@@ -90,21 +90,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 
-  // Tells the device to set the modem carrier firmware, as specified by
-  // |carrier|.
-  //
-  // See note on |callback| and |error_callback| in the class description
-  // above. The operation will fail if:
-  //    - Device |device_path| could not be found.
-  //    - |carrier| doesn't match one of the supported carriers, as reported by
-  //    - Shill.
-  //    - Operation is not supported by the device.
-  virtual void SetCarrier(
-      const std::string& device_path,
-      const std::string& carrier,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
   // SIM PIN/PUK methods
 
   // Tells the device whether or not a SIM PIN lock should be enforced by

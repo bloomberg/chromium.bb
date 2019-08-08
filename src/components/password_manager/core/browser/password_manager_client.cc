@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 
 namespace password_manager {
@@ -37,8 +41,8 @@ void PasswordManagerClient::PasswordWasAutofilled(
 }
 
 void PasswordManagerClient::AutofillHttpAuth(
-    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
-    const autofill::PasswordForm& preferred_match) const {}
+    const autofill::PasswordForm& preferred_match,
+    const PasswordFormManagerForUI* form_manager) const {}
 
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
@@ -63,6 +67,10 @@ const PasswordManager* PasswordManagerClient::GetPasswordManager() const {
 PasswordManager* PasswordManagerClient::GetPasswordManager() {
   return const_cast<PasswordManager*>(
       static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
+}
+
+HttpAuthManager* PasswordManagerClient::GetHttpAuthManager() {
+  return nullptr;
 }
 
 autofill::AutofillDownloadManager*

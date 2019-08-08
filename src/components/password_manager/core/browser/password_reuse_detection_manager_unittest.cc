@@ -171,6 +171,31 @@ TEST_F(PasswordReuseDetectionManagerTest, DidNavigateMainFrame) {
   manager.OnKeyPressed(base::ASCIIToUTF16("3"));
 }
 
+// Verify that CheckReuse is called on a paste event.
+TEST_F(PasswordReuseDetectionManagerTest, CheckReuseCalledOnPaste) {
+  const GURL gurls[] = {GURL("https://www.example.com"),
+                        GURL("https://www.example.test")};
+  const base::string16 input[] = {
+      base::ASCIIToUTF16(
+          "1234567890abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ"),
+      base::ASCIIToUTF16("?<>:'{}ABCDEF")};
+
+  EXPECT_CALL(client_, GetPasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  PasswordReuseDetectionManager manager(&client_);
+
+  for (size_t test = 0; test < base::size(gurls); ++test) {
+    manager.DidNavigateMainFrame(gurls[test]);
+    base::string16 expected_input = input[test];
+    if (expected_input.size() > kMaxNumberOfCharactersToStore)
+      expected_input = expected_input.substr(expected_input.size() -
+                                             kMaxNumberOfCharactersToStore);
+    EXPECT_CALL(*store_, CheckReuse(expected_input,
+                                    gurls[test].GetOrigin().spec(), &manager));
+    manager.OnPaste(input[test]);
+    testing::Mock::VerifyAndClearExpectations(store_.get());
+  }
+}
 }  // namespace
 
 }  // namespace password_manager

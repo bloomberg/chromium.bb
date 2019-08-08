@@ -6,18 +6,18 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/cast_config_controller.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom-test-utils.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
-#include "chrome/browser/ui/ash/cast_config_client_media_router.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
@@ -41,7 +41,7 @@ media_router::MediaRoute MakeRoute(const std::string& route_id,
                                    const std::string& sink_id,
                                    bool is_local) {
   return media_router::MediaRoute(
-      route_id, media_router::MediaSourceForDesktop(), sink_id, "description",
+      route_id, media_router::MediaSource::ForDesktop(), sink_id, "description",
       is_local, true /*for_display*/);
 }
 
@@ -50,16 +50,10 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   SystemTrayTrayCastMediaRouterChromeOSTest() : InProcessBrowserTest() {}
   ~SystemTrayTrayCastMediaRouterChromeOSTest() override {}
 
-  void ShowBubble() {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    wait_for.ShowBubble();
-  }
+  void ShowBubble() { tray_test_api_->ShowBubble(); }
 
   bool IsViewDrawn(int view_id) {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    bool visible = false;
-    wait_for.IsBubbleViewVisible(view_id, false /* open_tray */, &visible);
-    return visible;
+    return tray_test_api_->IsBubbleViewVisible(view_id, false /* open_tray */);
   }
 
   bool IsTrayVisible() { return IsViewDrawn(ash::VIEW_ID_CAST_MAIN_VIEW); }
@@ -92,6 +86,13 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
  private:
   // InProcessBrowserTest:
+  void SetUp() override {
+    // This makes sure CastDeviceCache is not initialized until after the
+    // MockMediaRouter is ready. (MockMediaRouter can't be constructed yet.)
+    CastConfigControllerMediaRouter::SetMediaRouterForTest(nullptr);
+    InProcessBrowserTest::SetUp();
+  }
+
   void PreRunTestOnMainThread() override {
     media_router_ = std::make_unique<media_router::MockMediaRouter>();
     ON_CALL(*media_router_, RegisterMediaSinksObserver(_))
@@ -100,16 +101,13 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
     ON_CALL(*media_router_, RegisterMediaRoutesObserver(_))
         .WillByDefault(Invoke(
             this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureRoutes));
-    CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
+    CastConfigControllerMediaRouter::SetMediaRouterForTest(media_router_.get());
     InProcessBrowserTest::PreRunTestOnMainThread();
   }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    // Connect to the ash test interface.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
+    tray_test_api_ = ash::SystemTrayTestApi::Create();
     // Connect to ash message center interface.
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
@@ -119,7 +117,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
   void PostRunTestOnMainThread() override {
     InProcessBrowserTest::PostRunTestOnMainThread();
-    CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
+    CastConfigControllerMediaRouter::SetMediaRouterForTest(nullptr);
   }
 
   bool CaptureSink(media_router::MediaSinksObserver* media_sinks_observer) {
@@ -134,7 +132,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   std::unique_ptr<media_router::MockMediaRouter> media_router_;
   media_router::MediaSinksObserver* media_sinks_observer_ = nullptr;
   media_router::MediaRoutesObserver* media_routes_observer_ = nullptr;
-  ash::mojom::SystemTrayTestApiPtr tray_test_api_;
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayTrayCastMediaRouterChromeOSTest);

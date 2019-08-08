@@ -124,10 +124,9 @@ class RenderViewBrowserTest : public ContentBrowserTest {
       int* error_code, bool* stale_cache_entry_present) {
     bool result = false;
 
-    PostTaskToInProcessRendererAndWait(
-        base::Bind(&RenderViewBrowserTest::GetLatestErrorFromRendererClient0,
-                   renderer_client_, &result, error_code,
-                   stale_cache_entry_present));
+    PostTaskToInProcessRendererAndWait(base::BindOnce(
+        &RenderViewBrowserTest::GetLatestErrorFromRendererClient0,
+        renderer_client_, &result, error_code, stale_cache_entry_present));
     return result;
   }
 

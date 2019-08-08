@@ -652,7 +652,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -669,7 +669,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -679,7 +679,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(
         gfx::Rect(0, 0, 50, 60),
         display::Screen::GetScreen()->GetPrimaryDisplay());
-    Shell::Get()->aura_env()->SetLastMouseLocation(gfx::Point(0, 0));
+    aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(0, 0));
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
@@ -687,7 +687,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -704,7 +704,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("399,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 
@@ -721,7 +721,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
     EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
+              aura::Env::GetInstance()->last_mouse_location().ToString());
     resizer->CompleteDrag();
   }
 }

@@ -33,14 +33,14 @@ VideoDetector::VideoDetector()
       is_shutting_down_(false),
       binding_(this),
       weak_factory_(this) {
-  Shell::Get()->aura_env()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   EstablishConnectionToViz();
 }
 
 VideoDetector::~VideoDetector() {
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void VideoDetector::AddObserver(Observer* observer) {
@@ -123,8 +123,7 @@ void VideoDetector::EstablishConnectionToViz() {
   binding_.Bind(mojo::MakeRequest(&observer));
   binding_.set_connection_error_handler(base::BindOnce(
       &VideoDetector::OnConnectionError, base::Unretained(this)));
-  Shell::Get()
-      ->aura_env()
+  aura::Env::GetInstance()
       ->context_factory_private()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(observer));

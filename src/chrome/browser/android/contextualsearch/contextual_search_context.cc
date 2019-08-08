@@ -66,6 +66,17 @@ void ContextualSearchContext::SetResolveProperties(
   previous_event_results = j_previous_event_results;
 }
 
+void ContextualSearchContext::SetContent(
+    JNIEnv* env,
+    jobject obj,
+    const base::android::JavaParamRef<jstring>& j_content,
+    jint j_selection_start,
+    jint j_selection_end) {
+  SetSelectionSurroundings(
+      j_selection_start, j_selection_end,
+      base::android::ConvertJavaStringToUTF16(env, j_content));
+}
+
 void ContextualSearchContext::AdjustSelection(JNIEnv* env,
                                               jobject obj,
                                               jint j_start_adjust,
@@ -136,6 +147,17 @@ int ContextualSearchContext::GetStartOffset() const {
 
 int ContextualSearchContext::GetEndOffset() const {
   return end_offset;
+}
+
+void ContextualSearchContext::RestrictResolve(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  // TODO(donnd): improve on this cheap implementation by sending this bit to
+  // the server instead of destroying our valuable context!
+  int start = this->start_offset;
+  int end = this->end_offset;
+  SetSelectionSurroundings(0, end - start,
+                           this->surrounding_text.substr(start, end - start));
 }
 
 base::android::ScopedJavaLocalRef<jstring>

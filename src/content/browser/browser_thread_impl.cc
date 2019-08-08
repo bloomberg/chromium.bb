@@ -260,4 +260,15 @@ void BrowserThread::RunAllPendingTasksOnThreadForTesting(ID identifier) {
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(identifier);
 }
 
+// static
+void BrowserThread::PostBestEffortTask(
+    const base::Location& from_here,
+    scoped_refptr<base::TaskRunner> task_runner,
+    base::OnceClosure task) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                     std::move(task_runner), from_here, std::move(task)));
+}
+
 }  // namespace content

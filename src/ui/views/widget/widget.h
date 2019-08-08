@@ -5,13 +5,13 @@
 #ifndef UI_VIEWS_WIDGET_WIDGET_H_
 #define UI_VIEWS_WIDGET_WIDGET_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -300,9 +300,20 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Used if widget is not activatable to do determine if mouse events should
     // be sent to the widget.
     bool wants_mouse_events_when_inactive = false;
+  };
 
-    // A map of properties applied to windows when running in mus.
-    std::map<std::string, std::vector<uint8_t>> mus_properties;
+  // Represents a lock held on the widget's ShouldPaintAsActive() state. As
+  // long as at least one lock is held, the widget will paint as active.
+  // Multiple locks can exist for the same widget, and a lock can outlive its
+  // associated widget. See Widget::LockPaintAsActive().
+  class PaintAsActiveLock {
+   public:
+    virtual ~PaintAsActiveLock();
+
+   protected:
+    PaintAsActiveLock();
+
+    DISALLOW_COPY_AND_ASSIGN(PaintAsActiveLock);
   };
 
   Widget();
@@ -815,13 +826,17 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the internal name for this Widget and NativeWidget.
   std::string GetName() const;
 
+  // Prevents the widget from being rendered as inactive during the lifetime of
+  // the returned lock. Multiple locks can exist with disjoint lifetimes. The
+  // returned lock can safely outlive the associated widget.
+  std::unique_ptr<PaintAsActiveLock> LockPaintAsActive();
+
   // Overridden from NativeWidgetDelegate:
   bool IsModal() const override;
   bool IsDialogBox() const override;
   bool CanActivate() const override;
+  bool ShouldPaintAsActive() const override;
   bool IsNativeWidgetInitialized() const override;
-  bool IsAlwaysRenderAsActive() const override;
-  void SetAlwaysRenderAsActive(bool always_render_as_active) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
   void OnNativeFocus() override;
   void OnNativeBlur() override;
@@ -871,6 +886,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
  protected:
+  // Call this to propagate native theme changes to the root view. Subclasses
+  // may override this to customize how native theme updates are propagated.
+  virtual void PropagateNativeThemeChanged();
+
   // Creates the RootView to be used within this Widget. Subclasses may override
   // to create custom RootViews that do specialized event processing.
   // TODO(beng): Investigate whether or not this is needed.
@@ -888,8 +907,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void OnDragComplete();
 
  private:
+  class PaintAsActiveLockImpl;
+
   friend class ButtonTest;
   friend class ComboboxTest;
+  friend class PaintAsActiveLockImpl;
   friend class TextfieldTest;
   friend class ViewAuraTest;
   friend void DisableActivationChangeHandlingForTests();
@@ -917,6 +939,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the Views whose layers are parented directly to the Widget's
   // layer.
   const View::Views& GetViewsWithLayers();
+
+  // Undoes LockPaintAsActive(). Called by PaintAsActiveLock destructor.
+  void UnlockPaintAsActive();
+
+  // Notifies the window frame that the active rendering state has changed.
+  void UpdatePaintAsActiveState(bool paint_as_active);
 
   static bool g_disable_activation_change_handling_;
 
@@ -964,9 +992,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // FRAME_TYPE_DEFAULT.
   FrameType frame_type_ = FRAME_TYPE_DEFAULT;
 
-  // True when the window should be rendered as active, regardless of whether
-  // or not it actually is.
-  bool always_render_as_active_ = false;
+  // Tracks whether the native widget is active.
+  bool native_widget_active_ = false;
+
+  // Tracks locks on the paint-as-active behavior. See LockPaintAsActive().
+  size_t paint_as_active_refcount_ = 0;
 
   // Set to true if the widget is in the process of closing.
   bool widget_closed_ = false;
@@ -1028,6 +1058,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_{
       this};
+
+  base::WeakPtrFactory<Widget> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

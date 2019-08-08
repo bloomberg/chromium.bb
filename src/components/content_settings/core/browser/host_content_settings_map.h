@@ -72,11 +72,10 @@ class HostContentSettingsMap : public content_settings::Observer,
   };
 
   // This should be called on the UI thread, otherwise |thread_checker_| handles
-  // CalledOnValidThread() wrongly. Only one (or neither) of
-  // |is_incognito_profile| and |is_guest_profile| should be true.
+  // CalledOnValidThread() wrongly. |is_off_the_record| indicates incognito
+  // profile or a guest session.
   HostContentSettingsMap(PrefService* prefs,
-                         bool is_incognito_profile,
-                         bool is_guest_profile,
+                         bool is_off_the_record,
                          bool store_last_modified,
                          bool migrate_requesting_and_top_level_origin_settings);
 
@@ -289,9 +288,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // to convert backwards.
   static ProviderType GetProviderTypeFromSource(const std::string& source);
 
-  bool is_incognito() const {
-    return is_incognito_;
-  }
+  // Whether this settings map is for an incognito or guest session.
+  bool IsOffTheRecord() const { return is_off_the_record_; }
 
   // Adds/removes an observer for content settings changes.
   void AddObserver(content_settings::Observer* observer);
@@ -414,8 +412,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Weak; owned by the Profile.
   PrefService* prefs_;
 
-  // Whether this settings map is for an incognito session.
-  bool is_incognito_;
+  // Whether this settings map is for an incognito or guest session.
+  bool is_off_the_record_;
 
   // Whether ContentSettings in the PrefProvider will store a last_modified
   // timestamp.

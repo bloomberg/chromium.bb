@@ -108,6 +108,47 @@ class ScriptsSmokeTest(unittest.TestCase):
     finally:
       shutil.rmtree(tempdir)
 
+  @decorators.Enabled('linux')  # Testing platform-independent code.
+  def testRunPerformanceTestsTelemetry_NoTestResults(self):
+    """Test that test results output gets returned for complete failures."""
+    options = options_for_unittests.GetCopy()
+    browser_type = options.browser_type
+    tempdir = tempfile.mkdtemp()
+    benchmarks = ['benchmark1', 'benchmark2']
+    return_code, stdout = self.RunPerfScript(
+        '../../testing/scripts/run_performance_tests.py '
+        '../../tools/perf/testdata/fail_and_do_nothing '
+        '--benchmarks=%s '
+        '--browser=%s '
+        '--isolated-script-test-output=%s' % (
+            ','.join(benchmarks),
+            browser_type,
+            os.path.join(tempdir, 'output.json')
+        ))
+    self.assertNotEqual(return_code, 0)
+    try:
+      with open(os.path.join(tempdir, 'output.json')) as f:
+        test_results = json.load(f)
+        self.assertIsNotNone(
+            test_results, 'json_test_results should be populated: ' + stdout)
+        self.assertTrue(
+            test_results['interrupted'],
+            'if the benchmark does not populate test results, then we should '
+            'populate it with a failure.')
+      for benchmark in benchmarks:
+        with open(os.path.join(tempdir, benchmark, 'test_results.json')) as f:
+          test_results = json.load(f)
+          self.assertIsNotNone(
+              test_results, 'json_test_results should be populated: ' + stdout)
+          self.assertTrue(
+              test_results['interrupted'],
+              'if the benchmark does not populate test results, then we should '
+              'populate it with a failure.')
+    except IOError as e:
+      self.fail('json_test_results should be populated: ' + stdout + str(e))
+    finally:
+      shutil.rmtree(tempdir)
+
   # Android: crbug.com/932301
   # ChromeOS: crbug.com/754913
   @decorators.Disabled('chromeos', 'android')
@@ -124,6 +165,8 @@ class ScriptsSmokeTest(unittest.TestCase):
         '--test-shard-map-filename=smoke_test_benchmark_shard_map.json '
         '--browser=%s '
         '--run-ref-build '
+        '--isolated-script-test-filter=dummy_benchmark.noisy_benchmark_1/'
+        'dummy_page.html::dummy_benchmark.stable_benchmark_1/dummy_page.html '
         '--isolated-script-test-repeat=2 '
         '--isolated-script-test-also-run-disabled-tests '
         '--isolated-script-test-output=%s' % (
@@ -160,7 +203,6 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.fail('KeyError: ' + stdout + str(e))
     finally:
       shutil.rmtree(tempdir)
-
 
   # Windows: ".exe" is auto-added which breaks Windows.
   # ChromeOS: crbug.com/754913.

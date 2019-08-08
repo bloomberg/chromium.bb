@@ -40,7 +40,7 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
+from chromite.lib import uri_lib
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import partition_lib
@@ -878,6 +878,7 @@ def BuildAndArchiveTestResultsTarball(src_dir, buildroot):
   return os.path.basename(target)
 
 
+# TODO(akeshet): Deprecate this undocumented type.
 HWTestSuiteResult = collections.namedtuple('HWTestSuiteResult',
                                            ['to_raise', 'json_dump_result'])
 
@@ -969,7 +970,7 @@ def RunHWTestSuite(
     if job_id:
       if wait_for_results:
         pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
-      suite_details_link = tree_status.ConstructGoldenEyeSuiteDetailsURL(
+      suite_details_link = uri_lib.ConstructGoldenEyeSuiteDetailsUri(
           job_id=job_id)
       logging.PrintBuildbotLink('Suite details', suite_details_link)
       if wait_for_results:
@@ -1066,175 +1067,83 @@ def RunHWTestSuite(
     return HWTestSuiteResult(to_raise, json_dump_result)
 
 
-# pylint: disable=docstring-missing-args
-def _GetRunSkylabSuiteArgs(
-    build, suite, board,
+def _GetSkylabWaitTaskArgs(task_id, timeout_mins=None):
+  """Get arguments for the `skylab wait-task` command.
+
+  Args:
+    timeout_mins: maximum number of minutes to wait for task completion.
+    task_id: id of the task to wait for.
+
+  Returns:
+    List of args for `skylab wait-task`, not including the subcommand itself.
+  """
+  args = ['-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT]
+  if timeout_mins is not None:
+    args += ['-timeout-mins', str(timeout_mins)]
+  args += [task_id]
+  return args
+
+
+def _GetSkylabCreateSuiteArgs(
+    build, suite, board, pool,
     model=None,
-    pool=None,
     priority=None,
     timeout_mins=None,
-    retry=None,
     max_retries=None,
-    suite_args=None,
     job_keyvals=None,
     quota_account=None):
-  """Get a list of args for run_suite.
+  """Get arguments for the `skylab create-suite` command.
 
-  TODO (xixuan): Add other features as required, e.g.
-    subsystems
-    test_args
-    skip_duts_check
-    suite_min_duts
-    minimum_duts
+  Command will run in -json mode.
 
   Args:
-    See args of |RunHWTestSuite|.
+    build: string image name to use, e.g. elm-paladin/R99-12345
+    suite: suite name to run
+    board: board name to run suite for
+    pool: pool to run the suite in
+    model: (optional) model name to run suite for
+    priority: (optional) integer priority for the suite. Higher number is a
+        lower priority
+    timeout_mins: (optional) suite timeout
+    max_retries: (optional) max retries allowed across all child tasks
+    job_keyvals: (optional) dictionary of {'key': 'value'} keyvals to be
+                 injected into all children of suite.
+    quota_account: (optional) quotascheduler account to use for child tasks
 
   Returns:
-    A list of args for SKYLAB_RUN_SUITE_PATH.
+    A list of args for the `skylab create-suite` subcommand (not including)
+    the subcommand itself.
   """
-  # HACK(pwang): Delete this once better solution is out.
-  board = board.replace('-arcnext', '')
-  board = board.replace('-arcvm', '')
-  board = board.replace('-kernelnext', '')
-  args = ['--build', build, '--board', board]
-
+  args = ['-image', build, '-board', board]
   if model:
-    args += ['--model', model]
+    args += ['-model', model]
 
-  args += ['--suite_name', suite]
-
-  # Add optional arguments to command, if present.
   if pool is not None:
-    args += ['--pool', pool]
+    args += ['-pool', pool]
 
   if priority is not None:
-    args += ['--priority', str(priority)]
+    args += ['-priority', str(priority)]
 
   if timeout_mins is not None:
-    args += ['--timeout_mins', str(timeout_mins)]
-
-  if retry is not None:
-    args += ['--test_retry']
+    args += ['-timeout-mins', str(timeout_mins)]
 
   if max_retries is not None:
-    args += ['--max_retries', str(max_retries)]
-
-  if suite_args is not None:
-    args += ['--suite_args', repr(suite_args)]
+    args += ['-max-retries', str(max_retries)]
 
   if job_keyvals is not None:
-    args += ['--job_keyvals', repr(job_keyvals)]
+    for key, value in job_keyvals.items():
+      args += ['-keyval', '%s:%s' % (key, value)]
 
   if quota_account is not None:
-    args += ['--quota_account', quota_account]
+    args += ['-qs-account', quota_account]
 
-  # Use fallback request for every skylab suite.
-  args += ['--use_fallback']
+  args += ['-json']
+
+  args += ['-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT]
+
+  args += [suite]
 
   return args
-# pylint: enable=docstring-missing-args
-
-
-def _remove_seeded_steps(output):
-  """Remove the user seeded steps in SkylabHWTestStage.
-
-  This step is used for filtering out extra annotations so that they won't show
-  on buildbot page.
-
-  When a suite passes, only the create and final wait swarming task URL are
-  listed.
-  When a suite fails, swarming task URL of the failed task is also listed.
-  No additional links are expected to show on buildbot. An example is:
-      https://cros-goldeneye.corp.google.com/chromeos/healthmonitoring/
-      buildDetails?buildbucketId=8940161120910419584
-
-  But when users view the suite swarming task URL, they're expected to see
-  all its child tests and their results for further debugging, e.g.
-      https://chrome-swarming.appspot.com/task?id=3ee300326eb47a10&refresh=10
-      https://chrome-swarming.appspot.com/task?id=3ee30107bdfe7d10&refresh=10
-
-  It's bad behavior to filter out steps based on swarming output, which
-  means the buildbot interface is highly depending on the output of
-  run_suite_skylab.py in autotest. However, it is hard to insert annotations
-  independently (run_suite_skylab (python) cannot use the LogDog libraries
-  (Go)). Currently we're still relying on printing format
-  '@@@ *** @@@' and let builder running kitchen to interpret it automatically.
-  So this function is needed until we have better approaches to interact with
-  logdog.
-  """
-  output_lines = output.splitlines()
-  return_output = ''
-  is_seeded_step = False
-  for line in output_lines:
-    if '@@@SEED_STEP' in line:
-      is_seeded_step = True
-
-    if not is_seeded_step:
-      return_output += line + '\n'
-
-    if '@@@STEP_CLOSED' in line:
-      is_seeded_step = False
-
-  return return_output
-
-
-def _SkylabHWTestCreate(cmd, **kwargs):
-  """Create HWTest with Skylab.
-
-  Args:
-    cmd: A list of args for proxied run_suite_skylab command.
-    kwargs: args to be passed to RunSwarmingCommand.
-
-  Returns:
-    A string swarming task id, which is regarded as the suite_id.
-  """
-  create_cmd = cmd + ['--create_and_return']
-  logging.info('Suite creation command: \n%s',
-               cros_build_lib.CmdToStr(create_cmd))
-  result = swarming_lib.RunSwarmingCommandWithRetries(
-      max_retry=_MAX_HWTEST_START_CMD_RETRY,
-      is_skylab=True,
-      error_check=swarming_lib.SwarmingRetriableErrorCheck,
-      cmd=create_cmd, capture_output=True,
-      combine_stdout_stderr=True, **kwargs)
-  # If the command succeeds, result.task_summary_json will have the right
-  # content. So result.GetValue is able to return valid values from its
-  # json summary.
-  for output in result.GetValue('outputs', []):
-    sys.stdout.write(_remove_seeded_steps(output))
-  sys.stdout.flush()
-  return result.GetValue('run_id')
-
-
-def _SkylabHWTestWait(cmd, suite_id, **kwargs):
-  """Wait for Skylab HWTest to finish.
-
-  Args:
-    cmd: Proxied run_suite command.
-    suite_id: The string suite_id to wait for.
-    kwargs: args to be passed to RunSwarmingCommand.
-  """
-  wait_cmd = list(cmd) + ['--suite_id', str(suite_id)]
-  logging.info('RunSkylabHWTestSuite will wait for suite %s: %s',
-               suite_id, cros_build_lib.CmdToStr(wait_cmd))
-  try:
-    result = swarming_lib.RunSwarmingCommandWithRetries(
-        max_retry=_MAX_HWTEST_START_CMD_RETRY,
-        is_skylab=True,
-        error_check=swarming_lib.SwarmingRetriableErrorCheck,
-        cmd=wait_cmd, capture_output=True, combine_stdout_stderr=True,
-        **kwargs)
-  except cros_build_lib.RunCommandError as e:
-    result = e.result
-    raise
-  finally:
-    # This is required to output buildbot annotations, e.g. 'STEP_LINKS'.
-    sys.stdout.write('######## Output for buildbot annotations ######## \n')
-    for output in result.GetValue('outputs', []):
-      sys.stdout.write(_remove_seeded_steps(output))
-    sys.stdout.write('######## END Output for buildbot annotations ######## \n')
-    sys.stdout.flush()
 
 
 def _InstallSkylabTool():
@@ -1342,7 +1251,7 @@ def RunSkylabHWTest(build, pool, test_name,
                                test_args)
   try:
     result = cros_build_lib.RunCommand(
-        [skylab_path, 'create-test'] + args, capture_output=True)
+        [skylab_path, 'create-test'] + args, redirect_stdout=True)
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
     result = e.result
@@ -1361,18 +1270,22 @@ def RunSkylabHWTest(build, pool, test_name,
     sys.stdout.write('######## END Output for buildbot annotations ######## \n')
     sys.stdout.flush()
 
+
 # pylint: disable=docstring-missing-args
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
                              timeout_util.TimeoutError)
 def RunSkylabHWTestSuite(
     build, suite, board,
     model=None,
+    # TODO(akeshet): Make this required argument a positional arg.
     pool=None,
-    wait_for_results=None,
+    wait_for_results=False,
     priority=None,
     timeout_mins=None,
+    # TODO(akeshet): Delete this ignored argument.
     retry=None,
     max_retries=None,
+    # TODO(akeshet): Delete this ignored argument.
     suite_args=None,
     job_keyvals=None,
     quota_account=None):
@@ -1384,36 +1297,72 @@ def RunSkylabHWTestSuite(
   Returns:
     See returns of RunHWTestSuite.
   """
-  priority_str = priority
+  if suite_args:
+    logging.warning('Skylab suites do not support suite_args, although they '
+                    'were specified: %s', suite_args)
+
+  if retry:
+    logging.warning('Skylab suites do not support retry arg, although it '
+                    'was specified: %s', retry)
+
+  if not pool:
+    raise ValueError('|pool| argument is required in Skylab, but was not '
+                     'supplied.')
+
   if priority:
     priority = constants.SKYLAB_HWTEST_PRIORITIES_MAP[str(priority)]
 
-  cmd = [SKYLAB_RUN_SUITE_PATH]
-  cmd += _GetRunSkylabSuiteArgs(
-      build, suite, board,
+  skylab_tool = _InstallSkylabTool()
+
+  cmd = [skylab_tool, 'create-suite']
+
+  cmd += _GetSkylabCreateSuiteArgs(
+      build, suite, board, pool,
       model=model,
-      pool=pool,
       priority=priority,
       timeout_mins=timeout_mins,
-      retry=retry,
       max_retries=max_retries,
-      suite_args=suite_args,
       job_keyvals=job_keyvals,
       quota_account=quota_account)
-  swarming_args = _CreateSwarmingArgs(build, suite, board, priority_str,
-                                      timeout_mins, run_skylab=True)
-  try:
-    suite_id = _SkylabHWTestCreate(cmd, **swarming_args)
-    if wait_for_results:
-      _SkylabHWTestWait(cmd, suite_id, **swarming_args)
 
-    return HWTestSuiteResult(None, None)
+  try:
+    output = cros_build_lib.RunCommand(cmd, redirect_stdout=True)
+    report = json.loads(output.output)
+    task_id = report['task_id']
+    task_url = report['task_url']
+
+    logging.info('Launched suite task %s', task_url)
+    logging.PrintBuildbotLink('Suite task: %s' % suite, task_url)
+    if not wait_for_results:
+      return HWTestSuiteResult(None, None)
+
+    wait_cmd = [skylab_tool, 'wait-task'] + _GetSkylabWaitTaskArgs(
+        task_id, timeout_mins=timeout_mins)
+    output = cros_build_lib.RunCommand(wait_cmd, redirect_stdout=True)
+    try:
+      report = json.loads(output.output)
+    except:
+      logging.error('Error when json parsing:\n%s', output.output)
+      raise
+
+    logging.info(
+        'Suite ended in state %s (success=%s) with output:\n%s',
+        report['task-result']['state'],
+        report['task-result']['success'],
+        report['stdout'],
+    )
+
+    error = None
+    if not report['task-result']['success']:
+      error = failures_lib.TestFailure('Suite failed.')
+
+    return HWTestSuiteResult(error, None)
+
   except cros_build_lib.RunCommandError as e:
     result = e.result
     to_raise = failures_lib.TestFailure(
         '** HWTest failed (code %d) **' % result.returncode)
     return HWTestSuiteResult(to_raise, None)
-# pylint: enable=docstring-missing-args
 
 
 # pylint: disable=docstring-missing-args
@@ -1443,11 +1392,6 @@ def _GetRunSuiteArgs(
   Returns:
     A list of args for run_suite
   """
-
-  # HACK(pwang): Delete this once better solution is out.
-  board = board.replace('-arcnext', '')
-  board = board.replace('-arcvm', '')
-  board = board.replace('-kernelnext', '')
   args = ['--build', build, '--board', board]
 
   if model:
@@ -1740,8 +1684,7 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
     logging.warning('AbortHWTests failed', exc_info=True)
 
 
-def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
-                       suite_id=''):
+def AbortSkylabHWTests(build, board, debug, suite):
   """Abort the specified hardware tests for the given bot(s).
 
   Args:
@@ -1749,16 +1692,8 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
     board: The name of the board.
     debug: Whether we are in debug mode.
     suite: Name of the Autotest suite.
-    priority: A string like 'CQ' to represent the suite's priority.
-    pool: The name of the pool.
-    suite_id: The ID of this swarming suite task.
   """
   abort_args = ['--board', board, '--suite_name', suite, '--build', build]
-  if suite_id:
-    abort_args += ['--suite_task_ids', suite_id]
-
-  if pool is not None:
-    abort_args += ['--pool', pool]
 
   try:
     cmd = [_SKYLAB_ABORT_SUITE_PATH] + abort_args
@@ -1766,7 +1701,6 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
         'swarming_server': topology.topology.get(
             topology.CHROME_SWARMING_PROXY_HOST_KEY),
         'task_name': '-'.join(['abort', build, suite]),
-        'priority': constants.SKYLAB_HWTEST_PRIORITIES_MAP[str(priority)],
         'dimensions': [('os', 'Ubuntu-14.04'),
                        ('pool', SKYLAB_SUITE_BOT_POOL)],
         'print_status_updates': True,
@@ -2133,20 +2067,19 @@ def ExtractBuildDepsGraph(buildroot, board):
   with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
     input_proto_file = os.path.join(tmpdir, 'input.json')
     output_proto_file = os.path.join(tmpdir, 'output.json')
-    depgraph_file = os.path.join(tmpdir, 'depgraph.json')
     with open(input_proto_file, 'w') as f:
       input_proto = {
           'build_target': {
               'name': board,
           },
-          'output_path': path_util.ToChrootPath(depgraph_file),
       }
       json.dump(input_proto, f)
     cmd += ['--input-json', path_util.ToChrootPath(input_proto_file),
             '--output-json', path_util.ToChrootPath(output_proto_file)]
     RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
                    redirect_stdout=True)
-    return json.loads(osutils.ReadFile(depgraph_file))
+    output = json.loads(osutils.ReadFile(output_proto_file))
+    return output['depGraph']
 
 
 def GenerateCPEExport(buildroot, board, useflags=None):
@@ -3438,7 +3371,7 @@ class ChromeSDK(object):
             'chromiumos_preflight']
 
   def VMTest(self, image_path, debug=False):
-    """Run cros_run_vm_test in a VM.
+    """Run cros_run_test in a VM.
 
     Only run tests for boards where we build a VM.
 
@@ -3450,7 +3383,7 @@ class ChromeSDK(object):
       A CommandResult object.
     """
     return self.Run([
-        'cros_run_vm_test', '--copy-on-write', '--deploy',
+        'cros_run_test', '--copy-on-write', '--deploy',
         '--board=%s' % self.board, '--image-path=%s' % image_path,
         '--build-dir=%s' % self._GetOutDirectory(debug=debug),
     ])

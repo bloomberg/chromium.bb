@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/layers/surface_layer.h"
@@ -58,10 +59,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
     : public cc::VideoFrameProvider,
       public base::RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor> {
  public:
-  // This |url| represents the media stream we are rendering. |url| is used to
-  // find out what web stream this WebMediaPlayerMSCompositor is playing, and
-  // together with flag "--disable-rtc-smoothness-algorithm" determine whether
-  // we enable algorithm or not.
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -88,7 +85,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   virtual void EnableSubmission(
       const viz::SurfaceId& id,
       base::TimeTicks local_surface_id_allocation_time,
-      media::VideoRotation rotation,
+      media::VideoTransformation transformation,
       bool force_submit);
 
   // Notifies the |submitter_| that the frames must be submitted.
@@ -105,13 +102,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   bool HasCurrentFrame() override;
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   void PutCurrentFrame() override;
-
-  // Return the current frame being rendered.
-  // Difference between GetCurrentFrame(): GetCurrentFrame() is designed for
-  // chrome compositor to pull frame from WebMediaPlayerMSCompositor, and thus
-  // calling GetCurrentFrame() will affect statistics like |dropped_frames_|
-  // etc. Calling this function has no side effect.
-  scoped_refptr<media::VideoFrame> GetCurrentFrameWithoutUpdatingStatistics();
+  base::TimeDelta GetPreferredRenderInterval() override;
 
   void StartRendering();
   void StopRendering();
@@ -149,16 +140,19 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // For algorithm disabled case only: call SetCurrentFrame() with the current
   // frame immediately. |video_frame_provider_client_| gets notified about the
   // new frame with a DidReceiveFrame() call.
-  void RenderWithoutAlgorithm(const scoped_refptr<media::VideoFrame>& frame);
+  void RenderWithoutAlgorithm(scoped_refptr<media::VideoFrame> frame);
   void RenderWithoutAlgorithmOnCompositor(
-      const scoped_refptr<media::VideoFrame>& frame);
+      scoped_refptr<media::VideoFrame> frame);
 
   // Update |current_frame_| and |dropped_frame_count_|
-  void SetCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
+  void SetCurrentFrame(scoped_refptr<media::VideoFrame> frame);
   // Following the update to |current_frame_|, this will check for changes that
   // require updating video layer.
-  void CheckForFrameChanges(const scoped_refptr<media::VideoFrame>& old_frame,
-                            const scoped_refptr<media::VideoFrame>& new_frame);
+  void CheckForFrameChanges(
+      bool is_first_frame,
+      bool has_frame_size_changed,
+      base::Optional<media::VideoRotation> new_frame_rotation,
+      base::Optional<bool> new_frame_opacity);
 
   void StartRenderingInternal();
   void StopRenderingInternal();

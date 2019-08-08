@@ -61,7 +61,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   //   - New frames will be signaled on |compositor_task_runner| via |client|'s
   //     DidReceiveFrame() method.
   void Initialize(
-      const base::Closure& received_frame_cb,
+      const base::RepeatingClosure& received_frame_cb,
       const gfx::Size& natural_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       const StreamTextureWrapperInitCB& init_cb) override;
@@ -97,13 +97,12 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   // Destroys |this| safely on |main_task_runner_|.
   void Destroy() override;
 
-  void InitializeOnMainThread(const base::Closure& received_frame_cb,
+  void InitializeOnMainThread(const base::RepeatingClosure& received_frame_cb,
                               const StreamTextureWrapperInitCB& init_cb);
 
   void ReallocateVideoFrame(const gfx::Size& natural_size);
 
-  void SetCurrentFrameInternal(
-      const scoped_refptr<media::VideoFrame>& video_frame);
+  void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame> video_frame);
 
   bool enable_texture_copy_;
 

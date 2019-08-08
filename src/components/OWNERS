@@ -39,4 +39,4 @@ per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 # This is for the common case of adding or removing tests or files. If you're
 # making structural changes, please get a review from one of the overall
 # components OWNERS.
-per-file BUILD.gn=file://build/OWNERS
+per-file BUILD.gn=*

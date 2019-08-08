@@ -155,7 +155,7 @@ bool ParsedCookie::IsValid() const {
 
 CookieSameSite ParsedCookie::SameSite() const {
   return (same_site_index_ == 0)
-             ? CookieSameSite::NO_RESTRICTION
+             ? CookieSameSite::UNSPECIFIED
              : StringToCookieSameSite(pairs_[same_site_index_].second);
 }
 
@@ -207,8 +207,8 @@ bool ParsedCookie::SetIsHttpOnly(bool is_http_only) {
   return SetBool(&httponly_index_, kHttpOnlyTokenName, is_http_only);
 }
 
-bool ParsedCookie::SetSameSite(const std::string& is_same_site) {
-  return SetString(&same_site_index_, kSameSiteTokenName, is_same_site);
+bool ParsedCookie::SetSameSite(const std::string& same_site) {
+  return SetString(&same_site_index_, kSameSiteTokenName, same_site);
 }
 
 bool ParsedCookie::SetPriority(const std::string& priority) {

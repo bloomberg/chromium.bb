@@ -6,8 +6,8 @@
 #define IOS_WEB_PUBLIC_TEST_FAKES_TEST_NAVIGATION_MANAGER_H_
 
 #include "base/callback.h"
+#include "ios/web/public/deprecated/navigation_item_list.h"
 #import "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_item_list.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 

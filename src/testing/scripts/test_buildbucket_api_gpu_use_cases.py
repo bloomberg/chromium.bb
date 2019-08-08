@@ -14,6 +14,7 @@ import common
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              '..', '..', 'content', 'test', 'gpu'))
 
+import gather_power_measurement_results
 import gather_swarming_json_results
 
 
@@ -21,7 +22,34 @@ class BuildBucketApiGpuUseCaseTests:
 
   @classmethod
   def GenerateTests(cls):
-    return ['TestGatherWebGL2TestTimesFromLatestGreenBuild']
+    return [
+        'TestGatherPowerMeasurementResultsFromLatestGreenBuild',
+        'TestGatherWebGL2TestTimesFromLatestGreenBuild',
+    ]
+
+  @staticmethod
+  def TestGatherPowerMeasurementResultsFromLatestGreenBuild():
+    # Verify we can get power measurement test data from latest successful
+    # build, including the swarming bot that runs the test, and actual test
+    # results.
+    bot = 'Win10 FYI Release (Intel HD 630)'
+    step = 'power_measurement_test'
+    build_id = gather_power_measurement_results.GetLatestGreenBuild(bot)
+    build_json = gather_power_measurement_results.GetJsonForBuildSteps(
+        bot, build_id)
+    if 'steps' not in build_json:
+      return '"steps" is missing from the build json'
+    stdout_url = gather_power_measurement_results.FindStepLogURL(
+        build_json['steps'], step, 'stdout')
+    if not stdout_url:
+      return 'Unable to find stdout from step %s' % step
+    results = { 'number': build_id, 'tests': [] }
+    gather_power_measurement_results.ProcessStepStdout(stdout_url, results)
+    if 'bot' not in results or not results['bot'].startswith('BUILD'):
+      return 'Failed to find bot name as BUILD*'
+    if not results['tests']:
+      return 'Failed to find power measurment test data'
+    return None
 
   @staticmethod
   def TestGatherWebGL2TestTimesFromLatestGreenBuild():

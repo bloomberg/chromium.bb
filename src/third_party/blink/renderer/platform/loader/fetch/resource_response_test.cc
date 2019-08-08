@@ -80,7 +80,7 @@ TEST(ResourceResponseTest, CrossThreadAtomicStrings) {
       ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest("WorkerThread"));
   PostCrossThreadTask(*thread->GetTaskRunner(), FROM_HERE,
-                      CrossThreadBind(&RunInThread));
+                      CrossThreadBindOnce(&RunInThread));
   thread.reset();
 }
 

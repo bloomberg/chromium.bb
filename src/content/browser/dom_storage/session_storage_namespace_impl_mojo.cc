@@ -131,8 +131,10 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
   }
   DCHECK(IsPopulated());
   auto it = origin_areas_.find(origin);
-  if (it == origin_areas_.end())
+  if (it == origin_areas_.end()) {
+    std::move(callback).Run();
     return;
+  }
   // Renderer process expects |source| to always be two newline separated
   // strings.
   it->second->DeleteAll(

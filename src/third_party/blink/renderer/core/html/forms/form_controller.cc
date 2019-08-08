@@ -48,8 +48,8 @@ inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
   // indeterminate.
-  return ToHTMLElement(control).FastHasAttribute(kFormAttr) ? nullptr
-                                                            : control.Form();
+  return control.ToHTMLElement().FastHasAttribute(kFormAttr) ? nullptr
+                                                             : control.Form();
 }
 
 const AtomicString& ControlType(const ListedElement& control) {
@@ -347,6 +347,12 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
     ListedElement& control = *controls[i];
     if (!control.ClassSupportsStateRestore())
       continue;
+    // The resultant string will be fragile if it contains a name of a
+    // form-associated custom element. It's associated to the |form| only if its
+    // custom element definition is available.  It's not associated if the
+    // definition is unavailable though the element structure is identical.
+    if (control.IsElementInternals())
+      continue;
     if (!OwnerFormForState(control))
       continue;
     AtomicString name = control.GetName();
@@ -359,7 +365,7 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
   builder.Append(']');
 }
 
-static inline String FormSignature(const HTMLFormElement& form) {
+String FormSignature(const HTMLFormElement& form) {
   KURL action_url = form.GetURLAttribute(kActionAttr);
   // Remove the query part because it might contain volatile parameters such
   // as a session key.
@@ -444,7 +450,7 @@ Vector<String> DocumentState::ToStateVector() {
   std::unique_ptr<SavedFormStateMap> state_map =
       base::WrapUnique(new SavedFormStateMap);
   for (auto& control : form_controls_) {
-    DCHECK(ToHTMLElement(control)->isConnected());
+    DCHECK(control->ToHTMLElement().isConnected());
     if (!control->ShouldSaveAndRestoreFormControlState())
       continue;
     SavedFormStateMap::AddResult result =

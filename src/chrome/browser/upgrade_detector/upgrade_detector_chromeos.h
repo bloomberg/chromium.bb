@@ -10,10 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chromeos/dbus/update_engine_client.h"
 
+class PrefRegistrySimple;
 namespace base {
 class Clock;
 template <typename T>
@@ -25,6 +27,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
                                 public chromeos::UpdateEngineClient::Observer {
  public:
   ~UpgradeDetectorChromeos() override;
+
+  // Register ChromeOS specific Prefs.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   static UpgradeDetectorChromeos* GetInstance();
 
@@ -47,6 +52,18 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
  private:
   friend class base::NoDestructor<UpgradeDetectorChromeos>;
 
+  // Returns the period between first notification and Recommended / Required
+  // deadline specified via the RelaunchHeadsUpPeriod policy setting, or a
+  // zero delta if unset or out of range.
+  static base::TimeDelta GetRelaunchHeadsUpPeriod();
+
+  // Calculates |elevated_threshold_| and |high_threshold_|.
+  void CalculateThresholds();
+
+  // Handles a change to the browser.relaunch_heads_up_period Local State
+  // preference. Calls NotifyUpgrade if an upgrade is available.
+  void OnRelaunchHeadsUpPeriodPrefChanged();
+
   // Returns the threshold to reach high annoyance level.
   static base::TimeDelta DetermineHighThreshold();
 
@@ -58,6 +75,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
       const chromeos::UpdateEngineClient::Status& status) override;
   void OnUpdateOverCellularOneTimePermissionGranted() override;
 
+  // Triggers NotifyOnUpgrade if thresholds have been changed.
+  void OnThresholdPrefChanged();
+
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the
   // user that a new version is available.
@@ -66,8 +86,15 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   void OnChannelsReceived(std::string current_channel,
                           std::string target_channel);
 
+  // The delta from upgrade detection until elevated annoyance level is reached.
+  base::TimeDelta elevated_threshold_;
+
   // The delta from upgrade detection until high annoyance level is reached.
   base::TimeDelta high_threshold_;
+
+  // Observes changes to the browser.relaunch_heads_up_period Local State
+  // preference.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // A timer used to move through the various upgrade notification stages and
   // call UpgradeDetector::NotifyUpgrade.

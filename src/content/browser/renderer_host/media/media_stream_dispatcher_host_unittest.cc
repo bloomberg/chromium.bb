@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -169,7 +170,7 @@ class MockMediaStreamDispatcherHost
     // Notify that the event have occurred.
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
-    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+    task_runner_->PostTask(FROM_HERE, std::move(quit_closure));
 
     label_ = label;
     audio_devices_ = audio_devices;
@@ -182,7 +183,7 @@ class MockMediaStreamDispatcherHost
     if (!quit_closures_.empty()) {
       base::Closure quit_closure = quit_closures_.front();
       quit_closures_.pop();
-      task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+      task_runner_->PostTask(FROM_HERE, std::move(quit_closure));
     }
 
     label_.clear();
@@ -203,7 +204,7 @@ class MockMediaStreamDispatcherHost
                       const blink::MediaStreamDevice& device) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
-    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+    task_runner_->PostTask(FROM_HERE, std::move(quit_closure));
     if (success) {
       label_ = label;
       opened_device_ = device;
@@ -288,7 +289,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                 info.descriptor.capture_api = kStubCaptureApi;
                 result.push_back(info);
               }
-              base::ResetAndReturn(&result_callback).Run(result);
+              std::move(result_callback).Run(result);
             }));
 
     base::RunLoop run_loop;
@@ -315,7 +316,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   std::unique_ptr<FakeMediaStreamUIProxy> CreateMockUI(bool expect_started) {
     std::unique_ptr<MockMediaStreamUIProxy> fake_ui =
         std::make_unique<MockMediaStreamUIProxy>();
-    testing::Mock::AllowLeak(fake_ui.get());
+
     if (expect_started)
       EXPECT_CALL(*fake_ui, MockOnStarted(_));
     return fake_ui;

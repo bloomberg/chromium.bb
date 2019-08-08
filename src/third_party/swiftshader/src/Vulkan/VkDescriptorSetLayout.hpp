@@ -27,29 +27,52 @@ namespace vk
 class DescriptorSet;
 
 // TODO(b/129523279): Move to the Device or Pipeline layer.
-struct SampledImageDescriptor
+struct alignas(16) SampledImageDescriptor
 {
-	// TODO(b/129523279): Minimize to the data actually needed.
-	vk::Sampler *sampler;
-	vk::ImageView *imageView;
+	void updateSampler(const vk::Sampler *sampler);
 
-	sw::Texture texture;
+	// TODO(b/129523279): Minimize to the data actually needed.
+	vk::Sampler sampler;
+
+	uint32_t imageViewId;
+	VkImageViewType type;
+	VkFormat format;
+	VkComponentMapping swizzle;
+	alignas(16) sw::Texture texture;
+	VkExtent3D extent; // Of base mip-level.
+	int arrayLayers;
+	int mipLevels;
+	int sampleCount;
 };
 
-struct StorageImageDescriptor
+struct alignas(16) StorageImageDescriptor
 {
 	void *ptr;
 	VkExtent3D extent;
 	int rowPitchBytes;
 	int slicePitchBytes;
+	int samplePitchBytes;
 	int arrayLayers;
+	int sampleCount;
+	int sizeInBytes;
+
+	void *stencilPtr;
+	int stencilRowPitchBytes;
+	int stencilSlicePitchBytes;
+	int stencilSamplePitchBytes;
+};
+
+struct alignas(16) BufferDescriptor
+{
+	void *ptr;
+	int sizeInBytes;		// intended size of the bound region -- slides along with dynamic offsets
+	int robustnessSize;		// total accessible size from static offset -- does not move with dynamic offset
 };
 
 class DescriptorSetLayout : public Object<DescriptorSetLayout, VkDescriptorSetLayout>
 {
 public:
 	DescriptorSetLayout(const VkDescriptorSetLayoutCreateInfo* pCreateInfo, void* mem);
-	~DescriptorSetLayout() = delete;
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
 	static size_t ComputeRequiredAllocationSize(const VkDescriptorSetLayoutCreateInfo* pCreateInfo);
@@ -57,6 +80,9 @@ public:
 	static size_t GetDescriptorSize(VkDescriptorType type);
 	static void WriteDescriptorSet(const VkWriteDescriptorSet& descriptorWrites);
 	static void CopyDescriptorSet(const VkCopyDescriptorSet& descriptorCopies);
+
+	static void WriteDescriptorSet(DescriptorSet *dstSet, VkDescriptorUpdateTemplateEntry const &entry, char const *src);
+	static void WriteTextureLevelInfo(sw::Texture *texture, int level, int width, int height, int depth, int pitchP, int sliceP);
 
 	void initialize(VkDescriptorSet descriptorSet);
 
@@ -66,9 +92,15 @@ public:
 	// Returns the number of bindings in the descriptor set.
 	size_t getBindingCount() const;
 
+	// Returns true iff the given binding exists.
+	bool hasBinding(uint32_t binding) const;
+
 	// Returns the byte offset from the base address of the descriptor set for
 	// the given binding and array element within that binding.
 	size_t getBindingOffset(uint32_t binding, size_t arrayElement) const;
+
+	// Returns the stride of an array of descriptors
+	size_t getBindingStride(uint32_t binding) const;
 
 	// Returns the number of descriptors across all bindings that are dynamic
 	// (see isBindingDynamic).
@@ -93,7 +125,6 @@ public:
 private:
 	size_t getDescriptorSetDataSize() const;
 	uint32_t getBindingIndex(uint32_t binding) const;
-	static const uint8_t* GetInputData(const VkWriteDescriptorSet& descriptorWrites);
 	static bool isDynamic(VkDescriptorType type);
 
 	VkDescriptorSetLayoutCreateFlags flags;
@@ -104,7 +135,7 @@ private:
 
 static inline DescriptorSetLayout* Cast(VkDescriptorSetLayout object)
 {
-	return reinterpret_cast<DescriptorSetLayout*>(object);
+	return reinterpret_cast<DescriptorSetLayout*>(object.get());
 }
 
 } // namespace vk

@@ -102,14 +102,14 @@ Profile* PepperIsolatedFileSystemMessageFilter::GetProfile() {
   return profile_manager->GetProfile(profile_directory_);
 }
 
-std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
-    Profile* profile) {
+storage::IsolatedContext::ScopedFSHandle
+PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(Profile* profile) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
           document_url_.host());
   if (!extension)
-    return std::string();
+    return storage::IsolatedContext::ScopedFSHandle();
 
   // First level directory for isolated filesystem to lookup.
   std::string kFirstLevelDirectory("crxfs");
@@ -119,7 +119,7 @@ std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
       extension->path(),
       &kFirstLevelDirectory);
 #else
-  return std::string();
+  return storage::IsolatedContext::ScopedFSHandle();
 #endif
 }
 
@@ -160,8 +160,9 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
   // TODO(raymes): When we remove FileSystem from the renderer, we should create
   // a pending PepperFileSystemBrowserHost here with the fsid and send the
   // pending host ID back to the plugin.
-  const std::string fsid = CreateCrxFileSystem(profile);
-  if (fsid.empty()) {
+  const storage::IsolatedContext::ScopedFSHandle fs =
+      CreateCrxFileSystem(profile);
+  if (!fs.is_valid()) {
     context->reply_msg =
         PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(std::string());
     return PP_ERROR_NOTSUPPORTED;
@@ -170,9 +171,10 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
   // Grant readonly access of isolated filesystem to renderer process.
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantReadFileSystem(render_process_id_, fsid);
+  policy->GrantReadFileSystem(render_process_id_, fs.id());
 
-  context->reply_msg = PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fsid);
+  context->reply_msg =
+      PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fs.id());
   return PP_OK;
 #else
   return PP_ERROR_NOTSUPPORTED;

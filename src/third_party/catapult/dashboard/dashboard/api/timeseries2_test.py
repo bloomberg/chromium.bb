@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import datetime
 import json
 import unittest
@@ -53,7 +57,7 @@ class Timeseries2Test(testing_common.TestCase):
     test.UpdateSheriff()
     test.put()
 
-    for i in xrange(1, 21, 2):
+    for i in range(1, 21, 2):
       graph_data.Row(
           error=(i / 2.0),
           id=i,
@@ -136,7 +140,7 @@ class Timeseries2Test(testing_common.TestCase):
       else:
         self.assertEqual(None, datum[4])
       if i in [0, 5]:
-        self.assertEqual('deviceIds', datum[5].keys()[0])
+        self.assertEqual('deviceIds', list(datum[5].keys())[0])
       else:
         self.assertEqual(None, datum[5])
       self.assertEqual(_TEST_HISTOGRAM_DATA['name'], datum[6]['name'])
@@ -210,7 +214,7 @@ class Timeseries2Test(testing_common.TestCase):
     old_std_test.UpdateSheriff()
     old_std_test.put()
 
-    for i in xrange(1, 21, 2):
+    for i in range(1, 21, 2):
       graph_data.Row(parent=old_avg_test.key, id=i, value=float(i)).put()
       graph_data.Row(parent=old_std_test.key, id=i, value=(i / 2.0)).put()
       graph_data.Row(parent=old_count_test.key, id=i, value=10).put()
@@ -222,7 +226,7 @@ class Timeseries2Test(testing_common.TestCase):
         units='units')
     new_test.UpdateSheriff()
     new_test.put()
-    for i in xrange(21, 41, 2):
+    for i in range(21, 41, 2):
       graph_data.Row(
           d_count=10,
           error=(i / 2.0),

@@ -17,7 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.webapk.lib.client.DexOptimizer;
 import org.chromium.webapk.lib.client.WebApkVersion;
-import org.chromium.webapk.lib.common.WebApkVersionUtils;
+import org.chromium.webapk.lib.common.WebApkCommonUtils;
 
 import java.io.File;
 
@@ -70,7 +70,7 @@ public class WebApkVersionManager {
         dexDir = context.getDir("dex", Context.MODE_PRIVATE);
 
         String dexName =
-                WebApkVersionUtils.getRuntimeDexName(WebApkVersion.CURRENT_RUNTIME_DEX_VERSION);
+                WebApkCommonUtils.getRuntimeDexName(WebApkVersion.CURRENT_RUNTIME_DEX_VERSION);
         File dexFile = new File(dexDir, dexName);
         if (!FileUtils.extractAsset(context, dexName, dexFile)) {
             return;

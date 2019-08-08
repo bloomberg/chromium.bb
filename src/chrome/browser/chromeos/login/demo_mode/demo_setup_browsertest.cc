@@ -32,6 +32,13 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -107,25 +114,21 @@ std::string DialogToStringId(DemoSetupDialog dialog) {
 
 // Returns query to access the content of the given OOBE |screen| or empty
 // string if the |screen| is not a part of Demo Mode setup flow.
-std::string ScreenToContentQuery(OobeScreen screen) {
-  switch (screen) {
-    case OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES:
-      return "$('demo-preferences-content')";
-    case OobeScreen::SCREEN_OOBE_NETWORK:
-      return "$('oobe-network-md')";
-    case OobeScreen::SCREEN_OOBE_EULA:
-      return "$('oobe-eula-md')";
-    case OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE:
-      return "$('arc-tos-root')";
-    case OobeScreen::SCREEN_OOBE_UPDATE:
-      return "$('oobe-update-md')";
-    case OobeScreen::SCREEN_OOBE_DEMO_SETUP:
-      return "$('demo-setup-content')";
-    default: {
-      NOTREACHED() << "This OOBE screen is not a part of Demo Mode setup flow";
-      return std::string();
-    }
-  }
+std::string ScreenToContentQuery(OobeScreenId screen) {
+  if (screen == DemoPreferencesScreenView::kScreenId)
+    return "$('demo-preferences-content')";
+  if (screen == NetworkScreenView::kScreenId)
+    return "$('oobe-network-md')";
+  if (screen == EulaView::kScreenId)
+    return "$('oobe-eula-md')";
+  if (screen == ArcTermsOfServiceScreenView::kScreenId)
+    return "$('arc-tos-root')";
+  if (screen == UpdateView::kScreenId)
+    return "$('oobe-update-md')";
+  if (screen == DemoSetupScreenView::kScreenId)
+    return "$('demo-setup-content')";
+  NOTREACHED() << "This OOBE screen is not a part of Demo Mode setup flow";
+  return std::string();
 }
 
 // Waits for js condition to be fulfilled.
@@ -159,8 +162,8 @@ class DemoSetupTest : public LoginManagerTest {
     DisconnectAllNetworks();
   }
 
-  bool IsScreenShown(OobeScreen screen) {
-    const std::string screen_name = GetOobeScreenName(screen);
+  bool IsScreenShown(OobeScreenId screen) {
+    const std::string screen_name = screen.name;
     const std::string query = base::StrCat(
         {"!!document.querySelector('#", screen_name,
          "') && !document.querySelector('#", screen_name, "').hidden"});
@@ -174,7 +177,7 @@ class DemoSetupTest : public LoginManagerTest {
   // TODO(michaelpg): Replace this with IsScreenDialogElementVisible, which is
   // more robust because it checks whether the element is actually rendered.
   // Do this after a branch in case it introduces flakiness.
-  bool IsScreenDialogElementShown(OobeScreen screen,
+  bool IsScreenDialogElementShown(OobeScreenId screen,
                                   DemoSetupDialog dialog,
                                   const std::string& element_selector) {
     const std::string element = base::StrCat(
@@ -185,7 +188,7 @@ class DemoSetupTest : public LoginManagerTest {
     return test::OobeJS().GetBool(query);
   }
 
-  bool IsScreenDialogElementVisible(OobeScreen screen,
+  bool IsScreenDialogElementVisible(OobeScreenId screen,
                                     DemoSetupDialog dialog,
                                     const std::string& element_selector) {
     const std::string element = base::StrCat(
@@ -196,7 +199,7 @@ class DemoSetupTest : public LoginManagerTest {
     return test::OobeJS().GetBool(query);
   }
 
-  bool IsScreenDialogElementEnabled(OobeScreen screen,
+  bool IsScreenDialogElementEnabled(OobeScreenId screen,
                                     DemoSetupDialog dialog,
                                     const std::string& element_selector) {
     const std::string element = base::StrCat(
@@ -211,7 +214,7 @@ class DemoSetupTest : public LoginManagerTest {
   // element on the network list.
   bool IsCustomNetworkListElementShown(const std::string& custom_item_name) {
     const std::string element_selector = base::StrCat(
-        {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_NETWORK),
+        {ScreenToContentQuery(NetworkScreenView::kScreenId),
          ".getNetworkListItemWithQueryForTest('cr-network-list-item')"});
     const std::string query =
         base::StrCat({"!!", element_selector, " && ", element_selector,
@@ -225,7 +228,7 @@ class DemoSetupTest : public LoginManagerTest {
   // |recovery_message_id|.
   bool IsErrorMessageShown(int error_message_id, int recovery_message_id) {
     const std::string element_selector =
-        base::StrCat({ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
+        base::StrCat({ScreenToContentQuery(DemoSetupScreenView::kScreenId),
                       ".$['", DialogToStringId(DemoSetupDialog::kError),
                       "'].querySelector('div[slot=subtitle]')"});
     const std::string query = base::StrCat(
@@ -269,7 +272,7 @@ class DemoSetupTest : public LoginManagerTest {
 
   // Simulates |button| click on a specified OOBE |screen|. Can be used for
   // screens that consists of one oobe-dialog element.
-  void ClickOobeButton(OobeScreen screen,
+  void ClickOobeButton(OobeScreenId screen,
                        OobeButton button,
                        JSExecution execution) {
     ClickOobeButtonWithSelector(screen, ButtonToTag(button), execution);
@@ -277,7 +280,7 @@ class DemoSetupTest : public LoginManagerTest {
 
   // Simulates click on a button with |button_selector| on specified OOBE
   // |screen|. Can be used for screens that consists of one oobe-dialog element.
-  void ClickOobeButtonWithSelector(OobeScreen screen,
+  void ClickOobeButtonWithSelector(OobeScreenId screen,
                                    const std::string& button_selector,
                                    JSExecution execution) {
     const std::string query = base::StrCat(
@@ -297,7 +300,7 @@ class DemoSetupTest : public LoginManagerTest {
 
   // Simulates |button| click on a |dialog| of the specified OOBE |screen|.
   // Can be used for screens that consists of multiple oobe-dialog elements.
-  void ClickScreenDialogButton(OobeScreen screen,
+  void ClickScreenDialogButton(OobeScreenId screen,
                                DemoSetupDialog dialog,
                                OobeButton button,
                                JSExecution execution) {
@@ -308,7 +311,7 @@ class DemoSetupTest : public LoginManagerTest {
   // Simulates click on a button with |button_selector| on a |dialog| of the
   // specified OOBE |screen|. Can be used for screens that consist of multiple
   // oobe-dialog elements.
-  void ClickScreenDialogButtonWithSelector(OobeScreen screen,
+  void ClickScreenDialogButtonWithSelector(OobeScreenId screen,
                                            DemoSetupDialog dialog,
                                            const std::string& button_selector,
                                            JSExecution execution) {
@@ -331,7 +334,7 @@ class DemoSetupTest : public LoginManagerTest {
   // the aria-label of the desired cr-network-list-item.
   void ClickNetworkListElement(const std::string& element) {
     const std::string query =
-        base::StrCat({ScreenToContentQuery(OobeScreen::SCREEN_OOBE_NETWORK),
+        base::StrCat({ScreenToContentQuery(NetworkScreenView::kScreenId),
                       ".getNetworkListItemWithQueryForTest('[aria-label=\"",
                       element, "\"]').click()"});
     test::ExecuteOobeJSAsync(query);
@@ -350,23 +353,23 @@ class DemoSetupTest : public LoginManagerTest {
     auto* const wizard_controller = WizardController::default_controller();
     wizard_controller->SimulateDemoModeSetupForTesting(
         DemoSession::DemoModeConfig::kOnline);
-    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+    wizard_controller->AdvanceToScreen(DemoSetupScreenView::kScreenId);
 
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+    OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
     // TODO(agawronska): Progress dialog transition is async - extra work is
     // needed to be able to check it reliably.
-    WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+    WaitForScreenDialog(DemoSetupScreenView::kScreenId,
                         DemoSetupDialog::kError);
   }
 
-  void WaitForScreenDialog(OobeScreen screen, DemoSetupDialog dialog) {
+  void WaitForScreenDialog(OobeScreenId screen, DemoSetupDialog dialog) {
     const std::string query =
         base::StrCat({"!", ScreenToContentQuery(screen), ".$['",
                       DialogToStringId(dialog), "'].hidden"});
     WaitForJsCondition(query);
   }
 
-  void SkipToScreen(OobeScreen screen) {
+  void SkipToScreen(OobeScreenId screen) {
     auto* const wizard_controller = WizardController::default_controller();
     wizard_controller->SimulateDemoModeSetupForTesting();
     wizard_controller->AdvanceToScreen(screen);
@@ -378,7 +381,7 @@ class DemoSetupTest : public LoginManagerTest {
   DemoSetupScreen* GetDemoSetupScreen() {
     return static_cast<DemoSetupScreen*>(
         WizardController::default_controller()->screen_manager()->GetScreen(
-            OobeScreen::SCREEN_OOBE_DEMO_SETUP));
+            DemoSetupScreenView::kScreenId));
   }
 
   void SimulateOfflineEnvironment() {
@@ -472,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
   ClickOkOnConfirmationDialog();
 
   WaitForJsCondition(kIsConfirmationDialogHiddenQuery);
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 }
 
 #if defined(OS_CHROMEOS)
@@ -491,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_ShowConfirmationDialogAndCancel) {
   ClickCancelOnConfirmationDialog();
 
   WaitForJsCondition(kIsConfirmationDialogHiddenQuery);
-  EXPECT_FALSE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  EXPECT_FALSE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, InvokeWithTaps) {
@@ -531,49 +534,49 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                            DemoSetupDialog::kNetwork,
                                            ButtonToTag(OobeButton::kNext)));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kNext,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
 
   EXPECT_TRUE(IsScreenDialogElementVisible(
-      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, DemoSetupDialog::kArcTos,
+      ArcTermsOfServiceScreenView::kScreenId, DemoSetupDialog::kArcTos,
       "#arc-tos-metrics-demo-apps"));
 
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  OobeScreenWaiter(UpdateView::kScreenId).Wait();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   EXPECT_TRUE(DemoSetupController::GetSubOrganizationEmail().empty());
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -589,8 +592,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
   InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
   // Verify the country names are displayed correctly. Regression test for
   // potential country code changes.
@@ -611,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
     const auto it = kCountryCodeToNameMap.find(country_code);
     ASSERT_NE(kCountryCodeToNameMap.end(), it);
     const std::string query = base::StrCat(
-        {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
+        {ScreenToContentQuery(DemoPreferencesScreenView::kScreenId),
          ".$$('oobe-dialog').querySelector('#countrySelect').$$('option[value="
          "\"",
          country_code, "\"]').innerHTML"});
@@ -620,46 +623,46 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
 
   // Select France as the Demo Mode country.
   const std::string select_country = base::StrCat(
-      {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
+      {ScreenToContentQuery(DemoPreferencesScreenView::kScreenId),
        ".$$('oobe-dialog').querySelector('#countrySelect').onSelected_('fr')"
        ";"});
   test::ExecuteOobeJSAsync(select_country);
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                            DemoSetupDialog::kNetwork,
                                            ButtonToTag(OobeButton::kNext)));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kNext,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  OobeScreenWaiter(UpdateView::kScreenId).Wait();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // Verify the email corresponds to France.
   EXPECT_EQ("admin-fr@cros-demo-mode.com",
             DemoSetupController::GetSubOrganizationEmail());
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -676,53 +679,51 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
   InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                            DemoSetupDialog::kNetwork,
                                            ButtonToTag(OobeButton::kNext)));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kNext,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  OobeScreenWaiter(UpdateView::kScreenId).Wait();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                      DemoSetupDialog::kError);
+  WaitForScreenDialog(DemoSetupScreenView::kScreenId, DemoSetupDialog::kError);
   // Default error returned by MockDemoModeOnlineEnrollmentHelperCreator.
   EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_TEMPORARY_ERROR,
                                   IDS_DEMO_SETUP_RECOVERY_RETRY));
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                         DemoSetupDialog::kError,
-                                         "#retryButton"));
-  EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_TRUE(IsScreenDialogElementShown(
+      DemoSetupScreenView::kScreenId, DemoSetupDialog::kError, "#retryButton"));
+  EXPECT_FALSE(IsScreenDialogElementShown(DemoSetupScreenView::kScreenId,
                                           DemoSetupDialog::kError,
                                           "#powerwashButton"));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_TRUE(IsScreenDialogElementEnabled(DemoSetupScreenView::kScreenId,
                                            DemoSetupDialog::kError,
                                            ButtonToTag(OobeButton::kBack)));
 
@@ -742,52 +743,50 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
   InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                            DemoSetupDialog::kNetwork,
                                            ButtonToTag(OobeButton::kNext)));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kNext,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  OobeScreenWaiter(UpdateView::kScreenId).Wait();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                      DemoSetupDialog::kError);
+  WaitForScreenDialog(DemoSetupScreenView::kScreenId, DemoSetupDialog::kError);
   EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_ALREADY_LOCKED_ERROR,
                                   IDS_DEMO_SETUP_RECOVERY_POWERWASH));
-  EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                          DemoSetupDialog::kError,
-                                          "#retryButton"));
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_FALSE(IsScreenDialogElementShown(
+      DemoSetupScreenView::kScreenId, DemoSetupDialog::kError, "#retryButton"));
+  EXPECT_TRUE(IsScreenDialogElementShown(DemoSetupScreenView::kScreenId,
                                          DemoSetupDialog::kError,
                                          "#powerwashButton"));
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_FALSE(IsScreenDialogElementEnabled(DemoSetupScreenView::kScreenId,
                                             DemoSetupDialog::kError,
                                             ButtonToTag(OobeButton::kBack)));
 
@@ -810,43 +809,42 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowCrosComponentFailure) {
       ->SetCrOSComponentLoadErrorForTest(
           component_updater::CrOSComponentManager::Error::INSTALL_FAILURE);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                            DemoSetupDialog::kNetwork,
                                            ButtonToTag(OobeButton::kNext)));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kNext,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  OobeScreenWaiter(UpdateView::kScreenId).Wait();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                      DemoSetupDialog::kError);
+  WaitForScreenDialog(DemoSetupScreenView::kScreenId, DemoSetupDialog::kError);
   EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_COMPONENT_ERROR,
                                   IDS_DEMO_SETUP_RECOVERY_CHECK_NETWORK));
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
@@ -859,15 +857,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineDemoModeUnavailable) {
   InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
                                             ButtonToTag(OobeButton::kNext)));
 
@@ -888,15 +886,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   // flow was started).
   SimulateOfflineEnvironment();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
                                             ButtonToTag(OobeButton::kNext)));
 
@@ -904,31 +902,31 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
       l10n_util::GetStringUTF8(IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME);
   ClickNetworkListElement(offline_setup_item_name);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kSync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
 
   EXPECT_TRUE(IsScreenDialogElementVisible(
-      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, DemoSetupDialog::kArcTos,
+      ArcTermsOfServiceScreenView::kScreenId, DemoSetupDialog::kArcTos,
       "#arc-tos-metrics-demo-apps"));
 
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -947,15 +945,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
   // flow was started).
   SimulateOfflineEnvironment();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
                                             ButtonToTag(OobeButton::kNext)));
 
@@ -963,36 +961,34 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
       l10n_util::GetStringUTF8(IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME);
   ClickNetworkListElement(offline_setup_item_name);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kSync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                      DemoSetupDialog::kError);
+  WaitForScreenDialog(DemoSetupScreenView::kScreenId, DemoSetupDialog::kError);
   // Default error returned by MockDemoModeOfflineEnrollmentHelperCreator.
   EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_OFFLINE_POLICY_ERROR,
                                   IDS_DEMO_SETUP_RECOVERY_OFFLINE_FATAL));
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                         DemoSetupDialog::kError,
-                                         "#retryButton"));
-  EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_TRUE(IsScreenDialogElementShown(
+      DemoSetupScreenView::kScreenId, DemoSetupDialog::kError, "#retryButton"));
+  EXPECT_FALSE(IsScreenDialogElementShown(DemoSetupScreenView::kScreenId,
                                           DemoSetupDialog::kError,
                                           "#powerwashButton"));
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_TRUE(IsScreenDialogElementEnabled(DemoSetupScreenView::kScreenId,
                                            DemoSetupDialog::kError,
                                            ButtonToTag(OobeButton::kBack)));
 
@@ -1014,15 +1010,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
   // flow was started).
   SimulateOfflineEnvironment();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+  ClickOobeButton(DemoPreferencesScreenView::kScreenId, OobeButton::kText,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
                                             ButtonToTag(OobeButton::kNext)));
 
@@ -1030,35 +1026,33 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
       l10n_util::GetStringUTF8(IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME);
   ClickNetworkListElement(offline_setup_item_name);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+  ClickScreenDialogButton(EulaView::kScreenId, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kSync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(ArcTermsOfServiceScreenView::kScreenId));
 
   SetPlayStoreTermsForTesting();
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-next-button", JSExecution::kSync);
-  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+  ClickOobeButtonWithSelector(ArcTermsOfServiceScreenView::kScreenId,
                               "#arc-tos-accept-button", JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                      DemoSetupDialog::kError);
+  WaitForScreenDialog(DemoSetupScreenView::kScreenId, DemoSetupDialog::kError);
   EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_LOCK_ERROR,
                                   IDS_DEMO_SETUP_RECOVERY_POWERWASH));
-  EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                          DemoSetupDialog::kError,
-                                          "#retryButton"));
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_FALSE(IsScreenDialogElementShown(
+      DemoSetupScreenView::kScreenId, DemoSetupDialog::kError, "#retryButton"));
+  EXPECT_TRUE(IsScreenDialogElementShown(DemoSetupScreenView::kScreenId,
                                          DemoSetupDialog::kError,
                                          "#powerwashButton"));
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  EXPECT_FALSE(IsScreenDialogElementEnabled(DemoSetupScreenView::kScreenId,
                                             DemoSetupDialog::kError,
                                             ButtonToTag(OobeButton::kBack)));
 
@@ -1068,75 +1062,75 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
   SimulateNetworkDisconnected();
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  SkipToScreen(NetworkScreenView::kScreenId);
+  EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
                                             ButtonToTag(OobeButton::kNext)));
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kNext,
                   JSExecution::kSync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickNetworkOnNetworkScreen) {
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  SkipToScreen(NetworkScreenView::kScreenId);
+  EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
                                             ButtonToTag(OobeButton::kNext)));
 
   ClickNetworkListElement(kDefaultNetworkName);
   SimulateNetworkConnected();
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickConnectedNetworkOnNetworkScreen) {
   SimulateNetworkConnected();
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+  SkipToScreen(NetworkScreenView::kScreenId);
+  EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                            DemoSetupDialog::kNetwork,
                                            ButtonToTag(OobeButton::kNext)));
 
   ClickNetworkListElement(kDefaultNetworkName);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnNetworkScreen) {
   SimulateNetworkConnected();
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  SkipToScreen(NetworkScreenView::kScreenId);
 
-  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kBack,
+  ClickOobeButton(NetworkScreenView::kScreenId, OobeButton::kBack,
                   JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
+  EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnArcTermsScreen) {
   // User cannot go to ARC ToS screen without accepting eula - simulate that.
   StartupUtils::MarkEulaAccepted();
 
-  SkipToScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  SkipToScreen(ArcTermsOfServiceScreenView::kScreenId);
 
-  ClickOobeButton(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, OobeButton::kBack,
+  ClickOobeButton(ArcTermsOfServiceScreenView::kScreenId, OobeButton::kBack,
                   JSExecution::kSync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnErrorScreen) {
   SkipToErrorDialog();
 
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  ClickScreenDialogButton(DemoSetupScreenView::kScreenId,
                           DemoSetupDialog::kError, OobeButton::kBack,
                           JSExecution::kAsync);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
@@ -1148,25 +1142,25 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
   enrollment_helper_.ExpectAttestationEnrollmentSuccess();
-  ClickScreenDialogButtonWithSelector(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+  ClickScreenDialogButtonWithSelector(DemoSetupScreenView::kScreenId,
                                       DemoSetupDialog::kError, "#retryButton",
                                       JSExecution::kAsync);
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
   auto* const wizard_controller = WizardController::default_controller();
   wizard_controller->SimulateDemoModeSetupForTesting();
   SimulateOfflineEnvironment();
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  SkipToScreen(NetworkScreenView::kScreenId);
 
   EXPECT_TRUE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, NoOfflineSetupOptionOnNetworkList) {
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
@@ -1248,12 +1242,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
   wizard_controller->demo_setup_controller()->set_demo_config(
       DemoSession::DemoModeConfig::kOffline);
 
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  SkipToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  SkipToScreen(NetworkScreenView::kScreenId);
+  SkipToScreen(DemoSetupScreenView::kScreenId);
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -1283,12 +1277,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, NonEnterpriseDevice) {
   wizard_controller->demo_setup_controller()->set_demo_config(
       DemoSession::DemoModeConfig::kOffline);
 
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  SkipToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  SkipToScreen(NetworkScreenView::kScreenId);
+  SkipToScreen(DemoSetupScreenView::kScreenId);
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -1319,12 +1313,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, LegacyDemoModeDevice) {
   wizard_controller->demo_setup_controller()->set_demo_config(
       DemoSession::DemoModeConfig::kOffline);
 
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  SkipToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  SkipToScreen(NetworkScreenView::kScreenId);
+  SkipToScreen(DemoSetupScreenView::kScreenId);
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -1353,12 +1347,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
   wizard_controller->demo_setup_controller()->set_demo_config(
       DemoSession::DemoModeConfig::kOffline);
 
-  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  SkipToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  SkipToScreen(NetworkScreenView::kScreenId);
+  SkipToScreen(DemoSetupScreenView::kScreenId);
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
-  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                      DemoSetupDialog::kError);
+  WaitForScreenDialog(DemoSetupScreenView::kScreenId, DemoSetupDialog::kError);
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());

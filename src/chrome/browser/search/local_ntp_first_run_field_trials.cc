@@ -14,10 +14,7 @@ LocalNtpFirstRunFieldTrialGroup::~LocalNtpFirstRunFieldTrialGroup() = default;
 
 LocalNtpFirstRunFieldTrialConfig::LocalNtpFirstRunFieldTrialConfig(
     const std::string& trial_name)
-    : trial_name_(trial_name),
-      expire_year_(base::FieldTrialList::kNoExpirationYear),
-      expire_month_(1),
-      expire_day_of_month_(1) {}
+    : trial_name_(trial_name) {}
 
 LocalNtpFirstRunFieldTrialConfig::~LocalNtpFirstRunFieldTrialConfig() = default;
 

@@ -106,7 +106,7 @@ TEST(ApplicationStatusListenerTest, SingleThread) {
   // Create a new listener that stores the new state into |result| on every
   // state change.
   auto listener = ApplicationStatusListener::New(
-      base::Bind(&StoreStateTo, base::Unretained(&result)));
+      base::BindRepeating(&StoreStateTo, base::Unretained(&result)));
 
   EXPECT_EQ(kInvalidApplicationState, result);
 

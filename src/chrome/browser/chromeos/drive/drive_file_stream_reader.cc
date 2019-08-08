@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -258,7 +257,7 @@ void NetworkReaderProxy::OnGetContent(std::unique_ptr<std::string> data) {
   buffer_ = nullptr;
   buffer_length_ = 0;
   DCHECK(!callback_.is_null());
-  base::ResetAndReturn(&callback_).Run(result);
+  std::move(callback_).Run(result);
 }
 
 void NetworkReaderProxy::OnCompleted(FileError error) {
@@ -281,7 +280,7 @@ void NetworkReaderProxy::OnCompleted(FileError error) {
 
   buffer_ = nullptr;
   buffer_length_ = 0;
-  base::ResetAndReturn(&callback_).Run(error_code_);
+  std::move(callback_).Run(error_code_);
 }
 
 }  // namespace internal

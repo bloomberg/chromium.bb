@@ -35,8 +35,6 @@ class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLFrameElement);
-
   explicit HTMLFrameElement(Document&);
 
   // Returns attributes that should be checked against Trusted Types

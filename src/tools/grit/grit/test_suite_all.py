@@ -5,16 +5,15 @@
 
 '''Unit test suite that collects all test cases for GRIT.'''
 
+import argparse
+import json
 import os
 import sys
-if __name__ == '__main__':
-  sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import unittest
 
 
-# TODO(joi) Use unittest.defaultTestLoader to automatically load tests
-# from modules. Iterating over the directory and importing could then
+# TODO(https://crbug.com/965793) Use unittest.defaultTestLoader to automatically
+# load tests from modules. Iterating over the directory and importing could then
 # automate this all the way, if desired.
 
 
@@ -37,7 +36,6 @@ class TestSuiteAll(unittest.TestSuite):
     import grit.format.data_pack_unittest
     import grit.format.gzip_string_unittest
     import grit.format.html_inline_unittest
-    import grit.format.js_map_format_unittest
     import grit.format.policy_templates_json_unittest
     import grit.format.rc_header_unittest
     import grit.format.rc_unittest
@@ -81,7 +79,6 @@ class TestSuiteAll(unittest.TestSuite):
         grit.format.data_pack_unittest.FormatDataPackUnittest,
         grit.format.gzip_string_unittest.FormatGzipStringUnittest,
         grit.format.html_inline_unittest.HtmlInlineUnittest,
-        grit.format.js_map_format_unittest.JsMapFormatUnittest,
         grit.format.policy_templates_json_unittest.PolicyTemplatesJsonUnittest,
         grit.format.rc_header_unittest.RcHeaderFormatterUnittest,
         grit.format.rc_unittest.FormatRcUnittest,
@@ -117,7 +114,26 @@ class TestSuiteAll(unittest.TestSuite):
     for test_class in test_classes:
       self.addTest(unittest.makeSuite(test_class))
 
+def main(args):
+  sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               '..')))
+  parser = argparse.ArgumentParser(
+      description='Run the full suite of grit unit tests')
+  parser.add_argument(
+      '--write-full-results-to',
+      help='File path that should be used to record the list of test failures')
+  parsed_args = parser.parse_args(args)
+
+  test_result = unittest.TextTestRunner(verbosity=2).run(TestSuiteAll())
+  if (parsed_args.write_full_results_to):
+    failures_and_errors = [str(f[0]) for f in test_result.failures]
+    failures_and_errors.extend(str(e[0]) for e in test_result.errors)
+
+    data = { 'valid': True, 'failures': failures_and_errors }
+    with open(parsed_args.write_full_results_to, 'w') as f:
+      json.dump(data, f)
+
+  return (len(test_result.errors) + len(test_result.failures))
 
 if __name__ == '__main__':
-  test_result = unittest.TextTestRunner(verbosity=2).run(TestSuiteAll())
-  sys.exit(len(test_result.errors) + len(test_result.failures))
+  sys.exit(main(sys.argv[1:]))

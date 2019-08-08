@@ -60,7 +60,7 @@ class BidirectionalStreamTestURLRequestContextGetter
           "https", net::QuicSimpleTestServer::GetHost(), 443);
       server_properties_->SetQuicAlternativeService(
           quic_hint_server, alternative_service, base::Time::Max(),
-          quic::QuicTransportVersionVector());
+          quic::ParsedQuicVersionVector());
 
       request_context_->set_cert_verifier(mock_cert_verifier_.get());
       request_context_->set_host_resolver(host_resolver_.get());

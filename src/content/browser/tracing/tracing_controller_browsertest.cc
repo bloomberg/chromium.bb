@@ -493,4 +493,10 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_SystemTraceEvents) {
   EXPECT_TRUE(last_data().find("systemTraceEvents") != std::string::npos);
 }
 
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, ProcessesPresentInTrace) {
+  TestStartAndStopTracingString();
+  EXPECT_TRUE(last_data().find("CrBrowserMain") != std::string::npos);
+  EXPECT_TRUE(last_data().find("CrRendererMain") != std::string::npos);
+}
+
 }  // namespace content

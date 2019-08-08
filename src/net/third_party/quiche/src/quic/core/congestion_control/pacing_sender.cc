@@ -99,6 +99,7 @@ void PacingSender::OnPacketSent(
     if (GetQuicReloadableFlag(quic_no_lumpy_pacing_at_low_bw) &&
         sender_->BandwidthEstimate() <
             QuicBandwidth::FromKBitsPerSecond(1200)) {
+      QUIC_RELOADABLE_FLAG_COUNT(quic_no_lumpy_pacing_at_low_bw);
       // Below 1.2Mbps, send 1 packet at once, because one full-sized packet
       // is about 10ms of queueing.
       lumpy_tokens_ = 1u;
@@ -119,6 +120,13 @@ void PacingSender::OnPacketSent(
 void PacingSender::OnApplicationLimited() {
   // The send is application limited, stop making up for lost time.
   pacing_limited_ = false;
+}
+
+void PacingSender::SetBurstTokens(uint32_t burst_tokens) {
+  initial_burst_size_ = burst_tokens;
+  burst_tokens_ = std::min(
+      initial_burst_size_,
+      static_cast<uint32_t>(sender_->GetCongestionWindow() / kDefaultTCPMSS));
 }
 
 QuicTime::Delta PacingSender::TimeUntilSend(

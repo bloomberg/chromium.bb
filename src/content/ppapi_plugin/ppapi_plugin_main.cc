@@ -8,10 +8,10 @@
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -110,7 +110,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   setenv("HOME", homedir.value().c_str(), 1);
 #endif
 
-  base::MessageLoop main_message_loop;
+  base::SingleThreadTaskExecutor main_thread_task_executor;
   base::PlatformThread::SetName("CrPPAPIMain");
   base::trace_event::TraceLog::GetInstance()->set_process_name("PPAPI Process");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(

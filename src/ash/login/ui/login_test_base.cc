@@ -13,11 +13,8 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "base/bind.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/strings/strcat.h"
-#include "services/ws/public/cpp/property_type_converters.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -52,14 +49,9 @@ void LoginTestBase::ShowLockScreen() {
       session_manager::SessionState::LOCKED);
   // The lock screen can't be shown without a wallpaper.
   Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-
-  base::Optional<bool> result;
-  Shell::Get()->login_screen_controller()->ShowLockScreen(base::BindOnce(
-      [](base::Optional<bool>* result, bool did_show) { *result = did_show; },
-      &result));
+  Shell::Get()->login_screen_controller()->ShowLockScreen();
+  // Allow focus to reach the appropriate View.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(result.has_value());
-  ASSERT_EQ(*result, true);
 }
 
 void LoginTestBase::ShowLoginScreen() {
@@ -67,14 +59,9 @@ void LoginTestBase::ShowLoginScreen() {
       session_manager::SessionState::LOGIN_PRIMARY);
   // The login screen can't be shown without a wallpaper.
   Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-
-  base::Optional<bool> result;
-  Shell::Get()->login_screen_controller()->ShowLoginScreen(base::BindOnce(
-      [](base::Optional<bool>* result, bool did_show) { *result = did_show; },
-      &result));
+  Shell::Get()->login_screen_controller()->ShowLoginScreen();
+  // Allow focus to reach the appropriate View.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(result.has_value());
-  ASSERT_EQ(*result, true);
 }
 
 void LoginTestBase::SetWidget(std::unique_ptr<views::Widget> widget) {
@@ -111,7 +98,7 @@ void LoginTestBase::SetUserCount(size_t count) {
 
   users_.erase(users_.begin() + count, users_.end());
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->NotifyUsers(users_);
+  DataDispatcher()->SetUserList(users_);
 }
 
 void LoginTestBase::AddUsers(size_t num_users) {
@@ -122,12 +109,12 @@ void LoginTestBase::AddUsers(size_t num_users) {
   }
 
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->NotifyUsers(users_);
+  DataDispatcher()->SetUserList(users_);
 }
 
 void LoginTestBase::AddUserByEmail(const std::string& email) {
   users_.push_back(CreateUser(email));
-  DataDispatcher()->NotifyUsers(users_);
+  DataDispatcher()->SetUserList(users_);
 }
 
 void LoginTestBase::AddPublicAccountUsers(size_t num_public_accounts) {
@@ -138,7 +125,7 @@ void LoginTestBase::AddPublicAccountUsers(size_t num_public_accounts) {
   }
 
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->NotifyUsers(users_);
+  DataDispatcher()->SetUserList(users_);
 }
 
 void LoginTestBase::AddChildUsers(size_t num_users) {
@@ -149,12 +136,11 @@ void LoginTestBase::AddChildUsers(size_t num_users) {
   }
 
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->NotifyUsers(users_);
+  DataDispatcher()->SetUserList(users_);
 }
 
 LoginDataDispatcher* LoginTestBase::DataDispatcher() {
-  return LockScreen::HasInstance() ? LockScreen::Get()->data_dispatcher()
-                                   : &data_dispatcher_;
+  return Shell::Get()->login_screen_controller()->data_dispatcher();
 }
 
 void LoginTestBase::TearDown() {

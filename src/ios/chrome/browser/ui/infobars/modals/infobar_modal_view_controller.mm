@@ -52,10 +52,17 @@
   self.navigationItem.rightBarButtonItem = settingsButton;
 }
 
+- (void)viewDidDisappear:(BOOL)animated {
+  [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  [super viewDidDisappear:animated];
+}
+
 #pragma mark - Private Methods
 
 - (void)dismissInfobarModal:(UIButton*)sender {
-  [self.infobarModalDelegate dismissInfobarModal:sender completion:nil];
+  [self.infobarModalDelegate dismissInfobarModal:sender
+                                        animated:YES
+                                      completion:nil];
 }
 
 @end

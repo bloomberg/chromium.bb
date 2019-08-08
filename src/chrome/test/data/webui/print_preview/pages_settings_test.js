@@ -108,6 +108,11 @@ cr.define('pages_settings_test', function() {
           pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
       assertTrue(customInputCollapse.opened);
       validateState([1, 2], [{from: 1, to: 2}], '', false);
+
+      // Set a selection equal to the full page range. This should set ranges to
+      // empty, so that reselecting "all" does not regenerate the preview.
+      await setCustomInput('1-3');
+      validateState([1, 2, 3], [], '', false);
     });
 
     // Tests that the page ranges set are valid for different user inputs.
@@ -133,7 +138,7 @@ cr.define('pages_settings_test', function() {
       validateState(tenToHundred, [{from: 10, to: 100}], '', false);
 
       await setCustomInput('-');
-      validateState(oneToHundred, [{from: 1, to: 100}], '', false);
+      validateState(oneToHundred, [], '', false);
 
       // https://crbug.com/806165
       await setCustomInput('1\u30012\u30013\u30011\u300156');
@@ -246,18 +251,18 @@ cr.define('pages_settings_test', function() {
       await whenBlurred;
       // Blurring a blank field sets the full page range.
       assertEquals(customValue, select.value);
-      validateState([1, 2, 3], [{from: 1, to: 3}], '', false);
+      validateState([1, 2, 3], [], '', false);
       assertEquals('1-3', input.value);
       input.focus();
 
       await setCustomInput('5');
       assertEquals(customValue, select.value);
       // Invalid input doesn't change the preview.
-      validateState([1, 2, 3], [{from: 1, to: 3}], limitError + '3', true);
+      validateState([1, 2, 3], [], limitError + '3', true);
 
       await setCustomInput('');
       assertEquals(customValue, select.value);
-      validateState([1, 2, 3], [{from: 1, to: 3}], '', false);
+      validateState([1, 2, 3], [], '', false);
       whenBlurred = test_util.eventToPromise('blur', input);
       input.blur();
 
@@ -265,7 +270,7 @@ cr.define('pages_settings_test', function() {
       // value to all pages.
       await whenBlurred;
       assertEquals(customValue, select.value);
-      validateState([1, 2, 3], [{from: 1, to: 3}], '', false);
+      validateState([1, 2, 3], [], '', false);
       assertEquals('1-3', input.value);
 
       // Re-focus and clear the input and then select "All" in the
@@ -288,6 +293,17 @@ cr.define('pages_settings_test', function() {
       // Input has been cleared.
       assertEquals('', input.value);
       validateState([1, 2, 3], [], '', false);
+      whenBlurred = test_util.eventToPromise('blur', input);
+      input.blur();
+
+      await whenBlurred;
+      assertEquals('1-3', input.value);
+
+      // Change the page count. Since the range was set automatically, this
+      // should reset it to the new set of all pages.
+      pagesSection.pageCount = 2;
+      validateState([1, 2], [], '', false);
+      assertEquals('1-2', input.value);
     });
 
     // Verifies that the input is never disabled when the validity of the

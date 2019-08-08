@@ -189,7 +189,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // |unthrottle_callback| will be called.
   virtual void RegisterPeripheralPlugin(
       const url::Origin& content_origin,
-      const base::Closure& unthrottle_callback) = 0;
+      base::OnceClosure unthrottle_callback) = 0;
 
   // Returns the peripheral content heuristic decision.
   //

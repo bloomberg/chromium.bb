@@ -92,12 +92,13 @@ void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
 }
 
 void SimNetwork::AddRequest(SimRequestBase& request) {
+  DCHECK(!requests_.Contains(request.url_.GetString()));
   requests_.insert(request.url_.GetString(), &request);
   WebURLResponse response(request.url_);
   response.SetMimeType(request.mime_type_);
 
   if (request.redirect_url_.IsEmpty()) {
-    response.SetHttpStatusCode(200);
+    response.SetHttpStatusCode(request.response_http_status_);
   } else {
     response.SetHttpStatusCode(302);
     response.AddHttpHeaderField("Location", request.redirect_url_);
@@ -120,7 +121,7 @@ bool SimNetwork::FillNavigationParamsResponse(WebNavigationParams* params) {
   SimRequestBase* request = it->value;
   params->response = WebURLResponse(params->url);
   params->response.SetMimeType(request->mime_type_);
-  params->response.SetHttpStatusCode(200);
+  params->response.SetHttpStatusCode(request->response_http_status_);
   for (const auto& http_header : request->response_http_headers_)
     params->response.AddHttpHeaderField(http_header.key, http_header.value);
 

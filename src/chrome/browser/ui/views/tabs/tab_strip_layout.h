@@ -13,6 +13,8 @@ namespace gfx {
 class Rect;
 }
 
+class TabAnimationState;
+
 struct TabSizeInfo {
   // The width of pinned tabs.
   int pinned_tab_width;
@@ -32,24 +34,19 @@ struct TabSizeInfo {
   int tab_overlap;
 };
 
-// Calculates the bounds of the pinned tabs. This assumes |tab_bounds| is the
-// same size as |num_tabs|. Returns the x-coordinate to use for the first
-// non-pinned tab, if any.
-int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
-                                 int num_pinned_tabs,
-                                 int num_tabs,
-                                 std::vector<gfx::Rect>* tab_bounds);
-
 // Calculates and returns the bounds of the tabs. |width| is the available
 // width to use for tab layout. This never sizes the tabs smaller then the
 // minimum widths in TabSizeInfo, and as a result the calculated bounds may go
 // beyond |width|.
-std::vector<gfx::Rect> CalculateTabBounds(const TabSizeInfo& tab_size_info,
-                                          int num_pinned_tabs,
-                                          int num_tabs,
-                                          int active_index,
-                                          int width,
-                                          int* active_width,
-                                          int* inactive_width);
+std::vector<gfx::Rect> CalculateTabBounds(
+    const TabSizeInfo& tab_size_info,
+    const std::vector<TabAnimationState>& tabs,
+    int width,
+    int* active_width,
+    int* inactive_width);
+
+std::vector<gfx::Rect> CalculatePinnedTabBounds(
+    const TabSizeInfo& tab_size_info,
+    const std::vector<TabAnimationState>& pinned_tabs);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_LAYOUT_H_

@@ -15,6 +15,7 @@
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/threading/simple_thread.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
@@ -113,6 +114,8 @@ class PLATFORM_EXPORT WorkerThread : public Thread {
   std::unique_ptr<SimpleThreadImpl> thread_;
   const WebThreadType thread_type_;
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
+  bool supports_gc_;
+  std::unique_ptr<GCTaskRunner> gc_task_runner_;
 };
 
 }  // namespace scheduler

@@ -14,9 +14,9 @@
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
+#include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -108,19 +108,19 @@ class LoginShelfViewTest : public LoginTestBase {
   // the specified list must be unique.
   bool ShowsShelfButtons(std::vector<LoginShelfView::ButtonId> ids) {
     for (LoginShelfView::ButtonId id : ids) {
-      if (!login_shelf_view_->GetViewByID(id)->visible())
+      if (!login_shelf_view_->GetViewByID(id)->GetVisible())
         return false;
     }
     const auto& children = login_shelf_view_->children();
     const size_t visible_buttons =
         std::count_if(children.cbegin(), login_shelf_view_->children().cend(),
-                      [](const auto* v) { return v->visible(); });
+                      [](const auto* v) { return v->GetVisible(); });
     return visible_buttons == ids.size();
   }
 
   // Check whether the button is enabled.
   bool IsButtonEnabled(LoginShelfView::ButtonId id) {
-    return login_shelf_view_->GetViewByID(id)->enabled();
+    return login_shelf_view_->GetViewByID(id)->GetEnabled();
   }
 
   TestTrayActionClient tray_action_client_;
@@ -264,15 +264,13 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
 
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps;
-  kiosk_apps.push_back(mojom::KioskAppInfo::New());
-  kiosk_apps.push_back(mojom::KioskAppInfo::New());
-  login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
+  std::vector<KioskAppMenuEntry> kiosk_apps(2);
+  login_shelf_view_->SetKioskApps(kiosk_apps, {});
   EXPECT_TRUE(ShowsShelfButtons(
       {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest,
        LoginShelfView::kAddUser, LoginShelfView::kApps}));
 
-  login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
+  login_shelf_view_->SetKioskApps({}, {});
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
@@ -299,7 +297,7 @@ TEST_F(LoginShelfViewTest, SetAllowLoginByGuest) {
   // However, SetAllowLoginAsGuest(true) does not mean that the guest button is
   // always visible.
   login_shelf_view_->SetLoginDialogState(
-      mojom::OobeDialogState::SAML_PASSWORD_CONFIRM);
+      OobeDialogState::SAML_PASSWORD_CONFIRM);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
@@ -307,7 +305,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
   // The conditions in this test should only hold while there are user pods on
   // the signin screen.
-  DataDispatcher()->AddObserver(login_shelf_view_);
   AddUsers(1);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
@@ -317,29 +314,28 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 
   // Add user button is always hidden if dialog state !=
   // OobeDialogState::HIDDEN.
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   // Guest button is hidden if dialog state ==
   // OobeDialogState::WRONG_HWID_WARNING or SAML_PASSWORD_CONFIRM.
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::HIDDEN);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::HIDDEN);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
-  login_shelf_view_->SetLoginDialogState(
-      mojom::OobeDialogState::WRONG_HWID_WARNING);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::WRONG_HWID_WARNING);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::HIDDEN);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::HIDDEN);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
   login_shelf_view_->SetLoginDialogState(
-      mojom::OobeDialogState::SAML_PASSWORD_CONFIRM);
+      OobeDialogState::SAML_PASSWORD_CONFIRM);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   // By default guest login during gaia is not allowed.
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   // Guest button is hidden if SetAllowLoginAsGuest(false).
@@ -348,37 +344,40 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 
   // Kiosk app button is visible when dialog state == OobeDialogState::HIDDEN
   // or GAIA_SIGNIN.
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps;
-  kiosk_apps.push_back(mojom::KioskAppInfo::New());
-  login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
+  std::vector<KioskAppMenuEntry> kiosk_apps(1);
+  login_shelf_view_->SetKioskApps(kiosk_apps, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kApps}));
 
   login_shelf_view_->SetLoginDialogState(
-      mojom::OobeDialogState::SAML_PASSWORD_CONFIRM);
+      OobeDialogState::SAML_PASSWORD_CONFIRM);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::HIDDEN);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::HIDDEN);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser,
                          LoginShelfView::kApps}));
 
   // Kiosk app button is hidden when no app exists.
-  login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
+  login_shelf_view_->SetKioskApps({}, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
+
+  // Only shutdown button is visible when state ==
+  // OobeDialogState::EXTENSION_LOGIN.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::EXTENSION_LOGIN);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
 TEST_F(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {
   login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
-  DataDispatcher()->AddObserver(login_shelf_view_);
   SetUserCount(0);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   // When no user pods are visible, the Gaia dialog would normally pop up. We
   // need to simulate that behavior in this test.
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
   EXPECT_TRUE(ShowsShelfButtons(
       {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest}));
 }
@@ -425,13 +424,13 @@ TEST_F(LoginShelfViewTest, ClickUnlockButton) {
 }
 
 TEST_F(LoginShelfViewTest, ClickCancelButton) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, CancelAddUser());
   Click(LoginShelfView::kCancel);
 }
 
 TEST_F(LoginShelfViewTest, ClickBrowseAsGuestButton) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, LoginAsGuest());
   Click(LoginShelfView::kBrowseAsGuest);
 }
@@ -524,7 +523,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterShutdownButtonStatusChange) {
 
 TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {
   // Parent access button should only be visible on lock screen.
-  Shell::Get()->login_screen_controller()->SetShowParentAccessButton(true);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
@@ -555,12 +554,12 @@ TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 
-  Shell::Get()->login_screen_controller()->SetShowParentAccessButton(true);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut,
                          LoginShelfView::kParentAccess}));
 
-  Shell::Get()->login_screen_controller()->SetShowParentAccessButton(false);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 }

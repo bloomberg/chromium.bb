@@ -25,7 +25,7 @@ const base::Feature kStorePendingItemInContext{
     "StorePendingItemInContext", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -39,15 +39,8 @@ const base::Feature kHistoryClobberWorkaround{
 const base::Feature kBlockUniversalLinksInOffTheRecordMode{
     "BlockUniversalLinksInOffTheRecord", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kWebUISchemeHandling{"WebUISchemeHandling",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kKeepsRenderProcessAlive{"KeepsRenderProcessAlive",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool WebUISchemeHandlingEnabled() {
-  return base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling);
-}
 
 }  // namespace features
 }  // namespace web

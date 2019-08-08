@@ -65,6 +65,10 @@ void VirtualAudioOutputStream::Close() {
   }
 }
 
+// There is nothing to flush since |this| is removed from the
+// |target_input_stream_|.
+void VirtualAudioOutputStream::Flush() {}
+
 void VirtualAudioOutputStream::SetVolume(double volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
   volume_ = volume;

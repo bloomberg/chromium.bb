@@ -605,19 +605,6 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
       }
     }
 
-    // Overwrite same event type and time.
-    if (events_[i]->Time() == insert_time &&
-        events_[i]->GetType() == event->GetType()) {
-      // Be sure to remove the old event from |new_events_| too, in
-      // case it was just added.
-      if (new_events_.Contains(events_[i].get())) {
-        new_events_.erase(events_[i].get());
-      }
-      events_[i] = std::move(event);
-      new_events_.insert(events_[i].get());
-      return;
-    }
-
     if (events_[i]->Time() > insert_time)
       break;
   }
@@ -631,21 +618,45 @@ bool AudioParamTimeline::HasValues(size_t current_frame,
   MutexTryLocker try_locker(events_lock_);
 
   if (try_locker.Locked()) {
-    if (events_.size() == 0)
+    unsigned n_events = events_.size();
+
+    // Clearly, if there are no scheduled events, we have no timeline values.
+    if (n_events == 0)
       return false;
 
+    // If there are at least 2 events in the timeline, assume there are timeline
+    // values.  This could be optimized to be more careful, but checking is
+    // complicated and keeping this consistent with |ValuesForFrameRangeImpl()|
+    // will be hard, so it's probably best to let the general timeline handle
+    // this until the events are in the past.
+    if (n_events >= 2)
+      return true;
+
+    // We have exactly one event in the timeline.
     switch (events_[0]->GetType()) {
-      case ParamEvent::kSetValue:
-      case ParamEvent::kSetValueCurve:
       case ParamEvent::kSetTarget:
         // Need automation if the event starts somewhere before the
         // end of the current render quantum.
         return events_[0]->Time() <=
                (current_frame + audio_utilities::kRenderQuantumFrames) /
                    sample_rate;
-      default:
-        // Otherwise, there's some kind of other event running, so we
-        // need to do automation.
+      case ParamEvent::kSetValue:
+      case ParamEvent::kLinearRampToValue:
+      case ParamEvent::kExponentialRampToValue:
+      case ParamEvent::kCancelValues:
+      case ParamEvent::kSetValueCurveEnd:
+        // If these events are in the past, we don't need any automation; the
+        // value is a constant.
+        return !(events_[0]->Time() < current_frame / sample_rate);
+      case ParamEvent::kSetValueCurve: {
+        double curve_end_time = events_[0]->Time() + events_[0]->Duration();
+        double current_time = current_frame / sample_rate;
+
+        return (events_[0]->Time() <= current_time) &&
+               (current_time < curve_end_time);
+      }
+      case ParamEvent::kLastType:
+        NOTREACHED();
         return true;
     }
   }
@@ -1067,7 +1078,7 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
     // |new_events_| should be empty here so we don't have to
     // do any updates due to this mutation of |events_|.
     DCHECK_EQ(new_events_.size(), 0u);
-    events_.EraseAt(0, last_skipped_event_index - 1);
+    RemoveOldEvents(last_skipped_event_index - 1);
   }
 
   // If there's any time left after processing the last event then just
@@ -1241,7 +1252,8 @@ bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
     // value.
     FillWithDefault(values, default_value, number_of_values, 0);
     smoothed_value_ = default_value;
-    events_.clear();
+    RemoveOldEvents(events_.size());
+
     return true;
   }
 
@@ -1914,6 +1926,16 @@ void AudioParamTimeline::RemoveCancelledEvents(
   // Now we can remove the cancelled events from the list.
   events_.EraseAt(first_event_to_remove,
                   events_.size() - first_event_to_remove);
+}
+
+void AudioParamTimeline::RemoveOldEvents(wtf_size_t event_count) {
+  wtf_size_t n_events = events_.size();
+  DCHECK(event_count <= n_events);
+
+  // Always leave at least one event in the event list!
+  if (n_events > 1) {
+    events_.EraseAt(0, std::min(event_count, n_events - 1));
+  }
 }
 
 }  // namespace blink

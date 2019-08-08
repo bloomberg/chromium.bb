@@ -94,8 +94,8 @@
 #endif
 
 using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 #if defined(FULL_SAFE_BROWSING)
 using PasswordReuseEvent =
@@ -127,6 +127,12 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
     CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
     CONTENT_SETTINGS_TYPE_USB_GUARD,
+#if !defined(OS_ANDROID)
+    CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
+    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
+    // settings and page info on Android.
+    CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+#endif
 };
 
 // Checks whether this permission is currently the factory default, as set by
@@ -285,12 +291,12 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
      IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
-     IDS_PAGE_INFO_DELETE_USB_DEVICE, "name"},
+     IDS_PAGE_INFO_DELETE_USB_DEVICE, &UsbChooserContext::GetObjectName},
 #if !defined(OS_ANDROID)
     {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
-     IDS_PAGE_INFO_DELETE_SERIAL_PORT, "name"},
+     IDS_PAGE_INFO_DELETE_SERIAL_PORT, &SerialChooserContext::GetObjectName},
 #endif
 };
 
@@ -332,7 +338,7 @@ PageInfo::PageInfo(
 #endif
       show_change_password_buttons_(false),
       did_perform_action_(false) {
-  Init(url, security_level, visible_security_state);
+  ComputeUIInputs(url, security_level, visible_security_state);
 
   PresentSitePermissions();
   PresentSiteIdentity();
@@ -382,6 +388,13 @@ PageInfo::~PageInfo() {
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
   }
+}
+
+void PageInfo::UpdateSecurityState(
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state) {
+  ComputeUIInputs(site_url_, security_level, visible_security_state);
+  PresentSiteIdentity();
 }
 
 void PageInfo::RecordPageInfoAction(PageInfoAction action) {
@@ -488,10 +501,10 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
 }
 
 void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
-                                         const base::DictionaryValue& object) {
+                                         const base::Value& object) {
   // TODO(reillyg): Create metrics for revocations. crbug.com/556845
   ChooserContextBase* context = ui_info.get_context(profile_);
-  const GURL origin = site_url_.GetOrigin();
+  const auto origin = url::Origin::Create(site_url_);
   context->RevokeObjectPermission(origin, origin, object);
   show_info_bar_ = true;
 
@@ -503,15 +516,20 @@ void PageInfo::OnSiteDataAccessed() {
   PresentSiteData();
 }
 
-void PageInfo::OnUIClosing() {
+void PageInfo::OnUIClosing(bool* reload_prompt) {
+  if (reload_prompt)
+    *reload_prompt = false;
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
   if (show_info_bar_ && web_contents() && !web_contents()->IsBeingDestroyed()) {
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents());
-    if (infobar_service)
+    if (infobar_service) {
       PageInfoInfoBarDelegate::Create(infobar_service);
+      if (reload_prompt)
+        *reload_prompt = true;
+    }
   }
 #endif
 }
@@ -567,7 +585,7 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
 #endif
 }
 
-void PageInfo::Init(
+void PageInfo::ComputeUIInputs(
     const GURL& url,
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state) {
@@ -617,12 +635,21 @@ void PageInfo::Init(
     GetSiteIdentityByMaliciousContentStatus(
         visible_security_state.malicious_content_status, &site_identity_status_,
         &site_identity_details_);
+#if defined(FULL_SAFE_BROWSING)
+    bool old_show_change_pw_buttons = show_change_password_buttons_;
+#endif
     show_change_password_buttons_ =
         (visible_security_state.malicious_content_status ==
              security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE ||
          visible_security_state.malicious_content_status ==
              security_state::
                  MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE);
+#if defined(FULL_SAFE_BROWSING)
+    // Only record password reuse when adding the button, not on updates.
+    if (show_change_password_buttons_ && !old_show_change_pw_buttons) {
+      RecordPasswordReuseEvent();
+    }
+#endif
   } else if (certificate_ &&
              (!net::IsCertStatusError(visible_security_state.cert_status) ||
               net::IsCertStatusMinorError(
@@ -890,15 +917,9 @@ void PageInfo::PresentSitePermissions() {
     }
   }
 
+  const auto origin = url::Origin::Create(site_url_);
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
     ChooserContextBase* context = ui_info.get_context(profile_);
-    const GURL origin = site_url_.GetOrigin();
-
-    // Hide individual object permissions because when the chooser is blocked
-    // previously granted device permissions are also ignored.
-    if (!context->CanRequestObjectPermission(origin, origin))
-      continue;
-
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (std::unique_ptr<ChooserContextBase::Object>& object : chosen_objects) {
       chosen_object_info_list.push_back(
@@ -953,25 +974,6 @@ void PageInfo::PresentSiteIdentity() {
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   info.show_change_password_buttons = show_change_password_buttons_;
   ui_->SetIdentityInfo(info);
-#if defined(FULL_SAFE_BROWSING)
-  if (password_protection_service_ && show_change_password_buttons_) {
-    if (site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE) {
-      safe_browsing::LogWarningAction(
-          safe_browsing::WarningUIType::PAGE_INFO,
-          safe_browsing::WarningAction::SHOWN,
-          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-              SIGN_IN_PASSWORD,
-          password_protection_service_->GetSyncAccountType());
-    } else {
-      safe_browsing::LogWarningAction(
-          safe_browsing::WarningUIType::PAGE_INFO,
-          safe_browsing::WarningAction::SHOWN,
-          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-              ENTERPRISE_PASSWORD,
-          password_protection_service_->GetSyncAccountType());
-    }
-  }
-#endif
 }
 
 void PageInfo::PresentPageFeatureInfo() {
@@ -981,6 +983,30 @@ void PageInfo::PresentPageFeatureInfo() {
 
   ui_->SetPageFeatureInfo(info);
 }
+
+#if defined(FULL_SAFE_BROWSING)
+void PageInfo::RecordPasswordReuseEvent() {
+  if (!password_protection_service_) {
+    return;
+  }
+
+  if (site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE) {
+    safe_browsing::LogWarningAction(
+        safe_browsing::WarningUIType::PAGE_INFO,
+        safe_browsing::WarningAction::SHOWN,
+        safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+            SIGN_IN_PASSWORD,
+        password_protection_service_->GetSyncAccountType());
+  } else {
+    safe_browsing::LogWarningAction(
+        safe_browsing::WarningUIType::PAGE_INFO,
+        safe_browsing::WarningAction::SHOWN,
+        safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+            ENTERPRISE_PASSWORD,
+        password_protection_service_->GetSyncAccountType());
+  }
+}
+#endif
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;

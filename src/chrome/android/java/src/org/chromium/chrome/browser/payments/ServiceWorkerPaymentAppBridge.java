@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -180,17 +180,19 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      *                         app.
      * @param total            The PaymentItem that represents the total cost of the payment.
      * @param modifiers        Payment method specific modifiers to the payment items and the total.
+     * @param host             The host of the payment handler.
      * @param callback         Called after the payment app is finished running.
      */
     public static void invokePaymentApp(WebContents webContents, long registrationId, String origin,
             String iframeOrigin, String paymentRequestId, Set<PaymentMethodData> methodData,
-            PaymentItem total, Set<PaymentDetailsModifier> modifiers,
+            PaymentItem total, Set<PaymentDetailsModifier> modifiers, PaymentHandlerHost host,
             PaymentInstrument.InstrumentDetailsCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         nativeInvokePaymentApp(webContents, registrationId, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
-                modifiers.toArray(new PaymentDetailsModifier[0]), callback);
+                modifiers.toArray(new PaymentDetailsModifier[0]),
+                host.getNativePaymentHandlerHost(), callback);
     }
 
     /**
@@ -205,6 +207,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      *                         app.
      * @param total            The PaymentItem that represents the total cost of the payment.
      * @param modifiers        Payment method specific modifiers to the payment items and the total.
+     * @param host             The host of the payment handler.
      * @param callback         Called after the payment app is finished running.
      * @param appName          The installable app name.
      * @param icon             The installable app icon.
@@ -215,15 +218,16 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      */
     public static void installAndInvokePaymentApp(WebContents webContents, String origin,
             String iframeOrigin, String paymentRequestId, Set<PaymentMethodData> methodData,
-            PaymentItem total, Set<PaymentDetailsModifier> modifiers,
+            PaymentItem total, Set<PaymentDetailsModifier> modifiers, PaymentHandlerHost host,
             PaymentInstrument.InstrumentDetailsCallback callback, String appName,
             @Nullable Bitmap icon, URI swUri, URI scope, boolean useCache, String method) {
         ThreadUtils.assertOnUiThread();
 
         nativeInstallAndInvokePaymentApp(webContents, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
-                modifiers.toArray(new PaymentDetailsModifier[0]), callback, appName, icon,
-                swUri.toString(), scope.toString(), useCache, method);
+                modifiers.toArray(new PaymentDetailsModifier[0]),
+                host.getNativePaymentHandlerHost(), callback, appName, icon, swUri.toString(),
+                scope.toString(), useCache, method);
     }
 
     /**
@@ -252,12 +256,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             public void onPageLoadFinished(Tab tab, String url) {
                 // Notify closing payment app window so as to abort payment if unsecure.
                 WebContents webContents = tab.getWebContents();
-                if (!OriginSecurityChecker.isOriginSecure(webContents.getLastCommittedUrl())
-                        || (!OriginSecurityChecker.isSchemeCryptographic(
-                                    webContents.getLastCommittedUrl())
-                                   && !OriginSecurityChecker.isOriginLocalhostOrFile(
-                                              webContents.getLastCommittedUrl()))
-                        || !SslValidityChecker.isSslCertificateValid(webContents)) {
+                if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(webContents)) {
                     onClosingPaymentAppWindow(webContents);
                 }
             }
@@ -460,13 +459,14 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static native void nativeInvokePaymentApp(WebContents webContents, long registrationId,
             String topOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
-            PaymentInstrument.InstrumentDetailsCallback callback);
+            long nativePaymentHandlerObject, PaymentInstrument.InstrumentDetailsCallback callback);
 
     private static native void nativeInstallAndInvokePaymentApp(WebContents webContents,
             String topOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
-            PaymentInstrument.InstrumentDetailsCallback callback, String appName,
-            @Nullable Bitmap icon, String swUrl, String scope, boolean useCache, String method);
+            long nativePaymentHandlerObject, PaymentInstrument.InstrumentDetailsCallback callback,
+            String appName, @Nullable Bitmap icon, String swUrl, String scope, boolean useCache,
+            String method);
 
     private static native void nativeAbortPaymentApp(
             WebContents webContents, long registrationId, PaymentInstrument.AbortCallback callback);

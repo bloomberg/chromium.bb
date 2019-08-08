@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -64,7 +65,6 @@ Service::Service(service_manager::mojom::ServiceRequest request,
                      url_loader_factory_info)
     : service_binding_(this, std::move(request)),
       platform_binding_(this),
-      session_observer_binding_(this),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       power_manager_observer_(this),
@@ -82,7 +82,13 @@ Service::Service(service_manager::mojom::ServiceRequest request,
   power_manager_client->RequestStatusUpdate();
 }
 
-Service::~Service() = default;
+Service::~Service() {
+  auto* const session_controller = ash::SessionController::Get();
+  if (observing_ash_session_ && session_controller) {
+    session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
+                                                                    this);
+  }
+}
 
 void Service::RequestAccessToken() {
   // Bypass access token fetching under signed out mode.
@@ -181,12 +187,6 @@ void Service::OnSessionActivated(bool activated) {
 
 void Service::OnLockStateChanged(bool locked) {
   locked_ = locked;
-
-  if (assistant_manager_service_->GetState() !=
-      AssistantManagerService::State::RUNNING) {
-    return;
-  }
-
   UpdateListeningState();
 }
 
@@ -204,6 +204,10 @@ void Service::OnLocaleChanged(const std::string& locale) {
 
 void Service::OnArcPlayStoreEnabledChanged(bool enabled) {
   UpdateAssistantManagerState();
+}
+
+void Service::OnLockedFullScreenStateChanged(bool enabled) {
+  UpdateListeningState();
 }
 
 void Service::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
@@ -293,7 +297,7 @@ identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
 }
 
 void Service::GetPrimaryAccountInfoCallback(
-    const base::Optional<AccountInfo>& account_info,
+    const base::Optional<CoreAccountInfo>& account_info,
     const identity::AccountState& account_state) {
   if (!account_info.has_value() || !account_state.has_refresh_token ||
       account_info.value().gaia.empty()) {
@@ -362,7 +366,7 @@ void Service::FinalizeAssistantManagerService() {
          AssistantManagerService::State::RUNNING);
 
   // Using session_observer_binding_ as a flag to control onetime initialization
-  if (!session_observer_binding_) {
+  if (!observing_ash_session_) {
     // Bind to the AssistantController in ash.
     service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
                                                    &assistant_controller_);
@@ -406,17 +410,21 @@ void Service::StopAssistantManagerService() {
 }
 
 void Service::AddAshSessionObserver() {
-  ash::mojom::SessionControllerPtr session_controller;
-  service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                                 &session_controller);
-  ash::mojom::SessionActivationObserverPtr observer;
-  session_observer_binding_.Bind(mojo::MakeRequest(&observer));
-  session_controller->AddSessionActivationObserverForAccountId(
-      account_id_, std::move(observer));
+  observing_ash_session_ = true;
+  ash::SessionController::Get()->AddSessionActivationObserverForAccountId(
+      account_id_, this);
 }
 
 void Service::UpdateListeningState() {
-  bool should_listen = !locked_ && session_active_;
+  if (assistant_manager_service_->GetState() !=
+      AssistantManagerService::State::RUNNING) {
+    return;
+  }
+
+  bool should_listen =
+      !locked_ &&
+      !assistant_state_.locked_full_screen_enabled().value_or(false) &&
+      session_active_;
   DVLOG(1) << "Update assistant listening state: " << should_listen;
   assistant_manager_service_->EnableListening(should_listen);
 }

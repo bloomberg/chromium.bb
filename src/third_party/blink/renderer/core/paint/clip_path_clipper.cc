@@ -135,7 +135,7 @@ static bool IsClipPathOperationValid(
 
 ClipPathClipper::ClipPathClipper(GraphicsContext& context,
                                  const LayoutObject& layout_object,
-                                 const LayoutPoint& paint_offset)
+                                 const PhysicalOffset& paint_offset)
     : context_(context),
       layout_object_(layout_object),
       paint_offset_(paint_offset) {
@@ -177,7 +177,7 @@ ClipPathClipper::~ClipPathClipper() {
     return;
   DrawingRecorder recorder(context_, layout_object_, DisplayItem::kSVGClip);
   context_.Save();
-  context_.Translate(paint_offset_.X(), paint_offset_.Y());
+  context_.Translate(paint_offset_.left, paint_offset_.top);
 
   SVGClipExpansionCycleHelper locks;
   bool is_first = true;

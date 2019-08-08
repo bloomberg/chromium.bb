@@ -422,20 +422,19 @@ class NavigationOrSwapObserver : public WebContentsObserver,
     if (change.type() != TabStripModelChange::kReplaced)
       return;
 
-    for (const auto& delta : change.deltas()) {
-      if (delta.replace.old_contents != web_contents())
-        continue;
+    auto* replace = change.GetReplace();
+    if (replace->old_contents != web_contents())
+      return;
 
-      // Switch to observing the new WebContents.
-      Observe(delta.replace.new_contents);
-      if (delta.replace.new_contents->IsLoading()) {
-        // If the new WebContents is still loading, wait for it to complete.
-        // Only one load post-swap is supported.
-        did_start_loading_ = true;
-        number_of_loads_ = 1;
-      } else {
-        loop_.Quit();
-      }
+    // Switch to observing the new WebContents.
+    Observe(replace->new_contents);
+    if (replace->new_contents->IsLoading()) {
+      // If the new WebContents is still loading, wait for it to complete.
+      // Only one load post-swap is supported.
+      did_start_loading_ = true;
+      number_of_loads_ = 1;
+    } else {
+      loop_.Quit();
     }
   }
 
@@ -2250,17 +2249,18 @@ class TtsPlatformMock : public content::TtsPlatform {
 
   bool PlatformImplAvailable() override { return true; }
 
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params) override {
+             const content::UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override {
     speaking_requested_ = true;
     // Dispatch the end of speaking back to the page.
     content::TtsController::GetInstance()->OnTtsEvent(
         utterance_id, content::TTS_EVENT_END, 0,
         static_cast<int>(utterance.size()), std::string());
-    return true;
+    std::move(on_speak_finished).Run(true);
   }
 
   bool StopSpeaking() override { return true; }

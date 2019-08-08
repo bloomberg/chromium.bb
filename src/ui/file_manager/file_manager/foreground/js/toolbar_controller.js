@@ -17,10 +17,11 @@ class ToolbarController {
    *     the toolbar.
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!DirectoryModel} directoryModel
+   * @param {!VolumeManager} volumeManager
    */
   constructor(
       toolbar, navigationList, listContainer, locationLine, selectionHandler,
-      directoryModel) {
+      directoryModel, volumeManager) {
     /**
      * @private {!HTMLElement}
      * @const
@@ -63,6 +64,14 @@ class ToolbarController {
         cr.ui.Command);
 
     /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.refreshCommand_ = assertInstanceof(
+        queryRequiredElement('#refresh', assert(this.toolbar_.ownerDocument)),
+        cr.ui.Command);
+
+    /**
      * @private {!HTMLElement}
      * @const
      */
@@ -92,6 +101,12 @@ class ToolbarController {
      */
     this.directoryModel_ = directoryModel;
 
+    /**
+     * @private {!VolumeManager}
+     * @const
+     */
+    this.volumeManager_ = volumeManager;
+
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
@@ -105,6 +120,9 @@ class ToolbarController {
     this.navigationList_.addEventListener(
         'relayout', this.onNavigationListRelayout_.bind(this));
 
+    this.directoryModel_.addEventListener(
+        'directory-changed', this.updateCurrentDirectoryButtons_.bind(this));
+
     // Watch visibility of toolbar buttons to update the width of location line.
     const observer =
         new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
@@ -115,6 +133,18 @@ class ToolbarController {
           toolbarButtons[i],
           /** @type MutationObserverInit */ ({attributes: true}));
     }
+  }
+
+  /**
+   * Updates buttons that act on current directory.
+   * @private
+   */
+  updateCurrentDirectoryButtons_() {
+    const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+    this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
+    this.refreshCommand_.setHidden(
+        volumeInfo && volumeInfo.watchable ||
+        this.directoryModel_.getFileListSelection().getCheckSelectMode());
   }
 
   /**
@@ -149,10 +179,8 @@ class ToolbarController {
     this.deleteButton_.hidden =
         (selection.totalCount === 0 || this.directoryModel_.isReadOnly() ||
          selection.hasReadOnlyEntry() ||
-         (util.isMyFilesVolumeEnabled() &&
-          this.directoryModel_.getCurrentRootType() ==
-              VolumeManagerCommon.RootType.DOWNLOADS &&
-          selection.entries.some(entry => entry.fullPath === '/Downloads')));
+         selection.entries.some(
+             entry => util.isNonModifiable(this.volumeManager_, entry)));
 
     // Set .selecting class to containing element to change the view
     // accordingly.

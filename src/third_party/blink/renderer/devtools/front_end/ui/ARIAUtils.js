@@ -84,6 +84,15 @@ UI.ARIAUtils.markAsHidden = function(element) {
 
 /**
  * @param {!Element} element
+ * @param {number} level
+ */
+UI.ARIAUtils.markAsHeading = function(element, level) {
+  element.setAttribute('role', 'heading');
+  element.setAttribute('aria-level', level);
+};
+
+/**
+ * @param {!Element} element
  * @param {?string} placeholder
  */
 UI.ARIAUtils.setPlaceholder = function(element, placeholder) {
@@ -98,6 +107,14 @@ UI.ARIAUtils.setPlaceholder = function(element, placeholder) {
  */
 UI.ARIAUtils.markAsPresentation = function(element) {
   element.setAttribute('role', 'presentation');
+};
+
+/**
+ * @param {!Element} element
+ */
+UI.ARIAUtils.ensureId = function(element) {
+  if (!element.id)
+    element.id = UI.ARIAUtils.nextId('ariaElement');
 };
 
 /**
@@ -175,6 +192,15 @@ UI.ARIAUtils.setPressed = function(element, value) {
  */
 UI.ARIAUtils.setAccessibleName = function(element, name) {
   element.setAttribute('aria-label', name);
+};
+
+/**
+ * @param {!Element} element
+ * @param {!Element} labelElement
+ */
+UI.ARIAUtils.setLabelledBy = function(element, labelElement) {
+  UI.ARIAUtils.ensureId(labelElement);
+  element.setAttribute('aria-labelledby', labelElement.id);
 };
 
 /**

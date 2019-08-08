@@ -4,7 +4,7 @@
 
 #include "ash/media/media_controller.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/feature_list.h"

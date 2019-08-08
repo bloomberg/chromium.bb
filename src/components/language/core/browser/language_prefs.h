@@ -19,6 +19,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class PrefService;
+
 namespace language {
 
 extern const char kFallbackInputMethodLocale[];
@@ -53,6 +55,8 @@ class LanguagePrefs {
 
   DISALLOW_COPY_AND_ASSIGN(LanguagePrefs);
 };
+
+void ResetLanguagePrefs(PrefService* prefs);
 
 }  // namespace language
 

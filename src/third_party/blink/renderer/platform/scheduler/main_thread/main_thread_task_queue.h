@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "net/base/request_priority.h"
@@ -18,6 +19,10 @@ class SequenceManager;
 
 namespace blink {
 namespace scheduler {
+
+namespace main_thread_scheduler_impl_unittest {
+class MainThreadSchedulerImplTest;
+}
 
 class FrameSchedulerImpl;
 class MainThreadSchedulerImpl;
@@ -299,7 +304,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   void OnTaskCompleted(
       const base::sequence_manager::Task& task,
-      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
+      base::sequence_manager::TaskQueue::TaskTiming* task_timing,
+      base::sequence_manager::LazyNow* lazy_now);
 
   void DetachFromMainThreadScheduler();
 
@@ -329,6 +335,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
  private:
   friend class base::sequence_manager::SequenceManager;
+  friend class blink::scheduler::main_thread_scheduler_impl_unittest::
+      MainThreadSchedulerImplTest;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and
@@ -353,6 +361,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
   FrameSchedulerImpl* frame_scheduler_;  // NOT OWNED
+
+  base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadTaskQueue);
 };

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
-#include "remoting/signaling/ftl_services.grpc.pb.h"
+#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/registration_manager.h"
 
 namespace remoting {

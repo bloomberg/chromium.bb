@@ -317,8 +317,7 @@ cr.define('languages_page_tests', function() {
         let item = null;
 
         let listItems = languagesCollapse.querySelectorAll('.list-item');
-        let domRepeat = assert(languagesCollapse.querySelector(
-            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        let domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
 
         let num_visibles = 0;
         Array.from(listItems).forEach(function(el) {
@@ -407,8 +406,7 @@ cr.define('languages_page_tests', function() {
 
         // Find the new language item.
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector(
-            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'no';
@@ -435,8 +433,7 @@ cr.define('languages_page_tests', function() {
             ['en-US'], languageHelper.prefs.translate_blocked_languages.value);
 
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector(
-            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'en-US';
@@ -451,8 +448,7 @@ cr.define('languages_page_tests', function() {
 
       test('remove language when starting with 2 languages', function() {
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector(
-            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'sw';
@@ -663,9 +659,15 @@ cr.define('languages_page_tests', function() {
           return;
         }
 
+        loadTimeData.overrideValues({
+          spellCheckDisabledReason: 'no languages!',
+        });
+
         assertFalse(languagesPage.$.enableSpellcheckingToggle.disabled);
         assertTrue(
             languageHelper.getPref('browser.enable_spellchecking').value);
+        assertEquals(
+            languagesPage.$.enableSpellcheckingToggle.subLabel, undefined);
 
         // Empty out supported languages
         languageHelper.setPrefValue('intl.accept_languages', '');
@@ -676,6 +678,9 @@ cr.define('languages_page_tests', function() {
         assertTrue(languagesPage.$.enableSpellcheckingToggle.disabled);
         assertFalse(
             languageHelper.getPref('browser.enable_spellchecking').value);
+        assertEquals(
+            languagesPage.$.enableSpellcheckingToggle.subLabel,
+            'no languages!');
       });
 
       test('error handling', function() {

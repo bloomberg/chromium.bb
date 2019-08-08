@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/rand_util.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -25,9 +26,17 @@
 namespace safe_browsing {
 namespace zip_analyzer {
 
+namespace {
+
+// The maximum duration of ZIP analysis, in milliseconds.
+const int kZipAnalysisTimeoutMs = 10000;
+
+}  // namespace
+
 void AnalyzeZipFile(base::File zip_file,
                     base::File temp_file,
                     ArchiveAnalyzerResults* results) {
+  base::Time start_time = base::Time::Now();
   zip::ZipReader reader;
   if (!reader.OpenFromPlatformFile(zip_file.GetPlatformFile())) {
     DVLOG(1) << "Failed to open zip file";
@@ -44,9 +53,8 @@ void AnalyzeZipFile(base::File zip_file,
     return;
   }
 
-  bool contains_zip = false;
+  bool timeout = false;
   bool advanced = true;
-  int zip_entry_count = 0;
   results->file_count = 0;
   results->directory_count = 0;
   for (; reader.HasMore(); advanced = reader.AdvanceToNextEntry()) {
@@ -57,6 +65,11 @@ void AnalyzeZipFile(base::File zip_file,
     if (!reader.OpenCurrentEntryInZip()) {
       DVLOG(1) << "Failed to open current entry in zip file";
       continue;
+    }
+    if (base::Time::Now() - start_time >
+        base::TimeDelta::FromMilliseconds(kZipAnalysisTimeoutMs)) {
+      timeout = true;
+      break;
     }
 
     // Clear the |temp_file| between extractions.
@@ -69,19 +82,13 @@ void AnalyzeZipFile(base::File zip_file,
         writer.file_length(), reader.current_entry_info()->is_encrypted(),
         results);
 
-    if (FileTypePolicies::GetFileExtension(
-            reader.current_entry_info()->file_path()) ==
-        FILE_PATH_LITERAL(".zip"))
-      contains_zip = true;
-    zip_entry_count++;
-
     if (reader.current_entry_info()->is_directory())
       results->directory_count++;
     else
       results->file_count++;
   }
 
-  results->success = true;
+  results->success = !timeout;
 }
 
 }  // namespace zip_analyzer

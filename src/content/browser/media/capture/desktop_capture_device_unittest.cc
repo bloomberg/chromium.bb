@@ -218,6 +218,7 @@ class DesktopCaptureDeviceTest : public testing::Test {
   void CopyFrame(const uint8_t* frame,
                  int size,
                  const media::VideoCaptureFormat&,
+                 const gfx::ColorSpace&,
                  int,
                  base::TimeTicks,
                  base::TimeDelta,
@@ -269,7 +270,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(SaveArg<1>(&frame_size), SaveArg<2>(&format),
                 InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
@@ -308,7 +309,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
                                   &FormatChecker::ExpectAcceptableSize)),
@@ -354,7 +355,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
                                   &FormatChecker::ExpectAcceptableSize)),
@@ -404,7 +405,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
                                   &FormatChecker::ExpectAcceptableSize)),
@@ -456,7 +457,7 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
                 SaveArg<1>(&frame_size),
@@ -505,7 +506,7 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
                 SaveArg<1>(&frame_size),
@@ -571,12 +572,12 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
               task_runner, task_runner->GetMockTickClock());
         }));
 
-    EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+    EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
         .WillRepeatedly(DoAll(
             WithArg<2>(
                 Invoke(&format_checker, &FormatChecker::ExpectAcceptableSize)),
-            WithArg<5>(Invoke([&done_event, &nb_frames, &task_runner]
-                              (base::TimeDelta timestamp) {
+            WithArg<6>(Invoke([&done_event, &nb_frames,
+                               &task_runner](base::TimeDelta timestamp) {
               ++nb_frames;
 
               // Simulate real device capture time. Indeed the time spent

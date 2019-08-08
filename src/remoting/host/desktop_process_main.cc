@@ -35,7 +35,7 @@ int DesktopProcessMain() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;

@@ -1457,4 +1457,30 @@ TEST_P(AudioFocusManagerTest, AmbientFocusHasNoEffect) {
             GetState(&media_session_1));
 }
 
+TEST_P(AudioFocusManagerTest, AudioFocusObserver_NotTopMost) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2,
+                    mojom::AudioFocusType::kGainTransientMayDuck);
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
+    media_session_1.AbandonAudioFocusFromClient();
+
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
+        test::GetMediaSessionInfoSync(&media_session_1)));
+  }
+}
+
 }  // namespace media_session

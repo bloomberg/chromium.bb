@@ -4,6 +4,7 @@
 
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,12 +32,10 @@ namespace {
 
 // The result of max_width and max_height could be zero if the stream
 // is not in the pre-defined configuration.
-void GetMaxStreamResolution(
-    const cros::mojom::CameraMetadataPtr& static_metadata,
-    cros::mojom::Camera3StreamType stream_type,
-    cros::mojom::HalPixelFormat stream_format,
-    int32_t* max_width,
-    int32_t* max_height) {
+void GetStreamResolutions(const cros::mojom::CameraMetadataPtr& static_metadata,
+                          cros::mojom::Camera3StreamType stream_type,
+                          cros::mojom::HalPixelFormat stream_format,
+                          std::vector<gfx::Size>* resolutions) {
   const cros::mojom::CameraMetadataEntryPtr* stream_configurations =
       GetMetadataEntry(static_metadata,
                        cros::mojom::CameraMetadataTag::
@@ -51,8 +50,6 @@ void GetMaxStreamResolution(
   const size_t kStreamConfigurationSize = 4;
   int32_t* iter =
       reinterpret_cast<int32_t*>((*stream_configurations)->data.data());
-  *max_width = 0;
-  *max_height = 0;
   for (size_t i = 0; i < (*stream_configurations)->count;
        i += kStreamConfigurationSize) {
     auto format =
@@ -67,13 +64,13 @@ void GetMaxStreamResolution(
       continue;
     }
 
-    // TODO(wtlee): Once we have resolution settings mechanism, we could set
-    // stream resolution based on user's settings.
-    if (width > *max_width && height > *max_height) {
-      *max_width = width;
-      *max_height = height;
-    }
+    resolutions->emplace_back(width, height);
   }
+
+  std::sort(resolutions->begin(), resolutions->end(),
+            [](const gfx::Size& a, const gfx::Size& b) -> bool {
+              return a.width() * a.height() < b.width() * b.height();
+            });
 }
 
 // VideoCaptureDevice::TakePhotoCallback is given by the application and is used
@@ -251,18 +248,26 @@ void CameraDeviceDelegate::GetPhotoState(
     return;
   }
 
-  int32_t max_blob_width = 0, max_blob_height = 0;
-  GetMaxStreamResolution(static_metadata_,
-                         cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT,
-                         cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB,
-                         &max_blob_width, &max_blob_height);
-  photo_state->width->current = max_blob_width;
-  photo_state->width->min = max_blob_width;
-  photo_state->width->max = max_blob_width;
+  std::vector<gfx::Size> blob_resolutions;
+  GetStreamResolutions(
+      static_metadata_, cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT,
+      cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB, &blob_resolutions);
+  if (blob_resolutions.empty()) {
+    std::move(callback).Run(std::move(photo_state));
+    return;
+  }
+
+  // Sets the correct range of min/max resolution in order to bypass checks that
+  // the resolution caller request should fall within the range when taking
+  // photos. And since we are not actually use the mechanism to get other
+  // resolutions, we set the step to 0.0 here.
+  photo_state->width->current = current_blob_resolution_.width();
+  photo_state->width->min = blob_resolutions.front().width();
+  photo_state->width->max = blob_resolutions.back().width();
   photo_state->width->step = 0.0;
-  photo_state->height->current = max_blob_height;
-  photo_state->height->min = max_blob_height;
-  photo_state->height->max = max_blob_height;
+  photo_state->height->current = current_blob_resolution_.height();
+  photo_state->height->min = blob_resolutions.front().height();
+  photo_state->height->max = blob_resolutions.back().height();
   photo_state->height->step = 0.0;
   std::move(callback).Run(std::move(photo_state));
 }
@@ -284,9 +289,25 @@ void CameraDeviceDelegate::SetPhotoOptions(
     return;
   }
 
-  if (!request_manager_->HasStreamsConfiguredForTakePhoto()) {
-    request_manager_->StopPreview(
-        base::BindOnce(&CameraDeviceDelegate::OnFlushed, GetWeakPtr()));
+  bool is_resolution_specified = settings->has_width && settings->has_height;
+  bool should_reconfigure_streams =
+      is_resolution_specified && (current_blob_resolution_.IsEmpty() ||
+                                  current_blob_resolution_.width() !=
+                                      static_cast<int32_t>(settings->width) ||
+                                  current_blob_resolution_.height() !=
+                                      static_cast<int32_t>(settings->height));
+  if (!request_manager_->HasStreamsConfiguredForTakePhoto() ||
+      should_reconfigure_streams) {
+    if (is_resolution_specified) {
+      gfx::Size new_blob_resolution(static_cast<int32_t>(settings->width),
+                                    static_cast<int32_t>(settings->height));
+      request_manager_->StopPreview(
+          base::BindOnce(&CameraDeviceDelegate::OnFlushed, GetWeakPtr(),
+                         std::move(new_blob_resolution)));
+    } else {
+      request_manager_->StopPreview(base::BindOnce(
+          &CameraDeviceDelegate::OnFlushed, GetWeakPtr(), base::nullopt));
+    }
     set_photo_option_callback_ = std::move(callback);
   } else {
     set_photo_option_callback_.Reset();
@@ -352,7 +373,9 @@ void CameraDeviceDelegate::OnMojoConnectionError() {
   }
 }
 
-void CameraDeviceDelegate::OnFlushed(int32_t result) {
+void CameraDeviceDelegate::OnFlushed(
+    base::Optional<gfx::Size> new_blob_resolution,
+    int32_t result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (result) {
     device_context_->SetErrorState(
@@ -362,7 +385,7 @@ void CameraDeviceDelegate::OnFlushed(int32_t result) {
     return;
   }
   device_context_->SetState(CameraDeviceContext::State::kInitialized);
-  ConfigureStreams(true);
+  ConfigureStreams(true, std::move(new_blob_resolution));
 }
 
 void CameraDeviceDelegate::OnClosed(int32_t result) {
@@ -376,6 +399,7 @@ void CameraDeviceDelegate::OnClosed(int32_t result) {
   }
   ResetMojoInterface();
   device_context_ = nullptr;
+  current_blob_resolution_.SetSize(0, 0);
   std::move(device_close_callback_).Run();
 }
 
@@ -405,11 +429,11 @@ void CameraDeviceDelegate::OnGotCameraInfo(
         FROM_HERE, "Failed to get camera info");
     return;
   }
+
+  reprocess_manager_->UpdateCameraInfo(device_descriptor_.device_id,
+                                       camera_info);
   SortCameraMetadata(&camera_info->static_camera_characteristics);
   static_metadata_ = std::move(camera_info->static_camera_characteristics);
-
-  reprocess_manager_->UpdateSupportedEffects(device_descriptor_.device_id,
-                                             static_metadata_);
 
   const cros::mojom::CameraMetadataEntryPtr* sensor_orientation =
       GetMetadataEntry(
@@ -499,10 +523,12 @@ void CameraDeviceDelegate::OnInitialized(int32_t result) {
     return;
   }
   device_context_->SetState(CameraDeviceContext::State::kInitialized);
-  ConfigureStreams(false);
+  ConfigureStreams(false, base::nullopt);
 }
 
-void CameraDeviceDelegate::ConfigureStreams(bool require_photo) {
+void CameraDeviceDelegate::ConfigureStreams(
+    bool require_photo,
+    base::Optional<gfx::Size> new_blob_resolution) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(device_context_->GetState(),
             CameraDeviceContext::State::kInitialized);
@@ -529,22 +555,35 @@ void CameraDeviceDelegate::ConfigureStreams(bool require_photo) {
 
   // Set up context for still capture stream. We set still capture stream to the
   // JPEG stream configuration with maximum supported resolution.
-  // TODO(jcliang): Once we support SetPhotoOptions() the still capture stream
-  // should be configured dynamically per the photo options.
+  int32_t blob_width = 0;
+  int32_t blob_height = 0;
   if (require_photo) {
-    int32_t max_blob_width = 0, max_blob_height = 0;
-    GetMaxStreamResolution(
+    std::vector<gfx::Size> blob_resolutions;
+    GetStreamResolutions(
         static_metadata_, cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT,
-        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB, &max_blob_width,
-        &max_blob_height);
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB, &blob_resolutions);
+    if (blob_resolutions.empty()) {
+      LOG(ERROR) << "Failed to configure streans: No BLOB resolution found.";
+      return;
+    }
 
+    if (new_blob_resolution.has_value() &&
+        std::find(blob_resolutions.begin(), blob_resolutions.end(),
+                  *new_blob_resolution) != blob_resolutions.end()) {
+      blob_width = new_blob_resolution->width();
+      blob_height = new_blob_resolution->height();
+    } else {
+      // Use the largest resolution as default.
+      blob_width = blob_resolutions.back().width();
+      blob_height = blob_resolutions.back().height();
+    }
     cros::mojom::Camera3StreamPtr still_capture_stream =
         cros::mojom::Camera3Stream::New();
     still_capture_stream->id = static_cast<uint64_t>(StreamType::kJpegOutput);
     still_capture_stream->stream_type =
         cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT;
-    still_capture_stream->width = max_blob_width;
-    still_capture_stream->height = max_blob_height;
+    still_capture_stream->width = blob_width;
+    still_capture_stream->height = blob_height;
     still_capture_stream->format =
         cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB;
     still_capture_stream->data_space = 0;
@@ -589,10 +628,12 @@ void CameraDeviceDelegate::ConfigureStreams(bool require_photo) {
       CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE;
   device_ops_->ConfigureStreams(
       std::move(stream_config),
-      base::BindOnce(&CameraDeviceDelegate::OnConfiguredStreams, GetWeakPtr()));
+      base::BindOnce(&CameraDeviceDelegate::OnConfiguredStreams, GetWeakPtr(),
+                     gfx::Size(blob_width, blob_height)));
 }
 
 void CameraDeviceDelegate::OnConfiguredStreams(
+    gfx::Size blob_resolution,
     int32_t result,
     cros::mojom::Camera3StreamConfigurationPtr updated_config) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
@@ -622,6 +663,9 @@ void CameraDeviceDelegate::OnConfiguredStreams(
             std::to_string(updated_config->streams.size()));
     return;
   }
+
+  current_blob_resolution_.SetSize(blob_resolution.width(),
+                                   blob_resolution.height());
 
   request_manager_->SetUpStreamsAndBuffers(
       chrome_capture_params_.requested_format, static_metadata_,
@@ -690,14 +734,16 @@ bool CameraDeviceDelegate::IsYUVReprocessingSupported(int* max_width,
     return false;
   }
 
-  GetMaxStreamResolution(
+  std::vector<gfx::Size> yuv_resolutions;
+  GetStreamResolutions(
       static_metadata_, cros::mojom::Camera3StreamType::CAMERA3_STREAM_INPUT,
-      cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888, max_width,
-      max_height);
-  if (max_width == 0 || max_height == 0) {
+      cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888,
+      &yuv_resolutions);
+  if (yuv_resolutions.empty()) {
     return false;
   }
-
+  *max_width = yuv_resolutions.back().width();
+  *max_height = yuv_resolutions.back().height();
   return true;
 }
 

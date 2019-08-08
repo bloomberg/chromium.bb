@@ -4,9 +4,10 @@
 
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 
-#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include <utility>
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
 namespace blink {
 
@@ -31,7 +32,7 @@ void WebPlatformMediaStreamSource::StopSource() {
 
 void WebPlatformMediaStreamSource::FinalizeStopSource() {
   if (!stop_callback_.is_null())
-    base::ResetAndReturn(&stop_callback_).Run(Owner());
+    std::move(stop_callback_).Run(Owner());
   if (Owner())
     Owner().SetReadyState(WebMediaStreamSource::kReadyStateEnded);
 }

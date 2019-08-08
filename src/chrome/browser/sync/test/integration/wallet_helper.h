@@ -172,14 +172,11 @@ class AutofillWalletMetadataSizeChecker
   void OnPersonalDataChanged() override;
 
  private:
-  // A state machine that makes sure we do not nest checking exit conditions.
-  enum State { IDLE, CHECKING, SHOULD_RECHECK };
-
   bool IsExitConditionSatisfiedImpl();
 
-  State state_ = IDLE;
   const int profile_a_;
   const int profile_b_;
+  bool checking_exit_condition_in_flight_ = false;
 };
 
 // Class that enables or disables USS for Wallet metadata based on test

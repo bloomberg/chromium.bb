@@ -14,8 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/task.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -116,7 +116,7 @@ class BASE_EXPORT DelayedTaskManager {
   // it is never modified. It is therefore safe to access
   // |service_thread_task_runner_| without synchronization once it is observed
   // that it is non-null.
-  SchedulerLock queue_lock_;
+  CheckedLock queue_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedTaskManager);
 };

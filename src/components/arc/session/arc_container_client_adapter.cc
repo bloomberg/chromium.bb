@@ -31,16 +31,15 @@ class ArcContainerClientAdapter
 
   // ArcClientAdapter overrides:
   void StartMiniArc(const StartArcMiniContainerRequest& request,
-                    StartMiniArcCallback callback) override {
+                    chromeos::VoidDBusMethodCallback callback) override {
     chromeos::SessionManagerClient::Get()->StartArcMiniContainer(
         request, std::move(callback));
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
-                  base::OnceClosure success_callback,
-                  UpgradeErrorCallback error_callback) override {
+                  chromeos::VoidDBusMethodCallback callback) override {
     chromeos::SessionManagerClient::Get()->UpgradeArcContainer(
-        request, std::move(success_callback), std::move(error_callback));
+        request, std::move(callback));
   }
 
   void StopArcInstance() override {
@@ -51,10 +50,9 @@ class ArcContainerClientAdapter
   }
 
   // chromeos::SessionManagerClient::Observer overrides:
-  void ArcInstanceStopped(login_manager::ArcContainerStopReason stop_reason,
-                          const std::string& container_instance_id) override {
+  void ArcInstanceStopped() override {
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped(stop_reason, container_instance_id);
+      observer.ArcInstanceStopped();
   }
 
  private:

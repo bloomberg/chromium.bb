@@ -20,12 +20,15 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
+#include "ios/chrome/browser/browsing_data/fake_browsing_data_remover.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/fake_browsing_data_counter_wrapper_producer.h"
 #import "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -78,6 +81,8 @@ class ClearBrowsingDataCollectionViewControllerTest
 
     test_sync_service_ = static_cast<syncer::TestSyncService*>(
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
+
+    remover_ = std::make_unique<FakeBrowsingDataRemover>();
   }
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
@@ -91,8 +96,16 @@ class ClearBrowsingDataCollectionViewControllerTest
   }
 
   CollectionViewController* InstantiateController() override {
+    ClearBrowsingDataManager* manager = [[ClearBrowsingDataManager alloc]
+                      initWithBrowserState:browser_state_.get()
+                                  listType:ClearBrowsingDataListType::
+                                               kListTypeCollectionView
+                       browsingDataRemover:remover_.get()
+        browsingDataCounterWrapperProducer:
+            [[FakeBrowsingDataCounterWrapperProducer alloc] init]];
     return [[ClearBrowsingDataCollectionViewController alloc]
-        initWithBrowserState:browser_state_.get()];
+        initWithBrowserState:browser_state_.get()
+                     manager:manager];
   }
 
   void SelectItem(int item, int section) {
@@ -111,6 +124,7 @@ class ClearBrowsingDataCollectionViewControllerTest
   std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
       identity_test_env_adaptor_;
   syncer::TestSyncService* test_sync_service_;
+  std::unique_ptr<BrowsingDataRemover> remover_;
 };
 
 // Tests ClearBrowsingDataCollectionViewControllerTest is set up with all
@@ -126,23 +140,22 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestModel) {
     section_offset = 1;
   }
 
-  CheckTextCellTitleWithId(IDS_IOS_CLEAR_BROWSING_HISTORY, 0 + section_offset,
-                           0);
+  CheckTextCellTextWithId(IDS_IOS_CLEAR_BROWSING_HISTORY, 0 + section_offset,
+                          0);
   CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark,
                      0 + section_offset, 0);
-  CheckTextCellTitleWithId(IDS_IOS_CLEAR_COOKIES, 0 + section_offset, 1);
+  CheckTextCellTextWithId(IDS_IOS_CLEAR_COOKIES, 0 + section_offset, 1);
   CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark,
                      0 + section_offset, 1);
-  CheckTextCellTitleWithId(IDS_IOS_CLEAR_CACHE, 0 + section_offset, 2);
+  CheckTextCellTextWithId(IDS_IOS_CLEAR_CACHE, 0 + section_offset, 2);
   CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark,
                      0 + section_offset, 2);
-  CheckTextCellTitleWithId(IDS_IOS_CLEAR_SAVED_PASSWORDS, 0 + section_offset,
-                           3);
+  CheckTextCellTextWithId(IDS_IOS_CLEAR_SAVED_PASSWORDS, 0 + section_offset, 3);
   CheckAccessoryType(MDCCollectionViewCellAccessoryNone, 0 + section_offset, 3);
-  CheckTextCellTitleWithId(IDS_IOS_CLEAR_AUTOFILL, 0 + section_offset, 4);
+  CheckTextCellTextWithId(IDS_IOS_CLEAR_AUTOFILL, 0 + section_offset, 4);
   CheckAccessoryType(MDCCollectionViewCellAccessoryNone, 0 + section_offset, 4);
 
-  CheckTextCellTitleWithId(IDS_IOS_CLEAR_BUTTON, 1 + section_offset, 0);
+  CheckTextCellTextWithId(IDS_IOS_CLEAR_BUTTON, 1 + section_offset, 0);
 
   CheckSectionFooterWithId(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA,
                            2 + section_offset);
@@ -169,7 +182,8 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
   EXPECT_EQ(1, NumberOfItemsInSection(1 + section_offset));
 
   EXPECT_EQ(1, NumberOfItemsInSection(2 + section_offset));
-  CheckSectionFooterWithId(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT, 2);
+  CheckSectionFooterWithId(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT,
+                           2 + section_offset);
 
   EXPECT_EQ(1, NumberOfItemsInSection(3 + section_offset));
   CheckSectionFooterWithId(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA,

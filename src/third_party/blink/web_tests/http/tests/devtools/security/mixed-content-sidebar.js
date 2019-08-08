@@ -28,7 +28,7 @@
       .dispatchEventToListeners(
           Security.SecurityModel.Events.SecurityStateChanged,
           new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Neutral, true, mixedExplanations, null));
+              Protocol.Security.SecurityState.Neutral, mixedExplanations, null));
 
   var passive = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   passive.mixedContentType = 'optionally-blockable';

@@ -87,7 +87,7 @@ class NaClService : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    if (source_info.identity.name() == content::mojom::kBrowserServiceName &&
+    if (source_info.identity.name() == content::mojom::kSystemServiceName &&
         interface_name == IPC::mojom::ChannelBootstrap::Name_ && !connected_) {
       connected_ = true;
       mojo::FuseInterface(

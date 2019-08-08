@@ -42,6 +42,7 @@ namespace blink {
 class Element;
 class ExceptionState;
 class KeyframeEffectModelBase;
+class PaintArtifactCompositor;
 class SampledEffect;
 class UnrestrictedDoubleOrKeyframeEffectOptions;
 
@@ -53,11 +54,6 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
  public:
   enum Priority { kDefaultPriority, kTransitionPriority };
 
-  static KeyframeEffect* Create(Element*,
-                                KeyframeEffectModelBase*,
-                                const Timing&,
-                                Priority = kDefaultPriority,
-                                EventDelegate* = nullptr);
   // Web Animations API Bindings constructors.
   static KeyframeEffect* Create(
       ScriptState*,
@@ -74,8 +70,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   KeyframeEffect(Element*,
                  KeyframeEffectModelBase*,
                  const Timing&,
-                 Priority,
-                 EventDelegate*);
+                 Priority = kDefaultPriority,
+                 EventDelegate* = nullptr);
   ~KeyframeEffect() override;
 
   bool IsKeyframeEffect() const override { return true; }
@@ -103,8 +99,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   void NotifySampledEffectRemovedFromEffectStack();
 
-  CompositorAnimations::FailureCode CheckCanStartAnimationOnCompositor(
-      const base::Optional<CompositorElementIdSet>& composited_element_ids,
+  CompositorAnimations::FailureReasons CheckCanStartAnimationOnCompositor(
+      const PaintArtifactCompositor*,
       double animation_playback_rate) const;
   // Must only be called once.
   void StartAnimationOnCompositor(int group,
@@ -119,11 +115,6 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void PauseAnimationForTestingOnCompositor(double pause_time);
 
   void AttachCompositedLayers();
-
-  void SetCompositorKeyframeModelIdsForTesting(
-      const Vector<int>& compositor_keyframe_model_ids) {
-    compositor_keyframe_model_ids_ = compositor_keyframe_model_ids;
-  }
 
   void DowngradeToNormal() { priority_ = kDefaultPriority; }
 

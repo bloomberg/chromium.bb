@@ -56,6 +56,22 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
 #endif
 }
 
+GpuFeatureStatus GetMetalFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    const GpuPreferences& gpu_preferences) {
+#if defined(OS_MACOSX)
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_METAL))
+    return kGpuFeatureStatusBlacklisted;
+
+  if (!gpu_preferences.enable_metal)
+    return kGpuFeatureStatusDisabled;
+
+  return kGpuFeatureStatusEnabled;
+#else
+  return kGpuFeatureStatusDisabled;
+#endif
+}
+
 GpuFeatureStatus GetGpuRasterizationFeatureStatus(
     const std::set<int>& blacklisted_features,
     const base::CommandLine& command_line) {
@@ -292,6 +308,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -326,6 +344,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -359,6 +379,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -435,6 +457,8 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
       GetAndroidSurfaceControlFeatureStatus(blacklisted_features,
                                             gpu_preferences);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
+      GetMetalFeatureStatus(blacklisted_features, gpu_preferences);
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -501,57 +525,6 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   // TODO(zmo): Find a better way to communicate these settings to bindings
   // initialization than commandline switches.
   AppendWorkaroundsToCommandLine(gpu_feature_info, command_line);
-
-  if (gpu_feature_info.IsWorkaroundEnabled(MAX_MSAA_SAMPLE_COUNT_4)) {
-    gpu_feature_info.webgl_preferences.msaa_sample_count = 4;
-  }
-
-  if (command_line->HasSwitch(switches::kWebglMSAASampleCount)) {
-    std::string sample_count =
-        command_line->GetSwitchValueASCII(switches::kWebglMSAASampleCount);
-    uint32_t count;
-    if (base::StringToUint(sample_count, &count)) {
-      gpu_feature_info.webgl_preferences.msaa_sample_count = count;
-    }
-  }
-
-  if (command_line->HasSwitch(switches::kWebglAntialiasingMode)) {
-    std::string mode =
-        command_line->GetSwitchValueASCII(switches::kWebglAntialiasingMode);
-    if (mode == "none") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeNone;
-    } else if (mode == "explicit") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeMSAAExplicitResolve;
-    } else if (mode == "implicit") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeMSAAImplicitResolve;
-    } else if (mode == "screenspace") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeScreenSpaceAntialiasing;
-    } else {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeUnspecified;
-    }
-  }
-
-// Set default context limits for WebGL.
-#if defined(OS_ANDROID)
-  gpu_feature_info.webgl_preferences.max_active_webgl_contexts = 8u;
-#else
-  gpu_feature_info.webgl_preferences.max_active_webgl_contexts = 16u;
-#endif
-  gpu_feature_info.webgl_preferences.max_active_webgl_contexts_on_worker = 4u;
-
-  uint32_t override_val = gpu_preferences.max_active_webgl_contexts;
-  if (override_val) {
-    // It shouldn't be common for users to override this. If they do,
-    // just override both values.
-    gpu_feature_info.webgl_preferences.max_active_webgl_contexts = override_val;
-    gpu_feature_info.webgl_preferences.max_active_webgl_contexts_on_worker =
-        override_val;
-  }
 
   return gpu_feature_info;
 }
@@ -629,7 +602,7 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
       return false;
     }
   }
-  CollectContextGraphicsInfo(out_gpu_info, gpu_preferences);
+  CollectContextGraphicsInfo(out_gpu_info);
   *out_gpu_feature_info = ComputeGpuFeatureInfo(*out_gpu_info, gpu_preferences,
                                                 command_line, nullptr);
   if (!out_gpu_feature_info->disabled_extensions.empty()) {

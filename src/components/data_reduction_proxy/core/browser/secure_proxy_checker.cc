@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
@@ -95,8 +94,8 @@ void SecureProxyChecker::CheckIfSecureProxyIsAllowed(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = params::GetSecureProxyCheckURL();
   resource_request->load_flags =
-      net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+      net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY;
+  resource_request->allow_credentials = false;
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
 

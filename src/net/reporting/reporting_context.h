@@ -12,6 +12,7 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
+#include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_policy.h"
 
 namespace base {
@@ -21,7 +22,6 @@ class TickClock;
 
 namespace net {
 
-class ReportingCache;
 class ReportingCacheObserver;
 class ReportingDelegate;
 class ReportingDeliveryAgent;
@@ -35,9 +35,11 @@ class URLRequestContext;
 // Wrapped by ReportingService, which provides the external interface.
 class NET_EXPORT ReportingContext {
  public:
+  // |request_context| and |store| should outlive the ReportingContext.
   static std::unique_ptr<ReportingContext> Create(
       const ReportingPolicy& policy,
-      URLRequestContext* request_context);
+      URLRequestContext* request_context,
+      ReportingCache::PersistentReportingStore* store);
 
   ~ReportingContext();
 
@@ -71,7 +73,8 @@ class NET_EXPORT ReportingContext {
                    const base::TickClock* tick_clock,
                    const RandIntCallback& rand_callback,
                    std::unique_ptr<ReportingUploader> uploader,
-                   std::unique_ptr<ReportingDelegate> delegate);
+                   std::unique_ptr<ReportingDelegate> delegate,
+                   ReportingCache::PersistentReportingStore* store);
 
  private:
   ReportingPolicy policy_;

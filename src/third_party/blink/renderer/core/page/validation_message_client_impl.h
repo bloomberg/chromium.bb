@@ -67,6 +67,7 @@ class ValidationMessageClientImpl final
   void HideValidationMessage(const Element& anchor) override;
   bool IsValidationMessageVisible(const Element& anchor) override;
   void DocumentDetached(const Document&) override;
+  void DidChangeFocusTo(const Element* new_element) override;
   void WillBeDestroyed() override;
   void LayoutOverlay() override;
   void UpdatePrePaint() override;

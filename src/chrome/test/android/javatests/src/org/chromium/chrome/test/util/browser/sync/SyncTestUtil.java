@@ -103,7 +103,7 @@ public final class SyncTestUtil {
      * Triggers a sync cycle.
      */
     public static void triggerSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { ProfileSyncService.get().triggerSync(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { ProfileSyncService.get().triggerRefresh(); });
     }
 
     /**

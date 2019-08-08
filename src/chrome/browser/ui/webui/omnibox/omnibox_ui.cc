@@ -33,7 +33,6 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : ui::MojoWebUIController(web_ui) {
       "chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js",
       IDR_OMNIBOX_MOJO_JS);
   source->SetDefaultResource(IDR_OMNIBOX_HTML);
-  source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
   AddHandlerToRegistry(base::BindRepeating(&OmniboxUI::BindOmniboxPageHandler,

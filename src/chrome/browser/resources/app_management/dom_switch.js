@@ -75,6 +75,8 @@ Polymer({
     },
   },
 
+  firstRenderForTesting_: new PromiseResolver(),
+
   attached: function() {
     const template = this.getContentChildren()[0];
     this.templatize(template);
@@ -111,28 +113,7 @@ Polymer({
     }
 
     this.selectedChild_ = newSelectedChild;
-  },
-
-  /**
-   * TODO(dpapad): Delete this method once migration to Polymer 2 has finished.
-   * @param {string} prop
-   * @param {Object} value
-   */
-  _forwardParentProp: function(prop, value) {
-    if (this.instance_) {
-      this.instance_[prop] = value;
-    }
-  },
-
-  /**
-   * TODO(dpapad): Delete this method once migration to Polymer 2 has finished.
-   * @param {string} path
-   * @param {Object} value
-   */
-  _forwardParentPath: function(path, value) {
-    if (this.instance_) {
-      this.instance_.notifyPath(path, value, true);
-    }
+    this.firstRenderForTesting_.resolve();
   },
 
   /**

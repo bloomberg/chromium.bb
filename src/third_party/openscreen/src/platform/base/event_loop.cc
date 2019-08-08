@@ -4,6 +4,8 @@
 
 #include "platform/base/event_loop.h"
 
+#include <utility>
+
 #include "platform/api/logging.h"
 #include "platform/api/socket.h"
 
@@ -11,6 +13,7 @@ namespace openscreen {
 namespace platform {
 
 ReceivedData::ReceivedData() = default;
+ReceivedData::ReceivedData(ReceivedData&&) = default;
 ReceivedData::~ReceivedData() = default;
 
 Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
@@ -24,7 +27,7 @@ Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
                   << len.error().message();
     return len.error();
   }
-  OSP_DCHECK_LE(len.value(), kUdpMaxPacketSize);
+  OSP_DCHECK_LE(len.value(), static_cast<size_t>(kUdpMaxPacketSize));
   data->length = len.value();
   data->socket = read_event.socket;
   return Error::None();

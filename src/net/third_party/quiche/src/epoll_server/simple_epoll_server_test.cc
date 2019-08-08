@@ -164,7 +164,10 @@ class RecordingCB : public EpollCallbackInterface {
     if (event->in_events & EPOLLIN) {
       const int kLength = 1024;
       char buf[kLength];
-      read(fd, &buf, kLength);
+      int data_read;
+      do {
+        data_read = read(fd, &buf, kLength);
+      } while (data_read > 0);
     }
   }
 
@@ -258,7 +261,7 @@ class EpollFunctionTest : public EpollTest {
 
     int pipe_fds[2];
     if (pipe(pipe_fds) < 0) {
-      PLOG(FATAL) << "pipe() failed";
+      EPOLL_PLOG(FATAL) << "pipe() failed";
     }
     fd_ = pipe_fds[0];
     fd2_ = pipe_fds[1];
@@ -1004,7 +1007,7 @@ TEST(SimpleEpollServerTest, TestRepeatAlarms) {
   alarm.Reset();
 
   // Make sure the alarm is called one final time.
-  EXPECT_EQ(1, ep.GetNumPendingAlarmsForTest());
+  EXPECT_EQ(1u, ep.GetNumPendingAlarmsForTest());
   ep.set_timeout_in_us(alarm_time * 1000 * 2);
   WaitForAlarm(&ep, alarm);
 
@@ -1481,18 +1484,18 @@ TEST(SimpleEpollServerTest, TestMultipleFDs) {
   EXPECT_EQ(2u, records_one->size());
   EXPECT_EQ(2u, records_two->size());
 
-  write(pipe_one[1], &data, 1);
+  EXPECT_EQ(1, write(pipe_one[1], &data, 1));
   ep.WaitForEventsAndExecuteCallbacks();
   EXPECT_EQ(3u, records_one->size());
   EXPECT_EQ(2u, records_two->size());
 
-  write(pipe_two[1], &data, 1);
+  EXPECT_EQ(1, write(pipe_two[1], &data, 1));
   ep.WaitForEventsAndExecuteCallbacks();
   EXPECT_EQ(3u, records_one->size());
   EXPECT_EQ(3u, records_two->size());
 
-  write(pipe_one[1], &data, 1);
-  write(pipe_two[1], &data, 1);
+  EXPECT_EQ(1, write(pipe_one[1], &data, 1));
+  EXPECT_EQ(1, write(pipe_two[1], &data, 1));
   ep.WaitForEventsAndExecuteCallbacks();
   EXPECT_EQ(4u, records_one->size());
   EXPECT_EQ(4u, records_two->size());
@@ -1724,7 +1727,7 @@ class EpollReader: public EpollCallbackInterface {
 void TestPipe(char *test_message, int len) {
   int pipe_fds[2];
   if (pipe(pipe_fds) < 0) {
-    PLOG(FATAL) << "pipe failed()";
+    EPOLL_PLOG(FATAL) << "pipe failed()";
   }
   int reader_pipe = pipe_fds[0];
   int writer_pipe = pipe_fds[1];
@@ -1744,14 +1747,14 @@ void TestPipe(char *test_message, int len) {
         }
       }
       if (len > 0) {
-        PLOG(FATAL) << "write() failed";
+        EPOLL_PLOG(FATAL) << "write() failed";
       }
       close(writer_pipe);
 
       _exit(0);
     }
     case -1:
-      PLOG(FATAL) << "fork() failed";
+      EPOLL_PLOG(FATAL) << "fork() failed";
       break;
     default: {  // Parent will receive message.
       close(writer_pipe);
@@ -1925,7 +1928,7 @@ class EdgeTriggerCB : public EpollCallbackInterface {
     // Since we can only get on the ready list once, wait till we confirm both
     // read and write side continuation state and set the correct event mask
     // for the ready list.
-    event->out_ready_mask = can_read_ ? EPOLLIN : 0;
+    event->out_ready_mask = can_read_ ? static_cast<int>(EPOLLIN) : 0;
     if (can_write_) {
       event->out_ready_mask |= EPOLLOUT;
     }

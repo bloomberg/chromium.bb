@@ -53,6 +53,7 @@ enum CALayerResult {
   CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION,
   CA_LAYER_FAILED_RENDER_PASS_SORTING_CONTEXT_ID,
   CA_LAYER_FAILED_TOO_MANY_RENDER_PASS_DRAW_QUADS,
+  CA_LAYER_FAILED_QUAD_ROUNDED_CORNER,
   CA_LAYER_FAILED_COUNT,
 };
 
@@ -192,6 +193,12 @@ class CALayerOverlayProcessor {
       return CA_LAYER_SUCCESS;
     }
 
+    // TODO(enne): we could probably handle set rounded corner info on
+    // the CALayer in the case that rounded corner rect aligns with the quad.
+    if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty()) {
+      return CA_LAYER_FAILED_QUAD_ROUNDED_CORNER;
+    }
+
     // Enable edge anti-aliasing only on layer boundaries.
     ca_layer_overlay->edge_aa_mask = 0;
     if (quad->IsLeftEdge())
@@ -223,34 +230,34 @@ class CALayerOverlayProcessor {
 
     ca_layer_overlay->bounds_rect = gfx::RectF(quad->rect);
 
-    *render_pass_draw_quad = quad->material == DrawQuad::RENDER_PASS;
+    *render_pass_draw_quad = quad->material == DrawQuad::Material::kRenderPass;
     switch (quad->material) {
-      case DrawQuad::TEXTURE_CONTENT:
+      case DrawQuad::Material::kTextureContent:
         return FromTextureQuad(resource_provider,
                                TextureDrawQuad::MaterialCast(quad),
                                ca_layer_overlay);
-      case DrawQuad::TILED_CONTENT:
+      case DrawQuad::Material::kTiledContent:
         return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
                             ca_layer_overlay);
-      case DrawQuad::SOLID_COLOR:
+      case DrawQuad::Material::kSolidColor:
         return FromSolidColorDrawQuad(SolidColorDrawQuad::MaterialCast(quad),
                                       ca_layer_overlay, skip);
-      case DrawQuad::STREAM_VIDEO_CONTENT:
+      case DrawQuad::Material::kStreamVideoContent:
         return FromStreamVideoQuad(resource_provider,
                                    StreamVideoDrawQuad::MaterialCast(quad),
                                    ca_layer_overlay);
-      case DrawQuad::DEBUG_BORDER:
+      case DrawQuad::Material::kDebugBorder:
         return CA_LAYER_FAILED_DEBUG_BORDER;
-      case DrawQuad::PICTURE_CONTENT:
+      case DrawQuad::Material::kPictureContent:
         return CA_LAYER_FAILED_PICTURE_CONTENT;
-      case DrawQuad::RENDER_PASS:
+      case DrawQuad::Material::kRenderPass:
         return FromRenderPassQuad(
             resource_provider, RenderPassDrawQuad::MaterialCast(quad),
             render_pass_filters, render_pass_backdrop_filters,
             ca_layer_overlay);
-      case DrawQuad::SURFACE_CONTENT:
+      case DrawQuad::Material::kSurfaceContent:
         return CA_LAYER_FAILED_SURFACE_CONTENT;
-      case DrawQuad::YUV_VIDEO_CONTENT:
+      case DrawQuad::Material::kYuvVideoContent:
         return CA_LAYER_FAILED_YUV_VIDEO_CONTENT;
       default:
         break;

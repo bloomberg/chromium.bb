@@ -167,7 +167,6 @@
             "v8.browsing_mobile-future": {
                 "begin": 6
             },
-            "wasm": {},
             "webrtc": {}
         }
     },

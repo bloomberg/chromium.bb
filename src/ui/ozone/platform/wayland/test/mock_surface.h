@@ -33,9 +33,12 @@ class MockSurface : public ServerObject {
   MOCK_METHOD3(Attach, void(wl_resource* buffer, int32_t x, int32_t y));
   MOCK_METHOD1(SetOpaqueRegion, void(wl_resource* region));
   MOCK_METHOD1(SetInputRegion, void(wl_resource* region));
+  MOCK_METHOD1(Frame, void(uint32_t callback));
   MOCK_METHOD4(Damage,
                void(int32_t x, int32_t y, int32_t width, int32_t height));
   MOCK_METHOD0(Commit, void());
+  MOCK_METHOD4(DamageBuffer,
+               void(int32_t x, int32_t y, int32_t width, int32_t height));
 
   void set_xdg_surface(std::unique_ptr<MockXdgSurface> xdg_surface) {
     xdg_surface_ = std::move(xdg_surface);

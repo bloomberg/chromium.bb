@@ -51,10 +51,29 @@ onload = function() {
     eventSender.mouseDown();
     eventSender.mouseUp();
 
+    // EventSender updated the lifecycle to prepaint on mouseUp.
+    // When scrollbars inject scroll gestures, handling the mouse down queues a
+    // gesture scroll update, but the main thread has not yet yielded so there's
+    // nothing to update at this point in time. The queued gesture event will
+    // run once this thread yields - this will register/schedule the animation
+    // and put it in a WaitingForCompositorState until the next compositing
+    // lifecycle phase runs (which happens after rAF on the next frame).
+    // Updating the animation will cause it to recognize that it needs
+    // to run on the main thread and update the state accordingly.
+    // Therefore we need to requestAnimationFrame twice before checking
+    // the scroll animation state.
+    // When scrollbar gestures are not enabled, isScrollAnimatingOnMainThread
+    // will return true in the first rAF callback, so check there as well.
     requestAnimationFrame(function() {
         iframeDoc = document.querySelector("#scroller").contentDocument;
-        shouldBeTrue("isScrollAnimatingOnMainThread(iframeDoc)");
-        finishJSTest();
+        window.animatedOnMainThread = isScrollAnimatingOnMainThread(iframeDoc);
+        requestAnimationFrame(function() {
+            if (!animatedOnMainThread) {
+                animatedOnMainThread = isScrollAnimatingOnMainThread(iframeDoc);
+            }
+            shouldBeTrue("animatedOnMainThread");
+            finishJSTest();
+        });
     });
 };
 

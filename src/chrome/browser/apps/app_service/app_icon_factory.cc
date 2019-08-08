@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -67,8 +68,12 @@ std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
 }
 
 std::vector<uint8_t> CompressedDataFromResource(
-    const extensions::ExtensionResource resource) {
-  return ReadFileAsCompressedData(resource.GetFilePath());
+    extensions::ExtensionResource resource) {
+  const base::FilePath& path = resource.GetFilePath();
+  if (path.empty()) {
+    return std::vector<uint8_t>();
+  }
+  return ReadFileAsCompressedData(path);
 }
 
 // Runs |callback| passing an IconValuePtr with a compressed image: a
@@ -266,16 +271,16 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         // caller has asked for compressed icons (i.e. PNG-formatted data), not
         // uncompressed (i.e. a gfx::ImageSkia).
         if (extension->location() == extensions::Manifest::COMPONENT) {
-          extensions::ComponentExtensionResourceInfo resource_info;
+          int resource_id = 0;
           const extensions::ComponentExtensionResourceManager* manager =
               extensions::ExtensionsBrowserClient::Get()
                   ->GetComponentExtensionResourceManager();
           if (manager && manager->IsComponentExtensionResource(
                              extension->path(), ext_resource.relative_path(),
-                             &resource_info)) {
+                             &resource_id)) {
             base::StringPiece data =
                 ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                    resource_info.resource_id);
+                    resource_id);
             RunCallbackWithCompressedData(
                 size_hint_in_dip, default_icon_resource, is_placeholder_icon,
                 icon_effects, std::move(callback),
@@ -284,18 +289,15 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
           }
         }
 
-        // This is an "if", not an "else if", as some component extensions
-        // don't have resource-backed icons.
-        if (!ext_resource.GetFilePath().empty()) {
-          base::PostTaskWithTraitsAndReplyWithResult(
-              FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-              base::BindOnce(&CompressedDataFromResource,
-                             std::move(ext_resource)),
-              base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
-                             default_icon_resource, is_placeholder_icon,
-                             icon_effects, std::move(callback)));
-          return;
-        }
+        // Try and load data from the resource file.
+        base::PostTaskWithTraitsAndReplyWithResult(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+            base::BindOnce(&CompressedDataFromResource,
+                           std::move(ext_resource)),
+            base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
+                           default_icon_resource, is_placeholder_icon,
+                           icon_effects, std::move(callback)));
+        return;
       }
     }
   }

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -19,6 +20,7 @@ class DisplayLockSuspendedHandle;
 class Element;
 class DisplayLockOptions;
 class DisplayLockScopedLogger;
+class TaskHandle;
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
@@ -65,22 +67,6 @@ class CORE_EXPORT DisplayLockContext final
     kStyleUpdateDescendants
   };
 
-  // See GetScopedPendingFrameRect() for description.
-  class ScopedPendingFrameRect {
-    STACK_ALLOCATED();
-
-   public:
-    ScopedPendingFrameRect(ScopedPendingFrameRect&&);
-    ~ScopedPendingFrameRect();
-
-   private:
-    friend class DisplayLockContext;
-
-    ScopedPendingFrameRect(DisplayLockContext*);
-
-    UntracedMember<DisplayLockContext> context_ = nullptr;
-  };
-
   // See GetScopedForcedUpdate() for description.
   class CORE_EXPORT ScopedForcedUpdate {
     DISALLOW_NEW();
@@ -122,12 +108,18 @@ class CORE_EXPORT DisplayLockContext final
   // Lifecycle observation / state functions.
   bool ShouldStyle(LifecycleTarget) const;
   void DidStyle(LifecycleTarget);
-  bool ShouldLayout() const;
-  void DidLayout();
+  bool ShouldLayout(LifecycleTarget) const;
+  void DidLayout(LifecycleTarget);
   bool ShouldPrePaint() const;
   void DidPrePaint();
   bool ShouldPaint() const;
   void DidPaint();
+
+  // Returns true if the last style recalc traversal was blocked at this
+  // element, either for itself, its children or its descendants.
+  bool StyleTraversalWasBlocked() {
+    return blocked_style_traversal_type_ != kStyleUpdateNotRequired;
+  }
 
   // Returns true if the contents of the associated element should be visible
   // from and activatable by find-in-page, tab order, anchor links, etc.
@@ -140,19 +132,12 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldCommitForActivation() const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
-  // lock is locked any time the state is not kUnlocked.
-  bool IsLocked() const { return state_ != kUnlocked; }
+  // lock is locked any time the state is not kUnlocked or kCommitting.
+  bool IsLocked() const { return state_ != kUnlocked && state_ != kCommitting; }
 
   // Called when the layout tree is attached. This is used to verify
   // containment.
   void DidAttachLayoutTree();
-
-  // Returns a ScopedPendingFrameRect object which exposes the pending layout
-  // frame rect to LayoutBox. This is used to ensure that children of the locked
-  // element use the pending layout frame to update the size of the element.
-  // After the scoped object is destroyed, the previous frame rect is restored
-  // and the pending one is stored in the context until it is needed.
-  ScopedPendingFrameRect GetScopedPendingFrameRect();
 
   // Returns a ScopedForcedUpdate object which for the duration of its lifetime
   // will allow updates to happen on this element's subtree. For the element
@@ -189,9 +174,13 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  const LayoutRect& GetLockedFrameRect() const {
-    DCHECK(locked_frame_rect_);
-    return *locked_frame_rect_;
+  LayoutUnit GetLockedContentLogicalWidth() const {
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Width()
+                                       : locked_content_logical_size_->Height();
+  }
+  LayoutUnit GetLockedContentLogicalHeight() const {
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Height()
+                                       : locked_content_logical_size_->Width();
   }
 
  private:
@@ -238,10 +227,6 @@ class CORE_EXPORT DisplayLockContext final
   bool IsElementDirtyForLayout() const;
   bool IsElementDirtyForPrePaint() const;
 
-  // When ScopedPendingFrameRect is destroyed, it calls this function. See
-  // GetScopedPendingFrameRect() for more information.
-  void NotifyPendingFrameRectScopeEnded();
-
   // When ScopedForcedUpdate is destroyed, it calls this function. See
   // GetScopedForcedUpdate() for more information.
   void NotifyForcedUpdateScopeEnded();
@@ -275,10 +260,16 @@ class CORE_EXPORT DisplayLockContext final
                       ResolverState,
                       const char* reject_reason);
 
-  // Returns true if the element supports display locking. Note that this can
-  // only be called if the style is clean. It checks the layout object if it
-  // exists. Otherwise, falls back to checking computed style.
-  bool ElementSupportsDisplayLocking() const;
+  // Checks whether we should force unlock the lock (due to not meeting
+  // containment/display requirements), returns a string from rejection_names
+  // if we should, nullptr if not. Note that this can only be called if the
+  // style is clean. It checks the layout object if it exists. Otherwise,
+  // falls back to checking computed style.
+  const char* ShouldForceUnlock() const;
+
+  // Unlocks the lock if the element doesn't meet requirements
+  // (containment/display type). Returns true if we did unlock.
+  bool ForceUnlockIfNeeded();
 
   // Returns true if the element is connected to a document that has a view.
   // If we're not connected,  or if we're connected but the document doesn't
@@ -304,11 +295,10 @@ class CORE_EXPORT DisplayLockContext final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
-  LayoutRect pending_frame_rect_;
-  base::Optional<LayoutRect> locked_frame_rect_;
+  base::Optional<LayoutSize> locked_content_logical_size_;
 
   bool update_forced_ = false;
-  bool timeout_task_is_scheduled_ = false;
+  bool in_lifecycle_update_ = false;
   bool activatable_ = false;
 
   bool is_locked_after_connect_ = false;
@@ -316,8 +306,9 @@ class CORE_EXPORT DisplayLockContext final
 
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
+  bool is_horizontal_writing_mode_ = true;
 
-  base::WeakPtrFactory<DisplayLockContext> weak_factory_;
+  TaskHandle timeout_task_handle_;
 };
 
 }  // namespace blink

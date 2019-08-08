@@ -51,10 +51,6 @@ class HTMLImportsController final
     : public GarbageCollected<HTMLImportsController>,
       public NameClient {
  public:
-  static HTMLImportsController* Create(Document& master) {
-    return MakeGarbageCollected<HTMLImportsController>(master);
-  }
-
   explicit HTMLImportsController(Document&);
 
   HTMLImportTreeRoot* Root() const { return root_; }

@@ -49,11 +49,6 @@ namespace blink {
 
 class RepeatEvent final : public Event {
  public:
-  static RepeatEvent* Create(const AtomicString& type, int repeat) {
-    return MakeGarbageCollected<RepeatEvent>(type, Bubbles::kNo,
-                                             Cancelable::kNo, repeat);
-  }
-
   RepeatEvent(const AtomicString& type, int repeat)
       : RepeatEvent(type, Bubbles::kNo, Cancelable::kNo, repeat) {}
   RepeatEvent(const AtomicString& type,
@@ -188,12 +183,13 @@ void SVGSMILElement::Condition::ConnectEventBase(
         WTF::BindRepeating(&SVGSMILElement::BuildPendingResource,
                            WrapWeakPersistent(&timed_element)));
   }
-  if (!target || !target->IsSVGElement())
+  auto* svg_element = DynamicTo<SVGElement>(target);
+  if (!svg_element)
     return;
   DCHECK(!event_listener_);
   event_listener_ =
       MakeGarbageCollected<ConditionEventListener>(&timed_element, this);
-  base_element_ = ToSVGElement(target);
+  base_element_ = svg_element;
   base_element_->addEventListener(name_, event_listener_, false);
   timed_element.AddReferenceTo(base_element_);
 }
@@ -266,8 +262,7 @@ void SVGSMILElement::BuildPendingResource() {
   } else {
     target = SVGURIReference::ObserveTarget(target_id_observer_, *this, href);
   }
-  SVGElement* svg_target =
-      target && target->IsSVGElement() ? ToSVGElement(target) : nullptr;
+  auto* svg_target = DynamicTo<SVGElement>(target);
 
   if (svg_target && !svg_target->isConnected())
     svg_target = nullptr;

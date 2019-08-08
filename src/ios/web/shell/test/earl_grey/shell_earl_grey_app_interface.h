@@ -16,18 +16,25 @@
 
 // Loads |URL| in the current WebState with transition of type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
-+ (void)loadURL:(NSString*)spec;
++ (void)startLoadingURL:(NSString*)spec;
 
 // Returns YES if the current WebState is loading.
 + (BOOL)isCurrentWebStateLoading WARN_UNUSED_RESULT;
 
-// Returns YES if the windowID has been injected into the current web state.  If
-// the WebState contains content that does not require windowID injection,
-// returns YES immediately.
-+ (BOOL)waitForWindowIDInjectedInCurrentWebState WARN_UNUSED_RESULT;
+// Waits until the windowID is injected into the current web state. Returns nil
+// on success, or else an NSError indicating why the operation failed.
+// Immediately returns if the WebState contains content that does not require
+// windowID injection.
++ (NSError*)waitForWindowIDInjectedInCurrentWebState WARN_UNUSED_RESULT;
 
 // Returns YES if the current WebState contains the given |text|.
 + (BOOL)currentWebStateContainsText:(NSString*)text WARN_UNUSED_RESULT;
+
+// Returns YES if the current WebState's WebUsage is enabled.
++ (BOOL)webUsageEnabledForCurrentWebState WARN_UNUSED_RESULT;
+
+// Returns Mojo instance group name for current WebState.
++ (NSString*)instanceGroupForCurrentBrowserState WARN_UNUSED_RESULT;
 
 @end
 

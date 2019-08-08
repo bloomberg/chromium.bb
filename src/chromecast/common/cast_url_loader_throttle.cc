@@ -38,6 +38,11 @@ void CastURLLoaderThrottle::WillStartRequest(
   }
 }
 
+bool CastURLLoaderThrottle::makes_unsafe_redirect() const {
+  // Yes, this makes cross-scheme redirects.
+  return true;
+}
+
 void CastURLLoaderThrottle::ResumeRequest(int error,
                                           net::HttpRequestHeaders headers) {
   DCHECK(deferred_);

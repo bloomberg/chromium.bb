@@ -5,7 +5,7 @@
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "components/account_id/account_id.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
@@ -14,12 +14,12 @@ namespace ash {
 
 namespace {
 
-bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
-  return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+bool IsPublicAccountUser(const LoginUserInfo& user) {
+  return user.basic_user_info.type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
-bool IsChildAccountUser(const mojom::LoginUserInfoPtr& user) {
-  return user->basic_user_info->type == user_manager::USER_TYPE_CHILD;
+bool IsChildAccountUser(const LoginUserInfo& user) {
+  return user.basic_user_info.type == user_manager::USER_TYPE_CHILD;
 }
 
 // Returns true if either a or b have a value, but not both.
@@ -30,7 +30,7 @@ bool OnlyOneSet(views::View* a, views::View* b) {
 }  // namespace
 
 LoginBigUserView::LoginBigUserView(
-    const mojom::LoginUserInfoPtr& user,
+    const LoginUserInfo& user,
     const LoginAuthUserView::Callbacks& auth_user_callbacks,
     const LoginPublicAccountUserView::Callbacks& public_account_callbacks,
     const ParentAccessView::Callbacks& parent_access_callbacks)
@@ -52,14 +52,14 @@ LoginBigUserView::LoginBigUserView(
 
 LoginBigUserView::~LoginBigUserView() = default;
 
-void LoginBigUserView::CreateChildView(const mojom::LoginUserInfoPtr& user) {
+void LoginBigUserView::CreateChildView(const LoginUserInfo& user) {
   if (IsPublicAccountUser(user))
     CreatePublicAccount(user);
   else
     CreateAuthUser(user);
 }
 
-void LoginBigUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
+void LoginBigUserView::UpdateForUser(const LoginUserInfo& user) {
   // Rebuild child view for the following swap case:
   // 1. Public Account -> Auth User
   // 2. Auth User      -> Public Account
@@ -89,7 +89,7 @@ void LoginBigUserView::ShowParentAccessView() {
 
   DCHECK(IsChildAccountUser(auth_user_->current_user()));
   parent_access_ = new ParentAccessView(
-      auth_user_->current_user()->basic_user_info->account_id,
+      auth_user_->current_user().basic_user_info.account_id,
       parent_access_callbacks_);
   RemoveChildView(auth_user_);
   AddChildView(parent_access_);
@@ -112,7 +112,7 @@ void LoginBigUserView::HideParentAccessView() {
   RequestFocus();
 }
 
-const mojom::LoginUserInfoPtr& LoginBigUserView::GetCurrentUser() const {
+const LoginUserInfo& LoginBigUserView::GetCurrentUser() const {
   DCHECK(OnlyOneSet(public_account_, auth_user_));
   if (public_account_) {
     DCHECK(!parent_access_);
@@ -171,7 +171,7 @@ void LoginBigUserView::OnWallpaperBlurChanged() {
   }
 }
 
-void LoginBigUserView::CreateAuthUser(const mojom::LoginUserInfoPtr& user) {
+void LoginBigUserView::CreateAuthUser(const LoginUserInfo& user) {
   DCHECK(!IsPublicAccountUser(user));
   DCHECK(!auth_user_);
   DCHECK(!parent_access_);
@@ -182,8 +182,7 @@ void LoginBigUserView::CreateAuthUser(const mojom::LoginUserInfoPtr& user) {
   AddChildView(auth_user_);
 }
 
-void LoginBigUserView::CreatePublicAccount(
-    const mojom::LoginUserInfoPtr& user) {
+void LoginBigUserView::CreatePublicAccount(const LoginUserInfo& user) {
   DCHECK(IsPublicAccountUser(user));
   DCHECK(!public_account_);
 

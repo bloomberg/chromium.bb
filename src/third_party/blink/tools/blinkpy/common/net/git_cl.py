@@ -52,14 +52,11 @@ class GitCL(object):
         self._cwd = cwd
         self._git_executable_name = Git.find_executable_name(host.executive, host.platform)
 
-    def run(self, args, return_stderr=False):
+    def run(self, args):
         """Runs git-cl with the given arguments and returns the output.
 
         Args:
             args: A list of arguments passed to `git cl`.
-            return_stderr: Whether to include stderr in the returned output (the
-                default is False because git-cl will show a warning when running
-                on Swarming bots with local git cache).
 
         Returns:
             A string (the output from git-cl).
@@ -67,7 +64,10 @@ class GitCL(object):
         command = [self._git_executable_name, 'cl'] + args
         if self._auth_refresh_token_json and args[0] in _COMMANDS_THAT_TAKE_REFRESH_TOKEN:
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
-        return self._host.executive.run_command(command, cwd=self._cwd, return_stderr=return_stderr)
+        # Suppress the stderr of git-cl because git-cl will show a warning when
+        # running on Swarming bots with local git cache.
+        return self._host.executive.run_command(
+            command, cwd=self._cwd, return_stderr=False, ignore_stderr=True)
 
     def trigger_try_jobs(self, builders, bucket=None):
         """Triggers try jobs on the given builders.

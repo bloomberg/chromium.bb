@@ -66,7 +66,7 @@ TEST_F(CannedBrowsingDataServiceWorkerHelperTest, Delete) {
 
 TEST_F(CannedBrowsingDataServiceWorkerHelperTest, IgnoreExtensionsAndDevTools) {
   const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");
-  const GURL origin2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/");
+  const GURL origin2("devtools://abcdefghijklmnopqrstuvwxyz/");
   const std::vector<GURL> scopes;
 
   scoped_refptr<CannedBrowsingDataServiceWorkerHelper> helper(

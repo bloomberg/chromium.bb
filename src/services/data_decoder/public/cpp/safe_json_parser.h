@@ -28,12 +28,12 @@ namespace data_decoder {
 // deletes itself.
 class SafeJsonParser {
  public:
-  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
-  using ErrorCallback = base::Callback<void(const std::string&)>;
+  using SuccessCallback = base::OnceCallback<void(base::Value)>;
+  using ErrorCallback = base::OnceCallback<void(const std::string&)>;
 
   using Factory = SafeJsonParser* (*)(const std::string& unsafe_json,
-                                      const SuccessCallback& success_callback,
-                                      const ErrorCallback& error_callback);
+                                      SuccessCallback success_callback,
+                                      ErrorCallback error_callback);
 
   // Starts parsing the passed in |unsafe_json| and calls either
   // |success_callback| or |error_callback| when finished.
@@ -45,8 +45,8 @@ class SafeJsonParser {
   // in an isolated sandboxed utility process.
   static void Parse(service_manager::Connector* connector,
                     const std::string& unsafe_json,
-                    const SuccessCallback& success_callback,
-                    const ErrorCallback& error_callback);
+                    SuccessCallback success_callback,
+                    ErrorCallback error_callback);
 
   // Same as Parse, but allows clients to provide a |batch_id|, which the system
   // may use to batch this parse request with other parse requests using the
@@ -55,8 +55,8 @@ class SafeJsonParser {
   // other, so this should be used with appropriate caution.
   static void ParseBatch(service_manager::Connector* connector,
                          const std::string& unsafe_json,
-                         const SuccessCallback& success_callback,
-                         const ErrorCallback& error_callback,
+                         SuccessCallback success_callback,
+                         ErrorCallback error_callback,
                          const base::Token& batch_id);
 
   static void SetFactoryForTesting(Factory factory);

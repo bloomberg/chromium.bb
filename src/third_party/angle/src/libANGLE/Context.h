@@ -59,6 +59,7 @@ class ProgramPipeline;
 class Query;
 class Renderbuffer;
 class Sampler;
+class Semaphore;
 class Shader;
 class Sync;
 class Texture;
@@ -141,7 +142,8 @@ class StateCache final : angle::NonCopyable
     // 11. onQueryChange.
     // 12. onActiveTransformFeedbackChange.
     // 13. onUniformBufferStateChange.
-    // 14. onBufferBindingChange.
+    // 14. onColorMaskChange.
+    // 15. onBufferBindingChange.
     bool hasBasicDrawStatesError(Context *context) const
     {
         if (mCachedBasicDrawStatesError == 0)
@@ -233,6 +235,7 @@ class StateCache final : angle::NonCopyable
     void onQueryChange(Context *context);
     void onActiveTransformFeedbackChange(Context *context);
     void onUniformBufferStateChange(Context *context);
+    void onColorMaskChange(Context *context);
     void onBufferBindingChange(Context *context);
 
   private:
@@ -301,7 +304,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     EGLLabelKHR getLabel() const override;
 
     egl::Error makeCurrent(egl::Display *display, egl::Surface *surface);
-    egl::Error releaseSurface(const egl::Display *display);
+    egl::Error unMakeCurrent(const egl::Display *display);
 
     // These create  and destroy methods are merely pass-throughs to
     // ResourceManager, which owns these object types
@@ -314,6 +317,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     GLuint createProgramPipeline();
     GLuint createShaderProgramv(ShaderType type, GLsizei count, const GLchar *const *strings);
     GLuint createMemoryObject();
+    GLuint createSemaphore();
 
     void deleteBuffer(GLuint buffer);
     void deleteShader(GLuint shader);
@@ -323,6 +327,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void deletePaths(GLuint first, GLsizei range);
     void deleteProgramPipeline(GLuint pipeline);
     void deleteMemoryObject(GLuint memoryObject);
+    void deleteSemaphore(GLuint semaphore);
 
     // CHROMIUM_path_rendering
     bool isPath(GLuint path) const;
@@ -662,6 +667,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     TransformFeedback *getTransformFeedback(GLuint handle) const;
     ProgramPipeline *getProgramPipeline(GLuint handle) const;
     MemoryObject *getMemoryObject(GLuint handle) const;
+    Semaphore *getSemaphore(GLuint handle) const;
 
     void objectLabel(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
     void objectPtrLabel(const void *ptr, GLsizei length, const GLchar *label);
@@ -1914,6 +1920,9 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     // A small helper method to facilitate using the ANGLE_CONTEXT_TRY macro.
     void tryGenPaths(GLsizei range, GLuint *createdOut);
 
+    egl::Error setDefaultFramebuffer(egl::Surface *surface);
+    egl::Error unsetDefaultFramebuffer();
+
     void initRendererString();
     void initVersionStrings();
     void initExtensionStrings();
@@ -2009,6 +2018,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     State::DirtyObjects mBlitDirtyObjects;
     State::DirtyBits mComputeDirtyBits;
     State::DirtyObjects mComputeDirtyObjects;
+    State::DirtyObjects mCopyImageDirtyObjects;
 
     Workarounds mWorkarounds;
 

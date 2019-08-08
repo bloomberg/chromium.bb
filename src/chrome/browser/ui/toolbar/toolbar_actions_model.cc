@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
@@ -157,7 +158,7 @@ void ToolbarActionsModel::OnExtensionActionUpdated(
 
 std::vector<std::unique_ptr<ToolbarActionViewController>>
 ToolbarActionsModel::CreateActions(Browser* browser,
-                                   ToolbarActionsBar* main_bar,
+                                   ExtensionsContainer* main_bar,
                                    bool in_overflow_mode) {
   DCHECK(browser);
   DCHECK(main_bar);
@@ -175,7 +176,7 @@ ToolbarActionsModel::CreateActions(Browser* browser,
 
 std::unique_ptr<ToolbarActionViewController>
 ToolbarActionsModel::CreateActionForId(Browser* browser,
-                                       ToolbarActionsBar* main_bar,
+                                       ExtensionsContainer* main_bar,
                                        bool in_overflow_mode,
                                        const ActionId& action_id) {
   // We should never have uninitialized actions in action_ids().
@@ -612,7 +613,11 @@ void ToolbarActionsModel::UpdatePrefs() {
 
 void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
                                               bool is_now_visible) {
-  // Hiding works differently with the new and old toolbars.
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    // TODO(pbos): Add extension pinning using a vector of pinned action IDs.
+    return;
+  }
+
   DCHECK(HasAction(action_id));
 
   int new_size = 0;

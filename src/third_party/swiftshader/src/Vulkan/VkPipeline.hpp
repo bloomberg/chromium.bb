@@ -19,7 +19,11 @@
 #include "Vulkan/VkDescriptorSet.hpp"
 #include "Device/Renderer.hpp"
 
-namespace sw { class SpirvShader; }
+namespace sw
+{
+	class ComputeProgram;
+	class SpirvShader;
+}
 
 namespace vk
 {
@@ -30,10 +34,11 @@ class Pipeline
 {
 public:
 	Pipeline(PipelineLayout const *layout);
+	virtual ~Pipeline() = default;
 
 	operator VkPipeline()
 	{
-		return reinterpret_cast<VkPipeline>(this);
+		return reinterpret_cast<VkPipeline::HandleType>(this);
 	}
 
 	void destroy(const VkAllocationCallbacks* pAllocator)
@@ -56,7 +61,6 @@ class GraphicsPipeline : public Pipeline, public ObjectBase<GraphicsPipeline, Vk
 {
 public:
 	GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateInfo, void* mem);
-	~GraphicsPipeline() = delete;
 	void destroyPipeline(const VkAllocationCallbacks* pAllocator) override;
 
 #ifndef NDEBUG
@@ -76,12 +80,14 @@ public:
 	const VkViewport& getViewport() const;
 	const sw::Color<float>& getBlendConstants() const;
 	bool hasDynamicState(VkDynamicState dynamicState) const;
+	bool hasPrimitiveRestartEnable() const { return primitiveRestartEnable; }
 
 private:
 	sw::SpirvShader *vertexShader = nullptr;
 	sw::SpirvShader *fragmentShader = nullptr;
 
 	uint32_t dynamicStateFlags = 0;
+	bool primitiveRestartEnable = false;
 	sw::Context context;
 	VkRect2D scissor;
 	VkViewport viewport;
@@ -92,7 +98,6 @@ class ComputePipeline : public Pipeline, public ObjectBase<ComputePipeline, VkPi
 {
 public:
 	ComputePipeline(const VkComputePipelineCreateInfo* pCreateInfo, void* mem);
-	~ComputePipeline() = delete;
 	void destroyPipeline(const VkAllocationCallbacks* pAllocator) override;
 
 #ifndef NDEBUG
@@ -106,19 +111,20 @@ public:
 
 	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkComputePipelineCreateInfo* pCreateInfo);
 
-	void run(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
+	void run(uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ,
+			uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
 		vk::DescriptorSet::Bindings const &descriptorSets,
 		vk::DescriptorSet::DynamicOffsets const &descriptorDynamicOffsets,
 		sw::PushConstantStorage const &pushConstants);
 
 protected:
 	sw::SpirvShader *shader = nullptr;
-	rr::Routine *routine = nullptr;
+	sw::ComputeProgram *program = nullptr;
 };
 
 static inline Pipeline* Cast(VkPipeline object)
 {
-	return reinterpret_cast<Pipeline*>(object);
+	return reinterpret_cast<Pipeline*>(object.get());
 }
 
 } // namespace vk

@@ -15,6 +15,7 @@
 #include "SpirvShader.hpp"
 
 #include "SamplerCore.hpp"
+#include "Reactor/Coroutine.hpp"
 #include "System/Math.hpp"
 #include "Vulkan/VkBuffer.hpp"
 #include "Vulkan/VkBufferView.hpp"
@@ -22,15 +23,11 @@
 #include "Vulkan/VkDescriptorSet.hpp"
 #include "Vulkan/VkPipelineLayout.hpp"
 #include "Vulkan/VkDescriptorSetLayout.hpp"
+#include "Vulkan/VkRenderPass.hpp"
 #include "Device/Config.hpp"
 
 #include <spirv/unified1/spirv.hpp>
 #include <spirv/unified1/GLSL.std.450.h>
-
-#ifdef Bool
-#undef Bool // b/127920555
-#undef None
-#endif
 
 namespace
 {
@@ -44,6 +41,23 @@ namespace
 	rr::RValue<rr::Bool> AnyFalse(rr::RValue<sw::SIMD::Int> const &ints)
 	{
 		return rr::SignMask(~ints) != 0;
+	}
+
+	rr::RValue<sw::SIMD::Float> Sign(rr::RValue<sw::SIMD::Float> const &val)
+	{
+		return rr::As<sw::SIMD::Float>((rr::As<sw::SIMD::UInt>(val) & sw::SIMD::UInt(0x80000000)) | sw::SIMD::UInt(0x3f800000));
+	}
+
+	// Returns the <whole, frac> of val.
+	// Both whole and frac will have the same sign as val.
+	std::pair<rr::RValue<sw::SIMD::Float>, rr::RValue<sw::SIMD::Float>>
+	Modf(rr::RValue<sw::SIMD::Float> const &val)
+	{
+		auto abs = Abs(val);
+		auto sign = Sign(val);
+		auto whole = Floor(abs) * sign;
+		auto frac = Frac(abs) * sign;
+		return std::make_pair(whole, frac);
 	}
 
 	// Returns 1 << bits.
@@ -217,30 +231,195 @@ namespace
 			s * ( a * fkgj - b * ekgi + c * ejfi),
 		}};
 	}
-}
+
+
+	sw::SIMD::Pointer interleaveByLane(sw::SIMD::Pointer p)
+	{
+		p *= sw::SIMD::Width;
+		p.staticOffsets[0] += 0 * sizeof(float);
+		p.staticOffsets[1] += 1 * sizeof(float);
+		p.staticOffsets[2] += 2 * sizeof(float);
+		p.staticOffsets[3] += 3 * sizeof(float);
+		return p;
+	}
+
+	VkFormat SpirvFormatToVulkanFormat(spv::ImageFormat format)
+	{
+		switch (format)
+		{
+		case spv::ImageFormatRgba32f: return VK_FORMAT_R32G32B32A32_SFLOAT;
+		case spv::ImageFormatRgba32i: return VK_FORMAT_R32G32B32A32_SINT;
+		case spv::ImageFormatRgba32ui: return VK_FORMAT_R32G32B32A32_UINT;
+		case spv::ImageFormatR32f: return VK_FORMAT_R32_SFLOAT;
+		case spv::ImageFormatR32i: return VK_FORMAT_R32_SINT;
+		case spv::ImageFormatR32ui: return VK_FORMAT_R32_UINT;
+		case spv::ImageFormatRgba8: return VK_FORMAT_R8G8B8A8_UNORM;
+		case spv::ImageFormatRgba8Snorm: return VK_FORMAT_R8G8B8A8_SNORM;
+		case spv::ImageFormatRgba8i: return VK_FORMAT_R8G8B8A8_SINT;
+		case spv::ImageFormatRgba8ui: return VK_FORMAT_R8G8B8A8_UINT;
+		case spv::ImageFormatRgba16f: return VK_FORMAT_R16G16B16A16_SFLOAT;
+		case spv::ImageFormatRgba16i: return VK_FORMAT_R16G16B16A16_SINT;
+		case spv::ImageFormatRgba16ui: return VK_FORMAT_R16G16B16A16_UINT;
+
+		default:
+			UNIMPLEMENTED("SPIR-V ImageFormat %u", format);
+			return VK_FORMAT_UNDEFINED;
+		}
+	}
+
+	sw::SIMD::Float sRGBtoLinear(sw::SIMD::Float c)
+	{
+		sw::SIMD::Float lc = c * sw::SIMD::Float(1.0f / 12.92f);
+		sw::SIMD::Float ec = sw::power((c + sw::SIMD::Float(0.055f)) * sw::SIMD::Float(1.0f / 1.055f), sw::SIMD::Float(2.4f));
+
+		sw::SIMD::Int linear = CmpLT(c, sw::SIMD::Float(0.04045f));
+
+		sw::SIMD::Float s = c;
+		s.xyz = rr::As<sw::SIMD::Float>((linear & rr::As<sw::SIMD::Int>(lc)) | (~linear & rr::As<sw::SIMD::Int>(ec)));   // TODO: IfThenElse()
+
+		return s;
+	}
+
+} // anonymous namespace
 
 namespace sw
 {
-	volatile int SpirvShader::serialCounter = 1;    // Start at 1, 0 is invalid shader.
+	namespace SIMD
+	{
 
-	SpirvShader::SpirvShader(InsnStore const &insns)
-			: insns{insns}, inputs{MAX_INTERFACE_COMPONENTS},
-			  outputs{MAX_INTERFACE_COMPONENTS},
-			  serialID{serialCounter++}, modes{}
+		template<typename T>
+		T Load(Pointer ptr, Int mask, bool atomic /* = false */, std::memory_order order /* = std::memory_order_relaxed */)
+		{
+			using EL = typename Element<T>::type;
+			auto offsets = ptr.offsets();
+			mask &= CmpLT(offsets + SIMD::Int(sizeof(float) - 1), SIMD::Int(ptr.limit)); // Disable OOB reads.
+			if (!atomic && order == std::memory_order_relaxed)
+			{
+				return rr::Gather(rr::Pointer<EL>(ptr.base), offsets, mask, sizeof(float));
+			}
+			else
+			{
+				T out;
+				auto anyLanesDisabled = AnyFalse(mask);
+				If(ptr.hasEqualOffsets() && !anyLanesDisabled)
+				{
+					// Load one, replicate.
+					auto offset = Extract(offsets, 0);
+					out = T(rr::Load(rr::Pointer<EL>(&ptr.base[offset]), sizeof(float), atomic, order));
+				}
+				Else If(ptr.hasSequentialOffsets() && !anyLanesDisabled)
+				{
+					// Load all elements in a single SIMD instruction.
+					auto offset = Extract(offsets, 0);
+					out = rr::Load(rr::Pointer<T>(&ptr.base[offset]), sizeof(float), atomic, order);
+				}
+				Else
+				{
+					// Divergent offsets or masked lanes.
+					out = T(0);
+					for (int i = 0; i < SIMD::Width; i++)
+					{
+						If(Extract(mask, i) != 0)
+						{
+							auto offset = Extract(offsets, i);
+							auto el = rr::Load(rr::Pointer<EL>(&ptr.base[offset]), sizeof(float), atomic, order);
+							out = Insert(out, el, i);
+						}
+					}
+				}
+				return out;
+			}
+		}
+
+		template<typename T>
+		void Store(Pointer ptr, T val, Int mask, bool atomic /* = false */, std::memory_order order /* = std::memory_order_relaxed */)
+		{
+			using EL = typename Element<T>::type;
+			auto offsets = ptr.offsets();
+			mask &= CmpLT(offsets + SIMD::Int(sizeof(float) - 1), SIMD::Int(ptr.limit)); // Disable OOB reads.
+			if (!atomic && order == std::memory_order_relaxed)
+			{
+				return rr::Scatter(rr::Pointer<EL>(ptr.base), val, offsets, mask, sizeof(float));
+			}
+			else
+			{
+				auto anyLanesDisabled = AnyFalse(mask);
+				If(ptr.hasSequentialOffsets() && !anyLanesDisabled)
+				{
+					// Store all elements in a single SIMD instruction.
+					auto offset = Extract(offsets, 0);
+					Store(val, rr::Pointer<T>(&ptr.base[offset]), sizeof(float), atomic, order);
+				}
+				Else
+				{
+					// Divergent offsets or masked lanes.
+					for (int i = 0; i < SIMD::Width; i++)
+					{
+						If(Extract(mask, i) != 0)
+						{
+							auto offset = Extract(offsets, i);
+							rr::Store(Extract(val, i), rr::Pointer<EL>(&ptr.base[offset]), sizeof(float), atomic, order);
+						}
+					}
+				}
+			}
+		}
+
+	} // namespace SIMD
+
+	std::atomic<int> SpirvShader::serialCounter(1);    // Start at 1, 0 is invalid shader.
+
+	SpirvShader::SpirvShader(
+			VkPipelineShaderStageCreateInfo const *createInfo,
+			InsnStore const &insns,
+			vk::RenderPass *renderPass,
+			uint32_t subpassIndex)
+				: insns{insns}, inputs{MAX_INTERFACE_COMPONENTS},
+				outputs{MAX_INTERFACE_COMPONENTS},
+				serialID{serialCounter++}, modes{}
 	{
 		ASSERT(insns.size() > 0);
 
+		if (renderPass != VK_NULL_HANDLE)
+		{
+			// capture formats of any input attachments present
+			auto subpass = renderPass->getSubpass(subpassIndex);
+			inputAttachmentFormats.reserve(subpass.inputAttachmentCount);
+			for (auto i = 0u; i < subpass.inputAttachmentCount; i++)
+			{
+				auto attachmentIndex = subpass.pInputAttachments[i].attachment;
+				inputAttachmentFormats.push_back(attachmentIndex != VK_ATTACHMENT_UNUSED
+												 ? renderPass->getAttachment(attachmentIndex).format : VK_FORMAT_UNDEFINED);
+			}
+		}
+
 		// Simplifying assumptions (to be satisfied by earlier transformations)
-		// - There is exactly one entrypoint in the module, and it's the one we want
 		// - The only input/output OpVariables present are those used by the entrypoint
 
+		Object::ID entryPointFunctionId;
 		Block::ID currentBlock;
 		InsnIterator blockStart;
 
 		for (auto insn : *this)
 		{
-			switch (insn.opcode())
+			spv::Op opcode = insn.opcode();
+
+			switch (opcode)
 			{
+			case spv::OpEntryPoint:
+			{
+				auto executionModel = spv::ExecutionModel(insn.word(1));
+				auto id = Object::ID(insn.word(2));
+				auto name = insn.string(3);
+				auto stage = executionModelToStage(executionModel);
+				if (stage == createInfo->stage && strcmp(name, createInfo->pName) == 0)
+				{
+					ASSERT_MSG(entryPointFunctionId == 0, "Duplicate entry point with name '%s' and stage %d", name, int(stage));
+					entryPointFunctionId = id;
+				}
+				break;
+			}
+
 			case spv::OpExecutionMode:
 				ProcessExecutionMode(insn);
 				break;
@@ -260,6 +439,9 @@ namespace sw
 					break;
 				case spv::DecorationBinding:
 					descriptorDecorations[targetId].Binding = value;
+					break;
+				case spv::DecorationInputAttachmentIndex:
+					descriptorDecorations[targetId].InputAttachmentIndex = value;
 					break;
 				default:
 					// Only handling descriptor decorations here.
@@ -350,7 +532,7 @@ namespace sw
 				blocks[currentBlock] = Block(blockStart, blockEnd);
 				currentBlock = Block::ID(0);
 
-				if (insn.opcode() == spv::OpKill)
+				if (opcode == spv::OpKill)
 				{
 					modes.ContainsKill = true;
 				}
@@ -383,14 +565,13 @@ namespace sw
 				Type::ID typeId = insn.word(1);
 				Object::ID resultId = insn.word(2);
 				auto storageClass = static_cast<spv::StorageClass>(insn.word(3));
-				if (insn.wordCount() > 4)
-					UNIMPLEMENTED("Variable initializers not yet supported");
 
 				auto &object = defs[resultId];
-				object.kind = Object::Kind::NonDivergentPointer;
+				object.kind = Object::Kind::Pointer;
 				object.definition = insn;
 				object.type = typeId;
 
+				ASSERT(getType(typeId).definition.opcode() == spv::OpTypePointer);
 				ASSERT(getType(typeId).storageClass == storageClass);
 
 				switch (storageClass)
@@ -408,21 +589,28 @@ namespace sw
 				case spv::StorageClassPushConstant:
 				case spv::StorageClassPrivate:
 				case spv::StorageClassFunction:
+				case spv::StorageClassUniformConstant:
 					break; // Correctly handled.
 
-				case spv::StorageClassUniformConstant:
-					// This storage class is for data stored within the descriptor itself,
-					// unlike StorageClassUniform which contains handles to buffers.
-					// For Vulkan it corresponds with samplers, images, or combined image samplers.
-					object.kind = Object::Kind::SampledImage;
-					break;
-
 				case spv::StorageClassWorkgroup:
-				case spv::StorageClassCrossWorkgroup:
-				case spv::StorageClassGeneric:
+				{
+					auto &elTy = getType(getType(typeId).element);
+					auto sizeInBytes = elTy.sizeInComponents * sizeof(float);
+					workgroupMemory.allocate(resultId, sizeInBytes);
+					object.kind = Object::Kind::Pointer;
+					break;
+				}
 				case spv::StorageClassAtomicCounter:
 				case spv::StorageClassImage:
 					UNIMPLEMENTED("StorageClass %d not yet implemented", (int)storageClass);
+					break;
+
+				case spv::StorageClassCrossWorkgroup:
+					UNSUPPORTED("SPIR-V OpenCL Execution Model (StorageClassCrossWorkgroup)");
+					break;
+
+				case spv::StorageClassGeneric:
+					UNSUPPORTED("SPIR-V GenericPointer Capability (StorageClassGeneric)");
 					break;
 
 				default:
@@ -433,12 +621,15 @@ namespace sw
 			}
 
 			case spv::OpConstant:
+			case spv::OpSpecConstant:
 				CreateConstant(insn).constantValue[0] = insn.word(3);
 				break;
 			case spv::OpConstantFalse:
+			case spv::OpSpecConstantFalse:
 				CreateConstant(insn).constantValue[0] = 0;		// represent boolean false as zero
 				break;
 			case spv::OpConstantTrue:
+			case spv::OpSpecConstantTrue:
 				CreateConstant(insn).constantValue[0] = ~0u;	// represent boolean true as all bits set
 				break;
 			case spv::OpConstantNull:
@@ -455,6 +646,7 @@ namespace sw
 				break;
 			}
 			case spv::OpConstantComposite:
+			case spv::OpSpecConstantComposite:
 			{
 				auto &object = CreateConstant(insn);
 				auto offset = 0u;
@@ -486,44 +678,84 @@ namespace sw
 				}
 				break;
 			}
+			case spv::OpSpecConstantOp:
+				EvalSpecConstantOp(insn);
+				break;
 
 			case spv::OpCapability:
+			{
+				auto capability = static_cast<spv::Capability>(insn.word(1));
+				switch (capability)
+				{
+				case spv::CapabilityMatrix:
+				case spv::CapabilityShader:
+				case spv::CapabilityInputAttachment:
+				case spv::CapabilitySampled1D:
+				case spv::CapabilityImage1D:
+				case spv::CapabilitySampledBuffer:
+				case spv::CapabilityImageBuffer:
+				case spv::CapabilityImageQuery:
+				case spv::CapabilityDerivativeControl:
+				case spv::CapabilityMultiView:
+				case spv::CapabilityDeviceGroup:
+				case spv::CapabilityGroupNonUniform:
+					break;
+
+				default:
+					UNSUPPORTED("Unsupported capability %u", insn.word(1));
+				}
 				break; // Various capabilities will be declared, but none affect our code generation at this point.
+			}
+
 			case spv::OpMemoryModel:
 				break; // Memory model does not affect our code generation until we decide to do Vulkan Memory Model support.
 
-			case spv::OpEntryPoint:
-				break;
 			case spv::OpFunction:
-				ASSERT(mainBlockId.value() == 0); // Multiple functions found
-				// Scan forward to find the function's label.
-				for (auto it = insn; it != end() && mainBlockId.value() == 0; it++)
+			{
+				auto functionId = Object::ID(insn.word(2));
+				if (functionId == entryPointFunctionId)
 				{
-					switch (it.opcode())
+					// Scan forward to find the function's label.
+					for (auto it = insn; it != end() && entryPointBlockId == 0; it++)
 					{
-					case spv::OpFunction:
-					case spv::OpFunctionParameter:
-						break;
-					case spv::OpLabel:
-						mainBlockId = Block::ID(it.word(1));
-						break;
-					default:
-						WARN("Unexpected opcode '%s' following OpFunction", OpcodeName(it.opcode()).c_str());
+						switch (it.opcode())
+						{
+						case spv::OpFunction:
+						case spv::OpFunctionParameter:
+							break;
+						case spv::OpLabel:
+							entryPointBlockId = Block::ID(it.word(1));
+							break;
+						default:
+							WARN("Unexpected opcode '%s' following OpFunction", OpcodeName(it.opcode()).c_str());
+						}
 					}
 				}
-				ASSERT(mainBlockId.value() != 0); // Function's OpLabel not found
+				else
+				{
+					// All non-entry point functions should be inlined into an
+					// entry point function.
+					// This isn't the target entry point, so must be another
+					// entry point that we are not interested in. Just skip it.
+					for (; insn != end() && insn.opcode() != spv::OpFunctionEnd; insn++) {}
+				}
+
 				break;
+			}
 			case spv::OpFunctionEnd:
 				// Due to preprocessing, the entrypoint and its function provide no value.
 				break;
 			case spv::OpExtInstImport:
+			{
 				// We will only support the GLSL 450 extended instruction set, so no point in tracking the ID we assign it.
 				// Valid shaders will not attempt to import any other instruction sets.
-				if (0 != strcmp("GLSL.std.450", reinterpret_cast<char const *>(insn.wordPointer(2))))
+				auto ext = insn.string(2);
+				if (0 != strcmp("GLSL.std.450", ext))
 				{
-					UNIMPLEMENTED("Only GLSL extended instruction set is supported");
+					UNSUPPORTED("SPIR-V Extension: %s", ext);
 				}
 				break;
+			}
 			case spv::OpName:
 			case spv::OpMemberName:
 			case spv::OpSource:
@@ -538,28 +770,28 @@ namespace sw
 
 			case spv::OpFunctionParameter:
 			case spv::OpFunctionCall:
-			case spv::OpSpecConstant:
-			case spv::OpSpecConstantComposite:
-			case spv::OpSpecConstantFalse:
-			case spv::OpSpecConstantOp:
-			case spv::OpSpecConstantTrue:
 				// These should have all been removed by preprocessing passes. If we see them here,
 				// our assumptions are wrong and we will probably generate wrong code.
-				UNIMPLEMENTED("%s should have already been lowered.", OpcodeName(insn.opcode()).c_str());
+				UNREACHABLE("%s should have already been lowered.", OpcodeName(opcode).c_str());
 				break;
 
 			case spv::OpFConvert:
-				UNIMPLEMENTED("No valid uses for OpFConvert until we support multiple bit widths enabled by features such as Float16/Float64 etc.");
+				UNSUPPORTED("SPIR-V Float16 or Float64 Capability (OpFConvert)");
 				break;
 
 			case spv::OpSConvert:
+				UNSUPPORTED("SPIR-V Int16 or Int64 Capability (OpSConvert)");
+				break;
+
 			case spv::OpUConvert:
-				UNIMPLEMENTED("No valid uses for Op*Convert until we support multiple bit widths enabled by features such as Int16/Int64 etc.");
+				UNSUPPORTED("SPIR-V Int16 or Int64 Capability (OpUConvert)");
 				break;
 
 			case spv::OpLoad:
 			case spv::OpAccessChain:
 			case spv::OpInBoundsAccessChain:
+			case spv::OpSampledImage:
+			case spv::OpImage:
 				{
 					// Propagate the descriptor decorations to the result.
 					Object::ID resultId = insn.word(2);
@@ -573,10 +805,10 @@ namespace sw
 
 					DefineResult(insn);
 
-					if (insn.opcode() == spv::OpAccessChain || insn.opcode() == spv::OpInBoundsAccessChain)
+					if (opcode == spv::OpAccessChain || opcode == spv::OpInBoundsAccessChain)
 					{
 						Decorations dd{};
-						ApplyDecorationsForAccessChain(&dd, pointerId, insn.wordCount() - 4, insn.wordPointer(4));
+						ApplyDecorationsForAccessChain(&dd, &descriptorDecorations[resultId], pointerId, insn.wordCount() - 4, insn.wordPointer(4));
 						// Note: offset is the one thing that does *not* propagate, as the access chain accounts for it.
 						dd.HasOffset = false;
 						decorations[resultId].Apply(dd);
@@ -607,6 +839,7 @@ namespace sw
 			case spv::OpSNegate:
 			case spv::OpFNegate:
 			case spv::OpLogicalNot:
+			case spv::OpQuantizeToF16:
 			// Binary ops
 			case spv::OpIAdd:
 			case spv::OpISub:
@@ -656,6 +889,8 @@ namespace sw
 			case spv::OpLogicalNotEqual:
 			case spv::OpUMulExtended:
 			case spv::OpSMulExtended:
+			case spv::OpIAddCarry:
+			case spv::OpISubBorrow:
 			case spv::OpDot:
 			case spv::OpConvertFToU:
 			case spv::OpConvertFToS:
@@ -678,10 +913,41 @@ namespace sw
 			case spv::OpDPdyFine:
 			case spv::OpFwidthFine:
 			case spv::OpAtomicLoad:
+			case spv::OpAtomicIAdd:
+			case spv::OpAtomicISub:
+			case spv::OpAtomicSMin:
+			case spv::OpAtomicSMax:
+			case spv::OpAtomicUMin:
+			case spv::OpAtomicUMax:
+			case spv::OpAtomicAnd:
+			case spv::OpAtomicOr:
+			case spv::OpAtomicXor:
+			case spv::OpAtomicIIncrement:
+			case spv::OpAtomicIDecrement:
+			case spv::OpAtomicExchange:
+			case spv::OpAtomicCompareExchange:
 			case spv::OpPhi:
 			case spv::OpImageSampleImplicitLod:
+			case spv::OpImageSampleExplicitLod:
+			case spv::OpImageSampleDrefImplicitLod:
+			case spv::OpImageSampleDrefExplicitLod:
+			case spv::OpImageSampleProjImplicitLod:
+			case spv::OpImageSampleProjExplicitLod:
+			case spv::OpImageSampleProjDrefImplicitLod:
+			case spv::OpImageSampleProjDrefExplicitLod:
+			case spv::OpImageGather:
+			case spv::OpImageDrefGather:
+			case spv::OpImageFetch:
+			case spv::OpImageQuerySizeLod:
 			case spv::OpImageQuerySize:
+			case spv::OpImageQueryLod:
+			case spv::OpImageQueryLevels:
+			case spv::OpImageQuerySamples:
 			case spv::OpImageRead:
+			case spv::OpImageTexelPointer:
+			case spv::OpGroupNonUniformElect:
+			case spv::OpCopyObject:
+			case spv::OpArrayLength:
 				// Instructions that yield an intermediate value or divergent pointer
 				DefineResult(insn);
 				break;
@@ -689,15 +955,36 @@ namespace sw
 			case spv::OpStore:
 			case spv::OpAtomicStore:
 			case spv::OpImageWrite:
+			case spv::OpCopyMemory:
+			case spv::OpMemoryBarrier:
 				// Don't need to do anything during analysis pass
 				break;
 
+			case spv::OpControlBarrier:
+				modes.ContainsControlBarriers = true;
+				break;
+
+			case spv::OpExtension:
+			{
+				auto ext = insn.string(1);
+				// Part of core SPIR-V 1.3. Vulkan 1.1 implementations must also accept the pre-1.3
+				// extension per Appendix A, `Vulkan Environment for SPIR-V`.
+				if (!strcmp(ext, "SPV_KHR_storage_buffer_storage_class")) break;
+				if (!strcmp(ext, "SPV_KHR_shader_draw_parameters")) break;
+				if (!strcmp(ext, "SPV_KHR_16bit_storage")) break;
+				if (!strcmp(ext, "SPV_KHR_variable_pointers")) break;
+				if (!strcmp(ext, "SPV_KHR_device_group")) break;
+				UNSUPPORTED("SPIR-V Extension: %s", ext);
+				break;
+			}
+
 			default:
-				UNIMPLEMENTED("%s", OpcodeName(insn.opcode()).c_str());
+				UNIMPLEMENTED("%s", OpcodeName(opcode).c_str());
 			}
 		}
 
-		AssignBlockIns();
+		ASSERT_MSG(entryPointFunctionId != 0, "Entry point '%s' not found", createInfo->pName);
+		AssignBlockFields();
 	}
 
 	void SpirvShader::TraverseReachableBlocks(Block::ID id, SpirvShader::Block::Set& reachable)
@@ -712,14 +999,15 @@ namespace sw
 		}
 	}
 
-	void SpirvShader::AssignBlockIns()
+	void SpirvShader::AssignBlockFields()
 	{
 		Block::Set reachable;
-		TraverseReachableBlocks(mainBlockId, reachable);
+		TraverseReachableBlocks(entryPointBlockId, reachable);
 
 		for (auto &it : blocks)
 		{
 			auto &blockId = it.first;
+			auto &block = it.second;
 			if (reachable.count(blockId) > 0)
 			{
 				for (auto &outId : it.second.outs)
@@ -728,6 +1016,12 @@ namespace sw
 					ASSERT_MSG(outIt != blocks.end(), "Block %d has a non-existent out %d", blockId.value(), outId.value());
 					auto &out = outIt->second;
 					out.ins.emplace(blockId);
+				}
+				if (block.kind == Block::Loop)
+				{
+					auto mergeIt = blocks.find(block.mergeBlock);
+					ASSERT_MSG(mergeIt != blocks.end(), "Loop block %d has a non-existent merge block %d", blockId.value(), block.mergeBlock.value());
+					mergeIt->second.isLoopMerge = true;
 				}
 			}
 		}
@@ -886,7 +1180,7 @@ namespace sw
 			// This is always the case for a Vulkan shader. Do nothing.
 			break;
 		default:
-			UNIMPLEMENTED("No other execution modes are permitted");
+			UNREACHABLE("Execution mode: %d", int(mode));
 		}
 	}
 
@@ -923,7 +1217,7 @@ namespace sw
 		case spv::OpTypeArray:
 		{
 			// Element count * element size. Array sizes come from constant ids.
-			auto arraySize = GetConstantInt(insn.word(3));
+			auto arraySize = GetConstScalarInt(insn.word(3));
 			return getType(insn.word(2)).sizeInComponents * arraySize;
 		}
 
@@ -943,9 +1237,21 @@ namespace sw
 			return 1;
 
 		default:
-			// Some other random insn.
-			UNIMPLEMENTED("Only types are supported");
+			UNREACHABLE("%s", OpcodeName(insn.opcode()).c_str());
 			return 0;
+		}
+	}
+
+	bool SpirvShader::IsExplicitLayout(spv::StorageClass storageClass)
+	{
+		switch (storageClass)
+		{
+		case spv::StorageClassUniform:
+		case spv::StorageClassStorageBuffer:
+		case spv::StorageClassPushConstant:
+			return true;
+		default:
+			return false;
 		}
 	}
 
@@ -956,6 +1262,7 @@ namespace sw
 		case spv::StorageClassUniform:
 		case spv::StorageClassStorageBuffer:
 		case spv::StorageClassPushConstant:
+		case spv::StorageClassWorkgroup:
 			return false;
 		default:
 			return true;
@@ -1020,7 +1327,7 @@ namespace sw
 		}
 		case spv::OpTypeArray:
 		{
-			auto arraySize = GetConstantInt(obj.definition.word(3));
+			auto arraySize = GetConstScalarInt(obj.definition.word(3));
 			for (auto i = 0u; i < arraySize; i++)
 			{
 				d.Location = VisitInterfaceInner<F>(obj.definition.word(2), d, f);
@@ -1052,15 +1359,15 @@ namespace sw
 		// a functor for each scalar element within the object.
 
 		// The functor's first parameter is the index of the scalar element;
-		// the second parameter is the offset (in sizeof(float) units) from
-		// the base of the object.
+		// the second parameter is the offset (in bytes) from the base of the
+		// object.
 
 		ApplyDecorationsForId(&d, id);
 		auto const &type = getType(id);
 
 		if (d.HasOffset)
 		{
-			offset += d.Offset / sizeof(float);
+			offset += d.Offset;
 			d.HasOffset = false;
 		}
 
@@ -1075,7 +1382,7 @@ namespace sw
 			break;
 		case spv::OpTypeVector:
 		{
-			auto elemStride = (d.InsideMatrix && d.HasRowMajor && d.RowMajor) ? d.MatrixStride / sizeof(float) : 1;
+			auto elemStride = (d.InsideMatrix && d.HasRowMajor && d.RowMajor) ? d.MatrixStride : sizeof(float);
 			for (auto i = 0u; i < type.definition.word(3); i++)
 			{
 				VisitMemoryObjectInner(type.definition.word(2), d, index, offset + elemStride * i, f);
@@ -1084,7 +1391,7 @@ namespace sw
 		}
 		case spv::OpTypeMatrix:
 		{
-			auto columnStride = (d.HasRowMajor && d.RowMajor) ? 1 : d.MatrixStride / sizeof(float);
+			auto columnStride = (d.HasRowMajor && d.RowMajor) ? sizeof(float) : d.MatrixStride;
 			d.InsideMatrix = true;
 			for (auto i = 0u; i < type.definition.word(3); i++)
 			{
@@ -1102,16 +1409,16 @@ namespace sw
 			break;
 		case spv::OpTypeArray:
 		{
-			auto arraySize = GetConstantInt(type.definition.word(3));
+			auto arraySize = GetConstScalarInt(type.definition.word(3));
 			for (auto i = 0u; i < arraySize; i++)
 			{
 				ASSERT(d.HasArrayStride);
-				VisitMemoryObjectInner<F>(type.definition.word(2), d, index, offset + i * d.ArrayStride / sizeof(float), f);
+				VisitMemoryObjectInner<F>(type.definition.word(2), d, index, offset + i * d.ArrayStride, f);
 			}
 			break;
 		}
 		default:
-			UNIMPLEMENTED("%s", OpcodeName(type.opcode()).c_str());
+			UNREACHABLE("%s", OpcodeName(type.opcode()).c_str());
 		}
 	}
 
@@ -1120,7 +1427,7 @@ namespace sw
 	{
 		auto typeId = getObject(id).type;
 		auto const & type = getType(typeId);
-		if (!IsStorageInterleavedByLane(type.storageClass))	// TODO: really "is explicit layout"
+		if (IsExplicitLayout(type.storageClass))
 		{
 			Decorations d{};
 			ApplyDecorationsForId(&d, id);
@@ -1132,7 +1439,7 @@ namespace sw
 			// Objects without explicit layout are tightly packed.
 			for (auto i = 0u; i < getType(type.element).sizeInComponents; i++)
 			{
-				f(i, i);
+				f(i, i * sizeof(float));
 			}
 		}
 	}
@@ -1142,12 +1449,9 @@ namespace sw
 		auto &object = getObject(id);
 		switch (object.kind)
 		{
-			case Object::Kind::NonDivergentPointer:
+			case Object::Kind::Pointer:
 			case Object::Kind::InterfaceVariable:
-				return SIMD::Pointer(routine->getPointer(id));
-
-			case Object::Kind::DivergentPointer:
-				return SIMD::Pointer(routine->getPointer(id), routine->getIntermediate(id).Int(0));
+				return routine->getPointer(id);
 
 			case Object::Kind::DescriptorSet:
 			{
@@ -1156,31 +1460,37 @@ namespace sw
 				ASSERT(d.Binding >= 0);
 
 				auto set = routine->getPointer(id);
+
 				auto setLayout = routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
+				ASSERT_MSG(setLayout->hasBinding(d.Binding), "Descriptor set %d does not contain binding %d", int(d.DescriptorSet), int(d.Binding));
 				int bindingOffset = static_cast<int>(setLayout->getBindingOffset(d.Binding, arrayIndex));
 
-				Pointer<Byte> bufferInfo = Pointer<Byte>(set + bindingOffset); // VkDescriptorBufferInfo*
-				Pointer<Byte> buffer = *Pointer<Pointer<Byte>>(bufferInfo + OFFSET(VkDescriptorBufferInfo, buffer)); // vk::Buffer*
-				Pointer<Byte> data = *Pointer<Pointer<Byte>>(buffer + vk::Buffer::DataOffset); // void*
-				Int offset = *Pointer<Int>(bufferInfo + OFFSET(VkDescriptorBufferInfo, offset));
+				Pointer<Byte> descriptor = set.base + bindingOffset; // BufferDescriptor*
+				Pointer<Byte> data = *Pointer<Pointer<Byte>>(descriptor + OFFSET(vk::BufferDescriptor, ptr)); // void*
+				Int size = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, sizeInBytes));
 				if (setLayout->isBindingDynamic(d.Binding))
 				{
 					uint32_t dynamicBindingIndex =
 						routine->pipelineLayout->getDynamicOffsetBase(d.DescriptorSet) +
 						setLayout->getDynamicDescriptorOffset(d.Binding) +
 						arrayIndex;
-					offset += routine->descriptorDynamicOffsets[dynamicBindingIndex];
+					Int offset = routine->descriptorDynamicOffsets[dynamicBindingIndex];
+					Int robustnessSize = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, robustnessSize));
+					return SIMD::Pointer(data + offset, Min(size, robustnessSize - offset));
 				}
-				return SIMD::Pointer(data + offset);
+				else
+				{
+					return SIMD::Pointer(data, size);
+				}
 			}
 
 			default:
 				UNREACHABLE("Invalid pointer kind %d", int(object.kind));
-				return SIMD::Pointer(Pointer<Byte>());
+				return SIMD::Pointer(Pointer<Byte>(), 0);
 		}
 	}
 
-	void SpirvShader::ApplyDecorationsForAccessChain(Decorations *d, Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds) const
+	void SpirvShader::ApplyDecorationsForAccessChain(Decorations *d, DescriptorDecorations *dd, Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds) const
 	{
 		ApplyDecorationsForId(d, baseId);
 		auto &baseObject = getObject(baseId);
@@ -1195,13 +1505,19 @@ namespace sw
 			{
 			case spv::OpTypeStruct:
 			{
-				int memberIndex = GetConstantInt(indexIds[i]);
+				int memberIndex = GetConstScalarInt(indexIds[i]);
 				ApplyDecorationsForIdMember(d, typeId, memberIndex);
 				typeId = type.definition.word(2u + memberIndex);
 				break;
 			}
 			case spv::OpTypeArray:
 			case spv::OpTypeRuntimeArray:
+				if (dd->InputAttachmentIndex >= 0)
+				{
+					dd->InputAttachmentIndex += GetConstScalarInt(indexIds[i]);
+				}
+				typeId = type.element;
+				break;
 			case spv::OpTypeVector:
 				typeId = type.element;
 				break;
@@ -1210,8 +1526,7 @@ namespace sw
 				d->InsideMatrix = true;
 				break;
 			default:
-				UNIMPLEMENTED("Unexpected type '%s' in ApplyDecorationsForAccessChain",
-							  OpcodeName(type.definition.opcode()).c_str());
+				UNREACHABLE("%s", OpcodeName(type.definition.opcode()).c_str());
 			}
 		}
 	}
@@ -1232,7 +1547,7 @@ namespace sw
 			if (type == spv::OpTypeArray || type == spv::OpTypeRuntimeArray)
 			{
 				ASSERT(getObject(indexIds[0]).kind == Object::Kind::Constant);
-				arrayIndex = GetConstantInt(indexIds[0]);
+				arrayIndex = GetConstScalarInt(indexIds[0]);
 
 				numIndexes--;
 				indexIds++;
@@ -1253,10 +1568,10 @@ namespace sw
 			{
 			case spv::OpTypeStruct:
 			{
-				int memberIndex = GetConstantInt(indexIds[i]);
+				int memberIndex = GetConstScalarInt(indexIds[i]);
 				ApplyDecorationsForIdMember(&d, typeId, memberIndex);
 				ASSERT(d.HasOffset);
-				constantOffset += d.Offset / sizeof(float);
+				constantOffset += d.Offset;
 				typeId = type.definition.word(2u + memberIndex);
 				break;
 			}
@@ -1267,9 +1582,13 @@ namespace sw
 				ASSERT(d.HasArrayStride);
 				auto & obj = getObject(indexIds[i]);
 				if (obj.kind == Object::Kind::Constant)
-					constantOffset += d.ArrayStride/sizeof(float) * GetConstantInt(indexIds[i]);
+				{
+					constantOffset += d.ArrayStride * GetConstScalarInt(indexIds[i]);
+				}
 				else
-					ptr.offset += SIMD::Int(d.ArrayStride / sizeof(float)) * routine->getIntermediate(indexIds[i]).Int(0);
+				{
+					ptr += SIMD::Int(d.ArrayStride) * routine->getIntermediate(indexIds[i]).Int(0);
+				}
 				typeId = type.element;
 				break;
 			}
@@ -1278,52 +1597,53 @@ namespace sw
 				// TODO: b/127950082: Check bounds.
 				ASSERT(d.HasMatrixStride);
 				d.InsideMatrix = true;
-				auto columnStride = (d.HasRowMajor && d.RowMajor) ? 1 : d.MatrixStride/sizeof(float);
+				auto columnStride = (d.HasRowMajor && d.RowMajor) ? sizeof(float) : d.MatrixStride;
 				auto & obj = getObject(indexIds[i]);
 				if (obj.kind == Object::Kind::Constant)
-					constantOffset += columnStride * GetConstantInt(indexIds[i]);
+				{
+					constantOffset += columnStride * GetConstScalarInt(indexIds[i]);
+				}
 				else
-					ptr.offset += SIMD::Int(columnStride) * routine->getIntermediate(indexIds[i]).Int(0);
+				{
+					ptr += SIMD::Int(columnStride) * routine->getIntermediate(indexIds[i]).Int(0);
+				}
 				typeId = type.element;
 				break;
 			}
 			case spv::OpTypeVector:
 			{
-				auto elemStride = (d.InsideMatrix && d.HasRowMajor && d.RowMajor) ? d.MatrixStride / sizeof(float) : 1;
+				auto elemStride = (d.InsideMatrix && d.HasRowMajor && d.RowMajor) ? d.MatrixStride : sizeof(float);
 				auto & obj = getObject(indexIds[i]);
 				if (obj.kind == Object::Kind::Constant)
-					constantOffset += elemStride * GetConstantInt(indexIds[i]);
+				{
+					constantOffset += elemStride * GetConstScalarInt(indexIds[i]);
+				}
 				else
-					ptr.offset += SIMD::Int(elemStride) * routine->getIntermediate(indexIds[i]).Int(0);
+				{
+					ptr += SIMD::Int(elemStride) * routine->getIntermediate(indexIds[i]).Int(0);
+				}
 				typeId = type.element;
 				break;
 			}
 			default:
-				UNIMPLEMENTED("Unexpected type '%s' in WalkExplicitLayoutAccessChain", OpcodeName(type.definition.opcode()).c_str());
+				UNREACHABLE("%s", OpcodeName(type.definition.opcode()).c_str());
 			}
 		}
 
-		ptr.offset += SIMD::Int(constantOffset);
-
+		ptr += constantOffset;
 		return ptr;
 	}
 
-	SIMD::Int SpirvShader::WalkAccessChain(Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds, SpirvRoutine *routine) const
+	SIMD::Pointer SpirvShader::WalkAccessChain(Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds, SpirvRoutine *routine) const
 	{
 		// TODO: avoid doing per-lane work in some cases if we can?
-		// Produce a *component* offset into location-oriented memory
 
-		int constantOffset = 0;
-		SIMD::Int dynamicOffset = SIMD::Int(0);
 		auto &baseObject = getObject(baseId);
 		Type::ID typeId = getType(baseObject.type).element;
 
-		// The <base> operand is a divergent pointer itself.
-		// Start with its offset and build from there.
-		if (baseObject.kind == Object::Kind::DivergentPointer)
-		{
-			dynamicOffset += routine->getIntermediate(baseId).Int(0);
-		}
+		auto ptr = routine->getPointer(baseId);
+
+		int constantOffset = 0;
 
 		for (auto i = 0u; i < numIndexes; i++)
 		{
@@ -1332,11 +1652,11 @@ namespace sw
 			{
 			case spv::OpTypeStruct:
 			{
-				int memberIndex = GetConstantInt(indexIds[i]);
+				int memberIndex = GetConstScalarInt(indexIds[i]);
 				int offsetIntoStruct = 0;
 				for (auto j = 0; j < memberIndex; j++) {
 					auto memberType = type.definition.word(2u + j);
-					offsetIntoStruct += getType(memberType).sizeInComponents;
+					offsetIntoStruct += getType(memberType).sizeInComponents * sizeof(float);
 				}
 				constantOffset += offsetIntoStruct;
 				typeId = type.definition.word(2u + memberIndex);
@@ -1349,27 +1669,54 @@ namespace sw
 			case spv::OpTypeRuntimeArray:
 			{
 				// TODO: b/127950082: Check bounds.
-				auto stride = getType(type.element).sizeInComponents;
-				auto & obj = getObject(indexIds[i]);
-				if (obj.kind == Object::Kind::Constant)
-					constantOffset += stride * GetConstantInt(indexIds[i]);
+				if (getType(baseObject.type).storageClass == spv::StorageClassUniformConstant)
+				{
+					// indexing into an array of descriptors.
+					auto &obj = getObject(indexIds[i]);
+					if (obj.kind != Object::Kind::Constant)
+					{
+						UNSUPPORTED("SPIR-V SampledImageArrayDynamicIndexing Capability");
+					}
+
+					auto d = descriptorDecorations.at(baseId);
+					ASSERT(d.DescriptorSet >= 0);
+					ASSERT(d.Binding >= 0);
+					auto setLayout = routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
+					auto stride = setLayout->getBindingStride(d.Binding);
+					ptr.base += stride * GetConstScalarInt(indexIds[i]);
+				}
 				else
-					dynamicOffset += SIMD::Int(stride) * routine->getIntermediate(indexIds[i]).Int(0);
+				{
+					auto stride = getType(type.element).sizeInComponents * sizeof(float);
+					auto & obj = getObject(indexIds[i]);
+					if (obj.kind == Object::Kind::Constant)
+					{
+						ptr += stride * GetConstScalarInt(indexIds[i]);
+					}
+					else
+					{
+						ptr += SIMD::Int(stride) * routine->getIntermediate(indexIds[i]).Int(0);
+					}
+				}
 				typeId = type.element;
 				break;
 			}
 
 			default:
-				UNIMPLEMENTED("Unexpected type '%s' in WalkAccessChain", OpcodeName(type.opcode()).c_str());
+				UNREACHABLE("%s", OpcodeName(type.opcode()).c_str());
 			}
 		}
 
-		return dynamicOffset + SIMD::Int(constantOffset);
+		if (constantOffset != 0)
+		{
+			ptr += constantOffset;
+		}
+		return ptr;
 	}
 
 	uint32_t SpirvShader::WalkLiteralAccessChain(Type::ID typeId, uint32_t numIndexes, uint32_t const *indexes) const
 	{
-		uint32_t constantOffset = 0;
+		uint32_t componentOffset = 0;
 
 		for (auto i = 0u; i < numIndexes; i++)
 		{
@@ -1384,7 +1731,7 @@ namespace sw
 					auto memberType = type.definition.word(2u + j);
 					offsetIntoStruct += getType(memberType).sizeInComponents;
 				}
-				constantOffset += offsetIntoStruct;
+				componentOffset += offsetIntoStruct;
 				typeId = type.definition.word(2u + memberIndex);
 				break;
 			}
@@ -1395,17 +1742,17 @@ namespace sw
 			{
 				auto elementType = type.definition.word(2);
 				auto stride = getType(elementType).sizeInComponents;
-				constantOffset += stride * indexes[i];
+				componentOffset += stride * indexes[i];
 				typeId = elementType;
 				break;
 			}
 
 			default:
-				UNIMPLEMENTED("Unexpected type in WalkLiteralAccessChain");
+				UNREACHABLE("%s", OpcodeName(type.opcode()).c_str());
 			}
 		}
 
-		return constantOffset;
+		return componentOffset;
 	}
 
 	void SpirvShader::Decorations::Apply(spv::Decoration decoration, uint32_t arg)
@@ -1532,6 +1879,11 @@ namespace sw
 		{
 			Binding = src.Binding;
 		}
+
+		if (src.InputAttachmentIndex >= 0)
+		{
+			InputAttachmentIndex = src.InputAttachmentIndex;
+		}
 	}
 
 	void SpirvShader::ApplyDecorationsForId(Decorations *d, TypeOrObjectID id) const
@@ -1556,23 +1908,21 @@ namespace sw
 		Object::ID resultId = insn.word(2);
 		auto &object = defs[resultId];
 		object.type = typeId;
-		object.kind = (getType(typeId).opcode() == spv::OpTypePointer)
-			? Object::Kind::DivergentPointer : Object::Kind::Intermediate;
+
+		switch (getType(typeId).opcode())
+		{
+		case spv::OpTypePointer:
+		case spv::OpTypeImage:
+		case spv::OpTypeSampledImage:
+		case spv::OpTypeSampler:
+			object.kind = Object::Kind::Pointer;
+			break;
+
+		default:
+			object.kind = Object::Kind::Intermediate;
+		}
+
 		object.definition = insn;
-	}
-
-	uint32_t SpirvShader::GetConstantInt(Object::ID id) const
-	{
-		// Slightly hackish access to constants very early in translation.
-		// General consumption of constants by other instructions should
-		// probably be just lowered to Reactor.
-
-		// TODO: not encountered yet since we only use this for array sizes etc,
-		// but is possible to construct integer constant 0 via OpConstantNull.
-		auto insn = getObject(id).definition;
-		ASSERT(insn.opcode() == spv::OpConstant);
-		ASSERT(getType(insn.word(1)).opcode() == spv::OpTypeInt);
-		return insn.word(3);
 	}
 
 	// emit-time
@@ -1594,6 +1944,13 @@ namespace sw
 					Object::ID resultId = insn.word(2);
 					routine->createVariable(resultId, pointeeType.sizeInComponents);
 				}
+				break;
+			}
+			case spv::OpPhi:
+			{
+				auto type = getType(insn.word(1));
+				Object::ID resultId = insn.word(2);
+				routine->phis.emplace(resultId, SpirvRoutine::Variable(type.sizeInComponents));
 				break;
 			}
 			default:
@@ -1618,8 +1975,8 @@ namespace sw
 			EmitInstruction(insn, &state);
 		}
 
-		// Emit all the blocks starting from mainBlockId.
-		EmitBlocks(mainBlockId, &state);
+		// Emit all the blocks starting from entryPointBlockId.
+		EmitBlocks(entryPointBlockId, &state);
 	}
 
 	void SpirvShader::EmitBlocks(Block::ID id, EmitState *state, Block::ID ignore /* = 0 */) const
@@ -1710,7 +2067,7 @@ namespace sw
 			return; // Already generated this block.
 		}
 
-		if (blockId != mainBlockId)
+		if (blockId != entryPointBlockId)
 		{
 			// Set the activeLaneMask.
 			SIMD::Int activeLaneMask(0);
@@ -1733,7 +2090,9 @@ namespace sw
 	void SpirvShader::EmitLoop(EmitState *state) const
 	{
 		auto blockId = state->currentBlock;
-		auto block = getBlock(blockId);
+		auto &block = getBlock(blockId);
+		auto mergeBlockId = block.mergeBlock;
+		auto &mergeBlock = getBlock(mergeBlockId);
 
 		// Ensure all incoming non-back edge blocks have been generated.
 		auto depsDone = true;
@@ -1741,7 +2100,7 @@ namespace sw
 		{
 			if (state->visited.count(in) == 0)
 			{
-				if (!existsPath(blockId, in, block.mergeBlock)) // if not a loop back edge
+				if (!existsPath(blockId, in, mergeBlockId)) // if not a loop back edge
 				{
 					state->pending->emplace(in);
 					depsDone = false;
@@ -1761,80 +2120,44 @@ namespace sw
 			return; // Already emitted this loop.
 		}
 
-		// loopActiveLaneMask is the mask of lanes that are continuing to loop.
-		// This is initialized with the incoming active lane masks.
-		SIMD::Int loopActiveLaneMask = SIMD::Int(0);
+		std::unordered_set<Block::ID> incomingBlocks;
+		std::unordered_set<Block::ID> loopBlocks;
 		for (auto in : block.ins)
 		{
-			if (!existsPath(blockId, in, block.mergeBlock)) // if not a loop back edge
+			if (!existsPath(blockId, in, mergeBlockId)) // if not a loop back-edge
 			{
-				loopActiveLaneMask |= GetActiveLaneMaskEdge(state, in, blockId);
+				incomingBlocks.emplace(in);
+			}
+			else
+			{
+				loopBlocks.emplace(in);
 			}
 		}
 
-		// Generate an alloca for each of the loop's phis.
-		// These will be primed with the incoming, non back edge Phi values
-		// before the loop, and then updated just before the loop jumps back to
-		// the block.
-		struct LoopPhi
-		{
-			LoopPhi(Object::ID id, uint32_t size) : phiId(id), storage(size) {}
-
-			Object::ID phiId; // The Phi identifier.
-			Object::ID continueValue; // The source merge value from the loop.
-			Array<SIMD::Int> storage; // The alloca.
-		};
-
-		std::vector<LoopPhi> phis;
-
-		// For each OpPhi between the block start and the merge instruction:
+		// Emit the loop phi instructions, and initialize them with a value from
+		// the incoming blocks.
 		for (auto insn = block.begin(); insn != block.mergeInstruction; insn++)
 		{
 			if (insn.opcode() == spv::OpPhi)
 			{
-				auto objectId = Object::ID(insn.word(2));
-				auto &object = getObject(objectId);
-				auto &type = getType(object.type);
-
-				LoopPhi phi(insn.word(2), type.sizeInComponents);
-
-				// Start with the Phi set to 0.
-				for (uint32_t i = 0; i < type.sizeInComponents; i++)
-				{
-					phi.storage[i] = SIMD::Int(0);
-				}
-
-				// For each Phi source:
-				for (uint32_t w = 3; w < insn.wordCount(); w += 2)
-				{
-					auto varId = Object::ID(insn.word(w + 0));
-					auto blockId = Block::ID(insn.word(w + 1));
-
-					if (block.ins.count(blockId) == 0)
-					{
-						continue; // In is unreachable. Ignore.
-					}
-
-					if (existsPath(state->currentBlock, blockId, block.mergeBlock))
-					{
-						// This source is from a loop back-edge.
-						ASSERT(phi.continueValue == 0 || phi.continueValue == varId);
-						phi.continueValue = varId;
-					}
-					else
-					{
-						// This source is from a preceding block.
-						for (uint32_t i = 0; i < type.sizeInComponents; i++)
-						{
-							auto in = GenericValue(this, state->routine, varId);
-							auto mask = GetActiveLaneMaskEdge(state, blockId, state->currentBlock);
-							phi.storage[i] = phi.storage[i] | (in.Int(i) & mask);
-						}
-					}
-				}
-
-				phis.push_back(phi);
+				StorePhi(blockId, insn, state, incomingBlocks);
 			}
+		}
+
+		// loopActiveLaneMask is the mask of lanes that are continuing to loop.
+		// This is initialized with the incoming active lane masks.
+		SIMD::Int loopActiveLaneMask = SIMD::Int(0);
+		for (auto in : incomingBlocks)
+		{
+			loopActiveLaneMask |= GetActiveLaneMaskEdge(state, in, blockId);
+		}
+
+		// mergeActiveLaneMasks contains edge lane masks for the merge block.
+		// This is the union of all edge masks across all iterations of the loop.
+		std::unordered_map<Block::ID, SIMD::Int> mergeActiveLaneMasks;
+		for (auto in : getBlock(mergeBlockId).ins)
+		{
+			mergeActiveLaneMasks.emplace(in, SIMD::Int(0));
 		}
 
 		// Create the loop basic blocks
@@ -1845,60 +2168,91 @@ namespace sw
 		Nucleus::createBr(headerBasicBlock);
 		Nucleus::setInsertBlock(headerBasicBlock);
 
-		// Load the Phi values from storage.
-		// This will load at the start of each loop.
-		for (auto &phi : phis)
-		{
-			auto &type = getType(getObject(phi.phiId).type);
-			auto &dst = state->routine->createIntermediate(phi.phiId, type.sizeInComponents);
-			for (unsigned int i = 0u; i < type.sizeInComponents; i++)
-			{
-				dst.move(i, phi.storage[i]);
-			}
-		}
-
 		// Load the active lane mask.
 		state->setActiveLaneMask(loopActiveLaneMask);
 
-		// Emit all the non-phi instructions in this loop header block.
+		// Emit the non-phi loop header block's instructions.
 		for (auto insn = block.begin(); insn != block.end(); insn++)
 		{
-			if (insn.opcode() != spv::OpPhi)
+			if (insn.opcode() == spv::OpPhi)
+			{
+				LoadPhi(insn, state);
+			}
+			else
 			{
 				EmitInstruction(insn, state);
 			}
 		}
 
-		// Emit all loop blocks, but don't emit the merge block yet.
+		// Emit all blocks between the loop header and the merge block, but
+		// don't emit the merge block yet.
 		for (auto out : block.outs)
 		{
-			if (existsPath(out, blockId, block.mergeBlock))
-			{
-				EmitBlocks(out, state, block.mergeBlock);
-			}
+			EmitBlocks(out, state, mergeBlockId);
 		}
+
+		// Restore current block id after emitting loop blocks.
+		state->currentBlock = blockId;
 
 		// Rebuild the loopActiveLaneMask from the loop back edges.
 		loopActiveLaneMask = SIMD::Int(0);
 		for (auto in : block.ins)
 		{
-			if (existsPath(blockId, in, block.mergeBlock))
+			if (existsPath(blockId, in, mergeBlockId))
 			{
 				loopActiveLaneMask |= GetActiveLaneMaskEdge(state, in, blockId);
 			}
 		}
 
-		// Update loop phi values
-		for (auto &phi : phis)
+		// Add active lanes to the merge lane mask.
+		for (auto in : getBlock(mergeBlockId).ins)
 		{
-			if (phi.continueValue != 0)
+			auto edge = Block::Edge{in, mergeBlockId};
+			auto it = state->edgeActiveLaneMasks.find(edge);
+			if (it != state->edgeActiveLaneMasks.end())
 			{
-				auto val = GenericValue(this, state->routine, phi.continueValue);
-				auto &type = getType(getObject(phi.phiId).type);
-				for (unsigned int i = 0u; i < type.sizeInComponents; i++)
-				{
-					phi.storage[i] = val.Int(i);
-				}
+				mergeActiveLaneMasks[in] |= it->second;
+			}
+		}
+
+		// Update loop phi values.
+		for (auto insn = block.begin(); insn != block.mergeInstruction; insn++)
+		{
+			if (insn.opcode() == spv::OpPhi)
+			{
+				StorePhi(blockId, insn, state, loopBlocks);
+			}
+		}
+
+		// Use the [loop -> merge] active lane masks to update the phi values in
+		// the merge block. We need to do this to handle divergent control flow
+		// in the loop.
+		//
+		// Consider the following:
+		//
+		//     int phi_source = 0;
+		//     for (uint i = 0; i < 4; i++)
+		//     {
+		//         phi_source = 0;
+		//         if (gl_GlobalInvocationID.x % 4 == i) // divergent control flow
+		//         {
+		//             phi_source = 42; // single lane assignment.
+		//             break; // activeLaneMask for [loop->merge] is active for a single lane.
+		//         }
+		//         // -- we are here --
+		//     }
+		//     // merge block
+		//     int phi = phi_source; // OpPhi
+		//
+		// In this example, with each iteration of the loop, phi_source will
+		// only have a single lane assigned. However by 'phi' value in the merge
+		// block needs to be assigned the union of all the per-lane assignments
+		// of phi_source when that lane exited the loop.
+		for (auto insn = mergeBlock.begin(); insn != mergeBlock.end(); insn++)
+		{
+			if (insn.opcode() == spv::OpPhi)
+			{
+				StorePhi(mergeBlockId, insn, state, mergeBlock.ins);
 			}
 		}
 
@@ -1909,7 +2263,11 @@ namespace sw
 
 		// Continue emitting from the merge block.
 		Nucleus::setInsertBlock(mergeBasicBlock);
-		state->pending->emplace(block.mergeBlock);
+		state->pending->emplace(mergeBlockId);
+		for (auto it : mergeActiveLaneMasks)
+		{
+			state->addActiveLaneMaskEdge(it.first, mergeBlockId, it.second);
+		}
 	}
 
 	SpirvShader::EmitResult SpirvShader::EmitInstruction(InsnIterator insn, EmitState *state) const
@@ -1931,6 +2289,7 @@ namespace sw
 		case spv::OpTypeFunction:
 		case spv::OpTypeImage:
 		case spv::OpTypeSampledImage:
+		case spv::OpTypeSampler:
 		case spv::OpExecutionMode:
 		case spv::OpMemoryModel:
 		case spv::OpFunction:
@@ -1940,6 +2299,11 @@ namespace sw
 		case spv::OpConstantTrue:
 		case spv::OpConstantFalse:
 		case spv::OpConstantComposite:
+		case spv::OpSpecConstant:
+		case spv::OpSpecConstantTrue:
+		case spv::OpSpecConstantFalse:
+		case spv::OpSpecConstantComposite:
+		case spv::OpSpecConstantOp:
 		case spv::OpUndef:
 		case spv::OpExtension:
 		case spv::OpCapability:
@@ -1976,6 +2340,23 @@ namespace sw
 		case spv::OpStore:
 		case spv::OpAtomicStore:
 			return EmitStore(insn, state);
+
+		case spv::OpAtomicIAdd:
+		case spv::OpAtomicISub:
+		case spv::OpAtomicSMin:
+		case spv::OpAtomicSMax:
+		case spv::OpAtomicUMin:
+		case spv::OpAtomicUMax:
+		case spv::OpAtomicAnd:
+		case spv::OpAtomicOr:
+		case spv::OpAtomicXor:
+		case spv::OpAtomicIIncrement:
+		case spv::OpAtomicIDecrement:
+		case spv::OpAtomicExchange:
+			return EmitAtomicOp(insn, state);
+
+		case spv::OpAtomicCompareExchange:
+			return EmitAtomicCompareExchange(insn, state);
 
 		case spv::OpAccessChain:
 		case spv::OpInBoundsAccessChain:
@@ -2043,6 +2424,7 @@ namespace sw
 		case spv::OpDPdxFine:
 		case spv::OpDPdyFine:
 		case spv::OpFwidthFine:
+		case spv::OpQuantizeToF16:
 			return EmitUnaryOp(insn, state);
 
 		case spv::OpIAdd:
@@ -2093,6 +2475,8 @@ namespace sw
 		case spv::OpLogicalNotEqual:
 		case spv::OpUMulExtended:
 		case spv::OpSMulExtended:
+		case spv::OpIAddCarry:
+		case spv::OpISubBorrow:
 			return EmitBinaryOp(insn, state);
 
 		case spv::OpDot:
@@ -2136,10 +2520,52 @@ namespace sw
 			return EmitKill(insn, state);
 
 		case spv::OpImageSampleImplicitLod:
-			return EmitImageSampleImplicitLod(insn, state);
+			return EmitImageSampleImplicitLod(None, insn, state);
+
+		case spv::OpImageSampleExplicitLod:
+			return EmitImageSampleExplicitLod(None, insn, state);
+
+		case spv::OpImageSampleDrefImplicitLod:
+			return EmitImageSampleImplicitLod(Dref, insn, state);
+
+		case spv::OpImageSampleDrefExplicitLod:
+			return EmitImageSampleExplicitLod(Dref, insn, state);
+
+		case spv::OpImageSampleProjImplicitLod:
+			return EmitImageSampleImplicitLod(Proj, insn, state);
+
+		case spv::OpImageSampleProjExplicitLod:
+			return EmitImageSampleExplicitLod(Proj, insn, state);
+
+		case spv::OpImageSampleProjDrefImplicitLod:
+			return EmitImageSampleImplicitLod(ProjDref, insn, state);
+
+		case spv::OpImageSampleProjDrefExplicitLod:
+			return EmitImageSampleExplicitLod(ProjDref, insn, state);
+
+		case spv::OpImageGather:
+			return EmitImageGather(None, insn, state);
+
+		case spv::OpImageDrefGather:
+			return EmitImageGather(Dref, insn, state);
+
+		case spv::OpImageFetch:
+			return EmitImageFetch(insn, state);
+
+		case spv::OpImageQuerySizeLod:
+			return EmitImageQuerySizeLod(insn, state);
 
 		case spv::OpImageQuerySize:
 			return EmitImageQuerySize(insn, state);
+
+		case spv::OpImageQueryLod:
+			return EmitImageQueryLod(insn, state);
+
+		case spv::OpImageQueryLevels:
+			return EmitImageQueryLevels(insn, state);
+
+		case spv::OpImageQuerySamples:
+			return EmitImageQuerySamples(insn, state);
 
 		case spv::OpImageRead:
 			return EmitImageRead(insn, state);
@@ -2147,8 +2573,33 @@ namespace sw
 		case spv::OpImageWrite:
 			return EmitImageWrite(insn, state);
 
+		case spv::OpImageTexelPointer:
+			return EmitImageTexelPointer(insn, state);
+
+		case spv::OpSampledImage:
+		case spv::OpImage:
+			return EmitSampledImageCombineOrSplit(insn, state);
+
+		case spv::OpCopyObject:
+			return EmitCopyObject(insn, state);
+
+		case spv::OpCopyMemory:
+			return EmitCopyMemory(insn, state);
+
+		case spv::OpControlBarrier:
+			return EmitControlBarrier(insn, state);
+
+		case spv::OpMemoryBarrier:
+			return EmitMemoryBarrier(insn, state);
+
+		case spv::OpGroupNonUniformElect:
+			return EmitGroupNonUniform(insn, state);
+
+		case spv::OpArrayLength:
+			return EmitArrayLength(insn, state);
+
 		default:
-			UNIMPLEMENTED("opcode: %s", OpcodeName(opcode).c_str());
+			UNREACHABLE("%s", OpcodeName(opcode).c_str());
 			break;
 		}
 
@@ -2168,7 +2619,19 @@ namespace sw
 		case spv::StorageClassPrivate:
 		case spv::StorageClassFunction:
 		{
-			routine->createPointer(resultId, &routine->getVariable(resultId)[0]);
+			ASSERT(objectTy.opcode() == spv::OpTypePointer);
+			auto base = &routine->getVariable(resultId)[0];
+			auto elementTy = getType(objectTy.element);
+			auto size = elementTy.sizeInComponents * sizeof(float) * SIMD::Width;
+			routine->createPointer(resultId, SIMD::Pointer(base, size));
+			break;
+		}
+		case spv::StorageClassWorkgroup:
+		{
+			ASSERT(objectTy.opcode() == spv::OpTypePointer);
+			auto base = &routine->workgroupMemory[0];
+			auto size = workgroupMemory.size();
+			routine->createPointer(resultId, SIMD::Pointer(base, size, workgroupMemory.offsetOf(resultId)));
 			break;
 		}
 		case spv::StorageClassInput:
@@ -2183,7 +2646,11 @@ namespace sw
 									dst[offset++] = routine->inputs[scalarSlot];
 								});
 			}
-			routine->createPointer(resultId, &routine->getVariable(resultId)[0]);
+			ASSERT(objectTy.opcode() == spv::OpTypePointer);
+			auto base = &routine->getVariable(resultId)[0];
+			auto elementTy = getType(objectTy.element);
+			auto size = elementTy.sizeInComponents * sizeof(float) * SIMD::Width;
+			routine->createPointer(resultId, SIMD::Pointer(base, size));
 			break;
 		}
 		case spv::StorageClassUniformConstant:
@@ -2194,10 +2661,20 @@ namespace sw
 
 			uint32_t arrayIndex = 0;  // TODO(b/129523279)
 			auto setLayout = routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
-			size_t bindingOffset = setLayout->getBindingOffset(d.Binding, arrayIndex);
-			Pointer<Byte> set = routine->descriptorSets[d.DescriptorSet];  // DescriptorSet*
-			Pointer<Byte> binding = Pointer<Byte>(set + bindingOffset);    // SampledImageDescriptor*
-			routine->createPointer(resultId, binding);
+			if (setLayout->hasBinding(d.Binding))
+			{
+				size_t bindingOffset = setLayout->getBindingOffset(d.Binding, arrayIndex);
+				Pointer<Byte> set = routine->descriptorSets[d.DescriptorSet];  // DescriptorSet*
+				Pointer<Byte> binding = Pointer<Byte>(set + bindingOffset);    // vk::SampledImageDescriptor*
+				auto size = 0; // Not required as this pointer is not directly used by SIMD::Read or SIMD::Write.
+				routine->createPointer(resultId, SIMD::Pointer(binding, size));
+			}
+			else
+			{
+				// TODO: Error if the variable with the non-existant binding is
+				// used? Or perhaps strip these unused variable declarations as
+				// a preprocess on the SPIR-V?
+			}
 			break;
 		}
 		case spv::StorageClassUniform:
@@ -2205,18 +2682,47 @@ namespace sw
 		{
 			const auto &d = descriptorDecorations.at(resultId);
 			ASSERT(d.DescriptorSet >= 0 && d.DescriptorSet < vk::MAX_BOUND_DESCRIPTOR_SETS);
-
-			routine->createPointer(resultId, routine->descriptorSets[d.DescriptorSet]);
+			auto size = 0; // Not required as this pointer is not directly used by SIMD::Read or SIMD::Write.
+			routine->createPointer(resultId, SIMD::Pointer(routine->descriptorSets[d.DescriptorSet], size));
 			break;
 		}
 		case spv::StorageClassPushConstant:
 		{
-			routine->createPointer(resultId, routine->pushConstants);
+			routine->createPointer(resultId, SIMD::Pointer(routine->pushConstants, vk::MAX_PUSH_CONSTANT_SIZE));
 			break;
 		}
 		default:
-			UNIMPLEMENTED("Storage class %d", objectTy.storageClass);
+			UNREACHABLE("Storage class %d", objectTy.storageClass);
 			break;
+		}
+
+		if (insn.wordCount() > 4)
+		{
+			Object::ID initializerId = insn.word(4);
+			if (getObject(initializerId).kind != Object::Kind::Constant)
+			{
+				UNIMPLEMENTED("Non-constant initializers not yet implemented");
+			}
+			switch (objectTy.storageClass)
+			{
+			case spv::StorageClassOutput:
+			case spv::StorageClassPrivate:
+			case spv::StorageClassFunction:
+			{
+				bool interleavedByLane = IsStorageInterleavedByLane(objectTy.storageClass);
+				auto ptr = GetPointerToData(resultId, 0, routine);
+				GenericValue initialValue(this, routine, initializerId);
+				VisitMemoryObject(resultId, [&](uint32_t i, uint32_t offset)
+				{
+					auto p = ptr + offset;
+					if (interleavedByLane) { p = interleaveByLane(p); }
+					SIMD::Store(p, initialValue.Float(i), state->activeLaneMask());
+				});
+				break;
+			}
+			default:
+				ASSERT_MSG(initializerId == 0, "Vulkan does not permit variables of storage class %d to have initializers", int(objectTy.storageClass));
+			}
 		}
 
 		return EmitResult::Continue;
@@ -2238,13 +2744,11 @@ namespace sw
 		ASSERT(Type::ID(insn.word(1)) == result.type);
 		ASSERT(!atomic || getType(getType(pointer.type).element).opcode() == spv::OpTypeInt);  // Vulkan 1.1: "Atomic instructions must declare a scalar 32-bit integer type, for the value pointed to by Pointer."
 
-		if(pointer.kind == Object::Kind::SampledImage)
+		if(pointerTy.storageClass == spv::StorageClassUniformConstant)
 		{
 			// Just propagate the pointer.
-			// TODO(b/129523279)
 			auto &ptr = routine->getPointer(pointerId);
 			routine->createPointer(resultId, ptr);
-
 			return EmitResult::Continue;
 		}
 
@@ -2255,62 +2759,18 @@ namespace sw
 			memoryOrder = MemoryOrder(memorySemantics);
 		}
 
-		if (pointerTy.storageClass == spv::StorageClassImage)
-		{
-			UNIMPLEMENTED("StorageClassImage load not yet implemented");
-		}
-
 		auto ptr = GetPointerToData(pointerId, 0, routine);
 
 		bool interleavedByLane = IsStorageInterleavedByLane(pointerTy.storageClass);
-		auto anyInactiveLanes = AnyFalse(state->activeLaneMask());
-
-		auto load = std::unique_ptr<SIMD::Float[]>(new SIMD::Float[resultTy.sizeInComponents]);
-
-		If(!ptr.uniform || anyInactiveLanes)
-		{
-			// Divergent offsets or masked lanes.
-			VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-			{
-				// i wish i had a Float,Float,Float,Float constructor here..
-				for (int j = 0; j < SIMD::Width; j++)
-				{
-					If(Extract(state->activeLaneMask(), j) != 0)
-					{
-						Int offset = Int(o) + Extract(ptr.offset, j);
-						if (interleavedByLane) { offset = offset * SIMD::Width + j; }
-						load[i] = Insert(load[i], Load(&ptr.base[offset], sizeof(float), atomic, memoryOrder), j);
-					}
-				}
-			});
-		}
-		Else
-		{
-			// No divergent offsets or masked lanes.
-			if (interleavedByLane)
-			{
-				// Lane-interleaved data.
-				Pointer<SIMD::Float> src = ptr.base;
-				VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-				{
-					load[i] = Load(&src[o], sizeof(float), atomic, memoryOrder);  // TODO: optimize alignment
-				});
-			}
-			else
-			{
-				// Non-interleaved data.
-				VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-				{
-					load[i] = RValue<SIMD::Float>(Load(&ptr.base[o], sizeof(float), atomic, memoryOrder));  // TODO: optimize alignment
-				});
-			}
-		}
 
 		auto &dst = routine->createIntermediate(resultId, resultTy.sizeInComponents);
-		for (auto i = 0u; i < resultTy.sizeInComponents; i++)
+
+		VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t offset)
 		{
-			dst.move(i, load[i]);
-		}
+			auto p = ptr + offset;
+			if (interleavedByLane) { p = interleaveByLane(p); }
+			dst.move(i, SIMD::Load<SIMD::Float>(p, state->activeLaneMask(), atomic, memoryOrder));
+		});
 
 		return EmitResult::Continue;
 	}
@@ -2336,89 +2796,30 @@ namespace sw
 
 		ASSERT(!atomic || elementTy.opcode() == spv::OpTypeInt);  // Vulkan 1.1: "Atomic instructions must declare a scalar 32-bit integer type, for the value pointed to by Pointer."
 
-		if (pointerTy.storageClass == spv::StorageClassImage)
-		{
-			UNIMPLEMENTED("StorageClassImage store not yet implemented");
-		}
-
 		auto ptr = GetPointerToData(pointerId, 0, routine);
-
 		bool interleavedByLane = IsStorageInterleavedByLane(pointerTy.storageClass);
-		auto anyInactiveLanes = AnyFalse(state->activeLaneMask());
 
 		if (object.kind == Object::Kind::Constant)
 		{
 			// Constant source data.
 			auto src = reinterpret_cast<float *>(object.constantValue.get());
-			If(!ptr.uniform || anyInactiveLanes)
+			VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t offset)
 			{
-				// Divergent offsets or masked lanes.
-				VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-				{
-					for (int j = 0; j < SIMD::Width; j++)
-					{
-						If(Extract(state->activeLaneMask(), j) != 0)
-						{
-							Int offset = Int(o) + Extract(ptr.offset, j);
-							if (interleavedByLane) { offset = offset * SIMD::Width + j; }
-							Store(RValue<Float>(src[i]), &ptr.base[offset], sizeof(float), atomic, memoryOrder);
-						}
-					}
-				});
-			}
-			Else
-			{
-				// Constant source data.
-				// No divergent offsets or masked lanes.
-				Pointer<SIMD::Float> dst = ptr.base;
-				VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-				{
-					Store(RValue<SIMD::Float>(src[i]), &dst[o], sizeof(float), atomic, memoryOrder);  // TODO: optimize alignment
-				});
-			}
+				auto p = ptr + offset;
+				if (interleavedByLane) { p = interleaveByLane(p); }
+				SIMD::Store(p, SIMD::Float(src[i]), state->activeLaneMask(), atomic, memoryOrder);
+			});
 		}
 		else
 		{
 			// Intermediate source data.
 			auto &src = routine->getIntermediate(objectId);
-			If(!ptr.uniform || anyInactiveLanes)
+			VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t offset)
 			{
-				// Divergent offsets or masked lanes.
-				VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-				{
-					for (int j = 0; j < SIMD::Width; j++)
-					{
-						If(Extract(state->activeLaneMask(), j) != 0)
-						{
-							Int offset = Int(o) + Extract(ptr.offset, j);
-							if (interleavedByLane) { offset = offset * SIMD::Width + j; }
-							Store(Extract(src.Float(i), j), &ptr.base[offset], sizeof(float), atomic, memoryOrder);
-						}
-					}
-				});
-			}
-			Else
-			{
-				// No divergent offsets or masked lanes.
-				if (interleavedByLane)
-				{
-					// Lane-interleaved data.
-					Pointer<SIMD::Float> dst = ptr.base;
-					VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-					{
-						Store(src.Float(i), &dst[o], sizeof(float), atomic, memoryOrder);  // TODO: optimize alignment
-					});
-				}
-				else
-				{
-					// Intermediate source data. Non-interleaved data.
-					Pointer<SIMD::Float> dst = ptr.base;
-					VisitMemoryObject(pointerId, [&](uint32_t i, uint32_t o)
-					{
-						Store<SIMD::Float>(SIMD::Float(src.Float(i)), &dst[o], sizeof(float), atomic, memoryOrder);  // TODO: optimize alignment
-					});
-				}
-			}
+				auto p = ptr + offset;
+				if (interleavedByLane) { p = interleaveByLane(p); }
+				SIMD::Store(p, src.Float(i), state->activeLaneMask(), atomic, memoryOrder);
+			});
 		}
 
 		return EmitResult::Continue;
@@ -2434,21 +2835,19 @@ namespace sw
 		const uint32_t *indexes = insn.wordPointer(4);
 		auto &type = getType(typeId);
 		ASSERT(type.sizeInComponents == 1);
-		ASSERT(getObject(resultId).kind == Object::Kind::DivergentPointer);
+		ASSERT(getObject(resultId).kind == Object::Kind::Pointer);
 
 		if(type.storageClass == spv::StorageClassPushConstant ||
 		   type.storageClass == spv::StorageClassUniform ||
 		   type.storageClass == spv::StorageClassStorageBuffer)
 		{
 			auto ptr = WalkExplicitLayoutAccessChain(baseId, numIndexes, indexes, routine);
-			routine->createPointer(resultId, ptr.base);
-			routine->createIntermediate(resultId, type.sizeInComponents).move(0, ptr.offset);
+			routine->createPointer(resultId, ptr);
 		}
 		else
 		{
-			auto offset = WalkAccessChain(baseId, numIndexes, indexes, routine);
-			routine->createPointer(resultId, routine->getPointer(baseId));
-			routine->createIntermediate(resultId, type.sizeInComponents).move(0, offset);
+			auto ptr = WalkAccessChain(baseId, numIndexes, indexes, routine);
+			routine->createPointer(resultId, ptr);
 		}
 
 		return EmitResult::Continue;
@@ -2892,8 +3291,24 @@ namespace sw
 				dst.move(i, Abs(dpdx) + Abs(dpdy));
 				break;
 			}
+			case spv::OpQuantizeToF16:
+			{
+				// Note: keep in sync with the specialization constant version in EvalSpecConstantUnaryOp
+				auto abs = Abs(src.Float(i));
+				auto sign = src.Int(i) & SIMD::Int(0x80000000);
+				auto isZero = CmpLT(abs, SIMD::Float(0.000061035f));
+				auto isInf  = CmpGT(abs, SIMD::Float(65504.0f));
+				auto isNaN  = IsNan(abs);
+				auto isInfOrNan = isInf | isNaN;
+				SIMD::Int v = src.Int(i) & SIMD::Int(0xFFFFE000);
+				v &= ~isZero | SIMD::Int(0x80000000);
+				v = sign | (isInfOrNan & SIMD::Int(0x7F800000)) | (~isInfOrNan & v);
+				v |= isNaN & SIMD::Int(0x400000);
+				dst.move(i, v);
+				break;
+			}
 			default:
-				UNIMPLEMENTED("Unhandled unary operator %s", OpcodeName(insn.opcode()).c_str());
+				UNREACHABLE("%s", OpcodeName(insn.opcode()).c_str());
 			}
 		}
 
@@ -3088,8 +3503,16 @@ namespace sw
 				dst.move(i, lhs.UInt(i) * rhs.UInt(i));
 				dst.move(i + lhsType.sizeInComponents, MulHigh(lhs.UInt(i), rhs.UInt(i)));
 				break;
+			case spv::OpIAddCarry:
+				dst.move(i, lhs.UInt(i) + rhs.UInt(i));
+				dst.move(i + lhsType.sizeInComponents, CmpLT(dst.UInt(i), lhs.UInt(i)) >> 31);
+				break;
+			case spv::OpISubBorrow:
+				dst.move(i, lhs.UInt(i) - rhs.UInt(i));
+				dst.move(i + lhsType.sizeInComponents, CmpLT(lhs.UInt(i), rhs.UInt(i)) >> 31);
+				break;
 			default:
-				UNIMPLEMENTED("Unhandled binary operator %s", OpcodeName(insn.opcode()).c_str());
+				UNREACHABLE("%s", OpcodeName(insn.opcode()).c_str());
 			}
 		}
 
@@ -3116,12 +3539,14 @@ namespace sw
 		auto &type = getType(insn.word(1));
 		auto &dst = routine->createIntermediate(insn.word(2), type.sizeInComponents);
 		auto cond = GenericValue(this, routine, insn.word(3));
+		auto condIsScalar = (getType(cond.type).sizeInComponents == 1);
 		auto lhs = GenericValue(this, routine, insn.word(4));
 		auto rhs = GenericValue(this, routine, insn.word(5));
 
 		for (auto i = 0u; i < type.sizeInComponents; i++)
 		{
-			dst.move(i, (cond.Int(i) & lhs.Int(i)) | (~cond.Int(i) & rhs.Int(i)));   // FIXME: IfThenElse()
+			auto sel = cond.Int(condIsScalar ? 0 : i);
+			dst.move(i, (sel & lhs.Int(i)) | (~sel & rhs.Int(i)));   // TODO: IfThenElse()
 		}
 
 		return EmitResult::Continue;
@@ -3462,21 +3887,12 @@ namespace sw
 
 			for (auto i = 0u; i < type.sizeInComponents; i++)
 			{
-				auto whole = Floor(val.Float(i));
-				auto frac = Frac(val.Float(i));
-
+				SIMD::Float whole, frac;
+				std::tie(whole, frac) = Modf(val.Float(i));
 				dst.move(i, frac);
-
-				// TODO: Refactor and consolidate with EmitStore.
-				for (int j = 0; j < SIMD::Width; j++)
-				{
-					If(Extract(state->activeLaneMask(), j) != 0)
-					{
-						Int offset = Int(i) + Extract(ptr.offset, j);
-						if (interleavedByLane) { offset = offset * SIMD::Width + j; }
-						Store(Extract(whole, j), &ptr.base[offset], sizeof(float), false, std::memory_order_relaxed);
-					}
-				}
+				auto p = ptr + (i * sizeof(float));
+				if (interleavedByLane) { p = interleaveByLane(p); }
+				SIMD::Store(p, whole, state->activeLaneMask());
 			}
 			break;
 		}
@@ -3487,9 +3903,8 @@ namespace sw
 
 			for (auto i = 0u; i < valTy.sizeInComponents; i++)
 			{
-				auto whole = Floor(val.Float(i));
-				auto frac = Frac(val.Float(i));
-
+				SIMD::Float whole, frac;
+				std::tie(whole, frac) = Modf(val.Float(i));
 				dst.move(i, frac);
 				dst.move(i + valTy.sizeInComponents, whole);
 			}
@@ -3580,8 +3995,8 @@ namespace sw
 		case GLSLstd450UnpackHalf2x16:
 		{
 			auto val = GenericValue(this, routine, insn.word(5));
-			dst.move(0, HalfToFloatBits(val.UInt(0) & SIMD::UInt(0x0000FFFF)));
-			dst.move(1, HalfToFloatBits((val.UInt(0) & SIMD::UInt(0xFFFF0000)) >> 16));
+			dst.move(0, halfToFloatBits(val.UInt(0) & SIMD::UInt(0x0000FFFF)));
+			dst.move(1, halfToFloatBits((val.UInt(0) & SIMD::UInt(0xFFFF0000)) >> 16));
 			break;
 		}
 		case GLSLstd450Fma:
@@ -3611,17 +4026,9 @@ namespace sw
 
 				dst.move(i, significand);
 
-				// TODO: Refactor and consolidate with EmitStore.
-				for (int j = 0; j < SIMD::Width; j++)
-				{
-					auto ptrBase = Pointer<Int>(ptr.base);
-					If(Extract(state->activeLaneMask(), j) != 0)
-					{
-						Int offset = Int(i) + Extract(ptr.offset, j);
-						if (interleavedByLane) { offset = offset * SIMD::Width + j; }
-						Store(Extract(exponent, j), &ptrBase[offset], sizeof(uint32_t), false, std::memory_order_relaxed);
-					}
-				}
+				auto p = ptr + (i * sizeof(float));
+				if (interleavedByLane) { p = interleaveByLane(p); }
+				SIMD::Store(p, exponent, state->activeLaneMask());
 			}
 			break;
 		}
@@ -3644,10 +4051,29 @@ namespace sw
 			for (auto i = 0u; i < type.sizeInComponents; i++)
 			{
 				// Assumes IEEE 754
-				auto significandExponent = Exponent(significand.Float(i));
+				auto in = significand.Float(i);
+				auto significandExponent = Exponent(in);
 				auto combinedExponent = exponent.Int(i) + significandExponent;
-				SIMD::UInt v = (significand.UInt(i) & SIMD::UInt(0x807FFFFF)) |
-						(SIMD::UInt(combinedExponent + SIMD::Int(126)) << SIMD::UInt(23));
+				auto isSignificandZero     = SIMD::UInt(CmpEQ(significand.Int(0), SIMD::Int(0)));
+				auto isSignificandInf      = SIMD::UInt(IsInf(in));
+				auto isSignificandNaN      = SIMD::UInt(IsNan(in));
+				auto isExponentNotTooSmall = SIMD::UInt(CmpGE(combinedExponent, SIMD::Int(-126)));
+				auto isExponentNotTooLarge = SIMD::UInt(CmpLE(combinedExponent, SIMD::Int(128)));
+				auto isExponentInBounds    = isExponentNotTooSmall & isExponentNotTooLarge;
+
+				SIMD::UInt v;
+				v  = significand.UInt(i) & SIMD::UInt(0x7FFFFF); // Add significand.
+				v |= (SIMD::UInt(combinedExponent + SIMD::Int(126)) << SIMD::UInt(23)); // Add exponent.
+				v &= isExponentInBounds; // Clear v if the exponent is OOB.
+
+				v |= significand.UInt(i) & SIMD::UInt(0x80000000); // Add sign bit.
+				v |= ~isExponentNotTooLarge & SIMD::UInt(0x7F800000); // Mark as inf if the exponent is too great.
+
+				// If the input significand is zero, inf or nan, just return the
+				// input significand.
+				auto passthrough = isSignificandZero | isSignificandInf | isSignificandNaN;
+				v = (v & ~passthrough) | (significand.UInt(0) & passthrough);
+
 				dst.move(i, As<SIMD::Float>(v));
 			}
 			break;
@@ -3947,14 +4373,12 @@ namespace sw
 		}
 		case GLSLstd450PackDouble2x32:
 		{
-			// Requires Float64 capability.
-			UNIMPLEMENTED("GLSLstd450PackDouble2x32");
+			UNSUPPORTED("SPIR-V Float64 Capability (GLSLstd450PackDouble2x32)");
 			break;
 		}
 		case GLSLstd450UnpackDouble2x32:
 		{
-			// Requires Float64 capability.
-			UNIMPLEMENTED("GLSLstd450UnpackDouble2x32");
+			UNSUPPORTED("SPIR-V Float64 Capability (GLSLstd450UnpackDouble2x32)");
 			break;
 		}
 		case GLSLstd450FindILsb:
@@ -3988,20 +4412,17 @@ namespace sw
 		}
 		case GLSLstd450InterpolateAtCentroid:
 		{
-			// Requires sampleRateShading / InterpolationFunction capability.
-			UNIMPLEMENTED("GLSLstd450InterpolateAtCentroid");
+			UNSUPPORTED("SPIR-V SampleRateShading Capability (GLSLstd450InterpolateAtCentroid)");
 			break;
 		}
 		case GLSLstd450InterpolateAtSample:
 		{
-			// Requires sampleRateShading / InterpolationFunction capability.
-			UNIMPLEMENTED("GLSLstd450InterpolateAtSample");
+			UNSUPPORTED("SPIR-V SampleRateShading Capability (GLSLstd450InterpolateAtCentroid)");
 			break;
 		}
 		case GLSLstd450InterpolateAtOffset:
 		{
-			// Requires sampleRateShading / InterpolationFunction capability.
-			UNIMPLEMENTED("GLSLstd450InterpolateAtOffset");
+			UNSUPPORTED("SPIR-V SampleRateShading Capability (GLSLstd450InterpolateAtCentroid)");
 			break;
 		}
 		case GLSLstd450NMin:
@@ -4037,7 +4458,7 @@ namespace sw
 			break;
 		}
 		default:
-			UNIMPLEMENTED("Unhandled ExtInst %d", extInstIndex);
+			UNREACHABLE("ExtInst %d", int(extInstIndex));
 			break;
 		}
 
@@ -4046,7 +4467,13 @@ namespace sw
 
 	std::memory_order SpirvShader::MemoryOrder(spv::MemorySemanticsMask memorySemantics)
 	{
-		switch(memorySemantics)
+		auto control = static_cast<uint32_t>(memorySemantics) & static_cast<uint32_t>(
+			spv::MemorySemanticsAcquireMask |
+			spv::MemorySemanticsReleaseMask |
+			spv::MemorySemanticsAcquireReleaseMask |
+			spv::MemorySemanticsSequentiallyConsistentMask
+		);
+		switch (control)
 		{
 		case spv::MemorySemanticsMaskNone:                   return std::memory_order_relaxed;
 		case spv::MemorySemanticsAcquireMask:                return std::memory_order_acquire;
@@ -4054,7 +4481,9 @@ namespace sw
 		case spv::MemorySemanticsAcquireReleaseMask:         return std::memory_order_acq_rel;
 		case spv::MemorySemanticsSequentiallyConsistentMask: return std::memory_order_acq_rel;  // Vulkan 1.1: "SequentiallyConsistent is treated as AcquireRelease"
 		default:
-			UNREACHABLE("MemorySemanticsMask %x", memorySemantics);
+			// "it is invalid for more than one of these four bits to be set:
+			// Acquire, Release, AcquireRelease, or SequentiallyConsistent."
+			UNREACHABLE("MemorySemanticsMask: %x", int(control));
 			return std::memory_order_acq_rel;
 		}
 	}
@@ -4093,19 +4522,6 @@ namespace sw
 															SIMD::UInt(c_infty_as_fp16)));
 
 		return storeInUpperBits ? ((joined << 16) | justsign) : joined | (justsign >> 16);
-	}
-
-	SIMD::UInt SpirvShader::HalfToFloatBits(SIMD::UInt halfBits) const
-	{
-		static const uint32_t mask_nosign = 0x7FFF;
-		static const uint32_t magic = (254 - 15) << 23;
-		static const uint32_t was_infnan = 0x7BFF;
-		static const uint32_t exp_infnan = 255 << 23;
-
-		SIMD::UInt expmant = halfBits & SIMD::UInt(mask_nosign);
-		return As<SIMD::UInt>(As<SIMD::Float>(expmant << 13) * As<SIMD::Float>(SIMD::UInt(magic))) |
-						 ((halfBits ^ SIMD::UInt(expmant)) << 16) |
-						 (CmpNLE(As<SIMD::UInt>(expmant), SIMD::UInt(was_infnan)) & SIMD::UInt(exp_infnan));
 	}
 
 	std::pair<SIMD::Float, SIMD::Int> SpirvShader::Frexp(RValue<SIMD::Float> val) const
@@ -4162,8 +4578,7 @@ namespace sw
 	SpirvShader::EmitResult SpirvShader::EmitBranch(InsnIterator insn, EmitState *state) const
 	{
 		auto target = Block::ID(insn.word(1));
-		auto edge = Block::Edge{state->currentBlock, target};
-		state->edgeActiveLaneMasks.emplace(edge, state->activeLaneMask());
+		state->addActiveLaneMaskEdge(state->currentBlock, target, state->activeLaneMask());
 		return EmitResult::Terminator;
 	}
 
@@ -4243,46 +4658,104 @@ namespace sw
 
 	SpirvShader::EmitResult SpirvShader::EmitPhi(InsnIterator insn, EmitState *state) const
 	{
+		auto currentBlock = getBlock(state->currentBlock);
+		if (!currentBlock.isLoopMerge)
+		{
+			// If this is a loop merge block, then don't attempt to update the
+			// phi values from the ins. EmitLoop() has had to take special care
+			// of this phi in order to correctly deal with divergent lanes.
+			StorePhi(state->currentBlock, insn, state, currentBlock.ins);
+		}
+		LoadPhi(insn, state);
+		return EmitResult::Continue;
+	}
+
+	void SpirvShader::LoadPhi(InsnIterator insn, EmitState *state) const
+	{
 		auto routine = state->routine;
 		auto typeId = Type::ID(insn.word(1));
 		auto type = getType(typeId);
 		auto objectId = Object::ID(insn.word(2));
-		auto currentBlock = getBlock(state->currentBlock);
 
-		auto tmp = std::unique_ptr<SIMD::Int[]>(new SIMD::Int[type.sizeInComponents]);
+		auto storageIt = state->routine->phis.find(objectId);
+		ASSERT(storageIt != state->routine->phis.end());
+		auto &storage = storageIt->second;
 
-		bool first = true;
+		auto &dst = routine->createIntermediate(objectId, type.sizeInComponents);
+		for(uint32_t i = 0; i < type.sizeInComponents; i++)
+		{
+			dst.move(i, storage[i]);
+		}
+	}
+
+	void SpirvShader::StorePhi(Block::ID currentBlock, InsnIterator insn, EmitState *state, std::unordered_set<SpirvShader::Block::ID> const& filter) const
+	{
+		auto routine = state->routine;
+		auto typeId = Type::ID(insn.word(1));
+		auto type = getType(typeId);
+		auto objectId = Object::ID(insn.word(2));
+
+		auto storageIt = state->routine->phis.find(objectId);
+		ASSERT(storageIt != state->routine->phis.end());
+		auto &storage = storageIt->second;
+
 		for (uint32_t w = 3; w < insn.wordCount(); w += 2)
 		{
 			auto varId = Object::ID(insn.word(w + 0));
 			auto blockId = Block::ID(insn.word(w + 1));
 
-			if (currentBlock.ins.count(blockId) == 0)
+			if (filter.count(blockId) == 0)
 			{
-				continue; // In is unreachable. Ignore.
+				continue;
 			}
 
+			auto mask = GetActiveLaneMaskEdge(state, blockId, currentBlock);
 			auto in = GenericValue(this, routine, varId);
-			auto mask = GetActiveLaneMaskEdge(state, blockId, state->currentBlock);
 
 			for (uint32_t i = 0; i < type.sizeInComponents; i++)
 			{
-				auto inMasked = in.Int(i) & mask;
-				tmp[i] = first ? inMasked : (tmp[i] | inMasked);
+				storage[i] = As<SIMD::Float>((As<SIMD::Int>(storage[i]) & ~mask) | (in.Int(i) & mask));
 			}
-			first = false;
 		}
+	}
 
-		auto &dst = routine->createIntermediate(objectId, type.sizeInComponents);
-		for(uint32_t i = 0; i < type.sizeInComponents; i++)
+	SpirvShader::EmitResult SpirvShader::EmitImageSampleImplicitLod(Variant variant, InsnIterator insn, EmitState *state) const
+	{
+		return EmitImageSample({variant, Implicit}, insn, state);
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageGather(Variant variant, InsnIterator insn, EmitState *state) const
+	{
+		ImageInstruction instruction = {variant, Gather};
+		instruction.gatherComponent = !instruction.isDref() ? getObject(insn.word(5)).constantValue[0] : 0;
+
+		return EmitImageSample(instruction, insn, state);
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageSampleExplicitLod(Variant variant, InsnIterator insn, EmitState *state) const
+	{
+		auto isDref = (variant == Dref) || (variant == ProjDref);
+		uint32_t imageOperands = static_cast<spv::ImageOperandsMask>(insn.word(isDref ? 6 : 5));
+		imageOperands &= ~spv::ImageOperandsConstOffsetMask;  // Dealt with later.
+
+		if((imageOperands & spv::ImageOperandsLodMask) == imageOperands)
 		{
-			dst.move(i, tmp[i]);
+			return EmitImageSample({variant, Lod}, insn, state);
 		}
-
+		else if((imageOperands & spv::ImageOperandsGradMask) == imageOperands)
+		{
+			return EmitImageSample({variant, Grad}, insn, state);
+		}
+		else UNIMPLEMENTED("Image Operands %x", imageOperands);
 		return EmitResult::Continue;
 	}
 
-	SpirvShader::EmitResult SpirvShader::EmitImageSampleImplicitLod(InsnIterator insn, EmitState *state) const
+	SpirvShader::EmitResult SpirvShader::EmitImageFetch(InsnIterator insn, EmitState *state) const
+	{
+		return EmitImageSample({None, Fetch}, insn, state);
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageSample(ImageInstruction instruction, InsnIterator insn, EmitState *state) const
 	{
 		Type::ID resultTypeId = insn.word(1);
 		Object::ID resultId = insn.word(2);
@@ -4291,108 +4764,408 @@ namespace sw
 		auto &resultType = getType(resultTypeId);
 
 		auto &result = state->routine->createIntermediate(resultId, resultType.sizeInComponents);
-		auto &sampledImage = state->routine->getPointer(sampledImageId);
+		auto imageDescriptor = state->routine->getPointer(sampledImageId).base; // vk::SampledImageDescriptor*
+
+		// If using a separate sampler, look through the OpSampledImage instruction to find the sampler descriptor
+		auto &sampledImage = getObject(sampledImageId);
+		auto samplerDescriptor = (sampledImage.opcode() == spv::OpSampledImage) ?
+				state->routine->getPointer(sampledImage.definition.word(4)).base : imageDescriptor;
+
 		auto coordinate = GenericValue(this, state->routine, coordinateId);
+		auto &coordinateType = getType(coordinate.type);
 
-		Pointer<Byte> constants;  // FIXME(b/129523279)
+		Pointer<Byte> sampler = samplerDescriptor + OFFSET(vk::SampledImageDescriptor, sampler); // vk::Sampler*
+		Pointer<Byte> texture = imageDescriptor + OFFSET(vk::SampledImageDescriptor, texture);  // sw::Texture*
 
-		const DescriptorDecorations &d = descriptorDecorations.at(sampledImageId);
-		uint32_t arrayIndex = 0;  // TODO(b/129523279)
-		auto setLayout = state->routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
-		size_t bindingOffset = setLayout->getBindingOffset(d.Binding, arrayIndex);
+		uint32_t imageOperands = spv::ImageOperandsMaskNone;
+		bool lodOrBias = false;
+		Object::ID lodOrBiasId = 0;
+		bool grad = false;
+		Object::ID gradDxId = 0;
+		Object::ID gradDyId = 0;
+		bool constOffset = false;
+		Object::ID offsetId = 0;
+		bool sample = false;
 
-		auto descriptor = state->routine->descriptorSets[d.DescriptorSet] + bindingOffset; // vk::SampledImageDescriptor*
-		auto sampler = *Pointer<Pointer<Byte>>(descriptor + OFFSET(vk::SampledImageDescriptor, sampler)); // vk::Sampler*
-		auto imageView = *Pointer<Pointer<Byte>>(descriptor + OFFSET(vk::SampledImageDescriptor, imageView)); // vk::ImageView*
+		uint32_t operand = (instruction.isDref() || instruction.samplerMethod == Gather) ? 6 : 5;
 
-		auto samplerFunc = Call(getImageSampler, imageView, sampler);
+		if(insn.wordCount() > operand)
+		{
+			imageOperands = static_cast<spv::ImageOperandsMask>(insn.word(operand++));
 
-		Array<SIMD::Float> in(2);
-		in[0] = coordinate.Float(0);
-		in[1] = coordinate.Float(1);
+			if(imageOperands & spv::ImageOperandsBiasMask)
+			{
+				lodOrBias = true;
+				lodOrBiasId = insn.word(operand);
+				operand++;
+				imageOperands &= ~spv::ImageOperandsBiasMask;
+
+				ASSERT(instruction.samplerMethod == Implicit);
+				instruction.samplerMethod = Bias;
+			}
+
+			if(imageOperands & spv::ImageOperandsLodMask)
+			{
+				lodOrBias = true;
+				lodOrBiasId = insn.word(operand);
+				operand++;
+				imageOperands &= ~spv::ImageOperandsLodMask;
+			}
+
+			if(imageOperands & spv::ImageOperandsGradMask)
+			{
+				ASSERT(!lodOrBias);  // SPIR-V 1.3: "It is invalid to set both the Lod and Grad bits." Bias is for ImplicitLod, Grad for ExplicitLod.
+				grad = true;
+				gradDxId = insn.word(operand + 0);
+				gradDyId = insn.word(operand + 1);
+				operand += 2;
+				imageOperands &= ~spv::ImageOperandsGradMask;
+			}
+
+			if(imageOperands & spv::ImageOperandsConstOffsetMask)
+			{
+				constOffset = true;
+				offsetId = insn.word(operand);
+				operand++;
+				imageOperands &= ~spv::ImageOperandsConstOffsetMask;
+			}
+
+			if(imageOperands & spv::ImageOperandsSampleMask)
+			{
+				UNIMPLEMENTED("Image operand %x", spv::ImageOperandsSampleMask); (void)sample;
+				sample = true;
+				imageOperands &= ~spv::ImageOperandsSampleMask;
+			}
+
+			if(imageOperands != 0)
+			{
+				UNIMPLEMENTED("Image operand %x", imageOperands);
+			}
+		}
+
+		Array<SIMD::Float> in(16);  // Maximum 16 input parameter components.
+
+		uint32_t coordinates = coordinateType.sizeInComponents - instruction.isProj();
+		instruction.coordinates = coordinates;
+
+		uint32_t i = 0;
+		for( ; i < coordinates; i++)
+		{
+			if(instruction.isProj())
+			{
+				in[i] = coordinate.Float(i) / coordinate.Float(coordinates);  // TODO(b/129523279): Optimize using reciprocal.
+			}
+			else
+			{
+				in[i] = coordinate.Float(i);
+			}
+		}
+
+		if(instruction.isDref())
+		{
+			auto drefValue = GenericValue(this, state->routine, insn.word(5));
+
+			if(instruction.isProj())
+			{
+				in[i] = drefValue.Float(0) / coordinate.Float(coordinates);  // TODO(b/129523279): Optimize using reciprocal.
+			}
+			else
+			{
+				in[i] = drefValue.Float(0);
+			}
+
+			i++;
+		}
+
+		if(lodOrBias)
+		{
+			auto lodValue = GenericValue(this, state->routine, lodOrBiasId);
+			in[i] = lodValue.Float(0);
+			i++;
+		}
+		else if(grad)
+		{
+			auto dxValue = GenericValue(this, state->routine, gradDxId);
+			auto dyValue = GenericValue(this, state->routine, gradDyId);
+			auto &dxyType = getType(dxValue.type);
+			ASSERT(dxyType.sizeInComponents == getType(dyValue.type).sizeInComponents);
+
+			instruction.gradComponents = dxyType.sizeInComponents;
+
+			for(uint32_t j = 0; j < dxyType.sizeInComponents; j++, i++)
+			{
+				in[i] = dxValue.Float(j);
+			}
+
+			for(uint32_t j = 0; j < dxyType.sizeInComponents; j++, i++)
+			{
+				in[i] = dyValue.Float(j);
+			}
+		}
+		else if (instruction.samplerMethod == Fetch)
+		{
+			// The instruction didn't provide a lod operand, but the sampler's Fetch
+			// function requires one to be present. If no lod is supplied, the default
+			// is zero.
+			in[i] = As<SIMD::Float>(SIMD::Int(0));
+			i++;
+		}
+
+		if(constOffset)
+		{
+			auto offsetValue = GenericValue(this, state->routine, offsetId);
+			auto &offsetType = getType(offsetValue.type);
+
+			instruction.samplerOption = Offset;
+			instruction.offsetComponents = offsetType.sizeInComponents;
+
+			for(uint32_t j = 0; j < offsetType.sizeInComponents; j++, i++)
+			{
+				in[i] = offsetValue.Float(j);  // Integer values, but transfered as float.
+			}
+		}
+
+		auto samplerFunc = Call(getImageSampler, instruction.parameters, imageDescriptor, sampler);
 
 		Array<SIMD::Float> out(4);
-		Call<ImageSampler>(samplerFunc, sampledImage, &in[0], &out[0]);
+		Call<ImageSampler>(samplerFunc, texture, sampler, &in[0], &out[0], state->routine->constants);
 
-		for (int i = 0; i < 4; i++) { result.move(i, out[i]); }
+		for (auto i = 0u; i < resultType.sizeInComponents; i++) { result.move(i, out[i]); }
+
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageQuerySizeLod(InsnIterator insn, EmitState *state) const
+	{
+		auto &resultTy = getType(Type::ID(insn.word(1)));
+		auto resultId = Object::ID(insn.word(2));
+		auto imageId = Object::ID(insn.word(3));
+		auto lodId = Object::ID(insn.word(4));
+
+		auto &dst = state->routine->createIntermediate(resultId, resultTy.sizeInComponents);
+		GetImageDimensions(state->routine, resultTy, imageId, lodId, dst);
 
 		return EmitResult::Continue;
 	}
 
 	SpirvShader::EmitResult SpirvShader::EmitImageQuerySize(InsnIterator insn, EmitState *state) const
 	{
-		auto &resultType = getType(Type::ID(insn.word(1)));
+		auto &resultTy = getType(Type::ID(insn.word(1)));
+		auto resultId = Object::ID(insn.word(2));
 		auto imageId = Object::ID(insn.word(3));
+		auto lodId = Object::ID(0);
+
+		auto &dst = state->routine->createIntermediate(resultId, resultTy.sizeInComponents);
+		GetImageDimensions(state->routine, resultTy, imageId, lodId, dst);
+
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageQueryLod(InsnIterator insn, EmitState *state) const
+	{
+		return EmitImageSample({None, Query}, insn, state);
+	}
+
+	void SpirvShader::GetImageDimensions(SpirvRoutine const *routine, Type const &resultTy, Object::ID imageId, Object::ID lodId, Intermediate &dst) const
+	{
 		auto &image = getObject(imageId);
 		auto &imageType = getType(image.type);
-		Object::ID resultId = insn.word(2);
 
 		ASSERT(imageType.definition.opcode() == spv::OpTypeImage);
 		bool isArrayed = imageType.definition.word(5) != 0;
 		bool isCubeMap = imageType.definition.word(3) == spv::DimCube;
 
 		const DescriptorDecorations &d = descriptorDecorations.at(imageId);
-		uint32_t arrayIndex = 0;  // TODO(b/129523279)
-		auto setLayout = state->routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
-		size_t bindingOffset = setLayout->getBindingOffset(d.Binding, arrayIndex);
+		auto setLayout = routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
 		auto &bindingLayout = setLayout->getBindingLayout(d.Binding);
 
-		Pointer<Byte> set = state->routine->descriptorSets[d.DescriptorSet];  // DescriptorSet*
-		Pointer<Byte> binding = Pointer<Byte>(set + bindingOffset);
+		Pointer<Byte> descriptor = routine->getPointer(imageId).base;
 
-		auto &dst = state->routine->createIntermediate(resultId, resultType.sizeInComponents);
+		Pointer<Int> extent;
+		Int arrayLayers;
 
 		switch (bindingLayout.descriptorType)
 		{
 		case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
 		case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
 		{
-			Pointer<Byte> desc = binding; // StorageImageDescriptor*
-			Pointer<Int> extent = desc + OFFSET(vk::StorageImageDescriptor, extent); // int[3]*
-			auto dimensions = resultType.sizeInComponents - (isArrayed ? 1 : 0);
+			extent = descriptor + OFFSET(vk::StorageImageDescriptor, extent); // int[3]*
+			arrayLayers = *Pointer<Int>(descriptor + OFFSET(vk::StorageImageDescriptor, arrayLayers)); // uint32_t
+			break;
+		}
+		case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+		case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+		{
+			extent = descriptor + OFFSET(vk::SampledImageDescriptor, extent); // int[3]*
+			arrayLayers = *Pointer<Int>(descriptor + OFFSET(vk::SampledImageDescriptor, arrayLayers)); // uint32_t
+			break;
+		}
+		default:
+			UNREACHABLE("Image descriptorType: %d", int(bindingLayout.descriptorType));
+		}
+
+		auto dimensions = resultTy.sizeInComponents - (isArrayed ? 1 : 0);
+		std::vector<Int> out;
+		if (lodId != 0)
+		{
+			auto lodVal = GenericValue(this, routine, lodId);
+			ASSERT(getType(lodVal.type).sizeInComponents == 1);
+			auto lod = lodVal.Int(0);
+			auto one = SIMD::Int(1);
+			for (uint32_t i = 0; i < dimensions; i++)
+			{
+				dst.move(i, Max(SIMD::Int(extent[i]) >> lod, one));
+			}
+		}
+		else
+		{
 			for (uint32_t i = 0; i < dimensions; i++)
 			{
 				dst.move(i, SIMD::Int(extent[i]));
 			}
-			if (isArrayed)
-			{
-				auto arrayLayers = *Pointer<Int>(desc + OFFSET(vk::StorageImageDescriptor, arrayLayers)); // uint32_t
-				auto numElements = isCubeMap ? arrayLayers / 6 : arrayLayers;
-				dst.move(dimensions, SIMD::Int(numElements));
-			}
+		}
+
+		if (isArrayed)
+		{
+			auto numElements = isCubeMap ? (arrayLayers / 6) : RValue<Int>(arrayLayers);
+			dst.move(dimensions, SIMD::Int(numElements));
+		}
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageQueryLevels(InsnIterator insn, EmitState *state) const
+	{
+		auto &resultTy = getType(Type::ID(insn.word(1)));
+		ASSERT(resultTy.sizeInComponents == 1);
+		auto resultId = Object::ID(insn.word(2));
+		auto imageId = Object::ID(insn.word(3));
+
+		const DescriptorDecorations &d = descriptorDecorations.at(imageId);
+		auto setLayout = state->routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
+		auto &bindingLayout = setLayout->getBindingLayout(d.Binding);
+
+		Pointer<Byte> descriptor = state->routine->getPointer(imageId).base;
+		Int mipLevels = 0;
+		switch (bindingLayout.descriptorType)
+		{
+		case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+		case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+			mipLevels = *Pointer<Int>(descriptor + OFFSET(vk::SampledImageDescriptor, mipLevels)); // uint32_t
 			break;
-		}
 		default:
-			UNIMPLEMENTED("EmitImageQuerySize image descriptorType: %d", int(bindingLayout.descriptorType));
+			UNREACHABLE("Image descriptorType: %d", int(bindingLayout.descriptorType));
 		}
+
+		auto &dst = state->routine->createIntermediate(resultId, 1);
+		dst.move(0, SIMD::Int(mipLevels));
 
 		return EmitResult::Continue;
 	}
 
-	SIMD::Int SpirvShader::GetTexelOffset(GenericValue const & coordinate, Type const & imageType, Pointer<Byte> descriptor, int texelSize) const
+	SpirvShader::EmitResult SpirvShader::EmitImageQuerySamples(InsnIterator insn, EmitState *state) const
 	{
-		// returns a (lane-divergent) byte offset to a texel within a storage image.
+		auto &resultTy = getType(Type::ID(insn.word(1)));
+		ASSERT(resultTy.sizeInComponents == 1);
+		auto resultId = Object::ID(insn.word(2));
+		auto imageId = Object::ID(insn.word(3));
+		auto imageTy = getType(getObject(imageId).type);
+		ASSERT(imageTy.definition.opcode() == spv::OpTypeImage);
+		ASSERT(imageTy.definition.word(3) == spv::Dim2D);
+		ASSERT(imageTy.definition.word(6 /* MS */) == 1);
+
+		const DescriptorDecorations &d = descriptorDecorations.at(imageId);
+		auto setLayout = state->routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
+		auto &bindingLayout = setLayout->getBindingLayout(d.Binding);
+
+		Pointer<Byte> descriptor = state->routine->getPointer(imageId).base;
+		Int sampleCount = 0;
+		switch (bindingLayout.descriptorType)
+		{
+		case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+			sampleCount = *Pointer<Int>(descriptor + OFFSET(vk::StorageImageDescriptor, sampleCount)); // uint32_t
+			break;
+		case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+		case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+			sampleCount = *Pointer<Int>(descriptor + OFFSET(vk::SampledImageDescriptor, sampleCount)); // uint32_t
+			break;
+		default:
+			UNREACHABLE("Image descriptorType: %d", int(bindingLayout.descriptorType));
+		}
+
+		auto &dst = state->routine->createIntermediate(resultId, 1);
+		dst.move(0, SIMD::Int(sampleCount));
+
+		return EmitResult::Continue;
+	}
+
+	SIMD::Pointer SpirvShader::GetTexelAddress(SpirvRoutine const *routine, SIMD::Pointer ptr, GenericValue const & coordinate, Type const & imageType, Pointer<Byte> descriptor, int texelSize, Object::ID sampleId, bool useStencilAspect) const
+	{
 		bool isArrayed = imageType.definition.word(5) != 0;
+		auto dim = static_cast<spv::Dim>(imageType.definition.word(3));
 		int dims = getType(coordinate.type).sizeInComponents - (isArrayed ? 1 : 0);
 
-		SIMD::Int texelOffset = coordinate.Int(0) * SIMD::Int(texelSize);
+		SIMD::Int u = coordinate.Int(0);
+		SIMD::Int v = SIMD::Int(0);
+
+		if (getType(coordinate.type).sizeInComponents > 1)
+		{
+			v = coordinate.Int(1);
+		}
+
+		if (dim == spv::DimSubpassData)
+		{
+			u += routine->windowSpacePosition[0];
+			v += routine->windowSpacePosition[1];
+		}
+
+		if (useStencilAspect)
+		{
+			// Adjust addressing for quad layout. Pitches are already correct for the stencil aspect.
+			// In the quad-layout block, pixel order is [x0,y0   x1,y0   x0,y1   x1,y1]
+			u = ((v & SIMD::Int(1)) << 1) | ((u << 1) - (u & SIMD::Int(1)));
+			v &= SIMD::Int(~1);
+		}
+
+		auto rowPitch = SIMD::Int(*Pointer<Int>(descriptor + (useStencilAspect
+															  ? OFFSET(vk::StorageImageDescriptor, stencilRowPitchBytes)
+															  : OFFSET(vk::StorageImageDescriptor, rowPitchBytes))));
+		auto slicePitch = SIMD::Int(
+				*Pointer<Int>(descriptor + (useStencilAspect
+											? OFFSET(vk::StorageImageDescriptor, stencilSlicePitchBytes)
+											: OFFSET(vk::StorageImageDescriptor, slicePitchBytes))));
+		auto samplePitch = SIMD::Int(
+				*Pointer<Int>(descriptor + (useStencilAspect
+											? OFFSET(vk::StorageImageDescriptor, stencilSamplePitchBytes)
+											: OFFSET(vk::StorageImageDescriptor, samplePitchBytes))));
+
+		ptr += u * SIMD::Int(texelSize);
 		if (dims > 1)
 		{
-			texelOffset += coordinate.Int(1) * SIMD::Int(
-					*Pointer<Int>(descriptor + OFFSET(vk::StorageImageDescriptor, rowPitchBytes)));
+			ptr += v * rowPitch;
 		}
 		if (dims > 2)
 		{
-			texelOffset += coordinate.Int(2) * SIMD::Int(
-					*Pointer<Int>(descriptor + OFFSET(vk::StorageImageDescriptor, slicePitchBytes)));
+			ptr += coordinate.Int(2) * slicePitch;
 		}
 		if (isArrayed)
 		{
-			texelOffset += coordinate.Int(dims) * SIMD::Int(
-					*Pointer<Int>(descriptor + OFFSET(vk::StorageImageDescriptor, slicePitchBytes)));
+			ptr += coordinate.Int(dims) * slicePitch;
 		}
 
-		return texelOffset;
+		if (sampleId.value())
+		{
+			GenericValue sample{this, routine, sampleId};
+			ptr += sample.Int(0) * samplePitch;
+		}
+
+		return ptr;
+	}
+
+	void SpirvShader::Yield(YieldResult res) const
+	{
+		rr::Yield(RValue<Int>(int(res)));
 	}
 
 	SpirvShader::EmitResult SpirvShader::EmitImageRead(InsnIterator insn, EmitState *state) const
@@ -4403,152 +5176,275 @@ namespace sw
 		auto &imageType = getType(image.type);
 		Object::ID resultId = insn.word(2);
 
-		// Not handling any image operands yet.
-		ASSERT(insn.wordCount() == 5);
+		Object::ID sampleId = 0;
+
+		if (insn.wordCount() > 5)
+		{
+			int operand = 6;
+			auto imageOperands = insn.word(5);
+			if (imageOperands & spv::ImageOperandsSampleMask)
+			{
+				sampleId = insn.word(operand++);
+				imageOperands &= ~spv::ImageOperandsSampleMask;
+			}
+
+			// Should be no remaining image operands.
+			ASSERT(!imageOperands);
+		}
 
 		ASSERT(imageType.definition.opcode() == spv::OpTypeImage);
-
-		const DescriptorDecorations &d = descriptorDecorations.at(imageId);
-		uint32_t arrayIndex = 0;  // TODO(b/129523279)
-		auto setLayout = state->routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
-		size_t bindingOffset = setLayout->getBindingOffset(d.Binding, arrayIndex);
+		auto dim = static_cast<spv::Dim>(imageType.definition.word(3));
 
 		auto coordinate = GenericValue(this, state->routine, insn.word(4));
+		const DescriptorDecorations &d = descriptorDecorations.at(imageId);
 
-		Pointer<Byte> set = state->routine->descriptorSets[d.DescriptorSet];  // DescriptorSet*
-		Pointer<Byte> binding = Pointer<Byte>(set + bindingOffset);
-		Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + OFFSET(vk::StorageImageDescriptor, ptr));
+		// For subpass data, format in the instruction is spv::ImageFormatUnknown. Get it from
+		// the renderpass data instead. In all other cases, we can use the format in the instruction.
+		auto vkFormat = (dim == spv::DimSubpassData)
+						? inputAttachmentFormats[d.InputAttachmentIndex]
+						: SpirvFormatToVulkanFormat(static_cast<spv::ImageFormat>(imageType.definition.word(8)));
+
+		// Depth+Stencil image attachments select aspect based on the Sampled Type of the
+		// OpTypeImage. If float, then we want the depth aspect. If int, we want the stencil aspect.
+		auto useStencilAspect = (vkFormat == VK_FORMAT_D32_SFLOAT_S8_UINT &&
+				getType(imageType.definition.word(2)).opcode() == spv::OpTypeInt);
+
+		if (useStencilAspect)
+		{
+			vkFormat = VK_FORMAT_S8_UINT;
+		}
+
+		auto pointer = state->routine->getPointer(imageId);
+		Pointer<Byte> binding = pointer.base;
+		Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + (useStencilAspect
+				? OFFSET(vk::StorageImageDescriptor, stencilPtr)
+				: OFFSET(vk::StorageImageDescriptor, ptr)));
+
+		auto imageSizeInBytes = *Pointer<Int>(binding + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
 
 		auto &dst = state->routine->createIntermediate(resultId, resultType.sizeInComponents);
 
+		auto texelSize = vk::Format(vkFormat).bytes();
+		auto basePtr = SIMD::Pointer(imageBase, imageSizeInBytes);
+		auto texelPtr = GetTexelAddress(state->routine, basePtr, coordinate, imageType, binding, texelSize, sampleId, useStencilAspect);
+
 		SIMD::Int packed[4];
-		auto numPackedElements = 0u;
-		int texelSize = 0;
-		auto format = static_cast<spv::ImageFormat>(imageType.definition.word(8));
-		switch (format)
+		// Round up texel size: for formats smaller than 32 bits per texel, we will emit a bunch
+		// of (overlapping) 32b loads here, and each lane will pick out what it needs from the low bits.
+		// TODO: specialize for small formats?
+		for (auto i = 0; i < (texelSize + 3)/4; i++)
 		{
-		case spv::ImageFormatRgba32f:
-		case spv::ImageFormatRgba32i:
-		case spv::ImageFormatRgba32ui:
-			texelSize = 16;
-			numPackedElements = 4;
-			break;
-		case spv::ImageFormatR32f:
-		case spv::ImageFormatR32i:
-		case spv::ImageFormatR32ui:
-			texelSize = 4;
-			numPackedElements = 1;
-			break;
-		case spv::ImageFormatRgba8:
-			texelSize = 4;
-			numPackedElements = 1;
-			break;
-		case spv::ImageFormatRgba8Snorm:
-			texelSize = 4;
-			numPackedElements = 1;
-			break;
-		case spv::ImageFormatRgba8i:
-		case spv::ImageFormatRgba8ui:
-			texelSize = 4;
-			numPackedElements = 1;
-			break;
-		case spv::ImageFormatRgba16f:
-			texelSize = 8;
-			numPackedElements = 2;
-			break;
-		case spv::ImageFormatRgba16i:
-		case spv::ImageFormatRgba16ui:
-			texelSize = 8;
-			numPackedElements = 2;
-			break;
-		default:
-			UNIMPLEMENTED("spv::ImageFormat %u", format);
+			packed[i] = SIMD::Load<SIMD::Int>(texelPtr, state->activeLaneMask());
+			texelPtr += sizeof(float);
 		}
 
-		SIMD::Int texelOffset = GetTexelOffset(coordinate, imageType, binding, texelSize);
-
-		for (auto i = 0u; i < numPackedElements; i++)
+		// Format support requirements here come from two sources:
+		// - Minimum required set of formats for loads from storage images
+		// - Any format supported as a color or depth/stencil attachment, for input attachments
+		switch(vkFormat)
 		{
-			for (int j = 0; j < 4; j++)
-			{
-				If(Extract(state->activeLaneMask(), j) != 0)
-				{
-					Int offset = Int(sizeof(float) * i) + Extract(texelOffset, j);
-					packed[i] = Insert(packed[i], Load(RValue<Pointer<Int>>(&imageBase[offset]), sizeof(uint32_t), false,
-						  std::memory_order_relaxed), j);
-				}
-			}
-		}
-
-		switch(format)
-		{
-		case spv::ImageFormatRgba32f:
-		case spv::ImageFormatRgba32i:
-		case spv::ImageFormatRgba32ui:
+		case VK_FORMAT_R32G32B32A32_SFLOAT:
+		case VK_FORMAT_R32G32B32A32_SINT:
+		case VK_FORMAT_R32G32B32A32_UINT:
 			dst.move(0, packed[0]);
 			dst.move(1, packed[1]);
 			dst.move(2, packed[2]);
 			dst.move(3, packed[3]);
 			break;
-		case spv::ImageFormatR32i:
-		case spv::ImageFormatR32ui:
+		case VK_FORMAT_R32_SINT:
+		case VK_FORMAT_R32_UINT:
 			dst.move(0, packed[0]);
 			// Fill remaining channels with 0,0,1 (of the correct type)
 			dst.move(1, SIMD::Int(0));
 			dst.move(2, SIMD::Int(0));
 			dst.move(3, SIMD::Int(1));
 			break;
-		case spv::ImageFormatR32f:
+		case VK_FORMAT_R32_SFLOAT:
+		case VK_FORMAT_D32_SFLOAT:
+		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			dst.move(0, packed[0]);
 			// Fill remaining channels with 0,0,1 (of the correct type)
 			dst.move(1, SIMD::Float(0));
 			dst.move(2, SIMD::Float(0));
 			dst.move(3, SIMD::Float(1));
 			break;
-		case spv::ImageFormatRgba16i:
+		case VK_FORMAT_D16_UNORM:
+			dst.move(0, SIMD::Float(packed[0] & SIMD::Int(0xffff)) * SIMD::Float(1.0f / 65535.0f));
+			dst.move(1, SIMD::Float(0));
+			dst.move(2, SIMD::Float(0));
+			dst.move(3, SIMD::Float(1));
+			break;
+		case VK_FORMAT_R16G16B16A16_SINT:
 			dst.move(0, (packed[0] << 16) >> 16);
 			dst.move(1, (packed[0]) >> 16);
 			dst.move(2, (packed[1] << 16) >> 16);
 			dst.move(3, (packed[1]) >> 16);
 			break;
-		case spv::ImageFormatRgba16ui:
+		case VK_FORMAT_R16G16B16A16_UINT:
 			dst.move(0, packed[0] & SIMD::Int(0xffff));
 			dst.move(1, (packed[0] >> 16) & SIMD::Int(0xffff));
 			dst.move(2, packed[1] & SIMD::Int(0xffff));
 			dst.move(3, (packed[1] >> 16) & SIMD::Int(0xffff));
 			break;
-		case spv::ImageFormatRgba16f:
-			dst.move(0, HalfToFloatBits(As<SIMD::UInt>(packed[0]) & SIMD::UInt(0x0000FFFF)));
-			dst.move(1, HalfToFloatBits((As<SIMD::UInt>(packed[0]) & SIMD::UInt(0xFFFF0000)) >> 16));
-			dst.move(2, HalfToFloatBits(As<SIMD::UInt>(packed[1]) & SIMD::UInt(0x0000FFFF)));
-			dst.move(3, HalfToFloatBits((As<SIMD::UInt>(packed[1]) & SIMD::UInt(0xFFFF0000)) >> 16));
+		case VK_FORMAT_R16G16B16A16_SFLOAT:
+			dst.move(0, halfToFloatBits(As<SIMD::UInt>(packed[0]) & SIMD::UInt(0x0000FFFF)));
+			dst.move(1, halfToFloatBits((As<SIMD::UInt>(packed[0]) & SIMD::UInt(0xFFFF0000)) >> 16));
+			dst.move(2, halfToFloatBits(As<SIMD::UInt>(packed[1]) & SIMD::UInt(0x0000FFFF)));
+			dst.move(3, halfToFloatBits((As<SIMD::UInt>(packed[1]) & SIMD::UInt(0xFFFF0000)) >> 16));
 			break;
-		case spv::ImageFormatRgba8Snorm:
+		case VK_FORMAT_R8G8B8A8_SNORM:
 			dst.move(0, Min(Max(SIMD::Float(((packed[0]<<24) & SIMD::Int(0xFF000000))) * SIMD::Float(1.0f / float(0x7f000000)), SIMD::Float(-1.0f)), SIMD::Float(1.0f)));
 			dst.move(1, Min(Max(SIMD::Float(((packed[0]<<16) & SIMD::Int(0xFF000000))) * SIMD::Float(1.0f / float(0x7f000000)), SIMD::Float(-1.0f)), SIMD::Float(1.0f)));
 			dst.move(2, Min(Max(SIMD::Float(((packed[0]<<8) & SIMD::Int(0xFF000000))) * SIMD::Float(1.0f / float(0x7f000000)), SIMD::Float(-1.0f)), SIMD::Float(1.0f)));
 			dst.move(3, Min(Max(SIMD::Float(((packed[0]) & SIMD::Int(0xFF000000))) * SIMD::Float(1.0f / float(0x7f000000)), SIMD::Float(-1.0f)), SIMD::Float(1.0f)));
 			break;
-		case spv::ImageFormatRgba8:
+		case VK_FORMAT_R8G8B8A8_UNORM:
+		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
 			dst.move(0, SIMD::Float((packed[0] & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
 			dst.move(1, SIMD::Float(((packed[0]>>8) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
 			dst.move(2, SIMD::Float(((packed[0]>>16) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
 			dst.move(3, SIMD::Float(((packed[0]>>24) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
 			break;
-		case spv::ImageFormatRgba8ui:
+		case VK_FORMAT_R8G8B8A8_SRGB:
+		case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+			dst.move(0, ::sRGBtoLinear(SIMD::Float((packed[0] & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			dst.move(1, ::sRGBtoLinear(SIMD::Float(((packed[0]>>8) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			dst.move(2, ::sRGBtoLinear(SIMD::Float(((packed[0]>>16) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			dst.move(3, ::sRGBtoLinear(SIMD::Float(((packed[0]>>24) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			break;
+		case VK_FORMAT_B8G8R8A8_UNORM:
+			dst.move(0, SIMD::Float(((packed[0]>>16) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			dst.move(1, SIMD::Float(((packed[0]>>8) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			dst.move(2, SIMD::Float((packed[0] & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			dst.move(3, SIMD::Float(((packed[0]>>24) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			break;
+		case VK_FORMAT_B8G8R8A8_SRGB:
+			dst.move(0, ::sRGBtoLinear(SIMD::Float(((packed[0]>>16) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			dst.move(1, ::sRGBtoLinear(SIMD::Float(((packed[0]>>8) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			dst.move(2, ::sRGBtoLinear(SIMD::Float((packed[0] & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			dst.move(3, ::sRGBtoLinear(SIMD::Float(((packed[0]>>24) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f)));
+			break;
+		case VK_FORMAT_R8G8B8A8_UINT:
+		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
 			dst.move(0, (As<SIMD::UInt>(packed[0]) & SIMD::UInt(0xFF)));
 			dst.move(1, ((As<SIMD::UInt>(packed[0])>>8) & SIMD::UInt(0xFF)));
 			dst.move(2, ((As<SIMD::UInt>(packed[0])>>16) & SIMD::UInt(0xFF)));
 			dst.move(3, ((As<SIMD::UInt>(packed[0])>>24) & SIMD::UInt(0xFF)));
 			break;
-		case spv::ImageFormatRgba8i:
+		case VK_FORMAT_R8G8B8A8_SINT:
+		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
 			dst.move(0, (packed[0] << 24) >> 24);
 			dst.move(1, (packed[0] << 16) >> 24);
 			dst.move(2, (packed[0] << 8) >> 24);
 			dst.move(3, (packed[0]) >> 24);
 			break;
+		case VK_FORMAT_R8_UNORM:
+			dst.move(0, SIMD::Float((packed[0] & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			dst.move(1, SIMD::Float(0));
+			dst.move(2, SIMD::Float(0));
+			dst.move(3, SIMD::Float(1));
+			break;
+		case VK_FORMAT_R8_UINT:
+		case VK_FORMAT_S8_UINT:
+			dst.move(0, (As<SIMD::UInt>(packed[0]) & SIMD::UInt(0xFF)));
+			dst.move(1, SIMD::UInt(0));
+			dst.move(2, SIMD::UInt(0));
+			dst.move(3, SIMD::UInt(1));
+			break;
+		case VK_FORMAT_R8_SINT:
+			dst.move(0, (packed[0] << 24) >> 24);
+			dst.move(1, SIMD::Int(0));
+			dst.move(2, SIMD::Int(0));
+			dst.move(3, SIMD::Int(1));
+			break;
+		case VK_FORMAT_R8G8_UNORM:
+			dst.move(0, SIMD::Float((packed[0] & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			dst.move(1, SIMD::Float(((packed[0]>>8) & SIMD::Int(0xFF))) * SIMD::Float(1.0f / 255.f));
+			dst.move(2, SIMD::Float(0));
+			dst.move(3, SIMD::Float(1));
+			break;
+		case VK_FORMAT_R8G8_UINT:
+			dst.move(0, (As<SIMD::UInt>(packed[0]) & SIMD::UInt(0xFF)));
+			dst.move(1, ((As<SIMD::UInt>(packed[0])>>8) & SIMD::UInt(0xFF)));
+			dst.move(2, SIMD::UInt(0));
+			dst.move(3, SIMD::UInt(1));
+			break;
+		case VK_FORMAT_R8G8_SINT:
+			dst.move(0, (packed[0] << 24) >> 24);
+			dst.move(1, (packed[0] << 16) >> 24);
+			dst.move(2, SIMD::Int(0));
+			dst.move(3, SIMD::Int(1));
+			break;
+		case VK_FORMAT_R16_SFLOAT:
+			dst.move(0, halfToFloatBits(As<SIMD::UInt>(packed[0]) & SIMD::UInt(0x0000FFFF)));
+			dst.move(1, SIMD::Float(0));
+			dst.move(2, SIMD::Float(0));
+			dst.move(3, SIMD::Float(1));
+			break;
+		case VK_FORMAT_R16_UINT:
+			dst.move(0, packed[0] & SIMD::Int(0xffff));
+			dst.move(1, SIMD::UInt(0));
+			dst.move(2, SIMD::UInt(0));
+			dst.move(3, SIMD::UInt(1));
+			break;
+		case VK_FORMAT_R16_SINT:
+			dst.move(0, (packed[0] << 16) >> 16);
+			dst.move(1, SIMD::Int(0));
+			dst.move(2, SIMD::Int(0));
+			dst.move(3, SIMD::Int(1));
+			break;
+		case VK_FORMAT_R16G16_SFLOAT:
+			dst.move(0, halfToFloatBits(As<SIMD::UInt>(packed[0]) & SIMD::UInt(0x0000FFFF)));
+			dst.move(1, halfToFloatBits((As<SIMD::UInt>(packed[0]) & SIMD::UInt(0xFFFF0000)) >> 16));
+			dst.move(2, SIMD::Float(0));
+			dst.move(3, SIMD::Float(1));
+			break;
+		case VK_FORMAT_R16G16_UINT:
+			dst.move(0, packed[0] & SIMD::Int(0xffff));
+			dst.move(1, (packed[0] >> 16) & SIMD::Int(0xffff));
+			dst.move(2, SIMD::UInt(0));
+			dst.move(3, SIMD::UInt(1));
+			break;
+		case VK_FORMAT_R16G16_SINT:
+			dst.move(0, (packed[0] << 16) >> 16);
+			dst.move(1, (packed[0]) >> 16);
+			dst.move(2, SIMD::Int(0));
+			dst.move(3, SIMD::Int(1));
+			break;
+		case VK_FORMAT_R32G32_SINT:
+		case VK_FORMAT_R32G32_UINT:
+			dst.move(0, packed[0]);
+			dst.move(1, packed[1]);
+			dst.move(2, SIMD::Int(0));
+			dst.move(3, SIMD::Int(1));
+			break;
+		case VK_FORMAT_R32G32_SFLOAT:
+			dst.move(0, packed[0]);
+			dst.move(1, packed[1]);
+			dst.move(2, SIMD::Float(0));
+			dst.move(3, SIMD::Float(1));
+			break;
+		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+			dst.move(0, (packed[0]) & SIMD::Int(0x3FF));
+			dst.move(1, (packed[0] >> 10) & SIMD::Int(0x3FF));
+			dst.move(2, (packed[0] >> 20) & SIMD::Int(0x3FF));
+			dst.move(3, (packed[0] >> 30) & SIMD::Int(0x3));
+			break;
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+			dst.move(0, SIMD::Float((packed[0]) & SIMD::Int(0x3FF)) * SIMD::Float(1.0f / 0x3FF));
+			dst.move(1, SIMD::Float((packed[0] >> 10) & SIMD::Int(0x3FF)) * SIMD::Float(1.0f / 0x3FF));
+			dst.move(2, SIMD::Float((packed[0] >> 20) & SIMD::Int(0x3FF)) * SIMD::Float(1.0f / 0x3FF));
+			dst.move(3, SIMD::Float((packed[0] >> 30) & SIMD::Int(0x3)) * SIMD::Float(1.0f / 0x3));
+			break;
+		case VK_FORMAT_R5G6B5_UNORM_PACK16:
+			dst.move(0, SIMD::Float((packed[0] >> 11) & SIMD::Int(0x1F)) * SIMD::Float(1.0f / 0x1F));
+			dst.move(1, SIMD::Float((packed[0] >> 5) & SIMD::Int(0x3F)) * SIMD::Float(1.0f / 0x3F));
+			dst.move(2, SIMD::Float((packed[0]) & SIMD::Int(0x1F)) * SIMD::Float(1.0f / 0x1F));
+			dst.move(3, SIMD::Float(1));
+			break;
 		default:
-			UNIMPLEMENTED("");
+			UNIMPLEMENTED("spv::ImageFormat %d", int(vkFormat));
+			break;
 		}
 
 		return EmitResult::Continue;
@@ -4565,17 +5461,12 @@ namespace sw
 		// Not handling any image operands yet.
 		ASSERT(insn.wordCount() == 4);
 
-		const DescriptorDecorations &d = descriptorDecorations.at(imageId);
-		uint32_t arrayIndex = 0;  // TODO(b/129523279)
-		auto setLayout = state->routine->pipelineLayout->getDescriptorSetLayout(d.DescriptorSet);
-		size_t bindingOffset = setLayout->getBindingOffset(d.Binding, arrayIndex);
-
 		auto coordinate = GenericValue(this, state->routine, insn.word(2));
 		auto texel = GenericValue(this, state->routine, insn.word(3));
 
-		Pointer<Byte> set = state->routine->descriptorSets[d.DescriptorSet];  // DescriptorSet*
-		Pointer<Byte> binding = Pointer<Byte>(set + bindingOffset);	// StorageImageDescriptor*
+		Pointer<Byte> binding = state->routine->getPointer(imageId).base;
 		Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + OFFSET(vk::StorageImageDescriptor, ptr));
+		auto imageSizeInBytes = *Pointer<Int>(binding + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
 
 		SIMD::Int packed[4];
 		auto numPackedElements = 0u;
@@ -4642,26 +5533,640 @@ namespace sw
 			packed[1] = SIMD::UInt(texel.UInt(2) & SIMD::UInt(0xffff)) | (SIMD::UInt(texel.UInt(3) & SIMD::UInt(0xffff)) << 16);
 			numPackedElements = 2;
 			break;
+		case spv::ImageFormatRg32f:
+		case spv::ImageFormatRg16f:
+		case spv::ImageFormatR11fG11fB10f:
+		case spv::ImageFormatR16f:
+		case spv::ImageFormatRgba16:
+		case spv::ImageFormatRgb10A2:
+		case spv::ImageFormatRg16:
+		case spv::ImageFormatRg8:
+		case spv::ImageFormatR16:
+		case spv::ImageFormatR8:
+		case spv::ImageFormatRgba16Snorm:
+		case spv::ImageFormatRg16Snorm:
+		case spv::ImageFormatRg8Snorm:
+		case spv::ImageFormatR16Snorm:
+		case spv::ImageFormatR8Snorm:
+		case spv::ImageFormatRg32i:
+		case spv::ImageFormatRg16i:
+		case spv::ImageFormatRg8i:
+		case spv::ImageFormatR16i:
+		case spv::ImageFormatR8i:
+		case spv::ImageFormatRgb10a2ui:
+		case spv::ImageFormatRg32ui:
+		case spv::ImageFormatRg16ui:
+		case spv::ImageFormatRg8ui:
+		case spv::ImageFormatR16ui:
+		case spv::ImageFormatR8ui:
+			UNIMPLEMENTED("spv::ImageFormat %d", int(format));
+			break;
+
 		default:
-			UNIMPLEMENTED("spv::ImageFormat %u", format);
+			UNREACHABLE("spv::ImageFormat %d", int(format));
+			break;
 		}
 
-		SIMD::Int texelOffset = GetTexelOffset(coordinate, imageType, binding, texelSize);
+		auto basePtr = SIMD::Pointer(imageBase, imageSizeInBytes);
+		auto texelPtr = GetTexelAddress(state->routine, basePtr, coordinate, imageType, binding, texelSize, 0, false);
 
 		for (auto i = 0u; i < numPackedElements; i++)
 		{
-			for (int j = 0; j < 4; j++)
-			{
-				If(Extract(state->activeLaneMask(), j) != 0)
-				{
-					Int offset = Int(sizeof(float) * i) + Extract(texelOffset, j);
-					Store(Extract(packed[i], j), RValue<Pointer<Int>>(&imageBase[offset]), sizeof(uint32_t), false,
-						  std::memory_order_relaxed);
-				}
-			}
+			SIMD::Store(texelPtr, packed[i], state->activeLaneMask());
+			texelPtr += sizeof(float);
 		}
 
 		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitImageTexelPointer(InsnIterator insn, EmitState *state) const
+	{
+		auto &resultType = getType(Type::ID(insn.word(1)));
+		auto imageId = Object::ID(insn.word(3));
+		auto &image = getObject(imageId);
+		// Note: OpImageTexelPointer is unusual in that the image is passed by pointer.
+		// Look through to get the actual image type.
+		auto &imageType = getType(getType(image.type).element);
+		Object::ID resultId = insn.word(2);
+
+		ASSERT(imageType.opcode() == spv::OpTypeImage);
+		ASSERT(resultType.storageClass == spv::StorageClassImage);
+		ASSERT(getType(resultType.element).opcode() == spv::OpTypeInt);
+
+		auto coordinate = GenericValue(this, state->routine, insn.word(4));
+
+		Pointer<Byte> binding = state->routine->getPointer(imageId).base;
+		Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + OFFSET(vk::StorageImageDescriptor, ptr));
+		auto imageSizeInBytes = *Pointer<Int>(binding + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
+
+		auto basePtr = SIMD::Pointer(imageBase, imageSizeInBytes);
+		auto ptr = GetTexelAddress(state->routine, basePtr, coordinate, imageType, binding, sizeof(uint32_t), 0, false);
+
+		state->routine->createPointer(resultId, ptr);
+
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitSampledImageCombineOrSplit(InsnIterator insn, EmitState *state) const
+	{
+		// Propagate the image pointer in both cases.
+		// Consumers of OpSampledImage will look through to find the sampler pointer.
+
+		Object::ID resultId = insn.word(2);
+		Object::ID imageId = insn.word(3);
+
+		state->routine->createPointer(resultId, state->routine->getPointer(imageId));
+
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitAtomicOp(InsnIterator insn, EmitState *state) const
+	{
+		auto &resultType = getType(Type::ID(insn.word(1)));
+		Object::ID resultId = insn.word(2);
+		Object::ID semanticsId = insn.word(5);
+		auto memorySemantics = static_cast<spv::MemorySemanticsMask>(getObject(semanticsId).constantValue[0]);
+		auto memoryOrder = MemoryOrder(memorySemantics);
+		// Where no value is provided (increment/decrement) use an implicit value of 1.
+		auto value = (insn.wordCount() == 7) ? GenericValue(this, state->routine, insn.word(6)).UInt(0) : RValue<SIMD::UInt>(1);
+		auto &dst = state->routine->createIntermediate(resultId, resultType.sizeInComponents);
+		auto ptr = state->routine->getPointer(insn.word(3));
+		auto ptrOffsets = ptr.offsets();
+
+		SIMD::UInt x;
+		for (int j = 0; j < SIMD::Width; j++)
+		{
+			If(Extract(state->activeLaneMask(), j) != 0)
+			{
+				auto offset = Extract(ptrOffsets, j);
+				auto laneValue = Extract(value, j);
+				UInt v;
+				switch (insn.opcode())
+				{
+				case spv::OpAtomicIAdd:
+				case spv::OpAtomicIIncrement:
+					v = AddAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicISub:
+				case spv::OpAtomicIDecrement:
+					v = SubAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicAnd:
+					v = AndAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicOr:
+					v = OrAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicXor:
+					v = XorAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicSMin:
+					v = As<UInt>(MinAtomic(Pointer<Int>(&ptr.base[offset]), As<Int>(laneValue), memoryOrder));
+					break;
+				case spv::OpAtomicSMax:
+					v = As<UInt>(MaxAtomic(Pointer<Int>(&ptr.base[offset]), As<Int>(laneValue), memoryOrder));
+					break;
+				case spv::OpAtomicUMin:
+					v = MinAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicUMax:
+					v = MaxAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				case spv::OpAtomicExchange:
+					v = ExchangeAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+					break;
+				default:
+					UNREACHABLE("%s", OpcodeName(insn.opcode()).c_str());
+					break;
+				}
+				x = Insert(x, v, j);
+			}
+		}
+
+		dst.move(0, x);
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitAtomicCompareExchange(InsnIterator insn, EmitState *state) const
+	{
+		// Separate from EmitAtomicOp due to different instruction encoding
+		auto &resultType = getType(Type::ID(insn.word(1)));
+		Object::ID resultId = insn.word(2);
+
+		auto memorySemanticsEqual = static_cast<spv::MemorySemanticsMask>(getObject(insn.word(5)).constantValue[0]);
+		auto memoryOrderEqual = MemoryOrder(memorySemanticsEqual);
+		auto memorySemanticsUnequal = static_cast<spv::MemorySemanticsMask>(getObject(insn.word(6)).constantValue[0]);
+		auto memoryOrderUnequal = MemoryOrder(memorySemanticsUnequal);
+
+		auto value = GenericValue(this, state->routine, insn.word(7));
+		auto comparator = GenericValue(this, state->routine, insn.word(8));
+		auto &dst = state->routine->createIntermediate(resultId, resultType.sizeInComponents);
+		auto ptr = state->routine->getPointer(insn.word(3));
+		auto ptrOffsets = ptr.offsets();
+
+		SIMD::UInt x;
+		for (int j = 0; j < SIMD::Width; j++)
+		{
+			If(Extract(state->activeLaneMask(), j) != 0)
+			{
+				auto offset = Extract(ptrOffsets, j);
+				auto laneValue = Extract(value.UInt(0), j);
+				auto laneComparator = Extract(comparator.UInt(0), j);
+				UInt v = CompareExchangeAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, laneComparator, memoryOrderEqual, memoryOrderUnequal);
+				x = Insert(x, v, j);
+			}
+		}
+
+		dst.move(0, x);
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitCopyObject(InsnIterator insn, EmitState *state) const
+	{
+		auto ty = getType(insn.word(1));
+		auto &dst = state->routine->createIntermediate(insn.word(2), ty.sizeInComponents);
+		auto src = GenericValue(this, state->routine, insn.word(3));
+		for (uint32_t i = 0; i < ty.sizeInComponents; i++)
+		{
+			dst.move(i, src.Int(i));
+		}
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitCopyMemory(InsnIterator insn, EmitState *state) const
+	{
+		Object::ID dstPtrId = insn.word(1);
+		Object::ID srcPtrId = insn.word(2);
+		auto &dstPtrTy = getType(getObject(dstPtrId).type);
+		auto &srcPtrTy = getType(getObject(srcPtrId).type);
+		ASSERT(dstPtrTy.element == srcPtrTy.element);
+
+		bool dstInterleavedByLane = IsStorageInterleavedByLane(dstPtrTy.storageClass);
+		bool srcInterleavedByLane = IsStorageInterleavedByLane(srcPtrTy.storageClass);
+		auto dstPtr = GetPointerToData(dstPtrId, 0, state->routine);
+		auto srcPtr = GetPointerToData(srcPtrId, 0, state->routine);
+
+		std::unordered_map<uint32_t, uint32_t> srcOffsets;
+
+		VisitMemoryObject(srcPtrId, [&](uint32_t i, uint32_t srcOffset) { srcOffsets[i] = srcOffset; });
+
+		VisitMemoryObject(dstPtrId, [&](uint32_t i, uint32_t dstOffset)
+		{
+			auto it = srcOffsets.find(i);
+			ASSERT(it != srcOffsets.end());
+			auto srcOffset = it->second;
+
+			auto dst = dstPtr + dstOffset;
+			auto src = srcPtr + srcOffset;
+			if (dstInterleavedByLane) { dst = interleaveByLane(dst); }
+			if (srcInterleavedByLane) { src = interleaveByLane(src); }
+			SIMD::Store(dst, SIMD::Load<SIMD::Float>(src, state->activeLaneMask()), state->activeLaneMask());
+		});
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitControlBarrier(InsnIterator insn, EmitState *state) const
+	{
+		auto executionScope = spv::Scope(GetConstScalarInt(insn.word(1)));
+		auto semantics = spv::MemorySemanticsMask(GetConstScalarInt(insn.word(3)));
+		// TODO: We probably want to consider the memory scope here. For now,
+		// just always emit the full fence.
+		Fence(semantics);
+
+		switch (executionScope)
+		{
+		case spv::ScopeWorkgroup:
+		case spv::ScopeSubgroup:
+			Yield(YieldResult::ControlBarrier);
+			break;
+		default:
+			// See Vulkan 1.1 spec, Appendix A, Validation Rules within a Module.
+			UNREACHABLE("Scope for execution must be limited to Workgroup or Subgroup");
+			break;
+		}
+
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitMemoryBarrier(InsnIterator insn, EmitState *state) const
+	{
+		auto semantics = spv::MemorySemanticsMask(GetConstScalarInt(insn.word(2)));
+		// TODO: We probably want to consider the memory scope here. For now,
+		// just always emit the full fence.
+		Fence(semantics);
+		return EmitResult::Continue;
+	}
+
+	void SpirvShader::Fence(spv::MemorySemanticsMask semantics) const
+	{
+		if (semantics == spv::MemorySemanticsMaskNone)
+		{
+			return; //no-op
+		}
+		rr::Fence(MemoryOrder(semantics));
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitGroupNonUniform(InsnIterator insn, EmitState *state) const
+	{
+		auto &type = getType(Type::ID(insn.word(1)));
+		Object::ID resultId = insn.word(2);
+		auto scope = spv::Scope(GetConstScalarInt(insn.word(3)));
+		ASSERT_MSG(scope == spv::ScopeSubgroup, "Scope for Non Uniform Group Operations must be Subgroup for Vulkan 1.1");
+
+		auto &dst = state->routine->createIntermediate(resultId, type.sizeInComponents);
+
+		switch (insn.opcode())
+		{
+		case spv::OpGroupNonUniformElect:
+		{
+			// Result is true only in the active invocation with the lowest id
+			// in the group, otherwise result is false.
+			SIMD::Int active = state->activeLaneMask();
+			// TODO: Would be nice if we could write this as:
+			//   elect = active & ~(active.Oxyz | active.OOxy | active.OOOx)
+			auto v0111 = SIMD::Int(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+			auto elect = active & ~(v0111 & (active.xxyz | active.xxxy | active.xxxx));
+			dst.move(0, elect);
+			break;
+		}
+		default:
+			UNIMPLEMENTED("EmitGroupNonUniform op: %s", OpcodeName(type.opcode()).c_str());
+		}
+		return EmitResult::Continue;
+	}
+
+	SpirvShader::EmitResult SpirvShader::EmitArrayLength(InsnIterator insn, EmitState *state) const
+	{
+		auto resultTyId = Type::ID(insn.word(1));
+		auto resultId = Object::ID(insn.word(2));
+		auto structPtrId = Object::ID(insn.word(3));
+		auto arrayFieldIdx = insn.word(4);
+
+		auto &resultType = getType(resultTyId);
+		ASSERT(resultType.sizeInComponents == 1);
+		ASSERT(resultType.definition.opcode() == spv::OpTypeInt);
+
+		auto &structPtrTy = getType(getObject(structPtrId).type);
+		auto &structTy = getType(structPtrTy.element);
+		auto &arrayTy = getType(structTy.definition.word(2 + arrayFieldIdx));
+		ASSERT(arrayTy.definition.opcode() == spv::OpTypeRuntimeArray);
+		auto &arrayElTy = getType(arrayTy.element);
+
+		auto &result = state->routine->createIntermediate(resultId, 1);
+		auto structBase = GetPointerToData(structPtrId, 0, state->routine);
+
+		Decorations d = {};
+		ApplyDecorationsForIdMember(&d, structPtrTy.element, arrayFieldIdx);
+		ASSERT(d.HasOffset);
+
+		auto arrayBase = structBase + d.Offset;
+		auto arraySizeInBytes = SIMD::Int(arrayBase.limit) - arrayBase.offsets();
+		auto arrayLength = arraySizeInBytes / SIMD::Int(arrayElTy.sizeInComponents * sizeof(float));
+
+		result.move(0, SIMD::Int(arrayLength));
+
+		return EmitResult::Continue;
+	}
+
+	uint32_t SpirvShader::GetConstScalarInt(Object::ID id) const
+	{
+		auto &scopeObj = getObject(id);
+		ASSERT(scopeObj.kind == Object::Kind::Constant);
+		ASSERT(getType(scopeObj.type).sizeInComponents == 1);
+		return scopeObj.constantValue[0];
+	}
+
+	void SpirvShader::EvalSpecConstantOp(InsnIterator insn)
+	{
+		auto opcode = static_cast<spv::Op>(insn.word(3));
+
+		switch (opcode)
+		{
+		case spv::OpIAdd:
+		case spv::OpISub:
+		case spv::OpIMul:
+		case spv::OpUDiv:
+		case spv::OpSDiv:
+		case spv::OpUMod:
+		case spv::OpSMod:
+		case spv::OpSRem:
+		case spv::OpShiftRightLogical:
+		case spv::OpShiftRightArithmetic:
+		case spv::OpShiftLeftLogical:
+		case spv::OpBitwiseOr:
+		case spv::OpLogicalOr:
+		case spv::OpBitwiseAnd:
+		case spv::OpLogicalAnd:
+		case spv::OpBitwiseXor:
+		case spv::OpLogicalEqual:
+		case spv::OpIEqual:
+		case spv::OpLogicalNotEqual:
+		case spv::OpINotEqual:
+		case spv::OpULessThan:
+		case spv::OpSLessThan:
+		case spv::OpUGreaterThan:
+		case spv::OpSGreaterThan:
+		case spv::OpULessThanEqual:
+		case spv::OpSLessThanEqual:
+		case spv::OpUGreaterThanEqual:
+		case spv::OpSGreaterThanEqual:
+			EvalSpecConstantBinaryOp(insn);
+			break;
+
+		case spv::OpSConvert:
+		case spv::OpFConvert:
+		case spv::OpUConvert:
+		case spv::OpSNegate:
+		case spv::OpNot:
+		case spv::OpLogicalNot:
+		case spv::OpQuantizeToF16:
+			EvalSpecConstantUnaryOp(insn);
+			break;
+
+		case spv::OpSelect:
+		{
+			auto &result = CreateConstant(insn);
+			auto const &cond = getObject(insn.word(4));
+			auto condIsScalar = (getType(cond.type).sizeInComponents == 1);
+			auto const &left = getObject(insn.word(5));
+			auto const &right = getObject(insn.word(6));
+
+			for (auto i = 0u; i < getType(result.type).sizeInComponents; i++)
+			{
+				auto sel = cond.constantValue[condIsScalar ? 0 : i];
+				result.constantValue[i] = sel ? left.constantValue[i] : right.constantValue[i];
+			}
+			break;
+		}
+
+		case spv::OpCompositeExtract:
+		{
+			auto &result = CreateConstant(insn);
+			auto const &compositeObject = getObject(insn.word(4));
+			auto firstComponent = WalkLiteralAccessChain(compositeObject.type, insn.wordCount() - 5, insn.wordPointer(5));
+
+			for (auto i = 0u; i < getType(result.type).sizeInComponents; i++)
+			{
+				result.constantValue[i] = compositeObject.constantValue[firstComponent + i];
+			}
+			break;
+		}
+
+		case spv::OpCompositeInsert:
+		{
+			auto &result = CreateConstant(insn);
+			auto const &newPart = getObject(insn.word(4));
+			auto const &oldObject = getObject(insn.word(5));
+			auto firstNewComponent = WalkLiteralAccessChain(result.type, insn.wordCount() - 6, insn.wordPointer(6));
+
+			// old components before
+			for (auto i = 0u; i < firstNewComponent; i++)
+			{
+				result.constantValue[i] = oldObject.constantValue[i];
+			}
+			// new part
+			for (auto i = 0u; i < getType(newPart.type).sizeInComponents; i++)
+			{
+				result.constantValue[firstNewComponent + i] = newPart.constantValue[i];
+			}
+			// old components after
+			for (auto i = firstNewComponent + getType(newPart.type).sizeInComponents; i < getType(result.type).sizeInComponents; i++)
+			{
+				result.constantValue[i] = oldObject.constantValue[i];
+			}
+			break;
+		}
+
+		case spv::OpVectorShuffle:
+		{
+			auto &result = CreateConstant(insn);
+			auto const &firstHalf = getObject(insn.word(4));
+			auto const &secondHalf = getObject(insn.word(5));
+
+			for (auto i = 0u; i < getType(result.type).sizeInComponents; i++)
+			{
+				auto selector = insn.word(6 + i);
+				if (selector == static_cast<uint32_t>(-1))
+				{
+					// Undefined value, we'll use zero
+					result.constantValue[i] = 0;
+				}
+				else if (selector < getType(firstHalf.type).sizeInComponents)
+				{
+					result.constantValue[i] = firstHalf.constantValue[selector];
+				}
+				else
+				{
+					result.constantValue[i] = secondHalf.constantValue[selector - getType(firstHalf.type).sizeInComponents];
+				}
+			}
+			break;
+		}
+
+		default:
+			// Other spec constant ops are possible, but require capabilities that are
+			// not exposed in our Vulkan implementation (eg Kernel), so we should never
+			// get here for correct shaders.
+			UNSUPPORTED("EvalSpecConstantOp op: %s", OpcodeName(opcode).c_str());
+		}
+	}
+
+	void SpirvShader::EvalSpecConstantUnaryOp(InsnIterator insn)
+	{
+		auto &result = CreateConstant(insn);
+
+		auto opcode = static_cast<spv::Op>(insn.word(3));
+		auto const &lhs = getObject(insn.word(4));
+		auto size = getType(lhs.type).sizeInComponents;
+
+		for (auto i = 0u; i < size; i++)
+		{
+			auto &v = result.constantValue[i];
+			auto l = lhs.constantValue[i];
+
+			switch (opcode)
+			{
+			case spv::OpSConvert:
+			case spv::OpFConvert:
+			case spv::OpUConvert:
+				UNREACHABLE("Not possible until we have multiple bit widths");
+				break;
+
+			case spv::OpSNegate:
+				v = -(int)l;
+				break;
+			case spv::OpNot:
+			case spv::OpLogicalNot:
+				v = ~l;
+				break;
+
+			case spv::OpQuantizeToF16:
+			{
+				// Can do this nicer with host code, but want to perfectly mirror the reactor code we emit.
+				auto abs = bit_cast<float>(l & 0x7FFFFFFF);
+				auto sign = l & 0x80000000;
+				auto isZero = abs < 0.000061035f ? ~0u : 0u;
+				auto isInf = abs > 65504.0f ? ~0u : 0u;
+				auto isNaN = (abs != abs) ? ~0u : 0u;
+				auto isInfOrNan = isInf | isNaN;
+				v = l & 0xFFFFE000;
+				v &= ~isZero | 0x80000000;
+				v = sign | (isInfOrNan & 0x7F800000) | (~isInfOrNan & v);
+				v |= isNaN & 0x400000;
+				break;
+			}
+			default:
+				UNREACHABLE("EvalSpecConstantUnaryOp op: %s", OpcodeName(opcode).c_str());
+			}
+		}
+	}
+
+	void SpirvShader::EvalSpecConstantBinaryOp(InsnIterator insn)
+	{
+		auto &result = CreateConstant(insn);
+
+		auto opcode = static_cast<spv::Op>(insn.word(3));
+		auto const &lhs = getObject(insn.word(4));
+		auto const &rhs = getObject(insn.word(5));
+		auto size = getType(lhs.type).sizeInComponents;
+
+		for (auto i = 0u; i < size; i++)
+		{
+			auto &v = result.constantValue[i];
+			auto l = lhs.constantValue[i];
+			auto r = rhs.constantValue[i];
+
+			switch (opcode)
+			{
+			case spv::OpIAdd:
+				v = l + r;
+				break;
+			case spv::OpISub:
+				v = l - r;
+				break;
+			case spv::OpIMul:
+				v = l * r;
+				break;
+			case spv::OpUDiv:
+				v = (r == 0) ? 0 : l / r;
+				break;
+			case spv::OpUMod:
+				v = (r == 0) ? 0 : l % r;
+				break;
+			case spv::OpSDiv:
+				if (r == 0) r = UINT32_MAX;
+				if (l == static_cast<uint32_t>(INT32_MIN)) l = UINT32_MAX;
+				v = static_cast<int32_t>(l) / static_cast<int32_t>(r);
+				break;
+			case spv::OpSRem:
+				if (r == 0) r = UINT32_MAX;
+				if (l == static_cast<uint32_t>(INT32_MIN)) l = UINT32_MAX;
+				v = static_cast<int32_t>(l) % static_cast<int32_t>(r);
+				break;
+			case spv::OpSMod:
+				if (r == 0) r = UINT32_MAX;
+				if (l == static_cast<uint32_t>(INT32_MIN)) l = UINT32_MAX;
+				if (l * r < 0)
+					v = static_cast<int32_t>(l) % static_cast<int32_t>(r) + r;
+				else
+					v = static_cast<int32_t>(l) % static_cast<int32_t>(r);
+				break;
+			case spv::OpShiftRightLogical:
+				v = l >> r;
+				break;
+			case spv::OpShiftRightArithmetic:
+				v = static_cast<int32_t>(l) >> r;
+				break;
+			case spv::OpShiftLeftLogical:
+				v = l << r;
+				break;
+			case spv::OpBitwiseOr:
+			case spv::OpLogicalOr:
+				v = l | r;
+				break;
+			case spv::OpBitwiseAnd:
+			case spv::OpLogicalAnd:
+				v = l & r;
+				break;
+			case spv::OpBitwiseXor:
+				v = l ^ r;
+				break;
+			case spv::OpLogicalEqual:
+			case spv::OpIEqual:
+				v = (l == r) ? ~0u : 0u;
+				break;
+			case spv::OpLogicalNotEqual:
+			case spv::OpINotEqual:
+				v = (l != r) ? ~0u : 0u;
+				break;
+			case spv::OpULessThan:
+				v = l < r ? ~0u : 0u;
+				break;
+			case spv::OpSLessThan:
+				v = static_cast<int32_t>(l) < static_cast<int32_t>(r) ? ~0u : 0u;
+				break;
+			case spv::OpUGreaterThan:
+				v = l > r ? ~0u : 0u;
+				break;
+			case spv::OpSGreaterThan:
+				v = static_cast<int32_t>(l) > static_cast<int32_t>(r) ? ~0u : 0u;
+				break;
+			case spv::OpULessThanEqual:
+				v = l <= r ? ~0u : 0u;
+				break;
+			case spv::OpSLessThanEqual:
+				v = static_cast<int32_t>(l) <= static_cast<int32_t>(r) ? ~0u : 0u;
+				break;
+			case spv::OpUGreaterThanEqual:
+				v = l >= r ? ~0u : 0u;
+				break;
+			case spv::OpSGreaterThanEqual:
+				v = static_cast<int32_t>(l) >= static_cast<int32_t>(r) ? ~0u : 0u;
+				break;
+			default:
+				UNREACHABLE("EvalSpecConstantBinaryOp op: %s", OpcodeName(opcode).c_str());
+			}
+		}
 	}
 
 	void SpirvShader::emitEpilog(SpirvRoutine *routine) const
@@ -4832,6 +6337,31 @@ namespace sw
 		auto it = state->edgeActiveLaneMasks.find(edge);
 		ASSERT_MSG(it != state->edgeActiveLaneMasks.end(), "Could not find edge %d -> %d", from.value(), to.value());
 		return it->second;
+	}
+
+	VkShaderStageFlagBits SpirvShader::executionModelToStage(spv::ExecutionModel model)
+	{
+		switch (model)
+		{
+		case spv::ExecutionModelVertex:                 return VK_SHADER_STAGE_VERTEX_BIT;
+		// case spv::ExecutionModelTessellationControl:    return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+		// case spv::ExecutionModelTessellationEvaluation: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+		// case spv::ExecutionModelGeometry:               return VK_SHADER_STAGE_GEOMETRY_BIT;
+		case spv::ExecutionModelFragment:               return VK_SHADER_STAGE_FRAGMENT_BIT;
+		case spv::ExecutionModelGLCompute:              return VK_SHADER_STAGE_COMPUTE_BIT;
+		// case spv::ExecutionModelKernel:                 return VkShaderStageFlagBits(0); // Not supported by vulkan.
+		// case spv::ExecutionModelTaskNV:                 return VK_SHADER_STAGE_TASK_BIT_NV;
+		// case spv::ExecutionModelMeshNV:                 return VK_SHADER_STAGE_MESH_BIT_NV;
+		// case spv::ExecutionModelRayGenerationNV:        return VK_SHADER_STAGE_RAYGEN_BIT_NV;
+		// case spv::ExecutionModelIntersectionNV:         return VK_SHADER_STAGE_INTERSECTION_BIT_NV;
+		// case spv::ExecutionModelAnyHitNV:               return VK_SHADER_STAGE_ANY_HIT_BIT_NV;
+		// case spv::ExecutionModelClosestHitNV:           return VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
+		// case spv::ExecutionModelMissNV:                 return VK_SHADER_STAGE_MISS_BIT_NV;
+		// case spv::ExecutionModelCallableNV:             return VK_SHADER_STAGE_CALLABLE_BIT_NV;
+		default:
+			UNSUPPORTED("ExecutionModel: %d", int(model));
+			return VkShaderStageFlagBits(0);
+		}
 	}
 
 	SpirvRoutine::SpirvRoutine(vk::PipelineLayout const *pipelineLayout) :

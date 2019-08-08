@@ -22,11 +22,11 @@
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
-#include "components/invalidation/impl/json_unsafe_parser.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -49,12 +49,19 @@ class MockInstanceID : public InstanceID {
 
   MOCK_METHOD1(GetID, void(const GetIDCallback& callback));
   MOCK_METHOD1(GetCreationTime, void(const GetCreationTimeCallback& callback));
-  MOCK_METHOD5(GetToken,
+  void GetToken(const std::string& authorized_entity,
+                const std::string& scope,
+                const std::map<std::string, std::string>& options,
+                bool is_lazy,
+                GetTokenCallback callback) override {
+    GetToken_(authorized_entity, scope, options, is_lazy, callback);
+  }
+  MOCK_METHOD5(GetToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::map<std::string, std::string>& options,
                     bool is_lazy,
-                    const GetTokenCallback& callback));
+                    GetTokenCallback& callback));
   MOCK_METHOD4(ValidateToken,
                void(const std::string& authorized_entity,
                     const std::string& scope,
@@ -62,11 +69,19 @@ class MockInstanceID : public InstanceID {
                     const ValidateTokenCallback& callback));
 
  protected:
-  MOCK_METHOD3(DeleteTokenImpl,
+  void DeleteTokenImpl(const std::string& authorized_entity,
+                       const std::string& scope,
+                       DeleteTokenCallback callback) override {
+    DeleteTokenImpl_(authorized_entity, scope, callback);
+  }
+  MOCK_METHOD3(DeleteTokenImpl_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
-                    const DeleteTokenCallback& callback));
-  MOCK_METHOD1(DeleteIDImpl, void(const DeleteIDCallback& callback));
+                    DeleteTokenCallback& callback));
+  void DeleteIDImpl(DeleteIDCallback callback) override {
+    DeleteIDImpl_(callback);
+  }
+  MOCK_METHOD1(DeleteIDImpl_, void(DeleteIDCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInstanceID);
@@ -89,8 +104,10 @@ class FCMInvalidationServiceTestDelegate {
  public:
   FCMInvalidationServiceTestDelegate() {
     pref_service_.registry()->RegisterStringPref(
-        prefs::kFCMInvalidationClientIDCache,
+        prefs::kFCMInvalidationClientIDCacheDeprecated,
         /*default_value=*/std::string());
+    pref_service_.registry()->RegisterDictionaryPref(
+        prefs::kInvalidationClientIDCache);
     syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(
         pref_service_.registry());
   }
@@ -116,7 +133,7 @@ class FCMInvalidationServiceTestDelegate {
     invalidation_service_ = std::make_unique<FCMInvalidationService>(
         identity_provider_.get(), gcm_driver_.get(),
         mock_instance_id_driver_.get(), &pref_service_,
-        base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
+        base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
         &url_loader_factory_);
   }
 
@@ -141,6 +158,7 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;
   std::unique_ptr<MockInstanceID> mock_instance_id_;

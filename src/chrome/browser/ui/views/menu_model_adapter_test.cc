@@ -194,8 +194,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());
-    menu_runner_->RunMenuAt(source->GetWidget(), button_, bounds,
-                            views::MenuAnchorPosition::kTopLeft,
+    menu_runner_->RunMenuAt(source->GetWidget(), button_->button_controller(),
+                            bounds, views::MenuAnchorPosition::kTopLeft,
                             ui::MENU_SOURCE_NONE);
   }
 

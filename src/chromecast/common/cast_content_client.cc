@@ -29,7 +29,7 @@
 
 #if !defined(OS_FUCHSIA)
 #include "base/no_destructor.h"
-#include "components/services/heap_profiling/public/cpp/client.h"  // nogncheck
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"  // nogncheck
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -132,6 +132,10 @@ base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool CastContentClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
@@ -146,12 +150,11 @@ gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
 void CastContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
 #if !defined(OS_FUCHSIA)
-  static base::NoDestructor<heap_profiling::Client> profiling_client;
+  static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
 
-  std::unique_ptr<service_manager::BinderRegistry> registry(
-      std::make_unique<service_manager::BinderRegistry>());
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
-      base::BindRepeating(&heap_profiling::Client::BindToInterface,
+      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
                           base::Unretained(profiling_client.get())));
   connection->AddConnectionFilter(
       std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));

@@ -4,11 +4,12 @@
 
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/child/image_decoder.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
@@ -57,8 +58,8 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_->Start(
       frame, request_context, network::mojom::FetchRequestMode::kNoCors,
       network::mojom::FetchCredentialsMode::kInclude,
-      base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
+                     base::Unretained(this)));
 }
 
 MultiResolutionImageResourceFetcher::~MultiResolutionImageResourceFetcher() {
@@ -80,15 +81,11 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     // If we get here, it means no image from server or couldn't decode the
     // response as an image. The delegate will see an empty vector.
 
-  // Take local ownership of the callback as running the callback may lead to
-  // our destruction.
-  base::ResetAndReturn(&callback_).Run(this, bitmaps);
+  std::move(callback_).Run(this, bitmaps);
 }
 
 void MultiResolutionImageResourceFetcher::OnRenderFrameDestruct() {
-  // Take local ownership of the callback as running the callback may lead to
-  // our destruction.
-  base::ResetAndReturn(&callback_).Run(this, std::vector<SkBitmap>());
+  std::move(callback_).Run(this, std::vector<SkBitmap>());
 }
 
 }  // namespace content

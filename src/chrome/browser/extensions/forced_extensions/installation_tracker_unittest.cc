@@ -33,6 +33,8 @@ constexpr char kTimedOutNotInstalledStats[] =
     "Extensions.ForceInstalledTimedOutAndNotInstalledCount";
 constexpr char kFailureReasons[] = "Extensions.ForceInstalledFailureReason";
 constexpr char kInstallationStages[] = "Extensions.ForceInstalledStage";
+constexpr char kInstallationDownloadingStages[] =
+    "Extensions.ForceInstalledDownloadingStage";
 constexpr char kFailureCrxInstallErrorStats[] =
     "Extensions.ForceInstalledFailureCrxInstallError";
 }  // namespace
@@ -137,6 +139,8 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {
       &profile_, kExtensionId1, InstallationReporter::Stage::PENDING);
   InstallationReporter::ReportInstallationStage(
       &profile_, kExtensionId2, InstallationReporter::Stage::DOWNLOADING);
+  InstallationReporter::ReportDownloadingStage(
+      &profile_, kExtensionId2, ExtensionDownloaderDelegate::PENDING);
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
@@ -149,6 +153,35 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {
   histogram_tester_.ExpectBucketCount(
       kInstallationStages, InstallationReporter::Stage::DOWNLOADING, 1);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
+}
+
+TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsAreDownloading) {
+  SetupForceList();
+  InstallationReporter::ReportInstallationStage(
+      &profile_, kExtensionId1, InstallationReporter::Stage::DOWNLOADING);
+  InstallationReporter::ReportDownloadingStage(
+      &profile_, kExtensionId1,
+      ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST);
+  InstallationReporter::ReportInstallationStage(
+      &profile_, kExtensionId2, InstallationReporter::Stage::DOWNLOADING);
+  InstallationReporter::ReportDownloadingStage(
+      &profile_, kExtensionId2, ExtensionDownloaderDelegate::DOWNLOADING_CRX);
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  fake_timer_->Fire();
+  histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
+  histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
+  histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 2, 1);
+  histogram_tester_.ExpectUniqueSample(
+      kFailureReasons, InstallationReporter::FailureReason::IN_PROGRESS, 2);
+  histogram_tester_.ExpectUniqueSample(
+      kInstallationStages, InstallationReporter::Stage::DOWNLOADING, 2);
+  histogram_tester_.ExpectTotalCount(kInstallationDownloadingStages, 2);
+  histogram_tester_.ExpectBucketCount(
+      kInstallationDownloadingStages,
+      ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST, 1);
+  histogram_tester_.ExpectBucketCount(
+      kInstallationDownloadingStages,
+      ExtensionDownloaderDelegate::DOWNLOADING_CRX, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {

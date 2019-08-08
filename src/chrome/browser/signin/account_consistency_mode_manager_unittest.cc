@@ -25,24 +25,37 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+std::unique_ptr<TestingProfile> BuildTestingProfile(bool is_new_profile) {
+  TestingProfile::Builder profile_builder;
+  profile_builder.OverrideIsNewProfile(is_new_profile);
+  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
+  EXPECT_EQ(is_new_profile, profile->IsNewProfile());
+  return profile;
+}
+
+}  // namespace
+
 // Check the default account consistency method.
 TEST(AccountConsistencyModeManagerTest, DefaultValue) {
   content::TestBrowserThreadBundle test_thread_bundle;
-  TestingProfile profile;
+  std::unique_ptr<TestingProfile> profile =
+      BuildTestingProfile(/*is_new_profile=*/false);
 
 #if BUILDFLAG(ENABLE_MIRROR)
   EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
+            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT)
   EXPECT_EQ(signin::AccountConsistencyMethod::kDiceMigration,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
+            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
 #else
   EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
+            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
   EXPECT_FALSE(
-      AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile.get()));
   EXPECT_FALSE(
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(&profile));
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
 #endif
 }
 
@@ -64,15 +77,18 @@ TEST(AccountConsistencyModeManagerTest, Basic) {
 
   for (const TestCase& test_case : test_cases) {
     ScopedAccountConsistency scoped_method(test_case.method);
-    TestingProfile profile;
+    std::unique_ptr<TestingProfile> profile =
+        BuildTestingProfile(/*is_new_profile=*/false);
 
-    EXPECT_EQ(test_case.method,
-              AccountConsistencyModeManager::GetMethodForProfile(&profile));
     EXPECT_EQ(
-        test_case.expect_mirror_enabled,
-        AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
-    EXPECT_EQ(test_case.expect_dice_enabled,
-              AccountConsistencyModeManager::IsDiceEnabledForProfile(&profile));
+        test_case.method,
+        AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+    EXPECT_EQ(test_case.expect_mirror_enabled,
+              AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+                  profile.get()));
+    EXPECT_EQ(
+        test_case.expect_dice_enabled,
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
   }
 }
 
@@ -82,20 +98,20 @@ TEST(AccountConsistencyModeManagerTest, Basic) {
 TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
   ScopedAccountConsistencyDice scoped_dice;
   content::TestBrowserThreadBundle test_thread_bundle;
-  TestingProfile profile;
-  ASSERT_FALSE(profile.IsNewProfile());
+  std::unique_ptr<TestingProfile> profile =
+      BuildTestingProfile(/*is_new_profile=*/false);
 
   {
     // First startup.
-    AccountConsistencyModeManager manager(&profile);
-    EXPECT_TRUE(profile.GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_TRUE(profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
     EXPECT_TRUE(
-        profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
+        profile->GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
 
     // User changes their settings.
-    profile.GetPrefs()->SetBoolean(prefs::kSigninAllowedOnNextStartup, false);
+    profile->GetPrefs()->SetBoolean(prefs::kSigninAllowedOnNextStartup, false);
     // Dice should remain in the same state until restart.
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
@@ -103,11 +119,11 @@ TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
 
   {
     // Second startup.
-    AccountConsistencyModeManager manager(&profile);
+    AccountConsistencyModeManager manager(profile.get());
     // The signin-allowed pref should be disabled.
-    EXPECT_FALSE(profile.GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+    EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
     EXPECT_FALSE(
-        profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
+        profile->GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     // Dice should be disabled.
     EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
               manager.GetAccountConsistencyMethod());
@@ -118,17 +134,18 @@ TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
 TEST(AccountConsistencyModeManagerTest, DisallowSigninSwitch) {
   ScopedAccountConsistencyDice scoped_dice;
   content::TestBrowserThreadBundle test_thread_bundle;
-  TestingProfile profile;
+  std::unique_ptr<TestingProfile> profile =
+      BuildTestingProfile(/*is_new_profile=*/false);
 
   {
     // With the switch, signin is disallowed.
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitch(
         "disallow-signin");
-    AccountConsistencyModeManager manager(&profile);
-    EXPECT_FALSE(profile.GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
     EXPECT_TRUE(
-        profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
+        profile->GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     // Dice should be disabled.
     EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
               manager.GetAccountConsistencyMethod());
@@ -136,10 +153,10 @@ TEST(AccountConsistencyModeManagerTest, DisallowSigninSwitch) {
 
   {
     // Remove the switch, signin is allowed again.
-    AccountConsistencyModeManager manager(&profile);
-    EXPECT_TRUE(profile.GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_TRUE(profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
     EXPECT_TRUE(
-        profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
+        profile->GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     // Dice should be enabled.
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
@@ -149,25 +166,25 @@ TEST(AccountConsistencyModeManagerTest, DisallowSigninSwitch) {
 // Checks that Dice migration happens when the reconcilor is created.
 TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
   content::TestBrowserThreadBundle test_thread_bundle;
-  TestingProfile profile;
-  ASSERT_FALSE(profile.IsNewProfile());
+  std::unique_ptr<TestingProfile> profile =
+      BuildTestingProfile(/*is_new_profile=*/false);
 
   {
     // Migration does not happen if SetDiceMigrationOnStartup() is not called.
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-    AccountConsistencyModeManager manager(&profile);
-    EXPECT_FALSE(manager.IsReadyForDiceMigration(&profile));
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_FALSE(manager.IsReadyForDiceMigration(profile.get()));
     EXPECT_NE(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }
 
-  AccountConsistencyModeManager::SetDiceMigrationOnStartup(profile.GetPrefs(),
+  AccountConsistencyModeManager::SetDiceMigrationOnStartup(profile->GetPrefs(),
                                                            true);
   {
     // Migration happens.
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-    AccountConsistencyModeManager manager(&profile);
-    EXPECT_TRUE(manager.IsReadyForDiceMigration(&profile));
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_TRUE(manager.IsReadyForDiceMigration(profile.get()));
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }
@@ -177,23 +194,8 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
 TEST(AccountConsistencyModeManagerTest, NewProfile) {
   content::TestBrowserThreadBundle test_thread_bundle;
   ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-  TestingProfile::Builder profile_builder;
-  {
-    TestingPrefStore* user_prefs = new TestingPrefStore();
-
-    // Set the read error so that Profile::IsNewProfile() returns true.
-    user_prefs->set_read_error(PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
-
-    std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service =
-        std::make_unique<sync_preferences::TestingPrefServiceSyncable>(
-            new TestingPrefStore(), new TestingPrefStore(), user_prefs,
-            new TestingPrefStore(), new user_prefs::PrefRegistrySyncable(),
-            new PrefNotifierImpl());
-    RegisterUserProfilePrefs(pref_service->registry());
-    profile_builder.SetPrefService(std::move(pref_service));
-  }
-  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
-  ASSERT_TRUE(profile->IsNewProfile());
+  std::unique_ptr<TestingProfile> profile =
+      BuildTestingProfile(/*is_new_profile=*/true);
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
 }

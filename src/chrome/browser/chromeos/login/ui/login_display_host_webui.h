@@ -11,17 +11,17 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
-#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
@@ -53,7 +53,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
                               public views::WidgetObserver,
-                              public MultiUserWindowManagerClient::Observer {
+                              public ash::MultiUserWindowManagerObserver {
  public:
   LoginDisplayHostWebUI();
   ~LoginDisplayHostWebUI() override;
@@ -67,7 +67,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   WebUILoginView* GetWebUILoginView() const override;
   void OnFinalize() override;
   void SetStatusAreaVisible(bool visible) override;
-  void StartWizard(OobeScreen first_screen) override;
+  void StartWizard(OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;
   void OnStartUserAdding() override;
   void CancelUserAdding() override;
@@ -76,12 +76,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnStartArcKiosk() override;
   void OnBrowserCreated() override;
-  void ShowGaiaDialog(
-      bool can_close,
-      const base::Optional<AccountId>& prefilled_account) override;
+  void ShowGaiaDialog(bool can_close,
+                      const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogSize(int width, int height) override;
-  void UpdateOobeDialogState(ash::mojom::OobeDialogState state) override;
+  void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
@@ -133,7 +132,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // MultiUserWindowManagerClient::Observer:
+  // ash::MultiUserWindowManagerObserver:
   void OnUserSwitchAnimationFinished() override;
 
  private:
@@ -248,7 +247,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   RestorePath restore_path_ = RESTORE_UNKNOWN;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
-  OobeScreen first_screen_;
+  OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.
@@ -271,9 +270,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // True if we need to play startup sound when audio device becomes available.
   bool need_to_play_startup_sound_ = false;
-
-  // Updates shelf kiosk app list.
-  KioskAppMenuUpdater kiosk_updater_;
 
   base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_;
 

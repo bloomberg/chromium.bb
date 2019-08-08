@@ -87,8 +87,8 @@ bool IsContentSecure(content::WebContents* web_contents) {
   // Check those explicitly, using the VisibleURL to match what
   // SecurityStateTabHelper looks at.
   if (net::IsLocalhost(url) ||
-      network::IsAllowlistedAsSecureOrigin(
-          url::Origin::Create(url), network::GetSecureOriginAllowlist())) {
+      network::SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(
+          url::Origin::Create(url))) {
     return true;
   }
 

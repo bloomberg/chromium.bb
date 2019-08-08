@@ -46,6 +46,9 @@ class UkmRecorder;
 }
 
 namespace blink {
+
+class MainThreadSchedulerTest;
+
 namespace scheduler {
 
 class MainThreadSchedulerImpl;
@@ -91,6 +94,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   bool IsAdFrame() const override;
 
   void TraceUrlChange(const String& url) override;
+  void AddTaskTime(base::TimeDelta time) override;
   FrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
@@ -149,10 +153,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       MainThreadTaskQueue*,
       base::sequence_manager::TaskQueue::QueueEnabledVoter*) override;
 
-  // Adds the time for the task to a running tally, then forwards it on when
-  // the total time exceeds the threshold (100ms).
-  void AddTaskTime(base::TimeDelta time);
-
   using FrameTaskTypeToQueueTraitsArray =
       std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
                  static_cast<size_t>(TaskType::kCount)>;
@@ -203,6 +203,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
   friend class ResourceLoadingTaskRunnerHandleImpl;
+  friend class ::blink::MainThreadSchedulerTest;
 
   // A class that adds and removes itself from the passed in weak pointer. While
   // one exists, resource loading is paused.

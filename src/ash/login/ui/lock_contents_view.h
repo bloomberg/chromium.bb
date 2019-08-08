@@ -11,16 +11,16 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/login/login_screen_controller.h"
-#include "ash/login/login_screen_controller_observer.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_error_bubble.h"
 #include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -29,8 +29,6 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
@@ -63,7 +61,6 @@ enum class TrayActionState;
 // at a time.
 class ASH_EXPORT LockContentsView
     : public NonAccessibleView,
-      public LoginScreenControllerObserver,
       public LoginDataDispatcher::Observer,
       public SystemTrayFocusObserver,
       public display::DisplayObserver,
@@ -126,6 +123,7 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowParentAccessDialog(bool show);
 
   // views::View:
   void Layout() override;
@@ -135,33 +133,26 @@ class ASH_EXPORT LockContentsView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
-  // LoginScreenController::Observer:
-  void SetAvatarForUser(const AccountId& account_id,
-                        const mojom::UserAvatarPtr& avatar) override;
-  void OnFocusLeavingLockScreenApps(bool reverse) override;
-  void OnOobeDialogStateChanged(mojom::OobeDialogState state) override;
-
   // LoginDataDispatcher::Observer:
-  void OnUsersChanged(
-      const std::vector<mojom::LoginUserInfoPtr>& users) override;
+  void OnUsersChanged(const std::vector<LoginUserInfo>& users) override;
+  void OnUserAvatarChanged(const AccountId& account_id,
+                           const UserAvatar& avatar) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
   void OnFingerprintStateChanged(const AccountId& account_id,
-                                 mojom::FingerprintState state) override;
+                                 FingerprintState state) override;
   void OnFingerprintAuthResult(const AccountId& account_id,
                                bool success) override;
   void OnAuthEnabledForUser(const AccountId& user) override;
   void OnAuthDisabledForUser(
       const AccountId& user,
-      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) override;
+      const AuthDisabledData& auth_disabled_data) override;
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
   void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
                                           bool enabled) override;
   void OnForceOnlineSignInForUser(const AccountId& user) override;
-  void OnShowEasyUnlockIcon(
-      const AccountId& user,
-      const mojom::EasyUnlockIconOptionsPtr& icon) override;
-  void OnShowWarningBanner(const base::string16& message) override;
-  void OnHideWarningBanner() override;
+  void OnShowEasyUnlockIcon(const AccountId& user,
+                            const EasyUnlockIconOptions& icon) override;
+  void OnWarningMessageUpdated(const base::string16& message) override;
   void OnSystemInfoChanged(bool show,
                            const std::string& os_version_label_text,
                            const std::string& enterprise_info_text,
@@ -169,20 +160,20 @@ class ASH_EXPORT LockContentsView
   void OnPublicSessionDisplayNameChanged(
       const AccountId& account_id,
       const std::string& display_name) override;
-  void OnPublicSessionLocalesChanged(
-      const AccountId& account_id,
-      const std::vector<mojom::LocaleItemPtr>& locales,
-      const std::string& default_locale,
-      bool show_advanced_view) override;
+  void OnPublicSessionLocalesChanged(const AccountId& account_id,
+                                     const std::vector<LocaleItem>& locales,
+                                     const std::string& default_locale,
+                                     bool show_advanced_view) override;
   void OnPublicSessionKeyboardLayoutsChanged(
       const AccountId& account_id,
       const std::string& locale,
-      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override;
+      const std::vector<InputMethodItem>& keyboard_layouts) override;
   void OnPublicSessionShowFullManagementDisclosureChanged(
       bool show_full_management_disclosure) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
-  void OnSetShowParentAccessDialog(bool show) override;
+  void OnFocusLeavingLockScreenApps(bool reverse) override;
+  void OnOobeDialogStateChanged(OobeDialogState state) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -209,7 +200,7 @@ class ASH_EXPORT LockContentsView
  private:
   class UserState {
    public:
-    explicit UserState(const mojom::LoginUserInfoPtr& user_info);
+    explicit UserState(const LoginUserInfo& user_info);
     UserState(UserState&&);
     ~UserState();
 
@@ -218,8 +209,8 @@ class ASH_EXPORT LockContentsView
     bool enable_tap_auth = false;
     bool force_online_sign_in = false;
     bool disable_auth = false;
-    mojom::EasyUnlockIconOptionsPtr easy_unlock_state;
-    mojom::FingerprintState fingerprint_state;
+    base::Optional<EasyUnlockIconOptions> easy_unlock_state;
+    FingerprintState fingerprint_state;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(UserState);
@@ -233,15 +224,12 @@ class ASH_EXPORT LockContentsView
   void FocusNextWidget(bool reverse);
 
   // 1-2 users.
-  void CreateLowDensityLayout(
-      const std::vector<mojom::LoginUserInfoPtr>& users);
+  void CreateLowDensityLayout(const std::vector<LoginUserInfo>& users);
   // 3-6 users.
-  void CreateMediumDensityLayout(
-      const std::vector<mojom::LoginUserInfoPtr>& users);
+  void CreateMediumDensityLayout(const std::vector<LoginUserInfo>& users);
   // 7+ users.
-  void CreateHighDensityLayout(
-      const std::vector<mojom::LoginUserInfoPtr>& users,
-      views::BoxLayout* main_layout);
+  void CreateHighDensityLayout(const std::vector<LoginUserInfo>& users,
+                               views::BoxLayout* main_layout);
 
   // Lay out the entire view. This is called when the view is attached to a
   // widget and when the screen is rotated.
@@ -319,9 +307,8 @@ class ASH_EXPORT LockContentsView
   void OnPublicAccountTapped(bool is_primary);
 
   // Helper method to allocate a LoginBigUserView instance.
-  LoginBigUserView* AllocateLoginBigUserView(
-      const mojom::LoginUserInfoPtr& user,
-      bool is_primary);
+  LoginBigUserView* AllocateLoginBigUserView(const LoginUserInfo& user,
+                                             bool is_primary);
 
   // Returns the big view for |user| if |user| is one of the active
   // big views. If |require_auth_active| is true then the view must
@@ -334,7 +321,7 @@ class ASH_EXPORT LockContentsView
 
   // Returns scrollable view with initialized size and rows for all |users|.
   ScrollableUsersListView* BuildScrollableUsersListView(
-      const std::vector<mojom::LoginUserInfoPtr>& users,
+      const std::vector<LoginUserInfo>& users,
       LoginDisplayStyle display_style);
 
   // Change the visibility of child views based on the |style|.

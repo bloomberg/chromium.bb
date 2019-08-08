@@ -13,8 +13,8 @@
 #endif
 
 namespace {
-const int kTableViewCustomSeparatorColor = 0xE8EAED;
-const CGFloat kTableViewCustomSeparatorHeight = 0.5;
+const int kTableViewCustomSeparatorColor = 0xDADDE2;
+const CGFloat kTableViewCustomSeparatorHeight = 0.75;
 }  // namespace
 
 @interface TableViewCell ()

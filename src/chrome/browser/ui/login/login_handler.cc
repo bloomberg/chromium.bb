@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,9 +22,10 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
+#include "chrome/common/chrome_features.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/password_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -83,7 +85,7 @@ void RecordHttpAuthPromptType(AuthPromptType prompt_type) {
 // LoginHandler
 
 LoginHandler::LoginModelData::LoginModelData(
-    password_manager::LoginModel* login_model,
+    password_manager::HttpAuthManager* login_model,
     const autofill::PasswordForm& observed_form)
     : model(login_model), form(observed_form) {
   DCHECK(model);
@@ -122,7 +124,8 @@ void LoginHandler::Start(
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& request_url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers) {
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    HandlerMode mode) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents());
   DCHECK(!WasAuthHandled());
@@ -134,9 +137,9 @@ void LoginHandler::Start(
   auto* api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
           web_contents()->GetBrowserContext());
-  auto continuation =
-      base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
-                     weak_factory_.GetWeakPtr(), request_url, is_main_frame);
+  auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
+                                     weak_factory_.GetWeakPtr(), request_url,
+                                     is_main_frame, mode);
   if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
                                  auth_info_, std::move(response_headers),
                                  request_id, is_main_frame,
@@ -152,21 +155,20 @@ void LoginHandler::Start(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                      weak_factory_.GetWeakPtr(), request_url, is_main_frame,
-                     base::nullopt, false /* should_cancel */));
+                     mode, base::nullopt, false /* should_cancel */));
 }
 
 void LoginHandler::SetAuth(const base::string16& username,
                            const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  password_manager::PasswordManager* password_manager =
-      GetPasswordManagerForLogin();
   std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
-  if (password_manager &&
-      password_manager->client()->GetLogManager()->IsLoggingActive()) {
+  password_manager::PasswordManagerClient* client =
+      GetPasswordManagerClientFromWebContent();
+  if (client && client->GetLogManager()->IsLoggingActive()) {
     logger =
         std::make_unique<password_manager::BrowserSavePasswordProgressLogger>(
-            password_manager->client()->GetLogManager());
+            client->GetLogManager());
     logger->LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SET_AUTH_METHOD);
   }
@@ -180,11 +182,14 @@ void LoginHandler::SetAuth(const base::string16& username,
   if (already_handled)
     return;
 
-  // Tell the password manager the credentials were submitted / accepted.
-  if (password_manager) {
+  password_manager::HttpAuthManager* httpauth_manager =
+      GetHttpAuthManagerForLogin();
+
+  // Tell the http-auth manager the credentials were submitted / accepted.
+  if (httpauth_manager) {
     password_form_.username_value = username;
     password_form_.password_value = password;
-    password_manager->OnPasswordHttpAuthFormSubmitted(password_form_);
+    httpauth_manager->OnPasswordFormSubmitted(password_form_);
     if (logger) {
       logger->LogPasswordForm(
           autofill::SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM,
@@ -234,8 +239,10 @@ void LoginHandler::Observe(int type,
   // AUTH_SUPPLIED or AUTH_CANCELLED notifications.
   DCHECK(login_details->handler() != this);
 
-  // Only handle notification for the identical auth info.
-  if (login_details->handler()->auth_info() != auth_info())
+  // Only handle notification for the identical auth info. When comparing
+  // AuthChallengeInfos, ignore path because the same credentials can be used
+  // for different paths.
+  if (!auth_info().MatchesExceptPath(login_details->handler()->auth_info()))
     return;
 
   // Ignore login notification events from other profiles.
@@ -310,12 +317,19 @@ void LoginHandler::NotifyAuthCancelled() {
                   content::Details<LoginNotificationDetails>(&details));
 }
 
-password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
+password_manager::PasswordManagerClient*
+LoginHandler::GetPasswordManagerClientFromWebContent() {
   if (!web_contents())
     return nullptr;
   password_manager::PasswordManagerClient* client =
       ChromePasswordManagerClient::FromWebContents(web_contents());
-  return client ? client->GetPasswordManager() : nullptr;
+  return client;
+}
+
+password_manager::HttpAuthManager* LoginHandler::GetHttpAuthManagerForLogin() {
+  password_manager::PasswordManagerClient* client =
+      GetPasswordManagerClientFromWebContent();
+  return client ? client->GetHttpAuthManager() : nullptr;
 }
 
 // Returns whether authentication had been handled (SetAuth or CancelAuth).
@@ -363,12 +377,12 @@ PasswordForm LoginHandler::MakeInputForPasswordManager(
     const net::AuthChallengeInfo& auth_info) {
   PasswordForm dialog_form;
   if (base::LowerCaseEqualsASCII(auth_info.scheme, net::kBasicAuthScheme)) {
-    dialog_form.scheme = PasswordForm::SCHEME_BASIC;
+    dialog_form.scheme = PasswordForm::Scheme::kBasic;
   } else if (base::LowerCaseEqualsASCII(auth_info.scheme,
                                         net::kDigestAuthScheme)) {
-    dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
+    dialog_form.scheme = PasswordForm::Scheme::kDigest;
   } else {
-    dialog_form.scheme = PasswordForm::SCHEME_OTHER;
+    dialog_form.scheme = PasswordForm::Scheme::kOther;
   }
   dialog_form.origin = auth_info.challenger.GetURL();
   DCHECK(auth_info.is_proxy || auth_info.challenger.IsSameOriginWith(
@@ -413,6 +427,7 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
 void LoginHandler::MaybeSetUpLoginPrompt(
     const GURL& request_url,
     bool is_request_for_main_frame,
+    HandlerMode mode,
     const base::Optional<net::AuthCredentials>& credentials,
     bool should_cancel) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -476,6 +491,25 @@ void LoginHandler::MaybeSetUpLoginPrompt(
           blink::kWebDisplayModeStandalone) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
 
+    if (base::FeatureList::IsEnabled(
+            features::kHTTPAuthCommittedInterstitials)) {
+      switch (mode) {
+        case PRE_COMMIT:
+          prompt_started_ = false;
+          CancelAuth();
+          return;
+        case POST_COMMIT:
+          // TODO(https://crbug.com/963313): add a WebContentsObserver which
+          // observes when LoginHandler does the PRE_COMMIT cancel and triggers
+          // the login prompt in POST_COMMIT mode on top of the committed error
+          // page.
+          NOTREACHED();
+          ShowLoginPrompt(request_url);
+          return;
+      }
+      NOTREACHED();
+    }
+
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.
     base::OnceClosure callback =
@@ -519,10 +553,10 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
   base::string16 explanation;
   GetDialogStrings(request_url, auth_info(), &authority, &explanation);
 
-  password_manager::PasswordManager* password_manager =
-      GetPasswordManagerForLogin();
+  password_manager::HttpAuthManager* httpauth_manager =
+      GetHttpAuthManagerForLogin();
 
-  if (!password_manager) {
+  if (!httpauth_manager) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // A WebContents in a <webview> (a GuestView type) does not have a password
     // manager, but still needs to be able to show login prompts.
@@ -538,17 +572,18 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
     return;
   }
 
-  if (password_manager &&
-      password_manager->client()->GetLogManager()->IsLoggingActive()) {
+  password_manager::PasswordManagerClient* client =
+      GetPasswordManagerClientFromWebContent();
+  if (client && client->GetLogManager()->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
-        password_manager->client()->GetLogManager());
+        client->GetLogManager());
     logger.LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
   }
 
   PasswordForm observed_form(
       MakeInputForPasswordManager(request_url, auth_info()));
-  LoginModelData model_data(password_manager, observed_form);
+  LoginModelData model_data(httpauth_manager, observed_form);
   BuildViewAndNotify(authority, explanation, &model_data);
 }
 
@@ -575,10 +610,11 @@ std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
     bool is_request_for_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
+    LoginHandler::HandlerMode mode,
     LoginAuthRequiredCallback auth_required_callback) {
   std::unique_ptr<LoginHandler> handler = LoginHandler::Create(
       auth_info, web_contents, std::move(auth_required_callback));
   handler->Start(request_id, is_request_for_main_frame, url,
-                 std::move(response_headers));
+                 std::move(response_headers), mode);
   return handler;
 }

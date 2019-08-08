@@ -16,7 +16,7 @@ namespace audio {
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
     std::unique_ptr<service_manager::Connector> connector,
     const std::string& device_id,
-    media::mojom::AudioLogPtr log) {
+    mojo::PendingRemote<media::mojom::AudioLog> log) {
   std::unique_ptr<media::AudioInputIPC> ipc = std::make_unique<InputIPC>(
       std::move(connector), device_id, std::move(log));
 
@@ -27,8 +27,8 @@ scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
     std::unique_ptr<service_manager::Connector> connector,
     const std::string& device_id) {
-  std::unique_ptr<media::AudioInputIPC> ipc =
-      std::make_unique<InputIPC>(std::move(connector), device_id, nullptr);
+  std::unique_ptr<media::AudioInputIPC> ipc = std::make_unique<InputIPC>(
+      std::move(connector), device_id, mojo::NullRemote());
 
   return base::MakeRefCounted<media::AudioInputDevice>(
       std::move(ipc), media::AudioInputDevice::Purpose::kUserInput);

@@ -267,6 +267,9 @@ GetStaticSiteCharacteristicsDatabaseParams();
 // Gets number of oldest tab that should be scored by TabRanker.
 int GetNumOldestTabsToScoreWithTabRanker();
 
+// Gets ProcessType of tabs that should be scored by TabRanker.
+int GetProcessTypeToScoreWithTabRanker();
+
 // Gets number of oldest tabs that should be logged by TabRanker.
 int GetNumOldestTabsToLogWithTabRanker();
 

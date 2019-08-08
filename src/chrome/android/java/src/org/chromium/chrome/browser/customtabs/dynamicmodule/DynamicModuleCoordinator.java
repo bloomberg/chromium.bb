@@ -31,22 +31,23 @@ import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -155,7 +156,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final DynamicModuleNavigationEventObserver mModuleNavigationEventObserver =
             new DynamicModuleNavigationEventObserver();
     private final DynamicModulePageLoadObserver mPageLoadObserver;
-
+    private final KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
     private final PageCriteria mPageCriteria;
 
     @Inject
@@ -195,6 +196,11 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         mPageCriteria = url -> (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url);
         closeButtonNavigator.setLandingPageCriteria(mPageCriteria);
         mNavigationController.setBackHandler(this::onBackPressedAsync);
+
+        mKeyboardVisibilityListener = isShowing ->
+            mBottomBarDelegate.get().hideBottomBar(isShowing);
+        KeyboardVisibilityDelegate.getInstance()
+                .addKeyboardVisibilityListener(mKeyboardVisibilityListener);
 
         activityLifecycleDispatcher.register(this);
     }
@@ -495,6 +501,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         unregisterObserver(mHeaderVisibilityObserver);
         unregisterObserver(mCustomRequestHeaderModifier);
         PageLoadMetrics.removeObserver(mPageLoadObserver);
+        KeyboardVisibilityDelegate.getInstance()
+                .removeKeyboardVisibilityListener(mKeyboardVisibilityListener);
     }
 
     private void unregisterObserver(TabObserver observer) {

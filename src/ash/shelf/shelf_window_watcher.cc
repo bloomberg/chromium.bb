@@ -66,9 +66,7 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   }
 
   // Prefer app icons over window icons, they're typically larger.
-  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconLargeKey);
-  if (!image || image->isNull())
-    image = window->GetProperty(aura::client::kAppIconKey);
+  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
   if (!image || image->isNull())
     image = window->GetProperty(aura::client::kWindowIconKey);
   if (!image || image->isNull()) {
@@ -94,7 +92,7 @@ const char ShelfWindowWatcher::kDefaultShelfIdPrefix[] = "ShelfWindowWatcher";
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      desks_util::IsDeskContainerId(params.new_parent->id())) {
+      desks_util::IsDeskContainer(params.new_parent)) {
     // A new window was created in one of the desks' containers. Note that the
     // shelf is globally showing all apps from all active and inactive desks.
     window_watcher_->OnUserWindowAdded(params.target);
@@ -137,8 +135,7 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
         ShelfID::Deserialize(window->GetProperty(kShelfIDKey)));
   }
 
-  if (key == aura::client::kAppIconLargeKey ||
-      key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
+  if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
       key == aura::client::kDrawAttentionKey || key == kShelfItemTypeKey ||
       key == kShelfIDKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);

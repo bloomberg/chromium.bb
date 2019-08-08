@@ -23,6 +23,8 @@ namespace sessions {
 class SESSIONS_EXPORT ContextRecordTaskId
     : public base::SupportsUserData::Data {
  public:
+  ContextRecordTaskId();
+  ContextRecordTaskId(const ContextRecordTaskId& context_record_task_id);
   ~ContextRecordTaskId() override;
 
   static ContextRecordTaskId* Get(content::NavigationEntry* entry);
@@ -53,9 +55,6 @@ class SESSIONS_EXPORT ContextRecordTaskId
   std::unique_ptr<base::SupportsUserData::Data> Clone() override;
 
  private:
-  ContextRecordTaskId();
-  ContextRecordTaskId(const ContextRecordTaskId& context_record_task_id);
-
   // A Task is a collection of navigations.
   //
   // A Task ID is an identifier of a Task. It is a Unique ID upon the first

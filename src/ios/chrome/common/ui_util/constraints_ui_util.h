@@ -136,6 +136,12 @@ void AddSameCenterYConstraint(UIView* unused_parentView,
 void AddSameConstraints(id<LayoutGuideProvider> view1,
                         id<LayoutGuideProvider> view2);
 
+// Constraints all sides of |innerView| and |outerView| together, with
+// |innerView| inset by |insets|.
+void AddSameConstraintsWithInsets(id<LayoutGuideProvider> innerView,
+                                  id<LayoutGuideProvider> outerView,
+                                  ChromeDirectionalEdgeInsets insets);
+
 // Adds constraints to make |innerView| leading, trailing, top and bottom
 // anchors equals to |outerView| safe area (or view bounds) anchors.
 void PinToSafeArea(id<LayoutGuideProvider> innerView, UIView* outerView);

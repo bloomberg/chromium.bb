@@ -12,16 +12,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_precondition.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
-
-namespace {
-// Time between two chip precondition checks.
-static constexpr base::TimeDelta kPreconditionChipCheckInterval =
-    base::TimeDelta::FromSeconds(1);
-}  // namespace
 
 PromptAction::PromptAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
@@ -48,7 +43,8 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
   if (HasNonemptyPreconditions() || HasAutoSelect()) {
     RunPeriodicChecks();
     timer_ = std::make_unique<base::RepeatingTimer>();
-    timer_->Start(FROM_HERE, kPreconditionChipCheckInterval,
+    timer_->Start(FROM_HERE,
+                  delegate->GetSettings().periodic_script_check_interval,
                   base::BindRepeating(&PromptAction::RunPeriodicChecks,
                                       weak_ptr_factory_.GetWeakPtr()));
   }
@@ -87,10 +83,9 @@ void PromptAction::CheckPreconditions() {
                              base::BindOnce(&PromptAction::OnPreconditionResult,
                                             weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate_->RunElementChecks(
-      precondition_checker_.get(),
-      base::BindOnce(&PromptAction::OnPreconditionChecksDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+  precondition_checker_->AddAllDoneCallback(base::BindOnce(
+      &PromptAction::OnPreconditionChecksDone, weak_ptr_factory_.GetWeakPtr()));
+  delegate_->RunElementChecks(precondition_checker_.get());
 }
 
 void PromptAction::OnPreconditionResult(size_t choice_index, bool result) {
@@ -112,17 +107,27 @@ void PromptAction::UpdateChips() {
   auto chips = std::make_unique<std::vector<Chip>>();
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
     auto& choice_proto = proto_.prompt().choices(i);
-    if (!precondition_results_[i] && !choice_proto.allow_disabling()) {
-      // hide chip.
+    // Don't show choices with no names, icon or types; they're likely just
+    // there for auto_select_if_element_exists.
+    if (!choice_proto.has_chip() && choice_proto.name().empty() &&
+        choice_proto.chip_icon() == NO_ICON &&
+        choice_proto.chip_type() == UNKNOWN_CHIP_TYPE)
       continue;
+
+    // Hide chips whose precondition don't match.
+    if (!precondition_results_[i] && !choice_proto.allow_disabling())
+      continue;
+
+    if (choice_proto.has_chip()) {
+      chips->emplace_back(choice_proto.chip());
+    } else {
+      chips->emplace_back();
+      chips->back().text = choice_proto.name();
+      chips->back().type = choice_proto.chip_type();
+      chips->back().icon = choice_proto.chip_icon();
     }
 
-    chips->emplace_back();
-    Chip& chip = chips->back();
-    chip.text = choice_proto.name();
-    chip.type = choice_proto.chip_type();
-    chip.icon = choice_proto.chip_icon();
-    chip.disabled = !precondition_results_[i];
+    chips->back().disabled = !precondition_results_[i];
     chips->back().callback = base::BindOnce(&PromptAction::OnSuggestionChosen,
                                             weak_ptr_factory_.GetWeakPtr(), i);
   }
@@ -156,9 +161,9 @@ void PromptAction::CheckAutoSelect() {
         selector, base::BindOnce(&PromptAction::OnAutoSelectElementExists,
                                  weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate_->RunElementChecks(auto_select_checker_.get(),
-                              base::BindOnce(&PromptAction::OnAutoSelectDone,
-                                             weak_ptr_factory_.GetWeakPtr()));
+  auto_select_checker_->AddAllDoneCallback(base::BindOnce(
+      &PromptAction::OnAutoSelectDone, weak_ptr_factory_.GetWeakPtr()));
+  delegate_->RunElementChecks(auto_select_checker_.get());
 }
 
 void PromptAction::OnAutoSelectElementExists(int choice_index, bool exists) {

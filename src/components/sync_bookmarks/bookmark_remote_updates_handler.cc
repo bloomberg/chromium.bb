@@ -485,8 +485,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     bookmark_tracker_->Remove(update_entity.id);
     DLOG(WARNING) << "Conflict: CHANGES_MATCH";
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::CHANGES_MATCH,
-                              syncer::ConflictResolution::TYPE_SIZE);
+                              syncer::ConflictResolution::kChangesMatch,
+                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -497,8 +497,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
                                            update.response_version);
     DLOG(WARNING) << "Conflict: USE_LOCAL";
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::USE_LOCAL,
-                              syncer::ConflictResolution::TYPE_SIZE);
+                              syncer::ConflictResolution::kUseLocal,
+                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -509,8 +509,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     ProcessCreate(update);
     DLOG(WARNING) << "Conflict: USE_REMOTE";
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::USE_REMOTE,
-                              syncer::ConflictResolution::TYPE_SIZE);
+                              syncer::ConflictResolution::kUseRemote,
+                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -559,8 +559,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     // The changes are identical so there isn't a real conflict.
     DLOG(WARNING) << "Conflict: CHANGES_MATCH";
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::CHANGES_MATCH,
-                              syncer::ConflictResolution::TYPE_SIZE);
+                              syncer::ConflictResolution::kChangesMatch,
+                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -568,8 +568,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
   // wins. Update the model from server data.
   DLOG(WARNING) << "Conflict: USE_REMOTE";
   UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                            syncer::ConflictResolution::USE_REMOTE,
-                            syncer::ConflictResolution::TYPE_SIZE);
+                            syncer::ConflictResolution::kUseRemote,
+                            syncer::ConflictResolution::kTypeSize);
   ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
                     bookmark_tracker_, favicon_service_);
 }

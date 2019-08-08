@@ -174,6 +174,12 @@ MemoryObjectImpl *ContextGL::createMemoryObject()
     return nullptr;
 }
 
+SemaphoreImpl *ContextGL::createSemaphore()
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
 angle::Result ContextGL::flush(const gl::Context *context)
 {
     return mRenderer->flush();
@@ -182,6 +188,30 @@ angle::Result ContextGL::flush(const gl::Context *context)
 angle::Result ContextGL::finish(const gl::Context *context)
 {
     return mRenderer->finish();
+}
+
+angle::Result ContextGL::waitSemaphore(const gl::Context *context,
+                                       const gl::Semaphore *semaphore,
+                                       GLuint numBufferBarriers,
+                                       const GLuint *buffers,
+                                       GLuint numTextureBarriers,
+                                       const GLuint *textures,
+                                       const GLenum *srcLayouts)
+{
+    ANGLE_GL_UNREACHABLE(this);
+    return angle::Result::Stop;
+}
+
+angle::Result ContextGL::signalSemaphore(const gl::Context *context,
+                                         const gl::Semaphore *semaphore,
+                                         GLuint numBufferBarriers,
+                                         const GLuint *buffers,
+                                         GLuint numTextureBarriers,
+                                         const GLuint *textures,
+                                         const GLenum *dstLayouts)
+{
+    ANGLE_GL_UNREACHABLE(this);
+    return angle::Result::Stop;
 }
 
 ANGLE_INLINE angle::Result ContextGL::setDrawArraysState(const gl::Context *context,
@@ -198,13 +228,6 @@ ANGLE_INLINE angle::Result ContextGL::setDrawArraysState(const gl::Context *cont
 
         ANGLE_TRY(vaoGL->syncClientSideData(context, program->getActiveAttribLocationsMask(), first,
                                             count, instanceCount));
-    }
-
-    if (context->getExtensions().webglCompatibility)
-    {
-        const gl::State &glState     = context->getState();
-        FramebufferGL *framebufferGL = GetImplAs<FramebufferGL>(glState.getDrawFramebuffer());
-        framebufferGL->maskOutInactiveOutputDrawBuffers(context);
     }
 
     return angle::Result::Continue;
@@ -234,24 +257,6 @@ ANGLE_INLINE angle::Result ContextGL::setDrawElementsState(const gl::Context *co
     else
     {
         *outIndices = indices;
-    }
-
-    if (context->getExtensions().webglCompatibility)
-    {
-        FramebufferGL *framebufferGL = GetImplAs<FramebufferGL>(glState.getDrawFramebuffer());
-        framebufferGL->maskOutInactiveOutputDrawBuffers(context);
-    }
-
-    return angle::Result::Continue;
-}
-
-ANGLE_INLINE angle::Result ContextGL::setDrawIndirectState(const gl::Context *context)
-{
-    if (context->getExtensions().webglCompatibility)
-    {
-        const gl::State &glState     = context->getState();
-        FramebufferGL *framebufferGL = GetImplAs<FramebufferGL>(glState.getDrawFramebuffer());
-        framebufferGL->maskOutInactiveOutputDrawBuffers(context);
     }
 
     return angle::Result::Continue;
@@ -375,7 +380,6 @@ angle::Result ContextGL::drawArraysIndirect(const gl::Context *context,
                                             gl::PrimitiveMode mode,
                                             const void *indirect)
 {
-    ANGLE_TRY(setDrawIndirectState(context));
     getFunctions()->drawArraysIndirect(ToGLenum(mode), indirect);
     return angle::Result::Continue;
 }
@@ -385,7 +389,6 @@ angle::Result ContextGL::drawElementsIndirect(const gl::Context *context,
                                               gl::DrawElementsType type,
                                               const void *indirect)
 {
-    ANGLE_TRY(setDrawIndirectState(context));
     getFunctions()->drawElementsIndirect(ToGLenum(mode), ToGLenum(type), indirect);
     return angle::Result::Continue;
 }

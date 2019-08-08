@@ -47,6 +47,7 @@ class GCMDriverAndroid : public GCMDriver,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& app_id,
       const base::android::JavaParamRef<jstring>& sender_id,
+      const base::android::JavaParamRef<jstring>& j_message_id,
       const base::android::JavaParamRef<jstring>& collapse_key,
       const base::android::JavaParamRef<jbyteArray>& raw_data,
       const base::android::JavaParamRef<jobjectArray>& data_keys_and_values);

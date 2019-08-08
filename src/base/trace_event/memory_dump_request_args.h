@@ -82,7 +82,7 @@ struct MemoryDumpArgs {
   uint64_t dump_guid;
 };
 
-using ProcessMemoryDumpCallback = Callback<
+using ProcessMemoryDumpCallback = OnceCallback<
     void(bool success, uint64_t dump_guid, std::unique_ptr<ProcessMemoryDump>)>;
 
 BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);

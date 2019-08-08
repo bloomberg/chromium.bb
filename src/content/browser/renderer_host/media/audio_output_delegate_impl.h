@@ -66,6 +66,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   int GetStreamId() override;
   void OnPlayStream() override;
   void OnPauseStream() override;
+  void OnFlushStream() override;
   void OnSetVolume(double volume) override;
 
  private:

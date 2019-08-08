@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/no_destructor.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -54,6 +54,10 @@ base::RefCountedMemory* AwContentClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool AwContentClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 bool AwContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
   // For legacy API support we perform a few browser -> renderer synchronous IPC
   // messages that block the browser. However, the synchronous IPC replies might
@@ -82,14 +86,14 @@ media::MediaDrmBridgeClient* AwContentClient::GetMediaDrmBridgeClient() {
 
 void AwContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-  // This creates a process-wide HeapProfiling::Client that listens for requests
-  // from the HeapProfilingService to start profiling the current process.
-  static base::NoDestructor<heap_profiling::Client> profiling_client;
+  // This creates a process-wide heap_profiling::ProfilingClient that listens
+  // for requests from the HeapProfilingService to start profiling the current
+  // process.
+  static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
 
-  std::unique_ptr<service_manager::BinderRegistry> registry(
-      new service_manager::BinderRegistry);
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
-      base::BindRepeating(&heap_profiling::Client::BindToInterface,
+      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
                           base::Unretained(profiling_client.get())));
   connection->AddConnectionFilter(
       std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));

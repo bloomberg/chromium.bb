@@ -50,6 +50,7 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/common/widget.mojom.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/page_zoom.h"
@@ -124,6 +125,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputRouterImplClient,
       public InputDispositionHandler,
       public RenderProcessHostImpl::PriorityClient,
+      public RenderProcessHostObserver,
       public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
@@ -246,6 +248,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderProcessHostImpl::PriorityClient implementation.
   RenderProcessHost::Priority GetPriority() override;
 
+  // RenderProcessHostObserver implementation.
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override;
+
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
 
@@ -307,8 +313,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(bool record_presentation_time,
-                base::TimeTicks tab_switch_start_time = base::TimeTicks());
+  void WasShown(const base::Optional<RecordTabSwitchTimeRequest>&
+                    record_tab_switch_time_request);
 
   // Send a WidgetMsg_WasHidden message to the RenderWidget, without caring
   // about the visibility state of the RenderWidgetHostImpl. This is used to
@@ -397,7 +403,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency,
       const std::vector<EditCommand>* commands,
-      ui::KeyEvent* original_key_event,
       bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view
@@ -422,6 +427,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void WaitForInputProcessed(SyntheticGestureParams::GestureType type,
                              SyntheticGestureParams::GestureSourceType source,
                              base::OnceClosure callback);
+
+  // Resolves the given callback once all effects of previously forwarded input
+  // have been fully realized (i.e. resulting compositor frame has been drawn,
+  // swapped, and presented).
+  void WaitForInputProcessed(base::OnceClosure callback);
 
   // Retrieve an iterator over any RenderWidgetHosts that are immediately
   // embedded within this one. This does not return hosts that are embedded
@@ -588,7 +598,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called when we receive a notification indicating that the renderer process
   // is gone. This will reset our state so that our state will be consistent if
   // a new renderer is created.
-  void RendererExited(base::TerminationStatus status, int exit_code);
+  void RendererExited();
 
   // Called from a RenderFrameHost when the text selection has changed.
   void SelectionChanged(const base::string16& text,
@@ -816,8 +826,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                          RenderProcessHost*,
                                          RenderWidgetHost*);
 
-  class KeyEventResultTracker;
-
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
   void Destroy(bool also_delete);
@@ -828,13 +836,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // InputRouter::SendKeyboardEvent() callbacks to this. This may be called
   // synchronously.
-  void OnKeyboardEventAck(std::unique_ptr<KeyEventResultTracker> result_tracker,
-                          const NativeWebKeyboardEventWithLatencyInfo& event,
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckSource ack_source,
                           InputEventAckState ack_result);
 
   // IPC message handlers
-  void OnRenderProcessGone(int status, int error_code);
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);

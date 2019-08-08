@@ -18,17 +18,11 @@ CrosImageCaptureImpl::CrosImageCaptureImpl(ReprocessManager* reprocess_manager)
 
 CrosImageCaptureImpl::~CrosImageCaptureImpl() = default;
 
-void CrosImageCaptureImpl::BindRequest(
-    cros::mojom::CrosImageCaptureRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void CrosImageCaptureImpl::GetSupportedEffects(
-    const std::string& device_id,
-    GetSupportedEffectsCallback callback) {
-  reprocess_manager_->GetSupportedEffects(
+void CrosImageCaptureImpl::GetCameraInfo(const std::string& device_id,
+                                         GetCameraInfoCallback callback) {
+  reprocess_manager_->GetCameraInfo(
       device_id, media::BindToCurrentLoop(base::BindOnce(
-                     &CrosImageCaptureImpl::OnGetSupportedEffects,
+                     &CrosImageCaptureImpl::OnGotCameraInfo,
                      base::Unretained(this), std::move(callback))));
 }
 
@@ -40,12 +34,10 @@ void CrosImageCaptureImpl::SetReprocessOption(
       device_id, effect, media::BindToCurrentLoop(std::move(callback)));
 }
 
-void CrosImageCaptureImpl::OnGetSupportedEffects(
-    GetSupportedEffectsCallback callback,
-    base::flat_set<cros::mojom::Effect> supported_effects) {
-  std::vector<cros::mojom::Effect> effects(supported_effects.begin(),
-                                           supported_effects.end());
-  std::move(callback).Run(std::move(effects));
+void CrosImageCaptureImpl::OnGotCameraInfo(
+    GetCameraInfoCallback callback,
+    cros::mojom::CameraInfoPtr camera_info) {
+  std::move(callback).Run(std::move(camera_info));
 }
 
 }  // namespace media

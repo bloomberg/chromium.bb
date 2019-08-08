@@ -498,3 +498,31 @@ std::ostream& operator<<(std::ostream& o, const CFErrorRef err) {
   }
   return o;
 }
+
+std::ostream& operator<<(std::ostream& o, CFRange range) {
+  return o << NSStringFromRange(NSMakeRange(range.location, range.length));
+}
+
+std::ostream& operator<<(std::ostream& o, id obj) {
+  return obj ? o << [obj description].UTF8String : o << "(nil)";
+}
+
+std::ostream& operator<<(std::ostream& o, NSRange range) {
+  return o << NSStringFromRange(range);
+}
+
+std::ostream& operator<<(std::ostream& o, SEL selector) {
+  return o << NSStringFromSelector(selector);
+}
+
+#if !defined(OS_IOS)
+std::ostream& operator<<(std::ostream& o, NSPoint point) {
+  return o << NSStringFromPoint(point);
+}
+std::ostream& operator<<(std::ostream& o, NSRect rect) {
+  return o << NSStringFromRect(rect);
+}
+std::ostream& operator<<(std::ostream& o, NSSize size) {
+  return o << NSStringFromSize(size);
+}
+#endif

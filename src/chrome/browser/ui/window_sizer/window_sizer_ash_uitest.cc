@@ -4,14 +4,12 @@
 
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -53,10 +51,6 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root) {
   gfx::Point center = GetChromeIconBoundsInScreen(root).CenterPoint();
   generator.MoveMouseTo(center);
   generator.ClickLeftButton();
-  // Ash notifies Chrome that the browser shortcut item was selected.
-  ash::Shell::Get()->shelf_controller()->FlushForTesting();
-  // Chrome replies to Ash that a new window was opened.
-  ChromeLauncherController::instance()->FlushForTesting();
 }
 
 // Launch a new browser window by clicking the "New window" context menu item.
@@ -65,11 +59,6 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   gfx::Point chrome_icon = GetChromeIconBoundsInScreen(root).CenterPoint();
   generator.MoveMouseTo(chrome_icon);
   generator.PressRightButton();
-
-  // Ash notifies Chrome that the browser shortcut item was right-clicked.
-  ash::Shell::Get()->shelf_controller()->FlushForTesting();
-  // Chrome replies to Ash with the context menu items to display.
-  ChromeLauncherController::instance()->FlushForTesting();
 
   // Move the cursor up to the "New window" menu option - assumes menu content.
   const int offset =
@@ -83,9 +72,6 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
       2.2 * views::MenuConfig::instance().touchable_menu_height;
   generator.MoveMouseBy(0, -offset);
   generator.ReleaseRightButton();
-
-  // Ash notifies Chrome's ShelfItemDelegate that the menu item was selected.
-  ash::Shell::Get()->shelf_controller()->FlushForTesting();
 }
 
 class WindowSizerTest : public InProcessBrowserTest {

@@ -56,11 +56,53 @@
 
 namespace blink {
 
+// static
+DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
+    DedicatedWorkerThread* thread,
+    base::TimeTicks time_origin) {
+  std::unique_ptr<Vector<String>> outside_origin_trial_tokens =
+      std::move(creation_params->origin_trial_tokens);
+
+  // Off-the-main-thread worker script fetch:
+  // Initialize() is called after script fetch.
+  if (creation_params->off_main_thread_fetch_option ==
+      OffMainThreadWorkerScriptFetchOption::kEnabled) {
+    return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
+        std::move(creation_params), thread, time_origin,
+        std::move(outside_origin_trial_tokens));
+  }
+
+  // Legacy on-the-main-thread worker script fetch (to be removed):
+  KURL response_script_url = creation_params->script_url;
+  network::mojom::ReferrerPolicy response_referrer_policy =
+      creation_params->referrer_policy;
+  mojom::IPAddressSpace response_address_space =
+      *creation_params->response_address_space;
+  auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
+      std::move(creation_params), thread, time_origin,
+      std::move(outside_origin_trial_tokens));
+  // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
+  // Initialize().
+  // Pass dummy origin trial tokens here as it is already set to outside's
+  // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
+  global_scope->Initialize(response_script_url, response_referrer_policy,
+                           response_address_space, Vector<CSPHeaderAndType>(),
+                           nullptr /* response_origin_trial_tokens */);
+  return global_scope;
+}
+
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
-    base::TimeTicks time_origin)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
+    base::TimeTicks time_origin,
+    std::unique_ptr<Vector<String>> outside_origin_trial_tokens)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+  // Dedicated workers don't need to pause after script fetch.
+  ReadyToRunClassicScript();
+  // Inherit the outside's origin trial tokens.
+  OriginTrialContext::AddTokens(this, outside_origin_trial_tokens.get());
+}
 
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
@@ -69,9 +111,47 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
+void DedicatedWorkerGlobalScope::Initialize(
+    const KURL& response_url,
+    network::mojom::ReferrerPolicy response_referrer_policy,
+    mojom::IPAddressSpace response_address_space,
+    const Vector<CSPHeaderAndType>& /* response_csp_headers */,
+    const Vector<String>* /* response_origin_trial_tokens */) {
+  // Step 12.3. "Set worker global scope's url to response's url."
+  InitializeURL(response_url);
+
+  // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
+  // state."
+  // This is done in the constructor of WorkerGlobalScope.
+
+  // Step 12.5. "Set worker global scope's referrer policy to the result of
+  // parsing the `Referrer-Policy` header of response."
+  SetReferrerPolicy(response_referrer_policy);
+
+  // https://wicg.github.io/cors-rfc1918/#integration-html
+  SetAddressSpace(response_address_space);
+
+  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
+  // on worker global scope and response. [CSP]"
+  // DedicatedWorkerGlobalScope inherits the outside's CSP instead of the
+  // response CSP headers. These should be called after SetAddressSpace() to
+  // correctly override the address space by the "treat-as-public-address" CSP
+  // directive.
+  InitContentSecurityPolicyFromVector(OutsideContentSecurityPolicyHeaders());
+  BindContentSecurityPolicyToExecutionContext();
+
+  // This should be called after OriginTrialContext::AddTokens() to install
+  // origin trial features in JavaScript's global object.
+  // DedicatedWorkerGlobalScope inherits the outside's OriginTrialTokens in the
+  // constructor instead of the response origin trial tokens.
+  ScriptController()->PrepareForEvaluation();
+}
+
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kOffMainThreadDedicatedWorkerScriptFetch));
@@ -89,10 +169,11 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadTopLevelScriptAsynchronously(
-      *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
-      destination, network::mojom::FetchRequestMode::kSameOrigin,
+      *this,
+      CreateOutsideSettingsFetcher(outside_settings_object,
+                                   outside_resource_timing_notifier),
+      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      outside_settings_object.GetAddressSpace(),
       WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
@@ -105,6 +186,7 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
 void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
@@ -115,7 +197,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
-  FetchModuleScript(module_url_record, outside_settings_object, destination,
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    outside_resource_timing_notifier, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     MakeGarbageCollected<WorkerModuleTreeClient>(modulator));
@@ -187,31 +270,26 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
-  ReportingProxy().DidFetchScript();
+  ReportingProxy().DidFetchScript(classic_script_loader->AppCacheID());
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
-  // Step 12.3. "Set worker global scope's url to response's url."
-  InitializeURL(classic_script_loader->ResponseURL());
-
-  // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
-  // state."
-  // This is done in the constructor of WorkerGlobalScope.
-
-  // Step 12.5. "Set worker global scope's referrer policy to the result of
-  // parsing the `Referrer-Policy` header of response."
-  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+  auto response_referrer_policy = network::mojom::ReferrerPolicy::kDefault;
   if (!classic_script_loader->GetReferrerPolicy().IsNull()) {
     SecurityPolicy::ReferrerPolicyFromHeaderValue(
         classic_script_loader->GetReferrerPolicy(),
-        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
-    SetReferrerPolicy(referrer_policy);
+        kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
   }
 
-  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
-  // on worker global scope and response. [CSP]"
-  // This is done in the constructor of WorkerGlobalScope.
-  DCHECK_EQ(GlobalScopeCSPApplyMode::kUseCreationParamsCSP, GetCSPApplyMode());
+  // Step 12.3-12.6 are implemented in Initialize().
+  // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
+  // Initialize().
+  // Pass dummy origin trial tokens here as it is already set to outside's
+  // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
+  Initialize(classic_script_loader->ResponseURL(), response_referrer_policy,
+             classic_script_loader->ResponseAddressSpace(),
+             Vector<CSPHeaderAndType>(),
+             nullptr /* response_origin_trial_tokens */);
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."

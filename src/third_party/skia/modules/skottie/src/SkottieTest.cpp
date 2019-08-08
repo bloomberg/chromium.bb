@@ -5,15 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "SkMatrix.h"
-#include "Skottie.h"
-#include "SkottieProperty.h"
-#include "SkottieShaper.h"
-#include "SkStream.h"
-#include "SkTextBlob.h"
-#include "SkTypeface.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTextBlob.h"
+#include "include/core/SkTypeface.h"
+#include "modules/skottie/include/Skottie.h"
+#include "modules/skottie/include/SkottieProperty.h"
+#include "modules/skottie/src/text/SkottieShaper.h"
 
-#include "Test.h"
+#include "tests/Test.h"
 
 #include <cmath>
 #include <tuple>
@@ -256,12 +256,14 @@ DEF_TEST(Skottie_Shaper_HAlign, reporter) {
             const skottie::Shaper::TextDesc desc = {
                 typeface,
                 tsize.text_size,
+                tsize.text_size,
                 talign.align,
                 skottie::Shaper::VAlign::kTopBaseline,
             };
 
             const auto shape_result = skottie::Shaper::Shape(text, desc, text_point);
-            REPORTER_ASSERT(reporter, shape_result.fBlob);
+            REPORTER_ASSERT(reporter, shape_result.fFragments.size() == 1ul);
+            REPORTER_ASSERT(reporter, shape_result.fFragments[0].fBlob);
 
             const auto shape_bounds = shape_result.computeBounds();
             REPORTER_ASSERT(reporter, !shape_bounds.isEmpty());
@@ -316,12 +318,14 @@ DEF_TEST(Skottie_Shaper_VAlign, reporter) {
             const skottie::Shaper::TextDesc desc = {
                 typeface,
                 tsize.text_size,
+                tsize.text_size,
                 SkTextUtils::Align::kCenter_Align,
                 talign.align,
             };
 
             const auto shape_result = skottie::Shaper::Shape(text, desc, text_box);
-            REPORTER_ASSERT(reporter, shape_result.fBlob);
+            REPORTER_ASSERT(reporter, shape_result.fFragments.size() == 1ul);
+            REPORTER_ASSERT(reporter, shape_result.fFragments[0].fBlob);
 
             const auto shape_bounds = shape_result.computeBounds();
             REPORTER_ASSERT(reporter, !shape_bounds.isEmpty());

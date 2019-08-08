@@ -732,13 +732,15 @@ void V4L2ImageProcessor::Dequeue() {
       case V4L2_MEMORY_MMAP:
         // Wrap the V4L2 VideoFrame into another one with a destruction observer
         // so we can reuse the MMAP buffer once the client is done with it.
-        output_frame = buffer->GetVideoFrame();
-        output_frame = VideoFrame::WrapVideoFrame(
-            output_frame, output_frame->format(), output_frame->visible_rect(),
-            output_frame->natural_size());
-        output_frame->AddDestructionObserver(BindToCurrentLoop(
-            base::BindOnce(&V4L2ImageProcessor::V4L2VFDestructionObserver,
-                           weak_this_factory_.GetWeakPtr(), buffer)));
+        {
+          const auto& orig_frame = buffer->GetVideoFrame();
+          output_frame = VideoFrame::WrapVideoFrame(
+              *orig_frame, orig_frame->format(), orig_frame->visible_rect(),
+              orig_frame->natural_size());
+          output_frame->AddDestructionObserver(BindToCurrentLoop(
+              base::BindOnce(&V4L2ImageProcessor::V4L2VFDestructionObserver,
+                             weak_this_factory_.GetWeakPtr(), buffer)));
+        }
         break;
 
       case V4L2_MEMORY_DMABUF:

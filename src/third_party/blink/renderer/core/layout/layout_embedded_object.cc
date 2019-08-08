@@ -81,7 +81,7 @@ bool LayoutEmbeddedObject::ShowsUnavailablePluginIndicator() const {
 
 void LayoutEmbeddedObject::PaintReplaced(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   EmbeddedObjectPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
@@ -111,7 +111,7 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
 
 void LayoutEmbeddedObject::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment());
+  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
   FrameView* frame_view = ChildFrameView();
   if (frame_view && frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info)) {
     // Handle zoom & vertical writing modes here, as the embedded document

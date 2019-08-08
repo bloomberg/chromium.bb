@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/credit_card_save_strike_database.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
@@ -143,20 +143,16 @@ class CreditCardSaveManager {
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
+                           StrikeDatabase_Local_FullFlowTest);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
+                           StrikeDatabase_Upload_FullFlowTest);
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
 
   // Returns the GetLocalCardMigrationStrikeDatabase for |client_|.
   LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
-
-  // Sets |show_save_prompt| and moves forward with offering credit card local
-  // save.
-  void OnDidGetStrikesForLocalSave(const int num_strikes);
-
-  // Sets |show_save_prompt| and moves forward with offering credit card upload
-  // if Payments has also returned a success response.
-  void OnDidGetStrikesForUploadSave(const int num_strikes);
 
   // Returns the legal message retrieved from Payments. On failure or not
   // meeting Payments's conditions for upload, |legal_message| will contain
@@ -269,13 +265,6 @@ class CreditCardSaveManager {
 
   // Logs the reason why expiration date was explicitly requested.
   void LogSaveCardRequestExpirationDateReasonMetric();
-
-  // Checks if credit card matches one of the ranges in
-  // |supported_card_bin_ranges|, inclusive of the start and end boundaries.
-  // For example, if the range consists of std::pair<34, 36>, then all cards
-  // with first two digits of 34, 35 and 36 are supported.
-  bool IsCreditCardSupported(
-      std::vector<std::pair<int, int>> supported_card_bin_ranges);
 
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {

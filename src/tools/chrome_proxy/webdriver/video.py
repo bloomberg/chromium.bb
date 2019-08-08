@@ -8,6 +8,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from common import ParseFlags
+from decorators import AndroidOnly
 from decorators import Slow
 from decorators import ChromeVersionEqualOrAfterM
 
@@ -32,6 +33,20 @@ class Video(IntegrationTest):
       self.assertEquals(2, len(responses))
       for response in responses:
         self.assertHasProxyHeaders(response)
+
+  def testCheckVideoBypass(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL(
+        'http://check.googlezip.net/blocksingle/blocksingle_embedded_video.html')
+      saw_video_response = False
+      for response in t.GetHTTPResponses():
+        if 'video' in response.response_headers['content-type']:
+          self.assertNotHasChromeProxyViaHeader(response)
+          saw_video_response = True
+        else:
+          self.assertHasProxyHeaders(response)
+      self.assertTrue(saw_video_response, 'No video request seen in test!')
 
   # Videos fetched via an XHR request should not be proxied.
   def testNoCompressionOnXHR(self):
@@ -80,16 +95,18 @@ class Video(IntegrationTest):
           # ofcl should be same as compressed full content length, since no
           # compression for XHR.
           self.assertEqual(ofcl, compressed_full_content_length)
-      # Navigate away to trigger the metrics recording for previous page load.
+      # Wait and navigate away to trigger the metrics recording for previous
+      # page load.
+      time.sleep(1)
       t.LoadURL('about:blank')
-      original_kb_histogram = t.GetHistogram('PageLoad.Clients.'
+      original_kb_histogram = t.GetBrowserHistogram('PageLoad.Clients.'
         'DataReductionProxy.Experimental.Bytes.Network.Original2')
-      compression_percent_histogram = t.GetHistogram('PageLoad.Clients.'
+      compression_percent_histogram = t.GetBrowserHistogram('PageLoad.Clients.'
         'DataReductionProxy.Experimental.Bytes.Network.CompressionRatio2')
       self.assertEqual(1, original_kb_histogram['count'])
       self.assertEqual(1, compression_percent_histogram['count'])
       # Verify the total page size is 3 KB, and compression ratio.
-      self.assertEqual(3, original_kb_histogram['sum'])
+      self.assertLessEqual(3, original_kb_histogram['sum'])
       self.assertEqual(compression_percent_histogram['sum'],
                        compressed_full_content_length/ofcl*100)
       self.assertTrue(saw_range_response, 'No range request was seen in test!')
@@ -154,6 +171,7 @@ class Video(IntegrationTest):
   # Check that the compressed video can be seeked. Use a slow network to ensure
   # the entire video isn't downloaded before we have a chance to seek.
   @Slow
+  @AndroidOnly
   def testVideoSeeking(self):
     with TestDriver(control_network_connection=True) as t:
       t.SetNetworkConnection("2G")

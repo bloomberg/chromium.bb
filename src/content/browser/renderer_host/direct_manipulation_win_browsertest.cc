@@ -90,7 +90,7 @@ INSTANTIATE_TEST_SUITE_P(WithScrollEventPhase,
 
 // Ensure the AnimationObserver destroy when hwnd reparent to other hwnd.
 IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
@@ -147,7 +147,7 @@ class EventLogger : public ui::EventRewriter {
 
 // Check DirectManipulation events convert to ui::event correctly.
 IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));

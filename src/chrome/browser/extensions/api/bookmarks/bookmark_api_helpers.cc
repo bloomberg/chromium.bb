@@ -137,7 +137,7 @@ bool RemoveNode(BookmarkModel* model,
     *error = bookmark_api_constants::kModifyManagedError;
     return false;
   }
-  if (node->is_folder() && !node->empty() && !recursive) {
+  if (node->is_folder() && !node->children().empty() && !recursive) {
     *error = bookmark_api_constants::kFolderNotEmptyError;
     return false;
   }

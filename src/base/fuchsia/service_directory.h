@@ -31,6 +31,8 @@ namespace fuchsia {
 // implementation is destroyed. GetDefault() should be used to get the default
 // ServiceDirectory for the current process. The default instance exports
 // services via a channel supplied at process creation time.
+// Debug services are published to a "debug" sub-directory only accessible by
+// other services via the Hub.
 //
 // Not thread-safe. All methods must be called on the thread that created the
 // object.
@@ -71,6 +73,9 @@ class BASE_EXPORT ServiceDirectory {
   void RemoveService(StringPiece name);
   void RemoveAllServices();
 
+  // Returns the debug ServiceDirectory.
+  ServiceDirectory* debug() const { return debug_.get(); }
+
   // Passes requests for |name| through to a generic |connect_callback|.
   // This is used only when proxying requests for interfaces not known at
   // compile-time. Use the type-safe APIs above whenever possible.
@@ -78,6 +83,9 @@ class BASE_EXPORT ServiceDirectory {
                         RepeatingCallback<void(zx::channel)> connect_callback);
 
  private:
+  // Sub-directory constructor.
+  ServiceDirectory(svc_dir_t* svc_dir, const char* name);
+
   // Called by |svc_dir_| to handle service requests.
   static void HandleConnectRequest(void* context,
                                    const char* service_name,
@@ -85,8 +93,16 @@ class BASE_EXPORT ServiceDirectory {
 
   THREAD_CHECKER(thread_checker_);
 
+  // Owned by the root directory.
   svc_dir_t* svc_dir_ = nullptr;
   flat_map<std::string, RepeatingCallback<void(zx::channel)>> services_;
+
+  // The debug sub-directory. Empty if this is a sub-directory.
+  std::unique_ptr<ServiceDirectory> debug_;
+
+  // If mon-null, this directory represents a sub-directory of the root
+  // ServiceDirectory.
+  const char* sub_directory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDirectory);
 };

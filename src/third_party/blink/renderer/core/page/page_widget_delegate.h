@@ -74,6 +74,7 @@ class CORE_EXPORT PageWidgetDelegate {
 
  public:
   static void Animate(Page&, base::TimeTicks monotonic_frame_begin_time);
+  static void PostAnimate(Page&);
 
   // For the following methods, the |root| argument indicates a root LocalFrame
   // from which to start performing the specified operation.

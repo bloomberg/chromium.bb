@@ -17,6 +17,7 @@ const int64_t kMinSyncRecoveryTimeSec = 60 * 6;  // 6 minutes
 BackgroundSyncParameters::BackgroundSyncParameters()
     : disable(false),
       max_sync_attempts(kMaxSyncAttempts),
+      max_sync_attempts_with_notification_permission(kMaxSyncAttempts),
       initial_retry_delay(base::TimeDelta::FromSeconds(kInitialRetryDelaySec)),
       retry_delay_factor(kRetryDelayFactor),
       min_sync_recovery_time(
@@ -27,6 +28,8 @@ bool BackgroundSyncParameters::operator==(
     const BackgroundSyncParameters& other) const {
   return disable == other.disable &&
          max_sync_attempts == other.max_sync_attempts &&
+         max_sync_attempts_with_notification_permission ==
+             other.max_sync_attempts_with_notification_permission &&
          initial_retry_delay == other.initial_retry_delay &&
          retry_delay_factor == other.retry_delay_factor &&
          min_sync_recovery_time == other.min_sync_recovery_time &&

@@ -78,37 +78,36 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
   const Columns& columns = table_->visible_columns();
   const int sorted_column_id = table_->sort_descriptors().empty() ? -1 :
       table_->sort_descriptors()[0].column_id;
-  for (size_t i = 0; i < columns.size(); ++i) {
-    if (columns[i].width >= 2) {
-      const int separator_x = GetMirroredXInView(
-          columns[i].x + columns[i].width - 1);
+  for (const auto& column : columns) {
+    if (column.width >= 2) {
+      const int separator_x = GetMirroredXInView(column.x + column.width - 1);
       canvas->DrawSharpLine(
           gfx::PointF(separator_x, kSeparatorPadding),
           gfx::PointF(separator_x, height() - kSeparatorPadding),
           separator_color);
     }
 
-    const int x = columns[i].x + kHorizontalPadding;
-    int width = columns[i].width - kHorizontalPadding - kHorizontalPadding;
+    const int x = column.x + kHorizontalPadding;
+    int width = column.width - kHorizontalPadding - kHorizontalPadding;
     if (width <= 0)
       continue;
 
     const int title_width =
-        gfx::GetStringWidth(columns[i].column.title, font_list_);
+        gfx::GetStringWidth(column.column.title, font_list_);
     const bool paint_sort_indicator =
-        (columns[i].column.id == sorted_column_id &&
+        (column.column.id == sorted_column_id &&
          title_width + kSortIndicatorWidth <= width);
 
     if (paint_sort_indicator &&
-        columns[i].column.alignment == ui::TableColumn::RIGHT) {
+        column.column.alignment == ui::TableColumn::RIGHT) {
       width -= kSortIndicatorWidth;
     }
 
     canvas->DrawStringRectWithFlags(
-        columns[i].column.title, font_list_, text_color,
+        column.column.title, font_list_, text_color,
         gfx::Rect(GetMirroredXWithWidthInView(x, width), kVerticalPadding,
                   width, height() - kVerticalPadding * 2),
-        TableColumnAlignmentToCanvasAlignment(columns[i].column.alignment));
+        TableColumnAlignmentToCanvasAlignment(column.column.alignment));
 
     if (paint_sort_indicator) {
       cc::PaintFlags flags;
@@ -117,7 +116,7 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
       flags.setAntiAlias(true);
 
       int indicator_x = 0;
-      ui::TableColumn::Alignment alignment = columns[i].column.alignment;
+      ui::TableColumn::Alignment alignment = column.column.alignment;
       if (base::i18n::IsRTL()) {
         if (alignment == ui::TableColumn::LEFT)
           alignment = ui::TableColumn::RIGHT;
@@ -231,9 +230,9 @@ void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void TableHeader::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SetBackground(CreateSolidBackground(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderBackground)));
+void TableHeader::OnThemeChanged() {
+  SetBackground(CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TableHeaderBackground)));
 }
 
 void TableHeader::ResizeColumnViaKeyboard(

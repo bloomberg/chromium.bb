@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_MAC_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_MAC_H_
 
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_mac.h"
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_mac.h"
 
 namespace viz {
 
@@ -14,16 +14,16 @@ class GLOutputSurfaceMac : public GLOutputSurfaceBufferQueue {
  public:
   GLOutputSurfaceMac(scoped_refptr<VizProcessContextProvider> context_provider,
                      gpu::SurfaceHandle surface_handle,
-                     UpdateVSyncParametersCallback update_vsync_callback,
                      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                      bool allow_overlays);
   ~GLOutputSurfaceMac() override;
 
  private:
   // GLOutputSurface implementation:
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
 
-  std::unique_ptr<CompositorOverlayCandidateValidatorMac> overlay_validator_;
+  std::unique_ptr<OverlayCandidateValidatorMac> overlay_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceMac);
 };

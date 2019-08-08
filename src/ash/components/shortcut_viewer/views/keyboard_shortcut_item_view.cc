@@ -227,9 +227,9 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   DCHECK(!shortcut_label_view_->children().empty() &&
          !description_label_view_->children().empty());
   const int description_view_top_line_center_offset_y =
-      description_label_view_->child_at(0)->bounds().CenterPoint().y();
+      description_label_view_->children().front()->bounds().CenterPoint().y();
   const int shortcut_view_top_line_center_offset_y =
-      shortcut_label_view_->child_at(0)->bounds().CenterPoint().y();
+      shortcut_label_view_->children().front()->bounds().CenterPoint().y();
   // |shortcut_label_view_| could have bubble view in the top line, whose
   // height is larger than normal text in |description_label_view_|. Otherwise,
   // the top line height in the two views should be equal.

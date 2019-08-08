@@ -135,7 +135,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
       frame, &frame_or_imported_document_->GetDocument(),
       resource_loading_policy, PreloadHelper::kLoadAll,
-      nullptr /* viewport_description_wrapper */,
+      base::nullopt /* viewport_description */,
       std::move(alternate_resource_info));
 
   if (response.HasMajorCertificateErrors()) {
@@ -149,7 +149,6 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   }
 
   frame.Loader().Progress().IncrementProgress(identifier, response);
-  frame_client->DispatchDidReceiveResponse(response);
   probe::DidReceiveResourceResponse(GetProbe(), identifier, &document_loader,
                                     response, resource);
   // It is essential that inspector gets resource response BEFORE console.
@@ -258,8 +257,9 @@ CoreProbeSink* ResourceLoadObserverForFrame::GetProbe() {
 }
 
 void ResourceLoadObserverForFrame::CountUsage(WebFeature feature) {
-  frame_or_imported_document_->GetMasterDocumentLoader().GetUseCounter().Count(
-      feature, &frame_or_imported_document_->GetFrame());
+  frame_or_imported_document_->GetMasterDocumentLoader()
+      .GetUseCounterHelper()
+      .Count(feature, &frame_or_imported_document_->GetFrame());
 }
 
 }  // namespace blink

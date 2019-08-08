@@ -11,7 +11,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
@@ -185,13 +185,15 @@ class ExampleSearchResult : public app_list::SearchResult {
 
 ExampleAppListClient::ExampleAppListClient(AppListControllerImpl* controller)
     : controller_(controller) {
-  controller_->SetClient(CreateInterfacePtrAndBind());
+  controller_->SetClient(this);
 
   PopulateApps();
   DecorateSearchBox();
 }
 
-ExampleAppListClient::~ExampleAppListClient() = default;
+ExampleAppListClient::~ExampleAppListClient() {
+  controller_->SetClient(nullptr);
+}
 
 void ExampleAppListClient::PopulateApps() {
   for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
@@ -212,7 +214,7 @@ void ExampleAppListClient::StartSearch(const base::string16& trimmed_query) {
   query = base::i18n::ToLower(trimmed_query);
 
   search_results_.clear();
-  std::vector<ash::mojom::SearchResultMetadataPtr> result_data;
+  std::vector<std::unique_ptr<ash::SearchResultMetadata>> result_data;
   for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
     WindowTypeShelfItem::Type type = static_cast<WindowTypeShelfItem::Type>(i);
 
@@ -231,8 +233,8 @@ void ExampleAppListClient::StartSearch(const base::string16& trimmed_query) {
 void ExampleAppListClient::OpenSearchResult(
     const std::string& result_id,
     int event_flags,
-    ash::mojom::AppListLaunchedFrom launched_from,
-    ash::mojom::AppListLaunchType launch_type,
+    ash::AppListLaunchedFrom launched_from,
+    ash::AppListLaunchType launch_type,
     int suggestion_index) {
   auto it = std::find_if(
       search_results_.begin(), search_results_.end(),

@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -191,11 +192,6 @@ void CountAudioConstraintUses(ExecutionContext* context,
   if (RequestUsesDiscreteConstraint(
           constraints, &WebMediaTrackConstraintSet::goog_highpass_filter)) {
     counter.Count(WebFeature::kMediaStreamConstraintsGoogHighpassFilter);
-  }
-  if (RequestUsesDiscreteConstraint(
-          constraints,
-          &WebMediaTrackConstraintSet::goog_typing_noise_detection)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsGoogTypingNoiseDetection);
   }
   if (RequestUsesDiscreteConstraint(
           constraints,
@@ -477,8 +473,8 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
   if (document->IsSecureContext(error_message)) {
     UseCounter::Count(document, WebFeature::kGetUserMediaSecureOrigin);
-    UseCounter::CountCrossOriginIframe(
-        *document, WebFeature::kGetUserMediaSecureOriginIframe);
+    document->CountUseOnlyInCrossOriginIframe(
+        WebFeature::kGetUserMediaSecureOriginIframe);
 
     // Feature policy deprecation messages.
     if (Audio()) {
@@ -588,9 +584,10 @@ void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
     default:
       NOTREACHED();
   }
-  callbacks_->OnError(nullptr,
-                      DOMExceptionOrOverconstrainedError::FromDOMException(
-                          DOMException::Create(exception_code, message)));
+  callbacks_->OnError(
+      nullptr,
+      DOMExceptionOrOverconstrainedError::FromDOMException(
+          MakeGarbageCollected<DOMException>(exception_code, message)));
 }
 
 void UserMediaRequest::ContextDestroyed(ExecutionContext*) {

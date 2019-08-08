@@ -22,7 +22,7 @@
 #include "api/audio_options.h"
 #include "api/crypto/frame_decryptor_interface.h"
 #include "api/crypto/frame_encryptor_interface.h"
-#include "api/media_transport_interface.h"
+#include "api/media_transport_config.h"
 #include "api/rtc_error.h"
 #include "api/rtp_parameters.h"
 #include "api/rtp_receiver_interface.h"
@@ -31,12 +31,14 @@
 #include "api/video/video_source_interface.h"
 #include "api/video/video_timing.h"
 #include "api/video_codecs/video_encoder_config.h"
+#include "common_video/include/quality_limitation_reason.h"
 #include "media/base/codec.h"
 #include "media/base/delayable.h"
 #include "media/base/media_config.h"
 #include "media/base/media_constants.h"
 #include "media/base/stream_params.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
+#include "modules/rtp_rtcp/include/report_block_data.h"
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/buffer.h"
 #include "rtc_base/copy_on_write_buffer.h"
@@ -193,8 +195,9 @@ class MediaChannel : public sigslot::has_slots<> {
   // TODO(sukhanov): Currently media transport can co-exist with RTP/RTCP, but
   // in the future we will refactor code to send all frames with media
   // transport.
-  virtual void SetInterface(NetworkInterface* iface,
-                            webrtc::MediaTransportInterface* media_transport);
+  virtual void SetInterface(
+      NetworkInterface* iface,
+      const webrtc::MediaTransportConfig& media_transport_config);
   // Called when a RTP packet is received.
   virtual void OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                                 int64_t packet_time_us) = 0;
@@ -261,8 +264,12 @@ class MediaChannel : public sigslot::has_slots<> {
     return network_interface_->SetOption(type, opt, option);
   }
 
+  const webrtc::MediaTransportConfig& media_transport_config() const {
+    return media_transport_config_;
+  }
+
   webrtc::MediaTransportInterface* media_transport() {
-    return media_transport_;
+    return media_transport_config_.media_transport;
   }
 
   // Corresponds to the SDP attribute extmap-allow-mixed, see RFC8285.
@@ -331,7 +338,7 @@ class MediaChannel : public sigslot::has_slots<> {
       nullptr;
   rtc::DiffServCodePoint preferred_dscp_
       RTC_GUARDED_BY(network_interface_crit_) = rtc::DSCP_DEFAULT;
-  webrtc::MediaTransportInterface* media_transport_ = nullptr;
+  webrtc::MediaTransportConfig media_transport_config_;
   bool extmap_allow_mixed_ = false;
 };
 
@@ -399,6 +406,11 @@ struct MediaSenderInfo {
   absl::optional<int> codec_payload_type;
   std::vector<SsrcSenderInfo> local_stats;
   std::vector<SsrcReceiverInfo> remote_stats;
+  // A snapshot of the most recent Report Block with additional data of interest
+  // to statistics. Used to implement RTCRemoteInboundRtpStreamStats. Within
+  // this list, the ReportBlockData::RTCPReportBlock::source_ssrc(), which is
+  // the SSRC of the corresponding outbound RTP stream, is unique.
+  std::vector<webrtc::ReportBlockData> report_block_datas;
 };
 
 struct MediaReceiverInfo {
@@ -479,9 +491,14 @@ struct VoiceReceiverInfo : public MediaReceiverInfo {
   uint64_t total_samples_received = 0;
   double total_output_duration = 0.0;
   uint64_t concealed_samples = 0;
+  uint64_t silent_concealed_samples = 0;
   uint64_t concealment_events = 0;
   double jitter_buffer_delay_seconds = 0.0;
   uint64_t jitter_buffer_emitted_count = 0;
+  uint64_t inserted_samples_for_deceleration = 0;
+  uint64_t removed_samples_for_acceleration = 0;
+  uint64_t fec_packets_received = 0;
+  uint64_t fec_packets_discarded = 0;
   // Stats below DO NOT correspond directly to anything in the WebRTC stats
   // fraction of synthesized audio inserted through expansion.
   float expand_rate = 0.0f;
@@ -514,6 +531,10 @@ struct VoiceReceiverInfo : public MediaReceiverInfo {
   uint64_t delayed_packet_outage_samples = 0;
   // Arrival delay of received audio packets.
   double relative_packet_arrival_delay_seconds = 0.0;
+  // Count and total duration of audio interruptions (loss-concealement periods
+  // longer than 150 ms).
+  int32_t interruption_count = 0;
+  int32_t total_interruption_duration_ms = 0;
 };
 
 struct VideoSenderInfo : public MediaSenderInfo {
@@ -532,11 +553,20 @@ struct VideoSenderInfo : public MediaSenderInfo {
   int nominal_bitrate = 0;
   int adapt_reason = 0;
   int adapt_changes = 0;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-qualitylimitationreason
+  webrtc::QualityLimitationReason quality_limitation_reason =
+      webrtc::QualityLimitationReason::kNone;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-qualitylimitationdurations
+  std::map<webrtc::QualityLimitationReason, int64_t>
+      quality_limitation_durations_ms;
   int avg_encode_ms = 0;
   int encode_usage_percent = 0;
   uint32_t frames_encoded = 0;
   // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodetime
   uint64_t total_encode_time_ms = 0;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodedbytestarget
+  uint64_t total_encoded_bytes_target = 0;
+  uint64_t total_packet_send_delay_ms = 0;
   bool has_entered_low_resolution = false;
   absl::optional<uint64_t> qp_sum;
   webrtc::VideoContentType content_type = webrtc::VideoContentType::UNSPECIFIED;
@@ -587,6 +617,12 @@ struct VideoReceiverInfo : public MediaReceiverInfo {
   int max_decode_ms = 0;
   // Jitter (network-related) latency.
   int jitter_buffer_ms = 0;
+  // Jitter (network-related) latency (cumulative).
+  // https://w3c.github.io/webrtc-stats/#dom-rtcvideoreceiverstats-jitterbufferdelay
+  double jitter_buffer_delay_seconds = 0;
+  // Number of observations for cumulative jitter latency.
+  // https://w3c.github.io/webrtc-stats/#dom-rtcvideoreceiverstats-jitterbufferemittedcount
+  uint64_t jitter_buffer_emitted_count = 0;
   // Requested minimum playout latency.
   int min_playout_delay_ms = 0;
   // Requested latency to account for rendering delay.

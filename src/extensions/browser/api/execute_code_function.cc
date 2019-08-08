@@ -230,7 +230,7 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
   // DCHECK.
   bool might_require_localization = ShouldInsertCSS() && !extension_id.empty();
 
-  ComponentExtensionResourceInfo resource_info;
+  int resource_id = 0;
   const ComponentExtensionResourceManager*
       component_extension_resource_manager =
           ExtensionsBrowserClient::Get()
@@ -238,11 +238,10 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
   if (component_extension_resource_manager &&
       component_extension_resource_manager->IsComponentExtensionResource(
           resource_.extension_root(), resource_.relative_path(),
-          &resource_info)) {
-    DCHECK(!resource_info.gzipped);
+          &resource_id)) {
+    DCHECK(!ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id));
     base::StringPiece resource =
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-            resource_info.resource_id);
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
     std::unique_ptr<std::string> data(
         new std::string(resource.data(), resource.size()));
 
@@ -251,9 +250,8 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&ExecuteCodeFunction::
                            GetFileURLAndLocalizeComponentResourceInBackground,
-                       this, base::Passed(std::move(data)), extension_id,
-                       extension_path, extension_default_locale,
-                       might_require_localization),
+                       this, std::move(data), extension_id, extension_path,
+                       extension_default_locale, might_require_localization),
         base::BindOnce(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
                        resource_.relative_path().AsUTF8Unsafe(),
                        true /* We assume this call always succeeds */));

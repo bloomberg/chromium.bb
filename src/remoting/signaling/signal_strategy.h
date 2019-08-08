@@ -17,6 +17,11 @@ class XmlElement;
 
 namespace remoting {
 
+namespace ftl {
+class ChromotingMessage;
+class Id;
+}  // namespace ftl
+
 class SignalingAddress;
 
 class SignalStrategy {
@@ -57,6 +62,21 @@ class SignalStrategy {
     // handler of this message.
     virtual bool OnSignalStrategyIncomingStanza(
         const jingle_xmpp::XmlElement* stanza) = 0;
+
+    // This method is similar to OnSignalStrategyIncomingStanza(). It will be
+    // called by signal strategy that supports ChromotingMessage (i.e.
+    // FtlSignalStrategy) before OnSignalStrategyIncomingStanza() is called.
+    //
+    // Must return true if the message was handled, false
+    // otherwise. The signal strategy must not be deleted from a
+    // handler of this message.
+    //
+    // TODO(yuweih): Remove OnSignalStrategyIncomingStanza() and make this
+    // method pure virtual.
+    virtual bool OnSignalStrategyIncomingMessage(
+        const ftl::Id& sender_id,
+        const std::string& sender_registration_id,
+        const ftl::ChromotingMessage& message);
   };
 
   SignalStrategy() {}

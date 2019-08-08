@@ -16,9 +16,6 @@
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/usb/mojo/type_converters.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_ids.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_host.h"
@@ -26,6 +23,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "services/device/public/cpp/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
@@ -349,15 +347,6 @@ base::string16 DevicePermissionEntry::GetPermissionMessageString() const {
 }
 
 DevicePermissions::~DevicePermissions() {
-}
-
-scoped_refptr<DevicePermissionEntry> DevicePermissions::FindUsbDeviceEntry(
-    scoped_refptr<device::UsbDevice> device) const {
-  if (!device)
-    return nullptr;
-
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  return FindUsbDeviceEntry(*device_info);
 }
 
 scoped_refptr<DevicePermissionEntry> DevicePermissions::FindUsbDeviceEntry(

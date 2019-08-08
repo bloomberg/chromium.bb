@@ -14,9 +14,11 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/blacklisted_credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
@@ -93,7 +95,7 @@ void FindDuplicates(std::vector<std::unique_ptr<PasswordForm>>* forms,
     tag_groups->front().push_back(unique_forms.front().get());
   }
   for (auto it = forms->begin() + 1; it != forms->end(); ++it) {
-    if (ArePasswordFormUniqueKeyEqual(**it, *unique_forms.back())) {
+    if (ArePasswordFormUniqueKeysEqual(**it, *unique_forms.back())) {
       if (tag_groups)
         tag_groups->back().push_back(it->get());
       duplicates->push_back(std::move(*it));
@@ -111,14 +113,14 @@ void TrimUsernameOnlyCredentials(
   // Remove username-only credentials which are not federated.
   base::EraseIf(*android_credentials,
                 [](const std::unique_ptr<PasswordForm>& form) {
-                  return form->scheme == PasswordForm::SCHEME_USERNAME_ONLY &&
+                  return form->scheme == PasswordForm::Scheme::kUsernameOnly &&
                          form->federation_origin.opaque();
                 });
 
   // Set "skip_zero_click" on federated credentials.
   std::for_each(android_credentials->begin(), android_credentials->end(),
                 [](const std::unique_ptr<PasswordForm>& form) {
-                  if (form->scheme == PasswordForm::SCHEME_USERNAME_ONLY)
+                  if (form->scheme == PasswordForm::Scheme::kUsernameOnly)
                     form->skip_zero_click = true;
                 });
 }
@@ -130,6 +132,11 @@ bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
 
 bool ManualPasswordGenerationEnabled(
     password_manager::PasswordManagerDriver* driver) {
+#if defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kManualPasswordGenerationAndroid))
+    return false;
+#endif  // defined(OS_ANDROID)
   password_manager::PasswordGenerationFrameHelper* password_generation_manager =
       driver ? driver->GetPasswordGenerationHelper() : nullptr;
   if (!password_generation_manager ||
@@ -187,6 +194,10 @@ void RemoveUselessCredentials(
             store, network_context_getter, prefs));
   }
 #endif  // !defined(OS_IOS)
+
+  cleaning_tasks_runner->MaybeAddCleaningTask(
+      std::make_unique<password_manager::BlacklistedCredentialsCleaner>(store,
+                                                                        prefs));
 
   if (cleaning_tasks_runner->HasPendingTasks()) {
     // The runner will delete itself once the clearing tasks are done, thus we
@@ -280,7 +291,7 @@ const PasswordForm* GetMatchForUpdating(
 
   // Next attempt is to find a match by password value. It should not be tried
   // when the username was actually detected.
-  if (submitted_form.type == PasswordForm::TYPE_API ||
+  if (submitted_form.type == PasswordForm::Type::kApi ||
       !submitted_form.username_value.empty())
     return nullptr;
 
@@ -292,6 +303,28 @@ const PasswordForm* GetMatchForUpdating(
   // Last try. The submitted form had no username but a password. Assume that
   // it's an existing credential.
   return credentials.empty() ? nullptr : credentials.begin()->second;
+}
+
+autofill::PasswordForm MakeNormalizedBlacklistedForm(
+    password_manager::PasswordStore::FormDigest digest) {
+  autofill::PasswordForm result;
+  result.blacklisted_by_user = true;
+  result.scheme = std::move(digest.scheme);
+  result.signon_realm = std::move(digest.signon_realm);
+  // In case |digest| corresponds to an Android credential copy the origin as
+  // is, otherwise clear out the path by calling GetOrigin().
+  if (password_manager::FacetURI::FromPotentiallyInvalidSpec(
+          digest.origin.spec())
+          .IsValidAndroidFacetURI()) {
+    result.origin = std::move(digest.origin);
+  } else {
+    // GetOrigin() will return an empty GURL if the origin is not valid or
+    // standard. DCHECK that this will not happen.
+    DCHECK(digest.origin.is_valid());
+    DCHECK(digest.origin.IsStandard());
+    result.origin = digest.origin.GetOrigin();
+  }
+  return result;
 }
 
 }  // namespace password_manager_util

@@ -4,8 +4,17 @@
 
 #include "components/previews/core/previews_switches.h"
 
+#include "base/command_line.h"
+
 namespace previews {
 namespace switches {
+
+bool ShouldIgnorePreviewsBlacklist() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kIgnorePreviewsBlacklist) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kForceEnablePreviews);
+}
 
 // Do not require the user notification InfoBar to be shown before triggering a
 // Lite Page Redirect preview.
@@ -14,6 +23,9 @@ const char kDoNotRequireLitePageRedirectInfoBar[] =
 
 // Ignore decisions made by PreviewsBlackList.
 const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
+
+// Force enable all available previews on every page load.
+const char kForceEnablePreviews[] = "force-enable-previews";
 
 // Override the Lite Page Preview Host.
 const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
@@ -40,16 +52,20 @@ const char kFetchHintsOverride[] = "optimization-guide-fetch-hints-override";
 
 // Overrides the Optimization Guide Service URL that the HintsFetcher will
 // request remote hints from.
-const char kOptimizationGuideServiceURL[] = "optimization_guide_service_url";
+const char kOptimizationGuideServiceURL[] = "optimization-guide-service-url";
 
 // Overrides the Optimization Guide Service API Key for remote requests to be
 // made.
 const char kOptimizationGuideServiceAPIKey[] =
-    "optimization_guide_service_api_key";
+    "optimization-guide-service-api-key";
 
 // Purges the hint cache store on startup, so that it's guaranteed to be using
 // fresh data.
 const char kPurgeHintCacheStore[] = "purge_hint_cache_store";
+
+// Sets the trigger ordering of Lite Page Redirect to be higher than page hints.
+const char kLitePageRedirectOverridesPageHints[] =
+    "litepage_redirect_overrides_page_hints";
 
 }  // namespace switches
 }  // namespace previews

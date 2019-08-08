@@ -17,11 +17,8 @@
 #include "url/gurl.h"
 
 CastRunner::CastRunner(base::fuchsia::ServiceDirectory* service_directory,
-                       fuchsia::web::ContextPtr context,
-                       base::OnceClosure on_idle_closure)
-    : WebContentRunner(service_directory,
-                       std::move(context),
-                       std::move(on_idle_closure)) {}
+                       fuchsia::web::ContextPtr context)
+    : WebContentRunner(service_directory, std::move(context)) {}
 
 CastRunner::~CastRunner() = default;
 
@@ -29,7 +26,9 @@ struct CastRunner::PendingComponent {
   chromium::cast::ApplicationConfigManagerPtr app_config_manager;
   std::unique_ptr<base::fuchsia::StartupContext> startup_context;
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
+  std::unique_ptr<ApiBindingsClient> bindings_manager;
   fidl::InterfaceRequest<fuchsia::sys::ComponentController> controller_request;
+  chromium::cast::ApplicationConfig app_config;
 };
 
 void CastRunner::StartComponent(
@@ -70,6 +69,15 @@ void CastRunner::StartComponent(
                           chromium::cast::ApplicationConfig());
       });
 
+  // Get binding details from the Agent.
+  fidl::InterfaceHandle<chromium::cast::ApiBindings> api_bindings_client;
+  pending_component->agent_manager->ConnectToAgentService(
+      kAgentComponentUrl, api_bindings_client.NewRequest());
+  pending_component->bindings_manager = std::make_unique<ApiBindingsClient>(
+      std::move(api_bindings_client),
+      base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
+                     base::Unretained(pending_component.get())));
+
   const std::string cast_app_id(cast_url.GetContent());
   pending_component->app_config_manager->GetConfig(
       cast_app_id, [this, pending_component = pending_component.get()](
@@ -100,17 +108,31 @@ void CastRunner::GetConfigCallback(
     return;
   }
 
+  pending_component->app_config = std::move(app_config);
+
+  MaybeStartComponent(pending_component);
+}
+
+void CastRunner::MaybeStartComponent(PendingComponent* pending_component) {
+  // Called after the completion of GetConfigCallback() or
+  // ApiBindingsClient::OnBindingsReceived().
+  if (pending_component->app_config.IsEmpty() ||
+      !pending_component->bindings_manager->HasBindings()) {
+    // Don't proceed unless both the application config and API bindings are
+    // received.
+    return;
+  }
+
   // Create a component based on the returned configuration, and pass it the
   // fields stashed in PendingComponent.
-  GURL cast_app_url(app_config.web_url());
+  GURL cast_app_url(pending_component->app_config.web_url());
   auto component = std::make_unique<CastComponent>(
-      this, std::move(pending_component->startup_context),
+      this, std::move(pending_component->app_config),
+      std::move(pending_component->bindings_manager),
+      std::move(pending_component->startup_context),
       std::move(pending_component->controller_request),
       std::move(pending_component->agent_manager));
-  pending_components_.erase(it);
-
-  // Disable input for the Frame by default.
-  component->frame()->SetEnableInput(false);
+  pending_components_.erase(pending_component);
 
   component->LoadUrl(std::move(cast_app_url));
   RegisterComponent(std::move(component));

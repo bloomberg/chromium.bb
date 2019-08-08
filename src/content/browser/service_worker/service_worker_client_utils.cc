@@ -37,7 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -257,7 +257,7 @@ void OpenWindowOnUI(
 
   GetContentClient()->browser()->OverrideNavigationParams(
       site_instance, &params.transition, &params.is_renderer_initiated,
-      &params.referrer);
+      &params.referrer, &params.initiator_origin);
 
   // End of RequestOpenURL copy.
 

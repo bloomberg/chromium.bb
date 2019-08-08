@@ -148,7 +148,7 @@ class StringPrinter:
             len = sl['__size_']
             ptr = sl['__data_']
 
-        return ptr.string(length=len)
+        return ''.join(chr(ptr[i]) for i in range(len))
 
     def display_hint(self):
         return 'string'

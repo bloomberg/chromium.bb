@@ -1,6 +1,16 @@
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//chrome/android/features/module_names_to_package_ids.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
+
+declare_args() {
+  # This is a developer flag to be able to use the incremental build/install workflow for autofill
+  # assistant. When set to true, autofill_assistant is built as part of the base apk and not a
+  # separate feature module which currently doesn't support incremental builds.
+  #
+  # TODO(http://crbug/864142): Remove once incremental bundle install is available.
+  # TODO(http://crbug/971244): Set default back to false.
+  disable_autofill_assistant_dfm = true
+}
 
 template("autofill_assistant_module_tmpl") {
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
@@ -31,7 +41,6 @@ template("autofill_assistant_module_tmpl") {
     package_name = "autofill_assistant"
     package_name_to_id_mapping = resource_packages_id_mapping
     deps = [
-      "//chrome/android/features/autofill_assistant:animated_poodle_java",
       "//chrome/android/features/autofill_assistant:java",
     ]
   }

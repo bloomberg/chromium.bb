@@ -28,7 +28,7 @@ void ClearOid(gss_OID dest) {
   if (!dest)
     return;
   dest->length = 0;
-  dest->elements = NULL;
+  dest->elements = nullptr;
 }
 
 void SetOid(gss_OID dest, const void* src, size_t length) {
@@ -57,7 +57,7 @@ void ClearBuffer(gss_buffer_t dest) {
     return;
   dest->length = 0;
   delete [] reinterpret_cast<char*>(dest->value);
-  dest->value = NULL;
+  dest->value = nullptr;
 }
 
 void SetBuffer(gss_buffer_t dest, const void* src, size_t length) {
@@ -193,9 +193,9 @@ MockGSSAPILibrary::SecurityContextQuery::SecurityContextQuery()
       minor_response_code(0),
       context_info() {
   expected_input_token.length = 0;
-  expected_input_token.value = NULL;
+  expected_input_token.value = nullptr;
   output_token.length = 0;
-  output_token.value = NULL;
+  output_token.value = nullptr;
 }
 
 MockGSSAPILibrary::SecurityContextQuery::SecurityContextQuery(
@@ -214,7 +214,7 @@ MockGSSAPILibrary::SecurityContextQuery::SecurityContextQuery(
     expected_input_token.value = const_cast<char*>(in_expected_input_token);
   } else {
     expected_input_token.length = 0;
-    expected_input_token.value = NULL;
+    expected_input_token.value = nullptr;
   }
 
   if (in_output_token) {
@@ -222,7 +222,7 @@ MockGSSAPILibrary::SecurityContextQuery::SecurityContextQuery(
     output_token.value = const_cast<char*>(in_output_token);
   } else {
     output_token.length = 0;
-    output_token.value = NULL;
+    output_token.value = nullptr;
   }
 }
 
@@ -271,10 +271,10 @@ OM_uint32 MockGSSAPILibrary::import_name(
   if (!input_name_type)
     return GSS_S_BAD_NAMETYPE;
   GssNameMockImpl* output = new GssNameMockImpl;
-  if (output == NULL)
+  if (output == nullptr)
     return GSS_S_FAILURE;
   output->name_type.length = 0;
-  output->name_type.elements = NULL;
+  output->name_type.elements = nullptr;
 
   // Save the data.
   output->name = BufferToString(input_name_buffer);
@@ -296,7 +296,7 @@ OM_uint32 MockGSSAPILibrary::release_name(
   GssNameMockImpl* name = *reinterpret_cast<GssNameMockImpl**>(input_name);
   ClearName(*input_name);
   delete name;
-  *input_name = NULL;
+  *input_name = nullptr;
   return GSS_S_COMPLETE;
 }
 
@@ -329,7 +329,7 @@ OM_uint32 MockGSSAPILibrary::display_name(
   GssNameMockImpl* internal_name =
       *reinterpret_cast<GssNameMockImpl**>(input_name);
   if (output_name_type)
-    *output_name_type = internal_name ? &internal_name->name_type : NULL;
+    *output_name_type = internal_name ? &internal_name->name_type : nullptr;
   return GSS_S_COMPLETE;
 }
 
@@ -436,7 +436,7 @@ OM_uint32 MockGSSAPILibrary::delete_sec_context(
       reinterpret_cast<GssContextMockImpl**>(context_handle);
   if (*internal_context_handle) {
     delete *internal_context_handle;
-    *internal_context_handle = NULL;
+    *internal_context_handle = nullptr;
   }
   return GSS_S_COMPLETE;
 }

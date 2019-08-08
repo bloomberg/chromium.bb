@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 class GURL;
+@protocol OmniboxIcon;
 
 // Represents an autocomplete suggestion in UI.
 @protocol AutocompleteSuggestion <NSObject>
@@ -41,6 +42,8 @@ class GURL;
 - (GURL)imageURL;
 // Page URL to be used to retrieve the favicon.
 - (GURL)faviconPageURL;
+
+- (id<OmniboxIcon>)icon;
 
 @end
 

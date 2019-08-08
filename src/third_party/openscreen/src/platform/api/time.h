@@ -5,70 +5,53 @@
 #ifndef PLATFORM_API_TIME_H_
 #define PLATFORM_API_TIME_H_
 
-#include <cstdint>
+#include <chrono>
 
 namespace openscreen {
 namespace platform {
 
-class TimeDelta {
+// For proper behavior of the OpenScreen library, the Clock implementation must
+// tick at least 10000 times per second.
+using kRequiredClockResolution = std::ratio<1, 10000>;
+
+// A monotonic clock that meets all the C++14 requirements of a TrivialClock,
+// for use with the chrono library. The default platform implementation bases
+// this on std::chrono::steady_clock or std::chrono::high_resolution_clock, but
+// a custom implementation may use a different source of time (e.g., an
+// embedder's time library, a simulated time source, or a mock).
+class Clock {
  public:
-  constexpr static TimeDelta FromSeconds(int64_t sec) {
-    return TimeDelta(sec * 1000000);
-  }
-  constexpr static TimeDelta FromMilliseconds(int64_t msec) {
-    return TimeDelta(msec * 1000);
-  }
-  constexpr static TimeDelta FromMicroseconds(int64_t usec) {
-    return TimeDelta(usec);
-  }
+  // TrivialClock named requirements: std::chrono templates can/may use these.
+  using duration = std::chrono::microseconds;
+  using rep = duration::rep;
+  using period = duration::period;
+  using time_point = std::chrono::time_point<Clock, duration>;
+  static constexpr bool is_steady = true;
 
-  constexpr int64_t AsSeconds() const { return microseconds_ / 1000000; }
-  constexpr int64_t AsMilliseconds() const { return microseconds_ / 1000; }
-  constexpr int64_t AsMicroseconds() const { return microseconds_; }
+  static time_point now() noexcept;
 
-  constexpr TimeDelta& operator-=(TimeDelta t) {
-    microseconds_ -= t.microseconds_;
-    return *this;
-  }
+  // In <chrono>, a Clock is just some type properties plus a static now()
+  // function. So, there's nothing to instantiate here.
+  Clock() = delete;
+  ~Clock() = delete;
 
-  constexpr TimeDelta& operator+=(TimeDelta t) {
-    microseconds_ += t.microseconds_;
-    return *this;
-  }
-
- private:
-  constexpr explicit TimeDelta(int64_t usec) : microseconds_(usec) {}
-
-  friend constexpr TimeDelta operator-(TimeDelta t1, TimeDelta t2) {
-    return TimeDelta(t1.microseconds_ - t2.microseconds_);
-  }
-  friend constexpr TimeDelta operator+(TimeDelta t1, TimeDelta t2) {
-    return TimeDelta(t1.microseconds_ + t2.microseconds_);
-  }
-  friend constexpr bool operator<(TimeDelta t1, TimeDelta t2) {
-    return t1.microseconds_ < t2.microseconds_;
-  }
-  friend constexpr bool operator<=(TimeDelta t1, TimeDelta t2) {
-    return t1.microseconds_ <= t2.microseconds_;
-  }
-  friend constexpr bool operator>(TimeDelta t1, TimeDelta t2) {
-    return t1.microseconds_ > t2.microseconds_;
-  }
-  friend constexpr bool operator>=(TimeDelta t1, TimeDelta t2) {
-    return t1.microseconds_ >= t2.microseconds_;
-  }
-  friend constexpr bool operator==(TimeDelta t1, TimeDelta t2) {
-    return t1.microseconds_ == t2.microseconds_;
-  }
-  friend constexpr bool operator!=(TimeDelta t1, TimeDelta t2) {
-    return t1.microseconds_ != t2.microseconds_;
-  }
-
-  int64_t microseconds_;
+  // "Trivially copyable" is necessary for use in std::atomic<>.
+  static_assert(std::is_trivially_copyable<duration>(),
+                "duration is not trivially copyable");
+  static_assert(std::is_trivially_copyable<time_point>(),
+                "time_point is not trivially copyable");
 };
 
-TimeDelta GetMonotonicTimeNow();
-TimeDelta GetUTCNow();
+// Convenience, for injecting Clocks into classes. Note: The 'noexcept' keyword
+// is dropped here to avoid a well-known Clang compiler warning (about an
+// upcoming C++20 ABI change).
+using ClockNowFunctionPtr = Clock::time_point (*)();
+
+// Returns the number of seconds since UNIX epoch (1 Jan 1970, midnight)
+// according to the wall clock, which is subject to adjustments (e.g., via
+// NTP). Note that this is NOT the same time source as Clock::now() above, and
+// is NOT guaranteed to be monotonically non-decreasing.
+std::chrono::seconds GetWallTimeSinceUnixEpoch() noexcept;
 
 }  // namespace platform
 }  // namespace openscreen

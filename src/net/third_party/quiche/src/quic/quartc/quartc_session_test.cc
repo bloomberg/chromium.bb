@@ -4,8 +4,6 @@
 
 #include "net/third_party/quiche/src/quic/quartc/quartc_session.h"
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
@@ -36,6 +34,11 @@ constexpr QuicTime::Delta kPropagationDelayAndABit =
 
 static QuicByteCount kDefaultMaxPacketSize = 1200;
 
+test::QuicTestMemSliceVector CreateMemSliceVector(QuicStringPiece data) {
+  return test::QuicTestMemSliceVector(
+      {std::pair<char*, size_t>(const_cast<char*>(data.data()), data.size())});
+}
+
 class QuartcSessionTest : public QuicTest {
  public:
   ~QuartcSessionTest() override {}
@@ -58,28 +61,26 @@ class QuartcSessionTest : public QuicTest {
         QuicBandwidth::FromKBitsPerSecond(10 * 1000), kPropagationDelay);
 
     client_stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
-    client_session_delegate_ = QuicMakeUnique<FakeQuartcSessionDelegate>(
+    client_session_delegate_ = QuicMakeUnique<FakeQuartcEndpointDelegate>(
         client_stream_delegate_.get(), simulator_.GetClock());
-    client_endpoint_delegate_ = QuicMakeUnique<FakeQuartcEndpointDelegate>(
-        client_session_delegate_.get());
 
     server_stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
-    server_session_delegate_ = QuicMakeUnique<FakeQuartcSessionDelegate>(
+    server_session_delegate_ = QuicMakeUnique<FakeQuartcEndpointDelegate>(
         server_stream_delegate_.get(), simulator_.GetClock());
-    server_endpoint_delegate_ = QuicMakeUnique<FakeQuartcEndpointDelegate>(
-        server_session_delegate_.get());
 
     // No 0-rtt setup, because server config is empty.
     // CannotCreateDataStreamBeforeHandshake depends on 1-rtt setup.
     if (create_client_endpoint) {
       client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
           simulator_.GetAlarmFactory(), simulator_.GetClock(),
-          client_endpoint_delegate_.get(), quic::QuartcSessionConfig(),
+          simulator_.GetRandomGenerator(), client_session_delegate_.get(),
+          quic::QuartcSessionConfig(),
           /*serialized_server_config=*/"");
     }
     server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
         simulator_.GetAlarmFactory(), simulator_.GetClock(),
-        server_endpoint_delegate_.get(), quic::QuartcSessionConfig());
+        simulator_.GetRandomGenerator(), server_session_delegate_.get(),
+        quic::QuartcSessionConfig());
   }
 
   // Note that input session config will apply to both server and client.
@@ -94,12 +95,12 @@ class QuartcSessionTest : public QuicTest {
     client_endpoint_->Connect(client_transport_.get());
 
     CHECK(simulator_.RunUntil([this] {
-      return client_endpoint_delegate_->session() != nullptr &&
-             server_endpoint_delegate_->session() != nullptr;
+      return client_session_delegate_->session() != nullptr &&
+             server_session_delegate_->session() != nullptr;
     }));
 
-    client_peer_ = client_endpoint_delegate_->session();
-    server_peer_ = server_endpoint_delegate_->session();
+    client_peer_ = client_session_delegate_->session();
+    server_peer_ = server_session_delegate_->session();
   }
 
   // Runs all tasks scheduled in the next 200 ms.
@@ -130,9 +131,7 @@ class QuartcSessionTest : public QuicTest {
     outgoing_stream->SetDelegate(server_stream_delegate_.get());
 
     // Send a test message from peer 1 to peer 2.
-    char kTestMessage[] = "Hello";
-    test::QuicTestMemSliceVector data(
-        {std::make_pair(kTestMessage, strlen(kTestMessage))});
+    test::QuicTestMemSliceVector data = CreateMemSliceVector("Hello");
     outgoing_stream->WriteMemSlices(data.span(), /*fin=*/false);
     RunTasks();
 
@@ -144,17 +143,15 @@ class QuartcSessionTest : public QuicTest {
     EXPECT_EQ(incoming->id(), stream_id);
     EXPECT_TRUE(client_peer_->ShouldKeepConnectionAlive());
 
-    EXPECT_EQ(client_stream_delegate_->data()[stream_id], kTestMessage);
+    EXPECT_EQ(client_stream_delegate_->data()[stream_id], "Hello");
     // Send a test message from peer 2 to peer 1.
-    char kTestResponse[] = "Response";
-    test::QuicTestMemSliceVector response(
-        {std::make_pair(kTestResponse, strlen(kTestResponse))});
+    test::QuicTestMemSliceVector response = CreateMemSliceVector("Response");
     incoming->WriteMemSlices(response.span(), /*fin=*/false);
     RunTasks();
     // Wait for peer 1 to receive messages.
     ASSERT_TRUE(server_stream_delegate_->has_data());
 
-    EXPECT_EQ(server_stream_delegate_->data()[stream_id], kTestResponse);
+    EXPECT_EQ(server_stream_delegate_->data()[stream_id], "Response");
   }
 
   // Test sending/receiving of messages for two directions.
@@ -162,8 +159,14 @@ class QuartcSessionTest : public QuicTest {
     ASSERT_TRUE(server_peer_->CanSendMessage());
     ASSERT_TRUE(client_peer_->CanSendMessage());
 
+    int64_t server_datagram_id = 111;
+    int64_t client_datagram_id = 222;
+
     // Send message from peer 1 to peer 2.
-    ASSERT_TRUE(server_peer_->SendOrQueueMessage("Message from server"));
+    test::QuicTestMemSliceVector message =
+        CreateMemSliceVector("Message from server");
+    ASSERT_TRUE(
+        server_peer_->SendOrQueueMessage(message.span(), server_datagram_id));
 
     // First message in each direction should not be queued.
     EXPECT_EQ(server_peer_->send_message_queue_size(), 0u);
@@ -174,8 +177,13 @@ class QuartcSessionTest : public QuicTest {
     EXPECT_THAT(client_session_delegate_->incoming_messages(),
                 testing::ElementsAre("Message from server"));
 
+    EXPECT_THAT(server_session_delegate_->sent_datagram_ids(),
+                testing::ElementsAre(server_datagram_id));
+
     // Send message from peer 2 to peer 1.
-    ASSERT_TRUE(client_peer_->SendOrQueueMessage("Message from client"));
+    message = CreateMemSliceVector("Message from client");
+    ASSERT_TRUE(
+        client_peer_->SendOrQueueMessage(message.span(), client_datagram_id));
 
     // First message in each direction should not be queued.
     EXPECT_EQ(client_peer_->send_message_queue_size(), 0u);
@@ -185,6 +193,9 @@ class QuartcSessionTest : public QuicTest {
 
     EXPECT_THAT(server_session_delegate_->incoming_messages(),
                 testing::ElementsAre("Message from client"));
+
+    EXPECT_THAT(client_session_delegate_->sent_datagram_ids(),
+                testing::ElementsAre(client_datagram_id));
   }
 
   // Test for sending multiple messages that also result in queueing.
@@ -199,9 +210,13 @@ class QuartcSessionTest : public QuicTest {
     QuartcSession* const peer_sending =
         direction_from_server ? server_peer_ : client_peer_;
 
-    FakeQuartcSessionDelegate* const delegate_receiving =
+    FakeQuartcEndpointDelegate* const delegate_receiving =
         direction_from_server ? client_session_delegate_.get()
                               : server_session_delegate_.get();
+
+    FakeQuartcEndpointDelegate* const delegate_sending =
+        direction_from_server ? server_session_delegate_.get()
+                              : client_session_delegate_.get();
 
     // There should be no messages in the queue before we start sending.
     EXPECT_EQ(peer_sending->send_message_queue_size(), 0u);
@@ -209,16 +224,24 @@ class QuartcSessionTest : public QuicTest {
     // Send messages from peer 1 to peer 2 until required number of messages
     // are queued in unsent message queue.
     std::vector<std::string> sent_messages;
+    std::vector<int64_t> sent_datagram_ids;
+    int64_t current_datagram_id = 0;
     while (peer_sending->send_message_queue_size() < queue_size) {
       sent_messages.push_back(
           QuicStrCat("Sending message, index=", sent_messages.size()));
-      ASSERT_TRUE(peer_sending->SendOrQueueMessage(sent_messages.back()));
+      ASSERT_TRUE(peer_sending->SendOrQueueMessage(
+          CreateMemSliceVector(sent_messages.back()).span(),
+          current_datagram_id));
+
+      sent_datagram_ids.push_back(current_datagram_id);
+      ++current_datagram_id;
     }
 
     // Wait for peer 2 to receive all messages.
     RunTasks();
 
     EXPECT_EQ(delegate_receiving->incoming_messages(), sent_messages);
+    EXPECT_EQ(delegate_sending->sent_datagram_ids(), sent_datagram_ids);
   }
 
   // Test sending long messages:
@@ -231,12 +254,17 @@ class QuartcSessionTest : public QuicTest {
     // Send message of maximum allowed length.
     std::string message_max_long =
         std::string(server_peer_->GetCurrentLargestMessagePayload(), 'A');
-    ASSERT_TRUE(server_peer_->SendOrQueueMessage(message_max_long));
+    test::QuicTestMemSliceVector message =
+        CreateMemSliceVector(message_max_long);
+    ASSERT_TRUE(
+        server_peer_->SendOrQueueMessage(message.span(), /*datagram_id=*/0));
 
     // Send long message which should fail.
     std::string message_too_long =
         std::string(server_peer_->GetCurrentLargestMessagePayload() + 1, 'B');
-    ASSERT_FALSE(server_peer_->SendOrQueueMessage(message_too_long));
+    message = CreateMemSliceVector(message_too_long);
+    ASSERT_FALSE(
+        server_peer_->SendOrQueueMessage(message.span(), /*datagram_id=*/0));
 
     // Wait for peer 2 to receive message.
     RunTasks();
@@ -267,11 +295,9 @@ class QuartcSessionTest : public QuicTest {
   std::unique_ptr<simulator::SymmetricLink> client_server_link_;
 
   std::unique_ptr<FakeQuartcStreamDelegate> client_stream_delegate_;
-  std::unique_ptr<FakeQuartcSessionDelegate> client_session_delegate_;
-  std::unique_ptr<FakeQuartcEndpointDelegate> client_endpoint_delegate_;
+  std::unique_ptr<FakeQuartcEndpointDelegate> client_session_delegate_;
   std::unique_ptr<FakeQuartcStreamDelegate> server_stream_delegate_;
-  std::unique_ptr<FakeQuartcSessionDelegate> server_session_delegate_;
-  std::unique_ptr<FakeQuartcEndpointDelegate> server_endpoint_delegate_;
+  std::unique_ptr<FakeQuartcEndpointDelegate> server_session_delegate_;
 
   std::unique_ptr<QuartcClientEndpoint> client_endpoint_;
   std::unique_ptr<QuartcServerEndpoint> server_endpoint_;
@@ -375,9 +401,7 @@ TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
   QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   stream->SetDelegate(client_stream_delegate_.get());
 
-  char kClientMessage[] = "Hello";
-  test::QuicTestMemSliceVector stream_data(
-      {std::make_pair(kClientMessage, strlen(kClientMessage))});
+  test::QuicTestMemSliceVector stream_data = CreateMemSliceVector("Hello");
   stream->WriteMemSlices(stream_data.span(), /*fin=*/false);
   RunTasks();
 
@@ -412,15 +436,13 @@ TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
 
   client_filter_->set_packets_to_drop(1);
 
-  char kClientMessage[] = "Hello";
-  test::QuicTestMemSliceVector stream_data(
-      {std::make_pair(kClientMessage, strlen(kClientMessage))});
+  test::QuicTestMemSliceVector stream_data = CreateMemSliceVector("Hello");
   stream->WriteMemSlices(stream_data.span(), /*fin=*/false);
   RunTasks();
 
   // Stream data should make it despite packet loss.
   ASSERT_TRUE(server_stream_delegate_->has_data());
-  EXPECT_EQ(server_stream_delegate_->data()[stream_id], kClientMessage);
+  EXPECT_EQ(server_stream_delegate_->data()[stream_id], "Hello");
 }
 
 TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
@@ -450,9 +472,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
 
   client_filter_->set_packets_to_drop(1);
 
-  char kMessage[] = "Hello";
-  test::QuicTestMemSliceVector stream_data(
-      {std::make_pair(kMessage, strlen(kMessage))});
+  test::QuicTestMemSliceVector stream_data = CreateMemSliceVector("Hello");
   stream->WriteMemSlices(stream_data.span(), /*fin=*/false);
   simulator_.RunFor(QuicTime::Delta::FromMilliseconds(1));
 
@@ -460,9 +480,8 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
   QuartcStream* stream_1 = client_peer_->CreateOutgoingBidirectionalStream();
   stream_1->SetDelegate(client_stream_delegate_.get());
 
-  char kMessage1[] = "Second message";
-  test::QuicTestMemSliceVector stream_data_1(
-      {std::make_pair(kMessage1, strlen(kMessage1))});
+  test::QuicTestMemSliceVector stream_data_1 =
+      CreateMemSliceVector("Second message");
   stream_1->WriteMemSlices(stream_data_1.span(), /*fin=*/false);
   RunTasks();
 
@@ -512,7 +531,8 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshakeIs0RTT) {
 
   client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
-      client_endpoint_delegate_.get(), QuartcSessionConfig(),
+      simulator_.GetRandomGenerator(), client_session_delegate_.get(),
+      QuartcSessionConfig(),
       // This is the key line here. It passes through the server config
       // from the server to the client.
       server_endpoint_->server_crypto_config());
@@ -523,8 +543,8 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshakeIs0RTT) {
   // client session should be created, but server won't be created yet.
   simulator_.RunFor(QuicTime::Delta::FromMilliseconds(1));
 
-  client_peer_ = client_endpoint_delegate_->session();
-  server_peer_ = server_endpoint_delegate_->session();
+  client_peer_ = client_session_delegate_->session();
+  server_peer_ = server_session_delegate_->session();
 
   ASSERT_NE(client_peer_, nullptr);
   ASSERT_EQ(server_peer_, nullptr);

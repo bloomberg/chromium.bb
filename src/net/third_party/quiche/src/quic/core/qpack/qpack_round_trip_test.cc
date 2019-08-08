@@ -5,7 +5,6 @@
 #include <string>
 #include <tuple>
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_test_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_test_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_test_utils.h"
@@ -130,6 +129,14 @@ TEST_P(QpackRoundTripTest, StaticTable) {
     spdy::SpdyHeaderBlock output = EncodeThenDecode(header_list);
     EXPECT_EQ(header_list, output);
   }
+}
+
+TEST_P(QpackRoundTripTest, ValueHasNullCharacter) {
+  spdy::SpdyHeaderBlock header_list;
+  header_list["foo"] = QuicStringPiece("bar\0bar\0baz", 11);
+
+  spdy::SpdyHeaderBlock output = EncodeThenDecode(header_list);
+  EXPECT_EQ(header_list, output);
 }
 
 }  // namespace

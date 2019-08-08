@@ -13,7 +13,10 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
@@ -104,7 +107,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
           BrowsingDataFilterBuilder::WHITELIST);
       filter_builder.AddRegisterableDomain(origin.host());
       ExpectCall(base::Time(), base::Time::Max(), data_type_mask,
-                 kOriginTypeMask, std::move(filter_builder));
+                 kOriginTypeMask, &filter_builder);
     }
     if (storage || cache) {
       int data_type_mask =
@@ -115,7 +118,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
           BrowsingDataFilterBuilder::WHITELIST);
       filter_builder.AddOrigin(origin);
       ExpectCall(base::Time(), base::Time::Max(), data_type_mask,
-                 kOriginTypeMask, std::move(filter_builder));
+                 kOriginTypeMask, &filter_builder);
     }
   }
 
@@ -350,6 +353,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   // Set a Clear-Site-Data header that |HandleRequest| will use for every
   // following request.
   void SetClearSiteDataHeader(const std::string& header) {
+    base::AutoLock lock(clear_site_data_header_lock_);
     clear_site_data_header_ = header;
   }
 
@@ -389,8 +393,11 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse());
 
-    if (!clear_site_data_header_.empty())
-      response->AddCustomHeader("Clear-Site-Data", clear_site_data_header_);
+    {
+      base::AutoLock lock(clear_site_data_header_lock_);
+      if (!clear_site_data_header_.empty())
+        response->AddCustomHeader("Clear-Site-Data", clear_site_data_header_);
+    }
 
     std::string value;
     if (net::GetValueForKeyInQuery(request.GetURL(), "header", &value))
@@ -490,7 +497,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   bool is_network_service_enabled_ = false;
 
   // If this is set, |HandleRequest| will always respond with Clear-Site-Data.
-  std::string clear_site_data_header_;
+  base::Lock clear_site_data_header_lock_;
+  std::string clear_site_data_header_ GUARDED_BY(clear_site_data_header_lock_);
 
   // Only used when |is_network_service_enabled_| is false.
   std::unique_ptr<CacheTestUtil> cache_test_util_ = nullptr;
@@ -1007,18 +1015,23 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Update the service worker and send C-S-D during update.
   delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
                                       false);
+
+  base::RunLoop loop;
+  auto* remover = BrowserContext::GetBrowsingDataRemover(browser_context());
+  remover->SetWouldCompleteCallbackForTesting(
+      base::BindLambdaForTesting([&](const base::RepeatingClosure& callback) {
+        callback.Run();
+        loop.Quit();
+      }));
+
   SetClearSiteDataHeader("\"storage\"");
   // Expect the update to fail and the service worker to be removed.
   EXPECT_FALSE(RunScriptAndGetBool("updateServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
-  // The service worker should be gone but a few tests are flaky and fail
-  // because it hasn't been removed. To find out if this is just a
-  // timing issue, add some delay if the first call returns true.
-  // TODO(crbug.com/912313): Check if this worked and find out why.
-  if (RunScriptAndGetBool("hasServiceWorker()")) {
-    LOG(ERROR) << "There was a service worker, checking again in a second";
-    EXPECT_FALSE(RunScriptAndGetBool("setTimeout(hasServiceWorker, 1000)"));
-  }
+  loop.Run();
+
+  // Notify crbug.com/912313 if the test fails here again.
+  EXPECT_FALSE(RunScriptAndGetBool("hasServiceWorker()"));
 }
 
 }  // namespace content

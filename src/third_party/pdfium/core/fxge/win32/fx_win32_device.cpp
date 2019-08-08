@@ -37,7 +37,7 @@ namespace {
 
 const struct {
   const char* m_pFaceName;
-  const char* m_pVariantName;  // Note: UTF16-LE terminator required.
+  const char* m_pVariantName;  // Note: UTF-16LE terminator required.
 } g_VariantNames[] = {
     {"DFKai-SB", "\x19\x6A\x77\x69\xD4\x9A\x00\x00"},
 };
@@ -683,28 +683,32 @@ std::unique_ptr<SystemFontInfoIface> SystemFontInfoIface::CreateDefault(
   return std::unique_ptr<SystemFontInfoIface>(pInfoFallback);
 }
 
-void CFX_GEModule::InitPlatform() {
-  CWin32Platform* pPlatformData = new CWin32Platform;
+CWin32Platform::CWin32Platform() = default;
+
+CWin32Platform::~CWin32Platform() = default;
+
+void CWin32Platform::Init() {
   OSVERSIONINFO ver;
   ver.dwOSVersionInfoSize = sizeof(ver);
   GetVersionEx(&ver);
-  pPlatformData->m_bHalfTone = ver.dwMajorVersion >= 5;
+  m_bHalfTone = ver.dwMajorVersion >= 5;
   if (pdfium::base::win::IsUser32AndGdi32Available())
-    pPlatformData->m_GdiplusExt.Load();
-  m_pPlatformData = pPlatformData;
-  m_pFontMgr->SetSystemFontInfo(SystemFontInfoIface::CreateDefault(nullptr));
+    m_GdiplusExt.Load();
+  CFX_GEModule::Get()->GetFontMgr()->SetSystemFontInfo(
+      SystemFontInfoIface::CreateDefault(nullptr));
 }
 
-void CFX_GEModule::DestroyPlatform() {
-  delete (CWin32Platform*)m_pPlatformData;
-  m_pPlatformData = nullptr;
+// static
+std::unique_ptr<CFX_GEModule::PlatformIface>
+CFX_GEModule::PlatformIface::Create() {
+  return pdfium::MakeUnique<CWin32Platform>();
 }
 
 CGdiDeviceDriver::CGdiDeviceDriver(HDC hDC, int device_class) {
   m_hDC = hDC;
   m_DeviceClass = device_class;
-  CWin32Platform* pPlatform =
-      (CWin32Platform*)CFX_GEModule::Get()->GetPlatformData();
+  auto* pPlatform =
+      static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
   SetStretchBltMode(hDC, pPlatform->m_bHalfTone ? HALFTONE : COLORONCOLOR);
   DWORD obj_type = GetObjectType(m_hDC);
   m_bMetafileDCType = obj_type == OBJ_ENHMETADC || obj_type == OBJ_ENHMETAFILE;
@@ -954,8 +958,8 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
   if (blend_type != BlendMode::kNormal)
     return false;
 
-  CWin32Platform* pPlatform =
-      (CWin32Platform*)CFX_GEModule::Get()->GetPlatformData();
+  auto* pPlatform =
+      static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
   if (!(pGraphState || stroke_color == 0) &&
       !pPlatform->m_GdiplusExt.IsAvailable()) {
     CFX_FloatRect bbox_f = pPathData->GetBoundingBox();
@@ -1128,8 +1132,8 @@ bool CGdiDeviceDriver::DrawCosmeticLine(const CFX_PointF& ptMoveTo,
 
 CGdiDisplayDriver::CGdiDisplayDriver(HDC hDC)
     : CGdiDeviceDriver(hDC, FXDC_DISPLAY) {
-  CWin32Platform* pPlatform =
-      (CWin32Platform*)CFX_GEModule::Get()->GetPlatformData();
+  auto* pPlatform =
+      static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
   if (pPlatform->m_GdiplusExt.IsAvailable()) {
     m_RenderCaps |= FXRC_ALPHA_PATH | FXRC_ALPHA_IMAGE;
   }
@@ -1300,8 +1304,8 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
                      image_rect.top + clip_rect.top, BlendMode::kNormal);
   }
   if (pSource->HasAlpha()) {
-    CWin32Platform* pPlatform =
-        (CWin32Platform*)CFX_GEModule::Get()->GetPlatformData();
+    auto* pPlatform =
+        static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
     if (pPlatform->m_GdiplusExt.IsAvailable() && !pSource->IsCmykImage()) {
       CFX_DIBExtractor temp(pSource);
       RetainPtr<CFX_DIBitmap> pBitmap = temp.GetBitmap();
@@ -1333,16 +1337,14 @@ bool CGdiDisplayDriver::StartDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
   return false;
 }
 
-CFX_WindowsRenderDevice::CFX_WindowsRenderDevice(CCodec_ModuleMgr* pModuleMgr,
-                                                 HDC hDC) {
-  SetDeviceDriver(pdfium::WrapUnique(CreateDriver(pModuleMgr, hDC)));
+CFX_WindowsRenderDevice::CFX_WindowsRenderDevice(HDC hDC) {
+  SetDeviceDriver(pdfium::WrapUnique(CreateDriver(hDC)));
 }
 
-CFX_WindowsRenderDevice::~CFX_WindowsRenderDevice() {}
+CFX_WindowsRenderDevice::~CFX_WindowsRenderDevice() = default;
 
 // static
 RenderDeviceDriverIface* CFX_WindowsRenderDevice::CreateDriver(
-    CCodec_ModuleMgr* pModuleMgr,
     HDC hDC) {
   int device_type = ::GetDeviceCaps(hDC, TECHNOLOGY);
   int obj_type = ::GetObjectType(hDC);
@@ -1359,5 +1361,5 @@ RenderDeviceDriverIface* CFX_WindowsRenderDevice::CreateDriver(
   if (g_pdfium_print_mode == WindowsPrintMode::kModeTextOnly)
     return new CTextOnlyPrinterDriver(hDC);
 
-  return new CPSPrinterDriver(pModuleMgr, hDC, g_pdfium_print_mode, false);
+  return new CPSPrinterDriver(hDC, g_pdfium_print_mode, false);
 }

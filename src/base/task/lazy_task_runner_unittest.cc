@@ -156,35 +156,35 @@ TEST_F(LazyTaskRunnerEnvironmentTest, LazyCOMSTATaskRunnerUserBlocking) {
 }
 #endif  // defined(OS_WIN)
 
-TEST(TaskSchdulerLazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
+TEST(LazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
   for (int i = 0; i < 2; ++i) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted ThreadPool and crash.
+    // deleted ThreadPoolInstance and crash.
     g_sequenced_task_runner_user_visible.Get()->PostTask(FROM_HERE,
                                                          DoNothing());
   }
 }
 
-TEST(TaskSchdulerLazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
+TEST(LazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
   for (int i = 0; i < 2; ++i) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted ThreadPool and crash.
+    // deleted ThreadPoolInstance and crash.
     g_single_thread_task_runner_user_visible.Get()->PostTask(FROM_HERE,
                                                              DoNothing());
   }
 }
 
 #if defined(OS_WIN)
-TEST(TaskSchdulerLazyTaskRunnerTest, LazyCOMSTATaskRunnerReset) {
+TEST(LazyTaskRunnerTest, LazyCOMSTATaskRunnerReset) {
   for (int i = 0; i < 2; ++i) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted ThreadPool and crash.
+    // deleted ThreadPoolInstance and crash.
     g_com_sta_task_runner_user_visible.Get()->PostTask(FROM_HERE, DoNothing());
   }
 }

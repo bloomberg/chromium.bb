@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_AURA_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/buildflags.h"
@@ -62,6 +64,16 @@ class CONTENT_EXPORT WebContentsViewAura
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
+  friend class WebContentsViewAuraTest;
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, EnableDisableOverscroll);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropFiles);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
+                           DragDropFilesOriginateFromRenderer);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropVirtualFiles);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
+                           DragDropVirtualFilesOriginateFromRenderer);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropUrlData);
+
   class WindowObserver;
 
   ~WebContentsViewAura() override;
@@ -181,11 +193,40 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
-  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, EnableDisableOverscroll);
+  // Completes a drop operation by communicating the drop data to the renderer
+  // process.
+  void CompleteDrop(RenderWidgetHostImpl* target_rwh,
+                    const DropData& drop_data,
+                    const gfx::PointF& client_pt,
+                    const gfx::PointF& screen_pt,
+                    int key_modifiers);
 
-  const bool is_mus_browser_plugin_guest_;
+  // For unit testing, registers a callback for when a drop operation
+  // completes.
+  using DropCallbackForTesting =
+      base::OnceCallback<void(RenderWidgetHostImpl* target_rwh,
+                              const DropData& drop_data,
+                              const gfx::PointF& client_pt,
+                              const gfx::PointF& screen_pt,
+                              int key_modifiers,
+                              bool drop_allowed)>;
+  void RegisterDropCallbackForTesting(DropCallbackForTesting callback);
 
-  // NOTE: this is null when running in mus and |is_mus_browser_plugin_guest_|.
+#if defined(OS_WIN)
+  // Callback for asynchronous retrieval of virtual files.
+  void OnGotVirtualFilesAsTempFiles(
+      const std::vector<std::pair</*temp path*/ base::FilePath,
+                                  /*display name*/ base::FilePath>>&
+          filepaths_and_names);
+
+  class AsyncDropNavigationObserver;
+  std::unique_ptr<AsyncDropNavigationObserver> async_drop_navigation_observer_;
+
+  class AsyncDropTempFileDeleter;
+  std::unique_ptr<AsyncDropTempFileDeleter> async_drop_temp_file_deleter_;
+#endif
+  DropCallbackForTesting drop_callback_for_testing_;
+
   std::unique_ptr<aura::Window> window_;
 
   std::unique_ptr<WindowObserver> window_observer_;
@@ -228,6 +269,12 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<GestureNavSimple> gesture_nav_simple_;
 
   bool init_rwhv_with_null_parent_for_testing_;
+
+#if defined(OS_WIN)
+  // Used to ensure that the virtual files retrieval callback bound to this
+  // object is canceled when this object is destroyed.
+  base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

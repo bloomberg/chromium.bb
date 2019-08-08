@@ -10,22 +10,14 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/engine/connection_status.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace ukm {
-
-const base::Feature kUkmCheckAuthErrorFeature{"UkmCheckAuthError",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kUkmCheckEnabledForDatatypes{
-    "UkmCheckEnabledForDatatypes", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kUkmPurgingOnConnection{"UkmPurgingOnConnection",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -80,38 +72,33 @@ bool SyncDisableObserver::SyncState::AllowsUkmWithExtension() const {
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service,
     UrlKeyedDataCollectionConsentHelper* consent_helper) {
-  syncer::SyncTokenStatus status = sync_service->GetSyncTokenStatus();
   SyncState state;
 
   // For the following two settings, we want them to match the state of a user
   // having history/extensions enabled in their Sync settings. Using it to track
   // active connections here is undesirable as changes in these states trigger
   // data purges.
-  if (base::FeatureList::IsEnabled(kUkmCheckEnabledForDatatypes)) {
-    state.history_enabled = sync_service->GetPreferredDataTypes().Has(
-                                syncer::HISTORY_DELETE_DIRECTIVES) &&
-                            sync_service->IsSyncFeatureEnabled();
-
-    state.extensions_enabled =
-        sync_service->GetPreferredDataTypes().Has(syncer::EXTENSIONS) &&
-        sync_service->IsSyncFeatureEnabled();
-  } else {
-    // If kUkmCheckEnabledForDatatypes is disabled, use legacy settings.
-    // TODO(rkaplow): Clean this up after crbug.com/906609.
-    state.history_enabled = sync_service->GetPreferredDataTypes().Has(
-        syncer::HISTORY_DELETE_DIRECTIVES);
-
-    state.extensions_enabled =
-        sync_service->GetPreferredDataTypes().Has(syncer::EXTENSIONS);
-  }
+  state.history_enabled = sync_service->GetPreferredDataTypes().Has(
+                              syncer::HISTORY_DELETE_DIRECTIVES) &&
+                          sync_service->IsSyncFeatureEnabled();
+  state.extensions_enabled =
+      sync_service->GetPreferredDataTypes().Has(syncer::EXTENSIONS) &&
+      sync_service->IsSyncFeatureEnabled();
 
   state.initialized = sync_service->IsEngineInitialized();
 
-  // We use CONNECTION_OK here as an auth error can be used in the sync
-  // paused state. Therefore we need to be more direct and check CONNECTION_OK
-  // as opposed to using something like IsSyncFeatureActive().
-  state.connected = !base::FeatureList::IsEnabled(kUkmCheckAuthErrorFeature) ||
-                    status.connection_status == syncer::CONNECTION_OK;
+  // Reasoning for the individual checks:
+  // - IsSyncFeatureActive() makes sure Sync is enabled and initialized.
+  // - HasCompletedSyncCycle() makes sure Sync has actually talked to the
+  //   server. Without this, it's possible that there is some auth issue that we
+  //   just haven't detected yet.
+  // - Finally, GetAuthError() makes sure Sync is not in an auth error state. In
+  //   particular, this includes the "Sync paused" state (which is implemented
+  //   as an auth error).
+  state.connected =
+      (sync_service->IsSyncFeatureActive() &&
+       sync_service->HasCompletedSyncCycle() &&
+       sync_service->GetAuthError() == GoogleServiceAuthError::AuthErrorNone());
 
   state.passphrase_protected =
       state.initialized &&
@@ -164,26 +151,29 @@ bool SyncDisableObserver::CheckSyncStateOnAllProfiles() {
     return false;
   for (const auto& kv : previous_states_) {
     const SyncDisableObserver::SyncState& state = kv.second;
-    if (!state.AllowsUkm()) {
-      int disabled_by = 0;
-      if (state.anonymized_data_collection_state ==
-          DataCollectionState::kIgnored) {
-        if (!state.history_enabled)
-          disabled_by |= 1 << 0;
-        if (!state.initialized)
-          disabled_by |= 1 << 1;
-        if (!state.connected)
-          disabled_by |= 1 << 2;
-        if (state.passphrase_protected)
-          disabled_by |= 1 << 3;
-      } else {
-        DCHECK_EQ(DataCollectionState::kDisabled,
-                  state.anonymized_data_collection_state);
-        disabled_by |= 1 << 4;
-      }
-      RecordDisableInfo(DisableInfo(disabled_by));
-      return false;
+
+    if (state.AllowsUkm())
+      continue;
+
+    // Used as output for the disable reason UMA metrics.
+    int disabled_by = 0;
+    if (state.anonymized_data_collection_state ==
+        DataCollectionState::kIgnored) {
+      if (!state.history_enabled)
+        disabled_by |= 1 << 0;
+      if (!state.initialized)
+        disabled_by |= 1 << 1;
+      if (!state.connected)
+        disabled_by |= 1 << 2;
+      if (state.passphrase_protected)
+        disabled_by |= 1 << 3;
+    } else {
+      DCHECK_EQ(DataCollectionState::kDisabled,
+                state.anonymized_data_collection_state);
+      disabled_by |= 1 << 4;
     }
+    RecordDisableInfo(DisableInfo(disabled_by));
+    return false;
   }
   RecordDisableInfo(DISABLED_BY_NONE);
   return true;
@@ -232,26 +222,24 @@ void SyncDisableObserver::UpdateSyncState(
          consent_helper);
   SyncDisableObserver::SyncState state = GetSyncState(sync, consent_helper);
 
-  // Trigger a purge if sync state no longer allows UKM.
-  // TODO(rkaplow): Clean this up once crbug.com/891777 is resolved.
+  // Trigger a purge if the current state no longer allows UKM, ignoring
+  // connection issues.
   bool must_purge;
 
-  // If unified_consent is used, we keep the logic introduced in
-  // http://crrev.com/c/1152744. Otherwise, if the kUkmPurgingOnConnection
-  // feature is enabled, we still use that logic.
-  if (unified_consent::IsUnifiedConsentFeatureEnabled() ||
-      base::FeatureList::IsEnabled(kUkmPurgingOnConnection)) {
-    // Purge using AllowsUkm which includes connected status.
+  if (state.anonymized_data_collection_state != DataCollectionState::kIgnored) {
+    // Verify that previous_state also uses unified consent.
+    DCHECK_NE(DataCollectionState::kIgnored,
+              previous_state.anonymized_data_collection_state);
     must_purge = previous_state.AllowsUkm() && !state.AllowsUkm();
   } else {
-    // Use the previous logic to investigate crbug.com/891777.
+    // This differs from AllowsUkm() as it intentionally ignores connected
+    // status.
     bool previous_state_allowed_ukm = previous_state.history_enabled &&
                                       previous_state.initialized &&
                                       !previous_state.passphrase_protected;
     bool current_state_allows_ukm = state.history_enabled &&
                                     state.initialized &&
                                     !state.passphrase_protected;
-    // Trigger a purge if UKM used to be allowed, but isn't anymore.
     must_purge = previous_state_allowed_ukm && !current_state_allows_ukm;
   }
 

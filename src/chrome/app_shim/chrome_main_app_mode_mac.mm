@@ -17,14 +17,13 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/launch_services_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app_shim/app_shim_controller.h"
@@ -32,7 +31,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "components/crash/content/app/crashpad.h"
 #include "mojo/core/embedder/embedder.h"
@@ -133,35 +131,6 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
       io_thread->task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  base::scoped_nsobject<NSRunningApplication> chrome_running_app;
-
-  // If this shim was launched by Chrome, open that specified process.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          app_mode::kLaunchedByChromeProcessId)) {
-    std::string chrome_pid_string =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            app_mode::kLaunchedByChromeProcessId);
-    int chrome_pid;
-    if (!base::StringToInt(chrome_pid_string, &chrome_pid))
-      LOG(FATAL) << "Invalid PID: " << chrome_pid_string;
-
-    chrome_running_app.reset([NSRunningApplication
-        runningApplicationWithProcessIdentifier:chrome_pid]);
-    if (!chrome_running_app)
-      LOG(FATAL) << "Failed open process with PID: " << chrome_pid;
-  }
-
-  // Find an already running instance of Chrome to open, if one exists.
-  if (!chrome_running_app) {
-    NSString* chrome_bundle_id = [base::mac::OuterBundle() bundleIdentifier];
-    NSArray* existing_chrome = [NSRunningApplication
-        runningApplicationsWithBundleIdentifier:chrome_bundle_id];
-    if ([existing_chrome count] > 0) {
-      chrome_running_app.reset([existing_chrome objectAtIndex:0],
-                               base::scoped_policy::RETAIN);
-    }
-  }
-
   // Initialize the NSApplication (and ensure that it was not previously
   // initialized).
   [AppShimApplication sharedApplication];
@@ -179,30 +148,16 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
   // the relevant message pump code.
   PostRepeatingDelayedTask();
 
-  // If Chrome is not running, launch it. In tests, launching Chrome does
-  // nothing, so just assume the socket exists.
-  if (!chrome_running_app && !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                 app_mode::kLaunchedForTest)) {
-    // Launch Chrome if it isn't already running.
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitch(switches::kSilentLaunch);
+  AppShimController::Params controller_params;
+  // Note that |info->user_data_dir| for shims contains the app data path,
+  // <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/.
+  controller_params.user_data_dir =
+      base::FilePath(info->user_data_dir).DirName().DirName().DirName();
+  controller_params.profile_dir = base::FilePath(info->profile_dir);
+  controller_params.app_mode_id = info->app_mode_id;
+  controller_params.app_mode_name = base::UTF8ToUTF16(info->app_mode_name);
 
-    // If the shim is the app launcher, pass --show-app-list when starting a new
-    // Chrome process to inform startup codepaths and load the correct profile.
-    if (info->app_mode_id == app_mode::kAppListModeId) {
-      command_line.AppendSwitch(switches::kShowAppList);
-    } else {
-      command_line.AppendSwitchPath(switches::kProfileDirectory,
-                                    base::FilePath(info->profile_dir));
-    }
-
-    chrome_running_app.reset(base::mac::OpenApplicationWithPath(
-        base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault));
-    if (!chrome_running_app)
-      LOG(FATAL) << "Failed launch Chrome.";
-  }
-
-  AppShimController controller(info, chrome_running_app);
+  AppShimController controller(controller_params);
   base::RunLoop().Run();
   return 0;
 }

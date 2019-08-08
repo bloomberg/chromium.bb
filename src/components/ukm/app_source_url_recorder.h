@@ -34,7 +34,7 @@ class AppSourceUrlRecorder {
   // Get a UKM SourceId for an Arc app.
   static SourceId GetSourceIdForArc(const std::string& package_name);
 
-  // Get a UKM SourceId for a PWA.
+  // Get a UKM SourceId for a PWA or bookmark app.
   static SourceId GetSourceIdForPWA(const GURL& url);
 
   // For internal use only.

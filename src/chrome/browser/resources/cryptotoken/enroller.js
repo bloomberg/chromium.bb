@@ -820,42 +820,27 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
     if (self.done_) {
       return;
     }
-    if (result) {
-      // AppID is valid, so the request should be sent.
-      await new Promise(resolve => {
-        if (!chrome.cryptotokenPrivate || !window.PublicKeyCredential) {
-          resolve(false);
-        } else {
-          chrome.cryptotokenPrivate.canProxyToWebAuthn(resolve);
-        }
-      }).then(shouldUseWebAuthn => {
-        let v2Challenge;
-        for (let index = 0; index < self.enrollChallenges_.length; index++) {
-          if (self.enrollChallenges_[index]['version'] === 'U2F_V2') {
-            v2Challenge = self.enrollChallenges_[index]['challenge'];
-          }
-        }
 
-        if (v2Challenge && shouldUseWebAuthn) {
-          // If we can proxy to WebAuthn, send the request via WebAuthn.
-          console.log('Proxying registration request to WebAuthn');
-          this.doRegisterWebAuthn_(enrollAppIds[0], v2Challenge, request);
-        } else {
-          self.handler_ =
-              FACTORY_REGISTRY.getRequestHelper().getHandler(request);
-          if (self.handler_) {
-            var helperComplete =
-                /** @type {function(HelperReply)} */
-                (self.helperComplete_.bind(self));
-            self.handler_.run(helperComplete);
-          } else {
-            self.notifyError_({errorCode: ErrorCodes.OTHER_ERROR});
-          }
-        }
-      });
-    } else {
+    if (!result) {
       self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+      return;
     }
+
+    let v2Challenge;
+    for (let index = 0; index < self.enrollChallenges_.length; index++) {
+      if (self.enrollChallenges_[index]['version'] === 'U2F_V2') {
+        v2Challenge = self.enrollChallenges_[index]['challenge'];
+      }
+    }
+
+    if (v2Challenge === undefined) {
+      console.warn('Did not find U2F_V2 challenge');
+      this.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+      return;
+    }
+
+    console.log('Proxying registration request to WebAuthn');
+    this.doRegisterWebAuthn_(enrollAppIds[0], v2Challenge, request);
   });
 };
 

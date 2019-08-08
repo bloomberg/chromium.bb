@@ -35,7 +35,11 @@ CardNameFixFlowViewDelegateMobile::~CardNameFixFlowViewDelegateMobile() {
 }
 
 int CardNameFixFlowViewDelegateMobile::GetIconId() const {
+#if defined(GOOGLE_CHROME_BUILD)
   return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
+#else
+  return 0;
+#endif
 }
 
 base::string16 CardNameFixFlowViewDelegateMobile::GetTitleText() const {

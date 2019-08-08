@@ -17,12 +17,15 @@ const service_manager::Manifest& GetAudioDecoderManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kAudioDecoderServiceName)
           .WithDisplayName("Assistant Audio Decoder Service")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("utility")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("utility")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("assistant:audio_decoder",
                             service_manager::Manifest::InterfaceList<
                                 mojom::AssistantAudioDecoderFactory>())

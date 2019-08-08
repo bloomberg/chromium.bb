@@ -541,7 +541,7 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   return {nullptr, false, base::nullopt, true, false};
 }
 
-// TODO(riajiang): Get rid of |point_in_screen| since it's not used.
+// TODO(crbug.com/966952): Get rid of |point_in_screen| since it's not used.
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
@@ -1221,7 +1221,8 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
   scroll_begin.data.scroll_begin.delta_y_hint = 0;
   scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebGestureEvent::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  scroll_begin.data.scroll_begin.scrollable_area_element_id = 0;
   view->ProcessGestureEvent(
       scroll_begin,
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
@@ -1244,9 +1245,9 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
     case blink::WebInputEvent::kGesturePinchEnd:
       DCHECK_EQ(blink::WebGestureDevice::kTouchscreen, event.SourceDevice());
       scroll_end.data.scroll_end.inertial_phase =
-          blink::WebGestureEvent::kUnknownMomentumPhase;
+          blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
       scroll_end.data.scroll_end.delta_units =
-          blink::WebGestureEvent::kPrecisePixels;
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
       break;
     default:
       NOTREACHED();
@@ -1263,9 +1264,9 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
                                     blink::WebInputEvent::kNoModifiers,
                                     base::TimeTicks::Now(), source_device);
   scroll_end.data.scroll_end.inertial_phase =
-      blink::WebGestureEvent::kUnknownMomentumPhase;
+      blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
   scroll_end.data.scroll_end.delta_units =
-      blink::WebGestureEvent::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   view->ProcessGestureEvent(
       scroll_end,
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(scroll_end));
@@ -1735,7 +1736,7 @@ RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
 
 bool RenderWidgetHostInputEventRouter::ShouldContinueHitTesting(
     RenderWidgetHostViewBase* target_view) const {
-  // TODO(kenrb, riajiang): It would be better if we could determine if the
+  // TODO(kenrb): It would be better if we could determine if the
   // event's point has a chance of hitting an embedded child and returning
   // false if not, but Viz hit testing does not easily support that. This
   // currently assumes any embedded view could potentially be the event

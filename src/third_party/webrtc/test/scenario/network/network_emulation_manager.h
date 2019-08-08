@@ -66,10 +66,7 @@ class NetworkEmulationManagerImpl : public NetworkEmulationManager {
       const std::vector<EmulatedEndpoint*>& endpoints) override;
 
  private:
-  FakeNetworkSocketServer* CreateSocketServer(
-      const std::vector<EmulatedEndpoint*>& endpoints);
   absl::optional<rtc::IPAddress> GetNextIPv4Address();
-  void ProcessNetworkPackets();
   Timestamp Now() const;
 
   Clock* const clock_;

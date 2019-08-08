@@ -52,6 +52,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
+#include "content/browser/loader/sec_fetch_site_resource_handler.h"
 #include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
@@ -105,7 +106,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/resource_scheduler.h"
 #include "services/network/throttling/scoped_throttling_token.h"
 #include "services/network/url_loader_factory.h"
@@ -336,7 +336,7 @@ class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
   void WillStartRequest(bool* defer) override {
     request_->WillStartRequest(defer);
   }
-  const char* GetNameForLogging() const override { return "ResourceScheduler"; }
+  const char* GetNameForLogging() override { return "ResourceScheduler"; }
 
  private:
   std::unique_ptr<network::ResourceScheduler::ScheduledResourceRequest>
@@ -374,7 +374,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
           kMaxOutstandingRequestsCostPerProcess),
       delegate_(nullptr),
       loader_delegate_(nullptr),
-      allow_cross_origin_auth_prompt_(false),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_thread_task_runner_(io_thread_runner),
@@ -416,10 +415,6 @@ ResourceDispatcherHostImpl* ResourceDispatcherHostImpl::Get() {
 void ResourceDispatcherHostImpl::SetDelegate(
     ResourceDispatcherHostDelegate* delegate) {
   delegate_ = delegate;
-}
-
-void ResourceDispatcherHostImpl::SetAllowCrossOriginAuthPrompt(bool value) {
-  allow_cross_origin_auth_prompt_ = value;
 }
 
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
@@ -633,8 +628,7 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   return GetContentClient()->browser()->HandleExternalProtocol(
       url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
       info->GetNavigationUIData(), info->IsMainFrame(),
-      info->GetPageTransition(), info->HasUserGesture(), url_request->method(),
-      url_request->extra_request_headers(), nullptr, dummy);
+      info->GetPageTransition(), info->HasUserGesture(), nullptr, dummy);
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
@@ -721,7 +715,6 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     network::mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   BeginRequest(requester_info, request_id, request_data, is_sync_load,
                routing_id, url_loader_options, std::move(mojo_request),
@@ -753,7 +746,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     network::mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
 
   int child_id = requester_info->child_id();
@@ -883,7 +875,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   // The request is always for a subresource.
   // The renderer process is killed in BeginRequest() when it happens with a
@@ -906,7 +897,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   }
   int child_id = requester_info->child_id();
   storage::BlobStorageContext* blob_context = nullptr;
-  bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
   bool report_security_info = false;
   int load_flags = request_data.load_flags;
@@ -928,15 +918,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   // Construct the request.
   std::unique_ptr<net::URLRequest> new_request = request_context->CreateRequest(
       request_data.url, request_data.priority, nullptr, traffic_annotation);
-
-  // Log that this request is a service worker navigation preload request
-  // here, since navigation preload machinery has no access to netlog.
-  // TODO(falken): Figure out how network::mojom::URLLoaderClient can
-  // access the request's netlog.
-  if (requester_info->IsNavigationPreload()) {
-    new_request->net_log().AddEvent(
-        net::NetLogEventType::SERVICE_WORKER_NAVIGATION_PRELOAD_REQUEST);
-  }
 
   new_request->set_method(request_data.method);
   new_request->set_site_for_cookies(request_data.site_for_cookies);
@@ -982,8 +963,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
             .get()));
   }
 
-  do_not_prompt_for_login = request_data.do_not_prompt_for_login;
-
   // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
   // allow requesting them if requester has ReadRawCookies permission.
   ChildProcessSecurityPolicyImpl* policy =
@@ -993,13 +972,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   // values), so |report_security_info| is not subject to the extra security
   // checks that are applied to |report_raw_headers|.
   report_security_info = request_data.report_raw_headers;
-  if (report_raw_headers && !policy->CanReadRawCookies(child_id) &&
-      !requester_info->IsNavigationPreload()) {
-    // For navigation preload, the child_id is -1 so CanReadRawCookies would
-    // return false. But |report_raw_headers| of the navigation preload
-    // request was copied from the original request, so this check has already
-    // been carried out.
-    // TODO: https://crbug.com/523063 can we call
+  if (report_raw_headers && !policy->CanReadRawCookies(child_id)) {
+    // TODO(https://crbug.com/523063): can we call
     // bad_message::ReceivedBadMessage here?
     VLOG(1) << "Denied unauthorized request for raw headers";
     report_raw_headers = false;
@@ -1010,20 +984,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   if (report_raw_headers &&
       !policy->CanAccessDataForOrigin(child_id, request_data.url)) {
     report_raw_headers = false;
-  }
-
-  if (DoNotPromptForLogin(static_cast<ResourceType>(request_data.resource_type),
-                          request_data.url, request_data.site_for_cookies)) {
-    // Prevent third-party image content from prompting for login, as this
-    // is often a scam to extract credentials for another domain from the
-    // user. Only block image loads, as the attack applies largely to the
-    // "src" property of the <img> tag. It is common for web properties to
-    // allow untrusted values for <img src>; this is considered a fair thing
-    // for an HTML sanitizer to do. Conversely, any HTML sanitizer that didn't
-    // filter sources for <script>, <link>, <embed>, <object>, <iframe> tags
-    // would be considered vulnerable in and of itself.
-    do_not_prompt_for_login = true;
-    load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
   }
 
   // Sync loads should have maximum priority and should be the only
@@ -1057,7 +1017,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       false,  // is stream
       ResourceInterceptPolicy::kAllowNone, request_data.has_user_gesture,
       request_data.enable_load_timing, request_data.enable_upload_progress,
-      do_not_prompt_for_login, request_data.keepalive,
+      request_data.do_not_prompt_for_login, request_data.keepalive,
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           request_data.referrer_policy),
       request_data.is_prerendering, resource_context, report_raw_headers,
@@ -1079,8 +1039,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   // Have the appcache associate its extra info with the request.
   AppCacheInterceptor::SetExtraRequestInfo(
-      new_request.get(), requester_info->appcache_service(), child_id,
-      request_data.appcache_host_id,
+      new_request.get(), requester_info->appcache_service(),
+      request_data.appcache_host_id.value_or(base::UnguessableToken()),
       static_cast<ResourceType>(request_data.resource_type),
       request_data.should_reset_appcache);
 
@@ -1111,7 +1071,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     network::mojom::URLLoaderRequest mojo_request,
     network::mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer() ||
-         requester_info->IsNavigationPreload() ||
          requester_info->IsCertificateFetcherForSignedExchange());
   // Construct the IPC resource handler.
   std::unique_ptr<ResourceHandler> handler =
@@ -1200,6 +1159,8 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugin_service = PluginService::GetInstance();
 #endif
+
+  handler.reset(new SecFetchSiteResourceHandler(request, std::move(handler)));
 
   if (!IsResourceTypeFrame(resource_type)) {
     // Add a handler to block cross-site documents from the renderer process.
@@ -1876,18 +1837,6 @@ void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
   loader->CancelRequest(true);
 }
 
-bool ResourceDispatcherHostImpl::DoNotPromptForLogin(
-    ResourceType resource_type,
-    const GURL& url,
-    const GURL& site_for_cookies) {
-  if (resource_type == ResourceType::kImage &&
-      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
-          HttpAuthRelationTypeOf(url, site_for_cookies)) {
-    return true;
-  }
-  return false;
-}
-
 void ResourceDispatcherHostImpl::StartLoading(
     ResourceRequestInfoImpl* info,
     std::unique_ptr<ResourceLoader> loader) {
@@ -2083,35 +2032,6 @@ void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
       StartLoading(info, std::move(loader));
     }
   }
-}
-
-ResourceDispatcherHostImpl::HttpAuthRelationType
-ResourceDispatcherHostImpl::HttpAuthRelationTypeOf(
-    const GURL& request_url,
-    const GURL& first_party) {
-  if (!first_party.is_valid())
-    return HTTP_AUTH_RELATION_TOP;
-
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          first_party, request_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // If the first party is secure but the subresource is not, this is
-    // mixed-content. Do not allow the image.
-    if (!allow_cross_origin_auth_prompt() && IsOriginSecure(first_party) &&
-        !IsOriginSecure(request_url)) {
-      return HTTP_AUTH_RELATION_BLOCKED_CROSS;
-    }
-    return HTTP_AUTH_RELATION_SAME_DOMAIN;
-  }
-
-  if (allow_cross_origin_auth_prompt())
-    return HTTP_AUTH_RELATION_ALLOWED_CROSS;
-
-  return HTTP_AUTH_RELATION_BLOCKED_CROSS;
-}
-
-bool ResourceDispatcherHostImpl::allow_cross_origin_auth_prompt() {
-  return allow_cross_origin_auth_prompt_;
 }
 
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(

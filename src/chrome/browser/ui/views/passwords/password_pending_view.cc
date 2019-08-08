@@ -165,8 +165,8 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
       views::ImageButton::STATE_NORMAL,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_HIDE_PASSWORD_HOVER));
-  button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                            views::ImageButton::ALIGN_MIDDLE);
+  button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   button->SetToggled(are_passwords_revealed);
   return button;
 }
@@ -208,7 +208,6 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
       sign_in_promo_(nullptr),
       username_dropdown_(nullptr),
       password_view_button_(nullptr),
-      initially_focused_view_(nullptr),
       password_dropdown_(nullptr),
       are_passwords_revealed_(
           model()->are_passwords_revealed_when_bubble_is_opened()) {
@@ -234,7 +233,6 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     username_dropdown_ =
         CreateUsernameEditableCombobox(password_form).release();
     username_dropdown_->set_listener(this);
-    username_dropdown_->set_show_menu_on_next_focus(false);
     password_dropdown_ =
         CreatePasswordEditableCombobox(password_form, are_passwords_revealed_)
             .release();
@@ -248,8 +246,6 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
 
     BuildCredentialRows(layout, username_dropdown_, password_dropdown_,
                         password_view_button_);
-    if (model()->pending_password().username_value.empty())
-      initially_focused_view_ = username_dropdown_;
   }
 }
 
@@ -327,9 +323,15 @@ gfx::Size PasswordPendingView::CalculatePreferredSize() const {
 }
 
 views::View* PasswordPendingView::GetInitiallyFocusedView() {
-  if (initially_focused_view_)
-    return initially_focused_view_;
-  return PasswordBubbleViewBase::GetInitiallyFocusedView();
+  if (username_dropdown_ && username_dropdown_->GetText().empty())
+    return username_dropdown_;
+  View* initial_view = PasswordBubbleViewBase::GetInitiallyFocusedView();
+  // |initial_view| will normally be the 'Save' button, but in case it's not
+  // focusable, we return nullptr so the Widget doesn't give focus to the next
+  // focusable View, which would be |username_dropdown_|, and which would bring
+  // up the menu without a user interaction. We only allow initial focus on
+  // |username_dropdown_| above, when the text is empty.
+  return (initial_view && initial_view->IsFocusable()) ? initial_view : nullptr;
 }
 
 int PasswordPendingView::GetDialogButtons() const {
@@ -408,7 +410,9 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
 
 void PasswordPendingView::ReplaceWithPromo() {
   RemoveAllChildViews(true);
-  initially_focused_view_ = nullptr;
+  username_dropdown_ = nullptr;
+  password_dropdown_ = nullptr;
+  password_view_button_ = nullptr;
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

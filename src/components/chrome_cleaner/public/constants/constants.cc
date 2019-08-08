@@ -22,9 +22,7 @@ const char kExtendedSafeBrowsingEnabledSwitch[] =
 const char kRegistrySuffixSwitch[] = "registry-suffix";
 const char kSessionIdSwitch[] = "session-id";
 const char kSRTPromptFieldTrialGroupNameSwitch[] = "srt-field-trial-group-name";
-const char kRebootPromptMethodSwitch[] = "reboot-prompt-method";
 const char kUmaUserSwitch[] = "uma-user";
-const char kQuarantineSwitch[] = "quarantine";
 
 // Registry paths and subkeys.
 const wchar_t kSoftwareRemovalToolRegistryKey[] =

@@ -4,12 +4,12 @@
 
 #include <memory>
 
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/test_layers.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
@@ -39,16 +39,15 @@ void SetWindowAndLayerName(aura::Window* window, const std::string& name) {
 // first) of |parent|. The format of the string is "name1 name2 name3 ...".
 std::string ChildWindowNamesAsString(const aura::Window& parent) {
   std::string names;
-  for (auto it = parent.children().begin(); it != parent.children().end();
-       ++it) {
+  for (const auto* child : parent.children()) {
     if (!names.empty())
       names += " ";
-    names += (*it)->GetName();
+    names += child->GetName();
   }
   return names;
 }
 
-using WindowReordererTest = aura::test::AuraTestBase;
+using WindowReordererTest = ViewsTestBase;
 
 // Test that views with layers and views with associated windows are reordered
 // according to the view hierarchy.

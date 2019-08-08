@@ -81,6 +81,8 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
                      WebRTCVoidRequest) override {}
   void GetStats(WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override {}
+  void SetStreams(
+      const blink::WebVector<blink::WebString>& stream_ids) override {}
 
  private:
   scoped_refptr<DummyRtpSenderInternal> internal_;
@@ -393,6 +395,11 @@ void MockWebRTCPeerConnectionHandler::
     RunSynchronousRepeatingClosureOnSignalingThread(
         const base::RepeatingClosure& closure,
         const char* trace_event_name) {}
+
+void MockWebRTCPeerConnectionHandler::TrackIceConnectionStateChange(
+    WebRTCPeerConnectionHandler::IceConnectionStateVersion version,
+    webrtc::PeerConnectionInterface::IceConnectionState state) {}
+
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,

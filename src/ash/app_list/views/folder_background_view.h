@@ -22,8 +22,11 @@ class FolderBackgroundView : public views::View {
     folder_view_ = folder_view;
   }
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
-  // views::View overrides:
+  // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 

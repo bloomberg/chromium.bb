@@ -738,6 +738,11 @@ bool SyncEncryptionHandlerImpl::IsEncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
+base::Time SyncEncryptionHandlerImpl::GetKeystoreMigrationTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return keystore_migration_time_;
+}
+
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
 void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
@@ -881,10 +886,6 @@ bool SyncEncryptionHandlerImpl::MigratedToKeystore() {
   return IsNigoriMigratedToKeystore(nigori_node.GetNigoriSpecifics());
 }
 
-base::Time SyncEncryptionHandlerImpl::migration_time() const {
-  return migration_time_;
-}
-
 base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
   return custom_passphrase_time_;
 }
@@ -928,7 +929,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(UnlockVault(trans->GetWrappedTrans()).cryptographer.is_ready());
   for (ModelType type : UnlockVault(trans->GetWrappedTrans()).encrypted_types) {
-    if (type == PASSWORDS || IsControlType(type))
+    if (type == PASSWORDS || type == WIFI_CONFIGURATIONS || IsControlType(type))
       continue;  // These types handle encryption differently.
 
     ReadNode type_root(trans);
@@ -974,6 +975,22 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
     }
   }
 
+  // Wifi configs are encrypted with their own legacy scheme and are always
+  // encrypted so we don't need to check GetEncryptedTypes().
+  ReadNode wifi_configurations_root(trans);
+  if (wifi_configurations_root.InitTypeRoot(WIFI_CONFIGURATIONS) ==
+      BaseNode::INIT_OK) {
+    int64_t child_id = wifi_configurations_root.GetFirstChildId();
+    while (child_id != kInvalidId) {
+      WriteNode child(trans);
+      if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK)
+        break;  // Possible if we failed to decrypt the data for some reason.
+      child.SetWifiConfigurationSpecifics(
+          child.GetWifiConfigurationSpecifics());
+      child_id = child.GetSuccessorId();
+    }
+  }
+
   DVLOG(1) << "Re-encrypt everything complete.";
 
   // NOTE: We notify from within a transaction.
@@ -996,7 +1013,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   bool is_nigori_migrated = IsNigoriMigratedToKeystore(nigori);
   PassphraseType* passphrase_type = &UnlockVaultMutable(trans)->passphrase_type;
   if (is_nigori_migrated) {
-    migration_time_ = ProtoTimeToTime(nigori.keystore_migration_time());
+    keystore_migration_time_ =
+        ProtoTimeToTime(nigori.keystore_migration_time());
     PassphraseType nigori_passphrase_type =
         ProtoPassphraseTypeToEnum(nigori.passphrase_type());
 
@@ -1098,12 +1116,13 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
       KeyDerivationParams::CreateForPbkdf2();
   if (*passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
     key_derivation_params = GetKeyDerivationParamsFromNigori(nigori);
-    custom_passphrase_key_derivation_params_ = key_derivation_params;
 
     if (key_derivation_params.method() == KeyDerivationMethod::UNSUPPORTED) {
       DLOG(WARNING) << "Updating from a Nigori node with an unsupported key "
-                       "derivation method. Decryption will fail.";
+                       "derivation method.";
     }
+
+    custom_passphrase_key_derivation_params_ = key_derivation_params;
   }
 
   // If we've completed a sync cycle and the cryptographer isn't ready
@@ -1369,6 +1388,8 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
       KeyDerivationParams::CreateForPbkdf2();
   if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
     DCHECK(custom_passphrase_key_derivation_params_.has_value());
+    DCHECK_NE(custom_passphrase_key_derivation_params_->method(),
+              KeyDerivationMethod::UNSUPPORTED);
     key_derivation_params = custom_passphrase_key_derivation_params_.value();
   }
   KeyParams key_params = {key_derivation_params, passphrase};
@@ -1747,9 +1768,11 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     return false;
   }
 
-  if (migration_time_.is_null())
-    migration_time_ = base::Time::Now();
-  migrated_nigori.set_keystore_migration_time(TimeToProtoTime(migration_time_));
+  if (keystore_migration_time_.is_null()) {
+    keystore_migration_time_ = base::Time::Now();
+  }
+  migrated_nigori.set_keystore_migration_time(
+      TimeToProtoTime(keystore_migration_time_));
 
   if (!custom_passphrase_time_.is_null()) {
     migrated_nigori.set_custom_passphrase_time(
@@ -1950,7 +1973,7 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
 base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime(
     PassphraseType passphrase_type) const {
   if (passphrase_type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE)
-    return migration_time();
+    return GetKeystoreMigrationTime();
   else if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE)
     return custom_passphrase_time();
   return base::Time();

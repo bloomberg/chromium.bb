@@ -13,3 +13,4 @@
         android:id="@+id/ephemeral_tab_caption"
         style="@style/ContextualSearchCaptionTextView" />
 </FrameLayout>
+

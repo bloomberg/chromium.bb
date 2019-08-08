@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
@@ -347,8 +348,8 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
 TEST_F(ActiveTabTest, CapturingPagesWithActiveTab) {
   std::vector<GURL> test_urls = {
       GURL("https://example.com"),
-      GURL("chrome://version"),
-      GURL("chrome://newtab"),
+      GURL(chrome::kChromeUIVersionURL),
+      GURL(chrome::kChromeUINewTabURL),
       GURL("http://[2607:f8b0:4005:805::200e]"),
       ExtensionsClient::Get()->GetWebstoreBaseURL(),
       extension->GetResourceURL("test.html"),
@@ -459,7 +460,7 @@ TEST_F(ActiveTabTest, SameDocumentNavigations) {
 }
 
 TEST_F(ActiveTabTest, ChromeUrlGrants) {
-  GURL internal("chrome://version");
+  GURL internal(chrome::kChromeUIVersionURL);
   NavigateAndCommit(internal);
   active_tab_permission_granter()->GrantIfRequested(
       extension_with_tab_capture.get());
@@ -543,8 +544,7 @@ class ActiveTabManagedSessionTest : public ActiveTabTest {
         TestingBrowserProcess::GetGlobal());
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
-    wallpaper_controller_client_->InitForTesting(
-        test_wallpaper_controller_.CreateInterfacePtr());
+    wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
     g_browser_process->local_state()->SetString(
         "PublicAccountPendingDataRemoval", user_email);
     user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,

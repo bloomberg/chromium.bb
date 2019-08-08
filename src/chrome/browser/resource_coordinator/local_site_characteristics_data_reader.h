@@ -28,10 +28,13 @@ class LocalSiteCharacteristicsDataReader
   ~LocalSiteCharacteristicsDataReader() override;
 
   // SiteCharacteristicsDataReader:
-  SiteFeatureUsage UpdatesFaviconInBackground() const override;
-  SiteFeatureUsage UpdatesTitleInBackground() const override;
-  SiteFeatureUsage UsesAudioInBackground() const override;
-  SiteFeatureUsage UsesNotificationsInBackground() const override;
+  performance_manager::SiteFeatureUsage UpdatesFaviconInBackground()
+      const override;
+  performance_manager::SiteFeatureUsage UpdatesTitleInBackground()
+      const override;
+  performance_manager::SiteFeatureUsage UsesAudioInBackground() const override;
+  performance_manager::SiteFeatureUsage UsesNotificationsInBackground()
+      const override;
   bool DataLoaded() const override;
   void RegisterDataLoadedCallback(base::OnceClosure&& callback) override;
 

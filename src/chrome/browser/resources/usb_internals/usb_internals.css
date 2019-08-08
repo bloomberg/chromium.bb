@@ -3,12 +3,12 @@
  * found in the LICENSE file.
  */
 
- tabs {
-   position: sticky;
-   top: 0;
-   /* selected treeItem is 2 */
-   z-index: 3;
- }
+tabs {
+  position: sticky;
+  top: 0;
+  /* selected treeItem is 2 */
+  z-index: 3;
+}
 
 /* Devices Tab */
 table.styled-table {
@@ -54,9 +54,14 @@ table.styled-table,
 }
 
 /* descriptor panel */
-.descriptor-panel {
+descriptorpanel {
   display: flex;
   overflow: visible;
+}
+
+descriptorpaneltitle {
+  font-size: 16px;
+  margin-block-start: 16px;
 }
 
 .string-descriptor-panel input {
@@ -106,6 +111,7 @@ table.styled-table,
 }
 
 #raw-data-byte-view div span {
+  font-family: monospace;
   padding-inline-end: .5em;
   padding-inline-start: .5em;
 }

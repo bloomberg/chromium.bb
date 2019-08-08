@@ -6,18 +6,18 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.NonNull;
 
-import com.google.android.libraries.feed.api.stream.ScrollListener;
-import com.google.android.libraries.feed.host.logging.ActionType;
-import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
-import com.google.android.libraries.feed.host.logging.ContentLoggingData;
-import com.google.android.libraries.feed.host.logging.ElementLoggingData;
-import com.google.android.libraries.feed.host.logging.InternalFeedError;
-import com.google.android.libraries.feed.host.logging.RequestReason;
-import com.google.android.libraries.feed.host.logging.ScrollType;
-import com.google.android.libraries.feed.host.logging.SessionEvent;
-import com.google.android.libraries.feed.host.logging.SpinnerType;
-import com.google.android.libraries.feed.host.logging.Task;
-import com.google.android.libraries.feed.host.logging.ZeroStateShowReason;
+import com.google.android.libraries.feed.api.client.stream.Stream.ScrollListener;
+import com.google.android.libraries.feed.api.host.logging.ActionType;
+import com.google.android.libraries.feed.api.host.logging.BasicLoggingApi;
+import com.google.android.libraries.feed.api.host.logging.ContentLoggingData;
+import com.google.android.libraries.feed.api.host.logging.ElementLoggingData;
+import com.google.android.libraries.feed.api.host.logging.InternalFeedError;
+import com.google.android.libraries.feed.api.host.logging.RequestReason;
+import com.google.android.libraries.feed.api.host.logging.ScrollType;
+import com.google.android.libraries.feed.api.host.logging.SessionEvent;
+import com.google.android.libraries.feed.api.host.logging.SpinnerType;
+import com.google.android.libraries.feed.api.host.logging.Task;
+import com.google.android.libraries.feed.api.host.logging.ZeroStateShowReason;
 import com.google.search.now.ui.action.FeedActionProto;
 
 import org.chromium.base.annotations.JNINamespace;
@@ -64,7 +64,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
         nativeOnContentViewed(mNativeFeedLoggingBridge, data.getPositionInStream(),
                 TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()),
-                TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()), data.getScore());
+                TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()), data.getScore(),
+                data.isAvailableOffline());
     }
 
     @Override
@@ -103,7 +104,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         recordUserAction(actionType);
         nativeOnClientAction(mNativeFeedLoggingBridge,
                 feedActionToWindowOpenDisposition(actionType), data.getPositionInStream(),
-                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore());
+                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore(),
+                data.isAvailableOffline());
     }
 
     @Override
@@ -368,12 +370,14 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedLoggingBridge);
     private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
-            long publishedTimeMs, long timeContentBecameAvailableMs, float score);
+            long publishedTimeMs, long timeContentBecameAvailableMs, float score,
+            boolean isAvailableOffline);
     private native void nativeOnContentDismissed(
             long nativeFeedLoggingBridge, int position, String uri, boolean wasCommitted);
     private native void nativeOnContentSwiped(long nativeFeedLoggingBridge);
     private native void nativeOnClientAction(long nativeFeedLoggingBridge,
-            int windowOpenDisposition, int position, long publishedTimeMs, float score);
+            int windowOpenDisposition, int position, long publishedTimeMs, float score,
+            boolean isAvailableOffline);
     private native void nativeOnContentContextMenuOpened(
             long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
     private native void nativeOnMoreButtonViewed(long nativeFeedLoggingBridge, int position);

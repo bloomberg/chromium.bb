@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
@@ -174,9 +175,6 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   uint32_t flags = trace_event->flags();
   bool copy_strings = flags & TRACE_EVENT_FLAG_COPY;
   bool explicit_timestamp = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
-
-  ScopedPerfettoPostTaskBlocker post_task_blocker(
-      !!(flags & TRACE_EVENT_FLAG_DISALLOW_POSTTASK));
 
   if (reset_incremental_state_) {
     interned_event_categories_.ResetEmittedState();

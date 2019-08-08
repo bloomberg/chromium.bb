@@ -123,7 +123,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   // Update tray border based on layout.
   bool is_child_on_edge = true;
   for (auto* child : children()) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
     SetBorderOnChild(child, is_child_on_edge);
     is_child_on_edge = false;
@@ -133,7 +133,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
 
   if (shelf_->IsHorizontalAlignment()) {
     for (auto* child : children()) {
-      if (!child->visible())
+      if (!child->GetVisible())
         continue;
       columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
                          0, /* resize percent */
@@ -141,7 +141,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     }
     layout->StartRow(0, 0);
     for (auto* child : children()) {
-      if (child->visible())
+      if (child->GetVisible())
         layout->AddView(child);
     }
   } else {
@@ -149,7 +149,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
     for (auto* child : children()) {
-      if (!child->visible())
+      if (!child->GetVisible())
         continue;
       layout->StartRow(0, 0);
       layout->AddView(child);

@@ -148,14 +148,6 @@ const Client kClient = Client::CHROME_QNX;
 const Client kClient = Client::UNKNOWN;
 #endif
 
-class TestLoFiUIService : public LoFiUIService {
- public:
-  TestLoFiUIService() {}
-  ~TestLoFiUIService() override {}
-
-  void OnLoFiReponseReceived(const net::URLRequest& request) override {}
-};
-
 class DataReductionProxyDelegateTest : public testing::Test {
  public:
   DataReductionProxyDelegateTest()
@@ -168,10 +160,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
                           .Build()) {
     context_.set_client_socket_factory(&mock_socket_factory_);
     test_context_->AttachToURLRequestContext(&context_storage_);
-
-    std::unique_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
-    lofi_ui_service_ = lofi_ui_service.get();
-    test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
     proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
     context_.Init();
@@ -252,8 +240,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
-
-  TestLoFiUIService* lofi_ui_service_;
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
@@ -678,8 +664,8 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
     EXPECT_EQ(request->GetTotalReceivedBytes(),
               total_received_bytes() - baseline_received_bytes);
 
-    const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-        test.DrpResponseHeaders.c_str(), test.DrpResponseHeaders.size());
+    const std::string raw_headers =
+        net::HttpUtil::AssembleRawHeaders(test.DrpResponseHeaders);
     EXPECT_EQ(
         static_cast<int64_t>(raw_headers.size() +
                              10000 /* original_response_body */),
@@ -749,8 +735,8 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
     EXPECT_EQ(request->GetTotalReceivedBytes(),
               total_received_bytes() - baseline_received_bytes);
 
-    const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-        test.DrpResponseHeaders.c_str(), test.DrpResponseHeaders.size());
+    const std::string raw_headers =
+        net::HttpUtil::AssembleRawHeaders(test.DrpResponseHeaders);
     EXPECT_EQ(
         static_cast<int64_t>(raw_headers.size() +
                              10000 /* original_response_body */),
@@ -908,9 +894,7 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
     base::RunLoop().RunUntilIdle();
 
     int64_t expected_original_size =
-        net::HttpUtil::AssembleRawHeaders(test.response_headers.data(),
-                                          test.response_headers.size())
-            .size() +
+        net::HttpUtil::AssembleRawHeaders(test.response_headers).size() +
         test.expected_original_content_length;
 
     EXPECT_EQ(request->GetTotalReceivedBytes(),

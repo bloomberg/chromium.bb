@@ -88,7 +88,8 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
 #if defined(GOOGLE_CHROME_BUILD)
   is_navi_enabled = nux::IsNuxOnboardingEnabled(profile);
 #endif
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10 && !is_navi_enabled) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10 &&
+      !is_navi_enabled) {
     Win10OnboardingTabsParams win10_params;
     PrefService* local_state = g_browser_process->local_state();
     const shell_integration::DefaultWebClientState web_client_state =

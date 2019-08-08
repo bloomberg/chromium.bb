@@ -47,6 +47,7 @@ class DriveFsHost::MountState : public DriveFsSession,
                        CreateMojoConnection(host->account_token_delegate_.get(),
                                             host->delegate_),
                        host->GetDataPath(),
+                       host->delegate_->GetMyFilesPath(),
                        host->GetDefaultMountDirName(),
                        host->mount_observer_),
         host_(host) {
@@ -72,7 +73,8 @@ class DriveFsHost::MountState : public DriveFsSession,
     auto access_token = auth_delegate->GetCachedAccessToken();
     mojom::DriveFsConfigurationPtr config = {
         base::in_place, auth_delegate->GetAccountId().GetUserEmail(),
-        std::move(access_token), auth_delegate->IsMetricsCollectionEnabled()};
+        std::move(access_token), auth_delegate->IsMetricsCollectionEnabled(),
+        delegate->GetLostAndFoundDirectoryName()};
     return DriveFsConnection::Create(delegate->CreateMojoListener(),
                                      std::move(config));
   }

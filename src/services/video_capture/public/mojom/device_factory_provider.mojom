@@ -4,13 +4,16 @@
 
 module video_capture.mojom;
 
-import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
+[EnableIf=is_chromeos]
+import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
 import "services/video_capture/public/mojom/device_factory.mojom";
 import "services/video_capture/public/mojom/video_source_provider.mojom";
 
+[EnableIf=is_chromeos]
 interface AcceleratorFactory {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
+  CreateJpegDecodeAccelerator(
+      chromeos_camera.mojom.MjpegDecodeAccelerator& jda);
 };
 
 // Entry point to the Video Capture Service API.
@@ -24,6 +27,7 @@ interface AcceleratorFactory {
 // decoding will be performed without gpu acceleration.
 // TODO(chfremer): Consider renaming this to VideoCaptureService.
 interface DeviceFactoryProvider  {
+  [EnableIf=is_chromeos]
   InjectGpuDependencies(AcceleratorFactory accelerator_factory);
 
   // Legacy API. Supports one client per device.

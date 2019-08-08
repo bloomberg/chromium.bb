@@ -30,6 +30,11 @@ namespace extensions {
 class Extension;
 }
 
+namespace send_tab_to_self {
+class SendTabToSelfBubbleController;
+class SendTabToSelfBubbleView;
+}  // namespace send_tab_to_self
+
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
 // contains a valid LocationBar, all other getters return NULL.
 // See BrowserWithTestWindowTest for an example of using this class.
@@ -79,6 +84,7 @@ class TestBrowserWindow : public BrowserWindow {
   ui::WindowShowState GetRestoredState() const override;
   gfx::Rect GetBounds() const override;
   gfx::Size GetContentsSize() const override;
+  void SetContentsSize(const gfx::Size& size) override;
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Maximize() override {}
@@ -120,7 +126,6 @@ class TestBrowserWindow : public BrowserWindow {
                               bool show_stay_in_chrome,
                               bool show_remember_selection,
                               IntentPickerResponse callback) override {}
-  void SetIntentPickerViewVisibility(bool visible) override {}
 #endif  //  !define(OS_ANDROID)
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
@@ -130,6 +135,10 @@ class TestBrowserWindow : public BrowserWindow {
       content::WebContents* contents,
       autofill::LocalCardMigrationBubbleController* controller,
       bool user_gesture) override;
+  send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
+      content::WebContents* contents,
+      send_tab_to_self::SendTabToSelfBubbleController* controller,
+      bool is_user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
@@ -219,6 +228,7 @@ class TestBrowserWindow : public BrowserWindow {
 
     // PageActionIconContainer:
     void UpdatePageActionIcon(PageActionIconType type) override {}
+    void ExecutePageActionIconForTesting(PageActionIconType type) override {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TestOmniboxPageActionIconContainer);

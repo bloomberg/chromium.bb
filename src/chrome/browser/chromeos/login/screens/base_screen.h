@@ -21,7 +21,7 @@ namespace chromeos {
 // method called just once.
 class BaseScreen {
  public:
-  explicit BaseScreen(OobeScreen screen_id);
+  explicit BaseScreen(OobeScreenId screen_id);
   virtual ~BaseScreen();
 
   // Makes wizard screen visible.
@@ -31,7 +31,7 @@ class BaseScreen {
   virtual void Hide() = 0;
 
   // Returns the identifier of the screen.
-  OobeScreen screen_id() const { return screen_id_; }
+  OobeScreenId screen_id() const { return screen_id_; }
 
   // Called when user action event with |event_id|
   // happened. Notification about this event comes from the JS
@@ -57,7 +57,7 @@ class BaseScreen {
   // to screen only between OnShow / OnHide calls.
   base::Value* configuration_ = nullptr;
 
-  const OobeScreen screen_id_;
+  const OobeScreenId screen_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreen);
 };

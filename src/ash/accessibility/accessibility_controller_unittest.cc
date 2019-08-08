@@ -8,10 +8,11 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -21,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 
 using message_center::MessageCenter;
@@ -482,10 +482,10 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
 
   AccessibilityController* accessibility =
       Shell::Get()->accessibility_controller();
-  DockedMagnifierController* docked_magnifier =
+  DockedMagnifierControllerImpl* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();
 
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session->GetSessionState());
   EXPECT_FALSE(accessibility->large_cursor_enabled());

@@ -9,9 +9,7 @@
 namespace views {
 
 BridgeFactoryHost::BridgeFactoryHost(
-    uint64_t host_id,
-    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest* request)
-    : host_id_(host_id) {
+    remote_cocoa::mojom::BridgeFactoryAssociatedRequest* request) {
   *request = mojo::MakeRequest(&bridge_factory_ptr_);
 }
 
@@ -20,7 +18,7 @@ BridgeFactoryHost::~BridgeFactoryHost() {
     obs.OnBridgeFactoryHostDestroying(this);
 }
 
-views_bridge_mac::mojom::BridgeFactory* BridgeFactoryHost::GetFactory() {
+remote_cocoa::mojom::BridgeFactory* BridgeFactoryHost::GetFactory() {
   return bridge_factory_ptr_.get();
 }
 

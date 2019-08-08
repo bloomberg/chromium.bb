@@ -12,6 +12,7 @@
 #include "cc/layers/layer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
@@ -24,6 +25,9 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
 
   void UpdateLocationAndSize(const gfx::Size& device_viewport,
                              float device_scale_factor);
+
+  const std::vector<gfx::Rect>& LayoutShiftRects() const;
+  void SetLayoutShiftRects(const std::vector<gfx::Rect>& rects);
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
@@ -38,6 +42,7 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
   ~HeadsUpDisplayLayer() override;
 
   sk_sp<SkTypeface> typeface_;
+  std::vector<gfx::Rect> layout_shift_rects_;
 };
 
 }  // namespace cc

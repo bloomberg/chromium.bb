@@ -18,7 +18,18 @@
 
 namespace ui {
 
-using TestPositionType = std::unique_ptr<AXPosition<AXNodePosition, AXNode>>;
+using TestPositionInstance =
+    std::unique_ptr<AXPosition<AXNodePosition, AXNode>>;
+using TestPositionRange = AXRange<AXPosition<AXNodePosition, AXNode>>;
+
+#define EXPECT_RANGE_VECTOR_EQ(actual_vector, expected_vector)  \
+  {                                                             \
+    EXPECT_EQ(expected_vector.size(), actual_vector.size());    \
+    size_t element_count =                                      \
+        std::min(expected_vector.size(), actual_vector.size()); \
+    for (size_t i = 0; i < element_count; ++i)                  \
+      EXPECT_EQ(expected_vector[i], actual_vector[i]);          \
+  }
 
 namespace {
 
@@ -169,22 +180,60 @@ void AXRangeTest::TearDown() {
 
 }  // namespace
 
+TEST_F(AXRangeTest, AXRangeEqualityOperators) {
+  TestPositionInstance null_position = AXNodePosition::CreateNullPosition();
+  TestPositionInstance test_position1 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, button_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance test_position2 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance test_position3 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  // Invalid ranges (with at least one null endpoint).
+  TestPositionRange null_position_and_nullptr(null_position->Clone(), nullptr);
+  TestPositionRange nullptr_and_test_position(nullptr, test_position1->Clone());
+  TestPositionRange test_position_and_null_position(test_position2->Clone(),
+                                                    null_position->Clone());
+
+  TestPositionRange test_positions_1_and_2(test_position1->Clone(),
+                                           test_position2->Clone());
+  TestPositionRange test_positions_2_and_1(test_position2->Clone(),
+                                           test_position1->Clone());
+  TestPositionRange test_positions_1_and_3(test_position1->Clone(),
+                                           test_position3->Clone());
+  TestPositionRange test_positions_2_and_3(test_position2->Clone(),
+                                           test_position3->Clone());
+  TestPositionRange test_positions_3_and_2(test_position3->Clone(),
+                                           test_position2->Clone());
+
+  EXPECT_EQ(null_position_and_nullptr, nullptr_and_test_position);
+  EXPECT_EQ(nullptr_and_test_position, test_position_and_null_position);
+  EXPECT_NE(null_position_and_nullptr, test_positions_2_and_1);
+  EXPECT_NE(test_positions_2_and_1, test_position_and_null_position);
+  EXPECT_EQ(test_positions_1_and_2, test_positions_1_and_2);
+  EXPECT_NE(test_positions_2_and_1, test_positions_1_and_2);
+  EXPECT_EQ(test_positions_3_and_2, test_positions_2_and_3);
+  EXPECT_NE(test_positions_1_and_2, test_positions_2_and_3);
+  EXPECT_EQ(test_positions_1_and_2, test_positions_1_and_3);
+}
+
 TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
   base::string16 all_text = BUTTON_TEXT.substr(0).append(TEXT_VALUE);
   // Create a range starting from the button object and ending at the last
   // character of the root, i.e. at the last character of the second line in the
   // text field.
-  TestPositionType start = AXNodePosition::CreateTreePosition(
+  TestPositionInstance start = AXNodePosition::CreateTreePosition(
       tree_.data().tree_id, root_.id, 0 /* child_index */);
-  TestPositionType end = AXNodePosition::CreateTextPosition(
+  TestPositionInstance end = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, root_.id, all_text.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> forward_range(start->Clone(),
-                                                            end->Clone());
+  TestPositionRange forward_range(start->Clone(), end->Clone());
   EXPECT_EQ(all_text, forward_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> backward_range(std::move(end),
-                                                             std::move(start));
+  TestPositionRange backward_range(std::move(end), std::move(start));
   EXPECT_EQ(all_text, backward_range.GetText());
 
   // Button
@@ -196,11 +245,9 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
       tree_.data().tree_id, button_.id, BUTTON_TEXT.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> button_range(start->Clone(),
-                                                           end->Clone());
+  TestPositionRange button_range(start->Clone(), end->Clone());
   EXPECT_EQ(BUTTON_TEXT, button_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> button_range_backward(
-      std::move(end), std::move(start));
+  TestPositionRange button_range_backward(std::move(end), std::move(start));
   EXPECT_EQ(BUTTON_TEXT, button_range_backward.GetText());
 
   // text_field_
@@ -213,11 +260,9 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
                                          ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(start->IsTextPosition());
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> text_field_range(start->Clone(),
-                                                               end->Clone());
+  TestPositionRange text_field_range(start->Clone(), end->Clone());
   EXPECT_EQ(TEXT_VALUE, text_field_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> text_field_range_backward(
-      std::move(end), std::move(start));
+  TestPositionRange text_field_range_backward(std::move(end), std::move(start));
   EXPECT_EQ(TEXT_VALUE, text_field_range_backward.GetText());
 
   // static_text1_
@@ -229,11 +274,10 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
       tree_.data().tree_id, static_text1_.id, LINE_1.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> static_text1_range(start->Clone(),
-                                                                 end->Clone());
+  TestPositionRange static_text1_range(start->Clone(), end->Clone());
   EXPECT_EQ(LINE_1, static_text1_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> static_text1_range_backward(
-      std::move(end), std::move(start));
+  TestPositionRange static_text1_range_backward(std::move(end),
+                                                std::move(start));
   EXPECT_EQ(LINE_1, static_text1_range_backward.GetText());
 
   // static_text2_
@@ -245,11 +289,10 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
       tree_.data().tree_id, static_text2_.id, LINE_2.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> static_text2_range(start->Clone(),
-                                                                 end->Clone());
+  TestPositionRange static_text2_range(start->Clone(), end->Clone());
   EXPECT_EQ(LINE_2, static_text2_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> static_text2_range_backward(
-      std::move(end), std::move(start));
+  TestPositionRange static_text2_range_backward(std::move(end),
+                                                std::move(start));
   EXPECT_EQ(LINE_2, static_text2_range_backward.GetText());
 
   // static_text1_ to static_text2_
@@ -261,11 +304,10 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
       tree_.data().tree_id, static_text2_.id, LINE_2.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> static_text_range(start->Clone(),
-                                                                end->Clone());
+  TestPositionRange static_text_range(start->Clone(), end->Clone());
   EXPECT_EQ(TEXT_VALUE, static_text_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> static_text_range_backward(
-      std::move(end), std::move(start));
+  TestPositionRange static_text_range_backward(std::move(end),
+                                               std::move(start));
   EXPECT_EQ(TEXT_VALUE, static_text_range_backward.GetText());
 
   // root_ to static_text2_'s end
@@ -275,11 +317,10 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
       tree_.data().tree_id, static_text2_.id, LINE_2.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> root_to_static2_text_range(
-      start->Clone(), end->Clone());
+  TestPositionRange root_to_static2_text_range(start->Clone(), end->Clone());
   EXPECT_EQ(all_text, root_to_static2_text_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>>
-      root_to_static2_text_range_backward(std::move(end), std::move(start));
+  TestPositionRange root_to_static2_text_range_backward(std::move(end),
+                                                        std::move(start));
   EXPECT_EQ(all_text, root_to_static2_text_range_backward.GetText());
 
   // root_ to static_text2_'s start
@@ -289,11 +330,10 @@ TEST_F(AXRangeTest, AXRangeGetTextWithWholeObjects) {
                                              0 /* child_index */);
   end = AXNodePosition::CreateTreePosition(
       tree_.data().tree_id, static_text2_.id, 0 /* child_index */);
-  AXRange<AXPosition<AXNodePosition, AXNode>> root_to_static2_tree_range(
-      start->Clone(), end->Clone());
+  TestPositionRange root_to_static2_tree_range(start->Clone(), end->Clone());
   EXPECT_EQ(text_up_to_text2_tree_start, root_to_static2_tree_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>>
-      root_to_static2_tree_range_backward(std::move(end), std::move(start));
+  TestPositionRange root_to_static2_tree_range_backward(std::move(end),
+                                                        std::move(start));
   EXPECT_EQ(text_up_to_text2_tree_start,
             root_to_static2_tree_range_backward.GetText());
 }
@@ -303,19 +343,17 @@ TEST_F(AXRangeTest, AXRangeGetTextWithTextOffsets) {
       BUTTON_TEXT.substr(2).append(TEXT_VALUE).substr(0, 15);
   // Create a range starting from the button object and ending two characters
   // before the end of the root.
-  TestPositionType start = AXNodePosition::CreateTextPosition(
+  TestPositionInstance start = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, button_.id, 2 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(start->IsTextPosition());
-  TestPositionType end = AXNodePosition::CreateTextPosition(
+  TestPositionInstance end = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, static_text2_.id, 4 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> forward_range(start->Clone(),
-                                                            end->Clone());
+  TestPositionRange forward_range(start->Clone(), end->Clone());
   EXPECT_EQ(most_text, forward_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>> backward_range(std::move(end),
-                                                             std::move(start));
+  TestPositionRange backward_range(std::move(end), std::move(start));
   EXPECT_EQ(most_text, backward_range.GetText());
 
   // root_ to static_text2_'s start with offsets
@@ -327,11 +365,10 @@ TEST_F(AXRangeTest, AXRangeGetTextWithTextOffsets) {
       tree_.data().tree_id, static_text2_.id, 3 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
-  AXRange<AXPosition<AXNodePosition, AXNode>> root_to_static2_tree_range(
-      start->Clone(), end->Clone());
+  TestPositionRange root_to_static2_tree_range(start->Clone(), end->Clone());
   EXPECT_EQ(text_up_to_text2_tree_start, root_to_static2_tree_range.GetText());
-  AXRange<AXPosition<AXNodePosition, AXNode>>
-      root_to_static2_tree_range_backward(std::move(end), std::move(start));
+  TestPositionRange root_to_static2_tree_range_backward(std::move(end),
+                                                        std::move(start));
   EXPECT_EQ(text_up_to_text2_tree_start,
             root_to_static2_tree_range_backward.GetText());
 }
@@ -339,49 +376,157 @@ TEST_F(AXRangeTest, AXRangeGetTextWithTextOffsets) {
 TEST_F(AXRangeTest, AXRangeGetTextWithEmptyRanges) {
   // empty string with non-leaf tree position
   base::string16 empty_string(base::ASCIIToUTF16(""));
-  TestPositionType start = AXNodePosition::CreateTreePosition(
+  TestPositionInstance start = AXNodePosition::CreateTreePosition(
       tree_.data().tree_id, root_.id, 0 /* child_index */);
-  AXRange<AXPosition<AXNodePosition, AXNode>> non_leaf_tree_range(
-      start->Clone(), start->Clone());
+  TestPositionRange non_leaf_tree_range(start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, non_leaf_tree_range.GetText());
 
   // empty string with leaf tree position
   start = AXNodePosition::CreateTreePosition(
       tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
-  AXRange<AXPosition<AXNodePosition, AXNode>> leaf_empty_range(start->Clone(),
-                                                               start->Clone());
+  TestPositionRange leaf_empty_range(start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, leaf_empty_range.GetText());
 
   // empty string with leaf text position and no offset
   start = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, inline_box1_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  AXRange<AXPosition<AXNodePosition, AXNode>> leaf_text_no_offset(
-      start->Clone(), start->Clone());
+  TestPositionRange leaf_text_no_offset(start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, leaf_text_no_offset.GetText());
 
   // empty string with leaf text position with offset
   start = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, inline_box1_.id, 3 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  AXRange<AXPosition<AXNodePosition, AXNode>> leaf_text_offset(start->Clone(),
-                                                               start->Clone());
+  TestPositionRange leaf_text_offset(start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, leaf_text_offset.GetText());
 
   // empty string with non-leaf text with no offset
   start = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, root_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  AXRange<AXPosition<AXNodePosition, AXNode>> non_leaf_text_no_offset(
-      start->Clone(), start->Clone());
+  TestPositionRange non_leaf_text_no_offset(start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, non_leaf_text_no_offset.GetText());
 
   // empty string with non-leaf text position with offset
   start = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, root_.id, 3 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  AXRange<AXPosition<AXNodePosition, AXNode>> non_leaf_text_offset(
-      start->Clone(), start->Clone());
+  TestPositionRange non_leaf_text_offset(start->Clone(), start->Clone());
   EXPECT_EQ(empty_string, non_leaf_text_offset.GetText());
+
+  // empty string with same position between two anchors, but different offsets
+  TestPositionInstance after_end = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance before_start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text2_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  AXRange<AXPosition<AXNodePosition, AXNode>>
+      same_position_different_anchors_forward(after_end->Clone(),
+                                              before_start->Clone());
+  EXPECT_EQ(empty_string, same_position_different_anchors_forward.GetText());
+  AXRange<AXPosition<AXNodePosition, AXNode>>
+      same_position_different_anchors_backward(before_start->Clone(),
+                                               after_end->Clone());
+  EXPECT_EQ(empty_string, same_position_different_anchors_backward.GetText());
 }
+
+TEST_F(AXRangeTest, AXRangeGetAnchors) {
+  TestPositionInstance button_start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, button_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance button_middle = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, button_.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance button_end = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, button_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  // Since a check box is not visible to the text representation, it spans an
+  // empty anchor whose start and end positions are the same.
+  TestPositionInstance check_box = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, check_box_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionInstance line1_start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance line1_middle = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance line1_end = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionInstance line_break_start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance line_break_end = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionInstance line2_start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance line2_middle = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionRange whole_anchor_range(button_start->Clone(),
+                                       button_end->Clone());
+  std::vector<TestPositionRange> range_anchors =
+      whole_anchor_range.GetAnchors();
+
+  std::vector<TestPositionRange> expected_anchors;
+  expected_anchors.emplace_back(button_start->Clone(), button_end->Clone());
+  EXPECT_RANGE_VECTOR_EQ(expected_anchors, range_anchors);
+
+  TestPositionRange non_null_degenerate_range(check_box->Clone(),
+                                              check_box->Clone());
+  range_anchors = non_null_degenerate_range.GetAnchors();
+
+  expected_anchors.clear();
+  expected_anchors.emplace_back(check_box->Clone(), check_box->Clone());
+  EXPECT_RANGE_VECTOR_EQ(expected_anchors, range_anchors);
+
+  TestPositionRange across_anchors_range(button_middle->Clone(),
+                                         line1_middle->Clone());
+  range_anchors = across_anchors_range.GetAnchors();
+
+  expected_anchors.clear();
+  expected_anchors.emplace_back(button_middle->Clone(), button_end->Clone());
+  expected_anchors.emplace_back(check_box->Clone(), check_box->Clone());
+  expected_anchors.emplace_back(line1_start->Clone(), line1_middle->Clone());
+  EXPECT_RANGE_VECTOR_EQ(expected_anchors, range_anchors);
+
+  TestPositionRange across_anchors_backward_range(line1_middle->Clone(),
+                                                  button_middle->Clone());
+  range_anchors = across_anchors_backward_range.GetAnchors();
+  EXPECT_RANGE_VECTOR_EQ(expected_anchors, range_anchors);
+
+  TestPositionRange starting_at_end_position_range(line1_end->Clone(),
+                                                   line2_middle->Clone());
+  range_anchors = starting_at_end_position_range.GetAnchors();
+
+  expected_anchors.clear();
+  expected_anchors.emplace_back(line1_end->Clone(), line1_end->Clone());
+  expected_anchors.emplace_back(line_break_start->Clone(),
+                                line_break_end->Clone());
+  expected_anchors.emplace_back(line2_start->Clone(), line2_middle->Clone());
+  EXPECT_RANGE_VECTOR_EQ(expected_anchors, range_anchors);
+
+  TestPositionRange ending_at_start_position_range(line1_middle->Clone(),
+                                                   line2_start->Clone());
+  range_anchors = ending_at_start_position_range.GetAnchors();
+
+  expected_anchors.clear();
+  expected_anchors.emplace_back(line1_middle->Clone(), line1_end->Clone());
+  expected_anchors.emplace_back(line_break_start->Clone(),
+                                line_break_end->Clone());
+  expected_anchors.emplace_back(line2_start->Clone(), line2_start->Clone());
+  EXPECT_RANGE_VECTOR_EQ(expected_anchors, range_anchors);
+}
+
 }  // namespace ui

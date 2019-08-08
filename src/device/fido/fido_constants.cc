@@ -27,8 +27,11 @@ const char kDisplayNameMapKey[] = "displayName";
 const char kIconUrlMapKey[] = "icon";
 const char kCredentialTypeMapKey[] = "type";
 const char kCredentialAlgorithmMapKey[] = "alg";
+const char kCredentialManagementMapKey[] = "credMgmt";
+const char kCredentialManagementPreviewMapKey[] = "credentialMgmtPreview";
+const char kBioEnrollmentPreviewMapKey[] = "userVerificationMgmtPreview";
 
-const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(3);
+const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(10);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);
 
 const char kFormatKey[] = "fmt";
@@ -56,6 +59,7 @@ const char kCtap2Version[] = "FIDO_2_0";
 const char kU2fVersion[] = "U2F_V2";
 
 const char kExtensionHmacSecret[] = "hmac-secret";
+const char kExtensionCredProtect[] = "credProtect";
 
 const base::TimeDelta kBleDevicePairingModeWaitingInterval =
     base::TimeDelta::FromSeconds(2);

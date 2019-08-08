@@ -24,6 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -45,23 +46,23 @@ static void ReportToVAJDADecoderFailureUMA(VAJDADecoderFailure failure) {
 }
 
 static void ReportToVAJDAResponseToClientUMA(
-    MjpegDecodeAccelerator::Error response) {
+    chromeos_camera::MjpegDecodeAccelerator::Error response) {
   UMA_HISTOGRAM_ENUMERATION(
       "Media.VAJDA.ResponseToClient", response,
-      MjpegDecodeAccelerator::Error::MJDA_ERROR_CODE_MAX + 1);
+      chromeos_camera::MjpegDecodeAccelerator::Error::MJDA_ERROR_CODE_MAX + 1);
 }
 
-static MjpegDecodeAccelerator::Error VaapiJpegDecodeStatusToError(
-    VaapiJpegDecodeStatus status) {
+static chromeos_camera::MjpegDecodeAccelerator::Error
+VaapiJpegDecodeStatusToError(VaapiJpegDecodeStatus status) {
   switch (status) {
     case VaapiJpegDecodeStatus::kSuccess:
-      return MjpegDecodeAccelerator::Error::NO_ERRORS;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS;
     case VaapiJpegDecodeStatus::kParseJpegFailed:
-      return MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
     case VaapiJpegDecodeStatus::kUnsupportedSubsampling:
-      return MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
     default:
-      return MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
+      return chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
   }
 }
 
@@ -94,7 +95,7 @@ void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
   VLOGF(1) << "Notifying of error " << error;
   // |error| shouldn't be NO_ERRORS because successful decodes should be handled
   // by VideoFrameReady().
-  DCHECK_NE(MjpegDecodeAccelerator::Error::NO_ERRORS, error);
+  DCHECK_NE(chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS, error);
   ReportToVAJDAResponseToClientUMA(error);
   DCHECK(client_);
   client_->NotifyError(bitstream_buffer_id, error);
@@ -102,7 +103,8 @@ void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
 
 void VaapiMjpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  ReportToVAJDAResponseToClientUMA(MjpegDecodeAccelerator::Error::NO_ERRORS);
+  ReportToVAJDAResponseToClientUMA(
+      chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS);
   client_->VideoFrameReady(bitstream_buffer_id);
 }
 
@@ -122,7 +124,8 @@ VaapiMjpegDecodeAccelerator::~VaapiMjpegDecodeAccelerator() {
   decoder_thread_.Stop();
 }
 
-bool VaapiMjpegDecodeAccelerator::Initialize(Client* client) {
+bool VaapiMjpegDecodeAccelerator::Initialize(
+    chromeos_camera::MjpegDecodeAccelerator::Client* client) {
   VLOGF(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -145,7 +148,7 @@ bool VaapiMjpegDecodeAccelerator::Initialize(Client* client) {
 bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
     std::unique_ptr<ScopedVAImage> scoped_image,
     int32_t input_buffer_id,
-    const scoped_refptr<VideoFrame>& video_frame) {
+    scoped_refptr<VideoFrame> video_frame) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   TRACE_EVENT1("jpeg", "VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner",
@@ -224,25 +227,30 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
   TRACE_EVENT0("jpeg", "DecodeTask");
 
   VaapiJpegDecodeStatus status;
-  std::unique_ptr<ScopedVAImage> image = decoder_.DoDecode(
-      base::make_span<const uint8_t>(static_cast<const uint8_t*>(shm->memory()),
-                                     shm->size()),
+  decoder_.Decode(
+      base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()),
       &status);
+  if (status != VaapiJpegDecodeStatus::kSuccess) {
+    NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
+    return;
+  }
+  std::unique_ptr<ScopedVAImage> image =
+      decoder_.GetImage(VA_FOURCC_I420 /* preferred_image_fourcc */, &status);
   if (status != VaapiJpegDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;
   }
 
   if (!OutputPictureOnTaskRunner(std::move(image), bitstream_buffer_id,
-                                 video_frame)) {
+                                 std::move(video_frame))) {
     VLOGF(1) << "Output picture failed";
     NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
   }
 }
 
 void VaapiMjpegDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer,
-    const scoped_refptr<VideoFrame>& video_frame) {
+    BitstreamBuffer bitstream_buffer,
+    scoped_refptr<VideoFrame> video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("jpeg", "Decode", "input_id", bitstream_buffer.id());
 
@@ -251,7 +259,8 @@ void VaapiMjpegDecodeAccelerator::Decode(
 
   // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
   auto shm = std::make_unique<UnalignedSharedMemory>(
-      bitstream_buffer.handle(), bitstream_buffer.size(), true);
+      bitstream_buffer.TakeRegion(), bitstream_buffer.size(),
+      false /* read_only */);
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();

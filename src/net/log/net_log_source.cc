@@ -17,14 +17,13 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> SourceEventParametersCallback(
+base::Value SourceEventParametersCallback(
     const NetLogSource source,
     NetLogCaptureMode /* capture_mode */) {
   if (!source.IsValid())
-    return std::unique_ptr<base::Value>();
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  source.AddToEventParameters(event_params.get());
+    return base::Value();
+  base::DictionaryValue event_params;
+  source.AddToEventParameters(&event_params);
   return std::move(event_params);
 }
 
@@ -42,12 +41,12 @@ bool NetLogSource::IsValid() const {
   return id != kInvalidId;
 }
 
-void NetLogSource::AddToEventParameters(
-    base::DictionaryValue* event_params) const {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("type", static_cast<int>(type));
-  dict->SetInteger("id", static_cast<int>(id));
-  event_params->Set("source_dependency", std::move(dict));
+void NetLogSource::AddToEventParameters(base::Value* event_params) const {
+  DCHECK(event_params->is_dict());
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("type", static_cast<int>(type));
+  dict.SetIntKey("id", static_cast<int>(id));
+  event_params->SetKey("source_dependency", std::move(dict));
 }
 
 NetLogParametersCallback NetLogSource::ToEventParametersCallback() const {

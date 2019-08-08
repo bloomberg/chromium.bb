@@ -25,7 +25,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       WritingMode block_or_line_writing_mode);
 
   ~NGPhysicalBoxFragment() {
-    for (const NGLinkStorage& child : Children())
+    for (const NGLink& child : Children())
       child.fragment->Release();
   }
 
@@ -33,56 +33,81 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return baselines_.Offset(request);
   }
 
-  const NGPhysicalBoxStrut Borders() const { return borders_; }
+  const NGPhysicalBoxStrut Borders() const {
+    if (!has_borders_)
+      return NGPhysicalBoxStrut();
+    return *ComputeBordersAddress();
+  }
 
-  const NGPhysicalBoxStrut Padding() const { return padding_; }
+  const NGPhysicalBoxStrut Padding() const {
+    if (!has_padding_)
+      return NGPhysicalBoxStrut();
+    return *ComputePaddingAddress();
+  }
 
   NGPixelSnappedPhysicalBoxStrut PixelSnappedPadding() const {
-    return padding_.SnapToDevicePixels();
+    if (!has_padding_)
+      return NGPixelSnappedPhysicalBoxStrut();
+    return ComputePaddingAddress()->SnapToDevicePixels();
   }
 
   bool HasSelfPaintingLayer() const;
   bool ChildrenInline() const { return children_inline_; }
 
-  bool HasControlClip() const;
-
-  NGPhysicalOffsetRect ScrollableOverflow() const;
+  PhysicalRect ScrollableOverflow() const;
 
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment
   // and change them to use NG geometry types once LayoutNG supports overflow.
-  LayoutRect OverflowClipRect(
-      const LayoutPoint& location,
+  PhysicalRect OverflowClipRect(
+      const PhysicalOffset& location,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
   IntSize ScrolledContentOffset() const;
-  LayoutSize ScrollSize() const;
+  PhysicalSize ScrollSize() const;
 
   // Compute visual overflow of this box in the local coordinate.
-  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
+  PhysicalRect ComputeSelfInkOverflow() const;
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
-  void AddSelfOutlineRects(Vector<LayoutRect>* outline_rects,
-                           const LayoutPoint& additional_offset,
+  void AddSelfOutlineRects(Vector<PhysicalRect>* outline_rects,
+                           const PhysicalOffset& additional_offset,
                            NGOutlineType include_block_overflows) const;
 
   UBiDiLevel BidiLevel() const;
 
-  scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
+  // Bitmask for border edges, see NGBorderEdges::Physical.
+  unsigned BorderEdges() const { return border_edge_; }
+  NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
-  LayoutBoxModelObject& GetLayoutBoxModelObject() const {
-    SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
-    return *static_cast<LayoutBoxModelObject*>(GetLayoutObject());
-  }
+#if DCHECK_IS_ON()
+  void CheckSameForSimplifiedLayout(const NGPhysicalBoxFragment&,
+                                    bool check_same_block_size) const;
+#endif
 
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
+                        const NGPhysicalBoxStrut& borders,
+                        const NGPhysicalBoxStrut& padding,
                         WritingMode block_or_line_writing_mode);
 
+  const NGPhysicalBoxStrut* ComputeBordersAddress() const {
+    DCHECK(has_borders_);
+    return reinterpret_cast<const NGPhysicalBoxStrut*>(children_ +
+                                                       Children().size());
+  }
+
+  const NGPhysicalBoxStrut* ComputePaddingAddress() const {
+    DCHECK(has_padding_);
+    const NGPhysicalBoxStrut* address =
+        reinterpret_cast<const NGPhysicalBoxStrut*>(children_ +
+                                                    Children().size());
+    return has_borders_ ? address + 1 : address;
+  }
+
   NGBaselineList baselines_;
-  NGPhysicalBoxStrut borders_;
-  NGPhysicalBoxStrut padding_;
-  NGLinkStorage children_[];
+  NGLink children_[];
+  // borders and padding come from after |children_| if they are not zero.
 };
 
 template <>

@@ -123,10 +123,9 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // hours passed since the last update check that hit network.
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration->last_update_check();
-  if (ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
-          is_main_script, registration->update_via_cache()) ||
-      time_since_last_check > kServiceWorkerScriptMaxCacheAge ||
-      version_->force_bypass_cache_for_scripts()) {
+  if (ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
+          is_main_script, version_->force_bypass_cache_for_scripts(),
+          registration->update_via_cache(), time_since_last_check)) {
     resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;
   }
 
@@ -368,7 +367,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
   DCHECK_EQ(type_, Type::kNetworkOnly);
   // Resource requests for service worker scripts should not follow redirects.
   //
-  // Step 7.5: "Set request's redirect mode to "error"."
+  // Step 9.5: "Set request's redirect mode to "error"."
   // https://w3c.github.io/ServiceWorker/#update-algorithm
   CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
                   kServiceWorkerRedirectError);
@@ -384,8 +383,8 @@ void ServiceWorkerNewScriptLoader::OnUploadProgress(
 }
 
 void ServiceWorkerNewScriptLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
-  client_->OnReceiveCachedMetadata(data);
+    mojo_base::BigBuffer data) {
+  client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void ServiceWorkerNewScriptLoader::OnTransferSizeUpdated(
@@ -478,7 +477,7 @@ void ServiceWorkerNewScriptLoader::OnComplete(
 
 // End of URLLoaderClient ------------------------------------------------------
 
-void ServiceWorkerNewScriptLoader::WillWriteInfo(
+int ServiceWorkerNewScriptLoader::WillWriteInfo(
     scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
   DCHECK_EQ(type_, Type::kResume);
   DCHECK(response_info);
@@ -489,9 +488,28 @@ void ServiceWorkerNewScriptLoader::WillWriteInfo(
     version_->SetMainScriptHttpResponseInfo(*info);
   }
 
-  ServiceWorkerUtils::SendHttpResponseInfoToClient(
+  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
       info, original_options_, request_start_, base::TimeTicks::Now(),
-      response_info->response_data_size, client_.get());
+      response_info->response_data_size);
+  client_->OnReceiveResponse(std::move(response.head));
+  if (!response.metadata.empty())
+    client_->OnReceiveCachedMetadata(std::move(response.metadata));
+
+  mojo::ScopedDataPipeConsumerHandle client_consumer;
+  if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
+      MOJO_RESULT_OK) {
+    // Reports error to cache writer and finally the loader would process this
+    // failure in OnCacheWriterResumed()
+    return net::ERR_INSUFFICIENT_RESOURCES;
+  }
+
+  // Pass the consumer handle to the client.
+  client_->OnStartLoadingResponseBody(std::move(client_consumer));
+  client_producer_watcher_.Watch(
+      client_producer_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      base::BindRepeating(&ServiceWorkerNewScriptLoader::OnClientWritable,
+                          weak_factory_.GetWeakPtr()));
+  return net::OK;
 }
 
 void ServiceWorkerNewScriptLoader::OnClientWritable(MojoResult) {
@@ -539,28 +557,12 @@ int ServiceWorkerNewScriptLoader::WillWriteData(
     base::OnceCallback<void(net::Error)> callback) {
   DCHECK_EQ(type_, Type::kResume);
   DCHECK(!write_observer_complete_callback_);
+  DCHECK(client_producer_);
+
   data_to_send_ = std::move(data);
   data_length_ = length;
   bytes_sent_to_client_ = 0;
   write_observer_complete_callback_ = std::move(callback);
-
-  // Send a data pipe to the client if it's the first call of WillWriteData().
-  if (!client_producer_) {
-    mojo::ScopedDataPipeConsumerHandle client_consumer;
-    if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
-        MOJO_RESULT_OK) {
-      // Report error to cache writer and finally the loader would process this
-      // failure in OnCacheWriterResumed().
-      return net::ERR_INSUFFICIENT_RESOURCES;
-    }
-
-    // Pass the consumer handle for responding with the response to the client.
-    client_->OnStartLoadingResponseBody(std::move(client_consumer));
-    client_producer_watcher_.Watch(
-        client_producer_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::BindRepeating(&ServiceWorkerNewScriptLoader::OnClientWritable,
-                            weak_factory_.GetWeakPtr()));
-  }
   client_producer_watcher_.ArmOrNotify();
   return net::ERR_IO_PENDING;
 }

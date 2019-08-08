@@ -131,7 +131,7 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
       base::Value::FromUniquePtrValue(
           ContentSettingToValue(CONTENT_SETTING_ALLOW)),
-      std::string(), map->is_incognito()));
+      std::string(), map->IsOffTheRecord()));
 #endif
   map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,

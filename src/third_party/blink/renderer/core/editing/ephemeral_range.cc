@@ -161,7 +161,7 @@ bool EphemeralRangeTemplate<Strategy>::IsValid() const {
 }
 #endif
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 template <typename Strategy>
 void EphemeralRangeTemplate<Strategy>::ShowTreeForThis() const {
@@ -188,8 +188,8 @@ void EphemeralRangeTemplate<Strategy>::ShowTreeForThis() const {
 Range* CreateRange(const EphemeralRange& range) {
   if (range.IsNull())
     return nullptr;
-  return Range::Create(range.GetDocument(), range.StartPosition(),
-                       range.EndPosition());
+  return MakeGarbageCollected<Range>(range.GetDocument(), range.StartPosition(),
+                                     range.EndPosition());
 }
 
 template <typename Strategy>

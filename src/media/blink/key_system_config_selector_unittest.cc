@@ -335,15 +335,14 @@ class FakeMediaPermission : public MediaPermission {
  public:
   // MediaPermission implementation.
   void HasPermission(Type type,
-                     const PermissionStatusCB& permission_status_cb) override {
-    permission_status_cb.Run(is_granted);
+                     PermissionStatusCB permission_status_cb) override {
+    std::move(permission_status_cb).Run(is_granted);
   }
 
-  void RequestPermission(
-      Type type,
-      const PermissionStatusCB& permission_status_cb) override {
+  void RequestPermission(Type type,
+                         PermissionStatusCB permission_status_cb) override {
     requests++;
-    permission_status_cb.Run(is_granted);
+    std::move(permission_status_cb).Run(is_granted);
   }
 
   bool IsEncryptedMediaEnabled() override { return is_encrypted_media_enabled; }

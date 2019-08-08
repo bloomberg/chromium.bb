@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -89,7 +87,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"bookmarksAdded", IDS_ONBOARDING_WELCOME_BOOKMARKS_ADDED},
       {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
       {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
-      {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
       {"defaultBrowserChanged", IDS_ONBOARDING_DEFAULT_BROWSER_CHANGED},
       {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
       {"headerText", IDS_WELCOME_HEADER},
@@ -133,19 +130,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
-const std::map<std::string, bool>& GetGzipMap() {
-  static std::map<std::string, bool>* gzip_map = nullptr;
-  if (!gzip_map) {
-    gzip_map = new std::map<std::string, bool>();
-    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-      (*gzip_map)[kOnboardingWelcomeResources[i].name] =
-          kOnboardingWelcomeResources[i].gzipped;
-    }
-    (*gzip_map)[kPreviewBackgroundPath] = false;
-  }
-  return *gzip_map;
-}
-
 }  // namespace
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
@@ -154,8 +138,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   // This page is not shown to incognito or guest profiles. If one should end up
   // here, we return, causing a 404-like page.
-  if (!profile ||
-      profile->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
+  if (!profile || !profile->IsRegularProfile()) {
     return;
   }
 
@@ -189,7 +172,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
 #if defined(OS_WIN)
     html_source->AddBoolean(
-        "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
+        "is_win10", base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
     // Add the shared bookmark handler for onboarding modules.
@@ -219,7 +202,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindRepeating(&HandleRequestCallback,
                             weak_ptr_factory_.GetWeakPtr()));
-    html_source->UseGzip(base::BindRepeating(&WelcomeUI::IsGzipped));
     html_source->SetJsonPath("strings.js");
   } else if (kIsBranded &&
              AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
@@ -282,10 +264,4 @@ void WelcomeUI::CreateBackgroundFetcher(
 void WelcomeUI::StorePageSeen(Profile* profile) {
   // Store that this profile has been shown the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-}
-
-bool WelcomeUI::IsGzipped(const std::string& path) {
-  const std::map<std::string, bool>& gzip_map = GetGzipMap();
-  const auto it = gzip_map.find(path);
-  return it == gzip_map.end() || it->second;
 }

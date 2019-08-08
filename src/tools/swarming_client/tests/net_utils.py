@@ -3,16 +3,9 @@
 # that can be found in the LICENSE file.
 
 import logging
-import os
-import sys
 import threading
 
-TEST_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
-ROOT_DIR = os.path.dirname(TEST_DIR)
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
-
+# third_party/
 from depot_tools import auto_stub
 from utils import net
 
@@ -61,7 +54,7 @@ class TestCase(auto_stub.TestCase):
       super(TestCase, self).tearDown()
 
   def expected_requests(self, requests):
-    """Registers the expected requests along their reponses.
+    """Registers the expected requests along their responses.
 
     Arguments:
       request: list of tuple(url, kwargs, response, headers) for normal requests
@@ -101,6 +94,7 @@ class TestCase(auto_stub.TestCase):
             return make_fake_response(result, url, headers)
           return None
     self.fail('Unknown request %s' % url)
+    return None
 
   def _url_read_json(self, url, **kwargs):
     logging.warn('url_read_json(%s, %s)', url[:500], str(kwargs)[:500])
@@ -123,3 +117,4 @@ class TestCase(auto_stub.TestCase):
             return result
           return None
     self.fail('Unknown request %s %s' % (url, kwargs))
+    return None

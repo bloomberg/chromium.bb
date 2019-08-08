@@ -5,6 +5,7 @@ if (window.testRunner) {
 	testRunner.dumpAsText();
 	testRunner.waitUntilDone();
 	testRunner.setCanOpenWindows();
+	testRunner.setDumpConsoleMessages(false);
 	testRunner.setCloseRemainingWindowsWhenComplete(true);
 }
 
@@ -23,7 +24,7 @@ window.onload = function()
 				a.click();
 
 				return "<script>(" + function() {
-					opener.location = "javascript:alert(location)";
+                    try { opener.location = "javascript:alert(location)"; } catch (e) {}
 
 					if (window.testRunner)
 						testRunner.notifyDone();

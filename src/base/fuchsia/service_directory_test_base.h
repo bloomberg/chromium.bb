@@ -35,6 +35,9 @@ class ServiceDirectoryTestBase : public testing::Test {
       service_binding_;
 
   std::unique_ptr<ServiceDirectoryClient> public_service_directory_client_;
+  std::unique_ptr<ServiceDirectoryClient> debug_service_directory_client_;
+  std::unique_ptr<ServiceDirectoryClient>
+      legacy_public_service_directory_client_;
   std::unique_ptr<ServiceDirectoryClient> root_service_directory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDirectoryTestBase);

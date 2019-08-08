@@ -21,7 +21,6 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
-#include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 
@@ -48,7 +47,7 @@ class NewPasswordFormManager;
 // receiving password form data from the renderer and managing the password
 // database through the PasswordStore. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
-class PasswordManager : public LoginModel, public FormSubmissionObserver {
+class PasswordManager : public FormSubmissionObserver {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -56,19 +55,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   explicit PasswordManager(PasswordManagerClient* client);
   ~PasswordManager() override;
-
-  // Called by a PasswordFormManager when it decides a HTTP auth dialog can be
-  // autofilled.
-  void AutofillHttpAuth(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const autofill::PasswordForm& preferred_match) const;
-
-  // LoginModel implementation.
-  void AddObserverAndDeliverCredentials(
-      LoginModelObserver* observer,
-      const autofill::PasswordForm& observed_form) override;
-  void RemoveObserver(LoginModelObserver* observer) override;
 
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
@@ -116,10 +102,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // Handles a password form being submitted.
   void OnPasswordFormSubmitted(PasswordManagerDriver* driver,
                                const autofill::PasswordForm& password_form);
-
-  // Handles submitted http auth credentials.
-  void OnPasswordHttpAuthFormSubmitted(
-      const autofill::PasswordForm& password_form);
 
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission.
@@ -278,7 +260,9 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // the match. If the function is called multiple times, only the form from the
   // last call is provisionally saved. Multiple calls is possible because it is
   // called on any user keystroke. If there is no NewPasswordFormManager that
-  // manages |form|, the new one is created. Returns manager which manages
+  // manages |form|, the new one is created. If |is_manual_fallback| is true
+  // and the matched form manager has not recieved yet response from the
+  // password store, then nullptr is returned. Returns manager which manages
   // |form|.
   // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
   // should be skipped on saving.
@@ -287,12 +271,8 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   NewPasswordFormManager* ProvisionallySaveForm(
       const autofill::FormData& form,
       PasswordManagerDriver* driver,
+      bool is_manual_fallback,
       bool is_gaia_with_skip_save_password_form);
-
-  // Passes |form| to NewPasswordFormManager that manages it for using it after
-  // detecting submission success for saving.
-  void ProvisionallySaveHttpAuthForm(
-      const autofill::PasswordForm& password_form);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.
@@ -333,6 +313,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // the match. Returns nullptr when no matched manager is found.
   NewPasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
                                             const autofill::FormData& form);
+
+  // Log a frame (main frame, iframe) of a submitted password form.
+  void ReportSubmittedFormFrameMetric(const PasswordManagerDriver* driver,
+                                      const autofill::PasswordForm& form);
 
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
@@ -386,10 +370,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;
-
-  // Observers to be notified of LoginModel events.  This is mutable to allow
-  // notification in const member functions.
-  mutable base::ObserverList<LoginModelObserver>::Unchecked observers_;
 
   // Records all visible forms seen during a page load, in all frames of the
   // page. When the page stops loading, the password manager checks if one of

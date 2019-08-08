@@ -14,6 +14,7 @@
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "media/base/audio_codecs.h"
+#include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace extensions {
@@ -31,6 +32,10 @@ class MemoryPressureObserverImpl;
 namespace media {
 class MediaCapsObserverImpl;
 class SupportedCodecProfileLevelsMemo;
+
+#if defined(OS_ANDROID)
+class CastAudioDeviceFactory;
+#endif  // defined(OS_ANDROID)
 }
 
 namespace shell {
@@ -71,6 +76,9 @@ class CastContentRendererClient
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType type) override;
+  base::Optional<::media::AudioRendererAlgorithmParameters>
+  GetAudioRendererAlgorithmParameters(
+      ::media::AudioParameters audio_parameters) override;
 
  protected:
   CastContentRendererClient();
@@ -100,6 +108,10 @@ class CastContentRendererClient
       extensions_renderer_client_;
   std::unique_ptr<extensions::ExtensionsGuestViewContainerDispatcher>
       guest_view_container_dispatcher_;
+#endif
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<media::CastAudioDeviceFactory> cast_audio_device_factory_;
 #endif
 
   int supported_bitstream_audio_codecs_;

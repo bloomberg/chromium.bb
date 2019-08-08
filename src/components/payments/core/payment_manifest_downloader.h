@@ -58,6 +58,11 @@ using PaymentManifestDownloadCallback =
 // The downloader follows up to three redirects for the HEAD request only (used
 // for payment method manifests). Three is enough for known legitimate use cases
 // and seems like a good upper bound.
+//
+// The command line must be initialized to use this class in tests, because it
+// checks for --unsafely-treat-insecure-origin-as-secure=<origin> flag. For
+// example:
+//  base::CommandLine::Init(0, nullptr);
 class PaymentManifestDownloader {
  public:
   PaymentManifestDownloader(

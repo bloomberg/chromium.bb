@@ -48,6 +48,7 @@ from blinkpy.web_tests.port import server_process
 # pylint: disable=invalid-name
 fuchsia_target = None
 qemu_target = None
+symbolizer = None
 # pylint: enable=invalid-name
 
 
@@ -62,7 +63,9 @@ def _import_fuchsia_runner():
     global fuchsia_target
     import target as fuchsia_target
     global qemu_target
-    import qemu_target as qemu_target
+    import qemu_target
+    global symbolizer
+    import symbolizer
     # pylint: enable=import-error
     # pylint: enable=invalid-name
     # pylint: disable=redefined-outer-name
@@ -266,6 +269,10 @@ class FuchsiaPort(base.Port):
     def get_target_host(self):
         return self._target_host
 
+    def get_build_ids_path(self):
+        package_path = self._path_to_driver()
+        return os.path.join(os.path.dirname(package_path), 'ids.txt')
+
 
 class ChromiumFuchsiaDriver(driver.Driver):
     def __init__(self, port, worker_number, no_timeout=False):
@@ -294,6 +301,7 @@ class FuchsiaServerProcess(server_process.ServerProcess):
                  treat_no_data_as_crash=False, more_logging=False):
         super(FuchsiaServerProcess, self).__init__(
             port_obj, name, cmd, env, treat_no_data_as_crash, more_logging)
+        self._symbolizer_proc = None
 
     def _start(self):
         if self._proc:
@@ -335,4 +343,15 @@ class FuchsiaServerProcess(server_process.ServerProcess):
         proc.stdin.close()
         proc.stdin = stdin_pipe
 
+        # Run symbolizer to filter the stderr stream.
+        self._symbolizer_proc = symbolizer.RunSymbolizer(
+            proc.stderr, [self._port.get_build_ids_path()]);
+        proc.stderr = self._symbolizer_proc.stdout
+
         self._set_proc(proc)
+
+    def stop(self, timeout_secs=0.0):
+        result = super(FuchsiaServerProcess, self).stop(timeout_secs)
+        if self._symbolizer_proc:
+            self._symbolizer_proc.kill()
+        return result

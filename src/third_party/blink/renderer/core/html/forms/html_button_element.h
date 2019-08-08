@@ -32,8 +32,6 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLButtonElement* Create(Document&);
-
   explicit HTMLButtonElement(Document&);
 
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;

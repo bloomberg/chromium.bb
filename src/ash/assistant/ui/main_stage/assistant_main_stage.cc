@@ -503,7 +503,7 @@ void AssistantMainStage::OnActiveQueryCleared() {
 bool AssistantMainStage::OnActiveQueryExitAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   // The exited active query view will always be the first child of its parent.
-  delete query_layout_container_->child_at(0);
+  delete query_layout_container_->children().front();
 
   // TODO(https://crbug.com/896079): Remove this when view.cc handles the
   // event notification.

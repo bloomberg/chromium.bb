@@ -77,6 +77,9 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void RunSynchronousRepeatingClosureOnSignalingThread(
       const base::RepeatingClosure& closure,
       const char* trace_event_name) override;
+  void TrackIceConnectionStateChange(
+      WebRTCPeerConnectionHandler::IceConnectionStateVersion version,
+      webrtc::PeerConnectionInterface::IceConnectionState state) override;
 
  private:
   class DummyWebRTCRtpTransceiver;

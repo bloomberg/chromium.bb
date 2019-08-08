@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell_test_api.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 
 #include <memory>
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -20,12 +21,9 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/run_loop.h"
 #include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ws/window_service.h"
-#include "services/ws/window_tree.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -74,10 +72,9 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
 // after executing the callback.
 class OverviewAnimationStateWaiter : public OverviewObserver {
  public:
-  OverviewAnimationStateWaiter(
-      mojom::OverviewAnimationState state,
-      ShellTestApi::WaitForOverviewAnimationStateCallback callback)
-      : state_(state), callback_(std::move(callback)) {
+  OverviewAnimationStateWaiter(OverviewAnimationState state,
+                               base::OnceClosure closure)
+      : state_(state), closure_(std::move(closure)) {
     Shell::Get()->overview_controller()->AddObserver(this);
   }
   ~OverviewAnimationStateWaiter() override {
@@ -86,21 +83,21 @@ class OverviewAnimationStateWaiter : public OverviewObserver {
 
   // OverviewObserver:
   void OnOverviewModeStartingAnimationComplete(bool canceled) override {
-    if (state_ == mojom::OverviewAnimationState::kEnterAnimationComplete) {
-      std::move(callback_).Run();
+    if (state_ == OverviewAnimationState::kEnterAnimationComplete) {
+      std::move(closure_).Run();
       delete this;
     }
   }
   void OnOverviewModeEndingAnimationComplete(bool canceled) override {
-    if (state_ == mojom::OverviewAnimationState::kExitAnimationComplete) {
-      std::move(callback_).Run();
+    if (state_ == OverviewAnimationState::kExitAnimationComplete) {
+      std::move(closure_).Run();
       delete this;
     }
   }
 
  private:
-  mojom::OverviewAnimationState state_;
-  ShellTestApi::WaitForOverviewAnimationStateCallback callback_;
+  OverviewAnimationState state_;
+  base::OnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewAnimationStateWaiter);
 };
@@ -109,10 +106,8 @@ class OverviewAnimationStateWaiter : public OverviewObserver {
 // execute the callback.  This self destruction upon completion.
 class LauncherStateWaiter {
  public:
-  LauncherStateWaiter(
-      ash::mojom::AppListViewState state,
-      ShellTestApi::WaitForLauncherAnimationStateCallback callback)
-      : target_state_(state), callback_(std::move(callback)) {
+  LauncherStateWaiter(ash::AppListViewState state, base::OnceClosure closure)
+      : target_state_(state), closure_(std::move(closure)) {
     Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
         base::BindRepeating(&LauncherStateWaiter::OnStateChanged,
                             base::Unretained(this)));
@@ -122,30 +117,24 @@ class LauncherStateWaiter {
         base::NullCallback());
   }
 
-  void OnStateChanged(ash::mojom::AppListViewState state) {
+  void OnStateChanged(ash::AppListViewState state) {
     if (target_state_ == state) {
-      std::move(callback_).Run();
+      std::move(closure_).Run();
       delete this;
     }
   }
 
  private:
-  ash::mojom::AppListViewState target_state_;
-  ShellTestApi::WaitForLauncherAnimationStateCallback callback_;
+  ash::AppListViewState target_state_;
+  base::OnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherStateWaiter);
 };
 
 }  // namespace
 
-ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
-
-ShellTestApi::ShellTestApi(Shell* shell) : shell_(shell) {}
-
-// static
-void ShellTestApi::BindRequest(mojom::ShellTestApiRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<ShellTestApi>(), std::move(request));
-}
+ShellTestApi::ShellTestApi() : shell_(Shell::Get()) {}
+ShellTestApi::~ShellTestApi() = default;
 
 MessageCenterController* ShellTestApi::message_center_controller() {
   return shell_->message_center_controller_.get();
@@ -176,126 +165,102 @@ PowerPrefs* ShellTestApi::power_prefs() {
   return shell_->power_prefs_.get();
 }
 
-void ShellTestApi::OnLocalStatePrefServiceInitialized(
-    std::unique_ptr<PrefService> pref_service) {
-  shell_->OnLocalStatePrefServiceInitialized(std::move(pref_service));
-}
-
 void ShellTestApi::ResetPowerButtonControllerForTest() {
   shell_->backlights_forced_off_setter_->ResetForTest();
   shell_->power_button_controller_ = std::make_unique<PowerButtonController>(
       shell_->backlights_forced_off_setter_.get());
 }
 
+void ShellTestApi::ResetTabletModeController() {
+  // Delete the old controller before constructing the new one to avoid
+  // coexistence of two instances of what should be a singleton.
+  shell_->tablet_mode_controller_.reset();
+  shell_->tablet_mode_controller_ = std::make_unique<TabletModeController>();
+}
+
 void ShellTestApi::SimulateModalWindowOpenForTest(bool modal_window_open) {
   shell_->simulate_modal_window_open_for_test_ = modal_window_open;
 }
 
-void ShellTestApi::IsSystemModalWindowOpen(IsSystemModalWindowOpenCallback cb) {
-  std::move(cb).Run(Shell::IsSystemModalWindowOpen());
+bool ShellTestApi::IsSystemModalWindowOpen() {
+  return Shell::IsSystemModalWindowOpen();
 }
 
 void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
+  AccelerometerReader::GetInstance()->DisableForTest();
   shell_->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
 }
 
-void ShellTestApi::EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) {
-  // TODO(https://crbug.com/845780): The callers to this function have already
-  // enabled the virtual keyboard. For some reason, in those tests, the virtual
-  // keyboard requires a rebuild. Remove this function once we no longer need a
-  // rebuild.
-  shell_->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
-  std::move(cb).Run();
+void ShellTestApi::EnableVirtualKeyboard() {
+  shell_->ash_keyboard_controller()->SetEnableFlag(
+      keyboard::mojom::KeyboardEnableFlag::kCommandLineEnabled);
 }
 
-void ShellTestApi::SnapWindowInSplitView(const std::string& client_name,
-                                         ws::Id window_id,
-                                         bool left,
-                                         SnapWindowInSplitViewCallback cb) {
-  auto* window_service = shell_->window_service_owner()->window_service();
-  aura::Window* window = nullptr;
-  for (ws::WindowTree* window_tree : window_service->window_trees()) {
-    if (client_name == window_tree->client_name()) {
-      window = window_tree->GetWindowByTransportId(window_id);
-      break;
-    }
-  }
-  DCHECK(window);
-  shell_->split_view_controller()->SnapWindow(
-      window,
-      left ? ash::SplitViewController::LEFT : ash::SplitViewController::RIGHT);
-  shell_->split_view_controller()->FlushForTesting();
-  std::move(cb).Run();
-}
-
-void ShellTestApi::ToggleFullscreen(ToggleFullscreenCallback cb) {
+void ShellTestApi::ToggleFullscreen() {
   ash::accelerators::ToggleFullscreen();
-  std::move(cb).Run();
 }
 
-void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
+void ShellTestApi::ToggleOverviewMode() {
   shell_->overview_controller()->ToggleOverview();
-  std::move(cb).Run();
 }
 
-void ShellTestApi::IsOverviewSelecting(IsOverviewSelectingCallback callback) {
-  std::move(callback).Run(shell_->overview_controller()->IsSelecting());
+bool ShellTestApi::IsOverviewSelecting() {
+  return shell_->overview_controller()->InOverviewSession();
 }
 
 void ShellTestApi::AddRemoveDisplay() {
   shell_->display_manager()->AddRemoveDisplay();
 }
 
-void ShellTestApi::SetMinFlingVelocity(float velocity) {
-  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
-}
-
-void ShellTestApi::WaitForNoPointerHoldLock(
-    WaitForNoPointerHoldLockCallback callback) {
+void ShellTestApi::WaitForNoPointerHoldLock() {
   aura::WindowTreeHost* primary_host =
       Shell::GetPrimaryRootWindowController()->GetHost();
   if (primary_host->holding_pointer_moves())
     PointerMoveLoopWaiter(primary_host).Wait();
-  std::move(callback).Run();
 }
 
-void ShellTestApi::WaitForNextFrame(WaitForNextFrameCallback callback) {
+void ShellTestApi::WaitForNextFrame(base::OnceClosure closure) {
   Shell::GetPrimaryRootWindowController()
       ->GetHost()
       ->compositor()
       ->RequestPresentationTimeForNextFrame(base::BindOnce(
-          [](WaitForNextFrameCallback callback,
+          [](base::OnceClosure closure,
              const gfx::PresentationFeedback& feedback) {
-            std::move(callback).Run();
+            std::move(closure).Run();
           },
-          std::move(callback)));
+          std::move(closure)));
 }
 
-void ShellTestApi::WaitForOverviewAnimationState(
-    mojom::OverviewAnimationState state,
-    WaitForOverviewAnimationStateCallback callback) {
-  auto* overview_controller = Shell::Get()->overview_controller();
-  if (state == mojom::OverviewAnimationState::kEnterAnimationComplete &&
-      overview_controller->IsSelecting() &&
+void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
+  auto* overview_controller = shell_->overview_controller();
+  if (state == OverviewAnimationState::kEnterAnimationComplete &&
+      overview_controller->InOverviewSession() &&
       !overview_controller->IsInStartAnimation()) {
     // If there is no animation applied, call the callback immediately.
-    std::move(callback).Run();
     return;
   }
-  if (state == mojom::OverviewAnimationState::kExitAnimationComplete &&
-      !overview_controller->IsSelecting() &&
+  if (state == OverviewAnimationState::kExitAnimationComplete &&
+      !overview_controller->InOverviewSession() &&
       !overview_controller->IsCompletingShutdownAnimations()) {
     // If there is no animation applied, call the callback immediately.
-    std::move(callback).Run();
     return;
   }
-  new OverviewAnimationStateWaiter(state, std::move(callback));
+  base::RunLoop run_loop;
+  new OverviewAnimationStateWaiter(state, run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
 }
 
 void ShellTestApi::WaitForLauncherAnimationState(
-    ash::mojom::AppListViewState target_state,
-    WaitForLauncherAnimationStateCallback callback) {
-  new LauncherStateWaiter(target_state, std::move(callback));
+    ash::AppListViewState target_state) {
+  base::RunLoop run_loop;
+  new LauncherStateWaiter(target_state, run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
+}
+
+std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {
+  return ash::Shell::Get()
+      ->overview_controller()
+      ->GetItemWindowListInOverviewGridsForTest();
 }
 
 }  // namespace ash

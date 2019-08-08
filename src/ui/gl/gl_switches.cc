@@ -148,12 +148,30 @@ namespace features {
 const base::Feature kDirectCompositionComplexOverlays{
     "DirectCompositionComplexOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDirectCompositionGpuVSync{
+    "DirectCompositionGpuVSync", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allow using overlays for non-root render passes.
 const base::Feature kDirectCompositionNonrootOverlays{
     "DirectCompositionNonrootOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Overrides preferred overlay format to NV12 instead of YUY2.
+const base::Feature kDirectCompositionPreferNV12Overlays{
+    "DirectCompositionPreferNV12Overlays", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Use decode swap chain created from compatible video decoder buffers.
+const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
+    "DirectCompositionUseNV12DecodeSwapChain",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Default to using ANGLE's OpenGL backend
 const base::Feature kDefaultANGLEOpenGL{"DefaultANGLEOpenGL",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use swap chain frame statistics for GLSurface presentation feedback.  Also
+// forces direct composition root surface to always use a swap chain instead of
+// an IDCompositionSurface.
+const base::Feature kSwapChainFrameStatistics{
+    "SwapChainFrameStatistics", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -75,10 +76,6 @@ static bool IsValidColorString(const String& value) {
 
 ColorInputType::ColorInputType(HTMLInputElement& element)
     : InputType(element), KeyboardClickableInputTypeView(element) {}
-
-InputType* ColorInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<ColorInputType>(element);
-}
 
 ColorInputType::~ColorInputType() = default;
 
@@ -112,7 +109,7 @@ bool ColorInputType::SupportsRequired() const {
 String ColorInputType::SanitizeValue(const String& proposed_value) const {
   if (!IsValidColorString(proposed_value))
     return "#000000";
-  return proposed_value.DeprecatedLower();
+  return proposed_value.LowerASCII();
 }
 
 Color ColorInputType::ValueAsColor() const {
@@ -126,10 +123,10 @@ void ColorInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
 
   Document& document = GetElement().GetDocument();
-  HTMLDivElement* wrapper_element = HTMLDivElement::Create(document);
+  auto* wrapper_element = MakeGarbageCollected<HTMLDivElement>(document);
   wrapper_element->SetShadowPseudoId(
       AtomicString("-webkit-color-swatch-wrapper"));
-  HTMLDivElement* color_swatch = HTMLDivElement::Create(document);
+  auto* color_swatch = MakeGarbageCollected<HTMLDivElement>(document);
   color_swatch->SetShadowPseudoId(AtomicString("-webkit-color-swatch"));
   wrapper_element->AppendChild(color_swatch);
   GetElement().UserAgentShadowRoot()->AppendChild(wrapper_element);
@@ -225,8 +222,11 @@ void ColorInputType::UpdateView() {
 
 HTMLElement* ColorInputType::ShadowColorSwatch() const {
   ShadowRoot* shadow = GetElement().UserAgentShadowRoot();
-  return shadow ? ToHTMLElementOrDie(shadow->firstChild()->firstChild())
-                : nullptr;
+  if (shadow) {
+    CHECK(IsA<HTMLElement>(shadow->firstChild()->firstChild()));
+    return To<HTMLElement>(shadow->firstChild()->firstChild());
+  }
+  return nullptr;
 }
 
 Element& ColorInputType::OwnerElement() const {

@@ -4,11 +4,12 @@
 
 #include "device/vr/oculus/oculus_gamepad_helper.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/vr/util/gamepad_builder.h"
 #include "device/vr/vr_device.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 #include "ui/gfx/transform.h"
@@ -18,6 +19,9 @@ namespace device {
 
 namespace {
 
+// TODO(https://crbug.com/953489): This is currently WebVR-only. If it is useful
+// for addressing this issue, give it a more meaningful name. Otherwise, remove
+// this enum when WebVR support is removed.
 enum GamepadIndex : unsigned int {
   kLeftTouchController = 0x0,
   kRightTouchController = 0x1,
@@ -181,6 +185,65 @@ void AddRemoteData(mojom::XRGamepadDataPtr& data,
   data->gamepads.push_back(std::move(remote));
 }
 
+device::mojom::XRHandedness OculusToMojomHand(ovrHandType hand) {
+  switch (hand) {
+    case ovrHand_Left:
+      return device::mojom::XRHandedness::LEFT;
+    case ovrHand_Right:
+      return device::mojom::XRHandedness::RIGHT;
+    default:
+      return device::mojom::XRHandedness::NONE;
+  }
+}
+
+class OculusGamepadBuilder : public GamepadBuilder {
+ public:
+  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
+  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
+  OculusGamepadBuilder(ovrInputState state, ovrHandType hand)
+      : GamepadBuilder("oculus-touch",
+                       GamepadMapping::kXRStandard,
+                       OculusToMojomHand(hand)),
+        state_(state) {}
+
+  ~OculusGamepadBuilder() override = default;
+
+  void AddStandardButton(ovrButton id) {
+    bool pressed = (state_.Buttons & id) != 0;
+    bool touched = (state_.Touches & id) != 0;
+    double value = pressed ? 1.0 : 0.0;
+    AddButton(GamepadButton(pressed, touched, value));
+  }
+
+  void AddTouchButton(ovrTouch id) {
+    bool touched = (state_.Touches & id) != 0;
+    AddButton(GamepadButton(false, touched, 0.0f));
+  }
+
+  void AddTriggerButton(float value) {
+    value = ApplyTriggerDeadzone(value);
+    bool pressed = value != 0;
+    bool touched = pressed;
+    AddButton(GamepadButton(pressed, touched, value));
+  }
+
+  void AddTouchTriggerButton(ovrTouch id, float value) {
+    value = ApplyTriggerDeadzone(value);
+    bool pressed = value != 0;
+    bool touched = (state_.Touches & id) != 0;
+    AddButton(GamepadButton(pressed, touched, value));
+  }
+
+  bool IsValid() const override {
+    return GamepadBuilder::IsValid() && GetHandedness() != GamepadHand::kNone;
+  }
+
+ private:
+  ovrInputState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(OculusGamepadBuilder);
+};
+
 }  // namespace
 
 mojom::XRGamepadDataPtr OculusGamepadHelper::GetGamepadData(
@@ -206,6 +269,60 @@ mojom::XRGamepadDataPtr OculusGamepadHelper::GetGamepadData(
     AddRemoteData(data, input_remote);
 
   return data;
+}
+
+// Order of buttons 1-4 is dictated by the xr-standard Gamepad mapping.
+// Buttons 5-7 are in order of decreasing importance.
+// 1) index trigger (primary trigger/button)
+// 2) thumb joystick button
+// 3) hand trigger (primary trigger/button)
+// 4) EMPTY (no secondary joystick/touchpad exists)
+// 5) A or X
+// 6) B or Y
+// 7) thumbrest touch sensor
+base::Optional<Gamepad> OculusGamepadHelper::CreateGamepad(ovrSession session,
+                                                           ovrHandType hand) {
+  ovrInputState input_touch;
+  bool have_touch = OVR_SUCCESS(
+      ovr_GetInputState(session, ovrControllerType_Touch, &input_touch));
+  if (!have_touch) {
+    return base::nullopt;
+  }
+
+  OculusGamepadBuilder touch(input_touch, hand);
+
+  // TODO(https://crbug.com/966060): Determine if inverting the y value here is
+  // necessary.
+  touch.AddAxis(input_touch.Thumbstick[hand].x);
+  touch.AddAxis(-input_touch.Thumbstick[hand].y);
+
+  switch (hand) {
+    case ovrHand_Left:
+      touch.AddTouchTriggerButton(ovrTouch_LIndexTrigger,
+                                  input_touch.IndexTrigger[hand]);
+      touch.AddStandardButton(ovrButton_LThumb);
+      touch.AddTriggerButton(input_touch.HandTrigger[hand]);
+      touch.AddPlaceholderButton();
+      touch.AddStandardButton(ovrButton_X);
+      touch.AddStandardButton(ovrButton_Y);
+      touch.AddTouchButton(ovrTouch_LThumbRest);
+      break;
+    case ovrHand_Right:
+      touch.AddTouchTriggerButton(ovrTouch_RIndexTrigger,
+                                  input_touch.IndexTrigger[hand]);
+      touch.AddStandardButton(ovrButton_RThumb);
+      touch.AddTriggerButton(input_touch.HandTrigger[hand]);
+      touch.AddPlaceholderButton();
+      touch.AddStandardButton(ovrButton_A);
+      touch.AddStandardButton(ovrButton_B);
+      touch.AddTouchButton(ovrTouch_RThumbRest);
+      break;
+    default:
+      DLOG(WARNING) << "Unsupported hand configuration.";
+      return base::nullopt;
+  }
+
+  return touch.GetGamepad();
 }
 
 }  // namespace device

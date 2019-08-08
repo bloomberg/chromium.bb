@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">skjutreglage</translation>
 <translation id="1211441953136645838">slutnot</translation>
 <translation id="1281252709823657822">dialogruta</translation>
-<translation id="1289247557029249093">Avsluta bild-i-bild-läge</translation>
 <translation id="1335095011850992622">medverkande</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2158401438286456825">sidlista</translation>
 <translation id="2226276347425096477">Förkorta texten till <ph name="MAX_CHARACTERS" /> tecken eller mindre (nu är texten <ph name="CURRENT_LENGTH" /> tecken).</translation>
+<translation id="2246498165605549352">Lokal fil</translation>
 <translation id="2247351761944213033">Vecka <ph name="WEEKNUMBER" /> <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Spår <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">kryssruta</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Bild utan etikett</translation>
 <translation id="3706100364254443312">växel</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Avsluta bild-i-bild-läge</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Lägg till minst <ph name="MIN_CHARACTERS" /> tecken (för närvarande har du angett <ph name="CURRENT_LENGTH" /> tecken).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">träd</translation>
 <translation id="4664250907885839816">En del efter <ph name="ATSIGN" /> får inte innehålla symbolen <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="4668956016107839909">bilaga</translation>
+<translation id="4718048029184481307">Spelas upp i bild-i-bild-läge</translation>
 <translation id="4742539557769756338">omslag</translation>
 <translation id="4748357248530471599">aktivera och inaktivera skärmutskärning i helskärm</translation>
 <translation id="4757246831282535685">flikpanel</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6209276755895393898">Det verkar vara: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordlista</translation>
-<translation id="628938136236500310">Spelar upp i bild-i-bild-läge</translation>
+<translation id="6310801910862476708">Avsluta bild-i-bild-läge</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
 <translation id="6443871981718447451">visa textningsmenyn</translation>

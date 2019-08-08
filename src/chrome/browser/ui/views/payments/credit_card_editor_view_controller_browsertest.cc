@@ -13,13 +13,13 @@
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
-#include "components/autofill/core/browser/address_combobox_model.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/test_region_data_loader.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
-#include "components/autofill/core/browser/test_region_data_loader.h"
+#include "components/autofill/core/browser/ui/address_combobox_model.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/autofill_payment_instrument.h"
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
 
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
 
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
   SetComboboxValue(base::ASCIIToUTF16("12"), autofill::CREDIT_CARD_EXP_MONTH);
 
-  EXPECT_TRUE(save_button->enabled());
+  EXPECT_TRUE(save_button->GetEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
@@ -277,13 +277,13 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
       dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
           autofill::ADDRESS_BILLING_LINE1)));
   ASSERT_NE(nullptr, billing_address_combobox);
-  EXPECT_TRUE(billing_address_combobox->enabled());
+  EXPECT_TRUE(billing_address_combobox->GetEnabled());
   autofill::AddressComboboxModel* model =
       static_cast<autofill::AddressComboboxModel*>(
           billing_address_combobox->model());
   EXPECT_EQ(
       billing_profile.guid(),
-      model->GetItemIdentifierAt(billing_address_combobox->selected_index()));
+      model->GetItemIdentifierAt(billing_address_combobox->GetSelectedIndex()));
 
   // Select a different billing address.
   SelectBillingAddress(additional_profile.guid());
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
@@ -815,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
       dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
           autofill::ADDRESS_BILLING_LINE1));
   ASSERT_NE(nullptr, billing_address_combobox);
-  EXPECT_FALSE(billing_address_combobox->enabled());
+  EXPECT_FALSE(billing_address_combobox->GetEnabled());
 
   // Add some region data to load synchonously.
   autofill::TestRegionDataLoader test_region_data_loader_;
@@ -852,8 +852,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
       dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
           autofill::ADDRESS_BILLING_LINE1)));
   ASSERT_NE(nullptr, billing_combobox);
-  EXPECT_FALSE(billing_combobox->invalid());
-  EXPECT_TRUE(billing_combobox->enabled());
+  EXPECT_FALSE(billing_combobox->GetInvalid());
+  EXPECT_TRUE(billing_combobox->GetEnabled());
 
   // And then save credit card state and come back to payment sheet.
   ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
@@ -943,7 +943,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, DoneButtonDisabled) {
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
 
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 
   // Set all fields but one:
   SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
@@ -955,20 +955,20 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, DoneButtonDisabled) {
                    autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
 
   // Still disabled.
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 
   // Set the last field.
   SelectBillingAddress(billing_profile.guid());
 
   // Should be good to go.
-  EXPECT_TRUE(save_button->enabled());
+  EXPECT_TRUE(save_button->GetEnabled());
 
   // Change a field to something invalid, to make sure it works both ways.
   SetEditorTextfieldValue(base::ASCIIToUTF16("Ni!"),
                           autofill::CREDIT_CARD_NUMBER);
 
   // Back to being disabled.
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,

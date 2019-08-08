@@ -31,9 +31,10 @@ Clone the `depot_tools` repository:
 $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ```
 
-Add `depot_tools` to the end of your PATH (you will probably want to put this
-in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned `depot_tools` to
-`/path/to/depot_tools`:
+Add `depot_tools` to the end of your PATH (you will probably want to put this in
+your `~/.bash_profile` or `~/.zshrc`). Assuming you cloned `depot_tools` to
+`/path/to/depot_tools` (note: you **must** use the absolute path or Python will
+not be able to find infra tools):
 
 ```shell
 $ export PATH="$PATH:/path/to/depot_tools"
@@ -53,7 +54,6 @@ has no spaces):
 
 ```shell
 $ mkdir chromium && cd chromium
-$ git config --global core.precomposeUnicode true
 ```
 
 Run the `fetch` tool from `depot_tools` to check out the code and its
@@ -64,7 +64,8 @@ $ fetch chromium
 ```
 
 If you don't need the full repo history, you can save time by using
-`fetch --no-history chromium`.
+`fetch --no-history chromium`. You can call `git fetch --unshallow` to retrieve
+the full history later.
 
 Expect the command to take 30 minutes on even a fast connection, and many
 hours on slower ones.

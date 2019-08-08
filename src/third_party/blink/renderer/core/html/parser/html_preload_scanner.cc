@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
@@ -151,9 +152,12 @@ class TokenPreloadScanner::StartTagScanner {
         integrity_attr_set_(false),
         integrity_features_(features),
         loading_attr_value_(LoadingAttrValue::kAuto),
-        width_attr_small_absolute_(false),
-        height_attr_small_absolute_(false),
-        inline_style_dimensions_small_(false),
+        width_attr_dimension_type_(
+            HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
+        height_attr_dimension_type_(
+            HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
+        inline_style_dimensions_type_(
+            HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
         scanner_type_(scanner_type),
         priority_hints_origin_trial_enabled_(
             priority_hints_origin_trial_enabled) {
@@ -288,15 +292,56 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
+    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
     // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='lazy' is considered as 'auto'.
-    if (loading_attr_value_ != LoadingAttrValue::kLazy &&
-        ((loading_attr_value_ == LoadingAttrValue::kEager &&
-          !document_parameters.lazyload_policy_enforced) ||
-         (width_attr_small_absolute_ && height_attr_small_absolute_) ||
-         inline_style_dimensions_small_)) {
-      request->SetIsLazyloadImageDisabled(true);
+    // loading='eager' is considered as 'auto'.
+    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
+        document_parameters.lazyload_policy_enforced) {
+      effective_loading_attr_value = LoadingAttrValue::kAuto;
     }
+    bool is_lazy_load_image_enabled = false;
+    switch (effective_loading_attr_value) {
+      case LoadingAttrValue::kEager:
+        is_lazy_load_image_enabled = false;
+        break;
+      case LoadingAttrValue::kLazy:
+        is_lazy_load_image_enabled =
+            document_parameters.lazy_load_image_enabled_state !=
+            LocalFrame::LazyLoadImageEnabledState::kDisabled;
+        break;
+      case LoadingAttrValue::kAuto:
+        if ((width_attr_dimension_type_ ==
+                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
+             height_attr_dimension_type_ ==
+                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
+            inline_style_dimensions_type_ ==
+                HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+          is_lazy_load_image_enabled = false;
+        } else {
+          is_lazy_load_image_enabled =
+              document_parameters.lazy_load_image_enabled_state ==
+              LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic;
+        }
+        break;
+    }
+    // Do not preload if lazyload is possible but metadata fetch is disabled.
+    if (is_lazy_load_image_enabled &&
+        !RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled()) {
+      return nullptr;
+    }
+    // LazyLoad: Do not preload if absolute dimensions are mentioned in width
+    // and height attributes or in the inline style, and the dimensions are not
+    // small enough.
+    if (is_lazy_load_image_enabled &&
+        ((width_attr_dimension_type_ ==
+              HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall &&
+          height_attr_dimension_type_ ==
+              HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) ||
+         inline_style_dimensions_type_ ==
+             HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall)) {
+      return nullptr;
+    }
+    request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
 
     // The only link tags that should keep the integrity metadata are
     // stylesheets until crbug.com/677022 is resolved.
@@ -377,19 +422,20 @@ class TokenPreloadScanner::StartTagScanner {
               : EqualIgnoringASCIICase(attribute_value, "lazy")
                     ? LoadingAttrValue::kLazy
                     : LoadingAttrValue::kAuto;
-    } else if (!width_attr_small_absolute_ &&
+    } else if (width_attr_dimension_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, kWidthAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      width_attr_small_absolute_ =
-          HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-              attribute_value);
-    } else if (!height_attr_small_absolute_ &&
+      width_attr_dimension_type_ =
+          HTMLImageElement::GetAttributeLazyLoadDimensionType(attribute_value);
+    } else if (height_attr_dimension_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, kHeightAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      height_attr_small_absolute_ =
-          HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-              attribute_value);
-    } else if (!inline_style_dimensions_small_ &&
+      height_attr_dimension_type_ =
+          HTMLImageElement::GetAttributeLazyLoadDimensionType(attribute_value);
+    } else if (inline_style_dimensions_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, kStyleAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       CSSParserMode mode =
@@ -397,8 +443,8 @@ class TokenPreloadScanner::StartTagScanner {
       const ImmutableCSSPropertyValueSet* property_set =
           CSSParser::ParseInlineStyleDeclaration(
               attribute_value, mode, SecureContextMode::kInsecureContext);
-      inline_style_dimensions_small_ =
-          HTMLImageElement::IsInlineStyleDimensionsSmall(property_set);
+      inline_style_dimensions_type_ =
+          HTMLImageElement::GetInlineStyleDimensionsType(property_set);
     }
   }
 
@@ -699,9 +745,9 @@ class TokenPreloadScanner::StartTagScanner {
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
   LoadingAttrValue loading_attr_value_;
-  bool width_attr_small_absolute_;
-  bool height_attr_small_absolute_;
-  bool inline_style_dimensions_small_;
+  HTMLImageElement::LazyLoadDimensionType width_attr_dimension_type_;
+  HTMLImageElement::LazyLoadDimensionType height_attr_dimension_type_;
+  HTMLImageElement::LazyLoadDimensionType inline_style_dimensions_type_;
   TokenPreloadScanner::ScannerType scanner_type_;
   // For explanation, see TokenPreloadScanner's declaration.
   bool priority_hints_origin_trial_enabled_;
@@ -758,7 +804,7 @@ void TokenPreloadScanner::RewindTo(
 void TokenPreloadScanner::Scan(const HTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
-                               ViewportDescriptionWrapper* viewport,
+                               base::Optional<ViewportDescription>* viewport,
                                bool* is_csp_meta_tag) {
   ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
 }
@@ -766,7 +812,7 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
 void TokenPreloadScanner::Scan(const CompactHTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
-                               ViewportDescriptionWrapper* viewport,
+                               base::Optional<ViewportDescription>* viewport,
                                bool* is_csp_meta_tag) {
   ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
 }
@@ -775,17 +821,15 @@ static void HandleMetaViewport(
     const String& attribute_value,
     const CachedDocumentParameters* document_parameters,
     MediaValuesCached* media_values,
-    ViewportDescriptionWrapper* viewport) {
+    base::Optional<ViewportDescription>* viewport) {
   if (!document_parameters->viewport_meta_enabled)
     return;
   ViewportDescription description(ViewportDescription::kViewportMeta);
   HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
       attribute_value, description, nullptr,
       document_parameters->viewport_meta_zero_values_quirk);
-  if (viewport) {
-    viewport->description = description;
-    viewport->set = true;
-  }
+  if (viewport)
+    *viewport = description;
   FloatSize initial_viewport(media_values->DeviceWidth(),
                              media_values->DeviceHeight());
   PageScaleConstraints constraints = description.Resolve(
@@ -814,7 +858,7 @@ static void HandleMetaNameAttribute(
     CachedDocumentParameters* document_parameters,
     MediaValuesCached* media_values,
     CSSPreloadScanner* css_scanner,
-    ViewportDescriptionWrapper* viewport) {
+    base::Optional<ViewportDescription>* viewport) {
   const typename Token::Attribute* name_attribute =
       token.GetAttributeItem(kNameAttr);
   if (!name_attribute)
@@ -840,11 +884,12 @@ static void HandleMetaNameAttribute(
 }
 
 template <typename Token>
-void TokenPreloadScanner::ScanCommon(const Token& token,
-                                     const SegmentedString& source,
-                                     PreloadRequestStream& requests,
-                                     ViewportDescriptionWrapper* viewport,
-                                     bool* is_csp_meta_tag) {
+void TokenPreloadScanner::ScanCommon(
+    const Token& token,
+    const SegmentedString& source,
+    PreloadRequestStream& requests,
+    base::Optional<ViewportDescription>* viewport,
+    bool* is_csp_meta_tag) {
   if (!document_parameters_->do_html_preload_scanning)
     return;
 
@@ -931,6 +976,11 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
         in_picture_ = true;
         picture_data_ = PictureData();
         return;
+      } else if (!Match(tag_impl, kSourceTag) && !Match(tag_impl, kImgTag)) {
+        // If found an "atypical" picture child, don't process it as a picture
+        // child.
+        in_picture_ = false;
+        picture_data_.picked = false;
       }
 
       StartTagScanner scanner(
@@ -945,8 +995,9 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
       std::unique_ptr<PreloadRequest> request = scanner.CreatePreloadRequest(
           predicted_base_element_url_, source, client_hints_preferences_,
           picture_data_, *document_parameters_);
-      if (request)
+      if (request) {
         requests.push_back(std::move(request));
+      }
       return;
     }
     default: { return; }
@@ -986,7 +1037,7 @@ void HTMLPreloadScanner::AppendToEnd(const SegmentedString& source) {
 
 PreloadRequestStream HTMLPreloadScanner::Scan(
     const KURL& starting_base_element_url,
-    ViewportDescriptionWrapper* viewport,
+    base::Optional<ViewportDescription>* viewport,
     bool& has_csp_meta_tag) {
   // HTMLTokenizer::updateStateFor only works on the main thread.
   DCHECK(IsMainThread());
@@ -1040,6 +1091,13 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   referrer_policy = document->GetReferrerPolicy();
   integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
   lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
+  if (document->Loader() && document->Loader()->GetFrame()) {
+    lazy_load_image_enabled_state =
+        document->Loader()->GetFrame()->GetLazyLoadImageEnabledState();
+  } else {
+    lazy_load_image_enabled_state =
+        LocalFrame::LazyLoadImageEnabledState::kDisabled;
+  }
 }
 
 }  // namespace blink

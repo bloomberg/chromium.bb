@@ -64,7 +64,7 @@ class HostedAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
     hosted_app_button_container_ =
         opaque_browser_frame_view_->hosted_app_button_container_for_testing();
     DCHECK(hosted_app_button_container_);
-    DCHECK(hosted_app_button_container_->visible());
+    DCHECK(hosted_app_button_container_->GetVisible());
 
     return true;
   }

@@ -256,7 +256,7 @@ class MenuManager {
     }
     const standardActions = /** @type {!Array<!SAConstants.MenuAction>} */ (
         node.standardActions.filter(
-            action => action in SAConstants.MenuAction));
+            action => Object.values(SAConstants.MenuAction).includes(action)));
 
     actions = actions.concat(standardActions);
 

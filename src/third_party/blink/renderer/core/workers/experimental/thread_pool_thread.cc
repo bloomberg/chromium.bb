@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool_thread.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/experimental/task_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
@@ -24,7 +26,9 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          CurrentTimeTicks()) {}
+                          CurrentTimeTicks()) {
+    ReadyToRunClassicScript();
+  }
 
   ~ThreadPoolWorkerGlobalScope() override = default;
 
@@ -36,15 +40,37 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override {
+    InitializeURL(response_url);
+    SetReferrerPolicy(response_referrer_policy);
+    SetAddressSpace(response_address_space);
+
+    // These should be called after SetAddressSpace() to correctly override the
+    // address space by the "treat-as-public-address" CSP directive.
+    InitContentSecurityPolicyFromVector(response_csp_headers);
+    BindContentSecurityPolicyToExecutionContext();
+
+    OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
+
+    // This should be called after OriginTrialContext::AddTokens() to install
+    // origin trial features in JavaScript's global object.
+    ScriptController()->PrepareForEvaluation();
+  }
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override {
     NOTREACHED();
   }
   void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::FetchCredentialsMode) override {
     // TODO(japhet): Consider whether modules should be supported.
     NOTREACHED();

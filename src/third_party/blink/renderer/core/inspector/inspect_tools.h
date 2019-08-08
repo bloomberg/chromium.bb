@@ -37,6 +37,7 @@ class SearchingForNodeTool : public InspectTool {
 
   Member<InspectorDOMAgent> dom_agent_;
   bool ua_shadow_;
+  bool is_locked_ancestor_ = false;
   Member<Node> hovered_node_;
   Member<Node> event_target_node_;
   std::unique_ptr<InspectorHighlightConfig> highlight_config_;
@@ -79,6 +80,7 @@ class NodeHighlightTool : public InspectTool {
   void DrawMatchingSelector();
   void Trace(blink::Visitor* visitor) override;
 
+  bool is_locked_ancestor_ = false;
   Member<Node> node_;
   String selector_list_;
   std::unique_ptr<InspectorHighlightConfig> highlight_config_;

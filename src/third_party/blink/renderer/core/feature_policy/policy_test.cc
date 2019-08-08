@@ -8,7 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -24,7 +24,7 @@ using testing::UnorderedElementsAre;
 class PolicyTest : public testing::Test {
  public:
   void SetUp() override {
-    document_ = Document::CreateForTest();
+    document_ = MakeGarbageCollected<Document>();
     document_->SetSecurityOrigin(SecurityOrigin::CreateFromString(kSelfOrigin));
     document_->ApplyFeaturePolicyFromHeader(
         "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
@@ -154,7 +154,7 @@ TEST_F(IFramePolicyTest, TestAllowedFeatures) {
 }
 
 TEST_F(IFramePolicyTest, TestCombinedPolicy) {
-  ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
+  ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
       "geolocation 'src'; payment 'none'; midi; camera 'src'",
       SecurityOrigin::CreateFromString(kSelfOrigin),
       SecurityOrigin::CreateFromString(kOriginA), nullptr);

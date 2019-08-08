@@ -98,25 +98,22 @@ void WebNavigationEventRouter::OnTabStripModelChanged(
   if (change.type() != TabStripModelChange::kReplaced)
     return;
 
-  for (const auto& delta : change.deltas()) {
-    content::WebContents* old_contents = delta.replace.old_contents;
-    content::WebContents* new_contents = delta.replace.new_contents;
+  auto* replace = change.GetReplace();
+  WebNavigationTabObserver* tab_observer =
+      WebNavigationTabObserver::Get(replace->old_contents);
 
-    WebNavigationTabObserver* tab_observer =
-        WebNavigationTabObserver::Get(old_contents);
-    if (!tab_observer) {
-      // If you hit this DCHECK(), please add reproduction steps to
-      // http://crbug.com/109464.
-      DCHECK(GetViewType(old_contents) != VIEW_TYPE_TAB_CONTENTS);
-      continue;
-    }
-    if (!FrameNavigationState::IsValidUrl(old_contents->GetURL()) ||
-        !FrameNavigationState::IsValidUrl(new_contents->GetURL()))
-      continue;
-
-    web_navigation_api_helpers::DispatchOnTabReplaced(old_contents, profile_,
-                                                      new_contents);
+  if (!tab_observer) {
+    // If you hit this DCHECK(), please add reproduction steps to
+    // http://crbug.com/109464.
+    DCHECK(GetViewType(replace->old_contents) != VIEW_TYPE_TAB_CONTENTS);
+    return;
   }
+  if (!FrameNavigationState::IsValidUrl(replace->old_contents->GetURL()) ||
+      !FrameNavigationState::IsValidUrl(replace->new_contents->GetURL()))
+    return;
+
+  web_navigation_api_helpers::DispatchOnTabReplaced(
+      replace->old_contents, profile_, replace->new_contents);
 }
 
 void WebNavigationEventRouter::Observe(

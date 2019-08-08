@@ -11,25 +11,30 @@ import org.chromium.chrome.R;
  */
 /* package */ class SilenceLintErrors {
     // TODO(yusufo): Add these resources to the DFM
-    private int[] mRes = new int[] {R.dimen.tab_grid_favicon_size,
-            R.string.tab_management_module_title,
+    private int[] mRes = new int[] {
             R.string.iph_tab_groups_quickly_compare_pages_text,
             R.string.iph_tab_groups_tap_to_see_another_tab_text,
-            R.string.iph_tab_groups_your_tabs_together_text, R.string.bottom_tab_grid_description,
-            R.string.bottom_tab_grid_opened_half, R.string.bottom_tab_grid_opened_full,
-            R.string.bottom_tab_grid_closed, R.dimen.tab_list_selected_inset,
-            R.layout.tab_strip_item, R.drawable.selected_tab_background,
-            R.drawable.tab_grid_card_background, R.layout.tab_grid_card_item,
-            R.layout.tab_list_recycler_view_layout, R.layout.bottom_tab_grid_toolbar,
-            R.string.bottom_tab_grid_new_tab, R.string.bottom_tab_grid_new_tab,
+            R.string.iph_tab_groups_your_tabs_together_text,
+            R.string.bottom_tab_grid_description,
+            R.string.bottom_tab_grid_opened_half,
+            R.string.bottom_tab_grid_opened_full,
+            R.string.bottom_tab_grid_closed,
+            R.string.bottom_tab_grid_new_tab,
+            R.string.bottom_tab_grid_new_tab,
             R.plurals.bottom_tab_grid_title_placeholder,
             R.string.iph_tab_groups_tap_to_see_another_tab_accessibility_text,
             R.string.accessibility_bottom_tab_strip_expand_tab_sheet,
-            R.layout.bottom_tab_strip_toolbar, R.drawable.tabstrip_selected,
-            R.dimen.tab_list_card_padding, R.dimen.tab_list_mini_card_text_size,
-            R.dimen.tab_list_mini_card_frame_size, R.dimen.tab_list_mini_card_radius,
-            R.drawable.tabstrip_favicon_background, R.dimen.swipe_to_dismiss_threshold,
-            R.dimen.tab_grid_thumbnail_card_default_size, R.dimen.tab_list_selected_inset_kitkat};
+            R.string.accessibility_bottom_tab_grid_close_tab_sheet,
+            R.string.tabswitcher_create_group,
+            R.string.tab_selection_editor_group,
+            R.string.accessibility_group_selected_tabs,
+            R.string.tab_selection_editor_toolbar_select_tabs,
+            R.string.accessibility_select_tab,
+            R.string.accessibility_unselect_tab,
+            R.string.undo_bar_group_tabs_message,
+            R.string.menu_group_tabs,
+            R.string.tab_grid_dialog_remove_from_group,
+    };
 
     private SilenceLintErrors() {}
 }

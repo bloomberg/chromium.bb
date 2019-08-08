@@ -108,6 +108,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   void Stop() override;
   void Play() override;
   void Pause() override;
+  void Flush() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
   void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;
@@ -160,6 +161,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   void CreateStreamOnIOThread();
   void PlayOnIOThread();
   void PauseOnIOThread();
+  void FlushOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 

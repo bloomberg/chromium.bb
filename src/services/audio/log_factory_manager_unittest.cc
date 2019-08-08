@@ -12,6 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/audio/traced_service_ref.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
@@ -43,9 +45,10 @@ class MockAudioLog : public media::mojom::AudioLog {
 
 class MockAudioLogFactory : public media::mojom::AudioLogFactory {
  public:
-  MockAudioLogFactory(media::mojom::AudioLogFactoryRequest request,
-                      size_t num_mock_logs)
-      : binding_(this, std::move(request)) {
+  MockAudioLogFactory(
+      mojo::PendingReceiver<media::mojom::AudioLogFactory> receiver,
+      size_t num_mock_logs)
+      : receiver_(this, std::move(receiver)) {
     for (size_t i = 0; i < num_mock_logs; ++i)
       mock_logs_.push_back(new MockAudioLog());
   }
@@ -65,7 +68,7 @@ class MockAudioLogFactory : public media::mojom::AudioLogFactory {
   MockAudioLog* GetMockLog(size_t index) { return mock_logs_[index]; }
 
  private:
-  mojo::Binding<media::mojom::AudioLogFactory> binding_;
+  mojo::Receiver<media::mojom::AudioLogFactory> receiver_;
   size_t current_mock_log_ = 0;
   std::vector<MockAudioLog*> mock_logs_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioLogFactory);
@@ -87,14 +90,14 @@ class LogFactoryManagerTest
   void CreateLogFactoryManager() {
     log_factory_manager_ = std::make_unique<LogFactoryManager>();
     log_factory_manager_->Bind(
-        mojo::MakeRequest(&log_factory_manager_ptr_),
+        remote_log_factory_manager_.BindNewPipeAndPassReceiver(),
         TracedServiceRef(service_keepalive_.CreateRef(),
                          "audio::LogFactoryManager Binding"));
     EXPECT_FALSE(service_keepalive_.HasNoRefs());
   }
 
   void DestroyLogFactoryManager() {
-    log_factory_manager_ptr_.reset();
+    remote_log_factory_manager_.reset();
     scoped_task_environment_.RunUntilIdle();
     EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
@@ -103,7 +106,7 @@ class LogFactoryManagerTest
   void OnIdleTimeout() override { OnNoServiceRefs(); }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  mojom::LogFactoryManagerPtr log_factory_manager_ptr_;
+  mojo::Remote<mojom::LogFactoryManager> remote_log_factory_manager_;
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
 
  private:
@@ -128,8 +131,9 @@ TEST_F(LogFactoryManagerTest, LogFactoryManagerQueuesRequestsAndSetsFactory) {
   log1->OnClosed();
 
   // Set the factory.
-  media::mojom::AudioLogFactoryPtr log_factory_ptr;
-  MockAudioLogFactory mock_factory(mojo::MakeRequest(&log_factory_ptr), 2);
+  mojo::PendingRemote<media::mojom::AudioLogFactory> remote_log_factory;
+  MockAudioLogFactory mock_factory(
+      remote_log_factory.InitWithNewPipeAndPassReceiver(), 2);
   MockAudioLog* mock_log1 = mock_factory.GetMockLog(0);
   testing::InSequence s;
 
@@ -141,7 +145,7 @@ TEST_F(LogFactoryManagerTest, LogFactoryManagerQueuesRequestsAndSetsFactory) {
   EXPECT_CALL(*mock_log1, OnSetVolume(kVolume1));
   EXPECT_CALL(*mock_log1, OnStopped());
   EXPECT_CALL(*mock_log1, OnClosed());
-  log_factory_manager_ptr_->SetLogFactory(std::move(log_factory_ptr));
+  remote_log_factory_manager_->SetLogFactory(std::move(remote_log_factory));
   scoped_task_environment_.RunUntilIdle();
 
   // Create another log after the factory is already set.

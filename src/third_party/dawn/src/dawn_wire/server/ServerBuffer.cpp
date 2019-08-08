@@ -61,6 +61,25 @@ namespace dawn_wire { namespace server {
         return true;
     }
 
+    bool Server::DoDeviceCreateBufferMapped(DawnDevice device,
+                                            const DawnBufferDescriptor* descriptor,
+                                            ObjectHandle bufferResult) {
+        auto* resultData = BufferObjects().Allocate(bufferResult.id);
+        if (resultData == nullptr) {
+            return false;
+        }
+        resultData->serial = bufferResult.serial;
+
+        DawnCreateBufferMappedResult result = mProcs.deviceCreateBufferMapped(device, descriptor);
+        ASSERT(result.buffer != nullptr);
+        ASSERT(result.data != nullptr);
+        resultData->handle = result.buffer;
+        resultData->mappedData = result.data;
+        resultData->mappedDataSize = result.dataLength;
+
+        return true;
+    }
+
     bool Server::DoBufferUpdateMappedData(ObjectId bufferId, uint32_t count, const uint8_t* data) {
         // The null object isn't valid as `self`
         if (bufferId == 0) {
@@ -114,7 +133,7 @@ namespace dawn_wire { namespace server {
         cmd.requestSerial = data->requestSerial;
         cmd.status = status;
         cmd.dataLength = 0;
-        cmd.data = reinterpret_cast<const uint8_t*>(ptr);
+        cmd.data = static_cast<const uint8_t*>(ptr);
 
         if (status == DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS) {
             cmd.dataLength = dataLength;

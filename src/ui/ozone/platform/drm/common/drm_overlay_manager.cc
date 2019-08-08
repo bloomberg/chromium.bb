@@ -57,7 +57,11 @@ void DrmOverlayManager::CheckOverlaySupport(
     // the primary plane.
     DCHECK(can_handle || candidate.plane_z_order != 0);
 
-    result_candidates.push_back(candidate);
+    // If we can't handle the candidate in an overlay replace it with default
+    // value. The quad might have a non-integer display rect which hits a
+    // DCHECK when converting to gfx::Rect in the comparator.
+    result_candidates.push_back(can_handle ? candidate
+                                           : OverlaySurfaceCandidate());
     result_candidates.back().overlay_handled = can_handle;
   }
 

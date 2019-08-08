@@ -48,7 +48,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "read revision",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
     ]
@@ -98,7 +97,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "count-objects",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@exception@ValueError(\"invalid literal for long() with base 10: 'xxx'\",)@@@",
       "@@@STEP_LOG_END@exception@@@",
@@ -107,11 +105,6 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "count-objects failed: invalid literal for long() with base 10: 'xxx'"
     },
     "name": "$result"

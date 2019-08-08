@@ -24,11 +24,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
@@ -568,9 +568,11 @@ TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
 // This test verifies that RenderWidgetHostViewCocoa's implementation of
 // NSTextInputClientConformance conforms to requirements.
 TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
-  NSRange selectedRange = [rwhv_cocoa_ selectedRange];
-  EXPECT_EQ(0u, selectedRange.location);
-  EXPECT_EQ(0u, selectedRange.length);
+  EXPECT_NSEQ(NSMakeRange(0, 0), [rwhv_cocoa_ selectedRange]);
+
+  rwhv_mac_->SelectionChanged(base::UTF8ToUTF16("llo, world!"), 2,
+                              gfx::Range(5, 10));
+  EXPECT_NSEQ(NSMakeRange(5, 5), [rwhv_cocoa_ selectedRange]);
 
   NSRange actualRange = NSMakeRange(1u, 2u);
   NSAttributedString* actualString = [rwhv_cocoa_
@@ -2259,11 +2261,6 @@ TEST_F(RenderWidgetHostViewMacTest, TransformToRootWithParentLayer) {
   EXPECT_EQ(point, gfx::PointF(105, 310));
 }
 
-// This test uses deprecated NSObject accessibility APIs - see
-// https://crbug.com/921109.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
   NSView* view = rwhv_mac_->cocoa_view();
 
@@ -2278,36 +2275,15 @@ TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
   [[window contentView] addSubview:accessibility_parent];
 
   [parent_view addSubview:view];
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              parent_view);
+  EXPECT_NSEQ([view accessibilityParent], parent_view);
 
   rwhv_mac_->SetParentAccessibilityElement(accessibility_parent);
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
+  EXPECT_NSEQ([view accessibilityParent],
               NSAccessibilityUnignoredAncestor(accessibility_parent));
-  EXPECT_NE([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-            nil);
+  EXPECT_NSNE(nil, [view accessibilityParent]);
 
   rwhv_mac_->SetParentAccessibilityElement(nil);
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              parent_view);
-}
-#pragma clang diagnostic pop
-
-// Tests that when entering mouse lock, the cursor will lock to window center.
-TEST_F(RenderWidgetHostViewMacTest, PointerLockCenterPosition) {
-  NSView* view = rwhv_mac_->cocoa_view();
-
-  NSRect bound = NSMakeRect(123, 234, 456, 678);
-  [view setFrame:bound];
-
-  EXPECT_EQ(gfx::Rect([view bounds]), gfx::Rect(0, 0, 456, 678));
-
-  rwhv_mac_->LockMouse();
-  EXPECT_TRUE(rwhv_mac_->IsMouseLocked());
-
-  gfx::Point mouse_pos =
-      gfx::Point([window_ mouseLocationOutsideOfEventStream]);
-  EXPECT_EQ(mouse_pos, gfx::Point(228, 339));
+  EXPECT_NSEQ([view accessibilityParent], parent_view);
 }
 
 }  // namespace content

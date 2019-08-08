@@ -35,10 +35,6 @@
 
 namespace blink {
 
-InputType* ButtonInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<ButtonInputType>(element);
-}
-
 void ButtonInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeButton);
 }

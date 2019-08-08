@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -18,6 +19,8 @@
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
+
+constexpr StaticOobeScreenId KioskEnableScreenView::kScreenId;
 
 KioskEnableScreenHandler::KioskEnableScreenHandler(
     JSCallsContainer* js_calls_container)
@@ -59,7 +62,7 @@ void KioskEnableScreenHandler::OnGetConsumerKioskAutoLaunchStatus(
       content::NotificationService::NoDetails());
 }
 
-void KioskEnableScreenHandler::SetDelegate(Delegate* delegate) {
+void KioskEnableScreenHandler::SetDelegate(KioskEnableScreen* delegate) {
   delegate_ = delegate;
   if (page_is_ready())
     Initialize();

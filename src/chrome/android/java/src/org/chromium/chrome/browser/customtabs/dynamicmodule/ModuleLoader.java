@@ -25,7 +25,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskPriority;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -218,16 +217,14 @@ public class ModuleLoader {
         ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.NOT_LOADED);
 
         mIsModuleLoading = true;
-        new LoadClassTask().executeWithTaskTraits(
-                new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
+        new LoadClassTask().executeWithTaskTraits(TaskTraits.USER_VISIBLE_MAY_BLOCK);
     }
 
     public void createClassLoader() {
         if (mClassLoader != null) return;
 
         mIsClassLoaderCreating = true;
-        new ClassLoaderTask().executeWithTaskTraits(
-                new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
+        new ClassLoaderTask().executeWithTaskTraits(TaskTraits.USER_VISIBLE_MAY_BLOCK);
     }
 
     /**
@@ -384,9 +381,6 @@ public class ModuleLoader {
      * A task for creating module {@link ClassLoader}.
      */
     private class ClassLoaderTask extends AsyncTask<ClassLoader> {
-        /** Buffer size to use while copying an input stream into the disk. */
-        private static final int BUFFER_SIZE = 16 * 1024;
-
         @Override
         @Nullable
         protected ClassLoader doInBackground() {
@@ -453,7 +447,7 @@ public class ModuleLoader {
         private void copyDexToDisk(String dexAssetName) throws IOException {
             InputStream in =
                     mDexInputStreamProvider.createInputStream(dexAssetName, mModuleContext);
-            FileUtils.copyFileStreamAtomicWithBuffer(in, getDexFile(), new byte[BUFFER_SIZE]);
+            FileUtils.copyStreamToFile(in, getDexFile());
         }
 
         private ClassLoader getModuleClassLoader(boolean loadFromDex) {

@@ -14,19 +14,20 @@
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 
-FakeTextCheckingCompletion::FakeTextCheckingCompletion()
-    : completion_count_(0), cancellation_count_(0) {}
+FakeTextCheckingCompletion::FakeTextCheckingCompletion(
+    FakeTextCheckingResult* result)
+    : result_(result) {}
 
 FakeTextCheckingCompletion::~FakeTextCheckingCompletion() {}
 
 void FakeTextCheckingCompletion::DidFinishCheckingText(
     const blink::WebVector<blink::WebTextCheckingResult>& results) {
-  ++completion_count_;
+  ++result_->completion_count_;
 }
 
 void FakeTextCheckingCompletion::DidCancelCheckingText() {
-  ++completion_count_;
-  ++cancellation_count_;
+  ++result_->completion_count_;
+  ++result_->cancellation_count_;
 }
 
 TestingSpellCheckProvider::TestingSpellCheckProvider(
@@ -51,7 +52,7 @@ TestingSpellCheckProvider::~TestingSpellCheckProvider() {
 
 void TestingSpellCheckProvider::RequestTextChecking(
     const base::string16& text,
-    blink::WebTextCheckingCompletion* completion) {
+    std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
   if (!loop_ && !base::MessageLoopCurrent::Get())
     loop_ = std::make_unique<base::MessageLoop>();
   if (!binding_.is_bound()) {
@@ -59,7 +60,7 @@ void TestingSpellCheckProvider::RequestTextChecking(
     binding_.Bind(mojo::MakeRequest(&host_proxy));
     SetSpellCheckHostForTesting(std::move(host_proxy));
   }
-  SpellCheckProvider::RequestTextChecking(text, completion);
+  SpellCheckProvider::RequestTextChecking(text, std::move(completion));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -79,13 +80,13 @@ void TestingSpellCheckProvider::CallSpellingService(
 void TestingSpellCheckProvider::OnCallSpellingService(
     const base::string16& text) {
   ++spelling_service_call_count_;
-  blink::WebTextCheckingCompletion* completion =
-      text_check_completions_.Lookup(last_identifier_);
-  if (!completion) {
+  if (!text_check_completions_.Lookup(last_identifier_)) {
     ResetResult();
     return;
   }
   text_.assign(text);
+  std::unique_ptr<blink::WebTextCheckingCompletion> completion(
+      text_check_completions_.Replace(last_identifier_, nullptr));
   text_check_completions_.Remove(last_identifier_);
   std::vector<blink::WebTextCheckingResult> results;
   results.push_back(

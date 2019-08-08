@@ -39,8 +39,6 @@ namespace {
 
 constexpr int kInnerPadding = 16;
 
-constexpr int kButtonSizeDip = 48;
-
 // Preferred width of search box.
 constexpr int kSearchBoxPreferredWidth = 544;
 
@@ -65,7 +63,7 @@ class SearchBoxBackground : public views::Background {
   }
   ~SearchBoxBackground() override {}
 
-  void set_corner_radius(int corner_radius) { corner_radius_ = corner_radius; }
+  void SetCornerRadius(int corner_radius) { corner_radius_ = corner_radius; }
 
  private:
   // views::Background overrides:
@@ -100,8 +98,8 @@ class SearchBoxImageButton : public views::ImageButton {
     SetInkDropMode(InkDropMode::ON);
 
     SetPreferredSize({kButtonSizeDip, kButtonSizeDip});
-    SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
-                      VerticalAlignment::ALIGN_MIDDLE);
+    SetImageHorizontalAlignment(ALIGN_CENTER);
+    SetImageVerticalAlignment(ALIGN_MIDDLE);
   }
   ~SearchBoxImageButton() override {}
 
@@ -257,7 +255,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
               views::LayoutProvider::Get()->GetDistanceMetric(
                   views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   box_layout_->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   box_layout_->set_minimum_cross_axis_size(kSearchBoxPreferredHeight);
 
   search_box_->SetBorder(views::NullBorder());
@@ -282,7 +280,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
 
   // An invisible space view to align |search_box_| to center.
   search_box_right_space_ = new views::View();
-  search_box_right_space_->SetPreferredSize(gfx::Size(kSearchIconSize, 0));
+  search_box_right_space_->SetPreferredSize(gfx::Size(kIconSize, 0));
   content_container_->AddChildView(search_box_right_space_);
 
   assistant_button_ = new SearchBoxImageButton(this);
@@ -382,9 +380,9 @@ gfx::Size SearchBoxViewBase::CalculatePreferredSize() const {
 }
 
 void SearchBoxViewBase::OnEnabledChanged() {
-  search_box_->SetEnabled(enabled());
+  search_box_->SetEnabled(GetEnabled());
   if (close_button_)
-    close_button_->SetEnabled(enabled());
+    close_button_->SetEnabled(GetEnabled());
 }
 
 const char* SearchBoxViewBase::GetClassName() const {
@@ -488,9 +486,9 @@ void SearchBoxViewBase::UpdateButtonsVisisbility() {
   const bool should_show_search_box_right_space =
       !(should_show_close_button || should_show_assistant_button);
 
-  if (close_button_->visible() == should_show_close_button &&
-      assistant_button_->visible() == should_show_assistant_button &&
-      search_box_right_space_->visible() ==
+  if (close_button_->GetVisible() == should_show_close_button &&
+      assistant_button_->GetVisible() == should_show_assistant_button &&
+      search_box_right_space_->GetVisible() ==
           should_show_search_box_right_space) {
     return;
   }
@@ -526,7 +524,7 @@ bool SearchBoxViewBase::HandleGestureEvent(
 
 void SearchBoxViewBase::SetSearchBoxBackgroundCornerRadius(int corner_radius) {
   static_cast<SearchBoxBackground*>(GetSearchBoxBackground())
-      ->set_corner_radius(corner_radius);
+      ->SetCornerRadius(corner_radius);
 }
 
 void SearchBoxViewBase::SetSearchIconImage(gfx::ImageSkia image) {

@@ -6,9 +6,8 @@
 
 #include <vector>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -116,9 +115,9 @@ class SystemGestureEventFilterTest : public AshTestBase {
     // positions to be consistent across tests.
     std::vector<views::FrameButton> leading;
     std::vector<views::FrameButton> trailing;
-    trailing.push_back(views::FRAME_BUTTON_MINIMIZE);
-    trailing.push_back(views::FRAME_BUTTON_MAXIMIZE);
-    trailing.push_back(views::FRAME_BUTTON_CLOSE);
+    trailing.push_back(views::FrameButton::kMinimize);
+    trailing.push_back(views::FrameButton::kMaximize);
+    trailing.push_back(views::FrameButton::kClose);
     views::WindowButtonOrderProvider::GetInstance()->SetWindowButtonOrder(
         leading, trailing);
 
@@ -465,7 +464,7 @@ TEST_F(SystemGestureEventFilterTest,
   child->Show();
 
   ui::test::TestEventHandler event_handler;
-  Shell::Get()->aura_env()->AddPreTargetHandler(
+  aura::Env::GetInstance()->AddPreTargetHandler(
       &event_handler, ui::EventTarget::Priority::kSystem);
 
   GetEventGenerator()->MoveMouseTo(0, 0);
@@ -476,7 +475,7 @@ TEST_F(SystemGestureEventFilterTest,
   EXPECT_EQ(event_handler.num_gesture_events(),
             delegate.GetGestureCountAndReset());
 
-  Shell::Get()->aura_env()->RemovePreTargetHandler(&event_handler);
+  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 }  // namespace ash

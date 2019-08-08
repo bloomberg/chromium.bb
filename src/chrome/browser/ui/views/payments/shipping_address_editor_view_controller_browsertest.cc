@@ -11,13 +11,13 @@
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/country_combobox_model.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
+#include "components/autofill/core/browser/geo/test_region_data_loader.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/region_combobox_model.h"
-#include "components/autofill/core/browser/test_region_data_loader.h"
+#include "components/autofill/core/browser/ui/country_combobox_model.h"
+#include "components/autofill/core/browser/ui/region_combobox_model.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -742,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
   ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnDialogViewAndWait(edit_button);
@@ -802,7 +802,7 @@ IN_PROC_BROWSER_TEST_F(
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  EXPECT_EQ(nullptr, sheet->child_at(0)->GetViewByID(
+  EXPECT_EQ(nullptr, sheet->children().front()->GetViewByID(
                          static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR)));
 }
 
@@ -825,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  EXPECT_EQ(nullptr, sheet->child_at(0)->GetViewByID(
+  EXPECT_EQ(nullptr, sheet->children().front()->GetViewByID(
                          static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR)));
 }
 
@@ -847,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  views::View* error_label = sheet->child_at(0)->GetViewByID(
+  views::View* error_label = sheet->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   EXPECT_EQ(base::ASCIIToUTF16("Phone number required"),
             static_cast<views::Label*>(error_label)->text());
@@ -874,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  views::View* error_label = sheet->child_at(0)->GetViewByID(
+  views::View* error_label = sheet->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
@@ -897,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is disabled.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 // TODO(crbug.com/730652): This address should be invalid.
@@ -921,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  EXPECT_EQ(nullptr, sheet->child_at(0)->GetViewByID(
+  EXPECT_EQ(nullptr, sheet->children().front()->GetViewByID(
                          static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR)));
 }
 
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  views::View* error_label = sheet->child_at(0)->GetViewByID(
+  views::View* error_label = sheet->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is disabled.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 // Tests that if the a profile has no country and an invalid state for the
@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  views::View* error_label = sheet->child_at(0)->GetViewByID(
+  views::View* error_label = sheet->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is disabled.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 // TODO(crbug.com/730165): The profile should be considered valid.
@@ -1054,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  views::View* error_label = sheet->child_at(0)->GetViewByID(
+  views::View* error_label = sheet->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
@@ -1073,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is enabled, since the profile is now valid.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_TRUE(save_button->enabled());
+  EXPECT_TRUE(save_button->GetEnabled());
 }
 
 // TODO(crbug.com/730165): The profile should be considered valid.
@@ -1101,7 +1101,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(1u, sheet->children().size());
-  views::View* error_label = sheet->child_at(0)->GetViewByID(
+  views::View* error_label = sheet->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
@@ -1126,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is enabled, since the profile is now valid.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_TRUE(save_button->enabled());
+  EXPECT_TRUE(save_button->GetEnabled());
 }
 
 // Tests that the state dropdown is set to the right value if the value from the

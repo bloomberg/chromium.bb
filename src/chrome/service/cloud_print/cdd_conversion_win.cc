@@ -29,7 +29,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
 
   using namespace cloud_devices::printer;
   printing::ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(printer_name.c_str()))
+  if (!printer.OpenPrinterWithName(printer_name.c_str()))
     return dev_mode;
 
   {

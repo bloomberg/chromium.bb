@@ -31,6 +31,7 @@ enum class PermissionType {
   PAYMENT_HANDLER = 16,
   BACKGROUND_FETCH = 17,
   IDLE_DETECTION = 18,
+  PERIODIC_BACKGROUND_SYNC = 19,
 
   // Always keep this at the end.
   NUM,

@@ -74,7 +74,6 @@
     ],
     "infra_step": true,
     "name": "listdir fetch_configs",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@listdir@[START_DIR]/depot_tools/fetch_configs/depot_tools.py@@@",
       "@@@STEP_LOG_LINE@listdir@[START_DIR]/depot_tools/fetch_configs/infra.py@@@",

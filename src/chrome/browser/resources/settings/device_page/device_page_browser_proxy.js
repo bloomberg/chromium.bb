@@ -93,6 +93,9 @@ cr.define('settings', function() {
     /** Shows the Ash keyboard shortcut viewer. */
     showKeyboardShortcutViewer() {}
 
+    /** Requests an ARC status update. */
+    updateAndroidEnabled() {}
+
     /** Requests a power status update. */
     updatePowerStatus() {}
 
@@ -175,6 +178,11 @@ cr.define('settings', function() {
     /** @override */
     showKeyboardShortcutViewer() {
       chrome.send('showKeyboardShortcutViewer');
+    }
+
+    /** @override */
+    updateAndroidEnabled() {
+      chrome.send('updateAndroidEnabled');
     }
 
     /** @override */

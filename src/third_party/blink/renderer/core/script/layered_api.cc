@@ -23,7 +23,7 @@ static const char kImportScheme[] = "import";
 
 constexpr char kBuiltinSpecifierPrefix[] = "@std/";
 
-constexpr char kTopLevelScriptPostfix[] = "/index.js";
+constexpr char kTopLevelScriptPostfix[] = "/index.mjs";
 
 const LayeredAPIResource* GetResourceFromPath(const Modulator& modulator,
                                               const String& path) {
@@ -84,7 +84,7 @@ KURL GetInternalURL(const KURL& url) {
     url_string.Append(kInternalScheme);
     url_string.Append("://");
     url_string.Append(path);
-    url_string.Append("/index.js");
+    url_string.Append(kTopLevelScriptPostfix);
     return KURL(NullURL(), url_string.ToString());
   }
 

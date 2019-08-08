@@ -34,6 +34,7 @@ class Server(object):
     if log_path:
       chromedriver_args.extend(['--log-path=%s' % log_path])
       chromedriver_args.extend(['--append-log'])
+      chromedriver_args.extend(['--readable-timestamp'])
       if verbose:
         chromedriver_args.extend(['--verbose',
                                   '--vmodule=*/chrome/test/chromedriver/*=3'])

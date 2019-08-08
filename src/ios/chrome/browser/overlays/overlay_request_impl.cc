@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/overlays/overlay_request_impl.h"
 
-#include "ios/chrome/browser/overlays/overlay_response.h"
+#include "ios/chrome/browser/overlays/public/overlay_response.h"
 
 // static
 std::unique_ptr<OverlayRequest> OverlayRequest::Create() {
@@ -12,10 +12,10 @@ std::unique_ptr<OverlayRequest> OverlayRequest::Create() {
 }
 
 OverlayRequestImpl::OverlayRequestImpl() {}
-OverlayRequestImpl::~OverlayRequestImpl() {}
 
-base::SupportsUserData& OverlayRequestImpl::data() {
-  return *this;
+OverlayRequestImpl::~OverlayRequestImpl() {
+  if (!callback_.is_null())
+    std::move(callback_).Run(response());
 }
 
 void OverlayRequestImpl::set_response(
@@ -25,4 +25,13 @@ void OverlayRequestImpl::set_response(
 
 OverlayResponse* OverlayRequestImpl::response() const {
   return response_.get();
+}
+
+void OverlayRequestImpl::set_callback(OverlayCallback callback) {
+  DCHECK(callback_.is_null());
+  callback_ = std::move(callback);
+}
+
+base::SupportsUserData* OverlayRequestImpl::data() {
+  return this;
 }

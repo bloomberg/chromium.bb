@@ -5,16 +5,20 @@
  * found in the LICENSE file.
  */
 
-#include "GrMtlUtil.h"
+#include "src/gpu/mtl/GrMtlUtil.h"
 
-#include "GrTypesPriv.h"
-#include "GrSurface.h"
-#include "mtl/GrMtlGpu.h"
-#include "mtl/GrMtlTexture.h"
-#include "mtl/GrMtlRenderTarget.h"
-#include "SkSLCompiler.h"
+#include "include/gpu/GrSurface.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/mtl/GrMtlGpu.h"
+#include "src/gpu/mtl/GrMtlRenderTarget.h"
+#include "src/gpu/mtl/GrMtlTexture.h"
+#include "src/sksl/SkSLCompiler.h"
 
 #import <Metal/Metal.h>
+
+#if !__has_feature(objc_arc)
+#error This file must be compiled with Arc. Use -fobjc-arc flag
+#endif
 
 #define PRINT_MSL 0 // print out the MSL code generated
 

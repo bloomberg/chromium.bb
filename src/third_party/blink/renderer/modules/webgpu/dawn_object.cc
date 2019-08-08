@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 
-#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 namespace blink {

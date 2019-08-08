@@ -100,7 +100,7 @@ class DistillerImpl : public Distiller {
     // Relative page number of the page.
     int page_num;
     std::vector<std::unique_ptr<DistillerURLFetcher>> image_fetchers_;
-    scoped_refptr<base::RefCountedData<DistilledPageProto> >
+    scoped_refptr<base::RefCountedData<DistilledPageProto>>
         distilled_page_proto;
 
    private:

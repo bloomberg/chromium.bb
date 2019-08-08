@@ -8,16 +8,16 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer.pb.h"
 
 namespace viz {
 
 struct FuzzedBitmap {
-  FuzzedBitmap(SharedBitmapId id,
-               gfx::Size size,
-               std::unique_ptr<base::SharedMemory> shared_memory);
+  FuzzedBitmap(const SharedBitmapId& id,
+               const gfx::Size& size,
+               base::ReadOnlySharedMemoryRegion shared_region);
   ~FuzzedBitmap();
 
   FuzzedBitmap(FuzzedBitmap&& other) noexcept;
@@ -25,9 +25,7 @@ struct FuzzedBitmap {
 
   SharedBitmapId id;
   gfx::Size size;
-  std::unique_ptr<base::SharedMemory> shared_memory;
-
-  DISALLOW_COPY(FuzzedBitmap);
+  base::ReadOnlySharedMemoryRegion shared_region;
 };
 
 struct FuzzedData {
@@ -39,19 +37,20 @@ struct FuzzedData {
 
   CompositorFrame frame;
   std::vector<FuzzedBitmap> allocated_bitmaps;
-
-  DISALLOW_COPY(FuzzedData);
 };
 
-// Converts a fuzzed specification in the form of a RenderPass protobuf message
-// (as defined in compositor_frame_fuzzer.proto) into a CompositorFrame with a
-// RenderPass member.
+// Builds a CompositorFrame with a root RenderPass matching the protobuf
+// specification in compositor_frame_fuzzer.proto, and allocates associated
+// resources.
 //
-// Performs minimal validation and corrections to ensure that submitting the
-// frame to a CompositorFrameSink will not result in a mojo deserialization
-// validation error.
-FuzzedData GenerateFuzzedCompositorFrame(
-    const content::fuzzing::proto::RenderPass& render_pass_spec);
+// May elide quads in an attempt to impose a cap on memory allocated to bitmaps
+// over the frame's lifetime (from texture allocations to intermediate bitmaps
+// used to draw the final frame).
+//
+// If necessary, performs minimal correction to ensure submission to a
+// CompositorFrameSink will not cause validation errors on deserialization.
+FuzzedData BuildFuzzedCompositorFrame(
+    const proto::RenderPass& render_pass_spec);
 
 }  // namespace viz
 

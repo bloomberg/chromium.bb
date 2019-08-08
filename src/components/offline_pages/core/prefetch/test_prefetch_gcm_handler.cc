@@ -22,7 +22,7 @@ std::string TestPrefetchGCMHandler::GetAppId() const {
 
 void TestPrefetchGCMHandler::GetGCMToken(
     instance_id::InstanceID::GetTokenCallback callback) {
-  callback.Run(kToken, instance_id::InstanceID::Result::SUCCESS);
+  std::move(callback).Run(kToken, instance_id::InstanceID::Result::SUCCESS);
 }
 
 void TestPrefetchGCMHandler::SetService(PrefetchService* service) {}

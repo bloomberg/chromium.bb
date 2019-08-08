@@ -51,28 +51,29 @@ std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
 }
 
 std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSPropertyArray(
-    const gfx::Rect& bounds,
-    const bool visible) {
+    const gfx::Rect& bounds) {
   auto cssProperties = Array<CSS::CSSProperty>::create();
   cssProperties->addItem(BuildCSSProperty(kHeight, bounds.height()));
   cssProperties->addItem(BuildCSSProperty(kWidth, bounds.width()));
   cssProperties->addItem(BuildCSSProperty(kX, bounds.x()));
   cssProperties->addItem(BuildCSSProperty(kY, bounds.y()));
-  cssProperties->addItem(BuildCSSProperty(kVisibility, visible));
   return cssProperties;
 }
 
 std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element) {
   gfx::Rect bounds;
-  bool visible;
   ui_element->GetBounds(&bounds);
-  ui_element->GetVisible(&visible);
-
   std::unique_ptr<Array<CSS::CSSProperty>> css_properties(
-      BuildCSSPropertyArray(bounds, visible));
+      BuildCSSPropertyArray(bounds));
+
+  if (ui_element->type() != VIEW) {
+    bool visible;
+    ui_element->GetVisible(&visible);
+    css_properties->addItem(BuildCSSProperty(kVisibility, visible));
+  }
+
   const std::vector<std::pair<std::string, std::string>> properties(
       ui_element->GetCustomProperties());
-
   for (const auto& it : properties)
     css_properties->addItem(BuildCSSProperty(it.first, it.second));
 
@@ -157,6 +158,10 @@ Response CSSAgent::setStyleTexts(
       return Response::Error("Invalid node id");
 
     UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+    // Handle setting properties from metadata for View.
+    if (ui_element->type() == VIEW)
+      ui_element->SetPropertiesFromString(edit->getText());
+
     gfx::Rect updated_bounds;
     bool visible = false;
     if (!GetPropertiesForUIElement(ui_element, &updated_bounds, &visible))
@@ -199,7 +204,8 @@ bool CSSAgent::GetPropertiesForUIElement(UIElement* ui_element,
                                          bool* visible) {
   if (ui_element) {
     ui_element->GetBounds(bounds);
-    ui_element->GetVisible(visible);
+    if (ui_element->type() != VIEW)
+      ui_element->GetVisible(visible);
     return true;
   }
   return false;

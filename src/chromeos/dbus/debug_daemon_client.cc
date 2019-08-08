@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -191,24 +192,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetModemStatus(DBusMethodCallback<std::string> callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetModemStatus);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void GetWiMaxStatus(DBusMethodCallback<std::string> callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetWiMaxStatus);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void GetNetworkInterfaces(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetInterfaces);
@@ -334,7 +317,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void TestICMP(const std::string& ip_address,
-                const TestICMPCallback& callback) override {
+                TestICMPCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kTestICMP);
     dbus::MessageWriter writer(&method_call);
@@ -342,12 +325,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnTestICMP,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void TestICMPWithOptions(const std::string& ip_address,
                            const std::map<std::string, std::string>& options,
-                           const TestICMPCallback& callback) override {
+                           TestICMPCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kTestICMPWithOptions);
     dbus::MessageWriter writer(&method_call);
@@ -372,7 +355,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnTestICMP,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void UploadCrashes() override {
@@ -561,6 +544,29 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetU2fFlags(const std::set<std::string>& flags,
+                   VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSetU2fFlags);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(base::JoinString(
+        std::vector<std::string>(flags.begin(), flags.end()), ","));
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetU2fFlags(
+      DBusMethodCallback<std::set<std::string>> callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetU2fFlags);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetU2fFlags,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -716,12 +722,14 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     // NB: requester is signaled when i/o completes
   }
 
-  void OnTestICMP(const TestICMPCallback& callback, dbus::Response* response) {
+  void OnTestICMP(TestICMPCallback callback, dbus::Response* response) {
     std::string status;
-    if (response && dbus::MessageReader(response).PopString(&status))
-      callback.Run(true, status);
-    else
-      callback.Run(false, "");
+    if (!response || !dbus::MessageReader(response).PopString(&status)) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(status);
   }
 
   // Called when pipe i/o completes; pass data on and delete the instance.
@@ -817,6 +825,31 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(result);
   }
 
+  void OnGetU2fFlags(DBusMethodCallback<std::set<std::string>> callback,
+                     dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::string flags_string;
+    dbus::MessageReader reader(response);
+    if (!reader.PopString(&flags_string)) {
+      LOG(ERROR) << "Failed to read GetU2fFlags response";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::set<std::string> flags;
+    for (const auto& flag :
+         base::SplitString(flags_string, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY)) {
+      flags.insert(flag);
+    }
+
+    std::move(callback).Run(std::move(flags));
+  }
+
   dbus::ObjectProxy* debugdaemon_proxy_;
   std::unique_ptr<PipeReader> pipe_reader_;
   StopAgentTracingCallback callback_;
@@ -831,8 +864,8 @@ DebugDaemonClient::DebugDaemonClient() = default;
 DebugDaemonClient::~DebugDaemonClient() = default;
 
 // static
-DebugDaemonClient* DebugDaemonClient::Create() {
-  return new DebugDaemonClientImpl();
+std::unique_ptr<DebugDaemonClient> DebugDaemonClient::Create() {
+  return std::make_unique<DebugDaemonClientImpl>();
 }
 
 }  // namespace chromeos

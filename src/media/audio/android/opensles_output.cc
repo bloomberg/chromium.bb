@@ -220,6 +220,10 @@ void OpenSLESOutputStream::Close() {
   audio_manager_->ReleaseOutputStream(this);
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void OpenSLESOutputStream::Flush() {}
+
 void OpenSLESOutputStream::SetVolume(double volume) {
   DVLOG(2) << "OpenSLESOutputStream::SetVolume(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());

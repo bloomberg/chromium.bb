@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TRANSITION_KEYFRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TRANSITION_KEYFRAME_H_
 
-#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value.h"
 #include "third_party/blink/renderer/core/animation/keyframe.h"
 #include "third_party/blink/renderer/core/animation/typed_interpolation_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -41,7 +41,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
     CHECK(!!value->Value());
     value_ = std::move(value);
   }
-  void SetCompositorValue(AnimatableValue*);
+  void SetCompositorValue(CompositorKeyframeValue*);
   PropertyHandleSet Properties() const final;
 
   void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const override;
@@ -54,14 +54,14 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
                              scoped_refptr<TimingFunction> easing,
                              EffectModel::CompositeOperation composite,
                              std::unique_ptr<TypedInterpolationValue> value,
-                             AnimatableValue* compositor_value)
+                             CompositorKeyframeValue* compositor_value)
         : Keyframe::PropertySpecificKeyframe(offset,
                                              std::move(easing),
                                              composite),
           value_(std::move(value)),
           compositor_value_(compositor_value) {}
 
-    const AnimatableValue* GetAnimatableValue() const final {
+    const CompositorKeyframeValue* GetCompositorKeyframeValue() const final {
       return compositor_value_;
     }
 
@@ -88,7 +88,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
     }
 
     std::unique_ptr<TypedInterpolationValue> value_;
-    Member<AnimatableValue> compositor_value_;
+    Member<CompositorKeyframeValue> compositor_value_;
   };
 
  private:
@@ -105,7 +105,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
 
   PropertyHandle property_;
   std::unique_ptr<TypedInterpolationValue> value_;
-  Member<AnimatableValue> compositor_value_;
+  Member<CompositorKeyframeValue> compositor_value_;
 };
 
 using TransitionPropertySpecificKeyframe =

@@ -172,7 +172,7 @@ TEST_F(LoginDatabaseIOSTest, RemoveLoginsCreatedBetween) {
                                         base::Time::FromDoubleT(250),
                                         /*changes=*/nullptr);
 
-  PasswordStore::FormDigest form = {PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest form = {PasswordForm::Scheme::kHtml,
                                     "http://www.example.com", GURL()};
   std::vector<std::unique_ptr<PasswordForm>> logins;
   EXPECT_TRUE(login_db_->GetLogins(form, &logins));

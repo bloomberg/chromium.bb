@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.ui.base.LocalizationUtils;
@@ -147,8 +148,8 @@ public class ContextualSearchBarControl {
         mImageControl = new ContextualSearchImageControl(panel);
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
-        mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader,
-                mCanPromoteToNewTab);
+        mCaptionControl = new ContextualSearchCaptionControl(
+                panel, context, container, loader, mCanPromoteToNewTab);
         mQuickActionControl = new ContextualSearchQuickActionControl(context, loader);
         mCardIconControl = new ContextualSearchCardIconControl(context, loader);
 
@@ -164,8 +165,11 @@ public class ContextualSearchBarControl {
                 R.dimen.contextual_search_divider_line_height);
         mDividerLineColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.contextual_search_divider_line_color);
-        mEndButtonWidth = context.getResources().getDimension(
-                R.dimen.contextual_search_end_button_width);
+        int endButtonsWidthDimension =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? R.dimen.contextual_search_end_buttons_width
+                : R.dimen.contextual_search_end_button_width;
+        mEndButtonWidth = context.getResources().getDimension(endButtonsWidthDimension);
         mDpToPx = context.getResources().getDisplayMetrics().density;
     }
 

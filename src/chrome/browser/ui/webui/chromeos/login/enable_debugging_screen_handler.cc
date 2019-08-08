@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +31,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
+
+constexpr StaticOobeScreenId EnableDebuggingScreenView::kScreenId;
 
 EnableDebuggingScreenHandler::EnableDebuggingScreenHandler(
     JSCallsContainer* js_calls_container)

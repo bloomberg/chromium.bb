@@ -56,20 +56,8 @@ repack("web_engine_pak") {
     "//ui/strings",
   ]
 
-  output = "$root_out_dir/webrunner.pak"
+  output = "$root_out_dir/web_engine.pak"
   visibility = [ ":*" ]
-}
-
-source_set("legacy_message_port_bridge") {
-  sources = [
-    "legacy_message_port_bridge.cc",
-    "legacy_message_port_bridge.h",
-  ]
-  deps = [
-    "//base",
-    "//fuchsia:web_fidl",
-    "//third_party/fuchsia-sdk/sdk:web",
-  ]
 }
 
 component("web_engine_core") {
@@ -84,6 +72,7 @@ component("web_engine_core") {
     "//content/public/common",
     "//content/public/renderer",
     "//fuchsia/base",
+    "//fuchsia/base:message_port",
     "//fuchsia/base:modular",
     "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
@@ -102,8 +91,11 @@ component("web_engine_core") {
   data_deps = [
     ":web_engine_pak",
   ]
+  public_deps = [
+    "//content/public/browser",
+  ]
   data = [
-    "$root_out_dir/webrunner.pak",
+    "$root_out_dir/web_engine.pak",
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
@@ -113,8 +105,6 @@ component("web_engine_core") {
     "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
     "browser/frame_impl.h",
-    "browser/message_port_impl.cc",
-    "browser/message_port_impl.h",
     "browser/web_engine_browser_context.cc",
     "browser/web_engine_browser_context.h",
     "browser/web_engine_browser_main.cc",
@@ -226,6 +216,7 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
+    "browser/frame_impl_unittest.cc",
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",

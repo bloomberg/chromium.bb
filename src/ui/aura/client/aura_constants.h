@@ -24,6 +24,12 @@ namespace aura {
 namespace client {
 class FocusClient;
 
+// Values used with property key kResizeBehaviorKey.
+constexpr int kResizeBehaviorNone = 0;
+constexpr int kResizeBehaviorCanResize = 1 << 0;
+constexpr int kResizeBehaviorCanMaximize = 1 << 1;
+constexpr int kResizeBehaviorCanMinimize = 1 << 2;
+
 // Alphabetical sort.
 
 // A property key to store whether accessibility focus falls back to widget or
@@ -51,16 +57,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 // A property key to store the app icon, typically larger for shelf icons, etc.
 // This is not transported to the window service.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAppIconKey;
-
-// A property key to store a large version of the app icon, which is
-// transported to the window service.
-AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const
-    kAppIconLargeKey;
-
-// A property key to store a smaller version of the app icon, which is
-// transported to the window service.
-AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const
-    kAppIconSmallKey;
 
 // A property key to store the type of window that will be used to record
 // pointer metrics. See AppType in ash/public/cpp/app_types.h for more details.
@@ -96,12 +92,6 @@ AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const
 
 // A property key to store the focus client on the window.
 AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
-
-// Should be set to true for fullscreen/maximized windows that want to be
-// drag-moved in response to gesture events in the top of the client
-// area/screen.
-AURA_EXPORT extern const WindowProperty<bool>* const
-    kGestureDragFromClientAreaTopMovesWindow;
 
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
@@ -144,8 +134,8 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kPreFullscreenShowStateKey;
 
 // A property key to store the resize behavior, which is a bitmask of the
-// ws::mojom::kResizeBehavior values.
-AURA_EXPORT extern const WindowProperty<int32_t>* const kResizeBehaviorKey;
+// ResizeBehavior values.
+AURA_EXPORT extern const WindowProperty<int>* const kResizeBehaviorKey;
 
 // Reserves a number of dip around the window (i.e. inset from its exterior
 // border) for event routing back to the top level window. This is used for
@@ -181,9 +171,6 @@ AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 // The corner radius of a window in DIPs. Currently only used for shadows.
 // Default is -1, meaning "unspecified". 0 Ensures corners are square.
 AURA_EXPORT extern const WindowProperty<int>* const kWindowCornerRadiusKey;
-
-AURA_EXPORT extern const WindowProperty<ws::mojom::WindowType>* const
-    kWindowTypeKey;
 
 // Alphabetical sort.
 

@@ -75,6 +75,13 @@ public class ChildProcessConnection {
     }
 
     /**
+     * Run time check if variable number of connections is supported.
+     */
+    public static boolean supportVariableConnections() {
+        return BindService.supportVariableConnections();
+    }
+
+    /**
      * Delegate that ChildServiceConnection should call when the service connects/disconnects.
      * These callbacks are expected to happen on a background thread.
      */
@@ -96,6 +103,7 @@ public class ChildProcessConnection {
         boolean bind();
         void unbind();
         boolean isBound();
+        void updateGroupImportance(int group, int importanceInGroup);
     }
 
     /** Implementation of ChildServiceConnection that does connect to a service. */
@@ -124,14 +132,12 @@ public class ChildProcessConnection {
 
         @Override
         public boolean bind() {
-            if (!mBound) {
-                try {
-                    TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                    mBound = BindService.doBindService(mContext, mBindIntent, this, mBindFlags,
-                            mHandler, mExecutor, mInstanceName);
-                } finally {
-                    TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                }
+            try {
+                TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
+                mBound = BindService.doBindService(mContext, mBindIntent, this, mBindFlags,
+                        mHandler, mExecutor, mInstanceName);
+            } finally {
+                TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
             }
             return mBound;
         }
@@ -147,6 +153,16 @@ public class ChildProcessConnection {
         @Override
         public boolean isBound() {
             return mBound;
+        }
+
+        @Override
+        public void updateGroupImportance(int group, int importanceInGroup) {
+            assert isBound();
+            if (BindService.supportVariableConnections()) {
+                BindService.updateServiceGroup(mContext, this, group, importanceInGroup);
+                BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
+                        mExecutor, mInstanceName);
+            }
         }
 
         @Override
@@ -243,6 +259,9 @@ public class ChildProcessConnection {
     // Refcount of bindings.
     private int mStrongBindingCount;
     private int mModerateBindingCount;
+
+    private int mGroup;
+    private int mImportanceInGroup;
 
     // Set to true once unbind() was called.
     private boolean mUnbound;
@@ -389,6 +408,16 @@ public class ChildProcessConnection {
         } finally {
             TraceEvent.end("ChildProcessConnection.start");
         }
+    }
+
+    /**
+     * Call bindService again on this connection. This must be called while connection is already
+     * bound. This is useful for controlling the recency of this connection, and also for updating
+     */
+    public void rebind() {
+        assert isRunningOnLauncherThread();
+        assert mWaivedBinding.isBound();
+        mWaivedBinding.bind();
     }
 
     /**
@@ -633,6 +662,28 @@ public class ChildProcessConnection {
             ThreadUtils.postOnUiThread(() -> MemoryPressureListener.removeCallback(callback));
             mMemoryPressureCallback = null;
         }
+    }
+
+    public void updateGroupImportance(int group, int importanceInGroup) {
+        assert isRunningOnLauncherThread();
+        assert !mUnbound;
+        assert mWaivedBinding.isBound();
+        assert group != 0 || importanceInGroup == 0;
+        if (mGroup != group || mImportanceInGroup != importanceInGroup) {
+            mGroup = group;
+            mImportanceInGroup = importanceInGroup;
+            mWaivedBinding.updateGroupImportance(group, importanceInGroup);
+        }
+    }
+
+    public int getGroup() {
+        assert isRunningOnLauncherThread();
+        return mGroup;
+    }
+
+    public int getImportanceInGroup() {
+        assert isRunningOnLauncherThread();
+        return mImportanceInGroup;
     }
 
     public boolean isStrongBindingBound() {

@@ -346,9 +346,8 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
         context_id,
         base::BindOnce(
             &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::Passed(std::move(file_definition_list)),
-            base::Passed(std::move(entry_definition_list)), handler_pid));
+            weak_ptr_factory_.GetWeakPtr(), std::move(file_definition_list),
+            std::move(entry_definition_list), handler_pid));
   }
 }
 

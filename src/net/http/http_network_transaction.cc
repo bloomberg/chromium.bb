@@ -11,7 +11,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/metrics/field_trial.h"
@@ -133,8 +132,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       websocket_handshake_stream_base_create_helper_(nullptr),
       net_error_details_(),
       retry_attempts_(0),
-      num_restarts_(0),
-      ssl_version_interference_error_(OK) {
+      num_restarts_(0) {
 }
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
@@ -655,29 +653,6 @@ void HttpNetworkTransaction::OnNeedsClientAuth(
   OnIOComplete(ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
-void HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect(
-    const HttpResponseInfo& response_info,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
-
-  CopyConnectionAttemptsFromStreamRequest();
-
-  headers_valid_ = true;
-  response_ = response_info;
-  server_ssl_config_ = used_ssl_config;
-  proxy_info_ = used_proxy_info;
-  if (stream_) {
-    total_received_bytes_ += stream_->GetTotalReceivedBytes();
-    total_sent_bytes_ += stream_->GetTotalSentBytes();
-  }
-  stream_ = std::move(stream);
-  stream_->SetRequestHeadersCallback(request_headers_callback_);
-  stream_request_.reset();  // we're done with the stream request
-  OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
-}
-
 void HttpNetworkTransaction::OnQuicBroken() {
   net_error_details_.quic_broken = true;
 }
@@ -708,7 +683,7 @@ void HttpNetworkTransaction::DoCallback(int rv) {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Since Run may result in Read being called, clear user_callback_ up front.
-  base::ResetAndReturn(&callback_).Run(rv);
+  std::move(callback_).Run(rv);
 }
 
 void HttpNetworkTransaction::OnIOComplete(int result) {
@@ -734,11 +709,7 @@ int HttpNetworkTransaction::DoLoop(int result) {
         rv = DoCreateStream();
         break;
       case STATE_CREATE_STREAM_COMPLETE:
-        // TODO(zhongyi): remove liveness checks when crbug.com/652868 is
-        // solved.
-        net_log_.CrashIfInvalid();
         rv = DoCreateStreamComplete(rv);
-        net_log_.CrashIfInvalid();
         break;
       case STATE_INIT_STREAM:
         DCHECK_EQ(OK, rv);
@@ -861,59 +832,15 @@ int HttpNetworkTransaction::DoCreateStream() {
 }
 
 int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
-  // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, then
-  // DoCreateStreamComplete is being called from
-  // OnHttpsProxyTunnelResponseRedirect, which resets the stream request first.
-  // Therefore, we have to grab the connection attempts in *that* function
-  // instead of here in that case.
-  if (result != ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT)
-    CopyConnectionAttemptsFromStreamRequest();
-
+  CopyConnectionAttemptsFromStreamRequest();
   if (result == OK) {
     next_state_ = STATE_INIT_STREAM;
     DCHECK(stream_.get());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     result = HandleCertificateRequest(result);
-  } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
-    return DoCreateStreamCompletedTunnelResponseRedirect();
   } else if (result == ERR_HTTP_1_1_REQUIRED ||
              result == ERR_PROXY_HTTP_1_1_REQUIRED) {
     return HandleHttp11Required(result);
-  }
-
-  // Perform a TLS 1.3 version interference probe on various connection
-  // errors. The retry will never produce a successful connection but may map
-  // errors to ERR_SSL_VERSION_INTERFERENCE, which signals a probable
-  // version-interfering middlebox.
-  if (IsSecureRequest() && !HasExceededMaxRetries() &&
-      server_ssl_config_.version_max == SSL_PROTOCOL_VERSION_TLS1_3 &&
-      !server_ssl_config_.version_interference_probe) {
-    if (result == ERR_CONNECTION_CLOSED || result == ERR_SSL_PROTOCOL_ERROR ||
-        result == ERR_SSL_VERSION_OR_CIPHER_MISMATCH ||
-        result == ERR_CONNECTION_RESET ||
-        result == ERR_SSL_BAD_RECORD_MAC_ALERT) {
-      // Report the error code for each time a version interference probe is
-      // triggered.
-      base::UmaHistogramSparse("Net.SSLVersionInterferenceProbeTrigger",
-                               std::abs(result));
-      net_log_.AddEventWithNetErrorCode(
-          NetLogEventType::SSL_VERSION_INTERFERENCE_PROBE, result);
-
-      retry_attempts_++;
-      server_ssl_config_.version_interference_probe = true;
-      server_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-      ssl_version_interference_error_ = result;
-      ResetConnectionAndRequestForResend();
-      return OK;
-    }
-  }
-
-  if (result == ERR_SSL_VERSION_INTERFERENCE) {
-    // Record the error code version interference was detected at.
-    DCHECK(server_ssl_config_.version_interference_probe);
-    DCHECK_NE(OK, ssl_version_interference_error_);
-    base::UmaHistogramSparse("Net.SSLVersionInterferenceError",
-                             std::abs(ssl_version_interference_error_));
   }
 
   // Handle possible client certificate errors that may have occurred if the
@@ -1131,7 +1058,6 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
                << " during SSL renegotiation";
     result = ERR_CERT_ERROR_IN_SSL_RENEGOTIATION;
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    // TODO(wtc): Need a test case for this code path!
     DCHECK(stream_.get());
     DCHECK(IsSecureRequest());
     response_.cert_request_info = new SSLCertRequestInfo;
@@ -1331,6 +1257,8 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
     // error with an alternative service, mark that alternative service broken.
     if (!enable_alternative_services_ &&
         retried_alternative_service_.protocol != kProtoUnknown) {
+      HistogramBrokenAlternateProtocolLocation(
+          BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_NETWORK_TRANSACTION);
       session_->http_server_properties()->MarkAlternativeServiceBroken(
           retried_alternative_service_);
     }
@@ -1607,18 +1535,40 @@ int HttpNetworkTransaction::HandleHttp11Required(int error) {
 }
 
 int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
+  // Most client auth errors here come from the origin server, but they may come
+  // from the proxy if the request is not tunneled (i.e. the origin is HTTP, so
+  // there is no HTTPS connection) and the proxy does not report a bad client
+  // certificate until after the TLS handshake completes. The latter occurs in
+  // TLS 1.3 or TLS 1.2 with False Start (disabled for proxies). The error will
+  // then surface out of Read() rather than Connect() and ultimately surfaced
+  // out of DoReadHeadersComplete().
+  //
+  // See https://crbug.com/828965.
+  bool is_server;
+  SSLConfig* ssl_config;
+  HostPortPair host_port_pair;
+  if (UsingHttpProxyWithoutTunnel()) {
+    is_server = false;
+    ssl_config = &proxy_ssl_config_;
+    host_port_pair = proxy_info_.proxy_server().host_port_pair();
+  } else {
+    is_server = true;
+    ssl_config = &server_ssl_config_;
+    host_port_pair = HostPortPair::FromURL(request_->url);
+  }
+
   // Client certificate errors from the proxy are handled in the
-  // HttpStreamFactory and below. See discussion in https://crbug.com/828965.
-  if (server_ssl_config_.send_client_cert &&
+  // HttpStreamFactory and below.
+  if (ssl_config->send_client_cert &&
       (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error))) {
-    session_->ssl_client_auth_cache()->Remove(
-        HostPortPair::FromURL(request_->url));
+    DCHECK((is_server && IsSecureRequest()) || proxy_info_.is_https());
+    session_->ssl_client_auth_cache()->Remove(host_port_pair);
 
     // The private key handle may have gone stale due to, e.g., the user
     // unplugging their smartcard. Operating systems do not provide reliable
     // notifications for this, so if the signature failed and the private key
     // came from SSLClientAuthCache, retry to ask the user for a new one.
-    if (error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
+    if (is_server && error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
         server_ssl_client_cert_was_cached_ && !HasExceededMaxRetries()) {
       server_ssl_client_cert_was_cached_ = false;
       server_ssl_config_.send_client_cert = false;
@@ -1945,34 +1895,6 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
   }
 
   return result;
-}
-
-static HttpNetworkTransaction::TunnelRedirectHistogramValue
-GetTunnelRedirectHistogramValue(bool is_main_frame, bool was_auto_detected) {
-  if (!is_main_frame && !was_auto_detected)
-    return HttpNetworkTransaction::kSubresourceByExplicitProxy;
-  if (is_main_frame && !was_auto_detected)
-    return HttpNetworkTransaction::kMainFrameByExplicitProxy;
-  if (!is_main_frame && was_auto_detected)
-    return HttpNetworkTransaction::kSubresourceByAutoDetectedProxy;
-  return HttpNetworkTransaction::kMainFrameByAutoDetectedProxy;
-}
-
-// TODO(https://crbug.com/928551): Support for redirect on CONNECT is
-// deprecated. Should remove the ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT error
-// code and supporting plumbing + histogram once this change sticks on Stable.
-int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
-  bool is_main_frame = (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) ==
-                       LOAD_MAIN_FRAME_DEPRECATED;
-  bool was_auto_detected = proxy_info_.did_use_auto_detected_pac_script();
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.Proxy.RedirectDuringConnect",
-      GetTunnelRedirectHistogramValue(is_main_frame, was_auto_detected));
-
-  // Fail the request.
-  stream_.reset();
-  return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 }
 
 }  // namespace net

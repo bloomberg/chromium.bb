@@ -37,7 +37,7 @@ button.action {
 }
 .focus,
 #back.focus {
-  outline: solid 3px rgb(138, 180, 248);  /** GB300 from SAConstants */
+  outline: solid 3px rgb(26, 115, 232);  /** Focus color from SAConstants */
 }
 img {
   display: block;

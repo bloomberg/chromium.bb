@@ -21,12 +21,15 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Mode controller managing capture sequence of different camera mode.
+ * @param {cca.views.camera.PhotoResolPreferrer} photoResolPreferrer
+ * @param {cca.views.camera.VideoResolPreferrer} videoResolPreferrer
  * @param {function()} doSwitchMode Callback to trigger mode switching.
  * @param {function(?Blob, boolean, string): Promise} doSavePicture Callback for
  *     saving picture.
  * @constructor
  */
-cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
+cca.views.camera.Modes = function(
+    photoResolPreferrer, videoResolPreferrer, doSwitchMode, doSavePicture) {
   /**
    * @type {function()}
    * @private
@@ -60,6 +63,12 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
   this.modesGroup_ = document.querySelector('#modes-group');
 
   /**
+   * @type {?[number, number]}
+   * @private
+   */
+  this.captureResolution_ = null;
+
+  /**
    * Mode classname and related functions and attributes.
    * @type {Object<string, Object>}
    * @private
@@ -69,26 +78,29 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
       captureFactory: () =>
           new cca.views.camera.Video(this.stream_, this.doSavePicture_),
       isSupported: async () => true,
-      deviceConstraints: cca.views.camera.Modes.videoConstraits,
+      resolutionConfig: videoResolPreferrer,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, true),
       nextMode: 'photo-mode',
     },
     'photo-mode': {
-      captureFactory: () =>
-          new cca.views.camera.Photo(this.stream_, this.doSavePicture_),
+      captureFactory: () => new cca.views.camera.Photo(
+          this.stream_, this.doSavePicture_, this.captureResolution_),
       isSupported: async () => true,
-      deviceConstraints: cca.views.camera.Modes.photoConstraits,
+      resolutionConfig: photoResolPreferrer,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'square-mode',
     },
     'square-mode': {
-      captureFactory: () =>
-          new cca.views.camera.Square(this.stream_, this.doSavePicture_),
+      captureFactory: () => new cca.views.camera.Square(
+          this.stream_, this.doSavePicture_, this.captureResolution_),
       isSupported: async () => true,
-      deviceConstraints: cca.views.camera.Modes.photoConstraits,
+      resolutionConfig: photoResolPreferrer,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'portrait-mode',
     },
     'portrait-mode': {
-      captureFactory: () =>
-          new cca.views.camera.Portrait(this.stream_, this.doSavePicture_),
+      captureFactory: () => new cca.views.camera.Portrait(
+          this.stream_, this.doSavePicture_, this.captureResolution_),
       isSupported: async (stream) => {
         try {
           const imageCapture =
@@ -104,8 +116,9 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
           return false;
         }
       },
-      deviceConstraints: cca.views.camera.Modes.photoConstraits,
-      nextMode: 'video-mode',
+      resolutionConfig: photoResolPreferrer,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
+      nextMode: 'photo-mode',
     },
   };
 
@@ -149,14 +162,15 @@ cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
 };
 
 /**
- * Returns a set of available video constraints.
+ * Returns a set of available constraints for HALv1 device.
+ * @param {boolean} videoMode Is getting constraints for video mode.
  * @param {?string} deviceId Id of video device.
  * @return {Array<Object>} Result of constraints-candidates.
  */
-cca.views.camera.Modes.videoConstraits = function(deviceId) {
+cca.views.camera.Modes.getV1Constraints = function(videoMode, deviceId) {
   return [
     {
-      aspectRatio: {ideal: 1.7777777778},
+      aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
       width: {min: 1280},
       frameRate: {min: 24},
     },
@@ -165,42 +179,14 @@ cca.views.camera.Modes.videoConstraits = function(deviceId) {
       frameRate: {min: 24},
     },
   ].map((constraint) => {
-    // Each passed-in video-constraint will be modified here.
     if (deviceId) {
       constraint.deviceId = {exact: deviceId};
     } else {
-      // As a default camera use the one which is facing the user.
+      // HALv1 devices are unable to know facing before stream configuration,
+      // deviceId is set to null for requesting user facing camera as default.
       constraint.facingMode = {exact: 'user'};
     }
-    return {audio: true, video: constraint};
-  });
-};
-
-/**
- * Returns a set of available photo constraints.
- * @param {?string} deviceId Id of video device.
- * @return {Array<Object>} Result of constraints-candidates.
- */
-cca.views.camera.Modes.photoConstraits = function(deviceId) {
-  return [
-    {
-      aspectRatio: {ideal: 1.3333333333},
-      width: {min: 1280},
-      frameRate: {min: 24},
-    },
-    {
-      width: {min: 640},
-      frameRate: {min: 24},
-    },
-  ].map((constraint) => {
-    // Each passed-in video-constraint will be modified here.
-    if (deviceId) {
-      constraint.deviceId = {exact: deviceId};
-    } else {
-      // As a default camera use the one which is facing the user.
-      constraint.facingMode = {exact: 'user'};
-    }
-    return {audio: false, video: constraint};
+    return {audio: videoMode, video: constraint};
   });
 };
 
@@ -236,14 +222,32 @@ cca.views.camera.Modes.prototype.getModeCandidates = function() {
 };
 
 /**
- * Gets constraints-candidates for given mode and deviceId.
- * @param {?string} deviceId Request video device id.
- * @param {?string} mode Request mode.
- * @return {Array<Object>} Constraints-candidates for given deviceId and mode.
+ * Gets all available capture resolution and its corresponding preview
+ * constraints for the given mode.
+ * @param {string} mode
+ * @param {string} deviceId
+ * @param {ResolList} previewResolutions
+ * @return {Array<[?[number, number], Array<Object>]>} Result capture resolution
+ *     width, height and constraints-candidates for its preview.
  */
-cca.views.camera.Modes.prototype.getConstraitsCandidates = function(
-    deviceId, mode) {
-  return this.allModes_[mode].deviceConstraints(deviceId);
+cca.views.camera.Modes.prototype.getResolutionCandidates = function(
+    mode, deviceId, previewResolutions) {
+  return this.allModes_[mode].resolutionConfig.getSortedCandidates(
+      deviceId, previewResolutions);
+};
+
+/**
+ * Gets capture resolution and its corresponding preview constraints for the
+ * given mode on camera HALv1 device.
+ * @param {string} mode
+ * @param {?string} deviceId
+ * @return {Array<[?[number, number], Array<Object>]>} Result capture resolution
+ *     width, height and constraints-candidates for its preview.
+ */
+cca.views.camera.Modes.prototype.getResolutionCandidatesV1 = function(
+    mode, deviceId) {
+  return this.allModes_[mode].v1Config(deviceId).map(
+      (constraints) => [null, [constraints]]);
 };
 
 /**
@@ -280,30 +284,34 @@ cca.views.camera.Modes.prototype.updateModeSelectionUI = function(
  * @async
  * @param {string} mode Classname of mode to be updated.
  * @param {MediaStream} stream Stream of the new switching mode.
+ * @param {?string} deviceId Device id of currently working video device.
+ * @param {?[number, number]} captureResolution Capturing resolution width and
+ *     height.
  */
-cca.views.camera.Modes.prototype.updateMode = async function(mode, stream) {
+cca.views.camera.Modes.prototype.updateMode =
+    async function(mode, stream, deviceId, captureResolution) {
   if (this.current != null) {
     await this.current.stopCapture();
   }
   this.updateModeUI_(mode);
   this.stream_ = stream;
+  this.captureResolution_ = captureResolution;
   this.current = this.allModes_[mode].captureFactory();
+  if (deviceId && this.captureResolution_) {
+    this.allModes_[mode].resolutionConfig.updateCurrentResolution(
+        deviceId, ...this.captureResolution_);
+  }
 };
 
 /**
  * Base class for controlling capture sequence in different camera modes.
  * @param {MediaStream} stream
  * @param {function(?Blob, boolean, string): Promise} doSavePicture
+ * @param {?[number, number]} captureResolution Capturing resolution width and
+ *     height.
  * @constructor
  */
-cca.views.camera.Mode = function(stream, doSavePicture) {
-  /**
-   * Promise for ongoing capture operation.
-   * @type {?Promise}
-   * @private
-   */
-  this.capture_ = null;
-
+cca.views.camera.Mode = function(stream, doSavePicture, captureResolution) {
   /**
    * Stream of current mode.
    * @type {?Promise}
@@ -317,6 +325,21 @@ cca.views.camera.Mode = function(stream, doSavePicture) {
    * @protected
    */
   this.doSavePicture_ = doSavePicture;
+
+  /**
+   * Width, height of capture resolution. May be null on device not supporting
+   * setting resolution.
+   * @type {?[number, number]}
+   * @private
+   */
+  this.captureResolution_ = captureResolution;
+
+  /**
+   * Promise for ongoing capture operation.
+   * @type {?Promise}
+   * @private
+   */
+  this.capture_ = null;
 };
 
 /**
@@ -360,7 +383,7 @@ cca.views.camera.Mode.prototype.stop_ = function() {};
  * @constructor
  */
 cca.views.camera.Video = function(stream, doSavePicture) {
-  cca.views.camera.Mode.call(this, stream, doSavePicture);
+  cca.views.camera.Mode.call(this, stream, doSavePicture, null);
 
   /**
    * Promise for play start sound delay.
@@ -471,6 +494,8 @@ cca.views.camera.Video.prototype.createVideoBlob_ = function() {
       var recordedBlob = new Blob(
           recordedChunks, {type: cca.views.camera.Video.VIDEO_MIMETYPE});
       recordedBlob.mins = this.recordTime_.stop();
+      const {width, height} = this.stream_.getVideoTracks()[0].getSettings();
+      recordedBlob.resolution = [width, height];
       recordedChunks = [];
       if (recordedBlob.size) {
         resolve(recordedBlob);
@@ -500,10 +525,11 @@ cca.views.camera.Video.prototype.createVideoBlob_ = function() {
  * Photo mode capture controller.
  * @param {MediaStream} stream
  * @param {function(?Blob, boolean, string): Promise} doSavePicture
+ * @param {?[number, number]} captureResolution
  * @constructor
  */
-cca.views.camera.Photo = function(stream, doSavePicture) {
-  cca.views.camera.Mode.call(this, stream, doSavePicture);
+cca.views.camera.Photo = function(stream, doSavePicture, captureResolution) {
+  cca.views.camera.Mode.call(this, stream, doSavePicture, captureResolution);
 
   /**
    * ImageCapture object to capture still photos.
@@ -549,24 +575,33 @@ cca.views.camera.Photo.prototype.start_ = async function() {
  * @private
  */
 cca.views.camera.Photo.prototype.createPhotoBlob_ = async function() {
-  var photoCapabilities = await this.imageCapture_.getPhotoCapabilities();
-  // Set to take the highest resolution, but the photo to be taken will
-  // still have the same aspect ratio with the preview.
-  var photoSettings = {
-    imageWidth: photoCapabilities.imageWidth.max,
-    imageHeight: photoCapabilities.imageHeight.max,
-  };
-  return await this.imageCapture_.takePhoto(photoSettings);
+  if (this.captureResolution_) {
+    var photoSettings = {
+      imageWidth: this.captureResolution_[0],
+      imageHeight: this.captureResolution_[1],
+    };
+  } else {
+    const caps = await this.imageCapture_.getPhotoCapabilities();
+    photoSettings = {
+      imageWidth: caps.imageWidth.max,
+      imageHeight: caps.imageHeight.max,
+    };
+  }
+  const blob = await this.imageCapture_.takePhoto(photoSettings);
+  const image = await cca.util.blobToImage(blob);
+  blob.resolution = [image.width, image.height];
+  return blob;
 };
 
 /**
  * Square mode capture controller.
  * @param {MediaStream} stream
  * @param {function(?Blob, boolean, string): Promise} doSavePicture
+ * @param {?[number, number]} captureResolution
  * @constructor
  */
-cca.views.camera.Square = function(stream, doSavePicture) {
-  cca.views.camera.Photo.call(this, stream, doSavePicture);
+cca.views.camera.Square = function(stream, doSavePicture, captureResolution) {
+  cca.views.camera.Photo.call(this, stream, doSavePicture, captureResolution);
 
   /**
    * Picture saving callback from parent.
@@ -593,39 +628,35 @@ cca.views.camera.Square.prototype = {
 /**
  * Crops out maximum possible centered square from the image blob.
  * @param {Blob} blob
- * @return {Promise<Blob>} Promise with result cropped square image.
+ * @return {Blob} Promise with result cropped square image.
+ * @async
  */
-cca.views.camera.Square.prototype.cropSquare = function(blob) {
-  return new Promise((resolve, reject) => {
-    var img = new Image();
-    img.onload = () => {
-      let side = Math.min(img.width, img.height);
-      let canvas = document.createElement('canvas');
-      canvas.width = side;
-      canvas.height = side;
-      let ctx = canvas.getContext('2d');
-      ctx.drawImage(
-          img, Math.floor((img.width - side) / 2),
-          Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
-      try {
-        canvas.toBlob(resolve, 'image/jpeg');
-      } catch (e) {
-        reject(e);
-      }
-    };
-    img.onerror = () => reject(new Error('Failed to load unprocessed image'));
-    img.src = URL.createObjectURL(blob);
+cca.views.camera.Square.prototype.cropSquare = async function(blob) {
+  const img = await cca.util.blobToImage(blob);
+  let side = Math.min(img.width, img.height);
+  let canvas = document.createElement('canvas');
+  canvas.width = side;
+  canvas.height = side;
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(
+      img, Math.floor((img.width - side) / 2),
+      Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
+  const croppedBlob = await new Promise((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg');
   });
+  croppedBlob.resolution = blob.resolution;
+  return croppedBlob;
 };
 
 /**
  * Portrait mode capture controller.
  * @param {MediaStream} stream
  * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @param {?[number, number]} captureResolution
  * @constructor
  */
-cca.views.camera.Portrait = function(stream, doSavePicture) {
-  cca.views.camera.Mode.call(this, stream, doSavePicture);
+cca.views.camera.Portrait = function(stream, doSavePicture, captureResolution) {
+  cca.views.camera.Mode.call(this, stream, doSavePicture, captureResolution);
 
   /**
    * ImageCapture object to capture still photos.
@@ -655,11 +686,18 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
       throw e;
     }
   }
-  const photoCapabilities = await this.crosImageCapture_.getPhotoCapabilities();
-  const photoSettings = {
-    imageWidth: photoCapabilities.imageWidth.max,
-    imageHeight: photoCapabilities.imageHeight.max,
-  };
+  if (this.captureResolution_) {
+    var photoSettings = {
+      imageWidth: this.captureResolution_[0],
+      imageHeight: this.captureResolution_[1],
+    };
+  } else {
+    const caps = await this.imageCapture_.getPhotoCapabilities();
+    photoSettings = {
+      imageWidth: caps.imageWidth.max,
+      imageHeight: caps.imageHeight.max,
+    };
+  }
   try {
     var [reference, portrait] = this.crosImageCapture_.takePhoto(
         photoSettings, [cros.mojom.Effect.PORTRAIT_MODE]);
@@ -679,6 +717,8 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
                        'error_msg_take_photo_failed');
       throw e;
     }
+    const image = await cca.util.blobToImage(blob);
+    blob.resolution = [image.width, image.height];
     if (!playSound) {
       playSound = true;
       cca.sound.play('#sound-shutter');

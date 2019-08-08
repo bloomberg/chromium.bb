@@ -107,6 +107,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // Called when a renderer is destroyed.
   void OnClientDeleted(int child_id, int route_id);
 
+  // Counts the number of active resource scheduler clients.
+  // A client is active when it has at least one request either in the pending
+  // request queue owned by the client or in flight.
+  // Note: the counter is expected to be 0 for the most of time.
+  size_t ActiveSchedulerClientsCounter() const;
 
   // Client functions:
 

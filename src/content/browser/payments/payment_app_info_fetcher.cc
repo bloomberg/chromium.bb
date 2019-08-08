@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
+#include "components/payments/content/icon/icon_size.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -238,13 +239,6 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
                       &(fetched_payment_app_info_->name));
   }
 
-  // TODO(gogerald): Choose appropriate icon size dynamically on different
-  // platforms.
-  // Here we choose a large ideal icon size to be big enough for all platforms.
-  // Note that we only scale down for this icon size but not scale up.
-  const int kPaymentAppIdealIconSize = 0xFFFF;
-  const int kPaymentAppMinimumIconSize = 0;
-
   if (manifest.icons.empty()) {
     WarnIfPossible(
         "Unable to download the payment handler's icon, because the web app "
@@ -256,8 +250,22 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
     return;
   }
 
+  WebContents* web_contents = web_contents_helper_->web_contents();
+  if (!web_contents) {
+    LOG(WARNING) << "Unable to download the payment handler's icon because no "
+                    "renderer was found, possibly because the page was closed "
+                    "or navigated away during installation. User may not "
+                    "recognize this payment handler in UI, because it will be "
+                    "labeled only by its name and origin.";
+    RunCallbackAndDestroy();
+    return;
+  }
+  gfx::NativeView native_view = web_contents->GetNativeView();
+
   icon_url_ = blink::ManifestIconSelector::FindBestMatchingIcon(
-      manifest.icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+      manifest.icons,
+      payments::IconSizeCalculator::IdealIconHeight(native_view),
+      payments::IconSizeCalculator::MinimumIconHeight(),
       ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (!icon_url_.is_valid()) {
@@ -271,19 +279,10 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
     return;
   }
 
-  if (!web_contents_helper_->web_contents()) {
-    LOG(WARNING) << "Unable to download the payment handler's icon because no "
-                    "renderer was found, possibly because the page was closed "
-                    "or navigated away during installation. User may not "
-                    "recognize this payment handler in UI, because it will be "
-                    "labeled only by its name and origin.";
-    RunCallbackAndDestroy();
-    return;
-  }
-
   bool can_download = ManifestIconDownloader::Download(
-      web_contents_helper_->web_contents(), icon_url_, kPaymentAppIdealIconSize,
-      kPaymentAppMinimumIconSize,
+      web_contents, icon_url_,
+      payments::IconSizeCalculator::IdealIconHeight(native_view),
+      payments::IconSizeCalculator::MinimumIconHeight(),
       base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched,
                      base::Unretained(this)),
       false /* square_only */);

@@ -13,12 +13,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -63,6 +66,33 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Member<LocalFrame> parent_;
 };
 
+// RenderingTestChromeClient ensures that we have a LayerTreeHost which allows
+// testing BlinkGenPropertyTrees and CompositeAfterPaint property tree creation.
+class RenderingTestChromeClient : public EmptyChromeClient {
+ public:
+  void SetUp() {
+    // Runtime flags can affect LayerTreeHost's settings so this needs to be
+    // recreated for each test.
+    layer_tree_.reset(new LayerTreeHostEmbedder());
+  }
+
+  bool HasLayer(const cc::Layer& layer) {
+    return layer.layer_tree_host() == layer_tree_->layer_tree_host();
+  }
+
+  void AttachRootLayer(scoped_refptr<cc::Layer> layer,
+                       LocalFrame* local_root) override {
+    layer_tree_->layer_tree_host()->SetRootLayer(std::move(layer));
+  }
+
+  cc::LayerTreeHost* layer_tree_host() {
+    return layer_tree_->layer_tree_host();
+  }
+
+ private:
+  std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
+};
+
 class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   USING_FAST_MALLOC(RenderingTest);
 
@@ -70,7 +100,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   virtual FrameSettingOverrideFunction SettingOverrider() const {
     return nullptr;
   }
-  virtual ChromeClient& GetChromeClient() const;
+  virtual RenderingTestChromeClient& GetChromeClient() const;
 
   explicit RenderingTest(LocalFrameClient* = nullptr);
 
@@ -111,7 +141,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
   }
 
-  DisplayItemClient* GetDisplayItemClientFromLayoutObject(
+  const DisplayItemClient* GetDisplayItemClientFromLayoutObject(
       LayoutObject* obj) const {
     LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlowOrNull(obj);
     if (block_flow && block_flow->PaintFragment())
@@ -119,13 +149,32 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     return obj;
   }
 
-  DisplayItemClient* GetDisplayItemClientFromElementId(const char* id) const {
+  const DisplayItemClient* GetDisplayItemClientFromElementId(
+      const char* id) const {
     return GetDisplayItemClientFromLayoutObject(GetLayoutObjectByElementId(id));
   }
 
  private:
   Persistent<LocalFrameClient> local_frame_client_;
 };
+
+// These constructors are for convenience of tests to construct these geometries
+// from integers.
+inline LogicalOffset::LogicalOffset(int inline_offset, int block_offset)
+    : inline_offset(inline_offset), block_offset(block_offset) {}
+inline LogicalSize::LogicalSize(int inline_size, int block_size)
+    : inline_size(inline_size), block_size(block_size) {}
+inline LogicalRect::LogicalRect(int inline_offset,
+                                int block_offset,
+                                int inline_size,
+                                int block_size)
+    : offset(inline_offset, block_offset), size(inline_size, block_size) {}
+inline PhysicalOffset::PhysicalOffset(int left, int top)
+    : left(left), top(top) {}
+inline PhysicalSize::PhysicalSize(int width, int height)
+    : width(width), height(height) {}
+inline PhysicalRect::PhysicalRect(int left, int top, int width, int height)
+    : offset(left, top), size(width, height) {}
 
 }  // namespace blink
 

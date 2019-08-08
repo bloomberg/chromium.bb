@@ -157,6 +157,7 @@ void URLRequest::Delegate::OnCertificateRequested(
 }
 
 void URLRequest::Delegate::OnSSLCertificateError(URLRequest* request,
+                                                 int net_error,
                                                  const SSLInfo& ssl_info,
                                                  bool is_hsts_ok) {
   request->Cancel();
@@ -279,51 +280,53 @@ LoadStateWithParam URLRequest::GetLoadState() const {
                             base::string16());
 }
 
-std::unique_ptr<base::Value> URLRequest::GetStateAsValue() const {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("url", original_url().possibly_invalid_spec());
+base::Value URLRequest::GetStateAsValue() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", original_url().possibly_invalid_spec());
 
   if (url_chain_.size() > 1) {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
+    base::Value list(base::Value::Type::LIST);
     for (const GURL& url : url_chain_) {
-      list->AppendString(url.possibly_invalid_spec());
+      list.GetList().emplace_back(url.possibly_invalid_spec());
     }
-    dict->Set("url_chain", std::move(list));
+    dict.SetKey("url_chain", std::move(list));
   }
 
-  dict->SetInteger("load_flags", load_flags_);
+  dict.SetIntKey("load_flags", load_flags_);
 
   LoadStateWithParam load_state = GetLoadState();
-  dict->SetInteger("load_state", load_state.state);
+  dict.SetIntKey("load_state", load_state.state);
   if (!load_state.param.empty())
-    dict->SetString("load_state_param", load_state.param);
+    dict.SetStringKey("load_state_param", load_state.param);
   if (!blocked_by_.empty())
-    dict->SetString("delegate_blocked_by", blocked_by_);
+    dict.SetStringKey("delegate_blocked_by", blocked_by_);
 
-  dict->SetString("method", method_);
-  dict->SetBoolean("has_upload", has_upload());
-  dict->SetBoolean("is_pending", is_pending_);
+  dict.SetStringKey("method", method_);
+  dict.SetBoolKey("has_upload", has_upload());
+  dict.SetBoolKey("is_pending", is_pending_);
+
+  dict.SetIntKey("traffic_annotation", traffic_annotation_.unique_id_hash_code);
 
   // Add the status of the request.  The status should always be IO_PENDING, and
   // the error should always be OK, unless something is holding onto a request
   // that has finished or a request was leaked.  Neither of these should happen.
   switch (status_.status()) {
     case URLRequestStatus::SUCCESS:
-      dict->SetString("status", "SUCCESS");
+      dict.SetStringKey("status", "SUCCESS");
       break;
     case URLRequestStatus::IO_PENDING:
-      dict->SetString("status", "IO_PENDING");
+      dict.SetStringKey("status", "IO_PENDING");
       break;
     case URLRequestStatus::CANCELED:
-      dict->SetString("status", "CANCELED");
+      dict.SetStringKey("status", "CANCELED");
       break;
     case URLRequestStatus::FAILED:
-      dict->SetString("status", "FAILED");
+      dict.SetStringKey("status", "FAILED");
       break;
   }
   if (status_.error() != OK)
-    dict->SetInteger("net_error", status_.error());
-  return std::move(dict);
+    dict.SetIntKey("net_error", status_.error());
+  return dict;
 }
 
 void URLRequest::LogBlockedBy(const char* blocked_by) {
@@ -395,6 +398,11 @@ HttpResponseHeaders* URLRequest::response_headers() const {
   return response_info_.headers.get();
 }
 
+const base::Optional<AuthChallengeInfo>& URLRequest::auth_challenge_info()
+    const {
+  return response_info_.auth_challenge;
+}
+
 void URLRequest::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   *load_timing_info = load_timing_info_;
 }
@@ -425,6 +433,15 @@ void URLRequest::GetCharset(string* charset) const {
 int URLRequest::GetResponseCode() const {
   DCHECK(job_.get());
   return job_->GetResponseCode();
+}
+
+void URLRequest::set_not_sent_cookies(CookieStatusList excluded_cookies) {
+  not_sent_cookies_ = std::move(excluded_cookies);
+}
+
+void URLRequest::set_not_stored_cookies(
+    CookieAndLineStatusList excluded_cookies) {
+  not_stored_cookies_ = std::move(excluded_cookies);
 }
 
 void URLRequest::SetLoadFlags(int flags) {
@@ -608,7 +625,8 @@ URLRequest::URLRequest(const GURL& url,
   context->url_requests()->insert(this);
   net_log_.BeginEvent(
       NetLogEventType::REQUEST_ALIVE,
-      base::Bind(&NetLogURLRequestConstructorCallback, &url, priority_));
+      base::BindRepeating(&NetLogURLRequestConstructorCallback, &url, priority_,
+                          traffic_annotation_));
 }
 
 void URLRequest::BeforeRequestComplete(int error) {
@@ -666,6 +684,9 @@ void URLRequest::StartJob(URLRequestJob* job) {
   is_redirecting_ = false;
 
   response_info_.was_cached = false;
+
+  not_sent_cookies_.clear();
+  not_stored_cookies_.clear();
 
   GURL referrer_url(referrer_);
   if (referrer_url != URLRequestJob::ComputeReferrerForPolicy(
@@ -877,6 +898,9 @@ void URLRequest::FollowDeferredRedirect(
   DCHECK(job_.get());
   DCHECK(status_.is_success());
 
+  not_sent_cookies_.clear();
+  not_stored_cookies_.clear();
+
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->FollowDeferredRedirect(removed_headers, modified_headers);
 }
@@ -884,6 +908,9 @@ void URLRequest::FollowDeferredRedirect(
 void URLRequest::SetAuth(const AuthCredentials& credentials) {
   DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
+
+  not_sent_cookies_.clear();
+  not_stored_cookies_.clear();
 
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->SetAuth(credentials);
@@ -1077,15 +1104,17 @@ void URLRequest::NotifyAuthRequiredComplete(
 void URLRequest::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
   status_ = URLRequestStatus();
+
   OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_CERTIFICATE_REQUESTED);
   delegate_->OnCertificateRequested(this, cert_request_info);
 }
 
-void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
+void URLRequest::NotifySSLCertificateError(int net_error,
+                                           const SSLInfo& ssl_info,
                                            bool fatal) {
   status_ = URLRequestStatus();
   OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_SSL_CERTIFICATE_ERROR);
-  delegate_->OnSSLCertificateError(this, ssl_info, fatal);
+  delegate_->OnSSLCertificateError(this, net_error, ssl_info, fatal);
 }
 
 bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {

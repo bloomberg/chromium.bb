@@ -108,7 +108,7 @@ OmniboxEditModel::State::State(
     bool is_keyword_hint,
     OmniboxEventProto::KeywordModeEntryMethod keyword_mode_entry_method,
     OmniboxFocusState focus_state,
-    FocusSource focus_source,
+    OmniboxFocusSource focus_source,
     const AutocompleteInput& autocomplete_input)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
@@ -134,7 +134,6 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       view_(view),
       controller_(controller),
       focus_state_(OMNIBOX_FOCUS_NONE),
-      focus_source_(INVALID),
       user_input_in_progress_(false),
       user_input_since_focus_(true),
       just_deleted_text_(false),
@@ -149,6 +148,12 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
+}
+
+metrics::OmniboxEventProto::PageClassification
+OmniboxEditModel::GetPageClassification() const {
+  return controller()->GetLocationBarModel()->GetPageClassification(
+      focus_source_);
 }
 
 const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
@@ -387,7 +392,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // screw up our calculation of the desired_tld.
   AutocompleteMatch match_from_text;
   client_->GetAutocompleteClassifier()->Classify(*text, is_keyword_selected(),
-                                                 true, ClassifyPage(),
+                                                 true, GetPageClassification(),
                                                  &match_from_text, nullptr);
   if (AutocompleteMatch::IsSearchType(match_from_text.type))
     return;
@@ -519,8 +524,9 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
       cursor_position = input_text.length();
     }
   }
-  input_ = AutocompleteInput(input_text, cursor_position, ClassifyPage(),
-                             client_->GetSchemeClassifier());
+  input_ =
+      AutocompleteInput(input_text, cursor_position, GetPageClassification(),
+                        client_->GetSchemeClassifier());
   input_.set_current_url(client_->GetURL());
   input_.set_current_title(client_->GetTitle());
   input_.set_prevent_inline_autocomplete(
@@ -703,7 +709,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     input_text = user_input_in_progress_ ? user_text_ : url_for_editing_;
   // Create a dummy AutocompleteInput for use in calling SuggestExactInput()
   // to create an alternate navigational match.
-  AutocompleteInput alternate_input(input_text, ClassifyPage(),
+  AutocompleteInput alternate_input(input_text, GetPageClassification(),
                                     client_->GetSchemeClassifier());
   // Somehow we can occasionally get here with no active tab.  It's not
   // clear why this happens.
@@ -746,7 +752,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       keyword_mode_entry_method_, popup_open, dropdown_ignored ? 0 : index,
       disposition, !pasted_text.empty(),
       SessionID::InvalidValue(),  // don't know tab ID; set later if appropriate
-      ClassifyPage(), elapsed_time_since_user_first_modified_omnibox,
+      GetPageClassification(), elapsed_time_since_user_first_modified_omnibox,
       match.allowed_to_be_default_match ? match.inline_autocompletion.length()
                                         : base::string16::npos,
       elapsed_time_since_last_change_to_default_match,
@@ -803,11 +809,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // in template_url.h.
     }
 
-    SearchEngineType search_engine_type = match.destination_url.is_valid() ?
-        TemplateURLPrepopulateData::GetEngineType(match.destination_url) :
-        SEARCH_ENGINE_OTHER;
-    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
-                              SEARCH_ENGINE_MAX);
+    AutocompleteMatch::LogSearchEngineUsed(match, service);
   } else {
     // |match| is a URL navigation, not a search.
     // For logging the below histogram, only record uses that depend on the
@@ -852,6 +854,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   BookmarkModel* bookmark_model = client_->GetBookmarkModel();
   if (bookmark_model && bookmark_model->IsBookmarked(match.destination_url))
     client_->OnBookmarkLaunched();
+}
+
+bool OmniboxEditModel::InExplicitExperimentalKeywordMode() {
+  return AutocompleteProvider::InExplicitExperimentalKeywordMode(input_,
+                                                                 keyword_);
 }
 
 bool OmniboxEditModel::AcceptKeyword(
@@ -1036,7 +1043,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   // off).
   // TODO(hfung): Remove this when crbug/271590 is fixed.
   if (client_->CurrentPageExists() && !user_input_in_progress_) {
-    input_ = AutocompleteInput(url_for_editing_, ClassifyPage(),
+    input_ = AutocompleteInput(url_for_editing_, GetPageClassification(),
                                client_->GetSchemeClassifier());
     input_.set_current_url(client_->GetURL());
     input_.set_current_title(client_->GetTitle());
@@ -1068,7 +1075,7 @@ void OmniboxEditModel::OnWillKillFocus() {
 
 void OmniboxEditModel::OnKillFocus() {
   SetFocusState(OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
-  focus_source_ = INVALID;
+  focus_source_ = OmniboxFocusSource::INVALID;
   last_omnibox_focus_ = base::TimeTicks();
   paste_state_ = NONE;
   control_key_state_ = UP;
@@ -1279,15 +1286,16 @@ bool OmniboxEditModel::OnAfterPossibleChange(
 
   if (state_changes.text_differs || state_changes.selection_differs) {
     // Record current focus state for this input if we haven't already.
-    if (focus_source_ == INVALID) {
+    if (focus_source_ == OmniboxFocusSource::INVALID) {
       // We should generally expect the omnibox to have focus at this point, but
       // it doesn't always on Linux. This is because, unlike other platforms,
       // right clicking in the omnibox on Linux doesn't focus it. So pasting via
       // right-click can change the contents without focusing the omnibox.
       // TODO(samarth): fix Linux focus behavior and add a DCHECK here to
       // check that the omnibox does have focus.
-      focus_source_ =
-          (focus_state_ == OMNIBOX_FOCUS_INVISIBLE) ? FAKEBOX : OMNIBOX;
+      focus_source_ = (focus_state_ == OMNIBOX_FOCUS_INVISIBLE)
+                          ? OmniboxFocusSource::FAKEBOX
+                          : OmniboxFocusSource::OMNIBOX;
     }
 
     // Restore caret visibility whenever the user changes text or selection in
@@ -1478,7 +1486,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
 
     client_->GetAutocompleteClassifier()->Classify(
         MaybePrependKeyword(text_for_match_generation), is_keyword_selected(),
-        true, ClassifyPage(), match, alternate_nav_url);
+        true, GetPageClassification(), match, alternate_nav_url);
   }
 }
 
@@ -1545,38 +1553,12 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
   }
 }
 
-OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
-  if (!client_->CurrentPageExists())
-    return OmniboxEventProto::OTHER;
-  if (focus_source_ == SEARCH_BUTTON)
-    return OmniboxEventProto::SEARCH_BUTTON_AS_STARTING_FOCUS;
-  if (client_->IsInstantNTP()) {
-    // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
-    // i.e., if input isn't actually in progress.
-    return (focus_source_ == FAKEBOX) ?
-        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
-        OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-  }
-  const GURL& gurl = client_->GetURL();
-  if (!gurl.is_valid())
-    return OmniboxEventProto::INVALID_SPEC;
-  if (client_->IsNewTabPage(gurl))
-    return OmniboxEventProto::NTP;
-  if (gurl.spec() == url::kAboutBlankURL)
-    return OmniboxEventProto::BLANK;
-  if (client_->IsHomePage(gurl))
-    return OmniboxEventProto::HOME_PAGE;
-  if (client_->IsSearchResultsPage())
-    return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-  return OmniboxEventProto::OTHER;
-}
-
 void OmniboxEditModel::ClassifyString(const base::string16& text,
                                       AutocompleteMatch* match,
                                       GURL* alternate_nav_url) const {
   DCHECK(match);
   client_->GetAutocompleteClassifier()->Classify(
-      text, false, false, ClassifyPage(), match, alternate_nav_url);
+      text, false, false, GetPageClassification(), match, alternate_nav_url);
 }
 
 bool OmniboxEditModel::SetInputInProgressNoNotify(bool in_progress) {

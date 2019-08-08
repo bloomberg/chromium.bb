@@ -104,9 +104,6 @@ class DisplayLockContextTest : public testing::Test {
     return *static_cast<Document*>(
         web_view_helper_.LocalMainFrame()->GetDocument());
   }
-  TextFinder& GetTextFinder() {
-    return web_view_helper_.LocalMainFrame()->EnsureTextFinder();
-  }
   FindInPage* GetFindInPage() {
     return web_view_helper_.LocalMainFrame()->GetFindInPage();
   }
@@ -131,6 +128,40 @@ class DisplayLockContextTest : public testing::Test {
     test::RunPendingTasks();
   }
 
+  void LockElement(Element& element, bool activatable) {
+    DisplayLockOptions options;
+    options.setActivatable(activatable);
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element.getDisplayLockForBindings()->acquire(script_state, &options);
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  void CommitElement(Element& element) {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element.getDisplayLockForBindings()->commit(script_state);
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  mojom::blink::FindOptionsPtr FindOptions(bool find_next = false) {
+    auto find_options = mojom::blink::FindOptions::New();
+    find_options->run_synchronously_for_testing = true;
+    find_options->find_next = find_next;
+    find_options->forward = true;
+    return find_options;
+  }
+
+  void Find(String search_text,
+            DisplayLockTestFindInPageClient& client,
+            bool find_next = false) {
+    client.Reset();
+    GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(find_next));
+    test::RunPendingTasks();
+  }
+
+  const int FAKE_FIND_ID = 1;
+
  private:
   base::Optional<RuntimeEnabledFeatures::Backup> features_backup_;
   frame_test_helpers::WebViewHelper web_view_helper_;
@@ -142,7 +173,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
     div {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container"><div id="child"></div></div></body>
@@ -162,7 +193,8 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       element->GetDisplayLockContext()->ShouldStyle(DisplayLockContext::kSelf));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
 
@@ -240,73 +272,6 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       MakeRGB(0, 0, 255));
 }
 
-TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-    #container {
-      width: 100px;
-      height: 100px;
-      contain: content;
-    }
-    </style>
-    <body><div id="container">testing</div></body>
-  )HTML");
-
-  int identifier = 0;
-  WebString search_text(String("testing"));
-  auto& text_finder = GetTextFinder();
-  auto find_options = mojom::blink::FindOptions::New();
-  bool wrap_within_frame = true;
-
-  ASSERT_TRUE(text_finder.Find(identifier, search_text, *find_options,
-                               wrap_within_frame));
-  text_finder.ClearActiveFindMatch();
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
-
-  // Sanity checks to ensure the element is locked.
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
-
-  EXPECT_FALSE(element->GetDisplayLockContext()->IsActivatable());
-
-  EXPECT_FALSE(text_finder.Find(identifier, search_text, *find_options,
-                                wrap_within_frame));
-
-  // Now commit the lock and ensure we can find the text.
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->commit(script_state);
-  }
-
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
-
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  EXPECT_TRUE(text_finder.Find(identifier, search_text, *find_options,
-                               wrap_within_frame));
-}
-
 TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
@@ -314,84 +279,25 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container">testing</div></body>
   )HTML");
 
-  WebString search_text(String("testing"));
-  auto* find_in_page = GetFindInPage();
-  ASSERT_TRUE(find_in_page);
-
+  const String search_text = "testing";
   DisplayLockTestFindInPageClient client;
   client.SetFrame(LocalMainFrame());
 
-  auto find_options = mojom::blink::FindOptions::New();
-  find_options->run_synchronously_for_testing = true;
-  find_options->find_next = false;
-  find_options->forward = true;
-
-  int current_id = 123;
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
-  EXPECT_EQ(1, client.Count());
-  client.Reset();
-
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
-
-  // Sanity checks to ensure the element is locked.
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
-
-  EXPECT_FALSE(element->GetDisplayLockContext()->IsActivatable());
-
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  auto* container = GetDocument().getElementById("container");
+  LockElement(*container, false /* activatable */);
+  Find(search_text, client);
   EXPECT_EQ(0, client.Count());
-  client.Reset();
 
-  // Now commit the lock and ensure we can find the text.
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->commit(script_state);
-  }
-
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
-
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  // Check if we can find the result after we commit.
+  CommitElement(*container);
+  Find(search_text, client);
   EXPECT_EQ(1, client.Count());
-  client.Reset();
 }
 
 TEST_F(DisplayLockContextTest,
@@ -402,175 +308,189 @@ TEST_F(DisplayLockContextTest,
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container">testing</div></body>
   )HTML");
 
-  WebString search_text(String("testing"));
-  auto* find_in_page = GetFindInPage();
-  ASSERT_TRUE(find_in_page);
-
+  const String search_text = "testing";
   DisplayLockTestFindInPageClient client;
   client.SetFrame(LocalMainFrame());
 
-  auto find_options = mojom::blink::FindOptions::New();
-  find_options->run_synchronously_for_testing = true;
-  find_options->find_next = false;
-  find_options->forward = true;
-
-  int current_id = 123;
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  // Finds on a normal element.
+  Find(search_text, client);
   EXPECT_EQ(1, client.Count());
-  client.Reset();
+  // Clears selections since we're going to use the same query next time.
+  GetFindInPage()->StopFinding(
+      mojom::StopFindAction::kStopFindActionClearSelection);
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  auto* container = GetDocument().getElementById("container");
+  LockElement(*container, true /* activatable */);
 
-  DisplayLockOptions options;
-  options.setActivatable(true);
-  auto* element = GetDocument().getElementById("container");
-  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-  {
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, &options);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
-
-  // Sanity checks to ensure the element is locked.
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  EXPECT_TRUE(element->GetDisplayLockContext()->IsActivatable());
-
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
   // Check if we can still get the same result with the same query.
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  Find(search_text, client);
   EXPECT_EQ(1, client.Count());
-  EXPECT_EQ(1, client.ActiveIndex());
-  client.Reset();
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+}
+
+TEST_F(DisplayLockContextTest, FindInPageWithChangedContent) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: style layout paint;
+    }
+    </style>
+    <body><div id="container">testing</div></body>
+  )HTML");
 
   // Check if the result is correct if we update the contents.
-  element->SetInnerHTMLFromString(
-      "<div>tes</div>ting"
-      "<div style='display:none;'>testing</div>");
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
-  EXPECT_EQ(0, client.Count());
-  EXPECT_EQ(-1, client.ActiveIndex());
-  client.Reset();
-  // Assert the container is still locked.
-  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+  auto* container = GetDocument().getElementById("container");
+  LockElement(*container, true /* activatable */);
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+  container->SetInnerHTMLFromString(
+      "testing"
+      "<div>testing</div>"
+      "tes<div style='display:none;'>x</div>ting");
 
-  // Check if the result is correct if we have non-activatable lock.
-  element->SetInnerHTMLFromString(
-      "<div>testing1</div>"
-      "<div id='activatable' style='contain: style layout;'>"
-      " testing2"
-      " <div id='nestedNonActivatable' style='contain: style layout;'>"
-      "   testing3"
-      " </div>"
-      "</div>"
-      "<div id='nonActivatable' style='contain: style layout;'>testing4</div>");
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  Find("testing", client);
+  EXPECT_EQ(3, client.Count());
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+}
+
+TEST_F(DisplayLockContextTest, FindInPageWithNoMatchesWontUnlock) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: style layout paint;
+    }
+    </style>
+    <body><div id="container">tes<div>ting</div><div style='display:none;'>testing</div></div></body>
+  )HTML");
+
+  auto* container = GetDocument().getElementById("container");
+  LockElement(*container, true /* activatable */);
+  LockElement(*container, true /* activatable */);
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  Find("testing", client);
+  // No results found, container stays locked.
+  EXPECT_EQ(0, client.Count());
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+}
+
+TEST_F(DisplayLockContextTest,
+       NestedActivatableLockedElementIsSearchableViaFindInPage) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <body>
+      <style>
+        div {
+          width: 100px;
+          height: 100px;
+          contain: style layout;
+        }
+      </style>
+      <div id='container'>
+        <div>testing1</div>
+        <div id='activatable'>
+        testing2
+          <div id='nestedNonActivatable'>
+            testing3
+          </div>
+        </div>
+        <div id='nonActivatable'>testing4</div>
+      </div>
+    "</body>"
+  )HTML");
+
+  auto* container = GetDocument().getElementById("container");
   auto* activatable = GetDocument().getElementById("activatable");
   auto* non_activatable = GetDocument().getElementById("nonActivatable");
   auto* nested_non_activatable =
       GetDocument().getElementById("nestedNonActivatable");
 
-  {
-    ScriptState::Scope scope(script_state);
-    activatable->getDisplayLockForBindings()->acquire(script_state, &options);
-    nested_non_activatable->getDisplayLockForBindings()->acquire(script_state,
-                                                                 nullptr);
-    non_activatable->getDisplayLockForBindings()->acquire(script_state,
-                                                          nullptr);
-  }
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(*non_activatable, false /* activatable */);
+  LockElement(*nested_non_activatable, false /* activatable */);
+  LockElement(*activatable, true /* activatable */);
+  LockElement(*container, true /* activatable */);
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
-
-  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(nested_non_activatable->GetDisplayLockContext()->IsLocked());
 
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  // We can find testing1 and testing2.
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  Find("testing", client);
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(1, client.ActiveIndex());
-  client.Reset();
 
-  UpdateAllLifecyclePhasesForTest();
-  // The locked container should be unlocked, since the match is inside that
-  // container ("testing1" inside the div).
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
-  EXPECT_FALSE(element->GetDisplayLockContext()->IsLocked());
-  // Since the active match isn't in any locked container, they need to be
-  // locked.
+  // #container should be unlocked, since the match is inside that
+  // element ("testing1" inside the div).
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  // Since the active match isn't located within other locked elements
+  // they need to stay locked.
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(nested_non_activatable->GetDisplayLockContext()->IsLocked());
-
-  // Check if the result is correct if we update style.
-  activatable->setAttribute("style", "contain: style layout; display: none;");
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
-
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
-  EXPECT_EQ(1, client.Count());
-  EXPECT_EQ(1, client.ActiveIndex());
-  client.Reset();
-
-  // Now commit all the locks and ensure we can find.
-  {
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->commit(script_state);
-    activatable->getDisplayLockForBindings()->commit(script_state);
-    nested_non_activatable->getDisplayLockForBindings()->commit(script_state);
-    non_activatable->getDisplayLockForBindings()->commit(script_state);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  find_in_page->Find(current_id++, "testing", find_options->Clone());
-  EXPECT_FALSE(client.FindResultsAreReady());
-  test::RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
-  EXPECT_EQ(2, client.Count());
 }
 
-// Tests find-in-page active match navigation (find next/previous).
-TEST_F(DisplayLockContextTest, FindInPageNavigateLockedMatches) {
+TEST_F(DisplayLockContextTest,
+       NestedActivatableLockedElementIsUnlockedByFindInPage) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <body>
+      <style>
+        div {
+          width: 100px;
+          height: 100px;
+          contain: style layout;
+        }
+      </style>
+      <div id='container'>
+        <div id='child'>testing1</div>
+      </div>
+  )HTML");
+  auto* container = GetDocument().getElementById("container");
+  auto* child = GetDocument().getElementById("child");
+  LockElement(*child, true /* activatable */);
+  LockElement(*container, true /* activatable */);
+
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(child->GetDisplayLockContext()->IsLocked());
+  // We can find testing1 and testing2.
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  Find("testing", client);
+  EXPECT_EQ(1, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
+
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(child->GetDisplayLockContext()->IsLocked());
+}
+
+TEST_F(DisplayLockContextTest,
+       FindInPageNavigateLockedMatchesRespectsActivatable) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
     <style>
     div {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -582,136 +502,37 @@ TEST_F(DisplayLockContextTest, FindInPageNavigateLockedMatches) {
     </body>
   )HTML");
 
-  WebString search_text(String("result"));
-  auto* find_in_page = GetFindInPage();
-  ASSERT_TRUE(find_in_page);
-
-  DisplayLockTestFindInPageClient client;
-  client.SetFrame(LocalMainFrame());
-
-  DisplayLockOptions options;
-  options.setActivatable(true);
-
-  // Lock the children and container.
-  auto* container = GetDocument().getElementById("container");
   auto* div_one = GetDocument().getElementById("one");
   auto* div_two = GetDocument().getElementById("two");
   auto* div_three = GetDocument().getElementById("three");
-  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-  {
-    ScriptState::Scope scope(script_state);
-    container->getDisplayLockForBindings()->acquire(script_state, &options);
-    div_one->getDisplayLockForBindings()->acquire(script_state, &options);
-    div_two->getDisplayLockForBindings()->acquire(script_state, &options);
-    div_three->getDisplayLockForBindings()->acquire(script_state, &options);
-  }
-  UpdateAllLifecyclePhasesForTest();
+  // Lock three divs, make #div_two non-activatable.
+  LockElement(*div_one, true /* activatable */);
+  LockElement(*div_two, false /* activatable */);
+  LockElement(*div_three, true /* activatable */);
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
-  auto find_options = mojom::blink::FindOptions::New();
-  find_options->run_synchronously_for_testing = true;
-  find_options->find_next = false;
-  find_options->forward = true;
-
-  int current_id = 123;
-
-  // Find should activate "result" number 1 in "#one".
-  find_in_page->Find(current_id++, search_text, find_options->Clone());
-  test::RunPendingTasks();
-  EXPECT_EQ(3, client.Count());
-  EXPECT_EQ(1, client.ActiveIndex());
-
-  EphemeralRange range_one = EphemeralRange::RangeOfContents(*div_one);
-  ASSERT_FALSE(range_one.IsNull());
-  EXPECT_EQ(ComputeTextRect(range_one), client.ActiveMatchRect());
-
-  UpdateAllLifecyclePhasesForTest();
-  // |div_one| and the container should be unlocked.
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(div_one->GetDisplayLockContext()->IsLocked());
-  EXPECT_TRUE(div_two->GetDisplayLockContext()->IsLocked());
-  EXPECT_TRUE(div_three->GetDisplayLockContext()->IsLocked());
-
-  // Find next should activate "result" number 2 in "#two".
-  client.Reset();
-  find_options->find_next = true;
-  find_in_page->Find(current_id++, search_text, find_options->Clone());
-  test::RunPendingTasks();
-  EXPECT_EQ(3, client.Count());
-  EXPECT_EQ(2, client.ActiveIndex());
-
-  EphemeralRange range_two = EphemeralRange::RangeOfContents(*div_two);
-  ASSERT_FALSE(range_one.IsNull());
-  EXPECT_EQ(ComputeTextRect(range_two), client.ActiveMatchRect());
-
-  UpdateAllLifecyclePhasesForTest();
-  // |div_two| should be unlocked.
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(div_one->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(div_two->GetDisplayLockContext()->IsLocked());
-  EXPECT_TRUE(div_three->GetDisplayLockContext()->IsLocked());
-
-  // Find next should activate "result" number 3 in "#three".
-  client.Reset();
-  find_options->find_next = true;
-  find_in_page->Find(current_id++, search_text, find_options->Clone());
-  test::RunPendingTasks();
-  EXPECT_EQ(3, client.Count());
-  EXPECT_EQ(3, client.ActiveIndex());
-
-  EphemeralRange range_three = EphemeralRange::RangeOfContents(*div_three);
-  ASSERT_FALSE(range_three.IsNull());
-  EXPECT_EQ(ComputeTextRect(range_three), client.ActiveMatchRect());
-
-  UpdateAllLifecyclePhasesForTest();
-  // |div_three| should be unlocked.
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(div_one->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(div_two->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(div_three->GetDisplayLockContext()->IsLocked());
-
-  // Lock them again, now making |div_two| non-activatable.
-  {
-    ScriptState::Scope scope(script_state);
-    div_one->getDisplayLockForBindings()->acquire(script_state, &options);
-    div_two->getDisplayLockForBindings()->acquire(script_state, nullptr);
-    div_three->getDisplayLockForBindings()->acquire(script_state, &options);
-  }
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+  WebString search_text(String("result"));
 
   // Find result in #one.
-  find_in_page->ClearActiveFindMatch();
-  client.Reset();
-  find_options->find_next = false;
-  find_in_page->Find(current_id++, search_text, find_options->Clone());
-  test::RunPendingTasks();
+  Find(search_text, client);
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(1, client.ActiveIndex());
+  EphemeralRange range_one = EphemeralRange::RangeOfContents(*div_one);
   EXPECT_EQ(ComputeTextRect(range_one), client.ActiveMatchRect());
 
   // Going forward from #one would go to #three.
-  client.Reset();
-  find_options->find_next = true;
-  find_in_page->Find(current_id++, search_text, find_options->Clone());
-  test::RunPendingTasks();
+  Find(search_text, client, true /* find_next */);
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(2, client.ActiveIndex());
+  EphemeralRange range_three = EphemeralRange::RangeOfContents(*div_three);
   EXPECT_EQ(ComputeTextRect(range_three), client.ActiveMatchRect());
 
   // Going backwards from #three would go to #one.
   client.Reset();
+  auto find_options = FindOptions();
   find_options->forward = false;
-  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  GetFindInPage()->Find(FAKE_FIND_ID, search_text, find_options->Clone());
   test::RunPendingTasks();
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(1, client.ActiveIndex());
@@ -725,7 +546,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container"><b>t</b>esting</div></body>
@@ -741,7 +562,8 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -809,7 +631,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -838,7 +660,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -862,7 +685,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
 
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
 
   UpdateAllLifecyclePhasesForTest();
@@ -898,7 +722,8 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
-      "<div id='container' style='contain:content;'><slot></slot></div>");
+      "<div id='container' style='contain:style layout "
+      "paint;'><slot></slot></div>");
   UpdateAllLifecyclePhasesForTest();
 
   auto* container = shadow_root.getElementById("container");
@@ -927,11 +752,11 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
     container->getDisplayLockForBindings()->commit(script_state);
   }
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_TRUE(container->DisplayLockPreventsActivation());
-  EXPECT_TRUE(slotted->DisplayLockPreventsActivation());
+  EXPECT_FALSE(container->DisplayLockPreventsActivation());
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -958,7 +783,8 @@ TEST_F(DisplayLockContextTest,
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
-      "<div id='container' style='contain:content;'><slot></slot></div>");
+      "<div id='container' style='contain:style layout "
+      "paint;'><slot></slot></div>");
 
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(text_field->IsKeyboardFocusable());
@@ -977,7 +803,8 @@ TEST_F(DisplayLockContextTest,
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -999,7 +826,7 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
     .container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -1091,7 +918,7 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
     .container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -1180,7 +1007,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
     #child {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     #grandchild {
       color: blue;
@@ -1200,7 +1027,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   auto* template_el =
       ToHTMLTemplateElement(GetDocument().getElementById("template"));
-  auto* child = ToElement(template_el->content()->firstChild());
+  auto* child = To<Element>(template_el->content()->firstChild());
   EXPECT_FALSE(child->isConnected());
   ASSERT_TRUE(child->getDisplayLockForBindings());
 
@@ -1227,7 +1054,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   // Try to lock an element that was moved from a template to a document.
   auto* document_child =
-      ToElement(GetDocument().adoptNode(child, ASSERT_NO_EXCEPTION));
+      To<Element>(GetDocument().adoptNode(child, ASSERT_NO_EXCEPTION));
   GetDocument().getElementById("container")->appendChild(document_child);
 
   {
@@ -1284,7 +1111,7 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
     #locked {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <div id="ancestor">
@@ -1430,7 +1257,7 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
     #locked {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <div id="ancestor">

@@ -12,9 +12,13 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/test/test_credential_provider.h"
 
 namespace credential_provider {
+
+namespace testing {
 
 #define DECLARE_IUNKOWN_NOQI_WITH_REF()                            \
   IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override; \
@@ -94,37 +98,44 @@ class FakeCredentialProviderEvents : public ICredentialProviderEvents {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Fake the GaiaCredentialProvider COM object.
-class FakeGaiaCredentialProvider : public IGaiaCredentialProvider {
+// Test implementation of GaiaCredentialProvider that stores information from
+// OnUserAuthenticatedImpl.
+class CTestGaiaCredentialProvider : public CGaiaCredentialProvider,
+                                    public ITestCredentialProvider {
  public:
-  FakeGaiaCredentialProvider();
-  virtual ~FakeGaiaCredentialProvider();
+  const CComBSTR& STDMETHODCALLTYPE username() const override;
+  const CComBSTR& STDMETHODCALLTYPE password() const override;
+  const CComBSTR& STDMETHODCALLTYPE sid() const override;
+  bool STDMETHODCALLTYPE credentials_changed_fired() const override;
+  void STDMETHODCALLTYPE ResetCredentialsChangedFired() override;
 
-  const CComBSTR& username() const { return username_; }
-  const CComBSTR& password() const { return password_; }
-  const CComBSTR& sid() const { return sid_; }
-  bool credentials_changed_fired() const { return credentials_changed_fired_; }
-  void ResetCredentialsChangedFired() { credentials_changed_fired_ = FALSE; }
-  void SetUsageScenario(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
-    cpus_ = cpus;
-  }
+  BEGIN_COM_MAP(CTestGaiaCredentialProvider)
+  COM_INTERFACE_ENTRY(IGaiaCredentialProvider)
+  COM_INTERFACE_ENTRY(ICredentialProviderSetUserArray)
+  COM_INTERFACE_ENTRY(ICredentialProvider)
+  COM_INTERFACE_ENTRY(ICredentialUpdateEventsHandler)
+  COM_INTERFACE_ENTRY(ITestCredentialProvider)
+  END_COM_MAP()
 
-  // IGaiaCredentialProvider
-  IFACEMETHODIMP GetUsageScenario(DWORD* cpus) override;
-  DECLARE_IUNKOWN_NOQI_WITH_REF()
-  IFACEMETHODIMP OnUserAuthenticated(IUnknown* credential,
-                                     BSTR username,
-                                     BSTR password,
-                                     BSTR sid,
-                                     BOOL fire_credentials_changed) override;
+ protected:
+  // CGaiaCredentialProvider
+  HRESULT OnUserAuthenticatedImpl(IUnknown* credential,
+                                  BSTR username,
+                                  BSTR password,
+                                  BSTR sid,
+                                  BOOL fire_credentials_changed) override;
+
+  CTestGaiaCredentialProvider();
+  ~CTestGaiaCredentialProvider() override;
 
  private:
   CComBSTR username_;
   CComBSTR password_;
   CComBSTR sid_;
   BOOL credentials_changed_fired_ = FALSE;
-  CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus_ = CPUS_LOGON;
 };
+
+}  // namespace testing
 
 }  // namespace credential_provider
 

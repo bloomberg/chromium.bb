@@ -16,6 +16,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/reflector.h"
@@ -27,7 +28,38 @@
 namespace ui {
 
 namespace {
+
 static const char* kBrowser = "Browser";
+
+#if defined(USE_X11)
+class HostDisplayClient : public viz::HostDisplayClient {
+ public:
+  explicit HostDisplayClient(ui::Compositor* compositor)
+      : viz::HostDisplayClient(compositor->widget()), compositor_(compositor) {}
+  ~HostDisplayClient() override = default;
+
+  // viz::HostDisplayClient:
+  void DidCompleteSwapWithNewSize(const gfx::Size& size) override {
+    compositor_->OnCompleteSwapWithNewSize(size);
+  }
+
+ private:
+  ui::Compositor* const compositor_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostDisplayClient);
+};
+#else
+class HostDisplayClient : public viz::HostDisplayClient {
+ public:
+  explicit HostDisplayClient(ui::Compositor* compositor)
+      : viz::HostDisplayClient(compositor->widget()) {}
+  ~HostDisplayClient() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HostDisplayClient);
+};
+#endif
+
 }  // namespace
 
 HostContextFactoryPrivate::HostContextFactoryPrivate(
@@ -57,11 +89,9 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   gfx::RenderingWindowManager::GetInstance()->RegisterParent(
       compositor->widget());
 #endif
-
   auto& compositor_data = compositor_data_map_[compositor];
 
   auto root_params = viz::mojom::RootCompositorFrameSinkParams::New();
-
   // Create interfaces for a root CompositorFrameSink.
   viz::mojom::CompositorFrameSinkAssociatedPtrInfo sink_info;
   root_params->compositor_frame_sink = mojo::MakeRequest(&sink_info);
@@ -70,7 +100,7 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   root_params->display_private =
       mojo::MakeRequest(&compositor_data.display_private);
   compositor_data.display_client =
-      std::make_unique<viz::HostDisplayClient>(compositor->widget());
+      std::make_unique<HostDisplayClient>(compositor);
   root_params->display_client =
       compositor_data.display_client->GetBoundPtr(resize_task_runner_)
           .PassInterface();
@@ -252,6 +282,19 @@ void HostContextFactoryPrivate::SetOutputIsSecure(Compositor* compositor,
 
   if (iter->second.display_private)
     iter->second.display_private->SetOutputIsSecure(secure);
+}
+
+void HostContextFactoryPrivate::AddVSyncParameterObserver(
+    Compositor* compositor,
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  auto iter = compositor_data_map_.find(compositor);
+  if (iter == compositor_data_map_.end())
+    return;
+
+  if (iter->second.display_private) {
+    iter->second.display_private->AddVSyncParameterObserver(
+        std::move(observer));
+  }
 }
 
 viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {

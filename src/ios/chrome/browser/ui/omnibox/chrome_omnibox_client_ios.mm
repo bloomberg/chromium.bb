@@ -71,33 +71,6 @@ bool ChromeOmniboxClientIOS::IsPasteAndGoEnabled() const {
   return false;
 }
 
-bool ChromeOmniboxClientIOS::IsInstantNTP() const {
-  // This is currently only called by the OmniboxEditModel to determine if the
-  // Google landing page is showing.
-  // TODO(lliabraa): This should also check the user's default search engine
-  // because if they're not using Google the Google landing page is not shown
-  // (crbug/315563).
-  GURL currentURL = controller_->GetWebState()->GetVisibleURL();
-  return currentURL == kChromeUINewTabURL;
-}
-
-bool ChromeOmniboxClientIOS::IsSearchResultsPage() const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(
-          controller_->GetWebState()->GetBrowserState());
-  return ios::TemplateURLServiceFactory::GetForBrowserState(browser_state)
-      ->IsSearchResultsPageFromDefaultSearchProvider(GetURL());
-}
-
-bool ChromeOmniboxClientIOS::IsNewTabPage(const GURL& url) const {
-  return url.spec() == kChromeUINewTabURL;
-}
-
-bool ChromeOmniboxClientIOS::IsHomePage(const GURL& url) const {
-  // iOS does not have a notion of home page.
-  return false;
-}
-
 bool ChromeOmniboxClientIOS::IsDefaultSearchProviderEnabled() const {
   // iOS does not have Enterprise policies
   return true;

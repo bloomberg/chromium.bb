@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -20,7 +21,7 @@
 #include "core/fxge/fx_font.h"
 #endif
 
-class CFX_FaceCache;
+class CFX_GlyphCache;
 class CFX_GlyphBitmap;
 class CFX_PathData;
 class CFX_SubstFont;
@@ -54,10 +55,10 @@ class CFX_Font {
 #ifdef PDF_ENABLE_XFA
   bool LoadFile(const RetainPtr<IFX_SeekableReadStream>& pFile, int nFaceIndex);
 
-#if _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
+#if !defined(OS_WIN)
   void SetFace(FXFT_Face face);
   void SetSubstFont(std::unique_ptr<CFX_SubstFont> subst);
-#endif  // _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
+#endif  // !defined(OS_WIN)
 #endif  // PDF_ENABLE_XFA
 
   const CFX_GlyphBitmap* LoadGlyphBitmap(uint32_t glyph_index,
@@ -65,7 +66,7 @@ class CFX_Font {
                                          const CFX_Matrix& matrix,
                                          uint32_t dest_width,
                                          int anti_alias,
-                                         int& text_flags) const;
+                                         int* pTextFlags) const;
   const CFX_PathData* LoadGlyphPath(uint32_t glyph_index,
                                     uint32_t dest_width) const;
 
@@ -94,7 +95,7 @@ class CFX_Font {
   void AdjustMMParams(int glyph_index, int dest_width, int weight) const;
   CFX_PathData* LoadGlyphPathImpl(uint32_t glyph_index,
                                   uint32_t dest_width) const;
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   void* GetPlatformFont() const { return m_pPlatformFont; }
   void SetPlatformFont(void* font) { m_pPlatformFont = font; }
 #endif
@@ -125,24 +126,24 @@ class CFX_Font {
 #endif  // PDF_ENABLE_XFA
 
  private:
-  CFX_FaceCache* GetFaceCache() const;
+  RetainPtr<CFX_GlyphCache> GetOrCreateGlyphCache() const;
   void DeleteFace();
-  void ClearFaceCache();
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+  void ClearGlyphCache();
+#if defined(OS_MACOSX)
   void ReleasePlatformResource();
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#endif
 
   ByteString GetFamilyNameOrUntitled() const;
 
   mutable UnownedPtr<FXFT_FaceRec> m_Face;
-  mutable UnownedPtr<CFX_FaceCache> m_FaceCache;
+  mutable RetainPtr<CFX_GlyphCache> m_GlyphCache;
   std::unique_ptr<CFX_SubstFont> m_pSubstFont;
   std::unique_ptr<uint8_t, FxFreeDeleter> m_pGsubData;
   std::vector<uint8_t> m_pFontDataAllocation;
   pdfium::span<uint8_t> m_FontData;
   bool m_bEmbedded = false;
   bool m_bVertical = false;
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   void* m_pPlatformFont = nullptr;
 #endif
 };

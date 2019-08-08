@@ -27,6 +27,7 @@
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/latency/latency_tracker.h"
 
 class SkDeferredDisplayList;
@@ -79,18 +80,6 @@ class SkiaOutputSurfaceImplOnGpu {
   using ContextLostCallback = base::RepeatingCallback<void()>;
 
   SkiaOutputSurfaceImplOnGpu(
-      gpu::SurfaceHandle surface_handle,
-      scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
-      gpu::MailboxManager* mailbox_manager,
-      scoped_refptr<gpu::SyncPointClientState> sync_point_client_data,
-      std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory,
-      gpu::raster::GrShaderCache* gr_shader_cache,
-      VulkanContextProvider* vulkan_context_provider,
-      const RendererSettings& renderer_settings_,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback,
-      const ContextLostCallback& context_lost_callback);
-  SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
       const RendererSettings& renderer_settings_,
@@ -122,7 +111,8 @@ class SkiaOutputSurfaceImplOnGpu {
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
       std::vector<ImageContext*> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
-      uint64_t sync_fence_release);
+      uint64_t sync_fence_release,
+      base::OnceClosure on_finished);
   void SwapBuffers(OutputSurfaceFrame frame);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
@@ -138,7 +128,9 @@ class SkiaOutputSurfaceImplOnGpu {
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request);
 
-  void BeginAccessImages(const std::vector<ImageContext*>& image_contexts);
+  void BeginAccessImages(const std::vector<ImageContext*>& image_contexts,
+                         std::vector<GrBackendSemaphore>* begin_semaphores,
+                         std::vector<GrBackendSemaphore>* end_semaphores);
   void EndAccessImages(const std::vector<ImageContext*>& image_contexts);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
@@ -160,7 +152,11 @@ class SkiaOutputSurfaceImplOnGpu {
   void InitializeForGLWithGpuService(GpuServiceImpl* gpu_service);
   void InitializeForVulkan(GpuServiceImpl* gpu_service);
 
-  void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
+  // Returns true if |texture_base| is a gles2::Texture and all necessary
+  // operations completed successfully. In this case, |*size| is the size of
+  // of level 0.
+  bool BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base,
+                                    gfx::Size* size);
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
@@ -182,7 +178,7 @@ class SkiaOutputSurfaceImplOnGpu {
     return output_device_->draw_surface();
   }
 
-  sk_sp<SkPromiseImageTexture> FallbackPromiseImage(ResourceFormat format);
+  void CreateFallbackImage(ImageContext* context);
 
   const gpu::SurfaceHandle surface_handle_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
@@ -210,6 +206,9 @@ class SkiaOutputSurfaceImplOnGpu {
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
+
+  // Semaphore for SkiaOutputDevice::SwapBuffers() to wait on.
+  GrBackendSemaphore swap_buffers_semaphore_;
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.
@@ -239,15 +238,12 @@ class SkiaOutputSurfaceImplOnGpu {
   std::unique_ptr<TextureDeleter> texture_deleter_;
   std::unique_ptr<GLRendererCopier> copier_;
 
+  GpuServiceImpl* const gpu_service_;
+
   bool delayed_work_pending_ = false;
 
   gl::GLApi* api_ = nullptr;
   bool supports_alpha_ = false;
-
-  // What we display when the mailbox for a texture is invalid. Indexed by
-  // SkColorType.
-  std::vector<sk_sp<SkPromiseImageTexture>> fallback_promise_image_texture_;
-  std::vector<sk_sp<SkImage>> fallback_promise_images_;
 
   THREAD_CHECKER(thread_checker_);
 

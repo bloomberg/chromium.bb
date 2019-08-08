@@ -34,6 +34,8 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareNotificationInteraction;
+import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareNotificationInteraction.InteractionType;
 
 /**
  * Manages all SendTabToSelf related notifications for Android. This includes displaying, handling
@@ -47,7 +49,7 @@ public class NotificationManager {
         @Override
         public void onReceive(Context context, Intent intent) {
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
-            hideNotification(guid);
+            hideNotification(guid, InteractionType.DISMISSED);
             SendTabToSelfAndroidBridge.dismissEntry(Profile.getLastUsedProfile(), guid);
         }
     }
@@ -58,7 +60,7 @@ public class NotificationManager {
         public void onReceive(Context context, Intent intent) {
             openUrl(intent.getData());
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
-            hideNotification(guid);
+            hideNotification(guid, InteractionType.OPENED);
             SendTabToSelfAndroidBridge.deleteEntry(Profile.getLastUsedProfile(), guid);
         }
     }
@@ -68,7 +70,7 @@ public class NotificationManager {
         @Override
         public void onReceive(Context context, Intent intent) {
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
-            hideNotification(guid);
+            hideNotification(guid, InteractionType.DISMISSED_REMOTELY);
             SendTabToSelfAndroidBridge.dismissEntry(Profile.getLastUsedProfile(), guid);
         }
     }
@@ -99,17 +101,31 @@ public class NotificationManager {
      *
      * @param guid The GUID of the notification to hide.
      */
+    private static void hideNotification(@Nullable String guid, @InteractionType int type) {
+        if (hideNotification(guid)) {
+            SendTabToSelfShareNotificationInteraction.recordClickResult(type);
+        }
+    }
+
+    /**
+     * Hides a notification.
+     *
+     * @param guid The GUID of the notification to hide.
+     * @return whether the notification was hidden. False if there is corresponding notification to
+     * hide.
+     */
     @CalledByNative
-    private static void hideNotification(@Nullable String guid) {
+    private static boolean hideNotification(@Nullable String guid) {
         NotificationSharedPrefManager.ActiveNotification activeNotification =
                 NotificationSharedPrefManager.findActiveNotification(guid);
         if (!NotificationSharedPrefManager.removeActiveNotification(guid)) {
-            return;
+            return false;
         }
         Context context = ContextUtils.getApplicationContext();
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
         manager.cancel(
                 NotificationConstants.GROUP_SEND_TAB_TO_SELF, activeNotification.notificationId);
+        return true;
     }
 
     /**
@@ -130,6 +146,8 @@ public class NotificationManager {
         }
 
         // Post notification.
+        SendTabToSelfShareNotificationInteraction.recordClickResult(
+                SendTabToSelfShareNotificationInteraction.InteractionType.SHOWN);
         Context context = ContextUtils.getApplicationContext();
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
 

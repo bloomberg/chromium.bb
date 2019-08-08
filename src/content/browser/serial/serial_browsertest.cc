@@ -11,6 +11,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/serial_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -21,6 +22,7 @@
 
 using testing::_;
 using testing::ByMove;
+using testing::Exactly;
 using testing::Return;
 
 namespace content {
@@ -37,7 +39,8 @@ class SerialTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features", "Serial");
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   void SetUpOnMainThread() override {
@@ -83,6 +86,8 @@ IN_PROC_BROWSER_TEST_F(SerialTest, GetPorts) {
 IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
   NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
 
+  EXPECT_CALL(delegate(), CanRequestPortPermission).WillOnce(Return(true));
+
   auto port = device::mojom::SerialPortInfo::New();
   port->token = base::UnguessableToken::Create();
   EXPECT_CALL(delegate(), RunChooserInternal)
@@ -93,6 +98,23 @@ IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
                            let port = await navigator.serial.requestPort({});
                            return port instanceof SerialPort;
                          })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SerialTest, DisallowRequestPort) {
+  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+
+  EXPECT_CALL(delegate(), CanRequestPortPermission(_)).WillOnce(Return(false));
+  EXPECT_CALL(delegate(), RunChooserInternal).Times(Exactly(0));
+
+  EXPECT_EQ(false, EvalJs(shell(),
+                          R"((async () => {
+                            try {
+                              await navigator.serial.requestPort({});
+                              return true;
+                            } catch (e) {
+                              return false;
+                            }
+                          })())"));
 }
 
 }  // namespace content

@@ -64,15 +64,13 @@ class BackgroundApplicationListModel
   // Associate observer with this model.
   void AddObserver(Observer* observer);
 
-  // Return the icon associated with |extension| or NULL.  NULL indicates either
-  // that there is no icon associated with the extension, or that a pending
-  // task to retrieve the icon has not completed.  See the Observer class above.
+  // Return the icon associated with |extension|.  If the result isNull(),
+  // there is no icon associated with the extension, or a pending task to
+  // retrieve the icon has not completed.  See the Observer class above.
   //
-  // NOTE: The model manages the ImageSkia result, that is it "owns" the memory,
-  //       releasing it if the associated background application is unloaded.
   // NOTE: All icons are currently sized as
   //       ExtensionIconSet::EXTENSION_ICON_BITTY.
-  const gfx::ImageSkia* GetIcon(const extensions::Extension* extension);
+  gfx::ImageSkia GetIcon(const extensions::Extension* extension);
 
   // Return the position of |extension| within this list model.
   int GetPosition(const extensions::Extension* extension) const;

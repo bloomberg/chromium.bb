@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include "base/debug/alias.h"
+#include "base/logging.h"
 #include "base/profiler/native_unwinder_win.h"
 #include "build/build_config.h"
 
@@ -26,6 +28,27 @@ struct TEB {
   NT_TIB Tib;
   // Rest of struct is ignored.
 };
+
+win::ScopedHandle GetThreadHandle(PlatformThreadId thread_id) {
+  // TODO(http://crbug.com/947459): Remove the test_handle* CHECKs once we
+  // understand which flag is triggering the failure.
+
+  DWORD flags = 0;
+  base::debug::Alias(&flags);
+
+  flags |= THREAD_GET_CONTEXT;
+  win::ScopedHandle test_handle1(::OpenThread(flags, FALSE, thread_id));
+  CHECK(test_handle1.IsValid());
+
+  flags |= THREAD_QUERY_INFORMATION;
+  win::ScopedHandle test_handle2(::OpenThread(flags, FALSE, thread_id));
+  CHECK(test_handle2.IsValid());
+
+  flags |= THREAD_SUSPEND_RESUME;
+  win::ScopedHandle handle(::OpenThread(flags, FALSE, thread_id));
+  CHECK(handle.IsValid());
+  return handle;
+}
 
 // Returns the thread environment block pointer for |thread_handle|.
 const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
@@ -148,10 +171,7 @@ bool ThreadDelegateWin::ScopedSuspendThread::WasSuccessful() const {
 // ThreadDelegateWin ----------------------------------------------------------
 
 ThreadDelegateWin::ThreadDelegateWin(PlatformThreadId thread_id)
-    : thread_handle_(::OpenThread(
-          THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
-          FALSE,
-          thread_id)),
+    : thread_handle_(GetThreadHandle(thread_id)),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase)) {}
 

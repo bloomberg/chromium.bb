@@ -85,7 +85,6 @@
 
 - (void)browserStateDestroyed {
   _webStateList->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
-  _webStateList.reset();
   _browserState = nullptr;
 }
 
@@ -195,9 +194,9 @@ class TabStripControllerTest : public PlatformTest {
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  TabStripControllerTestTabModel* tab_model_;
   TabStripController* controller_;
   UIWindow* window_;
-  TabStripControllerTestTabModel* tab_model_;
   TabStripControllerTestTab* tab1_;
   TabStripControllerTestTab* tab2_;
 };

@@ -129,8 +129,7 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTFloatBlend>(ext_float_blend_);
   RegisterExtension<EXTTextureFilterAnisotropic>(
       ext_texture_filter_anisotropic_);
-  RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_,
-                                              kDraftExtension);
+  RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_);
   RegisterExtension<OESTextureFloatLinear>(oes_texture_float_linear_);
   RegisterExtension<WebGLCompressedTextureASTC>(webgl_compressed_texture_astc_);
   RegisterExtension<WebGLCompressedTextureETC>(webgl_compressed_texture_etc_);

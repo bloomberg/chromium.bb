@@ -11,39 +11,47 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/previews/content/hint_cache_store.h"
+#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_experiments.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace previews {
-
 namespace {
 
 std::string GetHostDomainOrg(int index) {
   return "host.domain" + std::to_string(index) + ".org";
 }
 
-class HintCacheTest : public testing::Test {
+class HintCacheTest : public ProtoDatabaseProviderTestBase {
  public:
   HintCacheTest() : loaded_hint_(nullptr) {}
 
   ~HintCacheTest() override {}
 
-  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+  void SetUp() override { ProtoDatabaseProviderTestBase::SetUp(); }
 
-  void TearDown() override { DestroyHintCache(); }
+  void TearDown() override {
+    ProtoDatabaseProviderTestBase::TearDown();
+    DestroyHintCache();
+  }
 
  protected:
   // Creates and initializes the hint cache and hint cache store and waits for
   // the callback indicating that initialization is complete.
   void CreateAndInitializeHintCache(int memory_cache_size,
                                     bool purge_existing_data = false) {
+    auto database_path = temp_dir_.GetPath();
+    auto database_task_runner =
+        scoped_task_environment_.GetMainThreadTaskRunner();
     hint_cache_ = std::make_unique<HintCache>(
-        std::make_unique<HintCacheStore>(
-            temp_dir_.GetPath(),
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+        std::make_unique<HintCacheStore>(db_provider_, database_path,
+                                         nullptr /* pref_service */,
+                                         database_task_runner),
         memory_cache_size);
     is_store_initialized_ = false;
     hint_cache_->Initialize(purge_existing_data,
@@ -58,45 +66,44 @@ class HintCacheTest : public testing::Test {
     hint_cache_.reset();
     loaded_hint_ = nullptr;
     is_store_initialized_ = false;
-    is_component_data_updated_ = false;
+    are_component_hints_updated_ = false;
     on_load_hint_callback_called_ = false;
-    is_fetched_data_stored_ = false;
+    are_fetched_hints_updated_ = false;
 
     RunUntilIdle();
   }
 
   HintCache* hint_cache() { return hint_cache_.get(); }
 
-  bool is_fetched_data_stored() { return is_fetched_data_stored_; }
+  bool are_fetched_hints_updated() { return are_fetched_hints_updated_; }
 
   // Updates the cache with |component_data| and waits for callback indicating
   // that the update is complete.
-  void UpdateComponentData(
-      std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data) {
-    is_component_data_updated_ = false;
-    hint_cache_->UpdateComponentData(
+  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data) {
+    are_component_hints_updated_ = false;
+    hint_cache_->UpdateComponentHints(
         std::move(component_data),
-        base::BindOnce(&HintCacheTest::OnUpdateComponentData,
+        base::BindOnce(&HintCacheTest::OnUpdateComponentHints,
                        base::Unretained(this)));
-    while (!is_component_data_updated_) {
+    while (!are_component_hints_updated_) {
       RunUntilIdle();
     }
   }
 
-  bool StoreFetchedHints(
+  bool UpdateFetchedHints(
       std::unique_ptr<optimization_guide::proto::GetHintsResponse>
           get_hints_response,
       base::Time stored_time) {
-    is_fetched_data_stored_ = false;
-    bool result = hint_cache_->StoreFetchedHints(
+    are_fetched_hints_updated_ = false;
+    bool result = hint_cache_->UpdateFetchedHints(
         std::move(get_hints_response), stored_time,
-        base::BindOnce(&HintCacheTest::OnHintStored, base::Unretained(this)));
+        base::BindOnce(&HintCacheTest::OnHintsUpdated, base::Unretained(this)));
 
     RunUntilIdle();
     return result;
   }
 
-  void OnHintStored() { is_fetched_data_stored_ = true; }
+  void OnHintsUpdated() { are_fetched_hints_updated_ = true; }
 
   // Loads hint for the specified host from the cache and waits for callback
   // indicating that loading the hint is complete.
@@ -121,22 +128,21 @@ class HintCacheTest : public testing::Test {
   }
 
   void OnStoreInitialized() { is_store_initialized_ = true; }
-  void OnUpdateComponentData() { is_component_data_updated_ = true; }
+  void OnUpdateComponentHints() { are_component_hints_updated_ = true; }
   void OnLoadHint(const optimization_guide::proto::Hint* hint) {
     on_load_hint_callback_called_ = true;
     loaded_hint_ = hint;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<HintCache> hint_cache_;
   const optimization_guide::proto::Hint* loaded_hint_;
 
   bool is_store_initialized_;
-  bool is_component_data_updated_;
+  bool are_component_hints_updated_;
   bool on_load_hint_callback_called_;
-  bool is_fetched_data_stored_;
+  bool are_fetched_hints_updated_;
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheTest);
 };
@@ -146,8 +152,8 @@ TEST_F(HintCacheTest, ComponentUpdate) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-      hint_cache()->MaybeCreateComponentUpdateData(version);
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
   optimization_guide::proto::Hint hint1;
@@ -164,7 +170,7 @@ TEST_F(HintCacheTest, ComponentUpdate) {
   update_data->MoveHintIntoUpdateData(std::move(hint2));
   update_data->MoveHintIntoUpdateData(std::move(hint3));
 
-  UpdateComponentData(std::move(update_data));
+  UpdateComponentHints(std::move(update_data));
 
   // Not matched
   EXPECT_FALSE(hint_cache()->HasHint("domain.org"));
@@ -181,13 +187,13 @@ TEST_F(HintCacheTest, ComponentUpdateWithSameVersionIgnored) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-      hint_cache()->MaybeCreateComponentUpdateData(version);
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
-  UpdateComponentData(std::move(update_data));
+  UpdateComponentHints(std::move(update_data));
 
-  EXPECT_FALSE(hint_cache()->MaybeCreateComponentUpdateData(version));
+  EXPECT_FALSE(hint_cache()->MaybeCreateUpdateDataForComponentHints(version));
 }
 
 TEST_F(HintCacheTest, ComponentUpdateWithEarlierVersionIgnored) {
@@ -197,13 +203,13 @@ TEST_F(HintCacheTest, ComponentUpdateWithEarlierVersionIgnored) {
   base::Version version_1("1.0.0");
   base::Version version_2("2.0.0");
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-      hint_cache()->MaybeCreateComponentUpdateData(version_2);
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version_2);
   ASSERT_TRUE(update_data);
 
-  UpdateComponentData(std::move(update_data));
+  UpdateComponentHints(std::move(update_data));
 
-  EXPECT_FALSE(hint_cache()->MaybeCreateComponentUpdateData(version_1));
+  EXPECT_FALSE(hint_cache()->MaybeCreateUpdateDataForComponentHints(version_1));
 }
 
 TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
@@ -213,8 +219,8 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   base::Version version_1("1.0.0");
   base::Version version_2("2.0.0");
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data_1 =
-      hint_cache()->MaybeCreateComponentUpdateData(version_1);
+  std::unique_ptr<HintUpdateData> update_data_1 =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version_1);
   ASSERT_TRUE(update_data_1);
 
   optimization_guide::proto::Hint hint1;
@@ -231,7 +237,7 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   update_data_1->MoveHintIntoUpdateData(std::move(hint2));
   update_data_1->MoveHintIntoUpdateData(std::move(hint3));
 
-  UpdateComponentData(std::move(update_data_1));
+  UpdateComponentHints(std::move(update_data_1));
 
   // Not matched
   EXPECT_FALSE(hint_cache()->HasHint("domain.org"));
@@ -242,8 +248,8 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain.org"));
   EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain.org"));
 
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data_2 =
-      hint_cache()->MaybeCreateComponentUpdateData(version_2);
+  std::unique_ptr<HintUpdateData> update_data_2 =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version_2);
   ASSERT_TRUE(update_data_2);
 
   optimization_guide::proto::Hint hint4;
@@ -260,7 +266,7 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   update_data_2->MoveHintIntoUpdateData(std::move(hint5));
   update_data_2->MoveHintIntoUpdateData(std::move(hint6));
 
-  UpdateComponentData(std::move(update_data_2));
+  UpdateComponentHints(std::move(update_data_2));
 
   // Not matched
   EXPECT_FALSE(hint_cache()->HasHint("otherhost.subdomain.domain.org"));
@@ -283,8 +289,8 @@ TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
 
     base::Version version("2.0.0");
 
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-        hint_cache()->MaybeCreateComponentUpdateData(version);
+    std::unique_ptr<HintUpdateData> update_data =
+        hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
     if (i == 0) {
       ASSERT_TRUE(update_data);
 
@@ -302,7 +308,7 @@ TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
       update_data->MoveHintIntoUpdateData(std::move(hint2));
       update_data->MoveHintIntoUpdateData(std::move(hint3));
 
-      UpdateComponentData(std::move(update_data));
+      UpdateComponentHints(std::move(update_data));
     } else {
       EXPECT_FALSE(update_data);
     }
@@ -328,8 +334,8 @@ TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
 
     base::Version version("2.0.0");
 
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-        hint_cache()->MaybeCreateComponentUpdateData(version);
+    std::unique_ptr<HintUpdateData> update_data =
+        hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
     ASSERT_TRUE(update_data);
 
     optimization_guide::proto::Hint hint1;
@@ -346,7 +352,7 @@ TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
     update_data->MoveHintIntoUpdateData(std::move(hint2));
     update_data->MoveHintIntoUpdateData(std::move(hint3));
 
-    UpdateComponentData(std::move(update_data));
+    UpdateComponentHints(std::move(update_data));
 
     // Not matched
     EXPECT_FALSE(hint_cache()->HasHint("domain.org"));
@@ -369,8 +375,8 @@ TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
 
     base::Version version("2.0.0");
 
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-        hint_cache()->MaybeCreateComponentUpdateData(version);
+    std::unique_ptr<HintUpdateData> update_data =
+        hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
     if (i == 0) {
       ASSERT_TRUE(update_data);
 
@@ -388,7 +394,7 @@ TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
       update_data->MoveHintIntoUpdateData(std::move(hint2));
       update_data->MoveHintIntoUpdateData(std::move(hint3));
 
-      UpdateComponentData(std::move(update_data));
+      UpdateComponentHints(std::move(update_data));
     } else {
       EXPECT_TRUE(update_data);
     }
@@ -415,8 +421,8 @@ TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("1.0.0");
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-      hint_cache()->MaybeCreateComponentUpdateData(version);
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
   for (int i = 0; i < kTestHintCount; ++i) {
@@ -426,7 +432,7 @@ TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
     update_data->MoveHintIntoUpdateData(std::move(hint));
   }
 
-  UpdateComponentData(std::move(update_data));
+  UpdateComponentHints(std::move(update_data));
 
   for (int i = kTestHintCount - 1; i >= 0; --i) {
     std::string host = GetHostDomainOrg(i);
@@ -455,8 +461,8 @@ TEST_F(HintCacheTest, TestHostNotInCache) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("1.0.0");
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-      hint_cache()->MaybeCreateComponentUpdateData(version);
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
   for (int i = 0; i < kTestHintCount; ++i) {
@@ -466,7 +472,7 @@ TEST_F(HintCacheTest, TestHostNotInCache) {
     update_data->MoveHintIntoUpdateData(std::move(hint));
   }
 
-  UpdateComponentData(std::move(update_data));
+  UpdateComponentHints(std::move(update_data));
 
   EXPECT_FALSE(hint_cache()->HasHint(GetHostDomainOrg(kTestHintCount)));
 }
@@ -476,8 +482,8 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("1.0.0");
-  std::unique_ptr<HintCacheStore::ComponentUpdateData> update_data =
-      hint_cache()->MaybeCreateComponentUpdateData(version);
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
   std::string hint_key = "subdomain.domain.org";
@@ -486,7 +492,7 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
   hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint));
 
-  UpdateComponentData(std::move(update_data));
+  UpdateComponentHints(std::move(update_data));
 
   EXPECT_FALSE(hint_cache()->GetHintIfLoaded("host.subdomain.domain.org"));
   LoadHint("host.subdomain.domain.org");
@@ -514,8 +520,8 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  EXPECT_TRUE(StoreFetchedHints(std::move(get_hints_response), stored_time));
-  EXPECT_TRUE(is_fetched_data_stored());
+  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
   EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
@@ -530,8 +536,76 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
           std::make_unique<optimization_guide::proto::GetHintsResponse>();
 
   EXPECT_FALSE(
-      StoreFetchedHints(std::move(get_hints_response), base::Time().Now()));
-  EXPECT_FALSE(is_fetched_data_stored());
+      UpdateFetchedHints(std::move(get_hints_response), base::Time().Now()));
+  EXPECT_FALSE(are_fetched_hints_updated());
+}
+
+TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
+  base::HistogramTester histogram_tester;
+  const int kMemoryCacheSize = 5;
+  const int kFetchedHintExpirationSecs = 60;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  // Default update time for empty hint cache store is base::Time().
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  // Set server-provided expiration time.
+  get_hints_response->mutable_max_cache_duration()->set_seconds(
+      kFetchedHintExpirationSecs);
+
+  optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key("host.domain.org");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  EXPECT_TRUE(are_fetched_hints_updated());
+
+  // Next update time for hints should be updated.
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+
+  LoadHint("host.domain.org");
+  // HISTOGRAM TEST!
+  histogram_tester.ExpectTimeBucketCount(
+      "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+      base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs), 1);
+}
+
+TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
+  base::HistogramTester histogram_tester;
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  // Default update time for empty hint cache store is base::Time().
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key("host.domain.org");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  EXPECT_TRUE(are_fetched_hints_updated());
+
+  // Next update time for hints should be updated.
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+
+  LoadHint("host.domain.org");
+  histogram_tester.ExpectTimeBucketCount(
+      "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+      params::StoredFetchedHintsFreshnessDuration(), 1);
 }
 
 }  // namespace

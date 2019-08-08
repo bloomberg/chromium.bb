@@ -110,7 +110,6 @@ config("feature_flags") {
     defines += [
       "THREAD_SANITIZER",
       "DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL=1",
-      "WTF_USE_DYNAMIC_ANNOTATIONS_NOIMPL=1",
     ]
   }
   if (is_msan) {
@@ -150,7 +149,6 @@ config("debug") {
   defines = [
     "_DEBUG",
     "DYNAMIC_ANNOTATIONS_ENABLED=1",
-    "WTF_USE_DYNAMIC_ANNOTATIONS=1",
   ]
 
   if (is_nacl) {
@@ -158,7 +156,7 @@ config("debug") {
   }
 
   if (is_win) {
-    if (!enable_iterator_debugging) {
+    if (!enable_iterator_debugging && !use_custom_libcxx) {
       # Iterator debugging is enabled by default by the compiler on debug
       # builds, and we have to tell it to turn it off.
       defines += [ "_HAS_ITERATOR_DEBUGGING=0" ]
@@ -176,10 +174,7 @@ config("release") {
 
   # Sanitizers.
   if (is_tsan) {
-    defines += [
-      "DYNAMIC_ANNOTATIONS_ENABLED=1",
-      "WTF_USE_DYNAMIC_ANNOTATIONS=1",
-    ]
+    defines += [ "DYNAMIC_ANNOTATIONS_ENABLED=1" ]
   } else {
     defines += [ "NVALGRIND" ]
     if (!is_nacl) {

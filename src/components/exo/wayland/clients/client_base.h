@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -78,6 +78,7 @@ class ClientBase {
     std::unique_ptr<zwp_input_timestamps_manager_v1> input_timestamps_manager;
     std::unique_ptr<zwp_linux_explicit_synchronization_v1>
         linux_explicit_synchronization;
+    std::unique_ptr<zcr_vsync_feedback_v1> vsync_feedback;
   };
 
   struct Buffer {
@@ -99,8 +100,8 @@ class ClientBase {
 #endif  // defined(USE_VULKAN)
 #endif  // defined(USE_GBM)
     std::unique_ptr<zwp_linux_buffer_params_v1> params;
-    std::unique_ptr<base::SharedMemory> shared_memory;
     std::unique_ptr<wl_shm_pool> shm_pool;
+    base::WritableSharedMemoryMapping shared_memory_mapping;
     sk_sp<SkSurface> sk_surface;
   };
 

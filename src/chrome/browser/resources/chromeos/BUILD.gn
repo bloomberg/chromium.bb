@@ -36,12 +36,15 @@ grit("multidevice_setup_resources") {
 
 group("closure_compile") {
   deps = [
+    "add_supervision:closure_compile",
     "bluetooth_pairing_dialog:closure_compile",
     "braille_ime:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
     "kiosk_next_home:closure_compile",
     "login:closure_compile",
+    "login:closure_compile_supervision",
+    "machine_learning:closure_compile",
     "multidevice_setup:closure_compile",
     "network_ui:closure_compile",
     "select_to_speak:closure_compile",

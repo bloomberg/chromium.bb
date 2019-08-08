@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -52,11 +52,16 @@ gfx::Rect TrayContainer::GetAnchorBoundsInScreen() const {
     // When the virtual keyboard is up, any anchored widgets should anchor to
     // the virtual keyboard instead because it will cover the shelf.
     const gfx::Rect occluded_bounds =
-        keyboard::KeyboardController::Get()->GetWorkspaceOccludedBounds();
+        keyboard::KeyboardController::Get()
+            ->GetWorkspaceOccludedBoundsInScreen();
     if (!occluded_bounds.IsEmpty())
       return occluded_bounds;
   }
   return GetBoundsInScreen();
+}
+
+const char* TrayContainer::GetClassName() const {
+  return "TrayContainer";
 }
 
 void TrayContainer::UpdateLayout() {

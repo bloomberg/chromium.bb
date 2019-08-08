@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -188,7 +187,7 @@ void History::go(ScriptState* script_state,
   if (!active_document->GetFrame() ||
       !active_document->GetFrame()->CanNavigate(*GetFrame()) ||
       !active_document->GetFrame()->IsNavigationAllowed() ||
-      !NavigationDisablerForBeforeUnload::IsNavigationAllowed()) {
+      !GetFrame()->IsNavigationAllowed()) {
     return;
   }
 
@@ -300,7 +299,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     return;
   }
 
-  GetFrame()->Loader().UpdateForSameDocumentNavigation(
+  GetFrame()->GetDocument()->Loader()->UpdateForSameDocumentNavigation(
       full_url, kSameDocumentNavigationHistoryApi, std::move(data),
       restoration_type, type, GetFrame()->GetDocument());
 }

@@ -1,11 +1,12 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "services/tracing/perfetto/test_utils.h"
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "services/tracing/perfetto/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
@@ -20,7 +21,9 @@ namespace tracing {
 
 TestDataSource::TestDataSource(const std::string& data_source_name,
                                size_t send_packet_count)
-    : DataSourceBase(data_source_name), send_packet_count_(send_packet_count) {}
+    : DataSourceBase(data_source_name), send_packet_count_(send_packet_count) {
+  PerfettoTracedProcess::Get()->AddDataSource(this);
+}
 
 TestDataSource::~TestDataSource() = default;
 
@@ -30,7 +33,7 @@ void TestDataSource::WritePacketBigly() {
   payload.get()[kLargeMessageSize - 1] = 0;
 
   std::unique_ptr<perfetto::TraceWriter> writer =
-      producer_client_->CreateTraceWriter(config_.target_buffer());
+      producer_->CreateTraceWriter(config_.target_buffer());
   CHECK(writer);
 
   writer->NewTracePacket()->set_for_testing()->set_str(payload.get(),
@@ -38,14 +41,14 @@ void TestDataSource::WritePacketBigly() {
 }
 
 void TestDataSource::StartTracing(
-    ProducerClient* producer_client,
+    PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
-  producer_client_ = producer_client;
+  producer_ = producer;
   config_ = data_source_config;
 
   if (send_packet_count_ > 0) {
     std::unique_ptr<perfetto::TraceWriter> writer =
-        producer_client_->CreateTraceWriter(config_.target_buffer());
+        producer_->CreateTraceWriter(config_.target_buffer());
     CHECK(writer);
 
     for (size_t i = 0; i < send_packet_count_; i++) {
@@ -65,20 +68,29 @@ void TestDataSource::Flush(base::RepeatingClosure flush_complete_callback) {
 }
 
 MockProducerClient::MockProducerClient(
-    size_t send_packet_count,
     base::OnceClosure client_enabled_callback,
     base::OnceClosure client_disabled_callback)
-    : client_enabled_callback_(std::move(client_enabled_callback)),
-      client_disabled_callback_(std::move(client_disabled_callback)),
-      send_packet_count_(send_packet_count) {}
-
-MockProducerClient::~MockProducerClient() = default;
-
-void MockProducerClient::SetupDataSource(const std::string& data_source_name) {
-  enabled_data_source_ =
-      std::make_unique<TestDataSource>(data_source_name, send_packet_count_);
-  AddDataSource(enabled_data_source_.get());
+    : ProducerClient(PerfettoTracedProcess::Get()->GetTaskRunner()),
+      client_enabled_callback_(std::move(client_enabled_callback)),
+      client_disabled_callback_(std::move(client_disabled_callback)) {
+  // We want to set the ProducerClient to this mock, but that 'requires' passing
+  // ownership of ourselves to PerfettoTracedProcess. Since someone else manages
+  // our deletion we need to be careful in the deconstructor to not double free
+  // ourselves.
+  std::unique_ptr<MockProducerClient> client;
+  client.reset(this);
+  old_producer_ = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
+      std::move(client));
 }
+
+MockProducerClient::~MockProducerClient() {
+  // See comment in the constructor. This prevents a double free.
+  auto client = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
+      std::move(old_producer_));
+  client.release();
+}
+
+void MockProducerClient::SetupDataSource(const std::string& data_source_name) {}
 
 void MockProducerClient::StartDataSource(
     uint64_t id,
@@ -192,21 +204,14 @@ MockProducerHost::MockProducerHost(
     : producer_name_(producer_name),
       datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
-  auto on_mojo_connected_callback =
-      [](MockProducerClient* producer_client,
-         const std::string& data_source_name, MockProducerHost* producer_host,
-         perfetto::TracingService* service,
-         mojom::ProducerClientPtr producer_client_pipe,
-         mojom::ProducerHostRequest producer_host_pipe) {
-        producer_host->OnMessagepipesReadyCallback(
-            service, std::move(producer_client_pipe),
-            std::move(producer_host_pipe));
-        producer_client->SetupDataSource(data_source_name);
-      };
-
-  producer_client->CreateMojoMessagepipes(base::BindOnce(
-      on_mojo_connected_callback, base::Unretained(producer_client),
-      data_source_name, base::Unretained(this), base::Unretained(service)));
+  mojom::ProducerClientPtr client;
+  mojom::ProducerHostPtrInfo host_info;
+  auto client_request = mojo::MakeRequest(&client);
+  Initialize(std::move(client), service, producer_name_);
+  binding_.Bind(mojo::MakeRequest(&host_info));
+  producer_client->BindClientAndHostPipesForTesting(std::move(client_request),
+                                                    std::move(host_info));
+  producer_client->SetupDataSource(data_source_name);
 }
 
 MockProducerHost::~MockProducerHost() = default;
@@ -239,23 +244,16 @@ void MockProducerHost::OnCommit(
   all_host_commit_data_requests_ += proto_string;
 }
 
-void MockProducerHost::OnMessagepipesReadyCallback(
-    perfetto::TracingService* perfetto_service,
-    mojom::ProducerClientPtr producer_client_pipe,
-    mojom::ProducerHostRequest producer_host_pipe) {
-  Initialize(std::move(producer_client_pipe), perfetto_service, producer_name_);
-  binding_ = std::make_unique<mojo::Binding<mojom::ProducerHost>>(
-      this, std::move(producer_host_pipe));
-}
-
 MockProducer::MockProducer(const std::string& producer_name,
                            const std::string& data_source_name,
                            perfetto::TracingService* service,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
                            size_t num_packets) {
-  producer_client_ = std::make_unique<MockProducerClient>(
-      num_packets, std::move(on_tracing_started));
+  data_source_ =
+      std::make_unique<TestDataSource>(data_source_name, num_packets);
+  producer_client_ =
+      std::make_unique<MockProducerClient>(std::move(on_tracing_started));
 
   producer_host_ = std::make_unique<MockProducerHost>(
       producer_name, data_source_name, service, producer_client_.get(),
@@ -267,11 +265,13 @@ MockProducer::~MockProducer() {
 }
 
 void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
-  producer_client_->GetTaskRunner()->task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&TestDataSource::WritePacketBigly,
-                     base::Unretained(producer_client_->data_source())),
-      std::move(on_write_complete));
+  PerfettoTracedProcess::Get()
+      ->GetTaskRunner()
+      ->GetOrCreateTaskRunner()
+      ->PostTaskAndReply(FROM_HERE,
+                         base::BindOnce(&TestDataSource::WritePacketBigly,
+                                        base::Unretained(data_source())),
+                         std::move(on_write_complete));
 }
 
 }  // namespace tracing

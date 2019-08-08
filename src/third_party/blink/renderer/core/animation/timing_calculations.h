@@ -38,6 +38,18 @@
 
 namespace blink {
 
+namespace {
+inline bool IsWithinEpsilon(double a, double b) {
+  // Permit 2-bits of quantization error. Threshold based on experimentation
+  // with accuracy of fmod.
+  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
+}
+
+inline bool LessThanOrEqualToWithinEpsilon(double a, double b) {
+  return a <= b || IsWithinEpsilon(a, b);
+}
+}  // namespace
+
 static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
   DCHECK(!IsNull(x));
   DCHECK(!IsNull(y));
@@ -48,12 +60,6 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
                                                  double y) {
   DCHECK(!IsNull(y));
   return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
-}
-
-static inline bool IsWithinEpsilon(double a, double b) {
-  // Permit 2-bits of quantization error. Threshold based on experimentation
-  // with accuracy of fmod.
-  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
 }
 
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
@@ -124,7 +130,8 @@ static inline double CalculateOffsetActiveTime(double active_duration,
   if (IsNull(active_time))
     return NullValue();
 
-  DCHECK(active_time >= 0 && active_time <= active_duration);
+  DCHECK(active_time >= 0 &&
+         LessThanOrEqualToWithinEpsilon(active_time, active_duration));
 
   if (!std::isfinite(active_time))
     return std::numeric_limits<double>::infinity();
@@ -155,7 +162,8 @@ static inline double CalculateIterationTime(double iteration_duration,
     return NullValue();
 
   DCHECK_GE(offset_active_time, 0);
-  DCHECK_LE(offset_active_time, repeated_duration + start_offset);
+  DCHECK(LessThanOrEqualToWithinEpsilon(offset_active_time,
+                                        repeated_duration + start_offset));
 
   if (!std::isfinite(offset_active_time) ||
       (offset_active_time - start_offset == repeated_duration &&
@@ -190,7 +198,7 @@ static inline double CalculateOverallProgress(AnimationEffect::Phase phase,
 
   // 2. Calculate an initial value for overall progress.
   double overall_progress = 0;
-  if (!iteration_duration) {
+  if (IsWithinEpsilon(iteration_duration, 0)) {
     if (phase != AnimationEffect::kPhaseBefore)
       overall_progress = iteration_count;
   } else {
@@ -261,8 +269,10 @@ static inline double CalculateCurrentIteration(
 
   // 3. If the simple iteration progress is 1.0, return floor(overall progress)
   // - 1.
-  if (simple_iteration_progress == 1.0)
-    return floor(overall_progress) - 1;
+  if (simple_iteration_progress == 1.0) {
+    // Safeguard for zero duration animation (crbug.com/954558).
+    return fmax(0, floor(overall_progress) - 1);
+  }
 
   // 4. Otherwise, return floor(overall progress).
   return floor(overall_progress);
@@ -313,17 +323,38 @@ static inline double CalculateDirectedProgress(
 
 // https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress
 static inline double CalculateTransformedProgress(
+    AnimationEffect::Phase phase,
     double directed_progress,
     double iteration_duration,
+    bool is_current_direction_forward,
     scoped_refptr<TimingFunction> timing_function) {
   if (IsNull(directed_progress))
     return NullValue();
 
+  // Set the before flag to indicate if at the leading edge of an iteration.
+  // This is used to determine if the left or right limit should be used if at a
+  // discontinuity in the timing function.
+  bool before = is_current_direction_forward
+                    ? phase == AnimationEffect::kPhaseBefore
+                    : phase == AnimationEffect::kPhaseAfter;
+  TimingFunction::LimitDirection limit_direction =
+      before ? TimingFunction::LimitDirection::LEFT
+             : TimingFunction::LimitDirection::RIGHT;
+
+  // Snap boundaries to correctly render step timing functions at 0 and 1.
+  // (crbug.com/949373)
+  if (phase == AnimationEffect::kPhaseAfter) {
+    if (is_current_direction_forward && IsWithinEpsilon(directed_progress, 1)) {
+      directed_progress = 1;
+    } else if (!is_current_direction_forward &&
+               IsWithinEpsilon(directed_progress, 0)) {
+      directed_progress = 0;
+    }
+  }
+
   // Return the result of evaluating the animation effect’s timing function
   // passing directed progress as the input progress value.
-  // Note that the spec calls for passing in a before flag as well, which should
-  // be used by the step easing functions (Possibly related to crbug/827560).
-  return timing_function->Evaluate(directed_progress,
+  return timing_function->Evaluate(directed_progress, limit_direction,
                                    AccuracyForDuration(iteration_duration));
 }
 

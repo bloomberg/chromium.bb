@@ -59,16 +59,13 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
 
 }  // namespace
 
-AppCacheHost::AppCacheHost(int host_id,
+AppCacheHost::AppCacheHost(const base::UnguessableToken& host_id,
                            int process_id,
                            int render_frame_id,
                            blink::mojom::AppCacheFrontendPtr frontend,
                            AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
-      spawning_host_id_(blink::mojom::kAppCacheNoHostId),
-      parent_host_id_(blink::mojom::kAppCacheNoHostId),
-      parent_process_id_(0),
       pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
       pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),
       was_select_cache_called_(false),
@@ -126,7 +123,7 @@ void AppCacheHost::RemoveObserver(Observer* observer) {
 }
 
 void AppCacheHost::Unregister() {
-  service_->GetBackend(process_id_)->UnregisterHost(host_id_);
+  service_->EraseHost(host_id_);
 }
 
 void AppCacheHost::SelectCache(const GURL& document_url,
@@ -328,19 +325,13 @@ void AppCacheHost::DoPendingSwapCache() {
   std::move(pending_swap_cache_callback_).Run(success);
 }
 
-void AppCacheHost::SetSpawningHostId(int spawning_host_id) {
+void AppCacheHost::SetSpawningHostId(
+    const base::UnguessableToken& spawning_host_id) {
   spawning_host_id_ = spawning_host_id;
 }
 
 const AppCacheHost* AppCacheHost::GetSpawningHost() const {
-  AppCacheBackendImpl* backend = service_->GetBackend(process_id_);
-  return backend ? backend->GetHost(spawning_host_id_) : nullptr;
-}
-
-AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
-  DCHECK(is_for_dedicated_worker());
-  AppCacheBackendImpl* backend = service_->GetBackend(parent_process_id_);
-  return backend ? backend->GetHost(parent_host_id_) : nullptr;
+  return service_->GetHost(spawning_host_id_);
 }
 
 void AppCacheHost::GetResourceList(GetResourceListCallback callback) {
@@ -361,14 +352,6 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
     std::unique_ptr<AppCacheRequest> request,
     ResourceType resource_type,
     bool should_reset_appcache) {
-  if (is_for_dedicated_worker()) {
-    AppCacheHost* parent_host = GetParentAppCacheHost();
-    if (parent_host)
-      return parent_host->CreateRequestHandler(
-          std::move(request), resource_type, should_reset_appcache);
-    return nullptr;
-  }
-
   if (AppCacheRequestHandler::IsMainResourceType(resource_type)) {
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.

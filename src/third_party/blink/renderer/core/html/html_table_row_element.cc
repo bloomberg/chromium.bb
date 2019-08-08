@@ -43,8 +43,6 @@ using namespace html_names;
 HTMLTableRowElement::HTMLTableRowElement(Document& document)
     : HTMLTablePartElement(kTrTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLTableRowElement)
-
 bool HTMLTableRowElement::HasLegalLinkAttribute(
     const QualifiedName& name) const {
   return name == kBackgroundAttr ||

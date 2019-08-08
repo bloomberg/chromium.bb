@@ -74,7 +74,7 @@ bool IsNativeTextControl(const AXNode* node) {
 }
 
 bool IsLeaf(const AXNode* node) {
-  if (node->child_count() == 0)
+  if (node->children().empty())
     return true;
 
   if (IsNativeTextControl(node) || node->IsText()) {
@@ -158,7 +158,7 @@ base::string16 GetText(const AXNode* node, bool show_password) {
       node->data().GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
   if (ui::IsListItem(node->data().role) &&
       name_from == ax::mojom::NameFrom::kContents) {
-    if (node->child_count() > 0 && !HasOnlyTextChildren(node))
+    if (!node->children().empty() && !HasOnlyTextChildren(node))
       return base::string16();
   }
 

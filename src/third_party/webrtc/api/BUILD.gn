@@ -86,6 +86,7 @@ rtc_static_library("libjingle_peerconnection_api") {
     "bitrate_constraints.h",
     "candidate.cc",
     "candidate.h",
+    "congestion_control_interface.h",
     "crypto/crypto_options.cc",
     "crypto/crypto_options.h",
     "crypto/frame_decryptor_interface.h",
@@ -93,6 +94,7 @@ rtc_static_library("libjingle_peerconnection_api") {
     "crypto_params.h",
     "data_channel_interface.cc",
     "data_channel_interface.h",
+    "datagram_transport_interface.h",
     "dtls_transport_interface.cc",
     "dtls_transport_interface.h",
     "dtmf_sender_interface.h",
@@ -106,6 +108,8 @@ rtc_static_library("libjingle_peerconnection_api") {
     "media_stream_interface.h",
     "media_stream_proxy.h",
     "media_stream_track_proxy.h",
+    "media_transport_config.cc",
+    "media_transport_config.h",
     "media_transport_interface.cc",
     "media_transport_interface.h",
     "media_types.cc",
@@ -147,12 +151,14 @@ rtc_static_library("libjingle_peerconnection_api") {
     ":scoped_refptr",
     "audio:audio_mixer_api",
     "audio_codecs:audio_codecs_api",
+    "rtc_event_log",
     "task_queue",
     "transport:bitrate_settings",
     "transport:network_control",
     "transport/media:audio_interfaces",
     "transport/media:video_interfaces",
     "units:data_rate",
+    "units:timestamp",
     "video:encoded_image",
     "video:video_frame",
     "//third_party/abseil-cpp/absl/algorithm:container",
@@ -163,7 +169,6 @@ rtc_static_library("libjingle_peerconnection_api") {
     # targets like pnacl. API should not depend on anything outside of this
     # file, really. All these should arguably go away in time.
     "..:webrtc_common",
-    "../logging:rtc_event_log_api",
     "../media:rtc_media_config",
     "../modules/audio_processing:audio_processing_statistics",
     "../rtc_base",
@@ -196,6 +201,7 @@ rtc_source_set("video_quality_test_fixture_api") {
     "../call:rtp_interfaces",
     "../test:test_common",
     "../test:video_test_common",
+    "transport:network_control",
     "video_codecs:video_codecs_api",
   ]
 }
@@ -212,7 +218,6 @@ rtc_source_set("video_quality_analyzer_api") {
     "video:encoded_image",
     "video:video_frame",
     "video_codecs:video_codecs_api",
-    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -246,7 +251,6 @@ rtc_source_set("stats_observer_interface") {
 
   deps = [
     ":libjingle_peerconnection_api",
-    "//third_party/abseil-cpp/absl/strings",
   ]
 }
 
@@ -267,6 +271,7 @@ rtc_source_set("peer_connection_quality_test_fixture_api") {
     ":simulated_network_api",
     ":video_quality_analyzer_api",
     "../logging:rtc_event_log_api",
+    "../media:rtc_media_base",
     "../rtc_base:rtc_base",
     "transport:network_control",
     "units:time_delta",
@@ -348,18 +353,19 @@ rtc_source_set("libjingle_logging_api") {
   ]
 }
 
-rtc_source_set("ortc_api") {
+rtc_source_set("rtc_event_log_output_file") {
   visibility = [ "*" ]
   sources = [
-    "ortc/packet_transport_interface.h",
-    "ortc/rtp_transport_interface.h",
-    "ortc/srtp_transport_interface.h",
+    "rtc_event_log_output_file.cc",
+    "rtc_event_log_output_file.h",
   ]
 
   deps = [
-    ":libjingle_peerconnection_api",
-    ":rtp_headers",
-    "//third_party/abseil-cpp/absl/types:optional",
+    ":libjingle_logging_api",
+    "../rtc_base:checks",
+    "../rtc_base:rtc_base_approved",
+    "../rtc_base/system:file_wrapper",
+    "rtc_event_log",
   ]
 }
 
@@ -804,6 +810,7 @@ if (rtc_include_tests) {
       "array_view_unittest.cc",
       "function_view_unittest.cc",
       "rtc_error_unittest.cc",
+      "rtc_event_log_output_file_unittest.cc",
       "rtp_parameters_unittest.cc",
       "test/loopback_media_transport_unittest.cc",
     ]
@@ -813,13 +820,16 @@ if (rtc_include_tests) {
       ":function_view",
       ":libjingle_peerconnection_api",
       ":loopback_media_transport",
+      ":rtc_event_log_output_file",
       "../rtc_base:checks",
       "../rtc_base:gunit_helpers",
       "../rtc_base:rtc_base_approved",
+      "../test:fileutils",
       "../test:test_support",
       "task_queue:task_queue_default_factory_unittests",
       "units:units_unittests",
       "video:video_unittests",
+      "//third_party/abseil-cpp/absl/memory",
     ]
   }
 

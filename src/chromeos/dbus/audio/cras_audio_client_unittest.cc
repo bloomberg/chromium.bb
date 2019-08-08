@@ -365,7 +365,10 @@ class CrasAudioClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { mock_bus_->ShutdownAndBlock(); }
+  void TearDown() override {
+    mock_bus_->ShutdownAndBlock();
+    CrasAudioClient::Shutdown();
+  }
 
  protected:
   // A callback to intercept and check the method call arguments.

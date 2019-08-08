@@ -10,7 +10,7 @@
 /**
  *  @enum {number}
  *  These values must be kept in sync with the SmbMountResult enum in
- *  chrome/browser/chromeos/smb_client/smb_service.h.
+ *  chrome/browser/chromeos/smb_client/smb_errors.h.
  */
 const SmbMountResult = {
   SUCCESS: 0,
@@ -26,6 +26,7 @@ const SmbMountResult = {
   ABORTED: 10,
   IO_ERROR: 11,
   TOO_MANY_OPENED: 12,
+  INVALID_SSO_URL: 13,
 };
 
 /** @enum {string} */

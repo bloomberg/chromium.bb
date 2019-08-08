@@ -105,6 +105,11 @@ class TabWebContentsDelegateAndroid
       content::RenderFrameHost* subframe_host) const override;
 #endif
 
+  bool ShouldEnableEmbeddedMediaExperience() const;
+  bool IsPictureInPictureEnabled() const;
+  bool IsNightModeEnabled() const;
+  const GURL GetManifestScope() const;
+
  private:
   // NotificationObserver implementation.
   void Observe(int type,

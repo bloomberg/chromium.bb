@@ -133,6 +133,10 @@
         <item name="android:windowDisablePreview">true</item>
     </style>
 
+    <style name="Theme.Chromium.Webapp.Translucent" parent="Theme.Chromium.Webapp">
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
     <style name="Base.Theme.Chromium.Preferences" parent="Theme.Chromium.WithActionBar">
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="floatLabelTextAppearance">@style/TextAppearance.BlackCaption</item>
@@ -642,6 +646,7 @@
         <item name="android:layout_width">24dp</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:clickable">false</item>
+        <item name="android:importantForAccessibility">no</item>
     </style>
     <style name="TextAppearance.BottomToolbarLabel" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/default_text_color_dark_secondary</item>
@@ -666,6 +671,18 @@
         <item name="android:maxLines">1</item>
         <item name="android:gravity">center_horizontal</item>
         <item name="android:visibility">gone</item>
+    </style>
+    <style name="TabBarShadow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/action_bar_shadow_height</item>
+        <item name="android:src">@drawable/modern_toolbar_shadow</item>
+        <item name="android:scaleType">fitXY</item>
+    </style>
+    <style name="TabBarLineShadow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:src">@color/hairline_stroke_color</item>
+        <item name="android:scaleType">fitXY</item>
     </style>
 
     <style name="AppMenuItem">
@@ -835,16 +852,10 @@
         <item name="android:ellipsize">end</item>
         <item name="leading">20sp</item>
     </style>
-    <style name="ContextualSuggestionCardTitleModern" parent="SuggestionCardTitleModern">
-        <item name="leading">@dimen/text_size_large_leading</item>
-    </style>
     <style name="SuggestionCardBodyModern" parent="TextAppearance.BlackBody">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
-    </style>
-    <style name="ContextualSuggestionCardBodyModern" parent="SuggestionCardBodyModern">
-        <item name="leading">@dimen/text_size_medium_leading</item>
     </style>
     <style name="SuggestionCardAction" parent="@style/TextButton">
         <item name="android:minHeight">48dp</item>

@@ -24,6 +24,7 @@
 #include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "content/browser/devtools/devtools_frame_metadata.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -33,6 +34,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/android/event_handler_android.h"
@@ -125,8 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetIsLoading(bool is_loading) override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
-  void RenderProcessGone(base::TerminationStatus status,
-                         int error_code) override;
+  void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
@@ -304,6 +305,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                 int end_adjust);
 
   void SynchronousFrameMetadata(viz::CompositorFrameMetadata frame_metadata);
+  // TODO(ericrk): Ideally we'd reemove |root_scroll_offset| from this function
+  // once we have a reliable way to get it through RenderFrameMetadata.
+  void FrameTokenChangedForSynchronousCompositor(
+      uint32_t frame_token,
+      const gfx::ScrollOffset& root_scroll_offset);
 
   void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
 
@@ -343,6 +349,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const cc::RenderFrameMetadata& metadata) override;
 
   void WasEvicted();
+
+  void SetWebContentsAccessibility(
+      WebContentsAccessibilityAndroid* web_contents_accessibility);
 
   ui::DelegatedFrameHostAndroid* delegated_frame_host_for_testing() {
     return delegated_frame_host_.get();
@@ -387,6 +396,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void EvictFrameIfNecessary();
 
+  // Helper function to update background color for WebView on fullscreen
+  // changes. See https://crbug.com/961223.
+  void UpdateWebViewBackgroundColorIfNecessary();
+
   // DevTools ScreenCast support for Android WebView.
   void SynchronousCopyContents(
       const gfx::Rect& src_subrect_dip,
@@ -424,6 +437,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void SetTextHandlesHiddenForStylus(bool hide_handles);
   void SetTextHandlesHiddenInternal();
+
+  void OnUpdateScopedSelectionHandles();
 
   // The begin frame source being observed.  Null if none.
   viz::BeginFrameSource* begin_frame_source_;
@@ -486,6 +501,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // may be representing out-of-process iframes).
   std::unique_ptr<TouchSelectionControllerClientManagerAndroid>
       touch_selection_controller_client_manager_;
+  // Notifies the WindowAndroid when the page has active selection handles.
+  std::unique_ptr<ui::WindowAndroid::ScopedSelectionHandles>
+      scoped_selection_handles_;
 
   // Bounds to use if we have no backing WebContents.
   gfx::Rect default_bounds_;
@@ -527,6 +545,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool navigation_while_hidden_ = false;
 
   viz::PresentationFeedbackMap presentation_feedbacks_;
+
+  // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
+  // into DevTools capture logic.
+  // TODO(ericrk): Make this more robust.
+  bool in_sync_copy_contents_ = false;
+
+  // A cached copy of the most up to date DevToolsFrameMetadata, computed from
+  // either RenderFrameMetadata or CompositorFrameMetadata.
+  base::Optional<DevToolsFrameMetadata> last_devtools_frame_metadata_;
+
+  WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

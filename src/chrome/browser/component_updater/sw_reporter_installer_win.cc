@@ -96,14 +96,14 @@ void SRTHasCompleted(SRTCompleted value) {
 }
 
 void ReportUploadsWithUma(const base::string16& upload_results) {
-  base::WStringTokenizer tokenizer(upload_results, L";");
+  base::String16Tokenizer tokenizer(upload_results, STRING16_LITERAL(";"));
   int failure_count = 0;
   int success_count = 0;
   int longest_failure_run = 0;
   int current_failure_run = 0;
   bool last_result = false;
   while (tokenizer.GetNext()) {
-    if (tokenizer.token_piece() == L"0") {
+    if (tokenizer.token_piece() == STRING16_LITERAL("0")) {
       ++failure_count;
       ++current_failure_run;
       last_result = false;

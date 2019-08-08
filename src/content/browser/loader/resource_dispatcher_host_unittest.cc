@@ -30,6 +30,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -108,7 +109,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.load_flags = 0;
   request.plugin_child_id = -1;
   request.resource_type = static_cast<int>(type);
-  request.appcache_host_id = blink::mojom::kAppCacheNoHostId;
+  request.appcache_host_id = base::nullopt;
   request.should_reset_appcache = false;
   request.render_frame_id = 0;
   request.is_main_frame = true;
@@ -124,7 +125,6 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
   TestFilterSpecifyingChild(TestBrowserContext* browser_context, int process_id)
       : ResourceMessageFilter(
             process_id,
-            nullptr,
             nullptr,
             nullptr,
             nullptr,
@@ -528,9 +528,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  const char* GetNameForLogging() const override {
-    return "GenericResourceThrottle";
-  }
+  const char* GetNameForLogging() override { return "GenericResourceThrottle"; }
 
   void AssertAndResume() {
     ASSERT_TRUE(this == active_throttle_);
@@ -830,7 +828,9 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
             blink::WebMixedContentContextType::kBlockable,
-            false /* is_form_submission */, GURL() /* searchable_form_url */,
+            false /* is_form_submission */,
+            false /* was_initiated_by_link_click */,
+            GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
@@ -848,7 +848,8 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
         NavigationURLLoader::Create(
             browser_context_->GetResourceContext(),
             BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
-            std::move(request_info), nullptr, nullptr, nullptr, &delegate);
+            std::move(request_info), nullptr, nullptr, nullptr, nullptr,
+            &delegate);
 
     // The navigation should fail with the expected error code.
     delegate.WaitForRequestFailed();
@@ -2123,6 +2124,12 @@ TEST_P(ResourceDispatcherHostTest, MimeSniffEmpty) {
 
 // Tests for crbug.com/31266 (Non-2xx + application/octet-stream).
 TEST_P(ResourceDispatcherHostTest, ForbiddenDownload) {
+  // This is a regression test for code in ResourceDispatcherHost, but it's
+  // written in a way that uses code from network service if that feature is
+  // enabled. This will fail because not everything is setup.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   std::string raw_headers("HTTP/1.1 403 Forbidden\n"
                           "Content-disposition: attachment; filename=blah\n"
                           "Content-type: application/octet-stream\n\n");
@@ -2183,8 +2190,6 @@ class ExternalProtocolBrowserClient : public TestContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const std::string& method,
-      const net::HttpRequestHeaders& headers,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::URLLoaderFactory*& out_factory) override {
     return false;

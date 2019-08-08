@@ -175,23 +175,10 @@ RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
   return nullptr;
 }
 
-bool RenderFrameHostManager::ForInnerDelegate() {
-  return delegate_->GetOuterDelegateFrameTreeNodeId() !=
-      FrameTreeNode::kFrameTreeNodeInvalidId;
-}
-
-RenderWidgetHostImpl*
-RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
-  if (!ForInnerDelegate() || !frame_tree_node_->IsMainFrame())
-    return nullptr;
-
-  FrameTreeNode* outer_contents_frame_tree_node =
-      FrameTreeNode::GloballyFindByID(
-          delegate_->GetOuterDelegateFrameTreeNodeId());
-  return outer_contents_frame_tree_node->parent()
-      ->current_frame_host()
-      ->render_view_host()
-      ->GetWidget();
+bool RenderFrameHostManager::IsMainFrameForInnerDelegate() {
+  return frame_tree_node_->IsMainFrame() &&
+         delegate_->GetOuterDelegateFrameTreeNodeId() !=
+             FrameTreeNode::kFrameTreeNodeInvalidId;
 }
 
 FrameTreeNode* RenderFrameHostManager::GetOuterDelegateNode() {
@@ -211,6 +198,8 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
+  // Only the main frame should be able to reach the outer WebContents.
+  DCHECK(frame_tree_node_->IsMainFrame());
   int outer_contents_frame_tree_node_id =
       delegate_->GetOuterDelegateFrameTreeNodeId();
   FrameTreeNode* outer_contents_frame_tree_node =
@@ -226,6 +215,9 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
 }
 
 void RenderFrameHostManager::RemoveOuterDelegateFrame() {
+  // Removing the outer delegate frame will destroy the inner WebContents. This
+  // should only be called on the main frame.
+  DCHECK(frame_tree_node_->IsMainFrame());
   FrameTreeNode* outer_delegate_frame_tree_node =
       FrameTreeNode::GloballyFindByID(
           delegate_->GetOuterDelegateFrameTreeNodeId());
@@ -771,6 +763,37 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     GetNavigatingWebUI()->RenderFrameCreated(navigation_rfh);
   }
 
+  // If this function picked an incompatible process for the URL, capture a
+  // crash dump to diagnose why it is occurring.
+  // TODO(creis): Remove this check after we've gathered enough information to
+  // debug issues with browser-side security checks. https://crbug.com/931895.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  const GURL& lock_url = navigation_rfh->GetSiteInstance()->lock_url();
+  if (lock_url != GURL(kUnreachableWebDataURL) &&
+      request.common_params().url.IsStandard() &&
+      !policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
+                                      request.common_params().url)) {
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("lock_url",
+                                            base::debug::CrashKeySize::Size64),
+        lock_url.spec());
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("commit_origin",
+                                            base::debug::CrashKeySize::Size64),
+        request.common_params().url.GetOrigin().spec());
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_main_frame",
+                                            base::debug::CrashKeySize::Size32),
+        frame_tree_node_->IsMainFrame() ? "true" : "false");
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("use_current_rfh",
+                                            base::debug::CrashKeySize::Size32),
+        use_current_rfh ? "true" : "false");
+    NOTREACHED() << "Picked an incompatible process for URL: " << lock_url
+                 << " lock vs " << request.common_params().url.GetOrigin();
+    base::debug::DumpWithoutCrashing();
+  }
+
   return navigation_rfh;
 }
 
@@ -1207,7 +1230,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // consolidated into existing processes for that site.
   SiteInstanceImpl* new_instance_impl =
       static_cast<SiteInstanceImpl*>(new_instance.get());
-  if (!frame_tree_node_->IsMainFrame() && !new_instance_impl->HasProcess() &&
+  if (!frame_tree_node_->IsMainFrame() &&
+      !new_instance_impl->IsDefaultSiteInstance() &&
+      !new_instance_impl->HasProcess() &&
       new_instance_impl->RequiresDedicatedProcess()) {
     // Also give the embedder a chance to override this decision.  Certain
     // frames have different enough workloads so that it's better to avoid
@@ -1703,6 +1728,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // |dest_url| should end up in |candidate|'s SiteInstance.
   // This is used to keep same-site scripting working for hosted apps.
   bool should_compare_effective_urls =
+      candidate->GetSiteInstance()->IsDefaultSiteInstance() ||
       GetContentClient()
           ->browser()
           ->ShouldCompareEffectiveURLsForSiteInstanceSelection(
@@ -1710,8 +1736,10 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
               frame_tree_node_->IsMainFrame(),
               candidate->GetSiteInstance()->original_url(), dest_url);
 
-  bool src_has_effective_url = SiteInstanceImpl::HasEffectiveURL(
-      browser_context, candidate->GetSiteInstance()->original_url());
+  bool src_has_effective_url =
+      !candidate->GetSiteInstance()->IsDefaultSiteInstance() &&
+      SiteInstanceImpl::HasEffectiveURL(
+          browser_context, candidate->GetSiteInstance()->original_url());
   bool dest_has_effective_url =
       SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url);
 
@@ -1738,10 +1766,8 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // original_url() and not the site URL, so that we can do this comparison
   // without the effective URL resolution if needed.
   if (candidate->last_successful_url().is_empty()) {
-    return SiteInstanceImpl::IsSameWebSite(
-        candidate->GetSiteInstance()->GetIsolationContext(),
-        candidate->GetSiteInstance()->original_url(), dest_url,
-        should_compare_effective_urls);
+    return candidate->GetSiteInstance()->IsOriginalUrlSameSite(
+        dest_url, should_compare_effective_urls);
   }
 
   // In the common case, we use the RenderFrameHost's last successful URL. Thus,
@@ -1773,10 +1799,8 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // against the site URL.
   if (candidate->last_successful_url().IsAboutBlank() &&
       candidate->GetLastCommittedOrigin().opaque() &&
-      SiteInstanceImpl::IsSameWebSite(
-          candidate->GetSiteInstance()->GetIsolationContext(),
-          candidate->GetSiteInstance()->original_url(), dest_url,
-          should_compare_effective_urls)) {
+      candidate->GetSiteInstance()->IsOriginalUrlSameSite(
+          dest_url, should_compare_effective_urls)) {
     return true;
   }
 
@@ -1962,16 +1986,16 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   return new_render_frame_host;
 }
 
-int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
+void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   // A RenderFrameProxyHost should never be created in the same SiteInstance as
   // the current RFH.
   CHECK(instance);
   CHECK_NE(instance, render_frame_host_->GetSiteInstance());
 
-  // Return an already existing RenderFrameProxyHost if one exists and is alive.
+  // If a proxy already exists and is alive, nothing needs to be done.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   if (proxy && proxy->is_render_frame_proxy_live())
-    return proxy->GetRoutingID();
+    return;
 
   // At this point we know that we either have to 1) create a new
   // RenderFrameProxyHost or 2) revive an existing, but no longer alive
@@ -1997,13 +2021,11 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   } else {
     proxy->InitRenderFrameProxy();
   }
-
-  return proxy->GetRoutingID();
 }
 
 void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
   RenderFrameProxyHost* outer_delegate_proxy =
-      ForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
+      IsMainFrameForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
   for (const auto& pair : proxy_hosts_) {
     // Do not create proxies for subframes in the outer delegate's process,
     // since the outer delegate does not need to interact with them.
@@ -2064,7 +2086,7 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
 
 void RenderFrameHostManager::SetRWHViewForInnerContents(
     RenderWidgetHostView* child_rwhv) {
-  DCHECK(ForInnerDelegate() && frame_tree_node_->IsMainFrame());
+  DCHECK(IsMainFrameForInnerDelegate());
   GetProxyToOuterDelegate()->SetChildRWHView(child_rwhv, nullptr);
 }
 
@@ -2730,7 +2752,7 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
   // When sending a PageMessage for an inner WebContents, we don't want to also
   // send it to the outer WebContent's frame as well.
   RenderFrameProxyHost* outer_delegate_proxy =
-      ForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
+      IsMainFrameForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
   for (const auto& pair : proxy_hosts_) {
     if (outer_delegate_proxy != pair.second.get()) {
       send_msg(pair.second.get(), pair.second->GetRoutingID(), msg,

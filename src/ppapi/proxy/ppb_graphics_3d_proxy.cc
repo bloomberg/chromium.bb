@@ -217,8 +217,8 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
         case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
           attrib_helper.gpu_preference =
               (value == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
-                  ? gl::PreferIntegratedGpu
-                  : gl::PreferDiscreteGpu;
+                  ? gl::GpuPreference::kLowPower
+                  : gl::GpuPreference::kHighPerformance;
           break;
         case PP_GRAPHICS3DATTRIB_SINGLE_BUFFER:
           attrib_helper.single_buffer = !!value;

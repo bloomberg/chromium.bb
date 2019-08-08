@@ -21,10 +21,12 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/apps_launch.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
@@ -54,6 +56,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -64,6 +67,10 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/buildflags.h"
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#endif  // !defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #import "chrome/browser/mac/dock.h"
@@ -73,7 +80,7 @@
 
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
+#include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/shell_integration_win.h"
@@ -282,6 +289,23 @@ void AppendTabs(const StartupTabs& from, StartupTabs* to) {
     to->insert(to->end(), from.begin(), from.end());
 }
 
+bool ShouldShowBadFlagsSecurityWarnings() {
+#if !defined(OS_CHROMEOS)
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return true;
+
+  const auto* pref = local_state->FindPreference(
+      prefs::kCommandLineFlagSecurityWarningsEnabled);
+  DCHECK(pref);
+
+  // The warnings can only be disabled by policy. Default to show warnings.
+  if (pref->IsManaged())
+    return pref->GetValue()->GetBool();
+#endif
+  return true;
+}
+
 }  // namespace
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
@@ -333,11 +357,15 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // If being started for credential provider logon purpose, only show the
   // signin page.
   if (command_line_.HasSwitch(credential_provider::kGcpwSigninSwitch)) {
-    DCHECK_EQ(Profile::ProfileType::INCOGNITO_PROFILE,
-              profile_->GetProfileType());
-    // NOTE: All launch urls are ignored when running with --gcpw-logon since
+    DCHECK(profile_->IsIncognitoProfile());
+    // NOTE: All launch urls are ignored when running with --gcpw-signin since
     // this mode only loads Google's sign in page.
-    StartGCPWSignin(command_line_, profile_);
+
+    // If GCPW signin dialog fails, returning false here will allow Chrome to
+    // exit gracefully during the launch.
+    if (!StartGCPWSignin(command_line_, profile_))
+      return false;
+
     RecordLaunchModeHistogram(LM_CREDENTIAL_PROVIDER_SIGNIN);
     return true;
   }
@@ -570,8 +598,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   StartupTabs cmd_line_tabs;
   UrlsToTabs(cmd_line_urls, &cmd_line_tabs);
 
-  bool is_incognito_or_guest =
-      profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE;
+  const bool is_incognito_or_guest = profile_->IsOffTheRecord();
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   bool has_incompatible_applications = false;
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -602,6 +629,12 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         !SessionStartupPref::TypeIsManaged(profile_->GetPrefs()) &&
         !SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
   }
+
+#if !defined(OS_CHROMEOS)
+  // No promo if we *could* onboard, but have no modules to show.
+  if (nux::IsNuxOnboardingEnabled(profile_))
+    promotional_tabs_enabled &= nux::DoesOnboardingHaveModulesToShow(profile_);
+#endif  // !defined(OS_CHROMEOS)
 
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
@@ -791,8 +824,11 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     SessionCrashedBubble::Show(browser);
   }
 
-  if (command_line_.HasSwitch(switches::kEnableAutomation))
+  bool show_bad_flags_security_warnings = ShouldShowBadFlagsSecurityWarnings();
+  if (command_line_.HasSwitch(switches::kEnableAutomation) &&
+      show_bad_flags_security_warnings) {
     AutomationInfoBarDelegate::Create();
+  }
 
   // The below info bars are only added to the first profile which is launched.
   // Other profiles might be restoring the browsing sessions asynchronously,
@@ -807,19 +843,24 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     DCHECK(web_contents);
-    chrome::ShowBadFlagsPrompt(web_contents);
+
+    if (show_bad_flags_security_warnings)
+      chrome::ShowBadFlagsPrompt(web_contents);
+
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
     if (!google_apis::HasAPIKeyConfigured() ||
         !google_apis::HasOAuthClientConfigured()) {
       GoogleApiKeysInfoBarDelegate::Create(infobar_service);
     }
+
     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
       PrefService* local_state = g_browser_process->local_state();
       if (!local_state ||
           !local_state->GetBoolean(prefs::kSuppressUnsupportedOSWarning))
         ObsoleteSystemInfoBarDelegate::Create(infobar_service);
     }
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
     if (profile_->IsLegacySupervised())
@@ -840,9 +881,12 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+    auto* host_content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
     if (FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
-            profile_)) {
-      FlashDeprecationInfoBarDelegate::Create(infobar_service);
+            host_content_settings_map)) {
+      FlashDeprecationInfoBarDelegate::Create(infobar_service,
+                                              host_content_settings_map);
     }
 #endif
   }

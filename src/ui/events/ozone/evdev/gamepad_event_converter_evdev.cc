@@ -101,7 +101,8 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
                           devinfo.name(),
                           devinfo.phys(),
                           devinfo.vendor_id(),
-                          devinfo.product_id()),
+                          devinfo.product_id(),
+                          devinfo.version()),
       will_send_frame_(false),
       last_hat_left_press_(false),
       last_hat_right_press_(false),
@@ -127,6 +128,20 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
       }
       mapper_->Map(EV_ABS, code, &mapped_type, &mapped_code);
       axes_[code] = Axis(abs_info, mapped_type, mapped_code);
+    }
+  }
+
+  for (int code = 0; code < ABS_CNT; ++code) {
+    abs_info = devinfo.GetAbsInfoByCode(code);
+    if (devinfo.HasAbsEvent(code)) {
+      ui::GamepadDevice::Axis axis;
+      axis.code = code;
+      axis.min_value = abs_info.minimum;
+      axis.max_value = abs_info.maximum;
+      axis.flat = abs_info.flat;
+      axis.fuzz = abs_info.fuzz;
+      axis.resolution = abs_info.resolution;
+      raw_axes_.push_back(axis);
     }
   }
 }
@@ -165,6 +180,11 @@ void GamepadEventConverterEvdev::OnDisabled() {
   ResetGamepad();
 }
 
+std::vector<ui::GamepadDevice::Axis>
+GamepadEventConverterEvdev::GetGamepadAxes() const {
+  return raw_axes_;
+}
+
 void GamepadEventConverterEvdev::ProcessEvent(const input_event& evdev_ev) {
   base::TimeTicks timestamp = TimeTicksFromInputEvent(evdev_ev);
   // We may have missed Gamepad releases. Reset everything.
@@ -198,13 +218,17 @@ void GamepadEventConverterEvdev::ProcessEvdevKey(
   }
 
   // If it's btn -> btn mapping, we can send the event and return now.
-  OnButtonChange(mapped_code, value, timestamp);
+  OnButtonChange(mapped_code, code, value, timestamp);
 }
 
 void GamepadEventConverterEvdev::ProcessEvdevAbs(
     uint16_t code,
     int value,
     const base::TimeTicks& timestamp) {
+  // For abs type, notify raw event separately. When you're only interested in
+  // mapped data, you should ignore code == WG_ABS_COUNT for abs type.
+  OnAbsChange(WG_ABS_COUNT, code, value, timestamp);
+
   GamepadEventType mapped_type;
   uint16_t mapped_code;
 
@@ -219,7 +243,7 @@ void GamepadEventConverterEvdev::ProcessEvdevAbs(
 
   // If the mapped type is abs, we can send it now.
   if (mapped_type == GamepadEventType::AXIS) {
-    OnAbsChange(mapped_code, mapped_abs_value, timestamp);
+    OnAbsChange(mapped_code, 0, mapped_abs_value, timestamp);
     return;
   }
 
@@ -228,39 +252,39 @@ void GamepadEventConverterEvdev::ProcessEvdevAbs(
     bool hat_left_press = (mapped_abs_value < -kHatThreshold);
     bool hat_right_press = (mapped_abs_value > kHatThreshold);
     if (hat_left_press != last_hat_left_press_) {
-      OnButtonChange(WG_BUTTON_DPAD_LEFT, hat_left_press, timestamp);
+      OnButtonChange(WG_BUTTON_DPAD_LEFT, 0, hat_left_press, timestamp);
       last_hat_left_press_ = hat_left_press;
     }
 
     if (hat_right_press != last_hat_right_press_) {
-      OnButtonChange(WG_BUTTON_DPAD_RIGHT, hat_right_press, timestamp);
+      OnButtonChange(WG_BUTTON_DPAD_RIGHT, 0, hat_right_press, timestamp);
       last_hat_right_press_ = hat_right_press;
     }
   } else if (mapped_code == kHAT_Y) {
     bool hat_up_press = (mapped_abs_value < -kHatThreshold);
     bool hat_down_press = (mapped_abs_value > kHatThreshold);
     if (hat_up_press != last_hat_up_press_) {
-      OnButtonChange(WG_BUTTON_DPAD_UP, hat_up_press, timestamp);
+      OnButtonChange(WG_BUTTON_DPAD_UP, 0, hat_up_press, timestamp);
       last_hat_up_press_ = hat_up_press;
     }
 
     if (hat_down_press != last_hat_down_press_) {
-      OnButtonChange(WG_BUTTON_DPAD_DOWN, hat_down_press, timestamp);
+      OnButtonChange(WG_BUTTON_DPAD_DOWN, 0, hat_down_press, timestamp);
       last_hat_down_press_ = hat_down_press;
     }
   } else {
-    OnButtonChange(mapped_code, mapped_abs_value, timestamp);
+    OnButtonChange(mapped_code, 0, mapped_abs_value, timestamp);
   }
 }
 
 void GamepadEventConverterEvdev::ResetGamepad() {
   base::TimeTicks timestamp = ui::EventTimeForNow();
   for (int btn_code = 0; btn_code < WG_BUTTON_COUNT; ++btn_code) {
-    OnButtonChange(btn_code, 0, timestamp);
+    OnButtonChange(btn_code, 0, 0, timestamp);
   }
 
   for (int abs_code = 0; abs_code < WG_ABS_COUNT; ++abs_code) {
-    OnAbsChange(abs_code, 0, timestamp);
+    OnAbsChange(abs_code, 0, 0, timestamp);
   }
   OnSync(timestamp);
 }
@@ -269,7 +293,7 @@ void GamepadEventConverterEvdev::ResyncGamepad() {
   base::TimeTicks timestamp = ui::EventTimeForNow();
   // Reset all the buttons to 0.
   for (int btn_code = 0; btn_code < WG_BUTTON_COUNT; ++btn_code) {
-    OnButtonChange(btn_code, 0, timestamp);
+    OnButtonChange(btn_code, 0, 0, timestamp);
   }
   // Read the state of all axis.
   EventDeviceInfo info;
@@ -289,26 +313,28 @@ void GamepadEventConverterEvdev::ResyncGamepad() {
 
 void GamepadEventConverterEvdev::OnButtonChange(
     unsigned int code,
+    unsigned int raw_code,
     double value,
     const base::TimeTicks& timestamp) {
-  GamepadEvent event(input_device_.id, GamepadEventType::BUTTON, code, value,
-                     timestamp);
+  GamepadEvent event(input_device_.id, GamepadEventType::BUTTON, code, raw_code,
+                     value, timestamp);
   dispatcher_->DispatchGamepadEvent(event);
   will_send_frame_ = true;
 }
 
 void GamepadEventConverterEvdev::OnAbsChange(unsigned int code,
+                                             unsigned int raw_code,
                                              double value,
                                              const base::TimeTicks& timestamp) {
-  GamepadEvent event(input_device_.id, GamepadEventType::AXIS, code, value,
-                     timestamp);
+  GamepadEvent event(input_device_.id, GamepadEventType::AXIS, code, raw_code,
+                     value, timestamp);
   dispatcher_->DispatchGamepadEvent(event);
   will_send_frame_ = true;
 }
 
 void GamepadEventConverterEvdev::OnSync(const base::TimeTicks& timestamp) {
   if (will_send_frame_) {
-    GamepadEvent event(input_device_.id, GamepadEventType::FRAME, 0, 0,
+    GamepadEvent event(input_device_.id, GamepadEventType::FRAME, 0, 0, 0,
                        timestamp);
     dispatcher_->DispatchGamepadEvent(event);
     will_send_frame_ = false;

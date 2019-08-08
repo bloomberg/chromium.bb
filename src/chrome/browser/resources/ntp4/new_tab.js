@@ -20,19 +20,6 @@ cr.define('ntp', function() {
   let newTabView;
 
   /**
-   * If non-null, an bubble confirming that the user has signed into sync. It
-   * points at the login status at the top of the page.
-   * @type {!cr.ui.Bubble|undefined}
-   */
-  let loginBubble;
-
-  /**
-   * true if |loginBubble| should be shown.
-   * @type {boolean}
-   */
-  let shouldShowLoginBubble = false;
-
-  /**
    * The time when all sections are ready.
    * @type {number|undefined}
    * @private
@@ -105,28 +92,6 @@ cr.define('ntp', function() {
     // we can compute its layout.
     layoutFooter();
 
-    if (loadTimeData.getString('login_status_message')) {
-      loginBubble = new cr.ui.Bubble;
-      loginBubble.anchorNode = $('login-container');
-      loginBubble.arrowLocation = cr.ui.ArrowLocation.TOP_END;
-      loginBubble.bubbleAlignment =
-          cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
-      loginBubble.deactivateToDismissDelay = 2000;
-      loginBubble.closeButtonVisible = false;
-
-      $('login-status-advanced').onclick = function() {
-        chrome.send('showAdvancedLoginUI');
-      };
-      $('login-status-dismiss').onclick = loginBubble.hide.bind(loginBubble);
-
-      const bubbleContent = $('login-status-bubble-contents');
-      loginBubble.content = bubbleContent;
-
-      // The anchor node won't be updated until updateLogin is called so don't
-      // show the bubble yet.
-      shouldShowLoginBubble = true;
-    }
-
     $('login-container').addEventListener('click', showSyncLoginUI);
     if (loadTimeData.getBoolean('shouldShowSyncLogin')) {
       chrome.send('initializeSyncLogin');
@@ -158,7 +123,7 @@ cr.define('ntp', function() {
     }  // Ignore buttons other than left and middle.
     chrome.send(
         'recordAppLaunchByURL',
-        [encodeURIComponent(this.href), ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
+        [this.href, ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /**
@@ -295,14 +260,6 @@ cr.define('ntp', function() {
       headerContainer.style.backgroundImage =
           iconURL ? getUrlForCss(iconURL) : 'none';
     }
-
-    if (shouldShowLoginBubble) {
-      window.setTimeout(loginBubble.show.bind(loginBubble), 0);
-      chrome.send('loginMessageSeen');
-      shouldShowLoginBubble = false;
-    } else if (loginBubble) {
-      loginBubble.reposition();
-    }
   }
 
   /**
@@ -360,14 +317,6 @@ cr.define('ntp', function() {
    */
   function appsPrefChangeCallback(data) {
     newTabView.appsPrefChangedCallback(data);
-  }
-
-  /**
-   * Callback invoked by chrome whenever the app launcher promo pref changes.
-   * @param {boolean} show Identifies if we should show or hide the promo.
-   */
-  function appLauncherPromoPrefChangeCallback(show) {
-    newTabView.appLauncherPromoPrefChangeCallback(show);
   }
 
   /**
@@ -431,7 +380,6 @@ cr.define('ntp', function() {
     appMoved: appMoved,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
-    appLauncherPromoPrefChangeCallback: appLauncherPromoPrefChangeCallback,
     enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,

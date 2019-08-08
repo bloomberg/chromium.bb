@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -38,16 +39,10 @@ const double HTMLProgressElement::kInvalidPosition = -2;
 HTMLProgressElement::HTMLProgressElement(Document& document)
     : HTMLElement(kProgressTag, document), value_(nullptr) {
   UseCounter::Count(document, WebFeature::kProgressElement);
+  EnsureUserAgentShadowRoot();
 }
 
 HTMLProgressElement::~HTMLProgressElement() = default;
-
-HTMLProgressElement* HTMLProgressElement::Create(Document& document) {
-  HTMLProgressElement* progress =
-      MakeGarbageCollected<HTMLProgressElement>(document);
-  progress->EnsureUserAgentShadowRoot();
-  return progress;
-}
 
 LayoutObject* HTMLProgressElement::CreateLayoutObject(
     const ComputedStyle& style,
@@ -134,13 +129,13 @@ void HTMLProgressElement::DidElementStateChange() {
 void HTMLProgressElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   DCHECK(!value_);
 
-  ProgressShadowElement* inner = ProgressShadowElement::Create(GetDocument());
+  auto* inner = MakeGarbageCollected<ProgressShadowElement>(GetDocument());
   inner->SetShadowPseudoId(AtomicString("-webkit-progress-inner-element"));
   root.AppendChild(inner);
 
-  ProgressShadowElement* bar = ProgressShadowElement::Create(GetDocument());
+  auto* bar = MakeGarbageCollected<ProgressShadowElement>(GetDocument());
   bar->SetShadowPseudoId(AtomicString("-webkit-progress-bar"));
-  value_ = ProgressShadowElement::Create(GetDocument());
+  value_ = MakeGarbageCollected<ProgressShadowElement>(GetDocument());
   value_->SetShadowPseudoId(AtomicString("-webkit-progress-value"));
   SetValueWidthPercentage(HTMLProgressElement::kIndeterminatePosition * 100);
   bar->AppendChild(value_);

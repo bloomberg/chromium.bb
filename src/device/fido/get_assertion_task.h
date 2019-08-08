@@ -21,6 +21,10 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_task.h"
 
+namespace cbor {
+class Value;
+}
+
 namespace device {
 
 class AuthenticatorGetAssertionResponse;
@@ -46,6 +50,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
 
   // FidoTask:
   void Cancel() override;
+
+  // StringFixupPredicate indicates which fields of a GetAssertion
+  // response may contain truncated UTF-8 strings. See
+  // |Ctap2DeviceOperation::CBORPathPredicate|.
+  static bool StringFixupPredicate(const std::vector<const cbor::Value*>& path);
 
  private:
   // FidoTask:

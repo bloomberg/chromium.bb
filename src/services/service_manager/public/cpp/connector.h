@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -107,10 +108,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   // manifest. This is considered privileged behavior.
   using RegisterServiceInstanceCallback =
       base::OnceCallback<void(mojom::ConnectResult result)>;
-  void RegisterServiceInstance(const Identity& identity,
-                               mojom::ServicePtr service,
-                               mojom::PIDReceiverRequest pid_receiver_request,
-                               RegisterServiceInstanceCallback callback = {});
+  void RegisterServiceInstance(
+      const Identity& identity,
+      mojo::PendingRemote<mojom::Service> service,
+      mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
+      RegisterServiceInstanceCallback callback = {});
 
   // Determines if the service for |service_name| is known, and returns
   // information about it from the catalog.

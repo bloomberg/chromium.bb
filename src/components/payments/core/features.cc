@@ -7,6 +7,9 @@
 namespace payments {
 namespace features {
 
+const base::Feature kWebPaymentsExperimentalFeatures{
+    "WebPaymentsExperimentalFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kReturnGooglePayInBasicCard{
     "ReturnGooglePayInBasicCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -34,6 +37,9 @@ const base::Feature kWebPaymentsJustInTimePaymentApp{
 const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota{
     "WebPaymentsPerMethodCanMakePaymentQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebPaymentsRedactShippingAddress{
+    "WebPaymentsRedactShippingAddress", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace payments

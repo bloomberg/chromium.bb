@@ -87,6 +87,10 @@ cr.define('history', function() {
       this.unlisten(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
     },
 
+    focusOnMenuButton: function() {
+      cr.ui.focusWithoutInk(this.$['menu-button']);
+    },
+
     /** @param {!KeyboardEvent} e */
     onCheckboxKeydown_: function(e) {
       if (e.shiftKey && e.key === 'Tab') {
@@ -205,7 +209,7 @@ cr.define('history', function() {
      */
     onMenuButtonTap_: function(e) {
       this.fire('open-menu', {
-        target: Polymer.dom(e).localTarget,
+        target: e.target,
         index: this.index,
         item: this.item,
       });

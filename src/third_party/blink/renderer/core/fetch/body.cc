@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/fetch/body.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -44,7 +47,8 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
   }
 
   void Abort() override {
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+    resolver_->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
   // Resource Timing event is not yet added, so delay the resolution timing
@@ -106,7 +110,7 @@ class BodyFormDataConsumer final : public BodyConsumerBase {
   }
 
   void DidFetchDataLoadedString(const String& string) override {
-    FormData* formData = FormData::Create();
+    auto* formData = MakeGarbageCollected<FormData>();
     for (const auto& pair : URLSearchParams::Create(string)->Params())
       formData->append(pair.first, pair.second);
     DidFetchDataLoadedFormData(formData);
@@ -256,7 +260,7 @@ ScriptPromise Body::formData(ScriptState* script_state,
         return ScriptPromise();
       }
     } else {
-      resolver->Resolve(FormData::Create());
+      resolver->Resolve(MakeGarbageCollected<FormData>());
     }
     return promise;
   } else {

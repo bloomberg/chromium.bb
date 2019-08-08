@@ -17,12 +17,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/country_names.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
@@ -286,6 +287,8 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
   void ResetBridge(bool initial_sync_done = true) {
     sync_pb::ModelTypeState model_type_state;
     model_type_state.set_initial_sync_done(initial_sync_done);
+    model_type_state.mutable_progress_marker()->set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(syncer::AUTOFILL_WALLET_METADATA));
     EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_METADATA,
                                               model_type_state));
     bridge_.reset(new AutofillWalletMetadataSyncBridge(
@@ -864,6 +867,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 
 // Verify that old orphan metadata gets deleted on startup.
 TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
+  base::HistogramTester histogram_tester;
   WalletMetadataSpecifics profile =
       CreateWalletMetadataSpecificsForAddressWithDetails(
           kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
@@ -885,6 +889,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
   EXPECT_CALL(*backend(), CommitChanges());
 
   ResetBridge();
+  histogram_tester.ExpectBucketCount("Sync.WalletMetadata.DeletedOldOrphans",
+                                     /*bucket=*/2, /*count=*/1);
 
   ASSERT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
 }
@@ -892,6 +898,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
 // Verify that recent orphan metadata does not get deleted on startup.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
        DoNotDeleteOldNonOrphanMetadataOnStartup) {
+  base::HistogramTester histogram_tester;
   WalletMetadataSpecifics profile =
       CreateWalletMetadataSpecificsForAddressWithDetails(
           kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
@@ -911,6 +918,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
 
   ResetBridge();
+  histogram_tester.ExpectTotalCount("Sync.WalletMetadata.DeletedOldOrphans",
+                                    /*count=*/0);
 
   EXPECT_THAT(
       GetAllLocalDataInclRestart(),
@@ -920,6 +929,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 // Verify that recent orphan metadata does not get deleted on startup.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
        DoNotDeleteRecentOrphanMetadataOnStartup) {
+  base::HistogramTester histogram_tester;
   WalletMetadataSpecifics profile =
       CreateWalletMetadataSpecificsForAddressWithDetails(
           kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
@@ -938,6 +948,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
 
   ResetBridge();
+  histogram_tester.ExpectTotalCount("Sync.WalletMetadata.DeletedOldOrphans",
+                                    /*count=*/0);
 
   EXPECT_THAT(
       GetAllLocalDataInclRestart(),

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
@@ -15,8 +16,58 @@
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
+
+namespace {
+bool GetAhbProps(
+    const VkDevice& vk_device,
+    AHardwareBuffer* hardware_buffer,
+    VkAndroidHardwareBufferFormatPropertiesANDROID* ahb_format_props,
+    VkAndroidHardwareBufferPropertiesANDROID* ahb_props) {
+  DCHECK(ahb_format_props);
+  DCHECK(ahb_props);
+
+  // To obtain format properties of an Android hardware buffer, include an
+  // instance of VkAndroidHardwareBufferFormatPropertiesANDROID in the pNext
+  // chain of the VkAndroidHardwareBufferPropertiesANDROID instance passed to
+  // vkGetAndroidHardwareBufferPropertiesANDROID.
+  ahb_format_props->sType =
+      VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID;
+  ahb_format_props->pNext = nullptr;
+
+  ahb_props->sType =
+      VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
+  ahb_props->pNext = ahb_format_props;
+
+  bool result = vkGetAndroidHardwareBufferPropertiesANDROID(
+      vk_device, hardware_buffer, ahb_props);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR)
+        << "GetAhbProps: vkGetAndroidHardwareBufferPropertiesANDROID failed : "
+        << result;
+    return false;
+  }
+  return true;
+}
+
+void PopulateYcbcrInfo(
+    const VkAndroidHardwareBufferFormatPropertiesANDROID& ahb_format_props,
+    VulkanYCbCrInfo* ycbcr_info) {
+  DCHECK(ycbcr_info);
+
+  ycbcr_info->suggested_ycbcr_model = ahb_format_props.suggestedYcbcrModel;
+  ycbcr_info->suggested_ycbcr_range = ahb_format_props.suggestedYcbcrRange;
+  ycbcr_info->suggested_xchroma_offset =
+      ahb_format_props.suggestedXChromaOffset;
+  ycbcr_info->suggested_ychroma_offset =
+      ahb_format_props.suggestedYChromaOffset;
+  ycbcr_info->external_format = ahb_format_props.externalFormat;
+  ycbcr_info->format_features = ahb_format_props.formatFeatures;
+}
+
+}  // namespace
 
 VulkanImplementationAndroid::VulkanImplementationAndroid() = default;
 
@@ -134,6 +185,25 @@ VulkanImplementationAndroid::GetExternalImageHandleType() {
   return VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 }
 
+bool VulkanImplementationAndroid::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return false;
+}
+
+bool VulkanImplementationAndroid::CreateImageFromGpuMemoryHandle(
+    VkDevice vk_device,
+    gfx::GpuMemoryBufferHandle gmb_handle,
+    gfx::Size size,
+    VkImage* vk_image,
+    VkImageCreateInfo* vk_image_info,
+    VkDeviceMemory* vk_device_memory,
+    VkDeviceSize* mem_allocation_size) {
+  // TODO(sergeyu): Move code from CreateVkImageAndImportAHB() here and remove
+  // CreateVkImageAndImportAHB().
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
     const VkDevice& vk_device,
     const VkPhysicalDevice& vk_physical_device,
@@ -142,33 +212,19 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
     VkImage* vk_image,
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size) {
+    VkDeviceSize* mem_allocation_size,
+    VulkanYCbCrInfo* ycbcr_info) {
   DCHECK(ahb_handle.is_valid());
   DCHECK(vk_image);
   DCHECK(vk_image_info);
   DCHECK(vk_device_memory);
   DCHECK(mem_allocation_size);
 
-  // To obtain format properties of an Android hardware buffer, include an
-  // instance of VkAndroidHardwareBufferFormatPropertiesANDROID in the pNext
-  // chain of the VkAndroidHardwareBufferPropertiesANDROID instance passed to
-  // vkGetAndroidHardwareBufferPropertiesANDROID.
-  VkAndroidHardwareBufferFormatPropertiesANDROID ahb_format_props;
-  ahb_format_props.sType =
-      VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID;
-  ahb_format_props.pNext = nullptr;
-
-  VkAndroidHardwareBufferPropertiesANDROID ahb_props;
-  ahb_props.sType =
-      VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
-  ahb_props.pNext = &ahb_format_props;
-
-  bool result = vkGetAndroidHardwareBufferPropertiesANDROID(
-      vk_device, ahb_handle.get(), &ahb_props);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "GetAndroidHardwareBufferProperties failed : " << result;
+  // Get the image format properties of an Android hardware buffer.
+  VkAndroidHardwareBufferFormatPropertiesANDROID ahb_format_props = {};
+  VkAndroidHardwareBufferPropertiesANDROID ahb_props = {};
+  if (!GetAhbProps(vk_device, ahb_handle.get(), &ahb_format_props, &ahb_props))
     return false;
-  }
 
   // To create an image with an external format, include an instance of
   // VkExternalFormatANDROID in the pNext chain of VkImageCreateInfo.
@@ -262,7 +318,7 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
   vk_image_info->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
   // Create Vk Image.
-  result = vkCreateImage(vk_device, vk_image_info, nullptr, vk_image);
+  bool result = vkCreateImage(vk_device, vk_image_info, nullptr, vk_image);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "vkCreateImage failed : " << result;
     return false;
@@ -322,6 +378,24 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
   }
 
   *mem_allocation_size = mem_alloc_info.allocationSize;
+  if (ycbcr_info)
+    PopulateYcbcrInfo(ahb_format_props, ycbcr_info);
+  return true;
+}
+
+bool VulkanImplementationAndroid::GetSamplerYcbcrConversionInfo(
+    const VkDevice& vk_device,
+    base::android::ScopedHardwareBufferHandle ahb_handle,
+    VulkanYCbCrInfo* ycbcr_info) {
+  DCHECK(ycbcr_info);
+
+  // Get the image format properties of an Android hardware buffer.
+  VkAndroidHardwareBufferFormatPropertiesANDROID ahb_format_props = {};
+  VkAndroidHardwareBufferPropertiesANDROID ahb_props = {};
+  if (!GetAhbProps(vk_device, ahb_handle.get(), &ahb_format_props, &ahb_props))
+    return false;
+
+  PopulateYcbcrInfo(ahb_format_props, ycbcr_info);
   return true;
 }
 

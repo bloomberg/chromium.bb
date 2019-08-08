@@ -9,8 +9,10 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
@@ -24,6 +26,7 @@
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -62,9 +65,8 @@
   self.viewController =
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
 
-  self.viewController.defaultLeadingImage =
-      GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
-  self.viewController.emptyTextLeadingImage = GetOmniboxSuggestionIcon(SEARCH);
+  self.viewController.defaultLeadingImage = GetOmniboxSuggestionIcon(
+      DEFAULT_FAVICON, base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
           self.dispatcher);
@@ -72,6 +74,8 @@
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.faviconLoader =
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self.viewController;
 
   DCHECK(self.editController);
@@ -108,7 +112,7 @@
 
 - (void)setNextFocusSourceAsSearchButton {
   OmniboxEditModel* model = _editView->model();
-  model->set_focus_source(OmniboxEditModel::FocusSource::SEARCH_BUTTON);
+  model->set_focus_source(OmniboxFocusSource::SEARCH_BUTTON);
 }
 
 - (BOOL)isOmniboxFirstResponder {

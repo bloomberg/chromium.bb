@@ -40,12 +40,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
+HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
     : HTMLFormControlElement(kFieldsetTag, document) {}
-
-HTMLFieldSetElement* HTMLFieldSetElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLFieldSetElement>(document);
-}
 
 bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {
   return true;
@@ -56,9 +52,9 @@ bool HTMLFieldSetElement::IsValidElement() {
     if (element->IsFormControlElement()) {
       if (!ToHTMLFormControlElement(element)->IsNotCandidateOrValid())
         return false;
-    } else if (element->IsHTMLElement() &&
-               ToHTMLElement(element)->IsFormAssociatedCustomElement()) {
-      if (!element->EnsureElementInternals().IsNotCandidateOrValid())
+    } else if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+      if (html_element->IsFormAssociatedCustomElement() &&
+          !element->EnsureElementInternals().IsNotCandidateOrValid())
         return false;
     }
   }

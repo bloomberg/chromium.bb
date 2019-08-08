@@ -49,6 +49,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -62,6 +63,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
@@ -531,10 +533,6 @@ const int CookieMonster::kDefaultCookieableSchemesCount =
 
 CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
-}
-
-bool CookieMonster::IsEphemeral() {
-  return store_.get() == nullptr;
 }
 
 void CookieMonster::DumpMemoryStats(
@@ -1194,10 +1192,12 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     return;
   }
 
-  if (cc->IsHttpOnly() && options.exclude_httponly()) {
-    MaybeRunCookieCallback(
-        std::move(callback),
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
+  CanonicalCookie::CookieInclusionStatus status =
+      cc->IsSetPermittedInContext(options);
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    // IsSetPermittedInContext already logs if it rejects a cookie, so
+    // CookieMonster doesn't need to.
+    MaybeRunCookieCallback(std::move(callback), status);
     return;
   }
 
@@ -1205,6 +1205,22 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     MaybeRunCookieCallback(
         std::move(callback),
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
+    return;
+  }
+
+  // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
+  // are enabled, non-SameSite cookies without the Secure attribute will be
+  // rejected.
+  if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies) &&
+      base::FeatureList::IsEnabled(
+          features::kCookiesWithoutSameSiteMustBeSecure) &&
+      cc->GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION &&
+      !cc->IsSecure()) {
+    DVLOG(net::cookie_util::kVlogSetCookies)
+        << "SetCookie() rejecting insecure cookie with SameSite=None.";
+    status =
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE;
+    MaybeRunCookieCallback(std::move(callback), status);
     return;
   }
 
@@ -1219,7 +1235,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   base::Time creation_date_to_inherit;
 
-  CanonicalCookie::CookieInclusionStatus status = DeleteAnyEquivalentCookie(
+  status = DeleteAnyEquivalentCookie(
       key, *cc, secure_source, options.exclude_httponly(), already_expired,
       &creation_date_to_inherit);
 

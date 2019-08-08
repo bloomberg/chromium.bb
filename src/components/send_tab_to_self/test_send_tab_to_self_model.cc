@@ -29,8 +29,19 @@ void TestSendTabToSelfModel::DeleteEntry(const std::string& guid) {}
 
 void TestSendTabToSelfModel::DismissEntry(const std::string& guid) {}
 
+void TestSendTabToSelfModel::MarkEntryOpened(const std::string& guid) {}
+
 bool TestSendTabToSelfModel::IsReady() {
   return false;
+}
+
+bool TestSendTabToSelfModel::HasValidTargetDevice() {
+  return false;
+}
+
+std::map<std::string, TargetDeviceInfo>
+TestSendTabToSelfModel::GetTargetDeviceNameToCacheInfoMap() {
+  return {};
 }
 
 }  // namespace send_tab_to_self

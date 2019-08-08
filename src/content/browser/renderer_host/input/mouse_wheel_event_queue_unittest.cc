@@ -42,34 +42,34 @@ const float kWheelScrollGlobalY = 72;
   EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y);     \
   EXPECT_EQ(scroll_units, event->data.scroll_begin.delta_hint_units);
 
-#define EXPECT_GESTURE_SCROLL_BEGIN(event)          \
-  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);          \
-  EXPECT_FALSE(event->data.scroll_begin.synthetic); \
-  EXPECT_EQ(WebGestureEvent::kUnknownMomentumPhase, \
+#define EXPECT_GESTURE_SCROLL_BEGIN(event)                         \
+  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);                         \
+  EXPECT_FALSE(event->data.scroll_begin.synthetic);                \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kUnknownMomentum, \
             event->data.scroll_begin.inertial_phase);
 
-#define EXPECT_GESTURE_SCROLL_BEGIN_WITH_PHASE(event) \
-  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);            \
-  EXPECT_FALSE(event->data.scroll_begin.synthetic);   \
-  EXPECT_EQ(WebGestureEvent::kNonMomentumPhase,       \
+#define EXPECT_GESTURE_SCROLL_BEGIN_WITH_PHASE(event)          \
+  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);                     \
+  EXPECT_FALSE(event->data.scroll_begin.synthetic);            \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kNonMomentum, \
             event->data.scroll_begin.inertial_phase);
 
-#define EXPECT_SYNTHETIC_GESTURE_SCROLL_BEGIN(event) \
-  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);           \
-  EXPECT_TRUE(event->data.scroll_begin.synthetic);   \
-  EXPECT_EQ(WebGestureEvent::kNonMomentumPhase,      \
+#define EXPECT_SYNTHETIC_GESTURE_SCROLL_BEGIN(event)           \
+  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);                     \
+  EXPECT_TRUE(event->data.scroll_begin.synthetic);             \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kNonMomentum, \
             event->data.scroll_begin.inertial_phase);
 
-#define EXPECT_INERTIAL_GESTURE_SCROLL_BEGIN(event) \
-  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);          \
-  EXPECT_FALSE(event->data.scroll_begin.synthetic); \
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,        \
+#define EXPECT_INERTIAL_GESTURE_SCROLL_BEGIN(event)         \
+  EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);                  \
+  EXPECT_FALSE(event->data.scroll_begin.synthetic);         \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum, \
             event->data.scroll_begin.inertial_phase);
 
 #define EXPECT_SYNTHETIC_INERTIAL_GESTURE_SCROLL_BEGIN(event) \
   EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event);                    \
   EXPECT_TRUE(event->data.scroll_begin.synthetic);            \
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,                  \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,   \
             event->data.scroll_begin.inertial_phase);
 
 #define EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event)                    \
@@ -80,19 +80,19 @@ const float kWheelScrollGlobalY = 72;
   EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x);      \
   EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y);
 
-#define EXPECT_GESTURE_SCROLL_UPDATE(event)         \
-  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);         \
-  EXPECT_EQ(WebGestureEvent::kUnknownMomentumPhase, \
+#define EXPECT_GESTURE_SCROLL_UPDATE(event)                        \
+  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);                        \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kUnknownMomentum, \
             event->data.scroll_update.inertial_phase);
 
-#define EXPECT_GESTURE_SCROLL_UPDATE_WITH_PHASE(event) \
-  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);            \
-  EXPECT_EQ(WebGestureEvent::kNonMomentumPhase,        \
+#define EXPECT_GESTURE_SCROLL_UPDATE_WITH_PHASE(event)         \
+  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);                    \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kNonMomentum, \
             event->data.scroll_update.inertial_phase);
 
-#define EXPECT_INERTIAL_GESTURE_SCROLL_UPDATE(event) \
-  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);          \
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,         \
+#define EXPECT_INERTIAL_GESTURE_SCROLL_UPDATE(event)        \
+  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);                 \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum, \
             event->data.scroll_update.inertial_phase);
 
 #define EXPECT_GESTURE_SCROLL_END_IMPL(event)                    \
@@ -103,35 +103,35 @@ const float kWheelScrollGlobalY = 72;
   EXPECT_EQ(kWheelScrollGlobalX, event->PositionInScreen().x);   \
   EXPECT_EQ(kWheelScrollGlobalY, event->PositionInScreen().y);
 
-#define EXPECT_GESTURE_SCROLL_END(event)            \
-  EXPECT_GESTURE_SCROLL_END_IMPL(event);            \
-  EXPECT_FALSE(event->data.scroll_end.synthetic);   \
-  EXPECT_EQ(WebGestureEvent::kUnknownMomentumPhase, \
+#define EXPECT_GESTURE_SCROLL_END(event)                           \
+  EXPECT_GESTURE_SCROLL_END_IMPL(event);                           \
+  EXPECT_FALSE(event->data.scroll_end.synthetic);                  \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kUnknownMomentum, \
             event->data.scroll_end.inertial_phase);
 
-#define EXPECT_GESTURE_SCROLL_END_WITH_PHASE(event) \
-  EXPECT_GESTURE_SCROLL_END_IMPL(event);            \
-  EXPECT_FALSE(event->data.scroll_end.synthetic);   \
-  EXPECT_EQ(WebGestureEvent::kNonMomentumPhase,     \
+#define EXPECT_GESTURE_SCROLL_END_WITH_PHASE(event)            \
+  EXPECT_GESTURE_SCROLL_END_IMPL(event);                       \
+  EXPECT_FALSE(event->data.scroll_end.synthetic);              \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kNonMomentum, \
             event->data.scroll_end.inertial_phase);
 
-#define EXPECT_SYNTHETIC_GESTURE_SCROLL_END(event) \
-  EXPECT_GESTURE_SCROLL_END_IMPL(event);           \
-  EXPECT_TRUE(event->data.scroll_end.synthetic);   \
-  EXPECT_EQ(WebGestureEvent::kNonMomentumPhase,    \
+#define EXPECT_SYNTHETIC_GESTURE_SCROLL_END(event)             \
+  EXPECT_GESTURE_SCROLL_END_IMPL(event);                       \
+  EXPECT_TRUE(event->data.scroll_end.synthetic);               \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kNonMomentum, \
             event->data.scroll_end.inertial_phase);
 
-#define EXPECT_INERTIAL_GESTURE_SCROLL_END(event) \
-  EXPECT_GESTURE_SCROLL_END_IMPL(event);          \
-  EXPECT_FALSE(event->data.scroll_end.synthetic); \
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,      \
+#define EXPECT_INERTIAL_GESTURE_SCROLL_END(event)           \
+  EXPECT_GESTURE_SCROLL_END_IMPL(event);                    \
+  EXPECT_FALSE(event->data.scroll_end.synthetic);           \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum, \
             event->data.scroll_end.inertial_phase);
 
 #if defined(CHROME_OS)
 #define EXPECT_SYNTHETIC_INERTIAL_GESTURE_SCROLL_END(event) \
   EXPECT_GESTURE_SCROLL_END_IMPL(event);                    \
   EXPECT_TRUE(event->data.scroll_end.synthetic);            \
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,                \
+  EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum, \
             event->data.scroll_end.inertial_phase);         \
   EXPECT_TRUE(event->data.scroll_end.generated_by_fling_controller);
 #endif
@@ -277,9 +277,10 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
   void GestureSendingTest(bool high_precision) {
-    const WebGestureEvent::ScrollUnits scroll_units =
-        high_precision ? WebGestureEvent::kPrecisePixels
-                       : WebGestureEvent::kPixels;
+    const ui::input_types::ScrollGranularity scroll_units =
+        high_precision
+            ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+            : ui::input_types::ScrollGranularity::kScrollByPixel;
     SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                    kWheelScrollGlobalY, 1, 1, 0, high_precision,
                    WebMouseWheelEvent::kPhaseBegan,
@@ -313,9 +314,10 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
   void PhaseGestureSendingTest(bool high_precision) {
-    const WebGestureEvent::ScrollUnits scroll_units =
-        high_precision ? WebGestureEvent::kPrecisePixels
-                       : WebGestureEvent::kPixels;
+    const ui::input_types::ScrollGranularity scroll_units =
+        high_precision
+            ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+            : ui::input_types::ScrollGranularity::kScrollByPixel;
 
     SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                    kWheelScrollGlobalY, 1, 1, 0, high_precision,
@@ -441,8 +443,8 @@ TEST_F(MouseWheelEventQueueTest,
 // scroll_end.data.scroll_end.generated_by_fling_controller.
 #if defined(CHROME_OS)
 TEST_F(MouseWheelEventQueueTest, WheelEndWithMomentumPhaseEndedInformation) {
-  const WebGestureEvent::ScrollUnits scroll_units =
-      WebGestureEvent::kPrecisePixels;
+  const ui::input_types::ScrollGranularity scroll_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                  kWheelScrollGlobalY, 1, 1, 0, true /* high_precision */,
                  WebMouseWheelEvent::kPhaseBegan,
@@ -471,7 +473,8 @@ TEST_F(MouseWheelEventQueueTest, WheelEndWithMomentumPhaseEndedInformation) {
 #endif  // defined(CHROME_OS)
 
 TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
-  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::kPixels;
+  const ui::input_types::ScrollGranularity scroll_units =
+      ui::input_types::ScrollGranularity::kScrollByPixel;
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                  kWheelScrollGlobalY, 1, 1, 0, false,
                  WebMouseWheelEvent::kPhaseBegan,
@@ -551,7 +554,8 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
-  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::kPixels;
+  const ui::input_types::ScrollGranularity scroll_units =
+      ui::input_types::ScrollGranularity::kScrollByPixel;
   SendMouseWheel(
       kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX, kWheelScrollGlobalY, 1,
       1, 0, false, WebMouseWheelEvent::kPhaseBegan,
@@ -600,7 +604,8 @@ TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
 }
 
 TEST_F(MouseWheelEventQueueTest, WheelScrollLatching) {
-  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::kPixels;
+  const ui::input_types::ScrollGranularity scroll_units =
+      ui::input_types::ScrollGranularity::kScrollByPixel;
   SendMouseWheel(
       kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX, kWheelScrollGlobalY, 1,
       1, 0, false, WebMouseWheelEvent::kPhaseBegan,

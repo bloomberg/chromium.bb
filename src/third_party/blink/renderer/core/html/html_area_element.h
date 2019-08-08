@@ -38,8 +38,6 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLAreaElement);
-
   explicit HTMLAreaElement(Document&);
 
   bool IsDefault() const { return shape_ == kDefault; }

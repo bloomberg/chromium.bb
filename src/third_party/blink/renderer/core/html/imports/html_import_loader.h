@@ -62,10 +62,6 @@ class HTMLImportLoader final
     kStateError
   };
 
-  static HTMLImportLoader* Create(HTMLImportsController* controller) {
-    return MakeGarbageCollected<HTMLImportLoader>(controller);
-  }
-
   HTMLImportLoader(HTMLImportsController*);
   ~HTMLImportLoader() final;
   void Dispose();

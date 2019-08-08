@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/screen_orientation/lock_orientation_callback.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 // This code assumes that WebScreenOrientationType values are included in
@@ -154,7 +155,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
   Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
 
   if (!document || !Controller()) {
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "The object is no longer associated to a document.");
     resolver->Reject(exception);
@@ -162,10 +163,10 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
   }
 
   if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
-    DOMException* exception =
-        DOMException::Create(DOMExceptionCode::kSecurityError,
-                             "The document is sandboxed and lacks the "
-                             "'allow-orientation-lock' flag.");
+    auto* exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError,
+        "The document is sandboxed and lacks the "
+        "'allow-orientation-lock' flag.");
     resolver->Reject(exception);
     return promise;
   }

@@ -23,9 +23,9 @@ import string
 import sys
 import tempfile
 
-import file_tools
-import http_download
-import platform
+import pynacl.file_tools
+import pynacl.http_download
+import pynacl.platform
 
 
 GS_PATTERN = 'gs://%s'
@@ -43,8 +43,8 @@ def LegalizeName(name):
 
 def HttpDownload(url, target):
   """Default download route."""
-  http_download.HttpDownload(url, os.path.abspath(target), verbose=False,
-                             logger=logging.debug)
+  pynacl.http_download.HttpDownload(
+      url, os.path.abspath(target), verbose=False, logger=logging.debug)
 
 
 class GSDStorageError(Exception):
@@ -75,13 +75,15 @@ class GSDStorage(object):
       download: Testing hook to intercept download.
     """
     if gsutil is None:
-      gsutil_script = platform.CygPath(os.environ.get('GSUTIL', 'gsutil'))
+      gsutil_script = pynacl.platform.CygPath(
+          os.environ.get('GSUTIL', 'gsutil'))
       try:
         # Require that gsutil be Python if it is specified in the environment.
-        gsutil = [sys.executable,
-                  file_tools.Which(gsutil_script,
-                                   require_executable=False)]
-      except file_tools.ExecutableNotFound:
+        gsutil = [
+            sys.executable,
+            pynacl.file_tools.Which(gsutil_script, require_executable=False)
+        ]
+      except pynacl.file_tools.ExecutableNotFound:
         gsutil = [gsutil_script]
     assert isinstance(gsutil, list)
     assert isinstance(read_buckets, list)
@@ -170,7 +172,7 @@ class GSDStorage(object):
     handle, path = tempfile.mkstemp(prefix='gdstore', suffix='.tmp')
     try:
       os.close(handle)
-      file_tools.WriteFile(data, path)
+      pynacl.file_tools.WriteFile(data, path)
       return self.PutFile(path, key, clobber=clobber)
     finally:
       os.remove(path)
@@ -229,7 +231,7 @@ class GSDStorage(object):
     try:
       path = os.path.join(work_dir, 'data')
       if self.GetFile(key, path) is not None:
-        return file_tools.ReadFile(path)
+        return pynacl.file_tools.ReadFile(path)
       return None
     finally:
       shutil.rmtree(work_dir)

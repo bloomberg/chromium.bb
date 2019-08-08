@@ -38,7 +38,7 @@ class FramebufferMultiviewLayeredClearTest : public FramebufferMultiviewTest
   protected:
     FramebufferMultiviewLayeredClearTest() : mMultiviewFBO(0), mDepthTex(0), mDepthStencilTex(0) {}
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mMultiviewFBO != 0)
         {
@@ -67,7 +67,7 @@ class FramebufferMultiviewLayeredClearTest : public FramebufferMultiviewTest
             glDeleteTextures(1, &mDepthTex);
             mDepthTex = 0u;
         }
-        MultiviewTest::TearDown();
+        MultiviewTest::testTearDown();
     }
 
     void initializeFBOs(int width,
@@ -740,7 +740,7 @@ TEST_P(FramebufferMultiviewTest, NegativeMultisampledFramebufferTest)
 {
     ANGLE_SKIP_TEST_IF(!requestMultiviewExtension());
 
-    ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_OES_texture_storage_multisample_2d_array"));
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_OES_texture_storage_multisample_2d_array"));
 
     // We don't enable OVR_multiview2_multisample
 
@@ -756,7 +756,13 @@ TEST_P(FramebufferMultiviewTest, NegativeMultisampledFramebufferTest)
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
 
-ANGLE_INSTANTIATE_TEST(FramebufferMultiviewTest, VertexShaderOpenGL(3, 0), GeomShaderD3D11(3, 0));
+ANGLE_INSTANTIATE_TEST(FramebufferMultiviewTest,
+                       VertexShaderOpenGL(3, 0, ExtensionName::multiview),
+                       GeomShaderD3D11(3, 0, ExtensionName::multiview),
+                       VertexShaderOpenGL(3, 0, ExtensionName::multiview2),
+                       GeomShaderD3D11(3, 0, ExtensionName::multiview2));
 ANGLE_INSTANTIATE_TEST(FramebufferMultiviewLayeredClearTest,
-                       VertexShaderOpenGL(3, 0),
-                       GeomShaderD3D11(3, 0));
+                       VertexShaderOpenGL(3, 0, ExtensionName::multiview),
+                       GeomShaderD3D11(3, 0, ExtensionName::multiview),
+                       VertexShaderOpenGL(3, 0, ExtensionName::multiview2),
+                       GeomShaderD3D11(3, 0, ExtensionName::multiview2));

@@ -31,6 +31,10 @@ namespace {
 const char kPerfRecordCyclesCmd[] = "perf record -a -e cycles -c 1000003";
 const char kPerfRecordCallgraphCmd[] = "perf record -a -e cycles -g -c 4000037";
 const char kPerfRecordLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
+const char kPerfRecordLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
+const char kPerfRecordDataTLBMissesCmdGLM[] = "perf record -a -e r13d0 -c 2003";
+const char kPerfRecordDataTLBMissesCmd[] =
+    "perf record -a -e dTLB-misses -c 2003";
 const char kPerfRecordCacheMissesCmd[] =
     "perf record -a -e cache-misses -c 10007";
 const char kPerfStatMemoryBandwidthCmd[] =
@@ -358,6 +362,46 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
                          return cmd.value == kPerfRecordCacheMissesCmd;
+                       });
+  EXPECT_NE(cmds.end(), found);
+}
+
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0x06;
+  cpuid.model = 0x5c;  // Goldmont
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfStatMemoryBandwidthCmd;
+                   });
+  EXPECT_EQ(cmds.end(), found) << "Goldmont does not support this command";
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordLBRCmdAtom;
+                       });
+  EXPECT_NE(cmds.end(), found);
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordCacheMissesCmd;
+                       });
+  EXPECT_NE(cmds.end(), found);
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordDataTLBMissesCmd;
+                       });
+  EXPECT_EQ(cmds.end(), found) << "Goldmont requires specialized dTLB command";
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordDataTLBMissesCmdGLM;
                        });
   EXPECT_NE(cmds.end(), found);
 }

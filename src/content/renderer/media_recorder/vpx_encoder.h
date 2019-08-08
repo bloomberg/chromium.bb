@@ -62,8 +62,7 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
   bool IsInitialized(const vpx_codec_enc_cfg_t& codec_config) const;
 
   // Estimate the frame duration from |frame| and |last_frame_timestamp_|.
-  base::TimeDelta EstimateFrameDuration(
-      const scoped_refptr<media::VideoFrame>& frame);
+  base::TimeDelta EstimateFrameDuration(const media::VideoFrame& frame);
 
   // Force usage of VP9 for encoding, instead of VP8 which is the default.
   const bool use_vp9_;

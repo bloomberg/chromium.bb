@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
@@ -81,8 +80,6 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
         std::make_unique<ChromeLauncherController>(&profile_, model_.get());
 
     tablet_mode_client_ = std::make_unique<TabletModeClient>();
-    tablet_mode_client_->InitForTesting(
-        fake_tablet_mode_controller_.CreateInterfacePtr());
 
     // Disable safe icon decoding to ensure ArcAppShortcutRequests returns in
     // the test environment.
@@ -115,7 +112,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
     base::RunLoop run_loop;
     std::unique_ptr<ui::MenuModel> menu;
     launcher_context_menu->GetMenuModel(base::BindLambdaForTesting(
-        [&](std::unique_ptr<ui::MenuModel> created_menu) {
+        [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
           menu = std::move(created_menu);
           run_loop.Quit();
         }));
@@ -130,7 +127,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
     std::unique_ptr<ui::MenuModel> menu;
     item_delegate->GetContextMenu(
         display_id, base::BindLambdaForTesting(
-                        [&](std::unique_ptr<ui::MenuModel> created_menu) {
+                        [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
                           menu = std::move(created_menu);
                           run_loop.Quit();
                         }));
@@ -141,6 +138,9 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
   void TearDown() override {
     launcher_controller_.reset();
     ChromeAshTestBase::TearDown();
+    // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
+    // after Shell.
+    tablet_mode_client_.reset();
   }
 
   ArcAppTest& arc_test() { return arc_test_; }
@@ -158,7 +158,6 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeLauncherController> launcher_controller_;
 
-  FakeTabletModeController fake_tablet_mode_controller_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);
@@ -262,10 +261,9 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
-  ash::MenuItemList menu_list =
-      item_delegate->GetAppMenuItems(0 /* event_flags */);
+  auto menu_list = item_delegate->GetAppMenuItems(0 /* event_flags */);
   ASSERT_EQ(1U, menu_list.size());
-  EXPECT_EQ(base::UTF8ToUTF16(app_name), menu_list[0]->label);
+  EXPECT_EQ(base::UTF8ToUTF16(app_name), menu_list[0].first);
 
   menu = GetContextMenu(item_delegate, display_id);
   ASSERT_TRUE(menu);
@@ -291,7 +289,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
 
   menu_list = item_delegate2->GetAppMenuItems(0 /* event_flags */);
   ASSERT_EQ(1U, menu_list.size());
-  EXPECT_EQ(base::UTF8ToUTF16(app_name2), menu_list[0]->label);
+  EXPECT_EQ(base::UTF8ToUTF16(app_name2), menu_list[0].first);
 
   menu = GetContextMenu(item_delegate2, display_id);
   ASSERT_TRUE(menu);
@@ -348,7 +346,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
     // in reverse order, based on activation order.
     for (uint32_t j = 0; j <= i; ++j) {
       EXPECT_EQ(base::UTF8ToUTF16(GetAppNameInShelfGroup(3 + j)),
-                menu_list[i - j]->label);
+                menu_list[i - j].first);
     }
   }
 }

@@ -30,7 +30,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
     return RespondNow(Error(identity_constants::kOffTheRecord));
   }
 
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       IdentityManagerFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context()))
           ->GetAccountsWithRefreshTokens();

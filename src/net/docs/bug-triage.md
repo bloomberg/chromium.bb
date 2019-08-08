@@ -4,6 +4,12 @@ The Chrome network team uses a two day bug triage rotation.  The main goals are
 to identify and label new network bugs, and investigate network bugs when no
 label seems suitable.
 
+## Management
+
+Owners for the network bug triage rotation can find instructions on
+generating and modifying shifts
+[here (internal-only)](https://goto.google.com/pflvb).
+
 ## Responsibilities
 
 ### Required, in rough order of priority:

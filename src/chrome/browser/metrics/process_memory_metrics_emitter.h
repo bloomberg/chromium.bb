@@ -22,7 +22,7 @@ class UkmRecorder;
 }
 
 namespace performance_manager {
-class Graph;
+class GraphImpl;
 }
 
 // This class asynchronously fetches memory metrics for each process, and then
@@ -86,7 +86,7 @@ class ProcessMemoryMetricsEmitter
   using GetProcessToPageInfoMapCallback =
       base::OnceCallback<void(std::vector<ProcessInfo>)>;
   static void GetProcessToPageInfoMap(GetProcessToPageInfoMapCallback callback,
-                                      performance_manager::Graph* graph);
+                                      performance_manager::GraphImpl* graph);
 
   // The results of each request are cached. When both requests are finished,
   // the results are collated.

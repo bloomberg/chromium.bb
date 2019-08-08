@@ -185,7 +185,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   void RecycleResource(uint32_t plane_resource_id,
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
-  void ReturnTexture(const scoped_refptr<VideoFrame>& video_frame,
+  void ReturnTexture(scoped_refptr<VideoFrame> video_frame,
                      const gpu::SyncToken& sync_token,
                      bool lost_resource);
 

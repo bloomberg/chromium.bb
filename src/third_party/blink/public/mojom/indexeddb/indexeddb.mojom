@@ -235,9 +235,6 @@ interface IDBCallbacks {
   // Database::Get / Cursor::Advance
   SuccessValue(IDBReturnValue? value);
 
-  // Database::GetAll
-  SuccessArray(array<IDBReturnValue> values);
-
   // Database::Put / Cursor::Update
   SuccessKey(IDBKey key);
 
@@ -272,6 +269,12 @@ struct IDBCursorValue {
   array<IDBValue> values;
 };
 
+union IDBCursorResult {
+  IDBError error_result;  // |error| is reserved, so call this |error_result|.
+  bool empty;  // False values are not allowed.
+  IDBCursorValue values;
+};
+
 // Advance(), CursorContinue(), and Prefetch() can call its return callback in
 // one of 3 ways:
 // * with |error| set and |value| unset, if an error occurs
@@ -279,11 +282,9 @@ struct IDBCursorValue {
 // * with |error| unset and |value| unset, under normal operation when the end
 //   of the source being iterated is reached
 interface IDBCursor {
-  Advance(uint32 count) => (IDBError? error, IDBCursorValue? value);
-  CursorContinue(IDBKey key, IDBKey primary_key)
-    => (IDBError? error, IDBCursorValue? value);
-  Prefetch(int32 count)
-    => (IDBError? error, IDBCursorValue? value);
+  Advance(uint32 count) => (IDBCursorResult result);
+  CursorContinue(IDBKey key, IDBKey primary_key) => (IDBCursorResult result);
+  Prefetch(int32 count) => (IDBCursorResult result);
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
@@ -300,6 +301,12 @@ interface IDBTransaction {
       array<IDBIndexKeys> index_keys,
       associated IDBCallbacks callbacks);
   Commit(int64 num_errors_handled);
+};
+
+union IDBDatabaseGetAllResult {
+  IDBError error_result;  // |error| is reserved, so call this |error_result|.
+  IDBKey key;
+  array<IDBReturnValue> values;
 };
 
 interface IDBDatabase {
@@ -330,8 +337,8 @@ interface IDBDatabase {
          int64 index_id,
          IDBKeyRange key_range,
          bool key_only,
-         int64 max_count,
-         associated IDBCallbacks callbacks);
+         int64 max_count)
+    => (IDBDatabaseGetAllResult result);
   SetIndexKeys(int64 transaction_id,
                int64 object_store_id,
                IDBKey primary_key,

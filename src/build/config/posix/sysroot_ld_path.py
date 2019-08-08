@@ -8,14 +8,16 @@
 # TODO(brettw) the build/linux/sysroot_ld_path.sh script should be rewritten in
 # Python in this file.
 
+from __future__ import print_function
+
 import subprocess
 import sys
 
 if len(sys.argv) != 3:
-  print "Need two arguments"
+  print("Need two arguments")
   sys.exit(1)
 
 result = subprocess.check_output([sys.argv[1], sys.argv[2]]).strip()
 result = result.replace(" ", "\n")
 if result != "":
-  print result
+  print(result)

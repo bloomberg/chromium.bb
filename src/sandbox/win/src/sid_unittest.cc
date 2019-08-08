@@ -98,7 +98,7 @@ TEST(SidTest, GetPSID) {
 }
 
 TEST(SidTest, KnownCapability) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   Sid sid_invalid_well_known =
@@ -128,7 +128,7 @@ TEST(SidTest, KnownCapability) {
 }
 
 TEST(SidTest, NamedCapability) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   Sid sid_nullptr = Sid::FromNamedCapability(nullptr);

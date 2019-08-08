@@ -53,7 +53,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
   TestingCallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
       const WorkIdRecorder* work_id_recorder = nullptr,
-      const MetadataRecorder* metadata_recorder = nullptr,
+      const base::MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~TestingCallStackProfileBuilder() override;
@@ -72,7 +72,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     const WorkIdRecorder* work_id_recorder,
-    const MetadataRecorder* metadata_recorder,
+    const base::MetadataRecorder* metadata_recorder,
     base::OnceClosure completed_callback)
     : CallStackProfileBuilder(profile_params,
                               work_id_recorder,
@@ -165,13 +165,43 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   ASSERT_EQ(2, profile.stack_sample_size());
   EXPECT_EQ(0, profile.stack_sample(0).stack_index());
   EXPECT_FALSE(profile.stack_sample(0).has_continued_work());
+  EXPECT_FALSE(profile.stack_sample(0).has_weight());
   EXPECT_EQ(1, profile.stack_sample(1).stack_index());
   EXPECT_FALSE(profile.stack_sample(1).has_continued_work());
+  EXPECT_FALSE(profile.stack_sample(1).has_weight());
 
   ASSERT_TRUE(profile.has_profile_duration_ms());
   EXPECT_EQ(500, profile.profile_duration_ms());
   ASSERT_TRUE(profile.has_sampling_period_ms());
   EXPECT_EQ(100, profile.sampling_period_ms());
+}
+
+TEST(CallStackProfileBuilderTest, CustomWeightsAndCounts) {
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
+
+  TestModule module1;
+  base::Frame frame1 = {0x10, &module1};
+  std::vector<base::Frame> frames = {frame1};
+
+  profile_builder->OnSampleCompleted(frames, 42, 3);
+  profile_builder->OnSampleCompleted(frames, 1, 1);
+  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+  ASSERT_EQ(3, profile.stack_sample_size());
+  EXPECT_TRUE(profile.stack_sample(0).has_weight());
+  EXPECT_TRUE(profile.stack_sample(0).has_count());
+  EXPECT_EQ(42, profile.stack_sample(0).weight());
+  EXPECT_EQ(3, profile.stack_sample(0).count());
+  EXPECT_FALSE(profile.stack_sample(1).has_weight());
+  EXPECT_FALSE(profile.stack_sample(1).has_count());
+  EXPECT_FALSE(profile.stack_sample(2).has_weight());
+  EXPECT_FALSE(profile.stack_sample(2).has_count());
 }
 
 TEST(CallStackProfileBuilderTest, StacksDeduped) {
@@ -404,22 +434,14 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
   EXPECT_TRUE(profile.stack_sample(4).continued_work());
 }
 
-TEST(CallStackProfileBuilderTest, MetadataRecorder) {
-  MetadataRecorder metadata_recorder;
+TEST(CallStackProfileBuilderTest, MetadataRecorder_NoItems) {
+  base::MetadataRecorder metadata_recorder;
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
       kProfileParams, nullptr, &metadata_recorder);
 
   TestModule module;
   base::Frame frame = {0x10, &module};
 
-  metadata_recorder.Set(100, 10);
-  metadata_recorder.Set(200, 20);
-  metadata_recorder.Set(300, 30);
-  profile_builder->RecordMetadata();
-  profile_builder->OnSampleCompleted({frame});
-  metadata_recorder.Remove(300);
-  metadata_recorder.Set(200, 21);
-  metadata_recorder.Set(400, 40);
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
 
@@ -431,29 +453,172 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(4, profile.metadata_name_hash_size());
+  ASSERT_EQ(0, profile.metadata_name_hash_size());
+  ASSERT_EQ(1, profile.stack_sample_size());
+  ASSERT_EQ(0, profile.stack_sample(0).metadata_size());
+}
+
+TEST(CallStackProfileBuilderTest, MetadataRecorder_RepeatItem) {
+  base::MetadataRecorder metadata_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, nullptr, &metadata_recorder);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+
+  metadata_recorder.Set(100, 10);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(1, profile.metadata_name_hash_size());
   EXPECT_EQ(100u, profile.metadata_name_hash(0));
-  EXPECT_EQ(200u, profile.metadata_name_hash(1));
-  EXPECT_EQ(300u, profile.metadata_name_hash(2));
-  EXPECT_EQ(400u, profile.metadata_name_hash(3));
 
   ASSERT_EQ(2, profile.stack_sample_size());
 
-  ASSERT_EQ(3, profile.stack_sample(0).metadata_size());
+  ASSERT_EQ(1, profile.stack_sample(0).metadata_size());
   EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
   EXPECT_EQ(10, profile.stack_sample(0).metadata(0).value());
-  EXPECT_EQ(1, profile.stack_sample(0).metadata(1).name_hash_index());
-  EXPECT_EQ(20, profile.stack_sample(0).metadata(1).value());
-  EXPECT_EQ(2, profile.stack_sample(0).metadata(2).name_hash_index());
-  EXPECT_EQ(30, profile.stack_sample(0).metadata(2).value());
 
-  ASSERT_EQ(3, profile.stack_sample(1).metadata_size());
-  EXPECT_EQ(0, profile.stack_sample(1).metadata(0).name_hash_index());
-  EXPECT_EQ(10, profile.stack_sample(1).metadata(0).value());
-  EXPECT_EQ(1, profile.stack_sample(1).metadata(1).name_hash_index());
-  EXPECT_EQ(21, profile.stack_sample(1).metadata(1).value());
-  EXPECT_EQ(3, profile.stack_sample(1).metadata(2).name_hash_index());
-  EXPECT_EQ(40, profile.stack_sample(1).metadata(2).value());
+  // The second sample shouldn't have any metadata because it's all the same as
+  // the last sample.
+  ASSERT_EQ(0, profile.stack_sample(1).metadata_size());
+}
+
+TEST(CallStackProfileBuilderTest, MetadataRecorder_ModifiedItem) {
+  base::MetadataRecorder metadata_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, nullptr, &metadata_recorder);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+
+  metadata_recorder.Set(100, 10);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  metadata_recorder.Set(100, 11);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(1, profile.metadata_name_hash_size());
+  EXPECT_EQ(100u, profile.metadata_name_hash(0));
+
+  ASSERT_EQ(2, profile.stack_sample_size());
+
+  auto sample1 = profile.stack_sample(0);
+  ASSERT_EQ(1, sample1.metadata_size());
+  EXPECT_EQ(0, sample1.metadata(0).name_hash_index());
+  EXPECT_EQ(10, sample1.metadata(0).value());
+
+  // The second sample should have the metadata item with its new value.
+  auto sample2 = profile.stack_sample(1);
+  ASSERT_EQ(1, sample2.metadata_size());
+  EXPECT_EQ(0, sample2.metadata(0).name_hash_index());
+  EXPECT_EQ(11, sample2.metadata(0).value());
+}
+
+TEST(CallStackProfileBuilderTest, MetadataRecorder_NewItem) {
+  base::MetadataRecorder metadata_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, nullptr, &metadata_recorder);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+
+  metadata_recorder.Set(100, 10);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  metadata_recorder.Set(100, 11);
+  metadata_recorder.Set(200, 20);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(2, profile.metadata_name_hash_size());
+  EXPECT_EQ(100u, profile.metadata_name_hash(0));
+  EXPECT_EQ(200u, profile.metadata_name_hash(1));
+
+  ASSERT_EQ(2, profile.stack_sample_size());
+
+  auto sample1 = profile.stack_sample(0);
+  ASSERT_EQ(1, sample1.metadata_size());
+  EXPECT_EQ(0, sample1.metadata(0).name_hash_index());
+  EXPECT_EQ(10, sample1.metadata(0).value());
+
+  // The second sample should have the new item in it.
+  auto sample2 = profile.stack_sample(1);
+  ASSERT_EQ(2, sample2.metadata_size());
+  EXPECT_EQ(0, sample2.metadata(0).name_hash_index());
+  EXPECT_EQ(11, sample2.metadata(0).value());
+
+  EXPECT_EQ(1, sample2.metadata(1).name_hash_index());
+  EXPECT_EQ(20, sample2.metadata(1).value());
+}
+
+TEST(CallStackProfileBuilderTest, MetadataRecorder_RemovedItem) {
+  base::MetadataRecorder metadata_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, nullptr, &metadata_recorder);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+
+  metadata_recorder.Set(100, 10);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  metadata_recorder.Remove(100);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(1, profile.metadata_name_hash_size());
+  EXPECT_EQ(100u, profile.metadata_name_hash(0));
+
+  ASSERT_EQ(2, profile.stack_sample_size());
+
+  auto sample1 = profile.stack_sample(0);
+  ASSERT_EQ(1, sample1.metadata_size());
+  EXPECT_EQ(0, sample1.metadata(0).name_hash_index());
+  EXPECT_EQ(10, sample1.metadata(0).value());
+
+  // The second sample should have a metadata item with a set name hash but an
+  // empty value to indicate that the metadata item was removed.
+  auto sample2 = profile.stack_sample(1);
+  ASSERT_EQ(1, sample2.metadata_size());
+  EXPECT_EQ(0, sample2.metadata(0).name_hash_index());
+  EXPECT_FALSE(sample2.metadata(0).has_value());
 }
 
 }  // namespace metrics

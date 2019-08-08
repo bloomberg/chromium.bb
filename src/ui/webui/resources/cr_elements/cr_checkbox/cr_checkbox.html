@@ -146,7 +146,6 @@ List of customizable styles:
       }
 
       /* Hidden from UI, but not screen readers. */
-      #ariaLabel,
       #ariaDescription {
         height: 0;
         overflow: hidden;
@@ -154,12 +153,12 @@ List of customizable styles:
       }
     </style>
     <div id="checkbox" tabindex$="[[tabIndex]]" role="checkbox"
-        on-keydown="onKeyDown_" aria-disabled="false" aria-checked="false"
-        aria-labelledby="label-container" aria-describedby="ariaDescription">
+        on-keydown="onKeyDown_" on-keyup="onKeyUp_" aria-disabled="false"
+        aria-checked="false" aria-labelledby="label-container"
+        aria-describedby="ariaDescription">
       <span id="checkmark"></span>
     </div>
-    <div id="label-container"><slot></slot></div>
-    <div id="ariaLabel">[[ariaLabel]]</div>
+    <div id="label-container" aria-hidden="true"><slot></slot></div>
     <div id="ariaDescription">[[ariaDescription]]</div>
   </template>
   <script src="cr_checkbox.js"></script>

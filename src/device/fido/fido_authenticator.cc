@@ -64,6 +64,33 @@ FidoAuthenticator::WillNeedPINToGetAssertion(
   return GetAssertionPINDisposition::kNoPIN;
 }
 
+void FidoAuthenticator::GetCredentialsMetadata(
+    base::span<const uint8_t> pin_token,
+    GetCredentialsMetadataCallback callback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::EnumerateCredentials(
+    base::span<const uint8_t> pin_token,
+    EnumerateCredentialsCallback callback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::DeleteCredential(
+    base::span<const uint8_t> pin_token,
+    base::span<const uint8_t> credential_id,
+    DeleteCredentialCallback callback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::GetModality(GetBioEnrollmentInfoCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::GetSensorInfo(GetBioEnrollmentInfoCallback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);

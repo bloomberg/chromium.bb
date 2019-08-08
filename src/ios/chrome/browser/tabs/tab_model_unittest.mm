@@ -23,21 +23,20 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/test/fakes/fake_web_state_list_observing_delegate.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
-#import "ios/web/public/serializable_user_data_manager.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
@@ -51,27 +50,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// Defines a TabModelObserver for use in unittests.  This class can be used to
-// test if an observer method was called or not.
-@interface TabModelObserverPong : NSObject<TabModelObserver> {
-  // TODO(crbug.com/661989): Add tests for the other observer methods.
-  BOOL tabMovedWasCalled_;
-}
-@property(nonatomic, assign) BOOL tabMovedWasCalled;
-@end
-
-@implementation TabModelObserverPong
-@synthesize tabMovedWasCalled = tabMovedWasCalled_;
-
-- (void)tabModel:(TabModel*)model
-      didMoveTab:(Tab*)tab
-       fromIndex:(NSUInteger)fromIndex
-         toIndex:(NSUInteger)toIndex {
-  tabMovedWasCalled_ = YES;
-}
-
-@end
 
 namespace {
 
@@ -389,10 +367,8 @@ TEST_P(TabModelTest, RestoreSessionOnNTPTest) {
   web::WebStateImpl* web_state = static_cast<web::WebStateImpl*>(tab.webState);
 
   // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
-  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-    id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-    NewTabPageTabHelper::CreateForWebState(web_state, delegate);
-  }
+  id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+  NewTabPageTabHelper::CreateForWebState(web_state, delegate);
   web_state->GetNavigationManagerImpl().CommitPendingItem();
 
   SessionWindowIOS* window(CreateSessionWindow());
@@ -634,58 +610,58 @@ TEST_P(TabModelTest, MoveTabs) {
   ASSERT_NSEQ(tab2, [tab_model_ tabAtIndex:2]);
 
   // Check that observer methods are called.
-  TabModelObserverPong* tab_model_observer;
-  tab_model_observer = [[TabModelObserverPong alloc] init];
-  [tab_model_ addObserver:tab_model_observer];
+  FakeWebStateListObservingDelegate* web_state_list_observer =
+      [[FakeWebStateListObservingDelegate alloc] init];
+  [web_state_list_observer observeWebStateList:tab_model_.webStateList];
 
   // Move a tab from index 1 to index 0 (move tab left by one).
-  [tab_model_observer setTabMovedWasCalled:NO];
+  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:1] toIndex:0];
   ASSERT_EQ(3U, [tab_model_ count]);
   EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
   EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:1]);
   EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:2]);
-  EXPECT_TRUE([tab_model_observer tabMovedWasCalled]);
+  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
 
   // Move a tab from index 1 to index 2 (move tab right by one).
-  [tab_model_observer setTabMovedWasCalled:NO];
+  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:1] toIndex:2];
   ASSERT_EQ(3U, [tab_model_ count]);
   EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
   EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
   EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
-  EXPECT_TRUE([tab_model_observer tabMovedWasCalled]);
+  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
 
   // Move a tab from index 0 to index 2 (move tab right by more than one).
-  [tab_model_observer setTabMovedWasCalled:NO];
+  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:0] toIndex:2];
   ASSERT_EQ(3U, [tab_model_ count]);
   EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:0]);
   EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:1]);
   EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:2]);
-  EXPECT_TRUE([tab_model_observer tabMovedWasCalled]);
+  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
 
   // Move a tab from index 2 to index 0 (move tab left by more than one).
-  [tab_model_observer setTabMovedWasCalled:NO];
+  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:2] toIndex:0];
   ASSERT_EQ(3U, [tab_model_ count]);
   EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
   EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
   EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
-  EXPECT_TRUE([tab_model_observer tabMovedWasCalled]);
+  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
 
   // Move a tab from index 2 to index 2 (move tab to the same index).
-  [tab_model_observer setTabMovedWasCalled:NO];
+  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:2] toIndex:2];
   ASSERT_EQ(3U, [tab_model_ count]);
   EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
   EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
   EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
-  EXPECT_FALSE([tab_model_observer tabMovedWasCalled]);
+  EXPECT_FALSE([web_state_list_observer didMoveWebStateWasCalled]);
 
   // TabModel asserts that there are no observer when it is deallocated,
   // so remove the observer before the end of the method.
-  [tab_model_ removeObserver:tab_model_observer];
+  [web_state_list_observer stopObservingWebStateList:tab_model_.webStateList];
 }
 
 TEST_P(TabModelTest, TabCreatedOnInsertion) {

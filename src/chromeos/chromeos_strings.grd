@@ -133,6 +133,14 @@ Try tapping the mic to ask me anything.
         Turn on Bluetooth to discover nearby devices
       </message>
 
+      <!-- Managed guest session warnings -->
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING" desc="Text shown in the public account user pod in case of risky configuration, informing the user that this session is managed and admin can monitor all activity.">
+        The administrator of this device has access to all activity, including passwords and communications.
+      </message>
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING" desc="Text shown in the public account user pod in case of non-risky configuration, informing the user that this session is managed and admin can monitor all activity.">
+        The device administrator may be able to monitor your activity.
+      </message>
+
       <!-- Status tray enterprise management. -->
       <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
         This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
@@ -178,6 +186,27 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE" desc="The title used for the Ash Launcher in the Shelf to indicate loading/syncinc apps.">
         Launcher (syncing apps...)
+      </message>
+
+      <!-- Password expiry notifications -->
+      <message name="IDS_PASSWORD_HAS_EXPIRED_TITLE" desc="Title for a notification that tells the user their password has expired.">
+        Password has expired
+      </message>
+      <message name="IDS_PASSWORD_WILL_EXPIRE_TITLE" desc="Title for a notification that tells the user their password will soon expire.">
+        Password will soon expire
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_DAYS_BODY" desc="Message body for a notification that tells the user their password will expire in less than some number of days (where 0 days means it has expired).">
+        {NUM_DAYS, plural,
+         =0 {Your current password has expired!}
+         =1 {Your current password will expire in less than one day!}
+         other {Your current password will expire in less than # days!}}
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_CHOOSE_NEW_PASSWORD_LINK" desc="Added to the message body on a notification to explain that clicking the notification will open a dialog where a new password can be chosen.">
+        Click here to choose a new password
+      </message>
+
+      <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">
+        Chrome OS Input Method Service
       </message>
     </messages>
   </release>

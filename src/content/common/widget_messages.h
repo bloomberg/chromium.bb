@@ -7,10 +7,12 @@
 
 // IPC messages for controlling painting and input events.
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/tab_switch_time_recorder.h"
 #include "content/common/text_input_state.h"
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
@@ -22,6 +24,8 @@
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_text_direction.h"
+#include "ui/base/ime/text_input_action.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -109,11 +113,13 @@ IPC_STRUCT_BEGIN(WidgetHostMsg_SelectionBounds_Params)
 IPC_STRUCT_END()
 
 // Traits for TextInputState.
+IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputAction, ui::TextInputAction::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(mode)
+  IPC_STRUCT_TRAITS_MEMBER(action)
   IPC_STRUCT_TRAITS_MEMBER(flags)
   IPC_STRUCT_TRAITS_MEMBER(value)
   IPC_STRUCT_TRAITS_MEMBER(selection_start)
@@ -157,10 +163,13 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)
 IPC_MESSAGE_ROUTED0(WidgetMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden).
-IPC_MESSAGE_ROUTED3(WidgetMsg_WasShown,
-                    base::TimeTicks /* show_request_timestamp */,
-                    bool /* was_evicted */,
-                    base::TimeTicks /* tab_switch_start_time */)
+IPC_MESSAGE_ROUTED3(
+    WidgetMsg_WasShown,
+    base::TimeTicks /* show_request_timestamp */,
+    bool /* was_evicted */,
+    base::Optional<
+        content::
+            RecordTabSwitchTimeRequest> /* record_tab_switch_time_request */)
 
 // Activate/deactivate the RenderWidget (i.e., set its controls' tint
 // accordingly, etc.).

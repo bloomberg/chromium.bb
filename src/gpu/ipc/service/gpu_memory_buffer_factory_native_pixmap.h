@@ -5,6 +5,8 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_NATIVE_PIXMAP_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_NATIVE_PIXMAP_H_
 
+#include <vulkan/vulkan.h>
+
 #include <unordered_map>
 #include <utility>
 
@@ -27,6 +29,8 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryNativePixmap
       public ImageFactory {
  public:
   GpuMemoryBufferFactoryNativePixmap();
+  explicit GpuMemoryBufferFactoryNativePixmap(
+      viz::VulkanContextProvider* vulkan_context_provider);
   ~GpuMemoryBufferFactoryNativePixmap() override;
 
   // Overridden from GpuMemoryBufferFactory:
@@ -61,6 +65,11 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryNativePixmap
   using NativePixmapMap = std::unordered_map<NativePixmapMapKey,
                                              scoped_refptr<gfx::NativePixmap>,
                                              NativePixmapMapKeyHash>;
+
+  VkDevice GetVulkanDevice();
+
+  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider_;
+
   NativePixmapMap native_pixmaps_;
   base::Lock native_pixmaps_lock_;
 

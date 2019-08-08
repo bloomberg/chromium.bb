@@ -69,7 +69,7 @@ class AppUrlLoadingService {
   virtual void LoadUrlInNewTab(const UrlLoadParams& params);
 
   // Returns the current browser state.
-  ios::ChromeBrowserState* GetCurrentBrowserState();
+  virtual ios::ChromeBrowserState* GetCurrentBrowserState();
 
  private:
   __weak id<AppURLLoadingServiceDelegate> delegate_;

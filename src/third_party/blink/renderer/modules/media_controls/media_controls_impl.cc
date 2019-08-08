@@ -139,7 +139,6 @@ const char kActAsAudioControlsCSSClass[] = "audio-only";
 const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
-const char kPipPresentedCSSClass[] = "pip-presented";
 
 // The delay between two taps to be recognized as a double tap gesture.
 constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
@@ -327,7 +326,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
 // static
 bool MediaControlsImpl::IsModern() {
-  return RuntimeEnabledFeatures::ModernMediaControlsEnabled();
+  return true;
 }
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {
@@ -994,6 +993,7 @@ void MediaControlsImpl::MaybeShow() {
     loading_panel_->OnControlsShown();
 
   timeline_->OnControlsShown();
+  volume_slider_->OnControlsShown();
   UpdateCSSClassFromState();
   UpdateActingAsAudioControls();
 }
@@ -1017,6 +1017,7 @@ void MediaControlsImpl::Hide() {
     EndScrubbing();
   }
   timeline_->OnControlsHidden();
+  volume_slider_->OnControlsHidden();
 
   UpdateCSSClassFromState();
 
@@ -1394,7 +1395,6 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   MaybeRecordElementsDisplayed();
 
-  UpdateOverflowAndTrackListCSSClassForPip();
   UpdateOverflowMenuItemCSSClass();
 }
 
@@ -1425,32 +1425,17 @@ void MediaControlsImpl::UpdateScrubbingMessageFits() const {
     scrubbing_message_->SetDoesFit(size_.Width() >= kMinScrubbingMessageWidth);
 }
 
-// We want to have wider menu when pip is enabled so that "Exit picture in
-// picture" text won't be truncated. When pip is disable (e.g. on mobile
-// device), we don't want to enlarged the menu because it would look empty
-// when "picture in picture" text is not presented.
-void MediaControlsImpl::UpdateOverflowAndTrackListCSSClassForPip() const {
-  if (picture_in_picture_button_.Get() &&
-      picture_in_picture_button_.Get()->OverflowElementIsWanted()) {
-    overflow_list_->classList().Add(kPipPresentedCSSClass);
-    text_track_list_->classList().Add(kPipPresentedCSSClass);
-  } else {
-    overflow_list_->classList().Remove(kPipPresentedCSSClass);
-    text_track_list_->classList().Remove(kPipPresentedCSSClass);
-  }
-}
-
 void MediaControlsImpl::UpdateSizingCSSClass() {
   MediaControlsSizingClass sizing_class =
       MediaControls::GetSizingClass(size_.Width());
 
   SetClass(kMediaControlsSizingSmallCSSClass,
            ShouldShowVideoControls() &&
-               sizing_class == MediaControlsSizingClass::kSmall);
-  SetClass(kMediaControlsSizingMediumCSSClass,
+               (sizing_class == MediaControlsSizingClass::kSmall ||
+                sizing_class == MediaControlsSizingClass::kMedium));
+  SetClass(kMediaControlsSizingLargeCSSClass,
            ShouldShowVideoControls() &&
-               (sizing_class == MediaControlsSizingClass::kMedium ||
-                sizing_class == MediaControlsSizingClass::kLarge));
+               sizing_class == MediaControlsSizingClass::kLarge);
 }
 
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
@@ -1686,7 +1671,7 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
 void MediaControlsImpl::EnsureAnimatedArrowContainer() {
   if (!animated_arrow_container_element_) {
     animated_arrow_container_element_ =
-        new MediaControlAnimatedArrowContainerElement(*this);
+        MakeGarbageCollected<MediaControlAnimatedArrowContainerElement>(*this);
     ParserAppendChild(animated_arrow_container_element_);
   }
 }

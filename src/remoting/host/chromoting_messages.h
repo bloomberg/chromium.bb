@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/files/file_path.h"
-#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/time/time.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
@@ -123,6 +123,11 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_HostStarted,
                     std::string /* xmpp_login */)
 
 IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_HostShutdown)
+
+// Instructs the daemon process to update the config file, replacing the current
+// OAuth refresh token with the one provided.
+IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken,
+                    std::string /* token */)
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the daemon process.

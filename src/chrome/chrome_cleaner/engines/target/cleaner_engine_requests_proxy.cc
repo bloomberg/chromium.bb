@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/chrome_cleaner/engines/target/engine_commands_impl.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 
@@ -16,10 +17,10 @@ namespace chrome_cleaner {
 namespace {
 
 void SaveBoolCallback(bool* out_result,
-                      base::OnceClosure quit_closure,
+                      base::WaitableEvent* async_call_done_event,
                       bool result) {
   *out_result = result;
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 }  // namespace

@@ -44,7 +44,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
                                 ui::PageTransition transition) override;
 
   bool OnMessageReceived(const IPC::Message& message) override;
-  void FocusedNodeChanged(const blink::WebNode& node) override;
+  void FocusedElementChanged(const blink::WebElement& element) override;
   void OnDestruct() override;
 
   void OnDocumentHasImagesRequest(uint32_t id);

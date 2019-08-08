@@ -84,9 +84,14 @@ struct NetworkStatistics {
   // https://w3c.github.io/webrtc-stats/#dom-rtcmediastreamtrackstats
   uint64_t totalSamplesReceived;
   uint64_t concealedSamples;
+  uint64_t silentConcealedSamples;
   uint64_t concealmentEvents;
   uint64_t jitterBufferDelayMs;
   uint64_t jitterBufferEmittedCount;
+  uint64_t insertedSamplesForDeceleration;
+  uint64_t removedSamplesForAcceleration;
+  uint64_t fecPacketsReceived;
+  uint64_t fecPacketsDiscarded;
   // Stats below DO NOT correspond directly to anything in the WebRTC stats
   // Loss rate (network + late); fraction between 0 and 1, scaled to Q14.
   uint16_t currentPacketLossRate;
@@ -130,6 +135,10 @@ struct NetworkStatistics {
   uint64_t delayedPacketOutageSamples;
   // arrival delay of incoming packets
   uint64_t relativePacketArrivalDelayMs;
+  // number of audio interruptions
+  int32_t interruptionCount;
+  // total duration of audio interruptions
+  int32_t totalInterruptionDurationMs;
 };
 
 }  // namespace webrtc

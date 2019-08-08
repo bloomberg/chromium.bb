@@ -197,14 +197,14 @@ size_t BufferOffsetForBufferFormat(const Size& size,
     case BufferFormat::YVU_420: {
       static size_t offset_in_2x2_sub_sampling_sizes[] = {0, 4, 5};
       DCHECK_LT(plane, base::size(offset_in_2x2_sub_sampling_sizes));
-      return offset_in_2x2_sub_sampling_sizes[plane] *
-             (size.width() / 2 + size.height() / 2);
+      return offset_in_2x2_sub_sampling_sizes[plane] * (size.width() / 2) *
+             (size.height() / 2);
     }
     case gfx::BufferFormat::YUV_420_BIPLANAR: {
       static size_t offset_in_2x2_sub_sampling_sizes[] = {0, 4};
       DCHECK_LT(plane, base::size(offset_in_2x2_sub_sampling_sizes));
-      return offset_in_2x2_sub_sampling_sizes[plane] *
-             (size.width() / 2 + size.height() / 2);
+      return offset_in_2x2_sub_sampling_sizes[plane] * (size.width() / 2) *
+             (size.height() / 2);
     }
   }
   NOTREACHED();

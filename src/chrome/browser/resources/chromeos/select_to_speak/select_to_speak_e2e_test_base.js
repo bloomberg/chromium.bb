@@ -36,7 +36,7 @@ SelectToSpeakE2ETest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "ui/keyboard/keyboard_util.h"
+#include "ash/keyboard/ui/keyboard_util.h"
     `);
   },
 

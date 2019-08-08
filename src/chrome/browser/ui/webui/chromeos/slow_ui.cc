@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -44,15 +45,17 @@ content::WebUIDataSource* CreateSlowUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISlowHost);
 
-  source->AddLocalizedString("slowDisable", IDS_SLOW_DISABLE);
-  source->AddLocalizedString("slowEnable", IDS_SLOW_ENABLE);
-  source->AddLocalizedString("slowDescription", IDS_SLOW_DESCRIPTION);
-  source->AddLocalizedString("slowWarning", IDS_SLOW_WARNING);
+  static constexpr LocalizedString kStrings[] = {
+      {"slowDisable", IDS_SLOW_DISABLE},
+      {"slowEnable", IDS_SLOW_ENABLE},
+      {"slowDescription", IDS_SLOW_DESCRIPTION},
+      {"slowWarning", IDS_SLOW_WARNING},
+  };
+  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
   source->AddResourcePath("slow.js", IDR_SLOW_JS);
   source->AddResourcePath("slow.css", IDR_SLOW_CSS);
   source->SetDefaultResource(IDR_SLOW_HTML);
-  source->UseGzip();
   return source;
 }
 

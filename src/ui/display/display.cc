@@ -21,11 +21,14 @@
 namespace display {
 namespace {
 
-constexpr int DEFAULT_BITS_PER_PIXEL = 24;
-constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
+constexpr int kDefaultBitsPerPixel = 24;
+constexpr int kDefaultBitsPerComponent = 8;
 
-constexpr int HDR_BITS_PER_PIXEL = 48;
-constexpr int HDR_BITS_PER_COMPONENT = 16;
+constexpr int kHDR10BitsPerPixel = 30;
+constexpr int kHDR10BitsPerComponent = 10;
+
+constexpr int kSCRGBLinearBitsPerPixel = 48;
+constexpr int kSCRGBLinearBitsPerComponent = 16;
 
 // This variable tracks whether the forced device scale factor switch needs to
 // be read from the command line, i.e. if it is set to -1 then the command line
@@ -65,6 +68,8 @@ gfx::ColorSpace ForcedColorProfileStringToColorSpace(const std::string& value) {
     return gfx::ColorSpace::CreateDisplayP3D65();
   if (value == "scrgb-linear")
     return gfx::ColorSpace::CreateSCRGBLinear();
+  if (value == "hdr10")
+    return gfx::ColorSpace::CreateHDR10();
   if (value == "extended-srgb")
     return gfx::ColorSpace::CreateExtendedSRGB();
   if (value == "generic-rgb") {
@@ -209,12 +214,10 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
-      device_scale_factor_(GetForcedDeviceScaleFactor()),
-      color_space_(gfx::ColorSpace::CreateSRGB()),
-      color_depth_(DEFAULT_BITS_PER_PIXEL),
-      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
-  if (HasForceDisplayColorProfile())
-    SetColorSpaceAndDepth(GetForcedDisplayColorProfile());
+      device_scale_factor_(GetForcedDeviceScaleFactor()) {
+  SetColorSpaceAndDepth(HasForceDisplayColorProfile()
+                            ? GetForcedDisplayColorProfile()
+                            : gfx::ColorSpace::CreateSRGB());
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
@@ -298,14 +301,19 @@ void Display::SetSize(const gfx::Size& size_in_pixel) {
   SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
 }
 
-void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space) {
+void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space,
+                                    float sdr_white_level) {
   color_space_ = color_space;
-  if (color_space_.IsHDR()) {
-    color_depth_ = HDR_BITS_PER_PIXEL;
-    depth_per_component_ = HDR_BITS_PER_COMPONENT;
+  sdr_white_level_ = sdr_white_level;
+  if (color_space_ == gfx::ColorSpace::CreateHDR10()) {
+    color_depth_ = kHDR10BitsPerPixel;
+    depth_per_component_ = kHDR10BitsPerComponent;
+  } else if (color_space == gfx::ColorSpace::CreateSCRGBLinear()) {
+    color_depth_ = kSCRGBLinearBitsPerPixel;
+    depth_per_component_ = kSCRGBLinearBitsPerComponent;
   } else {
-    color_depth_ = DEFAULT_BITS_PER_PIXEL;
-    depth_per_component_ = DEFAULT_BITS_PER_COMPONENT;
+    color_depth_ = kDefaultBitsPerPixel;
+    depth_per_component_ = kDefaultBitsPerComponent;
   }
 }
 
@@ -364,7 +372,8 @@ bool Display::operator==(const Display& rhs) const {
          maximum_cursor_size_ == rhs.maximum_cursor_size_ &&
          color_space_ == rhs.color_space_ && color_depth_ == rhs.color_depth_ &&
          depth_per_component_ == rhs.depth_per_component_ &&
-         is_monochrome_ == rhs.is_monochrome_;
+         is_monochrome_ == rhs.is_monochrome_ &&
+         display_frequency_ == rhs.display_frequency_;
 }
 
 }  // namespace display

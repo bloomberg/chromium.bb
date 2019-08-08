@@ -65,6 +65,7 @@ using blink::mojom::StorageType;
 
 namespace {
 
+constexpr int kMockProcessId = 1;
 constexpr int kMockQuota = 5000;
 
 // The Reinitialize test needs some http accessible resources to run,
@@ -1694,10 +1695,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void Continue_Reinitialize(ReinitTestCase test_case) {
-    const int kMockProcessId = 1;
     const int kMockRenderFrameId = MSG_ROUTING_NONE;
-    backend_ =
-        std::make_unique<AppCacheBackendImpl>(service_.get(), kMockProcessId);
 
     if (test_case == CORRUPT_SQL_ON_INSTALL) {
       // Break the db file
@@ -1710,9 +1708,11 @@ class AppCacheStorageImplTest : public testing::Test {
         test_case == CORRUPT_SQL_ON_INSTALL) {
       // Try to create a new appcache, the resulting update job will
       // eventually fail when it gets to disk cache initialization.
-      backend_->RegisterHost(blink::mojom::AppCacheHostRequest(),
-                             BindFrontend(), 1, kMockRenderFrameId);
-      AppCacheHost* host1 = backend_->GetHost(1);
+      host1_id_ = base::UnguessableToken::Create();
+      service_->RegisterHostForFrame(
+          blink::mojom::AppCacheHostRequest(), BindFrontend(), host1_id_,
+          kMockRenderFrameId, kMockProcessId, GetBadMessageCallback());
+      AppCacheHost* host1 = service_->GetHost(host1_id_);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
       host1->SetFirstPartyUrlForTesting(kEmptyPageUrl);
       host1->SelectCache(kEmptyPageUrl, blink::mojom::kAppCacheNoCacheId,
@@ -1722,9 +1722,11 @@ class AppCacheStorageImplTest : public testing::Test {
       // Try to access the existing cache manifest.
       // The URLRequestJob  will eventually fail when it gets to disk
       // cache initialization.
-      backend_->RegisterHost(blink::mojom::AppCacheHostRequest(),
-                             BindFrontend(), 2, kMockRenderFrameId);
-      AppCacheHost* host2 = backend_->GetHost(2);
+      host2_id_ = base::UnguessableToken::Create();
+      service_->RegisterHostForFrame(
+          blink::mojom::AppCacheHostRequest(), BindFrontend(), host2_id_,
+          kMockRenderFrameId, kMockProcessId, GetBadMessageCallback());
+      AppCacheHost* host2 = service_->GetHost(host2_id_);
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");
       handler_ =
@@ -1757,20 +1759,21 @@ class AppCacheStorageImplTest : public testing::Test {
     if (test_case == CORRUPT_CACHE_ON_INSTALL ||
         test_case == CORRUPT_SQL_ON_INSTALL) {
       EXPECT_TRUE(frontend_.error_event_was_raised_);
-      AppCacheHost* host1 = backend_->GetHost(1);
+      AppCacheHost* host1 = service_->GetHost(host1_id_);
       EXPECT_FALSE(host1->associated_cache());
       EXPECT_FALSE(host1->group_being_updated_.get());
       EXPECT_TRUE(host1->disabled_storage_reference_.get());
     } else {
       ASSERT_EQ(CORRUPT_CACHE_ON_LOAD_EXISTING, test_case);
-      AppCacheHost* host2 = backend_->GetHost(2);
+      AppCacheHost* host2 = service_->GetHost(host2_id_);
       EXPECT_TRUE(host2->disabled_storage_reference_.get());
     }
 
     // Cleanup and claim victory.
+    service_->EraseHost(host1_id_);
+    service_->EraseHost(host2_id_);
     service_->RemoveObserver(observer_.get());
     handler_.reset();
-    backend_.reset();
     observer_.reset();
     TestFinished();
   }
@@ -1783,15 +1786,22 @@ class AppCacheStorageImplTest : public testing::Test {
     return static_cast<AppCacheStorageImpl*>(service()->storage());
   }
 
-  AppCacheDatabase* database() { return storage()->database_; }
+  AppCacheDatabase* database() { return storage()->database_.get(); }
 
   MockStorageDelegate* delegate() { return delegate_.get(); }
 
-  blink::mojom::AppCacheFrontendPtr BindFrontend() {
-    blink::mojom::AppCacheFrontendPtr result;
+  blink::mojom::AppCacheFrontendPtrInfo BindFrontend() {
+    blink::mojom::AppCacheFrontendPtrInfo result;
     frontend_bindings_.AddBinding(&frontend_, mojo::MakeRequest(&result));
     return result;
   }
+
+  mojo::ReportBadMessageCallback GetBadMessageCallback() {
+    return base::BindOnce(&AppCacheStorageImplTest::OnBadMessage,
+                          base::Unretained(this));
+  }
+
+  void OnBadMessage(const std::string& reason) { NOTREACHED(); }
 
   void MakeCacheAndGroup(const GURL& manifest_url,
                          int64_t group_id,
@@ -1844,6 +1854,9 @@ class AppCacheStorageImplTest : public testing::Test {
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCache> cache2_;
+
+  base::UnguessableToken host1_id_;
+  base::UnguessableToken host2_id_;
 
   // Specifically for the Reinitalize test.
   base::test::ScopedFeatureList feature_list_;

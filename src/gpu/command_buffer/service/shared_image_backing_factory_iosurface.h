@@ -30,7 +30,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
     : public SharedImageBackingFactory {
  public:
   SharedImageBackingFactoryIOSurface(const GpuDriverBugWorkarounds& workarounds,
-                                     const GpuFeatureInfo& gpu_feature_info);
+                                     const GpuFeatureInfo& gpu_feature_info,
+                                     bool use_gl);
   ~SharedImageBackingFactoryIOSurface() override;
 
   // SharedImageBackingFactory implementation.
@@ -57,9 +58,14 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage) override;
+  bool CanImportGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType memory_buffer_type) override;
 
  private:
+  void CollectGLFormatInfo(const GpuDriverBugWorkarounds& workarounds,
+                           const GpuFeatureInfo& gpu_feature_info);
   bool format_supported_by_gl_[viz::RESOURCE_FORMAT_MAX + 1];
+  bool use_gl_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingFactoryIOSurface);
 };

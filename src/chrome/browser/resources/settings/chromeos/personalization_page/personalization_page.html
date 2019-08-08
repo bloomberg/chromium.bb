@@ -1,0 +1,26 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="personalization_browser_proxy.html">
+<link rel="import" href="../../settings_page/settings_animated_pages.html">
+
+<dom-module id="settings-personalization-page">
+  <template>
+    <settings-animated-pages id="pages" section="personalization">
+      <div route-path="default">
+        <cr-link-row  id="wallpaperButton"
+            hidden="[[!pageVisibility.setWallpaper]]"
+            on-click="openWallpaperManager_" label="$i18n{setWallpaper}"
+            sub-label="$i18n{openWallpaperApp}"
+            disabled="[[isWallpaperPolicyControlled_]]" external>
+          <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
+            <cr-policy-indicator id="wallpaperPolicyIndicator"
+                indicator-type="devicePolicy">
+            </cr-policy-indicator>
+          </template>
+        </cr-link-row>
+      </div>
+    </settings-animated-pages>
+  </template>
+  <script src="personalization_page.js"></script>
+</dom-module>

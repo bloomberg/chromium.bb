@@ -21,7 +21,7 @@ namespace blink {
 
 void NGFieldsetPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint paint_offset) {
+    const PhysicalOffset& paint_offset) {
   const NGPaintFragment* legend = nullptr;
   if (!fieldset_.Children().IsEmpty()) {
     const auto& first_child = fieldset_.Children().front();
@@ -42,9 +42,9 @@ void NGFieldsetPainter::PaintBoxDecorationBackground(
 void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     const NGPaintFragment* legend,
     const PaintInfo& paint_info,
-    const LayoutPoint paint_offset) {
-  LayoutSize fieldset_size(fieldset_.Size().ToLayoutSize());
-  LayoutRect paint_rect(paint_offset, fieldset_size);
+    const PhysicalOffset& paint_offset) {
+  PhysicalSize fieldset_size(fieldset_.Size());
+  PhysicalRect paint_rect(paint_offset, fieldset_size);
   const auto& fragment =
       To<NGPhysicalBoxFragment>(fieldset_.PhysicalFragment());
   BoxDecorationData box_decoration_data(paint_info, fragment);
@@ -57,14 +57,14 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
 
   LayoutRectOutsets fieldset_borders = fragment.Borders().ToLayoutRectOutsets();
   const ComputedStyle& style = fieldset_.Style();
-  LayoutRect legend_border_box;
+  PhysicalRect legend_border_box;
   if (legend) {
-    legend_border_box.SetLocation(legend->Offset().ToLayoutPoint());
-    legend_border_box.SetSize(legend->Size().ToLayoutSize());
+    legend_border_box.offset = legend->Offset();
+    legend_border_box.size = legend->Size();
   }
   FieldsetPaintInfo fieldset_paint_info(style, fieldset_size, fieldset_borders,
                                         legend_border_box);
-  LayoutRect contracted_rect(paint_rect);
+  PhysicalRect contracted_rect(paint_rect);
   contracted_rect.Contract(fieldset_paint_info.border_outsets);
 
   DrawingRecorder recorder(paint_info.context, fieldset_, paint_info.phase);
@@ -91,11 +91,11 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     GraphicsContext& graphics_context = paint_info.context;
     GraphicsContextStateSaver state_saver(graphics_context);
 
-    LayoutRect legend_cutout_rect = fieldset_paint_info.legend_cutout_rect;
-    legend_cutout_rect.MoveBy(paint_rect.Location());
+    PhysicalRect legend_cutout_rect = fieldset_paint_info.legend_cutout_rect;
+    legend_cutout_rect.Move(paint_rect.offset);
     graphics_context.ClipOut(PixelSnappedIntRect(legend_cutout_rect));
 
-    LayoutObject* layout_object = fieldset_.GetLayoutObject();
+    const LayoutObject* layout_object = fieldset_.GetLayoutObject();
     Node* node = layout_object->GeneratingNode();
     fragment_painter.PaintBorder(*fieldset_.GetLayoutObject(),
                                  layout_object->GetDocument(), node, paint_info,
@@ -107,7 +107,7 @@ void NGFieldsetPainter::PaintLegend(const NGPaintFragment& legend,
                                     const PaintInfo& paint_info) {
   // Unless the legend establishes its own self-painting layer, paint the legend
   // as part of the border phase, according to spec.
-  LayoutObject* legend_object = legend.GetLayoutObject();
+  const LayoutObject* legend_object = legend.GetLayoutObject();
   if (ToLayoutBox(legend_object)->HasSelfPaintingLayer())
     return;
   PaintInfo legend_paint_info = paint_info;

@@ -37,8 +37,7 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
       callback_registered_(false),
       web_data_service_(web_data_service),
       currently_enabled_(IsEnabled()) {
-  DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
-         type == syncer::AUTOFILL_WALLET_METADATA);
+  DCHECK(type == syncer::AUTOFILL_WALLET_METADATA);
   pref_registrar_.Init(sync_client->GetPrefService());
   pref_registrar_.Add(
       autofill::prefs::kAutofillWalletImportEnabled,
@@ -73,39 +72,6 @@ bool AutofillWalletDataTypeController::StartModels() {
   }
 
   return false;
-}
-
-void AutofillWalletDataTypeController::StopModels() {
-  DCHECK(CalledOnValidThread());
-
-  // This controller is used by two data types, we need to clear the data only
-  // once. (In particular, if AUTOFILL_WALLET_DATA is on USS (and thus doesn't
-  // use this controller), we *don't* want any ClearAllServerData call).
-  if (type() == syncer::AUTOFILL_WALLET_DATA) {
-    // This function is called when shutting down (nothing is changing), when
-    // sync is disabled completely, or when wallet sync is disabled. In the
-    // cases where wallet sync or sync in general is disabled, clear wallet
-    // cards and addresses copied from the server. This is different than other
-    // sync cases since this type of data reflects what's on the server rather
-    // than syncing local data between clients, so this extra step is required.
-
-    // CanSyncFeatureStart indicates if sync is currently enabled at all. The
-    // preferred data type indicates if wallet sync data is enabled, and
-    // currently_enabled_ indicates if the other prefs are enabled. All of these
-    // have to be enabled to sync wallet data.
-    if (!sync_service()->CanSyncFeatureStart() ||
-        !sync_service()->GetPreferredDataTypes().Has(type()) ||
-        !currently_enabled_) {
-      autofill::PersonalDataManager* pdm = pdm_provider_.Run();
-      if (pdm) {
-        int count = pdm->GetServerCreditCards().size() +
-                    pdm->GetServerProfiles().size() +
-                    (pdm->GetPaymentsCustomerData() == nullptr ? 0 : 1);
-        SyncWalletDataRecordClearedEntitiesCount(count);
-        pdm->ClearAllServerData();
-      }
-    }
-  }
 }
 
 bool AutofillWalletDataTypeController::ReadyForStart() const {

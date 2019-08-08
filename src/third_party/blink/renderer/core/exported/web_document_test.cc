@@ -35,7 +35,6 @@ using blink::frame_test_helpers::WebViewHelper;
 using blink::url_test_helpers::ToKURL;
 
 const char kDefaultOrigin[] = "https://example.test/";
-const char kManifestDummyFilePath[] = "manifest-dummy.html";
 const char kOriginTrialDummyFilePath[] = "origin-trial-dummy.html";
 const char kNoOriginTrialDummyFilePath[] = "simple_div.html";
 
@@ -51,9 +50,6 @@ class WebDocumentTest : public testing::Test {
 };
 
 void WebDocumentTest::SetUpTestCase() {
-  url_test_helpers::RegisterMockedURLLoad(
-      ToKURL(std::string(kDefaultOrigin) + kManifestDummyFilePath),
-      test::CoreTestDataPath(kManifestDummyFilePath));
   url_test_helpers::RegisterMockedURLLoad(
       ToKURL(std::string(kDefaultOrigin) + kNoOriginTrialDummyFilePath),
       test::CoreTestDataPath(kNoOriginTrialDummyFilePath));
@@ -130,50 +126,6 @@ TEST_F(WebDocumentTest, InsertAndRemoveStyleSheet) {
   const ComputedStyle& style_after_removing = body_element->ComputedStyleRef();
   ASSERT_EQ(Color(0, 0, 0),
             style_after_removing.VisitedDependentColor(GetCSSPropertyColor()));
-}
-
-TEST_F(WebDocumentTest, ManifestURL) {
-  LoadURL(std::string(kDefaultOrigin) + kManifestDummyFilePath);
-
-  WebDocument web_doc = TopWebDocument();
-  Document* document = TopDocument();
-  HTMLLinkElement* link_manifest = document->LinkManifest();
-
-  // No href attribute was set.
-  ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
-
-  // Set to some absolute url.
-  link_manifest->setAttribute(html_names::kHrefAttr,
-                              "http://example.com/manifest.json");
-  ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
-
-  // Set to some relative url.
-  link_manifest->setAttribute(html_names::kHrefAttr, "static/manifest.json");
-  ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
-}
-
-TEST_F(WebDocumentTest, ManifestUseCredentials) {
-  LoadURL(std::string(kDefaultOrigin) + kManifestDummyFilePath);
-
-  WebDocument web_doc = TopWebDocument();
-  Document* document = TopDocument();
-  HTMLLinkElement* link_manifest = document->LinkManifest();
-
-  // No crossorigin attribute was set so credentials shouldn't be used.
-  ASSERT_FALSE(link_manifest->FastHasAttribute(html_names::kCrossoriginAttr));
-  ASSERT_FALSE(web_doc.ManifestUseCredentials());
-
-  // Crossorigin set to a random string shouldn't trigger using credentials.
-  link_manifest->setAttribute(html_names::kCrossoriginAttr, "foobar");
-  ASSERT_FALSE(web_doc.ManifestUseCredentials());
-
-  // Crossorigin set to 'anonymous' shouldn't trigger using credentials.
-  link_manifest->setAttribute(html_names::kCrossoriginAttr, "anonymous");
-  ASSERT_FALSE(web_doc.ManifestUseCredentials());
-
-  // Crossorigin set to 'use-credentials' should trigger using credentials.
-  link_manifest->setAttribute(html_names::kCrossoriginAttr, "use-credentials");
-  ASSERT_TRUE(web_doc.ManifestUseCredentials());
 }
 
 // Origin Trial Policy which vends the test public key so that the token

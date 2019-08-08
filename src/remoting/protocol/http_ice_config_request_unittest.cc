@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/fake_oauth_token_getter.h"
@@ -67,7 +67,7 @@ class HttpIceConfigRequestTest : public testing::Test {
 
   ChromiumUrlRequestFactory url_request_factory_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<HttpIceConfigRequest> request_;
   std::unique_ptr<IceConfig> received_config_;
 };

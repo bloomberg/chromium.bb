@@ -1,4 +1,7 @@
 ########################################################################
+# Note: CMake support is community-based. The maintainers do not use CMake
+# internally.
+#
 # CMake build script for Google Test.
 #
 # To run the tests for Google Test itself on Linux, use 'make test' or
@@ -97,7 +100,7 @@ if (INSTALL_GTEST)
   set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated" CACHE INTERNAL "")
   set(cmake_files_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${cmake_package_name}")
   set(version_file "${generated_dir}/${cmake_package_name}ConfigVersion.cmake")
-  write_basic_package_version_file(${version_file} COMPATIBILITY AnyNewerVersion)
+  write_basic_package_version_file(${version_file} VERSION ${GOOGLETEST_VERSION} COMPATIBILITY AnyNewerVersion)
   install(EXPORT ${targets_export_name}
     NAMESPACE ${cmake_package_name}::
     DESTINATION ${cmake_files_install_dir})

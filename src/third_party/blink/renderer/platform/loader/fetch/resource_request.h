@@ -37,7 +37,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -226,8 +225,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   // Allows the request to be matched up with its app cache host.
-  int AppCacheHostID() const { return app_cache_host_id_; }
-  void SetAppCacheHostID(int id) { app_cache_host_id_ = id; }
+  const base::UnguessableToken& AppCacheHostID() const {
+    return app_cache_host_id_;
+  }
+  void SetAppCacheHostID(const base::UnguessableToken& id) {
+    app_cache_host_id_ = id;
+  }
 
   // True if request was user initiated.
   bool HasUserGesture() const { return has_user_gesture_; }
@@ -376,6 +379,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   bool IsAutomaticUpgrade() const { return is_automatic_upgrade_; }
 
+  bool ShouldAlsoUseFactoryBoundOriginForCors() const {
+    return should_also_use_factory_bound_origin_for_cors_;
+  }
+  void SetShouldAlsoUseFactoryBoundOriginForCors(bool value) {
+    should_also_use_factory_bound_origin_for_cors_ = value;
+  }
+
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
@@ -460,7 +470,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   int intra_priority_value_;
   int requestor_id_;
   int plugin_child_id_;
-  int app_cache_host_id_;
+  base::UnguessableToken app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;
@@ -490,6 +500,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_revalidating_ = false;
 
   bool is_automatic_upgrade_ = false;
+  bool should_also_use_factory_bound_origin_for_cors_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
   base::Optional<String> devtools_id_;

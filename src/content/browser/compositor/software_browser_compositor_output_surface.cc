@@ -21,10 +21,8 @@
 namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
-    std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback)
-    : BrowserCompositorOutputSurface(std::move(software_device),
-                                     update_vsync_parameters_callback),
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device)
+    : BrowserCompositorOutputSurface(std::move(software_device)),
       weak_factory_(this) {}
 
 SoftwareBrowserCompositorOutputSurface::
@@ -87,9 +85,14 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    const gfx::Size& pixel_size) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
+#if defined(USE_X11)
+  if (needs_swap_size_notifications_)
+    client_->DidSwapWithSize(pixel_size);
+#endif
   client_->DidReceivePresentationFeedback(
       gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
 }
@@ -98,7 +101,8 @@ void SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback(
     const base::TimeTicks timebase,
     const base::TimeDelta interval) {
   refresh_interval_ = interval;
-  update_vsync_parameters_callback_.Run(timebase, interval);
+  if (update_vsync_parameters_callback_)
+    update_vsync_parameters_callback_.Run(timebase, interval);
 }
 
 bool SoftwareBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane() const {
@@ -124,5 +128,12 @@ SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
 unsigned SoftwareBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }
+
+#if defined(USE_X11)
+void SoftwareBrowserCompositorOutputSurface::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  needs_swap_size_notifications_ = needs_swap_size_notifications;
+}
+#endif
 
 }  // namespace content

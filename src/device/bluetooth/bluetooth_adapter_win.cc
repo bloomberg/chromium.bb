@@ -59,7 +59,7 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter(
 // static
 bool BluetoothAdapterWin::UseNewBLEWinImplementation() {
   return base::FeatureList::IsEnabled(kNewBLEWinImplementation) &&
-         base::win::GetVersion() >= base::win::VERSION_WIN10;
+         base::win::GetVersion() >= base::win::Version::WIN10;
 }
 
 BluetoothAdapterWin::BluetoothAdapterWin(InitCallback init_callback)
@@ -320,19 +320,54 @@ bool BluetoothAdapterWin::SetPoweredImpl(bool powered) {
   return false;
 }
 
-// If the method is called when |discovery_status_| is DISCOVERY_STOPPING,
-// starting again is handled by BluetoothAdapterWin::DiscoveryStopped().
-void BluetoothAdapterWin::AddDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  if (discovery_status_ == DISCOVERING) {
-    num_discovery_listeners_++;
-    callback.Run();
+void BluetoothAdapterWin::UpdateFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  // If the status is DISCOVERY_STOPPING then we then we must wait for the OS
+  // to complete that operation before starting a new discovery session.
+  // A new call to StartScanWithFilter is queued to perform this operation.
+  // The |discovery_filter| parameter is currently ignored so nullptr can be
+  // passed instead.  This will be simplified when the RemoveDiscoverySession
+  // workflow is refactored in an upcoming CL.
+  if (discovery_status_ == DISCOVERY_STOPPING) {
+    on_stop_discovery_callbacks_.push_back(base::BindRepeating(
+        &BluetoothAdapterWin::StartScanWithFilter, base::Unretained(this),
+        nullptr, copyable_callback));
     return;
   }
-  on_start_discovery_callbacks_.push_back(
-      std::make_pair(callback, std::move(error_callback)));
+  DCHECK(discovery_status_ == DISCOVERING ||
+         discovery_status_ == DISCOVERY_STARTING);
+  if (discovery_status_ == DISCOVERING) {
+    num_discovery_listeners_++;
+    copyable_callback.Run(false, UMABluetoothDiscoverySessionOutcome::SUCCESS);
+    return;
+  }
+  on_start_discovery_callbacks_.push_back(std::make_pair(
+      base::BindRepeating(copyable_callback, false,
+                          UMABluetoothDiscoverySessionOutcome::SUCCESS),
+      base::BindOnce(copyable_callback, true)));
+}
+
+void BluetoothAdapterWin::StartScanWithFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+
+  // If the status is DISCOVERING already then this call was in the
+  // on_stop_discovery_callbacks_ queue and was called after another StartScan
+  // in the same queue. Now that the queue is already started we simply have to
+  // update the filter. This will be cleaned up completely when
+  // RemoveDiscoveryFilter is refactored.
+  if (discovery_status_ == DISCOVERING) {
+    UpdateFilter(std::move(discovery_filter), std::move(callback));
+    return;
+  }
+
+  on_start_discovery_callbacks_.push_back(std::make_pair(
+      base::BindRepeating(copyable_callback, false,
+                          UMABluetoothDiscoverySessionOutcome::SUCCESS),
+      base::BindOnce(copyable_callback, true)));
   MaybePostStartDiscoveryTask();
 }
 

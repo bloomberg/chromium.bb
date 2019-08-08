@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/wallpaper.mojom.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -45,7 +45,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -57,7 +56,6 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -83,8 +81,7 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
     return NULL;
   }
   policy::UserCloudPolicyManagerChromeOS* policy_manager =
-      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   if (!policy_manager) {
     ADD_FAILURE();
     return NULL;
@@ -132,7 +129,7 @@ void SetSystemSalt() {
 }  // namespace
 
 class WallpaperPolicyTest : public LoginManagerTest,
-                            public ash::mojom::WallpaperObserver {
+                            public ash::WallpaperControllerObserver {
  protected:
   WallpaperPolicyTest()
       : LoginManagerTest(true, true),
@@ -206,9 +203,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
+    WallpaperControllerClient::Get()->AddObserver(this);
 
     // Set up policy signing.
     user_policy_builders_[0] = GetUserPolicyBuilder(testUsers_[0]);
@@ -216,44 +211,29 @@ class WallpaperPolicyTest : public LoginManagerTest,
   }
 
   void TearDownOnMainThread() override {
+    WallpaperControllerClient::Get()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 
   // Obtain wallpaper image and return its average ARGB color.
   SkColor GetAverageWallpaperColor() {
     average_color_.reset();
-    WallpaperControllerClient::Get()->GetWallpaperImage(
-        base::BindOnce(&WallpaperPolicyTest::OnGetWallpaperImageCallback,
-                       weak_ptr_factory_.GetWeakPtr()));
-    while (!average_color_.has_value()) {
-      run_loop_.reset(new base::RunLoop);
-      run_loop_->Run();
-    }
-    return average_color_.value();
-  }
-
-  void OnGetWallpaperImageCallback(const gfx::ImageSkia& image) {
+    auto image = WallpaperControllerClient::Get()->GetWallpaperImage();
     const gfx::ImageSkiaRep& representation = image.GetRepresentation(1.0f);
     if (representation.is_null()) {
       ADD_FAILURE() << "No image representation.";
       average_color_ = SkColorSetARGB(0, 0, 0, 0);
     }
     average_color_ = ComputeAverageColor(representation.GetBitmap());
-    if (run_loop_)
-      run_loop_->Quit();
+    return average_color_.value();
   }
 
-  // ash::mojom::WallpaperObserver:
-  void OnWallpaperChanged(uint32_t image_id) override {
+  // ash::WallpaperControllerObserver:
+  void OnWallpaperChanged() override {
     ++wallpaper_change_count_;
     if (run_loop_)
       run_loop_->Quit();
   }
-
-  void OnWallpaperColorsChanged(
-      const std::vector<SkColor>& prominent_colors) override {}
-
-  void OnWallpaperBlurChanged(bool blurred) override {}
 
   // Runs the loop until wallpaper has changed to the expected color.
   void RunUntilWallpaperChangeToColor(const SkColor& expected_color) {
@@ -325,9 +305,6 @@ class WallpaperPolicyTest : public LoginManagerTest,
         true /* success */);
   }
 
-  ScopedStubInstallAttributes test_install_attributes_{
-      StubInstallAttributes::CreateCloudManaged("fake-domain", "fake-id")};
-
   base::FilePath test_data_dir_;
   std::unique_ptr<base::RunLoop> run_loop_;
   int wallpaper_change_count_ = 0;
@@ -336,12 +313,10 @@ class WallpaperPolicyTest : public LoginManagerTest,
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   std::vector<AccountId> testUsers_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
  private:
-  // The binding this instance uses to implement ash::mojom::WallpaperObserver.
-  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_{
-      this};
-
   // The average ARGB color of the current wallpaper.
   base::Optional<SkColor> average_color_;
 
@@ -350,8 +325,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
   DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
 
-// Disabled due to flakiness: https://crbug.com/873908.
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_PRE_SetResetClear) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
   RegisterUser(testUsers_[0]);
   RegisterUser(testUsers_[1]);
   StartupUtils::MarkOobeCompleted();

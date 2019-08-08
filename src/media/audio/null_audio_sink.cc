@@ -72,6 +72,8 @@ void NullAudioSink::Pause() {
   playing_ = false;
 }
 
+void NullAudioSink::Flush() {}
+
 bool NullAudioSink::SetVolume(double volume) {
   // Audio is always muted.
   return volume == 0.0;

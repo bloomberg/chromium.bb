@@ -16,7 +16,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//chrome/browser/conflicts:module_info",
+    "//chrome/browser/win/conflicts:module_info",
     "//chrome/common",
     "//components/variations",
     "//components/version_info",

@@ -7,10 +7,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "services/ws/public/cpp/property_type_converters.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -32,20 +29,8 @@ gfx::NativeWindow GetNativeWindowFromDisplayId(int64_t display_id) {
 // static
 void CrostiniAppRestartView::Show(const ash::ShelfID& id, int64_t display_id) {
   CrostiniAppRestartView* view = new CrostiniAppRestartView(id, display_id);
-  if (features::IsUsingWindowService()) {
-    // TODO(mash): Simplify specifying |display_id| via CreateDialogWidget, etc.
-    views::Widget* widget = new views::Widget;
-    views::Widget::InitParams params =
-        views::DialogDelegate::GetDialogWidgetInitParams(view, nullptr, nullptr,
-                                                         gfx::Rect());
-    params.mus_properties[ws::mojom::WindowManager::kDisplayId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(display_id);
-    widget->Init(params);
-  } else {
-    // TODO(timzheng): Remove this after single process mash is enabled.
-    views::DialogDelegate::CreateDialogWidget(
-        view, GetNativeWindowFromDisplayId(display_id), nullptr);
-  }
+  views::DialogDelegate::CreateDialogWidget(
+      view, GetNativeWindowFromDisplayId(display_id), nullptr);
   view->GetWidget()->Show();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_APP_RESTART);
 }

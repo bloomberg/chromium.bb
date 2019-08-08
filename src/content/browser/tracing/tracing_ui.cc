@@ -177,12 +177,6 @@ TracingUI::TracingUI(WebUI* web_ui)
       web_ui->GetWebContents()->GetBrowserContext();
 
   WebUIDataSource* source = WebUIDataSource::Create(kChromeUITracingHost);
-  source->UseGzip(base::BindRepeating([](const std::string& path) {
-    return path != "json/begin_recording" && path != "json/categories" &&
-           path != "json/end_recording_compressed" &&
-           path != "json/get_buffer_percent_full" &&
-           path != "json/get_buffer_status";
-  }));
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
   source->AddResourcePath("tracing.js", IDR_TRACING_JS);

@@ -126,7 +126,7 @@ StateManagerGL::StateManagerGL(const FunctionsGL *functions,
       mPathStencilFunc(GL_ALWAYS),
       mPathStencilRef(0),
       mPathStencilMask(std::numeric_limits<GLuint>::max()),
-      mIsMultiviewEnabled(extensions.multiview2),
+      mIsMultiviewEnabled(extensions.multiview || extensions.multiview2),
       mProvokingVertex(GL_LAST_VERTEX_CONVENTION),
       mLocalDirtyBits()
 {
@@ -945,15 +945,16 @@ void StateManagerGL::setAttributeCurrentData(size_t index,
         {
             case gl::VertexAttribType::Float:
                 mFunctions->vertexAttrib4fv(static_cast<GLuint>(index),
-                                            mVertexAttribCurrentValues[index].FloatValues);
+                                            mVertexAttribCurrentValues[index].Values.FloatValues);
                 break;
             case gl::VertexAttribType::Int:
                 mFunctions->vertexAttribI4iv(static_cast<GLuint>(index),
-                                             mVertexAttribCurrentValues[index].IntValues);
+                                             mVertexAttribCurrentValues[index].Values.IntValues);
                 break;
             case gl::VertexAttribType::UnsignedInt:
-                mFunctions->vertexAttribI4uiv(static_cast<GLuint>(index),
-                                              mVertexAttribCurrentValues[index].UnsignedIntValues);
+                mFunctions->vertexAttribI4uiv(
+                    static_cast<GLuint>(index),
+                    mVertexAttribCurrentValues[index].Values.UnsignedIntValues);
                 break;
             default:
                 UNREACHABLE();

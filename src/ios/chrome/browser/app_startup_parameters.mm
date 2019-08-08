@@ -89,9 +89,6 @@
     case FOCUS_OMNIBOX:
       [description appendString:@", should focus omnibox"];
       break;
-    case SEARCH_TEXT:
-      [description appendString:@", should search for text"];
-      break;
     default:
       break;
   }

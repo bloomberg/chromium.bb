@@ -15,7 +15,65 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper_types.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "components/user_manager/user_names.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/image/image_skia.h"
+#endif  // OS_CHROMEOS
+
 static const char kTraceDir[] = "trace-dir";
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+// Watches if the wallpaper has been changed and runs a passed callback if so.
+class TestWallpaperObserver : public ash::WallpaperControllerObserver {
+ public:
+  explicit TestWallpaperObserver(base::OnceClosure closure)
+      : closure_(std::move(closure)) {
+    WallpaperControllerClient::Get()->AddObserver(this);
+  }
+
+  ~TestWallpaperObserver() override {
+    WallpaperControllerClient::Get()->RemoveObserver(this);
+  }
+
+  // ash::WallpaperControllerObserver:
+  void OnWallpaperChanged() override { std::move(closure_).Run(); }
+
+ private:
+  base::OnceClosure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWallpaperObserver);
+};
+
+// Creates a high resolution wallpaper and sets it as the current wallpaper as
+// the wallpaper affects many UI tests.
+void CreateAndSetWallpaper() {
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(display_size.width(), display_size.height(),
+                        /*isOpaque=*/true);
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorGREEN);
+  gfx::ImageSkia image(gfx::ImageSkiaRep(std::move(bitmap), 1.f));
+
+  base::RunLoop run_loop;
+  TestWallpaperObserver observer(run_loop.QuitClosure());
+  WallpaperControllerClient::Get()->SetCustomWallpaper(
+      user_manager::StubAccountId(), /*wallpaper_files_id=*/"dummyid",
+      /*file_name=*/"dummyfilename", ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      image, /*preview_mode=*/false);
+  run_loop.Run();
+}
+#endif  // OS_CHROMEOS
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // PerformanceTest
@@ -30,7 +88,9 @@ PerformanceTest::PerformanceTest()
   }
 }
 
-PerformanceTest::~PerformanceTest() = default;
+PerformanceTest::~PerformanceTest() {
+  DCHECK(setup_called_);
+}
 
 std::vector<std::string> PerformanceTest::GetUMAHistogramNames() const {
   return {};
@@ -41,6 +101,7 @@ const std::string PerformanceTest::GetTracingCategories() const {
 }
 
 void PerformanceTest::SetUpOnMainThread() {
+  setup_called_ = true;
   InProcessBrowserTest::SetUpOnMainThread();
   if (!should_start_trace_)
     return;
@@ -102,6 +163,13 @@ bool PerformanceTest::HasHistogram(const std::string& name) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // UIPerformanceTest
+
+void UIPerformanceTest::SetUpOnMainThread() {
+  PerformanceTest::SetUpOnMainThread();
+#if defined(OS_CHROMEOS)
+  CreateAndSetWallpaper();
+#endif  // OS_CHROMEOS
+}
 
 const std::string UIPerformanceTest::GetTracingCategories() const {
   return "benchmark,cc,viz,input,latency,gpu,rail,toplevel,ui,views,viz";

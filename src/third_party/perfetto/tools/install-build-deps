@@ -170,13 +170,19 @@ BUILD_DEPS_HOST = [
   # These dependencies are for libunwindstack, which is used by src/profiling.
   ('buildtools/android-core',
    'https://android.googlesource.com/platform/system/core.git',
-   '9d3310c019839ec342b5c0712f3ba59cfd5ca4a0',
+   '09070afd38466fc0e84aa58b90a336fd4b3f56a0',
    'all'
   ),
 
   ('buildtools/lzma',
    'https://android.googlesource.com/platform/external/lzma.git',
    '7851dce6f4ca17f5caa1c93a4e0a45686b1d56c3',
+   'all'
+  ),
+
+  ('buildtools/zlib',
+   'https://android.googlesource.com/platform/external/zlib.git',
+   'dfa0646a03b4e1707469e04dc931b09774968fe6',
    'all'
   ),
 
@@ -188,8 +194,8 @@ BUILD_DEPS_HOST = [
 
   # Example traces for regression tests.
   ('buildtools/test_data.zip',
-   'https://storage.googleapis.com/perfetto/test-data-20190403-122506.zip',
-   '5092cabf96cb3fc9335274a296d34cc2ddefa874',
+   'https://storage.googleapis.com/perfetto/test-data-20190423-131328.zip',
+   '263db97612203fd0dd047edd54eaa7007e32bf91',
    'all',
   ),
 

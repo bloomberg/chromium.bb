@@ -20,9 +20,10 @@ namespace {
 
 SafeJsonParser* CreateTestingJsonParser(
     const std::string& unsafe_json,
-    const SafeJsonParser::SuccessCallback& success_callback,
-    const SafeJsonParser::ErrorCallback& error_callback) {
-  return new TestingJsonParser(unsafe_json, success_callback, error_callback);
+    SafeJsonParser::SuccessCallback success_callback,
+    SafeJsonParser::ErrorCallback error_callback) {
+  return new TestingJsonParser(unsafe_json, std::move(success_callback),
+                               std::move(error_callback));
 }
 
 }  // namespace
@@ -36,27 +37,28 @@ TestingJsonParser::ScopedFactoryOverride::~ScopedFactoryOverride() {
 }
 
 TestingJsonParser::TestingJsonParser(const std::string& unsafe_json,
-                                     const SuccessCallback& success_callback,
-                                     const ErrorCallback& error_callback)
+                                     SuccessCallback success_callback,
+                                     ErrorCallback error_callback)
     : unsafe_json_(unsafe_json),
-      success_callback_(success_callback),
-      error_callback_(error_callback) {}
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 TestingJsonParser::~TestingJsonParser() {}
 
 void TestingJsonParser::Start() {
-  int error_code;
-  std::string error;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          unsafe_json_, base::JSON_PARSE_RFC, &error_code, &error);
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(unsafe_json_,
+                                                    base::JSON_PARSE_RFC);
 
   // Run the callback asynchronously. Post the delete task first, so that the
   // completion callbacks may quit the run loop without leaking |this|.
   base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, value ? base::Bind(success_callback_, base::Passed(&value))
-                       : base::Bind(error_callback_, error));
+      FROM_HERE, value_with_error.value
+                     ? base::BindOnce(std::move(success_callback_),
+                                      std::move(*value_with_error.value))
+                     : base::BindOnce(std::move(error_callback_),
+                                      value_with_error.error_message));
 }
 
 }  // namespace data_decoder

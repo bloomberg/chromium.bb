@@ -8,23 +8,31 @@ import static java.lang.Math.min;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.native_page.NativePage;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.usage_stats.SuspendedTab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +72,17 @@ public class TabContentManager {
      */
     private static int getIntegerResourceWithOverride(Context context, int resourceId,
             String commandLineSwitch) {
-        int val = context.getResources().getInteger(resourceId);
+        int val = -1;
+        // TODO(crbug/959054): Convert this to Finch config.
+        if (FeatureUtilities.isGridTabSwitcherEnabled()) {
+            // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
+            // See crbug.com/959054 for more details.
+            if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;
+            if (resourceId == R.integer.default_approximation_thumbnail_cache_size) val = 8;
+            assert val != -1;
+        } else {
+            val = context.getResources().getInteger(resourceId);
+        }
         String switchCount = CommandLine.getInstance().getSwitchValue(commandLineSwitch);
         if (switchCount != null) {
             int count = Integer.parseInt(switchCount);
@@ -101,6 +119,7 @@ public class TabContentManager {
 
         float thumbnailScale = 1.f;
         boolean useApproximationThumbnails;
+        boolean saveJpegThumbnails = FeatureUtilities.isGridTabSwitcherEnabled();
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(context);
         float deviceDensity = display.getDipScale();
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
@@ -119,9 +138,9 @@ public class TabContentManager {
 
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
-        mNativeTabContentManager = nativeInit(defaultCacheSize,
-                approximationCacheSize, compressionQueueMaxSize, writeQueueMaxSize,
-                useApproximationThumbnails);
+        mNativeTabContentManager =
+                nativeInit(defaultCacheSize, approximationCacheSize, compressionQueueMaxSize,
+                        writeQueueMaxSize, useApproximationThumbnails, saveJpegThumbnails);
     }
 
     /**
@@ -175,24 +194,29 @@ public class TabContentManager {
         mListeners.remove(listener);
     }
 
-    private Bitmap readbackNativePage(final Tab tab, float scale) {
-        Bitmap bitmap = null;
-        NativePage page = tab.getNativePage();
-        if (page == null) {
-            return bitmap;
+    private Bitmap readbackNativeBitmap(final Tab tab, float scale) {
+        NativePage nativePage = tab.getNativePage();
+        boolean isNativeViewShowing = isNativeViewShowing(tab);
+        if (nativePage == null && !isNativeViewShowing) {
+            return null;
         }
 
-        View viewToDraw = page.getView();
+        View viewToDraw = isNativeViewShowing ? tab.getContentView() : nativePage.getView();
         if (viewToDraw == null || viewToDraw.getWidth() == 0 || viewToDraw.getHeight() == 0) {
-            return bitmap;
+            return null;
         }
 
-        if (page instanceof InvalidationAwareThumbnailProvider) {
-            if (!((InvalidationAwareThumbnailProvider) page).shouldCaptureThumbnail()) {
+        if (nativePage != null && nativePage instanceof InvalidationAwareThumbnailProvider) {
+            if (!((InvalidationAwareThumbnailProvider) nativePage).shouldCaptureThumbnail()) {
                 return null;
             }
         }
 
+        return readbackNativeView(viewToDraw, scale, nativePage);
+    }
+
+    private Bitmap readbackNativeView(View viewToDraw, float scale, NativePage nativePage) {
+        Bitmap bitmap = null;
         float overlayTranslateY = mContentOffsetProvider.getOverlayTranslateY();
 
         float leftMargin = 0.f;
@@ -205,8 +229,8 @@ public class TabContentManager {
 
         try {
             bitmap = Bitmap.createBitmap(
-                    (int) ((viewToDraw.getWidth() + leftMargin) * mThumbnailScale),
-                    (int) ((viewToDraw.getHeight() + topMargin - overlayTranslateY)
+                    (int) ((viewToDraw.getMeasuredWidth() + leftMargin) * mThumbnailScale),
+                    (int) ((viewToDraw.getMeasuredHeight() + topMargin - overlayTranslateY)
                             * mThumbnailScale),
                     Bitmap.Config.ARGB_8888);
         } catch (OutOfMemoryError ex) {
@@ -216,8 +240,8 @@ public class TabContentManager {
         Canvas c = new Canvas(bitmap);
         c.scale(scale, scale);
         c.translate(leftMargin, -overlayTranslateY + topMargin);
-        if (page instanceof InvalidationAwareThumbnailProvider) {
-            ((InvalidationAwareThumbnailProvider) page).captureThumbnail(c);
+        if (nativePage != null && nativePage instanceof InvalidationAwareThumbnailProvider) {
+            ((InvalidationAwareThumbnailProvider) nativePage).captureThumbnail(c);
         } else {
             viewToDraw.draw(c);
         }
@@ -236,75 +260,124 @@ public class TabContentManager {
     }
 
     /**
-     * Call to get a thumbnail for a given tab from disk through a {@link Callback}. If there is
+     * Call to get a thumbnail for a given tab through a {@link Callback}. If there is
      * no up-to-date thumbnail on disk for the given tab, callback returns null.
-     * Currently this reads a compressed file from disk and sends the Bitmap over the
-     * JNI boundary after decompressing. In its current form, should be used for experimental
-     * purposes only.
-     * TODO(yusufo): Change the plumbing so that at the least a {@link android.net.Uri} is sent
-     * over JNI of an uncompressed file on disk.
      * @param tab The tab to get the thumbnail for.
-     * @param callback The callback to send the {@link Bitmap} with.
+     * @param callback The callback to send the {@link Bitmap} with. Can be called up to twice when
+     *                 {@code forceUpdate}; otherwise always called exactly once.
+     * @param forceUpdate Whether to obtain the thumbnail from the live content.
+     * @param writeBack When {@code forceUpdate}, whether to write the thumbnail to cache.
      */
-    public void getTabThumbnailWithCallback(
-            Tab tab, Callback<Bitmap> callback, boolean forceUpdate) {
+    public void getTabThumbnailWithCallback(@NonNull Tab tab, @NonNull Callback<Bitmap> callback,
+            boolean forceUpdate, boolean writeBack) {
         if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
 
-        if (forceUpdate) {
-            cacheTabThumbnail(tab, (bitmap) -> {
+        if (!forceUpdate) {
+            assert !writeBack : "writeBack is ignored if not forceUpdate";
+            getTabThumbnailFromDisk(tab, callback);
+            return;
+        }
+
+        // Reading thumbnail from disk is faster than taking screenshot from live Tab, so fetch
+        // that first even if |forceUpdate|.
+        getTabThumbnailFromDisk(tab, (diskBitmap) -> {
+            if (diskBitmap != null) callback.onResult(diskBitmap);
+
+            captureThumbnail(tab, writeBack, (bitmap) -> {
+                // Null check to avoid having a Bitmap from getTabThumbnailFromDisk() but
+                // cleared here.
+                // If invalidation is not needed, readbackNativeBitmap() might not do anything and
+                // send back null.
+                if (bitmap != null) {
+                    callback.onResult(bitmap);
+                }
+            });
+        });
+    }
+
+    private void getTabThumbnailFromDisk(@NonNull Tab tab, @NonNull Callback<Bitmap> callback) {
+        // Try JPEG thumbnail first before using the more costly nativeGetEtc1TabThumbnail.
+        new AsyncTask<Bitmap>() {
+            @Override
+            public Bitmap doInBackground() {
+                File file = new File(PathUtils.getThumbnailCacheDirectory(), tab.getId() + ".jpeg");
+                if (!file.isFile()) return null;
+                return BitmapFactory.decodeFile(file.getPath());
+            }
+
+            @Override
+            public void onPostExecute(Bitmap bitmap) {
                 if (bitmap != null) {
                     callback.onResult(bitmap);
                     return;
                 }
-                // If invalidation is not needed, cacheTabThumbnail() might not do anything, so we
-                // need to fall back to reading from disk.
-                nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
-            });
-        } else {
-            nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
-        }
+                if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
+                nativeGetEtc1TabThumbnail(mNativeTabContentManager, tab.getId(), callback);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
      * Cache the content of a tab as a thumbnail.
      * @param tab The tab whose content we will cache.
      */
-    public void cacheTabThumbnail(final Tab tab) {
-        cacheTabThumbnail(tab, null);
+    public void cacheTabThumbnail(@NonNull final Tab tab) {
+        if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
+
+        captureThumbnail(tab, true, null);
+    }
+
+    private Bitmap cacheNativeTabThumbnail(final Tab tab) {
+        assert tab.getNativePage() != null || isNativeViewShowing(tab);
+
+        Bitmap nativeBitmap = readbackNativeBitmap(tab, mThumbnailScale);
+        if (nativeBitmap == null) return null;
+        nativeCacheTabWithBitmap(mNativeTabContentManager, tab, nativeBitmap, mThumbnailScale);
+        return nativeBitmap;
     }
 
     /**
-     * Cache the content of a tab as a thumbnail.
-     * @param tab The tab whose content we will cache.
+     * Capture the content of a tab as a thumbnail.
+     * @param tab The tab whose content we will capture.
+     * @param writeToCache Whether write the captured thumbnail to cache. If not, a downsampled
+     *                     thumbnail is captured instead.
      * @param callback The callback to send the {@link Bitmap} with.
      */
-    public void cacheTabThumbnail(final Tab tab, @Nullable Callback<Bitmap> callback) {
-        if (mNativeTabContentManager != 0 && mSnapshotsEnabled) {
-            if (tab.getNativePage() != null) {
-                Bitmap nativePageBitmap = readbackNativePage(tab, mThumbnailScale);
-                if (nativePageBitmap == null) {
-                    if (callback != null) callback.onResult(null);
-                    return;
-                }
-                nativeCacheTabWithBitmap(mNativeTabContentManager, tab, nativePageBitmap,
-                        mThumbnailScale);
-                if (callback != null) {
-                    // In portrait mode, we want to show thumbnails in squares.
-                    // Therefore, the thumbnail saved in portrait mode needs to be cropped to
-                    // a square, or it would become too tall and break the layout.
-                    Matrix matrix = new Matrix();
-                    matrix.setScale(0.5f, 0.5f);
-                    Bitmap resized =
-                            Bitmap.createBitmap(nativePageBitmap, 0, 0, nativePageBitmap.getWidth(),
-                                    min(nativePageBitmap.getWidth(), nativePageBitmap.getHeight()),
-                                    matrix, true);
-                    callback.onResult(resized);
-                }
-                nativePageBitmap.recycle();
-            } else {
-                if (tab.getWebContents() == null) return;
-                nativeCacheTab(mNativeTabContentManager, tab, mThumbnailScale, callback);
+    private void captureThumbnail(
+            @NonNull final Tab tab, boolean writeToCache, @Nullable Callback<Bitmap> callback) {
+        assert mNativeTabContentManager != 0;
+        assert mSnapshotsEnabled;
+
+        if (tab.getNativePage() != null || isNativeViewShowing(tab)) {
+            final float downsamplingScale = 0.5f;
+            // If we use readbackNativeBitmap() with a downsampled scale and not saving it through
+            // nativeCacheTabWithBitmap(), the logic of InvalidationAwareThumbnailProvider
+            // might prevent captureThumbnail() from getting the latest thumbnail.
+            // Therefore, we have to also call cacheNativeTabThumbnail(), and do the downsampling
+            // here ourselves. This is less efficient than capturing a downsampled bitmap, but
+            // the performance here is not the bottleneck.
+            Bitmap bitmap = cacheNativeTabThumbnail(tab);
+            if (callback == null) return;
+            if (bitmap == null) {
+                callback.onResult(null);
+                return;
             }
+            // In portrait mode, we want to show thumbnails in squares.
+            // Therefore, the thumbnail saved in portrait mode needs to be cropped to
+            // a square, or it would become too tall and break the layout.
+            Matrix matrix = new Matrix();
+            matrix.setScale(downsamplingScale, downsamplingScale);
+            Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                    min(bitmap.getWidth(), bitmap.getHeight()), matrix, true);
+            callback.onResult(resized);
+        } else {
+            if (tab.getWebContents() == null) return;
+            // If we don't have to write the thumbnail back to the cache, we can use the faster
+            // path of capturing a downsampled copy.
+            // This faster path is essential to Tab-to-Grid animation to be smooth.
+            final float downsamplingScale = writeToCache ? 1 : 0.5f;
+            nativeCaptureThumbnail(mNativeTabContentManager, tab,
+                    mThumbnailScale * downsamplingScale, writeToCache, callback);
         }
     }
 
@@ -321,7 +394,7 @@ public class TabContentManager {
 
     /**
      * Invalidate a thumbnail of the tab whose id is |id|.
-     * @param tabId The id of the {@link Tab} thumbnail to check.
+     * @param id The id of the {@link Tab} thumbnail to check.
      * @param url   The current URL of the {@link Tab}.
      */
     public void invalidateTabThumbnail(int id, String url) {
@@ -366,14 +439,19 @@ public class TabContentManager {
         }
     }
 
+    private boolean isNativeViewShowing(Tab tab) {
+        return tab != null && (SadTab.isShowing(tab) || SuspendedTab.isShowing(tab));
+    }
+
     // Class Object Methods
     private native long nativeInit(int defaultCacheSize, int approximationCacheSize,
-            int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail);
+            int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail,
+            boolean saveJpegThumbnails);
     private native void nativeAttachTab(long nativeTabContentManager, Tab tab, int tabId);
     private native void nativeDetachTab(long nativeTabContentManager, Tab tab, int tabId);
     private native boolean nativeHasFullCachedThumbnail(long nativeTabContentManager, int tabId);
-    private native void nativeCacheTab(long nativeTabContentManager, Object tab,
-            float thumbnailScale, Callback<Bitmap> callback);
+    private native void nativeCaptureThumbnail(long nativeTabContentManager, Object tab,
+            float thumbnailScale, boolean writeToCache, Callback<Bitmap> callback);
     private native void nativeCacheTabWithBitmap(long nativeTabContentManager, Object tab,
             Object bitmap, float thumbnailScale);
     private native void nativeInvalidateIfChanged(long nativeTabContentManager, int tabId,
@@ -381,7 +459,7 @@ public class TabContentManager {
     private native void nativeUpdateVisibleIds(
             long nativeTabContentManager, int[] priority, int primaryTabId);
     private native void nativeRemoveTabThumbnail(long nativeTabContentManager, int tabId);
-    private native void nativeGetTabThumbnailWithCallback(
+    private native void nativeGetEtc1TabThumbnail(
             long nativeTabContentManager, int tabId, Callback<Bitmap> callback);
     private static native void nativeDestroy(long nativeTabContentManager);
 }

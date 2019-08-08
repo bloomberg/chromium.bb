@@ -170,6 +170,33 @@
       <message desc="Label for for grid-type: 4x4." name="IDS_LABEL_GRID_4X4">
         4 x 4
       </message>
+      <message desc="Label for the button of camera-resolution options." name="IDS_CAMERA_RESOLUTION_BUTTON">
+        Camera resolution
+      </message>
+      <message desc="Label for the button of photo-resolution options." name="IDS_PHOTO_RESOLUTION_BUTTON">
+        Photo resolution
+      </message>
+      <message desc="Label for the button of video-resolution options." name="IDS_VIDEO_RESOLUTION_BUTTON">
+        Video resolution
+      </message>
+      <message desc="Label for front camera." name="IDS_LABEL_FRONT_CAMERA">
+        Front camera
+      </message>
+      <message desc="Label for back camera." name="IDS_LABEL_BACK_CAMERA">
+        Back camera
+      </message>
+      <message desc="Label for external camera." name="IDS_LABEL_EXTERNAL_CAMERA">
+        External camera
+      </message>
+      <message desc="Label for photo resolution options of specific resolution." name="IDS_LABEL_PHOTO_RESOLUTION">
+        (<ph name="aspect_ratio_width">$1<ex>16</ex></ph>:<ph name="aspect_ratio_height">$2<ex>9</ex></ph>) <ph name="megapixel">$3<ex>0.9</ex></ph> mega pixel
+      </message>
+      <message desc="Label for detail photo resolution options of specific resolution." name="IDS_LABEL_DETAIL_PHOTO_RESOLUTION">
+        (<ph name="aspect_ratio_width">$1<ex>16</ex></ph>:<ph name="aspect_ratio_height">$2<ex>9</ex></ph> - <ph name="width">$3<ex>1920</ex></ph>x<ph name="height">$4<ex>1080</ex></ph>) <ph name="megapixel">$5<ex>0.9</ex></ph> mega pixel
+      </message>
+      <message desc="Label for video resolution options of specific resolution." name="IDS_LABEL_VIDEO_RESOLUTION">
+        HD <ph name="height">$1<ex>720</ex></ph>p (<ph name="width">$2<ex>1280</ex></ph>:<ph name="height">$1<ex>720</ex></ph>)
+      </message>
       <message desc="Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in." name="IDS_DELETE_CONFIRMATION_MSG">
         Do you really want to remove <ph name="file">$1<ex>IMG_20160520_000000.jpg</ex></ph>?
       </message>
@@ -272,6 +299,18 @@
       </message>
       <message desc="Label for switch to take portrait photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
         Portrait
+      </message>
+      <message desc="Title of banner shown for introducing new camera App UI." name="IDS_BANNER_TITLE">
+        A whole new look
+      </message>
+      <message desc="Message in the banner shown for introducing new camera App UI." name="IDS_BANNER_MSG">
+        Your camera now supports new modes and your photos and videos will be available under your Downloads folders.
+      </message>
+      <message desc="Label for close introducing new camera App UI banner button." name="IDS_BANNER_CLOSE_BUTTON">
+        Close
+      </message>
+      <message desc="Label for learn more about new camera App UI button." name="IDS_BANNER_LEARN_MORE_BUTTON">
+        Learn more
       </message>
     </messages>
   </release>

@@ -11,17 +11,11 @@
 namespace base {
 namespace internal {
 
-size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
-  const bool is_background =
-      traits.priority() == base::TaskPriority::BEST_EFFORT;
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-  return is_background ? BACKGROUND : FOREGROUND;
-}
+namespace {
 
-bool CanUseBackgroundPriorityForSchedulerWorker() {
+bool CanUseBackgroundPriorityForWorkerThreadImpl() {
   // When Lock doesn't handle multiple thread priorities, run all
-  // SchedulerWorker with a normal priority to avoid priority inversion when a
+  // WorkerThread with a normal priority to avoid priority inversion when a
   // thread running with a normal priority tries to acquire a lock held by a
   // thread running with a background priority.
   if (!Lock::HandlesMultipleThreadPriorities())
@@ -29,7 +23,7 @@ bool CanUseBackgroundPriorityForSchedulerWorker() {
 
 #if !defined(OS_ANDROID)
   // When thread priority can't be increased to NORMAL, run all threads with a
-  // NORMAL priority to avoid priority inversions on shutdown (ThreadPool
+  // NORMAL priority to avoid priority inversions on shutdown (ThreadPoolImpl
   // increases BACKGROUND threads priority to NORMAL on shutdown while resolving
   // remaining shutdown blocking tasks).
   //
@@ -39,6 +33,14 @@ bool CanUseBackgroundPriorityForSchedulerWorker() {
 #endif  // defined(OS_ANDROID)
 
   return true;
+}
+
+}  // namespace
+
+bool CanUseBackgroundPriorityForWorkerThread() {
+  static const bool can_use_background_priority_for_worker_thread =
+      CanUseBackgroundPriorityForWorkerThreadImpl();
+  return can_use_background_priority_for_worker_thread;
 }
 
 }  // namespace internal

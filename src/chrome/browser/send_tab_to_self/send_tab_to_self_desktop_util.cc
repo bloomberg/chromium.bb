@@ -17,6 +17,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +28,10 @@
 
 namespace send_tab_to_self {
 
-void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
+void CreateNewEntry(content::WebContents* tab,
+                    const std::string& target_device_name,
+                    const std::string& target_device_guid,
+                    const GURL& link_url) {
   content::NavigationEntry* navigation_entry =
       tab->GetController().GetLastCommittedEntry();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
@@ -35,8 +39,6 @@ void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
   std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
   base::Time navigation_time = navigation_entry->GetTimestamp();
 
-  // TODO(crbug/946804) Add target device.
-  std::string target_device;
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel();
@@ -51,16 +53,28 @@ void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
   const SendTabToSelfEntry* entry;
   if (link_url.is_valid()) {
     // When share a link.
-    entry = model->AddEntry(link_url, "", base::Time(), target_device);
+    entry = model->AddEntry(link_url, "", base::Time(), target_device_guid);
   } else {
     // When share a tab.
-    entry = model->AddEntry(url, title, navigation_time, target_device);
+    entry = model->AddEntry(url, title, navigation_time, target_device_guid);
   }
   if (entry) {
-    DesktopNotificationHandler(profile).DisplaySendingConfirmation(*entry);
+    DesktopNotificationHandler(profile).DisplaySendingConfirmation(
+        *entry, target_device_name);
   } else {
     DesktopNotificationHandler(profile).DisplayFailureMessage(url);
   }
+}
+
+void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(GetValidDeviceCount(profile) == 1);
+  std::map<std::string, TargetDeviceInfo> map =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+          ->GetSendTabToSelfModel()
+          ->GetTargetDeviceNameToCacheInfoMap();
+  CreateNewEntry(tab, map.begin()->first, map.begin()->second.cache_guid,
+                 link_url);
 }
 
 gfx::ImageSkia* GetImageSkia() {
@@ -109,10 +123,36 @@ const gfx::Image GetImageForNotification() {
 
   return gfx::Image();
 }
-void RecordSendTabToSelfClickResult(std::string context_menu,
+void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state) {
-  base::UmaHistogramEnumeration(
-      "SendTabToSelf." + context_menu + ".ClickResult", state);
+  base::UmaHistogramEnumeration("SendTabToSelf." + entry_point + ".ClickResult",
+                                state);
+}
+
+void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
+                                    const int& device_count) {
+  base::UmaHistogramCounts100("SendTabToSelf." + entry_point + ".DeviceCount",
+                              device_count);
+}
+
+int GetValidDeviceCount(Profile* profile) {
+  SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile);
+  DCHECK(service);
+  SendTabToSelfModel* model = service->GetSendTabToSelfModel();
+  DCHECK(model);
+  std::map<std::string, TargetDeviceInfo> map =
+      model->GetTargetDeviceNameToCacheInfoMap();
+  return map.size();
+}
+
+std::string GetSingleTargetDeviceName(Profile* profile) {
+  DCHECK(GetValidDeviceCount(profile) == 1);
+  return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+      ->GetSendTabToSelfModel()
+      ->GetTargetDeviceNameToCacheInfoMap()
+      .begin()
+      ->first;
 }
 
 }  // namespace send_tab_to_self

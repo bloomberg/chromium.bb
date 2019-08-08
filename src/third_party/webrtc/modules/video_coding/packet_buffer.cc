@@ -125,7 +125,7 @@ bool PacketBuffer::InsertPacket(VCMPacket* packet) {
 
     int64_t now_ms = clock_->TimeInMilliseconds();
     last_received_packet_ms_ = now_ms;
-    if (packet->frameType == VideoFrameType::kVideoFrameKey)
+    if (packet->video_header.frame_type == VideoFrameType::kVideoFrameKey)
       last_received_keyframe_packet_ms_ = now_ms;
 
     found_frames = FindFrames(seq_num);
@@ -377,17 +377,20 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
         const size_t first_packet_index = start_seq_num % size_;
         RTC_CHECK_LT(first_packet_index, size_);
         if (is_h264_keyframe) {
-          data_buffer_[first_packet_index].frameType =
+          data_buffer_[first_packet_index].video_header.frame_type =
               VideoFrameType::kVideoFrameKey;
         } else {
-          data_buffer_[first_packet_index].frameType =
+          data_buffer_[first_packet_index].video_header.frame_type =
               VideoFrameType::kVideoFrameDelta;
         }
 
-        // If this is not a keyframe, make sure there are no gaps in the
-        // packet sequence numbers up until this point.
-        if (!is_h264_keyframe && missing_packets_.upper_bound(start_seq_num) !=
-                                     missing_packets_.begin()) {
+        // With IPPP, if this is not a keyframe, make sure there are no gaps
+        // in the packet sequence numbers up until this point.
+        const uint8_t h264tid =
+            data_buffer_[start_index].video_header.frame_marking.temporal_id;
+        if (h264tid == kNoTemporalIdx && !is_h264_keyframe
+            && missing_packets_.upper_bound(start_seq_num)
+            != missing_packets_.begin()) {
           uint16_t stop_index = (index + 1) % size_;
           while (start_index != stop_index) {
             sequence_buffer_[start_index].frame_created = false;

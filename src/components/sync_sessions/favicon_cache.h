@@ -78,19 +78,19 @@ class FaviconCache : public syncer::SyncableService,
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // If a valid favicon for the icon at |favicon_url| is found, fills
-  // |favicon_png| with the png-encoded image and returns true. Else, returns
-  // false.
-  bool GetSyncedFaviconForFaviconURL(
-      const GURL& favicon_url,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const;
+  // If a valid favicon for the icon at |favicon_url| is found, returns a
+  // pointer to the png-encoded image. Otherwise, returns nullptr.
+  scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForFaviconURL(
+      const GURL& favicon_url) const;
 
-  // If a valid favicon for the icon associated with |page_url| is found, fills
-  // |favicon_png| with the png-encoded image and returns true. Else, returns
-  // false.
-  bool GetSyncedFaviconForPageURL(
-      const GURL& page_url,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const;
+  // Returns the value associated with |page_url| in |page_favicon_map_| if one
+  // exists, otherwise returns an empty URL.
+  GURL GetIconUrlForPageUrl(const GURL& page_url) const;
+
+  // If a valid favicon for the icon associated with |page_url| is found,
+  // returns a pointer to the png-encoded image. Otherwise, returns nullptr.
+  scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
+      const GURL& page_url) const;
 
   // Load the favicon for |page_url|. Will create a new sync node or update
   // an existing one as necessary, and update the last visit time with |mtime|,

@@ -38,12 +38,19 @@ class MockBluetoothGattDescriptor : public BluetoothRemoteGattDescriptor {
   MOCK_CONST_METHOD0(GetCharacteristic, BluetoothRemoteGattCharacteristic*());
   MOCK_CONST_METHOD0(GetPermissions,
                      BluetoothRemoteGattCharacteristic::Permissions());
-  MOCK_METHOD2(ReadRemoteDescriptor,
-               void(const ValueCallback&, const ErrorCallback&));
-  MOCK_METHOD3(WriteRemoteDescriptor,
+  void ReadRemoteDescriptor(ValueCallback c, ErrorCallback ec) override {
+    ReadRemoteDescriptor_(c, ec);
+  }
+  MOCK_METHOD2(ReadRemoteDescriptor_, void(ValueCallback&, ErrorCallback&));
+  void WriteRemoteDescriptor(const std::vector<uint8_t>& v,
+                             base::OnceClosure c,
+                             ErrorCallback ec) override {
+    WriteRemoteDescriptor_(v, c, ec);
+  }
+  MOCK_METHOD3(WriteRemoteDescriptor_,
                void(const std::vector<uint8_t>&,
-                    const base::Closure&,
-                    const ErrorCallback&));
+                    base::OnceClosure&,
+                    ErrorCallback&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothGattDescriptor);

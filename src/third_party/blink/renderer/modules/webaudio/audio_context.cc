@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
@@ -54,8 +55,8 @@ AudioContext* AudioContext::Create(Document& document,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  UseCounter::CountCrossOriginIframe(
-      document, WebFeature::kAudioContextCrossOriginIframe);
+  document.CountUseOnlyInCrossOriginIframe(
+      WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
   if (context_options->latencyHint().IsAudioContextLatencyCategory()) {
@@ -73,23 +74,25 @@ AudioContext* AudioContext::Create(Document& document,
     sample_rate = context_options->sampleRate();
   }
 
+  // Validate options before trying to construct the actual context.
+  if (sample_rate.has_value() &&
+      !audio_utilities::IsValidAudioBufferSampleRate(sample_rate.value())) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange(
+            "hardware sample rate", sample_rate.value(),
+            audio_utilities::MinAudioBufferSampleRate(),
+            ExceptionMessages::kInclusiveBound,
+            audio_utilities::MaxAudioBufferSampleRate(),
+            ExceptionMessages::kInclusiveBound));
+    return nullptr;
+  }
+
   AudioContext* audio_context =
       MakeGarbageCollected<AudioContext>(document, latency_hint, sample_rate);
   ++g_hardware_context_count;
   audio_context->UpdateStateIfNeeded();
 
-  if (!audio_utilities::IsValidAudioBufferSampleRate(
-          audio_context->sampleRate())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange(
-            "hardware sample rate", audio_context->sampleRate(),
-            audio_utilities::MinAudioBufferSampleRate(),
-            ExceptionMessages::kInclusiveBound,
-            audio_utilities::MaxAudioBufferSampleRate(),
-            ExceptionMessages::kInclusiveBound));
-    return audio_context;
-  }
   // This starts the audio thread. The destination node's
   // provideInput() method will now be called repeatedly to render
   // audio.  Each time provideInput() is called, a portion of the
@@ -182,9 +185,9 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (ContextState() == kClosed) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Cannot suspend a context that has been closed"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot suspend a context that has been closed"));
   } else {
     suspended_by_user_ = true;
 
@@ -208,9 +211,9 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
 
   if (IsContextClosed()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidAccessError,
-                             "cannot resume a closed AudioContext"));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidAccessError,
+                          "cannot resume a closed AudioContext"));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -288,10 +291,10 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
     // We've already closed the context previously, but it hasn't yet been
     // resolved, so just create a new promise and reject it.
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Cannot close a context that is being closed or "
-                             "has already been closed."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Cannot close a context that is being closed or "
+                          "has already been closed."));
   }
 
   close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -614,13 +617,13 @@ void AudioContext::HandleAudibility(AudioBus* destination_bus) {
     if (is_audible) {
       PostCrossThreadTask(
           *task_runner_, FROM_HERE,
-          CrossThreadBind(&AudioContext::NotifyAudibleAudioStarted,
-                          WrapCrossThreadPersistent(this)));
+          CrossThreadBindOnce(&AudioContext::NotifyAudibleAudioStarted,
+                              WrapCrossThreadPersistent(this)));
     } else {
       PostCrossThreadTask(
           *task_runner_, FROM_HERE,
-          CrossThreadBind(&AudioContext::NotifyAudibleAudioStopped,
-                          WrapCrossThreadPersistent(this)));
+          CrossThreadBindOnce(&AudioContext::NotifyAudibleAudioStopped,
+                              WrapCrossThreadPersistent(this)));
     }
   }
 }

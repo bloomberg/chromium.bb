@@ -105,7 +105,6 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
     _textLabel.adjustsFontForContentSizeCategory = YES;
     _textLabel.textColor = [UIColor blackColor];
     _textLabel.backgroundColor = [UIColor clearColor];
-    _textLabel.textAlignment = NSTextAlignmentLeft;
     [contentView addSubview:_textLabel];
 
     _detailTextLabel = [[UILabel alloc] init];
@@ -115,7 +114,6 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
     _detailTextLabel.backgroundColor = [UIColor clearColor];
-    _detailTextLabel.textAlignment = NSTextAlignmentRight;
     [contentView addSubview:_detailTextLabel];
 
     // Set up the constraints for when the icon is visible and hidden.  One of
@@ -268,11 +266,21 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
   if (accessibilityContentSizeCategory) {
     [NSLayoutConstraint deactivateConstraints:_standardConstraints];
     [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
+    // detailTextLabel is laid below textLabel with accessibility content size
+    // category.
+    _detailTextLabel.textAlignment = NSTextAlignmentNatural;
     _detailTextLabel.numberOfLines = 0;
     _textLabel.numberOfLines = 0;
   } else {
     [NSLayoutConstraint deactivateConstraints:_accessibilityConstraints];
     [NSLayoutConstraint activateConstraints:_standardConstraints];
+    // detailTextLabel is laid after textLabel and should have a trailing text
+    // alignment with non-accessibility content size category.
+    _detailTextLabel.textAlignment =
+        self.effectiveUserInterfaceLayoutDirection ==
+                UIUserInterfaceLayoutDirectionLeftToRight
+            ? NSTextAlignmentRight
+            : NSTextAlignmentLeft;
     _detailTextLabel.numberOfLines = 1;
     _textLabel.numberOfLines = 1;
   }

@@ -23,6 +23,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kBlueZLongTermKeyBlocklistParamName[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kCrostiniBackup;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kCrostiniGpuSupport;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUsbSupport;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUsbAllowUnsupported;
@@ -33,7 +35,10 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDriveFs;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerFeedbackPanel;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kEnableFileManagerPiexWasm;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableMessagesWebPush;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMojoDBusRelay;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMyFilesVolume;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableSupervisionTransitionScreens;
@@ -41,11 +46,15 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeInputLogicFst;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kImeServiceConnectable;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kSmartDimModelV3;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSplitSettings;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kSupervisionOnboardingEligibility;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kSupervisionOnboardingScreens;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUpdatedCellularActivationUi;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -55,11 +64,13 @@ extern const base::Feature kUseMessagesStagingUrl;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kUserActivityPredictionMlService;
+extern const base::Feature kUseSearchClickForRightClick;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVideoPlayerNativeControls;
 
 // Keep alphabetized.
+
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsEnabled();
 
 }  // namespace features
 

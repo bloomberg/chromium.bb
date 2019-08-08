@@ -88,4 +88,4 @@ constants.DEFAULT_CROSTINI_VM = 'termina';
  * Name of the Plugin VM.
  * @const
  */
-constants.PLUGIN_VM = 'PluginVm';
+constants.PLUGIN_VM = 'PvmDefault';

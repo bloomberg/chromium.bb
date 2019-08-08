@@ -26,7 +26,11 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
               const LayoutPoint& text_origin,
               const LayoutRect& text_bounds,
               bool horizontal)
-      : TextPainterBase(context, font, text_origin, text_bounds, horizontal),
+      : TextPainterBase(context,
+                        font,
+                        PhysicalOffset(text_origin),
+                        PhysicalRect(text_bounds),
+                        horizontal),
         run_(run),
         combined_text_(nullptr) {}
   ~TextPainter() = default;

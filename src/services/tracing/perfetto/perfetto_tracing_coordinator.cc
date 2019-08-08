@@ -84,7 +84,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 
   ~TracingSession() override {
     if (!stop_and_flush_callback_.is_null()) {
-      base::ResetAndReturn(&stop_and_flush_callback_)
+      std::move(stop_and_flush_callback_)
           .Run(base::Value(base::Value::Type::DICTIONARY));
     }
 
@@ -124,16 +124,16 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     consumer_endpoint_->DisableTracing();
   }
 
-  void OnJSONTraceEventCallback(const std::string& json,
+  void OnJSONTraceEventCallback(std::string* json,
                                 base::DictionaryValue* metadata,
                                 bool has_more) {
     if (stream_.is_valid()) {
-      mojo::BlockingCopyFromString(json, stream_);
+      mojo::BlockingCopyFromString(*json, stream_);
     }
 
     if (!has_more) {
       DCHECK(!stop_and_flush_callback_.is_null());
-      base::ResetAndReturn(&stop_and_flush_callback_)
+      std::move(stop_and_flush_callback_)
           .Run(/*metadata=*/std::move(*metadata));
 
       std::move(tracing_over_callback_).Run();
@@ -208,8 +208,8 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 
       // Attempt to parse the PID out of the producer name.
       base::ProcessId pid;
-      if (!ConsumerHost::ParsePidFromProducerName(state_change.producer_name(),
-                                                  &pid)) {
+      if (!PerfettoService::ParsePidFromProducerName(
+              state_change.producer_name(), &pid)) {
         continue;
       }
 

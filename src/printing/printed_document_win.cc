@@ -16,7 +16,7 @@ void SimpleModifyWorldTransform(HDC context,
                                 int offset_x,
                                 int offset_y,
                                 float shrink_factor) {
-  XFORM xform = { 0 };
+  XFORM xform = {0};
   xform.eDx = static_cast<float>(offset_x);
   xform.eDy = static_cast<float>(offset_y);
   xform.eM11 = xform.eM22 = 1.f / shrink_factor;
@@ -60,8 +60,7 @@ void PrintedDocument::RenderPrintedPage(
     // Note that the printing output is relative to printable area of the page.
     // That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
     SimpleModifyWorldTransform(
-        context,
-        content_area.x() - page_setup.printable_area().x(),
+        context, content_area.x() - page_setup.printable_area().x(),
         content_area.y() - page_setup.printable_area().y(),
         page.shrink_factor());
 

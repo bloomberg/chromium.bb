@@ -54,9 +54,11 @@ group("all") {
       ":perfetto_integrationtests",
       ":traced",
       ":traced_probes",
+      ":trigger_perfetto",
       "protos/perfetto/config:merged_config",  # For syntax-checking the proto.
       "protos/perfetto/trace:merged_trace",  # For syntax-checking the proto.
       "src/ipc/protoc_plugin:ipc_plugin($host_toolchain)",
+      "src/public",
       "tools:protoc_helper",
     ]
     if (perfetto_build_standalone) {
@@ -106,6 +108,7 @@ if (perfetto_build_standalone) {
     deps = [
       "src/trace_processor:trace_processor_shell",
     ]
+    testonly = true  # We need this for proto full.
   }
 }
 
@@ -137,7 +140,10 @@ test("perfetto_unittests") {
     deps += [ "src/profiling/memory:unittests" ]
   }
   if (perfetto_build_standalone && !is_android) {
-    deps += [ "src/trace_processor:unittests" ]
+    deps += [
+      "src/trace_processor:unittests",
+      "src/trace_processor/metrics:unittests",
+    ]
   }
 }
 
@@ -146,6 +152,7 @@ if (perfetto_build_standalone || perfetto_build_with_android) {
     deps = [
       "gn:default_deps",
       "gn:gtest_main",
+      "src/public:integrationtests",
       "src/traced/probes/ftrace:integrationtests",
       "test:end_to_end_integrationtests",
     ]
@@ -210,6 +217,22 @@ if (perfetto_build_standalone || perfetto_build_with_android) {
     ]
     sources = [
       "src/perfetto_cmd/main.cc",
+    ]
+  }
+
+  # Tool to finalize long running traces.
+  # This connects to traced as a producer and sends the triggers passed on the
+  # commandline. This is a subset of what the perfetto binary can do but we
+  # need a separate binary for programs that cannot (for good reason) use the
+  # additional functionality (for example starting traces via consumer socket)
+  # due to selinux rules.
+  executable("trigger_perfetto") {
+    deps = [
+      "gn:default_deps",
+      "src/perfetto_cmd:trigger_perfetto_cmd",
+    ]
+    sources = [
+      "src/perfetto_cmd/trigger_perfetto_main.cc",
     ]
   }
 

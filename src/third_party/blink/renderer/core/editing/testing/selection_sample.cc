@@ -154,8 +154,8 @@ class Parser final {
       HandleElementNode(ToElement(node));
       return;
     }
-    if (node->IsCharacterDataNode()) {
-      HandleCharacterData(ToCharacterData(node));
+    if (auto* data = DynamicTo<CharacterData>(node)) {
+      HandleCharacterData(data);
       return;
     }
     NOTREACHED() << node;
@@ -287,20 +287,21 @@ class Serializer final {
       return;
     }
     if (node.IsTextNode()) {
-      HandleCharacterData(ToCharacterData(node));
+      HandleCharacterData(To<CharacterData>(node));
       return;
     }
     if (node.getNodeType() == Node::kCommentNode) {
       builder_.Append("<!--");
-      HandleCharacterData(ToCharacterData(node));
+      HandleCharacterData(To<CharacterData>(node));
       builder_.Append("-->");
       return;
     }
-    if (node.getNodeType() == Node::kProcessingInstructionNode) {
+    if (auto* processing_instruction_node =
+            DynamicTo<ProcessingInstruction>(node)) {
       builder_.Append("<?");
-      builder_.Append(ToProcessingInstruction(node).target());
+      builder_.Append(processing_instruction_node->target());
       builder_.Append(' ');
-      HandleCharacterData(ToCharacterData(node));
+      HandleCharacterData(To<CharacterData>(node));
       builder_.Append("?>");
       return;
     }

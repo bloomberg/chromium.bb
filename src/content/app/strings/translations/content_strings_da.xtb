@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">skyder</translation>
 <translation id="1211441953136645838">slutnote</translation>
 <translation id="1281252709823657822">dialogboks</translation>
-<translation id="1289247557029249093">Afslut tilstanden med integreret billede</translation>
 <translation id="1335095011850992622">anerkendelser</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2158401438286456825">sideliste</translation>
 <translation id="2226276347425096477">Forkort denne tekst til <ph name="MAX_CHARACTERS" /> tegn eller færre (du bruger i øjeblikket <ph name="CURRENT_LENGTH" /> tegn).</translation>
+<translation id="2246498165605549352">Lokal fil</translation>
 <translation id="2247351761944213033">Uge <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Spor <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">afkrydsningsfelt</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Billedet har ingen etiket</translation>
 <translation id="3706100364254443312">kontakt</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Afslut integreret billede</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Forlæng denne tekst til <ph name="MIN_CHARACTERS" /> eller flere tegn (du bruger i øjeblikket <ph name="CURRENT_LENGTH" /> tegn).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">træ</translation>
 <translation id="4664250907885839816">Den del, der kommer efter "<ph name="ATSIGN" />", må ikke indeholde symbolet "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">bilag</translation>
+<translation id="4718048029184481307">Afspiller i integreret billede</translation>
 <translation id="4742539557769756338">forside</translation>
 <translation id="4748357248530471599">skift fra skærmhak til fuld skærm</translation>
 <translation id="4757246831282535685">fanepanel</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">efterskrift</translation>
 <translation id="6209276755895393898">Det lader til at være: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordliste</translation>
-<translation id="628938136236500310">Afspiller i tilstanden med integreret billede</translation>
+<translation id="6310801910862476708">Afslut integreret billede</translation>
 <translation id="6398862346408813489">Vis panel til valg af måned</translation>
 <translation id="6404546809543547843">afspilningsbjælke for lyd</translation>
 <translation id="6443871981718447451">vis menuen for undertekster</translation>

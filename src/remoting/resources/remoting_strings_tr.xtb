@@ -126,8 +126,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="3695446226812920698">Nasıl yapacağınızı öğrenin</translation>
 <translation id="3718805989288361841">Chrome Uzaktan Masaüstü politika ayarında bir hata oluştu. Yardım için sistem yöneticinizle görüşün.</translation>
 <translation id="3776024066357219166">Chrome Uzaktan Masaüstü oturumunuz sonlandı.</translation>
-<translation id="3846148461359626420">• iPhone X'de daha iyi kaydırma ve yakınlaştırma deneyimi.
-• Kararlılıkla ilgili iyileştirmeler ve hata düzeltmeleri.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome Uzaktan Masaüstü tarafından erişime izin vermek için lütfen aşağıda hesabınızı ve PIN kodunuzu onaylayın.</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -286,6 +284,7 @@ Bu işlevi etkinleştirmek için "<ph name="BUTTON_NAME" />" düğmesini seçere
 <translation id="7116737094673640201">Chrome Chrome Uzaktan Masaüstü'ne hoş geldiniz</translation>
 <translation id="7144878232160441200">Yeniden Dene</translation>
 <translation id="7149517134817561223">Chrome uzaktan masaüstü ana makinesine komutları verecek uygulama.</translation>
+<translation id="7213491505512310433">Kararlılık iyileştirmeleri ve hata düzeltmeleri.</translation>
 <translation id="7215059001581613786">Lütfen altı veya daha fazla basamaklı bir PIN kodu girin.</translation>
 <translation id="7312846573060934304">Ana makine çevrimdışı.</translation>
 <translation id="7319983568955948908">Paylaşmayı Durdur</translation>
@@ -339,8 +338,6 @@ Bu işlevi etkinleştirmek için "<ph name="BUTTON_NAME" />" düğmesini seçere
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="8548209692293300397">Daha önce <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) olarak oturum açmıştınız. Bu hesapla bilgisayarlarınıza erişmek için bu hesabı kullanarak <ph name="LINK_BEGIN" />Google Chrome'da oturum açın<ph name="LINK_END" /> ve Chrome Uzaktan Masaüstü'nü yeniden yükleyin.</translation>
 <translation id="8642984861538780905">Orta</translation>
-<translation id="8705151241155781642">• Android 9.0 Pie için destek eklendi.
-• Android cihazınızın ekranına uygun uzaktan masaüstü çözünürlüğünü yeniden boyutlandırmak için destek.</translation>
 <translation id="8712909229180978490">Google Drive'daki kaydedilmiş dosyalarımı çevrimiçi olarak göremiyorum.</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> kullanıcısının bilgisayarınızı görmesine ve kontrol etmesine izin vermek istiyor musunuz?</translation>
 <translation id="8747048596626351634">Oturum kilitlendi veya başlatılamadı. Uzak bilgisayarda ~/.chrome-remote-desktop-session mevcutsa masaüstü ortamı veya pencere yöneticisi gibi uzun süre ön planda çalışan bir işlem başlattığından emin olun.</translation>

@@ -233,8 +233,9 @@ cr.define('cr.ui', function() {
 
   /**
    * The command managers for different documents.
+   * @type {!Map<!Document, !CommandManager>}
    */
-  const commandManagers = {};
+  const commandManagers = new Map();
 
   /**
    * Keeps track of the focused element and updates the commands when the focus
@@ -254,9 +255,8 @@ cr.define('cr.ui', function() {
    * @param {!Document} doc The document to manage the commands for.
    */
   CommandManager.init = function(doc) {
-    const uid = cr.getUid(doc);
-    if (!(uid in commandManagers)) {
-      commandManagers[uid] = new CommandManager(doc);
+    if (!commandManagers.has(doc)) {
+      commandManagers.set(doc, new CommandManager(doc));
     }
   };
 

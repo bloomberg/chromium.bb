@@ -149,7 +149,7 @@ TEST_F(ScriptTrackerTest, SomeRunnableScripts) {
 
   EXPECT_EQ(1, runnable_scripts_changed_);
   ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  EXPECT_EQ("runnable name", runnable_scripts()[0].name);
+  EXPECT_EQ("runnable name", runnable_scripts()[0].chip.text());
   EXPECT_EQ("runnable path", runnable_scripts()[0].path);
   EXPECT_EQ(0, no_runnable_scripts_anymore_);
 }
@@ -170,7 +170,7 @@ TEST_F(ScriptTrackerTest, DoNotCheckInterruptWithNoName) {
 
   EXPECT_EQ(1, runnable_scripts_changed_);
   ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  EXPECT_EQ("with name", runnable_scripts()[0].name);
+  EXPECT_EQ("with name", runnable_scripts()[0].chip.text());
 }
 
 TEST_F(ScriptTrackerTest, ReportInterruptToAutostart) {
@@ -189,7 +189,7 @@ TEST_F(ScriptTrackerTest, ReportInterruptToAutostart) {
 TEST_F(ScriptTrackerTest, OrderScriptsByPriority) {
   SupportedScriptProto* a = AddScript();
   a->set_path("a");
-  a->mutable_presentation()->set_name("a");
+  a->mutable_presentation()->mutable_chip()->set_text("a");
   a->mutable_presentation()->set_priority(2);
 
   SupportedScriptProto* b = AddScript();
@@ -303,7 +303,7 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
 
   EXPECT_EQ(1, runnable_scripts_changed_);
   ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  EXPECT_EQ("runnable name", runnable_scripts()[0].name);
+  EXPECT_EQ("runnable name", runnable_scripts()[0].chip.text());
   EXPECT_EQ("runnable path", runnable_scripts()[0].path);
 
   // 2. Run the action and trigger a script list update.
@@ -330,9 +330,9 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   // 3. Verify that the runnable scripts have changed to the updated list.
   EXPECT_EQ(2, runnable_scripts_changed_);
   ASSERT_THAT(runnable_scripts(), SizeIs(2));
-  EXPECT_EQ("update name", runnable_scripts()[0].name);
+  EXPECT_EQ("update name", runnable_scripts()[0].chip.text());
   EXPECT_EQ("update path", runnable_scripts()[0].path);
-  EXPECT_EQ("update name 2", runnable_scripts()[1].name);
+  EXPECT_EQ("update name 2", runnable_scripts()[1].chip.text());
   EXPECT_EQ("update path 2", runnable_scripts()[1].path);
 }
 
@@ -344,7 +344,7 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
 
   EXPECT_EQ(1, runnable_scripts_changed_);
   ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  EXPECT_EQ("runnable name", runnable_scripts()[0].name);
+  EXPECT_EQ("runnable name", runnable_scripts()[0].chip.text());
   EXPECT_EQ("runnable path", runnable_scripts()[0].path);
 
   // 2. Run the interrupt action and trigger a script list update from an
@@ -372,9 +372,9 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   // 3. Verify that the runnable scripts have changed to the updated list.
   EXPECT_EQ(2, runnable_scripts_changed_);
   ASSERT_THAT(runnable_scripts(), SizeIs(2));
-  EXPECT_EQ("update name", runnable_scripts()[0].name);
+  EXPECT_EQ("update name", runnable_scripts()[0].chip.text());
   EXPECT_EQ("update path", runnable_scripts()[0].path);
-  EXPECT_EQ("update name 2", runnable_scripts()[1].name);
+  EXPECT_EQ("update name 2", runnable_scripts()[1].chip.text());
   EXPECT_EQ("update path 2", runnable_scripts()[1].path);
 }
 

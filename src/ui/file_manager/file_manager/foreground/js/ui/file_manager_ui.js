@@ -4,6 +4,8 @@
 
 /**
  * The root of the file manager's view managing the DOM of the Files app.
+ * @implements {ActionModelUI}
+ * @implements {A11yAnnounce}
  */
 class FileManagerUI {
   /**
@@ -39,13 +41,6 @@ class FileManagerUI {
      * @private {!Array<!Element>}
      */
     this.separators_ = [].slice.call(document.querySelectorAll('cr-menu > hr'));
-
-    /**
-     * Error dialog.
-     * @type {!ErrorDialog}
-     * @const
-     */
-    this.errorDialog = new ErrorDialog(this.element);
 
     /**
      * Alert dialog.

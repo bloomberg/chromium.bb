@@ -36,6 +36,7 @@ using autofill::FormStructure;
 namespace password_manager {
 
 class FormSaver;
+class PasswordGenerationState;
 class PasswordManager;
 class PasswordManagerClient;
 
@@ -289,7 +290,10 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // the old password and username with |pending_credentials_| to the new
   // password of |pending_credentials_|, and returns copies of all such modified
   // credentials.
-  std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate();
+  std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate() const;
+
+  // Save/update |pending_credentials_| to the password store.
+  void SavePendingToStore(bool update);
 
   void SetPasswordOverridden(bool password_overridden) {
     password_overridden_ = password_overridden;
@@ -340,14 +344,8 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // to an existing one.
   bool is_new_login_;
 
-  // Whether this form has an auto generated password. If the user modifies the
-  // password it remains in status "generated".
-  bool has_generated_password_;
-
-  // If |has_generated_password_|, contains a generated password. If the user
-  // modifies the generated password, this field is updated to reflect the
-  // modified value.
-  base::string16 generated_password_;
+  // Handles the user flows related to the generation.
+  std::unique_ptr<PasswordGenerationState> generation_state_;
 
   // Whether the saved password was overridden.
   bool password_overridden_;

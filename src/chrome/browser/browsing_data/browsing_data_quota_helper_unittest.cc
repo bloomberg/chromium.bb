@@ -164,10 +164,10 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
        StorageType::kTemporary, 10000},
       {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
        StorageType::kPersistent, 100000},
-      {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/", StorageType::kTemporary,
+      {"devtools://abcdefghijklmnopqrstuvwxyz/", StorageType::kTemporary,
        10000},
-      {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
-       StorageType::kPersistent, 100000},
+      {"devtools://abcdefghijklmnopqrstuvwxyz/", StorageType::kPersistent,
+       100000},
   };
 
   RegisterClient(kOrigins, base::size(kOrigins));

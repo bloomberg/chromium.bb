@@ -3,10 +3,8 @@
   amd64-generic-telemetry
   amd64-generic-tot-chromium-pfq-informational
   caroline-tot-chrome-pfq-informational
-  daisy-tot-chromium-pfq-informational
   eve-tot-chrome-pfq-informational
   kevin-arcnext-tot-chrome-pfq-informational
-  peach_pit-tot-chrome-pfq-informational
   tricky-tot-chrome-pfq-informational
   veyron_minnie-tot-chrome-pfq-informational
 
@@ -24,8 +22,6 @@
     chell-chrome-pfq
     coral-chrome-pfq
     cyan-chrome-pfq
-    daisy-chromium-pfq
-    daisy_skate-chrome-pfq
     eve-arcnext-chrome-pfq
     eve-chrome-pfq
     grunt-chrome-pfq
@@ -33,10 +29,9 @@
     kevin64-chrome-pfq
     nocturne-chrome-pfq
     nyan_big-chrome-pfq
-    peach_pit-chrome-pfq
     peppy-chrome-pfq
     reef-chrome-pfq
-    scarlet-chrome-pfq
+    scarlet-chromium-pfq
     terra-chrome-pfq
     tricky-chrome-pfq
     veyron_jerry-chromium-pfq
@@ -67,9 +62,6 @@
     cobblepot-paladin
     coral-paladin
     cyan-paladin
-    daisy-paladin
-    daisy_skate-paladin
-    daisy_spring-paladin
     edgar-paladin
     elm-paladin
     eve-arcnext-paladin
@@ -113,11 +105,9 @@
     nyan_blaze-paladin
     nyan_kitty-full-compile-paladin
     nyan_kitty-paladin
-    oak-paladin
     octavius-paladin
     octopus-paladin
     panther-paladin
-    peach_pit-paladin
     peppy-paladin
     poppy-paladin
     quawks-paladin
@@ -130,7 +120,6 @@
     scarlet-paladin
     sentry-paladin
     sludge-paladin
-    stout-paladin
     tael-paladin
     tatl-paladin
     terra-paladin
@@ -149,6 +138,7 @@
     wizpig-paladin
     wolf-paladin
     wooten-paladin
+    zork-paladin
 
 == factory ==
   factory-atlas-11907.B-buildspec
@@ -331,10 +321,10 @@
   firmware-reks-7287.133.B-firmwarebranch
   firmware-rikku-6301.110.B-firmwarebranch
   firmware-samus-6300.B-firmwarebranch
+  firmware-sarien-12200.B-firmwarebranch
   firmware-scarlet-10388.B-firmwarebranch
   firmware-servo-11011.B-firmwarebranch
   firmware-servo-9040.B-firmwarebranch
-  firmware-skate-3824.129.B-firmwarebranch
   firmware-smaug-7900.B-firmwarebranch
   firmware-squawks-5216.152.B-firmwarebranch
   firmware-strago-7287.B-firmwarebranch
@@ -357,7 +347,6 @@
     amd64-generic-goma-full
     arm-generic-full
     arm64-generic-full
-    daisy-full
     kevin-full
     kevin64-full
     lakitu-full
@@ -370,7 +359,6 @@
     amd64-generic-incremental
     betty-incremental
     chell-incremental
-    daisy-incremental
     lakitu-incremental
 
 == informational ==
@@ -394,7 +382,6 @@
     betty-nyc-android-pfq
     bob-nyc-android-pfq
     caroline-nyc-android-pfq
-    coral-nyc-android-pfq
     cyan-nyc-android-pfq
     hana-nyc-android-pfq
     reef-nyc-android-pfq
@@ -405,6 +392,7 @@
   master-pi-android-pfq
     betty-arcnext-pi-android-pfq
     caroline-arcnext-pi-android-pfq
+    coral-pi-android-pfq
     eve-pi-android-pfq
     grunt-pi-android-pfq
     kevin-pi-android-pfq
@@ -441,9 +429,6 @@
     cobblepot-postsubmit
     coral-postsubmit
     cyan-postsubmit
-    daisy-postsubmit
-    daisy_skate-postsubmit
-    daisy_spring-postsubmit
     edgar-postsubmit
     elm-postsubmit
     enguarde-postsubmit
@@ -465,12 +450,10 @@
     gonzo-postsubmit
     grunt-postsubmit
     guado-accelerator-postsubmit
-    guado-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
     hatch-postsubmit
     heli-postsubmit
-    jecht-postsubmit
     kalista-postsubmit
     kefka-postsubmit
     kevin-arcnext-postsubmit
@@ -480,6 +463,7 @@
     kukui-postsubmit
     lakitu-gpu-postsubmit
     lakitu-postsubmit
+    lakitu-st-postsubmit
     lars-postsubmit
     lasilla-ground-postsubmit
     leon-postsubmit
@@ -496,13 +480,10 @@
     nyan_big-postsubmit
     nyan_blaze-postsubmit
     nyan_kitty-postsubmit
-    oak-postsubmit
     octavius-postsubmit
     octopus-postsubmit
     orco-postsubmit
     panther-postsubmit
-    peach_pi-postsubmit
-    peach_pit-postsubmit
     peppy-postsubmit
     poppy-postsubmit
     pyro-postsubmit
@@ -523,7 +504,6 @@
     snappy-postsubmit
     soraka-postsubmit
     squawks-postsubmit
-    stout-postsubmit
     sumo-postsubmit
     swanky-postsubmit
     tael-postsubmit
@@ -548,17 +528,17 @@
     wolf-postsubmit
     wooten-postsubmit
     zako-postsubmit
+    zork-postsubmit
 
 == pre_cq ==
   pre-cq-launcher
 
+== qt_android_pfq ==
+  master-qt-android-pfq
+    betty-qt-arc-qt-android-pfq
+
 == release ==
   master-lakitu-release
-    lakitu-gpu-release
-    lakitu-nc-release
-    lakitu-release
-    lakitu-st-release
-    lakitu_next-release
   master-release
     amd64-generic-cheets-release
     arkham-release
@@ -573,8 +553,12 @@
     betty-arc64-release
     betty-arcmaster-release
     betty-arcnext-release
+    betty-nyc-arc-release
+    betty-pi-arc-release
+    betty-qt-arc-release
     betty-release
     bob-release
+    buddy-cfm-release
     buddy-release
     candy-release
     capri-release
@@ -588,12 +572,11 @@
     chell-release
     cheza-freedreno-release
     cheza-release
+    cheza64-release
     clapper-release
     cobblepot-release
     coral-release
     cyan-release
-    daisy-release
-    daisy_skate-release
     edgar-release
     elm-release
     enguarde-release
@@ -609,6 +592,7 @@
     falco-release
     falco_li-release
     fizz-accelerator-release
+    fizz-cfm-release
     fizz-labstation-release
     fizz-moblab-release
     fizz-release
@@ -619,6 +603,8 @@
     gnawty-release
     gonzo-release
     grunt-release
+    guado-cfm-release
+    guado-kernelnext-release
     guado-macrophage-release
     guado-release
     guado_labstation-release
@@ -626,7 +612,6 @@
     hana-release
     hatch-release
     heli-release
-    jecht-release
     kalista-release
     kefka-release
     kevin-arcnext-release
@@ -634,6 +619,11 @@
     kevin64-release
     kip-release
     kukui-release
+    lakitu-gpu-release
+    lakitu-nc-release
+    lakitu-release
+    lakitu-st-release
+    lakitu_next-release
     lars-release
     lasilla-ground-release
     leon-release
@@ -652,13 +642,10 @@
     nyan_big-release
     nyan_blaze-release
     nyan_kitty-release
-    oak-release
     octavius-release
     octopus-release
     orco-release
     panther-release
-    peach_pi-release
-    peach_pit-release
     peppy-release
     pyro-release
     quawks-release
@@ -690,6 +677,7 @@
     veyron_jerry-release
     veyron_mickey-release
     veyron_mighty-release
+    veyron_minnie-kernelnext-release
     veyron_minnie-release
     veyron_rialto-release
     veyron_speedy-release
@@ -701,11 +689,12 @@
     wolf-release
     wooten-release
     zako-release
+    zork-release
 
 == toolchain ==
-  amd64-llvm-pgo-generate-toolchain
-  arm-llvm-pgo-generate-toolchain
-  arm64-llvm-pgo-generate-toolchain
+  amd64-pgo-generate-llvm-next-toolchain
+  arm-pgo-generate-llvm-next-toolchain
+  arm64-pgo-generate-llvm-next-toolchain
   llvm-clang-tidy-toolchain
   master-toolchain
     amd64-llvm-next-toolchain
@@ -772,7 +761,7 @@
   amd64-generic-v4_19-pre-cq
   amd64-generic-v4_4-pre-cq
   amd64-llvm-next-toolchain-tryjob
-  amd64-llvm-pgo-generate-toolchain-tryjob
+  amd64-pgo-generate-llvm-next-toolchain-tryjob
   arkham-compile-only-pre-cq
   arkham-full-tryjob
   arkham-llvm-next-toolchain-tryjob
@@ -801,7 +790,7 @@
   arm-generic-v4_19-pre-cq
   arm-generic-v4_4-pre-cq
   arm-llvm-next-toolchain-tryjob
-  arm-llvm-pgo-generate-toolchain-tryjob
+  arm-pgo-generate-llvm-next-toolchain-tryjob
   arm64-generic-chromium-pfq-tryjob
   arm64-generic-compile-only-pre-cq
   arm64-generic-full-tryjob
@@ -818,7 +807,6 @@
   arm64-generic-v4_19-pre-cq
   arm64-generic-v4_4-pre-cq
   arm64-llvm-next-toolchain-tryjob
-  arm64-llvm-pgo-generate-toolchain-tryjob
   arm64-llvmpipe-chromium-pfq-tryjob
   arm64-llvmpipe-compile-only-pre-cq
   arm64-llvmpipe-full-tryjob
@@ -830,6 +818,7 @@
   arm64-llvmpipe-pre-cq
   arm64-llvmpipe-tot-chromium-pfq-informational-tryjob
   arm64-llvmpipe-unittest-stress
+  arm64-pgo-generate-llvm-next-toolchain-tryjob
   asuka-chrome-pfq-tryjob
   asuka-chromium-pfq-tryjob
   asuka-compile-only-pre-cq
@@ -1028,10 +1017,47 @@
   betty-llvm-toolchain-tryjob
   betty-no-vmtest-pre-cq
   betty-nyc-android-pfq-tryjob
+  betty-nyc-arc-chromium-pfq-tryjob
+  betty-nyc-arc-compile-only-pre-cq
+  betty-nyc-arc-full-tryjob
+  betty-nyc-arc-llvm-next-toolchain-tryjob
+  betty-nyc-arc-llvm-toolchain-tryjob
+  betty-nyc-arc-no-vmtest-pre-cq
+  betty-nyc-arc-paladin-tryjob
+  betty-nyc-arc-postsubmit-tryjob
+  betty-nyc-arc-pre-cq
+  betty-nyc-arc-release-tryjob
+  betty-nyc-arc-tot-chromium-pfq-informational-tryjob
+  betty-nyc-arc-unittest-stress
   betty-paladin-tryjob
   betty-payloads-tryjob
+  betty-pi-arc-chromium-pfq-tryjob
+  betty-pi-arc-compile-only-pre-cq
+  betty-pi-arc-full-tryjob
+  betty-pi-arc-llvm-next-toolchain-tryjob
+  betty-pi-arc-llvm-toolchain-tryjob
+  betty-pi-arc-no-vmtest-pre-cq
+  betty-pi-arc-paladin-tryjob
+  betty-pi-arc-postsubmit-tryjob
+  betty-pi-arc-pre-cq
+  betty-pi-arc-release-tryjob
+  betty-pi-arc-tot-chromium-pfq-informational-tryjob
+  betty-pi-arc-unittest-stress
   betty-postsubmit-tryjob
   betty-pre-cq
+  betty-qt-arc-chromium-pfq-tryjob
+  betty-qt-arc-compile-only-pre-cq
+  betty-qt-arc-full-tryjob
+  betty-qt-arc-llvm-next-toolchain-tryjob
+  betty-qt-arc-llvm-toolchain-tryjob
+  betty-qt-arc-no-vmtest-pre-cq
+  betty-qt-arc-paladin-tryjob
+  betty-qt-arc-postsubmit-tryjob
+  betty-qt-arc-pre-cq
+  betty-qt-arc-qt-android-pfq-tryjob
+  betty-qt-arc-release-tryjob
+  betty-qt-arc-tot-chromium-pfq-informational-tryjob
+  betty-qt-arc-unittest-stress
   betty-release-afdo-generate-tryjob
   betty-release-afdo-tryjob
   betty-release-afdo-use-tryjob
@@ -1064,6 +1090,18 @@
   bob-tot-chrome-pfq-informational-tryjob
   bob-tot-chromium-pfq-informational-tryjob
   bob-unittest-stress
+  buddy-cfm-chromium-pfq-tryjob
+  buddy-cfm-compile-only-pre-cq
+  buddy-cfm-full-tryjob
+  buddy-cfm-llvm-next-toolchain-tryjob
+  buddy-cfm-llvm-toolchain-tryjob
+  buddy-cfm-no-vmtest-pre-cq
+  buddy-cfm-paladin-tryjob
+  buddy-cfm-postsubmit-tryjob
+  buddy-cfm-pre-cq
+  buddy-cfm-release-tryjob
+  buddy-cfm-tot-chromium-pfq-informational-tryjob
+  buddy-cfm-unittest-stress
   buddy-chrome-pfq-tryjob
   buddy-chromium-pfq-tryjob
   buddy-compile-only-pre-cq
@@ -1289,6 +1327,24 @@
   cheza-tot-chrome-pfq-informational-tryjob
   cheza-tot-chromium-pfq-informational-tryjob
   cheza-unittest-stress
+  cheza64-chrome-pfq-tryjob
+  cheza64-chromium-pfq-tryjob
+  cheza64-compile-only-pre-cq
+  cheza64-full-tryjob
+  cheza64-llvm-next-toolchain-tryjob
+  cheza64-llvm-toolchain-tryjob
+  cheza64-no-vmtest-pre-cq
+  cheza64-paladin-tryjob
+  cheza64-payloads-tryjob
+  cheza64-postsubmit-tryjob
+  cheza64-pre-cq
+  cheza64-release-afdo-generate-tryjob
+  cheza64-release-afdo-tryjob
+  cheza64-release-afdo-use-tryjob
+  cheza64-release-tryjob
+  cheza64-tot-chrome-pfq-informational-tryjob
+  cheza64-tot-chromium-pfq-informational-tryjob
+  cheza64-unittest-stress
   chromeos-infra-go-pre-cq
   chromeos-infra-go-tryjob
   chromeos-infra-puppet-pre-cq
@@ -1335,9 +1391,9 @@
   coral-llvm-toolchain-tryjob
   coral-master-factorybranch-tryjob
   coral-no-vmtest-pre-cq
-  coral-nyc-android-pfq-tryjob
   coral-paladin-tryjob
   coral-payloads-tryjob
+  coral-pi-android-pfq-tryjob
   coral-postsubmit-tryjob
   coral-pre-cq
   coral-release-afdo-generate-tryjob
@@ -1368,63 +1424,6 @@
   cyan-tot-chromium-pfq-informational-tryjob
   cyan-unittest-stress
   cyan-wificell-pre-cq
-  daisy-chrome-perf-tryjob
-  daisy-chrome-pfq-tryjob
-  daisy-chromium-pfq-tryjob
-  daisy-compile-only-pre-cq
-  daisy-full-tryjob
-  daisy-incremental-tryjob
-  daisy-llvm-next-toolchain-tryjob
-  daisy-llvm-toolchain-tryjob
-  daisy-no-vmtest-pre-cq
-  daisy-paladin-tryjob
-  daisy-payloads-tryjob
-  daisy-postsubmit-tryjob
-  daisy-pre-cq
-  daisy-release-afdo-generate-tryjob
-  daisy-release-afdo-tryjob
-  daisy-release-afdo-use-tryjob
-  daisy-release-tryjob
-  daisy-tot-chrome-pfq-informational-tryjob
-  daisy-tot-chromium-pfq-informational-tryjob
-  daisy-unittest-stress
-  daisy-wificell-pre-cq
-  daisy_skate-chrome-pfq-tryjob
-  daisy_skate-chromium-pfq-tryjob
-  daisy_skate-compile-only-pre-cq
-  daisy_skate-full-tryjob
-  daisy_skate-llvm-next-toolchain-tryjob
-  daisy_skate-llvm-toolchain-tryjob
-  daisy_skate-no-vmtest-pre-cq
-  daisy_skate-paladin-tryjob
-  daisy_skate-payloads-tryjob
-  daisy_skate-postsubmit-tryjob
-  daisy_skate-pre-cq
-  daisy_skate-release-afdo-generate-tryjob
-  daisy_skate-release-afdo-tryjob
-  daisy_skate-release-afdo-use-tryjob
-  daisy_skate-release-tryjob
-  daisy_skate-tot-chrome-pfq-informational-tryjob
-  daisy_skate-tot-chromium-pfq-informational-tryjob
-  daisy_skate-unittest-stress
-  daisy_spring-chrome-pfq-tryjob
-  daisy_spring-chromium-pfq-tryjob
-  daisy_spring-compile-only-pre-cq
-  daisy_spring-full-tryjob
-  daisy_spring-llvm-next-toolchain-tryjob
-  daisy_spring-llvm-toolchain-tryjob
-  daisy_spring-no-vmtest-pre-cq
-  daisy_spring-paladin-tryjob
-  daisy_spring-payloads-tryjob
-  daisy_spring-postsubmit-tryjob
-  daisy_spring-pre-cq
-  daisy_spring-release-afdo-generate-tryjob
-  daisy_spring-release-afdo-tryjob
-  daisy_spring-release-afdo-use-tryjob
-  daisy_spring-release-tryjob
-  daisy_spring-tot-chrome-pfq-informational-tryjob
-  daisy_spring-tot-chromium-pfq-informational-tryjob
-  daisy_spring-unittest-stress
   edgar-chrome-pfq-tryjob
   edgar-chromium-pfq-tryjob
   edgar-compile-only-pre-cq
@@ -1844,10 +1843,10 @@
   firmware-reks-7287.133.B-firmwarebranch-tryjob
   firmware-rikku-6301.110.B-firmwarebranch-tryjob
   firmware-samus-6300.B-firmwarebranch-tryjob
+  firmware-sarien-12200.B-firmwarebranch-tryjob
   firmware-scarlet-10388.B-firmwarebranch-tryjob
   firmware-servo-11011.B-firmwarebranch-tryjob
   firmware-servo-9040.B-firmwarebranch-tryjob
-  firmware-skate-3824.129.B-firmwarebranch-tryjob
   firmware-smaug-7900.B-firmwarebranch-tryjob
   firmware-squawks-5216.152.B-firmwarebranch-tryjob
   firmware-strago-7287.B-firmwarebranch-tryjob
@@ -1878,6 +1877,18 @@
   fizz-accelerator-release-afdo-use-tryjob
   fizz-accelerator-release-tryjob
   fizz-accelerator-unittest-stress
+  fizz-cfm-chromium-pfq-tryjob
+  fizz-cfm-compile-only-pre-cq
+  fizz-cfm-full-tryjob
+  fizz-cfm-llvm-next-toolchain-tryjob
+  fizz-cfm-llvm-toolchain-tryjob
+  fizz-cfm-no-vmtest-pre-cq
+  fizz-cfm-paladin-tryjob
+  fizz-cfm-postsubmit-tryjob
+  fizz-cfm-pre-cq
+  fizz-cfm-release-tryjob
+  fizz-cfm-tot-chromium-pfq-informational-tryjob
+  fizz-cfm-unittest-stress
   fizz-chrome-pfq-tryjob
   fizz-chromium-pfq-tryjob
   fizz-compile-only-pre-cq
@@ -2088,11 +2099,35 @@
   guado-accelerator-release-afdo-use-tryjob
   guado-accelerator-release-tryjob
   guado-accelerator-unittest-stress
+  guado-cfm-chromium-pfq-tryjob
+  guado-cfm-compile-only-pre-cq
+  guado-cfm-full-tryjob
+  guado-cfm-llvm-next-toolchain-tryjob
+  guado-cfm-llvm-toolchain-tryjob
+  guado-cfm-no-vmtest-pre-cq
+  guado-cfm-paladin-tryjob
+  guado-cfm-postsubmit-tryjob
+  guado-cfm-pre-cq
+  guado-cfm-release-tryjob
+  guado-cfm-tot-chromium-pfq-informational-tryjob
+  guado-cfm-unittest-stress
   guado-chrome-pfq-tryjob
   guado-chromium-pfq-tryjob
   guado-compile-only-pre-cq
   guado-factory-auron-6772.B-factorybranch-tryjob
   guado-full-tryjob
+  guado-kernelnext-chromium-pfq-tryjob
+  guado-kernelnext-compile-only-pre-cq
+  guado-kernelnext-full-tryjob
+  guado-kernelnext-llvm-next-toolchain-tryjob
+  guado-kernelnext-llvm-toolchain-tryjob
+  guado-kernelnext-no-vmtest-pre-cq
+  guado-kernelnext-paladin-tryjob
+  guado-kernelnext-postsubmit-tryjob
+  guado-kernelnext-pre-cq
+  guado-kernelnext-release-tryjob
+  guado-kernelnext-tot-chromium-pfq-informational-tryjob
+  guado-kernelnext-unittest-stress
   guado-llvm-next-toolchain-tryjob
   guado-llvm-toolchain-tryjob
   guado-macrophage-chromium-pfq-tryjob
@@ -2536,8 +2571,6 @@
     chell-chrome-pfq-tryjob
     coral-chrome-pfq-tryjob
     cyan-chrome-pfq-tryjob
-    daisy-chromium-pfq-tryjob
-    daisy_skate-chrome-pfq-tryjob
     eve-arcnext-chrome-pfq-tryjob
     eve-chrome-pfq-tryjob
     grunt-chrome-pfq-tryjob
@@ -2545,10 +2578,9 @@
     kevin64-chrome-pfq-tryjob
     nocturne-chrome-pfq-tryjob
     nyan_big-chrome-pfq-tryjob
-    peach_pit-chrome-pfq-tryjob
     peppy-chrome-pfq-tryjob
     reef-chrome-pfq-tryjob
-    scarlet-chrome-pfq-tryjob
+    scarlet-chromium-pfq-tryjob
     terra-chrome-pfq-tryjob
     tricky-chrome-pfq-tryjob
     veyron_jerry-chromium-pfq-tryjob
@@ -2559,7 +2591,6 @@
     amd64-generic-goma-full-tryjob
     arm-generic-full-tryjob
     arm64-generic-full-tryjob
-    daisy-full-tryjob
     kevin-full-tryjob
     kevin64-full-tryjob
     lakitu-full-tryjob
@@ -2570,14 +2601,8 @@
     amd64-generic-incremental-tryjob
     betty-incremental-tryjob
     chell-incremental-tryjob
-    daisy-incremental-tryjob
     lakitu-incremental-tryjob
   master-lakitu-release-tryjob
-    lakitu-gpu-release-tryjob
-    lakitu-nc-release-tryjob
-    lakitu-release-tryjob
-    lakitu-st-release-tryjob
-    lakitu_next-release-tryjob
   master-mst-android-pfq-tryjob
     eve-arcnext-mst-android-pfq-tryjob
   master-nyc-android-pfq-tryjob
@@ -2585,7 +2610,6 @@
     betty-nyc-android-pfq-tryjob
     bob-nyc-android-pfq-tryjob
     caroline-nyc-android-pfq-tryjob
-    coral-nyc-android-pfq-tryjob
     cyan-nyc-android-pfq-tryjob
     hana-nyc-android-pfq-tryjob
     reef-nyc-android-pfq-tryjob
@@ -2614,9 +2638,6 @@
     cobblepot-paladin-tryjob
     coral-paladin-tryjob
     cyan-paladin-tryjob
-    daisy-paladin-tryjob
-    daisy_skate-paladin-tryjob
-    daisy_spring-paladin-tryjob
     edgar-paladin-tryjob
     elm-paladin-tryjob
     eve-arcnext-paladin-tryjob
@@ -2660,11 +2681,9 @@
     nyan_blaze-paladin-tryjob
     nyan_kitty-full-compile-paladin-tryjob
     nyan_kitty-paladin-tryjob
-    oak-paladin-tryjob
     octavius-paladin-tryjob
     octopus-paladin-tryjob
     panther-paladin-tryjob
-    peach_pit-paladin-tryjob
     peppy-paladin-tryjob
     poppy-paladin-tryjob
     quawks-paladin-tryjob
@@ -2677,7 +2696,6 @@
     scarlet-paladin-tryjob
     sentry-paladin-tryjob
     sludge-paladin-tryjob
-    stout-paladin-tryjob
     tael-paladin-tryjob
     tatl-paladin-tryjob
     terra-paladin-tryjob
@@ -2696,9 +2714,11 @@
     wizpig-paladin-tryjob
     wolf-paladin-tryjob
     wooten-paladin-tryjob
+    zork-paladin-tryjob
   master-pi-android-pfq-tryjob
     betty-arcnext-pi-android-pfq-tryjob
     caroline-arcnext-pi-android-pfq-tryjob
+    coral-pi-android-pfq-tryjob
     eve-pi-android-pfq-tryjob
     grunt-pi-android-pfq-tryjob
     kevin-pi-android-pfq-tryjob
@@ -2733,9 +2753,6 @@
     cobblepot-postsubmit-tryjob
     coral-postsubmit-tryjob
     cyan-postsubmit-tryjob
-    daisy-postsubmit-tryjob
-    daisy_skate-postsubmit-tryjob
-    daisy_spring-postsubmit-tryjob
     edgar-postsubmit-tryjob
     elm-postsubmit-tryjob
     enguarde-postsubmit-tryjob
@@ -2757,12 +2774,10 @@
     gonzo-postsubmit-tryjob
     grunt-postsubmit-tryjob
     guado-accelerator-postsubmit-tryjob
-    guado-postsubmit-tryjob
     guado_moblab-postsubmit-tryjob
     hana-postsubmit-tryjob
     hatch-postsubmit-tryjob
     heli-postsubmit-tryjob
-    jecht-postsubmit-tryjob
     kalista-postsubmit-tryjob
     kefka-postsubmit-tryjob
     kevin-arcnext-postsubmit-tryjob
@@ -2772,6 +2787,7 @@
     kukui-postsubmit-tryjob
     lakitu-gpu-postsubmit-tryjob
     lakitu-postsubmit-tryjob
+    lakitu-st-postsubmit-tryjob
     lars-postsubmit-tryjob
     lasilla-ground-postsubmit-tryjob
     leon-postsubmit-tryjob
@@ -2788,13 +2804,10 @@
     nyan_big-postsubmit-tryjob
     nyan_blaze-postsubmit-tryjob
     nyan_kitty-postsubmit-tryjob
-    oak-postsubmit-tryjob
     octavius-postsubmit-tryjob
     octopus-postsubmit-tryjob
     orco-postsubmit-tryjob
     panther-postsubmit-tryjob
-    peach_pi-postsubmit-tryjob
-    peach_pit-postsubmit-tryjob
     peppy-postsubmit-tryjob
     poppy-postsubmit-tryjob
     pyro-postsubmit-tryjob
@@ -2815,7 +2828,6 @@
     snappy-postsubmit-tryjob
     soraka-postsubmit-tryjob
     squawks-postsubmit-tryjob
-    stout-postsubmit-tryjob
     sumo-postsubmit-tryjob
     swanky-postsubmit-tryjob
     tael-postsubmit-tryjob
@@ -2840,6 +2852,9 @@
     wolf-postsubmit-tryjob
     wooten-postsubmit-tryjob
     zako-postsubmit-tryjob
+    zork-postsubmit-tryjob
+  master-qt-android-pfq-tryjob
+    betty-qt-arc-qt-android-pfq-tryjob
   master-release-tryjob
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
@@ -2854,8 +2869,12 @@
     betty-arc64-release-tryjob
     betty-arcmaster-release-tryjob
     betty-arcnext-release-tryjob
+    betty-nyc-arc-release-tryjob
+    betty-pi-arc-release-tryjob
+    betty-qt-arc-release-tryjob
     betty-release-tryjob
     bob-release-tryjob
+    buddy-cfm-release-tryjob
     buddy-release-tryjob
     candy-release-tryjob
     capri-release-tryjob
@@ -2869,12 +2888,11 @@
     chell-release-tryjob
     cheza-freedreno-release-tryjob
     cheza-release-tryjob
+    cheza64-release-tryjob
     clapper-release-tryjob
     cobblepot-release-tryjob
     coral-release-tryjob
     cyan-release-tryjob
-    daisy-release-tryjob
-    daisy_skate-release-tryjob
     edgar-release-tryjob
     elm-release-tryjob
     enguarde-release-tryjob
@@ -2890,6 +2908,7 @@
     falco-release-tryjob
     falco_li-release-tryjob
     fizz-accelerator-release-tryjob
+    fizz-cfm-release-tryjob
     fizz-labstation-release-tryjob
     fizz-moblab-release-tryjob
     fizz-release-tryjob
@@ -2900,6 +2919,8 @@
     gnawty-release-tryjob
     gonzo-release-tryjob
     grunt-release-tryjob
+    guado-cfm-release-tryjob
+    guado-kernelnext-release-tryjob
     guado-macrophage-release-tryjob
     guado-release-tryjob
     guado_labstation-release-tryjob
@@ -2907,7 +2928,6 @@
     hana-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
-    jecht-release-tryjob
     kalista-release-tryjob
     kefka-release-tryjob
     kevin-arcnext-release-tryjob
@@ -2915,6 +2935,11 @@
     kevin64-release-tryjob
     kip-release-tryjob
     kukui-release-tryjob
+    lakitu-gpu-release-tryjob
+    lakitu-nc-release-tryjob
+    lakitu-release-tryjob
+    lakitu-st-release-tryjob
+    lakitu_next-release-tryjob
     lars-release-tryjob
     lasilla-ground-release-tryjob
     leon-release-tryjob
@@ -2933,13 +2958,10 @@
     nyan_big-release-tryjob
     nyan_blaze-release-tryjob
     nyan_kitty-release-tryjob
-    oak-release-tryjob
     octavius-release-tryjob
     octopus-release-tryjob
     orco-release-tryjob
     panther-release-tryjob
-    peach_pi-release-tryjob
-    peach_pit-release-tryjob
     peppy-release-tryjob
     pyro-release-tryjob
     quawks-release-tryjob
@@ -2971,6 +2993,7 @@
     veyron_jerry-release-tryjob
     veyron_mickey-release-tryjob
     veyron_mighty-release-tryjob
+    veyron_minnie-kernelnext-release-tryjob
     veyron_minnie-release-tryjob
     veyron_rialto-release-tryjob
     veyron_speedy-release-tryjob
@@ -2982,6 +3005,7 @@
     wolf-release-tryjob
     wooten-release-tryjob
     zako-release-tryjob
+    zork-release-tryjob
   master-toolchain-tryjob
     amd64-llvm-next-toolchain-tryjob
     arm-llvm-next-toolchain-tryjob
@@ -3494,6 +3518,7 @@
   reks-tot-chrome-pfq-informational-tryjob
   reks-tot-chromium-pfq-informational-tryjob
   reks-unittest-stress
+  release-afdo-profile-generate-tryjob
   relm-chrome-pfq-tryjob
   relm-chromium-pfq-tryjob
   relm-compile-only-pre-cq
@@ -3756,24 +3781,6 @@
   squawks-tot-chrome-pfq-informational-tryjob
   squawks-tot-chromium-pfq-informational-tryjob
   squawks-unittest-stress
-  stout-chrome-pfq-tryjob
-  stout-chromium-pfq-tryjob
-  stout-compile-only-pre-cq
-  stout-full-tryjob
-  stout-llvm-next-toolchain-tryjob
-  stout-llvm-toolchain-tryjob
-  stout-no-vmtest-pre-cq
-  stout-paladin-tryjob
-  stout-payloads-tryjob
-  stout-postsubmit-tryjob
-  stout-pre-cq
-  stout-release-afdo-generate-tryjob
-  stout-release-afdo-tryjob
-  stout-release-afdo-use-tryjob
-  stout-release-tryjob
-  stout-tot-chrome-pfq-informational-tryjob
-  stout-tot-chromium-pfq-informational-tryjob
-  stout-unittest-stress
   success-build
   sumo-chrome-pfq-tryjob
   sumo-chromium-pfq-tryjob
@@ -4011,6 +4018,18 @@
   veyron_minnie-compile-only-pre-cq
   veyron_minnie-factory-veyron-6591.B-factorybranch-tryjob
   veyron_minnie-full-tryjob
+  veyron_minnie-kernelnext-chromium-pfq-tryjob
+  veyron_minnie-kernelnext-compile-only-pre-cq
+  veyron_minnie-kernelnext-full-tryjob
+  veyron_minnie-kernelnext-llvm-next-toolchain-tryjob
+  veyron_minnie-kernelnext-llvm-toolchain-tryjob
+  veyron_minnie-kernelnext-no-vmtest-pre-cq
+  veyron_minnie-kernelnext-paladin-tryjob
+  veyron_minnie-kernelnext-postsubmit-tryjob
+  veyron_minnie-kernelnext-pre-cq
+  veyron_minnie-kernelnext-release-tryjob
+  veyron_minnie-kernelnext-tot-chromium-pfq-informational-tryjob
+  veyron_minnie-kernelnext-unittest-stress
   veyron_minnie-llvm-next-toolchain-tryjob
   veyron_minnie-llvm-toolchain-tryjob
   veyron_minnie-no-vmtest-pre-cq
@@ -4215,4 +4234,22 @@
   zako-tot-chrome-pfq-informational-tryjob
   zako-tot-chromium-pfq-informational-tryjob
   zako-unittest-stress
+  zork-chrome-pfq-tryjob
+  zork-chromium-pfq-tryjob
+  zork-compile-only-pre-cq
+  zork-full-tryjob
+  zork-llvm-next-toolchain-tryjob
+  zork-llvm-toolchain-tryjob
+  zork-no-vmtest-pre-cq
+  zork-paladin-tryjob
+  zork-payloads-tryjob
+  zork-postsubmit-tryjob
+  zork-pre-cq
+  zork-release-afdo-generate-tryjob
+  zork-release-afdo-tryjob
+  zork-release-afdo-use-tryjob
+  zork-release-tryjob
+  zork-tot-chrome-pfq-informational-tryjob
+  zork-tot-chromium-pfq-informational-tryjob
+  zork-unittest-stress
 

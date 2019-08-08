@@ -35,6 +35,8 @@ jumbo_source_set("blink") {
     "input_handler_proxy_client.h",
     "input_scroll_elasticity_controller.cc",
     "input_scroll_elasticity_controller.h",
+    "momentum_scroll_jank_tracker.cc",
+    "momentum_scroll_jank_tracker.h",
     "prediction/empty_predictor.cc",
     "prediction/empty_predictor.h",
     "prediction/input_predictor.h",

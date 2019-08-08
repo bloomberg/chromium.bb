@@ -38,6 +38,7 @@ BookmarkContextMenu::BookmarkContextMenu(
     Browser* browser,
     Profile* profile,
     PageNavigator* page_navigator,
+    BookmarkLaunchLocation opened_from,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
     bool close_on_remove)
@@ -47,6 +48,7 @@ BookmarkContextMenu::BookmarkContextMenu(
           browser,
           profile,
           page_navigator,
+          opened_from,
           parent,
           selection)),
       parent_widget_(parent_widget),

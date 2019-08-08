@@ -100,8 +100,8 @@ void DataDevice::OnDragEntered(const ui::DropTargetEvent& event) {
     dnd_actions.insert(DndAction::kAsk);
   }
 
-  data_offer_ =
-      std::make_unique<ScopedDataOffer>(delegate_->OnDataOffer(), this);
+  data_offer_ = std::make_unique<ScopedDataOffer>(
+      delegate_->OnDataOffer(DataOffer::DRAG_DROP), this);
   data_offer_->get()->SetDropData(file_helper_, event.data());
   data_offer_->get()->SetSourceActions(dnd_actions);
   data_offer_->get()->SetActions(base::flat_set<DndAction>(), DndAction::kAsk);
@@ -195,7 +195,7 @@ Surface* DataDevice::GetEffectiveTargetForEvent(
 }
 
 void DataDevice::SetSelectionToCurrentClipboardData() {
-  DataOffer* data_offer = delegate_->OnDataOffer();
+  DataOffer* data_offer = delegate_->OnDataOffer(DataOffer::COPY_PASTE);
   data_offer->SetClipboardData(file_helper_,
                                *ui::Clipboard::GetForCurrentThread());
   delegate_->OnSelection(*data_offer);

@@ -14,6 +14,7 @@
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
@@ -76,15 +77,14 @@ bool CPDF_ObjectStream::HasObject(uint32_t obj_number) const {
   return pdfium::ContainsKey(objects_offsets_, obj_number);
 }
 
-std::unique_ptr<CPDF_Object> CPDF_ObjectStream::ParseObject(
+RetainPtr<CPDF_Object> CPDF_ObjectStream::ParseObject(
     CPDF_IndirectObjectHolder* pObjList,
     uint32_t obj_number) const {
   const auto it = objects_offsets_.find(obj_number);
   if (it == objects_offsets_.end())
     return nullptr;
 
-  std::unique_ptr<CPDF_Object> result =
-      ParseObjectAtOffset(pObjList, it->second);
+  RetainPtr<CPDF_Object> result = ParseObjectAtOffset(pObjList, it->second);
   if (!result)
     return nullptr;
 
@@ -116,7 +116,7 @@ void CPDF_ObjectStream::Init(const CPDF_Stream* stream) {
   }
 }
 
-std::unique_ptr<CPDF_Object> CPDF_ObjectStream::ParseObjectAtOffset(
+RetainPtr<CPDF_Object> CPDF_ObjectStream::ParseObjectAtOffset(
     CPDF_IndirectObjectHolder* pObjList,
     uint32_t object_offset) const {
   FX_SAFE_FILESIZE offset_in_stream = first_object_offset_;

@@ -33,10 +33,6 @@ class Length;
 
 class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
  public:
-  // Override operator new to allocate CSSValue subtype objects onto
-  // a dedicated heap.
-  GC_PLUGIN_IGNORE("crbug.com/443854")
-  void* operator new(size_t size) { return AllocateObject(size, false); }
   static void* AllocateObject(size_t size, bool is_eager) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<CSSValue>::kAffinity>::GetState();
@@ -136,9 +132,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsStepsTimingFunctionValue() const {
     return class_type_ == kStepsTimingFunctionClass;
   }
-  bool IsFramesTimingFunctionValue() const {
-    return class_type_ == kFramesTimingFunctionClass;
-  }
   bool IsGridTemplateAreasValue() const {
     return class_type_ == kGridTemplateAreasClass;
   }
@@ -157,6 +150,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   }
   bool IsGridAutoRepeatValue() const {
     return class_type_ == kGridAutoRepeatClass;
+  }
+  bool IsGridIntegerRepeatValue() const {
+    return class_type_ == kGridIntegerRepeatClass;
   }
   bool IsPendingSubstitutionValue() const {
     return class_type_ == kPendingSubstitutionValueClass;
@@ -216,7 +212,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     // Timing function classes.
     kCubicBezierTimingFunctionClass,
     kStepsTimingFunctionClass,
-    kFramesTimingFunctionClass,
 
     // Other class types.
     kBorderImageSliceClass,
@@ -250,6 +245,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kImageSetClass,
     kGridLineNamesClass,
     kGridAutoRepeatClass,
+    kGridIntegerRepeatClass,
     kAxisClass,
     // Do not append non-list class types here.
   };

@@ -4,10 +4,12 @@
 
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 
-#include "base/files/platform_file.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include <sys/types.h>
+#include <unistd.h>
 
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#include "base/files/platform_file.h"
+#include "media/gpu/macros.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 
@@ -27,4 +29,25 @@ base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle) {
 
   return base::ScopedFD(platform_file);
 }
+
+bool GetFileSize(const int fd, size_t* size) {
+  off_t fd_size = lseek(fd, 0, SEEK_END);
+  lseek(fd, 0, SEEK_SET);
+  if (fd_size < 0u) {
+    VPLOGF(1) << "Fail to find the size of fd.";
+    return false;
+  }
+
+  if (!base::IsValueInRangeForNumericType<size_t>(fd_size)) {
+    VLOGF(1) << "fd_size is out of range of size_t"
+             << ", size=" << size
+             << ", size_t max=" << std::numeric_limits<size_t>::max()
+             << ", size_t min=" << std::numeric_limits<size_t>::min();
+    return false;
+  }
+
+  *size = static_cast<size_t>(fd_size);
+  return true;
+}
+
 }  // namespace arc

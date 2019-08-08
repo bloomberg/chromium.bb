@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -24,6 +25,9 @@ struct CONTENT_EXPORT TextInputState {
 
   // The mode of input field.
   ui::TextInputMode mode;
+
+  // The action of the input field.
+  ui::TextInputAction action;
 
   // The flags of input field (autocorrect, autocomplete, etc.)
   int flags;

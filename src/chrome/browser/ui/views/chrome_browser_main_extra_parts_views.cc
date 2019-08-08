@@ -27,7 +27,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/gpu/gpu.h"  // nogncheck
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
@@ -75,7 +74,7 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
 }
 
 void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   views::InstallDesktopScreenIfNecessary();
 #endif
 }
@@ -83,8 +82,7 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
           ui_devtools::switches::kEnableUiDevTools)) {
-    // Starts the UI Devtools server for the browser UI. On Aura platforms,
-    // ChromeBrowserMainExtraPartsAsh wires up Ash UI for SingleProcessMash.
+    // Starts the UI Devtools server for browser UI (and Ash UI on Chrome OS).
     devtools_server_ = ui_devtools::CreateUiDevToolsServerForViews(
         g_browser_process->system_network_context_manager()->GetContext());
   }
@@ -134,13 +132,4 @@ void ChromeBrowserMainExtraPartsViews::PostMainMessageLoopRun() {
   // down explicitly here to avoid a case where such an event arrives during
   // shutdown.
   relaunch_notification_controller_.reset();
-
-#if defined(USE_AURA)
-  // Explicitly release |devtools_server_| to avoid use-after-free under
-  // single process mash, where |devtools_server_| indirectly accesses
-  // the Env of ash::Shell during destruction and ash::Shell as part of
-  // ChromeBrowserMainExtraPartsAsh is released before
-  // ChromeBrowserMainExtraPartsViews.
-  devtools_server_.reset();
-#endif
 }

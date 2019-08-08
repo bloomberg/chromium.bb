@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/download/public/common/download_export.h"
@@ -42,7 +43,10 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  SimpleDownloadManagerCoordinator();
+  using DownloadWhenFullManagerStartsCallBack =
+      base::RepeatingCallback<void(std::unique_ptr<DownloadUrlParameters>)>;
+  SimpleDownloadManagerCoordinator(const DownloadWhenFullManagerStartsCallBack&
+                                       download_when_full_manager_starts_cb);
   ~SimpleDownloadManagerCoordinator() override;
 
   void AddObserver(Observer* observer);
@@ -63,21 +67,19 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Get the download item for |guid|.
   DownloadItem* GetDownloadByGuid(const std::string& guid);
 
-  // Return whether this object has download manager set.
-  bool HasSetDownloadManager();
-
   // Returns a non-empty notifier to be used for observing download events.
   AllDownloadEventNotifier* GetNotifier();
+
+  // Whether this object is initialized.
+  bool initialized() const { return initialized_; }
 
   bool has_all_history_downloads() const { return has_all_history_downloads_; }
 
  private:
   // SimpleDownloadManager::Observer implementation.
+  void OnDownloadsInitialized() override;
   void OnManagerGoingDown() override;
   void OnDownloadCreated(DownloadItem* item) override;
-
-  // Called when |simple_download_manager_| is initialized.
-  void OnManagerInitialized(bool has_all_history_downloads);
 
   SimpleDownloadManager* simple_download_manager_;
 
@@ -87,9 +89,15 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Whether all the history downloads are ready.
   bool has_all_history_downloads_;
 
+  // Whether current SimpleDownloadManager has all history downloads.
+  bool current_manager_has_all_history_downloads_;
+
   // Whether this object is initialized and active downloads are ready to be
   // retrieved.
   bool initialized_;
+
+  // Callback to download the url when full manager becomes ready.
+  DownloadWhenFullManagerStartsCallBack download_when_full_manager_starts_cb_;
 
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer>::Unchecked observers_;

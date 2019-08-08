@@ -4,23 +4,14 @@
 */
 'use strict';
 
+import ResultChannelSender from './result-channel-sender.js';
 import {
   CacheRequestBase, READONLY, READWRITE, jsonResponse,
 } from './cache-request-base.js';
 
-const STORE_SIDS = 'sids';
+import sha from './sha.js';
 
-// TODO share with utils.js when vulcanize is replaced with webpack
-async function sha(s) {
-  s = new TextEncoder('utf-8').encode(s);
-  const hash = await crypto.subtle.digest('SHA-256', s);
-  const view = new DataView(hash);
-  let hex = '';
-  for (let i = 0; i < view.byteLength; i += 4) {
-    hex += ('00000000' + view.getUint32(i).toString(16)).slice(-8);
-  }
-  return hex;
-}
+const STORE_SIDS = 'sids';
 
 export default class SessionIdCacheRequest extends CacheRequestBase {
   get timingCategory() {
@@ -53,14 +44,16 @@ export default class SessionIdCacheRequest extends CacheRequestBase {
     return entry !== undefined;
   }
 
-  async maybeValidate_(sid) {
-    const isKnown = await this.isKnown_(sid);
-    if (isKnown) return;
-    const response = await fetch(this.fetchEvent.request);
-    const json = await response.json();
-    if (json.sid !== sid) {
-      throw new Error(`short_uri expected ${sid} actual ${json.sid}`);
-    }
+  maybeValidate_(sid) {
+    return (async function* () {
+      const isKnown = await this.isKnown_(sid);
+      if (isKnown) return;
+      const response = await fetch(this.fetchEvent.request);
+      const json = await response.json();
+      if (json.sid !== sid) {
+        throw new Error(`short_uri expected ${sid} actual ${json.sid}`);
+      }
+    }).call(this);
   }
 
   async writeDatabase(sid) {
@@ -72,11 +65,14 @@ export default class SessionIdCacheRequest extends CacheRequestBase {
 
   async getResponse() {
     const body = await this.fetchEvent.request.clone().formData();
-    const sid = await sha(body.get('page_state'));
+    const pageState = body.get('page_state');
+    const sid = await sha(pageState);
     // Update the timestamp even if the sid was already in the database so that
     // we can evict LRU.
     this.scheduleWrite(sid);
-    this.fetchEvent.waitUntil(this.maybeValidate_(sid));
+    const sender = new ResultChannelSender(this.fetchEvent.request.url + '?' +
+      new URLSearchParams({page_state: pageState}));
+    this.fetchEvent.waitUntil(sender.send(this.maybeValidate_(sid)));
     return {sid};
   }
 

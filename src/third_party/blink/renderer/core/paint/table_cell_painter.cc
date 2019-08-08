@@ -41,7 +41,7 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
 }
 
 void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
-                                       const LayoutRect& paint_rect,
+                                       const PhysicalRect& paint_rect,
                                        const LayoutObject& background_object) {
   if (layout_table_cell_.BackgroundTransfersToView())
     return;
@@ -57,7 +57,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
                        layout_table_cell_.Table()->ShouldCollapseBorders();
     GraphicsContextStateSaver state_saver(paint_info.context, should_clip);
     if (should_clip) {
-      LayoutRect clip_rect(paint_rect.Location(), layout_table_cell_.Size());
+      PhysicalRect clip_rect(paint_rect.offset, layout_table_cell_.Size());
       clip_rect.Expand(layout_table_cell_.BorderInsets());
       paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
     }
@@ -69,7 +69,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
 
 void TableCellPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+    const PhysicalOffset& paint_offset) {
   LayoutTable* table = layout_table_cell_.Table();
   const ComputedStyle& style = layout_table_cell_.StyleRef();
   if (!table->ShouldCollapseBorders() &&
@@ -80,14 +80,14 @@ void TableCellPainter::PaintBoxDecorationBackground(
   BoxDecorationData box_decoration_data(paint_info, layout_table_cell_);
 
   const DisplayItemClient* client = nullptr;
-  LayoutRect paint_rect;
+  PhysicalRect paint_rect;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (box_decoration_data.IsPaintingScrollingBackground()) {
     // See BoxPainter::PaintBoxDecorationBackground() for explanations.
     // TODO(wangxianzhu): Perhaps we can merge them for CompositeAfterPaint.
     paint_rect = layout_table_cell_.PhysicalLayoutOverflowRect();
     contents_paint_state.emplace(paint_info, paint_offset, layout_table_cell_);
-    paint_rect.MoveBy(contents_paint_state->PaintOffset());
+    paint_rect.Move(contents_paint_state->PaintOffset());
     paint_rect.Expand(layout_table_cell_.BorderBoxOutsets());
     client = &layout_table_cell_.GetScrollableArea()
                   ->GetScrollingBackgroundDisplayItemClient();
@@ -115,9 +115,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
       // from the overridden BorderXXX() methods). Otherwise the following code
       // is equivalent to BoxPainterBase::PaintInsetBoxShadowWithBorderRect().
       auto inner_rect = paint_rect;
-      inner_rect.ContractEdges(
-          layout_table_cell_.BorderTop(), layout_table_cell_.BorderRight(),
-          layout_table_cell_.BorderBottom(), layout_table_cell_.BorderLeft());
+      inner_rect.Contract(layout_table_cell_.BorderBoxOutsets());
       BoxPainterBase::PaintInsetBoxShadowWithInnerRect(
           paint_info, inner_rect, layout_table_cell_.StyleRef());
     }
@@ -134,7 +132,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
 }
 
 void TableCellPainter::PaintMask(const PaintInfo& paint_info,
-                                 const LayoutPoint& paint_offset) {
+                                 const PhysicalOffset& paint_offset) {
   if (layout_table_cell_.StyleRef().Visibility() != EVisibility::kVisible ||
       paint_info.phase != PaintPhase::kMask)
     return;
@@ -151,17 +149,17 @@ void TableCellPainter::PaintMask(const PaintInfo& paint_info,
 
   DrawingRecorder recorder(paint_info.context, layout_table_cell_,
                            paint_info.phase);
-  LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
+  PhysicalRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
   BoxPainter(layout_table_cell_).PaintMaskImages(paint_info, paint_rect);
 }
 
 // TODO(crbug.com/377847): When table cells fully support subpixel layout, we
 // should not snap the size to pixels here. We should remove this function and
 // snap to pixels for the rect with paint offset applied.
-LayoutRect TableCellPainter::PaintRectNotIncludingVisualOverflow(
-    const LayoutPoint& paint_offset) {
-  return LayoutRect(paint_offset,
-                    LayoutSize(layout_table_cell_.PixelSnappedSize()));
+PhysicalRect TableCellPainter::PaintRectNotIncludingVisualOverflow(
+    const PhysicalOffset& paint_offset) {
+  return PhysicalRect(paint_offset,
+                      PhysicalSize(layout_table_cell_.PixelSnappedSize()));
 }
 
 }  // namespace blink

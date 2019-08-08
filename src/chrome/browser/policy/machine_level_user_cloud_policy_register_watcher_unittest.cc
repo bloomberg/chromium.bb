@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,53 +30,6 @@ namespace {
 constexpr char kEnrollmentToken[] = "enrollment-token";
 constexpr char kDMToken[] = "dm-token";
 constexpr char kClientId[] = "client-id";
-
-// A fake token storage class for tested code to get enrollment token and DM
-// token.
-class FakeDMTokenStorage : public BrowserDMTokenStorage {
- public:
-  FakeDMTokenStorage() = default;
-  std::string RetrieveDMToken() override { return dm_token_; }
-  std::string RetrieveEnrollmentToken() override { return enrollment_token_; }
-  std::string RetrieveClientId() override { return kClientId; }
-  bool ShouldDisplayErrorMessageOnFailure() override {
-    return should_display_error_message_on_failure_;
-  }
-
-  std::string InitClientId() override {
-    NOTREACHED();
-    return std::string();
-  }
-  std::string InitEnrollmentToken() override {
-    NOTREACHED();
-    return std::string();
-  }
-  std::string InitDMToken() override {
-    NOTREACHED();
-    return std::string();
-  }
-  bool InitEnrollmentErrorOption() override {
-    NOTREACHED();
-    return true;
-  }
-
-  void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }
-
-  void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
-  void set_enrollment_token(const std::string& enrollment_token) {
-    enrollment_token_ = enrollment_token;
-  }
-  void set_should_display_error_message_on_failure(bool should_display) {
-    should_display_error_message_on_failure_ = should_display;
-  }
-
- private:
-  std::string enrollment_token_;
-  std::string dm_token_;
-  bool should_display_error_message_on_failure_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDMTokenStorage);
-};
 
 // A fake MachineLevelUserCloudPolicyController that notifies all observers the
 // machine level user cloud policy enrollment process has been finished.
@@ -136,9 +89,9 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
       : watcher_(&controller_),
         dialog_(std::make_unique<MockEnterpriseStartupDialog>()),
         dialog_ptr_(dialog_.get()) {
-    BrowserDMTokenStorage::SetForTesting(&storage_);
-    storage_.set_enrollment_token(kEnrollmentToken);
-    storage_.set_dm_token(std::string());
+    storage_.SetEnrollmentToken(kEnrollmentToken);
+    storage_.SetDMToken(std::string());
+    storage_.SetClientId(kClientId);
     watcher_.SetDialogCreationCallbackForTesting(
         base::BindOnce(&MachineLevelUserCloudPolicyRegisterWatcherTest::
                            CreateEnterpriseStartupDialog,
@@ -146,7 +99,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
   }
 
  protected:
-  FakeDMTokenStorage* storage() { return &storage_; }
+  FakeBrowserDMTokenStorage* storage() { return &storage_; }
   FakeMachineLevelUserCloudPolicyController* controller() {
     return &controller_;
   }
@@ -164,7 +117,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
 
   FakeMachineLevelUserCloudPolicyController controller_;
   MachineLevelUserCloudPolicyRegisterWatcher watcher_;
-  FakeDMTokenStorage storage_;
+  FakeBrowserDMTokenStorage storage_;
   std::unique_ptr<MockEnterpriseStartupDialog> dialog_;
   MockEnterpriseStartupDialog* dialog_ptr_;
 
@@ -173,15 +126,15 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
 
 TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
        NoEnrollmentNeededWithDMToken) {
-  storage()->set_dm_token(kDMToken);
+  storage()->SetDMToken(kDMToken);
   EXPECT_EQ(RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
 
 TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
        NoEnrollmentNeededWithoutEnrollmentToken) {
-  storage()->set_enrollment_token(std::string());
-  storage()->set_dm_token(std::string());
+  storage()->SetEnrollmentToken(std::string());
+  storage()->SetDMToken(std::string());
   EXPECT_EQ(RegisterResult::kNoEnrollmentNeeded,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
@@ -216,7 +169,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
 
   EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
   EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
-  storage()->set_should_display_error_message_on_failure(false);
+  storage()->SetEnrollmentErrorOption(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -320,7 +273,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   base::HistogramTester histogram_tester;
 
   EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
-  storage()->set_should_display_error_message_on_failure(false);
+  storage()->SetEnrollmentErrorOption(false);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -368,7 +321,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
 
   EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
   EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
-  storage()->set_should_display_error_message_on_failure(false);
+  storage()->SetEnrollmentErrorOption(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -392,7 +345,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
        EnrollmentFailedBeforeDialogDisplayWithoutErrorMessage) {
   base::HistogramTester histogram_tester;
 
-  storage()->set_should_display_error_message_on_failure(false);
+  storage()->SetEnrollmentErrorOption(false);
   controller()->FireNotification(false);
   EXPECT_EQ(RegisterResult::kEnrollmentFailedSilentlyBeforeDialogDisplayed,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());

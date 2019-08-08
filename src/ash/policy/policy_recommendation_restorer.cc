@@ -4,7 +4,7 @@
 
 #include "ash/policy/policy_recommendation_restorer.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"

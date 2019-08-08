@@ -9,7 +9,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab.TabFullscreenHandler;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 
 import javax.inject.Inject;
 
@@ -72,6 +72,6 @@ public class CustomTabBrowserControlsVisibilityDelegate
     }
 
     private void updateActiveTabFullscreenEnabledState() {
-        TabFullscreenHandler.updateEnabledState(mTabProvider.get());
+        TabBrowserControlsState.updateEnabledState(mTabProvider.get());
     }
 }

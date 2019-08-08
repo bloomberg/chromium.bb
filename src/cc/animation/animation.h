@@ -47,9 +47,6 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
 
   int id() const { return id_; }
   typedef size_t KeyframeEffectId;
-  ElementId element_id_of_keyframe_effect(
-      KeyframeEffectId keyframe_effect_id) const;
-  bool IsElementAttached(ElementId id) const;
 
   // Parent AnimationHost. Animation can be detached from AnimationTimeline.
   AnimationHost* animation_host() { return animation_host_; }

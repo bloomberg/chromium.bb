@@ -100,9 +100,10 @@ void LocalCardMigrationErrorDialogView::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
+#if defined(GOOGLE_CHROME_BUILD)
   auto* image = new views::ImageView();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
       rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
                                ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
@@ -110,6 +111,7 @@ void LocalCardMigrationErrorDialogView::Init() {
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
+#endif  // GOOGLE_CHROME_BUILD
 
   auto* error_view = new views::View();
   auto* horizontal_layout =
@@ -118,7 +120,7 @@ void LocalCardMigrationErrorDialogView::Init() {
           provider->GetDistanceMetric(
               views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   horizontal_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   error_view->SetBorder(views::CreateEmptyBorder(kMigrationDialogInsets));
   auto* error_image = new views::ImageView();
   error_image->SetImage(

@@ -10,7 +10,7 @@
     android:minHeight="@dimen/autofill_assistant_button_height"
     app:chipColor="@color/filled_button_bg"
     app:rippleColor="@color/filled_button_ripple_color"
-    app:cornerRadius="40dp"
+    app:cornerRadius="@dimen/autofill_assistant_button_corner_radius"
     app:primaryTextAppearance="@style/TextAppearance.WhiteButtonText"
     app:iconWidth="24dp"
     app:iconHeight="24dp"

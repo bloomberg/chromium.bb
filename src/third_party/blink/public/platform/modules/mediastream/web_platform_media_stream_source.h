@@ -34,6 +34,14 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
       base::Callback<void(WebPlatformMediaStreamSource* source,
                           MediaStreamRequestResult result,
                           const WebString& result_name)>;
+  using ConstraintsRepeatingCallback =
+      base::RepeatingCallback<void(WebPlatformMediaStreamSource* source,
+                                   MediaStreamRequestResult result,
+                                   const WebString& result_name)>;
+  using ConstraintsOnceCallback =
+      base::OnceCallback<void(WebPlatformMediaStreamSource* source,
+                              MediaStreamRequestResult result,
+                              const WebString& result_name)>;
 
   // Source constraints key for
   // https://dev.w3.org/2011/webrtc/editor/getusermedia.html.

@@ -46,7 +46,7 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  view->set_id(DialogViewId::SIGN_IN_PROMO_VIEW);
+  view->SetID(DialogViewId::SIGN_IN_PROMO_VIEW);
 
 #if !defined(OS_CHROMEOS)
   sync_promo_delegate_ =
@@ -63,7 +63,7 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
       controller()->GetProfile(), sync_promo_delegate_.get(),
       signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE, params);
 
-  signin_view->set_id(DialogViewId::SIGN_IN_VIEW);
+  signin_view->SetID(DialogViewId::SIGN_IN_VIEW);
   view->AddChildView(signin_view.release());
 #endif
 

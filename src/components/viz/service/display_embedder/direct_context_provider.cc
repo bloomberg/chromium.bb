@@ -15,6 +15,7 @@
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -27,13 +28,17 @@
 
 namespace viz {
 
+DirectContextProviderDelegate::DirectContextProviderDelegate() = default;
+DirectContextProviderDelegate::~DirectContextProviderDelegate() = default;
+
 DirectContextProvider::DirectContextProvider(
     scoped_refptr<gl::GLContext> gl_context,
     scoped_refptr<gl::GLSurface> gl_surface,
     bool supports_alpha,
     const gpu::GpuPreferences& gpu_preferences,
-    gpu::gles2::FeatureInfo* feature_info)
-    : translator_cache_(gpu_preferences) {
+    gpu::gles2::FeatureInfo* feature_info,
+    std::unique_ptr<DirectContextProviderDelegate> delegate)
+    : translator_cache_(gpu_preferences), delegate_(std::move(delegate)) {
   DCHECK(gl_context->IsCurrent(gl_surface.get()));
 
   auto limits = gpu::SharedMemoryLimits::ForMailboxContext();
@@ -42,7 +47,7 @@ DirectContextProvider::DirectContextProvider(
       &translator_cache_, &completeness_cache_, feature_info, true,
       &image_manager_, /*image_factory=*/nullptr,
       /*progress_reporter=*/nullptr, gpu_feature_info_, &discardable_manager_,
-      &passthrough_discardable_manager_, &shared_image_manager_);
+      &passthrough_discardable_manager_, delegate_->GetSharedImageManager());
 
   auto command_buffer = std::make_unique<gpu::CommandBufferDirect>();
 
@@ -189,8 +194,7 @@ class GrContext* DirectContextProvider::GrContext() {
 }
 
 gpu::SharedImageInterface* DirectContextProvider::SharedImageInterface() {
-  NOTREACHED();
-  return nullptr;
+  return delegate_->GetSharedImageInterface();
 }
 
 ContextCacheController* DirectContextProvider::CacheController() {
@@ -277,15 +281,14 @@ void DirectContextProvider::SetLock(base::Lock*) {
 }
 
 void DirectContextProvider::EnsureWorkVisible() {
-  NOTREACHED();
 }
 
 gpu::CommandBufferNamespace DirectContextProvider::GetNamespaceID() const {
-  return gpu::CommandBufferNamespace::INVALID;
+  return delegate_->GetNamespaceID();
 }
 
 gpu::CommandBufferId DirectContextProvider::GetCommandBufferID() const {
-  return gpu::CommandBufferId();
+  return delegate_->GetCommandBufferID();
 }
 
 void DirectContextProvider::FlushPendingWork() {
@@ -293,8 +296,7 @@ void DirectContextProvider::FlushPendingWork() {
 }
 
 uint64_t DirectContextProvider::GenerateFenceSyncRelease() {
-  NOTREACHED();
-  return 0;
+  return delegate_->GenerateFenceSyncRelease();
 }
 
 bool DirectContextProvider::IsFenceSyncReleased(uint64_t release) {
@@ -304,7 +306,7 @@ bool DirectContextProvider::IsFenceSyncReleased(uint64_t release) {
 
 void DirectContextProvider::SignalSyncToken(const gpu::SyncToken& sync_token,
                                             base::OnceClosure callback) {
-  NOTREACHED();
+  delegate_->SignalSyncToken(sync_token, std::move(callback));
 }
 
 void DirectContextProvider::WaitSyncToken(const gpu::SyncToken& sync_token) {
@@ -314,6 +316,11 @@ void DirectContextProvider::WaitSyncToken(const gpu::SyncToken& sync_token) {
 bool DirectContextProvider::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken& sync_token) {
   return false;
+}
+
+void DirectContextProvider::SetDisplayTransform(
+    gfx::OverlayTransform transform) {
+  NOTREACHED();
 }
 
 GLuint DirectContextProvider::GenClientTextureId() {

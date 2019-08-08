@@ -29,11 +29,11 @@ include_rules = [
   "+components/mirroring/mojom",
   "+components/mirroring/service",
   "+components/payments/content/utility",
-  "+components/services/heap_profiling/heap_profiling_service.h",
-  "+components/services/heap_profiling/public",
   "+components/services/patch",
   "+components/services/pdf_compositor/public/cpp",
   "+components/services/pdf_compositor/public/interfaces",
+  "+components/services/quarantine/quarantine_service.h",
+  "+components/services/quarantine/public",
   "+components/services/unzip",
   "+components/wifi",
   "+content/public/child",
@@ -47,21 +47,7 @@ include_rules = [
   "+services/network/public",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
-  "+services/ws/public",
   "+skia/ext",
   "+third_party/libxml",
   "+third_party/zlib/google",
 ]
-
-specific_include_rules = {
-  "mash_service_factory.cc": [
-    "+ash/ash_service.h",
-    "+ash/components/shortcut_viewer/public",
-    "+ash/components/shortcut_viewer/shortcut_viewer_application.h",
-    "+ash/components/tap_visualizer/public",
-    "+ash/components/tap_visualizer/tap_visualizer_app.h",
-    "+ash/public/interfaces",
-    "+ash/window_manager_service.h",
-    "+services/ws/public",
-  ],
-}

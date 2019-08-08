@@ -84,12 +84,18 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,
+                                  bool offset_expanded_bounds,
                                   SkIRect* auto_bounds) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform,
       const cc::FilterOperations* backdrop_filters,
+      const cc::FilterOperations* regular_filters,
+      base::Optional<gfx::RRectF> backdrop_filter_bounds_input,
+      gfx::Transform contents_device_transform,
+      gfx::Transform* backdrop_filter_bounds_transform,
+      base::Optional<gfx::RRectF>* backdrop_filter_bounds,
       gfx::Rect* unclipped_rect) const;
+
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
   sk_sp<SkShader> GetBackdropFilterShader(const RenderPassDrawQuad* quad,
                                           SkTileMode content_tile_mode) const;

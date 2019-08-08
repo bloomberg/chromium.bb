@@ -56,6 +56,7 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
+    case PreviewsType::DEFER_ALL_SCRIPT:
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
@@ -73,6 +74,7 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
   switch (type) {
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
+    case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
     case PreviewsType::LOFI:
     case PreviewsType::LITE_PAGE_REDIRECT:
@@ -89,11 +91,6 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
   return false;
 }
 
-bool IsPreviewsBlacklistIgnoredViaFlag() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnorePreviewsBlacklist);
-}
-
 // We don't care if the ECT is unknown if the slow page threshold is set to 4G
 // (i.e.: all pages).
 bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
@@ -105,9 +102,8 @@ bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
 
 }  // namespace
 
-PreviewsDeciderImpl::PreviewsDeciderImpl(
-    base::Clock* clock)
-    : blacklist_ignored_(IsPreviewsBlacklistIgnoredViaFlag()),
+PreviewsDeciderImpl::PreviewsDeciderImpl(base::Clock* clock)
+    : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()),
       clock_(clock),
       page_id_(1u),
       weak_factory_(this) {}
@@ -170,11 +166,12 @@ void PreviewsDeciderImpl::LogPreviewDecisionMade(
     base::Time time,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>&& passed_reasons,
-    uint64_t page_id) const {
+    PreviewsUserData* user_data) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LogPreviewsEligibilityReason(reason, type);
+  user_data->SetEligibilityReasonForPreview(type, reason);
   previews_ui_service_->LogPreviewDecisionMade(
-      reason, url, time, type, std::move(passed_reasons), page_id);
+      reason, url, time, type, std::move(passed_reasons), user_data->page_id());
 }
 
 void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
@@ -192,6 +189,10 @@ void PreviewsDeciderImpl::ClearBlackList(base::Time begin_time,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   previews_black_list_->ClearBlackList(begin_time, end_time);
+
+  // Removes all fetched hints known to the owned optimization guide.
+  if (previews_opt_guide_)
+    previews_opt_guide_->ClearFetchedHints();
 }
 
 void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {
@@ -217,7 +218,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtNavigationStart(
       DeterminePreviewEligibility(previews_data, url, is_reload, type,
                                   is_drp_server_preview, &passed_reasons);
   LogPreviewDecisionMade(eligibility, url, clock_->Now(), type,
-                         std::move(passed_reasons), previews_data->page_id());
+                         std::move(passed_reasons), previews_data);
   return eligibility == PreviewsEligibilityReason::ALLOWED;
 }
 
@@ -249,6 +250,15 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // Do not allow previews on any authenticated pages.
   if (url.has_username() || url.has_password())
     return PreviewsEligibilityReason::URL_HAS_BASIC_AUTH;
+  passed_reasons->push_back(PreviewsEligibilityReason::URL_HAS_BASIC_AUTH);
+
+  // Do not allow previews for URL suffixes which are excluded. In practice,
+  // this is used to exclude navigations that look like media resources like
+  // navigating to http://chromium.org/video.mp4.
+  if (params::ShouldExcludeMediaSuffix(url))
+    return PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX;
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX);
 
   // Skip blacklist checks if the blacklist is ignored.
   if (!blacklist_ignored_) {
@@ -372,8 +382,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
         committed_url, type, false, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
-                             std::move(passed_reasons),
-                             previews_data->page_id());
+                             std::move(passed_reasons), previews_data);
       return false;
     }
   }
@@ -386,8 +395,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
         previews_data, committed_url, type, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
-                             std::move(passed_reasons),
-                             previews_data->page_id());
+                             std::move(passed_reasons), previews_data);
       return false;
     }
   }

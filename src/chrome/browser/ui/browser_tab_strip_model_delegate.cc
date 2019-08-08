@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_helpers.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,7 +45,7 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {}
 void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
                                             int index,
                                             bool foreground,
-                                            base::Optional<int> group) {
+                                            base::Optional<TabGroupId> group) {
   chrome::AddTabAt(browser_, url, index, foreground, group);
 }
 

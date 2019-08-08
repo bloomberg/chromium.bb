@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 
 namespace content {
 
@@ -85,7 +84,7 @@ void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
     bool success) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!success) {
-    base::ResetAndReturn(&init_cb_).Run(
+    std::move(init_cb_).Run(
         media::PipelineStatus::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
@@ -118,7 +117,7 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
         base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
                    weak_factory_.GetWeakPtr()));
   }
-  base::ResetAndReturn(&init_cb_).Run(status);
+  std::move(init_cb_).Run(status);
 }
 
 void MediaPlayerRendererClient::OnFrameAvailable() {

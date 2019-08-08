@@ -246,6 +246,8 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
 
 void ServiceWorkerPaymentInstrument::OnPaymentAppWindowClosed() {
   delegate_ = nullptr;
+  content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
+      browser_context_);
 }
 
 mojom::PaymentRequestEventDataPtr
@@ -281,6 +283,8 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
       event_data->method_data.push_back(data.Clone());
     }
   }
+
+  event_data->payment_handler_host = std::move(payment_handler_host_);
 
   return event_data;
 }
@@ -349,7 +353,7 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   if (needs_installation_)
     return installable_enabled_method_ == method;
 
-  if (!base::ContainsValue(stored_payment_app_info_->enabled_methods, method))
+  if (!IsValidForPaymentMethodIdentifier(method))
     return false;
 
   // Return true if 'basic-card' is not the only matched payment method. This
@@ -407,8 +411,15 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   return i < stored_payment_app_info_->capabilities.size();
 }
 
-const gfx::ImageSkia* ServiceWorkerPaymentInstrument::icon_image_skia() const {
-  return icon_image_.get();
+bool ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier) const {
+  DCHECK(!needs_installation_);
+  return base::ContainsValue(stored_payment_app_info_->enabled_methods,
+                             payment_method_identifier);
+}
+
+gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {
+  return icon_image_;
 }
 
 }  // namespace payments

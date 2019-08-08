@@ -8,41 +8,18 @@ differs from Google style.
 
 [TOC]
 
-## Use references for all non-null pointer arguments
-Pointer arguments that can never be null should be passed as a reference, even
-if this results in a mutable reference argument.
+## May use mutable reference arguments
 
-> Note: Even though Google style prohibits mutable reference arguments, Blink
-style explicitly permits their use.
+Mutable reference arguments are permitted in Blink, in contrast to Google style.
 
-**Good:**
+> Note: This rule is under [discussion](https://groups.google.com/a/chromium.org/d/msg/blink-dev/O7R4YwyPIHc/mJyEyJs-EAAJ).
+
+**OK:**
 ```c++
-// Passed by mutable reference since |frame| is assumed to be non-null.
+// May be passed by mutable reference since |frame| is assumed to be non-null.
 FrameLoader::FrameLoader(LocalFrame& frame)
     : frame_(&frame),
       progress_tracker_(ProgressTracker::Create(frame)) {
-  // ...
-}
-
-// Optional arguments should still be passed by pointer.
-void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
-  if (dom_window)
-    GetScriptController().ClearWindowProxy();
-
-  if (this->DomWindow())
-    this->DomWindow()->Reset();
-  dom_window_ = dom_window;
-}
-```
-
-**Bad:**
-```c++
-// Since the constructor assumes that |frame| is never null, it should be
-// passed as a mutable reference.
-FrameLoader::FrameLoader(LocalFrame* frame)
-    : frame_(frame),
-      progress_tracker_(ProgressTracker::Create(frame)) {
-  DCHECK(frame_);
   // ...
 }
 ```

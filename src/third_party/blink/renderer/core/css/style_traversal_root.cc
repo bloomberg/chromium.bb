@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/style_traversal_root.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
 
 namespace blink {
 
@@ -53,5 +55,17 @@ void StyleTraversalRoot::ChildrenRemoved(ContainerNode& parent) {
   ClearChildDirtyForAncestors(parent);
   Clear();
 }
+
+#if DCHECK_IS_ON()
+bool StyleTraversalRoot::IsConnectedToDocument(Node& node) const {
+  if (node.IsDocumentNode())
+    return true;
+  for (Node& parent : NodeTraversal::AncestorsOf(node)) {
+    if (parent.IsDocumentNode())
+      return true;
+  }
+  return false;
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink

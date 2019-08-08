@@ -259,13 +259,14 @@ class DisplayRotationBootTest
     : public chromeos::MixinBasedInProcessBrowserTest,
       public testing::WithParamInterface<display::Display::Rotation> {
  protected:
-  DisplayRotationBootTest() = default;
+  DisplayRotationBootTest() {
+    device_state_.set_skip_initial_policy_setup(true);
+  }
   ~DisplayRotationBootTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
-    test_helper_.InstallOwnerKey();
     ash::DisplayConfigurationController::DisableAnimatorForTest();
     chromeos::MixinBasedInProcessBrowserTest::
         SetUpInProcessBrowserTestFixture();

@@ -179,6 +179,139 @@ enum VmstatCounters {
 }
 // End of protos/perfetto/common/sys_stats_counters.proto
 
+// Begin of protos/perfetto/common/trace_stats.proto
+
+// Statistics for the internals of the tracing service.
+//
+// Next id: 10.
+message TraceStats {
+  // From TraceBuffer::Stats.
+  //
+  // Next id: 19.
+  message BufferStats {
+    // Size of the circular buffer in bytes.
+    optional uint64 buffer_size = 12;
+
+    // Num. bytes written into the circular buffer, including chunk headers.
+    optional uint64 bytes_written = 1;
+
+    // Num. bytes overwritten before they have been read (i.e. loss of data).
+    optional uint64 bytes_overwritten = 13;
+
+    // Total size of chunks that were fully read from the circular buffer by the
+    // consumer. This may not be equal to |bytes_written| either in the middle
+    // of tracing, or if |chunks_overwritten| is non-zero. Note that this is the
+    // size of the chunks read from the buffer, including chunk headers, which
+    // will be different from the total size of packets returned to the
+    // consumer.
+    //
+    // The current utilization of the trace buffer (mid-tracing) can be obtained
+    // by subtracting |bytes_read| and |bytes_overwritten| from |bytes_written|,
+    // adding the difference of |padding_bytes_written| and
+    // |padding_bytes_cleared|, and comparing this sum to the |buffer_size|.
+    // Note that this represents the total size of buffered data in the buffer,
+    // yet this data may be spread non-contiguously through the buffer and may
+    // be overridden before the utilization reaches 100%.
+    optional uint64 bytes_read = 14;
+
+    // Num. bytes that were allocated as padding between chunks in the circular
+    // buffer.
+    optional uint64 padding_bytes_written = 15;
+
+    // Num. of padding bytes that were removed from the circular buffer when
+    // they were overwritten.
+    //
+    // The difference between |padding_bytes_written| and
+    // |padding_bytes_cleared| denotes the total size of padding currently
+    // present in the buffer.
+    optional uint64 padding_bytes_cleared = 16;
+
+    // Num. chunks (!= packets) written into the buffer.
+    optional uint64 chunks_written = 2;
+
+    // Num. chunks (!= packets) rewritten into the buffer. This means we rewrote
+    // the same chunk with additional packets appended to the end.
+    optional uint64 chunks_rewritten = 10;
+
+    // Num. chunks overwritten before they have been read (i.e. loss of data).
+    optional uint64 chunks_overwritten = 3;
+
+    // Num. chunks discarded (i.e. loss of data). Can be > 0 only when a buffer
+    // is configured with FillPolicy == DISCARD.
+    optional uint64 chunks_discarded = 18;
+
+    // Num. chunks (!= packets) that were fully read from the circular buffer by
+    // the consumer. This may not be equal to |chunks_written| either in the
+    // middle of tracing, or if |chunks_overwritten| is non-zero.
+    optional uint64 chunks_read = 17;
+
+    // Num. chunks that were committed out of order.
+    optional uint64 chunks_committed_out_of_order = 11;
+
+    // Num. times the ring buffer wrapped around.
+    optional uint64 write_wrap_count = 4;
+
+    // Num. out-of-band (OOB) patches that succeeded.
+    optional uint64 patches_succeeded = 5;
+
+    // Num. OOB patches that failed (e.g., the chunk to patch was gone).
+    optional uint64 patches_failed = 6;
+
+    // Num. readaheads (for large multi-chunk packet reads) that ended up in a
+    // successful packet read.
+    optional uint64 readaheads_succeeded = 7;
+
+    // Num. readaheads aborted because of missing chunks in the sequence stream.
+    // Note that a small number > 0 is totally expected: occasionally, when
+    // issuing a read, the very last packet in a sequence might be incomplete
+    // (because the producer is still writing it while we read). The read will
+    // stop at that point, for that sequence, increasing this counter.
+    optional uint64 readaheads_failed = 8;
+
+    // Num. of violations of the SharedMemoryABI found while writing or reading
+    // the buffer. This is an indication of either a bug in the producer(s) or
+    // malicious producer(s).
+    optional uint64 abi_violations = 9;
+  }
+
+  // Stats for the TraceBuffer(s) of the current trace session.
+  repeated BufferStats buffer_stats = 1;
+
+  // Num. producers connected (whether they are involved in the current tracing
+  // session or not).
+  optional uint32 producers_connected = 2;
+
+  // Num. producers ever seen for all trace sessions since startup (it's a good
+  // proxy for inferring num. producers crashed / killed).
+  optional uint64 producers_seen = 3;
+
+  // Num. data sources registered for all trace sessions.
+  optional uint32 data_sources_registered = 4;
+
+  // Num. data sources ever seen for all trace sessions since startup.
+  optional uint64 data_sources_seen = 5;
+
+  // Num. concurrently active tracing sessions.
+  optional uint32 tracing_sessions = 6;
+
+  // Num. buffers for all tracing session (not just the current one). This will
+  // be >= buffer_stats.size(), because the latter is only about the current
+  // session.
+  optional uint32 total_buffers = 7;
+
+  // The fields below have been introduced in Android Q.
+
+  // Num. chunks that were discarded by the service before attempting to commit
+  // them to a buffer, e.g. because the producer specified an invalid buffer ID.
+  optional uint64 chunks_discarded = 8;
+
+  // Num. patches that were discarded by the service before attempting to apply
+  // them to a buffer, e.g. because the producer specified an invalid buffer ID.
+  optional uint64 patches_discarded = 9;
+}
+
+// End of protos/perfetto/common/trace_stats.proto
+
 // Begin of protos/perfetto/trace/android/android_log.proto
 
 message AndroidLogPacket {
@@ -261,6 +394,42 @@ message PackagesList {
 }
 
 // End of protos/perfetto/trace/android/packages_list.proto
+
+// Begin of protos/perfetto/trace/chrome/chrome_benchmark_metadata.proto
+
+// This message is not intended to be written by the chrome on the device.
+// It's emitted on the host by the telemetry benchmark infrastructure (it's a
+// part of the trace that's written by the telemetry tracing agent).
+message ChromeBenchmarkMetadata {
+  // Time when the benchmark execution started (host unixtime in microseconds).
+  optional int64 benchmark_start_time_us = 1;
+
+  // Time when this particular story was run (host unixtime in microseconds).
+  optional int64 story_run_time_us = 2;
+
+  // Name of benchmark.
+  optional string benchmark_name = 3;
+
+  // Description of benchmark.
+  optional string benchmark_description = 4;
+
+  // Optional label.
+  optional string label = 5;
+
+  // Name of story.
+  optional string story_name = 6;
+
+  // List of story tags.
+  repeated string story_tags = 7;
+
+  // Index of the story run (>0 if the same story was run several times).
+  optional int32 story_run_index = 8;
+
+  // Whether this run failed.
+  optional bool had_failures = 9;
+}
+
+// End of protos/perfetto/trace/chrome/chrome_benchmark_metadata.proto
 
 // Begin of protos/perfetto/trace/clock_snapshot.proto
 
@@ -2338,7 +2507,7 @@ message MmVmscanKswapdSleepFtraceEvent {
 // The writer will emit new entries when it encounters new internable values
 // that aren't yet in the index. Data in current and subsequent TracePackets can
 // then refer to the entry by its position (interning ID, abbreviated "iid") in
-// its index.
+// its index. An interning ID with value 0 is considered invalid (not set).
 //
 // Because of the incremental build-up, the interning index will miss data when
 // TracePackets are lost, e.g. because a chunk was overridden in the central
@@ -2428,7 +2597,6 @@ message PowerRails {
 // Begin of protos/perfetto/trace/profiling/profile_packet.proto
 
 message ProfilePacket {
-  // either a function or library name.
   repeated InternedString strings = 1;
   message InternedString {
     optional uint64 id = 1;
@@ -2465,12 +2633,20 @@ message ProfilePacket {
 
   message HeapSample {
     optional uint64 callstack_id = 1;
-    // bytes allocated at this frame.
+    // bytes allocated at this callstack.
     optional uint64 self_allocated = 2;
-    // bytes allocated at this frame that have been freed.
+    // bytes allocated at this callstack that have been freed.
     optional uint64 self_freed = 3;
+    // bytes allocated at this callstack but not used since the last
+    // clear_refs.
+    // See documentation of idle_allocations in HeapprofdConfig for more
+    // details.
+    optional uint64 self_idle = 7;
     optional uint64 timestamp = 4;  // timestamp [opt]
+    // Number of allocations that were sampled at this callstack.
     optional uint64 alloc_count = 5;
+    // Number of allocations that were sampled at this callstack that have been
+    // freed.
     optional uint64 free_count = 6;
   }
 
@@ -2522,6 +2698,18 @@ message ProfilePacket {
     // buffer being corrupted. THIS IS ALWAYS A BUG IN HEAPPROFD OR CLIENT
     // MEMORY CORRUPTION.
     optional bool buffer_corrupted = 8;
+
+    // Timestamp of the state of the target process that this dump represents.
+    // This can be different to the timestamp of the TracePackets for various
+    // reasons:
+    // * If disconnected is set above, this is the timestamp of last state
+    //   heapprofd had of the process before it disconnected.
+    // * Otherwise, if the rate of events produced by the process is high,
+    //   heapprofd might be behind.
+    //
+    // TODO(fmayer): This is MONOTONIC_COARSE. Refactor ClockSnapshot::Clock
+    //               to have a type enum that we can reuse here.
+    optional uint64 timestamp = 9;
 
     optional ProcessStats stats = 5;
 
@@ -2701,7 +2889,7 @@ message Trace {
 // TracePacket(s).
 //
 // Next reserved id: 13 (up to 15).
-// Next id: 47.
+// Next id: 49.
 message TracePacket {
   // TODO(primiano): in future we should add a timestamp_clock_domain field to
   // allow mixing timestamps from different clock domains.
@@ -2722,7 +2910,7 @@ message TracePacket {
 
     TraceConfig trace_config = 33;
     FtraceStats ftrace_stats = 34;
-    // removed field with id 35
+    TraceStats trace_stats = 35;
     ProfilePacket profile_packet = 37;
     BatteryCounters battery = 38;
     PowerRails power_rails = 40;
@@ -2730,6 +2918,7 @@ message TracePacket {
     SystemInfo system_info = 45;
     Trigger trigger = 46;
     PackagesList packages_list = 47;
+    ChromeBenchmarkMetadata chrome_benchmark_metadata = 48;
 
     // Only used by TrackEvent.
     ProcessDescriptor process_descriptor = 43;
@@ -2742,7 +2931,12 @@ message TracePacket {
     bytes synchronization_marker = 36;
 
     // This field is only used for testing.
-    // removed field with id 268435455  // 2^28 - 1, max field id for protos.
+    // In previous versions of this proto this field had the id 268435455
+    // This caused many problems:
+    // - protozero decoder does not handle field ids larger than 999.
+    // - old versions of protoc produce Java bindings with syntax errors when
+    //   the field id is large enough.
+    // removed field with id 900
   }
 
   // Trusted user id of the producer which generated this packet. Keep in sync
@@ -2956,7 +3150,7 @@ message ThreadDescriptor {
 // messages in separate TracePackets instead.
 //
 // Next reserved id: 7 (up to 15).
-// Next id: 20.
+// Next id: 21.
 message TrackEvent {
   // Timestamp in microseconds (usually CLOCK_MONOTONIC).
   oneof timestamp {
@@ -2982,6 +3176,9 @@ message TrackEvent {
     // but shouldn't be required anymore when we split them into begin/end.
     int64 thread_time_absolute_us = 17;
   }
+
+  // Elapsed retired instruction count during the event.
+  optional int64 thread_instruction_delta = 20;
 
   // We intend to add a binary symbol version of this in the future.
   repeated uint32 category_iids = 3;  // interned EventCategoryName.
@@ -3160,14 +3357,21 @@ message DataSourceConfig {
   // Keeep the lower IDs (up to 99) for fields that are *not* specific to
   // data-sources and needs to be processed by the traced daemon.
 
-  optional FtraceConfig ftrace_config = 100;
+  // All data source config fields must be marked as [lazy=true]. This prevents
+  // the proto-to-cpp generator from recursing into those when generating the
+  // cpp classes and polluting tracing/core with data-source-specific classes.
+  // Instead they are treated as opaque strings containing raw proto bytes.
+
+  optional FtraceConfig ftrace_config = 100 [lazy = true];
+  optional InodeFileConfig inode_file_config = 102 [lazy = true];
+  optional ProcessStatsConfig process_stats_config = 103 [lazy = true];
+  optional SysStatsConfig sys_stats_config = 104 [lazy = true];
+  optional HeapprofdConfig heapprofd_config = 105 [lazy = true];
+  optional AndroidPowerConfig android_power_config = 106 [lazy = true];
+  optional AndroidLogConfig android_log_config = 107 [lazy = true];
+
+  // TODO(primiano): Figure out how to deal with this, needs a multi-side patch.
   optional ChromeConfig chrome_config = 101;
-  optional InodeFileConfig inode_file_config = 102;
-  optional ProcessStatsConfig process_stats_config = 103;
-  optional SysStatsConfig sys_stats_config = 104;
-  optional HeapprofdConfig heapprofd_config = 105;
-  optional AndroidPowerConfig android_power_config = 106;
-  optional AndroidLogConfig android_log_config = 107;
 
   // This is a fallback mechanism to send a free-form text config to the
   // producer. In theory this should never be needed. All the code that
@@ -3399,7 +3603,7 @@ message TestConfig {
 
 // Begin of protos/perfetto/config/trace_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
+// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos
 // to reflect changes in the corresponding C++ headers.
 
 // The overall config that is used when starting a new tracing session through
@@ -3407,7 +3611,7 @@ message TestConfig {
 // It contains the general config for the logging buffer(s) and the configs for
 // all the data source being enabled.
 //
-// Next id: 18.
+// Next id: 23.
 message TraceConfig {
   message BufferConfig {
     optional uint32 size_kb = 1;
@@ -3450,6 +3654,18 @@ message TraceConfig {
     repeated string producer_name_filter = 2;
   }
   repeated DataSource data_sources = 2;
+
+  // Config for builtin trace packets emitted by perfetto like trace stats,
+  // system info, etc.
+  message BuiltinDataSource {
+    // Disable emitting clock timestamps into the trace.
+    optional bool disable_clock_snapshotting = 1;
+
+    optional bool disable_trace_config = 2;
+
+    optional bool disable_system_info = 3;
+  }
+  optional BuiltinDataSource builtin_data_sources = 20;
 
   // If specified, the trace will be stopped |duration_ms| after starting.
   // However in case of traces with triggers, see
@@ -3545,8 +3761,7 @@ message TraceConfig {
   // Default 5s.
   optional uint32 flush_timeout_ms = 14;
 
-  // Disable emitting clock timestamps into the trace.
-  optional bool disable_clock_snapshotting = 15;
+  reserved 15;  // |disable_clock_snapshotting| moved.
 
   // Android-only. If set, sends an intent to the Traceur system app when the
   // trace ends to notify it about the trace readiness.
@@ -3613,6 +3828,38 @@ message TraceConfig {
   // producer and send these triggers, potentially stopping or starting traces
   // that were previous configured to use a TriggerConfig.
   repeated string activate_triggers = 18;
+
+  // Configuration for trace contents that reference earlier trace data. For
+  // example, a data source might intern strings, and emit packets containing
+  // {interned id : string} pairs. Future packets from that data source can then
+  // use the interned ids instead of duplicating the raw string contents. The
+  // trace parser will then need to use that interning table to fully interpret
+  // the rest of the trace.
+  message IncrementalStateConfig {
+    // If nonzero, notify eligible data sources to clear their incremental state
+    // periodically, with the given period. The notification is sent only to
+    // data sources that have |handles_incremental_state_clear| set in their
+    // DataSourceDescriptor. The notification requests that the data source
+    // stops referring to past trace contents. This is particularly useful when
+    // tracing in ring buffer mode, where it is not exceptional to overwrite old
+    // trace data.
+    //
+    // Warning: this time-based global clearing is likely to be removed in the
+    // future, to be replaced with a smarter way of sending the notifications
+    // only when necessary.
+    optional uint32 clear_period_ms = 1;
+  }
+  optional IncrementalStateConfig incremental_state_config = 21;
+
+  // Additional guardrail used by the Perfetto command line client.
+  // On user builds when --dropbox is set perfetto will refuse to trace unless
+  // this is also set.
+  // Added in Q.
+  optional bool allow_user_build_tracing = 19;
+
+  // If set the tracing service will ensure there is at most one tracing session
+  // with this key.
+  optional string unique_session_name = 22;
 }
 
 // End of protos/perfetto/config/trace_config.proto
@@ -3646,7 +3893,19 @@ message HeapprofdConfig {
 
   // For watermark based triggering or local debugging.
   repeated uint64 pid = 4;
+
+  // Profile all processes eligible for profiling on the system.
+  // See https://docs.perfetto.dev/#/heapprofd?id=target-processes for which
+  // processes are eligible.
+  //
+  // On unmodified userdebug builds, this will lead to system crashes. Zygote
+  // will crash when trying to launch a new process as it will have an
+  // unexpected open socket to heapprofd.
+  //
+  // heapprofd will likely be overloaded by the amount of data for low
+  // sampling intervals.
   optional bool all = 5;
+
   // Do not emit function names for mappings starting with this prefix.
   // E.g. /system to not emit symbols for any system libraries.
   repeated string skip_symbol_prefix = 7;
@@ -3667,6 +3926,34 @@ message HeapprofdConfig {
   // * a power of two,
   // * a multiple of 4096.
   optional uint64 shmem_size_bytes = 8;
+
+  // When the shmem buffer is full, block the client instead of ending the
+  // trace. Use with caution as this will significantly slow down the target
+  // process.
+  optional bool block_client = 9;
+
+  // Do not profile processes from startup, only match already running
+  // processes.
+  //
+  // Can not be set at the same time as no_running.
+  optional bool no_startup = 10;
+
+  // Do not profile running processes. Only match processes on startup.
+  //
+  // Can not be set at the same time as no_startup.
+  optional bool no_running = 11;
+
+  // Gather information on how many bytes of allocations are on non-referenced
+  // pages. The way to use this generally is:
+  // 1. Start profile of app.
+  // 2. Start app.
+  // 3. echo 1 > /proc/$APP_PID/clear_refs.
+  // 4. Do operations.
+  // 5. End profile.
+  //
+  // You can then find the allocations that were not used for the operations you
+  // did in step 4.
+  optional bool idle_allocations = 12;
 }
 
 // End of protos/perfetto/config/profiling/heapprofd_config.proto

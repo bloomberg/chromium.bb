@@ -25,6 +25,8 @@ const base::TimeDelta kForbiddenCheckDelay = base::TimeDelta::FromDays(7);
 
 const char kUserSettingEnabled[] = "offline_prefetch.enabled";
 const char kBackoff[] = "offline_prefetch.backoff";
+const char kContentSuggestionsNotificationsEnabled[] =
+    "ntp.content_suggestions.notifications.enabled";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kBackoff);
@@ -34,6 +36,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kPrefetchTestingHeaderPref, std::string());
   registry->RegisterBooleanPref(kEnabledByServer, false);
   registry->RegisterTimePref(kNextForbiddenCheckTimePref, base::Time());
+  registry->RegisterBooleanPref(kContentSuggestionsNotificationsEnabled, true);
 }
 
 void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled) {

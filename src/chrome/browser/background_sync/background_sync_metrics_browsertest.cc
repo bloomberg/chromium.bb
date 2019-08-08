@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/history/core/browser/history_service.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
@@ -24,17 +24,18 @@ class BackgroundSyncMetricsBrowserTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
 
     recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
-    auto* history_service = HistoryServiceFactory::GetForProfile(
-        profile, ServiceAccessType::EXPLICIT_ACCESS);
-    DCHECK(history_service);
+    auto* ukm_background_service =
+        ukm::UkmBackgroundRecorderFactory::GetForProfile(profile);
+    DCHECK(ukm_background_service);
 
     background_sync_metrics_ =
-        std::make_unique<BackgroundSyncMetrics>(history_service);
+        std::make_unique<BackgroundSyncMetrics>(ukm_background_service);
 
     // Adds the URL to the history so that UKM events for this origin are
     // recorded.
-    history_service->AddPage(GURL("https://backgroundsync.com/page"),
-                             base::Time::Now(), history::SOURCE_BROWSED);
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL url(embedded_test_server()->GetURL("/links.html"));
+    ui_test_utils::NavigateToURL(browser(), url);
   }
 
  protected:
@@ -52,14 +53,9 @@ class BackgroundSyncMetricsBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
-                       NoUkmRecordingsWithMissingHistory) {
+                       BackgroundSyncUkmEventsAreRecorded) {
   background_sync_metrics_->MaybeRecordRegistrationEvent(
-      url::Origin::Create(GURL("https://notinhistory.com")),
-      /* can_fire= */ false,
-      /* is_reregistered= */ false);
-
-  background_sync_metrics_->MaybeRecordRegistrationEvent(
-      url::Origin::Create(GURL("https://backgroundsync.com")),
+      url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
       /* can_fire= */ true,
       /* is_reregistered= */ false);
   WaitForUkm();
@@ -77,18 +73,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
   }
 
   background_sync_metrics_->MaybeRecordCompletionEvent(
-      url::Origin::Create(GURL("https://backgroundsync.com")),
+      url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
       /* status_code= */ blink::ServiceWorkerStatusCode::kOk,
       /* num_attempts= */ 2, /* max_attempts= */ 5);
   WaitForUkm();
-
-  // Sanity check that no additional BackgroundSyncRegistered events were
-  // logged.
-  {
-    auto entries = recorder_->GetEntriesByName(
-        ukm::builders::BackgroundSyncRegistered::kEntryName);
-    EXPECT_EQ(entries.size(), 1u);
-  }
 
   {
     auto entries = recorder_->GetEntriesByName(

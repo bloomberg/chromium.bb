@@ -37,9 +37,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
-#include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -170,72 +168,6 @@ namespace blink {
 class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
  public:
   typedef HeapVector<Member<AXObject>> AXObjectVector;
-
-  struct AXSelection {
-    DISALLOW_NEW();
-    // The deepest descendant in which the range starts.
-    // (nullptr means the current object.)
-    Persistent<AXObject> anchor_object;
-    // The number of characters and child objects in the anchor object
-    // before the range starts.
-    int anchor_offset;
-    // When the same character offset could correspond to two possible
-    // cursor positions, upstream means it's on the previous line rather
-    // than the next line.
-    TextAffinity anchor_affinity;
-
-    // The deepest descendant in which the range ends.
-    // (nullptr means the current object.)
-    Persistent<AXObject> focus_object;
-    // The number of characters and child objects in the focus object
-    // before the range ends.
-    int focus_offset;
-    // When the same character offset could correspond to two possible
-    // cursor positions, upstream means it's on the previous line rather
-    // than the next line.
-    TextAffinity focus_affinity;
-
-    AXSelection()
-        : anchor_object(nullptr),
-          anchor_offset(-1),
-          anchor_affinity(TextAffinity::kUpstream),
-          focus_object(nullptr),
-          focus_offset(-1),
-          focus_affinity(TextAffinity::kDownstream) {}
-
-    AXSelection(int start_offset, int end_offset)
-        : anchor_object(nullptr),
-          anchor_offset(start_offset),
-          anchor_affinity(TextAffinity::kUpstream),
-          focus_object(nullptr),
-          focus_offset(end_offset),
-          focus_affinity(TextAffinity::kDownstream) {}
-
-    AXSelection(AXObject* anchor_object,
-                int anchor_offset,
-                TextAffinity anchor_affinity,
-                AXObject* focus_object,
-                int focus_offset,
-                TextAffinity focus_affinity)
-        : anchor_object(anchor_object),
-          anchor_offset(anchor_offset),
-          anchor_affinity(anchor_affinity),
-          focus_object(focus_object),
-          focus_offset(focus_offset),
-          focus_affinity(focus_affinity) {}
-
-    bool IsValid() const {
-      return ((anchor_object && focus_object) ||
-              (!anchor_object && !focus_object)) &&
-             anchor_offset >= 0 && focus_offset >= 0;
-    }
-
-    // Determines if the range only refers to text offsets under the current
-    // object.
-    bool IsSimple() const {
-      return anchor_object == focus_object || !anchor_object || !focus_object;
-    }
-  };
 
   // Iterator for doing an in-order traversal of the accessibility tree.
   // Includes ignored objects in the traversal.
@@ -541,6 +473,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return kExpandedUndefined;
   }
   virtual bool IsFocused() const { return false; }
+  // aria-grabbed is deprecated in WAI-ARIA 1.1.
+  virtual AccessibilityGrabbedState IsGrabbed() const {
+    return kGrabbedStateUndefined;
+  }
   virtual bool IsHovered() const { return false; }
   virtual bool IsLinked() const { return false; }
   virtual bool IsLoaded() const { return false; }
@@ -776,7 +712,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool HasGlobalARIAAttribute() const;
   bool SupportsARIAExpanded() const;
   virtual bool SupportsARIADragging() const { return false; }
-  virtual bool SupportsARIADropping() const { return false; }
+  virtual void Dropeffects(Vector<ax::mojom::Dropeffect>& dropeffects) const {}
   virtual bool SupportsARIAFlowTo() const { return false; }
   virtual bool SupportsARIAOwns() const { return false; }
   bool SupportsRangeValue() const;
@@ -898,15 +834,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool HasAttribute(const QualifiedName&) const;
   const AtomicString& GetAttribute(const QualifiedName&) const;
 
-  // Methods that retrieve or manipulate the current selection.
-
-  // Get the current selection from anywhere in the accessibility tree.
-  virtual AXSelection Selection() const { return AXSelection(); }
-  // Gets only the start and end offsets of the selection computed using the
-  // current object as the starting point. Returns a null selection if there is
-  // no selection in the subtree rooted at this object.
-  virtual AXSelection SelectionUnderObject() const { return AXSelection(); }
-
   // Scrollable containers.
   bool IsScrollableContainer() const;
   IntPoint GetScrollOffset() const;
@@ -968,7 +895,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool RequestScrollToMakeVisibleAction();
   bool RequestScrollToMakeVisibleWithSubFocusAction(const IntRect&);
   bool RequestSetSelectedAction(bool);
-  bool RequestSetSelectionAction(const AXSelection&);
   bool RequestSetSequentialFocusNavigationStartingPointAction();
   bool RequestSetValueAction(const String&);
   bool RequestShowContextMenuAction();
@@ -991,7 +917,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool OnNativeScrollToMakeVisibleWithSubFocusAction(
       const IntRect&) const;
   virtual bool OnNativeSetSelectedAction(bool);
-  virtual bool OnNativeSetSelectionAction(const AXSelection&);
   virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
   virtual bool OnNativeSetValueAction(const String&);
   virtual bool OnNativeShowContextMenuAction();
@@ -1003,10 +928,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void HandleAriaExpandedChanged() {}
   virtual void SelectionChanged();
   virtual void TextChanged() {}
-
-  // Text metrics. Most of these should be deprecated, needs major cleanup.
-  virtual VisiblePosition VisiblePositionForIndex(int) const;
-  virtual int Index(const VisiblePosition&) const { return -1; }
 
   // Static helper functions.
   static bool IsARIAControl(ax::mojom::Role);

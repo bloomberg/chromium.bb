@@ -15,6 +15,12 @@ const service_manager::Manifest& GetLocalStateManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kLocalStateServiceName)
           .WithDisplayName("Local state preferences")
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("utility")
+                  .Build())
           .ExposeCapability("pref_client",
                             service_manager::Manifest::InterfaceList<
                                 mojom::PrefStoreConnector>())

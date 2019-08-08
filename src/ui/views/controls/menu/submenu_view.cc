@@ -63,22 +63,23 @@ SubmenuView::~SubmenuView() {
 }
 
 bool SubmenuView::HasEmptyMenuItemView() const {
-  return std::any_of(children().cbegin(), children().cend(),
-                     [](const View* child) {
-                       return child->id() == MenuItemView::kEmptyMenuItemViewID;
-                     });
+  return std::any_of(
+      children().cbegin(), children().cend(), [](const View* child) {
+        return child->GetID() == MenuItemView::kEmptyMenuItemViewID;
+      });
 }
 
 bool SubmenuView::HasVisibleChildren() const {
   const auto menu_items = GetMenuItems();
-  return std::any_of(menu_items.cbegin(), menu_items.cend(),
-                     [](const MenuItemView* item) { return item->visible(); });
+  return std::any_of(
+      menu_items.cbegin(), menu_items.cend(),
+      [](const MenuItemView* item) { return item->GetVisible(); });
 }
 
 SubmenuView::MenuItems SubmenuView::GetMenuItems() const {
   MenuItems menu_items;
   for (View* child : children()) {
-    if (child->id() == MenuItemView::kMenuItemViewID)
+    if (child->GetID() == MenuItemView::kMenuItemViewID)
       menu_items.push_back(static_cast<MenuItemView*>(child));
   }
   return menu_items;
@@ -128,7 +129,7 @@ void SubmenuView::Layout() {
   int y = insets.top();
   int menu_item_width = width() - insets.width();
   for (View* child : children()) {
-    if (child->visible()) {
+    if (child->GetVisible()) {
       int child_height = child->GetHeightForWidth(menu_item_width);
       child->SetBounds(x, y, menu_item_width, child_height);
       y += child_height;
@@ -153,9 +154,9 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
   // using that width. This allows views that have flexible widths to adjust
   // accordingly.
   for (const View* child : children()) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
-    if (child->id() == MenuItemView::kMenuItemViewID) {
+    if (child->GetID() == MenuItemView::kMenuItemViewID) {
       const MenuItemView* menu = static_cast<const MenuItemView*>(child);
       const MenuItemView::MenuItemDimensions& dimensions =
           menu->GetDimensions();
@@ -189,8 +190,9 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
   // Then, the height for that width.
   const int menu_item_width = width - insets.width();
   const auto get_height = [menu_item_width](int height, const View* child) {
-    return height +
-           (child->visible() ? child->GetHeightForWidth(menu_item_width) : 0);
+    return height + (child->GetVisible()
+                         ? child->GetHeightForWidth(menu_item_width)
+                         : 0);
   };
   const int height =
       std::accumulate(children().cbegin(), children().cend(), 0, get_height);
@@ -477,7 +479,7 @@ void SubmenuView::MenuHostDestroyed() {
   host_ = nullptr;
   MenuController* controller = parent_menu_item_->GetMenuController();
   if (controller)
-    controller->Cancel(MenuController::EXIT_DESTROYED);
+    controller->Cancel(MenuController::ExitType::kDestroyed);
 }
 
 const char* SubmenuView::GetClassName() const {

@@ -60,7 +60,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 65;
+const int kThemePackVersion = 66;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -779,6 +779,8 @@ void BrowserThemePack::BuildFromColor(SkColor color, BrowserThemePack* pack) {
   SkColor tab_color;
   pack->GetColor(TP::COLOR_TOOLBAR, &tab_color);
   pack->SetColor(TP::COLOR_NTP_BACKGROUND, tab_color);
+  pack->SetColor(TP::COLOR_NTP_TEXT,
+                 color_utils::GetColorWithMaxContrast(tab_color));
 
   SkColor tab_text_color;
   pack->GetColor(TP::COLOR_TAB_TEXT, &tab_text_color);
@@ -810,10 +812,10 @@ void BrowserThemePack::GenerateFrameAndTabColors(SkColor color,
     frame_text_color = color_utils::GetColorWithMaxContrast(frame_color);
     SkColor blend_target =
         color_utils::GetColorWithMaxContrast(frame_text_color);
-    SkAlpha alpha = color_utils::GetBlendValueWithMinimumContrast(
-        frame_color, blend_target, frame_text_color,
-        kPreferredReadableContrastRatio);
-    frame_color = color_utils::AlphaBlend(blend_target, frame_color, alpha);
+    frame_color = color_utils::BlendForMinContrast(
+                      frame_color, frame_text_color, blend_target,
+                      kPreferredReadableContrastRatio)
+                      .color;
 
     // Generate active tab color so that it has enough contrast with the
     // |frame_color| to avoid the isolation line in the tab strip.
@@ -1079,6 +1081,9 @@ void BrowserThemePack::AdjustThemePack() {
   // with the frame/tab behind them.
   GenerateMissingTextColors();
 
+  // Generates missing NTP related colors.
+  GenerateMissingNtpColors();
+
   // Make sure the |images_on_file_thread_| has bitmaps for supported
   // scale factors before passing to FILE thread.
   images_on_file_thread_ = images_;
@@ -1158,8 +1163,6 @@ void BrowserThemePack::InitDisplayProperties() {
     display_properties_[i].id = -1;
     display_properties_[i].property = 0;
   }
-  display_properties_[0].id = TP::NTP_LOGO_ALTERNATE;
-  display_properties_[0].property = 1;
 }
 
 void BrowserThemePack::InitSourceImages() {
@@ -1825,9 +1828,25 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
     }
   }
 
-  const SkColor result_color =
-      color_utils::GetColorWithMinimumContrast(blend_source_color, bg_color);
-  SetColor(text_color_id, result_color);
+  SetColor(
+      text_color_id,
+      color_utils::BlendForMinContrast(blend_source_color, bg_color).color);
+}
+
+void BrowserThemePack::GenerateMissingNtpColors() {
+  // Calculate NTP text color based on NTP background.
+  SkColor ntp_background_color;
+  gfx::Image image = GetImageNamed(IDR_THEME_NTP_BACKGROUND);
+  if (!image.IsEmpty()) {
+    ntp_background_color = ComputeImageColor(image, image.Height());
+    SetColorIfUnspecified(
+        TP::COLOR_NTP_TEXT,
+        color_utils::GetColorWithMaxContrast(ntp_background_color));
+  } else if (GetColor(TP::COLOR_NTP_BACKGROUND, &ntp_background_color)) {
+    SetColorIfUnspecified(
+        TP::COLOR_NTP_TEXT,
+        color_utils::GetColorWithMaxContrast(ntp_background_color));
+  }
 }
 
 void BrowserThemePack::RepackImages(const ImageCache& images,

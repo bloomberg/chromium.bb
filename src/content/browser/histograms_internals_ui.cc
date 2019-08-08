@@ -36,7 +36,6 @@ WebUIDataSource* CreateHistogramsHTMLSource() {
 
   source->AddResourcePath(kHistogramsUIJs, IDR_HISTOGRAMS_INTERNALS_JS);
   source->SetDefaultResource(IDR_HISTOGRAMS_INTERNALS_HTML);
-  source->UseGzip();
   return source;
 }
 

@@ -6,7 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("wayland_interfaces") {
   sources = [
-    "wayland_connection.mojom",
+    "wayland_buffer_manager.mojom",
   ]
 
   public_deps = [

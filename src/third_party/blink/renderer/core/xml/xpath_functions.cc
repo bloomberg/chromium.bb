@@ -384,9 +384,9 @@ static inline String ExpandedNameLocalPart(Node* node) {
     case Node::kElementNode:
       return ToElement(node)->localName();
     case Node::kAttributeNode:
-      return ToAttr(node)->localName();
+      return To<Attr>(node)->localName();
     case Node::kProcessingInstructionNode:
-      return ToProcessingInstruction(node)->target();
+      return To<ProcessingInstruction>(node)->target();
     default:
       return String();
   }
@@ -397,7 +397,7 @@ static inline String ExpandedNamespaceURI(Node* node) {
     case Node::kElementNode:
       return ToElement(node)->namespaceURI();
     case Node::kAttributeNode:
-      return ToAttr(node)->namespaceURI();
+      return To<Attr>(node)->namespaceURI();
     default:
       return String();
   }
@@ -411,7 +411,7 @@ static inline String ExpandedName(Node* node) {
       prefix = ToElement(node)->prefix();
       break;
     case Node::kAttributeNode:
-      prefix = ToAttr(node)->prefix();
+      prefix = To<Attr>(node)->prefix();
       break;
     default:
       break;

@@ -12,7 +12,7 @@ class TracingController(object):
     """Set the TelemetryInfo object to be recorded in the trace data."""
     self._tracing_controller_backend.SetTelemetryInfo(telemetry_info)
 
-  def StartTracing(self, tracing_config, timeout=10):
+  def StartTracing(self, tracing_config, timeout=20):
     """Starts tracing.
 
     tracing config contains both tracing options and category filters.
@@ -56,10 +56,6 @@ class TracingController(object):
   @property
   def is_tracing_running(self):
     return self._tracing_controller_backend.is_tracing_running
-
-  def IsChromeTracingSupported(self):
-    """Returns whether chrome tracing is supported."""
-    return self._tracing_controller_backend.IsChromeTracingSupported()
 
   def ClearStateIfNeeded(self):
     """Clear tracing state if needed."""

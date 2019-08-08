@@ -15,7 +15,7 @@ let testName =
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [
+let requestSessionModes = [
   'inline',
   'immersive-vr',
 ];
@@ -23,8 +23,8 @@ let requestSessionOptions = [
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl),
-    outputContext: getOutputContext()
+    baseLayer: new XRWebGLLayer(session, gl, {
+        compositionDisabled: session.mode == 'inline' })
   });
 
   fakeDeviceController.setStageTransform(null);
@@ -38,7 +38,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
-  return session.requestReferenceSpace({ type: "stationary", subtype: "floor-level" })
+  return session.requestReferenceSpace('local-floor')
     .then((referenceSpace) => new Promise((resolve, reject) => {
       function onFirstFrame(time, xrFrame) {
         // On the first frame where the pose has been initialized, the stage
@@ -80,6 +80,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

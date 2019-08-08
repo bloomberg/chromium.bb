@@ -8,7 +8,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -29,18 +28,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     private static final int MAX_CONTROLS_ANIMATION_DURATION_MS = 200;
 
-    /**
-     * An interface for notification about browser controls offset updates.
-     */
-    public interface Observer {
-        /**
-         * Called when the browser controls are fully visible on screen.
-         */
-        void onBrowserControlsFullyVisible(Tab tab);
-    }
-
     private final Tab mTab;
-    private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final TabObserver mTabObserver;
 
     private int mPreviousTopControlsOffsetY;
@@ -100,28 +88,6 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
     }
 
     /**
-     * @return Whether the browser controls are fully visible on screen.
-     */
-    public boolean areBrowserControlsFullyVisible() {
-        final FullscreenManager manager = mTab.getFullscreenManager();
-        return Float.compare(0f, manager.getBrowserControlHiddenRatio()) == 0;
-    }
-
-    /**
-     * @param observer The observer to be added to get notifications from this class.
-     */
-    public void addObserver(Observer observer) {
-        mObservers.addObserver(observer);
-    }
-
-    /**
-     * @param observer The observer to be removed to cancel notifications from this class.
-     */
-    public void removeObserver(Observer observer) {
-        mObservers.removeObserver(observer);
-    }
-
-    /**
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
@@ -137,7 +103,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         mPreviousContentOffsetY = contentOffsetY;
         mAreOffsetsInitialized = true;
 
-        if (mTab.getFullscreenManager() == null) return;
+        if (FullscreenManager.from(mTab) == null) return;
         if (SadTab.isShowing(mTab) || mTab.isNativePage()) {
             showAndroidControls(false);
         } else {
@@ -152,13 +118,13 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      * @param animate Whether a slide-in animation should be run.
      */
     public void showAndroidControls(boolean animate) {
-        if (mTab.getFullscreenManager() == null) return;
+        FullscreenManager manager = FullscreenManager.from(mTab);
+        if (manager == null) return;
 
         if (animate) {
             runBrowserDrivenShowAnimation();
         } else {
-            updateFullscreenManagerOffsets(
-                    true, 0, 0, mTab.getFullscreenManager().getContentOffset());
+            updateFullscreenManagerOffsets(true, 0, 0, manager.getContentOffset());
         }
     }
 
@@ -167,7 +133,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     public void resetPositions() {
         resetControlsOffsetOverridden();
-        if (mTab.getFullscreenManager() == null) return;
+        if (FullscreenManager.from(mTab) == null) return;
 
         // Make sure the dominant control offsets have been set.
         if (mAreOffsetsInitialized) {
@@ -176,7 +142,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         } else {
             showAndroidControls(false);
         }
-        TabFullscreenHandler.updateEnabledState(mTab);
+        TabBrowserControlsState.updateEnabledState(mTab);
     }
 
     /**
@@ -194,7 +160,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     private void updateFullscreenManagerOffsets(boolean toNonFullscreen, int topControlsOffset,
             int bottomControlsOffset, int topContentOffset) {
-        final FullscreenManager manager = mTab.getFullscreenManager();
+        final FullscreenManager manager = FullscreenManager.from(mTab);
         if (manager == null) return;
 
         if (mIsInVr) {
@@ -213,11 +179,6 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
             manager.setPositionsForTabToNonFullscreen();
         } else {
             manager.setPositionsForTab(topControlsOffset, bottomControlsOffset, topContentOffset);
-        }
-
-        if (!areBrowserControlsFullyVisible()) return;
-        for (Observer observer : mObservers) {
-            observer.onBrowserControlsFullyVisible(mTab);
         }
     }
 
@@ -238,7 +199,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
 
         mIsControlsOffsetOverridden = true;
 
-        final FullscreenManager manager = mTab.getFullscreenManager();
+        final FullscreenManager manager = FullscreenManager.from(mTab);
         final float hiddenRatio = manager.getBrowserControlHiddenRatio();
         final int topControlHeight = manager.getTopControlsHeight();
         final int topControlOffset = manager.getTopControlOffset();

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -26,8 +27,8 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/test_extension_registry_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -129,8 +130,7 @@ SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
       test_web_app_provider_creator_(
           base::BindOnce(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
                          base::Unretained(this))) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
+  scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
   content::WebUIControllerFactory::RegisterFactory(factory_.get());
 }
 
@@ -155,7 +155,7 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
 
   base::flat_map<SystemAppType, GURL> system_apps;
   system_apps[SystemAppType::SETTINGS] =
-      GURL("chrome://test-system-app/pwa.html");
+      content::GetWebUIURL("test-system-app/pwa.html");
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:
@@ -164,13 +164,24 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   return provider;
 }
 
-Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch() {
+Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
+    SystemAppType system_app_type) {
   Profile* profile = browser()->profile();
 
+  // Wait for the System Web Apps to install.
+  base::RunLoop run_loop;
+  test_system_web_app_manager_->on_apps_synchronized().Post(
+      FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  base::Optional<AppId> app_id =
+      test_system_web_app_manager_->GetAppIdForSystemApp(system_app_type);
+  DCHECK(app_id.has_value());
+
   const extensions::Extension* app =
-      extensions::TestExtensionRegistryObserver(
-          extensions::ExtensionRegistry::Get(profile))
-          .WaitForExtensionInstalled();
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          app_id.value());
+  DCHECK(app);
 
   return extensions::browsertest_util::LaunchAppBrowser(profile, app);
 }
@@ -179,7 +190,8 @@ Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch() {
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   const extensions::Extension* app =
       static_cast<extensions::HostedAppBrowserController*>(
-          WaitForSystemAppInstallAndLaunch()->web_app_controller())
+          WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS)
+              ->app_controller())
           ->GetExtensionForTesting();
   EXPECT_EQ("Test System App", app->name());
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),
@@ -189,13 +201,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
 
   // The app should be a PWA.
   EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
-                browser()->profile(), GURL("chrome://test-system-app/")),
+                browser()->profile(), content::GetWebUIURL("test-system-app/")),
             app);
-  // The app should be retrievable from the Web Apps system.
-  EXPECT_EQ(app->id(),
-            WebAppProvider::Get(browser()->profile())
-                ->system_web_app_manager()
-                .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS));
   EXPECT_TRUE(WebAppProvider::Get(browser()->profile())
                   ->system_web_app_manager()
                   .IsSystemWebApp(app->id()));

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -17,14 +18,17 @@ class ProtoDatabaseProvider;
 namespace notifications {
 
 class NotificationBackgroundTaskScheduler;
+class NotificationSchedulerClientRegistrar;
 
 // Creates the notification schedule service with all the embedder level
 // dependencies. This layer is mainly to forbid the embedder to depend on
 // notification scheduler internal code.
 KeyedService* CreateNotificationScheduleService(
+    std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
     std::unique_ptr<NotificationBackgroundTaskScheduler>
         background_task_scheduler,
-    leveldb_proto::ProtoDatabaseProvider* db_provider);
+    leveldb_proto::ProtoDatabaseProvider* db_provider,
+    const base::FilePath& storage_dir);
 
 }  // namespace notifications
 

@@ -20,7 +20,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_cq_tests.json",
@@ -28,7 +36,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_cq_tests.json",
@@ -36,7 +52,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_cq_tests.json",
@@ -44,15 +68,31 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_cq_tests.json",
-      "device type": "iPad Pro",
+      "device type": "iPad Pro (12.9-inch)",
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_tests.json",
@@ -60,7 +100,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_tests.json",
@@ -68,7 +116,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_tests.json",
@@ -76,7 +132,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "eg_tests.json",
@@ -84,7 +148,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -92,7 +164,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -100,7 +180,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -108,7 +196,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -116,7 +212,15 @@
       "os": "12.1",
       "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
     }
   ]
 }

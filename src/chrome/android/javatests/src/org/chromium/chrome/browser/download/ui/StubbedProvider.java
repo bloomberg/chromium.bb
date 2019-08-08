@@ -407,7 +407,7 @@ public class StubbedProvider implements BackendProvider {
         offlineItem.filePath = targetPath;
         offlineItem.creationTimeMs = startTime;
         offlineItem.totalSizeBytes = totalSize;
-        offlineItem.filter = OfflineItemFilter.FILTER_PAGE;
+        offlineItem.filter = OfflineItemFilter.PAGE;
         return offlineItem;
     }
 

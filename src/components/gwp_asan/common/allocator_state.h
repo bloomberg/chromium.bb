@@ -27,6 +27,7 @@
 
 #include <atomic>
 #include <limits>
+#include <string>
 #include <type_traits>
 
 #include "base/threading/platform_thread.h"
@@ -135,13 +136,15 @@ class AllocatorState {
   // address known to be in the GWP-ASan allocator region. Given the metadata
   // and slot to metadata arrays for the allocator, this method returns an enum
   // indicating an error or a GWP-ASan exception with or without metadata. If
-  // metadata is available, the metadata_idx parameter stores the index of the
-  // relevant metadata in the given array.
+  // metadata is available, the |metadata_idx| parameter stores the index of the
+  // relevant metadata in the given array. If an error occurs, the |error|
+  // parameter is filled out with an error string.
   GetMetadataReturnType GetMetadataForAddress(
       uintptr_t exception_address,
       const SlotMetadata* metadata_arr,
       const MetadataIdx* slot_to_metadata,
-      MetadataIdx* metadata_idx) const;
+      MetadataIdx* metadata_idx,
+      std::string* error) const;
 
   // Returns the likely error type given an exception address and whether its
   // previously been allocated and deallocated.

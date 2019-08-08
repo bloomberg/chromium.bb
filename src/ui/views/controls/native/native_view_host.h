@@ -86,11 +86,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void set_fast_resize(bool fast_resize) { fast_resize_ = fast_resize; }
   bool fast_resize() const { return fast_resize_; }
 
-  // Value of fast_resize() the last time Layout() was invoked.
-  bool fast_resize_at_last_layout() const {
-    return fast_resize_at_last_layout_;
-  }
-
   gfx::NativeView native_view() const { return native_view_; }
 
   void NativeViewDestroyed();
@@ -137,9 +132,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // True if the native view is being resized using the fast method described
   // in the setter/accessor above.
   bool fast_resize_ = false;
-
-  // Value of |fast_resize_| during the last call to Layout.
-  bool fast_resize_at_last_layout_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };

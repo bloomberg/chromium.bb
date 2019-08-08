@@ -63,9 +63,18 @@ class WebViewImpl : public WebView {
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value) override;
   Status TraverseHistory(int delta, const Timeout* timeout) override;
+  Status EvaluateScriptWithTimeout(const std::string& frame,
+                                   const std::string& expression,
+                                   const base::TimeDelta& timeout,
+                                   std::unique_ptr<base::Value>* result);
   Status EvaluateScript(const std::string& frame,
                         const std::string& expression,
                         std::unique_ptr<base::Value>* result) override;
+  Status CallFunctionWithTimeout(const std::string& frame,
+                                 const std::string& function,
+                                 const base::ListValue& args,
+                                 const base::TimeDelta& timeout,
+                                 std::unique_ptr<base::Value>* result);
   Status CallFunction(const std::string& frame,
                       const std::string& function,
                       const base::ListValue& args,
@@ -75,6 +84,11 @@ class WebViewImpl : public WebView {
                            const base::ListValue& args,
                            const base::TimeDelta& timeout,
                            std::unique_ptr<base::Value>* result) override;
+  Status CallUserSyncFunction(const std::string& frame,
+                              const std::string& function,
+                              const base::ListValue& args,
+                              const base::TimeDelta& timeout,
+                              std::unique_ptr<base::Value>* result) override;
   Status CallUserAsyncFunction(const std::string& frame,
                                const std::string& function,
                                const base::ListValue& args,
@@ -212,15 +226,18 @@ Status EvaluateScript(DevToolsClient* client,
                       int context_id,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
+                      const base::TimeDelta& timeout,
                       std::unique_ptr<base::DictionaryValue>* result);
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
+                                  const base::TimeDelta& timeout,
                                   bool* got_object,
                                   std::string* object_id);
 Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
                                  const std::string& expression,
+                                 const base::TimeDelta& timeout,
                                  std::unique_ptr<base::Value>* result);
 Status ParseCallFunctionResult(const base::Value& temp_result,
                                std::unique_ptr<base::Value>* result);

@@ -406,7 +406,8 @@ int main(int argc, const char* argv[]) {
 
   logging::LoggingSettings settings;
   if (command_line.HasSwitch("nologfile")) {
-    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    settings.logging_dest =
+        logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   } else {
     settings.logging_dest = logging::LOG_TO_ALL;
     settings.log_file = FILE_PATH_LITERAL("courgette.log");

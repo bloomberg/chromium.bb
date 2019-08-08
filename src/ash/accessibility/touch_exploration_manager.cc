@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/accessibility/touch_exploration_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/root_window_controller.h"
@@ -23,7 +24,6 @@
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -239,7 +239,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->IsEnabled()) {
       touch_exploration_controller_->SetLiftActivationBounds(
-          keyboard_controller->visual_bounds_in_screen());
+          keyboard_controller->GetVisualBoundsInScreen());
     }
   } else {
     touch_exploration_controller_.reset();

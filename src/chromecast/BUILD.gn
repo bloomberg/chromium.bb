@@ -153,6 +153,9 @@ cast_test_group("cast_tests") {
         gtest_excludes += [
           "CastMediaBlockerBrowserTest.Video_BlockUnblock",
           "CastMediaBlockerBrowserTest.Audio_BlockUnblock",
+
+          # This browser test can only be run inside of a source checkout.
+          "CastWebContentsBrowserTest.*",
         ]
       }
 
@@ -228,19 +231,6 @@ cast_test_group("cast_tests") {
     }
   }
   filters += [ base_unittests_filter ]
-
-  cast_avsettings_unittests_filter = {
-    test_name = "cast_avsettings_unittests"
-    gtest_excludes = []
-    if (is_android_things) {
-      # Disable tests to enable presubmit. Re-enable for b/120669054.
-      gtest_excludes += [
-        "JniVolumeControllerTest.SetMutedNotifiesAllVolumeObservers",
-        "JniVolumeControllerTest.SetVolumeNotifiesVolumeObserver",
-      ]
-    }
-  }
-  filters += [ cast_avsettings_unittests_filter ]
 
   cc_unittests_filter = {
     test_name = "cc_unittests"
@@ -379,16 +369,6 @@ cast_test_group("cast_tests") {
     }
   }
   filters += [ net_unittests_filter ]
-
-  cast_receiver_unittests_filter = {
-    test_name = "cast_receiver_unittests"
-    gtest_excludes = []
-    if (is_android_things) {
-      # Disable tests to enable presubmit. Re-enable for b/120669054.
-      gtest_excludes += [ "ApplicationManagerImplTest.SwapBackgroundApp_StereoVirtualDevice_BitstreamNotSupported" ]
-    }
-  }
-  filters += [ cast_receiver_unittests_filter ]
 }
 
 # Creates the build and run lists for all test targets.
@@ -463,6 +443,7 @@ group("cast_shell_lib") {
 
   deps = [
     "//chromecast/app",
+    "//chromecast/base:default_create_sys_info",
     "//chromecast/browser",
     "//chromecast/common",
     "//chromecast/renderer",

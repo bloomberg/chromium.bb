@@ -14,7 +14,6 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -53,7 +52,7 @@ TEST(ManagedBookmarkServiceNoPolicyTest, EmptyManagedNode) {
   DCHECK(managed);
 
   ASSERT_TRUE(managed->managed_node());
-  EXPECT_TRUE(managed->managed_node()->empty());
+  EXPECT_TRUE(managed->managed_node()->children().empty());
   EXPECT_FALSE(managed->managed_node()->IsVisible());
 }
 
@@ -167,9 +166,9 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
 TEST_F(ManagedBookmarkServiceTest, LoadInitial) {
   // Verifies that the initial load picks up the initial policy too.
-  EXPECT_TRUE(model_->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model_->other_node()->empty());
-  EXPECT_FALSE(managed_->managed_node()->empty());
+  EXPECT_TRUE(model_->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model_->other_node()->children().empty());
+  EXPECT_FALSE(managed_->managed_node()->children().empty());
   EXPECT_TRUE(managed_->managed_node()->IsVisible());
 
   std::unique_ptr<base::DictionaryValue> expected(CreateExpectedTree());
@@ -240,7 +239,7 @@ TEST_F(ManagedBookmarkServiceTest, RemoveAllUserBookmarks) {
   prefs_->RemoveManagedPref(bookmarks::prefs::kManagedBookmarks);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_TRUE(managed_->managed_node()->empty());
+  EXPECT_TRUE(managed_->managed_node()->children().empty());
   EXPECT_FALSE(managed_->managed_node()->IsVisible());
 }
 
@@ -315,8 +314,7 @@ TEST_F(ManagedBookmarkServiceTest, GetManagedBookmarksDomain) {
           .empty());
 
   // Managed profile
-  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(&profile_)
-      ->OverrideIsManagedForTesting(true);
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EXPECT_EQ(
       "google.com",
       ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(&profile_));

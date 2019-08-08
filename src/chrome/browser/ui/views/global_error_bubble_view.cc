@@ -196,8 +196,9 @@ views::View* GlobalErrorBubbleView::CreateExtraView() {
   if (!error_ || error_->GetBubbleViewCancelButtonLabel().empty() ||
       !error_->ShouldUseExtraView())
     return nullptr;
-  return views::MdTextButton::CreateSecondaryUiButton(
+  auto view = views::MdTextButton::CreateSecondaryUiButton(
       this, error_->GetBubbleViewCancelButtonLabel());
+  return view.release();
 }
 
 bool GlobalErrorBubbleView::Cancel() {

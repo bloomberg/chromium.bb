@@ -13,10 +13,11 @@
 // limitations under the License.
 
 #include "VkPhysicalDevice.hpp"
-#include "VkConfig.h"
 
+#include "VkConfig.h"
 #include "Pipeline/SpirvShader.hpp" // sw::SIMD::Width
 
+#include <limits>
 #include <cstring>
 
 namespace vk
@@ -92,7 +93,7 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 
 void PhysicalDevice::getFeatures(VkPhysicalDeviceSamplerYcbcrConversionFeatures* features) const
 {
-	features->samplerYcbcrConversion = VK_FALSE;
+	features->samplerYcbcrConversion = VK_TRUE;
 }
 
 void PhysicalDevice::getFeatures(VkPhysicalDevice16BitStorageFeatures* features) const
@@ -204,7 +205,7 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		4, // mipmapPrecisionBits
 		UINT32_MAX, // maxDrawIndexedIndexValue
 		UINT32_MAX, // maxDrawIndirectCount
-		2, // maxSamplerLodBias
+		std::numeric_limits<float>::infinity(), // maxSamplerLodBias (no clamping takes place)
 		16, // maxSamplerAnisotropy
 		16, // maxViewports
 		{ 4096, 4096 }, // maxViewportDimensions[2]
@@ -325,8 +326,15 @@ void PhysicalDevice::getProperties(const VkExternalMemoryHandleTypeFlagBits* han
 
 void PhysicalDevice::getProperties(VkSamplerYcbcrConversionImageFormatProperties* properties) const
 {
-	properties->combinedImageSamplerDescriptorCount = 0;
+	properties->combinedImageSamplerDescriptorCount = 1;  // Need only one descriptor for YCbCr sampling.
 }
+
+#ifdef __ANDROID__
+void PhysicalDevice::getProperties(VkPhysicalDevicePresentationPropertiesANDROID* properties) const
+{
+	properties->sharedImage = VK_FALSE;
+}
+#endif
 
 void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) const
 {
@@ -367,7 +375,7 @@ bool PhysicalDevice::hasFeatures(const VkPhysicalDeviceFeatures& requestedFeatur
 	return true;
 }
 
-void PhysicalDevice::getFormatProperties(VkFormat format, VkFormatProperties* pFormatProperties) const
+void PhysicalDevice::getFormatProperties(Format format, VkFormatProperties* pFormatProperties) const
 {
 	pFormatProperties->linearTilingFeatures = 0; // Unsupported format
 	pFormatProperties->optimalTilingFeatures = 0; // Unsupported format
@@ -375,6 +383,7 @@ void PhysicalDevice::getFormatProperties(VkFormat format, VkFormatProperties* pF
 
 	switch(format)
 	{
+		// Formats which can be sampled *and* filtered
 	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
 	case VK_FORMAT_R5G6B5_UNORM_PACK16:
 	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
@@ -396,9 +405,21 @@ void PhysicalDevice::getFormatProperties(VkFormat format, VkFormatProperties* pF
 	case VK_FORMAT_R16G16B16A16_SFLOAT:
 	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
 	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+	case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+	case VK_FORMAT_EAC_R11_UNORM_BLOCK:
+	case VK_FORMAT_EAC_R11_SNORM_BLOCK:
+	case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
+	case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
 		pFormatProperties->optimalTilingFeatures |=
 			VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
 		// Fall through
+
+		// Formats which can be sampled, but don't support filtering
 	case VK_FORMAT_R8_UINT:
 	case VK_FORMAT_R8_SINT:
 	case VK_FORMAT_R8G8_UINT:
@@ -426,26 +447,20 @@ void PhysicalDevice::getFormatProperties(VkFormat format, VkFormatProperties* pF
 	case VK_FORMAT_D16_UNORM:
 	case VK_FORMAT_D32_SFLOAT:
 		pFormatProperties->optimalTilingFeatures |=
+			VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
 			VK_FORMAT_FEATURE_BLIT_SRC_BIT |
 			VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
 			VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
-		// Fall through
-	case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
-	case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
-	case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
-	case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
-	case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
-	case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
-	case VK_FORMAT_EAC_R11_UNORM_BLOCK:
-	case VK_FORMAT_EAC_R11_SNORM_BLOCK:
-	case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
-	case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
+		break;
+
+		// YCbCr formats:
+	case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+	case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
 		pFormatProperties->optimalTilingFeatures |=
 			VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
 			VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
 			VK_FORMAT_FEATURE_TRANSFER_DST_BIT |
-			VK_FORMAT_FEATURE_BLIT_SRC_BIT |
-			VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+			VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT;
 		break;
 	default:
 		break;
@@ -645,11 +660,17 @@ void PhysicalDevice::getFormatProperties(VkFormat format, VkFormatProperties* pF
 	default:
 		break;
 	}
+
+	if(pFormatProperties->optimalTilingFeatures)
+	{
+		pFormatProperties->linearTilingFeatures = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+		                                          VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+	}
 }
 
-void PhysicalDevice::getImageFormatProperties(VkFormat format, VkImageType type, VkImageTiling tiling,
+void PhysicalDevice::getImageFormatProperties(Format format, VkImageType type, VkImageTiling tiling,
                                               VkImageUsageFlags usage, VkImageCreateFlags flags,
-	                                          VkImageFormatProperties* pImageFormatProperties) const
+                                              VkImageFormatProperties* pImageFormatProperties) const
 {
 	pImageFormatProperties->sampleCounts = VK_SAMPLE_COUNT_1_BIT;
 	pImageFormatProperties->maxArrayLayers = vk::MAX_IMAGE_ARRAY_LAYERS;
@@ -698,6 +719,24 @@ void PhysicalDevice::getImageFormatProperties(VkFormat format, VkImageType type,
 	}
 
 	pImageFormatProperties->maxResourceSize = 1 << 31; // Minimum value for maxResourceSize
+
+	// "Images created with tiling equal to VK_IMAGE_TILING_LINEAR have further restrictions on their limits and capabilities
+	//  compared to images created with tiling equal to VK_IMAGE_TILING_OPTIMAL."
+	if(tiling == VK_IMAGE_TILING_LINEAR)
+	{
+		pImageFormatProperties->maxMipLevels = 1;
+		pImageFormatProperties->maxArrayLayers = 1;
+		pImageFormatProperties->sampleCounts = VK_SAMPLE_COUNT_1_BIT;
+	}
+
+	// "Images created with a format from one of those listed in Formats requiring sampler Y’CBCR conversion for VK_IMAGE_ASPECT_COLOR_BIT image views
+	//  have further restrictions on their limits and capabilities compared to images created with other formats."
+	if(format.isYcbcrFormat())
+	{
+		pImageFormatProperties->maxMipLevels = 1;
+		pImageFormatProperties->maxArrayLayers = 1;
+		pImageFormatProperties->sampleCounts = VK_SAMPLE_COUNT_1_BIT;
+	}
 }
 
 uint32_t PhysicalDevice::getQueueFamilyPropertyCount() const

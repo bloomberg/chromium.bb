@@ -84,7 +84,7 @@ async function testFunction(t) {
   {
     // Test many calls to signal and wait on fence values one at a time.
     const fence = queue.createFence({});
-    for (let i = 1; i <= 100; ++i) {
+    for (let i = 1; i <= 20; ++i) {
       queue.signal(fence, i);
       await fence.onCompletion(i);
       assert_equals(fence.getCompletedValue(), i);
@@ -94,14 +94,14 @@ async function testFunction(t) {
     // Test many calls to signal and wait on all fence values.
     const fence = queue.createFence({});
     const promises = [];
-    for (let i = 1; i <= 100; ++i) {
+    for (let i = 1; i <= 20; ++i) {
       queue.signal(fence, i);
       promises.push(fence.onCompletion(i).then(() => {
         assert_true(fence.getCompletedValue() >= i);
       }));
     }
     await Promise.all(promises);
-    assert_equals(fence.getCompletedValue(), 100);
+    assert_equals(fence.getCompletedValue(), 20);
   }
   {
     // Test it is illegal to wait on a fence without signaling the value.

@@ -10,8 +10,9 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/common/linux/gbm_device.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
@@ -89,17 +90,14 @@ class FakeGbmDevice : public GbmDevice {
 
 class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
-  WaylandSurfaceFactoryTest() {
-    surface_factory_.SetProxy(connection_proxy_.get());
-  }
-
-  ~WaylandSurfaceFactoryTest() override {}
+  WaylandSurfaceFactoryTest() = default;
+  ~WaylandSurfaceFactoryTest() override = default;
 
   void SetUp() override {
     WaylandTest::SetUp();
 
-    auto connection_ptr = connection_->BindInterface();
-    connection_proxy_->SetWaylandConnection(std::move(connection_ptr));
+    auto manager_ptr = connection_->buffer_manager_host()->BindInterface();
+    buffer_manager_gpu_->SetWaylandBufferManagerHost(std::move(manager_ptr));
 
     // Wait until initialization and mojo calls go through.
     base::RunLoop().RunUntilIdle();
@@ -114,13 +112,11 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
  protected:
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvas(
       gfx::AcceleratedWidget widget) {
-    auto canvas = surface_factory_.CreateCanvasForWidget(widget_);
+    auto canvas = surface_factory_->CreateCanvasForWidget(widget_);
     base::RunLoop().RunUntilIdle();
 
     return canvas;
   }
-
-  WaylandSurfaceFactory surface_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactoryTest);
@@ -137,7 +133,7 @@ TEST_P(WaylandSurfaceFactoryTest, Canvas) {
   // Wait until the mojo calls are done.
   base::RunLoop().RunUntilIdle();
 
-  Expectation damage = EXPECT_CALL(*surface_, Damage(5, 10, 20, 15));
+  Expectation damage = EXPECT_CALL(*surface_, DamageBuffer(5, 10, 20, 15));
   wl_resource* buffer_resource = nullptr;
   Expectation attach = EXPECT_CALL(*surface_, Attach(_, 0, 0))
                            .WillOnce(SaveArg<0>(&buffer_resource));
@@ -167,7 +163,7 @@ TEST_P(WaylandSurfaceFactoryTest, CanvasResize) {
 
   base::RunLoop().RunUntilIdle();
 
-  Expectation damage = EXPECT_CALL(*surface_, Damage(0, 0, 100, 50));
+  Expectation damage = EXPECT_CALL(*surface_, DamageBuffer(0, 0, 100, 50));
   wl_resource* buffer_resource = nullptr;
   Expectation attach = EXPECT_CALL(*surface_, Attach(_, 0, 0))
                            .WillOnce(SaveArg<0>(&buffer_resource));
@@ -187,22 +183,22 @@ TEST_P(WaylandSurfaceFactoryTest, CreateSurfaceCheckGbm) {
 
   // When gbm is not available, only canvas can be created with viz process
   // used.
-  EXPECT_FALSE(connection_proxy_->gbm_device());
+  EXPECT_FALSE(buffer_manager_gpu_->gbm_device());
 
-  auto* gl_ozone = surface_factory_.GetGLOzone(gl::kGLImplementationEGLGLES2);
+  auto* gl_ozone = surface_factory_->GetGLOzone(gl::kGLImplementationEGLGLES2);
   EXPECT_TRUE(gl_ozone);
   auto gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
   EXPECT_FALSE(gl_surface);
 
   // Now, set gbm.
-  connection_proxy_->set_gbm_device(std::make_unique<FakeGbmDevice>());
+  buffer_manager_gpu_->set_gbm_device(std::make_unique<FakeGbmDevice>());
 
   gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
   EXPECT_TRUE(gl_surface);
 
   // Reset gbm now. WaylandConnectionProxy can reset it when zwp is not
   // available. And factory must behave the same way as previously.
-  connection_proxy_->ResetGbmDevice();
+  buffer_manager_gpu_->ResetGbmDevice();
   gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
   EXPECT_FALSE(gl_surface);
 }

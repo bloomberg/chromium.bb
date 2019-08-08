@@ -8,4 +8,11 @@ include_rules = [
   "+gpu/vulkan",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/skia/include/gpu",
+  "+third_party/vulkan/include",
 ]
+
+specific_include_rules = {
+  "metal_api_proxy.mm": [
+    "+ui/gl",
+  ]
+}

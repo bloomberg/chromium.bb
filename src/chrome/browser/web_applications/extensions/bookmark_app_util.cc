@@ -55,28 +55,6 @@ bool BookmarkAppIsLocallyInstalled(const ExtensionPrefs* prefs,
   return true;
 }
 
-bool BookmarkOrHostedAppInstalled(content::BrowserContext* browser_context,
-                                  const GURL& url) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
-  const ExtensionSet& extensions = registry->enabled_extensions();
-
-  // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
-  // or check the web extent (hosted apps).
-  for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (!extension->is_hosted_app())
-      continue;
-
-    if (!BookmarkAppIsLocallyInstalled(browser_context, extension.get()))
-      continue;
-
-    if (extension->web_extent().MatchesURL(url) ||
-        AppLaunchInfo::GetLaunchWebURL(extension.get()) == url) {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url) {
   // Drop any "suffix" components after the path (Resolve "."):
   const GURL nav_scope = launch_url.GetWithoutFilename();

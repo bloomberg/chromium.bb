@@ -301,6 +301,7 @@ void XRCompositorCommon::StartPendingFrame() {
 }
 
 void XRCompositorCommon::GetFrameData(
+    mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("xr", "GetFrameData");
   if (!is_presenting_) {
@@ -318,9 +319,9 @@ void XRCompositorCommon::GetFrameData(
     if (delayed_get_frame_data_callback_) {
       mojo::ReportBadMessage("Multiple outstanding GetFrameData calls");
     }
-    delayed_get_frame_data_callback_ =
-        base::BindOnce(&XRCompositorCommon::GetFrameData,
-                       base::Unretained(this), std::move(callback));
+    delayed_get_frame_data_callback_ = base::BindOnce(
+        &XRCompositorCommon::GetFrameData, base::Unretained(this),
+        std::move(options), std::move(callback));
     return;
   }
 

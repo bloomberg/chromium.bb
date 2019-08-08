@@ -578,6 +578,62 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
   return hr;
 }
 
+HRESULT LookupLocalizedNameBySid(PSID sid, base::string16* localized_name) {
+  DCHECK(localized_name);
+  std::vector<wchar_t> localized_name_buffer;
+  DWORD group_name_size = 0;
+  std::vector<wchar_t> domain_buffer;
+  DWORD domain_size = 0;
+  SID_NAME_USE use;
+
+  // Get the localized name of the local users group. The function
+  // NetLocalGroupAddMembers only accepts the name of the group and it
+  // may be localized on the system.
+  if (!::LookupAccountSidW(nullptr, sid, nullptr, &group_name_size, nullptr,
+                           &domain_size, &use)) {
+    if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "LookupAccountSidW hr=" << putHR(hr);
+      return hr;
+    }
+
+    localized_name_buffer.resize(group_name_size);
+    domain_buffer.resize(domain_size);
+    if (!::LookupAccountSidW(nullptr, sid, localized_name_buffer.data(),
+                             &group_name_size, domain_buffer.data(),
+                             &domain_size, &use)) {
+      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "LookupAccountSidW hr=" << putHR(hr);
+      return hr;
+    }
+  }
+
+  if (localized_name_buffer.empty()) {
+    LOGFN(ERROR) << "Empty localized name";
+    return E_UNEXPECTED;
+  }
+  *localized_name = base::string16(localized_name_buffer.data(),
+                                   localized_name_buffer.size() - 1);
+
+  return S_OK;
+}
+
+HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
+                                           base::string16* localized_name) {
+  BYTE well_known_sid[SECURITY_MAX_SID_SIZE];
+  DWORD size_local_users_group_sid = base::size(well_known_sid);
+
+  // Get the sid for the well known local users group.
+  if (!::CreateWellKnownSid(sid_type, nullptr, well_known_sid,
+                            &size_local_users_group_sid)) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "CreateWellKnownSid hr=" << putHR(hr);
+    return hr;
+  }
+
+  return LookupLocalizedNameBySid(well_known_sid, localized_name);
+}
+
 bool VerifyStartupSentinel() {
   // Always try to write to the startup sentinel file. If writing or opening
   // fails for any reason (file locked, no access etc) consider this a failure.

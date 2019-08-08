@@ -1,0 +1,38 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_DETAILS_CONVERTER_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_DETAILS_CONVERTER_H_
+
+#include <string>
+
+#include "base/callback_forward.h"
+#include "base/macros.h"
+#include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+
+namespace payments {
+
+class PaymentDetailsConverter {
+ public:
+  using MethodChecker = base::RepeatingCallback<bool(const std::string&)>;
+
+  // Converts and redacts the |details| from the merchant's updateWith(details)
+  // call into a data structure that can be sent to the payment handler.
+  //
+  // The |details| should not be null.
+  //
+  // The |method_checker| is not saved. It is used only for the duration of this
+  // call.
+  static mojom::PaymentMethodChangeResponsePtr
+  ConvertToPaymentMethodChangeResponse(const mojom::PaymentDetailsPtr& details,
+                                       const MethodChecker& method_checker);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PaymentDetailsConverter);
+};
+
+}  // namespace payments
+
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_DETAILS_CONVERTER_H_

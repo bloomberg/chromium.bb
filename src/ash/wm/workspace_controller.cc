@@ -73,7 +73,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   // the same regardles of the window we have.
   // The |overview_controller| can be null during shutdown.
   if (Shell::Get()->overview_controller() &&
-      Shell::Get()->overview_controller()->IsSelecting()) {
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   }
 
@@ -83,7 +83,8 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 
   auto mru_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+          kActiveDesk);
 
   for (aura::Window* window : mru_list) {
     if (window->GetRootWindow() != viewport_->GetRootWindow())

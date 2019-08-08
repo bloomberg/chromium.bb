@@ -14,30 +14,11 @@
 #include <sstream>
 #include <string>
 
-#include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "encoding_test_helper.h"
 
 using testing::ElementsAreArray;
 
 namespace inspector_protocol_encoding {
-
-std::string UTF16ToUTF8(span<uint16_t> in) {
-  std::string out;
-  bool success = base::UTF16ToUTF8(
-      reinterpret_cast<const base::char16*>(in.data()), in.size(), &out);
-  CHECK(success);
-  return out;
-}
-
-std::vector<uint16_t> UTF8ToUTF16(span<uint8_t> in) {
-  base::string16 tmp;
-  bool success = base::UTF8ToUTF16(reinterpret_cast<const char*>(in.data()),
-                                   in.size(), &tmp);
-  CHECK(success);
-  return std::vector<uint16_t>(tmp.begin(), tmp.end());
-}
 
 class TestPlatform : public json::Platform {
   bool StrToD(const char* str, double* result) const override {
@@ -86,8 +67,8 @@ TYPED_TEST_SUITE(SpanTest, TestTypes);
 TYPED_TEST(SpanTest, Empty) {
   span<TypeParam> empty;
   EXPECT_TRUE(empty.empty());
-  EXPECT_EQ(0, empty.size());
-  EXPECT_EQ(0, empty.size_bytes());
+  EXPECT_EQ(0u, empty.size());
+  EXPECT_EQ(0u, empty.size_bytes());
   EXPECT_EQ(empty.begin(), empty.end());
 }
 
@@ -95,8 +76,8 @@ TYPED_TEST(SpanTest, SingleItem) {
   TypeParam single_item = 42;
   span<TypeParam> singular(&single_item, 1);
   EXPECT_FALSE(singular.empty());
-  EXPECT_EQ(1, singular.size());
-  EXPECT_EQ(sizeof(TypeParam), static_cast<size_t>(singular.size_bytes()));
+  EXPECT_EQ(1u, singular.size());
+  EXPECT_EQ(sizeof(TypeParam), singular.size_bytes());
   EXPECT_EQ(singular.begin() + 1, singular.end());
   EXPECT_EQ(42, singular[0]);
 }
@@ -105,9 +86,8 @@ TYPED_TEST(SpanTest, FiveItems) {
   std::vector<TypeParam> test_input = {31, 32, 33, 34, 35};
   span<TypeParam> five_items(test_input.data(), 5);
   EXPECT_FALSE(five_items.empty());
-  EXPECT_EQ(5, five_items.size());
-  EXPECT_EQ(sizeof(TypeParam) * 5,
-            static_cast<size_t>(five_items.size_bytes()));
+  EXPECT_EQ(5u, five_items.size());
+  EXPECT_EQ(sizeof(TypeParam) * 5, five_items.size_bytes());
   EXPECT_EQ(five_items.begin() + 5, five_items.end());
   EXPECT_EQ(31, five_items[0]);
   EXPECT_EQ(32, five_items[1]);
@@ -115,12 +95,12 @@ TYPED_TEST(SpanTest, FiveItems) {
   EXPECT_EQ(34, five_items[3]);
   EXPECT_EQ(35, five_items[4]);
   span<TypeParam> three_items = five_items.subspan(2);
-  EXPECT_EQ(3, three_items.size());
+  EXPECT_EQ(3u, three_items.size());
   EXPECT_EQ(33, three_items[0]);
   EXPECT_EQ(34, three_items[1]);
   EXPECT_EQ(35, three_items[2]);
   span<TypeParam> two_items = five_items.subspan(2, 2);
-  EXPECT_EQ(2, two_items.size());
+  EXPECT_EQ(2u, two_items.size());
   EXPECT_EQ(33, two_items[0]);
   EXPECT_EQ(34, two_items[1]);
 }
@@ -128,17 +108,30 @@ TYPED_TEST(SpanTest, FiveItems) {
 TEST(SpanFromTest, FromConstCharAndLiteral) {
   // Testing this is useful because strlen(nullptr) is undefined.
   EXPECT_EQ(nullptr, SpanFrom(nullptr).data());
-  EXPECT_EQ(0, SpanFrom(nullptr).size());
+  EXPECT_EQ(0u, SpanFrom(nullptr).size());
 
   const char* kEmpty = "";
   EXPECT_EQ(kEmpty, reinterpret_cast<const char*>(SpanFrom(kEmpty).data()));
-  EXPECT_EQ(0, SpanFrom(kEmpty).size());
+  EXPECT_EQ(0u, SpanFrom(kEmpty).size());
 
   const char* kFoo = "foo";
   EXPECT_EQ(kFoo, reinterpret_cast<const char*>(SpanFrom(kFoo).data()));
-  EXPECT_EQ(3, SpanFrom(kFoo).size());
+  EXPECT_EQ(3u, SpanFrom(kFoo).size());
 
-  EXPECT_EQ(3, SpanFrom("foo").size());
+  EXPECT_EQ(3u, SpanFrom("foo").size());
+}
+
+// =============================================================================
+// Status and Error codes
+// =============================================================================
+
+TEST(StatusTest, StatusToASCIIString) {
+  Status ok_status;
+  EXPECT_EQ("OK", ok_status.ToASCIIString());
+  Status json_error(Error::JSON_PARSER_COLON_EXPECTED, 42);
+  EXPECT_EQ("JSON: colon expected at position 42", json_error.ToASCIIString());
+  Status cbor_error(Error::CBOR_TRAILING_JUNK, 21);
+  EXPECT_EQ("CBOR: trailing junk at position 21", cbor_error.ToASCIIString());
 }
 
 namespace cbor {
@@ -207,7 +200,7 @@ TEST(EncodeDecodeInt32Test, RoundtripsUint16) {
   std::vector<uint8_t> encoded;
   EncodeInt32(500, &encoded);
   // 1 for initial byte, 2 for uint16.
-  EXPECT_EQ(static_cast<std::size_t>(3), encoded.size());
+  EXPECT_EQ(3u, encoded.size());
   // first three bits: major type = 0;
   // remaining five bits: additional info = 25, indicating payload is uint16.
   EXPECT_EQ(25, encoded[0]);
@@ -241,6 +234,30 @@ TEST(EncodeDecodeInt32Test, RoundtripsInt32Max) {
   EXPECT_EQ(CBORTokenTag::DONE, tokenizer.TokenTag());
 }
 
+TEST(EncodeDecodeInt32Test, RoundtripsInt32Min) {
+  // std::numeric_limits<int32_t> is encoded as a uint32 (4 unsigned bytes)
+  // after the initial byte, which effectively carries the sign by
+  // designating the token as NEGATIVE.
+  std::vector<uint8_t> encoded;
+  EncodeInt32(std::numeric_limits<int32_t>::min(), &encoded);
+  // 1 for initial byte, 4 for the uint32.
+  // first three bits: major type = 1;
+  // remaining five bits: additional info = 26, indicating payload is uint32.
+  EXPECT_THAT(encoded, ElementsAreArray(std::array<uint8_t, 5>{
+                           {1 << 5 | 26, 0x7f, 0xff, 0xff, 0xff}}));
+
+  // Reverse direction: decode with CBORTokenizer.
+  CBORTokenizer tokenizer(SpanFrom(encoded));
+  EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
+  EXPECT_EQ(std::numeric_limits<int32_t>::min(), tokenizer.GetInt32());
+  // It's nice to see how the min int32 value reads in hex:
+  // That is, -1 minus the unsigned payload (0x7fffffff, see above).
+  int32_t expected = -1 - 0x7fffffff;
+  EXPECT_EQ(expected, tokenizer.GetInt32());
+  tokenizer.Next();
+  EXPECT_EQ(CBORTokenTag::DONE, tokenizer.TokenTag());
+}
+
 TEST(EncodeDecodeInt32Test, CantRoundtripUint32) {
   // 0xdeadbeef is a value which does not fit below
   // std::numerical_limits<int32_t>::max(), so we can't encode
@@ -268,15 +285,21 @@ TEST(EncodeDecodeInt32Test, DecodeErrorCases) {
     std::vector<uint8_t> data;
     std::string msg;
   };
-  std::vector<TestCase> tests{
-      {TestCase{
-           {24},
-           "additional info = 24 would require 1 byte of payload (but it's 0)"},
-       TestCase{{27, 0xaa, 0xbb, 0xcc},
-                "additional info = 27 would require 8 bytes of payload (but "
-                "it's 3)"},
-       TestCase{{29}, "additional info = 29 isn't recognized"}}};
-
+  std::vector<TestCase> tests{{
+      TestCase{
+          {24},
+          "additional info = 24 would require 1 byte of payload (but it's 0)"},
+      TestCase{{27, 0xaa, 0xbb, 0xcc},
+               "additional info = 27 would require 8 bytes of payload (but "
+               "it's 3)"},
+      TestCase{{29}, "additional info = 29 isn't recognized"},
+      TestCase{{1 << 5 | 27, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+               "Max UINT64 payload is outside the allowed range"},
+      TestCase{{1 << 5 | 26, 0xff, 0xff, 0xff, 0xff},
+               "Max UINT32 payload is outside the allowed range"},
+      TestCase{{1 << 5 | 26, 0x80, 0x00, 0x00, 0x00},
+               "UINT32 payload w/ high bit set is outside the allowed range"},
+  }};
   for (const TestCase& test : tests) {
     SCOPED_TRACE(test.msg);
     CBORTokenizer tokenizer(SpanFrom(test.data));
@@ -336,7 +359,7 @@ TEST(EncodeDecodeString16Test, RoundtripsEmpty) {
   // CBORTokenizer.
   std::vector<uint8_t> encoded;
   EncodeString16(span<uint16_t>(), &encoded);
-  EXPECT_EQ(static_cast<std::size_t>(1), encoded.size());
+  EXPECT_EQ(1u, encoded.size());
   // first three bits: major type = 2; remaining five bits: additional info =
   // size 0.
   EXPECT_EQ(2 << 5, encoded[0]);
@@ -355,9 +378,10 @@ TEST(EncodeDecodeString16Test, RoundtripsEmpty) {
 // so this routine follows the advice in
 // https://commandcenter.blogspot.com/2012/04/byte-order-fallacy.html.
 std::vector<uint16_t> String16WireRepToHost(span<uint8_t> in) {
-  CHECK_EQ(in.size() & 1, 0);  // must be even number of bytes.
+  // must be even number of bytes.
+  CHECK_EQ(in.size() & 1, 0u);
   std::vector<uint16_t> host_out;
-  for (std::ptrdiff_t ii = 0; ii < in.size(); ii += 2)
+  for (size_t ii = 0; ii < in.size(); ii += 2)
     host_out.push_back(in[ii + 1] << 8 | in[ii]);
   return host_out;
 }
@@ -405,7 +429,7 @@ TEST(EncodeDecodeString16Test, Roundtrips500) {
     two_fifty.push_back(ii);
   std::vector<uint8_t> encoded;
   EncodeString16(span<uint16_t>(two_fifty.data(), two_fifty.size()), &encoded);
-  EXPECT_EQ(static_cast<std::size_t>(3 + 250 * 2), encoded.size());
+  EXPECT_EQ(3u + 250u * 2, encoded.size());
   // Now check the first three bytes:
   // Major type: 2 (BYTE_STRING)
   // Additional information: 25, indicating size is represented by 2 bytes.
@@ -432,7 +456,12 @@ TEST(EncodeDecodeString16Test, ErrorCases) {
   std::vector<TestCase> tests{
       {TestCase{{2 << 5 | 1, 'a'},
                 "length must be divisible by 2 (but it's 1)"},
-       TestCase{{2 << 5 | 29}, "additional info = 29 isn't recognized"}}};
+       TestCase{{2 << 5 | 29}, "additional info = 29 isn't recognized"},
+       TestCase{{2 << 5 | 9, 1, 2, 3, 4, 5, 6, 7, 8},
+                "length (9) points just past the end of the test case"},
+       TestCase{{2 << 5 | 27, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                 'a', 'b', 'c'},
+                "large length pointing past the end of the test case"}}};
   for (const TestCase& test : tests) {
     SCOPED_TRACE(test.msg);
     CBORTokenizer tokenizer(SpanFrom(test.data));
@@ -468,6 +497,26 @@ TEST(EncodeDecodeString8Test, RoundtripsHelloWorld) {
   EXPECT_THAT(decoded, ElementsAreArray(msg));
   tokenizer.Next();
   EXPECT_EQ(CBORTokenTag::DONE, tokenizer.TokenTag());
+}
+
+TEST(EncodeDecodeString8Test, ErrorCases) {
+  struct TestCase {
+    std::vector<uint8_t> data;
+    std::string msg;
+  };
+  std::vector<TestCase> tests{
+      {TestCase{{3 << 5 | 29}, "additional info = 29 isn't recognized"},
+       TestCase{{3 << 5 | 9, 1, 2, 3, 4, 5, 6, 7, 8},
+                "length (9) points just past the end of the test case"},
+       TestCase{{3 << 5 | 27, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                 'a', 'b', 'c'},
+                "large length pointing past the end of the test case"}}};
+  for (const TestCase& test : tests) {
+    SCOPED_TRACE(test.msg);
+    CBORTokenizer tokenizer(SpanFrom(test.data));
+    EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
+    EXPECT_EQ(Error::CBOR_INVALID_STRING8, tokenizer.Status().error);
+  }
 }
 
 TEST(EncodeFromLatin1Test, ConvertsToUTF8IfNeeded) {
@@ -547,6 +596,24 @@ TEST(EncodeDecodeBinaryTest, RoundtripsHelloWorld) {
   EXPECT_THAT(decoded, ElementsAreArray(binary));
   tokenizer.Next();
   EXPECT_EQ(CBORTokenTag::DONE, tokenizer.TokenTag());
+}
+
+TEST(EncodeDecodeBinaryTest, ErrorCases) {
+  struct TestCase {
+    std::vector<uint8_t> data;
+    std::string msg;
+  };
+  std::vector<TestCase> tests{{TestCase{
+      {6 << 5 | 22,  // tag 22 indicating base64 interpretation in JSON
+       2 << 5 | 27,  // BYTE_STRING (type 2), followed by 8 bytes length
+       0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+      "large length pointing past the end of the test case"}}};
+  for (const TestCase& test : tests) {
+    SCOPED_TRACE(test.msg);
+    CBORTokenizer tokenizer(SpanFrom(test.data));
+    EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
+    EXPECT_EQ(Error::CBOR_INVALID_BINARY, tokenizer.Status().error);
+  }
 }
 
 //
@@ -853,7 +920,7 @@ TEST(ParseCBORTest, UnexpectedEofExpectedValueError) {
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_EXPECTED_VALUE, status.error);
-  EXPECT_EQ(static_cast<int64_t>(bytes.size()), status.pos);
+  EXPECT_EQ(bytes.size(), status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -871,7 +938,7 @@ TEST(ParseCBORTest, UnexpectedEofInArrayError) {
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_IN_ARRAY, status.error);
-  EXPECT_EQ(static_cast<int64_t>(bytes.size()), status.pos);
+  EXPECT_EQ(bytes.size(), status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -886,7 +953,7 @@ TEST(ParseCBORTest, UnexpectedEofInMapError) {
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_IN_MAP, status.error);
-  EXPECT_EQ(7, status.pos);
+  EXPECT_EQ(7u, status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -903,7 +970,7 @@ TEST(ParseCBORTest, InvalidMapKeyError) {
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_MAP_KEY, status.error);
-  EXPECT_EQ(7, status.pos);
+  EXPECT_EQ(7u, status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -952,8 +1019,8 @@ TEST(ParseCBORTest, StackLimitExceededError) {
   // where the error is encountered. So we look at a small example and find
   // the second envelope start.
   std::vector<uint8_t> small_example = MakeNestedCBOR(3);
-  int64_t opening_segment_size = 1;  // Start after the first envelope start.
-  while (opening_segment_size < static_cast<int64_t>(small_example.size()) &&
+  size_t opening_segment_size = 1;  // Start after the first envelope start.
+  while (opening_segment_size < small_example.size() &&
          small_example[opening_segment_size] != 0xd8)
     opening_segment_size++;
 
@@ -984,7 +1051,7 @@ TEST(ParseCBORTest, UnsupportedValueError) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   bytes.push_back(6 << 5 | 5);  // tags aren't supported yet.
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
 
@@ -1003,7 +1070,7 @@ TEST(ParseCBORTest, InvalidString16Error) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   // a BYTE_STRING of length 5 as value; since we interpret these as string16,
   // it's going to be invalid as each character would need two bytes, but
   // 5 isn't divisible by 2.
@@ -1026,7 +1093,7 @@ TEST(ParseCBORTest, InvalidString8Error) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   // a STRING of length 5 as value, but we're at the end of the bytes array
   // so it can't be decoded successfully.
   bytes.push_back(3 << 5 | 5);
@@ -1046,7 +1113,7 @@ TEST(ParseCBORTest, InvalidBinaryError) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   bytes.push_back(6 << 5 | 22);  // base64 hint for JSON; indicates binary
   bytes.push_back(2 << 5 | 10);  // BYTE_STRING (major type 2) of length 10
   // Just two garbage bytes, not enough for the binary.
@@ -1068,7 +1135,7 @@ TEST(ParseCBORTest, InvalidDoubleError) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   bytes.push_back(7 << 5 | 27);  // initial byte for double
   // Just two garbage bytes, not enough to represent an actual double.
   bytes.push_back(0x31);
@@ -1089,7 +1156,7 @@ TEST(ParseCBORTest, InvalidSignedError) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   // uint64_t max is a perfectly fine value to encode as CBOR unsigned,
   // but we don't support this since we only cover the int32_t range.
   internals::WriteTokenStart(MajorType::UNSIGNED,
@@ -1112,7 +1179,7 @@ TEST(ParseCBORTest, TrailingJunk) {
   EncodeString8(SpanFrom("key"), &bytes);
   EncodeString8(SpanFrom("value"), &bytes);
   bytes.push_back(0xff);  // Up to here, it's a perfectly fine msg.
-  int64_t error_pos = bytes.size();
+  size_t error_pos = bytes.size();
   EncodeString8(SpanFrom("trailing junk"), &bytes);
 
   internals::WriteTokenStart(MajorType::UNSIGNED,
@@ -1132,7 +1199,13 @@ TEST(ParseCBORTest, TrailingJunk) {
 // cbor::AppendString8EntryToMap - for limited in-place editing of messages
 // =============================================================================
 
-TEST(AppendString8EntryToMapTest, AppendsEntrySuccessfully) {
+template <typename T>
+class AppendString8EntryToMapTest : public ::testing::Test {};
+
+using ContainerTestTypes = ::testing::Types<std::vector<uint8_t>, std::string>;
+TYPED_TEST_SUITE(AppendString8EntryToMapTest, ContainerTestTypes);
+
+TYPED_TEST(AppendString8EntryToMapTest, AppendsEntrySuccessfully) {
   constexpr uint8_t kPayloadLen = 12;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
@@ -1142,20 +1215,22 @@ TEST(AppendString8EntryToMapTest, AppendsEntrySuccessfully) {
   bytes.push_back(0xff);  // A perfectly fine cbor message.
   EXPECT_EQ(kPayloadLen, bytes.size() - pos_before_payload);
 
+  TypeParam msg(bytes.begin(), bytes.end());
+
   Status status =
-      AppendString8EntryToCBORMap(SpanFrom("foo"), SpanFrom("bar"), &bytes);
+      AppendString8EntryToCBORMap(SpanFrom("foo"), SpanFrom("bar"), &msg);
   EXPECT_EQ(Error::OK, status.error);
-  EXPECT_EQ(-1, status.pos);
+  EXPECT_EQ(Status::npos(), status.pos);
   std::string out;
   std::unique_ptr<StreamingParserHandler> json_writer =
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
-  ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
+  ParseCBOR(SpanFrom(msg), json_writer.get());
   EXPECT_EQ("{\"key\":\"value\",\"foo\":\"bar\"}", out);
   EXPECT_EQ(Error::OK, status.error);
-  EXPECT_EQ(-1, status.pos);
+  EXPECT_EQ(Status::npos(), status.pos);
 }
 
-TEST(AppendString8EntryToMapTest, AppendThreeEntries) {
+TYPED_TEST(AppendString8EntryToMapTest, AppendThreeEntries) {
   std::vector<uint8_t> encoded = {
       0xd8, 0x5a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), EncodeStop()};
   EXPECT_EQ(Error::OK, AppendString8EntryToCBORMap(SpanFrom("key"),
@@ -1167,71 +1242,75 @@ TEST(AppendString8EntryToMapTest, AppendThreeEntries) {
   EXPECT_EQ(Error::OK, AppendString8EntryToCBORMap(SpanFrom("key2"),
                                                    SpanFrom("value2"), &encoded)
                            .error);
-
+  TypeParam msg(encoded.begin(), encoded.end());
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
-  ParseCBOR(SpanFrom(encoded), json_writer.get());
+  ParseCBOR(SpanFrom(msg), json_writer.get());
   EXPECT_EQ("{\"key\":\"value\",\"key1\":\"value1\",\"key2\":\"value2\"}", out);
   EXPECT_EQ(Error::OK, status.error);
-  EXPECT_EQ(-1, status.pos);
+  EXPECT_EQ(Status::npos(), status.pos);
 }
 
-TEST(AppendString8EntryToMapTest, MapStartExpected_Error) {
+TYPED_TEST(AppendString8EntryToMapTest, MapStartExpected_Error) {
   std::vector<uint8_t> bytes = {
       0xd8, 0x5a, 0, 0, 0, 1, EncodeIndefiniteLengthArrayStart()};
-
+  TypeParam msg(bytes.begin(), bytes.end());
   Status status =
-      AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+      AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &msg);
   EXPECT_EQ(Error::CBOR_MAP_START_EXPECTED, status.error);
-  EXPECT_EQ(6, status.pos);
+  EXPECT_EQ(6u, status.pos);
 }
 
-TEST(AppendString8EntryToMapTest, MapStopExpected_Error) {
+TYPED_TEST(AppendString8EntryToMapTest, MapStopExpected_Error) {
   std::vector<uint8_t> bytes = {
       0xd8, 0x5a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), 42};
-
+  TypeParam msg(bytes.begin(), bytes.end());
   Status status =
-      AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+      AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &msg);
   EXPECT_EQ(Error::CBOR_MAP_STOP_EXPECTED, status.error);
-  EXPECT_EQ(7, status.pos);
+  EXPECT_EQ(7u, status.pos);
 }
 
-TEST(AppendString8EntryToMapTest, InvalidEnvelope_Error) {
+TYPED_TEST(AppendString8EntryToMapTest, InvalidEnvelope_Error) {
   {  // Second byte is wrong.
     std::vector<uint8_t> bytes = {
         0x5a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), EncodeStop(), 0};
+    TypeParam msg(bytes.begin(), bytes.end());
     Status status =
-        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &msg);
     EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
-    EXPECT_EQ(0, status.pos);
+    EXPECT_EQ(0u, status.pos);
   }
   {  // Second byte is wrong.
     std::vector<uint8_t> bytes = {
         0xd8, 0x7a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), EncodeStop()};
+    TypeParam msg(bytes.begin(), bytes.end());
     Status status =
-        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &msg);
     EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
-    EXPECT_EQ(0, status.pos);
+    EXPECT_EQ(0u, status.pos);
   }
   {  // Invalid envelope size example.
     std::vector<uint8_t> bytes = {
         0xd8, 0x5a, 0, 0, 0, 3, EncodeIndefiniteLengthMapStart(), EncodeStop(),
     };
+    TypeParam msg(bytes.begin(), bytes.end());
     Status status =
-        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &msg);
     EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
-    EXPECT_EQ(0, status.pos);
+    EXPECT_EQ(0u, status.pos);
   }
   {  // Invalid envelope size example.
     std::vector<uint8_t> bytes = {
         0xd8, 0x5a, 0, 0, 0, 1, EncodeIndefiniteLengthMapStart(), EncodeStop(),
     };
+    TypeParam msg(bytes.begin(), bytes.end());
     Status status =
-        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &msg);
     EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
-    EXPECT_EQ(0, status.pos);
+    EXPECT_EQ(0u, status.pos);
   }
 }
 }  // namespace cbor
@@ -1361,7 +1440,7 @@ TEST(JsonStdStringWriterTest, HandlesErrors) {
   WriteUTF8AsUTF16(writer.get(), "msg1");
   writer->HandleError(Status{Error::JSON_PARSER_VALUE_EXPECTED, 42});
   EXPECT_EQ(Error::JSON_PARSER_VALUE_EXPECTED, status.error);
-  EXPECT_EQ(42, status.pos);
+  EXPECT_EQ(42u, status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -1464,6 +1543,22 @@ TEST_F(JsonParserTest, SimpleDictionary) {
       "map begin\n"
       "string16: foo\n"
       "int: 42\n"
+      "map end\n",
+      log_.str());
+}
+
+TEST_F(JsonParserTest, UsAsciiDelCornerCase) {
+  // DEL (0x7f) is a 7 bit US-ASCII character, and while it is a control
+  // character according to Unicode, it's not considered a control
+  // character in https://tools.ietf.org/html/rfc7159#section-7, so
+  // it can be placed directly into the JSON string, without JSON escaping.
+  std::string json = "{\"foo\": \"a\x7f\"}";
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
+  EXPECT_TRUE(log_.status().ok());
+  EXPECT_EQ(
+      "map begin\n"
+      "string16: foo\n"
+      "string16: a\x7f\n"
       "map end\n",
       log_.str());
 }
@@ -1580,8 +1675,8 @@ TEST_F(JsonParserTest, Unicode_ParseUtf8) {
 TEST_F(JsonParserTest, UnprocessedInputRemainsError) {
   // Trailing junk after the valid JSON.
   std::string json = "{\"foo\": 3.1415} junk";
-  int64_t junk_idx = json.find("junk");
-  EXPECT_GT(junk_idx, 0);
+  size_t junk_idx = json.find("junk");
+  EXPECT_NE(junk_idx, std::string::npos);
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_UNPROCESSED_INPUT_REMAINS, log_.status().error);
   EXPECT_EQ(junk_idx, log_.status().pos);
@@ -1633,8 +1728,7 @@ TEST_F(JsonParserTest, StackLimitExceededError_AboveLimit) {
   std::string exceeded = MakeNestedJson(301);
   ParseJSON(GetTestPlatform(), SpanFrom(exceeded), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
-  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 301),
-            log_.status().pos);
+  EXPECT_EQ(strlen("{\"foo\":") * 301, log_.status().pos);
 }
 
 TEST_F(JsonParserTest, StackLimitExceededError_WayAboveLimit) {
@@ -1642,15 +1736,14 @@ TEST_F(JsonParserTest, StackLimitExceededError_WayAboveLimit) {
   std::string far_out = MakeNestedJson(320);
   ParseJSON(GetTestPlatform(), SpanFrom(far_out), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
-  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 301),
-            log_.status().pos);
+  EXPECT_EQ(strlen("{\"foo\":") * 301, log_.status().pos);
 }
 
 TEST_F(JsonParserTest, NoInputError) {
   std::string json = "";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_NO_INPUT, log_.status().error);
-  EXPECT_EQ(0, log_.status().pos);
+  EXPECT_EQ(0u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1658,7 +1751,7 @@ TEST_F(JsonParserTest, InvalidTokenError) {
   std::string json = "|";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_INVALID_TOKEN, log_.status().error);
-  EXPECT_EQ(0, log_.status().pos);
+  EXPECT_EQ(0u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1667,7 +1760,7 @@ TEST_F(JsonParserTest, InvalidNumberError) {
   std::string json = "1E9223372036854775807";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_INVALID_NUMBER, log_.status().error);
-  EXPECT_EQ(0, log_.status().pos);
+  EXPECT_EQ(0u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1676,7 +1769,7 @@ TEST_F(JsonParserTest, InvalidStringError) {
   std::string json = "\"foo\\x22\"";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_INVALID_STRING, log_.status().error);
-  EXPECT_EQ(0, log_.status().pos);
+  EXPECT_EQ(0u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1684,7 +1777,7 @@ TEST_F(JsonParserTest, UnexpectedArrayEndError) {
   std::string json = "[1,2,]";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_UNEXPECTED_ARRAY_END, log_.status().error);
-  EXPECT_EQ(5, log_.status().pos);
+  EXPECT_EQ(5u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1693,7 +1786,7 @@ TEST_F(JsonParserTest, CommaOrArrayEndExpectedError) {
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_COMMA_OR_ARRAY_END_EXPECTED,
             log_.status().error);
-  EXPECT_EQ(5, log_.status().pos);
+  EXPECT_EQ(5u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1702,7 +1795,7 @@ TEST_F(JsonParserTest, StringLiteralExpectedError) {
   std::string json = "{\"foo\": 3.1415, \"bar: 31415e-4}";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STRING_LITERAL_EXPECTED, log_.status().error);
-  EXPECT_EQ(16, log_.status().pos);
+  EXPECT_EQ(16u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1710,7 +1803,7 @@ TEST_F(JsonParserTest, ColonExpectedError) {
   std::string json = "{\"foo\", 42}";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_COLON_EXPECTED, log_.status().error);
-  EXPECT_EQ(6, log_.status().pos);
+  EXPECT_EQ(6u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1718,7 +1811,7 @@ TEST_F(JsonParserTest, UnexpectedMapEndError) {
   std::string json = "{\"foo\": 42, }";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_UNEXPECTED_MAP_END, log_.status().error);
-  EXPECT_EQ(12, log_.status().pos);
+  EXPECT_EQ(12u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1727,7 +1820,7 @@ TEST_F(JsonParserTest, CommaOrMapEndExpectedError) {
   std::string json = "{\"foo\": 3.1415: \"bar\": 0}";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_COMMA_OR_MAP_END_EXPECTED, log_.status().error);
-  EXPECT_EQ(14, log_.status().pos);
+  EXPECT_EQ(14u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
@@ -1735,19 +1828,26 @@ TEST_F(JsonParserTest, ValueExpectedError) {
   std::string json = "}";
   ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_VALUE_EXPECTED, log_.status().error);
-  EXPECT_EQ(0, log_.status().pos);
+  EXPECT_EQ(0u, log_.status().pos);
   EXPECT_EQ("", log_.str());
 }
 
-TEST(ConvertJSONToCBOR, RoundTripValidJson) {
-  std::string json = "{\"msg\":\"Hello, world.\"}";
-  std::string cbor;
+template <typename T>
+class ConvertJSONToCBORTest : public ::testing::Test {};
+
+using ContainerTestTypes = ::testing::Types<std::vector<uint8_t>, std::string>;
+TYPED_TEST_SUITE(ConvertJSONToCBORTest, ContainerTestTypes);
+
+TYPED_TEST(ConvertJSONToCBORTest, RoundTripValidJson) {
+  std::string json_in = "{\"msg\":\"Hello, world.\",\"lst\":[1,2,3]}";
+  TypeParam json(json_in.begin(), json_in.end());
+  TypeParam cbor;
   {
     Status status = ConvertJSONToCBOR(GetTestPlatform(), SpanFrom(json), &cbor);
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(Status::npos(), status.pos);
   }
-  std::string roundtrip_json;
+  TypeParam roundtrip_json;
   {
     Status status =
         ConvertCBORToJSON(GetTestPlatform(), SpanFrom(cbor), &roundtrip_json);
@@ -1755,6 +1855,30 @@ TEST(ConvertJSONToCBOR, RoundTripValidJson) {
     EXPECT_EQ(Status::npos(), status.pos);
   }
   EXPECT_EQ(json, roundtrip_json);
+}
+
+TYPED_TEST(ConvertJSONToCBORTest, RoundTripValidJson16) {
+  std::vector<uint16_t> json16 = {
+      '{', '"', 'm', 's',    'g',    '"', ':', '"', 'H', 'e', 'l', 'l',
+      'o', ',', ' ', 0xd83c, 0xdf0e, '.', '"', ',', '"', 'l', 's', 't',
+      '"', ':', '[', '1',    ',',    '2', ',', '3', ']', '}'};
+  TypeParam cbor;
+  {
+    Status status = ConvertJSONToCBOR(
+        GetTestPlatform(), span<uint16_t>(json16.data(), json16.size()), &cbor);
+    EXPECT_EQ(Error::OK, status.error);
+    EXPECT_EQ(Status::npos(), status.pos);
+  }
+  TypeParam roundtrip_json;
+  {
+    Status status =
+        ConvertCBORToJSON(GetTestPlatform(), SpanFrom(cbor), &roundtrip_json);
+    EXPECT_EQ(Error::OK, status.error);
+    EXPECT_EQ(Status::npos(), status.pos);
+  }
+  std::string json = "{\"msg\":\"Hello, \\ud83c\\udf0e.\",\"lst\":[1,2,3]}";
+  TypeParam expected_json(json.begin(), json.end());
+  EXPECT_EQ(expected_json, roundtrip_json);
 }
 }  // namespace json
 }  // namespace inspector_protocol_encoding

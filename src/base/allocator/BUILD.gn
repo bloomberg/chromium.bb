@@ -187,8 +187,8 @@ if (use_allocator == "tcmalloc") {
     if (use_new_tcmalloc) {
       sources -= [ "$tcmalloc_dir/src/base/cycleclock.h" ]
       sources += [
-        "$tcmalloc_dir/src/emergency_malloc_for_stacktrace.cc",
         "$tcmalloc_dir/src/fake_stacktrace_scope.cc",
+        "$tcmalloc_dir/src/maybe_emergency_malloc.h",
       ]
     }
 

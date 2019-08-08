@@ -85,6 +85,7 @@
 #include "api/media_transport_interface.h"
 #include "api/network_state_predictor.h"
 #include "api/rtc_error.h"
+#include "api/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "api/rtc_event_log_output.h"
 #include "api/rtp_receiver_interface.h"
 #include "api/rtp_sender_interface.h"
@@ -96,7 +97,6 @@
 #include "api/transport/bitrate_settings.h"
 #include "api/transport/network_control.h"
 #include "api/turn_customizer.h"
-#include "logging/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "media/base/media_config.h"
 // TODO(bugs.webrtc.org/7447): We plan to provide a way to let applications
 // inject a PacketSocketFactory and/or NetworkManager, and not expose
@@ -615,6 +615,16 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // |enable_rtp_data_channel| is invalid.
     bool use_media_transport_for_data_channels = false;
 
+    // If MediaTransportFactory is provided in PeerConnectionFactory, this flag
+    // informs PeerConnection that it should use the DatagramTransportInterface
+    // for packets instead DTLS. It's invalid to set it to |true| if the
+    // MediaTransportFactory wasn't provided.
+    //
+    // TODO(sukhanov): Once we have a working mechanism for negotiating media
+    // transport through SDP, we replace media transport flags in
+    // RTCConfiguration with field trials.
+    bool use_datagram_transport = false;
+
     // Defines advanced optional cryptographic settings related to SRTP and
     // frame encryption for native WebRTC. Setting this will overwrite any
     // settings set in PeerConnectionFactory (which is deprecated).
@@ -663,6 +673,10 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
 
     // This will apply to all video tracks with a Plan B SDP offer/answer.
     int num_simulcast_layers = 1;
+
+    // If true: Use SDP format from draft-ietf-mmusic-scdp-sdp-03
+    // If false: Use SDP format from draft-ietf-mmusic-sdp-sdp-26 or later
+    bool use_obsolete_sctp_sdp = false;
 
     RTCOfferAnswerOptions() = default;
 
@@ -1074,8 +1088,14 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   // |output| and passes it on to Call, which will take the ownership. If the
   // operation fails the output will be closed and deallocated. The event log
   // will send serialized events to the output object every |output_period_ms|.
+  // Applications using the event log should generally make their own trade-off
+  // regarding the output period. A long period is generally more efficient,
+  // with potential drawbacks being more bursty thread usage, and more events
+  // lost in case the application crashes. If the |output_period_ms| argument is
+  // omitted, webrtc selects a default deemed to be workable in most cases.
   virtual bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output,
                                 int64_t output_period_ms);
+  virtual bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output);
 
   // Stops logging the RtcEventLog.
   // TODO(ivoc): Make this pure virtual when Chrome is updated.
@@ -1382,17 +1402,14 @@ class PeerConnectionFactoryInterface : public rtc::RefCountInterface {
   ~PeerConnectionFactoryInterface() override = default;
 };
 
-// This is a lower-level version of the CreatePeerConnectionFactory functions
-// above. It's implemented in the "peerconnection" build target, whereas the
-// above methods are only implemented in the broader "libjingle_peerconnection"
-// build target, which pulls in the implementations of every module webrtc may
-// use.
+// CreateModularPeerConnectionFactory is implemented in the "peerconnection"
+// build target, which doesn't pull in the implementations of every module
+// webrtc may use.
 //
 // If an application knows it will only require certain modules, it can reduce
 // webrtc's impact on its binary size by depending only on the "peerconnection"
 // target and the modules the application requires, using
-// CreateModularPeerConnectionFactory instead of one of the
-// CreatePeerConnectionFactory methods above. For example, if an application
+// CreateModularPeerConnectionFactory. For example, if an application
 // only uses WebRTC for audio, it can pass in null pointers for the
 // video-specific interfaces, and omit the corresponding modules from its
 // build.
@@ -1401,42 +1418,6 @@ class PeerConnectionFactoryInterface : public rtc::RefCountInterface {
 // will create the necessary thread internally. If |signaling_thread| is null,
 // the PeerConnectionFactory will use the thread on which this method is called
 // as the signaling thread, wrapping it in an rtc::Thread object if needed.
-//
-// If non-null, a reference is added to |default_adm|, and ownership of
-// |video_encoder_factory| and |video_decoder_factory| is transferred to the
-// returned factory.
-//
-// If |audio_mixer| is null, an internal audio mixer will be created and used.
-//
-// TODO(deadbeef): Use rtc::scoped_refptr<> and std::unique_ptr<> to make this
-// ownership transfer and ref counting more obvious.
-//
-// TODO(deadbeef): Encapsulate these modules in a struct, so that when a new
-// module is inevitably exposed, we can just add a field to the struct instead
-// of adding a whole new CreateModularPeerConnectionFactory overload.
-rtc::scoped_refptr<PeerConnectionFactoryInterface>
-CreateModularPeerConnectionFactory(
-    rtc::Thread* network_thread,
-    rtc::Thread* worker_thread,
-    rtc::Thread* signaling_thread,
-    std::unique_ptr<cricket::MediaEngineInterface> media_engine,
-    std::unique_ptr<CallFactoryInterface> call_factory,
-    std::unique_ptr<RtcEventLogFactoryInterface> event_log_factory);
-
-rtc::scoped_refptr<PeerConnectionFactoryInterface>
-CreateModularPeerConnectionFactory(
-    rtc::Thread* network_thread,
-    rtc::Thread* worker_thread,
-    rtc::Thread* signaling_thread,
-    std::unique_ptr<cricket::MediaEngineInterface> media_engine,
-    std::unique_ptr<CallFactoryInterface> call_factory,
-    std::unique_ptr<RtcEventLogFactoryInterface> event_log_factory,
-    std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory,
-    std::unique_ptr<NetworkStatePredictorFactoryInterface>
-        network_state_predictor_factory,
-    std::unique_ptr<NetworkControllerFactoryInterface>
-        network_controller_factory = nullptr);
-
 rtc::scoped_refptr<PeerConnectionFactoryInterface>
 CreateModularPeerConnectionFactory(
     PeerConnectionFactoryDependencies dependencies);

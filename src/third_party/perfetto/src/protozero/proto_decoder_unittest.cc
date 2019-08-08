@@ -32,19 +32,12 @@ using ::testing::Invoke;
 using namespace proto_utils;
 
 TEST(ProtoDecoderTest, ReadString) {
-  Message message;
-  ScatteredHeapBuffer delegate(512, 512);
-  ScatteredStreamWriter writer(&delegate);
-  delegate.set_writer(&writer);
-  message.Reset(&writer);
+  HeapBuffered<Message> message;
 
   static constexpr char kTestString[] = "test";
-  message.AppendString(1, kTestString);
-
-  delegate.AdjustUsedSizeOfCurrentSlice();
-  auto used_range = delegate.slices()[0].GetUsedRange();
-
-  TypedProtoDecoder<32, false> decoder(used_range.begin, used_range.size());
+  message->AppendString(1, kTestString);
+  std::vector<uint8_t> proto = message.SerializeAsArray();
+  TypedProtoDecoder<32, false> decoder(proto.data(), proto.size());
 
   const auto& field = decoder.Get(1);
   ASSERT_EQ(field.type(), ProtoWireType::kLengthDelimited);
@@ -230,6 +223,18 @@ TEST(ProtoDecoderTest, FixedData) {
                                   sizeof(buf));
   EXPECT_FLOAT_EQ(decoder.Get(1).as_float(), 1.25f);
   EXPECT_DOUBLE_EQ(decoder.Get(2).as_double(), -1000.25);
+}
+
+TEST(ProtoDecoderTest, FindField) {
+  uint8_t buf[] = {0x08, 0x00};  // field_id 1, varint value 0.
+  ProtoDecoder pd(buf, 2);
+
+  auto field = pd.FindField(1);
+  ASSERT_TRUE(field);
+  EXPECT_EQ(field.as_int64(), 0);
+
+  auto field2 = pd.FindField(2);
+  EXPECT_FALSE(field2);
 }
 
 }  // namespace

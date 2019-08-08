@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -169,7 +169,7 @@ void OpaqueBrowserFrameView::InitViews() {
   if (browser_view()->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this, this);
     window_icon_->set_is_light(true);
-    window_icon_->set_id(VIEW_ID_WINDOW_ICON);
+    window_icon_->SetID(VIEW_ID_WINDOW_ICON);
     AddChildView(window_icon_);
     window_icon_->Update();
   }
@@ -178,11 +178,11 @@ void OpaqueBrowserFrameView::InitViews() {
   window_title_->SetVisible(browser_view()->ShouldShowWindowTitle());
   window_title_->SetSubpixelRenderingEnabled(false);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  window_title_->set_id(VIEW_ID_WINDOW_TITLE);
+  window_title_->SetID(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  WebAppBrowserController* controller =
-      browser_view()->browser()->web_app_controller();
+  web_app::AppBrowserController* controller =
+      browser_view()->browser()->app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
         frame(), browser_view(), GetCaptionColor(kActive),
@@ -261,16 +261,16 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_ && close_button_->visible() &&
+  if (close_button_ && close_button_->GetVisible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (restore_button_ && restore_button_->visible() &&
+  if (restore_button_ && restore_button_->GetVisible() &&
       restore_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (maximize_button_ && maximize_button_->visible() &&
+  if (maximize_button_ && maximize_button_->GetVisible() &&
       maximize_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (minimize_button_ && minimize_button_->visible() &&
+  if (minimize_button_ && minimize_button_->GetVisible() &&
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
@@ -356,10 +356,10 @@ void OpaqueBrowserFrameView::OnMenuButtonClicked(views::Button* source,
 #if defined(OS_LINUX)
   views::MenuRunner menu_runner(frame()->GetSystemMenuModel(),
                                 views::MenuRunner::HAS_MNEMONICS);
-  menu_runner.RunMenuAt(browser_view()->GetWidget(), window_icon_,
-                        window_icon_->GetBoundsInScreen(),
-                        views::MenuAnchorPosition::kTopLeft,
-                        ui::MENU_SOURCE_MOUSE);
+  menu_runner.RunMenuAt(
+      browser_view()->GetWidget(), window_icon_->button_controller(),
+      window_icon_->GetBoundsInScreen(), views::MenuAnchorPosition::kTopLeft,
+      ui::MENU_SOURCE_MOUSE);
 #endif
 }
 
@@ -594,7 +594,7 @@ void OpaqueBrowserFrameView::InitWindowCaptionButton(
     int accessibility_string_id,
     ViewID view_id) {
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
-  button->set_id(view_id);
+  button->SetID(view_id);
   AddChildView(button);
 }
 
@@ -675,8 +675,6 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 
   // Do not show caption buttons if the window manager is forcefully providing a
   // title bar (e.g., in Ubuntu Unity, if the window is maximized).
-  if (!views::ViewsDelegate::GetInstance())
-    return true;
   return !views::ViewsDelegate::GetInstance()->WindowManagerProvidesTitleBar(
       IsMaximized());
 }

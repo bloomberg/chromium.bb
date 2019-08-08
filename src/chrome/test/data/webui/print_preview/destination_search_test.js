@@ -14,7 +14,7 @@ cr.define('destination_search_test', function() {
         'receive successful setup with policies',
   };
 
-  const suiteName = 'NewDestinationSearchTest';
+  const suiteName = 'DestinationSearchTest';
   suite(suiteName, function() {
     /** @type {?PrintPreviewDestinationDialogElement} */
     let dialog = null;

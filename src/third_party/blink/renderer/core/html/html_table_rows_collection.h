@@ -39,9 +39,8 @@ class HTMLTableRowElement;
 
 class HTMLTableRowsCollection final : public HTMLCollection {
  public:
-  static HTMLTableRowsCollection* Create(ContainerNode&, CollectionType);
-
   explicit HTMLTableRowsCollection(ContainerNode&);
+  HTMLTableRowsCollection(ContainerNode&, CollectionType);
 
   HTMLTableRowElement* Item(unsigned offset) const {
     return ToHTMLTableRowElement(HTMLCollection::item(offset));

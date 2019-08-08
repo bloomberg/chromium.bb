@@ -16,7 +16,7 @@ inline void QuicRunSystemEventLoopIterationImpl() {
 class QuicSystemEventLoopImpl {
  public:
   QuicSystemEventLoopImpl(std::string context_name) {
-    base::ThreadPool::CreateAndStartWithDefaultParams(context_name);
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams(context_name);
   }
 
  private:

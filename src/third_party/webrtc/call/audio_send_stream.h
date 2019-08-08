@@ -23,11 +23,13 @@
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
 #include "api/crypto/frame_encryptor_interface.h"
+#include "api/media_transport_config.h"
 #include "api/media_transport_interface.h"
 #include "api/rtp_parameters.h"
 #include "api/scoped_refptr.h"
 #include "call/rtp_config.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
+#include "modules/rtp_rtcp/include/report_block_data.h"
 
 namespace webrtc {
 
@@ -65,11 +67,17 @@ class AudioSendStream {
     AudioProcessingStats apm_statistics;
 
     int64_t target_bitrate_bps = 0;
+    // A snapshot of Report Blocks with additional data of interest to
+    // statistics. Within this list, the sender-source SSRC pair is unique and
+    // per-pair the ReportBlockData represents the latest Report Block that was
+    // received for that pair.
+    std::vector<ReportBlockData> report_block_datas;
   };
 
   struct Config {
     Config() = delete;
-    Config(Transport* send_transport, MediaTransportInterface* media_transport);
+    Config(Transport* send_transport,
+           const MediaTransportConfig& media_transport_config);
     explicit Config(Transport* send_transport);
     ~Config();
     std::string ToString() const;
@@ -108,7 +116,7 @@ class AudioSendStream {
     // the entire life of the AudioSendStream and is owned by the API client.
     Transport* send_transport = nullptr;
 
-    MediaTransportInterface* media_transport = nullptr;
+    MediaTransportConfig media_transport_config;
 
     // Bitrate limits used for variable audio bitrate streams. Set both to -1 to
     // disable audio bitrate adaptation.

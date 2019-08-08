@@ -9,12 +9,15 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
 namespace syncer {
 
+class ModelTypeControllerDelegate;
 class NigoriSyncBridge;
 struct EntityData;
 
@@ -50,6 +53,17 @@ class NigoriLocalChangeProcessor {
   // Returns both the entity metadata and model type state such that the Nigori
   // model takes care of persisting them.
   virtual NigoriMetadataBatch GetMetadata() = 0;
+
+  // Reports an error in the model to sync. Should be called for any persistence
+  // or consistency error the bridge encounters outside of a method that allows
+  // returning a ModelError directly. Outstanding callbacks are not expected to
+  // be called after an error. This will result in sync being temporarily
+  // disabled (generally until the next restart).
+  virtual void ReportError(const ModelError& error) = 0;
+
+  // Returns the delegate for the controller.
+  virtual base::WeakPtr<ModelTypeControllerDelegate>
+  GetControllerDelegate() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NigoriLocalChangeProcessor);

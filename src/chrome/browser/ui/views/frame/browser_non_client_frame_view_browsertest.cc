@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager_browsertest.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -29,7 +29,6 @@ class BrowserNonClientFrameViewBrowserTest
   ~BrowserNonClientFrameViewBrowserTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
     ASSERT_TRUE(embedded_test_server()->Start());
 
     extensions::ExtensionBrowserTest::SetUp();
@@ -67,8 +66,6 @@ class BrowserNonClientFrameViewBrowserTest
 
  private:
   GURL GetAppURL() { return embedded_test_server()->GetURL("/empty.html"); }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewBrowserTest);
 };
@@ -152,7 +149,8 @@ using SystemWebAppNonClientFrameViewBrowserTest =
 // System Web Apps don't get the hosted app buttons.
 IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
                        HideHostedAppButtonContainer) {
-  Browser* app_browser = WaitForSystemAppInstallAndLaunch();
+  Browser* app_browser =
+      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()

@@ -16,11 +16,11 @@ The following tools must be installed and present in the PATH variable:
 
  * Git (for checking out sources)
  * Python 2.7.x (all recent versions in 2.x should work, 3.x is not supported)
- * CMake 2.8 (3.6 for Android NDK r15+ builds) or newer
+ * CMake 2.8 (3.6 for Android NDK r17+ builds) or newer
 
 ### Win32
 
- * Visual Studio 2013 or newer (glslang uses several C++11 features)
+ * Visual Studio 2015 or newer (glslang uses several C++11 features)
 
 ### Linux
 
@@ -29,14 +29,14 @@ The following tools must be installed and present in the PATH variable:
 ### Android
 
  * Android NDK r15c or later.
- * Android SDK with: SDK Tools, SDK Platform-tools, SDK Build-tools, and API 22
+ * Android SDK with: SDK Tools, SDK Platform-tools, SDK Build-tools, and API 28
  * Java Development Kit (JDK)
  * Windows: either NMake or Ninja in PATH
 
 If you have downloaded Android SDK tools, you can install necessary components
 by running:
 
-	tools/android update sdk --no-ui --all --filter tools,platform-tools,build-tools-25.0.2,android-22
+	tools/android update sdk --no-ui --all --filter tools,platform-tools,build-tools-25.0.2,android-28
 
 
 Building CTS
@@ -59,12 +59,12 @@ using cmake.
 
 ### Windows x86-32
 
-	cmake <path to vulkancts> -G"Visual Studio 12"
+	cmake <path to vulkancts> -G"Visual Studio 14"
 	start dEQP-Core-default.sln
 
 ### Windows x86-64
 
-	cmake <path to vulkancts> -G"Visual Studio 12 Win64"
+	cmake <path to vulkancts> -G"Visual Studio 14 Win64"
 	start dEQP-Core-default.sln
 
 ### Linux 32-bit Debug
@@ -85,7 +85,7 @@ Following command will build dEQP.apk:
 
 	python scripts/android/build_apk.py --sdk <path to Android SDK> --ndk <path to Android NDK>
 
-By default the CTS package will be built for the Android API level 21 (Android 5.0 and above).
+By default the CTS package will be built for the Android API level 28.
 Another API level may be supplied using --native-api command line option.
 
 The package can be installed by either running:

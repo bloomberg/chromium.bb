@@ -274,10 +274,21 @@ jumbo_component("gl") {
       "//build/config/linux:xext",
     ]
 
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/base/x",
+      "//ui/gfx/x",
+    ]
   }
   if (is_win) {
     sources += [
+      "child_window_win.cc",
+      "child_window_win.h",
+      "dc_layer_tree.cc",
+      "dc_layer_tree.h",
+      "direct_composition_child_surface_win.cc",
+      "direct_composition_child_surface_win.h",
+      "direct_composition_surface_win.cc",
+      "direct_composition_surface_win.h",
       "gl_angle_util_win.cc",
       "gl_angle_util_win.h",
       "gl_bindings_autogen_wgl.cc",
@@ -286,16 +297,28 @@ jumbo_component("gl") {
       "gl_context_wgl.h",
       "gl_image_dxgi.cc",
       "gl_image_dxgi.h",
+      "gl_image_dxgi_swap_chain.cc",
+      "gl_image_dxgi_swap_chain.h",
       "gl_surface_wgl.cc",
       "gl_surface_wgl.h",
       "gl_wgl_api_implementation.cc",
       "gl_wgl_api_implementation.h",
+      "swap_chain_presenter.cc",
+      "swap_chain_presenter.h",
       "vsync_provider_win.cc",
       "vsync_provider_win.h",
+      "vsync_thread_win.cc",
+      "vsync_thread_win.h",
     ]
 
-    libs = [ "dwmapi.lib" ]
-    ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
+    libs = [
+      "dxgi.lib",
+      "dwmapi.lib",
+    ]
+    ldflags = [
+      "/DELAYLOAD:dwmapi.dll",
+      "/DELAYLOAD:dxgi.dll",
+    ]
 
     assert(use_egl)
     data_deps += [
@@ -511,6 +534,7 @@ test("gl_unittests") {
 
   if (is_win) {
     sources += [
+      "direct_composition_surface_win_unittest.cc",
       "gl_image_dxgi_unittest.cc",
       "wgl_api_unittest.cc",
     ]
@@ -534,6 +558,7 @@ test("gl_unittests") {
     "//base",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base:base",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

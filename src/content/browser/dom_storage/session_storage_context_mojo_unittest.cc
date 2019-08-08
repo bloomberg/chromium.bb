@@ -632,8 +632,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   url::Origin origin3 = url::Origin::Create(GURL("http://example.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  file_service()->GetBinderRegistryForTesting()->AddInterface(
-      leveldb::mojom::LevelDBService::Name_,
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&fake_leveldb_service)));
 
@@ -768,8 +767,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  file_service()->GetBinderRegistryForTesting()->AddInterface(
-      leveldb::mojom::LevelDBService::Name_,
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&fake_leveldb_service)));
 

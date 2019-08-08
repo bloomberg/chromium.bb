@@ -33,8 +33,6 @@ class SVGLinearGradientElement final : public SVGGradientElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGLinearGradientElement);
-
   explicit SVGLinearGradientElement(Document&);
 
   bool CollectGradientAttributes(LinearGradientAttributes&);

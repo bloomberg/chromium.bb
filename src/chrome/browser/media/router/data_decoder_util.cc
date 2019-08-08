@@ -21,11 +21,11 @@ void DataDecoder::ParseXml(const std::string& unsafe_xml,
 
 void DataDecoder::ParseJson(
     const std::string& unsafe_json,
-    const data_decoder::SafeJsonParser::SuccessCallback& success_callback,
-    const data_decoder::SafeJsonParser::ErrorCallback& error_callback) {
-  data_decoder::SafeJsonParser::ParseBatch(connector_.get(), unsafe_json,
-                                           success_callback, error_callback,
-                                           kDataDecoderServiceBatchId);
+    data_decoder::SafeJsonParser::SuccessCallback success_callback,
+    data_decoder::SafeJsonParser::ErrorCallback error_callback) {
+  data_decoder::SafeJsonParser::ParseBatch(
+      connector_.get(), unsafe_json, std::move(success_callback),
+      std::move(error_callback), kDataDecoderServiceBatchId);
 }
 
 }  // namespace media_router

@@ -87,8 +87,6 @@ bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
   for (size_t i = 0; i < nalu_vector.size(); ++i) {
     header->fragmentationOffset[i] = nalu_vector[i].data - data;
     header->fragmentationLength[i] = nalu_vector[i].size;
-    header->fragmentationPlType[i] = 0;
-    header->fragmentationTimeDiff[i] = 0;
   }
   return true;
 }
@@ -145,8 +143,8 @@ class RTCVideoEncoder::Impl
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
 
   // Request encoding parameter change for the underlying encoder.
-  void RequestEncodingParametersChange(webrtc::VideoBitrateAllocation bitrate,
-                                       uint32_t framerate);
+  void RequestEncodingParametersChange(
+      const webrtc::VideoEncoder::RateControlParameters& parameters);
 
   void RegisterEncodeCompleteCallback(base::WaitableEvent* async_waiter,
                                       int32_t* async_retval,
@@ -205,7 +203,7 @@ class RTCVideoEncoder::Impl
 
   // Checks if the frame size is different than hardware accelerator
   // requirements.
-  bool RequiresSizeChange(const scoped_refptr<media::VideoFrame>& frame) const;
+  bool RequiresSizeChange(const media::VideoFrame& frame) const;
 
   // Return an encoded output buffer to WebRTC.
   void ReturnEncodedImage(const webrtc::EncodedImage& image,
@@ -392,29 +390,29 @@ void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (video_encoder_) {
     video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        bitstream_buffer_id,
-        output_buffers_[bitstream_buffer_id]->handle(),
+        bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
+        false /* read_only */,
         output_buffers_[bitstream_buffer_id]->mapped_size()));
     output_buffers_free_count_++;
   }
 }
 
 void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
-    webrtc::VideoBitrateAllocation bitrate,
-    uint32_t framerate) {
-  DVLOG(3) << __func__ << " bitrate=" << bitrate.ToString()
-           << ", framerate=" << framerate;
+    const webrtc::VideoEncoder::RateControlParameters& parameters) {
+  DVLOG(3) << __func__ << " bitrate=" << parameters.bitrate.ToString()
+           << ", framerate=" << parameters.framerate_fps;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This is a workaround to zero being temporarily provided, as part of the
   // initial setup, by WebRTC.
-  if (bitrate.get_sum_bps() == 0) {
-    bitrate.SetBitrate(0, 0, 1);
-  }
-  framerate = std::max(1u, framerate);
-
   if (video_encoder_) {
     media::VideoBitrateAllocation allocation;
+    if (parameters.bitrate.get_sum_bps() == 0) {
+      allocation.SetBitrate(0, 0, 1);
+    }
+    uint32_t framerate =
+        std::max(1u, static_cast<uint32_t>(parameters.framerate_fps + 0.5));
+
     for (size_t spatial_id = 0;
          spatial_id < media::VideoBitrateAllocation::kMaxSpatialLayers;
          ++spatial_id) {
@@ -422,17 +420,19 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
            temporal_id < media::VideoBitrateAllocation::kMaxTemporalLayers;
            ++temporal_id) {
         // TODO(sprang): Clean this up if/when webrtc struct moves to int.
-        uint32_t layer_bitrate = bitrate.GetBitrate(spatial_id, temporal_id);
+        uint32_t layer_bitrate =
+            parameters.bitrate.GetBitrate(spatial_id, temporal_id);
         RTC_CHECK_LE(layer_bitrate,
                      static_cast<uint32_t>(std::numeric_limits<int>::max()));
         if (!allocation.SetBitrate(spatial_id, temporal_id, layer_bitrate)) {
           LOG(WARNING) << "Overflow in bitrate allocation: "
-                       << bitrate.ToString();
+                       << parameters.bitrate.ToString();
           break;
         }
       }
     }
-    DCHECK_EQ(allocation.GetSumBps(), static_cast<int>(bitrate.get_sum_bps()));
+    DCHECK_EQ(allocation.GetSumBps(),
+              static_cast<int>(parameters.bitrate.get_sum_bps()));
     video_encoder_->RequestEncodingParametersChange(allocation, framerate);
   }
 }
@@ -504,7 +504,8 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   // Immediately provide all output buffers to the VEA.
   for (size_t i = 0; i < output_buffers_.size(); ++i) {
     video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        i, output_buffers_[i]->handle(), output_buffers_[i]->mapped_size()));
+        i, output_buffers_[i]->handle(), false /* read_only */,
+        output_buffers_[i]->mapped_size()));
     output_buffers_free_count_++;
   }
   DCHECK_EQ(GetStatus(), WEBRTC_VIDEO_CODEC_UNINITIALIZED);
@@ -564,9 +565,10 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
     capture_timestamp_ms = current_time_ms;
   }
 
-  webrtc::EncodedImage image(static_cast<uint8_t*>(output_buffer->memory()),
-                             metadata.payload_size_bytes,
-                             output_buffer->mapped_size());
+  webrtc::EncodedImage image;
+  image.Allocate(metadata.payload_size_bytes);
+  image.set_size(metadata.payload_size_bytes);
+  memcpy(image.data(), output_buffer->memory(), metadata.payload_size_bytes);
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
   image.SetTimestamp(rtp_timestamp.value());
@@ -649,7 +651,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     frame = static_cast<WebRtcVideoFrameAdapter*>(
                 next_frame->video_frame_buffer().get())
                 ->getMediaVideoFrame();
-    requires_copy = RequiresSizeChange(frame) ||
+    requires_copy = RequiresSizeChange(*frame) ||
                     frame->storage_type() != media::VideoFrame::STORAGE_SHMEM;
   } else {
     requires_copy = true;
@@ -694,8 +696,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
       return;
     }
   }
-  frame->AddDestructionObserver(media::BindToCurrentLoop(
-      base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index)));
+  frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(
+      &RTCVideoEncoder::Impl::EncodeFrameFinished, this, index)));
   if (!failed_timestamp_match_) {
     DCHECK(std::find_if(pending_timestamps_.begin(), pending_timestamps_.end(),
                         [&frame](const RTCTimestamps& entry) {
@@ -746,9 +748,9 @@ bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32_t bitrate) {
 }
 
 bool RTCVideoEncoder::Impl::RequiresSizeChange(
-    const scoped_refptr<media::VideoFrame>& frame) const {
-  return (frame->coded_size() != input_frame_coded_size_ ||
-          frame->visible_rect() != gfx::Rect(input_visible_size_));
+    const media::VideoFrame& frame) const {
+  return (frame.coded_size() != input_frame_coded_size_ ||
+          frame.visible_rect() != gfx::Rect(input_visible_size_));
 }
 
 void RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback(
@@ -782,8 +784,6 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
       header.VerifyAndAllocateFragmentationHeader(1);
       header.fragmentationOffset[0] = 0;
       header.fragmentationLength[0] = image.size();
-      header.fragmentationPlType[0] = 0;
-      header.fragmentationTimeDiff[0] = 0;
       break;
     case webrtc::kVideoCodecH264:
       if (!GetRTPFragmentationHeaderH264(&header, image.data(), image.size())) {
@@ -976,27 +976,26 @@ int32_t RTCVideoEncoder::Release() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t RTCVideoEncoder::SetRateAllocation(
-    const webrtc::VideoBitrateAllocation& allocation,
-    uint32_t frame_rate) {
-  DVLOG(3) << __func__ << " new_bit_rate=" << allocation.ToString()
-           << ", frame_rate=" << frame_rate;
+void RTCVideoEncoder::SetRates(
+    const webrtc::VideoEncoder::RateControlParameters& parameters) {
+  DVLOG(3) << __func__ << " new_bit_rate=" << parameters.bitrate.ToString()
+           << ", frame_rate=" << parameters.framerate_fps;
   if (!impl_.get()) {
     DVLOG(3) << "Encoder is not initialized";
-    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+    return;
   }
 
   const int32_t retval = impl_->GetStatus();
   if (retval != WEBRTC_VIDEO_CODEC_OK) {
     DVLOG(3) << __func__ << " returning " << retval;
-    return retval;
+    return;
   }
 
   gpu_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&RTCVideoEncoder::Impl::RequestEncodingParametersChange,
-                     impl_, allocation, frame_rate));
-  return WEBRTC_VIDEO_CODEC_OK;
+                     impl_, parameters));
+  return;
 }
 
 webrtc::VideoEncoder::EncoderInfo RTCVideoEncoder::GetEncoderInfo() const {

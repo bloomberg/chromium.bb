@@ -12,7 +12,7 @@ generate_token.py http://127.0.0.1:8000 ExperimentalIsInputPending --expire-time
 
 <script>
 test(t => {
-  OriginTrialsHelper.check_properties(this,
+  OriginTrialsHelper.check_properties_exist(this,
       {
         'Navigator': ['scheduling'],
         'Scheduling': ['isInputPending'],

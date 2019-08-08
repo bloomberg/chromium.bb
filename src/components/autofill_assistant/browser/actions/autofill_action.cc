@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
@@ -153,11 +153,11 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate->RunElementChecks(
-      batch_element_checker_.get(),
+  batch_element_checker_->AddAllDoneCallback(
       base::BindOnce(&AutofillAction::OnCheckRequiredFieldsDone,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      allow_fallback));
+  delegate->RunElementChecks(batch_element_checker_.get());
 }
 
 void AutofillAction::OnGetRequiredFieldValue(int required_fields_index,

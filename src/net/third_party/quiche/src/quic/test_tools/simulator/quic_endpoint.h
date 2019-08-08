@@ -82,6 +82,7 @@ class QuicEndpoint : public Endpoint,
   void OnStreamFrame(const QuicStreamFrame& frame) override;
   void OnCryptoFrame(const QuicCryptoFrame& frame) override;
   void OnCanWrite() override;
+  bool SendProbingData() override;
   bool WillingAndAbleToWrite() const override;
   bool HasPendingHandshake() const override;
   bool ShouldKeepConnectionAlive() const override;
@@ -107,10 +108,10 @@ class QuicEndpoint : public Endpoint,
   void SendPing() override {}
   bool AllowSelfAddressChange() const override;
   void OnForwardProgressConfirmed() override {}
-  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
+  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) override {
     return true;
   }
-  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
+  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override {
     return true;
   }
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {

@@ -10,7 +10,7 @@
 
 namespace web_app {
 
-TestAppRegistrar::TestAppRegistrar() = default;
+TestAppRegistrar::TestAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 
 TestAppRegistrar::~TestAppRegistrar() = default;
 
@@ -29,6 +29,11 @@ void TestAppRegistrar::AddAsExternalAppUninstalledByUser(const AppId& app_id) {
 }
 
 void TestAppRegistrar::Init(base::OnceClosure callback) {}
+
+bool TestAppRegistrar::IsInstalled(const GURL& start_url) const {
+  NOTIMPLEMENTED();
+  return false;
+}
 
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::ContainsKey(installed_apps_, app_id);

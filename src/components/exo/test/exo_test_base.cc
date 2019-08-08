@@ -6,7 +6,6 @@
 
 #include "ash/shell.h"
 #include "components/exo/test/exo_test_helper.h"
-#include "components/exo/test/test_client_controlled_state_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/env.h"
@@ -28,14 +27,11 @@ ExoTestBase::~ExoTestBase() {}
 void ExoTestBase::SetUp() {
   ui::SetUpInputMethodFactoryForTesting();
   AshTestBase::SetUp();
-  wm_helper_ =
-      std::make_unique<WMHelperChromeOS>(ash::Shell::Get()->aura_env());
+  wm_helper_ = std::make_unique<WMHelperChromeOS>();
   WMHelper::SetInstance(wm_helper_.get());
-  test::TestClientControlledStateDelegate::InstallFactory();
 }
 
 void ExoTestBase::TearDown() {
-  test::TestClientControlledStateDelegate::UninstallFactory();
   WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
   AshTestBase::TearDown();

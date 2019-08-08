@@ -69,7 +69,7 @@ void MaterialDesignController::Initialize() {
     // TabletModeClient's default state is in non-tablet mode.
     automatic_touch_ui_ = true;
 #elif defined(OS_WIN)
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
       // Win 10+ uses dynamic mode by default and checks the current tablet mode
       // state to determine whether to start in touch mode.
       automatic_touch_ui_ = true;

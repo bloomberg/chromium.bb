@@ -35,7 +35,6 @@ VideoStreamDecoder::~VideoStreamDecoder() {
   // callbacks.
 
   // Unset all the callback pointers that we set in the ctor.
-  video_receiver_->RegisterPacketRequestCallback(nullptr);
   video_receiver_->RegisterReceiveCallback(nullptr);
 }
 
@@ -48,12 +47,6 @@ int32_t VideoStreamDecoder::FrameToRender(VideoFrame& video_frame,
                                           VideoContentType content_type) {
   receive_stats_callback_->OnDecodedFrame(video_frame, qp, content_type);
   incoming_video_stream_->OnFrame(video_frame);
-  return 0;
-}
-
-int32_t VideoStreamDecoder::ReceivedDecodedReferenceFrame(
-    const uint64_t picture_id) {
-  RTC_NOTREACHED();
   return 0;
 }
 

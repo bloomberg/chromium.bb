@@ -59,14 +59,15 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
                const content::NotificationDetails& details) override {
     DCHECK(type == extensions::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
-    shared_memory_ = content::Details<base::SharedMemory>(details).ptr();
+    shared_memory_ =
+        content::Details<base::ReadOnlySharedMemoryRegion>(details).ptr();
   }
 
   // Directory containing user scripts.
   base::ScopedTempDir temp_dir_;
 
   // Updated to the script shared memory when we get notified.
-  base::SharedMemory* shared_memory_;
+  base::ReadOnlySharedMemoryRegion* shared_memory_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -85,7 +86,7 @@ TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
   loader.StartLoad();
   content::RunAllTasksUntilIdle();
 
-  ASSERT_TRUE(shared_memory_ != NULL);
+  ASSERT_TRUE(shared_memory_ != nullptr && shared_memory_->IsValid());
 }
 
 TEST_F(ExtensionUserScriptLoaderTest, Parse1) {

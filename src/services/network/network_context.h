@@ -24,6 +24,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/cert/cert_verifier.h"
@@ -34,10 +35,12 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/network_qualities_pref_delegate.h"
+#include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -53,6 +56,7 @@ class UnguessableToken;
 }  // namespace base
 
 namespace net {
+class CertNetFetcherImpl;
 class CertVerifier;
 class HostPortPair;
 class ReportSender;
@@ -62,7 +66,6 @@ class URLRequestContext;
 
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
-class TreeStateTracker;
 }  // namespace certificate_transparency
 
 namespace domain_reliability {
@@ -196,11 +199,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
-                          const std::vector<uint8_t>& data) override;
-  void ClearChannelIds(base::Time start_time,
-                       base::Time end_time,
-                       mojom::ClearDataFilterPtr filter,
-                       ClearChannelIdsCallback callback) override;
+                          mojo_base::BigBuffer data) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
@@ -318,6 +317,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const scoped_refptr<net::X509Certificate>& certificate,
       const std::string& hostname,
       const std::string& ocsp_response,
+      const std::string& sct_list,
       VerifyCertificateForTestingCallback callback) override;
   void PreconnectSockets(uint32_t num_streams,
                          const GURL& url,
@@ -349,6 +349,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override;
+
+  void GetOriginPolicyManager(
+      mojom::OriginPolicyManagerRequest request) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -396,10 +399,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   bool SkipReportingPermissionCheck() const;
 
   // Reports and gather CORS preflight cache size metric.
-  size_t ReportAndGatherCorsPreflightCacheSizeMetric();
+  cors::PreflightCache::Metrics ReportAndGatherCorsPreflightCacheSizeMetric();
 
   // Gather active URLLoader count.
   size_t GatherActiveLoaderCount();
+
+  // Creates a new url loader factory bound to this network context. For use
+  // inside the network service.
+  mojom::URLLoaderFactoryPtr CreateUrlLoaderFactoryForNetworkService();
 
  private:
   class ContextNetworkDelegate;
@@ -542,7 +549,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::queue<SetExpectCTTestReportCallback>
       outstanding_set_expect_ct_callbacks_;
-  std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_CHROMEOS)
@@ -551,6 +557,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // certificates.
   std::unique_ptr<network::NSSTempCertsCacheChromeOS> nss_temp_certs_cache_;
 #endif
+
+  // CertNetFetcher used by the context's CertVerifier. May be nullptr if
+  // CertNetFetcher is not used by the current platform.
+  scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher_;
 
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;
@@ -595,6 +605,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
+
+  std::unique_ptr<OriginPolicyManager> origin_policy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

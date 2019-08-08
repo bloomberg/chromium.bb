@@ -71,8 +71,9 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
   AddChildView(apps_grid_view_);
 
   // Page switcher should be initialized after AppsGridView.
-  page_switcher_ = new PageSwitcher(apps_grid_view_->pagination_model(),
-                                    true /* vertical */);
+  page_switcher_ =
+      new PageSwitcher(apps_grid_view_->pagination_model(), true /* vertical */,
+                       contents_view_->app_list_view()->is_tablet_mode());
   AddChildView(page_switcher_);
 
   app_list_folder_view_ = new AppListFolderView(this, model, contents_view_);
@@ -158,20 +159,20 @@ void AppsContainerView::ReparentDragEnded() {
 }
 
 void AppsContainerView::UpdateControlVisibility(
-    ash::mojom::AppListViewState app_list_state,
+    ash::AppListViewState app_list_state,
     bool is_in_drag) {
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
-  page_switcher_->SetVisible(
-      app_list_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
-      is_in_drag);
+  page_switcher_->SetVisible(app_list_state ==
+                                 ash::AppListViewState::kFullscreenAllApps ||
+                             is_in_drag);
 
   // Ignore button press during dragging to avoid app list item views' opacity
   // being set to wrong value.
   page_switcher_->set_ignore_button_press(is_in_drag);
 
   suggestion_chip_container_view_->SetVisible(
-      app_list_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
-      app_list_state == ash::mojom::AppListViewState::kPeeking || is_in_drag);
+      app_list_state == ash::AppListViewState::kFullscreenAllApps ||
+      app_list_state == ash::AppListViewState::kPeeking || is_in_drag);
 }
 
 void AppsContainerView::UpdateYPositionAndOpacity() {
@@ -181,8 +182,8 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
   // AppsGridView.
   AppListView* app_list_view = contents_view_->app_list_view();
   bool should_restore_opacity =
-      !app_list_view->is_in_drag() && (app_list_view->app_list_state() !=
-                                       ash::mojom::AppListViewState::kClosed);
+      !app_list_view->is_in_drag() &&
+      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   int screen_bottom = app_list_view->GetScreenBottom();
   gfx::Rect switcher_bounds = page_switcher_->GetBoundsInScreen();
   float centerline_above_work_area =
@@ -223,6 +224,7 @@ void AppsContainerView::OnTabletModeChanged(bool started) {
   suggestion_chip_container_view_->OnTabletModeChanged(started);
   apps_grid_view_->OnTabletModeChanged(started);
   app_list_folder_view_->OnTabletModeChanged(started);
+  page_switcher_->set_is_tablet_mode(started);
 }
 
 void AppsContainerView::Layout() {

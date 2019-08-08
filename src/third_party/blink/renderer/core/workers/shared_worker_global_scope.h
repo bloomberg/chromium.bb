@@ -47,9 +47,19 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // TODO(nhiroki): Merge Create() into the constructor after
+  // off-the-main-thread worker script fetch is enabled by default.
+  static SharedWorkerGlobalScope* Create(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      SharedWorkerThread*,
+      base::TimeTicks time_origin);
+
+  // Do not call this. Use Create() instead. This is public only for
+  // MakeGarbageCollected.
   SharedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                           SharedWorkerThread*,
                           base::TimeTicks time_origin);
+
   ~SharedWorkerGlobalScope() override;
 
   bool IsSharedWorkerGlobalScope() const override { return true; }
@@ -58,13 +68,20 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // WorkerGlobalScope
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override;
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override;
   void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::FetchCredentialsMode) override;
 
   // shared_worker_global_scope.idl
@@ -72,6 +89,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
 
   void Connect(MessagePortChannel channel);
+
+  void OnAppCacheSelected();
 
   void Trace(blink::Visitor*) override;
 

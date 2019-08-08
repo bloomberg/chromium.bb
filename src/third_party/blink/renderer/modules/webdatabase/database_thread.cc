@@ -61,9 +61,9 @@ void DatabaseThread::Start() {
     return;
   thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kDatabaseThread));
-  thread_->PostTask(FROM_HERE,
-                    CrossThreadBind(&DatabaseThread::SetupDatabaseThread,
-                                    WrapCrossThreadPersistent(this)));
+  PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
+                      CrossThreadBindOnce(&DatabaseThread::SetupDatabaseThread,
+                                          WrapCrossThreadPersistent(this)));
 }
 
 void DatabaseThread::SetupDatabaseThread() {
@@ -81,9 +81,10 @@ void DatabaseThread::Terminate() {
     termination_requested_ = true;
     cleanup_sync_ = &sync;
     STORAGE_DVLOG(1) << "DatabaseThread " << this << " was asked to terminate";
-    thread_->PostTask(FROM_HERE,
-                      CrossThreadBind(&DatabaseThread::CleanupDatabaseThread,
-                                      WrapCrossThreadPersistent(this)));
+    PostCrossThreadTask(
+        *thread_->GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(&DatabaseThread::CleanupDatabaseThread,
+                            WrapCrossThreadPersistent(this)));
   }
   sync.Wait();
   // The Thread destructor blocks until all the tasks of the database
@@ -117,9 +118,9 @@ void DatabaseThread::CleanupDatabaseThread() {
   }
   open_database_set_.clear();
 
-  thread_->PostTask(FROM_HERE,
-                    WTF::Bind(&DatabaseThread::CleanupDatabaseThreadCompleted,
-                              WrapCrossThreadPersistent(this)));
+  thread_->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&DatabaseThread::CleanupDatabaseThreadCompleted,
+                           WrapCrossThreadPersistent(this)));
 }
 
 void DatabaseThread::CleanupDatabaseThreadCompleted() {
@@ -172,8 +173,8 @@ void DatabaseThread::ScheduleTask(std::unique_ptr<DatabaseTask> task) {
   }
 #endif
   // Thread takes ownership of the task.
-  thread_->PostTask(FROM_HERE,
-                    CrossThreadBind(&DatabaseTask::Run, std::move(task)));
+  PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
+                      CrossThreadBindOnce(&DatabaseTask::Run, std::move(task)));
 }
 
 }  // namespace blink

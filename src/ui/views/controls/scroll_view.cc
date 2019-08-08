@@ -120,7 +120,7 @@ class ScrollView::Viewport : public View {
     if (children().empty() || !parent())
       return;
 
-    View* contents = child_at(0);
+    View* contents = children().front();
     gfx::Rect scroll_rect(rect);
 
     if (scroll_view_->ScrollsWithLayers()) {
@@ -224,8 +224,8 @@ ScrollView::~ScrollView() {
 }
 
 // static
-ScrollView* ScrollView::CreateScrollViewWithBorder() {
-  auto* scroll_view = new ScrollView();
+std::unique_ptr<ScrollView> ScrollView::CreateScrollViewWithBorder() {
+  auto scroll_view = std::make_unique<ScrollView>();
   scroll_view->AddBorder();
   return scroll_view;
 }
@@ -315,7 +315,7 @@ int ScrollView::GetScrollBarLayoutHeight() const {
 
 void ScrollView::SetHorizontalScrollBar(ScrollBar* horiz_sb) {
   DCHECK(horiz_sb);
-  horiz_sb->SetVisible(horiz_sb_->visible());
+  horiz_sb->SetVisible(horiz_sb_->GetVisible());
   delete horiz_sb_;
   horiz_sb->set_controller(this);
   horiz_sb_ = horiz_sb;
@@ -323,7 +323,7 @@ void ScrollView::SetHorizontalScrollBar(ScrollBar* horiz_sb) {
 
 void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
   DCHECK(vert_sb);
-  vert_sb->SetVisible(vert_sb_->visible());
+  vert_sb->SetVisible(vert_sb_->GetVisible());
   delete vert_sb_;
   vert_sb->set_controller(this);
   vert_sb_ = vert_sb;
@@ -558,10 +558,10 @@ bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
   bool processed = false;
 
   // Give vertical scrollbar priority
-  if (vert_sb_->visible())
+  if (vert_sb_->GetVisible())
     processed = vert_sb_->OnKeyPressed(event);
 
-  if (!processed && horiz_sb_->visible())
+  if (!processed && horiz_sb_->GetVisible())
     processed = horiz_sb_->OnKeyPressed(event);
 
   return processed;
@@ -571,10 +571,10 @@ bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   bool processed = false;
 
   // TODO(https://crbug.com/615948): Use composited scrolling.
-  if (vert_sb_->visible())
+  if (vert_sb_->GetVisible())
     processed = vert_sb_->OnMouseWheel(e);
 
-  if (horiz_sb_->visible())
+  if (horiz_sb_->GetVisible())
     processed = horiz_sb_->OnMouseWheel(e) || processed;
 
   return processed;
@@ -613,11 +613,11 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
                       event->type() == ui::ET_SCROLL_FLING_START;
 
   // TODO(https://crbug.com/615948): Use composited scrolling.
-  if (vert_sb_->visible()) {
+  if (vert_sb_->GetVisible()) {
     if (vert_sb_->bounds().Contains(event->location()) || scroll_event)
       vert_sb_->OnGestureEvent(event);
   }
-  if (!event->handled() && horiz_sb_->visible()) {
+  if (!event->handled() && horiz_sb_->GetVisible()) {
     if (horiz_sb_->bounds().Contains(event->location()) || scroll_event)
       horiz_sb_->OnGestureEvent(event);
   }
@@ -627,7 +627,7 @@ const char* ScrollView::GetClassName() const {
   return kViewClassName;
 }
 
-void ScrollView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void ScrollView::OnThemeChanged() {
   UpdateBorder();
   if (use_color_id_)
     UpdateBackground();
@@ -638,13 +638,13 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
     return;
 
   gfx::ScrollOffset offset = CurrentOffset();
-  if (source == horiz_sb_ && horiz_sb_->visible()) {
+  if (source == horiz_sb_ && horiz_sb_->GetVisible()) {
     position = AdjustPosition(offset.x(), position, contents_->width(),
                               contents_viewport_->width());
     if (offset.x() == position)
       return;
     offset.set_x(position);
-  } else if (source == vert_sb_ && vert_sb_->visible()) {
+  } else if (source == vert_sb_ && vert_sb_->GetVisible()) {
     position = AdjustPosition(offset.y(), position, contents_->height(),
                               contents_viewport_->height());
     if (offset.y() == position)
@@ -714,7 +714,7 @@ void ScrollView::SetHeaderOrContents(View* parent,
 }
 
 void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
-  if (!contents_ || (!horiz_sb_->visible() && !vert_sb_->visible()))
+  if (!contents_ || (!horiz_sb_->GetVisible() && !vert_sb_->GetVisible()))
     return;
 
   // Figure out the maximums for this scroll view.
@@ -792,7 +792,7 @@ void ScrollView::SetControlVisibility(View* control, bool should_show) {
   if (!control)
     return;
   if (should_show) {
-    if (!control->visible()) {
+    if (!control->GetVisible()) {
       AddChildView(control);
       control->SetVisible(true);
     }
@@ -807,12 +807,12 @@ void ScrollView::UpdateScrollBarPositions() {
     return;
 
   const gfx::ScrollOffset offset = CurrentOffset();
-  if (horiz_sb_->visible()) {
+  if (horiz_sb_->GetVisible()) {
     int vw = contents_viewport_->width();
     int cw = contents_->width();
     horiz_sb_->Update(vw, cw, offset.x());
   }
-  if (vert_sb_->visible()) {
+  if (vert_sb_->GetVisible()) {
     int vh = contents_viewport_->height();
     int ch = contents_->height();
     vert_sb_->Update(vh, ch, offset.y());
@@ -936,20 +936,20 @@ void ScrollView::PositionOverflowIndicators() {
 void ScrollView::UpdateOverflowIndicatorVisibility(
     const gfx::ScrollOffset& offset) {
   SetControlVisibility(more_content_top_.get(),
-                       !draw_border_ && !header_ && vert_sb_->visible() &&
+                       !draw_border_ && !header_ && vert_sb_->GetVisible() &&
                            offset.y() > vert_sb_->GetMinPosition() &&
                            draw_overflow_indicator_);
   SetControlVisibility(
       more_content_bottom_.get(),
-      !draw_border_ && vert_sb_->visible() && !horiz_sb_->visible() &&
+      !draw_border_ && vert_sb_->GetVisible() && !horiz_sb_->GetVisible() &&
           offset.y() < vert_sb_->GetMaxPosition() && draw_overflow_indicator_);
   SetControlVisibility(more_content_left_.get(),
-                       !draw_border_ && horiz_sb_->visible() &&
+                       !draw_border_ && horiz_sb_->GetVisible() &&
                            offset.x() > horiz_sb_->GetMinPosition() &&
                            draw_overflow_indicator_);
   SetControlVisibility(
       more_content_right_.get(),
-      !draw_border_ && horiz_sb_->visible() && !vert_sb_->visible() &&
+      !draw_border_ && horiz_sb_->GetVisible() && !vert_sb_->GetVisible() &&
           offset.x() < horiz_sb_->GetMaxPosition() && draw_overflow_indicator_);
 }
 

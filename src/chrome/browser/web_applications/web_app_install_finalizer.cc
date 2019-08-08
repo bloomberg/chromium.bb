@@ -81,6 +81,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
                      std::move(web_app)));
 }
 
+void WebAppInstallFinalizer::UninstallExternalWebApp(
+    const GURL& app_url,
+    UninstallExternalWebAppCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
                                            std::unique_ptr<WebApp> web_app,
                                            bool success) {
@@ -147,6 +153,13 @@ bool WebAppInstallFinalizer::CanRevealAppShim() const {
 void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
+}
+
+bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
+    const AppId& app_id,
+    const WebApplicationInfo& web_app_info) const {
+  NOTIMPLEMENTED();
+  return true;
 }
 
 }  // namespace web_app

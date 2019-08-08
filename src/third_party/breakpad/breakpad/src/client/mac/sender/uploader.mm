@@ -511,6 +511,9 @@ NSDictionary *readConfigurationData(const char *configFile) {
     reportID = [[result stringByTrimmingCharactersInSet:trimSet] UTF8String];
     [self logUploadWithID:reportID];
   }
+  if (uploadCompletion_) {
+    uploadCompletion_([NSString stringWithUTF8String:reportID], error);
+  }
 
   // rename the minidump file according to the id returned from the server
   NSString *minidumpDir =
@@ -545,6 +548,11 @@ NSDictionary *readConfigurationData(const char *configFile) {
     [value stringByAddingPercentEncodingWithAllowedCharacters:
       [NSCharacterSet URLQueryAllowedCharacterSet]];
   return [NSURLQueryItem queryItemWithName:queryItemName value:escapedValue];
+}
+
+//=============================================================================
+- (void)setUploadCompletionBlock:(UploadCompletionBlock)uploadCompletion {
+  uploadCompletion_ = uploadCompletion;
 }
 
 //=============================================================================

@@ -25,6 +25,9 @@ namespace remoting {
 
 class FakeSignalStrategy : public SignalStrategy {
  public:
+  using PeerCallback = base::RepeatingCallback<void(
+      std::unique_ptr<jingle_xmpp::XmlElement> message)>;
+
   // Calls ConenctTo() to connect |peer1| and |peer2|. Both |peer1| and |peer2|
   // must belong to the current thread.
   static void Connect(FakeSignalStrategy* peer1, FakeSignalStrategy* peer2);
@@ -40,7 +43,8 @@ class FakeSignalStrategy : public SignalStrategy {
     send_delay_ = delay;
   }
 
-  void SetState(State state) const;
+  void SetState(State state);
+  void SetPeerCallback(const PeerCallback& peer_callback);
 
   // Connects current FakeSignalStrategy to receive messages from |peer|.
   void ConnectTo(FakeSignalStrategy* peer);
@@ -50,6 +54,9 @@ class FakeSignalStrategy : public SignalStrategy {
   // Simulate IQ messages re-ordering by swapping the delivery order of
   // next pair of messages.
   void SimulateMessageReordering();
+
+  // Called by the |peer_|. Takes ownership of |stanza|.
+  void OnIncomingMessage(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
 
   // SignalStrategy interface.
   void Connect() override;
@@ -63,18 +70,12 @@ class FakeSignalStrategy : public SignalStrategy {
   std::string GetNextId() override;
 
  private:
-  typedef base::Callback<void(std::unique_ptr<jingle_xmpp::XmlElement> message)>
-      PeerCallback;
-
   static void DeliverMessageOnThread(
       scoped_refptr<base::SingleThreadTaskRunner> thread,
       base::WeakPtr<FakeSignalStrategy> target,
       std::unique_ptr<jingle_xmpp::XmlElement> stanza);
 
-  // Called by the |peer_|. Takes ownership of |stanza|.
-  void OnIncomingMessage(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
   void NotifyListeners(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
-  void SetPeerCallback(const PeerCallback& peer_callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 

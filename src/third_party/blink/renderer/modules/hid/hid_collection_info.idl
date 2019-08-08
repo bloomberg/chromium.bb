@@ -25,8 +25,4 @@
     readonly attribute FrozenArray<HIDReportInfo> inputReports;
     readonly attribute FrozenArray<HIDReportInfo> outputReports;
     readonly attribute FrozenArray<HIDReportInfo> featureReports;
-
-    // The 8-bit report IDs associated with this collection, in the order they
-    // were encountered in the report descriptor.
-    readonly attribute FrozenArray<octet> reportIds;
 };

@@ -65,10 +65,7 @@ class TestShimClient : public chrome::mojom::AppShim {
 
   // chrome::mojom::AppShim implementation (not used in testing, but can be).
   void CreateViewsBridgeFactory(
-      views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request)
-      override {}
-  void CreateContentNSViewBridgeFactory(
-      content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
+      remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}

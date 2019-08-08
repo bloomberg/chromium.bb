@@ -750,10 +750,10 @@ CJS_Result CJS_Document::get_info(CJS_Runtime* pRuntime) {
 
   // PutObjectProperty() calls below may re-enter JS and change info dict.
   auto pCopy = pDictionary->Clone();
-  CPDF_DictionaryLocker locker(ToDictionary(pCopy.get()));
+  CPDF_DictionaryLocker locker(ToDictionary(pCopy.Get()));
   for (const auto& it : locker) {
     const ByteString& bsKey = it.first;
-    CPDF_Object* pValueObj = it.second.get();
+    CPDF_Object* pValueObj = it.second.Get();
     if (pValueObj->IsString() || pValueObj->IsName()) {
       pRuntime->PutObjectProperty(
           pObj, bsKey.AsStringView(),
@@ -1309,7 +1309,7 @@ CJS_Result CJS_Document::getPageNthWord(
 
   int nWords = 0;
   WideString swRet;
-  for (auto& pPageObj : *page->GetPageObjectList()) {
+  for (auto& pPageObj : *page) {
     if (pPageObj->IsText()) {
       CPDF_TextObject* pTextObj = pPageObj->AsText();
       int nObjWords = CountWords(pTextObj);
@@ -1357,7 +1357,7 @@ CJS_Result CJS_Document::getPageNumWords(
   page->ParseContent();
 
   int nWords = 0;
-  for (auto& pPageObj : *page->GetPageObjectList()) {
+  for (auto& pPageObj : *page) {
     if (pPageObj->IsText())
       nWords += CountWords(pPageObj->AsText());
   }
@@ -1448,7 +1448,7 @@ CJS_Result CJS_Document::gotoNamedDest(
   std::vector<float> scrollPositionArray;
   if (arrayObject) {
     for (size_t i = 2; i < arrayObject->size(); i++)
-      scrollPositionArray.push_back(arrayObject->GetFloatAt(i));
+      scrollPositionArray.push_back(arrayObject->GetNumberAt(i));
   }
   pRuntime->BeginBlock();
   m_pFormFillEnv->DoGoToAction(dest.GetDestPageIndex(pDocument),

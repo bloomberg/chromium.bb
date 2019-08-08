@@ -104,17 +104,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // if the |text| is empty) into the omnibox.
     virtual void PasteIntoOmnibox(const base::string16& text) = 0;
 
-    // Called when the EmbeddedSearch wants to verify the signed-in Chrome
-    // identity against the provided |identity|.
-    virtual bool ChromeIdentityCheck(const base::string16& identity) = 0;
-
-    // Called when the EmbeddedSearch wants to verify that history sync is
-    // enabled.
-    virtual bool HistorySyncCheck() = 0;
-
-    // Called when a custom background is selected on the NTP.
-    virtual void OnSetCustomBackgroundURL(const GURL& url) = 0;
-
     // Called when a custom background with attributions is selected on the NTP.
     // background_url: Url of the background image.
     // attribution_line_1: First attribution line for the image.
@@ -173,13 +162,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessLogSuggestionEventWithValue() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
-    virtual bool ShouldProcessChromeIdentityCheck() = 0;
-    virtual bool ShouldProcessHistorySyncCheck() = 0;
     virtual bool ShouldSendSetInputInProgress(bool is_active_tab) = 0;
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
-    virtual bool ShouldProcessSetCustomBackgroundURL() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
     virtual bool ShouldProcessBlocklistSearchSuggestion() = 0;
@@ -267,12 +253,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
       const ntp_tiles::NTPTileImpression& impression) override;
   void PasteAndOpenDropdown(int page_seq_no,
                             const base::string16& text) override;
-  void ChromeIdentityCheck(int page_seq_no,
-                           const base::string16& identity,
-                           ChromeIdentityCheckCallback callback) override;
-  void HistorySyncCheck(int page_seq_no,
-                        HistorySyncCheckCallback callback) override;
-  void SetCustomBackgroundURL(const GURL& url) override;
   void SetCustomBackgroundURLWithAttributions(
       const GURL& background_url,
       const std::string& attribution_line_1,

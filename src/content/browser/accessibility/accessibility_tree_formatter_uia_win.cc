@@ -1033,7 +1033,7 @@ AccessibilityTreeFormatterUia::GetExpectedFileSuffix() {
 
 const base::FilePath::StringType
 AccessibilityTreeFormatterUia::GetVersionSpecificExpectedFileSuffix() {
-  if (base::win::GetVersion() == base::win::Version::VERSION_WIN7) {
+  if (base::win::GetVersion() == base::win::Version::WIN7) {
     return FILE_PATH_LITERAL("-expected-uia-win7.txt");
   }
   return FILE_PATH_LITERAL("");

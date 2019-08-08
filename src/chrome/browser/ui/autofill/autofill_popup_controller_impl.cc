@@ -17,9 +17,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/core/browser/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -82,7 +82,8 @@ AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
 
 void AutofillPopupControllerImpl::Show(
     const std::vector<autofill::Suggestion>& suggestions,
-    bool autoselect_first_suggestion) {
+    bool autoselect_first_suggestion,
+    PopupType popup_type) {
   SetValues(suggestions);
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
@@ -117,6 +118,11 @@ void AutofillPopupControllerImpl::Show(
 
   if (just_created) {
 #if defined(OS_ANDROID)
+    if (popup_type == PopupType::kPasswords) {
+      ManualFillingController::GetOrCreate(web_contents_)
+          ->ShowTouchToFillSheet();
+    }
+
     ManualFillingController::GetOrCreate(web_contents_)
         ->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
 #endif
@@ -190,12 +196,8 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   elided_labels_.insert(elided_labels_.begin(), values.size(),
                         base::string16());
   for (size_t i = 0; i < values.size(); i++) {
-    // A suggestion's label has one line of disambiguating information to show
-    // to the user. However, when the two-line suggestion display experiment is
-    // enabled on desktop, label is replaced by additional label.
     suggestions_[i].value = values[i];
     suggestions_[i].label = labels[i];
-    suggestions_[i].additional_label = labels[i];
     suggestions_[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
 
     // TODO(brettw) it looks like these should be elided.

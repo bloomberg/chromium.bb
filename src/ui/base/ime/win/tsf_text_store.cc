@@ -260,10 +260,12 @@ STDMETHODIMP TSFTextStore::GetText(LONG acp_start,
     text_buffer[i] = result[i];
   }
 
-  if (run_info_buffer_size) {
+  if (*text_buffer_copied > 0 && run_info_buffer_size) {
     run_info_buffer[0].uCount = *text_buffer_copied;
     run_info_buffer[0].type = TS_RT_PLAIN;
     *run_info_buffer_copied = 1;
+  } else {
+    *run_info_buffer_copied = 0;
   }
 
   *next_acp = acp_end;
@@ -311,7 +313,10 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
           tmp_rect.set_width(0);
           result_rect = gfx::Rect(tmp_rect);
         } else {
-          return TS_E_NOLAYOUT;
+          // PPAPI flash does not support GetCompositionCharacterBounds. We need
+          // to call GetCaretBounds instead to get correct text bounds info.
+          // TODO(https://crbug.com/963706): Remove this hack.
+          result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
         }
       } else if (text_input_client_->GetCompositionCharacterBounds(
                      start_pos - 1, &tmp_rect)) {
@@ -341,17 +346,20 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
           // first character bounds instead of returning TS_E_NOLAYOUT.
         }
       } else {
-        return TS_E_NOLAYOUT;
+        // PPAPI flash does not support GetCompositionCharacterBounds. We need
+        // to call GetCaretBounds instead to get correct text bounds info.
+        // TODO(https://crbug.com/963706): Remove this hack.
+        if (start_pos == 0) {
+          result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
+        } else {
+          return TS_E_NOLAYOUT;
+        }
       }
     } else {
-      // Hack for PPAPI flash. PPAPI flash does not support GetCaretBounds, so
-      // it's better to return previous caret rectangle instead.
-      // TODO(nona, kinaba): Remove this hack.
-      if (start_pos == 0) {
-        result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
-      } else {
-        return TS_E_NOLAYOUT;
-      }
+      // Caret Bounds may be incorrect if focus is in flash control and
+      // |start_pos| is not equal to |end_pos|. In this case, it's better to
+      // return previous caret rectangle instead.
+      result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
     }
   }
   *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_, result_rect)
@@ -672,7 +680,8 @@ STDMETHODIMP TSFTextStore::RetrieveRequestedAttrs(
   attribute_buffer[0].varValue.vt = VT_UNKNOWN;
   attribute_buffer[0].varValue.punkVal =
       tsf_inputscope::CreateInputScope(text_input_client_->GetTextInputType(),
-                                       text_input_client_->GetTextInputMode());
+                                       text_input_client_->GetTextInputMode(),
+                                       text_input_client_->ShouldDoLearning());
   attribute_buffer[0].varValue.punkVal->AddRef();
   *attribute_buffer_copied = 1;
   return S_OK;

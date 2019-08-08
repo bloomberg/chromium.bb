@@ -10,9 +10,9 @@
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -148,7 +148,10 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
   base::HistogramTester histograms;
 
-  ASSERT_TRUE(SetupSync());
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
+  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+
   ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
 
   // The order of events is roughly: First client (whichever that happens to be)
@@ -218,7 +221,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
   AddProfile(0, profile0);
   AddProfile(1, profile1);
-  ASSERT_TRUE(SetupSync());
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
 
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
@@ -330,8 +334,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
   ASSERT_NE(GetAllAutoFillProfiles(0)[0]->guid(),
             GetAllAutoFillProfiles(1)[0]->guid());
 
-  // Wait for the sync to happen.
-  ASSERT_TRUE(SetupSync());
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
 
   // Make sure that both clients have one profile.

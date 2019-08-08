@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_background_animator.h"
@@ -39,7 +40,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
                                public ShelfLayoutManagerObserver,
                                public ShelfObserver,
-                               public SessionObserver {
+                               public SessionObserver,
+                               public KioskNextShellObserver {
  public:
   ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
@@ -62,9 +64,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   void OnTabletModeChanged();
 
-  // Sets the shelf's background type.
-  void SetPaintsBackground(ShelfBackgroundType background_type,
-                           AnimationChangeType change_type);
   ShelfBackgroundType GetBackgroundType() const;
 
   // Gets the alpha value of |background_type|.
@@ -121,6 +120,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnUserSessionAdded(const AccountId& account_id) override;
 
+  // KioskNextShellObserver:
+  void OnKioskNextEnabled() override;
+
   SkColor GetShelfBackgroundColor() const;
   bool GetHitTestRects(aura::Window* target,
                        gfx::Rect* hit_test_rect_mouse,
@@ -165,7 +167,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // View containing the shelf items within an active user session. Owned by
   // the views hierarchy.
-  ShelfView* const shelf_view_;
+  ShelfView* shelf_view_;
 
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.

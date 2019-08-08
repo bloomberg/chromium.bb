@@ -9,6 +9,7 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
@@ -70,5 +71,15 @@ public class RadioButtonGroupThemePreference
         }
         callChangeListener(mSetting);
         NightModeMetrics.recordThemePreferencesChanged(mSetting);
+    }
+
+    @VisibleForTesting
+    public int getSetting() {
+        return mSetting;
+    }
+
+    @VisibleForTesting
+    ArrayList getButtonsForTesting() {
+        return mButtons;
     }
 }

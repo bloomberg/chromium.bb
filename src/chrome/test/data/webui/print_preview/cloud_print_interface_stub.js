@@ -9,7 +9,7 @@ cr.define('print_preview', function() {
    */
   class CloudPrintInterfaceStub extends TestBrowserProxy {
     constructor() {
-      super(['submit']);
+      super(['printer', 'search', 'submit']);
 
       /** @private {!cr.EventTarget} */
       this.eventTarget_ = new cr.EventTarget();
@@ -43,12 +43,36 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * Helper method to derive logged in users from the |cloudPrintersMap_|.
+     * @return {!Array<string>} The logged in user accounts.
+     */
+    getUsers_() {
+      const users = [];
+      this.cloudPrintersMap_.forEach((printer, key) => {
+        if (!users.includes(printer.account)) {
+          users.push(printer.account);
+        }
+      });
+      return users;
+    }
+
+    /**
      * Dispatches a CloudPrintInterfaceEventType.SEARCH_DONE event with the
      * printers that have been set so far using setPrinter().
      * @override
      */
     search(account) {
+      this.methodCalled('search', account);
       this.searchInProgress_ = true;
+      const users = this.getUsers_();
+      const activeUser = users.includes(account) ? account : (users[0] || '');
+      if (activeUser) {
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
+            {detail: {users: users, activeUser: activeUser}}));
+        this.initialized_ = true;
+      }
+
       const printers = [];
       this.cloudPrintersMap_.forEach((value) => {
         if (value.account === account) {
@@ -79,16 +103,13 @@ cr.define('print_preview', function() {
      * @override
      */
     printer(printerId, origin, account) {
+      this.methodCalled(
+          'printer', {id: printerId, origin: origin, account: account});
       const printer = this.cloudPrintersMap_.get(
           print_preview.createDestinationKey(printerId, origin, account));
 
       if (!this.initialized_) {
-        const users = [];
-        this.cloudPrintersMap_.forEach((printer, key) => {
-          if (!users.includes(printer.account)) {
-            users.push(printer.account);
-          }
-        });
+        const users = this.getUsers_();
         const activeUser = users.includes(account) ? account : (users[0] || '');
         if (activeUser) {
           this.eventTarget_.dispatchEvent(new CustomEvent(

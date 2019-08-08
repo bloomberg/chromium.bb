@@ -5,11 +5,16 @@
 #include "tools/cddl/codegen.h"
 
 #include <cinttypes>
+#include <iostream>
 #include <limits>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "absl/algorithm/container.h"
+#include "absl/types/optional.h"
 
 // Convert '-' to '_' to use a CDDL identifier as a C identifier.
 std::string ToUnderscoreId(const std::string& x) {
@@ -50,13 +55,22 @@ std::string CppTypeToString(const CppType& cpp_type) {
       return "uint64_t";
     case CppType::Which::kString:
       return "std::string";
+    case CppType::Which::kBytes: {
+      if (cpp_type.bytes_type.fixed_size) {
+        std::string size_string =
+            std::to_string(cpp_type.bytes_type.fixed_size.value());
+        return "std::array<uint8_t, " + size_string + ">";
+      } else {
+        return "std::vector<uint8_t>";
+      }
+    }
     case CppType::Which::kVector: {
       std::string element_string =
           CppTypeToString(*cpp_type.vector_type.element_type);
       if (element_string.empty())
         return std::string();
       return "std::vector<" + element_string + ">";
-    } break;
+    }
     case CppType::Which::kEnum:
       return ToCamelCase(cpp_type.name);
     case CppType::Which::kStruct:
@@ -68,37 +82,202 @@ std::string CppTypeToString(const CppType& cpp_type) {
   }
 }
 
+bool WriteEnumEqualityOperatorSwitchCases(int fd,
+                                          const CppType& parent,
+                                          std::string child_name,
+                                          std::string parent_name) {
+  for (const auto& x : parent.enum_type.members) {
+    std::string enum_value = "k" + ToCamelCase(x.first);
+    dprintf(fd, "    case %s::%s: return parent == %s::%s;\n",
+            child_name.c_str(), enum_value.c_str(), parent_name.c_str(),
+            enum_value.c_str());
+  }
+
+  return absl::c_all_of(parent.enum_type.sub_members,
+                        [&fd, &child_name, &parent_name](CppType* new_parent) {
+                          return WriteEnumEqualityOperatorSwitchCases(
+                              fd, *new_parent, child_name, parent_name);
+                        });
+}
+
+// Write the equality operators for comparing an enum and its parent types.
+bool WriteEnumEqualityOperator(int fd,
+                               const CppType& type,
+                               const CppType& parent) {
+  std::string name = ToCamelCase(type.name);
+  std::string parent_name = ToCamelCase(parent.name);
+
+  // Define type == parentType.
+  dprintf(fd, "inline bool operator==(const %s& child, const %s& parent) {\n",
+          name.c_str(), parent_name.c_str());
+  dprintf(fd, "  switch (child) {\n");
+  if (!WriteEnumEqualityOperatorSwitchCases(fd, parent, name, parent_name)) {
+    return false;
+  }
+  dprintf(fd, "    default: return false;\n");
+  dprintf(fd, "  }\n}\n");
+
+  // Define parentType == type.
+  dprintf(fd, "inline bool operator==(const %s& parent, const %s& child) {\n",
+          parent_name.c_str(), name.c_str());
+  dprintf(fd, "  return child == parent;\n}\n");
+
+  // Define type != parentType.
+  dprintf(fd, "inline bool operator!=(const %s& child, const %s& parent) {\n",
+          name.c_str(), parent_name.c_str());
+  dprintf(fd, "  return !(child == parent);\n}\n");
+
+  // Define parentType != type.
+  dprintf(fd, "inline bool operator!=(const %s& parent, const %s& child) {\n",
+          parent_name.c_str(), name.c_str());
+  dprintf(fd, "  return !(parent == child);\n}\n");
+
+  return true;
+}
+
+bool WriteEnumStreamOperatorSwitchCases(int fd,
+                                        const CppType& type,
+                                        std::string name) {
+  for (const auto& x : type.enum_type.members) {
+    std::string enum_value = "k" + ToCamelCase(x.first);
+    dprintf(fd, "    case %s::%s: os << \"%s\"; break;\n", name.c_str(),
+            enum_value.c_str(), enum_value.c_str());
+  }
+
+  return absl::c_all_of(
+      type.enum_type.sub_members, [&fd, &name](CppType* parent) {
+        return WriteEnumStreamOperatorSwitchCases(fd, *parent, name);
+      });
+}
+
+bool WriteEnumOperators(int fd, const CppType& type) {
+  // Write << operator.
+  std::string name = ToCamelCase(type.name);
+  dprintf(
+      fd,
+      "inline std::ostream& operator<<(std::ostream& os, const %s& val) {\n",
+      name.c_str());
+  dprintf(fd, "  switch (val) {\n");
+  if (!WriteEnumStreamOperatorSwitchCases(fd, type, name)) {
+    return false;
+  }
+  dprintf(fd,
+          "    default: os << \"Unknown Value: \" << static_cast<int>(val);"
+          "\n      break;\n    }\n  return os;\n}\n");
+
+  // Write equality operators.
+  return absl::c_all_of(type.enum_type.sub_members,
+                        [&fd, &type](CppType* parent) {
+                          return WriteEnumEqualityOperator(fd, type, *parent);
+                        });
+}
+
+// Writes the equality operator for a specific Discriminated Union.
+bool WriteDiscriminatedUnionEqualityOperator(
+    int fd,
+    const CppType& type,
+    const std::string& name_prefix = "") {
+  const std::string name = name_prefix + ToCamelCase(type.name);
+  dprintf(fd, "\nbool %s::operator==(const %s& other) const {\n", name.c_str(),
+          name.c_str());
+  dprintf(fd, "  return this->which == other.which");
+  for (auto* union_member : type.discriminated_union.members) {
+    dprintf(fd, " &&\n         ");
+    switch (union_member->which) {
+      case CppType::Which::kUint64:
+        dprintf(fd,
+                "(this->which != Which::kUint64 || this->uint == other.uint)");
+        break;
+      case CppType::Which::kString:
+        dprintf(fd,
+                "(this->which != Which::kString || this->str == other.str)");
+        break;
+      case CppType::Which::kBytes:
+        dprintf(fd,
+                "(this->which != Which::kBytes || this->bytes == other.bytes)");
+        break;
+      default:
+        return false;
+    }
+  }
+  dprintf(fd, ";\n}\n");
+  dprintf(fd, "bool %s::operator!=(const %s& other) const {\n", name.c_str(),
+          name.c_str());
+  dprintf(fd, "  return !(*this == other);\n}\n");
+  return true;
+}
+
+// Writes the equality operator for a specific C++ struct.
+bool WriteStructEqualityOperator(int fd,
+                                 const CppType& type,
+                                 const std::string& name_prefix = "") {
+  const std::string name = name_prefix + ToCamelCase(type.name);
+  dprintf(fd, "\nbool %s::operator==(const %s& other) const {\n", name.c_str(),
+          name.c_str());
+  for (size_t i = 0; i < type.struct_type.members.size(); i++) {
+    if (i == 0) {
+      dprintf(fd, "  return ");
+    } else {
+      dprintf(fd, " &&\n         ");
+    }
+    auto name = ToUnderscoreId(type.struct_type.members[i].name);
+    dprintf(fd, "this->%s == other.%s", name.c_str(), name.c_str());
+  }
+  dprintf(fd, ";\n}");
+  dprintf(fd, "\nbool %s::operator!=(const %s& other) const {\n", name.c_str(),
+          name.c_str());
+  dprintf(fd, "  return !(*this == other);\n}\n");
+  std::string new_prefix = name_prefix + ToCamelCase(type.name) + "::";
+  for (const auto& x : type.struct_type.members) {
+    // NOTE: Don't need to call recursively on struct members, since all structs
+    // are handled in the calling method.
+    if (x.type->which == CppType::Which::kDiscriminatedUnion) {
+      if (!WriteDiscriminatedUnionEqualityOperator(fd, *x.type, new_prefix)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // Write the C++ struct member definitions of every type in |members| to the
 // file descriptor |fd|.
 bool WriteStructMembers(
     int fd,
-    const std::vector<std::pair<std::string, CppType*>>& members) {
+    const std::string& name,
+    const std::vector<CppType::Struct::CppMember>& members) {
   for (const auto& x : members) {
     std::string type_string;
-    switch (x.second->which) {
+    switch (x.type->which) {
       case CppType::Which::kStruct: {
-        if (x.second->struct_type.key_type ==
+        if (x.type->struct_type.key_type ==
             CppType::Struct::KeyType::kPlainGroup) {
-          if (!WriteStructMembers(fd, x.second->struct_type.members))
+          if (!WriteStructMembers(fd, x.type->name,
+                                  x.type->struct_type.members))
             return false;
           continue;
         } else {
-          type_string = ToCamelCase(x.first);
+          type_string = ToCamelCase(x.name);
         }
       } break;
       case CppType::Which::kOptional: {
         // TODO(btolsch): Make this optional<T> when one lands.
-        dprintf(fd, "  bool has_%s;\n", ToUnderscoreId(x.first).c_str());
-        type_string = CppTypeToString(*x.second->optional_type);
+        dprintf(fd, "  bool has_%s;\n", ToUnderscoreId(x.name).c_str());
+        type_string = CppTypeToString(*x.type->optional_type);
       } break;
       case CppType::Which::kDiscriminatedUnion: {
-        std::string cid = ToUnderscoreId(x.first);
-        type_string = ToCamelCase(x.first);
+        std::string cid = ToUnderscoreId(x.name);
+        type_string = ToCamelCase(x.name);
         dprintf(fd, "  struct %s {\n", type_string.c_str());
         dprintf(fd, "    %s();\n    ~%s();\n\n", type_string.c_str(),
                 type_string.c_str());
+
+        dprintf(fd, "  bool operator==(const %s& other) const;\n",
+                type_string.c_str());
+        dprintf(fd, "  bool operator!=(const %s& other) const;\n\n",
+                type_string.c_str());
         dprintf(fd, "  enum class Which {\n");
-        for (auto* union_member : x.second->discriminated_union.members) {
+        for (auto* union_member : x.type->discriminated_union.members) {
           switch (union_member->which) {
             case CppType::Which::kUint64:
               dprintf(fd, "    kUint64,\n");
@@ -116,7 +295,7 @@ bool WriteStructMembers(
         dprintf(fd, "    kUninitialized,\n");
         dprintf(fd, "  } which;\n");
         dprintf(fd, "  union {\n");
-        for (auto* union_member : x.second->discriminated_union.members) {
+        for (auto* union_member : x.type->discriminated_union.members) {
           switch (union_member->which) {
             case CppType::Which::kUint64:
               dprintf(fd, "    uint64_t uint;\n");
@@ -138,32 +317,48 @@ bool WriteStructMembers(
         dprintf(fd, "  };\n");
       } break;
       default:
-        type_string = CppTypeToString(*x.second);
+        type_string = CppTypeToString(*x.type);
         break;
     }
     if (type_string.empty())
       return false;
     dprintf(fd, "  %s %s;\n", type_string.c_str(),
-            ToUnderscoreId(x.first).c_str());
+            ToUnderscoreId(x.name).c_str());
   }
   return true;
+}
+
+void WriteEnumMembers(int fd, const CppType& type) {
+  for (const auto& x : type.enum_type.members) {
+    dprintf(fd, "  k%s = %" PRIu64 "ull,\n", ToCamelCase(x.first).c_str(),
+            x.second);
+  }
+  for (const auto* x : type.enum_type.sub_members) {
+    WriteEnumMembers(fd, *x);
+  }
 }
 
 // Writes a C++ type definition for |type| to the file descriptor |fd|.  This
 // only generates a definition for enums and structs.
 bool WriteTypeDefinition(int fd, const CppType& type) {
+  std::string name = ToCamelCase(type.name);
   switch (type.which) {
     case CppType::Which::kEnum: {
-      dprintf(fd, "\nenum %s : uint64_t {\n", ToCamelCase(type.name).c_str());
-      for (const auto& x : type.enum_type.members) {
-        dprintf(fd, "  k%s = %" PRIu64 "ull,\n", ToCamelCase(x.first).c_str(),
-                x.second);
-      }
+      dprintf(fd, "\nenum class %s : uint64_t {\n", name.c_str());
+      WriteEnumMembers(fd, type);
       dprintf(fd, "};\n");
+      if (!WriteEnumOperators(fd, type))
+        return false;
     } break;
     case CppType::Which::kStruct: {
-      dprintf(fd, "\nstruct %s {\n", ToCamelCase(type.name).c_str());
-      if (!WriteStructMembers(fd, type.struct_type.members))
+      dprintf(fd, "\nstruct %s {\n", name.c_str());
+      if (type.type_key != absl::nullopt) {
+        dprintf(fd, "  // type key: %" PRIu64 "\n", type.type_key.value());
+      }
+      dprintf(fd, "  bool operator==(const %s& other) const;\n", name.c_str());
+      dprintf(fd, "  bool operator!=(const %s& other) const;\n\n",
+              name.c_str());
+      if (!WriteStructMembers(fd, type.name, type.struct_type.members))
         return false;
       dprintf(fd, "};\n");
     } break;
@@ -202,7 +397,7 @@ bool EnsureDependentTypeDefinitionsWritten(int fd,
         if (defs->find(cpp_type.name) != defs->end())
           return true;
         for (const auto& x : cpp_type.struct_type.members)
-          if (!EnsureDependentTypeDefinitionsWritten(fd, *x.second, defs))
+          if (!EnsureDependentTypeDefinitionsWritten(fd, *x.type, defs))
             return false;
         defs->emplace(cpp_type.name);
         WriteTypeDefinition(fd, cpp_type);
@@ -245,40 +440,49 @@ bool EnsureDependentTypeDefinitionsWritten(int fd,
 // };
 //
 // This function ensures that Bar would be written sometime before Foo.
-bool WriteTypeDefinitions(int fd, const CppSymbolTable& table) {
+bool WriteTypeDefinitions(int fd, CppSymbolTable* table) {
   std::set<std::string> defs;
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  // NOTE: Currently encoding the type tag as a uint8_t.
-  if (root_type->discriminated_union.members.size() >
-      std::numeric_limits<uint8_t>::max()) {
-    return false;
-  }
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+  for (const std::unique_ptr<CppType>& real_type : table->cpp_types) {
     if (real_type->which != CppType::Which::kStruct ||
         real_type->struct_type.key_type ==
             CppType::Struct::KeyType::kPlainGroup) {
-      return false;
+      continue;
     }
     if (!EnsureDependentTypeDefinitionsWritten(fd, *real_type, &defs))
       return false;
   }
 
-  dprintf(fd, "\nenum class Type {\n");
-  for (const auto* type : root_type->discriminated_union.members) {
-    dprintf(fd, "    k%s,\n",
-            ToCamelCase(type->tagged_type.real_type->name).c_str());
+  dprintf(fd, "\nenum class Type : uint64_t {\n");
+  dprintf(fd, "    kUnknown = 0ull,\n");
+  for (CppType* type : table->TypesWithId()) {
+    dprintf(fd, "    k%s = %" PRIu64 "ull,\n", ToCamelCase(type->name).c_str(),
+            type->type_key.value());
   }
   dprintf(fd, "};\n");
   return true;
 }
 
+// Writes a parser that takes in a uint64_t and outputs the corresponding Type
+// if one matches up, or Type::kUnknown if none does.
+// NOTE: In future, this could be changes to use a Trie, which would allow for
+// manufacturers to more easily add their own type ids to ours.
+bool WriteTypeParserDefinition(int fd, CppSymbolTable* table) {
+  dprintf(fd, "\n//static\n");
+  dprintf(fd, "Type TypeEnumValidator::SafeCast(uint64_t type_id) {\n");
+  dprintf(fd, "  switch (type_id) {\n");
+  for (CppType* type : table->TypesWithId()) {
+    dprintf(fd, "    case uint64_t{%" PRIu64 "}: return Type::k%s;\n",
+            type->type_key.value(), ToCamelCase(type->name).c_str());
+  }
+  dprintf(fd, "    default: return Type::kUnknown;\n");
+  dprintf(fd, "  }\n}\n");
+  return true;
+}
+
 // Writes the function prototypes for the encode and decode functions for each
 // type in |table| to the file descriptor |fd|.
-bool WriteFunctionDeclarations(int fd, const CppSymbolTable& table) {
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+bool WriteFunctionDeclarations(int fd, CppSymbolTable* table) {
+  for (CppType* real_type : table->TypesWithId()) {
     const auto& name = real_type->name;
     if (real_type->which != CppType::Which::kStruct ||
         real_type->struct_type.key_type ==
@@ -299,18 +503,16 @@ bool WriteFunctionDeclarations(int fd, const CppSymbolTable& table) {
   return true;
 }
 
-bool WriteMapEncoder(
-    int fd,
-    const std::string& name,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    const std::string& nested_type_scope,
-    int encoder_depth = 1);
-bool WriteArrayEncoder(
-    int fd,
-    const std::string& name,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    const std::string& nested_type_scope,
-    int encoder_depth = 1);
+bool WriteMapEncoder(int fd,
+                     const std::string& name,
+                     const std::vector<CppType::Struct::CppMember>& members,
+                     const std::string& nested_type_scope,
+                     int encoder_depth = 1);
+bool WriteArrayEncoder(int fd,
+                       const std::string& name,
+                       const std::vector<CppType::Struct::CppMember>& members,
+                       const std::string& nested_type_scope,
+                       int encoder_depth = 1);
 
 // Writes the encoding function for the C++ type |cpp_type| to the file
 // descriptor |fd|.  |name| is the C++ variable name that needs to be encoded.
@@ -326,24 +528,31 @@ bool WriteEncoder(int fd,
     case CppType::Which::kStruct:
       if (cpp_type.struct_type.key_type == CppType::Struct::KeyType::kMap) {
         if (!WriteMapEncoder(fd, name, cpp_type.struct_type.members,
-                             cpp_type.name, encoder_depth)) {
+                             cpp_type.name, encoder_depth + 1)) {
           return false;
         }
         return true;
       } else if (cpp_type.struct_type.key_type ==
                  CppType::Struct::KeyType::kArray) {
         if (!WriteArrayEncoder(fd, name, cpp_type.struct_type.members,
-                               cpp_type.name, encoder_depth)) {
+                               cpp_type.name, encoder_depth + 1)) {
           return false;
         }
         return true;
       } else {
         for (const auto& x : cpp_type.struct_type.members) {
-          dprintf(fd,
-                  "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string(&encoder%d, "
-                  "\"%s\", sizeof(\"%s\") - 1));\n",
-                  encoder_depth, x.first.c_str(), x.first.c_str());
-          if (!WriteEncoder(fd, name + "." + ToUnderscoreId(x.first), *x.second,
+          if (x.integer_key.has_value()) {
+            dprintf(fd,
+                    "  CBOR_RETURN_ON_ERROR(cbor_encode_uint("
+                    "&encoder%d, %" PRIu64 ");\n",
+                    encoder_depth, x.integer_key.value());
+          } else {
+            dprintf(fd,
+                    "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string("
+                    "&encoder%d, \"%s\", sizeof(\"%s\") - 1));\n",
+                    encoder_depth, x.name.c_str(), x.name.c_str());
+          }
+          if (!WriteEncoder(fd, name + "." + ToUnderscoreId(x.name), *x.type,
                             nested_type_scope, encoder_depth)) {
             return false;
           }
@@ -379,6 +588,20 @@ bool WriteEncoder(int fd,
     case CppType::Which::kVector: {
       std::string cid = ToUnderscoreId(name);
       dprintf(fd, "  {\n");
+      if (cpp_type.vector_type.min_length !=
+          CppType::Vector::kMinLengthUnbounded) {
+        dprintf(fd, "  if (%s.size() < %d) {\n", cid.c_str(),
+                cpp_type.vector_type.min_length);
+        dprintf(fd, "    return -CborErrorTooFewItems;\n");
+        dprintf(fd, "  }\n");
+      }
+      if (cpp_type.vector_type.max_length !=
+          CppType::Vector::kMaxLengthUnbounded) {
+        dprintf(fd, "  if (%s.size() > %d) {\n", cid.c_str(),
+                cpp_type.vector_type.max_length);
+        dprintf(fd, "    return -CborErrorTooManyItems;\n");
+        dprintf(fd, "  }\n");
+      }
       dprintf(fd, "  CborEncoder encoder%d;\n", encoder_depth + 1);
       dprintf(fd,
               "  CBOR_RETURN_ON_ERROR(cbor_encoder_create_array(&encoder%d, "
@@ -398,7 +621,9 @@ bool WriteEncoder(int fd,
       return true;
     } break;
     case CppType::Which::kEnum: {
-      dprintf(fd, "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, %s));\n",
+      dprintf(fd,
+              "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, "
+              "static_cast<uint64_t>(%s)));\n",
               encoder_depth, ToUnderscoreId(name).c_str());
       return true;
     } break;
@@ -471,12 +696,12 @@ struct MemberCountResult {
 MemberCountResult CountMemberTypes(
     int fd,
     const std::string& name_id,
-    const std::vector<std::pair<std::string, CppType*>>& members) {
+    const std::vector<CppType::Struct::CppMember>& members) {
   int num_required = 0;
   int num_optional = 0;
   for (const auto& x : members) {
-    if (x.second->which == CppType::Which::kOptional) {
-      std::string x_id = ToUnderscoreId(x.first);
+    if (x.type->which == CppType::Which::kOptional) {
+      std::string x_id = ToUnderscoreId(x.name);
       if (num_optional == 0) {
         dprintf(fd, "  int num_optionals_present = %s.has_%s;\n",
                 name_id.c_str(), x_id.c_str());
@@ -498,12 +723,11 @@ MemberCountResult CountMemberTypes(
 // struct name), which may be used to access local enum constants.
 // |encoder_depth| is used to independently name independent cbor encoders that
 // need to be created.
-bool WriteMapEncoder(
-    int fd,
-    const std::string& name,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    const std::string& nested_type_scope,
-    int encoder_depth) {
+bool WriteMapEncoder(int fd,
+                     const std::string& name,
+                     const std::vector<CppType::Struct::CppMember>& members,
+                     const std::string& nested_type_scope,
+                     int encoder_depth) {
   std::string name_id = ToUnderscoreId(name);
   dprintf(fd, "  CborEncoder encoder%d;\n", encoder_depth);
   MemberCountResult member_counts = CountMemberTypes(fd, name_id, members);
@@ -523,32 +747,38 @@ bool WriteMapEncoder(
 
   for (const auto& x : members) {
     std::string fullname = name;
-    CppType* member_type = x.second;
-    if (x.second->which != CppType::Which::kStruct ||
-        x.second->struct_type.key_type !=
-            CppType::Struct::KeyType::kPlainGroup) {
-      if (x.second->which == CppType::Which::kOptional) {
-        member_type = x.second->optional_type;
+    CppType* member_type = x.type;
+    if (x.type->which != CppType::Which::kStruct ||
+        x.type->struct_type.key_type != CppType::Struct::KeyType::kPlainGroup) {
+      if (x.type->which == CppType::Which::kOptional) {
+        member_type = x.type->optional_type;
         dprintf(fd, "  if (%s.has_%s) {\n", name_id.c_str(),
-                ToUnderscoreId(x.first).c_str());
+                ToUnderscoreId(x.name).c_str());
       }
-      dprintf(
-          fd,
-          "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string(&encoder%d, \"%s\", "
-          "sizeof(\"%s\") - 1));\n",
-          encoder_depth, x.first.c_str(), x.first.c_str());
-      if (x.second->which == CppType::Which::kDiscriminatedUnion) {
+
+      if (x.integer_key.has_value()) {
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(cbor_encode_uint(&encoder%d, %" PRIu64
+                "));\n",
+                encoder_depth, x.integer_key.value());
+      } else {
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string(&encoder%d, "
+                "\"%s\", sizeof(\"%s\") - 1));\n",
+                encoder_depth, x.name.c_str(), x.name.c_str());
+      }
+      if (x.type->which == CppType::Which::kDiscriminatedUnion) {
         dprintf(fd, "  switch (%s.%s.which) {\n", fullname.c_str(),
-                x.first.c_str());
+                x.name.c_str());
       }
-      fullname = fullname + "." + x.first;
+      fullname = fullname + "." + x.name;
     }
     if (!WriteEncoder(fd, fullname, *member_type, nested_type_scope,
                       encoder_depth)) {
       return false;
     }
-    if (x.second->which == CppType::Which::kOptional ||
-        x.second->which == CppType::Which::kDiscriminatedUnion) {
+    if (x.type->which == CppType::Which::kOptional ||
+        x.type->which == CppType::Which::kDiscriminatedUnion) {
       dprintf(fd, "  }\n");
     }
   }
@@ -566,12 +796,11 @@ bool WriteMapEncoder(
 // struct name), which may be used to access local enum constants.
 // |encoder_depth| is used to independently name independent cbor encoders that
 // need to be created.
-bool WriteArrayEncoder(
-    int fd,
-    const std::string& name,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    const std::string& nested_type_scope,
-    int encoder_depth) {
+bool WriteArrayEncoder(int fd,
+                       const std::string& name,
+                       const std::vector<CppType::Struct::CppMember>& members,
+                       const std::string& nested_type_scope,
+                       int encoder_depth) {
   std::string name_id = ToUnderscoreId(name);
   dprintf(fd, "  CborEncoder encoder%d;\n", encoder_depth);
   MemberCountResult member_counts = CountMemberTypes(fd, name_id, members);
@@ -589,27 +818,26 @@ bool WriteArrayEncoder(
 
   for (const auto& x : members) {
     std::string fullname = name;
-    CppType* member_type = x.second;
-    if (x.second->which != CppType::Which::kStruct ||
-        x.second->struct_type.key_type !=
-            CppType::Struct::KeyType::kPlainGroup) {
-      if (x.second->which == CppType::Which::kOptional) {
-        member_type = x.second->optional_type;
+    CppType* member_type = x.type;
+    if (x.type->which != CppType::Which::kStruct ||
+        x.type->struct_type.key_type != CppType::Struct::KeyType::kPlainGroup) {
+      if (x.type->which == CppType::Which::kOptional) {
+        member_type = x.type->optional_type;
         dprintf(fd, "  if (%s.has_%s) {\n", name_id.c_str(),
-                ToUnderscoreId(x.first).c_str());
+                ToUnderscoreId(x.name).c_str());
       }
-      if (x.second->which == CppType::Which::kDiscriminatedUnion) {
+      if (x.type->which == CppType::Which::kDiscriminatedUnion) {
         dprintf(fd, "  switch (%s.%s.which) {\n", fullname.c_str(),
-                x.first.c_str());
+                x.name.c_str());
       }
-      fullname = fullname + "." + x.first;
+      fullname = fullname + "." + x.name;
     }
     if (!WriteEncoder(fd, fullname, *member_type, nested_type_scope,
                       encoder_depth)) {
       return false;
     }
-    if (x.second->which == CppType::Which::kOptional ||
-        x.second->which == CppType::Which::kDiscriminatedUnion) {
+    if (x.type->which == CppType::Which::kOptional ||
+        x.type->which == CppType::Which::kDiscriminatedUnion) {
       dprintf(fd, "  }\n");
     }
   }
@@ -621,12 +849,51 @@ bool WriteArrayEncoder(
   return true;
 }
 
+uint8_t GetByte(uint64_t value, size_t byte) {
+  return static_cast<uint8_t>((value >> (byte * 8)) & 0xFF);
+}
+
+std::string GetEncodedTypeKey(const CppType& type) {
+  if (type.type_key == absl::nullopt) {
+    return "";
+  }
+
+  // Determine all constants needed for calculating the encoded id bytes.
+  uint64_t type_id = type.type_key.value();
+  uint8_t encoding_size;
+  uint8_t start_processing_byte;
+  if (type_id < 0x1 << 6) {
+    encoding_size = 0x0;
+    start_processing_byte = 0;
+  } else if (type_id < 0x1 << 14) {
+    encoding_size = 0x01;
+    start_processing_byte = 1;
+  } else if (type_id < 0x1 << 30) {
+    encoding_size = 0x02;
+    start_processing_byte = 3;
+  } else if (type_id < uint64_t{0x1} << 62) {
+    encoding_size = 0x03;
+    start_processing_byte = 7;
+  } else {
+    return "";
+  }
+
+  // Parse the encoded id into a string;
+  std::stringstream ss;
+  uint8_t first_byte =
+      encoding_size << 6 | GetByte(type_id, start_processing_byte);
+  ss << "{0x" << std::hex << uint32_t{first_byte};
+  for (int i = start_processing_byte - 1; i >= 0; i--) {
+    ss << ", 0x" << std::hex << uint32_t{GetByte(type_id, i)};
+  }
+  ss << "}";
+  return ss.str();
+}
+
 // Writes encoding functions for each type in |table| to the file descriptor
 // |fd|.
-bool WriteEncoders(int fd, const CppSymbolTable& table) {
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+bool WriteEncoders(int fd, CppSymbolTable* table) {
+  for (CppType* real_type : table->TypesWithId()) {
     const auto& name = real_type->name;
     if (real_type->which != CppType::Which::kStruct ||
         real_type->struct_type.key_type ==
@@ -636,20 +903,20 @@ bool WriteEncoders(int fd, const CppSymbolTable& table) {
     std::string cpp_name = ToCamelCase(name);
 
     for (const auto& x : real_type->struct_type.members) {
-      if (x.second->which != CppType::Which::kDiscriminatedUnion)
+      if (x.type->which != CppType::Which::kDiscriminatedUnion)
         continue;
-      std::string dunion_cpp_name = ToCamelCase(x.first);
+      std::string dunion_cpp_name = ToCamelCase(x.name);
       dprintf(fd, "\n%s::%s::%s()\n", cpp_name.c_str(), dunion_cpp_name.c_str(),
               dunion_cpp_name.c_str());
-      std::string cid = ToUnderscoreId(x.first);
-      std::string type_name = ToCamelCase(x.first);
+      std::string cid = ToUnderscoreId(x.name);
+      std::string type_name = ToCamelCase(x.name);
       dprintf(fd,
               "    : which(Which::kUninitialized), placeholder_(false) {}\n");
 
       dprintf(fd, "\n%s::%s::~%s() {\n", cpp_name.c_str(),
               dunion_cpp_name.c_str(), dunion_cpp_name.c_str());
       dprintf(fd, "  switch (which) {\n");
-      for (const auto* y : x.second->discriminated_union.members) {
+      for (const auto* y : x.type->discriminated_union.members) {
         switch (y->which) {
           case CppType::Which::kUint64: {
             dprintf(fd, " case Which::kUint64: break;\n");
@@ -681,7 +948,10 @@ bool Encode%1$s(
   if (buffer->AvailableLength() == 0 &&
       !buffer->Append(CborEncodeBuffer::kDefaultInitialEncodeBufferSize))
     return false;
-  buffer->SetType(Type::k%1$s);
+  const uint8_t type_id[] = %2$s;
+  if(!buffer->SetType(type_id, sizeof(type_id))) {
+    return false;
+  }
   while (true) {
     size_t available_length = buffer->AvailableLength();
     ssize_t error_or_size = msgs::Encode%1$s(
@@ -699,8 +969,12 @@ bool Encode%1$s(
 }
 )";
 
-    dprintf(fd, vector_encode_function, cpp_name.c_str());
+    std::string encoded_id = GetEncodedTypeKey(*real_type);
+    if (encoded_id.empty()) {
+      return false;
+    }
 
+    dprintf(fd, vector_encode_function, cpp_name.c_str(), encoded_id.c_str());
     dprintf(fd, "\nssize_t Encode%s(\n", cpp_name.c_str());
     dprintf(fd, "    const %s& data,\n", cpp_name.c_str());
     dprintf(fd, "    uint8_t* buffer,\n    size_t length) {\n");
@@ -734,20 +1008,18 @@ bool Encode%1$s(
   return true;
 }
 
-bool WriteMapDecoder(
-    int fd,
-    const std::string& name,
-    const std::string& member_accessor,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    int decoder_depth,
-    int* temporary_count);
-bool WriteArrayDecoder(
-    int fd,
-    const std::string& name,
-    const std::string& member_accessor,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    int decoder_depth,
-    int* temporary_count);
+bool WriteMapDecoder(int fd,
+                     const std::string& name,
+                     const std::string& member_accessor,
+                     const std::vector<CppType::Struct::CppMember>& members,
+                     int decoder_depth,
+                     int* temporary_count);
+bool WriteArrayDecoder(int fd,
+                       const std::string& name,
+                       const std::string& member_accessor,
+                       const std::vector<CppType::Struct::CppMember>& members,
+                       int decoder_depth,
+                       int* temporary_count);
 
 // Writes the decoding function for the C++ type |cpp_type| to the file
 // descriptor |fd|.  |name| is the C++ variable name that needs to be encoded.
@@ -818,8 +1090,18 @@ bool WriteDecoder(int fd,
           "&length%d));\n",
           decoder_depth, temp_length);
       dprintf(fd, "  }\n");
-      dprintf(fd, "  %s%sresize(length%d);\n", name.c_str(),
-              member_accessor.c_str(), temp_length);
+      if (!cpp_type.bytes_type.fixed_size) {
+        dprintf(fd, "  %s%sresize(length%d);\n", name.c_str(),
+                member_accessor.c_str(), temp_length);
+      } else {
+        dprintf(fd, "  if (length%d < %d) {\n", temp_length,
+                static_cast<int>(cpp_type.bytes_type.fixed_size.value()));
+        dprintf(fd, "    return -CborErrorTooFewItems;\n");
+        dprintf(fd, "  } else if (length%d > %d) {\n", temp_length,
+                static_cast<int>(cpp_type.bytes_type.fixed_size.value()));
+        dprintf(fd, "    return -CborErrorTooManyItems;\n");
+        dprintf(fd, "  }\n");
+      }
       dprintf(fd,
               "  CBOR_RETURN_ON_ERROR(cbor_value_copy_byte_string(&it%d, "
               "const_cast<uint8_t*>(%s%sdata()), &length%d, nullptr));\n",
@@ -841,6 +1123,20 @@ bool WriteDecoder(int fd,
               "  CBOR_RETURN_ON_ERROR(cbor_value_get_array_length(&it%d, "
               "&it%d_length));\n",
               decoder_depth, decoder_depth + 1);
+      if (cpp_type.vector_type.min_length !=
+          CppType::Vector::kMinLengthUnbounded) {
+        dprintf(fd, "  if (it%d_length < %d) {\n", decoder_depth + 1,
+                cpp_type.vector_type.min_length);
+        dprintf(fd, "    return -CborErrorTooFewItems;\n");
+        dprintf(fd, "  }\n");
+      }
+      if (cpp_type.vector_type.max_length !=
+          CppType::Vector::kMaxLengthUnbounded) {
+        dprintf(fd, "  if (it%d_length > %d) {\n", decoder_depth + 1,
+                cpp_type.vector_type.max_length);
+        dprintf(fd, "    return -CborErrorTooManyItems;\n");
+        dprintf(fd, "  }\n");
+      }
       dprintf(fd, "  %s%sresize(it%d_length);\n", name.c_str(),
               member_accessor.c_str(), decoder_depth + 1);
       dprintf(
@@ -971,13 +1267,12 @@ bool WriteDecoder(int fd,
 // cbor decoders that need to be created.  |temporary_count| is used to ensure
 // temporaries get unique names by appending an automatically incremented
 // integer.
-bool WriteMapDecoder(
-    int fd,
-    const std::string& name,
-    const std::string& member_accessor,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    int decoder_depth,
-    int* temporary_count) {
+bool WriteMapDecoder(int fd,
+                     const std::string& name,
+                     const std::string& member_accessor,
+                     const std::vector<CppType::Struct::CppMember>& members,
+                     int decoder_depth,
+                     int* temporary_count) {
   dprintf(fd, "  if (cbor_value_get_type(&it%d) != CborMapType) {\n",
           decoder_depth - 1);
   dprintf(fd, "    return -1;\n");
@@ -990,7 +1285,7 @@ bool WriteMapDecoder(
           decoder_depth - 1, decoder_depth);
   int optional_members = 0;
   for (const auto& member : members) {
-    if (member.second->which == CppType::Which::kOptional) {
+    if (member.type->which == CppType::Which::kOptional) {
       ++optional_members;
     }
   }
@@ -1008,18 +1303,26 @@ bool WriteMapDecoder(
           decoder_depth - 1, decoder_depth);
   int member_pos = 0;
   for (const auto& x : members) {
-    std::string cid = ToUnderscoreId(x.first);
+    std::string cid = ToUnderscoreId(x.name);
     std::string fullname = name + member_accessor + cid;
-    if (x.second->which == CppType::Which::kOptional) {
+    if (x.type->which == CppType::Which::kOptional) {
       // TODO(btolsch): This is wrong for the same reason as arrays, but will be
       // easier to handle when doing out-of-order keys.
       dprintf(fd, "  if (it%d_length > %d) {\n", decoder_depth, member_pos);
-      dprintf(fd,
-              "  CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&it%d, \"%s\"));\n",
-              decoder_depth, x.first.c_str());
+
+      if (x.integer_key.has_value()) {
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(EXPECT_INT_KEY_CONSTANT(&it%d, %" PRIu64
+                "));\n",
+                decoder_depth, x.integer_key.value());
+      } else {
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&it%d, \"%s\"));\n",
+                decoder_depth, x.name.c_str());
+      }
       dprintf(fd, "    %s%shas_%s = true;\n", name.c_str(),
               member_accessor.c_str(), cid.c_str());
-      if (!WriteDecoder(fd, fullname, ".", *x.second->optional_type,
+      if (!WriteDecoder(fd, fullname, ".", *x.type->optional_type,
                         decoder_depth, temporary_count)) {
         return false;
       }
@@ -1028,10 +1331,17 @@ bool WriteMapDecoder(
               member_accessor.c_str(), cid.c_str());
       dprintf(fd, "  }\n");
     } else {
-      dprintf(fd,
-              "  CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&it%d, \"%s\"));\n",
-              decoder_depth, x.first.c_str());
-      if (!WriteDecoder(fd, fullname, ".", *x.second, decoder_depth,
+      if (x.integer_key.has_value()) {
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(EXPECT_INT_KEY_CONSTANT(&it%d, %" PRIu64
+                "));\n",
+                decoder_depth, x.integer_key.value());
+      } else {
+        dprintf(fd,
+                "  CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&it%d, \"%s\"));\n",
+                decoder_depth, x.name.c_str());
+      }
+      if (!WriteDecoder(fd, fullname, ".", *x.type, decoder_depth,
                         temporary_count)) {
         return false;
       }
@@ -1051,13 +1361,12 @@ bool WriteMapDecoder(
 // cbor decoders that need to be created.  |temporary_count| is used to ensure
 // temporaries get unique names by appending an automatically incremented
 // integer.
-bool WriteArrayDecoder(
-    int fd,
-    const std::string& name,
-    const std::string& member_accessor,
-    const std::vector<std::pair<std::string, CppType*>>& members,
-    int decoder_depth,
-    int* temporary_count) {
+bool WriteArrayDecoder(int fd,
+                       const std::string& name,
+                       const std::string& member_accessor,
+                       const std::vector<CppType::Struct::CppMember>& members,
+                       int decoder_depth,
+                       int* temporary_count) {
   dprintf(fd, "  if (cbor_value_get_type(&it%d) != CborArrayType) {\n",
           decoder_depth - 1);
   dprintf(fd, "    return -1;\n");
@@ -1070,7 +1379,7 @@ bool WriteArrayDecoder(
           decoder_depth - 1, decoder_depth);
   int optional_members = 0;
   for (const auto& member : members) {
-    if (member.second->which == CppType::Which::kOptional) {
+    if (member.type->which == CppType::Which::kOptional) {
       ++optional_members;
     }
   }
@@ -1088,9 +1397,9 @@ bool WriteArrayDecoder(
           decoder_depth - 1, decoder_depth);
   int member_pos = 0;
   for (const auto& x : members) {
-    std::string cid = ToUnderscoreId(x.first);
+    std::string cid = ToUnderscoreId(x.name);
     std::string fullname = name + member_accessor + cid;
-    if (x.second->which == CppType::Which::kOptional) {
+    if (x.type->which == CppType::Which::kOptional) {
       // TODO(btolsch): This only handles a single block of optionals and only
       // the ones present form a contiguous range from the start of the block.
       // However, we likely don't really need more than one optional for arrays
@@ -1100,7 +1409,7 @@ bool WriteArrayDecoder(
       dprintf(fd, "  if (it%d_length > %d) {\n", decoder_depth, member_pos);
       dprintf(fd, "    %s%shas_%s = true;\n", name.c_str(),
               member_accessor.c_str(), cid.c_str());
-      if (!WriteDecoder(fd, fullname, ".", *x.second->optional_type,
+      if (!WriteDecoder(fd, fullname, ".", *x.type->optional_type,
                         decoder_depth, temporary_count)) {
         return false;
       }
@@ -1109,7 +1418,7 @@ bool WriteArrayDecoder(
               member_accessor.c_str(), cid.c_str());
       dprintf(fd, "  }\n");
     } else {
-      if (!WriteDecoder(fd, fullname, ".", *x.second, decoder_depth,
+      if (!WriteDecoder(fd, fullname, ".", *x.type, decoder_depth,
                         temporary_count)) {
         return false;
       }
@@ -1122,12 +1431,28 @@ bool WriteArrayDecoder(
   return true;
 }
 
+// Writes the equality operators for all structs.
+bool WriteEqualityOperators(int fd, CppSymbolTable* table) {
+  for (const auto& pair : table->cpp_type_map) {
+    CppType* real_type = pair.second;
+    if (real_type->which == CppType::Which::kStruct &&
+        real_type->struct_type.key_type !=
+            CppType::Struct::KeyType::kPlainGroup) {
+      if (!WriteStructEqualityOperator(fd, *real_type)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // Writes a decoder function definition for every type in |table| to the file
 // descriptor |fd|.
-bool WriteDecoders(int fd, const CppSymbolTable& table) {
-  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
-  for (const auto* type : root_type->discriminated_union.members) {
-    CppType* real_type = type->tagged_type.real_type;
+bool WriteDecoders(int fd, CppSymbolTable* table) {
+  if (!WriteTypeParserDefinition(fd, table)) {
+    return false;
+  }
+  for (CppType* real_type : table->TypesWithId()) {
     const auto& name = real_type->name;
     int temporary_count = 0;
     if (real_type->which != CppType::Which::kStruct ||
@@ -1185,7 +1510,9 @@ bool WriteHeaderPrologue(int fd, const std::string& header_filename) {
       R"(#ifndef %s
 #define %s
 
+#include <array>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -1207,6 +1534,11 @@ class CborEncodeBuffer;
 
 bool WriteHeaderEpilogue(int fd, const std::string& header_filename) {
   static const char epilogue[] = R"(
+class TypeEnumValidator {
+ public:
+  static Type SafeCast(uint64_t type_id);
+};
+
 class CborEncodeBuffer {
  public:
   static constexpr size_t kDefaultInitialEncodeBufferSize = 250;
@@ -1218,7 +1550,7 @@ class CborEncodeBuffer {
 
   bool Append(size_t length);
   bool ResizeBy(ssize_t length);
-  void SetType(Type type);
+  bool SetType(const uint8_t encoded_id[], size_t size);
 
   const uint8_t* data() const { return data_.data(); }
   size_t size() const { return data_.size(); }
@@ -1231,6 +1563,9 @@ class CborEncodeBuffer {
   size_t position_;
   std::vector<uint8_t> data_;
 };
+
+CborError ExpectKey(CborValue* it, const uint64_t key);
+CborError ExpectKey(CborValue* it, const char* key, size_t key_length);
 
 }  // namespace msgs
 }  // namespace openscreen
@@ -1268,6 +1603,7 @@ namespace {
 #define CBOR_RETURN_ON_ERROR(stmt) CBOR_RETURN_WHAT_ON_ERROR(stmt, -error)
 
 #define EXPECT_KEY_CONSTANT(it, key) ExpectKey(it, key, sizeof(key) - 1)
+#define EXPECT_INT_KEY_CONSTANT(it, key) ExpectKey(it, key)
 
 bool IsValidUtf8(const std::string& s) {
   const uint8_t* buffer = reinterpret_cast<const uint8_t*>(s.data());
@@ -1280,8 +1616,22 @@ bool IsValidUtf8(const std::string& s) {
   }
   return true;
 }
+}  // namespace
+
+CborError ExpectKey(CborValue* it, const uint64_t key) {
+  if  (!cbor_value_is_unsigned_integer(it))
+    return CborErrorImproperValue;
+  uint64_t observed_key;
+  CBOR_RETURN_ON_ERROR_INTERNAL(cbor_value_get_uint64(it, &observed_key));
+  if (observed_key != key)
+    return CborErrorImproperValue;
+  CBOR_RETURN_ON_ERROR_INTERNAL(cbor_value_advance_fixed(it));
+  return CborNoError;
+}
 
 CborError ExpectKey(CborValue* it, const char* key, size_t key_length) {
+  if(!cbor_value_is_text_string(it))
+    return CborErrorImproperValue;
   size_t observed_length = 0;
   CBOR_RETURN_ON_ERROR_INTERNAL(
       cbor_value_get_string_length(it, &observed_length));
@@ -1296,8 +1646,6 @@ CborError ExpectKey(CborValue* it, const char* key, size_t key_length) {
   return CborNoError;
 }
 
-}  // namespace
-
 // static
 constexpr size_t CborEncodeBuffer::kDefaultInitialEncodeBufferSize;
 
@@ -1306,11 +1654,22 @@ constexpr size_t CborEncodeBuffer::kDefaultMaxEncodeBufferSize;
 
 CborEncodeBuffer::CborEncodeBuffer()
     : max_size_(kDefaultMaxEncodeBufferSize),
-      position_(1),
+      position_(0),
       data_(kDefaultInitialEncodeBufferSize) {}
 CborEncodeBuffer::CborEncodeBuffer(size_t initial_size, size_t max_size)
-    : max_size_(max_size), position_(1), data_(initial_size) {}
+    : max_size_(max_size), position_(0), data_(initial_size) {}
 CborEncodeBuffer::~CborEncodeBuffer() = default;
+
+bool CborEncodeBuffer::SetType(const uint8_t encoded_id[], size_t size) {
+  if (this->AvailableLength() < size) {
+    if (!this->ResizeBy(size)) {
+      return false;
+    }
+  }
+  memcpy(&data_[position_], encoded_id, size);
+  position_ += size;
+  return true;
+}
 
 bool CborEncodeBuffer::Append(size_t length) {
   if (length == 0)
@@ -1322,7 +1681,7 @@ bool CborEncodeBuffer::Append(size_t length) {
   }
   size_t append_area = data_.size();
   data_.resize(append_area + length);
-  position_ = append_area + 1;
+  position_ = append_area;
   return true;
 }
 
@@ -1335,10 +1694,6 @@ bool CborEncodeBuffer::ResizeBy(ssize_t delta) {
     return false;
   data_.resize(data_.size() + delta);
   return true;
-}
-
-void CborEncodeBuffer::SetType(Type type) {
-  data_[position_ - 1] = static_cast<uint8_t>(type);
 }
 
 bool IsError(ssize_t x) {

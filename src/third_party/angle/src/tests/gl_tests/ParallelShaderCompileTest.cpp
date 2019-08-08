@@ -37,18 +37,14 @@ class ParallelShaderCompileTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override { ANGLETest::SetUp(); }
-
-    void TearDown() override { ANGLETest::TearDown(); }
-
     bool ensureParallelShaderCompileExtensionAvailable()
     {
-        if (extensionRequestable("GL_KHR_parallel_shader_compile"))
+        if (IsGLExtensionRequestable("GL_KHR_parallel_shader_compile"))
         {
             glRequestExtensionANGLE("GL_KHR_parallel_shader_compile");
         }
 
-        if (!extensionEnabled("GL_KHR_parallel_shader_compile"))
+        if (!IsGLExtensionEnabled("GL_KHR_parallel_shader_compile"))
         {
             return false;
         }
@@ -395,7 +391,6 @@ TEST_P(ParallelShaderCompileTestES31, LinkAndDispatchManyPrograms)
 ANGLE_INSTANTIATE_TEST(ParallelShaderCompileTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());

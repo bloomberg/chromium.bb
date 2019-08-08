@@ -16,23 +16,19 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_observer.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -43,6 +39,40 @@
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #endif
 
+// Handles registration for key events with RenderFrameHost.
+class PasswordGenerationPopupControllerImpl::KeyPressRegistrator {
+ public:
+  explicit KeyPressRegistrator(content::RenderFrameHost* frame)
+      : frame_(frame) {}
+  KeyPressRegistrator(const KeyPressRegistrator& rhs) = delete;
+  KeyPressRegistrator& operator=(const KeyPressRegistrator& rhs) = delete;
+
+  ~KeyPressRegistrator() = default;
+
+  void RegisterKeyPressHandler(
+      content::RenderWidgetHost::KeyPressEventCallback handler) {
+    DCHECK(callback_.is_null());
+    content::RenderWidgetHostView* view = frame_->GetView();
+    if (!view)
+      return;
+    view->GetRenderWidgetHost()->AddKeyPressEventCallback(handler);
+    callback_ = std::move(handler);
+  }
+
+  void RemoveKeyPressHandler() {
+    if (!callback_.is_null()) {
+      content::RenderWidgetHostView* view = frame_->GetView();
+      if (view)
+        view->GetRenderWidgetHost()->RemoveKeyPressEventCallback(callback_);
+      callback_.Reset();
+    }
+  }
+
+ private:
+  content::RenderFrameHost* const frame_;
+  content::RenderWidgetHost::KeyPressEventCallback callback_;
+};
+
 base::WeakPtr<PasswordGenerationPopupControllerImpl>
 PasswordGenerationPopupControllerImpl::GetOrCreate(
     base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
@@ -50,14 +80,13 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     const autofill::PasswordForm& form,
     const base::string16& generation_element,
     uint32_t max_length,
-    password_manager::PasswordManager* password_manager,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
-    gfx::NativeView container_view) {
+    content::RenderFrameHost* frame) {
   if (previous.get() && previous->element_bounds() == bounds &&
       previous->web_contents() == web_contents &&
-      previous->container_view() == container_view) {
+      previous->driver_.get() == driver.get()) {
     return previous;
   }
 
@@ -67,7 +96,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
   PasswordGenerationPopupControllerImpl* controller =
       new PasswordGenerationPopupControllerImpl(
           bounds, form, generation_element, max_length, driver, observer,
-          web_contents, container_view);
+          web_contents, frame);
   return controller->GetWeakPtr();
 }
 
@@ -79,7 +108,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
-    gfx::NativeView container_view)
+    content::RenderFrameHost* frame)
     : content::WebContentsObserver(web_contents),
       view_(nullptr),
       form_(form),
@@ -91,9 +120,12 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
                                                          "password")),
       max_length_(max_length),
       // TODO(estade): use correct text direction.
-      controller_common_(bounds, base::i18n::LEFT_TO_RIGHT, container_view),
+      controller_common_(bounds,
+                         base::i18n::LEFT_TO_RIGHT,
+                         web_contents->GetNativeView()),
       password_selected_(false),
       state_(kOfferGeneration),
+      key_press_handler_manager_(new KeyPressRegistrator(frame)),
       weak_ptr_factory_(this) {
 #if !defined(OS_ANDROID)
   zoom::ZoomController* zoom_controller =
@@ -192,17 +224,14 @@ void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
       Hide();
       return;
     }
-
+    key_press_handler_manager_->RegisterKeyPressHandler(base::BindRepeating(
+        &PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
+        base::Unretained(this)));
     view_->Show();
   } else {
     view_->UpdateState();
     view_->UpdateBoundsAndRedrawPopup();
   }
-
-  static_cast<autofill::ContentAutofillDriver*>(driver_->GetAutofillDriver())
-      ->RegisterKeyPressHandler(base::BindRepeating(
-          &PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
-          base::Unretained(this)));
 
   if (observer_)
     observer_->OnPopupShown(state_);
@@ -243,10 +272,9 @@ void PasswordGenerationPopupControllerImpl::OnZoomChanged(
 #endif  // !defined(OS_ANDROID)
 
 void PasswordGenerationPopupControllerImpl::Hide() {
-  if (driver_) {
-    static_cast<autofill::ContentAutofillDriver*>(driver_->GetAutofillDriver())
-        ->RemoveKeyPressHandler();
-  }
+  // Detach if the frame is still alive.
+  if (driver_)
+    key_press_handler_manager_->RemoveKeyPressHandler();
 
   if (view_)
     view_->Hide();

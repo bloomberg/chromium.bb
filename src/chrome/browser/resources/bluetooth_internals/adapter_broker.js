@@ -8,17 +8,17 @@
  */
 cr.define('adapter_broker', function() {
   /** @typedef {bluetooth.mojom.AdapterProxy} */
-  var AdapterProxy;
+  let AdapterProxy;
   /** @typedef {bluetooth.mojom.DeviceProxy} */
-  var DeviceProxy;
+  let DeviceProxy;
   /** @typedef {bluetooth.mojom.DiscoverySessionProxy} */
-  var DiscoverySessionProxy;
+  let DiscoverySessionProxy;
 
   /**
    * Enum of adapter property names. Used for adapterchanged events.
    * @enum {string}
    */
-  var AdapterProperty = {
+  const AdapterProperty = {
     DISCOVERABLE: 'discoverable',
     DISCOVERING: 'discovering',
     POWERED: 'powered',
@@ -104,8 +104,8 @@ cr.define('adapter_broker', function() {
         if (response.result != bluetooth.mojom.ConnectResult.SUCCESS) {
           // TODO(crbug.com/663394): Replace with more descriptive error
           // messages.
-          var ConnectResult = bluetooth.mojom.ConnectResult;
-          var errorString = Object.keys(ConnectResult).find(function(key) {
+          const ConnectResult = bluetooth.mojom.ConnectResult;
+          const errorString = Object.keys(ConnectResult).find(function(key) {
             return ConnectResult[key] === response.result;
           });
 
@@ -148,7 +148,7 @@ cr.define('adapter_broker', function() {
     }
   }
 
-  var adapterBroker = null;
+  let adapterBroker = null;
 
   /**
    * Initializes an AdapterBroker if one doesn't exist.
@@ -160,7 +160,8 @@ cr.define('adapter_broker', function() {
       return Promise.resolve(adapterBroker);
     }
 
-    var bluetoothInternalsHandler = mojom.BluetoothInternalsHandler.getProxy();
+    const bluetoothInternalsHandler =
+        mojom.BluetoothInternalsHandler.getProxy();
 
     // Get an Adapter service.
     return bluetoothInternalsHandler.getAdapter().then(function(response) {

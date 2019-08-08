@@ -23,7 +23,7 @@
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -161,14 +161,13 @@
 
 #pragma mark - InfobarBadgeTabHelper
 
-- (void)displayBadge:(BOOL)display {
+- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType {
   DCHECK(IsInfobarUIRebootEnabled());
-  [self.consumer displayInfobarBadge:display];
+  [self.consumer displayInfobarBadge:display type:infobarType];
 }
 
 - (void)setBadgeState:(InfobarBadgeState)badgeState {
   _badgeState = badgeState;
-  [self.consumer selectInfobarBadge:_badgeState & InfobarBadgeStateSelected];
   [self.consumer activeInfobarBadge:_badgeState & InfobarBadgeStateAccepted];
 }
 
@@ -191,9 +190,16 @@
       infobarBadgeTabHelper->SetDelegate(self);
       if (self.consumer) {
         // Whenever the WebState changes ask the corresponding
-        // InfobarBadgeTabHelper if a badge should be displayed.
-        [self.consumer displayInfobarBadge:infobarBadgeTabHelper
-                                               ->IsInfobarBadgeDisplaying()];
+        // InfobarBadgeTabHelper if a badge should be displayed, and if its
+        // Active or not.
+        [self.consumer
+            displayInfobarBadge:infobarBadgeTabHelper->is_infobar_displaying()
+                           type:infobarBadgeTabHelper->infobar_type()];
+        if (infobarBadgeTabHelper->is_badge_accepted()) {
+          self.badgeState |= InfobarBadgeStateAccepted;
+        } else {
+          self.badgeState &= ~InfobarBadgeStateAccepted;
+        }
       }
     }
 
@@ -246,7 +252,8 @@
 #pragma mark - private
 
 - (void)notifyConsumerOfChangedLocation {
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self.consumer updateLocationText:[self currentLocationString]
+                           clipTail:[self locationShouldClipTail]];
   GURL URL = self.webState->GetVisibleURL();
   BOOL isNTP = IsURLNewTabPage(URL);
   if (isNTP) {
@@ -267,6 +274,13 @@
 - (NSString*)currentLocationString {
   base::string16 string = self.locationBarModel->GetURLForDisplay();
   return base::SysUTF16ToNSString(string);
+}
+
+// Some URLs (data://) should have their tail clipped when presented; while for
+// others (http://) it would be more appropriate to clip the head.
+- (BOOL)locationShouldClipTail {
+  GURL url = self.locationBarModel->GetURL();
+  return url.SchemeIs(url::kDataScheme);
 }
 
 #pragma mark Security status icon helpers

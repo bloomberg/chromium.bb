@@ -31,17 +31,13 @@ namespace sw
 	{
 		const void *buffer[6];
 
-		float4 fWidth;
-		float4 fHeight;
-		float4 fDepth;
-
-		short uHalf[4];
-		short vHalf[4];
-		short wHalf[4];
-		short width[4];
-		short height[4];
-		short depth[4];
-		short onePitchP[4];
+		short4 uHalf;
+		short4 vHalf;
+		short4 wHalf;
+		int4 width;
+		int4 height;
+		int4 depth;
+		short4 onePitchP;
 		int4 pitchP;
 		int4 sliceP;
 	};
@@ -50,19 +46,10 @@ namespace sw
 	{
 		Mipmap mipmap[MIPMAP_LEVELS];
 
-		float LOD;
-		float4 widthHeightLOD;
-		float4 widthLOD;
-		float4 heightLOD;
-		float4 depthLOD;
-
-		word4 borderColor4[4];   // FIXME(b/129523279): Part of Vulkan sampler.
-		float4 borderColorF[4];  // FIXME(b/129523279): Part of Vulkan sampler.
-		float maxAnisotropy;     // FIXME(b/129523279): Part of Vulkan sampler.
-		int baseLevel;
-		int maxLevel;
-		float minLod;  // FIXME(b/129523279): Part of Vulkan sampler.
-		float maxLod;  // FIXME(b/129523279): Part of Vulkan sampler.
+		float4 widthWidthHeightHeight;
+		float4 width;
+		float4 height;
+		float4 depth;
 	};
 
 	enum SamplerType
@@ -73,14 +60,16 @@ namespace sw
 
 	enum TextureType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
 	{
-		TEXTURE_NULL,
+		TEXTURE_NULL,       // TODO(b/129523279): Eliminate
+		TEXTURE_1D,
 		TEXTURE_2D,
-		TEXTURE_RECTANGLE,
-		TEXTURE_CUBE,
 		TEXTURE_3D,
+		TEXTURE_CUBE,
+		TEXTURE_1D_ARRAY,   // Treated as 2D texture with second coordinate 0.
 		TEXTURE_2D_ARRAY,
+		TEXTURE_CUBE_ARRAY,
 
-		TEXTURE_LAST = TEXTURE_2D_ARRAY
+		TEXTURE_LAST = TEXTURE_CUBE_ARRAY
 	};
 
 	enum FilterType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
@@ -106,6 +95,7 @@ namespace sw
 
 	enum AddressingMode ENUM_UNDERLYING_TYPE_UNSIGNED_INT
 	{
+		ADDRESSING_UNUSED,
 		ADDRESSING_WRAP,
 		ADDRESSING_CLAMP,
 		ADDRESSING_MIRROR,
@@ -145,105 +135,31 @@ namespace sw
 		SWIZZLE_LAST = SWIZZLE_ONE
 	};
 
-	class Sampler
+	struct Sampler
 	{
-	public:
-		struct State
-		{
-			State();
-
-			TextureType textureType;
-			vk::Format textureFormat;
-			FilterType textureFilter;
-			AddressingMode addressingModeU;
-			AddressingMode addressingModeV;
-			AddressingMode addressingModeW;
-			MipmapType mipmapFilter;
-			bool sRGB;
-			SwizzleType swizzleR;
-			SwizzleType swizzleG;
-			SwizzleType swizzleB;
-			SwizzleType swizzleA;
-			bool highPrecisionFiltering;
-			CompareFunc compare;
-
-			#if PERF_PROFILE
-			bool compressedFormat;
-			#endif
-		};
-
-		Sampler();
-
-		~Sampler();
-
-		State samplerState() const;
-
-		void setTextureLevel(int face, int level, vk::Image *image, TextureType type);
-
-		void setTextureFilter(FilterType textureFilter);
-		void setMipmapFilter(MipmapType mipmapFilter);
-		void setGatherEnable(bool enable);
-		void setAddressingModeU(AddressingMode addressingMode);
-		void setAddressingModeV(AddressingMode addressingMode);
-		void setAddressingModeW(AddressingMode addressingMode);
-		void setReadSRGB(bool sRGB);
-		void setBorderColor(const Color<float> &borderColor);
-		void setMaxAnisotropy(float maxAnisotropy);
-		void setHighPrecisionFiltering(bool highPrecisionFiltering);
-		void setSwizzleR(SwizzleType swizzleR);
-		void setSwizzleG(SwizzleType swizzleG);
-		void setSwizzleB(SwizzleType swizzleB);
-		void setSwizzleA(SwizzleType swizzleA);
-		void setCompareFunc(CompareFunc compare);
-		void setBaseLevel(int baseLevel);
-		void setMaxLevel(int maxLevel);
-		void setMinLod(float minLod);
-		void setMaxLod(float maxLod);
-
-		static void setFilterQuality(FilterType maximumFilterQuality);
-		static void setMipmapQuality(MipmapType maximumFilterQuality);
-		void setMipmapLOD(float lod);
-
-		bool hasTexture() const;
-		bool hasUnsignedTexture() const;
-		bool hasCubeTexture() const;
-		bool hasVolumeTexture() const;
-
-		const Texture &getTextureData();
-
-	private:
-		MipmapType mipmapFilter() const;
-		TextureType getTextureType() const;
-		FilterType getTextureFilter() const;
-		AddressingMode getAddressingModeU() const;
-		AddressingMode getAddressingModeV() const;
-		AddressingMode getAddressingModeW() const;
-		CompareFunc getCompareFunc() const;
-
-		vk::Format textureFormat;
 		TextureType textureType;
-
+		vk::Format textureFormat;
 		FilterType textureFilter;
 		AddressingMode addressingModeU;
 		AddressingMode addressingModeV;
 		AddressingMode addressingModeW;
-		MipmapType mipmapFilterState;
-		bool sRGB;
-		bool gather;
+		MipmapType mipmapFilter;
+		VkComponentMapping swizzle;
+		int gatherComponent;
 		bool highPrecisionFiltering;
-		int border;
+		bool compareEnable;
+		VkCompareOp compareOp;
+		VkBorderColor border;
+		bool unnormalizedCoordinates;
+		bool largeTexture;
 
-		SwizzleType swizzleR;
-		SwizzleType swizzleG;
-		SwizzleType swizzleB;
-		SwizzleType swizzleA;
-		CompareFunc compare;
+		VkSamplerYcbcrModelConversion ycbcrModel;
+		bool studioSwing;    // Narrow range
+		bool swappedChroma;  // Cb/Cr components in reverse order
 
-		Texture texture;
-		float exp2LOD;
-
-		static FilterType maximumTextureFilterQuality;
-		static MipmapType maximumMipmapFilterQuality;
+		#if PERF_PROFILE
+		bool compressedFormat;
+		#endif
 	};
 }
 

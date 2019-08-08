@@ -22,13 +22,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/json_unsafe_parser.h"
+#include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -204,7 +204,7 @@ class PopularSitesTest : public ::testing::Test {
         prefs_.get(),
         /*template_url_service=*/nullptr,
         /*variations_service=*/nullptr, test_shared_loader_factory_,
-        base::Bind(JsonUnsafeParser::Parse));
+        base::Bind(&data_decoder::SafeJsonParser::Parse, nullptr));
   }
 
   const TestPopularSite kWikipedia;
@@ -213,6 +213,7 @@ class PopularSitesTest : public ::testing::Test {
 
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -531,10 +532,7 @@ TEST_F(PopularSitesTest, ShouldOverrideDirectory) {
   EXPECT_THAT(sites.size(), Eq(1u));
 }
 
-TEST_F(PopularSitesTest, DoesNotFetchExplorationSitesWithoutFeature) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndDisableFeature(kSiteExplorationUiFeature);
-
+TEST_F(PopularSitesTest, DoesNotFetchExplorationSites) {
   SetCountryAndVersion("ZZ", "6");
   RespondWithV6JSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_6.json",
@@ -547,47 +545,6 @@ TEST_F(PopularSitesTest, DoesNotFetchExplorationSitesWithoutFeature) {
 
   // The fetched news section should not be propagated without enabled feature.
   EXPECT_THAT(sections, Not(Contains(Pair(SectionType::NEWS, _))));
-}
-
-TEST_F(PopularSitesTest, FetchesExplorationSitesWithFeature) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(kSiteExplorationUiFeature);
-  SetCountryAndVersion("ZZ", "6");
-  RespondWithV6JSON(
-      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_6.json",
-      {{SectionType::PERSONALIZED, {kChromium}},
-       {SectionType::ENTERTAINMENT, {kWikipedia, kYouTube}},
-       {SectionType::NEWS, {kYouTube}},
-       {SectionType::TOOLS, TestPopularSiteVector{}}});
-
-  std::map<SectionType, PopularSites::SitesVector> sections;
-  EXPECT_THAT(FetchAllSections(/*force_download=*/false, &sections),
-              Eq(base::Optional<bool>(true)));
-
-  EXPECT_THAT(sections, ElementsAre(Pair(SectionType::PERSONALIZED, SizeIs(1)),
-                                    Pair(SectionType::ENTERTAINMENT, SizeIs(2)),
-                                    Pair(SectionType::NEWS, SizeIs(1)),
-                                    Pair(SectionType::TOOLS, IsEmpty())));
-}
-
-TEST_F(PopularSitesTest, FetchesExplorationSitesIgnoreUnknownSections) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(kSiteExplorationUiFeature);
-
-  SetCountryAndVersion("ZZ", "6");
-  RespondWithV6JSON(
-      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_6.json",
-      {{SectionType::UNKNOWN, {kChromium}},
-       {SectionType::NEWS, {kYouTube}},
-       {SectionType::UNKNOWN, {kWikipedia, kYouTube}}});
-
-  std::map<SectionType, PopularSites::SitesVector> sections;
-  EXPECT_THAT(FetchAllSections(/*force_download=*/false, &sections),
-              Eq(base::Optional<bool>(true)));
-
-  // Expect that there are four sections, none of which is empty.
-  EXPECT_THAT(sections, ElementsAre(Pair(SectionType::PERSONALIZED, SizeIs(0)),
-                                    Pair(SectionType::NEWS, SizeIs(1))));
 }
 
 }  // namespace

@@ -27,12 +27,15 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
   def testPolicyTranslation(self):
     # Create test policy_templates.json data.
     caption = "The main policy"
-    caption_translation = "Die Hauptrichtilinie"
+    caption_translation = "Die Hauptrichtlinie"
 
     message = \
       "Red cabbage stays red cabbage and wedding dress stays wedding dress"
     message_translation = \
       "Blaukraut bleibt Blaukraut und Brautkleid bleibt Brautkleid"
+
+    schema_key_description = "Number of users"
+    schema_key_description_translation = "Anzahl der Nutzer"
 
     policy_json = """
         {
@@ -40,7 +43,22 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
             {
               'name': 'MainPolicy',
               'type': 'main',
-              'schema': { 'type': 'boolean' },
+              'schema': {
+                'properties': {
+                  'default_launch_container': {
+                    'enum': [
+                      'tab',
+                      'window',
+                    ],
+                    'type': 'string',
+                  },
+                  'users_number': {
+                    'description': '''%s''',
+                    'type': 'integer',
+                  },
+                },
+                'type': 'object',
+              },
               'supported_on': ['chrome_os:29-'],
               'features': {
                 'can_be_recommended': True,
@@ -59,19 +77,24 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
               'text': '''%s'''
             }
           }
-        }""" % (caption, message)
+        }""" % (schema_key_description, caption, message)
 
     # Create translations. The translation IDs are hashed from the English text.
     caption_id = grit.extern.tclib.GenerateMessageId(caption);
     message_id = grit.extern.tclib.GenerateMessageId(message);
+    schema_key_description_id = grit.extern.tclib.GenerateMessageId(
+        schema_key_description)
     policy_xtb = """
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="%s">%s</translation>
 <translation id="%s">%s</translation>
+<translation id="%s">%s</translation>
 </translationbundle>""" % (caption_id, caption_translation,
-                           message_id, message_translation)
+                           message_id, message_translation,
+                           schema_key_description_id,
+                           schema_key_description_translation)
 
     # Write both to a temp file.
     tmp_dir_name = tempfile.gettempdir()
@@ -132,7 +155,22 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
       'type': 'main',
       'example_value': True,
       'supported_on': ['chrome_os:29-'],
-      'schema': {'type': 'boolean'},
+      'schema': {
+        'properties': {
+          'default_launch_container': {
+            'enum': [
+              'tab',
+              'window',
+            ],
+            'type': 'string',
+          },
+          'users_number': {
+            'description': '''%s''',
+            'type': 'integer',
+          },
+        },
+        'type': 'object',
+      },
     },
   ],
   'messages': {
@@ -141,7 +179,8 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
       },
   },
 
-}""" % (caption_translation, message_translation)
+}""" % (caption_translation, schema_key_description_translation,
+        message_translation)
     self.assertEqual(expected, output)
 
 

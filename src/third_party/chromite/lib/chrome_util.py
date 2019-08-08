@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import ast
 import functools
 import glob
 import os
@@ -98,6 +99,14 @@ class MissingPathError(failures_lib.StepFailure):
 
 class MustNotBeDirError(failures_lib.StepFailure):
   """The specified path should not be a directory, but is."""
+
+
+class GetRuntimeDepsError(failures_lib.StepFailure):
+  """Unable to get runtime deps for a build target."""
+
+
+class GnIsolateMapFileError(failures_lib.StepFailure):
+  """Failed to parse gn isolate map file."""
 
 
 class Copier(object):
@@ -229,7 +238,7 @@ class Copier(object):
 class Path(object):
   """Represents an artifact to be copied from build dir to staging dir."""
 
-  DEFAULT_BLACKLIST = (r'(^|.*/)\.svn($|/.*)',)
+  DEFAULT_BLACKLIST = (r'(^|.*/)\.git($|/.*)',)
 
   def __init__(self, src, exe=False, cond=None, dest=None, mode=None,
                optional=False, strip=True, blacklist=None):
@@ -341,6 +350,8 @@ _COPY_PATHS_CHROME = (
     Path('chrome-wrapper'),
     Path('chrome_100_percent.pak'),
     Path('chrome_200_percent.pak', cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
+    # TODO(jperaza): make the handler required when  Crashpad is enabled.
+    Path('crashpad_handler', exe=True, optional=True),
     Path('dbus/', optional=True),
     Path('keyboard_resources.pak'),
     Path('libassistant.so', exe=True, optional=True),
@@ -407,6 +418,128 @@ def GetCopyPaths(deployment_type='chrome'):
   if paths is None:
     raise RuntimeError('Invalid deployment type "%s"' % deployment_type)
   return paths
+
+
+def _GetGnLabel(build_dir, build_target):
+  """Gets the gn label for a build target in a build dir.
+
+  Args:
+    build_dir: The build output directory.
+    build_target: The build target whose gn label to be returned.
+
+  Returns:
+    Gn label for the build target as a string.
+  """
+  src_dir = os.path.dirname(os.path.dirname(build_dir))
+  # Look up gn label from testing/buildbot/gn_isolate_map.pyl, which contains
+  # a mapping of build targets to GN labels. This is faster than extracting the
+  # gn label from "gn ls" output.
+  isolate_map_file = os.path.join(src_dir, 'testing', 'buildbot',
+                                  'gn_isolate_map.pyl')
+  try:
+    isolate_map = ast.literal_eval(osutils.ReadFile(isolate_map_file))
+  except SyntaxError as e:
+    raise GnIsolateMapFileError(
+        'Failed to parse isolate map file "%s": %s' % (isolate_map_file, e))
+
+  if not build_target in isolate_map:
+    raise GnIsolateMapFileError(
+        'Target %s not found in %s' % (build_target, isolate_map_file))
+
+  gn_label = isolate_map[build_target]['label']
+  assert gn_label.startswith('//')
+  return gn_label
+
+
+def GetChromeRuntimeDeps(build_dir, build_target):
+  """Returns a list of runtime deps files for the given build target.
+
+  Args:
+    build_dir: The build output directory.
+    build_target: A chrome build target.
+
+  Returns:
+    The list of runtime deps files for |build_target| relative to two levels up
+    |build_dir|, i.e. chrome src dir.
+  """
+  gn_label = _GetGnLabel(build_dir, build_target)
+
+  # Runtime deps files are generated for test executables of ChromeOS build
+  # inside SDK env in testing/test.gni.
+  #   https://cs.chromium.org/chromium/src/testing/test.gni?rcl=9b95cd58&l=336
+  # Check out test.gni if the file is missing and the slow "gn desc" code path
+  # is used.
+  generated_runtime_deps_file = os.path.join(build_dir,
+                                             'gen.runtime',
+                                             gn_label.split(':')[0].lstrip('/'),
+                                             build_target,
+                                             build_target + '.runtime_deps')
+
+  runtime_deps = None
+  if not os.path.exists(generated_runtime_deps_file):
+    logging.warning('Unable to find generated runtime deps file: %s',
+                    generated_runtime_deps_file)
+  else:
+    runtime_deps = osutils.ReadFile(generated_runtime_deps_file).splitlines()
+
+  if not runtime_deps:
+    result = cros_build_lib.RunCommand(['gn', 'desc', build_dir,
+                                        gn_label, 'runtime_deps'],
+                                       capture_output=True)
+    if result.returncode != 0:
+      raise GetRuntimeDepsError('Failed to get runtime deps for: %s' %
+                                build_target)
+
+    runtime_deps = result.output.splitlines()
+
+  # |runtime_deps| is relative to |build_dir|. Make them relative to |src_dir|.
+  src_dir = os.path.dirname(os.path.dirname(build_dir))
+  rebased_runtime_deps = []
+  for f in runtime_deps:
+    rebased = os.path.relpath(os.path.abspath(os.path.join(build_dir, f)),
+                              src_dir)
+    if f.endswith('/') and not rebased.endswith('/'):
+      rebased += '/'
+
+    rebased_runtime_deps.append(rebased)
+
+  return rebased_runtime_deps
+
+
+def GetChromeTestCopyPaths(build_dir, test_target):
+  """Returns the list of copy paths for the given chrome test target.
+
+  Args:
+    build_dir: The build output directory that |runtime_deps| is relative to.
+    test_target: A build target defined in //chrome/test/BUILD.gn
+
+  Returns:
+    The list of paths to stage for |runtime_deps| relative to two levels up
+    |build_dir|, i.e. chrome src dir.
+  """
+
+  # Black list of file patterns for files in the runtime deps of the test target
+  # but are not really needed to run the test. Keep sync with the list in
+  # build/chromeos/test_runner.py in chromium code.
+  _BLACKLIST = [
+      re.compile(r'.*build/android.*'),
+      re.compile(r'.*build/chromeos.*'),
+      re.compile(r'.*build/cros_cache.*'),
+      re.compile(r'.*testing/(?!buildbot/filters).*'),
+      re.compile(r'.*third_party/chromite.*'),
+      re.compile(r'.*tools/swarming_client.*'),
+  ]
+
+  src_dir = os.path.dirname(os.path.dirname(build_dir))
+  copy_paths = []
+  for f in GetChromeRuntimeDeps(build_dir, test_target):
+    if not any(regex.match(f) for regex in _BLACKLIST):
+      local_path = os.path.join(src_dir, f)
+      is_exe = os.path.isfile(local_path) and os.access(local_path, os.X_OK)
+      copy_paths.append(Path(f, exe=is_exe))
+
+  return copy_paths
+
 
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, sloppy=False,
                             gn_args=None, staging_flags=None,

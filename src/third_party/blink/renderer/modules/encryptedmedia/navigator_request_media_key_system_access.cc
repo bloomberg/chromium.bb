@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/encrypted_media_request.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -93,8 +94,8 @@ void MediaKeySystemAccessInitializer::RequestNotSupported(
   if (!IsExecutionContextValid())
     return;
 
-  resolver_->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                         error_message));
+  resolver_->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNotSupportedError, error_message));
   resolver_.Clear();
 }
 
@@ -121,7 +122,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
                                kEncryptedMediaFeaturePolicyConsoleWarning));
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kSecurityError,
             "requestMediaKeySystemAccess is disabled by feature policy."));
   }
@@ -151,14 +152,14 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   if (!document->GetPage()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The context provided is not associated with a page."));
   }
 
   UseCounter::Count(*document, WebFeature::kEncryptedMediaSecureOrigin);
-  UseCounter::CountCrossOriginIframe(
-      *document, WebFeature::kEncryptedMediaCrossOriginIframe);
+  document->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kEncryptedMediaCrossOriginIframe);
 
   // 4. Let origin be the origin of document.
   //    (Passed with the execution context.)

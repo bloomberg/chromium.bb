@@ -48,6 +48,7 @@
     [FakeAutocompleteSuggestion currencySuggestion],
     [FakeAutocompleteSuggestion translateSuggestion],
     [FakeAutocompleteSuggestion calculatorSuggestion],
+    [FakeAutocompleteSuggestion richEntitySuggestion],
   ];
 
   [self.consumer updateMatches:suggestions withAnimation:YES];

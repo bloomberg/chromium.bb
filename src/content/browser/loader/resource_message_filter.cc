@@ -14,7 +14,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -42,7 +41,6 @@ ResourceMessageFilter::ResourceMessageFilter(
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
-    ServiceWorkerContextWrapper* service_worker_context,
     PrefetchURLLoaderService* prefetch_url_loader_service,
     const GetContextsCallback& get_contexts_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
@@ -54,7 +52,6 @@ ResourceMessageFilter::ResourceMessageFilter(
                                                    appcache_service,
                                                    blob_storage_context,
                                                    file_system_context,
-                                                   service_worker_context,
                                                    get_contexts_callback)),
       prefetch_url_loader_service_(prefetch_url_loader_service),
       io_thread_task_runner_(io_thread_runner),

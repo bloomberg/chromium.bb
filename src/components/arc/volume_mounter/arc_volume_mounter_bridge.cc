@@ -5,6 +5,7 @@
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
@@ -12,7 +13,12 @@
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_features.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
@@ -57,13 +63,30 @@ ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContext(
   return ArcVolumeMounterBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcVolumeMounterBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
 ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service),
+      pref_service_(user_prefs::UserPrefs::Get(context)),
+      weak_ptr_factory_(this) {
+  DCHECK(pref_service_);
   arc_bridge_service_->volume_mounter()->AddObserver(this);
   arc_bridge_service_->volume_mounter()->SetHost(this);
   DCHECK(DiskMountManager::GetInstance());
   DiskMountManager::GetInstance()->AddObserver(this);
+
+  change_registerar_.Init(pref_service_);
+  // Start monitoring |kArcHasAccessToRemovableMedia| changes. Note that the
+  // registerar automatically stops monitoring the pref in its dtor.
+  change_registerar_.Add(
+      prefs::kArcHasAccessToRemovableMedia,
+      base::BindRepeating(&ArcVolumeMounterBridge::OnPrefChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
@@ -99,13 +122,35 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
   chromeos::DeviceType device_type = chromeos::DeviceType::DEVICE_TYPE_SD;
 
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
-      chromeos::disks::DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath,
-      kMyFilesUuid, device_label, device_type));
+      DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
+      device_label, device_type));
+}
+
+bool ArcVolumeMounterBridge::HasAccessToRemovableMedia() const {
+  DCHECK(pref_service_);
+  // If the UI is not enabled, allow the access.
+  if (!base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
+    return true;
+  return pref_service_->GetBoolean(prefs::kArcHasAccessToRemovableMedia);
+}
+
+void ArcVolumeMounterBridge::OnPrefChanged() {
+  if (HasAccessToRemovableMedia()) {
+    // Mount everything again. Mounting the same disk (e.g. MyFiles) again is
+    // allowed and is no-op.
+    SendAllMountEvents();
+    return;
+  }
+  // Unmount everything except for MyFiles.
+  for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
+    OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
+                 chromeos::MountError::MOUNT_ERROR_NONE, keyValue.second);
+  }
 }
 
 void ArcVolumeMounterBridge::OnConnectionReady() {
   // Deferring the SendAllMountEvents as a task to current thread to not
-  // block the mojo request since SendAllMountEvents might takes non trivial
+  // block the mojo request since SendAllMountEvents might take non trivial
   // amount of time.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ArcVolumeMounterBridge::SendAllMountEvents,
@@ -115,7 +160,7 @@ void ArcVolumeMounterBridge::OnConnectionReady() {
 void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPointInfo& mount_info) {
   // ArcVolumeMounter is limited for local storage, as Android's StorageManager
   // volume concept relies on assumption that it is local filesystem. Hence,
   // special volumes like DriveFS should not come through this path.
@@ -126,6 +171,15 @@ void ArcVolumeMounterBridge::OnMountEvent(
   }
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     DVLOG(1) << "Error " << error_code << "occurs during MountEvent " << event;
+    return;
+  }
+
+  // Do not propagate MOUNTING event to ARC when the media sharing setting is
+  // turned off. The other event (i.e. UNMOUNTING) should still go through.
+  if (event == DiskMountManager::MountEvent::MOUNTING &&
+      !HasAccessToRemovableMedia()) {
+    VLOG(2) << "Disk at " << mount_info.source_path
+            << " is not allowed to be shared with ARC";
     return;
   }
 
@@ -166,7 +220,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
 
 void ArcVolumeMounterBridge::RequestAllMountPoints() {
   // Deferring the SendAllMountEvents as a task to current thread to not
-  // block the mojo request since SendAllMountEvents might takes non trivial
+  // block the mojo request since SendAllMountEvents might take non trivial
   // amount of time.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ArcVolumeMounterBridge::SendAllMountEvents,

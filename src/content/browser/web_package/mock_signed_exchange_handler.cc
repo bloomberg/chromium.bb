@@ -20,13 +20,15 @@ MockSignedExchangeHandlerParams::MockSignedExchangeHandlerParams(
     net::Error error,
     const GURL& inner_url,
     const std::string& mime_type,
-    std::vector<std::string> response_headers)
+    std::vector<std::string> response_headers,
+    base::Optional<net::SHA256HashValue> header_integrity)
     : outer_url(outer_url),
       result(result),
       error(error),
       inner_url(inner_url),
       mime_type(mime_type),
-      response_headers(std::move(response_headers)) {}
+      response_headers(std::move(response_headers)),
+      header_integrity(std::move(header_integrity)) {}
 
 MockSignedExchangeHandlerParams::MockSignedExchangeHandlerParams(
     const MockSignedExchangeHandlerParams& other) = default;
@@ -35,7 +37,8 @@ MockSignedExchangeHandlerParams::~MockSignedExchangeHandlerParams() = default;
 MockSignedExchangeHandler::MockSignedExchangeHandler(
     const MockSignedExchangeHandlerParams& params,
     std::unique_ptr<net::SourceStream> body,
-    ExchangeHeadersCallback headers_callback) {
+    ExchangeHeadersCallback headers_callback)
+    : header_integrity_(params.header_integrity) {
   network::ResourceResponseHead head;
   if (params.error == net::OK) {
     head.headers =
@@ -51,6 +54,11 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
       FROM_HERE,
       base::BindOnce(std::move(headers_callback), params.result, params.error,
                      params.inner_url, head, std::move(body)));
+}
+
+base::Optional<net::SHA256HashValue>
+MockSignedExchangeHandler::ComputeHeaderIntegrity() const {
+  return header_integrity_;
 }
 
 MockSignedExchangeHandler::~MockSignedExchangeHandler() {}

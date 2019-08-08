@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "constants/stream_dict_common.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
@@ -19,13 +20,12 @@
 
 namespace {
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_ || \
-    _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_MACOSX) || defined(OS_WIN)
 WideString ChangeSlashToPlatform(const wchar_t* str) {
   WideString result;
   while (*str) {
     if (*str == '/') {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
       result += L':';
 #else
       result += L'\\';
@@ -50,7 +50,7 @@ WideString ChangeSlashToPDF(const wchar_t* str) {
   }
   return result;
 }
-#endif  // _FX_PLATFORM_APPLE_ || _FX_PLATFORM_WINDOWS_
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
 }  // namespace
 
@@ -69,11 +69,11 @@ WideString CPDF_FileSpec::DecodeFileName(const WideString& filepath) {
   if (filepath.GetLength() <= 1)
     return WideString();
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   if (filepath.Left(sizeof("/Mac") - 1) == WideStringView(L"/Mac"))
     return ChangeSlashToPlatform(filepath.c_str() + 1);
   return ChangeSlashToPlatform(filepath.c_str());
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
 
   if (filepath[0] != L'/')
     return ChangeSlashToPlatform(filepath.c_str());
@@ -98,26 +98,30 @@ WideString CPDF_FileSpec::DecodeFileName(const WideString& filepath) {
 WideString CPDF_FileSpec::GetFileName() const {
   WideString csFileName;
   if (const CPDF_Dictionary* pDict = m_pObj->AsDictionary()) {
-    csFileName = pDict->GetUnicodeTextFor("UF");
+    const CPDF_String* pUF = ToString(pDict->GetDirectObjectFor("UF"));
+    if (pUF)
+      csFileName = pUF->GetUnicodeText();
     if (csFileName.IsEmpty()) {
-      csFileName = WideString::FromDefANSI(
-          pDict->GetStringFor(pdfium::stream::kF).AsStringView());
+      const CPDF_String* pK =
+          ToString(pDict->GetDirectObjectFor(pdfium::stream::kF));
+      if (pK)
+        csFileName = WideString::FromDefANSI(pK->GetString().AsStringView());
     }
     if (pDict->GetStringFor("FS") == "URL")
       return csFileName;
 
     if (csFileName.IsEmpty()) {
-      constexpr const char* keys[] = {"DOS", "Mac", "Unix"};
-      for (const auto* key : keys) {
-        if (pDict->KeyExist(key)) {
+      for (const auto* key : {"DOS", "Mac", "Unix"}) {
+        const CPDF_String* pValue = ToString(pDict->GetDirectObjectFor(key));
+        if (pValue) {
           csFileName =
-              WideString::FromDefANSI(pDict->GetStringFor(key).AsStringView());
+              WideString::FromDefANSI(pValue->GetString().AsStringView());
           break;
         }
       }
     }
-  } else if (m_pObj->IsString()) {
-    csFileName = WideString::FromDefANSI(m_pObj->GetString().AsStringView());
+  } else if (const CPDF_String* pString = m_pObj->AsString()) {
+    csFileName = WideString::FromDefANSI(pString->GetString().AsStringView());
   }
   return DecodeFileName(csFileName);
 }
@@ -134,7 +138,7 @@ const CPDF_Stream* CPDF_FileSpec::GetFileStream() const {
 
   // List of keys to check for the file specification string.
   // Follows the same precedence order as GetFileName().
-  constexpr const char* kKeys[] = {"UF", "F", "DOS", "Mac", "Unix"};
+  static constexpr const char* kKeys[] = {"UF", "F", "DOS", "Mac", "Unix"};
   size_t end = pDict->GetStringFor("FS") == "URL" ? 2 : FX_ArraySize(kKeys);
   for (size_t i = 0; i < end; ++i) {
     ByteString key = kKeys[i];
@@ -170,7 +174,7 @@ WideString CPDF_FileSpec::EncodeFileName(const WideString& filepath) {
   if (filepath.GetLength() <= 1)
     return WideString();
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
   if (filepath[1] == L':') {
     WideString result(L'/');
     result += filepath[0];
@@ -186,7 +190,7 @@ WideString CPDF_FileSpec::EncodeFileName(const WideString& filepath) {
   if (filepath[0] == L'\\')
     return L'/' + ChangeSlashToPDF(filepath.c_str());
   return ChangeSlashToPDF(filepath.c_str());
-#elif _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#elif defined(OS_MACOSX)
   if (filepath.Left(sizeof("Mac") - 1).EqualsASCII("Mac"))
     return L'/' + ChangeSlashToPDF(filepath.c_str());
   return ChangeSlashToPDF(filepath.c_str());

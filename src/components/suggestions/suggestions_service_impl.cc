@@ -18,11 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/blacklist_store.h"
-#include "components/suggestions/features.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -93,10 +91,6 @@ const char kSuggestionsBlacklistClearURLFormat[] =
 
 const char kSuggestionsBlacklistURLParam[] = "url";
 const char kSuggestionsDeviceParam[] = "t=%s";
-const char kSuggestionsMinParam[] = "num=%i";
-
-const char kSuggestionsMinVariationName[] = "min_suggestions";
-const int kSuggestionsMinVariationDefault = 0;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const char kDeviceType[] = "2";
@@ -109,12 +103,6 @@ const char kFaviconURL[] =
 
 // The default expiry timeout is 168 hours.
 const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
-
-int GetMinimumSuggestionsCount() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      kUseSuggestionsEvenIfFewFeature, kSuggestionsMinVariationName,
-      kSuggestionsMinVariationDefault);
-}
 
 }  // namespace
 
@@ -257,14 +245,7 @@ void SuggestionsServiceImpl::RegisterProfilePrefs(
 
 // static
 GURL SuggestionsServiceImpl::BuildSuggestionsURL() {
-  std::string device = base::StringPrintf(kSuggestionsDeviceParam, kDeviceType);
-  std::string query = device;
-  if (base::FeatureList::IsEnabled(kUseSuggestionsEvenIfFewFeature)) {
-    std::string min_suggestions =
-        base::StringPrintf(kSuggestionsMinParam, GetMinimumSuggestionsCount());
-    query =
-        base::StringPrintf("%s&%s", device.c_str(), min_suggestions.c_str());
-  }
+  std::string query = base::StringPrintf(kSuggestionsDeviceParam, kDeviceType);
   return GURL(base::StringPrintf(
       kSuggestionsURLFormat, GetGoogleBaseURL().spec().c_str(), query.c_str()));
 }
@@ -439,9 +420,8 @@ SuggestionsServiceImpl::CreateSuggestionsRequest(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->method = "GET";
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->allow_credentials = false;
   // Add Chrome experiment state to the request headers.
   // TODO: We should call AppendVariationHeaders with explicit
   // variations::SignedIn::kNo If the access_token is empty
@@ -452,9 +432,6 @@ SuggestionsServiceImpl::CreateSuggestionsRequest(
         "Authorization", base::StrCat({"Bearer ", access_token}));
   }
 
-  // TODO(https://crbug.com/808498): re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::SUGGESTIONS
   auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
 

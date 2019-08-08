@@ -79,4 +79,10 @@ function LaunchParam(unformatted) {
         overrideCwsContainerUrlForTest: '',
         overrideCwsContainerOriginForTest: ''
       };
+
+  /**
+   * @type {boolean}
+   * @const
+   */
+  this.showAndroidPickerApps = !!unformatted['showAndroidPickerApps'];
 }

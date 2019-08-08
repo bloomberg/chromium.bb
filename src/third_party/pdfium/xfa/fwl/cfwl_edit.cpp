@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fde/cfde_texteditengine.h"
@@ -36,7 +37,7 @@ namespace {
 
 const int kEditMargin = 3;
 
-#if (_FX_OS_ == _FX_OS_MACOSX_)
+#if defined(OS_MACOSX)
 constexpr int kEditingModifier = FWL_KEYFLAG_Command;
 #else
 constexpr int kEditingModifier = FWL_KEYFLAG_Ctrl;
@@ -906,17 +907,12 @@ void CFWL_Edit::ShowCaret(CFX_RectF* pRect) {
     pRect->Offset(rtOuter.left, rtOuter.top);
   }
 
-  CXFA_FFWidget* pXFAWidget = pOuter->GetLayoutItem();
+  CFWL_Widget::AdapterIface* pXFAWidget = pOuter->GetFFWidget();
   if (!pXFAWidget)
     return;
 
-  IXFA_DocEnvironment* pDocEnvironment =
-      pXFAWidget->GetDoc()->GetDocEnvironment();
-  if (!pDocEnvironment)
-    return;
-
   CFX_RectF rt = pXFAWidget->GetRotateMatrix().TransformRect(*pRect);
-  pDocEnvironment->DisplayCaret(pXFAWidget, true, &rt);
+  pXFAWidget->DisplayCaret(true, &rt);
 }
 
 void CFWL_Edit::HideCaret(CFX_RectF* pRect) {
@@ -930,16 +926,11 @@ void CFWL_Edit::HideCaret(CFX_RectF* pRect) {
   while (pOuter->GetOuter())
     pOuter = pOuter->GetOuter();
 
-  CXFA_FFWidget* pXFAWidget = pOuter->GetLayoutItem();
+  CFWL_Widget::AdapterIface* pXFAWidget = pOuter->GetFFWidget();
   if (!pXFAWidget)
     return;
 
-  IXFA_DocEnvironment* pDocEnvironment =
-      pXFAWidget->GetDoc()->GetDocEnvironment();
-  if (!pDocEnvironment)
-    return;
-
-  pDocEnvironment->DisplayCaret(pXFAWidget, false, pRect);
+  pXFAWidget->DisplayCaret(false, pRect);
 }
 
 bool CFWL_Edit::ValidateNumberChar(wchar_t cNum) {

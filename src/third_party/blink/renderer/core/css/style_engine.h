@@ -342,17 +342,12 @@ class CORE_EXPORT StyleEngine final
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
-  void SetSupportedColorSchemes(const ColorSchemeSet& supported_color_schemes) {
-    supported_color_schemes_ = supported_color_schemes;
-    UpdateColorScheme();
-  }
-  const ColorSchemeSet& GetSupportedColorSchemes() const {
-    return supported_color_schemes_;
-  }
+  void SetColorSchemeFromMeta(const CSSValue* color_scheme);
+  const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
   PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
-  ColorScheme GetColorScheme() const { return color_scheme_; }
+  void UpdateColorSchemeBackground();
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -447,6 +442,7 @@ class CORE_EXPORT StyleEngine final
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
 
   void UpdateColorScheme();
+  bool SupportsDarkColorScheme();
 
   Member<Document> document_;
   bool is_master_;
@@ -532,9 +528,9 @@ class CORE_EXPORT StyleEngine final
   HashMap<AtomicString, FontDisplay> default_font_display_map_;
 
   // Color schemes explicitly supported by the author through the viewport meta
-  // tag. E.g. <meta name="supported-color-schemes" content="light dark">. The
-  // supported schemes are used to opt-out of forced darkening.
-  ColorSchemeSet supported_color_schemes_;
+  // tag. E.g. <meta name="color-scheme" content="light dark">. A dark color-
+  // scheme is used to opt-out of forced darkening.
+  Member<const CSSValue> meta_color_scheme_;
 
   // The preferred color scheme is set in settings, but may be overridden by the
   // ForceDarkMode setting where the preferred_color_scheme_ will be set no
@@ -542,11 +538,9 @@ class CORE_EXPORT StyleEngine final
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
 
-  // The resolved color scheme to use based on the supported color schemes, the
-  // preferred color scheme, and the ForceDarkMode setting.
-  ColorScheme color_scheme_ = ColorScheme::kLight;
-
+  friend class NodeTest;
   friend class StyleEngineTest;
+  friend class WhitespaceAttacherTest;
 };
 
 }  // namespace blink

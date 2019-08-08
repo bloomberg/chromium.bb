@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
 
@@ -49,7 +51,7 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
         return gfx::mojom::BufferFormat::UYVY_422;
     }
     NOTREACHED();
-    return gfx::mojom::BufferFormat::LAST;
+    return gfx::mojom::BufferFormat::kMinValue;
   }
 
   static bool FromMojom(gfx::mojom::BufferFormat input,
@@ -126,7 +128,7 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE;
     }
     NOTREACHED();
-    return gfx::mojom::BufferUsage::LAST;
+    return gfx::mojom::BufferUsage::kMinValue;
   }
 
   static bool FromMojom(gfx::mojom::BufferUsage input, gfx::BufferUsage* out) {
@@ -199,9 +201,6 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
   static uint64_t size(const gfx::NativePixmapPlane& plane) {
     return plane.size;
   }
-  static uint64_t modifier(const gfx::NativePixmapPlane& plane) {
-    return plane.modifier;
-  }
   static mojo::ScopedHandle buffer_handle(gfx::NativePixmapPlane& plane);
   static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
                    gfx::NativePixmapPlane* out);
@@ -214,6 +213,21 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
       gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.planes;
   }
+
+  static uint64_t modifier(const gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.modifier;
+  }
+
+#if defined(OS_FUCHSIA)
+  static base::Optional<base::UnguessableToken> buffer_collection_id(
+      const gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.buffer_collection_id;
+  }
+
+  static uint32_t& buffer_index(gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.buffer_index;
+  }
+#endif  // defined(OS_FUCHSIA)
 
   static bool Read(gfx::mojom::NativePixmapHandleDataView data,
                    gfx::NativePixmapHandle* out);

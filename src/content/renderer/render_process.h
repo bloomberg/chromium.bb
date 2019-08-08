@@ -25,9 +25,9 @@ namespace content {
 class RenderProcess : public ChildProcess {
  public:
   RenderProcess() = default;
-  RenderProcess(
-      const std::string& thread_pool_name,
-      std::unique_ptr<base::ThreadPool::InitParams> thread_pool_init_params);
+  RenderProcess(const std::string& thread_pool_name,
+                std::unique_ptr<base::ThreadPoolInstance::InitParams>
+                    thread_pool_init_params);
   ~RenderProcess() override {}
 
   // Keep track of the cumulative set of enabled bindings for this process,

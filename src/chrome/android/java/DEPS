@@ -1,4 +1,7 @@
 include_rules = [
+  "-chrome/android/features/keyboard_accessory/internal"
+
+  "+components/embedder_support/android",
   "+components/embedder_support/android",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android/java/src/org/chromium/components/background_task_scheduler",

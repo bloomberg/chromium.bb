@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1028699632127661925">درحال ارسال به <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">تنظیمات اعلان</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{۱ روز قبل}one{# روز قبل}other{# روز قبل}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="1409544243779336081">توصیه برنامه</translation>
-<translation id="1413622004203049571">غیرفعال کردن اعلان‌ها از <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{۱ دقیقه و }one{# دقیقه و }other{# دقیقه و }}</translation>
 <translation id="1643823602425662293">اعلان</translation>
 <translation id="169515659049020177">تبدیل</translation>
 <translation id="1710340000377843106">اکنون</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
-<translation id="1756116796893109054">درحال ارسال برگه…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بایت</translation>
 <translation id="1801827354178857021">نقطه</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">حذف</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> بایت/ثانیه</translation>
 <translation id="6156262341071374681">بزرگ کردن برای مشاهده همه برنامه‌ها</translation>
+<translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6264365405983206840">انتخاب &amp;همه</translation>
 <translation id="6351032674660237738">پیشنهادات برنامه</translation>
 <translation id="6364916375976753737">پیمایش به چپ</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{بیش از ۱ اعلان خوانده‌نشده}one{بیش از # اعلان خوانده‌نشده}other{بیش از # اعلان خوانده‌نشده}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{تا ۱ دقیقه دیگر}one{تا # دقیقه دیگر}other{تا # دقیقه دیگر}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">‏شروع پُرسمان صوتی «دستیار Google»</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
+<translation id="8144660977431427332">‏جستجوهایتان را «دستیار Google» انجام می‌دهد. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، تکمیل خودکار</translation>
 <translation id="815598010540052116">پیمایش به پایین</translation>
 <translation id="8170087467028567933">برداشتن این پیشنهاد موجب می‌شود از حسابتان در همه دستگاه‌هایتان پنهان شود.</translation>

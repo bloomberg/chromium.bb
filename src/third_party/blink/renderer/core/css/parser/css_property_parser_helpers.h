@@ -135,6 +135,8 @@ CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext*);
 CSSValue* ConsumeAxis(CSSParserTokenRange&);
 
 bool IsCSSWideKeyword(StringView);
+bool IsRevertKeyword(StringView);
+bool IsDefaultKeyword(StringView);
 
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange&);
 

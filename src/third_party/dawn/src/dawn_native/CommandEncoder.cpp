@@ -543,12 +543,14 @@ namespace dawn_native {
                 dawn::BindingType type = layoutInfo.types[i];
 
                 switch (type) {
-                    case dawn::BindingType::UniformBuffer: {
+                    case dawn::BindingType::UniformBuffer:
+                    case dawn::BindingType::DynamicUniformBuffer: {
                         BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
                         tracker->BufferUsedAs(buffer, dawn::BufferUsageBit::Uniform);
                     } break;
 
-                    case dawn::BindingType::StorageBuffer: {
+                    case dawn::BindingType::StorageBuffer:
+                    case dawn::BindingType::DynamicStorageBuffer: {
                         BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
                         tracker->BufferUsedAs(buffer, dawn::BufferUsageBit::Storage);
                     } break;
@@ -559,12 +561,6 @@ namespace dawn_native {
                     } break;
 
                     case dawn::BindingType::Sampler:
-                        break;
-
-                    // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset
-                    case dawn::BindingType::DynamicUniformBuffer:
-                    case dawn::BindingType::DynamicStorageBuffer:
-                        UNREACHABLE();
                         break;
                 }
             }
@@ -643,7 +639,6 @@ namespace dawn_native {
         mEncodingState = EncodingState::RenderPass;
 
         BeginRenderPassCmd* cmd = mAllocator.Allocate<BeginRenderPassCmd>(Command::BeginRenderPass);
-        new (cmd) BeginRenderPassCmd;
 
         for (uint32_t i = 0; i < info->colorAttachmentCount; ++i) {
             if (info->colorAttachments[i] != nullptr) {
@@ -695,7 +690,6 @@ namespace dawn_native {
 
         CopyBufferToBufferCmd* copy =
             mAllocator.Allocate<CopyBufferToBufferCmd>(Command::CopyBufferToBuffer);
-        new (copy) CopyBufferToBufferCmd;
         copy->source.buffer = source;
         copy->source.offset = sourceOffset;
         copy->destination.buffer = destination;
@@ -720,7 +714,6 @@ namespace dawn_native {
 
         CopyBufferToTextureCmd* copy =
             mAllocator.Allocate<CopyBufferToTextureCmd>(Command::CopyBufferToTexture);
-        new (copy) CopyBufferToTextureCmd;
         copy->source.buffer = source->buffer;
         copy->source.offset = source->offset;
         copy->destination.texture = destination->texture;
@@ -757,7 +750,6 @@ namespace dawn_native {
 
         CopyTextureToBufferCmd* copy =
             mAllocator.Allocate<CopyTextureToBufferCmd>(Command::CopyTextureToBuffer);
-        new (copy) CopyTextureToBufferCmd;
         copy->source.texture = source->texture;
         copy->source.origin = source->origin;
         copy->copySize = *copySize;
@@ -794,7 +786,6 @@ namespace dawn_native {
 
         CopyTextureToTextureCmd* copy =
             mAllocator.Allocate<CopyTextureToTextureCmd>(Command::CopyTextureToTexture);
-        new (copy) CopyTextureToTextureCmd;
         copy->source.texture = source->texture;
         copy->source.origin = source->origin;
         copy->source.level = source->level;
@@ -824,9 +815,13 @@ namespace dawn_native {
     // Implementation of functions to interact with sub-encoders
 
     void CommandEncoderBase::HandleError(const char* message) {
-        if (!mGotError) {
-            mGotError = true;
-            mErrorMessage = message;
+        if (mEncodingState != EncodingState::Finished) {
+            if (!mGotError) {
+                mGotError = true;
+                mErrorMessage = message;
+            }
+        } else {
+            GetDevice()->HandleError(message);
         }
     }
 
@@ -1035,6 +1030,9 @@ namespace dawn_native {
 
                 case Command::SetBindGroup: {
                     SetBindGroupCmd* cmd = mIterator.NextCommand<SetBindGroupCmd>();
+                    if (cmd->dynamicOffsetCount > 0) {
+                        mIterator.NextData<uint64_t>(cmd->dynamicOffsetCount);
+                    }
 
                     TrackBindGroupResourceUsage(cmd->group.Get(), &usageTracker);
                     persistentState.SetBindGroup(cmd->index, cmd->group.Get());
@@ -1150,6 +1148,9 @@ namespace dawn_native {
 
                 case Command::SetBindGroup: {
                     SetBindGroupCmd* cmd = mIterator.NextCommand<SetBindGroupCmd>();
+                    if (cmd->dynamicOffsetCount > 0) {
+                        mIterator.NextData<uint64_t>(cmd->dynamicOffsetCount);
+                    }
 
                     TrackBindGroupResourceUsage(cmd->group.Get(), &usageTracker);
                     persistentState.SetBindGroup(cmd->index, cmd->group.Get());

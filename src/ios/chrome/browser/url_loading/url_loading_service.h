@@ -39,12 +39,11 @@ class UrlLoadingService : public KeyedService {
   void SetDelegate(id<URLLoadingServiceDelegate> delegate);
   void SetBrowser(Browser* browser);
 
-  // Opens a url depending on |params.disposition|.  Applies load strategy then
-  // calls |Dispatch|.
+  // Applies load strategy then calls |Dispatch|.
   virtual void Load(const UrlLoadParams& params);
 
  private:
-  // Dispatches to action method below.
+  // Dispatches to one action method below, depending on |params.disposition|.
   void Dispatch(const UrlLoadParams& params);
 
   // Switches to a tab that matches |params.web_params| or loads in a new tab.

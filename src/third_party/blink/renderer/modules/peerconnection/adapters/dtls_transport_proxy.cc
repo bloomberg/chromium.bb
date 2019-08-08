@@ -25,9 +25,10 @@ std::unique_ptr<DtlsTransportProxy> DtlsTransportProxy::Create(
                                               dtls_transport, delegate));
   // TODO(hta): Delete this thread jump once creation can be initiated
   // from the host thread (=webrtc signalling thread).
-  PostCrossThreadTask(*host_thread, FROM_HERE,
-                      CrossThreadBind(&DtlsTransportProxy::StartOnHostThread,
-                                      CrossThreadUnretained(proxy.get())));
+  PostCrossThreadTask(
+      *host_thread, FROM_HERE,
+      CrossThreadBindOnce(&DtlsTransportProxy::StartOnHostThread,
+                          CrossThreadUnretained(proxy.get())));
   return proxy;
 }
 
@@ -45,9 +46,10 @@ DtlsTransportProxy::DtlsTransportProxy(
 void DtlsTransportProxy::StartOnHostThread() {
   DCHECK(host_thread_->BelongsToCurrentThread());
   dtls_transport_->RegisterObserver(this);
-  PostCrossThreadTask(*proxy_thread_, FROM_HERE,
-                      CrossThreadBind(&Delegate::OnStartCompleted, delegate_,
-                                      dtls_transport_->Information()));
+  PostCrossThreadTask(
+      *proxy_thread_, FROM_HERE,
+      CrossThreadBindOnce(&Delegate::OnStartCompleted, delegate_,
+                          dtls_transport_->Information()));
 }
 
 void DtlsTransportProxy::OnStateChange(webrtc::DtlsTransportInformation info) {
@@ -60,7 +62,7 @@ void DtlsTransportProxy::OnStateChange(webrtc::DtlsTransportInformation info) {
   }
   PostCrossThreadTask(
       *proxy_thread_, FROM_HERE,
-      CrossThreadBind(&Delegate::OnStateChange, delegate_, info));
+      CrossThreadBindOnce(&Delegate::OnStateChange, delegate_, info));
   if (info.state() == webrtc::DtlsTransportState::kClosed) {
     delegate_ = nullptr;
   }

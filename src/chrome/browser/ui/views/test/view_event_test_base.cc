@@ -15,17 +15,9 @@
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/test/ui_controls_factory_ash.h"
-#include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/aura/window.h"
-#include "ui/base/test/ui_controls_aura.h"
-#include "ui/base/ui_base_features.h"
-#endif
 
 namespace {
 
@@ -42,11 +34,8 @@ class TestView : public views::View {
     // Permit a test to remove the view being tested from the hierarchy, then
     // still handle a _NET_WM_STATE event on Linux during teardown that triggers
     // layout.
-    if (children().empty())
-      return;
-
-    View* child_view = child_at(0);
-    child_view->SetBounds(0, 0, width(), height());
+    if (!children().empty())
+      children().front()->SetBoundsRect(GetLocalBounds());
   }
 
  private:
@@ -57,7 +46,7 @@ class TestView : public views::View {
 
 }  // namespace
 
-ViewEventTestBase::ViewEventTestBase() : window_(NULL), content_view_(NULL) {
+ViewEventTestBase::ViewEventTestBase() {
   // The TestingBrowserProcess must be created in the constructor because there
   // are tests that require it before SetUp() is called.
   TestingBrowserProcess::CreateInstance();
@@ -82,28 +71,21 @@ void ViewEventTestBase::SetUp() {
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.
-  bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  const bool enable_pixel_output = false;
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
-  views_delegate_.set_context_factory(context_factory);
-  views_delegate_.set_context_factory_private(context_factory_private);
+  views_delegate_.set_context_factory(context_factories_->GetContextFactory());
+  views_delegate_.set_context_factory_private(
+      context_factories_->GetContextFactoryPrivate());
   views_delegate_.set_use_desktop_native_widgets(true);
 
   platform_part_.reset(ViewEventTestPlatformPart::Create(
-      context_factory, context_factory_private));
+      context_factories_->GetContextFactory(),
+      context_factories_->GetContextFactoryPrivate()));
   gfx::NativeWindow context = platform_part_->GetContext();
   window_ = views::Widget::CreateWindowWithContext(this, context);
   window_->Show();
-#if defined(OS_CHROMEOS)
-  ui_controls::InstallUIControlsAura(
-      features::IsUsingWindowService()
-          ? aura::test::CreateUIControlsAura(
-                window_->GetNativeWindow()->GetHost())
-          : ash::test::CreateAshUIControls());
-#endif
 }
 
 void ViewEventTestBase::TearDown() {
@@ -116,7 +98,7 @@ void ViewEventTestBase::TearDown() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
   platform_part_.reset();
 
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
 
   ui::ShutdownInputMethodForTesting();
 }

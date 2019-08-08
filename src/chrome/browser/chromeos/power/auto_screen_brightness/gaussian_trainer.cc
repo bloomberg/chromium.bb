@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/gaussian_trainer.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/constants/chromeos_features.h"
 
@@ -20,6 +22,10 @@ namespace power {
 namespace auto_screen_brightness {
 
 namespace {
+
+// If the curve error is greater than |kErrorTol|, then error will be written
+// to logs.
+constexpr double kErrorTol = 5;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -187,6 +193,18 @@ double ModelPredictionAdjustment(double brightness_old,
 double Gaussian(double x, double sigma) {
   double xs = x / sigma;
   return std::exp(-xs * xs);
+}
+
+void LogModelCurveError(double error, bool model_updated) {
+  DCHECK_GE(error, 0.0);
+  const std::string histogram_name =
+      std::string("AutoScreenBrightness.ModelTraining.Inaccuracy.") +
+      (model_updated ? "Update" : "NoUpdate");
+  base::UmaHistogramPercentage(histogram_name, std::round(error));
+  if (error > kErrorTol) {
+    VLOG(1) << "Model error " << (model_updated ? "with " : "without ")
+            << "model updated: " << base::StringPrintf("%.4f", error) << "%";
+  }
 }
 
 }  // namespace
@@ -391,11 +409,19 @@ MonotoneCubicSpline GaussianTrainer::Train(
     AdjustCurveWithSingleDataPoint(data_point);
   }
 
-  if (!need_to_update_curve_)
+  if (!need_to_update_curve_) {
+    const double error = CalculateCurveError(data);
+    LogModelCurveError(error, false /* model_updated */);
     return *current_curve_;
+  }
 
-  current_curve_.emplace(MonotoneCubicSpline(ambient_log_lux_, brightness_));
+  current_curve_ = MonotoneCubicSpline::CreateMonotoneCubicSpline(
+      ambient_log_lux_, brightness_);
+  DCHECK(current_curve_);
   need_to_update_curve_ = false;
+
+  const double error = CalculateCurveError(data);
+  LogModelCurveError(error, true /* model_updated */);
   return *current_curve_;
 }
 
@@ -502,6 +528,17 @@ void GaussianTrainer::EnforceMonotonicity(size_t center_index) {
   DCHECK_GE(brightness_.back(), 0);
   DCHECK_LE(brightness_.back(), 100);
 #endif
+}
+
+double GaussianTrainer::CalculateCurveError(
+    const std::vector<TrainingDataPoint>& data) const {
+  DCHECK(current_curve_);
+  double error = 0.0;
+  for (const auto& data_point : data) {
+    error += std::abs(data_point.brightness_new -
+                      current_curve_->Interpolate(data_point.ambient_log_lux));
+  }
+  return error / data.size();
 }
 
 }  // namespace auto_screen_brightness

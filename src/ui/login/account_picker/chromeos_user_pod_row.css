@@ -206,12 +206,11 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
 }
 
 .auth-container .submit-button {
-  color: #FFFFFF;
-  height: 20px;
+  --cr-icon-button--icon-size: 20px;
+  --cr-icon-button-size: 20px;
+  --cr-icon-button-color: white;
   margin: 15px 0 5px 0;
   opacity: 1;
-  padding: 0;
-  width: 20px;
 }
 
 .auth-container .custom-icon-shown .submit-button {
@@ -546,11 +545,11 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
 }
 
 .action-box-button {
-  -webkit-margin-start: 8px;
-  height: 24px;
+  --cr-icon-button-icon-size: 24px;
+  --cr-icon-button-size: 24px;
+  margin-inline-end: 0;
+  margin-inline-start: 8px;
   margin-top: 3px;
-  padding: 0;
-  width: 24px;
 }
 
 .action-box-button.ripple-circle {
@@ -966,9 +965,9 @@ html[dir=rtl] .pod.public-account .button-container {
 }
 
 .public-account-submit-button {
-  color: #FFF;
+  --cr-icon-button-color: #FFF;
   opacity: 1;
-  padding: 10px 7px 8px 11px;
+  margin: 10px 7px 8px 11px;
 }
 
 .monitoring-container {

@@ -171,7 +171,7 @@ cr.define('destination_dialog_test', function() {
       const whenReset = test_util.eventToPromise(
           print_preview.DestinationStore.EventType.DESTINATIONS_RESET,
           destinationStore);
-      cr.webUIListenerCallback('reload-printer-list');
+      cr.webUIListenerCallback('user-accounts-updated', ['foo@chromium.org']);
       return whenReset.then(() => {
         Polymer.dom.flush();
         const printerItems = dialog.$.printList.shadowRoot.querySelectorAll(
@@ -235,13 +235,13 @@ cr.define('destination_dialog_test', function() {
 
       // Check that both cloud print promo and dropdown are hidden when cloud
       // print is disabled.
-      dialog.cloudPrintState = print_preview.CloudPrintState.DISABLED;
+      dialog.cloudPrintDisabled = true;
       assertTrue(dialog.$.cloudprintPromo.hidden);
       assertTrue(dialog.$$('.user-info').hidden);
       const userSelect = dialog.$$('.md-select');
 
       // Enable cloud print.
-      dialog.cloudPrintState = print_preview.CloudPrintState.NOT_SIGNED_IN;
+      dialog.cloudPrintDisabled = false;
       assertSignedInState('', 0);
 
       // 6 printers, no Google drive (since not signed in).
@@ -254,7 +254,6 @@ cr.define('destination_dialog_test', function() {
           .then(addAccount => {
             assertFalse(addAccount);
             nativeLayer.resetResolver('signIn');
-            dialog.cloudPrintState = print_preview.CloudPrintState.SIGNED_IN;
             dialog.activeUser = user1;
             dialog.users = [user1];
             Polymer.dom.flush();
@@ -294,8 +293,8 @@ cr.define('destination_dialog_test', function() {
             // Check printers were temporarily cleared.
             assertNumPrintersWithDriveAccount(0, '');
 
-            // This will all be done by app.js and user_info.js in response to
-            // the account-change event.
+            // This will all be done by app.js and user_manager.js in response
+            // to the account-change event.
             destinationStore.setActiveUser(user2);
             dialog.activeUser = user2;
             const whenInserted = test_util.eventToPromise(

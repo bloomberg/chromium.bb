@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 
+#include <memory>
+#include <utility>
+
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
@@ -19,6 +22,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -107,16 +111,16 @@ ScriptPromise RemotePlayback::watchAvailability(
 
   if (media_element_->FastHasAttribute(
           html_names::kDisableremoteplaybackAttr)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "disableRemotePlayback attribute is present."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "disableRemotePlayback attribute is present."));
     return promise;
   }
 
   int id = WatchAvailabilityInternal(
       MakeGarbageCollected<AvailabilityCallbackWrapper>(callback));
   if (id == kWatchAvailabilityNotSupported) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Availability monitoring is not supported on this device."));
     return promise;
@@ -139,16 +143,16 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
 
   if (media_element_->FastHasAttribute(
           html_names::kDisableremoteplaybackAttr)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "disableRemotePlayback attribute is present."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "disableRemotePlayback attribute is present."));
     return promise;
   }
 
   if (!CancelWatchAvailabilityInternal(id)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kNotFoundError,
-                             "A callback with the given id is not found."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError,
+        "A callback with the given id is not found."));
     return promise;
   }
 
@@ -163,9 +167,9 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
 
   if (media_element_->FastHasAttribute(
           html_names::kDisableremoteplaybackAttr)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "disableRemotePlayback attribute is present."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "disableRemotePlayback attribute is present."));
     return promise;
   }
 
@@ -182,41 +186,41 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
 
   if (media_element_->FastHasAttribute(
           html_names::kDisableremoteplaybackAttr)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "disableRemotePlayback attribute is present."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "disableRemotePlayback attribute is present."));
     return promise;
   }
 
   if (prompt_promise_resolver_) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kOperationError,
         "A prompt is already being shown for this media element."));
     return promise;
   }
 
   if (!LocalFrame::HasTransientUserActivation(media_element_->GetFrame())) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidAccessError,
         "RemotePlayback::prompt() requires user gesture."));
     return promise;
   }
 
   if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled()) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "The RemotePlayback API is disabled on this platform."));
     return promise;
   }
 
   if (availability_ == mojom::ScreenAvailability::UNAVAILABLE) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          "No remote playback devices found."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, "No remote playback devices found."));
     return promise;
   }
 
   if (availability_ == mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "The currentSrc is not compatible with remote playback"));
     return promise;
@@ -331,9 +335,9 @@ void RemotePlayback::StateChanged(
     // prompt() succeeded.
     if (state_ != mojom::blink::PresentationConnectionState::CONNECTED &&
         state == mojom::blink::PresentationConnectionState::CLOSED) {
-      prompt_promise_resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kAbortError,
-                               "Failed to connect to the remote device."));
+      prompt_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Failed to connect to the remote device."));
     } else {
       DCHECK((state_ == mojom::blink::PresentationConnectionState::CLOSED &&
               state == mojom::blink::PresentationConnectionState::CONNECTING) ||
@@ -352,7 +356,8 @@ void RemotePlayback::StateChanged(
     DispatchEvent(*Event::Create(event_type_names::kConnecting));
     if (media_element_->IsHTMLVideoElement()) {
       // TODO(xjz): Pass the remote device name.
-      ToHTMLVideoElement(media_element_)->MediaRemotingStarted(WebString());
+      ToHTMLVideoElement(media_element_.Get())
+          ->MediaRemotingStarted(WebString());
     }
     media_element_->FlingingStarted();
   } else if (state_ == mojom::blink::PresentationConnectionState::CONNECTED) {
@@ -360,7 +365,7 @@ void RemotePlayback::StateChanged(
   } else if (state_ == mojom::blink::PresentationConnectionState::CLOSED) {
     DispatchEvent(*Event::Create(event_type_names::kDisconnect));
     if (media_element_->IsHTMLVideoElement()) {
-      ToHTMLVideoElement(media_element_)
+      ToHTMLVideoElement(media_element_.Get())
           ->MediaRemotingStopped(WebLocalizedString::kMediaRemotingStopNoText);
     }
     CleanupConnections();
@@ -377,7 +382,7 @@ void RemotePlayback::PromptCancelled() {
   if (!prompt_promise_resolver_)
     return;
 
-  prompt_promise_resolver_->Reject(DOMException::Create(
+  prompt_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kNotAllowedError, "The prompt was dismissed."));
   prompt_promise_resolver_ = nullptr;
 }
@@ -443,9 +448,9 @@ bool RemotePlayback::RemotePlaybackAvailable() const {
 
 void RemotePlayback::RemotePlaybackDisabled() {
   if (prompt_promise_resolver_) {
-    prompt_promise_resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "disableRemotePlayback attribute is present."));
+    prompt_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "disableRemotePlayback attribute is present."));
     prompt_promise_resolver_ = nullptr;
   }
 

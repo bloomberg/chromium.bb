@@ -23,54 +23,21 @@ bool LayoutNGListMarker::IsOfType(LayoutObjectType type) const {
          LayoutNGMixin<LayoutBlockFlow>::IsOfType(type);
 }
 
-bool LayoutNGListMarker::IsListMarkerWrapperForBlockContent(
-    const LayoutObject& object) {
-  const auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
-  if (!object.IsAnonymous() || !block_flow)
-    return false;
-  if (const LayoutObject* child = block_flow->FirstChild()) {
-    return child->IsLayoutNGListMarker() &&
-           // The anonymous box should not have other children.
-           // e.g., <li>text<div>block</div></li>
-           // In this case, inline layout can handle the list marker.
-           !child->NextSibling();
-  }
-  return false;
-}
-
-// The LayoutNGListItem this marker belongs to.
-LayoutNGListItem* LayoutNGListMarker::ListItem() const {
-  for (LayoutObject* parent = Parent(); parent; parent = parent->Parent()) {
-    if (parent->IsLayoutNGListItem()) {
-      DCHECK(ToLayoutNGListItem(parent)->Marker() == this);
-      return ToLayoutNGListItem(parent);
-    }
-    // These DCHECKs are not critical but to ensure we cover all cases we know.
-    DCHECK(parent->IsAnonymous());
-    DCHECK(parent->IsLayoutBlockFlow() || parent->IsLayoutFlowThread());
-  }
-  return nullptr;
-}
-
 void LayoutNGListMarker::WillCollectInlines() {
-  if (LayoutNGListItem* list_item = ListItem())
+  if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*this))
     list_item->UpdateMarkerTextIfNeeded();
 }
 
 bool LayoutNGListMarker::IsContentImage() const {
-  return ListItem()->IsMarkerImage();
+  if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*this))
+    return list_item->IsMarkerImage();
+  return false;
 }
 
 LayoutObject* LayoutNGListMarker::SymbolMarkerLayoutText() const {
-  return ListItem()->SymbolMarkerLayoutText();
-}
-
-String LayoutNGListMarker::TextAlternative() const {
-  // Compute from the list item, in the logical order even in RTL, reflecting
-  // speech order.
-  if (LayoutNGListItem* list_item = ListItem())
-    return list_item->MarkerTextWithSuffix();
-  return g_empty_string;
+  if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*this))
+    return list_item->SymbolMarkerLayoutText();
+  return nullptr;
 }
 
 bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
@@ -84,6 +51,11 @@ bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
     return true;
 
   return false;
+}
+
+PositionWithAffinity LayoutNGListMarker::PositionForPoint(
+    const LayoutPoint&) const {
+  return CreatePositionWithAffinity(0);
 }
 
 }  // namespace blink

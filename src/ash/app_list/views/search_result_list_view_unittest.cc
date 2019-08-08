@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/views/controls/progress_bar.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {
@@ -97,10 +96,6 @@ class SearchResultListViewTest : public views::ViewsTestBase {
     }
   }
 
-  views::ProgressBar* GetProgressBarAt(size_t index) const {
-    return GetResultViewAt(index)->progress_bar_;
-  }
-
  private:
   AppListTestViewDelegate view_delegate_;
   std::unique_ptr<SearchResultListView> view_;
@@ -144,20 +139,6 @@ TEST_F(SearchResultListViewTest, ModelObservers) {
   // Delete from start.
   DeleteResultAt(0);
   ExpectConsistent();
-}
-
-// Regression test for http://crbug.com/402859 to ensure ProgressBar is
-// initialized properly in SearchResultListView::SetResult().
-TEST_F(SearchResultListViewTest, ProgressBar) {
-  SetUpSearchResults();
-
-  GetResults()->GetItemAt(0)->SetIsInstalling(true);
-  EXPECT_EQ(0.0f, GetProgressBarAt(0)->current_value());
-  GetResults()->GetItemAt(0)->SetPercentDownloaded(10);
-
-  DeleteResultAt(0);
-  RunPendingMessages();
-  EXPECT_EQ(0.0f, GetProgressBarAt(0)->current_value());
 }
 
 }  // namespace test

@@ -224,7 +224,6 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
     const std::string& feature_name = it.key();
     auto* field_trial = base::FieldTrialList::FactoryGetFieldTrial(
         feature_name, k100PercentProbability, kDefaultDCSFeaturesGroup,
-        base::FieldTrialList::kNoExpirationYear, 1 /* month */, 1 /* day */,
         base::FieldTrial::SESSION_RANDOMIZED, nullptr);
 
     bool enabled;
@@ -251,7 +250,7 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
               feature_name, base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
         // Build a map of the FieldTrial parameters and associate it to the
         // FieldTrial.
-        base::FieldTrialParamAssociator::FieldTrialParams params;
+        base::FieldTrialParams params;
         for (Iterator p(*params_dict); !p.IsAtEnd(); p.Advance()) {
           std::string val;
           if (p.value().GetAsString(&val)) {

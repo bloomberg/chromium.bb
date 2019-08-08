@@ -59,7 +59,7 @@ namespace ui {
 template <typename ClipboardTraits>
 class ClipboardTest : public PlatformTest {
  public:
-  ClipboardTest() {}
+  ClipboardTest() = default;
   ~ClipboardTest() override = default;
 
   // PlatformTest:

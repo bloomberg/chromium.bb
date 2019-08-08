@@ -39,15 +39,15 @@ LoopbackStream::LoopbackStream(
     CreatedCallback created_callback,
     BindingLostCallback binding_lost_callback,
     scoped_refptr<base::SequencedTaskRunner> flow_task_runner,
-    media::mojom::AudioInputStreamRequest request,
-    media::mojom::AudioInputStreamClientPtr client,
-    media::mojom::AudioInputStreamObserverPtr observer,
+    mojo::PendingReceiver<media::mojom::AudioInputStream> receiver,
+    mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
+    mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     LoopbackCoordinator* coordinator,
     const base::UnguessableToken& group_id)
     : binding_lost_callback_(std::move(binding_lost_callback)),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       client_(std::move(client)),
       observer_(std::move(observer)),
       coordinator_(coordinator),
@@ -61,11 +61,11 @@ LoopbackStream::LoopbackStream(
 
   // Generate an error and shut down automatically whenever any of the mojo
   // bindings is closed.
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&LoopbackStream::OnError, base::Unretained(this)));
-  client_.set_connection_error_handler(
+  client_.set_disconnect_handler(
       base::BindOnce(&LoopbackStream::OnError, base::Unretained(this)));
-  observer_.set_connection_error_handler(
+  observer_.set_disconnect_handler(
       base::BindOnce(&LoopbackStream::OnError, base::Unretained(this)));
 
   // As of this writing, only machines older than about 10 years won't be able
@@ -213,7 +213,7 @@ void LoopbackStream::OnError() {
 
   TRACE_EVENT0("audio", "LoopbackStream::OnError");
 
-  binding_.Close();
+  receiver_.reset();
   if (client_) {
     client_->OnError();
     client_.reset();

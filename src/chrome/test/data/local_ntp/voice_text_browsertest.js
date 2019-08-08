@@ -113,6 +113,10 @@ test.text.testShowErrorMessageWithTryAgainLink = function() {
 /**
  * Test clearing the text elements.
  */
+// TODO(crbug.com/960622) Disabling for flakyness. Please consider migrating
+// the test to a default testing framework that supports a means to disable
+// tests beyond uncommenting it.
+/*
 test.text.testClearText = function() {
   const interimText = 'interim '.repeat(100);
   const finalText = 'final '.repeat(100);
@@ -131,6 +135,7 @@ test.text.testClearText = function() {
   assertEquals('voice-text', text.interim_.className);
   assertEquals('voice-text', text.final_.className);
 };
+*/
 
 
 /**

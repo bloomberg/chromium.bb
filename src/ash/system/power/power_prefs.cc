@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -63,7 +63,7 @@ chromeos::PowerPolicyController::Action GetPowerPolicyAction(
 // used: if more-restrictive power-related prefs are set by policy, it's most
 // likely to be on this profile.
 PrefService* GetPrefService() {
-  ash::SessionController* controller = Shell::Get()->session_controller();
+  ash::SessionControllerImpl* controller = Shell::Get()->session_controller();
   PrefService* prefs = controller->GetPrimaryUserPrefService();
   return prefs ? prefs : controller->GetActivePrefService();
 }
@@ -123,6 +123,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
                                 true, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true,
                                 PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kPowerAlsLoggingEnabled, false,
+                                PrefRegistry::PUBLIC);
 
   if (for_test) {
     registry->RegisterBooleanPref(prefs::kAllowScreenLock, true,
@@ -130,31 +132,31 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
     registry->RegisterBooleanPref(
         prefs::kEnableAutoScreenLock, false,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  } else {
-    registry->RegisterForeignPref(prefs::kAllowScreenLock);
-    registry->RegisterForeignPref(prefs::kEnableAutoScreenLock);
   }
 }
 
 }  // namespace
 
 PowerPrefs::PowerPrefs(chromeos::PowerPolicyController* power_policy_controller,
-                       chromeos::PowerManagerClient* power_manager_client)
+                       chromeos::PowerManagerClient* power_manager_client,
+                       PrefService* local_state)
     : power_policy_controller_(power_policy_controller),
       power_manager_client_observer_(this),
-      tick_clock_(base::DefaultTickClock::GetInstance()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      local_state_(local_state) {
   DCHECK(power_manager_client);
   DCHECK(power_policy_controller_);
   DCHECK(tick_clock_);
 
-  Shell::Get()->AddShellObserver(this);
-
   power_manager_client_observer_.Add(power_manager_client);
   Shell::Get()->session_controller()->AddObserver(this);
+
+  // |local_state_| could be null in tests.
+  if (local_state_)
+    ObserveLocalStatePrefs(local_state_);
 }
 
 PowerPrefs::~PowerPrefs() {
-  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -244,16 +246,6 @@ void PowerPrefs::OnSigninScreenPrefServiceInitialized(PrefService* prefs) {
 
 void PowerPrefs::OnActiveUserPrefServiceChanged(PrefService* prefs) {
   ObservePrefs(prefs);
-}
-
-void PowerPrefs::OnLocalStatePrefServiceInitialized(PrefService* prefs) {
-  local_state_ = prefs;
-
-  // Pass |nullptr| in tests, because lifetime of local state prefs is shorter
-  // than lifetime of PowerPrefs.
-  if (local_state_) {
-    ObserveLocalStatePrefs(prefs);
-  }
 }
 
 void PowerPrefs::UpdatePowerPolicyFromPrefs() {
@@ -455,6 +447,7 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
   profile_registrar_->Add(prefs::kPowerSmartDimEnabled, update_callback);
   profile_registrar_->Add(prefs::kPowerFastSuspendWhenBacklightsForcedOff,
                           update_callback);
+  profile_registrar_->Add(prefs::kPowerAlsLoggingEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }

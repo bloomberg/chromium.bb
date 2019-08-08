@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,8 +49,8 @@ ScriptPromise ClipboardItem::getType(ScriptState* script_state,
     }
   }
 
-  resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                        "The type was not found"));
+  resolver->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNotFoundError, "The type was not found"));
   return promise;
 }
 

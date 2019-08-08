@@ -689,9 +689,8 @@ void OfflinePageRequestHandler::Redirect(const GURL& redirected_url) {
       net::URLRequestRedirectJob::REDIRECT_302_FOUND,
       redirected_url.spec().c_str());
 
-  fake_headers_for_redirect_ =
-      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-          header_string.c_str(), header_string.length()));
+  fake_headers_for_redirect_ = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(header_string));
   DCHECK(fake_headers_for_redirect_->IsRedirect(nullptr));
 
   delegate_->NotifyHeadersComplete(0);

@@ -7,12 +7,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 // crbug.com/932380
 TEST(XMLDocumentParserTest, NodeNamespaceWithParseError) {
-  auto& doc = *Document::CreateForTest();
+  auto& doc = *MakeGarbageCollected<Document>();
   doc.SetContent(
       "<html xmlns='http://www.w3.org/1999/xhtml'>"
       "<body><d:foo/></body></html>");

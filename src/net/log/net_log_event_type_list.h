@@ -510,15 +510,6 @@ EVENT_TYPE(SSL_HANDSHAKE_ERROR)
 EVENT_TYPE(SSL_READ_ERROR)
 EVENT_TYPE(SSL_WRITE_ERROR)
 
-// An SSL connection needs to be retried with a lower protocol version to detect
-// if the error was due to a middlebox interfering with the protocol version we
-// offered.
-// The following parameters are attached to the event:
-//   {
-//     "net_error": <Net integer error code which triggered the probe>,
-//   }
-EVENT_TYPE(SSL_VERSION_INTERFERENCE_PROBE)
-
 // We found that our prediction of the server's certificates was correct and
 // we merged the verification with the SSLHostInfo. (Note: now obsolete.)
 EVENT_TYPE(SSL_VERIFICATION_MERGED)
@@ -829,6 +820,7 @@ EVENT_TYPE(SOCKET_POOL_CONNECTING_N_SOCKETS)
 //      "load_flags": <Numeric value of the combined load flags>,
 //      "privacy_mode": <True if privacy mode is enabled for the request>
 //      "priority": <Numeric priority of the request>,
+//      "traffic_annotation": <int32 for the request's TrafficAnnotationTag>,
 //      "upload_id" <String of upload body identifier, if present>,
 //   }
 //
@@ -2178,13 +2170,54 @@ EVENT_TYPE(SOCKS5_HANDSHAKE_READ)
 // HTTP Authentication
 // ------------------------------------------------------------------------
 
-// The time spent authenticating to the proxy.
-EVENT_TYPE(AUTH_PROXY)
+// Lifetime event for HttpAuthController.
+//
+// The BEGIN phase has the following parameters:
+//  {
+//      "target": <Either "proxy" or "server">,
+//      "url": <URL of authentication target>
+//  }
+EVENT_TYPE(AUTH_CONTROLLER)
 
-// The time spent authentication to the server.
-EVENT_TYPE(AUTH_SERVER)
+// Records on the caller's NetLog to indicate the HttpAuthController that's
+// servicing the request.
+//  {
+//      "source_dependency": <Source ID of HttpAuthController>
+//  }
+EVENT_TYPE(AUTH_BOUND_TO_CONTROLLER)
+
+// Record the initialization of an HttpAuthHandler derivative.
+//
+// The END phase has the following parameters:
+//  {
+//       "succeeded": <bool indicating whether the initialization succeeded>
+//  }
+EVENT_TYPE(AUTH_HANDLER_INIT)
+
+// Records the invocation and completion of a single token generation operation.
+//
+// The END phase has the following parameters:
+//  {
+//       "net_error": <Net Error. Only present in case of error.>
+//  }
+EVENT_TYPE(AUTH_GENERATE_TOKEN)
+
+// Records the invocation and completion of HandleAuthChallenge operation.
+//
+// Parameters:
+//  {
+//       "authorization_result": <One of "accept", "reject", "stale", "invalid",
+//                                "different_realm" depending on the outcome of
+//                                the handling the challenge>
+//  }
+EVENT_TYPE(AUTH_HANDLE_CHALLENGE)
 
 // The channel bindings generated for the connection.
+//  {
+//       "token": <Hex encoded RFC 5929 'tls-server-endpoint' channel binding
+//                 token. Could be empty if one could not be generated (e.g.
+//                 because the underlying channel was not TLS>
+//  }
 EVENT_TYPE(AUTH_CHANNEL_BINDINGS)
 
 // ------------------------------------------------------------------------
@@ -2204,135 +2237,6 @@ EVENT_TYPE(APPCACHE_DELIVERING_ERROR_RESPONSE)
 // This event is emitted whenever the appcache executes script to compute
 // a response.
 EVENT_TYPE(APPCACHE_DELIVERING_EXECUTABLE_RESPONSE)
-
-// ------------------------------------------------------------------------
-// Service Worker
-// ------------------------------------------------------------------------
-// This event is emitted when Service Worker starts to handle a request.
-EVENT_TYPE(SERVICE_WORKER_START_REQUEST)
-
-// This event is emitted when Service Worker results in a fallback to network
-// response.
-EVENT_TYPE(SERVICE_WORKER_FALLBACK_RESPONSE)
-
-// This event is emitted when Service Worker results in a fallback to network
-// response, and asks the renderer rather than the browser to do the fallback
-// due to CORS.
-EVENT_TYPE(SERVICE_WORKER_FALLBACK_FOR_CORS)
-
-// This event is emitted when Service Worker responds with a headers-only
-// response.
-EVENT_TYPE(SERVICE_WORKER_HEADERS_ONLY_RESPONSE)
-
-// This event is emitted when Service Worker responds with a stream.
-EVENT_TYPE(SERVICE_WORKER_STREAM_RESPONSE)
-
-// This event is emitted when Service Worker responds with a blob.
-EVENT_TYPE(SERVICE_WORKER_BLOB_RESPONSE)
-
-// This event is emitted when Service Worker instructs the browser
-// to respond with a network error.
-EVENT_TYPE(SERVICE_WORKER_ERROR_RESPONSE_STATUS_ZERO)
-
-// This event is emitted when Service Worker attempts to respond with
-// a blob, but it was not readable.
-EVENT_TYPE(SERVICE_WORKER_ERROR_BAD_BLOB)
-
-// This event is emitted when Service Worker fails to respond because
-// the provider host was null.
-EVENT_TYPE(SERVICE_WORKER_ERROR_NO_PROVIDER_HOST)
-
-// This event is emitted when Service Worker fails to respond because
-// the registration had no active version.
-EVENT_TYPE(SERVICE_WORKER_ERROR_NO_ACTIVE_VERSION)
-
-// This event is emitted when Service Worker fails to respond because
-// the job delegate behaved incorrectly.
-EVENT_TYPE(SERVICE_WORKER_ERROR_BAD_DELEGATE)
-
-// This event is emitted when Service Worker fails to respond because
-// the fetch event could not be dispatched to the worker.
-EVENT_TYPE(SERVICE_WORKER_ERROR_FETCH_EVENT_DISPATCH)
-
-// This event is emitted when Service Worker fails to respond because
-// of an error when reading the blob response.
-EVENT_TYPE(SERVICE_WORKER_ERROR_BLOB_READ)
-
-// This event is emitted when Service Worker fails to respond because
-// of an error when reading the stream response.
-EVENT_TYPE(SERVICE_WORKER_ERROR_STREAM_ABORTED)
-
-// This event is emitted when Service Worker is destroyed before it
-// responds.
-EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED)
-
-// This event is emitted when Service Worker is destroyed before it
-// finishes responding with a blob.
-EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED_WITH_BLOB)
-
-// This event is emitted when Service Worker is destroyed before it
-// finishes responding with a stream.
-EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED_WITH_STREAM)
-
-// This event is emitted when a request to be forwarded to a Service Worker has
-// request body, and it may be necessary to wait for sizes of files in the body
-// to be resolved. The END phase event parameter is:
-//   {
-//     "success": Whether file sizes in the request body have been resolved
-//     successfully
-//   }
-EVENT_TYPE(SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_FILES)
-
-// This event is emitted when a request failed to be forwarded to a Service
-// Worker, because it had a request body with a blob that failed to be
-// constructed.
-EVENT_TYPE(SERVICE_WORKER_ERROR_REQUEST_BODY_BLOB_FAILED)
-
-// The start/end of dispatching a fetch event to a service worker. This includes
-// waiting for the worker to activate and starting the worker if neccessary.
-//
-// The BEGIN phase consists of the following parameters:
-// {
-//   "event_type": A string indicating the resource type being fetched.
-// }
-//
-// For the END phase, the following parameters are attached. No parameters are
-// attached when cancelled:
-// {
-//   "status": The ServiceWorkerStatusCode as a string.
-//   "has_response": True if the service worker provided a response to the fetch
-//   event. False means to fall back to network.
-// }
-EVENT_TYPE(SERVICE_WORKER_DISPATCH_FETCH_EVENT)
-
-// Measures the time waiting for a service worker to go from ACTIVATING to
-// ACTIVATED.
-EVENT_TYPE(SERVICE_WORKER_WAIT_FOR_ACTIVATION)
-
-// The start/end of starting a service worker.
-// For the END phase, the following parameters are attached:
-// {
-//   "status": The ServiceWorkerStatusCode as a string. Only present on failure.
-// }
-EVENT_TYPE(SERVICE_WORKER_START_WORKER)
-
-// The start/end of dispatching a fetch event to an activated, running service
-// worker.
-// For the END phase, the following parameters are attached:
-// {
-//   "status": The ServiceWorkerStatusCode as a string. Only present on failure.
-// }
-EVENT_TYPE(SERVICE_WORKER_FETCH_EVENT)
-
-// This event is emitted when a request for a service worker script or its
-// imported scripts could not be handled.
-// {
-//   "error": The error reason as a string.
-// }
-EVENT_TYPE(SERVICE_WORKER_SCRIPT_LOAD_UNHANDLED_REQUEST_ERROR)
-
-// This event is emitted when a navigation preload request is created.
-EVENT_TYPE(SERVICE_WORKER_NAVIGATION_PRELOAD_REQUEST)
 
 // ------------------------------------------------------------------------
 // Global events
@@ -3049,7 +2953,6 @@ EVENT_TYPE(WPAD_DHCP_WIN_ON_WAIT_TIMER)
 // Event emitted on store creation/deletion
 //  {
 //    "persistent_store": <Whether there is an attached persistent store>,
-//    "channel_id_services": <Whether there is an attached channel id service>,
 //  }
 EVENT_TYPE(COOKIE_STORE_ALIVE)
 

@@ -16,7 +16,7 @@ class HTMLLinkElementSizesAttributeTest : public testing::Test {};
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesPropertyValue_updatesAttribute) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   auto* link =
       MakeGarbageCollected<HTMLLinkElement>(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();
@@ -28,7 +28,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesAttribute_updatesSizesPropertyValue) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   auto* link =
       MakeGarbageCollected<HTMLLinkElement>(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();

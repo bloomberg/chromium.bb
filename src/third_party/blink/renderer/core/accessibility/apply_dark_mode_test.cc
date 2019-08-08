@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
@@ -75,14 +76,15 @@ TEST_F(ApplyDarkModeCheckTest, BackgroundColorNotDefinedAlwaysFiltered) {
                                               GetLayoutView()));
 }
 
-TEST_F(ApplyDarkModeCheckTest, SupportedColorSchemesDark) {
-  RuntimeEnabledFeatures::SetMetaSupportedColorSchemesEnabled(true);
+TEST_F(ApplyDarkModeCheckTest, MetaColorSchemeDark) {
+  RuntimeEnabledFeatures::SetCSSColorSchemeEnabled(true);
+  RuntimeEnabledFeatures::SetMetaColorSchemeEnabled(true);
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
   GetDocument().GetSettings()->SetPreferredColorScheme(
       PreferredColorScheme::kDark);
-  ColorSchemeSet schemes;
-  schemes.Set(ColorScheme::kDark);
-  GetDocument().GetStyleEngine().SetSupportedColorSchemes(schemes);
+  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+    <meta name="color-scheme" content="dark">
+  )HTML");
   UpdateAllLifecyclePhasesForTest();
 
   // Opting out of forced darkening when dark is among the supported color

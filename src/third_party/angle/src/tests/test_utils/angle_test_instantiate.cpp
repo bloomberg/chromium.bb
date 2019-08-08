@@ -36,10 +36,10 @@ bool IsANGLEConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
     eglLibrary.reset(angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
 #endif
 
-    EGLWindow *eglWindow =
-        EGLWindow::New(param.majorVersion, param.minorVersion, param.eglParameters);
+    EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
     ConfigParameters configParams;
-    bool result = eglWindow->initializeGL(osWindow, eglLibrary.get(), configParams);
+    bool result =
+        eglWindow->initializeGL(osWindow, eglLibrary.get(), param.eglParameters, configParams);
     eglWindow->destroyGL();
     EGLWindow::Delete(&eglWindow);
     return result;
@@ -52,7 +52,8 @@ bool IsWGLConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
 
     WGLWindow *wglWindow = WGLWindow::New(param.majorVersion, param.minorVersion);
     ConfigParameters configParams;
-    bool result = wglWindow->initializeGL(osWindow, openglLibrary.get(), configParams);
+    bool result =
+        wglWindow->initializeGL(osWindow, openglLibrary.get(), param.eglParameters, configParams);
     wglWindow->destroyGL();
     WGLWindow::Delete(&wglWindow);
     return result;
@@ -66,7 +67,12 @@ bool IsNativeConfigSupported(const PlatformParameters &param, OSWindow *osWindow
     // Not yet implemented.
     return false;
 }
+
+std::map<PlatformParameters, bool> gParamAvailabilityCache;
 }  // namespace
+
+std::string gSelectedConfig;
+bool gSeparateProcessPerConfig = false;
 
 SystemInfo *GetTestSystemInfo()
 {
@@ -81,7 +87,8 @@ SystemInfo *GetTestSystemInfo()
 
         // Print complete system info when available.
         // Seems to trip up Android test expectation parsing.
-        if (!IsAndroid())
+        // Also don't print info when a config is selected to prevent test spam.
+        if (!IsAndroid() && gSelectedConfig.empty())
         {
             PrintSystemInfo(*sSystemInfo);
         }
@@ -184,7 +191,7 @@ bool IsNVIDIAShield()
 
 bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters &param)
 {
-    VendorID vendorID = systemInfo.gpus[systemInfo.primaryGPUIndex].vendorId;
+    VendorID vendorID = systemInfo.gpus[systemInfo.activeGPUIndex].vendorId;
 
     // We support the default and null back-ends on every platform.
     if (param.driver == GLESDriverType::AngleEGL)
@@ -405,35 +412,80 @@ bool IsPlatformAvailable(const PlatformParameters &param)
             return false;
     }
 
-    static std::map<PlatformParameters, bool> paramAvailabilityCache;
-    auto iter = paramAvailabilityCache.find(param);
-    if (iter != paramAvailabilityCache.end())
+    bool result = false;
+
+    auto iter = gParamAvailabilityCache.find(param);
+    if (iter != gParamAvailabilityCache.end())
     {
-        return iter->second;
+        result = iter->second;
     }
     else
     {
-        const SystemInfo *systemInfo = GetTestSystemInfo();
-
-        bool result = false;
-        if (systemInfo)
+        if (!gSelectedConfig.empty())
         {
-            result = IsConfigWhitelisted(*systemInfo, param);
+            std::stringstream strstr;
+            strstr << param;
+            if (strstr.str() == gSelectedConfig)
+            {
+                result = true;
+            }
         }
         else
         {
-            result = IsConfigSupported(param);
+            const SystemInfo *systemInfo = GetTestSystemInfo();
+
+            if (systemInfo)
+            {
+                result = IsConfigWhitelisted(*systemInfo, param);
+            }
+            else
+            {
+                result = IsConfigSupported(param);
+            }
         }
 
-        paramAvailabilityCache[param] = result;
+        gParamAvailabilityCache[param] = result;
 
-        if (!result)
+        // Enable this unconditionally to print available platforms.
+        if (!gSelectedConfig.empty())
+        {
+            if (result)
+            {
+                std::cout << "Test Config: " << param << "\n";
+            }
+        }
+        else if (!result)
         {
             std::cout << "Skipping tests using configuration " << param
-                      << " because it is not available." << std::endl;
+                      << " because it is not available.\n";
         }
-
-        return result;
     }
+
+    // Disable all tests in the parent process when running child processes.
+    if (gSeparateProcessPerConfig)
+    {
+        return false;
+    }
+    return result;
+}
+
+std::vector<std::string> GetAvailableTestPlatformNames()
+{
+    std::vector<std::string> platformNames;
+
+    for (const auto &iter : gParamAvailabilityCache)
+    {
+        if (iter.second)
+        {
+            std::stringstream strstr;
+            strstr << iter.first;
+            platformNames.push_back(strstr.str());
+        }
+    }
+
+    // Keep the list sorted.
+    std::sort(platformNames.begin(), platformNames.end());
+
+    return platformNames;
 }
 }  // namespace angle

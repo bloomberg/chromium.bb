@@ -49,6 +49,7 @@
 using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
+using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebAutofillState;
@@ -494,7 +495,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SimulateUsernameFieldAutofill(const std::string& text) {
     // Simulate set |username_element_| in focus.
     static_cast<content::RenderFrameObserver*>(autofill_agent_)
-        ->FocusedNodeChanged(username_element_);
+        ->FocusedElementChanged(username_element_);
     // Fill focused element (i.e. |username_element_|).
     autofill_agent_->FillFieldWithValue(ASCIIToUTF16(text));
   }
@@ -753,28 +754,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 // Tests that the password login is autocompleted as expected when the browser
 // sends back the password info.
 TEST_F(PasswordAutofillAgentTest, InitialAutocomplete) {
-  /*
-   * Right now we are not sending the message to the browser because we are
-   * loading a data URL and the security origin canAccessPasswordManager()
-   * returns false.  May be we should mock URL loading to cirmcuvent this?
-   TODO(jcivelli): find a way to make the security origin not deny access to the
-                   password manager and then reenable this code.
-
-  // The form has been loaded, we should have sent the browser a message about
-  // the form.
-  const IPC::Message* msg = render_thread_.sink().GetFirstMessageMatching(
-      AutofillHostMsg_PasswordFormsParsed::ID);
-  ASSERT_TRUE(msg != NULL);
-
-  std::tuple<std::vector<PasswordForm> > forms;
-  AutofillHostMsg_PasswordFormsParsed::Read(msg, &forms);
-  ASSERT_EQ(1U, forms.a.size());
-  PasswordForm password_form = forms.a[0];
-  EXPECT_EQ(PasswordForm::SCHEME_HTML, password_form.scheme);
-  EXPECT_EQ(ASCIIToUTF16(kUsernameName), password_form.username_element);
-  EXPECT_EQ(ASCIIToUTF16(kPasswordName), password_form.password_element);
-  */
-
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
@@ -1726,6 +1705,22 @@ TEST_F(PasswordAutofillAgentTest,
     CheckTextFieldsDOMState("ali", true, "sec", true);
     CheckUsernameSelection(3, 3);
   }
+}
+
+// Tests that HasFillData() works correctly for fiiable and non-fillable fields.
+TEST_F(PasswordAutofillAgentTest, HasFillData) {
+  // Initially no fill data is available.
+  WebInputElement random_element = GetInputElementByID("random_field");
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(username_element_));
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(random_element));
+
+  // This changes once fill data is simulated. |random_element| continue  to
+  // have no fill data, though.
+  SimulateOnFillPasswordForm(fill_data_);
+  EXPECT_TRUE(password_autofill_agent_->HasFillData(username_element_));
+  EXPECT_TRUE(password_autofill_agent_->HasFillData(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(random_element));
 }
 
 // Tests that |FillIntoFocusedField| doesn't fill read-only text fields.
@@ -3026,25 +3021,45 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutUnfillableField) {
-  EXPECT_FALSE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_EQ(FocusedFieldType::kUnknown, fake_driver_.last_focused_field_type());
   SimulateElementClick(kPasswordName);
   fake_driver_.Flush();
-  EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+            fake_driver_.last_focused_field_type());
 
+  // Even though the focused element is a username field, it should be treated
+  // as unfillable, since it is read-only.
   SetElementReadOnly(username_element_, true);
   FocusElement(kUsernameName);
   fake_driver_.Flush();
-  EXPECT_FALSE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_EQ(FocusedFieldType::kUnfillableElement,
+            fake_driver_.last_focused_field_type());
 }
 
-TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutPasswordFields) {
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableFields) {
+  SimulateElementClick("random_field");
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableTextField,
+            fake_driver_.last_focused_field_type());
+
+  // A username field without fill data is indistinguishable from any other text
+  // field.
   SimulateElementClick(kUsernameName);
   fake_driver_.Flush();
-  EXPECT_FALSE(fake_driver_.last_focused_input_was_password());
+  EXPECT_EQ(FocusedFieldType::kFillableTextField,
+            fake_driver_.last_focused_field_type());
 
   SimulateElementClick(kPasswordName);
   fake_driver_.Flush();
-  EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
+  EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+            fake_driver_.last_focused_field_type());
+
+  // A username field with fill data should be detected.
+  SimulateOnFillPasswordForm(fill_data_);
+  SimulateElementClick(kUsernameName);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableUsernameField,
+            fake_driver_.last_focused_field_type());
 }
 
 // Tests that credential suggestions are autofilled on a password (and change

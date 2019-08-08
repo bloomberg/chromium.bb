@@ -174,7 +174,7 @@ void NonClientView::Layout() {
   if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
     client_view_->set_clip_path(client_clip);
 
-  if (overlay_view_ && overlay_view_->visible())
+  if (overlay_view_ && overlay_view_->GetVisible())
     overlay_view_->SetBoundsRect(GetLocalBounds());
 }
 
@@ -250,9 +250,7 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 NonClientFrameView::~NonClientFrameView() = default;
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
-  return  GetWidget()->IsAlwaysRenderAsActive() ||
-         (active_state_override_ ? *active_state_override_
-                                 : GetWidget()->IsActive());
+  return GetWidget()->ShouldPaintAsActive();
 }
 
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
@@ -304,8 +302,7 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   return can_resize ? component : HTBORDER;
 }
 
-void NonClientFrameView::ActivationChanged(bool active) {
-}
+void NonClientFrameView::PaintAsActiveChanged(bool active) {}
 
 void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
@@ -315,7 +312,7 @@ const char* NonClientFrameView::GetClassName() const {
   return kViewClassName;
 }
 
-void NonClientFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void NonClientFrameView::OnThemeChanged() {
   SchedulePaint();
 }
 

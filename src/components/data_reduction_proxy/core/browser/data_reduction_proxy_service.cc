@@ -72,8 +72,10 @@ DataReductionProxyService::DataReductionProxyService(
   }
   network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   network_quality_tracker_->AddRTTAndThroughputEstimatesObserver(this);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      data_use_measurement_) {  // null in unit tests.
     data_use_measurement_->AddServicesDataUseObserver(this);
+  }
 
   // TODO(rajendrant): Combine uses of NetworkConnectionTracker within DRP.
   network_connection_tracker_->AddNetworkConnectionObserver(this);
@@ -90,8 +92,10 @@ DataReductionProxyService::~DataReductionProxyService() {
   network_connection_tracker_->RemoveNetworkConnectionObserver(this);
   compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      data_use_measurement_) {  // null in unit tests.
     data_use_measurement_->RemoveServicesDataUseObserver(this);
+  }
 }
 
 void DataReductionProxyService::SetIOData(

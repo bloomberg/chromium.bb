@@ -9,6 +9,7 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/stl_util.h"
 
 CPDF_ExpIntFunc::CPDF_ExpIntFunc()
@@ -38,8 +39,8 @@ bool CPDF_ExpIntFunc::v_Init(const CPDF_Object* pObj,
   m_BeginValues = pdfium::Vector2D<float>(m_nOutputs, 2);
   m_EndValues = pdfium::Vector2D<float>(m_nOutputs, 2);
   for (uint32_t i = 0; i < m_nOutputs; i++) {
-    m_BeginValues[i] = pArray0 ? pArray0->GetFloatAt(i) : 0.0f;
-    m_EndValues[i] = pArray1 ? pArray1->GetFloatAt(i) : 1.0f;
+    m_BeginValues[i] = pArray0 ? pArray0->GetNumberAt(i) : 0.0f;
+    m_EndValues[i] = pArray1 ? pArray1->GetNumberAt(i) : 1.0f;
   }
 
   FX_SAFE_UINT32 nOutputs = m_nOutputs;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -23,12 +24,6 @@ namespace gfx {
 class GpuMemoryBuffer;
 
 }  // namespace gfx
-
-namespace base {
-
-class SharedMemory;
-
-}  // namespace base
 
 namespace viz {
 
@@ -127,6 +122,7 @@ class PLATFORM_EXPORT CanvasResource
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void OnDestroy();
   CanvasResourceProvider* Provider() { return provider_.get(); }
+  base::WeakPtr<CanvasResourceProvider> WeakProvider() { return provider_; }
 
  private:
   // Sync token that was provided when resource was released
@@ -305,7 +301,7 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
                              SkFilterQuality);
 
   viz::SharedBitmapId shared_bitmap_id_;
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::WritableSharedMemoryMapping shared_mapping_;
   IntSize size_;
   bool is_origin_clean_ = true;
 };
@@ -319,7 +315,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality,
       const CanvasColorParams&,
-      bool is_overlay_candidate);
+      bool is_overlay_candidate,
+      bool is_origin_top_left);
   ~CanvasResourceSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
@@ -345,6 +342,12 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   void WillDraw();
 
  private:
+  static void OnBitmapImageDestroyed(
+      scoped_refptr<CanvasResourceSharedImage> resource,
+      scoped_refptr<base::SingleThreadTaskRunner> original_task_runner,
+      const gpu::SyncToken& sync_token,
+      bool is_lost);
+
   void TearDown() override;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;
@@ -359,7 +362,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             base::WeakPtr<CanvasResourceProvider>,
                             SkFilterQuality,
                             const CanvasColorParams&,
-                            bool is_overlay_candidate);
+                            bool is_overlay_candidate,
+                            bool is_origin_top_left);
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   gpu::Mailbox shared_image_mailbox_;
@@ -369,6 +373,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   GLuint texture_id_ = 0u;
   bool is_overlay_candidate_ = false;
   IntSize size_;
+  bool is_origin_top_left_ = false;
 
   bool is_origin_clean_ = true;
 };

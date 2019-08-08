@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "content/public/browser/push_messaging_service.h"
 
-namespace content {
+namespace blink {
+struct WebPushSubscriptionOptions;
+}  // namespace blink
 
-struct PushSubscriptionOptions;
+namespace content {
 
 class WebTestPushMessagingService : public PushMessagingService {
  public:
@@ -28,24 +30,24 @@ class WebTestPushMessagingService : public PushMessagingService {
                              int64_t service_worker_registration_id,
                              int renderer_id,
                              int render_frame_id,
-                             const PushSubscriptionOptions& options,
+                             const blink::WebPushSubscriptionOptions& options,
                              bool user_gesture,
-                             const RegisterCallback& callback) override;
+                             RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
-                           const PushSubscriptionOptions& options,
-                           const RegisterCallback& callback) override;
+                           const blink::WebPushSubscriptionOptions& options,
+                           RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
                            const std::string& subscription_id,
                            const SubscriptionInfoCallback& callback) override;
   bool SupportNonVisibleMessages() override;
-  void Unsubscribe(mojom::PushUnregistrationReason reason,
+  void Unsubscribe(blink::mojom::PushUnregistrationReason reason,
                    const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,
-                   const UnregisterCallback& callback) override;
+                   UnregisterCallback callback) override;
   void DidDeleteServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id) override;

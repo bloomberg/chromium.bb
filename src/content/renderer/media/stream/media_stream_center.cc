@@ -218,19 +218,14 @@ void MediaStreamCenter::GetSourceSettings(
     return;
 
   media::AudioParameters audio_parameters = source->GetAudioParameters();
-  settings.sample_rate = audio_parameters.sample_rate();
+  if (audio_parameters.IsValid()) {
+    settings.sample_rate = audio_parameters.sample_rate();
+    settings.channel_count = audio_parameters.channels();
+    settings.latency = audio_parameters.GetBufferDuration().InSecondsF();
+  }
   // kSampleFormatS16 is the format used for all audio input streams.
   settings.sample_size =
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
-  settings.channel_count = audio_parameters.channels();
-  settings.latency = audio_parameters.GetBufferDuration().InSecondsF();
-
-  ProcessedLocalAudioSource* const processed_source =
-      ProcessedLocalAudioSource::From(source);
-  settings.volume = processed_source
-                        ? static_cast<double>(processed_source->Volume()) /
-                              processed_source->MaxVolume()
-                        : 1.0;
 }
 
 }  // namespace content

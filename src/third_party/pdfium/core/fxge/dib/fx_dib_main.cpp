@@ -9,9 +9,10 @@
 #include <tuple>
 #include <utility>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
 static_assert(sizeof(FX_COLORREF) == sizeof(COLORREF),
               "FX_COLORREF vs. COLORREF mismatch");
 #endif
@@ -56,26 +57,10 @@ const int16_t SDP_Table[513] = {
 
 FXDIB_ResampleOptions::FXDIB_ResampleOptions() = default;
 
-FXDIB_ResampleOptions::FXDIB_ResampleOptions(bool downsample,
-                                             bool bilinear,
-                                             bool bicubic,
-                                             bool halftone,
-                                             bool no_smoothing,
-                                             bool lossy)
-    : bInterpolateDownsample(downsample),
-      bInterpolateBilinear(bilinear),
-      bInterpolateBicubic(bicubic),
-      bHalftone(halftone),
-      bNoSmoothing(no_smoothing),
-      bLossy(lossy) {}
-
 bool FXDIB_ResampleOptions::HasAnyOptions() const {
   return bInterpolateDownsample || bInterpolateBilinear ||
          bInterpolateBicubic || bHalftone || bNoSmoothing || bLossy;
 }
-
-const FXDIB_ResampleOptions kBilinearInterpolation = {
-    false, /*bilinear=*/true, false, false, false, false};
 
 FX_RECT FXDIB_SwapClipBox(const FX_RECT& clip,
                           int width,

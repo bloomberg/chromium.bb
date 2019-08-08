@@ -680,7 +680,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       GetHistoryURLForDataURL(), previews_state, navigation_start,
       frame_entry.method(), post_body ? post_body : post_data_,
       base::Optional<SourceLocation>(), has_started_from_context_menu(),
-      has_user_gesture(), InitiatorCSPInfo(), std::string(), input_start);
+      has_user_gesture(), InitiatorCSPInfo(), std::vector<int>(), std::string(),
+      false /* is_history_navigation_in_new_child_frame */, input_start);
 }
 
 CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
@@ -688,7 +689,6 @@ CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
     const GURL& original_url,
     const base::Optional<url::Origin>& origin_to_commit,
     const std::string& original_method,
-    bool is_history_navigation_in_new_child,
     const std::map<std::string, bool>& subframe_unique_names,
     bool intended_as_new_entry,
     int pending_history_list_offset,
@@ -716,9 +716,9 @@ CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
   CommitNavigationParams commit_params(
       origin_to_commit, GetIsOverridingUserAgent(), redirects, original_url,
       original_method, GetCanLoadLocalResources(), frame_entry.page_state(),
-      GetUniqueID(), is_history_navigation_in_new_child, subframe_unique_names,
-      intended_as_new_entry, pending_offset_to_send, current_offset_to_send,
-      current_length_to_send, IsViewSourceMode(), should_clear_history_list());
+      GetUniqueID(), subframe_unique_names, intended_as_new_entry,
+      pending_offset_to_send, current_offset_to_send, current_length_to_send,
+      IsViewSourceMode(), should_clear_history_list());
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params.data_url_as_string = GetDataURLAsString()->data();

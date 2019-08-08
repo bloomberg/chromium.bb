@@ -21,15 +21,34 @@ scoped_refptr<Authenticator> StubAuthenticatorBuilder::Create(
     authenticator->old_password_ = old_password_;
   if (data_recovery_notifier_)
     authenticator->data_recovery_notifier_ = data_recovery_notifier_;
+  authenticator->has_incomplete_encryption_migration_ =
+      has_incomplete_encryption_migration_;
+  if (auth_action_ == StubAuthenticator::AuthAction::kAuthFailure)
+    authenticator->failure_reason_ = failure_reason_;
   return authenticator;
 }
 
 void StubAuthenticatorBuilder::SetUpPasswordChange(
     const std::string& old_password,
     const StubAuthenticator::DataRecoveryNotifier& notifier) {
+  DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
   auth_action_ = StubAuthenticator::AuthAction::kPasswordChange;
   old_password_ = old_password;
   data_recovery_notifier_ = notifier;
+}
+
+void StubAuthenticatorBuilder::SetUpOldEncryption(
+    bool has_incomplete_migration) {
+  DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
+  auth_action_ = StubAuthenticator::AuthAction::kOldEncryption;
+  has_incomplete_encryption_migration_ = has_incomplete_migration;
+}
+
+void StubAuthenticatorBuilder::SetUpAuthFailure(
+    AuthFailure::FailureReason failure_reason) {
+  DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
+  auth_action_ = StubAuthenticator::AuthAction::kAuthFailure;
+  failure_reason_ = failure_reason;
 }
 
 }  // namespace chromeos

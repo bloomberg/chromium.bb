@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/content_capture/browser/content_capture_receiver.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -86,10 +87,12 @@ void ContentCaptureReceiverManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   auto* receiver =
       ContentCaptureReceiverForFrame(navigation_handle->GetRenderFrameHost());
-  if (ShouldCapture(navigation_handle->GetURL()))
-    receiver->StartCapture();
-  else
+  if (web_contents()->GetBrowserContext()->IsOffTheRecord() ||
+      !ShouldCapture(navigation_handle->GetURL())) {
     receiver->StopCapture();
+    return;
+  }
+  receiver->StartCapture();
 }
 
 void ContentCaptureReceiverManager::DidCaptureContent(
@@ -100,6 +103,15 @@ void ContentCaptureReceiverManager::DidCaptureContent(
   BuildContentCaptureSession(content_capture_receiver, true /* ancestor_only */,
                              &parent_session);
   DidCaptureContent(parent_session, data);
+}
+
+void ContentCaptureReceiverManager::DidUpdateContent(
+    ContentCaptureReceiver* content_capture_receiver,
+    const ContentCaptureData& data) {
+  ContentCaptureSession parent_session;
+  BuildContentCaptureSession(content_capture_receiver, true /* ancestor_only */,
+                             &parent_session);
+  DidUpdateContent(parent_session, data);
 }
 
 void ContentCaptureReceiverManager::DidRemoveContent(
@@ -118,8 +130,15 @@ void ContentCaptureReceiverManager::DidRemoveSession(
   ContentCaptureSession session;
   // The session should include the removed frame that the
   // |content_capture_receiver| associated with.
-  BuildContentCaptureSession(content_capture_receiver,
-                             false /* ancestor_only */, &session);
+  // We want the last reported content capture session, instead of the current
+  // one for the scenario like below:
+  // Main frame navigates to different url which has the same origin of previous
+  // one, it triggers the previous child frame being removed but the main RFH
+  // unchanged, if we use BuildContentCaptureSession() which always use the
+  // current URL to build session, the new session will be created for current
+  // main frame URL, the returned ContentCaptureSession is wrong.
+  if (!BuildContentCaptureSessionLastSeen(content_capture_receiver, &session))
+    return;
   DidRemoveSession(session);
 }
 
@@ -142,6 +161,22 @@ void ContentCaptureReceiverManager::BuildContentCaptureSession(
     session->push_back(receiver->GetFrameContentCaptureData());
     rfh = receiver->rfh()->GetParent();
   }
+}
+
+bool ContentCaptureReceiverManager::BuildContentCaptureSessionLastSeen(
+    ContentCaptureReceiver* content_capture_receiver,
+    ContentCaptureSession* session) {
+  session->push_back(
+      content_capture_receiver->GetFrameContentCaptureDataLastSeen());
+  content::RenderFrameHost* rfh = content_capture_receiver->rfh()->GetParent();
+  while (rfh) {
+    ContentCaptureReceiver* receiver = ContentCaptureReceiverForFrame(rfh);
+    if (!receiver)
+      return false;
+    session->push_back(receiver->GetFrameContentCaptureDataLastSeen());
+    rfh = receiver->rfh()->GetParent();
+  }
+  return true;
 }
 
 }  // namespace content_capture

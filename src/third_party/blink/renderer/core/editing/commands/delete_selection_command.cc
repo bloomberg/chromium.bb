@@ -479,21 +479,10 @@ void DeleteSelectionCommand::RemoveNode(
       if (!node->hasChildren())
         return;
       // Search this non-editable region for editable regions to empty.
-      Node* child = node->firstChild();
-      while (child) {
-        Node* next_child = child->nextSibling();
-        RemoveNode(child, editing_state,
-                   should_assume_content_is_always_editable);
-        if (editing_state->IsAborted())
-          return;
-        // Bail if nextChild is no longer node's child.
-        if (next_child && next_child->parentNode() != node)
-          return;
-        child = next_child;
-      }
-
       // Don't remove editable regions that are inside non-editable ones, just
       // clear them.
+      RemoveAllChildrenIfPossible(To<ContainerNode>(node), editing_state,
+                                  should_assume_content_is_always_editable);
       return;
     }
   }
@@ -501,15 +490,10 @@ void DeleteSelectionCommand::RemoveNode(
   if (IsTableStructureNode(node) || IsRootEditableElement(*node)) {
     // Do not remove an element of table structure; remove its contents.
     // Likewise for the root editable element.
-    Node* child = node->firstChild();
-    while (child) {
-      Node* remove = child;
-      child = child->nextSibling();
-      RemoveNode(remove, editing_state,
-                 should_assume_content_is_always_editable);
-      if (editing_state->IsAborted())
-        return;
-    }
+    RemoveAllChildrenIfPossible(To<ContainerNode>(node), editing_state,
+                                should_assume_content_is_always_editable);
+    if (editing_state->IsAborted())
+      return;
 
     // Make sure empty cell has some height, if a placeholder can be inserted.
     GetDocument().UpdateStyleAndLayout();
@@ -621,8 +605,8 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
   }
 
   GetDocument().UpdateStyleAndLayout();
-  if (start_offset >= CaretMaxOffset(start_node) && start_node->IsTextNode()) {
-    Text* text = ToText(start_node);
+  auto* text = DynamicTo<Text>(start_node);
+  if (start_offset >= CaretMaxOffset(start_node) && text) {
     if (text->length() > (unsigned)CaretMaxOffset(start_node))
       DeleteTextFromNode(text, CaretMaxOffset(start_node),
                          text->length() - CaretMaxOffset(start_node));
@@ -639,9 +623,8 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
 
   if (start_node == downstream_end_.AnchorNode()) {
     if (downstream_end_.ComputeEditingOffset() - start_offset > 0) {
-      if (start_node->IsTextNode()) {
+      if (auto* text = DynamicTo<Text>(start_node)) {
         // in a text node that needs to be trimmed
-        Text* text = ToText(start_node);
         DeleteTextFromNode(
             text, start_offset,
             downstream_end_.ComputeOffsetInContainerNode() - start_offset);
@@ -670,20 +653,19 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
             downstream_end_.AnchorNode());
     // The selection to delete spans more than one node.
     Node* node(start_node);
-
+    auto* start_text_node = DynamicTo<Text>(start_node);
     if (start_offset > 0) {
-      if (start_node->IsTextNode()) {
+      if (start_text_node) {
         // in a text node that needs to be trimmed
-        Text* text = ToText(node);
-        DeleteTextFromNode(text, start_offset, text->length() - start_offset);
+        DeleteTextFromNode(start_text_node, start_offset,
+                           start_text_node->length() - start_offset);
         node = NodeTraversal::Next(*node);
       } else {
         node = NodeTraversal::ChildAt(*start_node, start_offset);
       }
-    } else if (start_node == upstream_end_.AnchorNode() &&
-               start_node->IsTextNode()) {
-      Text* text = ToText(upstream_end_.AnchorNode());
-      DeleteTextFromNode(text, 0, upstream_end_.ComputeOffsetInContainerNode());
+    } else if (start_node == upstream_end_.AnchorNode() && start_text_node) {
+      DeleteTextFromNode(start_text_node, 0,
+                         upstream_end_.ComputeOffsetInContainerNode());
     }
 
     // handle deleting all nodes that are completely selected
@@ -732,9 +714,8 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
         // The node itself is fully selected, not just its contents.  Delete it.
         RemoveNode(downstream_end_.AnchorNode(), editing_state);
       } else {
-        if (downstream_end_.AnchorNode()->IsTextNode()) {
+        if (auto* text = DynamicTo<Text>(downstream_end_.AnchorNode())) {
           // in a text node that needs to be trimmed
-          Text* text = ToText(downstream_end_.AnchorNode());
           if (downstream_end_.ComputeEditingOffset() > 0) {
             DeleteTextFromNode(text, 0, downstream_end_.ComputeEditingOffset());
           }
@@ -772,26 +753,27 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
 void DeleteSelectionCommand::FixupWhitespace() {
   GetDocument().UpdateStyleAndLayout();
   if (leading_whitespace_.IsNotNull() &&
-      !IsRenderedCharacter(leading_whitespace_) &&
-      leading_whitespace_.AnchorNode()->IsTextNode()) {
-    Text* text_node = ToText(leading_whitespace_.AnchorNode());
-    DCHECK(!text_node->GetLayoutObject() ||
-           text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
-        << text_node;
-    ReplaceTextInNode(text_node,
-                      leading_whitespace_.ComputeOffsetInContainerNode(), 1,
-                      NonBreakingSpaceString());
+      !IsRenderedCharacter(leading_whitespace_)) {
+    if (auto* text_node = DynamicTo<Text>(leading_whitespace_.AnchorNode())) {
+      DCHECK(!text_node->GetLayoutObject() ||
+             text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
+          << text_node;
+      ReplaceTextInNode(text_node,
+                        leading_whitespace_.ComputeOffsetInContainerNode(), 1,
+                        NonBreakingSpaceString());
+    }
   }
+
   if (trailing_whitespace_.IsNotNull() &&
-      !IsRenderedCharacter(trailing_whitespace_) &&
-      trailing_whitespace_.AnchorNode()->IsTextNode()) {
-    Text* text_node = ToText(trailing_whitespace_.AnchorNode());
-    DCHECK(!text_node->GetLayoutObject() ||
-           text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
-        << text_node;
-    ReplaceTextInNode(text_node,
-                      trailing_whitespace_.ComputeOffsetInContainerNode(), 1,
-                      NonBreakingSpaceString());
+      !IsRenderedCharacter(trailing_whitespace_)) {
+    if (auto* text_node = DynamicTo<Text>(trailing_whitespace_.AnchorNode())) {
+      DCHECK(!text_node->GetLayoutObject() ||
+             text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
+          << text_node;
+      ReplaceTextInNode(text_node,
+                        trailing_whitespace_.ComputeOffsetInContainerNode(), 1,
+                        NonBreakingSpaceString());
+    }
   }
 }
 

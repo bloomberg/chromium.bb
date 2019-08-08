@@ -91,6 +91,11 @@ blink::WebScreenInfo WebViewTestProxy::GetScreenInfo() {
 }
 
 void WebViewTestProxy::Reset() {
+  // TODO(https://crbug.com/961499): There is a race condition where Reset()
+  // can be called after GetWidget() has been nulled, but before this is
+  // destructed.
+  if (!GetWidget())
+    return;
   accessibility_controller_.Reset();
   // text_input_controller_ doesn't have any state to reset.
   view_test_runner_.Reset();

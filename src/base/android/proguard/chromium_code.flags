@@ -20,25 +20,25 @@
 -keep @interface org.chromium.base.annotations.UsedByReflection
 
 # Keeps for class level annotations.
--keep @org.chromium.base.annotations.UsedByReflection class * {}
+-keep @org.chromium.base.annotations.UsedByReflection class ** {}
 
 # Keeps for method level annotations.
--keepclasseswithmembers class * {
+-keepclasseswithmembers class ** {
   @org.chromium.base.annotations.AccessedByNative <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class * {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   @org.chromium.base.annotations.CalledByNative <methods>;
 }
--keepclasseswithmembers,includedescriptorclasses class * {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
 }
--keepclasseswithmembers class * {
+-keepclasseswithmembers class ** {
   @org.chromium.base.annotations.UsedByReflection <methods>;
 }
--keepclasseswithmembers class * {
+-keepclasseswithmembers class ** {
   @org.chromium.base.annotations.UsedByReflection <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class * {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   native <methods>;
 }
 
@@ -49,10 +49,10 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keepnames,allowobfuscation @org.chromium.base.annotations.DoNotInline class * {
+-keepnames,allowobfuscation @org.chromium.base.annotations.DoNotInline class ** {
   *;
 }
--keepclassmembernames,allowobfuscation class * {
+-keepclassmembernames,allowobfuscation class ** {
   @org.chromium.base.annotations.DoNotInline <methods>;
 }
 
@@ -65,7 +65,9 @@
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
 # names of just those ones. For now, we'll just keep them all.
--keepnames class org.chromium.** implements android.os.Parcelable
+-keepnames class org.chromium.** implements android.os.Parcelable {
+  <init>(...);
+}
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html

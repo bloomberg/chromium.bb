@@ -296,10 +296,10 @@ public class SearchActivityTest {
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         OmniboxSuggestion mockSuggestion = new OmniboxSuggestion(0, true, 0, 0,
                 "https://google.com", classifications, "https://google.com", classifications, null,
-                "", "https://google.com", false, false);
+                "", "https://google.com", null, null, false, false);
         OmniboxSuggestion mockSuggestion2 = new OmniboxSuggestion(0, true, 0, 0,
                 "https://android.com", classifications, "https://android.com", classifications,
-                null, "", "https://android.com", false, false);
+                null, "", "https://android.com", null, null, false, false);
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

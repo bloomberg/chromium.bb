@@ -119,6 +119,7 @@ void SaveCreditCard(Browser* browser);
 void MigrateLocalCards(Browser* browser);
 void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
+void SendTabToSelfFromPageAction(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void ShowFindBar(Browser* browser);
@@ -158,6 +159,10 @@ void DistillCurrentPage(Browser* browser);
 bool CanRequestTabletSite(content::WebContents* current_tab);
 bool IsRequestingTabletSite(Browser* browser);
 void ToggleRequestTabletSite(Browser* browser);
+// Overwrite the user agent's OS with Android OS so that the web content is
+// using its mobile version layout. Note it won't take effect until the web
+// contents is reloaded.
+void SetAndroidOsForTabletSite(content::WebContents* current_tab);
 void ToggleFullscreenMode(Browser* browser);
 void ClearCache(Browser* browser);
 bool IsDebuggerAttachedToCurrentTab(Browser* browser);

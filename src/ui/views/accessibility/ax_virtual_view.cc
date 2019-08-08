@@ -153,17 +153,6 @@ void AXVirtualView::RemoveAllChildViews() {
   }
 }
 
-const AXVirtualView* AXVirtualView::child_at(int index) const {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, static_cast<int>(children_.size()));
-  return children_[index].get();
-}
-
-AXVirtualView* AXVirtualView::child_at(int index) {
-  return const_cast<AXVirtualView*>(
-      const_cast<const AXVirtualView*>(this)->child_at(index));
-}
-
 bool AXVirtualView::Contains(const AXVirtualView* view) const {
   DCHECK(view);
   for (const AXVirtualView* v = view; v; v = v->virtual_parent_view_) {
@@ -219,7 +208,7 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
 
   node_data.id = GetUniqueId().Get();
 
-  if (!GetOwnerView() || !GetOwnerView()->enabled())
+  if (!GetOwnerView() || !GetOwnerView()->GetEnabled())
     node_data.SetRestriction(ax::mojom::Restriction::kDisabled);
 
   if (!GetOwnerView() || !GetOwnerView()->IsDrawn())

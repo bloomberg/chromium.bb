@@ -15,6 +15,7 @@
 #include "VkPipeline.hpp"
 #include "VkPipelineLayout.hpp"
 #include "VkShaderModule.hpp"
+#include "VkRenderPass.hpp"
 #include "Pipeline/ComputeProgram.hpp"
 #include "Pipeline/SpirvShader.hpp"
 
@@ -170,9 +171,12 @@ std::vector<uint32_t> preprocessSpirv(
 		case SPV_MSG_INFO:           category = "INFO";           break;
 		case SPV_MSG_DEBUG:          category = "DEBUG";          break;
 		}
-		vk::trace("%s: %d:%d %s", category, p.line, p.column, m);
+		vk::trace("%s: %d:%d %s", category, int(p.line), int(p.column), m);
 	});
 
+
+	opt.RegisterPass(spvtools::CreateDeadBranchElimPass()); // Required for MergeReturnPass
+	opt.RegisterPass(spvtools::CreateMergeReturnPass());
 	opt.RegisterPass(spvtools::CreateInlineExhaustivePass());
 	opt.RegisterPass(spvtools::CreateEliminateDeadFunctionsPass());
 
@@ -190,9 +194,6 @@ std::vector<uint32_t> preprocessSpirv(
 		}
 		opt.RegisterPass(spvtools::CreateSetSpecConstantDefaultValuePass(specializations));
 	}
-	// Freeze specialization constants into normal constants, and propagate through
-	opt.RegisterPass(spvtools::CreateFreezeSpecConstantValuePass());
-	opt.RegisterPass(spvtools::CreateFoldSpecConstantOpAndCompositePass());
 
 	// Basic optimization passes to primarily address glslang's love of loads &
 	// stores. Significantly reduces time spent in LLVM passes and codegen.
@@ -229,8 +230,10 @@ Pipeline::Pipeline(PipelineLayout const *layout) : layout(layout) {}
 GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateInfo, void* mem)
 	: Pipeline(Cast(pCreateInfo->layout))
 {
-	if(((pCreateInfo->flags & ~(VK_PIPELINE_CREATE_DERIVATIVE_BIT | VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT)) != 0) ||
-	   (pCreateInfo->stageCount != 2) ||
+	if(((pCreateInfo->flags &
+		~(VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT |
+	      VK_PIPELINE_CREATE_DERIVATIVE_BIT |
+	      VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT)) != 0) ||
 	   (pCreateInfo->pTessellationState != nullptr))
 	{
 		UNIMPLEMENTED("pCreateInfo settings");
@@ -295,12 +298,12 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 	}
 
 	const VkPipelineInputAssemblyStateCreateInfo* assemblyState = pCreateInfo->pInputAssemblyState;
-	if((assemblyState->flags != 0) ||
-	   (assemblyState->primitiveRestartEnable != 0))
+	if(assemblyState->flags != 0)
 	{
 		UNIMPLEMENTED("pCreateInfo->pInputAssemblyState settings");
 	}
 
+	primitiveRestartEnable = assemblyState->primitiveRestartEnable;
 	context.topology = assemblyState->topology;
 
 	const VkPipelineViewportStateCreateInfo* viewportState = pCreateInfo->pViewportState;
@@ -355,9 +358,10 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 		if (multisampleState->pSampleMask)
 			context.sampleMask = multisampleState->pSampleMask[0];
 
+		context.alphaToCoverage = (multisampleState->alphaToCoverageEnable == VK_TRUE);
+
 		if((multisampleState->flags != 0) ||
 			(multisampleState->sampleShadingEnable != 0) ||
-				(multisampleState->alphaToCoverageEnable != 0) ||
 			(multisampleState->alphaToOneEnable != 0))
 		{
 			UNIMPLEMENTED("multisampleState");
@@ -394,8 +398,7 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 	if(colorBlendState)
 	{
 		if((colorBlendState->flags != 0) ||
-		   ((colorBlendState->logicOpEnable != 0) &&
-			(colorBlendState->attachmentCount > 1)))
+		   ((colorBlendState->logicOpEnable != 0)))
 		{
 			UNIMPLEMENTED("colorBlendState");
 		}
@@ -408,14 +411,16 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 			blendConstants.a = colorBlendState->blendConstants[3];
 		}
 
-		if(colorBlendState->attachmentCount == 1)
+		for (auto i = 0u; i < colorBlendState->attachmentCount; i++)
+		{
+			const VkPipelineColorBlendAttachmentState& attachment = colorBlendState->pAttachments[i];
+			context.setColorWriteMask(i, attachment.colorWriteMask);
+		}
+
+		if(colorBlendState->attachmentCount > 0)
 		{
 			const VkPipelineColorBlendAttachmentState& attachment = colorBlendState->pAttachments[0];
-			context.setColorWriteMask(0, attachment.colorWriteMask);
 			context.alphaBlendEnable = (attachment.blendEnable == VK_TRUE);
-			context.separateAlphaBlendEnable = (attachment.alphaBlendOp != attachment.colorBlendOp) ||
-											   (attachment.dstAlphaBlendFactor != attachment.dstColorBlendFactor) ||
-											   (attachment.srcAlphaBlendFactor != attachment.srcColorBlendFactor);
 			context.blendOperationStateAlpha = attachment.alphaBlendOp;
 			context.blendOperationState = attachment.colorBlendOp;
 			context.destBlendFactorStateAlpha = attachment.dstAlphaBlendFactor;
@@ -451,15 +456,17 @@ void GraphicsPipeline::compileShaders(const VkAllocationCallbacks* pAllocator, c
 
 		// FIXME (b/119409619): use an allocator here so we can control all memory allocations
 		// TODO: also pass in any pipeline state which will affect shader compilation
-		auto spirvShader = new sw::SpirvShader{code};
+		auto spirvShader = new sw::SpirvShader{pStage, code, Cast(pCreateInfo->renderPass), pCreateInfo->subpass};
 
 		switch (pStage->stage)
 		{
 		case VK_SHADER_STAGE_VERTEX_BIT:
+			ASSERT(vertexShader == nullptr);
 			context.vertexShader = vertexShader = spirvShader;
 			break;
 
 		case VK_SHADER_STAGE_FRAGMENT_BIT:
+			ASSERT(fragmentShader == nullptr);
 			context.pixelShader = fragmentShader = spirvShader;
 			break;
 
@@ -478,13 +485,13 @@ uint32_t GraphicsPipeline::computePrimitiveCount(uint32_t vertexCount) const
 	case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
 		return vertexCount / 2;
 	case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
-		return vertexCount - 1;
+		return std::max<uint32_t>(vertexCount, 1) - 1;
 	case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
 		return vertexCount / 3;
 	case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
-		return vertexCount - 2;
+		return std::max<uint32_t>(vertexCount, 2) - 2;
 	case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
-		return vertexCount - 2;
+		return std::max<uint32_t>(vertexCount, 2) - 2;
 	default:
 		UNIMPLEMENTED("context.topology %d", int(context.topology));
 	}
@@ -525,6 +532,7 @@ ComputePipeline::ComputePipeline(const VkComputePipelineCreateInfo* pCreateInfo,
 void ComputePipeline::destroyPipeline(const VkAllocationCallbacks* pAllocator)
 {
 	delete shader;
+	delete program;
 }
 
 size_t ComputePipeline::ComputeRequiredAllocationSize(const VkComputePipelineCreateInfo* pCreateInfo)
@@ -543,24 +551,23 @@ void ComputePipeline::compileShaders(const VkAllocationCallbacks* pAllocator, co
 	ASSERT(shader == nullptr);
 
 	// FIXME(b/119409619): use allocator.
-	shader = new sw::SpirvShader(code);
+	shader = new sw::SpirvShader(&pCreateInfo->stage, code, nullptr, 0);
 	vk::DescriptorSet::Bindings descriptorSets;  // FIXME(b/129523279): Delay code generation until invoke time.
-	sw::ComputeProgram program(shader, layout, descriptorSets);
-
-	program.generate();
-
-	// TODO(bclayton): Cache program
-	routine = program("ComputeRoutine");
+	program = new sw::ComputeProgram(shader, layout, descriptorSets);
+	program->generate();
+	program->finalize();
 }
 
-void ComputePipeline::run(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
+void ComputePipeline::run(uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ,
+	uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
 	vk::DescriptorSet::Bindings const &descriptorSets,
 	vk::DescriptorSet::DynamicOffsets const &descriptorDynamicOffsets,
 	sw::PushConstantStorage const &pushConstants)
 {
-	ASSERT_OR_RETURN(routine != nullptr);
-	sw::ComputeProgram::run(
-		routine, descriptorSets, descriptorDynamicOffsets, pushConstants,
+	ASSERT_OR_RETURN(program != nullptr);
+	program->run(
+		descriptorSets, descriptorDynamicOffsets, pushConstants,
+		baseGroupX, baseGroupY, baseGroupZ,
 		groupCountX, groupCountY, groupCountZ);
 }
 

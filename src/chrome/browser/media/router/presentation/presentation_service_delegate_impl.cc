@@ -25,7 +25,7 @@
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/presentation_request.h"
@@ -164,7 +164,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
   MediaRouterMetrics::RecordPresentationUrlType(url);
 
-  MediaSource source = MediaSourceForPresentationUrl(url);
+  MediaSource source = MediaSource::ForPresentationUrl(url);
   auto& sinks_observer = url_to_sinks_observer_[source.id()];
   if (sinks_observer && sinks_observer->listener() == listener)
     return false;
@@ -185,7 +185,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 void PresentationFrame::RemoveScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
   MediaSource source =
-      MediaSourceForPresentationUrl(listener->GetAvailabilityUrl());
+      MediaSource::ForPresentationUrl(listener->GetAvailabilityUrl());
   auto sinks_observer_it = url_to_sinks_observer_.find(source.id());
   if (sinks_observer_it != url_to_sinks_observer_.end() &&
       sinks_observer_it->second->listener() == listener) {
@@ -601,7 +601,7 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
     const GURL& presentation_url = presentation_urls[0];
     bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
     router_->JoinRoute(
-        MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
+        MediaSource::ForPresentationUrl(presentation_url).id(), presentation_id,
         request.frame_origin, web_contents_,
         base::BindOnce(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
                        GetWeakPtr(), render_frame_host_id, presentation_url,

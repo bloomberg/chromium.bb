@@ -9,7 +9,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.support.v7.widget.GridLayoutManager;
@@ -43,9 +45,9 @@ class TabGridContainerViewBinder {
         } else if (VISIBILITY_LISTENER == propertyKey) {
             view.setVisibilityListener(model.get(VISIBILITY_LISTENER));
         } else if (INITIAL_SCROLL_INDEX == propertyKey) {
-            // recyclerview.scrollToPosition() behaves incorrectly after cold start.
-            ((GridLayoutManager) view.getLayoutManager())
-                    .scrollToPositionWithOffset(model.get(INITIAL_SCROLL_INDEX), 0);
+            // RecyclerView#scrollToPosition(int) behaves incorrectly first time after cold start.
+            int index = (Integer) model.get(INITIAL_SCROLL_INDEX);
+            ((GridLayoutManager) view.getLayoutManager()).scrollToPositionWithOffset(index, 0);
         } else if (TOP_CONTROLS_HEIGHT == propertyKey) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
             params.topMargin = model.get(TOP_CONTROLS_HEIGHT);
@@ -54,6 +56,11 @@ class TabGridContainerViewBinder {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
             params.bottomMargin = model.get(BOTTOM_CONTROLS_HEIGHT);
             view.requestLayout();
+        } else if (TOP_PADDING == propertyKey) {
+            view.setPadding(view.getPaddingLeft(), model.get(TOP_PADDING), view.getPaddingRight(),
+                    view.getPaddingBottom());
+        } else if (SHADOW_TOP_MARGIN == propertyKey) {
+            view.setShadowTopMargin(model.get(SHADOW_TOP_MARGIN));
         }
     }
 }

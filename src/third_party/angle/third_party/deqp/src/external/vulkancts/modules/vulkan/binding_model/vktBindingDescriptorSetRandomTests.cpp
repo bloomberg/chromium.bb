@@ -531,7 +531,7 @@ void DescriptorSetRandomTestCase::initPrograms (SourceCollections& programCollec
 					decls << "layout(set = " << s << ", binding = " << b << ") buffer sbodef" << s << "_" << b << " { int val; } ssbo" << s << "_" << b << array.str()  << ";\n";
 					break;
 				case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-					decls << "layout(set = " << s << ", binding = " << b << ") uniform isamplerBuffer texbo" << s << "_" << b << array.str()  << ";\n";
+					decls << "layout(set = " << s << ", binding = " << b << ") uniform itextureBuffer texbo" << s << "_" << b << array.str()  << ";\n";
 					break;
 				case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
 					decls << "layout(r32i, set = " << s << ", binding = " << b << ") uniform iimageBuffer image" << s << "_" << b << array.str()  << ";\n";
@@ -700,6 +700,7 @@ void DescriptorSetRandomTestCase::initPrograms (SourceCollections& programCollec
 				"  uvec4 color = (accum != 0) ? uvec4(0,0,0,0) : uvec4(1,0,0,1);\n"
 				"  imageStore(image0_0, ivec2(gl_VertexIndex % " << DIM << ", gl_VertexIndex / " << DIM << "), color);\n"
 				"  gl_PointSize = 1.0f;\n"
+				"  gl_Position = vec4(0.0f, 0.0f, 0.0f, 1.0f);\n"
 				"}\n";
 
 			programCollection.glslSources.add("test") << glu::VertexSource(vss.str());

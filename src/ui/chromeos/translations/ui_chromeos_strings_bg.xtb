@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Транслитерация (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Изглед на слайд</translation>
 <translation id="1045157690796831147">Транслитерация (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Въвеждане на японски (за американска клавиатура)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> елемента се изтриват...</translation>
 <translation id="1049926623896334335">Документ в Word</translation>
 <translation id="1062407476771304334">Замяна</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1351692861129622852">Импортират се <ph name="FILE_COUNT" /> файла...</translation>
 <translation id="1352103415082130575">Тайландска клавиатура (паташот)</translation>
-<translation id="1358032944105037487">Японска клавиатура</translation>
 <translation id="1358735829858566124">Файлът или директорията не могат да се използват.</translation>
 <translation id="1363028406613469049">Запис</translation>
 <translation id="1378727793141957596">Добре дошли в Google Диск!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">На <ph name="FILE_COUNT" /> снимки бяха създадени резервни копия в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Копира се...</translation>
 <translation id="3475447146579922140">Електронна таблица в Google</translation>
-<translation id="3494768541638400973">Google Редактор с метод за въвеждане на японски (за японска клавиатура)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
 <translation id="3522708245912499433">португалски</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Към drive.google.com...</translation>
 <translation id="357479282490346887">литовски</translation>
+<translation id="3583509704582854624">Въвеждане на буквено-цифрени знаци (за японска клавиатура)</translation>
 <translation id="3603385196401704894">Канадска (френски) клавиатура</translation>
 <translation id="3606220979431771195">Турски (тип „F“)</translation>
 <translation id="3609785682760573515">Синхронизира се...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">Трябва да сте онлайн, за да осъществите достъп до този файл.</translation>
 <translation id="4212740939091998969">Папката „<ph name="FOLDER_NAME" />“ вече съществува. Моля, изберете друго име.</translation>
 <translation id="4215448920900139318">Създаваме резервно копие на <ph name="FILE_COUNT" /></translation>
+<translation id="4242533952199664413">Отваряне на настройките</translation>
 <translation id="426015154560005552">Арабска клавиатура</translation>
 <translation id="4261901459838235729">Презентация в Google</translation>
 <translation id="4290535918735525311">1 папка е споделена с Linux</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984">Файл от тип <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Още...</translation>
 <translation id="4582497162516204941">Инсталиране чрез Linux (бета)</translation>
-<translation id="4584780943629874245">Споделяне с Plugin VM</translation>
 <translation id="4631887759990505102">Изпълнител</translation>
 <translation id="4656293982926141856">Този компютър</translation>
 <translation id="4669606053856530811">Членовете на „<ph name="SOURCE_NAME" />“ ще загубят достъп, ако тези елементи не са споделени с тях.</translation>
 <translation id="4690246192099372265">шведски</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694604912444486114">Маймуна</translation>
+<translation id="4697043402264950621">Списъкът с файлове е сортиран във възходящ ред по <ph name="COLUMN_NAME" />.</translation>
 <translation id="4711094779914110278">турски</translation>
 <translation id="4713544552769165154">Този файл е предназначен за компютри със софтуер Macintosh и не е съвместим с устройството ви с Chrome OS. Моля, потърсете в <ph name="BEGIN_LINK" />уеб магазина на Chrome<ph name="END_LINK" /> подходящо приложение със същата функционалност. <ph name="BEGIN_LINK_HELP" />Научете повече<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">На <ph name="FILE_COUNT" /> снимки бяха създадени резервни копия</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242">Избрани са <ph name="SELCTED_FILES_COUNT" /> елемента</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="485316830061041779">немски</translation>
+<translation id="4867079195717347957">Кликнете, за да сортирате колоната в низходящ ред.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> байта</translation>
 <translation id="4880214202172289027">Плъзгач за силата на звука</translation>
 <translation id="4880520557730313061">Автокоригиране</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">Нидерландска клавиатура</translation>
 <translation id="5170477580121653719">Оставащо място в Google Диск: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Изглед с миниизображения</translation>
+<translation id="5194713942430106590">Кликнете, за да сортирате колоната във възходящ ред.</translation>
 <translation id="5218183485292899140">Швейцарска (френски) клавиатура</translation>
 <translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="5241298539944515331">Виетнамска клавиатура (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">корейски</translation>
 <translation id="5819442873484330149">Хангъл, 3 набора (окончателна)</translation>
 <translation id="5833610766403489739">Този файл се е скрил някъде. Моля, проверете настройката си за местоположението на изтеглянията и опитайте отново.</translation>
+<translation id="5838051104334203064">Приложенията от Google Play Магазин нямат достъп до това устройство</translation>
 <translation id="5838825566232597749">Американска (Уъркман) международна клавиатура</translation>
 <translation id="5850516540536751549">Този файлов тип не се поддържа. Моля, посетете <ph name="BEGIN_LINK" />уеб магазина на Chrome<ph name="END_LINK" />, за да намерите приложение, което може да го отвори.
    <ph name="BEGIN_LINK_HELP" />Научете повече<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">Френска (BÉPO) клавиатура</translation>
 <translation id="5911887972742538906">Възникна грешка при инсталирането на приложението за Linux.</translation>
 <translation id="5913638992615760742">Копирането не бе успешно. Възникна неочаквана грешка: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Въвеждане на японски (за японска клавиатура)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Разрешете на приложенията под Linux да променят файловете в профила ви в Google Диск. Промените ще се синхронизират с другите ви устройства.</translation>
 <translation id="5982621672636444458">Опции за сортиране</translation>
@@ -497,7 +502,6 @@
 <ph name="LINE_BREAK1" />
 Намерихме <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Наопаки</translation>
-<translation id="6937152069980083337">Google Редактор с метод за въвеждане на японски (за американска клавиатура)</translation>
 <translation id="6939777852457331078">Американска (Уъркман) клавиатура</translation>
 <translation id="696203921837389374">Активиране на синхронизирането чрез мобилни данни</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="7348749398828259943">Американска (Уъркман) международна клавиатура</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> елемента се копират...</translation>
-<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> папки са споделени с Plugin VM</translation>
+<translation id="7375951387215729722">Списъкът с файлове е сортиран в низходящ ред по <ph name="COLUMN_NAME" />.</translation>
 <translation id="7389722738210761877">Тайландска клавиатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавиатура на хинди (фонетична)</translation>
 <translation id="7417453074306512035">Етиопска клавиатура</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">словенски</translation>
 <translation id="7982283708762922719">Височина</translation>
 <translation id="7987485481246785146">Кюрдски (сорани), базирана на арабски клавиатура</translation>
-<translation id="7990715602172183602">1 папка е споделена с Plugin VM</translation>
 <translation id="799547531016638432">Премахване на прекия път</translation>
 <translation id="799923393800005025">Може да преглежда</translation>
 <translation id="8008366997883261463">Джак Ръсел териер</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">Вече съществува файл или директория със същото име.</translation>
 <translation id="8391950649760071442">Транслитерация (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Размери</translation>
-<translation id="8400874747056634633">Управление на споделянето с Plugin VM</translation>
 <translation id="8412586565681117057">Бърз метод на въвеждане</translation>
 <translation id="8418113698656761985">Румънска клавиатура</translation>
 <translation id="8432745813735585631">Американска (Коулмак) клавиатура</translation>

@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -84,7 +84,7 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
   Element* parent = ToElement(GetDocument().body()->firstChild()->firstChild());
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
-  Persistent<Document> another_document = Document::CreateForTest();
+  Persistent<Document> another_document = MakeGarbageCollected<Document>();
   another_document->adoptNode(parent, ASSERT_NO_EXCEPTION);
 
   // No more reference to marked node.
@@ -373,7 +373,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
 
   ASSERT_EQ(1u, MarkerController().Markers().size());
   auto* marker = To<SuggestionMarker>(MarkerController().Markers()[0].Get());
-  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker->Tag());
+  MarkerController().RemoveSuggestionMarkerByTag(*To<Text>(text),
+                                                 marker->Tag());
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -397,7 +398,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
 
   const auto* marker =
       To<SuggestionMarker>(MarkerController().Markers()[0].Get());
-  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker->Tag());
+  MarkerController().RemoveSuggestionMarkerByTag(*To<Text>(text),
+                                                 marker->Tag());
   ASSERT_EQ(0u, MarkerController().Markers().size());
 
   // Add a suggestion marker which need to be removed after finish composing,
@@ -420,7 +422,7 @@ TEST_F(DocumentMarkerControllerTest, FirstMarkerIntersectingOffsetRange) {
   SetBodyContent("<div contenteditable>123456789</div>");
   GetDocument().UpdateStyleAndLayout();
   Element* div = GetDocument().QuerySelector("div");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
 
   // Add a spelling marker on "123"
   MarkerController().AddSpellingMarker(
@@ -441,7 +443,7 @@ TEST_F(DocumentMarkerControllerTest,
   SetBodyContent("<div contenteditable>123456789</div>");
   GetDocument().UpdateStyleAndLayout();
   Element* div = GetDocument().QuerySelector("div");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
 
   // Add a spelling marker on "123"
   MarkerController().AddSpellingMarker(

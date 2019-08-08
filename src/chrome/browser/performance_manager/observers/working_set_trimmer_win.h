@@ -26,7 +26,7 @@ namespace performance_manager {
 //   to be compressed and/or written to disk preemptively, which makes more
 //   memory available quickly for foreground processes and improves global
 //   browser performance.
-class WorkingSetTrimmer : public GraphObserver {
+class WorkingSetTrimmer : public GraphObserverDefaultImpl {
  public:
   WorkingSetTrimmer();
   ~WorkingSetTrimmer() override;

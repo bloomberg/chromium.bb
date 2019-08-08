@@ -33,12 +33,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -81,6 +82,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -572,6 +574,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   response_object->setFromDiskCache(response.WasCached());
   response_object->setFromServiceWorker(response.WasFetchedViaServiceWorker());
+  response_object->setFromPrefetchCache(response.WasInPrefetchCache());
   if (response.GetResourceLoadTiming())
     response_object->setTiming(
         BuildObjectForTiming(*response.GetResourceLoadTiming()));
@@ -808,12 +811,12 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       CurrentTimeTicksInSeconds(), CurrentTime(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id), request.HasUserGesture());
+  if (is_handling_sync_xhr_)
+    GetFrontend()->flush();
 
   if (pending_xhr_replay_data_) {
     resources_data_->SetXHRReplayData(request_id,
                                       pending_xhr_replay_data_.Get());
-    if (!pending_xhr_replay_data_->Async())
-      GetFrontend()->flush();
     pending_xhr_replay_data_.Clear();
   }
   pending_request_type_ = base::nullopt;
@@ -1057,6 +1060,7 @@ void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
   if (monotonic_finish_time.is_null())
     monotonic_finish_time = CurrentTimeTicks();
 
+  is_handling_sync_xhr_ = false;
   // TODO(npm): Use TimeTicks in Network.h.
   GetFrontend()->loadingFinished(
       request_id, monotonic_finish_time.since_origin().InSecondsF(),
@@ -1086,6 +1090,7 @@ void InspectorNetworkAgent::DidFailLoading(uint64_t identifier,
     blocked_reason =
         BuildBlockedReason(resource_request_blocked_reason.value());
   }
+  is_handling_sync_xhr_ = false;
   GetFrontend()->loadingFailed(
       request_id, CurrentTimeTicksInSeconds(),
       InspectorPageAgent::ResourceTypeJson(
@@ -1124,6 +1129,9 @@ void InspectorNetworkAgent::WillLoadXHR(ExecutionContext* execution_context,
       form_data ? form_data->DeepCopy() : nullptr, include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
+  DCHECK(!is_handling_sync_xhr_);
+  if (!async)
+    is_handling_sync_xhr_ = true;
 }
 
 void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
@@ -1519,8 +1527,10 @@ Response InspectorNetworkAgent::getCertificate(
         SecurityOrigin::Create(resource->RequestedURL());
     if (resource_origin->IsSameSchemeHostPort(security_origin.get()) &&
         resource->Certificate().size()) {
-      for (auto& cert : resource->Certificate())
-        certificate->get()->addItem(Base64Encode(cert.Latin1()));
+      for (auto& cert : resource->Certificate()) {
+        certificate->get()->addItem(
+            Base64Encode(base::as_bytes(base::make_span(cert.Latin1()))));
+      }
       return Response::OK();
     }
   }

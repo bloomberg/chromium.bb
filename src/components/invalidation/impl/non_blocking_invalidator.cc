@@ -273,12 +273,6 @@ bool NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
   return true;
 }
 
-bool NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
-                                                 const TopicSet& ids) {
-  NOTREACHED();
-  return false;
-}
-
 void NonBlockingInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.UnregisterHandler(handler);

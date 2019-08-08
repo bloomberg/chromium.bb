@@ -8,9 +8,8 @@
 /**
  * @fileoverview An UI component to authenciate to Chrome. The component hosts
  * IdP web pages in a webview. A client who is interested in monitoring
- * authentication events should pass a listener object of type
- * cr.login.GaiaAuthHost.Listener as defined in this file. After initialization,
- * call {@code load} to start the authentication flow.
+ * authentication events should subscribe itself via addEventListener(). After
+ * initialization, call {@code load} to start the authentication flow.
  *
  * See go/cros-auth-design for details on Google API.
  */
@@ -22,14 +21,10 @@ cr.define('cr.login', function() {
   // of hardcoding the prod URL here.  As is, this does not work with staging
   // environments.
   const IDP_ORIGIN = 'https://accounts.google.com/';
-  const IDP_PATH = 'ServiceLogin?skipvpage=true&sarp=1&rm=hide';
-  const CONTINUE_URL =
-      'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html';
   const SIGN_IN_HEADER = 'google-accounts-signin';
   const EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   const LOCATION_HEADER = 'location';
   const SERVICE_ID = 'chromeoslogin';
-  const EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
   const EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2 = 'embedded/setup/v2/chromeos';
   const SAML_REDIRECTION_PATH = 'samlredirect';
   const BLANK_PAGE_URL = 'about:blank';
@@ -64,7 +59,6 @@ cr.define('cr.login', function() {
     'gaiaPath',      // Gaia path to use without a leading slash.
     'hl',            // Language code for the user interface.
     'service',       // Name of Gaia service.
-    'continueUrl',   // Continue url to use.
     'frameUrl',      // Initial frame URL to use. If empty defaults to
                      // gaiaUrl.
     'constrained',   // Whether the extension is loaded in a constrained
@@ -84,7 +78,6 @@ cr.define('cr.login', function() {
     'platformVersion',           // Version of the OS build.
     'releaseChannel',            // Installation channel.
     'endpointGen',               // Current endpoint generation.
-    'chromeOSApiVersion',        // GAIA Chrome OS API version
     'menuGuestMode',             // Enables "Guest mode" menu item
     'menuKeyboardOptions',       // Enables "Keyboard options" menu item
     'menuEnterpriseEnrollment',  // Enables "Enterprise enrollment" menu item.
@@ -94,6 +87,9 @@ cr.define('cr.login', function() {
     'obfuscatedOwnerId',         // Obfuscated device owner ID, if needed.
     'extractSamlPasswordAttributes',  // If enabled attempts to extract password
                                       // attributes from the SAML response.
+    'ignoreCrOSIdpSetting',  // If set to true, causes Gaia to ignore 3P
+                             // SAML IdP SSO redirection policies (and
+                             // redirect to SAML IdPs by default).
 
     // The email fields allow for the following possibilities:
     //
@@ -120,7 +116,7 @@ cr.define('cr.login', function() {
    */
   class Authenticator extends cr.EventTarget {
     /**
-     * @param {webview|string} webview The webview element or its ID to host
+     * @param {!WebView|string} webview The webview element or its ID to host
      *     IdP web pages.
      */
     constructor(webview) {
@@ -134,14 +130,19 @@ cr.define('cr.login', function() {
       this.skipForNow_ = false;
       this.authFlow = AuthFlow.DEFAULT;
       this.authDomain = '';
+      /**
+       * @type {!cr.login.SamlHandler|undefined}
+       * @private
+       */
+      this.samlHandler_ = undefined;
       this.videoEnabled = false;
       this.idpOrigin_ = null;
-      this.continueUrl_ = null;
-      this.continueUrlWithoutParams_ = null;
       this.initialFrameUrl_ = null;
       this.reloadUrl_ = null;
       this.trusted_ = true;
       this.readyFired_ = false;
+      this.webview_ = typeof webview == 'string' ? $(webview) : webview;
+      assert(this.webview_);
       this.webviewEventManager_ = WebviewEventManager.create();
 
       this.clientId_ = null;
@@ -169,12 +170,22 @@ cr.define('cr.login', function() {
        */
       this.isSamlUserPasswordless_ = null;
 
-      this.bindToWebview_(webview);
-
       window.addEventListener(
           'message', this.onMessageFromWebview_.bind(this), false);
       window.addEventListener('focus', this.onFocus_.bind(this), false);
       window.addEventListener('popstate', this.onPopState_.bind(this), false);
+
+      /**
+       * @type {boolean}
+       * @private
+       */
+      this.isDomLoaded_ = document.readyState != 'loading';
+      if (this.isDomLoaded_) {
+        this.initializeAfterDomLoaded_();
+      } else {
+        document.addEventListener(
+            'DOMContentLoaded', this.initializeAfterDomLoaded_.bind(this));
+      }
     }
 
     /**
@@ -208,16 +219,23 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Binds this authenticator to the passed webview.
-     * @param {!Object} webview the new webview to be used by this
-     *     Authenticator.
+     * Completes the part of the initialization that should happen after the
+     * page's DOM has loaded.
      * @private
      */
-    bindToWebview_(webview) {
-      assert(!this.webview_);
-      assert(!this.samlHandler_);
+    initializeAfterDomLoaded_() {
+      this.isDomLoaded_ = true;
+      this.bindToWebview_();
+    }
 
-      this.webview_ = typeof webview == 'string' ? $(webview) : webview;
+    /**
+     * Binds this authenticator to the current |webview_|.
+     * @private
+     */
+    bindToWebview_() {
+      assert(this.webview_);
+      assert(this.webview_.request);
+      assert(!this.samlHandler_);
 
       this.samlHandler_ =
           new cr.login.SamlHandler(this.webview_, false /* startsOnSamlPage */);
@@ -275,8 +293,16 @@ cr.define('cr.login', function() {
      * @param {Object} webview the new webview to be used by this Authenticator.
      */
     rebindWebview(webview) {
+      if (!this.isDomLoaded_) {
+        // We haven't bound to the previously set webview yet, so simply update
+        // |webview_| to use the new element during the delayed initialization.
+        this.webview_ = webview;
+        return;
+      }
       this.unbindFromWebview_();
-      this.bindToWebview_(webview);
+      assert(!this.webview_);
+      this.webview_ = webview;
+      this.bindToWebview_();
     }
 
     /**
@@ -290,15 +316,9 @@ cr.define('cr.login', function() {
       // gaiaUrl parameter is used for testing. Once defined, it is never
       // changed.
       this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
-      this.continueUrl_ = data.continueUrl || CONTINUE_URL;
-      this.continueUrlWithoutParams_ =
-          this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
-          this.continueUrl_;
       this.isConstrainedWindow_ = data.constrained == '1';
-      this.isNewGaiaFlow = data.isNewGaiaFlow;
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
-      this.chromeOSApiVersion_ = data.chromeOSApiVersion;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -310,22 +330,16 @@ cr.define('cr.login', function() {
           data.extractSamlPasswordAttributes;
       this.needPassword = !('needPassword' in data) || data.needPassword;
 
-      if (this.isNewGaiaFlow) {
-        this.webview_.contextMenus.onShow.addListener(function(e) {
-          e.preventDefault();
-        });
-      }
+      this.webview_.contextMenus.onShow.addListener(function(e) {
+        e.preventDefault();
+      });
 
       this.webview_.src = this.reloadUrl_;
       this.isLoaded_ = true;
     }
 
     constructChromeOSAPIUrl_() {
-      if (this.chromeOSApiVersion_ && this.chromeOSApiVersion_ == 2) {
-        return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2;
-      }
-
-      return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
+      return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2;
     }
 
     /**
@@ -354,63 +368,54 @@ cr.define('cr.login', function() {
       let url;
       if (data.gaiaPath) {
         url = this.idpOrigin_ + data.gaiaPath;
-      } else if (this.isNewGaiaFlow) {
-        url = this.constructChromeOSAPIUrl_();
       } else {
-        url = this.idpOrigin_ + IDP_PATH;
+        url = this.constructChromeOSAPIUrl_();
       }
 
-      if (this.isNewGaiaFlow) {
-        if (data.chromeType) {
-          url = appendParam(url, 'chrometype', data.chromeType);
-        }
-        if (data.clientId) {
-          url = appendParam(url, 'client_id', data.clientId);
-        }
-        if (data.enterpriseDisplayDomain) {
-          url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
-        }
-        if (data.clientVersion) {
-          url = appendParam(url, 'client_version', data.clientVersion);
-        }
-        if (data.platformVersion) {
-          url = appendParam(url, 'platform_version', data.platformVersion);
-        }
-        if (data.releaseChannel) {
-          url = appendParam(url, 'release_channel', data.releaseChannel);
-        }
-        if (data.endpointGen) {
-          url = appendParam(url, 'endpoint_gen', data.endpointGen);
-        }
-        if (data.chromeOSApiVersion == 2) {
-          let mi = '';
-          if (data.menuGuestMode) {
-            mi += 'gm,';
-          }
-          if (data.menuKeyboardOptions) {
-            mi += 'ko,';
-          }
-          if (data.menuEnterpriseEnrollment) {
-            mi += 'ee,';
-          }
-          if (mi.length) {
-            url = appendParam(url, 'mi', mi);
-          }
+      if (data.chromeType) {
+        url = appendParam(url, 'chrometype', data.chromeType);
+      }
+      if (data.clientId) {
+        url = appendParam(url, 'client_id', data.clientId);
+      }
+      if (data.enterpriseDisplayDomain) {
+        url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
+      }
+      if (data.clientVersion) {
+        url = appendParam(url, 'client_version', data.clientVersion);
+      }
+      if (data.platformVersion) {
+        url = appendParam(url, 'platform_version', data.platformVersion);
+      }
+      if (data.releaseChannel) {
+        url = appendParam(url, 'release_channel', data.releaseChannel);
+      }
+      if (data.endpointGen) {
+        url = appendParam(url, 'endpoint_gen', data.endpointGen);
+      }
+      let mi = '';
+      if (data.menuGuestMode) {
+        mi += 'gm,';
+      }
+      if (data.menuKeyboardOptions) {
+        mi += 'ko,';
+      }
+      if (data.menuEnterpriseEnrollment) {
+        mi += 'ee,';
+      }
+      if (mi.length) {
+        url = appendParam(url, 'mi', mi);
+      }
 
-          if (data.lsbReleaseBoard) {
-            url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
-          }
-          if (data.isFirstUser) {
-            url = appendParam(url, 'is_first_user', true);
-          }
-          if (data.obfuscatedOwnerId) {
-            url =
-                appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
-          }
+      if (data.isFirstUser) {
+        url = appendParam(url, 'is_first_user', true);
+
+        if (data.lsbReleaseBoard) {
+          url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
         }
-      } else {
-        url = appendParam(url, 'continue', this.continueUrl_);
-        url = appendParam(url, 'service', data.service || SERVICE_ID);
+      }
+      if (data.obfuscatedOwnerId) {
+        url = appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
       }
       if (data.hl) {
         url = appendParam(url, 'hl', data.hl);
@@ -437,6 +442,9 @@ cr.define('cr.login', function() {
         // argument to show an email domain.
         url = appendParam(url, 'hd', data.emailDomain);
       }
+      if (data.ignoreCrOSIdpSetting === true) {
+        url = appendParam(url, 'ignoreCrOSIdpSetting', 'true');
+      }
       return url;
     }
 
@@ -458,16 +466,6 @@ cr.define('cr.login', function() {
      */
     onRequestCompleted_(details) {
       const currentUrl = details.url;
-
-      if (!this.isNewGaiaFlow &&
-          currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
-        if (currentUrl.indexOf('ntp=1') >= 0) {
-          this.skipForNow_ = true;
-        }
-
-        this.maybeCompleteAuth_();
-        return;
-      }
 
       if (!currentUrl.startsWith('https')) {
         this.trusted_ = false;
@@ -784,6 +782,36 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Asserts the |arr| which is known as |nameOfArr| is an array of strings.
+     * @private
+     */
+    assertStringArray_(arr, nameOfArr) {
+      console.assert(Array.isArray(arr),
+          'FATAL: Bad %s type: %s', nameOfArr, typeof arr);
+      for (let i = 0; i < arr.length; ++i) {
+        this.assertStringElement_(arr[i], nameOfArr, i);
+      }
+    }
+
+    /**
+     * Asserts the |dict| which is known as |nameOfDict| is a dict of strings.
+     * @private
+     */
+    assertStringDict_(dict, nameOfDict) {
+      console.assert(typeof dict == 'object',
+          'FATAL: Bad %s type: %s', nameOfDict, typeof dict);
+      for (const key in dict) {
+        this.assertStringElement_(dict[key], nameOfDict, key);
+      }
+    }
+
+    /** Asserts an element |elem| in a certain collection is a string. */
+    assertStringElement_(elem, nameOfCollection, index) {
+      console.assert(typeof elem == 'string',
+          'FATAL: Bad %s[%s] type: %s', nameOfCollection, index, typeof elem);
+    }
+
+    /**
      * Invoked to process authentication completion.
      * @private
      */
@@ -794,19 +822,7 @@ cr.define('cr.login', function() {
       // Chrome will crash on incorrect data type, so log some error message
       // here.
       if (this.services_) {
-        if (!Array.isArray(this.services_)) {
-          console.error('FATAL: Bad services type:' + typeof this.services_);
-        } else {
-          for (let i = 0; i < this.services_.length; ++i) {
-            if (typeof this.services_[i] == 'string') {
-              continue;
-            }
-
-            console.error(
-                'FATAL: Bad services[' + i +
-                '] type:' + typeof this.services_[i]);
-          }
-        }
+        this.assertStringArray_(this.services_, 'services');
       }
       if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
           this.email_) {
@@ -815,6 +831,13 @@ cr.define('cr.login', function() {
         // |password_|, if any.
         this.password_ = '';
       }
+      let passwordAttributes = {};
+      if (this.authFlow == AuthFlow.SAML &&
+          this.samlHandler_.extractSamlPasswordAttributes &&
+          !this.isSamlUserPasswordless_) {
+        passwordAttributes = this.samlHandler_.passwordAttributes;
+      }
+      this.assertStringDict_(passwordAttributes, 'passwordAttributes');
       this.dispatchEvent(new CustomEvent(
           'authCompleted',
           // TODO(rsorokin): get rid of the stub values.
@@ -829,6 +852,7 @@ cr.define('cr.login', function() {
               sessionIndex: this.sessionIndex_ || '',
               trusted: this.trusted_,
               services: this.services_ || [],
+              passwordAttributes: passwordAttributes
             }
           }));
       this.resetStates();
@@ -1006,9 +1030,6 @@ cr.define('cr.login', function() {
   Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
   return {
-    // TODO(guohui, xiyuan): Rename GaiaAuthHost to Authenticator once the old
-    // iframe-based flow is deprecated.
-    GaiaAuthHost: Authenticator,
     Authenticator: Authenticator
   };
 });

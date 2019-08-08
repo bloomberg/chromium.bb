@@ -936,7 +936,8 @@ int VP9EncoderImpl::Encode(const VideoFrame& input_image,
 
   // Keep reference to buffer until encode completes.
   rtc::scoped_refptr<I420BufferInterface> i420_buffer;
-  rtc::scoped_refptr<I010BufferInterface> i010_buffer;
+  const I010BufferInterface* i010_buffer;
+  rtc::scoped_refptr<const I010BufferInterface> i010_copy;
   switch (profile_) {
     case VP9Profile::kProfile0: {
       i420_buffer = input_image.video_frame_buffer()->ToI420();
@@ -959,8 +960,9 @@ int VP9EncoderImpl::Encode(const VideoFrame& input_image,
           break;
         }
         default: {
-          i010_buffer =
+          i010_copy =
               I010Buffer::Copy(*input_image.video_frame_buffer()->ToI420());
+          i010_buffer = i010_copy.get();
         }
       }
       raw_->planes[VPX_PLANE_Y] = const_cast<uint8_t*>(
@@ -1488,8 +1490,6 @@ void VP9EncoderImpl::DeliverBufferedFrame(bool end_of_picture) {
     frag_info.VerifyAndAllocateFragmentationHeader(1);
     frag_info.fragmentationOffset[part_idx] = 0;
     frag_info.fragmentationLength[part_idx] = encoded_image_.size();
-    frag_info.fragmentationPlType[part_idx] = 0;
-    frag_info.fragmentationTimeDiff[part_idx] = 0;
 
     encoded_complete_callback_->OnEncodedImage(encoded_image_, &codec_specific_,
                                                &frag_info);

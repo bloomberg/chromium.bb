@@ -336,6 +336,11 @@ bool DisassemblerElf32::ExtractAbs32Locations() {
     if (section_header->sh_type == SHT_REL) {
       const Elf32_Rel* relocs_table =
           reinterpret_cast<const Elf32_Rel*>(SectionBody(section_id));
+      // Reject if malformed.
+      if (section_header->sh_entsize != sizeof(Elf32_Rel))
+        return false;
+      if (section_header->sh_size % section_header->sh_entsize != 0)
+        return false;
 
       int relocs_table_count =
           section_header->sh_size / section_header->sh_entsize;

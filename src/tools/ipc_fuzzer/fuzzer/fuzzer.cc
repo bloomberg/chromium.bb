@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
+#include "base/util/type_safety/id_type.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
@@ -947,8 +948,8 @@ struct FuzzTraits<gfx::Vector2dF> {
 };
 
 template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
-struct FuzzTraits<gpu::IdType<TypeMarker, WrappedType, kInvalidValue>> {
-  using param_type = gpu::IdType<TypeMarker, WrappedType, kInvalidValue>;
+struct FuzzTraits<util::IdType<TypeMarker, WrappedType, kInvalidValue>> {
+  using param_type = util::IdType<TypeMarker, WrappedType, kInvalidValue>;
   static bool Fuzz(param_type* id, Fuzzer* fuzzer) {
     WrappedType raw_value = id->GetUnsafeValue();
     if (!FuzzParam(&raw_value, fuzzer))
@@ -1332,6 +1333,15 @@ struct FuzzTraits<ppapi::proxy::SerializedHandle> {
 template <>
 struct FuzzTraits<ppapi::proxy::SerializedFontDescription> {
   static bool Fuzz(ppapi::proxy::SerializedFontDescription* p,
+                       Fuzzer* fuzzer) {
+    // TODO(mbarbella): This should actually do something.
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<ppapi::proxy::SerializedTrueTypeFontDesc> {
+  static bool Fuzz(ppapi::proxy::SerializedTrueTypeFontDesc* p,
                        Fuzzer* fuzzer) {
     // TODO(mbarbella): This should actually do something.
     return true;

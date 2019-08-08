@@ -42,9 +42,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // This is what AwContentBrowserClient::GetAcceptLangs uses.
   static std::string GetAcceptLangsImpl();
 
-  // Deprecated: use AwBrowserContext::GetDefault() instead.
-  static AwBrowserContext* GetAwBrowserContext();
-
   // Sets whether the net stack should check the cleartext policy from the
   // platform. For details, see
   // https://developer.android.com/reference/android/security/NetworkSecurityPolicy.html#isCleartextTrafficPermitted().
@@ -67,7 +64,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const base::FilePath& relative_partition_path) override;
   network::mojom::NetworkContextParamsPtr GetNetworkContextParams();
 
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;
@@ -81,7 +78,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                       int child_process_id) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
-  const gfx::ImageSkia* GetDefaultFavicon() override;
+  gfx::ImageSkia GetDefaultFavicon() override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::ResourceContext* context) override;
@@ -119,7 +116,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
-      content::ResourceType resource_type,
+      bool is_main_frame_request,
       bool strict_enforcement,
       bool expired_previous_decision,
       const base::Callback<void(content::CertificateRequestResultType)>&
@@ -167,6 +164,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
+  void RunServiceInstanceOnIOThread(
+      const service_manager::Identity& identity,
+      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
+      override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
@@ -213,11 +214,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const std::string& method,
-      const net::HttpRequestHeaders& headers,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::URLLoaderFactory*& out_factory) override;
-  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       int render_process_id,
       int render_frame_id,

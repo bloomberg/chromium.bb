@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,9 +31,9 @@
 namespace device {
 
 // Ctap2DeviceOperation performs a single request--response operation on a CTAP2
-// device. The |Request| class must implement an |EncodeToCBOR| method that
-// returns a pair of |CtapRequestCommand| and an optional CBOR |Value|.
-// The response will be parsed to CBOR and then further parsed into a |Response|
+// device. The |Request| class must implement a static |EncodeToCBOR| method
+// that returns a pair of |CtapRequestCommand| and an optional CBOR |Value|. The
+// response will be parsed to CBOR and then further parsed into a |Response|
 // using a provided callback.
 template <class Request, class Response>
 class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
@@ -48,22 +49,34 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
   // argument will be |nullopt|. The parser should return |nullopt| on error.
   using DeviceResponseParser = base::OnceCallback<base::Optional<Response>(
       const base::Optional<cbor::Value>&)>;
+  // CBORPathPredicate takes a vector of CBOR |Value|s that are map keys and
+  // returns true if the string at that location may validly be truncated.
+  // For example, the path of the string "bar" in {"x": {"y": "foo",
+  // "z": "bar"}} is ["x", "z"].
+  //
+  // It's a function pointer rather than a callback to emphasise that the result
+  // should be stateless and based only on the static structure of the expected
+  // message.
+  typedef bool (*CBORPathPredicate)(
+      const std::vector<const cbor::Value*>& path);
 
   Ctap2DeviceOperation(FidoDevice* device,
                        Request request,
                        DeviceResponseCallback callback,
-                       DeviceResponseParser device_response_parser)
+                       DeviceResponseParser device_response_parser,
+                       CBORPathPredicate string_fixup_predicate)
       : DeviceOperation<Request, Response>(device,
                                            std::move(request),
                                            std::move(callback)),
         device_response_parser_(std::move(device_response_parser)),
+        string_fixup_predicate_(string_fixup_predicate),
         weak_factory_(this) {}
 
   ~Ctap2DeviceOperation() override = default;
 
   void Start() override {
     std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request(
-        this->request().EncodeAsCBOR());
+        AsCTAPRequestValuePair(this->request()));
     std::vector<uint8_t> request_bytes;
 
     // TODO: it would be nice to see which device each request is going to, but
@@ -132,7 +145,13 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
 
     if (!cbor_bytes.empty()) {
       cbor::Reader::DecoderError error;
-      cbor = cbor::Reader::Read(cbor_bytes, &error);
+      cbor::Reader::Config config;
+      config.error_code_out = &error;
+      if (string_fixup_predicate_) {
+        config.allow_invalid_utf8 = true;
+      }
+
+      cbor = cbor::Reader::Read(cbor_bytes, config);
       if (!cbor) {
         FIDO_LOG(ERROR) << "-> (CBOR parse error '"
                         << cbor::Reader::ErrorCodeToString(error)
@@ -143,6 +162,20 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
         std::move(this->callback())
             .Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR, base::nullopt);
         return;
+      }
+
+      if (string_fixup_predicate_) {
+        cbor = FixInvalidUTF8(std::move(*cbor), string_fixup_predicate_);
+        if (!cbor) {
+          FIDO_LOG(ERROR)
+              << "-> (CBOR with unfixable UTF-8 errors from raw message "
+              << base::HexEncode(device_response->data(),
+                                 device_response->size())
+              << ")";
+          std::move(this->callback())
+              .Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR, base::nullopt);
+          return;
+        }
       }
 
       response = std::move(std::move(device_response_parser_).Run(cbor));
@@ -170,6 +203,7 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
 
  private:
   DeviceResponseParser device_response_parser_;
+  const CBORPathPredicate string_fixup_predicate_;
   base::WeakPtrFactory<Ctap2DeviceOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Ctap2DeviceOperation);

@@ -53,7 +53,11 @@ import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.components.payments.PaymentDetailsConverter;
+import org.chromium.components.payments.PaymentHandlerHost;
+import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
 import org.chromium.components.payments.PaymentValidator;
+import org.chromium.components.payments.UrlUtil;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -64,6 +68,7 @@ import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PayerErrors;
+import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
@@ -103,7 +108,8 @@ public class PaymentRequestImpl
                    PaymentInstrument.InstrumentDetailsCallback,
                    PaymentAppFactory.PaymentAppCreatedCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
-                   NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer {
+                   NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
+                   PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker {
     /**
      * A test-only observer for the PaymentRequest service implementation.
      */
@@ -314,6 +320,7 @@ public class PaymentRequestImpl
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
     private OverviewModeBehavior mOverviewModeBehavior;
+    private PaymentHandlerHost mPaymentHandlerHost;
 
     /** Aborts should only be recorded if the Payment Request was shown to the user. */
     private boolean mShouldRecordAbortReason;
@@ -420,9 +427,7 @@ public class PaymentRequestImpl
         mRequestPayerEmail = options != null && options.requestPayerEmail;
         mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
 
-        if (!OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
-                && !OriginSecurityChecker.isOriginLocalhostOrFile(
-                        mWebContents.getLastCommittedUrl())) {
+        if (!UrlUtil.isOriginAllowedToUseWebPaymentApis(mWebContents.getLastCommittedUrl())) {
             Log.d(TAG, "Only localhost, file://, and cryptographic scheme origins allowed");
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
@@ -855,6 +860,38 @@ public class PaymentRequestImpl
         return result == null ? null : Collections.unmodifiableMap(result);
     }
 
+    /** Called by the payment app to get updated total based on the billing address, for example. */
+    @Override
+    public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
+        if (TextUtils.isEmpty(methodName) || stringifiedDetails == null || mClient == null
+                || mInvokedPaymentInstrument == null) {
+            return false;
+        }
+
+        mClient.onPaymentMethodChange(methodName, stringifiedDetails);
+        return true;
+    }
+
+    /**
+     * Called by the web-based payment handler to get updated total based on the billing address,
+     * for example.
+     */
+    @Override
+    public boolean changePaymentMethodFromPaymentHandler(
+            String methodName, String stringifiedData) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChangingPaymentMethod()) {
+            return false;
+        }
+
+        return changePaymentMethodFromInvokedApp(methodName, stringifiedData);
+    }
+
+    @Override
+    public boolean isInvokedInstrumentValidForPaymentMethodIdentifier(String methodName) {
+        return mInvokedPaymentInstrument != null
+                && mInvokedPaymentInstrument.isValidForPaymentMethodData(methodName, null);
+    }
+
     /**
      * Called by merchant to update the shipping options and line items after the user has selected
      * their shipping address or shipping option.
@@ -875,17 +912,21 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (!mRequestShipping) {
+        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone
+                && (mInvokedPaymentInstrument == null
+                        || !mInvokedPaymentInstrument.isChangingPaymentMethod())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without passing a promise into "
-                    + "PaymentRequest.show() and without requestShipping:true");
+                    + "PaymentRequest.show(), without a payment method change event, and without"
+                    + "payment options (e.g. requestShipping: true)");
             return;
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (mInvokedPaymentInstrument != null) {
+        if (mInvokedPaymentInstrument != null
+                && mInvokedPaymentInstrument.isChangingPaymentMethod()) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
             // via updateWith() should be forwarded to the invoked app, so it can reflect the
             // updated price in its UI.
@@ -895,12 +936,13 @@ public class PaymentRequestImpl
             // opaque to Chrome sub-instruments inside, representing each card in the user account.
             // Hence Chrome forwards the updateWith() calls to the currently invoked
             // PaymentInstrument object.
-            mInvokedPaymentInstrument.onPaymentDetailsUpdate(
-                    details.total != null ? details.total.amount : null, details.error);
+            mInvokedPaymentInstrument.updateWith(
+                    PaymentDetailsConverter.convertToPaymentMethodChangeResponse(
+                            details, this /* methodChecker */));
             return;
         }
 
-        if ((mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
+        if (mRequestShipping && (mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
                 && mShippingAddressesSection.getSelectedItem() != null) {
             mShippingAddressesSection.getSelectedItem().setInvalid();
             mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
@@ -960,8 +1002,9 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mInvokedPaymentInstrument != null) {
-            mInvokedPaymentInstrument.onPaymentDetailsUpdate(null, null);
+        if (mInvokedPaymentInstrument != null
+                && mInvokedPaymentInstrument.isChangingPaymentMethod()) {
+            mInvokedPaymentInstrument.noUpdatedPaymentDetails();
             return;
         }
 
@@ -1525,6 +1568,15 @@ public class PaymentRequestImpl
             }
         }
 
+        if (mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp) {
+            if (mPaymentHandlerHost == null) {
+                mPaymentHandlerHost = new PaymentHandlerHost(this /* delegate */);
+            }
+
+            ((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
+                    .setPaymentHandlerHost(mPaymentHandlerHost);
+        }
+
         mInvokedPaymentInstrument.invokePaymentApp(mId, mMerchantName, mTopLevelOrigin,
                 mPaymentRequestOrigin, mCertificateChain, Collections.unmodifiableMap(methodData),
                 mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), this);
@@ -1624,6 +1676,13 @@ public class PaymentRequestImpl
 
         // Go back to the payment sheet
         mUI.onPayButtonProcessingCancelled();
+        if (!TextUtils.isEmpty(errors.error)) {
+            mUI.setRetryErrorMessage(errors.error);
+        } else {
+            ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+            mUI.setRetryErrorMessage(
+                    activity.getResources().getString(R.string.payments_error_message));
+        }
 
         if (mRequestShipping && hasShippingAddressError(errors.shippingAddress)) {
             mRetryQueue.add(() -> {
@@ -1834,8 +1893,7 @@ public class PaymentRequestImpl
         // If |mWebContents| is destroyed, don't bother checking the localhost or file:// scheme
         // exemption. It doesn't really matter anyways.
         return mWebContents.isDestroyed()
-                || !OriginSecurityChecker.isOriginLocalhostOrFile(
-                        mWebContents.getLastCommittedUrl())
+                || !UrlUtil.isLocalDevelopmentUrl(mWebContents.getLastCommittedUrl())
                 || sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
     }
 
@@ -2058,12 +2116,6 @@ public class PaymentRequestImpl
         }
     }
 
-    /** Called by the payment app to get updated total based on the billing address, for example. */
-    @Override
-    public void onPaymentMethodChange(String methodName, String stringifiedDetails) {
-        if (mClient != null) mClient.onPaymentMethodChange(methodName, stringifiedDetails);
-    }
-
     @Override
     public void onFocusChanged(@PaymentRequestUI.DataType int dataType, boolean willFocus) {
         assert dataType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES;
@@ -2098,8 +2150,19 @@ public class PaymentRequestImpl
         // Don't reuse the selected address because it is formatted for display.
         AutofillAddress shippingAddress = new AutofillAddress(chromeActivity, profile);
 
+        // Redact shipping address before exposing it in ShippingAddressChangeEvent.
+        // https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
+        PaymentAddress redactedAddress = shippingAddress.toPaymentAddress();
+        if (PaymentsExperimentalFeatures.isEnabled(
+                    ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS)) {
+            redactedAddress.organization = "";
+            redactedAddress.phone = "";
+            redactedAddress.recipient = "";
+            redactedAddress.addressLine = new String[0];
+        }
+
         // This updates the line items and the shipping options asynchronously.
-        mClient.onShippingAddressChange(shippingAddress.toPaymentAddress());
+        mClient.onShippingAddressChange(redactedAddress);
     }
 
     @Override
@@ -2172,6 +2235,8 @@ public class PaymentRequestImpl
             formatter.destroy();
         }
         mJourneyLogger.destroy();
+
+        if (mPaymentHandlerHost != null) mPaymentHandlerHost.destroy();
     }
 
     private void closeClient() {

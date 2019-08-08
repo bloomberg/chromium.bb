@@ -35,8 +35,8 @@ class ScopedPaintState {
       // The object has nothing to paint in the current fragment.
       // TODO(wangxianzhu): Use DCHECK(fragment_to_paint_) in PaintOffset()
       // when all painters check FragmentToPaint() before painting.
-      paint_offset_ = LayoutPoint(
-          LayoutPoint(LayoutUnit::NearlyMax(), LayoutUnit::NearlyMax()));
+      paint_offset_ =
+          PhysicalOffset(LayoutUnit::NearlyMax(), LayoutUnit::NearlyMax());
       return;
     }
     paint_offset_ = fragment_to_paint_->PaintOffset();
@@ -73,20 +73,21 @@ class ScopedPaintState {
     return *adjusted_paint_info_;
   }
 
-  LayoutPoint PaintOffset() const { return paint_offset_; }
+  PhysicalOffset PaintOffset() const { return paint_offset_; }
 
   const FragmentData* FragmentToPaint() const { return fragment_to_paint_; }
 
-  LayoutRect LocalCullRect() const {
-    auto cull_rect = LayoutRect(GetPaintInfo().GetCullRect().Rect());
-    cull_rect.MoveBy(-PaintOffset());
+  PhysicalRect LocalCullRect() const {
+    PhysicalRect cull_rect(LayoutRect(GetPaintInfo().GetCullRect().Rect()));
+    cull_rect.Move(-PaintOffset());
     return cull_rect;
   }
 
-  bool LocalRectIntersectsCullRect(const LayoutRect& local_rect) const {
-    LayoutRect rect_in_paint_info_space = local_rect;
-    rect_in_paint_info_space.MoveBy(PaintOffset());
-    return GetPaintInfo().GetCullRect().Intersects(rect_in_paint_info_space);
+  bool LocalRectIntersectsCullRect(const PhysicalRect& local_rect) const {
+    PhysicalRect rect_in_paint_info_space = local_rect;
+    rect_in_paint_info_space.Move(PaintOffset());
+    return GetPaintInfo().GetCullRect().Intersects(
+        rect_in_paint_info_space.ToLayoutRect());
   }
 
  protected:
@@ -98,7 +99,7 @@ class ScopedPaintState {
   // TODO(wangxianzhu): Remove this constructor when we pass ScopedPaintState to
   // PaintXXX() methods of the same object.
   ScopedPaintState(const PaintInfo& paint_info,
-                   const LayoutPoint& paint_offset,
+                   const PhysicalOffset& paint_offset,
                    const LayoutObject& object)
       : fragment_to_paint_(paint_info.FragmentToPaint(object)),
         input_paint_info_(paint_info),
@@ -114,7 +115,7 @@ class ScopedPaintState {
  protected:
   const FragmentData* fragment_to_paint_;
   const PaintInfo& input_paint_info_;
-  LayoutPoint paint_offset_;
+  PhysicalOffset paint_offset_;
   base::Optional<PaintInfo> adjusted_paint_info_;
   base::Optional<ScopedPaintChunkProperties> chunk_properties_;
   bool paint_offset_translation_as_drawing_ = false;
@@ -133,7 +134,7 @@ class ScopedBoxContentsPaintState : public ScopedPaintState {
   // TODO(wangxianzhu): Remove this constructor when we pass ScopedPaintState to
   // PaintXXX() methods of the same object.
   ScopedBoxContentsPaintState(const PaintInfo& paint_info,
-                              const LayoutPoint& paint_offset,
+                              const PhysicalOffset& paint_offset,
                               const LayoutBox& box)
       : ScopedPaintState(paint_info, paint_offset, box) {
     AdjustForBoxContents(box);

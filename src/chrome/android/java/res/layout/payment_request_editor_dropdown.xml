@@ -27,6 +27,14 @@
             android:padding="0dp"
             android:dropDownWidth="match_parent" />
 
-    <View style="@style/PreferenceSpinnerUnderlineView" />
+    <View android:id="@+id/spinner_underline" style="@style/PreferenceSpinnerUnderlineView" />
+
+    <TextView
+            android:id="@+id/spinner_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/pref_autofill_field_top_margin"
+            android:visibility="gone"
+            android:textAppearance="@style/TextAppearance.ErrorCaption" />
 
 </LinearLayout>

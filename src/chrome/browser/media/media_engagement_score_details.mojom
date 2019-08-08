@@ -4,10 +4,10 @@
 
 module media.mojom;
 
-import "url/mojom/url.mojom";
+import "url/mojom/origin.mojom";
 
 struct MediaEngagementScoreDetails {
-  url.mojom.Url origin;
+  url.mojom.Origin origin;
   double total_score;
 
   // Details of the components which make up |score|.
@@ -46,6 +46,7 @@ struct MediaEngagementConfig {
   bool feature_record_data;
   bool feature_bypass_autoplay;
   bool feature_preload_data;
+  bool feature_https_only;
   bool feature_autoplay_disable_settings;
   bool feature_autoplay_whitelist_settings;
   bool pref_disable_unified_autoplay;

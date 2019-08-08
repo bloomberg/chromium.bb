@@ -124,7 +124,19 @@ class LocalCardMigrationManager {
   int GetDetectedValues() const;
 
   // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
+  // Migratable cards are cards whose card number passed luhn check and
+  // expiration date are valid. We do NOT filter unsupported cards here.
+  // Any other usage of this function other than ShouldOfferLocalCardMigration()
+  // and from settings page after OnDidGetUploadDetails, you should call
+  // FilterOutUnsupportedLocalCards right after this function to filter out
+  // unsupported cards. If so, the first OnDidGetUploadDetails() will need to
+  // store the supported ranges locally.
   void GetMigratableCreditCards();
+
+  // For testing.
+  void SetAppLocaleForTesting(const std::string& app_locale) {
+    app_locale_ = app_locale;
+  }
 
  protected:
   // Callback after successfully getting the legal documents. On success,
@@ -156,6 +168,11 @@ class LocalCardMigrationManager {
  private:
   friend class LocalCardMigrationBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
+                           MigrateCreditCard_MigrateWhenHasSupportedLocalCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      LocalCardMigrationManagerTest,
+      MigrateCreditCard_MigrationAbortWhenNoSupportedCards);
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationPermanentFailure);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationTemporaryFailure);
@@ -166,6 +183,13 @@ class LocalCardMigrationManager {
 
   // Returns the LocalCardMigrationStrikeDatabase for |client_|.
   LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
+
+  // Filter the |migratable_credit_cards_| with |supported_card_bin_ranges| and
+  // keep supported local cards in |migratable_credit_cards_|.
+  // Effective after one successful GetUploadDetails call where we fetch the
+  // |supported_card_bin_ranges|.
+  void FilterOutUnsupportedLocalCards(
+      const std::vector<std::pair<int, int>>& supported_card_bin_ranges);
 
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();

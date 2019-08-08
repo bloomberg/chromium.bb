@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,31 +14,6 @@
 #endif
 
 #pragma mark - Suggestion icons.
-
-NSString* GetOmniboxSuggestionIconTypeAssetName(
-    OmniboxSuggestionIconType iconType) {
-  switch (iconType) {
-    case BOOKMARK:
-      return @"omnibox_completion_bookmark";
-    case CALCULATOR:
-      return @"omnibox_completion_calculator";
-    case DEFAULT_FAVICON:
-      return @"omnibox_completion_default_favicon";
-    case HISTORY:
-      return @"omnibox_completion_history";
-    case SEARCH:
-      return @"omnibox_completion_search";
-    case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-  }
-}
-
-UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType iconType) {
-  NSString* imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
-  return [[UIImage imageNamed:imageName]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-}
 
 OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     AutocompleteMatchType::Type type,
@@ -60,9 +36,12 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::HISTORY_KEYWORD:
     case AutocompleteMatchType::HISTORY_TITLE:
     case AutocompleteMatchType::HISTORY_URL:
-    case AutocompleteMatchType::SEARCH_HISTORY:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
-      return HISTORY;
+      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) &&
+                     base::FeatureList::IsEnabled(
+                         kOmniboxUseDefaultSearchEngineFavicon)
+                 ? DEFAULT_FAVICON
+                 : HISTORY;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::SEARCH_SUGGEST:
@@ -75,6 +54,9 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
+    case AutocompleteMatchType::SEARCH_HISTORY:
+      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) ? SEARCH
+                                                                  : HISTORY;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
@@ -89,7 +71,8 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
     bool is_starred) {
   OmniboxSuggestionIconType iconType =
       GetOmniboxSuggestionIconTypeForAutocompleteMatchType(type, is_starred);
-  return GetOmniboxSuggestionIcon(iconType);
+  return GetOmniboxSuggestionIcon(
+      iconType, base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
 }
 
 #pragma mark - Security icons.

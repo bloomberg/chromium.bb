@@ -113,19 +113,23 @@ class CORE_EXPORT DedicatedWorker final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
   void Trace(blink::Visitor*) override;
 
  private:
   // Starts the worker.
   void Start();
-  void ContinueStart(const KURL& script_url,
-                     OffMainThreadWorkerScriptFetchOption,
-                     network::mojom::ReferrerPolicy,
-                     const String& source_code);
+  void ContinueStart(
+      const KURL& script_url,
+      OffMainThreadWorkerScriptFetchOption,
+      network::mojom::ReferrerPolicy,
+      base::Optional<mojom::IPAddressSpace> response_address_space,
+      const String& source_code);
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
       const KURL& script_url,
       OffMainThreadWorkerScriptFetchOption,
-      network::mojom::ReferrerPolicy);
+      network::mojom::ReferrerPolicy,
+      base::Optional<mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
   WorkerClients* CreateWorkerClients();
 
@@ -146,9 +150,12 @@ class CORE_EXPORT DedicatedWorker final
   std::unique_ptr<WebDedicatedWorkerHostFactoryClient> factory_client_;
 
   // Used for tracking cross-debugger calls.
-  const v8_inspector::V8StackTraceId v8_stack_trace_id_;
+  v8_inspector::V8StackTraceId v8_stack_trace_id_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider_;
+
+  // Whether the worker is frozen due to a call from this context.
+  bool requested_frozen_ = false;
 };
 
 }  // namespace blink

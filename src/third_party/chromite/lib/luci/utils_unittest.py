@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import datetime
+from datetime import datetime, date
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
@@ -27,4 +27,12 @@ class TestTimeParsingFunctions(cros_test_lib.MockTestCase):
     time1.GetCurrentTime()
     formatted_time = utils.TimestampToDatetime(time1)
     self.assertIsNotNone(formatted_time)
-    self.assertTrue(isinstance(formatted_time, datetime.datetime))
+    self.assertTrue(isinstance(formatted_time, datetime))
+
+  def testDateToTimestamp(self):
+    result = utils.DatetimeToTimestamp(date(2019, 4, 15))
+    self.assertEqual(result.seconds, 1555286400)
+    result = utils.DatetimeToTimestamp(date(2019, 4, 15), end_of_day=True)
+    self.assertEqual(result.seconds, 1555372740)
+    with self.assertRaises(AssertionError):
+      utils.DatetimeToTimestamp(None)

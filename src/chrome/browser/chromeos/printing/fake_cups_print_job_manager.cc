@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/fake_cups_print_job_manager.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -25,7 +23,7 @@ FakeCupsPrintJobManager::FakeCupsPrintJobManager(Profile* profile)
   VLOG(1) << "Using Fake Print Job Manager";
 }
 
-FakeCupsPrintJobManager::~FakeCupsPrintJobManager() {}
+FakeCupsPrintJobManager::~FakeCupsPrintJobManager() = default;
 
 bool FakeCupsPrintJobManager::CreatePrintJob(const std::string& printer_name,
                                              const std::string& title,

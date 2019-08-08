@@ -8,12 +8,11 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/views/app_list_main_view.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -174,12 +173,11 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
                             show_source == kShelfButtonFullscreen;
   if (IsVisible()) {
     if (request_fullscreen) {
-      if (view_->app_list_state() == ash::mojom::AppListViewState::kPeeking) {
-        view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+      if (view_->app_list_state() == ash::AppListViewState::kPeeking) {
+        view_->SetState(ash::AppListViewState::kFullscreenAllApps);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
-      } else if (view_->app_list_state() ==
-                 ash::mojom::AppListViewState::kHalf) {
-        view_->SetState(ash::mojom::AppListViewState::kFullscreenSearch);
+      } else if (view_->app_list_state() == ash::AppListViewState::kHalf) {
+        view_->SetState(ash::AppListViewState::kFullscreenSearch);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
       }
     }
@@ -188,7 +186,7 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
   }
   Show(display_id, event_time_stamp);
   if (request_fullscreen)
-    view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+    view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
@@ -210,17 +208,9 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
 }
 
 void AppListPresenterImpl::EndDragFromShelf(
-    ash::mojom::AppListViewState app_list_state) {
-  if (view_) {
-    if (app_list_state == ash::mojom::AppListViewState::kClosed ||
-        view_->app_list_state() == ash::mojom::AppListViewState::kClosed) {
-      view_->Dismiss();
-    } else {
-      view_->SetState(app_list_state);
-    }
-    view_->SetIsInDrag(false);
-    view_->UpdateChildViewsYPositionAndOpacity();
-  }
+    ash::AppListViewState app_list_state) {
+  if (view_)
+    view_->EndDragFromShelf(app_list_state);
 }
 
 void AppListPresenterImpl::ProcessMouseWheelOffset(
@@ -241,7 +231,14 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   // We want to animate the expand arrow, suggestion chips and apps grid in
   // app_list_main_view, and the search box.
   ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
-  layer->GetAnimator()->StopAnimating();
+
+  if (layer->GetAnimator()->is_animating()) {
+    layer->GetAnimator()->StopAnimating();
+
+    // Reset the animation metrics reporter when the animation is interrupted.
+    view_->ResetTransitionMetricsReporter();
+  }
+
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
   if (!callback.is_null()) {
     settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
@@ -249,6 +246,15 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     callback.Run(settings.get());
   }
   layer->SetOpacity(opacity);
+
+  // Only record animation metrics for transformation animation. Because the
+  // animation triggered by setting opacity should have the same metrics values
+  // with the transformation animation.
+  if (settings.get()) {
+    settings->SetAnimationMetricsReporter(
+        view_->GetStateTransitionMetricsReporter());
+  }
+
   layer->SetTransform(translation);
 
   // Update child views' y positions to target state to avoid stale positions.
@@ -332,6 +338,11 @@ void AppListPresenterImpl::ScheduleDismissAnimation() {
   views::Widget* widget = view_->GetWidget();
   ui::Layer* layer = GetLayer(widget);
   layer->GetAnimator()->StopAnimating();
+
+  // Reset animation metrics reporter for AppListView when the animation is
+  // interrupted.
+  view_->ResetTransitionMetricsReporter();
+
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
       delegate_->GetVisibilityAnimationOffset(root_window);
@@ -346,12 +357,19 @@ void AppListPresenterImpl::ScheduleDismissAnimation() {
   transform.Translate(-offset.x(), -offset.y());
   layer->SetTransform(transform);
 
+  if (view_->is_side_shelf()) {
+    // No close animation in side shelf mode.
+    OnImplicitAnimationsCompleted();
+    return;
+  }
+
   {
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTransitionDuration(animation_duration);
     animation.SetAnimationMetricsReporter(
         view_->GetStateTransitionMetricsReporter());
     animation.AddObserver(this);
+    TRACE_EVENT_ASYNC_BEGIN0("ui", "AppList::StateTransitionAnimations", this);
 
     layer->SetTransform(gfx::Transform());
   }
@@ -395,15 +413,19 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
   if (view_ && is_visible_) {
     aura::Window* applist_window = view_->GetWidget()->GetNativeView();
-
+    const bool applist_gained_focus = applist_window->Contains(gained_focus);
     if (delegate_->IsTabletMode()) {
       if (applist_window->Contains(lost_focus)) {
         home_launcher_shown_ = false;
         HandleCloseOpenSearchBox();
-      } else if (applist_window->Contains(gained_focus)) {
+      } else if (applist_gained_focus) {
         home_launcher_shown_ = true;
+        view_->ResetForShow();
       }
     }
+
+    if (applist_gained_focus)
+      base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
 
     aura::Window* applist_container = applist_window->parent();
     if (applist_container->Contains(lost_focus) &&
@@ -418,6 +440,9 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 // AppListPresenterImpl, ui::ImplicitAnimationObserver implementation:
 
 void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
+  // This class observes the closing animation only.
+  TRACE_EVENT_ASYNC_END1("ui", "AppList::StateTransitionAnimations", this,
+                         "state", ash::AppListViewState::kClosed);
   NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
 
   if (is_visible_) {

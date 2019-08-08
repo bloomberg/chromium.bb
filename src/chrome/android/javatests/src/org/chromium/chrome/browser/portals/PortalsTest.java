@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -65,6 +66,16 @@ public class PortalsTest {
         }
     }
 
+    private void executeScriptAndAwaitSwap(Tab tab, String code) throws Exception {
+        TabContentsSwapObserver swapObserver = new TabContentsSwapObserver();
+        CallbackHelper swapWaiter = swapObserver.getCallbackHelper();
+        tab.addObserver(swapObserver);
+
+        int currSwapCount = swapWaiter.getCallCount();
+        JavaScriptUtils.executeJavaScript(tab.getWebContents(), code);
+        swapWaiter.waitForCallback(currSwapCount, 1);
+    }
+
     /**
      * Tests that a portal can be activated and have its contents swapped in to its embedder's tab.
      */
@@ -80,16 +91,77 @@ public class PortalsTest {
         final WebContents embedderContents = tab.getWebContents();
         Assert.assertNotNull(embedderContents);
 
-        TabContentsSwapObserver swapObserver = new TabContentsSwapObserver();
-        CallbackHelper swapWaiter = swapObserver.getCallbackHelper();
-        tab.addObserver(swapObserver);
-
-        int currSwapCount = swapWaiter.getCallCount();
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("activatePortal();");
-        swapWaiter.waitForCallback(currSwapCount, 1);
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
 
         final WebContents portalContents = tab.getWebContents();
         Assert.assertNotNull(portalContents);
         Assert.assertNotSame(embedderContents, portalContents);
+    }
+
+    /**
+     * Tests that a portal can be activated and adopt the embedder's contents.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testAdoptPredecessor() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/predecessor-adoption.html"));
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(),
+                "pingPredecessor().then(() => { domAutomationController.send(true); });");
+    }
+
+    /**
+     * Tests that an adopted predecessor can be activated and adopt its portal back.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testReactivatePredecessor() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/predecessor-adoption.html"));
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+        executeScriptAndAwaitSwap(tab, "reactivatePredecessor();");
+    }
+
+    /**
+     * Tests that an adopted predecessor can be destroyed.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testRemovePredecessor() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/predecessor-adoption.html"));
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                tab.getWebContents(), "removePredecessor();");
+    }
+
+    /**
+     * Tests that a previously activated portal can be destroyed.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testRemovePreviouslyActivePortal() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/predecessor-adoption.html"));
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+        executeScriptAndAwaitSwap(tab, "reactivatePredecessor();");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "removePortal();");
     }
 }

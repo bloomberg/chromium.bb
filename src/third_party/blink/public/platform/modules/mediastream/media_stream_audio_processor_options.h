@@ -83,25 +83,25 @@ struct BLINK_PLATFORM_EXPORT AudioProcessingProperties {
 #else
       true;
 #endif
-  bool goog_typing_noise_detection = true;
+  bool goog_typing_noise_detection = false;
   bool goog_noise_suppression = true;
   bool goog_experimental_noise_suppression = true;
   bool goog_highpass_filter = true;
   bool goog_experimental_auto_gain_control = true;
 };
 
-// Enables the echo cancellation in |audio_processing|.
+// Enables the echo cancellation.
 BLINK_PLATFORM_EXPORT void EnableEchoCancellation(
-    AudioProcessing* audio_processing);
+    AudioProcessing::Config* apm_config);
 
-// Enables the noise suppression in |audio_processing|.
+// Enables the noise suppression with the given level.
 BLINK_PLATFORM_EXPORT void EnableNoiseSuppression(
-    AudioProcessing* audio_processing,
-    webrtc::NoiseSuppression::Level ns_level);
+    AudioProcessing::Config* apm_config,
+    AudioProcessing::Config::NoiseSuppression::Level ns_level);
 
-// Enables the typing detection in |audio_processing|.
+// Enables the typing detection with the given detector.
 BLINK_PLATFORM_EXPORT void EnableTypingDetection(
-    AudioProcessing* audio_processing,
+    AudioProcessing::Config* apm_config,
     webrtc::TypingDetection* typing_detector);
 
 // Starts the echo cancellation dump in
@@ -125,15 +125,19 @@ BLINK_PLATFORM_EXPORT void GetExtraGainConfig(
     base::Optional<double>* pre_amplifier_fixed_gain_factor,
     base::Optional<double>* gain_control_compression_gain_db);
 
-// Enables automatic gain control. If optional |fixed_gain| is set, will set the
-// gain control mode to use the fixed gain.
-BLINK_PLATFORM_EXPORT void EnableAutomaticGainControl(
-    AudioProcessing* audio_processing,
+// Enables automatic gain control with flags and optional configures.
+BLINK_PLATFORM_EXPORT void ConfigAutomaticGainControl(
+    AudioProcessing::Config* apm_config,
+    bool agc_enabled,
+    bool experimental_agc_enabled,
+    bool use_hybrid_agc,
+    base::Optional<bool> hybrid_agc_use_peaks_not_rms,
+    base::Optional<int> hybrid_agc_saturation_margin,
     base::Optional<double> compression_gain_db);
 
 // Enables pre-amplifier with given gain factor if the optional |factor| is set.
 BLINK_PLATFORM_EXPORT void ConfigPreAmplifier(
-    webrtc::AudioProcessing::Config* apm_config,
+    AudioProcessing::Config* apm_config,
     base::Optional<double> fixed_gain_factor);
 
 }  // namespace blink

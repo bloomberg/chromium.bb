@@ -167,7 +167,6 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
 
   window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   // TODO(msw): Set shelf item types earlier to avoid ShelfWindowWatcher races.
-  // (maybe use Widget::InitParams::mus_properties in cash too crbug.com/750334)
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
 
   // Windows created by IME extension should be treated the same way as the

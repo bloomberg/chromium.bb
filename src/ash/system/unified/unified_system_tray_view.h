@@ -15,6 +15,7 @@ class FeaturePodButton;
 class FeaturePodsContainerView;
 class TopShortcutsView;
 class NotificationHiddenView;
+class PageIndicatorView;
 class UnifiedMessageCenterView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
@@ -40,6 +41,7 @@ class UnifiedSlidersContainerView : public views::View {
   // views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
  private:
   double expanded_amount_;
@@ -133,6 +135,8 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
     return notification_hidden_view_;
   }
 
+  View* detailed_view_for_testing() { return detailed_view_container_; }
+
  private:
   class FocusSearch;
 
@@ -145,6 +149,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   NotificationHiddenView* const notification_hidden_view_;
   TopShortcutsView* const top_shortcuts_view_;
   FeaturePodsContainerView* const feature_pods_container_;
+  PageIndicatorView* const page_indicator_view_;
   UnifiedSlidersContainerView* const sliders_container_;
   UnifiedSystemInfoView* const system_info_view_;
   views::View* const system_tray_container_;

@@ -31,14 +31,14 @@ namespace net {
 namespace {
 
 // Returns parameters associated with the proxy resolution.
-std::unique_ptr<base::Value> NetLogHttpStreamJobProxyServerResolved(
+base::Value NetLogHttpStreamJobProxyServerResolved(
     const ProxyServer& proxy_server,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
 
-  dict->SetString("proxy_server", proxy_server.is_valid()
-                                      ? proxy_server.ToPacString()
-                                      : std::string());
+  dict.SetString("proxy_server", proxy_server.is_valid()
+                                     ? proxy_server.ToPacString()
+                                     : std::string());
   return std::move(dict);
 }
 
@@ -48,23 +48,21 @@ std::unique_ptr<base::Value> NetLogHttpStreamJobProxyServerResolved(
 // the main job.
 const int kMaxDelayTimeForMainJobSecs = 3;
 
-std::unique_ptr<base::Value> NetLogJobControllerCallback(
-    const GURL* url,
-    bool is_preconnect,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("url", url->possibly_invalid_spec());
-  dict->SetBoolean("is_preconnect", is_preconnect);
+base::Value NetLogJobControllerCallback(const GURL* url,
+                                        bool is_preconnect,
+                                        NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetBoolean("is_preconnect", is_preconnect);
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogAltSvcCallback(
-    const AlternativeServiceInfo* alt_svc_info,
-    bool is_broken,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("alt_svc", alt_svc_info->ToString());
-  dict->SetBoolean("is_broken", is_broken);
+base::Value NetLogAltSvcCallback(const AlternativeServiceInfo* alt_svc_info,
+                                 bool is_broken,
+                                 NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetString("alt_svc", alt_svc_info->ToString());
+  dict.SetBoolean("is_broken", is_broken);
   return std::move(dict);
 }
 
@@ -381,29 +379,6 @@ void HttpStreamFactory::JobController::OnCertificateError(
   delegate_->OnCertificateError(status, used_ssl_config, ssl_info);
 }
 
-void HttpStreamFactory::JobController::OnHttpsProxyTunnelResponseRedirect(
-    Job* job,
-    const HttpResponseInfo& response_info,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  MaybeResumeMainJob(job, base::TimeDelta());
-
-  if (IsJobOrphaned(job)) {
-    // We have bound a job to the associated HttpStreamRequest, |job| has been
-    // orphaned.
-    OnOrphanedJobComplete(job);
-    return;
-  }
-
-  if (!bound_job_)
-    BindJob(job);
-  if (!request_)
-    return;
-  delegate_->OnHttpsProxyTunnelResponseRedirect(
-      response_info, used_ssl_config, used_proxy_info, std::move(stream));
-}
-
 void HttpStreamFactory::JobController::OnNeedsClientAuth(
     Job* job,
     const SSLConfig& used_ssl_config,
@@ -706,11 +681,11 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
     alternative_service_info_ =
         GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_);
   }
-  quic::QuicTransportVersion quic_version = quic::QUIC_VERSION_UNSUPPORTED;
+  quic::ParsedQuicVersion quic_version = quic::UnsupportedQuicVersion();
   if (alternative_service_info_.protocol() == kProtoQUIC) {
     quic_version =
         SelectQuicVersion(alternative_service_info_.advertised_versions());
-    DCHECK_NE(quic_version, quic::QUIC_VERSION_UNSUPPORTED);
+    DCHECK_NE(quic_version, quic::UnsupportedQuicVersion());
   }
 
   if (is_preconnect_) {
@@ -1085,7 +1060,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     // If there is no QUIC version in the advertised versions that is
     // supported, ignore this entry.
     if (SelectQuicVersion(alternative_service_info.advertised_versions()) ==
-        quic::QUIC_VERSION_UNSUPPORTED)
+        quic::UnsupportedQuicVersion())
       continue;
 
     // Check whether there is an existing QUIC session to use for this origin.
@@ -1120,23 +1095,23 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   return first_alternative_service_info;
 }
 
-quic::QuicTransportVersion HttpStreamFactory::JobController::SelectQuicVersion(
-    const quic::QuicTransportVersionVector& advertised_versions) {
-  const quic::QuicTransportVersionVector& supported_versions =
+quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
+    const quic::ParsedQuicVersionVector& advertised_versions) {
+  const quic::ParsedQuicVersionVector& supported_versions =
       session_->params().quic_supported_versions;
   if (advertised_versions.empty())
     return supported_versions[0];
 
-  for (const quic::QuicTransportVersion& supported : supported_versions) {
-    for (const quic::QuicTransportVersion& advertised : advertised_versions) {
+  for (const quic::ParsedQuicVersion& supported : supported_versions) {
+    for (const quic::ParsedQuicVersion& advertised : advertised_versions) {
       if (supported == advertised) {
-        DCHECK_NE(quic::QUIC_VERSION_UNSUPPORTED, supported);
+        DCHECK_NE(quic::UnsupportedQuicVersion(), supported);
         return supported;
       }
     }
   }
 
-  return quic::QUIC_VERSION_UNSUPPORTED;
+  return quic::UnsupportedQuicVersion();
 }
 
 bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(

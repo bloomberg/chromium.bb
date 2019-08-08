@@ -65,8 +65,6 @@ component("lib") {
       "chromium_api_delegate.h",
       "chromium_http_connection.cc",
       "chromium_http_connection.h",
-      "default_url_request_context_getter.cc",
-      "default_url_request_context_getter.h",
       "media_session/assistant_media_session.cc",
       "media_session/assistant_media_session.h",
       "platform/audio_device_owner.cc",
@@ -160,7 +158,7 @@ source_set("tests") {
     deps += [
       "//chromeos/dbus",
       "//libassistant/shared/public",
-      "//services/device/public/cpp/test:test_support",
+      "//services/device/public/cpp:test_support",
     ]
   }
 }

@@ -4,6 +4,7 @@
 
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -131,6 +132,7 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
 #endif
 
   void LoadAndWait(const std::string& url) {
+    base::ScopedAllowBlockingForTesting blocking_for_load;
     ASSERT_TRUE(embedded_test_server()->Start());
     TestNavigationObserver navigation_observer(
         static_cast<WebContentsImpl*>(shell()->web_contents()));

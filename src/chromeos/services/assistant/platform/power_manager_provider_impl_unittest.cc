@@ -28,16 +28,20 @@ class PowerManagerProviderImplTest : public testing::Test {
  public:
   PowerManagerProviderImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
   ~PowerManagerProviderImplTest() override = default;
 
   void SetUp() override {
     chromeos::PowerManagerClient::InitializeFake();
+    FakePowerManagerClient::Get()->set_tick_clock(
+        scoped_task_environment_.GetMockTickClock());
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
         connector_factory_.GetDefaultConnector(),
         scoped_task_environment_.GetMainThreadTaskRunner());
+    power_manager_provider_impl_->set_tick_clock_for_testing(
+        scoped_task_environment_.GetMockTickClock());
   }
 
   void TearDown() override {
@@ -87,21 +91,20 @@ class PowerManagerProviderImplTest : public testing::Test {
   bool CheckAddWakeAlarmAndExpiration(uint64_t relative_time_ms,
                                       uint64_t max_delay_ms) {
     // Schedule wake alarm and check if valid id is returned and timer callback
-    // is fired. Fake power manager ensures that the timer is notified instantly
-    // in tests and the test doesn't sleep.
-    base::RunLoop run_loop;
+    // is fired.
     bool result = false;
-    assistant_client::Callback0 wake_alarm_expiration_cb([&]() {
-      result = true;
-      run_loop.QuitClosure().Run();
-    });
+    assistant_client::Callback0 wake_alarm_expiration_cb(
+        [&result]() { result = true; });
     assistant_client::PowerManagerProvider::AlarmId id =
         power_manager_provider_impl_->AddWakeAlarm(
             relative_time_ms, max_delay_ms,
             std::move(wake_alarm_expiration_cb));
-    run_loop.Run();
-    // Assistant client requires wake alarm ids to be > 0.
-    return id > 0UL && result;
+    scoped_task_environment_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(relative_time_ms));
+
+    if (id <= 0UL)
+      return false;
+    return result;
   }
 
  private:

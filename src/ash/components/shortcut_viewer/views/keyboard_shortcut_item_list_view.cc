@@ -54,7 +54,7 @@ KeyboardShortcutItemListView::KeyboardShortcutItemListView() {
   constexpr int kLeftPadding = 16;
   constexpr int kRightPadding = 32;
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   SetLayoutManager(std::move(layout));
   SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, kLeftPadding, 0, kRightPadding)));

@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -78,33 +79,33 @@ void MediaDocumentParser::CreateDocumentStructure() {
   did_build_document_structure_ = true;
 
   DCHECK(GetDocument());
-  HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*GetDocument());
+  auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*GetDocument());
   GetDocument()->AppendChild(root_element);
   root_element->InsertedByParser();
 
   if (IsDetached())
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
-  HTMLHeadElement* head = HTMLHeadElement::Create(*GetDocument());
-  HTMLMetaElement* meta = HTMLMetaElement::Create(*GetDocument());
+  auto* head = MakeGarbageCollected<HTMLHeadElement>(*GetDocument());
+  auto* meta = MakeGarbageCollected<HTMLMetaElement>(*GetDocument());
   meta->setAttribute(kNameAttr, "viewport");
   meta->setAttribute(kContentAttr, "width=device-width");
   head->AppendChild(meta);
 
-  HTMLVideoElement* media = HTMLVideoElement::Create(*GetDocument());
+  auto* media = MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   media->setAttribute(kControlsAttr, "");
   media->setAttribute(kAutoplayAttr, "");
   media->setAttribute(kNameAttr, "media");
 
-  HTMLSourceElement* source = HTMLSourceElement::Create(*GetDocument());
-  source->SetSrc(GetDocument()->Url());
+  auto* source = MakeGarbageCollected<HTMLSourceElement>(*GetDocument());
+  source->setAttribute(kSrcAttr, AtomicString(GetDocument()->Url()));
 
   if (DocumentLoader* loader = GetDocument()->Loader())
     source->setType(loader->MimeType());
 
   media->AppendChild(source);
 
-  HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
+  auto* body = MakeGarbageCollected<HTMLBodyElement>(*GetDocument());
 
   GetDocument()->WillInsertBody();
 
@@ -126,7 +127,7 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
   LockCompatibilityMode();
 
   // Set the autoplay policy to kNoUserGestureRequired.
-  if (GetSettings()) {
+  if (GetSettings() && IsInMainFrame()) {
     GetSettings()->SetAutoplayPolicy(
         AutoplayPolicy::Type::kNoUserGestureRequired);
   }

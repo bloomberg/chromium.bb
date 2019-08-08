@@ -48,10 +48,6 @@
 namespace content {
 namespace {
 
-GURL GetWebUIURL(std::string host) {
-  return GURL(std::string(kChromeUIScheme) + "://" + host);
-}
-
 bool IsSameWebSite(BrowserContext* context,
                    const GURL& url1,
                    const GURL& url2) {
@@ -481,12 +477,14 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   // URL's site (app.com) and the original URL's site (foo.com).
   GURL expected_app_site_url(app_url.spec() + "#" + nonapp_site_url.spec());
   {
-    GURL site_url = SiteInstanceImpl::GetSiteForURL(
-        isolation_context, test_url, false /* use_effective_urls */);
+    GURL site_url = SiteInstanceImpl::GetSiteForURLInternal(
+        isolation_context, test_url, false /* use_effective_urls */,
+        false /* allow_default_site_url */);
     EXPECT_EQ(nonapp_site_url, site_url);
 
-    site_url = SiteInstanceImpl::GetSiteForURL(isolation_context, test_url,
-                                               true /* use_effective_urls */);
+    site_url = SiteInstanceImpl::GetSiteForURLInternal(
+        isolation_context, test_url, true /* use_effective_urls */,
+        false /* allow_default_site_url */);
     EXPECT_EQ(expected_app_site_url, site_url);
   }
 
@@ -776,10 +774,10 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   EXPECT_FALSE(instance->HasWrongProcessForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://gpu")));
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GetWebUIURL(kChromeUIGpuHost)));
 
   // Test that WebUI SiteInstances reject normal web URLs.
-  const GURL webui_url("chrome://gpu");
+  const GURL webui_url(GetWebUIURL(kChromeUIGpuHost));
   scoped_refptr<SiteInstanceImpl> webui_instance(
       SiteInstanceImpl::Create(browser_context.get()));
   webui_instance->SetSite(webui_url);
@@ -834,7 +832,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
   EXPECT_FALSE(instance->HasWrongProcessForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://gpu")));
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GetWebUIURL(kChromeUIGpuHost)));
 
   DrainMessageLoop();
 }
@@ -853,7 +851,7 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
 
   // Simulate navigating to a WebUI URL in a process that does not have WebUI
   // bindings.  This already requires bypassing security checks.
-  const GURL webui_url("chrome://gpu");
+  const GURL webui_url(GetWebUIURL(kChromeUIGpuHost));
   instance->SetSite(webui_url);
   EXPECT_TRUE(instance->HasSite());
 
@@ -941,6 +939,74 @@ TEST_F(SiteInstanceTest, IsSameWebsiteForNestedURLs) {
   EXPECT_FALSE(IsSameWebSite(&context, https_bar_url, bar_url));
   EXPECT_FALSE(IsSameWebSite(&context, https_bar_url, blob_bar_url));
   EXPECT_FALSE(IsSameWebSite(&context, https_bar_url, fs_bar_url));
+}
+
+TEST_F(SiteInstanceTest, StrictOriginIsolation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kStrictOriginIsolation);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kStrictOriginIsolation));
+
+  GURL isolated1_foo_url("http://isolated1.foo.com");
+  GURL isolated2_foo_url("http://isolated2.foo.com");
+  TestBrowserContext browser_context;
+  IsolationContext isolation_context(&browser_context);
+
+  EXPECT_FALSE(IsSameWebSite(context(), isolated1_foo_url, isolated2_foo_url));
+  EXPECT_NE(
+      SiteInstanceImpl::GetSiteForURL(isolation_context, isolated1_foo_url),
+      SiteInstanceImpl::GetSiteForURL(isolation_context, isolated2_foo_url));
+
+  // A bunch of special cases of origins.
+  GURL secure_foo("https://foo.com");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, secure_foo),
+            secure_foo);
+  GURL foo_with_port("http://foo.com:1234");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, foo_with_port),
+            foo_with_port);
+  GURL local_host("http://localhost");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, local_host),
+            local_host);
+  GURL ip_local_host("http://127.0.0.1");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, ip_local_host),
+            ip_local_host);
+
+  // The following should not get origin-specific SiteInstances, as they don't
+  // have valid hosts.
+  GURL about_url("about:flags");
+  EXPECT_NE(SiteInstanceImpl::GetSiteForURL(isolation_context, about_url),
+            about_url);
+
+  GURL file_url("file:///home/user/foo");
+  EXPECT_NE(SiteInstanceImpl::GetSiteForURL(isolation_context, file_url),
+            file_url);
+}
+
+// Ensure that the site URL for a URL that resolves to a non-HTTP/HTTPS
+// effective site URL won't break with strict origin isolation.  The effective
+// site URL should still contain the non-translated site URL in its hash.  See
+// https://crbug.com/961386.
+TEST_F(SiteInstanceTest, StrictOriginIsolationWithEffectiveURLs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kStrictOriginIsolation);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kStrictOriginIsolation));
+
+  const GURL kOriginalUrl("https://original.com");
+  const GURL kTranslatedUrl(GetWebUIURL("translated"));
+  EffectiveURLContentBrowserClient modified_client(kOriginalUrl,
+                                                   kTranslatedUrl);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  TestBrowserContext browser_context;
+  IsolationContext isolation_context(&browser_context);
+
+  // Ensure that original.com's effective site URL still contains the
+  // non-translated site URL in its hash.
+  GURL expected_site_url(kTranslatedUrl.spec() + "#" + kOriginalUrl.spec());
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, kOriginalUrl),
+            expected_site_url);
+
+  SetBrowserClientForTesting(regular_client);
 }
 
 TEST_F(SiteInstanceTest, IsolatedOrigins) {

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -34,6 +37,7 @@
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/vr/vr_stage_parameters.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -146,12 +150,9 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
   device::mojom::blink::XRSessionOptionsPtr options =
       device::mojom::blink::XRSessionOptions::New();
   options->immersive = false;
-  // Set in_on_display_activate to true, this will prevent the request present
-  // from being logged.
-  // TODO(http://crbug.com/842025): clean up the logging when refactors are
-  // complete.
+  options->is_legacy_webvr = true;
   device_ptr_->RequestSession(
-      std::move(options), true,
+      std::move(options),
       WTF::Bind(&VRDisplay::OnNonImmersiveSessionRequestReturned,
                 WrapPersistent(this)));
 }
@@ -284,6 +285,7 @@ void VRDisplay::RequestVSync() {
     pending_non_immersive_vsync_ = false;
     pending_presenting_vsync_ = true;
     vr_presentation_data_provider_->GetFrameData(
+        nullptr,
         WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
 
     DVLOG(2) << __FUNCTION__ << " done: pending_presenting_vsync_="
@@ -301,8 +303,9 @@ void VRDisplay::RequestVSync() {
     non_immersive_pose_request_time_ = WTF::CurrentTimeTicks();
 
     if (non_immersive_provider_) {
-      non_immersive_provider_->GetFrameData(WTF::Bind(
-          &VRDisplay::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+      non_immersive_provider_->GetFrameData(
+          nullptr, WTF::Bind(&VRDisplay::OnNonImmersiveFrameData,
+                             WrapWeakPersistent(this)));
     } else {
       // If we don't have a non immersive provider, we should just return
       // an identity pose.  We're not worried about re-entrant calls right now
@@ -333,7 +336,7 @@ int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
           callback);
 
   frame_callback->SetUseLegacyTimeBase(false);
-  return EnsureScriptedAnimationController(doc).RegisterCallback(
+  return EnsureScriptedAnimationController(doc).RegisterFrameCallback(
       frame_callback);
 }
 
@@ -341,7 +344,7 @@ void VRDisplay::cancelAnimationFrame(int id) {
   DVLOG(2) << __FUNCTION__;
   if (!scripted_animation_controller_)
     return;
-  scripted_animation_controller_->CancelCallback(id);
+  scripted_animation_controller_->CancelFrameCallback(id);
 }
 
 void VRDisplay::OnBlur(bool is_immersive) {
@@ -404,7 +407,7 @@ ScriptPromise VRDisplay::requestPresent(
   // If the VRDisplay does not advertise the ability to present reject the
   // request.
   if (!capabilities_->canPresent()) {
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRDisplay cannot present.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kVRDisplayCannotPresent);
@@ -421,9 +424,9 @@ ScriptPromise VRDisplay::requestPresent(
   if (first_present) {
     if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                     : nullptr)) {
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "API can only be initiated by a user gesture.");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "API can only be initiated by a user gesture.");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kNotInitiatedByUserGesture);
       return promise;
@@ -438,7 +441,7 @@ ScriptPromise VRDisplay::requestPresent(
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > capabilities_->maxLayers()) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "Invalid number of layers.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidNumberOfLayers);
@@ -449,7 +452,7 @@ ScriptPromise VRDisplay::requestPresent(
   // previous, valid source, so delay m_layer reassignment
   if (layers[0]->source().IsNull()) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "Invalid layer source.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidLayerSource);
@@ -469,9 +472,9 @@ ScriptPromise VRDisplay::requestPresent(
 
   if (!rendering_context || !rendering_context->Is3d()) {
     ForceExitPresent();
-    DOMException* exception =
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Layer source must have a WebGLRenderingContext");
+    auto* exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "Layer source must have a WebGLRenderingContext");
     resolver->Reject(exception);
     ReportPresentationResult(
         PresentationResult::kLayerSourceMissingWebGLContext);
@@ -486,7 +489,7 @@ ScriptPromise VRDisplay::requestPresent(
       (layer_->rightBounds().size() != 0 &&
        layer_->rightBounds().size() != 4)) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "Layer bounds must either be an empty array or have 4 values");
     resolver->Reject(exception);
@@ -497,9 +500,9 @@ ScriptPromise VRDisplay::requestPresent(
   for (float value : layer_->leftBounds()) {
     if (std::isnan(value)) {
       ForceExitPresent();
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Layer bounds must not contain NAN values");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "Layer bounds must not contain NAN values");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
       return promise;
@@ -509,9 +512,9 @@ ScriptPromise VRDisplay::requestPresent(
   for (float value : layer_->rightBounds()) {
     if (std::isnan(value)) {
       ForceExitPresent();
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Layer bounds must not contain NAN values");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "Layer bounds must not contain NAN values");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
       return promise;
@@ -526,9 +529,9 @@ ScriptPromise VRDisplay::requestPresent(
   } else if (first_present) {
     if (!device_ptr_) {
       ForceExitPresent();
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The service is no longer active.");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The service is no longer active.");
       resolver->Reject(exception);
       return promise;
     }
@@ -540,10 +543,10 @@ ScriptPromise VRDisplay::requestPresent(
     device::mojom::blink::XRSessionOptionsPtr options =
         device::mojom::blink::XRSessionOptions::New();
     options->immersive = true;
-    options->use_legacy_webvr_render_path = true;
+    options->is_legacy_webvr = true;
 
     device_ptr_->RequestSession(
-        std::move(options), in_display_activate_,
+        std::move(options),
         WTF::Bind(&VRDisplay::OnRequestImmersiveSessionReturned,
                   WrapPersistent(this)));
     pending_present_request_ = true;
@@ -596,7 +599,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
     this->BeginPresent();
   } else {
     this->ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Presentation request was denied.");
 
     while (!pending_present_resolvers_.IsEmpty()) {
@@ -632,14 +635,14 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
 
   if (!is_presenting_) {
     // Can't stop presenting if we're not presenting.
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRDisplay is not presenting.");
     resolver->Reject(exception);
     return promise;
   }
 
   if (!device_ptr_) {
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRService is not available.");
     resolver->Reject(exception);
     return promise;
@@ -658,16 +661,16 @@ void VRDisplay::BeginPresent() {
 
   DOMException* exception = nullptr;
   if (!frame_transport_) {
-    exception =
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "VRDisplay presentation path not configured.");
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "VRDisplay presentation path not configured.");
   }
 
   if (layer_->source().IsOffscreenCanvas()) {
     // TODO(junov, crbug.com/695497): Implement OffscreenCanvas presentation
-    exception =
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "OffscreenCanvas presentation not implemented.");
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "OffscreenCanvas presentation not implemented.");
   } else {
     // A canvas must be either Offscreen or plain HTMLCanvas.
     DCHECK(layer_->source().IsHTMLCanvasElement());
@@ -973,8 +976,6 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
     gesture_indicator = LocalFrame::NotifyUserActivation(doc->GetFrame());
 
-  base::AutoReset<bool> in_activate(&in_display_activate_, true);
-
   navigator_vr_->DispatchVREvent(VRDisplayEvent::Create(
       event_type_names::kVrdisplayactivate, this, reason));
   std::move(on_handled).Run(!pending_present_request_ && !is_presenting_);
@@ -1222,7 +1223,7 @@ bool VRDisplay::HasPendingActivity() const {
   return GetExecutionContext() &&
          (HasEventListeners() ||
           (scripted_animation_controller_ &&
-           scripted_animation_controller_->HasCallback()));
+           scripted_animation_controller_->HasFrameCallback()));
 }
 
 void VRDisplay::FocusChanged() {

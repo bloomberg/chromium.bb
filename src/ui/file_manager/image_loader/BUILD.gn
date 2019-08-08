@@ -94,6 +94,10 @@ js_library("piex_loader") {
     ":load_image_request",
     "../file_manager/foreground/js/metadata:image_orientation",
   ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "../externs/platform.js",
+  ]
 }
 
 js_unittest("piex_loader_unittest") {

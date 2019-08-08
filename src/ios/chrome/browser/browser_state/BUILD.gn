@@ -22,6 +22,7 @@ source_set("browser_state") {
     "//components/sync_preferences",
     "//components/variations/net",
     "//ios/chrome/browser/net:net_types",
+    "//ios/web/public/webui",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -119,7 +120,6 @@ source_set("browser_state_impl") {
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
-    "//ios/web",
     "//ios/web/net/cookies",
     "//net",
     "//net:extras",

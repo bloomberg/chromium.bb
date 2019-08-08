@@ -11,12 +11,12 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
-#include "media/filters/vp8_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/vp8_picture.h"
+#include "media/parsers/vp8_parser.h"
 
 namespace media {
 namespace {

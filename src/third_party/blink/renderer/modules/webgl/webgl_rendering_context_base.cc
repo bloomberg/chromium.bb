@@ -26,10 +26,12 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -189,8 +191,7 @@ void WebGLRenderingContextBase::InitializeWebGLContextLimits(
   MutexLocker locker(WebGLContextLimitMutex());
   if (!webgl_context_limits_initialized_) {
     // These do not change over the lifetime of the browser.
-    auto webgl_preferences =
-        context_provider->GetGpuFeatureInfo().webgl_preferences;
+    auto webgl_preferences = context_provider->GetWebglPreferences();
     max_active_webgl_contexts_ = webgl_preferences.max_active_webgl_contexts;
     max_active_webgl_contexts_on_worker_ =
         webgl_preferences.max_active_webgl_contexts_on_worker;
@@ -649,10 +650,11 @@ CreateContextProviderOnWorkerThread(
   creation_info.using_gpu_compositing = using_gpu_compositing;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Thread::MainThread()->GetTaskRunner();
-  PostCrossThreadTask(*task_runner, FROM_HERE,
-                      CrossThreadBind(&CreateContextProviderOnMainThread,
-                                      CrossThreadUnretained(&creation_info),
-                                      CrossThreadUnretained(&waitable_event)));
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(&CreateContextProviderOnMainThread,
+                          CrossThreadUnretained(&creation_info),
+                          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
   return std::move(creation_info.created_context_provider);
 }
@@ -821,7 +823,8 @@ ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
     ScriptState* script_state) {
   if (isContextLost()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            "Context lost."));
   }
 
@@ -839,7 +842,7 @@ ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
   // compatible GPU.
   return ScriptPromise::RejectWithDOMException(
       script_state,
-      DOMException::Create(
+      MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Context is not compatible. Switching not yet implemented."));
 }
@@ -1015,7 +1018,9 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
                      &WebGLRenderingContextBase::MaybeRestoreContext),
       task_runner_(task_runner),
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
-      context_type_(context_type) {
+      context_type_(context_type),
+      program_completion_queries_(
+          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT) {
   DCHECK(context_provider);
 
   // TODO(http://crbug.com/876140) Make sure this is being created on a
@@ -1226,6 +1231,11 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   for (int i = 0; i < kWebGLExtensionNameCount; ++i)
     extension_enabled_[i] = false;
 
+  // This limits the count of threads if the extension is yet to be requested.
+  if (String(ContextGL()->GetString(GL_EXTENSIONS))
+          .Contains("GL_KHR_parallel_shader_compile")) {
+    ContextGL()->MaxShaderCompilerThreadsKHR(2);
+  }
   is_web_gl2_formats_types_added_ = false;
   is_web_gl2_tex_image_source_formats_types_added_ = false;
   is_web_gl2_internal_formats_copy_tex_image_added_ = false;
@@ -1320,6 +1330,8 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase() {
 void WebGLRenderingContextBase::DestroyContext() {
   if (!GetDrawingBuffer())
     return;
+
+  clearProgramCompletionQueries();
 
   extensions_util_.reset();
 
@@ -1676,11 +1688,11 @@ void WebGLRenderingContextBase::Reshape(int width, int height) {
   width = Clamp(width, 1, max_width);
   height = Clamp(height, 1, max_height);
 
-  // Limit drawing buffer area to 4k*4k to avoid memory exhaustion. Width or
-  // height may be larger than 4k as long as it's within the max viewport
-  // dimensions and total area remains within the limit.
-  // For example: 5120x2880 should be fine.
-  const int kMaxArea = 4096 * 4096;
+  // Limit drawing buffer area to the resolution of an 8K monitor to avoid
+  // memory exhaustion.  Width or height may be larger than that size as long as
+  // it's within the max viewport dimensions and total area remains within the
+  // limit. For example: 7680x4320 should be fine.
+  const int kMaxArea = 5760 * 5760;
   int current_area = width * height;
   if (current_area > kMaxArea) {
     // If we've exceeded the area limit scale the buffer down, preserving
@@ -2318,25 +2330,6 @@ void WebGLRenderingContextBase::SetBoundVertexArrayObject(
     bound_vertex_array_object_ = array_object;
   else
     bound_vertex_array_object_ = default_vertex_array_object_;
-}
-
-bool WebGLRenderingContextBase::ValidateShaderType(const char* function_name,
-                                                   GLenum shader_type) {
-  switch (shader_type) {
-    case GL_VERTEX_SHADER:
-    case GL_FRAGMENT_SHADER:
-      return true;
-    case GL_COMPUTE_SHADER:
-      if (context_type_ != Platform::kWebGL2ComputeContextType) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name,
-                          "invalid shader type");
-        return false;
-      }
-      return true;
-    default:
-      SynthesizeGLError(GL_INVALID_ENUM, function_name, "invalid shader type");
-      return false;
-  }
 }
 
 WebGLShader* WebGLRenderingContextBase::createShader(GLenum type) {
@@ -3450,7 +3443,10 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(
                           "invalid parameter name");
         return ScriptValue::CreateNull(script_state);
       }
-
+      bool completed;
+      if (checkProgramCompletionQueryAvailable(program, &completed)) {
+        return WebGLAny(script_state, completed);
+      }
       return WebGLAny(script_state, program->CompletionStatus(this));
     case GL_ACTIVE_UNIFORM_BLOCKS:
     case GL_TRANSFORM_FEEDBACK_VARYINGS:
@@ -4185,7 +4181,17 @@ void WebGLRenderingContextBase::linkProgram(WebGLProgram* program) {
     return;
   }
 
+  GLuint query = 0u;
+  if (ExtensionEnabled(kKHRParallelShaderCompileName)) {
+    ContextGL()->GenQueriesEXT(1, &query);
+    ContextGL()->BeginQueryEXT(GL_PROGRAM_COMPLETION_QUERY_CHROMIUM, query);
+  }
   ContextGL()->LinkProgram(ObjectOrZero(program));
+  if (ExtensionEnabled(kKHRParallelShaderCompileName)) {
+    ContextGL()->EndQueryEXT(GL_PROGRAM_COMPLETION_QUERY_CHROMIUM);
+    addProgramCompletionQuery(program, query);
+  }
+
   program->IncreaseLinkCount();
 }
 
@@ -4277,11 +4283,16 @@ bool WebGLRenderingContextBase::ValidateReadPixelsFormatAndType(
 
   switch (type) {
     case GL_UNSIGNED_BYTE:
-      if (buffer && buffer->GetType() != DOMArrayBufferView::kTypeUint8) {
-        SynthesizeGLError(
-            GL_INVALID_OPERATION, "readPixels",
-            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
-        return false;
+      if (buffer) {
+        auto bufferType = buffer->GetType();
+        if (bufferType != DOMArrayBufferView::kTypeUint8 &&
+            bufferType != DOMArrayBufferView::kTypeUint8Clamped) {
+          SynthesizeGLError(
+              GL_INVALID_OPERATION, "readPixels",
+              "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array or "
+              "Uint8ClampedArray");
+          return false;
+        }
       }
       return true;
     case GL_UNSIGNED_SHORT_5_6_5:
@@ -5409,7 +5420,12 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
 
     // The GPU-GPU copy path uses the Y-up coordinate system.
     IntRect adjusted_source_sub_rectangle = source_sub_rectangle;
-    if (!unpack_flip_y_) {
+
+    bool should_adjust_source_sub_rectangle = !unpack_flip_y_;
+    if (is_origin_top_left_ && source_canvas_webgl_context)
+      should_adjust_source_sub_rectangle = !should_adjust_source_sub_rectangle;
+
+    if (should_adjust_source_sub_rectangle) {
       adjusted_source_sub_rectangle.SetY(context_host->Size().Height() -
                                          adjusted_source_sub_rectangle.MaxY());
     }
@@ -6980,6 +6996,18 @@ bool WebGLRenderingContextBase::ValidateShaderSource(const String& string) {
   return true;
 }
 
+bool WebGLRenderingContextBase::ValidateShaderType(const char* function_name,
+                                                   GLenum shader_type) {
+  switch (shader_type) {
+    case GL_VERTEX_SHADER:
+    case GL_FRAGMENT_SHADER:
+      return true;
+    default:
+      SynthesizeGLError(GL_INVALID_ENUM, function_name, "invalid shader type");
+      return false;
+  }
+}
+
 void WebGLRenderingContextBase::AddExtensionSupportedFormatsTypes() {
   if (!is_oes_texture_float_formats_types_added_ &&
       ExtensionEnabled(kOESTextureFloatName)) {
@@ -7303,24 +7331,28 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
   if (!ValidateSettableTexFormat(function_name, format))
     return false;
 
+  auto pixelType = pixels->GetType();
+
   switch (type) {
     case GL_BYTE:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeInt8) {
+      if (pixelType != DOMArrayBufferView::kTypeInt8) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type BYTE but ArrayBufferView not Int8Array");
         return false;
       }
       break;
     case GL_UNSIGNED_BYTE:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint8) {
+      if (pixelType != DOMArrayBufferView::kTypeUint8 &&
+          pixelType != DOMArrayBufferView::kTypeUint8Clamped) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, function_name,
-            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
+            "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array or "
+            "Uint8ClampedArray");
         return false;
       }
       break;
     case GL_SHORT:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeInt16) {
+      if (pixelType != DOMArrayBufferView::kTypeInt16) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type SHORT but ArrayBufferView not Int16Array");
         return false;
@@ -7330,7 +7362,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint16) {
+      if (pixelType != DOMArrayBufferView::kTypeUint16) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, function_name,
             "type UNSIGNED_SHORT but ArrayBufferView not Uint16Array");
@@ -7338,7 +7370,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
       }
       break;
     case GL_INT:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeInt32) {
+      if (pixelType != DOMArrayBufferView::kTypeInt32) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type INT but ArrayBufferView not Int32Array");
         return false;
@@ -7349,7 +7381,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
     case GL_UNSIGNED_INT_24_8:
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint32) {
+      if (pixelType != DOMArrayBufferView::kTypeUint32) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, function_name,
             "type UNSIGNED_INT but ArrayBufferView not Uint32Array");
@@ -7357,7 +7389,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
       }
       break;
     case GL_FLOAT:  // OES_texture_float
-      if (pixels->GetType() != DOMArrayBufferView::kTypeFloat32) {
+      if (pixelType != DOMArrayBufferView::kTypeFloat32) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type FLOAT but ArrayBufferView not Float32Array");
         return false;
@@ -7367,7 +7399,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
       // As per the specification, ArrayBufferView should be null or a
       // Uint16Array when OES_texture_half_float is enabled.
-      if (pixels->GetType() != DOMArrayBufferView::kTypeUint16) {
+      if (pixelType != DOMArrayBufferView::kTypeUint16) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "type HALF_FLOAT_OES but ArrayBufferView is not NULL "
                           "and not Uint16Array");
@@ -8146,4 +8178,45 @@ void WebGLRenderingContextBase::getHTMLOrOffscreenCanvas(
   }
 }
 
+void WebGLRenderingContextBase::addProgramCompletionQuery(WebGLProgram* program,
+                                                          GLuint query) {
+  auto old_query = program_completion_queries_.Get(program);
+  if (old_query != program_completion_queries_.end()) {
+    ContextGL()->DeleteQueriesEXT(1, &old_query->second);
+  }
+  program_completion_queries_.Put(program, query);
+  if (program_completion_queries_.size() > kMaxProgramCompletionQueries) {
+    auto oldest = program_completion_queries_.rbegin();
+    ContextGL()->DeleteQueriesEXT(1, &oldest->second);
+    program_completion_queries_.Erase(oldest);
+  }
+}
+
+void WebGLRenderingContextBase::clearProgramCompletionQueries() {
+  for (auto query : program_completion_queries_) {
+    ContextGL()->DeleteQueriesEXT(1, &query.second);
+  }
+  program_completion_queries_.Clear();
+}
+
+bool WebGLRenderingContextBase::checkProgramCompletionQueryAvailable(
+    WebGLProgram* program,
+    bool* completed) {
+  GLuint id = 0;
+  auto found = program_completion_queries_.Get(program);
+  if (found != program_completion_queries_.end()) {
+    id = found->second;
+    GLuint available;
+    ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE,
+                                      &available);
+    if (available) {
+      GLuint result = 0u;
+      ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT, &result);
+      program->setLinkStatus(result);
+    }
+    *completed = (available == GL_TRUE);
+    return true;
+  }
+  return false;
+}
 }  // namespace blink

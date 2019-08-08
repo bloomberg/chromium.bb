@@ -15,6 +15,12 @@ table ApplicationConfig {
   /// URL from which the application should be loaded, if it has a web-based
   /// implementation.
   3: string web_url;
+
+  /// Touch input policy to be applied to the application.
+  /// If true, then touch input is forced on.
+  /// If false, then touch input is disabled.
+  /// If unset, then the caller is allowed to enable or disable input.
+  4: bool touch_enabled_policy;
 };
 
 /// Service interface for working with application configurations.

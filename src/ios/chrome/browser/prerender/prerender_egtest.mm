@@ -12,9 +12,8 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -61,9 +60,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
         @"Disabled for iPad due to alternate letters educational screen.");
   }
 
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey clearBrowsingHistory];
   // Set server up.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));
@@ -72,30 +69,28 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   NSString* pageString = base::SysUTF8ToNSString(pageURL.GetContent());
 
   // Go to the page a couple of time so it shows as suggestion.
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   [[self class] closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                          chrome_test_util::Omnibox()]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
   [[self class] closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   // Type the begining of the address to have the autocomplete suggestion.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                          chrome_test_util::Omnibox()]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(
                         [pageString substringToIndex:[pageString length] - 6])];

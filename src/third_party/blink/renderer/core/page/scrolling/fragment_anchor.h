@@ -32,7 +32,8 @@ class CORE_EXPORT FragmentAnchor
   // url, this returns nullptr. In either case, side-effects on the document
   // will be performed, for example, setting/clearing :target and svgView().
   static FragmentAnchor* TryCreate(const KURL& url,
-                                   LocalFrame& frame);
+                                   LocalFrame& frame,
+                                   bool same_document_navigation);
 
   FragmentAnchor() = default;
   virtual ~FragmentAnchor() = default;

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
-#include "components/autofill/core/browser/payments/test_legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/payments/test_strike_database.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -42,7 +41,6 @@ class TestAutofillClient : public AutofillClient {
   identity::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
-  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -93,6 +91,7 @@ class TestAutofillClient : public AutofillClient {
       base::i18n::TextDirection text_direction,
       const std::vector<Suggestion>& suggestions,
       bool autoselect_first_suggestion,
+      PopupType popup_type,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
@@ -123,11 +122,6 @@ class TestAutofillClient : public AutofillClient {
 
   void SetPrefs(std::unique_ptr<PrefService> prefs) {
     prefs_ = std::move(prefs);
-  }
-
-  void set_test_legacy_strike_database(
-      std::unique_ptr<TestLegacyStrikeDatabase> test_legacy_strike_database) {
-    test_legacy_strike_database_ = std::move(test_legacy_strike_database);
   }
 
   void set_test_strike_database(
@@ -187,7 +181,6 @@ class TestAutofillClient : public AutofillClient {
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
-  std::unique_ptr<TestLegacyStrikeDatabase> test_legacy_strike_database_;
   std::unique_ptr<TestStrikeDatabase> test_strike_database_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;

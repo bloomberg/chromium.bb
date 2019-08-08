@@ -21,8 +21,9 @@ namespace quic {
 const uint64_t kNumSecondsPerMinute = 60;
 const uint64_t kNumSecondsPerHour = kNumSecondsPerMinute * 60;
 const uint64_t kNumSecondsPerWeek = kNumSecondsPerHour * 24 * 7;
+const uint64_t kNumMillisPerSecond = 1000;
 const uint64_t kNumMicrosPerMilli = 1000;
-const uint64_t kNumMicrosPerSecond = 1000 * 1000;
+const uint64_t kNumMicrosPerSecond = kNumMicrosPerMilli * kNumMillisPerSecond;
 
 // Default number of connections for N-connection emulation.
 const uint32_t kDefaultNumConnections = 2;
@@ -57,8 +58,17 @@ const QuicByteCount kMinPacketSizeForVersionNegotiation = 1200;
 // We match SPDY's use of 32 (since we'd compete with SPDY).
 const QuicPacketCount kInitialCongestionWindow = 32;
 
+// Do not allow initial congestion window to be greater than 200 packets.
+const QuicPacketCount kMaxInitialCongestionWindow = 200;
+
+// Do not allow initial congestion window to be smaller than 10 packets.
+const QuicPacketCount kMinInitialCongestionWindow = 10;
+
 // Minimum size of initial flow control window, for both stream and session.
+// This is only enforced when version.AllowsLowFlowControlLimits() is false.
 const uint32_t kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
+// Default size of initial flow control window, for both stream and session.
+const uint32_t kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 
 // Maximum flow control receive window limits for connection and stream.
 const QuicByteCount kStreamReceiveWindowLimit = 16 * 1024 * 1024;   // 16 MB
@@ -210,6 +220,9 @@ const uint64_t kMaxIetfVarInt = UINT64_C(0x3fffffffffffffff);
 // The maximum stream id value that is supported - (2^32)-1
 // TODO(fkastenholz): Should update this to 64 bits for IETF Quic.
 const QuicStreamId kMaxQuicStreamId = 0xffffffff;
+
+// The maximum value that can be stored in a 32-bit QuicStreamCount.
+const QuicStreamCount kMaxQuicStreamCount = 0xffffffff;
 
 // Number of bytes reserved for packet header type.
 const size_t kPacketHeaderTypeSize = 1;

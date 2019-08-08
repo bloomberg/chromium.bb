@@ -70,6 +70,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::mojom::FileChooserParams;
 using content::BluetoothChooser;
@@ -191,18 +192,6 @@ bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
   }
   return false;
 }
-
-#if BUILDFLAG(ENABLE_PRINTING)
-void TabWebContentsDelegateAndroid::PrintCrossProcessSubframe(
-    content::WebContents* web_contents,
-    const gfx::Rect& rect,
-    int document_cookie,
-    content::RenderFrameHost* subframe_host) const {
-  auto* client = printing::PrintCompositeClient::FromWebContents(web_contents);
-  if (client)
-    client->PrintCrossProcessSubframe(rect, document_cookie, subframe_host);
-}
-#endif
 
 void TabWebContentsDelegateAndroid::Observe(
     int type,
@@ -494,6 +483,55 @@ TabWebContentsDelegateAndroid::SwapWebContents(
       did_start_load, did_finish_load);
   new_contents.release();
   return base::WrapUnique(old_contents);
+}
+
+#if BUILDFLAG(ENABLE_PRINTING)
+void TabWebContentsDelegateAndroid::PrintCrossProcessSubframe(
+    content::WebContents* web_contents,
+    const gfx::Rect& rect,
+    int document_cookie,
+    content::RenderFrameHost* subframe_host) const {
+  auto* client = printing::PrintCompositeClient::FromWebContents(web_contents);
+  if (client)
+    client->PrintCrossProcessSubframe(rect, document_cookie, subframe_host);
+}
+#endif
+
+bool TabWebContentsDelegateAndroid::ShouldEnableEmbeddedMediaExperience()
+    const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroid_shouldEnableEmbeddedMediaExperience(
+      env, obj);
+}
+
+bool TabWebContentsDelegateAndroid::IsPictureInPictureEnabled() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroid_isPictureInPictureEnabled(env, obj);
+}
+
+bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroid_isNightModeEnabled(env, obj);
+}
+
+const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return GURL();
+  const JavaRef<jstring>& scope =
+      Java_TabWebContentsDelegateAndroid_getManifestScope(env, obj);
+  return scope.is_null() ? GURL()
+                         : GURL(base::android::ConvertJavaStringToUTF8(scope));
 }
 
 }  // namespace android

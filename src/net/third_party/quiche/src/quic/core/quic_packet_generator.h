@@ -76,7 +76,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
         QuicStopWaitingFrame* stop_waiting) = 0;
   };
 
-  QuicPacketGenerator(QuicConnectionId connection_id,
+  QuicPacketGenerator(QuicConnectionId server_connection_id,
                       QuicFramer* framer,
                       QuicRandom* random_generator,
                       DelegateInterface* delegate);
@@ -92,7 +92,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // CreateAckFrame() when the packet is serialized.
   void SetShouldSendAck(bool also_send_stop_waiting);
 
-  void AddControlFrame(const QuicFrame& frame);
+  // Consumes retransmittable control |frame|. Returns true if the frame is
+  // successfully consumed. Returns false otherwise.
+  bool ConsumeRetransmittableControlFrame(const QuicFrame& frame);
 
   // Given some data, may consume part or all of it and pass it to the
   // packet creator to be serialized into packets. If not in batch
@@ -183,8 +185,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   void UpdatePacketNumberLength(QuicPacketNumber least_packet_awaited_by_peer,
                                 QuicPacketCount max_packets_in_flight);
 
-  // Set the minimum number of bytes for the connection id length;
-  void SetConnectionIdLength(uint32_t length);
+  // Set the minimum number of bytes for the server connection id length;
+  void SetServerConnectionIdLength(uint32_t length);
 
   // Sets the encrypter to use for the encryption level.
   void SetEncrypter(EncryptionLevel level,
@@ -215,6 +217,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Set transmission type of next constructed packets.
   void SetTransmissionType(TransmissionType type);
 
+  // Sets the retry token to be sent over the wire in IETF Initial packets.
+  void SetRetryToken(QuicStringPiece retry_token);
+
   // Allow/Disallow setting transmission type of next constructed packets.
   void SetCanSetTransmissionType(bool can_set_transmission_type);
 
@@ -230,8 +235,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   QuicPacketLength GetCurrentLargestMessagePayload() const;
   QuicPacketLength GetGuaranteedLargestMessagePayload() const;
 
-  // Update the connection ID used in outgoing packets.
-  void SetConnectionId(QuicConnectionId connection_id);
+  // Update the server connection ID used in outgoing packets.
+  void SetServerConnectionId(QuicConnectionId server_connection_id);
 
   void set_debug_delegate(QuicPacketCreator::DebugDelegate* debug_delegate) {
     packet_creator_.set_debug_delegate(debug_delegate);
@@ -249,6 +254,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
 
   bool deprecate_ack_bundling_mode() const {
     return deprecate_ack_bundling_mode_;
+  }
+
+  bool deprecate_queued_control_frames() const {
+    return deprecate_queued_control_frames_;
   }
 
  private:
@@ -281,6 +290,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   DelegateInterface* delegate_;
 
   QuicPacketCreator packet_creator_;
+  // TODO(fayang): remove this when deprecating
+  // quic_deprecate_queued_control_frames.
   QuicFrames queued_control_frames_;
 
   // Transmission type of the next serialized packet.
@@ -307,8 +318,16 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Whether crypto handshake packets should be fully padded.
   bool fully_pad_crypto_handshake_packets_;
 
+  // Packet number of the first packet of a write operation. This gets set
+  // when the out-most flusher attaches and gets cleared when the out-most
+  // flusher detaches.
+  QuicPacketNumber write_start_packet_number_;
+
   // Latched value of quic_deprecate_ack_bundling_mode.
   const bool deprecate_ack_bundling_mode_;
+
+  // Latched value of quic_deprecate_queued_control_frames.
+  const bool deprecate_queued_control_frames_;
 };
 
 }  // namespace quic

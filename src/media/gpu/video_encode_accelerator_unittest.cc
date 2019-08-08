@@ -44,27 +44,32 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#include "media/filters/in_memory_url_protocol.h"
 #include "media/filters/ivf_parser.h"
-#include "media/filters/vp8_parser.h"
 #include "media/filters/vp9_parser.h"
+#include "media/filters/vpx_video_decoder.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
+#include "media/parsers/vp8_parser.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_level_limits.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -159,25 +164,25 @@ const unsigned int kFlushTimeoutMs = 2000;
 //                     h264_parser.h. Use kDefaultH264Level if not provided.
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-const char* g_default_in_filename = "bear_320x192_40frames.yuv";
-const base::FilePath::CharType* g_default_in_parameters =
+const char kDefaultInputFileName[] = "bear_320x192_40frames.yuv.webm";
+const base::FilePath::CharType kDefaultInputParameters[] =
     FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
 #elif defined(OS_MACOSX)
 // VideoToolbox falls back to SW encoder with resolutions lower than this.
-const char* g_default_in_filename = "bear_640x384_40frames.yuv";
-const base::FilePath::CharType* g_default_in_parameters =
+const char kDefaultInputFileName[] = "bear_640x384_40frames.yuv.webm";
+const base::FilePath::CharType kDefaultInputParameters[] =
     FILE_PATH_LITERAL(":640:384:1:out.h264:200000");
 #elif defined(OS_WIN)
-const char* g_default_in_filename = "bear_320x192_40frames.yuv";
-const base::FilePath::CharType* g_default_in_parameters =
+const char kDefaultInputFileName[] = "bear_320x192_40frames.yuv.webm";
+const base::FilePath::CharType kDefaultInputParameters[] =
     FILE_PATH_LITERAL(",320,192,0,out.h264,200000");
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // Default params that can be overriden via command line.
 std::unique_ptr<base::FilePath::StringType> g_test_stream_data(
     new base::FilePath::StringType(
-        media::GetTestDataFilePath(media::g_default_in_filename).value() +
-        media::g_default_in_parameters));
+        media::GetTestDataFilePath(media::kDefaultInputFileName).value() +
+        media::kDefaultInputParameters));
 
 base::FilePath g_log_path;
 
@@ -341,6 +346,105 @@ static std::string FilePathStringTypeToString(
 #endif  // defined(OS_WIN)
 }
 
+// Decodes webm vp9 |src_file| into |test_stream_->aligned_in_file_data|. Used
+// to save storage size in media/test/data since raw YUV files are huge.
+static bool DecodeFile(const base::FilePath& src_file,
+                       TestStream* test_stream) {
+  InitializeMediaLibrary();
+
+  const int file_size = base::checked_cast<int>([src_file]() {
+    int64_t tmp = 0;
+    CHECK(base::GetFileSize(src_file, &tmp))
+        << "Failed to get file size for '" << src_file << "'";
+    return tmp;
+  }());
+
+  // Read file data into memory.
+  auto buffer = base::MakeRefCounted<DecoderBuffer>(file_size);
+  auto* data = reinterpret_cast<char*>(buffer->writable_data());
+  CHECK_EQ(file_size, base::ReadFile(src_file, data, file_size))
+      << "Failed to read '" << src_file << "'";
+
+  // Initialize ffmpeg with the file data.
+  InMemoryUrlProtocol protocol(buffer->data(), buffer->data_size(), false);
+  FFmpegGlue glue(&protocol);
+  CHECK(glue.OpenContext());
+
+  // Find first vp9 stream in the file.
+  int stream_index = -1;
+  VideoDecoderConfig config;
+  for (size_t i = 0; i < glue.format_context()->nb_streams; ++i) {
+    AVStream* stream = glue.format_context()->streams[i];
+    const AVCodecParameters* codec_parameters = stream->codecpar;
+    const AVMediaType codec_type = codec_parameters->codec_type;
+    const AVCodecID codec_id = codec_parameters->codec_id;
+    if (codec_type == AVMEDIA_TYPE_VIDEO && codec_id == AV_CODEC_ID_VP9) {
+      CHECK(AVStreamToVideoDecoderConfig(stream, &config));
+      stream_index = i;
+      break;
+    }
+  }
+
+  CHECK(config.IsValidConfig());
+
+  test_stream->num_frames = 0;
+  test_stream->aligned_in_file_data.clear();
+
+  // Writes VideoFrames into the |test_stream_->aligned_in_file_data| structure.
+  class FrameWriter {
+   public:
+    explicit FrameWriter(TestStream* test_stream) : test_stream_(test_stream) {}
+    ~FrameWriter() = default;
+
+    void FrameReady(scoped_refptr<VideoFrame> frame) {
+      const size_t previous_end = test_stream_->aligned_in_file_data.size();
+
+      ++test_stream_->num_frames;
+      test_stream_->aligned_in_file_data.resize(
+          test_stream_->num_frames * test_stream_->aligned_buffer_size);
+      uint8_t* dest = reinterpret_cast<uint8_t*>(
+          &test_stream_->aligned_in_file_data[previous_end]);
+
+      for (size_t plane = 0;
+           plane < VideoFrame::NumPlanes(test_stream_->pixel_format); plane++) {
+        libyuv::CopyPlane(
+            frame->data(plane), frame->stride(plane), dest,
+            VideoFrame::RowBytes(plane, test_stream_->pixel_format,
+                                 test_stream_->coded_size.width()),
+            VideoFrame::RowBytes(plane, test_stream_->pixel_format,
+                                 test_stream_->visible_size.width()),
+            VideoFrame::Rows(plane, test_stream_->pixel_format,
+                             test_stream_->visible_size.height()));
+        dest += test_stream_->aligned_plane_size[plane];
+      }
+    }
+
+   private:
+    TestStream* const test_stream_;
+    DISALLOW_COPY_AND_ASSIGN(FrameWriter);
+  } frame_writer(test_stream);
+
+  // Setup decoder.
+  VpxVideoDecoder decoder;
+  decoder.Initialize(config, false, nullptr, base::DoNothing(),
+                     base::BindRepeating(&FrameWriter::FrameReady,
+                                         base::Unretained(&frame_writer)),
+                     base::NullCallback());
+
+  // Decode frames. No need to flush since VpxVideoDecoder is 1 in 1 out.
+  AVPacket packet = {};
+  while (av_read_frame(glue.format_context(), &packet) >= 0) {
+    if (packet.stream_index == stream_index) {
+      decoder.Decode(DecoderBuffer::CopyFrom(packet.data, packet.size),
+                     base::DoNothing());
+      base::RunLoop().RunUntilIdle();
+    }
+    av_packet_unref(&packet);
+  }
+
+  return true;
+}
+
 // Some platforms may have requirements on physical memory buffer alignment.
 // Since we are just mapping and passing chunks of the input file directly to
 // the VEA as input frames, to avoid copying large chunks of raw data on each
@@ -394,6 +498,13 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   }
 
   base::FilePath src_file(StringToFilePathStringType(test_stream->in_filename));
+
+  // File is encoded and must be decoded first.
+  if (src_file.MatchesExtension(FILE_PATH_LITERAL(".webm"))) {
+    ASSERT_TRUE(DecodeFile(src_file, test_stream));
+    return;
+  }
+
   int64_t src_file_size = 0;
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
@@ -939,7 +1050,7 @@ class VideoFrameQualityValidator
   void InitializeCB(bool success);
   void DecodeDone(DecodeStatus status);
   void FlushDone(DecodeStatus status);
-  void VerifyOutputFrame(const scoped_refptr<VideoFrame>& output_frame);
+  void VerifyOutputFrame(scoped_refptr<VideoFrame> output_frame);
   void Decode();
   void WriteFrameStats();
 
@@ -958,9 +1069,6 @@ class VideoFrameQualityValidator
   const VideoPixelFormat pixel_format_;
   const bool verify_quality_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
-  VideoDecoder::DecodeCB decode_cb_;
-  // Decode callback of an EOS buffer.
-  VideoDecoder::DecodeCB eos_decode_cb_;
   // Callback of Flush(). Called after all frames are decoded.
   const base::Closure flush_complete_cb_;
   const base::Closure decode_error_cb_;
@@ -981,10 +1089,6 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
       pixel_format_(pixel_format),
       verify_quality_(verify_quality),
       decoder_(new FFmpegVideoDecoder(&media_log_)),
-      decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::DecodeDone,
-                                     AsWeakPtr())),
-      eos_decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::FlushDone,
-                                         AsWeakPtr())),
       flush_complete_cb_(flush_complete_cb),
       decode_error_cb_(decode_error_cb),
       decoder_state_(UNINITIALIZED) {
@@ -1003,17 +1107,17 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   VideoDecoderConfig config;
   if (IsVP8(profile_)) {
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
-                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else if (IsVP9(profile_)) {
     config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, pixel_format_,
-                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else if (IsH264(profile_)) {
     config.Initialize(kCodecH264, H264PROFILE_MAIN, pixel_format_,
-                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else {
@@ -1126,10 +1230,15 @@ void VideoFrameQualityValidator::Decode() {
     scoped_refptr<DecoderBuffer> next_buffer = decode_buffers_.front();
     decode_buffers_.pop();
     decoder_state_ = DECODING;
-    if (next_buffer->end_of_stream())
-      decoder_->Decode(next_buffer, eos_decode_cb_);
-    else
-      decoder_->Decode(next_buffer, decode_cb_);
+    if (next_buffer->end_of_stream()) {
+      decoder_->Decode(
+          next_buffer,
+          base::BindOnce(&VideoFrameQualityValidator::FlushDone, AsWeakPtr()));
+    } else {
+      decoder_->Decode(
+          next_buffer,
+          base::BindOnce(&VideoFrameQualityValidator::DecodeDone, AsWeakPtr()));
+    }
   }
 }
 
@@ -1285,7 +1394,7 @@ VideoFrameQualityValidator::CompareFrames(const VideoFrame& original_frame,
 }
 
 void VideoFrameQualityValidator::VerifyOutputFrame(
-    const scoped_refptr<VideoFrame>& output_frame) {
+    scoped_refptr<VideoFrame> output_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_refptr<VideoFrame> original_frame = original_frames_.front();
@@ -2061,18 +2170,13 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   if (state_ != CS_ENCODING && state_ != CS_FLUSHING)
     return;
 
-  base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
-  LOG_ASSERT(dup_handle.IsValid());
-
-  // TODO(erikchen): This may leak the SharedMemoryHandle.
-  // https://crbug.com/640840.
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                   output_buffer_size_);
+  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, shm->handle(),
+                                   false /* read_only */, output_buffer_size_);
   LOG_ASSERT(output_buffers_at_client_
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
 
-  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
+  encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
 }
 
 bool VEAClient::HandleEncodedFrame(bool keyframe,
@@ -2390,8 +2494,8 @@ void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
   LOG_ASSERT(dup_handle.IsValid());
 
   BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                   output_size);
-  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
+                                   false /* read_only */, output_size);
+  encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
 }
 
 // This client is only used to make sure the encoder does not return an encoded
@@ -2983,7 +3087,8 @@ int main(int argc, char** argv) {
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   LOG_ASSERT(logging::InitLogging(settings));
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();

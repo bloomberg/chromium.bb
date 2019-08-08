@@ -8,7 +8,7 @@ namespace blink {
 
 NGStaticPosition NGStaticPosition::Create(WritingMode writing_mode,
                                           TextDirection direction,
-                                          NGPhysicalOffset offset) {
+                                          PhysicalOffset offset) {
   NGStaticPosition position;
   position.offset = offset;
   switch (writing_mode) {
@@ -70,26 +70,6 @@ LayoutUnit NGStaticPosition::BottomInset(LayoutUnit container_size,
     return container_size - offset.top - height - margin_top - margin_bottom;
   else
     return container_size - offset.top;
-}
-
-LayoutUnit NGStaticPosition::Left() const {
-  DCHECK(HasLeft());
-  return offset.left;
-}
-
-LayoutUnit NGStaticPosition::Right() const {
-  DCHECK(!HasLeft());
-  return offset.left;
-}
-
-LayoutUnit NGStaticPosition::Top() const {
-  DCHECK(HasTop());
-  return offset.top;
-}
-
-LayoutUnit NGStaticPosition::Bottom() const {
-  DCHECK(!HasTop());
-  return offset.top;
 }
 
 }  // namespace blink

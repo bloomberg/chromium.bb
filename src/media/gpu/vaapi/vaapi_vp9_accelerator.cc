@@ -39,7 +39,7 @@ scoped_refptr<VP9Picture> VaapiVP9Accelerator::CreateVP9Picture() {
 }
 
 bool VaapiVP9Accelerator::SubmitDecode(
-    const scoped_refptr<VP9Picture>& pic,
+    scoped_refptr<VP9Picture> pic,
     const Vp9SegmentationParams& seg,
     const Vp9LoopFilterParams& lf,
     const Vp9ReferenceFrameVector& ref_frames,
@@ -158,7 +158,7 @@ bool VaapiVP9Accelerator::SubmitDecode(
       pic->AsVaapiVP9Picture()->va_surface()->id());
 }
 
-bool VaapiVP9Accelerator::OutputPicture(const scoped_refptr<VP9Picture>& pic) {
+bool VaapiVP9Accelerator::OutputPicture(scoped_refptr<VP9Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiVP9Picture* vaapi_pic = pic->AsVaapiVP9Picture();
@@ -172,7 +172,7 @@ bool VaapiVP9Accelerator::IsFrameContextRequired() const {
   return false;
 }
 
-bool VaapiVP9Accelerator::GetFrameContext(const scoped_refptr<VP9Picture>& pic,
+bool VaapiVP9Accelerator::GetFrameContext(scoped_refptr<VP9Picture> pic,
                                           Vp9FrameContext* frame_ctx) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED() << "Frame context update not supported";

@@ -13,32 +13,28 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 
 class GURL;
 
 namespace url {
 class Origin;
 }
-namespace net {
-struct RedirectInfo;
-}  // namespace net
-namespace network {
-struct ResourceResponseHead;
-class SimpleURLLoader;
-}  // namespace network
 
 namespace content {
 class NavigationHandle;
 enum class OriginPolicyErrorReason;
+
+// Constant derived from the spec, https://github.com/WICG/origin-policy
+static constexpr const char* kDefaultOriginPolicyVersion = "0";
 
 // The OriginPolicyThrottle is responsible for deciding whether an origin
 // policy should be fetched, and doing so when that is positive.
 //
 // The intended use is that the navigation request will
 // - call OriginPolicyThrottle::ShouldRequestOriginPolicy to determine whether
-//   a policy should be requested and which version, and should add the
-//   appropriate SecOriginPolicy: header.
+//   a policy should be requested, and add the appropriate SecOriginPolicy:
+//   header.
 // - call OriginPolicyThrottle::MaybeCreateThrottleFor a given navigation.
 //   This will use presence of the header to decide whether to create a
 //   throttle or not.
@@ -50,10 +46,8 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   };
 
   // Determine whether to request a policy (or advertise origin policy
-  // support) and which version.
-  // Returns whether the policy header should be sent. It it returns true,
-  // |version| will contain the policy version to use.
-  static bool ShouldRequestOriginPolicy(const GURL& url, std::string* version);
+  // support). Returns whether the policy header should be sent.
+  static bool ShouldRequestOriginPolicy(const GURL& url);
 
   // Create a throttle (if the request contains the appropriate header.
   // The throttle will handle fetching of the policy and updating the
@@ -76,23 +70,15 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   using KnownVersionMap = std::map<url::Origin, std::string>;
   static KnownVersionMap& GetKnownVersionsForTesting();
 
-  void InjectPolicyForTesting(const std::string& policy_content);
-
-  void SetURLLoaderFactoryForTesting(
-      std::unique_ptr<network::mojom::URLLoaderFactory>
-          url_loader_factory_for_testing);
-
+  // TODO(andypaicu): Remove this when we move the store to the network
+  // service layer.
   static PolicyVersionAndReportTo
   GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
       const std::string& header);
 
- private:
-  using FetchCallback = base::OnceCallback<void(std::unique_ptr<std::string>)>;
-  using RedirectCallback =
-      base::RepeatingCallback<void(const net::RedirectInfo&,
-                                   const network::ResourceResponseHead&,
-                                   std::vector<std::string>*)>;
+  static bool IsExemptedForTesting(const url::Origin& origin);
 
+ private:
   explicit OriginPolicyThrottle(NavigationHandle* handle);
 
   static KnownVersionMap& GetKnownVersions();
@@ -103,25 +89,13 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   GetRequestedPolicyAndReportGroupFromHeaderString(const std::string& header);
 
   const url::Origin GetRequestOrigin() const;
-  const GURL GetPolicyURL(const std::string& version) const;
-  void FetchPolicy(const GURL& url,
-                   FetchCallback done,
-                   RedirectCallback redirect);
-  void OnTheGloriousPolicyHasArrived(
-      std::unique_ptr<std::string> policy_content);
-  void OnRedirect(const net::RedirectInfo& redirect_info,
-                  const network::ResourceResponseHead& response_head,
-                  std::vector<std::string>* to_be_removed_headers);
-  void CancelNavigation(OriginPolicyErrorReason reason);
 
-  void Report(OriginPolicyErrorReason reason);
+  void CancelNavigation(OriginPolicyErrorReason reason, const GURL& policy_url);
 
-  // We may need the SimpleURLLoader to download the policy. The loader must
-  // be kept alive while the load is ongoing.
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  void Report(OriginPolicyErrorReason reason, const GURL& policy_url);
 
-  std::unique_ptr<network::mojom::URLLoaderFactory>
-      url_loader_factory_for_testing_;
+  void OnOriginPolicyManagerRetrieveDone(
+      const network::mojom::OriginPolicyPtr origin_policy);
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
 };

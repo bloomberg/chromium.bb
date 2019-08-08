@@ -13,7 +13,7 @@
 #include "content/browser/background_sync/background_sync_launcher.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,7 +58,8 @@ void BackgroundSyncContext::GetSoonestWakeupDeltaAcrossPartitions(
 
 void BackgroundSyncContextImpl::Init(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-    const scoped_refptr<DevToolsBackgroundServicesContext>& devtools_context) {
+    const scoped_refptr<DevToolsBackgroundServicesContextImpl>&
+        devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraits(
@@ -177,7 +178,7 @@ void BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread(
 
 void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context) {
+    scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!background_sync_manager_);
 

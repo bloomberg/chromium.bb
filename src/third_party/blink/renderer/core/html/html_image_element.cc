@@ -90,6 +90,10 @@ class HTMLImageElement::ViewportChangeListener final
   Member<HTMLImageElement> element_;
 };
 
+HTMLImageElement::HTMLImageElement(Document& document,
+                                   const CreateElementFlags flags)
+    : HTMLImageElement(document, flags.IsCreatedByParser()) {}
+
 HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
     : HTMLElement(kImgTag, document),
       image_loader_(MakeGarbageCollected<HTMLImageLoader>(this)),
@@ -109,16 +113,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
     overridden_intrinsic_size_ =
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
   }
-}
-
-HTMLImageElement* HTMLImageElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLImageElement>(document);
-}
-
-HTMLImageElement* HTMLImageElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLImageElement>(document,
-                                                flags.IsCreatedByParser());
 }
 
 HTMLImageElement::~HTMLImageElement() = default;
@@ -617,19 +611,6 @@ IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
   return overridden_intrinsic_size_;
 }
 
-KURL HTMLImageElement::Src() const {
-  return GetDocument().CompleteURL(getAttribute(kSrcAttr));
-}
-
-void HTMLImageElement::SetSrc(const String& value) {
-  setAttribute(kSrcAttr, AtomicString(value));
-}
-
-void HTMLImageElement::SetSrc(const USVStringOrTrustedURL& value,
-                              ExceptionState& exception_state) {
-  setAttribute(kSrcAttr, value, exception_state);
-}
-
 void HTMLImageElement::setWidth(unsigned value) {
   SetUnsignedIntegralAttribute(kWidthAttr, value);
 }
@@ -641,8 +622,9 @@ int HTMLImageElement::x() const {
     return 0;
 
   // FIXME: This doesn't work correctly with transforms.
-  FloatPoint abs_pos = r->LocalToAbsolute();
-  return abs_pos.X();
+  PhysicalOffset abs_pos =
+      r->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
+  return abs_pos.left.ToInt();
 }
 
 int HTMLImageElement::y() const {
@@ -652,8 +634,9 @@ int HTMLImageElement::y() const {
     return 0;
 
   // FIXME: This doesn't work correctly with transforms.
-  FloatPoint abs_pos = r->LocalToAbsolute();
-  return abs_pos.Y();
+  PhysicalOffset abs_pos =
+      r->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
+  return abs_pos.top.ToInt();
 }
 
 ScriptPromise HTMLImageElement::decode(ScriptState* script_state,
@@ -762,9 +745,17 @@ void HTMLImageElement::SelectSourceURL(
         FastGetAttribute(kSrcAttr), FastGetAttribute(kSrcsetAttr),
         &GetDocument());
   }
+  AtomicString old_url = best_fit_image_url_;
   SetBestFitURLAndDPRFromImageCandidate(candidate);
 
-  GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
+  // Step 5 in
+  // https://html.spec.whatwg.org/multipage/images.html#reacting-to-environment-changes
+  // Deliberately not compliant and avoiding checking image density, to avoid
+  // spurious downloads. See https://github.com/whatwg/html/issues/4646
+  if (behavior != HTMLImageLoader::kUpdateSizeChanged ||
+      best_fit_image_url_ != old_url) {
+    GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
+  }
 
   ImageResourceContent* image_content = GetImageLoader().GetContent();
   // Images such as data: uri's can return immediately and may already have
@@ -844,7 +835,13 @@ void HTMLImageElement::SetLayoutDisposition(
     EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
     EnsureUserAgentShadowRoot();
   }
-  LazyReattachIfAttached();
+
+  // ComputedStyle depends on layout_disposition_. Trigger recalc.
+  SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kUseFallback));
+  // LayoutObject type depends on layout_disposition_. Trigger re-attach.
+  SetForceReattachLayoutTree();
 }
 
 scoped_refptr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {
@@ -873,29 +870,38 @@ void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
 // Minimum height or width of the image to start lazyloading.
 constexpr int kMinDimensionToLazyLoad = 10;
 
-bool HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+HTMLImageElement::LazyLoadDimensionType
+HTMLImageElement::GetAttributeLazyLoadDimensionType(
     const String& attribute_value) {
   HTMLDimension dimension;
-  return ParseDimensionValue(attribute_value, dimension) &&
-         dimension.IsAbsolute() && dimension.Value() <= kMinDimensionToLazyLoad;
+  if (ParseDimensionValue(attribute_value, dimension) &&
+      dimension.IsAbsolute()) {
+    return dimension.Value() <= kMinDimensionToLazyLoad
+               ? LazyLoadDimensionType::kAbsoluteSmall
+               : LazyLoadDimensionType::kAbsoluteNotSmall;
+  }
+  return LazyLoadDimensionType::kNotAbsolute;
 }
 
-bool HTMLImageElement::IsInlineStyleDimensionsSmall(
+HTMLImageElement::LazyLoadDimensionType
+HTMLImageElement::GetInlineStyleDimensionsType(
     const CSSPropertyValueSet* property_set) {
   if (!property_set)
-    return false;
+    return LazyLoadDimensionType::kNotAbsolute;
   const CSSValue* height =
       property_set->GetPropertyCSSValue(CSSPropertyID::kHeight);
   const CSSValue* width =
       property_set->GetPropertyCSSValue(CSSPropertyID::kWidth);
   const auto* width_prim = DynamicTo<CSSPrimitiveValue>(width);
   const auto* height_prim = DynamicTo<CSSPrimitiveValue>(height);
-  if (!width_prim || !height_prim)
-    return false;
-  return height_prim->IsPx() &&
-         (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
-         width_prim->IsPx() &&
-         (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad);
+  if (!width_prim || !height_prim || !width_prim->IsPx() ||
+      !height_prim->IsPx()) {
+    return LazyLoadDimensionType::kNotAbsolute;
+  }
+  return (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
+                 (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad)
+             ? LazyLoadDimensionType::kAbsoluteSmall
+             : LazyLoadDimensionType::kAbsoluteNotSmall;
 }
 
 }  // namespace blink

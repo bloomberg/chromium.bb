@@ -13,9 +13,7 @@ mojom_component("mojom") {
     "lifecycle.mojom",
     "memory_instrumentation/constants.mojom",
     "memory_instrumentation/memory_instrumentation.mojom",
-    "page_signal.mojom",
     "service_constants.mojom",
-    "webui_graph_dump.mojom",
   ]
 
   public_deps = [

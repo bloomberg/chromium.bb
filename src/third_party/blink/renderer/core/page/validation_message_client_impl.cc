@@ -155,6 +155,11 @@ void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
     HideValidationMessageImmediately(*current_anchor_);
 }
 
+void ValidationMessageClientImpl::DidChangeFocusTo(const Element* new_element) {
+  if (current_anchor_ && current_anchor_ != new_element)
+    HideValidationMessageImmediately(*current_anchor_);
+}
+
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
   if ((!WebTestSupport::IsRunningWebTest() &&

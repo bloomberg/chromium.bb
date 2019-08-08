@@ -9,13 +9,13 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
@@ -47,7 +47,6 @@ public class VariationsSeedFetcher {
     private static final String VARIATIONS_SERVER_URL =
             "https://clientservices.googleapis.com/chrome-variations/seed?osname=";
 
-    private static final int BUFFER_SIZE = 4096;
     private static final int READ_TIMEOUT = 3000; // time in ms
     private static final int REQUEST_TIMEOUT = 1000; // time in ms
 
@@ -272,22 +271,6 @@ public class VariationsSeedFetcher {
         }
     }
 
-    /**
-     * Convert a input stream into a byte array.
-     * @param inputStream the input stream
-     * @return the byte array which holds the data from the input stream
-     * @throws IOException if I/O error occurs when reading data from the input stream
-     */
-    public static byte[] convertInputStreamToByteArray(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int charactersReadCount = 0;
-        while ((charactersReadCount = inputStream.read(buffer)) != -1) {
-            byteBuffer.write(buffer, 0, charactersReadCount);
-        }
-        return byteBuffer.toByteArray();
-    }
-
     private String getHeaderFieldOrEmpty(HttpURLConnection connection, String name) {
         String headerField = connection.getHeaderField(name);
         if (headerField == null) {
@@ -300,7 +283,7 @@ public class VariationsSeedFetcher {
         InputStream inputStream = null;
         try {
             inputStream = connection.getInputStream();
-            return convertInputStreamToByteArray(inputStream);
+            return FileUtils.readStream(inputStream);
         } finally {
             if (inputStream != null) {
                 inputStream.close();

@@ -25,13 +25,11 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/window_util.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -95,13 +93,7 @@ aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
 
 const char* GetUICompositorMemoryLimitMB() {
   bool uses_shader_rounded_corner = features::ShouldUseShaderRoundedCorner();
-  // TODO(oshima): Cleanup once new rounded corners and SPM are launched.
-
-  // The upper limit of the gpu memory each compositor in mus can use on
-  // chromeos.  Please see crbug.com/930163 for more info.
-  if (::features::IsUsingWindowService() && uses_shader_rounded_corner)
-    return "144";
-
+  // TODO(oshima): Cleanup once new rounded corners is launched.
   // Uses 512mb which is default.
   if (uses_shader_rounded_corner)
     return "512";
@@ -124,14 +116,6 @@ const char* GetUICompositorMemoryLimitMB() {
   }
 
   return width >= 3000 ? "1024" : "512";
-}
-
-// Returns the Shell's WindowService instance or nullptr if Shell's
-// |window_service_owner_| is not yet created.
-ws::WindowService* GetWindowService() {
-  return Shell::Get()->window_service_owner()
-             ? Shell::Get()->window_service_owner()->window_service()
-             : nullptr;
 }
 
 }  // namespace
@@ -552,8 +536,6 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     GetRootWindowSettings(GetWindow(ash_host))->display_id = display.id();
     for (auto& observer : observers_)
       observer.OnWindowTreeHostReusedForDisplay(ash_host, display);
-    if (auto* window_service = GetWindowService())
-      window_service->OnWindowTreeHostsDisplayIdChanged({GetWindow(ash_host)});
     const display::ManagedDisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
     ash_host->AsWindowTreeHost()->SetBoundsInPixels(
@@ -621,10 +603,6 @@ void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {
 
     for (auto& observer : observers_)
       observer.OnWindowTreeHostsSwappedDisplays(host_to_delete, primary_host);
-    if (auto* window_service = GetWindowService()) {
-      window_service->OnWindowTreeHostsDisplayIdChanged(
-          {GetWindow(host_to_delete), GetWindow(primary_host)});
-    }
 
     OnDisplayMetricsChanged(
         GetDisplayManager()->GetDisplayForId(primary_display_id),
@@ -642,12 +620,6 @@ void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {
 void WindowTreeHostManager::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
-  // Shell creates |window_service_owner_| from Shell::Init(), but this
-  // function may be called before |window_service_owner_| is created. It's safe
-  // to ignore the call in this case as no clients have connected yet.
-  if (auto* window_service = GetWindowService())
-    window_service->OnDisplayMetricsChanged(display, metrics);
-
   if (!(metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
                    DISPLAY_METRIC_DEVICE_SCALE_FACTOR))) {
     return;
@@ -765,10 +737,6 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
 
   for (auto& observer : observers_)
     observer.OnWindowTreeHostsSwappedDisplays(primary_host, non_primary_host);
-  if (auto* window_service = GetWindowService()) {
-    window_service->OnWindowTreeHostsDisplayIdChanged(
-        {primary_window, non_primary_window});
-  }
 
   const display::DisplayLayout& layout =
       GetDisplayManager()->GetCurrentDisplayLayout();

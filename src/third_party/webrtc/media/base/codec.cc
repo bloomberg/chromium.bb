@@ -99,6 +99,18 @@ bool Codec::Matches(const Codec& codec) const {
              : (absl::EqualsIgnoreCase(name, codec.name));
 }
 
+bool Codec::MatchesCapability(
+    const webrtc::RtpCodecCapability& codec_capability) const {
+  webrtc::RtpCodecParameters codec_parameters = ToCodecParameters();
+
+  return codec_parameters.name == codec_capability.name &&
+         codec_parameters.kind == codec_capability.kind &&
+         (codec_parameters.name == cricket::kRtxCodecName ||
+          (codec_parameters.num_channels == codec_capability.num_channels &&
+           codec_parameters.clock_rate == codec_capability.clock_rate &&
+           codec_parameters.parameters == codec_capability.parameters));
+}
+
 bool Codec::GetParam(const std::string& name, std::string* out) const {
   CodecParameterMap::const_iterator iter = params.find(name);
   if (iter == params.end())
@@ -322,23 +334,28 @@ bool VideoCodec::ValidateCodecFormat() const {
   return true;
 }
 
-DataCodec::DataCodec(int id, const std::string& name)
+RtpDataCodec::RtpDataCodec(int id, const std::string& name)
     : Codec(id, name, kDataCodecClockrate) {}
 
-DataCodec::DataCodec() : Codec() {
+RtpDataCodec::RtpDataCodec() : Codec() {
   clockrate = kDataCodecClockrate;
 }
 
-DataCodec::DataCodec(const DataCodec& c) = default;
-DataCodec::DataCodec(DataCodec&& c) = default;
-DataCodec& DataCodec::operator=(const DataCodec& c) = default;
-DataCodec& DataCodec::operator=(DataCodec&& c) = default;
+RtpDataCodec::RtpDataCodec(const RtpDataCodec& c) = default;
+RtpDataCodec::RtpDataCodec(RtpDataCodec&& c) = default;
+RtpDataCodec& RtpDataCodec::operator=(const RtpDataCodec& c) = default;
+RtpDataCodec& RtpDataCodec::operator=(RtpDataCodec&& c) = default;
 
-std::string DataCodec::ToString() const {
+std::string RtpDataCodec::ToString() const {
   char buf[256];
   rtc::SimpleStringBuilder sb(buf);
-  sb << "DataCodec[" << id << ":" << name << "]";
+  sb << "RtpDataCodec[" << id << ":" << name << "]";
   return sb.str();
+}
+
+bool HasLntf(const Codec& codec) {
+  return codec.HasFeedbackParam(
+      FeedbackParam(kRtcpFbParamLntf, kParamValueEmpty));
 }
 
 bool HasNack(const Codec& codec) {

@@ -8,10 +8,6 @@
 
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
-#include "ui/aura/mus/window_tree_host_mus_init_params.h"
-#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -33,31 +29,22 @@ bool IsRotationPortrait(display::Display::Rotation rotation) {
 }  // namespace
 
 // static
-TestScreen* TestScreen::Create(const gfx::Size& size,
-                               WindowTreeClient* window_tree_client) {
+TestScreen* TestScreen::Create(const gfx::Size& size) {
   const gfx::Size kDefaultSize(800, 600);
   // Use (0,0) because the desktop aura tests are executed in
   // native environment where the display's origin is (0,0).
-  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size),
-                        window_tree_client);
+  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size));
 }
 
 TestScreen::~TestScreen() {
   delete host_;
 }
 
-WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay(Env* env) {
+WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   DCHECK(!host_);
-  if (window_tree_client_) {
-    host_ =
-        new WindowTreeHostMus(CreateInitParamsForTopLevel(window_tree_client_));
-    host_->SetBoundsInPixels(gfx::Rect(GetPrimaryDisplay().GetSizeInPixel()));
-  } else {
-    host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
-                                       GetPrimaryDisplay().GetSizeInPixel())},
-                                   env)
-                .release();
-  }
+  host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
+                                     GetPrimaryDisplay().GetSizeInPixel())})
+              .release();
   // Some tests don't correctly manage window focus/activation states.
   // Makes sure InputMethod is default focused so that IME basics can work.
   host_->GetInputMethod()->OnFocus();
@@ -77,9 +64,10 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
   host_->OnHostResizedInPixels(bounds_in_pixel.size());
 }
 
-void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space) {
+void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space,
+                               float sdr_white_level) {
   display::Display display(GetPrimaryDisplay());
-  display.set_color_space(color_space);
+  display.SetColorSpaceAndDepth(color_space, sdr_white_level);
   display_list().UpdateDisplay(display);
 }
 
@@ -162,10 +150,7 @@ void TestScreen::OnWindowDestroying(Window* window) {
 }
 
 gfx::Point TestScreen::GetCursorScreenPoint() {
-  // This may be hit during shutdown, after |host_| has been destroyed.
-  return host_ && host_->window()
-             ? host_->window()->env()->last_mouse_location()
-             : gfx::Point();
+  return Env::GetInstance()->last_mouse_location();
 }
 
 bool TestScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
@@ -183,9 +168,7 @@ display::Display TestScreen::GetDisplayNearestWindow(
   return GetPrimaryDisplay();
 }
 
-TestScreen::TestScreen(const gfx::Rect& screen_bounds,
-                       WindowTreeClient* window_tree_client)
-    : host_(nullptr), ui_scale_(1.0f), window_tree_client_(window_tree_client) {
+TestScreen::TestScreen(const gfx::Rect& screen_bounds) {
   static int64_t synthesized_display_id = 2000;
   display::Display display(synthesized_display_id++);
   display.SetScaleAndBounds(1.0f, screen_bounds);

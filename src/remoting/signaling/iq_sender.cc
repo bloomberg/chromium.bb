@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -151,7 +150,7 @@ void IqRequest::SetTimeout(base::TimeDelta timeout) {
 
 void IqRequest::CallCallback(const jingle_xmpp::XmlElement* stanza) {
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(this, stanza);
+    std::move(callback_).Run(this, stanza);
 }
 
 void IqRequest::OnTimeout() {

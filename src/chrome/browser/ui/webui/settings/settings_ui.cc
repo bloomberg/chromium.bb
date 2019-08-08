@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -58,17 +57,16 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
+#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
-#include "chrome/browser/conflicts/token_util_win.h"
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
+#include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
+#include "chrome/browser/win/conflicts/token_util.h"
 #endif
 #endif  // defined(OS_WIN)
 
@@ -78,6 +76,7 @@
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -106,8 +105,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/components/account_manager/account_manager.h"
@@ -157,10 +159,6 @@ void SettingsUI::RegisterProfilePrefs(
 SettingsUI::SettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  std::vector<std::string> exclude_from_gzip;
-#endif
-
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
@@ -207,26 +205,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // TODO(950007): Remove this when SplitSettings is the default and there are
   // no Chrome OS settings in the browser settings page.
   InitOSWebUIHandlers(profile, web_ui, html_source);
-
-  // TODO(jamescook): Sort out how account management is split between Chrome OS
-  // and browser settings.
-  if (chromeos::IsAccountManagerAvailable(profile)) {
-    chromeos::AccountManagerFactory* factory =
-        g_browser_process->platform_part()->GetAccountManagerFactory();
-    chromeos::AccountManager* account_manager =
-        factory->GetAccountManager(profile->GetPath().value());
-    DCHECK(account_manager);
-
-    AddSettingsPageUIHandler(
-        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager, IdentityManagerFactory::GetForProfile(profile)));
-    html_source->AddBoolean(
-        "secondaryGoogleAccountSigninAllowed",
-        profile->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
-  }
-  AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::ChangePictureHandler>());
 #else
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
@@ -305,32 +283,16 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-    exclude_from_gzip.push_back("icon-192.png");
-    exclude_from_gzip.push_back("pwa.html");
-#endif  // BUILDFLAG(OPTIMIZE_WEBUI)
   }
 #endif  // defined (OS_CHROMEOS)
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  const bool use_polymer_2 =
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2);
   html_source->AddResourcePath("crisper.js", IDR_SETTINGS_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.crisper.js",
                                IDR_SETTINGS_LAZY_LOAD_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.html",
-                               use_polymer_2
-                                   ? IDR_SETTINGS_LAZY_LOAD_VULCANIZED_P2_HTML
-                                   : IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
-  html_source->SetDefaultResource(use_polymer_2
-                                      ? IDR_SETTINGS_VULCANIZED_P2_HTML
-                                      : IDR_SETTINGS_VULCANIZED_HTML);
-  html_source->UseGzip(base::BindRepeating(
-      [](const std::vector<std::string>& excluded_paths,
-         const std::string& path) {
-        return !base::ContainsValue(excluded_paths, path);
-      },
-      std::move(exclude_from_gzip)));
+                               IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
+  html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
 #if defined(OS_CHROMEOS)
   html_source->AddResourcePath("manifest.json", IDR_SETTINGS_MANIFEST);
 #endif  // defined (OS_CHROMEOS)
@@ -384,6 +346,27 @@ void SettingsUI::DocumentOnLoadCompletedInMainFrame() {
 void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                                      content::WebUI* web_ui,
                                      content::WebUIDataSource* html_source) {
+  // TODO(jamescook): Sort out how account management is split between Chrome OS
+  // and browser settings.
+  if (chromeos::IsAccountManagerAvailable(profile)) {
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(profile->GetPath().value());
+    DCHECK(account_manager);
+
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+            account_manager, IdentityManagerFactory::GetForProfile(profile)));
+    html_source->AddBoolean(
+        "secondaryGoogleAccountSigninAllowed",
+        profile->GetPrefs()->GetBoolean(
+            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
+  }
+
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::ChangePictureHandler>());
+
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
   web_ui->AddMessageHandler(
@@ -403,12 +386,22 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
   }
+  if (g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled)) {
+    // Note that UI is also dependent on this pref.
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::KerberosAccountsHandler>());
+  }
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
+  if (plugin_vm::IsPluginVmEnabled(profile)) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::PluginVmHandler>(profile));
+  }
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::StorageHandler>(profile));
+      std::make_unique<chromeos::settings::StorageHandler>(profile,
+                                                           html_source));
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::StylusHandler>());
   web_ui->AddMessageHandler(
@@ -461,10 +454,13 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                           !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
-
+#if defined(KIOSK_NEXT)
+  // Remove valueExists call from os_settings_ui.js when the #define is removed.
   html_source->AddBoolean(
       "showKioskNextShell",
-      base::FeatureList::IsEnabled(ash::features::kKioskNextShell));
+      base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&
+          profile->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+#endif
 
   html_source->AddBoolean("showCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(
@@ -501,6 +497,9 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
         std::make_unique<chromeos::settings::PowerHandler>(
             profile->GetPrefs()));
   }
+
+  html_source->AddBoolean(
+      "showApps", base::FeatureList::IsEnabled(features::kAppManagement));
 }
 #endif  // defined(OS_CHROMEOS)
 

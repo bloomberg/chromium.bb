@@ -10,6 +10,8 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_annotations.h"
@@ -64,6 +66,11 @@ class Cronet_EngineImpl : public Cronet_Engine {
   // Returns true if there is a listener currently registered (using
   // AddRequestFinishedListener()), and false otherwise.
   bool HasRequestFinishedListener();
+
+  // Provide |request_info| to all registered RequestFinishedListeners.
+  void ReportRequestFinished(
+      scoped_refptr<base::RefCountedData<Cronet_RequestFinishedInfo>>
+          request_info);
 
  private:
   class StreamEngineImpl;

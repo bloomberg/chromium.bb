@@ -91,7 +91,7 @@ a:focus {
   flex-direction: column;
   max-width: 40%;
   min-width: 105px;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
   width: 240px;
 }
@@ -100,7 +100,6 @@ a:focus {
   display: flex;
   flex: 1 1 auto;
   margin-top: 8px;
-  position: relative;
 }
 
 .dialog-navigation-list-footer {
@@ -125,11 +124,7 @@ div.splitter {
   bottom: 0;
   flex: none;
   left: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  position: absolute;
-  right: 0;
-  top: 0;
+  min-width: 100%;
 }
 
 #directory-tree .tree-row {
@@ -139,6 +134,16 @@ div.splitter {
   display: flex;
   height: 40px;
   padding: 0 3px;
+}
+
+.tree-item > .ejectable {
+  position: inherit;
+}
+
+.ejectable > span.label {
+  left: 52px;
+  position: absolute;
+  width: calc(100% - 92px);
 }
 
 #directory-tree .tree-row > .button {
@@ -213,17 +218,25 @@ div.splitter {
   background-color: rgb(216, 223, 240);
 }
 
-#directory-tree .tree-row > .root-eject {
-  background: -webkit-image-set(
-      url(../images/files/ui/eject.png) 1x,
-      url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
+#directory-tree .tree-row > .align-right-icon {
   border-style: none;
   cursor: pointer;
   flex: none;
   height: 40px;
-  position: relative;
+  position: absolute;
+  right: 0;
   width: 40px;
-  z-index: 1;  /* Make sure .root-eject is on upper layer than paper-ripple. */
+  z-index: 1;  /* Make sure the icon is on upper layer than paper-ripple. */
+}
+
+#directory-tree .tree-row > .external-link-icon {
+  background: url(../images/files/ui/external_link.svg) no-repeat center;
+}
+
+#directory-tree .tree-row > .root-eject {
+  background: -webkit-image-set(
+      url(../images/files/ui/eject.png) 1x,
+      url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
 }
 
 #directory-tree .tree-row[selected] > .root-eject {
@@ -2305,10 +2318,7 @@ files-toggle-ripple {
 
 /*
  * Preventing FOUC
- * TODO(dpapad): Remove :unresolved when Polymer 2 migration is complete,
- * (crbug.com/738611).
  */
-cr-input:unresolved,
 cr-input:not(:defined) {
   display: none;
 }

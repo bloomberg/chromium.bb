@@ -20,8 +20,8 @@ class SoftwareOutputDevice;
 
 class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
  public:
-  SoftwareOutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device,
-                        UpdateVSyncParametersCallback update_vsync_callback);
+  explicit SoftwareOutputSurface(
+      std::unique_ptr<SoftwareOutputDevice> software_device);
   ~SoftwareOutputSurface() override;
 
   // OutputSurface implementation.
@@ -37,27 +37,40 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   unsigned UpdateGpuFence() override;
+  void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
+#if defined(USE_X11)
+  void SetNeedsSwapSizeNotifications(
+      bool needs_swap_size_notifications) override;
+#endif
 
  private:
-  void SwapBuffersCallback();
+  void SwapBuffersCallback(const gfx::Size& pixel_size);
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);
 
   OutputSurfaceClient* client_ = nullptr;
 
-  UpdateVSyncParametersCallback update_vsync_callback_;
+  UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   base::TimeTicks refresh_timebase_;
   base::TimeDelta refresh_interval_ = BeginFrameArgs::DefaultInterval();
 
   std::vector<ui::LatencyInfo> stored_latency_info_;
   ui::LatencyTracker latency_tracker_;
+
+#if defined(USE_X11)
+  bool needs_swap_size_notifications_ = false;
+#endif
 
   base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_{this};
 

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1289966288285062467">Sekretessmeddelande för Chromium</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
+<translation id="1507010443238049608">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
 <translation id="1617663976202781617">Data från Chromium-synkronisering</translation>
 <translation id="1736662517232558588">Chromium-data har rensats</translation>
 <translation id="1838412507805038478">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">Några tillägg har fått Chromium att krascha. Avinstallera följande:</translation>
 <translation id="2178608107313874732">Chromium kan inte använda kameran just nu</translation>
 <translation id="2195025571279539885">Vill du att Chromium ska översätta sidor skrivna på <ph name="LANGUAGE_NAME" /> på den här webbplatsen nästa gång?</translation>
-<translation id="2517624234762908348">Synkronisera data i Chromium</translation>
+<translation id="2590893390871230428">Synkronisera data i Chromium</translation>
 <translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium kan inte använda kameran eftersom den används av en annan app</translation>
 <translation id="2915596697727466327">Chromium använder Face ID för att se till att endast behöriga har åtkomst till lösenorden.</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">Logga in i Chromium om du vill få tillgång till flikarna på alla enheter.</translation>
 <translation id="4157467675761413638">Tips för Chromium. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 <translation id="4241912885070669028">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chromium från den här enheten, men den finns kvar på Google-kontot.</translation>
-<translation id="4272892696084633551">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Här visas flikar som du har öppnat i Chromium på andra enheter.</translation>
 <translation id="495292094137889840">Börja använda Chromium som QR-skanner</translation>

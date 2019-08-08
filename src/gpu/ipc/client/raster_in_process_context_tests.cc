@@ -59,7 +59,8 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
   void SetUp() override {
     if (!RasterInProcessContext::SupportedInTest())
       return;
-    gpu_memory_buffer_factory_ = GpuMemoryBufferFactory::CreateNativeType();
+    gpu_memory_buffer_factory_ =
+        GpuMemoryBufferFactory::CreateNativeType(nullptr);
     gpu_memory_buffer_manager_ =
         std::make_unique<viz::TestGpuMemoryBufferManager>();
     gpu_thread_holder_.GetGpuPreferences()->texture_target_exception_list =

@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
@@ -71,6 +71,7 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
   bool enable_pixel_output_ = false;
 
  private:
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<ui::Compositor> compositor_;
   TestPlatformWindowDelegate window_delegate_;
 
@@ -81,16 +82,13 @@ SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() = default;
 SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() = default;
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  ui::InitializeContextFactoryForTests(enable_pixel_output_, &context_factory,
-                                       &context_factory_private);
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output_);
 
   const gfx::Size size(500, 400);
   compositor_ = std::make_unique<ui::Compositor>(
-      FrameSinkId(1, 1), context_factory, nullptr,
-      base::ThreadTaskRunnerHandle::Get(),
-      false /* enable_pixel_canvas */);
+      FrameSinkId(1, 1), context_factories_->GetContextFactory(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), false /* enable_pixel_canvas */);
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size, LocalSurfaceIdAllocation());
 
@@ -113,7 +111,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
 void SoftwareOutputDeviceOzoneTest::TearDown() {
   output_device_.reset();
   compositor_.reset();
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
 }
 
 class SoftwareOutputDeviceOzonePixelTest

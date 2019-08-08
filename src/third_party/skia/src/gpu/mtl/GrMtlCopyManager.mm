@@ -5,21 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "GrMtlCopyManager.h"
+#include "src/gpu/mtl/GrMtlCopyManager.h"
 
-#include "GrSurface.h"
+#include "include/gpu/GrSurface.h"
 
-#include "GrMtlBuffer.h"
-#include "GrMtlCopyPipelineState.h"
-#include "GrMtlGpu.h"
-#include "GrMtlResourceProvider.h"
-#include "GrMtlUtil.h"
+#include "src/gpu/mtl/GrMtlBuffer.h"
+#include "src/gpu/mtl/GrMtlCommandBuffer.h"
+#include "src/gpu/mtl/GrMtlCopyPipelineState.h"
+#include "src/gpu/mtl/GrMtlGpu.h"
+#include "src/gpu/mtl/GrMtlResourceProvider.h"
+#include "src/gpu/mtl/GrMtlUtil.h"
 
-#include "SkPoint.h"
-#include "SkRect.h"
-#include "SkTraceEvent.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "src/core/SkTraceEvent.h"
 
 #import <simd/simd.h>
+
+#if !__has_feature(objc_arc)
+#error This file must be compiled with Arc. Use -fobjc-arc flag
+#endif
 
 void GrMtlCopyManager::createCopyProgramBuffer() {
     // Create per vertex attribute data for copy as draw
@@ -134,6 +139,7 @@ bool GrMtlCopyManager::copySurfaceAsDraw(GrSurface* dst, GrSurfaceOrigin dstOrig
 
     id<MTLTexture> dstTex = GrGetMTLTextureFromSurface(dst, false);
     id<MTLTexture> srcTex = GrGetMTLTextureFromSurface(src, false);
+    SkASSERT(srcTex != dstTex);
 
     if (fSamplerState == nil) {
         SkASSERT(fVertexAttributeBuffer == nil);
@@ -197,7 +203,7 @@ bool GrMtlCopyManager::copySurfaceAsDraw(GrSurface* dst, GrSurfaceOrigin dstOrig
     renderPassDesc.colorAttachments[0].storeAction = MTLStoreActionStore;
 
     id<MTLRenderCommandEncoder> renderCmdEncoder =
-            [fGpu->commandBuffer() renderCommandEncoderWithDescriptor: renderPassDesc];
+            fGpu->commandBuffer()->getRenderCommandEncoder(renderPassDesc, nullptr);
     GrMtlCopyPipelineState* copyPipelineState =
             fGpu->resourceProvider().findOrCreateCopyPipelineState(dstTex.pixelFormat,
                                                                    fVertexFunction,
@@ -217,11 +223,18 @@ bool GrMtlCopyManager::copySurfaceAsDraw(GrSurface* dst, GrSurfaceOrigin dstOrig
     [renderCmdEncoder drawPrimitives: MTLPrimitiveTypeTriangleStrip
                          vertexStart: 0
                          vertexCount: 4];
-    [renderCmdEncoder endEncoding];
     return true;
 }
 
 bool GrMtlCopyManager::IsCompatible(const GrMtlCopyPipelineState* pipelineState,
                                     MTLPixelFormat dstPixelFormat) {
     return pipelineState->fPixelFormat == dstPixelFormat;
+}
+
+void GrMtlCopyManager::destroyResources() {
+    fSamplerState = nil;
+    fVertexAttributeBuffer = nil;
+    fVertexFunction = nil;
+    fFragmentFunction = nil;
+    fVertexDescriptor = nil;
 }

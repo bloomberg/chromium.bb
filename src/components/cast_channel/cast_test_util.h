@@ -194,10 +194,10 @@ class MockCastMessageHandler : public CastMessageHandler {
                                    const std::string& source_id,
                                    const std::string& destination_id));
   MOCK_METHOD4(SendSetVolumeRequest,
-               Result(int channel_id,
-                      const base::Value& body,
-                      const std::string& source_id,
-                      ResultCallback callback));
+               void(int channel_id,
+                    const base::Value& body,
+                    const std::string& source_id,
+                    ResultCallback callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCastMessageHandler);

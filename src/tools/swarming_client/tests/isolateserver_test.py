@@ -3,8 +3,6 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-# pylint: disable=W0212,W0223,W0231,W0613
-
 import base64
 import hashlib
 import json
@@ -12,30 +10,27 @@ import logging
 import io
 import os
 import StringIO
-import stat
 import sys
 import tarfile
 import tempfile
 import unittest
 import zlib
 
-# net_utils adjusts sys.path.
+# Mutates sys.path.
+import test_env
+
+import isolateserver_fake
 import net_utils
 
 import auth
 import isolated_format
 import isolate_storage
 import isolateserver
-import isolate_storage
 import local_caching
-import test_utils
-from depot_tools import fix_encoding
 from utils import file_path
 from utils import fs
 from utils import logging_utils
 from utils import threading_utils
-
-import isolateserver_fake
 
 
 CONTENTS = {
@@ -73,10 +68,11 @@ class TestCase(net_utils.TestCase):
     return self._tempdir
 
   def make_tree(self, contents):
-    test_utils.make_tree(self.tempdir, contents)
+    test_env.make_tree(self.tempdir, contents)
 
   def checkOutput(self, expected_out, expected_err):
     try:
+      # pylint: disable=no-member
       self.assertEqual(expected_err, sys.stderr.getvalue())
       self.assertEqual(expected_out, sys.stdout.getvalue())
     finally:
@@ -127,6 +123,8 @@ class FakeItem(isolate_storage.Item):
 
 
 class MockedStorageApi(isolate_storage.StorageApi):
+  # pylint: disable=abstract-method
+
   def __init__(
       self, server_ref, missing_hashes, push_side_effect=None):
     logging.debug(
@@ -176,7 +174,7 @@ class UtilsTest(TestCase):
     self.assertIs(None, isolateserver.fileobj_path(io.BytesIO('hello')))
 
     # Path on opened files
-    thisfile = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
+    thisfile = os.path.join(test_env.TESTS_DIR, 'isolateserver_test.py')
     f = fs.open(thisfile)
     result = isolateserver.fileobj_path(f)
     self.assertIsInstance(result, unicode)
@@ -578,9 +576,10 @@ class IsolateServerStorageApiTest(TestCase):
         {'server_version': 'such a good version'}
     )
 
-  @staticmethod
-  def mock_gs_request(server_ref, item, data=None, offset=0,
+  def mock_gs_request(self, server_ref, item, data=None, offset=0,
                       request_headers=None, response_headers=None):
+    self.assertEqual(200, offset)
+    self.assertEqual({'Range': 'bytes=200-'}, request_headers)
     response = data
     return (
         '%s/some/gs/url/%s/%s' % (server_ref.url, server_ref.namespace, item),
@@ -793,8 +792,6 @@ class IsolateServerStorageApiTest(TestCase):
         files[1],
         files[2],
     ]
-    # Pylint is confused, self._requests is set in net_utils.TestCase.setUp().
-    # pylint: disable=attribute-defined-outside-init
     self._requests = [self.mock_contains_request(server_ref, request, response)]
     storage = isolate_storage.IsolateServer(server_ref)
     result = storage.contains(files)
@@ -972,6 +969,7 @@ class IsolateServerDownloadTest(TestCase):
           self._flagged_requests[i] = 1
           return result
     self.fail('Unknown request %s' % url)
+    return None
 
   def _get_actual(self):
     """Returns the files in '<self.tempdir>/target'."""
@@ -1032,7 +1030,7 @@ class IsolateServerDownloadTest(TestCase):
       'download',
       '--isolate-server', server_ref.url,
       '--namespace', server_ref.namespace,
-      '--target', net_utils.ROOT_DIR,
+      '--target', test_env.CLIENT_DIR,
       '--file', coucou_sha1, 'path/to/a',
       '--file', byebye_sha1, 'path/to/b',
       # Even if everything is mocked, the cache directory will still be created.
@@ -1040,8 +1038,8 @@ class IsolateServerDownloadTest(TestCase):
     ]
     self.assertEqual(0, isolateserver.main(cmd))
     expected = {
-      os.path.join(net_utils.ROOT_DIR, 'path/to/a'): 'Coucou',
-      os.path.join(net_utils.ROOT_DIR, 'path/to/b'): 'Bye Bye',
+      os.path.join(test_env.CLIENT_DIR, 'path/to/a'): 'Coucou',
+      os.path.join(test_env.CLIENT_DIR, 'path/to/b'): 'Bye Bye',
     }
     self.assertEqual(expected, actual)
 
@@ -1074,7 +1072,7 @@ class IsolateServerDownloadTest(TestCase):
       'read_only': 1,
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
+    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',', ':'))
     isolated_hash = isolateserver_fake.hash_content(isolated_data)
     requests = [
       (v['h'], files[k]) for k, v in isolated['files'].iteritems()
@@ -1166,7 +1164,7 @@ class IsolateServerDownloadTest(TestCase):
       'read_only': 1,
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
+    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',', ':'))
     isolated_hash = isolateserver_fake.hash_content(isolated_data)
     requests = [
       (isolated['files']['archive1']['h'], archive),
@@ -1237,15 +1235,10 @@ class TestArchive(TestCase):
     self.mock(logging_utils, 'prepare_logging', lambda *_: None)
     self.mock(logging_utils, 'set_console_level', lambda *_: None)
 
-  @staticmethod
-  def get_isolateserver_prog():
-    """Returns 'isolateserver.py' or 'isolateserver.pyc'."""
-    return os.path.basename(sys.modules[isolateserver.__name__].__file__)
-
   def test_archive_no_server(self):
     with self.assertRaises(SystemExit):
       isolateserver.main(['archive', '.'])
-    prog = self.get_isolateserver_prog()
+    prog = os.path.basename(sys.modules[isolateserver.__name__].__file__)
     self.checkOutput(
         '',
         'Usage: %(prog)s archive [options] <file1..fileN> or - to read '
@@ -1280,7 +1273,7 @@ class TestArchive(TestCase):
       }
       if sys.platform != 'win32':
         isolated['files'][k]['m'] = 0600
-    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
+    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',', ':'))
     isolated_hash = isolateserver_fake.hash_content(isolated_data)
     self.checkOutput(
         '%s %s\n' % (isolated_hash, self.tempdir),
@@ -1290,20 +1283,11 @@ class TestArchive(TestCase):
     self.help_test_archive(['archive', '-I', 'https://localhost:1'])
 
   def test_archive_directory_envvar(self):
-    with test_utils.EnvVars({'ISOLATE_SERVER': 'https://localhost:1'}):
+    with test_env.EnvVars({'ISOLATE_SERVER': 'https://localhost:1'}):
       self.help_test_archive(['archive'])
 
 
-def clear_env_vars():
+if __name__ == '__main__':
   for e in ('ISOLATE_DEBUG', 'ISOLATE_SERVER'):
     os.environ.pop(e, None)
-
-
-if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  logging.basicConfig(
-      level=(logging.DEBUG if '-v' in sys.argv else logging.CRITICAL))
-  clear_env_vars()
-  unittest.main()
+  test_env.main()

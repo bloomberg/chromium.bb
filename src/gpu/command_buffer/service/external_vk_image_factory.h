@@ -48,6 +48,8 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage) override;
+  bool CanImportGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType memory_buffer_type) override;
 
  private:
   VkResult CreateExternalVkImage(VkFormat format,

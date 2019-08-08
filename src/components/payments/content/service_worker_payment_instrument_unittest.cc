@@ -60,6 +60,8 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
   ~ServiceWorkerPaymentInstrumentTest() override {}
 
  protected:
+  const SkBitmap* icon_bitmap() const { return icon_bitmap_; }
+
   void OnSpecUpdated() override {}
 
   void SetUp() override {
@@ -125,12 +127,16 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
   void TearDown() override {}
 
   void CreateServiceWorkerPaymentInstrument(bool with_url_method) {
+    constexpr int kBitmapDimension = 16;
+
     std::unique_ptr<content::StoredPaymentApp> stored_app =
         std::make_unique<content::StoredPaymentApp>();
     stored_app->registration_id = 123456;
     stored_app->scope = GURL("https://bobpay.com");
     stored_app->name = "bobpay";
-    stored_app->icon.reset(new SkBitmap());
+    stored_app->icon = std::make_unique<SkBitmap>();
+    stored_app->icon->allocN32Pixels(kBitmapDimension, kBitmapDimension);
+    stored_app->icon->eraseColor(SK_ColorRED);
     stored_app->enabled_methods.emplace_back("basic-card");
     if (with_url_method)
       stored_app->enabled_methods.emplace_back("https://bobpay.com");
@@ -144,6 +150,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     stored_app->user_hint = "Visa 4012 ... 1881";
     stored_app->prefer_related_applications = false;
 
+    icon_bitmap_ = stored_app->icon.get();
     instrument_ = std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
@@ -167,6 +174,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<ServiceWorkerPaymentInstrument> instrument_;
+  const SkBitmap* icon_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentInstrumentTest);
 };
@@ -180,7 +188,10 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, InstrumentInfo) {
 
   EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetLabel()), "bobpay");
   EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetSublabel()), "bobpay.com");
-  EXPECT_NE(GetInstrument()->icon_image_skia(), nullptr);
+
+  const gfx::Size expected_size{icon_bitmap()->width(),
+                                icon_bitmap()->height()};
+  EXPECT_EQ(GetInstrument()->icon_image_skia().size(), expected_size);
 }
 
 // Test payment request event data can be correctly constructed for invoking

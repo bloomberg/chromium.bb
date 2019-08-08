@@ -45,20 +45,18 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
 
     void init(vk::ImageHelper *image,
               vk::ImageView *imageView,
+              vk::ImageView *cubeImageFetchView,
               size_t levelIndex,
-              size_t layerIndex,
-              TextureVk *owner);
+              size_t layerIndex);
     void reset();
 
     // Note: RenderTargets should be called in order, with the depth/stencil onRender last.
     angle::Result onColorDraw(ContextVk *contextVk,
                               vk::FramebufferHelper *framebufferVk,
-                              vk::CommandBuffer *commandBuffer,
-                              vk::RenderPassDesc *renderPassDesc);
+                              vk::CommandBuffer *commandBuffer);
     angle::Result onDepthStencilDraw(ContextVk *contextVk,
                                      vk::FramebufferHelper *framebufferVk,
-                                     vk::CommandBuffer *commandBuffer,
-                                     vk::RenderPassDesc *renderPassDesc);
+                                     vk::CommandBuffer *commandBuffer);
 
     vk::ImageHelper &getImage();
     const vk::ImageHelper &getImage() const;
@@ -71,6 +69,10 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
 
     vk::ImageView *getDrawImageView() const;
     vk::ImageView *getReadImageView() const;
+    // GLSL's texelFetch() needs a 2D array view to read from cube maps.  This function returns the
+    // same view as `getReadImageView()`, except for cubemaps, in which case it returns a 2D array
+    // view of it.
+    vk::ImageView *getFetchImageView() const;
 
     const vk::Format &getImageFormat() const;
     gl::Extents getExtents() const;
@@ -81,19 +83,17 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
     // RenderTargetVk pointer.
     void updateSwapchainImage(vk::ImageHelper *image, vk::ImageView *imageView);
 
-    angle::Result ensureImageInitialized(ContextVk *contextVk);
+    angle::Result flushStagedUpdates(ContextVk *contextVk);
 
   private:
     vk::ImageHelper *mImage;
     // Note that the draw and read image views are the same, given the requirements of a render
     // target.
     vk::ImageView *mImageView;
+    // For cubemaps, a 2D-array view is also created to be used with shaders that use texelFetch().
+    vk::ImageView *mCubeImageFetchView;
     size_t mLevelIndex;
     size_t mLayerIndex;
-
-    // If owned by the texture, this will be non-nullptr, and is used to ensure texture changes
-    // are flushed.
-    TextureVk *mOwner;
 };
 
 }  // namespace rx

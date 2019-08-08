@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
+#include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/render_surface_impl.h"
@@ -30,7 +31,7 @@ DebugRectHistory::~DebugRectHistory() = default;
 
 void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     LayerTreeImpl* tree_impl,
-    LayerImpl* hud_layer,
+    HeadsUpDisplayLayerImpl* hud_layer,
     const RenderSurfaceList& render_surface_list,
     const LayerTreeDebugState& debug_state) {
   // For now, clear all rects from previous frames. In the future we may want to
@@ -49,6 +50,9 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
   if (debug_state.show_non_fast_scrollable_rects)
     SaveNonFastScrollableRects(tree_impl);
 
+  if (debug_state.show_layout_shift_regions)
+    SaveLayoutShiftRects(hud_layer);
+
   if (debug_state.show_paint_rects)
     SavePaintRects(tree_impl);
 
@@ -60,6 +64,14 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
 
   if (debug_state.show_screen_space_rects)
     SaveScreenSpaceRects(render_surface_list);
+}
+
+void DebugRectHistory::SaveLayoutShiftRects(HeadsUpDisplayLayerImpl* hud) {
+  for (gfx::Rect rect : hud->LayoutShiftRects()) {
+    debug_rects_.push_back(DebugRect(
+        LAYOUT_SHIFT_RECT_TYPE,
+        MathUtil::MapEnclosingClippedRect(hud->ScreenSpaceTransform(), rect)));
+  }
 }
 
 void DebugRectHistory::SavePaintRects(LayerTreeImpl* tree_impl) {

@@ -49,7 +49,7 @@ class AudioPipelineImpl : public AvPipelineImpl {
 
   CmaBackend::AudioDecoder* const audio_decoder_;
 
-  AudioConfig audio_config_;
+  EncryptionScheme encryption_scheme_ = EncryptionScheme::kUnencrypted;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPipelineImpl);
 };

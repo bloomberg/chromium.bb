@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "ios/web/public/browser_url_rewriter.h"
-#include "ios/web/public/navigation_item_list.h"
+#include "ios/web/public/deprecated/navigation_item_list.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/reload_type.h"
 #include "ios/web/public/user_agent.h"

@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -217,20 +218,20 @@ IntSize ImageDocument::ImageSize() const {
 }
 
 void ImageDocument::CreateDocumentStructure() {
-  HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*this);
+  auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*this);
   AppendChild(root_element);
   root_element->InsertedByParser();
 
   if (IsStopped())
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
-  HTMLHeadElement* head = HTMLHeadElement::Create(*this);
-  HTMLMetaElement* meta = HTMLMetaElement::Create(*this);
+  auto* head = MakeGarbageCollected<HTMLHeadElement>(*this);
+  auto* meta = MakeGarbageCollected<HTMLMetaElement>(*this);
   meta->setAttribute(kNameAttr, "viewport");
   meta->setAttribute(kContentAttr, "width=device-width, minimum-scale=0.1");
   head->AppendChild(meta);
 
-  HTMLBodyElement* body = HTMLBodyElement::Create(*this);
+  auto* body = MakeGarbageCollected<HTMLBodyElement>(*this);
 
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
@@ -238,13 +239,11 @@ void ImageDocument::CreateDocumentStructure() {
 
     // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
-    div_element_ = HTMLDivElement::Create(*this);
+    div_element_ = MakeGarbageCollected<HTMLDivElement>(*this);
     div_element_->setAttribute(kStyleAttr,
                                "display: flex;"
                                "flex-direction: column;"
-                               "justify-content: center;"
-                               "align-items: center;"
-                               "min-height: min-content;"
+                               "align-items: flex-start;"
                                "min-width: min-content;"
                                "height: 100%;"
                                "width: 100%;");
@@ -266,7 +265,7 @@ void ImageDocument::CreateDocumentStructure() {
   image_element_ = MakeGarbageCollected<HTMLImageElement>(*this);
   UpdateImageStyle();
   image_element_->SetLoadingImageDocument();
-  image_element_->SetSrc(Url().GetString());
+  image_element_->setAttribute(kSrcAttr, AtomicString(Url().GetString()));
   body->AppendChild(image_element_.Get());
   if (Loader() && image_element_->CachedImageResourceForImageDocument()) {
     image_element_->CachedImageResourceForImageDocument()->ResponseReceived(
@@ -381,6 +380,7 @@ void ImageDocument::UpdateImageStyle() {
   if (ShouldShrinkToFit()) {
     if (shrink_to_fit_mode_ == kViewport)
       image_style.Append("max-width: 100%;");
+    image_style.Append("margin: auto;");
 
     if (image_is_loaded_) {
       MouseCursorMode new_cursor_mode = kDefault;

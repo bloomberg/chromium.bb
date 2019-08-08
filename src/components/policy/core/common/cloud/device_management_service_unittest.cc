@@ -10,11 +10,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
@@ -29,8 +31,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Mock;
 using testing::_;
+using testing::DoAll;
+using testing::Invoke;
+using testing::Mock;
 
 namespace em = enterprise_management;
 
@@ -72,6 +76,23 @@ class DeviceManagementServiceTestBase : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetUp() override {
+    // Verify the metrics when job is done.
+    ON_CALL(*this, OnJobDone(_, _, _))
+        .WillByDefault(
+            Invoke([this](DeviceManagementStatus status, int net_error,
+                          const enterprise_management::DeviceManagementResponse&
+                              response) { VerifyMetrics(status, net_error); }));
+  }
+
+  void TearDown() override {
+    // Metrics data is always reset after verification so there shouldn't be any
+    // data point left.
+    EXPECT_EQ(
+        0u, histogram_tester_.GetTotalCountsForPrefix(request_uma_name_prefix_)
+                .size());
+  }
+
   void ResetService() {
     std::unique_ptr<DeviceManagementService::Configuration> configuration(
         new MockDeviceManagementServiceConfiguration(kServiceUrl));
@@ -101,6 +122,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -115,6 +137,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -129,6 +152,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::BindRepeating(&DeviceManagementServiceTestBase::OnJobDone,
                                    base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -143,6 +167,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -157,6 +182,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -173,6 +199,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -190,6 +217,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -207,6 +235,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
                           base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -221,6 +250,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::AdaptCallbackForRepeating(base::BindOnce(
         &DeviceManagementServiceTestBase::OnJobDone, base::Unretained(this))));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 
@@ -232,6 +262,32 @@ class DeviceManagementServiceTestBase : public testing::Test {
     service_->OnURLLoaderCompleteInternal(
         service_->GetSimpleURLLoaderForTesting(), response, mime_type, error,
         http_status, was_fetched_via_proxy);
+  }
+
+  void VerifyMetrics(DeviceManagementStatus status, int net_error) {
+    EXPECT_LE(expected_retry_count_, 10);
+    DCHECK_NE(last_job_type_, "");
+    EXPECT_EQ(
+        1u, histogram_tester_.GetTotalCountsForPrefix(request_uma_name_prefix_)
+                .size());
+    int expected_sample;
+    if (net_error != net::OK) {
+      expected_sample = static_cast<int>(
+          DMServerRequestSuccess::kRequestFailed);  // network error sample
+    } else if (status != DM_STATUS_SUCCESS &&
+               status != DM_STATUS_RESPONSE_DECODING_ERROR) {
+      expected_sample = static_cast<int>(
+          DMServerRequestSuccess::kRequestError);  // server error sample
+    } else {
+      expected_sample = expected_retry_count_;  // Success without retry sample
+    }
+    histogram_tester_.ExpectUniqueSample(
+        request_uma_name_prefix_ + last_job_type_, expected_sample, 1);
+
+    // Reset metrics data for next request.
+    statistics_recorder_.reset();
+    statistics_recorder_ =
+        base::StatisticsRecorder::CreateTemporaryForTesting();
   }
 
   MOCK_METHOD3(OnJobDone,
@@ -246,6 +302,14 @@ class DeviceManagementServiceTestBase : public testing::Test {
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
   std::unique_ptr<DeviceManagementService> service_;
+
+  std::string last_job_type_;
+  int expected_retry_count_ = 0;
+  const std::string request_uma_name_prefix_ =
+      "Enterprise.DMServerRequestSuccess.";
+  std::unique_ptr<base::StatisticsRecorder> statistics_recorder_ =
+      base::StatisticsRecorder::CreateTemporaryForTesting();
+  base::HistogramTester histogram_tester_;
 };
 
 struct FailedRequestParams {
@@ -447,14 +511,11 @@ class QueryParams {
   std::vector<std::string> GetParams(const std::string& name) {
     std::vector<std::string> results;
     for (const auto& param : params_) {
-      std::string unescaped_name;
-      net::UnescapeBinaryURLComponent(
-          param.first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
-          &unescaped_name);
+      std::string unescaped_name = net::UnescapeBinaryURLComponent(
+          param.first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
       if (unescaped_name == name) {
-        std::string value;
-        net::UnescapeBinaryURLComponent(
-            param.second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE, &value);
+        std::string value = net::UnescapeBinaryURLComponent(
+            param.second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
         results.push_back(value);
       }
     }
@@ -816,7 +877,11 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
   ASSERT_TRUE(request);
 
   EXPECT_CALL(*this, OnJobDone(_, _, _))
-      .WillOnce(ResetPointer(&request_job));
+      .WillOnce(DoAll(
+          ResetPointer(&request_job),
+          Invoke([this](DeviceManagementStatus status, int net_error,
+                        const enterprise_management::DeviceManagementResponse&
+                            response) { VerifyMetrics(status, net_error); })));
   EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
 
   // Generate a callback.
@@ -957,6 +1022,14 @@ TEST_F(DeviceManagementServiceTest, PolicyFetchRetryImmediately) {
   // Retry with last error net::ERR_NETWORK_CHANGED.
   CheckURLAndQueryParams(request, dm_protocol::kValueRequestPolicy, kClientID,
                          std::to_string(net::ERR_NETWORK_CHANGED));
+
+  // Request is succeeded with retry.
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _));
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  expected_retry_count_ = 1;
+  SendResponse(net::OK, 200, std::string());
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(this);
 }
 
 TEST_F(DeviceManagementServiceTest, RetryLimit) {
@@ -1034,6 +1107,7 @@ class DeviceManagementRequestAuthTest : public DeviceManagementServiceTestBase {
 
     job->Start(base::BindRepeating(&DeviceManagementRequestAuthTest::OnJobDone,
                                    base::Unretained(this)));
+    last_job_type_ = job->GetJobTypeAsString();
     return job;
   }
 

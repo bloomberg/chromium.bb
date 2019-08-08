@@ -29,7 +29,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -56,8 +55,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String address_without_phone = helper.setProfile(new AutofillProfile("",
                 "https://example.com", true, "Jon NoPhone", "Google", "340 Main St", "CA",
@@ -77,8 +75,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanPayWithBillingNoPhone()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCanPayWithBillingNoPhone() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -93,7 +90,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @MediumTest
     @Feature({"Payments"})
     public void testCanSelectBillingAddressWithoutPhone()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Go edit the credit card.
@@ -121,7 +118,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @MediumTest
     @Feature({"Payments"})
     public void testCantSelectShippingAddressWithoutPhone()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -144,7 +141,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @MediumTest
     @Feature({"Payments"})
     public void testCantAddNewBillingAddressWithoutPhone()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

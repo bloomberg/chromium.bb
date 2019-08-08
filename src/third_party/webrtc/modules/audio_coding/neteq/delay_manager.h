@@ -101,9 +101,11 @@ class DelayManager {
   // within to the corresponding pointers. The values are in (fractions of)
   // packets in Q8.
   virtual void BufferLimits(int* lower_limit, int* higher_limit) const;
+  virtual void BufferLimits(int target_level,
+                            int* lower_limit,
+                            int* higher_limit) const;
 
-  // Gets the target buffer level, in (fractions of) packets in Q8. This value
-  // includes any extra delay set through the set_extra_delay_ms() method.
+  // Gets the target buffer level, in (fractions of) packets in Q8.
   virtual int TargetLevel() const;
 
   // Informs the delay manager whether or not the last decoded packet contained
@@ -122,7 +124,6 @@ class DelayManager {
   virtual bool SetBaseMinimumDelay(int delay_ms);
   virtual int GetBaseMinimumDelay() const;
   virtual int base_target_level() const;
-  virtual void set_streaming_mode(bool value);
   virtual int last_pack_cng_or_dtmf() const;
   virtual void set_last_pack_cng_or_dtmf(int value);
 
@@ -132,6 +133,11 @@ class DelayManager {
   }
 
   // This accessor is only intended for testing purposes.
+  absl::optional<int> deceleration_target_level_offset_ms() const {
+    return deceleration_target_level_offset_ms_;
+  }
+
+  // These accessors are only intended for testing purposes.
   HistogramMode histogram_mode() const { return histogram_mode_; }
   int histogram_quantile() const { return histogram_quantile_; }
   Histogram* histogram() const { return histogram_.get(); }
@@ -149,10 +155,6 @@ class DelayManager {
 
   // Calculate relative packet arrival delay from |delay_history_|.
   int CalculateRelativePacketArrivalDelay() const;
-
-  // Updates |iat_cumulative_sum_| and |max_iat_cumulative_sum_|. (These are
-  // used by the streaming mode.) This method is called by Update().
-  void UpdateCumulativeSums(int packet_len_ms, uint16_t sequence_number);
 
   // Updates |effective_minimum_delay_ms_| delay based on current
   // |minimum_delay_ms_|, |base_minimum_delay_ms_| and |maximum_delay_ms_|
@@ -192,21 +194,21 @@ class DelayManager {
   int target_level_;   // Currently preferred buffer level in (fractions)
                        // of packets (Q8), before adding any extra delay.
   int packet_len_ms_;  // Length of audio in each incoming packet [ms].
-  bool streaming_mode_;
   uint16_t last_seq_no_;         // Sequence number for last received packet.
   uint32_t last_timestamp_;      // Timestamp for the last received packet.
   int minimum_delay_ms_;         // Externally set minimum delay.
   int maximum_delay_ms_;         // Externally set maximum allowed delay.
-  int iat_cumulative_sum_;       // Cumulative sum of delta inter-arrival times.
-  int max_iat_cumulative_sum_;   // Max of |iat_cumulative_sum_|.
-  // Time elapsed since maximum was observed.
-  std::unique_ptr<TickTimer::Stopwatch> max_iat_stopwatch_;
   DelayPeakDetector& peak_detector_;
   int last_pack_cng_or_dtmf_;
   const bool frame_length_change_experiment_;
   const bool enable_rtx_handling_;
   int num_reordered_packets_ = 0;  // Number of consecutive reordered packets.
   std::deque<int> delay_history_;
+  // When current buffer level is more than
+  // |deceleration_target_level_offset_ms_| below the target level, NetEq will
+  // impose deceleration to increase the buffer level. The value is in Q8, and
+  // measured in milliseconds.
+  const absl::optional<int> deceleration_target_level_offset_ms_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(DelayManager);
 };

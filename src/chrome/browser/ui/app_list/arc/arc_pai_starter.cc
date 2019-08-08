@@ -24,15 +24,15 @@ namespace arc {
 
 namespace {
 
-constexpr int kMinRetryTimeSeconds = 30;
-constexpr int kMaxRetryTimeSeconds = 1800;
+constexpr base::TimeDelta kMinRetryTime = base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kMaxRetryTime = base::TimeDelta::FromMinutes(30);
 
 }  // namespace
 
 ArcPaiStarter::ArcPaiStarter(Profile* profile)
     : profile_(profile),
       pref_service_(profile->GetPrefs()),
-      retry_interval_seconds_(kMinRetryTimeSeconds),
+      retry_interval_(kMinRetryTime),
       weak_ptr_factory_(this) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   // Prefs may not available in some unit tests.
@@ -143,10 +143,9 @@ void ArcPaiStarter::OnPaiRequested(mojom::PaiFlowState state) {
 
   if (state != mojom::PaiFlowState::SUCCEEDED) {
     retry_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(retry_interval_seconds_),
+        FROM_HERE, retry_interval_,
         base::BindOnce(&ArcPaiStarter::MaybeStartPai, base::Unretained(this)));
-    retry_interval_seconds_ =
-        std::min(retry_interval_seconds_ * 2, kMaxRetryTimeSeconds);
+    retry_interval_ = std::min(retry_interval_ * 2, kMaxRetryTime);
     return;
   }
 

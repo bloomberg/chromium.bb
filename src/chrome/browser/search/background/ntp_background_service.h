@@ -55,6 +55,13 @@ class NtpBackgroundService : public KeyedService {
 
   void AddValidBackdropUrlForTesting(const GURL& url);
 
+  void AddValidBackdropUrlWithThumbnailForTesting(const GURL& url,
+                                                  const GURL& thumbnail_url);
+
+  // Returns thumbnail url for the given image url if its valid. Otherwise,
+  // returns empty url.
+  const GURL& GetThumbnailUrl(const GURL& image_url);
+
   // Returns the currently cached CollectionInfo, if any.
   const std::vector<CollectionInfo>& collection_info() const {
     return collection_info_;

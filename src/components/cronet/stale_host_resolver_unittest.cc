@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -35,6 +34,7 @@
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/host_cache.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/http/http_network_session.h"
@@ -94,11 +94,13 @@ std::unique_ptr<net::MockDnsClient> CreateHangingMockDnsClient() {
 
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      kHostname, net::dns_protocol::kTypeA, net::SecureDnsMode::AUTOMATIC,
+      kHostname, net::dns_protocol::kTypeA,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
       true /* delay */);
   rules.emplace_back(
-      kHostname, net::dns_protocol::kTypeAAAA, net::SecureDnsMode::AUTOMATIC,
+      kHostname, net::dns_protocol::kTypeAAAA,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
       true /* delay */);
 
@@ -180,7 +182,12 @@ class StaleHostResolverTest : public testing::Test {
 
     net::ProcTaskParams proc_params(mock_proc_.get(), 1u);
     inner_resolver->SetProcParamsForTesting(proc_params);
-    inner_resolver->SetDnsClientForTesting(std::move(dns_client));
+    if (dns_client) {
+      inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
+          std::move(dns_client));
+    } else {
+      inner_resolver->GetManagerForTesting()->SetDnsClientEnabled(false);
+    }
     return inner_resolver;
   }
 
@@ -316,7 +323,7 @@ class StaleHostResolverTest : public testing::Test {
     resolve_complete_ = true;
 
     if (!resolve_closure_.is_null())
-      base::ResetAndReturn(&resolve_closure_).Run();
+      std::move(resolve_closure_).Run();
   }
 
   void AdvanceTickClock(base::TimeDelta delta) { tick_clock_.Advance(delta); }

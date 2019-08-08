@@ -72,6 +72,10 @@ void GhostImageView::SetTransitionOffset(
   SetPosition(drop_target_bounds_.origin() + transition_offset);
 }
 
+const char* GhostImageView::GetClassName() const {
+  return "GhostImageView";
+}
+
 void GhostImageView::DoAnimation(bool hide) {
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
   animation.SetTransitionDuration(kGhostFadeInOutLength);

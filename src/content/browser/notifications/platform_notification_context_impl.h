@@ -93,6 +93,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                              WriteResultCallback callback) override;
   void DeleteNotificationData(const std::string& notification_id,
                               const GURL& origin,
+                              bool close_notification,
                               DeleteResultCallback callback) override;
   void DeleteAllNotificationDataForBlockedOrigins(
       DeleteAllResultCallback callback) override;
@@ -206,6 +207,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DoDeleteNotificationData(const std::string& notification_id,
                                 const GURL& origin,
                                 DeleteResultCallback callback,
+                                bool should_log_close,
                                 bool initialized);
 
   // Actually reads all notification origins from the database. Must only be
@@ -271,6 +273,9 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   std::vector<std::unique_ptr<BlinkNotificationServiceImpl>> services_;
 
   NotificationDatabase::UkmCallback ukm_callback_;
+
+  // Flag if the |browser_context_| has been shutdown already.
+  bool has_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationContextImpl);
 };

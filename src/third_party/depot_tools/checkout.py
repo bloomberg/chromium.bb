@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,6 +6,8 @@
 
 Includes support only for git.
 """
+
+from __future__ import print_function
 
 import fnmatch
 import logging
@@ -288,11 +290,11 @@ class GitCheckout(CheckoutBase):
         for post in post_processors:
           post(self, p)
         if verbose:
-          print p.filename
-          print align_stdout(stdout)
-      except OSError, e:
+          print(p.filename)
+          print(align_stdout(stdout))
+      except OSError as e:
         errors.append((p, '%s%s' % (align_stdout(stdout), e)))
-      except subprocess.CalledProcessError, e:
+      except subprocess.CalledProcessError as e:
         errors.append((p,
             'While running %s;\n%s%s' % (
               ' '.join(e.cmd),
@@ -307,9 +309,9 @@ class GitCheckout(CheckoutBase):
       extra_files = sorted(set(found_files) - set(patches.filenames))
       unpatched_files = sorted(set(patches.filenames) - set(found_files))
       if extra_files:
-        print 'Found extra files: %r' % (extra_files,)
+        print('Found extra files: %r' % extra_files)
       if unpatched_files:
-        print 'Found unpatched files: %r' % (unpatched_files,)
+        print('Found unpatched files: %r' % unpatched_files)
 
 
   def commit(self, commit_message, user):

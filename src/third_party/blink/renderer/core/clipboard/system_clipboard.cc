@@ -107,7 +107,7 @@ void SystemClipboard::WritePlainText(const String& plain_text,
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
-  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
+  clipboard_->WriteText(NonNullString(text));
 }
 
 String SystemClipboard::ReadHTML(KURL& url,
@@ -137,11 +137,10 @@ void SystemClipboard::WriteHTML(const String& markup,
 #endif
   ReplaceNBSPWithSpace(text);
 
-  clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard,
-                        NonNullString(markup), document_url);
-  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
+  clipboard_->WriteHtml(NonNullString(markup), document_url);
+  clipboard_->WriteText(NonNullString(text));
   if (smart_replace_option == kCanSmartReplace)
-    clipboard_->WriteSmartPasteMarker(mojom::ClipboardBuffer::kStandard);
+    clipboard_->WriteSmartPasteMarker();
 }
 
 String SystemClipboard::ReadRTF() {
@@ -168,7 +167,7 @@ void SystemClipboard::WriteImageWithTag(Image* image,
   SkBitmap bitmap;
   if (sk_sp<SkImage> sk_image = paint_image.GetSkImage())
     sk_image->asLegacyBitmap(&bitmap);
-  clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
+  clipboard_->WriteImage(bitmap);
 
   if (url.IsValid() && !url.IsEmpty()) {
 #if !defined(OS_MACOSX)
@@ -176,21 +175,19 @@ void SystemClipboard::WriteImageWithTag(Image* image,
     // consistency between platforms, and to help fix errors in applications
     // which prefer text/plain content over image content for compatibility with
     // Microsoft Word.
-    clipboard_->WriteBookmark(mojom::ClipboardBuffer::kStandard,
-                              url.GetString(), NonNullString(title));
+    clipboard_->WriteBookmark(url.GetString(), NonNullString(title));
 #endif
 
     // When writing the image, we also write the image markup so that pasting
     // into rich text editors, such as Gmail, reveals the image. We also don't
     // want to call writeText(), since some applications (WordPad) don't pick
     // the image if there is also a text format on the clipboard.
-    clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard,
-                          URLToImageMarkup(url, title), KURL());
+    clipboard_->WriteHtml(URLToImageMarkup(url, title), KURL());
   }
 }
 
 void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
-  clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
+  clipboard_->WriteImage(bitmap);
 }
 
 String SystemClipboard::ReadCustomData(const String& type) {
@@ -202,6 +199,7 @@ String SystemClipboard::ReadCustomData(const String& type) {
 }
 
 void SystemClipboard::WriteDataObject(DataObject* data_object) {
+  DCHECK(data_object);
   // This plagiarizes the logic in DropDataBuilder::Build, but only extracts the
   // data needed for the implementation of WriteDataObject.
   //
@@ -218,24 +216,21 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
   for (const WebDragData::Item& item : data.Items()) {
     if (item.storage_type == WebDragData::Item::kStorageTypeString) {
       if (item.string_type == blink::kMimeTypeTextPlain) {
-        clipboard_->WriteText(mojom::ClipboardBuffer::kStandard,
-                              NonNullString(item.string_data));
+        clipboard_->WriteText(NonNullString(item.string_data));
       } else if (item.string_type == blink::kMimeTypeTextHTML) {
-        clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard,
-                              NonNullString(item.string_data), KURL());
+        clipboard_->WriteHtml(NonNullString(item.string_data), KURL());
       } else if (item.string_type != blink::kMimeTypeDownloadURL) {
         custom_data.insert(item.string_type, NonNullString(item.string_data));
       }
     }
   }
   if (!custom_data.IsEmpty()) {
-    clipboard_->WriteCustomData(mojom::ClipboardBuffer::kStandard,
-                                std::move(custom_data));
+    clipboard_->WriteCustomData(std::move(custom_data));
   }
 }
 
 void SystemClipboard::CommitWrite() {
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
+  clipboard_->CommitWrite();
 }
 
 bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
@@ -248,7 +243,7 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
 #else
       // Chrome OS and non-X11 unix builds do not support
       // the X selection clipboard.
-      // TODO: remove the need for this case, see http://crbug.com/361753
+      // TODO(http://crbug.com/361753): remove the need for this case.
       return false;
 #endif
   }

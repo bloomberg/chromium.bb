@@ -53,5 +53,30 @@ bool HasGooglePaymentsAccount(PersonalDataManager* personal_data_manager) {
          kCustomerHasNoBillingCustomerNumber;
 }
 
+bool IsCreditCardSupported(
+    const CreditCard& credit_card,
+    const std::vector<std::pair<int, int>>& supported_card_bin_ranges) {
+  base::string16 stripped_number =
+      CreditCard::StripSeparators(credit_card.number());
+  for (auto& bin_range : supported_card_bin_ranges) {
+    unsigned long range_num_of_digits =
+        base::NumberToString(bin_range.first).size();
+    DCHECK_EQ(range_num_of_digits,
+              base::NumberToString(bin_range.second).size());
+    // The first n digits of credit card number, where n is the number of
+    // digits in range's starting/ending number.
+    int first_digits_start, first_digits_end;
+    base::StringToInt(stripped_number.substr(0, range_num_of_digits),
+                      &first_digits_start);
+    base::StringToInt(stripped_number.substr(0, range_num_of_digits),
+                      &first_digits_end);
+    if (first_digits_start >= bin_range.first &&
+        first_digits_end <= bin_range.second) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace payments
 }  // namespace autofill

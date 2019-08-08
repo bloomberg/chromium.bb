@@ -6,6 +6,9 @@ group("web_app_group") {
   public_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
+group("web_app_test_group") {
+}
+
 source_set("web_applications") {
   sources = [
     "abstract_web_app_database.h",
@@ -45,6 +48,10 @@ source_set("web_applications") {
     "//skia",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
+
   public_deps = [
     "//chrome/browser/web_applications/proto",
   ]
@@ -77,11 +84,13 @@ source_set("web_applications_test_support") {
   ]
 
   deps = [
-    ":web_app_group",
+    ":web_app_test_group",
     ":web_applications",
+    "//base/test:test_support",
+    "//chrome/browser",
     "//chrome/browser/web_applications/components",
-    "//chrome/test:test_support",
     "//components/sync:test_support_model",
+    "//content/test:test_support",
     "//testing/gtest",
   ]
 }
@@ -92,13 +101,14 @@ source_set("web_applications_unit_tests") {
   sources = [
     "web_app_database_unittest.cc",
     "web_app_icon_manager_unittest.cc",
+    "web_app_install_manager_unittest.cc",
     "web_app_install_task_unittest.cc",
     "web_app_registrar_unittest.cc",
     "web_app_utils_unittest.cc",
   ]
 
   deps = [
-    ":web_app_group",
+    ":web_app_test_group",
     ":web_applications",
     ":web_applications_test_support",
     "//base/test:test_support",
@@ -134,6 +144,7 @@ source_set("web_applications_on_extensions") {
     "//chrome/browser/web_applications/extensions",
     "//chrome/common",
     "//components/keyed_service/content",
+    "//components/pref_registry:pref_registry",
     "//extensions/browser",
   ]
 }
@@ -142,7 +153,7 @@ source_set("unit_tests") {
   testonly = true
 
   deps = [
-    ":web_app_group",
+    ":web_app_test_group",
     ":web_applications_unit_tests",
     "//chrome/browser/web_applications/bookmark_apps:unit_tests",
     "//chrome/browser/web_applications/components:unit_tests",
@@ -154,7 +165,7 @@ source_set("browser_tests") {
   testonly = true
 
   deps = [
-    ":web_app_group",
+    ":web_app_test_group",
     "//chrome/browser/web_applications/bookmark_apps:browser_tests",
     "//chrome/browser/web_applications/components:browser_tests",
     "//chrome/browser/web_applications/extensions:browser_tests",

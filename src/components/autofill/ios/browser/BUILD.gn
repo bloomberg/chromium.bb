@@ -40,7 +40,11 @@ source_set("browser") {
     "//components/prefs:prefs",
     "//components/prefs/ios",
     "//google_apis",
-    "//ios/web",
+    "//ios/web/common",
+    "//ios/web/public",
+    "//ios/web/public/deprecated",
+    "//ios/web/public/js_messaging",
+    "//ios/web/public/security",
     "//services/network/public/cpp",
     "//ui/gfx/geometry",
   ]
@@ -67,6 +71,7 @@ source_set("test_support") {
     "//components/autofill/core/browser",
     "//components/leveldb_proto:leveldb_proto",
     "//ios/web/public",
+    "//ios/web/public/js_messaging",
   ]
 }
 
@@ -84,6 +89,8 @@ source_set("unit_tests") {
     "//components/leveldb_proto:leveldb_proto",
     "//components/prefs",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gmock",

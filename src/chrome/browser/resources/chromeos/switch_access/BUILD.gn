@@ -18,6 +18,7 @@ group("build") {
     ":switch_access_copied_files",
     ":switch_access_guest_manifest",
     ":switch_access_manifest",
+    "strings:switch_access_strings",
   ]
 }
 
@@ -58,6 +59,7 @@ run_jsbundler("switch_access_copied_files") {
     "options.html",
     "options.js",
     "preferences.js",
+    "rect_helper.js",
     "switch_access.js",
     "switch_access_constants.js",
     "switch_access_predicate.js",
@@ -104,11 +106,11 @@ js2gtest("switch_access_extjs_tests") {
   # The test base classes generate C++ code with these deps.
   deps = [
     "//ash",
+    "//ash/keyboard/ui",
     "//base",
     "//chrome/browser/chromeos",
     "//chrome/common",
     "//chromeos",
-    "//ui/keyboard",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
@@ -162,10 +164,12 @@ js_type_check("closure_compile") {
     ":commands",
     ":key_event_handler",
     ":menu_manager",
+    ":menu_panel",
     ":menu_panel_interface",
     ":navigation_manager",
     ":options",
     ":preferences",
+    ":rect_helper",
     ":switch_access",
     ":switch_access_constants",
     ":switch_access_interface",
@@ -188,6 +192,7 @@ js_library("navigation_manager") {
     ":back_button_manager",
     ":menu_manager",
     ":menu_panel_interface",
+    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_predicate",
     ":text_input_manager",
@@ -237,6 +242,12 @@ js_library("menu_manager") {
   ]
 }
 
+js_library("menu_panel") {
+  deps = [
+    ":switch_access_interface",
+  ]
+}
+
 js_library("menu_panel_interface") {
 }
 
@@ -253,6 +264,10 @@ js_library("preferences") {
     ":switch_access_interface",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
+}
+
+js_library("rect_helper") {
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("switch_access") {

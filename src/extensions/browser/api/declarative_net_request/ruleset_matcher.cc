@@ -153,6 +153,7 @@ RequestParams::RequestParams(const WebRequestInfo& info)
 }
 
 RequestParams::RequestParams() = default;
+RequestParams::~RequestParams() = default;
 
 // static
 RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
@@ -257,7 +258,8 @@ bool RulesetMatcher::HasMatchingRedirectRule(const RequestParams& params,
   *redirect_url = GURL(base::StringPiece(metadata->redirect_url()->c_str(),
                                          metadata->redirect_url()->size()));
   DCHECK(redirect_url->is_valid());
-  return true;
+  // Prevent a redirect loop where a URL continuously redirects to itself.
+  return *params.url != *redirect_url;
 }
 
 RulesetMatcher::RulesetMatcher(std::string ruleset_data,

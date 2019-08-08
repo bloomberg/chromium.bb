@@ -281,7 +281,10 @@ namespace networkingPrivate {
   dictionary IPConfigProperties {
     DOMString? Gateway;
     DOMString? IPAddress;
+    DOMString[]? ExcludedRoutes;
+    DOMString[]? IncludedRoutes;
     DOMString[]? NameServers;
+    DOMString[]? SearchDomains;
     long? RoutingPrefix;
     DOMString? Type;
     DOMString? WebProxyAutoDiscoveryUrl;
@@ -515,7 +518,6 @@ namespace networkingPrivate {
     DOMString? ActivationType;
     ActivationStateType? ActivationState;
     boolean? AllowRoaming;
-    DOMString? Carrier;
     DOMString? ESN;
     DOMString? Family;
     DOMString? FirmwareRevision;
@@ -540,7 +542,6 @@ namespace networkingPrivate {
     boolean? SIMPresent;
     long? SignalStrength;
     boolean? SupportNetworkScan;
-    DOMString[]? SupportedCarriers;
   };
 
   dictionary ManagedCellularProperties {
@@ -550,7 +551,6 @@ namespace networkingPrivate {
     DOMString? ActivationType;
     ActivationStateType? ActivationState;
     boolean? AllowRoaming;
-    ManagedDOMString? Carrier;
     DOMString? ESN;
     DOMString? Family;
     DOMString? FirmwareRevision;
@@ -575,7 +575,6 @@ namespace networkingPrivate {
     boolean? SIMPresent;
     long? SignalStrength;
     boolean? SupportNetworkScan;
-    DOMString[]? SupportedCarriers;
   };
 
   dictionary CellularStateProperties {

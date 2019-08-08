@@ -75,7 +75,7 @@ void MoveToDisplayForRestore(WindowState* window_state) {
 
 }  // namespace
 
-DefaultState::DefaultState(mojom::WindowStateType initial_state_type)
+DefaultState::DefaultState(WindowStateType initial_state_type)
     : BaseState(initial_state_type), stored_window_state_(nullptr) {}
 
 DefaultState::~DefaultState() = default;
@@ -344,8 +344,8 @@ void DefaultState::HandleBoundsEvents(WindowState* window_state,
 
 void DefaultState::HandleTransitionEvents(WindowState* window_state,
                                           const WMEvent* event) {
-  mojom::WindowStateType current_state_type = window_state->GetStateType();
-  mojom::WindowStateType next_state_type = GetStateForTransitionEvent(event);
+  WindowStateType current_state_type = window_state->GetStateType();
+  WindowStateType next_state_type = GetStateForTransitionEvent(event);
   if (event->IsPinEvent()) {
     // If there already is a pinned window, it is not allowed to set it
     // to this window.
@@ -361,8 +361,8 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
   if (next_state_type == current_state_type && window_state->IsSnapped()) {
     gfx::Rect snapped_bounds = GetSnappedWindowBoundsInParent(
         window_state->window(), event->type() == WM_EVENT_SNAP_LEFT
-                                    ? mojom::WindowStateType::LEFT_SNAPPED
-                                    : mojom::WindowStateType::RIGHT_SNAPPED);
+                                    ? WindowStateType::kLeftSnapped
+                                    : WindowStateType::kRightSnapped);
     window_state->SetBoundsDirectAnimated(snapped_bounds);
     return;
   }
@@ -421,12 +421,12 @@ void DefaultState::SetBounds(WindowState* window_state,
 }
 
 void DefaultState::EnterToNextState(WindowState* window_state,
-                                    mojom::WindowStateType next_state_type) {
+                                    WindowStateType next_state_type) {
   // Do nothing if  we're already in the same state.
   if (state_type_ == next_state_type)
     return;
 
-  mojom::WindowStateType previous_state_type = state_type_;
+  WindowStateType previous_state_type = state_type_;
   state_type_ = next_state_type;
 
   window_state->UpdateWindowPropertiesFromStateType();
@@ -438,8 +438,8 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   // we still need this.
   if (window_state->window()->parent()) {
     if (!window_state->HasRestoreBounds() &&
-        (previous_state_type == mojom::WindowStateType::DEFAULT ||
-         previous_state_type == mojom::WindowStateType::NORMAL) &&
+        (previous_state_type == WindowStateType::kDefault ||
+         previous_state_type == WindowStateType::kNormal) &&
         !window_state->IsMinimized() && !window_state->IsNormalStateType()) {
       window_state->SaveCurrentBoundsForRestore();
     }
@@ -449,7 +449,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
     // (The restore bounds are set if a user maximized the window in one
     // axis by double clicking the window border for example).
     gfx::Rect restore_bounds_in_screen;
-    if (previous_state_type == mojom::WindowStateType::MINIMIZED &&
+    if (previous_state_type == WindowStateType::kMinimized &&
         window_state->IsNormalStateType() && window_state->HasRestoreBounds() &&
         !window_state->unminimize_to_restore_bounds()) {
       restore_bounds_in_screen = window_state->GetRestoreBoundsInScreen();
@@ -471,10 +471,10 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   }
   window_state->NotifyPostStateTypeChange(previous_state_type);
 
-  if (next_state_type == mojom::WindowStateType::PINNED ||
-      previous_state_type == mojom::WindowStateType::PINNED ||
-      next_state_type == mojom::WindowStateType::TRUSTED_PINNED ||
-      previous_state_type == mojom::WindowStateType::TRUSTED_PINNED) {
+  if (next_state_type == WindowStateType::kPinned ||
+      previous_state_type == WindowStateType::kPinned ||
+      next_state_type == WindowStateType::kTrustedPinned ||
+      previous_state_type == WindowStateType::kTrustedPinned) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
   }
@@ -483,27 +483,26 @@ void DefaultState::EnterToNextState(WindowState* window_state,
 void DefaultState::ReenterToCurrentState(
     WindowState* window_state,
     WindowState::State* state_in_previous_mode) {
-  mojom::WindowStateType previous_state_type =
-      state_in_previous_mode->GetType();
+  WindowStateType previous_state_type = state_in_previous_mode->GetType();
 
   // A state change should not move a window into or out of full screen or
   // pinned since these are "special mode" the user wanted to be in and
   // should be respected as such.
-  if (previous_state_type == mojom::WindowStateType::FULLSCREEN ||
-      previous_state_type == mojom::WindowStateType::PINNED ||
-      previous_state_type == mojom::WindowStateType::TRUSTED_PINNED) {
+  if (previous_state_type == WindowStateType::kFullscreen ||
+      previous_state_type == WindowStateType::kPinned ||
+      previous_state_type == WindowStateType::kTrustedPinned) {
     state_type_ = previous_state_type;
-  } else if (state_type_ == mojom::WindowStateType::FULLSCREEN ||
-             state_type_ == mojom::WindowStateType::PINNED ||
-             state_type_ == mojom::WindowStateType::TRUSTED_PINNED) {
+  } else if (state_type_ == WindowStateType::kFullscreen ||
+             state_type_ == WindowStateType::kPinned ||
+             state_type_ == WindowStateType::kTrustedPinned) {
     state_type_ = previous_state_type;
   }
 
   window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
-  if ((state_type_ == mojom::WindowStateType::NORMAL ||
-       state_type_ == mojom::WindowStateType::DEFAULT) &&
+  if ((state_type_ == WindowStateType::kNormal ||
+       state_type_ == WindowStateType::kDefault) &&
       !stored_bounds_.IsEmpty()) {
     // Use the restore mechanism to set the bounds for
     // the window in normal state. This also covers unminimize case.
@@ -522,20 +521,19 @@ void DefaultState::ReenterToCurrentState(
   window_state->NotifyPostStateTypeChange(previous_state_type);
 }
 
-void DefaultState::UpdateBoundsFromState(
-    WindowState* window_state,
-    mojom::WindowStateType previous_state_type) {
+void DefaultState::UpdateBoundsFromState(WindowState* window_state,
+                                         WindowStateType previous_state_type) {
   aura::Window* window = window_state->window();
   gfx::Rect bounds_in_parent;
   switch (state_type_) {
-    case mojom::WindowStateType::LEFT_SNAPPED:
-    case mojom::WindowStateType::RIGHT_SNAPPED:
+    case WindowStateType::kLeftSnapped:
+    case WindowStateType::kRightSnapped:
       bounds_in_parent =
           GetSnappedWindowBoundsInParent(window_state->window(), state_type_);
       break;
 
-    case mojom::WindowStateType::DEFAULT:
-    case mojom::WindowStateType::NORMAL: {
+    case WindowStateType::kDefault:
+    case WindowStateType::kNormal: {
       gfx::Rect work_area_in_parent =
           screen_util::GetDisplayWorkAreaBoundsInParent(window);
       if (window_state->HasRestoreBounds()) {
@@ -543,7 +541,7 @@ void DefaultState::UpdateBoundsFromState(
         // Check if the |window|'s restored size is bigger than the working area
         // This may happen if a window was resized to maximized bounds or if the
         // display resolution changed while the window was maximized.
-        if (previous_state_type == mojom::WindowStateType::MAXIMIZED &&
+        if (previous_state_type == WindowStateType::kMaximized &&
             bounds_in_parent.width() >= work_area_in_parent.width() &&
             bounds_in_parent.height() >= work_area_in_parent.height()) {
           bounds_in_parent = work_area_in_parent;
@@ -563,21 +561,21 @@ void DefaultState::UpdateBoundsFromState(
       }
       break;
     }
-    case mojom::WindowStateType::MAXIMIZED:
+    case WindowStateType::kMaximized:
       bounds_in_parent = screen_util::GetMaximizedWindowBoundsInParent(window);
       break;
 
-    case mojom::WindowStateType::FULLSCREEN:
-    case mojom::WindowStateType::PINNED:
-    case mojom::WindowStateType::TRUSTED_PINNED:
+    case WindowStateType::kFullscreen:
+    case WindowStateType::kPinned:
+    case WindowStateType::kTrustedPinned:
       bounds_in_parent = screen_util::GetFullscreenWindowBoundsInParent(window);
       break;
 
-    case mojom::WindowStateType::MINIMIZED:
+    case WindowStateType::kMinimized:
       break;
-    case mojom::WindowStateType::INACTIVE:
-    case mojom::WindowStateType::AUTO_POSITIONED:
-    case mojom::WindowStateType::PIP:
+    case WindowStateType::kInactive:
+    case WindowStateType::kAutoPositioned:
+    case WindowStateType::kPip:
       return;
   }
 

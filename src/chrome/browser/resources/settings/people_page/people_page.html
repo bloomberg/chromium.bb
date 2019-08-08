@@ -30,6 +30,7 @@
 <link rel="import" href="change_picture.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html">
 <link rel="import" href="fingerprint_list.html">
+<link rel="import" href="kerberos_accounts.html">
 <link rel="import" href="lock_screen.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="users_page.html">
@@ -177,7 +178,7 @@
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
                 <paper-button class="action-button" on-click="onSigninTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
+                    disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncSignin}
                 </paper-button>
               </template>
@@ -185,7 +186,7 @@
                 <div class="separator"></div>
                 <paper-button id="disconnectButton" class="secondary-button"
                     on-click="onDisconnectTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
+                    disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncDisconnect}
                 </paper-button>
               </template>
@@ -265,16 +266,26 @@
             on-click="onConfigureLockTap_"
             label="[[selectLockScreenTitleString(hasPinLogin)]]"
             sub-label="[[getPasswordState_(hasPin,
-                prefs.settings.enable_screen_lock.value)]]"></cr-link-row>
+                prefs.settings.enable_screen_lock.value)]]"
+            hidden="[[!pageVisibility.people.lockScreen]]"></cr-link-row>
 
-        <template is="dom-if" if="[[isAccountManagerEnabled_]]">
+        <template is="dom-if" if="[[shouldShowAccountManager_(
+            isAccountManagerEnabled_, pageVisibility.people.googleAccounts)]]">
           <cr-link-row id="account-manager-subpage-trigger" class="hr"
               on-click="onAccountManagerTap_"
               label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
         </template>
 
+        <template is="dom-if" if="[[shouldShowKerberos_(
+            isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
+          <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
+              on-click="onKerberosAccountsTap_"
+              label="$i18n{kerberosAccountsSubMenuLabel}"></cr-link-row>
+        </template>
+
         <cr-link-row id="manage-other-people-subpage-trigger"
-            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_">
+            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
+            hidden="[[!pageVisibility.people.manageUsers]]">
         </cr-link-row>
 </if>
 
@@ -318,7 +329,8 @@
       </template>
 
 <if expr="chromeos">
-      <template is="dom-if" route-path="/lockScreen">
+      <template is="dom-if" if="[[!pageVisibility.people.lockScreen]]"
+          route-path="/lockScreen">
         <settings-subpage
             page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
@@ -327,7 +339,8 @@
           </settings-lock-screen>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
+      <template is="dom-if" if="[[fingerprintUnlockEnabled_
+          && !pageVisibility.people.lockScreen]]">
         <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
           <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
             <settings-fingerprint-list auth-token="[[authToken_]]">
@@ -335,13 +348,16 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" route-path="/accounts">
-        <settings-subpage
-            associated-control="[[$$('#manage-other-people-subpage-trigger')]]"
-            page-title="$i18n{manageOtherPeople}">
-          <settings-users-page prefs="{{prefs}}">
-          </settings-users-page>
-        </settings-subpage>
+      <template is="dom-if" if="[!pageVisibility.people.manageUsers]]">
+        <template is="dom-if" route-path="/accounts">
+          <settings-subpage
+              associated-control=
+                  "[[$$('#manage-other-people-subpage-trigger')]]"
+              page-title="$i18n{manageOtherPeople}">
+            <settings-users-page prefs="{{prefs}}">
+            </settings-users-page>
+          </settings-subpage>
+        </template>
       </template>
       <template is="dom-if" route-path="/changePicture">
         <settings-subpage
@@ -350,12 +366,23 @@
           <settings-change-picture></settings-change-picture>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[isAccountManagerEnabled_]]">
+      <template is="dom-if" if="[[shouldShowAccountManager_(
+          isAccountManagerEnabled_, pageVisibility.people.googleAccounts)]]">
         <template is="dom-if" route-path="/accountManager">
           <settings-subpage
               associated-control="[[$$('#account-manager-subpage-trigger')]]"
               page-title="$i18n{accountManagerPageTitle}">
             <settings-account-manager></settings-account-manager>
+          </settings-subpage>
+        </template>
+      </template>
+      <template is="dom-if" if="[[shouldShowKerberos_(
+          isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
+        <template is="dom-if" route-path="/kerberosAccounts">
+          <settings-subpage
+              associated-control="[[$$('#kerberos-accounts-subpage-trigger')]]"
+              page-title="$i18n{kerberosAccountsPageTitle}">
+            <settings-kerberos-accounts></settings-kerberos-accounts>
           </settings-subpage>
         </template>
       </template>

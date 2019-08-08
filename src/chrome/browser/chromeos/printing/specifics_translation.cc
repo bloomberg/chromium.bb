@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
+#include "chrome/browser/chromeos/printing/specifics_translation.h"
+
 #include <string>
 #include <vector>
 
@@ -10,9 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "components/sync/protocol/printer_specifics.pb.h"
 
 namespace chromeos {
 

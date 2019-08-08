@@ -139,6 +139,8 @@ class TreeBuilder {
    * attached to the tree.
    * @param {(symbolNode: TreeNode) => boolean} options.highlightTest Called to
    * see if a symbol should be highlighted.
+   * @param {boolean} options.methodCountMode Whether we're in "method count"
+   * mode.
    * @param {string} options.sep Path seperator used to find parent names.
    * @param {Meta} options.meta Metadata associated with this tree.
    */
@@ -146,6 +148,7 @@ class TreeBuilder {
     this._getPath = options.getPath;
     this._filterTest = options.filterTest;
     this._highlightTest = options.highlightTest;
+    this._methodCountMode = options.methodCountMode;
     this._sep = options.sep || _PATH_SEP;
     this._meta = options.meta;
 
@@ -223,16 +226,11 @@ class TreeBuilder {
    * @param {TreeNode} node
    */
   _joinDexMethodClasses(node) {
+    const isFileNode = node.type[0] === _CONTAINER_TYPES.FILE;
     const hasDex = node.childStats[_DEX_SYMBOL_TYPE] ||
         node.childStats[_DEX_METHOD_SYMBOL_TYPE];
-    if (!hasDex || !node.children) return node;
+    if (!isFileNode || !hasDex || !node.children) return node;
 
-    if (node.type[0] !== _CONTAINER_TYPES.FILE) {
-      for (const child of node.children) {
-        this._joinDexMethodClasses(child);
-      }
-      return node;
-    }
     /** @type {Map<string, TreeNode>} */
     const javaClassContainers = new Map();
     /** @type {TreeNode[]} */
@@ -243,7 +241,9 @@ class TreeBuilder {
       // Java classes are denoted with a "#", such as "LogoView#onDraw"
       // Except for some older .ndjson files, which didn't do this for fields.
       const splitIndex = childNode.idPath.lastIndexOf('#');
-      const isClassNode = childNode.idPath.indexOf(' ') == -1;
+      // No return type / field type means it's a class node.
+      const isClassNode = childNode.idPath.indexOf(
+          ' ', childNode.shortNameIndex) == -1;
       const hasClassPrefix = isClassNode || splitIndex != -1;
 
       if (hasClassPrefix) {
@@ -418,6 +418,12 @@ class TreeBuilder {
       const flags = _KEYS.FLAGS in symbol ? symbol[_KEYS.FLAGS] : 0;
       const numAliases =
           _KEYS.NUM_ALIASES in symbol ? symbol[_KEYS.NUM_ALIASES] : 1;
+
+      // Skip methods that have changed in size but not count when in
+      // "method count" mode.
+      if (this._methodCountMode && count === 0) {
+        continue;
+      }
 
       const symbolNode = createNode({
         // Join file path to symbol name with a ":"
@@ -723,7 +729,7 @@ function parseOptions(options) {
     highlightTest = () => false;
   }
 
-  return {groupBy, filterTest, highlightTest, url};
+  return {groupBy, filterTest, highlightTest, url, methodCountMode};
 }
 
 /** @type {TreeBuilder | null} */
@@ -737,10 +743,12 @@ const fetcher = new DataFetcher('data.ndjson');
  * each symbol is tested against
  * @param {(symbolNode: TreeNode) => boolean} highlightTest Filter function that
  * each symbol's flags are tested against
+ * @param {boolean} methodCountMode
  * @param {(msg: TreeProgress) => void} onProgress
  * @returns {Promise<TreeProgress>}
  */
-async function buildTree(groupBy, filterTest, highlightTest, onProgress) {
+async function buildTree(
+    groupBy, filterTest, highlightTest, methodCountMode, onProgress) {
   /** @type {Meta | null} Object from the first line of the data file */
   let meta = null;
 
@@ -805,6 +813,7 @@ async function buildTree(groupBy, filterTest, highlightTest, onProgress) {
           getPath: getPathMap[groupBy],
           filterTest,
           highlightTest,
+          methodCountMode,
           sep: groupBy === 'component' ? '>' : _PATH_SEP,
           meta,
         });
@@ -838,7 +847,8 @@ async function buildTree(groupBy, filterTest, highlightTest, onProgress) {
 const actions = {
   /** @param {{input:string|null,options:string}} param0 */
   load({input, options}) {
-    const {groupBy, filterTest, highlightTest, url} = parseOptions(options);
+    const {groupBy, filterTest, highlightTest, url, methodCountMode} =
+        parseOptions(options);
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
       console.info('Displaying data from', url);
@@ -848,10 +858,11 @@ const actions = {
       fetcher.setInput(input);
     }
 
-    return buildTree(groupBy, filterTest, highlightTest, progress => {
-      // @ts-ignore
-      self.postMessage(progress);
-    });
+    return buildTree(
+        groupBy, filterTest, highlightTest, methodCountMode, progress => {
+          // @ts-ignore
+          self.postMessage(progress);
+        });
   },
   /** @param {string} path */
   async open(path) {

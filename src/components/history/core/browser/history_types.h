@@ -142,6 +142,9 @@ class QueryResults {
   QueryResults();
   ~QueryResults();
 
+  QueryResults(QueryResults&& other) noexcept;
+  QueryResults& operator=(QueryResults&& other) noexcept;
+
   void set_reached_beginning(bool reached) { reached_beginning_ = reached; }
   bool reached_beginning() { return reached_beginning_; }
 
@@ -202,7 +205,7 @@ class QueryResults {
   void AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta);
 
   // Whether the query reaches the beginning of the database.
-  bool reached_beginning_;
+  bool reached_beginning_ = false;
 
   // The ordered list of results. The pointers inside this are owned by this
   // QueryResults object.
@@ -273,7 +276,9 @@ struct QueryOptions {
 struct QueryURLResult {
   QueryURLResult();
   QueryURLResult(const QueryURLResult&);
-  QueryURLResult(QueryURLResult&&);
+  QueryURLResult(QueryURLResult&&) noexcept;
+  QueryURLResult& operator=(const QueryURLResult&);
+  QueryURLResult& operator=(QueryURLResult&&) noexcept;
   ~QueryURLResult();
 
   // Indicates whether the call to HistoryBackend::QueryURL was successfull

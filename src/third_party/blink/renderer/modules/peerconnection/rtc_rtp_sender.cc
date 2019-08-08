@@ -4,6 +4,12 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 
+#include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,6 +24,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -338,8 +345,9 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (pc_->IsClosed()) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                          "The peer connection is closed."));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
+                                           "The peer connection is closed."));
     return promise;
   }
   WebMediaStreamTrack web_track;
@@ -419,7 +427,7 @@ ScriptPromise RTCRtpSender::setParameters(
   ScriptPromise promise = resolver->Promise();
 
   if (!last_returned_parameters_) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "getParameters() needs to be called before setParameters()."));
     return promise;
@@ -430,9 +438,9 @@ ScriptPromise RTCRtpSender::setParameters(
   // So we save the last returned dictionary and enforce the check at this
   // level instead.
   if (HasInvalidModification(last_returned_parameters_, parameters)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidModificationError,
-                             "Read-only field modified in setParameters()."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidModificationError,
+        "Read-only field modified in setParameters()."));
     return promise;
   }
 
@@ -507,6 +515,25 @@ RTCDTMFSender* RTCRtpSender::dtmf() {
         RTCDTMFSender::Create(pc_->GetExecutionContext(), std::move(handler));
   }
   return dtmf_;
+}
+
+void RTCRtpSender::setStreams(HeapVector<Member<MediaStream>> streams,
+                              ExceptionState& exception_state) {
+  if (pc_->IsClosed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCPeerConnection's signalingState is 'closed'.");
+    return;
+  }
+  if (pc_->sdp_semantics() != webrtc::SdpSemantics::kUnifiedPlan) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kOnlySupportedInUnifiedPlanMessage);
+    return;
+  }
+  WebVector<WebString> stream_ids;
+  for (auto stream : streams)
+    stream_ids.emplace_back(stream->id());
+  sender_->SetStreams(stream_ids);
 }
 
 void RTCRtpSender::Trace(blink::Visitor* visitor) {

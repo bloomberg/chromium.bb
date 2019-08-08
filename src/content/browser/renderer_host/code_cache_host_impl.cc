@@ -9,6 +9,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
@@ -126,7 +127,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
     blink::mojom::CodeCacheType cache_type,
     const GURL& url,
     base::Time expected_response_time,
-    const std::vector<uint8_t>& data) {
+    mojo_base::BigBuffer data) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     mojo::ReportBadMessage("Invalid URL scheme for code cache.");
     return;
@@ -141,7 +142,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI,
                          render_process_id_, url, expected_response_time,
-                         data));
+                         std::move(data)));
     } else {
       mojo::ReportBadMessage("Single-keyed code cache is Javascript only.");
       return;
@@ -200,7 +201,7 @@ void CodeCacheHostImpl::ClearCodeCacheEntry(
 void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
     const GURL& url,
     base::Time expected_response_time,
-    const std::vector<uint8_t>& data,
+    mojo_base::BigBuffer data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
   int64_t trace_id = blink::cache_storage::CreateTraceId();
@@ -214,8 +215,8 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
 
   scoped_refptr<net::IOBuffer> buf =
       base::MakeRefCounted<net::IOBuffer>(data.size());
-  if (!data.empty())
-    memcpy(buf->data(), &data.front(), data.size());
+  if (data.size())
+    memcpy(buf->data(), data.data(), data.size());
 
   CacheStorageHandle cache_storage =
       cache_storage_context_->cache_manager()->OpenCacheStorage(
@@ -272,7 +273,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI(
     int render_process_id,
     const GURL& url,
     base::Time expected_response_time,
-    const std::vector<uint8_t>& data) {
+    mojo_base::BigBuffer data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (!host)
@@ -285,7 +286,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI(
   // in weburlloader_impl.cc).
   const net::RequestPriority kPriority = net::LOW;
   host->GetStoragePartition()->GetNetworkContext()->WriteCacheMetadata(
-      url, kPriority, expected_response_time, data);
+      url, kPriority, expected_response_time, std::move(data));
 }
 
 }  // namespace content

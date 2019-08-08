@@ -19,6 +19,8 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -69,17 +71,6 @@
 @implementation ContentSuggestionsCoordinator
 
 @synthesize browserState = _browserState;
-@synthesize suggestionsViewController = _suggestionsViewController;
-@synthesize visible = _visible;
-@synthesize contentSuggestionsMediator = _contentSuggestionsMediator;
-@synthesize headerCollectionInteractionHandler =
-    _headerCollectionInteractionHandler;
-@synthesize headerController = _headerController;
-@synthesize webStateList = _webStateList;
-@synthesize toolbarDelegate = _toolbarDelegate;
-@synthesize dispatcher = _dispatcher;
-@synthesize metricsRecorder = _metricsRecorder;
-@synthesize NTPMediator = _NTPMediator;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -116,13 +107,17 @@
   }
 
   UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(_browserState);
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
 
   self.NTPMediator = [[NTPHomeMediator alloc]
       initWithWebStateList:self.webStateList
         templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
                                self.browserState)
          urlLoadingService:urlLoadingService
+               authService:AuthenticationServiceFactory::GetForBrowserState(
+                               self.browserState)
+           identityManager:IdentityManagerFactory::GetForBrowserState(
+                               self.browserState)
                 logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
                                self.browserState)];
 
@@ -235,7 +230,7 @@
       [_dispatcher closeCurrentTab];
     } break;
     case OverscrollAction::REFRESH:
-      [self reload];
+      [self.contentSuggestionsMediator.dataSink reloadAllData];
       break;
     case OverscrollAction::NONE:
       NOTREACHED();
@@ -267,20 +262,10 @@
   return height + topInset;
 }
 
-#pragma mark - CRWNativeContent
+#pragma mark - Public methods
 
 - (UIView*)view {
   return self.suggestionsViewController.view;
-}
-
-- (void)reload {
-  [self.contentSuggestionsMediator.dataSink reloadAllData];
-}
-
-- (void)wasShown {
-}
-
-- (void)wasHidden {
 }
 
 - (void)dismissModals {
@@ -301,18 +286,6 @@
 
 - (void)willUpdateSnapshot {
   [self.suggestionsViewController clearOverscroll];
-}
-
-- (NSString*)title {
-  return nil;
-}
-
-- (const GURL&)url {
-  return GURL::EmptyGURL();
-}
-
-- (BOOL)isViewAlive {
-  return YES;
 }
 
 @end

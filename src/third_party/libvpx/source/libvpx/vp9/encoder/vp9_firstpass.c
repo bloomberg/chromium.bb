@@ -45,7 +45,7 @@
 
 #define FIRST_PASS_Q 10.0
 #define NORMAL_BOOST 100
-#define MIN_ARF_GF_BOOST 240
+#define MIN_ARF_GF_BOOST 250
 #define MIN_DECAY_FACTOR 0.01
 #define NEW_MV_MODE_PENALTY 32
 #define DARK_THRESH 64
@@ -850,7 +850,6 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
 
   xd->mi = cm->mi_grid_visible + xd->mi_stride * (mb_row << 1) + mb_col_start;
   xd->mi[0] = cm->mi + xd->mi_stride * (mb_row << 1) + mb_col_start;
-  xd->tile = tile;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     p[i].coeff = ctx->coeff_pbuf[i][1];
@@ -915,8 +914,6 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
     // are available.  Required by vp9_predict_intra_block().
     xd->above_mi = (mb_row != 0) ? &mi_above : NULL;
     xd->left_mi = ((mb_col << 1) > tile.mi_col_start) ? &mi_left : NULL;
-    xd->mi_row = mb_row << 1;
-    xd->mi_col = mb_col << 1;
 
     // Do intra 16x16 prediction.
     x->skip_encode = 0;
@@ -2528,6 +2525,8 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         (active_max_gf_interval >= (rc->frames_to_key - rc->min_gf_interval)))
       active_max_gf_interval = rc->frames_to_key / 2;
   }
+  active_max_gf_interval =
+      VPXMAX(active_max_gf_interval, active_min_gf_interval);
 
   if (cpi->multi_layer_arf) {
     int layers = 0;
@@ -2643,12 +2642,30 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     rc->source_alt_ref_pending = 0;
   }
 
+#define LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR 0.2
+  rc->arf_active_best_quality_adjustment_factor = 1.0;
+  if (rc->source_alt_ref_pending && !is_lossless_requested(&cpi->oxcf) &&
+      rc->frames_to_key <= rc->arf_active_best_quality_adjustment_window) {
+    rc->arf_active_best_quality_adjustment_factor =
+        LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR +
+        (1.0 - LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR) *
+            (rc->frames_to_key - i) /
+            VPXMAX(1, (rc->arf_active_best_quality_adjustment_window - i));
+  }
+
 #ifdef AGGRESSIVE_VBR
   // Limit maximum boost based on interval length.
   rc->gfu_boost = VPXMIN((int)rc->gfu_boost, i * 140);
 #else
   rc->gfu_boost = VPXMIN((int)rc->gfu_boost, i * 200);
 #endif
+
+  // Cap the ARF boost when perceptual quality AQ mode is enabled. This is
+  // designed to improve the perceptual quality of high value content and to
+  // make consistent quality across consecutive frames. It will hurt objective
+  // quality.
+  if (oxcf->aq_mode == PERCEPTUAL_AQ)
+    rc->gfu_boost = VPXMIN(rc->gfu_boost, MIN_ARF_GF_BOOST);
 
   rc->baseline_gf_interval = i - rc->source_alt_ref_pending;
 
@@ -2716,10 +2733,8 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   reset_fpf_position(twopass, start_pos);
 
   // Calculate a section intra ratio used in setting max loop filter.
-  if (cpi->common.frame_type != KEY_FRAME) {
-    twopass->section_intra_rating = calculate_section_intra_ratio(
-        start_pos, twopass->stats_in_end, rc->baseline_gf_interval);
-  }
+  twopass->section_intra_rating = calculate_section_intra_ratio(
+      start_pos, twopass->stats_in_end, rc->baseline_gf_interval);
 
   if (oxcf->resize_mode == RESIZE_DYNAMIC) {
     // Default to starting GF groups at normal frame size.
@@ -2890,7 +2905,9 @@ static int test_candidate_kf(TWO_PASS *twopass,
 
 #define FRAMES_TO_CHECK_DECAY 8
 #define MIN_KF_TOT_BOOST 300
-#define KF_BOOST_SCAN_MAX_FRAMES 32
+#define DEFAULT_SCAN_FRAMES_FOR_KF_BOOST 32
+#define MAX_SCAN_FRAMES_FOR_KF_BOOST 48
+#define MIN_SCAN_FRAMES_FOR_KF_BOOST 32
 #define KF_ABS_ZOOM_THRESH 6.0
 
 #ifdef AGGRESSIVE_VBR
@@ -2914,6 +2931,12 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int kf_bits = 0;
   double decay_accumulator = 1.0;
   double zero_motion_accumulator = 1.0;
+  double zero_motion_sum = 0.0;
+  double zero_motion_avg;
+  double motion_compensable_sum = 0.0;
+  double motion_compensable_avg;
+  int num_frames = 0;
+  int kf_boost_scan_frames = DEFAULT_SCAN_FRAMES_FOR_KF_BOOST;
   double boost_score = 0.0;
   double kf_mod_err = 0.0;
   double kf_raw_err = 0.0;
@@ -3066,13 +3089,34 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // how many bits to spend on it.
   boost_score = 0.0;
 
+  for (i = 0; i < VPXMIN(MAX_SCAN_FRAMES_FOR_KF_BOOST, (rc->frames_to_key - 1));
+       ++i) {
+    if (EOF == input_stats(twopass, &next_frame)) break;
+
+    zero_motion_sum += next_frame.pcnt_inter - next_frame.pcnt_motion;
+    motion_compensable_sum +=
+        1 - (double)next_frame.coded_error / next_frame.intra_error;
+    num_frames++;
+  }
+
+  if (num_frames >= MIN_SCAN_FRAMES_FOR_KF_BOOST) {
+    zero_motion_avg = zero_motion_sum / num_frames;
+    motion_compensable_avg = motion_compensable_sum / num_frames;
+    kf_boost_scan_frames = (int)(VPXMAX(64 * zero_motion_avg - 16,
+                                        160 * motion_compensable_avg - 112));
+    kf_boost_scan_frames =
+        VPXMAX(VPXMIN(kf_boost_scan_frames, MAX_SCAN_FRAMES_FOR_KF_BOOST),
+               MIN_SCAN_FRAMES_FOR_KF_BOOST);
+  }
+  reset_fpf_position(twopass, start_position);
+
   for (i = 0; i < (rc->frames_to_key - 1); ++i) {
     if (EOF == input_stats(twopass, &next_frame)) break;
 
     // The zero motion test here insures that if we mark a kf group as static
     // it is static throughout not just the first KF_BOOST_SCAN_MAX_FRAMES.
     // It also allows for a larger boost on long static groups.
-    if ((i <= KF_BOOST_SCAN_MAX_FRAMES) || (zero_motion_accumulator >= 0.99)) {
+    if ((i <= kf_boost_scan_frames) || (zero_motion_accumulator >= 0.99)) {
       double frame_boost;
       double zm_factor;
 
@@ -3118,7 +3162,7 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->kf_zeromotion_pct = (int)(zero_motion_accumulator * 100.0);
 
   // Calculate a section intra ratio used in setting max loop filter.
-  twopass->section_intra_rating = calculate_section_intra_ratio(
+  twopass->key_frame_section_intra_rating = calculate_section_intra_ratio(
       start_position, twopass->stats_in_end, rc->frames_to_key);
 
   // Special case for static / slide show content but dont apply
@@ -3155,6 +3199,11 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     // Default to normal-sized frame on keyframes.
     cpi->rc.next_frame_size_selector = UNSCALED;
   }
+#define ARF_ACTIVE_BEST_QUALITY_ADJUSTMENT_WINDOW_SIZE 64
+  // TODO(ravi.chaudhary@ittiam.com): Experiment without the below min
+  // condition. This might be helpful for small key frame intervals.
+  rc->arf_active_best_quality_adjustment_window =
+      VPXMIN(ARF_ACTIVE_BEST_QUALITY_ADJUSTMENT_WINDOW_SIZE, rc->frames_to_key);
 }
 
 static int is_skippable_frame(const VP9_COMP *cpi) {
@@ -3190,6 +3239,11 @@ void vp9_rc_get_second_pass_params(VP9_COMP *cpi) {
   if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
     int target_rate;
 
+    vp9_zero(this_frame);
+    this_frame =
+        cpi->twopass.stats_in_start[cm->current_video_frame +
+                                    gf_group->arf_src_offset[gf_group->index]];
+
     vp9_configure_buffer_updates(cpi, gf_group->index);
 
     target_rate = gf_group->bit_allocation[gf_group->index];
@@ -3204,6 +3258,11 @@ void vp9_rc_get_second_pass_params(VP9_COMP *cpi) {
         !cpi->use_svc) {
       cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
     }
+
+    // The multiplication by 256 reverses a scaling factor of (>> 8)
+    // applied when combining MB error values for the frame.
+    twopass->mb_av_energy = log((this_frame.intra_error * 256.0) + 1.0);
+    twopass->mb_smooth_pct = this_frame.intra_smooth_pct;
 
     return;
   }
@@ -3353,7 +3412,8 @@ void vp9_twopass_postencode_update(VP9_COMP *cpi) {
 
     // Extend min or Max Q range to account for imbalance from the base
     // value when using AQ.
-    if (cpi->oxcf.aq_mode != NO_AQ) {
+    if (cpi->oxcf.aq_mode != NO_AQ && cpi->oxcf.aq_mode != PSNR_AQ &&
+        cpi->oxcf.aq_mode != PERCEPTUAL_AQ) {
       if (cm->seg.aq_av_offset < 0) {
         // The balance of the AQ map tends towarda lowering the average Q.
         aq_extend_min = 0;

@@ -171,8 +171,7 @@ void Service::StartLoader(Loader* loader) {
   resource_request->method = "POST";
   resource_request->fetch_redirect_mode =
       ::network::mojom::FetchRedirectMode::kError;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   if (access_token_.empty()) {
     std::string query_str = base::StrCat({"key=", api_key_});
     // query_str must remain valid until ReplaceComponents() has returned.

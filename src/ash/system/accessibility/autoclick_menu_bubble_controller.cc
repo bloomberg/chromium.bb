@@ -6,12 +6,18 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/work_area_insets.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_utils.h"
 
 namespace ash {
@@ -19,13 +25,17 @@ namespace ash {
 namespace {
 // Autoclick menu constants.
 const int kAutoclickMenuWidth = 321;
+const int kAutoclickMenuHeight = 64;
 }  // namespace
 
-AutoclickMenuBubbleController::AutoclickMenuBubbleController() {}
+AutoclickMenuBubbleController::AutoclickMenuBubbleController() {
+  Shell::Get()->locale_update_controller()->AddObserver(this);
+}
 
 AutoclickMenuBubbleController::~AutoclickMenuBubbleController() {
   if (bubble_widget_ && !bubble_widget_->IsClosed())
     bubble_widget_->CloseNow();
+  Shell::Get()->locale_update_controller()->RemoveObserver(this);
 }
 
 void AutoclickMenuBubbleController::SetEventType(
@@ -36,36 +46,77 @@ void AutoclickMenuBubbleController::SetEventType(
 }
 
 void AutoclickMenuBubbleController::SetPosition(
-    mojom::AutoclickMenuPosition position) {
-  if (!menu_view_ || !bubble_view_)
+    mojom::AutoclickMenuPosition new_position) {
+  if (!menu_view_ || !bubble_view_ || !bubble_widget_)
     return;
 
-  menu_view_->UpdatePosition(position);
-  // TODO(katie): On first load it can display over top of the shelf on Chrome
-  // OS emulated on Linux (not reproduced on Eve). There must be a race
-  // condition with the user work area bounds loading.
+  // Update the menu view's UX if the position has changed, or if it's not the
+  // default position (because that can change with language direction).
+  if (position_ != new_position ||
+      new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
+    menu_view_->UpdatePosition(new_position);
+  }
+  position_ = new_position;
 
-  // TODO(katie): Support multiple displays.
-  gfx::Rect work_area = WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
-                            ->user_work_area_bounds();
-  gfx::Rect new_position;
-  switch (position) {
+  // If this is the default system position, pick the position based on the
+  // language direction.
+  if (new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
+    new_position = base::i18n::IsRTL()
+                       ? mojom::AutoclickMenuPosition::kBottomLeft
+                       : mojom::AutoclickMenuPosition::kBottomRight;
+  }
+
+  // Calculates the ideal bounds.
+  // TODO(katie): Support multiple displays: draw the menu on whichever display
+  // the cursor is on.
+  aura::Window* window = Shell::GetPrimaryRootWindow();
+  gfx::Rect work_area =
+      WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
+  gfx::Rect new_bounds;
+  switch (new_position) {
     case mojom::AutoclickMenuPosition::kBottomRight:
-      new_position = gfx::Rect(work_area.width(), work_area.height(), 0, 0);
+      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth,
+                             work_area.bottom() - kAutoclickMenuHeight,
+                             kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kBottomLeft:
-      new_position = gfx::Rect(work_area.x(), work_area.height(), 0, 0);
+      new_bounds =
+          gfx::Rect(work_area.x(), work_area.bottom() - kAutoclickMenuHeight,
+                    kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopLeft:
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_position = gfx::Rect(work_area.x(), 1, 0, 0);
+      new_bounds = gfx::Rect(work_area.x(), 1, kAutoclickMenuWidth,
+                             kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopRight:
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_position = gfx::Rect(work_area.width(), 1, 0, 0);
+      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth, 1,
+                             kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
+    case mojom::AutoclickMenuPosition::kSystemDefault:
+      return;
   }
-  bubble_view_->MoveToPosition(new_position);
+
+  // Update the preferred bounds based on other system windows.
+  gfx::Rect resting_bounds = CollisionDetectionUtils::GetRestingPosition(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          bubble_widget_->GetNativeWindow()),
+      new_bounds,
+      CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu);
+
+  // Un-inset the bounds to get the widget's bounds, which includes the drop
+  // shadow.
+  resting_bounds.Inset(-kCollisionWindowWorkAreaInsetsDp,
+                       -kCollisionWindowWorkAreaInsetsDp);
+  if (bubble_widget_->GetWindowBoundsInScreen() == resting_bounds)
+    return;
+
+  ui::ScopedLayerAnimationSettings settings(
+      bubble_widget_->GetLayer()->GetAnimator());
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  bubble_widget_->SetBounds(resting_bounds);
 }
 
 void AutoclickMenuBubbleController::ShowBubble(
@@ -83,9 +134,7 @@ void AutoclickMenuBubbleController::ShowBubble(
   init_params.parent_window = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.insets =
-      gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding,
-                  kUnifiedMenuPadding - 1, kUnifiedMenuPadding - 1);
+  init_params.insets = gfx::Insets(kCollisionWindowWorkAreaInsetsDp);
   init_params.min_width = kAutoclickMenuWidth;
   init_params.max_width = kAutoclickMenuWidth;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
@@ -102,6 +151,9 @@ void AutoclickMenuBubbleController::ShowBubble(
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
+  CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
+      bubble_widget_->GetNativeWindow(),
+      CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu);
   bubble_view_->InitializeAndShowBubble();
 
   if (app_list_features::IsBackgroundBlurEnabled()) {
@@ -116,6 +168,16 @@ void AutoclickMenuBubbleController::CloseBubble() {
   if (!bubble_widget_ || bubble_widget_->IsClosed())
     return;
   bubble_widget_->Close();
+}
+
+void AutoclickMenuBubbleController::SetBubbleVisibility(bool is_visible) {
+  if (!bubble_widget_)
+    return;
+
+  if (is_visible)
+    bubble_widget_->Show();
+  else
+    bubble_widget_->Hide();
 }
 
 void AutoclickMenuBubbleController::ClickOnBubble(gfx::Point location_in_dips,
@@ -150,6 +212,13 @@ void AutoclickMenuBubbleController::BubbleViewDestroyed() {
   bubble_view_ = nullptr;
   bubble_widget_ = nullptr;
   menu_view_ = nullptr;
+}
+
+void AutoclickMenuBubbleController::OnLocaleChanged() {
+  // Layout update is needed when language changes between LTR and RTL, if the
+  // position is the system default.
+  if (position_ == mojom::AutoclickMenuPosition::kSystemDefault)
+    SetPosition(position_);
 }
 
 }  // namespace ash

@@ -129,6 +129,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
                               base::string16* result) const = 0;
 
   // Reads a bookmark from the clipboard, if available.
+  // |title| or |url| may be null.
   virtual void ReadBookmark(base::string16* title, std::string* url) const = 0;
 
   // Reads raw data from the clipboard with the given format type. Stores result
@@ -146,8 +147,8 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
  protected:
   static Clipboard* Create();
 
-  Clipboard() {}
-  virtual ~Clipboard() {}
+  Clipboard() = default;
+  virtual ~Clipboard() = default;
 
   // ObjectType designates the type of data to be stored in the clipboard. This
   // designation is shared across all OSes. The system-specific designation

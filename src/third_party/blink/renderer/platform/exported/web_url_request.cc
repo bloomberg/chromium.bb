@@ -255,11 +255,12 @@ void WebURLRequest::SetPluginChildID(int plugin_child_id) {
   resource_request_->SetPluginChildID(plugin_child_id);
 }
 
-int WebURLRequest::AppCacheHostID() const {
+const base::UnguessableToken& WebURLRequest::AppCacheHostID() const {
   return resource_request_->AppCacheHostID();
 }
 
-void WebURLRequest::SetAppCacheHostID(int app_cache_host_id) {
+void WebURLRequest::SetAppCacheHostID(
+    const base::UnguessableToken& app_cache_host_id) {
   resource_request_->SetAppCacheHostID(app_cache_host_id);
 }
 
@@ -406,6 +407,10 @@ bool WebURLRequest::SupportsAsyncRevalidation() const {
 
 bool WebURLRequest::IsRevalidating() const {
   return resource_request_->IsRevalidating();
+}
+
+bool WebURLRequest::ShouldAlsoUseFactoryBoundOriginForCors() const {
+  return resource_request_->ShouldAlsoUseFactoryBoundOriginForCors();
 }
 
 const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()

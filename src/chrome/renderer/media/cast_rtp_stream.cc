@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -216,7 +215,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       frame_input_ = std::move(frame_input);
     }
 
-    void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+    void OnVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
                       base::TimeTicks estimated_capture_time) {
       main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&CastVideoSink::DidReceiveFrame, sink_));
@@ -234,14 +233,14 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       scoped_refptr<media::VideoFrame> frame = video_frame;
       // Drop alpha channel since we do not support it yet.
       if (frame->format() == media::PIXEL_FORMAT_I420A)
-        frame = media::WrapAsI420VideoFrame(video_frame);
+        frame = media::WrapAsI420VideoFrame(std::move(video_frame));
 
       // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
       TRACE_EVENT_INSTANT2("cast_perf_test", "ConsumeVideoFrame",
                            TRACE_EVENT_SCOPE_THREAD, "timestamp",
                            (timestamp - base::TimeTicks()).InMicroseconds(),
                            "time_delta", frame->timestamp().InMicroseconds());
-      frame_input_->InsertRawVideoFrame(frame, timestamp);
+      frame_input_->InsertRawVideoFrame(std::move(frame), timestamp);
     }
 
    private:
@@ -543,7 +542,7 @@ void CastRtpStream::Stop() {
   error_callback_.Reset();
   audio_sink_.reset();
   video_sink_.reset();
-  base::ResetAndReturn(&stop_callback_).Run();
+  std::move(stop_callback_).Run();
 }
 
 void CastRtpStream::ToggleLogging(bool enable) {

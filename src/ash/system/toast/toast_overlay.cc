@@ -302,7 +302,9 @@ void ToastOverlay::OnImplicitAnimationsCompleted() {
 }
 
 void ToastOverlay::OnKeyboardWorkspaceOccludedBoundsChanged(
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds_in_screen) {
+  // TODO(https://crbug.com/943446): Observe changes in user work area bounds
+  // directly instead of listening for keyboard bounds changes.
   UpdateOverlayBounds();
 }
 

@@ -24,8 +24,10 @@ SHEET_CONFIG = {
   "last_update_column_name": "Last Update",
 }
 
-def is_linux():
-  return sys.platform.startswith('linux')
+
+def is_windows():
+  return os.name == 'nt'
+
 
 def main_run(args):
   annotations_file = tempfile.NamedTemporaryFile()
@@ -43,14 +45,17 @@ def main_run(args):
   ]
   rc = common.run_command(command_line)
 
-  # Update the Google Sheets on success, but only on the Linux trybot.
-  if rc == 0 and is_linux():
+  # Update the Google Sheets on success, but only on the Windows trybot.
+  if rc == 0 and is_windows():
+    print("Tests succeeded. Updating annotations sheet...")
+
     config_file = tempfile.NamedTemporaryFile(delete=False)
     json.dump(SHEET_CONFIG, config_file, indent=4)
     config_filename = config_file.name
     config_file.close()
 
     command_line = [
+      'vpython.bat',
       os.path.join(common.SRC_DIR, 'tools', 'traffic_annotation', 'scripts',
                    'update_annotations_sheet.py'),
       '--force',

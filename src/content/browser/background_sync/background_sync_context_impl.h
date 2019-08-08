@@ -21,7 +21,7 @@ namespace content {
 
 class BackgroundSyncManager;
 class BackgroundSyncServiceImpl;
-class DevToolsBackgroundServicesContext;
+class DevToolsBackgroundServicesContextImpl;
 class ServiceWorkerContextWrapper;
 
 // One instance of this exists per StoragePartition, and services multiple child
@@ -39,7 +39,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   // StoragePartition is being setup and torn down.
   void Init(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-      const scoped_refptr<DevToolsBackgroundServicesContext>& devtools_context);
+      const scoped_refptr<DevToolsBackgroundServicesContextImpl>&
+          devtools_context);
 
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
@@ -77,7 +78,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   void DidFireBackgroundSyncEventsOnIOThread(base::OnceClosure done_closure);
   virtual void CreateBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
 
   void CreateServiceOnIOThread(
       mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request);

@@ -32,6 +32,4 @@ using namespace html_names;
 HTMLHeadElement::HTMLHeadElement(Document& document)
     : HTMLElement(kHeadTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLHeadElement)
-
 }  // namespace blink

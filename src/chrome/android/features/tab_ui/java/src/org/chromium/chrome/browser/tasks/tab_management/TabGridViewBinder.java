@@ -14,8 +14,9 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -40,8 +41,6 @@ class TabGridViewBinder {
         if (TabProperties.TITLE == propertyKey) {
             String title = item.get(TabProperties.TITLE);
             holder.title.setText(title);
-            holder.closeButton.setContentDescription(holder.itemView.getResources().getString(
-                    R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             Resources res = holder.itemView.getResources();
             Resources.Theme theme = holder.itemView.getContext().getTheme();
@@ -51,7 +50,6 @@ class TabGridViewBinder {
                         (int) res.getDimension(R.dimen.tab_list_selected_inset_kitkat));
                 Drawable elevationDrawable =
                         ResourcesCompat.getDrawable(res, R.drawable.popup_bg, theme);
-                holder.backgroundView.setVisibility(View.VISIBLE);
                 holder.backgroundView.setBackground(
                         item.get(TabProperties.IS_SELECTED) ? selectedDrawable : elevationDrawable);
             } else {
@@ -61,33 +59,39 @@ class TabGridViewBinder {
                 holder.itemView.setForeground(
                         item.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
+        } else if (TabProperties.FAVICON == propertyKey) {
+            holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
+        } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
+            updateThumbnail(holder, item);
+        } else if (TabProperties.TAB_ID == propertyKey) {
+            holder.setTabId(item.get(TabProperties.TAB_ID));
+        }
+
+        if (holder instanceof ClosableTabGridViewHolder) {
+            onBindClosableTab(holder, item, propertyKey);
+        } else {
+            onBindSelectableTab(holder, item, propertyKey);
+        }
+    }
+
+    private static void onBindViewHolder(TabGridViewHolder holder, PropertyModel item) {
+        for (PropertyKey propertyKey : TabProperties.ALL_KEYS_TAB_GRID) {
+            onBindViewHolder(holder, item, propertyKey);
+        }
+    }
+
+    private static void onBindClosableTab(
+            TabGridViewHolder holder, PropertyModel item, PropertyKey propertyKey) {
+        assert holder instanceof ClosableTabGridViewHolder;
+
+        if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
+            holder.actionButton.setOnClickListener(view -> {
+                item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
+            });
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
             holder.itemView.setOnClickListener(view -> {
                 item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
             });
-        } else if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
-            holder.closeButton.setOnClickListener(view -> {
-                item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
-            });
-        } else if (TabProperties.FAVICON == propertyKey) {
-            holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
-        } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
-            TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
-            if (fetcher == null) return;
-            Callback<Bitmap> callback = result -> {
-                if (result == null) {
-                    holder.thumbnail.setImageResource(0);
-                    holder.thumbnail.setMinimumHeight(holder.thumbnail.getWidth());
-                } else {
-                    holder.thumbnail.setImageBitmap(result);
-                }
-            };
-            fetcher.fetch(callback);
-        } else if (TabProperties.IPH_PROVIDER == propertyKey) {
-            TabListMediator.IphProvider provider = item.get(TabProperties.IPH_PROVIDER);
-            if (provider != null) provider.showIPH(holder.thumbnail);
-        } else if (TabProperties.TAB_ID == propertyKey) {
-            holder.setTabId(item.get(TabProperties.TAB_ID));
         } else if (TabProperties.CREATE_GROUP_LISTENER == propertyKey) {
             TabListMediator.TabActionListener listener =
                     item.get(TabProperties.CREATE_GROUP_LISTENER);
@@ -99,12 +103,67 @@ class TabGridViewBinder {
             holder.createGroupButton.setOnClickListener(view -> listener.run(holder.getTabId()));
         } else if (TabProperties.ALPHA == propertyKey) {
             holder.itemView.setAlpha(item.get(TabProperties.ALPHA));
+        } else if (TabProperties.TITLE == propertyKey) {
+            String title = item.get(TabProperties.TITLE);
+            holder.actionButton.setContentDescription(holder.itemView.getResources().getString(
+                    org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+        } else if (TabProperties.IPH_PROVIDER == propertyKey) {
+            TabListMediator.IphProvider provider = item.get(TabProperties.IPH_PROVIDER);
+            if (provider != null) provider.showIPH(holder.thumbnail);
+        } else if (TabProperties.CARD_ANIMATION_STATUS == propertyKey) {
+            TabListRecyclerView.scaleTabGridCardView(
+                    holder.itemView, item.get(TabProperties.CARD_ANIMATION_STATUS));
         }
     }
 
-    private static void onBindViewHolder(TabGridViewHolder holder, PropertyModel item) {
-        for (PropertyKey propertyKey : TabProperties.ALL_KEYS_TAB_GRID) {
-            onBindViewHolder(holder, item, propertyKey);
+    private static void onBindSelectableTab(
+            TabGridViewHolder holder, PropertyModel item, PropertyKey propertyKey) {
+        assert holder instanceof SelectableTabGridViewHolder;
+
+        SelectableTabGridViewHolder selectionHolder = (SelectableTabGridViewHolder) holder;
+        if (TabProperties.IS_SELECTED == propertyKey) {
+            boolean isSelected = item.get(TabProperties.IS_SELECTED);
+            selectionHolder.actionButton.getBackground().setLevel(
+                    isSelected ? selectionHolder.selectedLevel : selectionHolder.defaultLevel);
+            selectionHolder.actionButton.setImageDrawable(
+                    isSelected ? selectionHolder.mCheckDrawable : null);
+            ApiCompatibilityUtils.setImageTintList(selectionHolder.actionButton,
+                    isSelected ? selectionHolder.iconColorList : null);
+            if (isSelected) selectionHolder.mCheckDrawable.start();
+        } else if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
+            selectionHolder.itemView.setOnClickListener(view -> {
+                item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
+                selectionHolder.selectableTabGridView.onClick();
+            });
+        } else if (TabProperties.TITLE == propertyKey) {
+            String title = item.get(TabProperties.TITLE);
+            selectionHolder.actionButton.setContentDescription(
+                    holder.itemView.getResources().getString(
+                            org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab,
+                            title));
+        } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
+            assert item.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
+
+            selectionHolder.selectableTabGridView.setSelectionDelegate(
+                    item.get(TabProperties.TAB_SELECTION_DELEGATE));
+            selectionHolder.selectableTabGridView.setItem(selectionHolder.getTabId());
         }
+    }
+
+    private static void updateThumbnail(TabGridViewHolder holder, PropertyModel item) {
+        TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
+        if (fetcher == null) {
+            // Release the thumbnail to save memory.
+            holder.resetThumbnail();
+            return;
+        }
+        Callback<Bitmap> callback = result -> {
+            if (result == null) {
+                holder.resetThumbnail();
+            } else {
+                holder.thumbnail.setImageBitmap(result);
+            }
+        };
+        fetcher.fetch(callback);
     }
 }

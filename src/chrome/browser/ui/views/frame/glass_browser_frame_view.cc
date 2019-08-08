@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
@@ -95,7 +95,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
 
     window_icon_ = new TabIconView(this, nullptr);
     window_icon_->set_is_light(true);
-    window_icon_->set_id(VIEW_ID_WINDOW_ICON);
+    window_icon_->SetID(VIEW_ID_WINDOW_ICON);
     // Stop the icon from intercepting clicks intended for the HTSYSMENU region
     // of the window. Even though it does nothing on click, it will still
     // prevent us from giving the event back to Windows to handle properly.
@@ -107,12 +107,12 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     window_title_ = new views::Label(browser_view->GetWindowTitle());
     window_title_->SetSubpixelRenderingEnabled(false);
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    window_title_->set_id(VIEW_ID_WINDOW_TITLE);
+    window_title_->SetID(VIEW_ID_WINDOW_TITLE);
     AddChildView(window_title_);
   }
 
-  WebAppBrowserController* controller =
-      browser_view->browser()->web_app_controller();
+  web_app::AppBrowserController* controller =
+      browser_view->browser()->app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
     // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a
@@ -171,7 +171,7 @@ int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
 bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes(
     ActiveState active_state) const {
   // Pre-Win 8, tabs never match the glass frame appearance.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return true;
 
   // Enabling high contrast mode disables the custom-drawn titlebar (so the
@@ -189,7 +189,7 @@ bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes(
 bool GlassBrowserFrameView::CanDrawStrokes() const {
   // On Win 7, the tabs are drawn as flat shapes against the glass frame, so
   // the active tab always has a visible shape and strokes are unnecessary.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return false;
 
   return BrowserNonClientFrameView::CanDrawStrokes();
@@ -259,7 +259,7 @@ namespace {
 
 bool HitTestCaptionButton(Windows10CaptionButton* button,
                           const gfx::Point& point) {
-  return button && button->visible() &&
+  return button && button->GetVisible() &&
          button->GetMirroredBounds().Contains(point);
 }
 
@@ -311,7 +311,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // corner of the window. This code ensures the mouse isn't set to a size
   // cursor while hovering over the caption buttons, thus giving the incorrect
   // impression that the user can resize the window.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     RECT button_bounds = {0};
     if (SUCCEEDED(DwmGetWindowAttribute(views::HWNDForWidget(frame()),
                                         DWMWA_CAPTION_BUTTON_BOUNDS,

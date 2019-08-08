@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_FUNCTION_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_FUNCTION_BASE_H_
 
+#include "base/callback.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
@@ -67,6 +68,14 @@ class PLATFORM_EXPORT CallbackFunctionBase
 
   // Returns true if the ES function has a [[Construct]] internal method.
   bool IsConstructor() const { return CallbackFunction()->IsConstructor(); }
+
+  // Evaluates the given |closure| as part of the IDL callback function, i.e.
+  // in the relevant realm of the callback object with the callback context as
+  // the incumbent realm.
+  //
+  // NOTE: Do not abuse this function.  Let |Invoke| method defined in a
+  // subclass do the right thing.  This function is rarely needed.
+  void EvaluateAsPartOfCallback(base::OnceCallback<void()> closure);
 
   // Makes the underlying V8 function collectable by V8 Scavenger GC.  Do not
   // use this function unless you really need a hacky performance optimization.
@@ -160,13 +169,6 @@ ToV8PersistentCallbackFunction(V8CallbackFunction* callback_function) {
                    callback_function)
              : nullptr;
 }
-
-// CallbackFunctionBase is designed to be used with wrapper-tracing. As
-// blink::Persistent does not perform wrapper-tracing, use of |WrapPersistent|
-// for callback functions is likely (if not always) misuse. Thus, this code
-// prohibits such a use case. The call sites should explicitly use
-// WrapPersistent(V8PersistentCallbackFunction<T>*).
-Persistent<CallbackFunctionBase> WrapPersistent(CallbackFunctionBase*) = delete;
 
 }  // namespace blink
 

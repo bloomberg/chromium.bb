@@ -90,33 +90,6 @@ bool SandboxKnownFolderIdToPathServiceKey(KnownFolder folder_id,
   return false;
 }
 
-uint32_t ValidateFileForReading(const base::FilePath& file_name) {
-  if (file_name.value().empty()) {
-    LOG(ERROR) << "File path cannot be empty";
-    return SandboxErrorCode::NULL_FILE_NAME;
-  }
-  if (!file_name.IsAbsolute()) {
-    LOG(ERROR) << "File path must be absolute, received "
-               << chrome_cleaner::SanitizePath(file_name);
-    return SandboxErrorCode::RELATIVE_PATH_NOT_ALLOWED;
-  }
-  return ERROR_SUCCESS;
-}
-
-bool IsFilePresentLocally(const base::FilePath& file_name) {
-  DWORD file_attributes = ::GetFileAttributes(file_name.value().c_str());
-  if (file_attributes != INVALID_FILE_ATTRIBUTES &&
-      !(file_attributes & FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS) &&
-      !(file_attributes & FILE_ATTRIBUTE_RECALL_ON_OPEN)) {
-    return true;
-  }
-  if (file_attributes != INVALID_FILE_ATTRIBUTES) {
-    PLOG(ERROR) << "Failed to get attributes: "
-                << chrome_cleaner::SanitizePath(file_name);
-  }
-  return false;
-}
-
 NTSTATUS NtQueryInformationProcess(HANDLE ProcessHandle,
                                    PROCESSINFOCLASS ProcessInformationClass,
                                    PVOID ProcessInformation,
@@ -195,8 +168,17 @@ bool GetCommandLineUsingProcessInformation(base::ProcessId pid,
   // of null terminating characters.
   PUNICODE_STRING command_line =
       reinterpret_cast<PUNICODE_STRING>(buffer.data());
-  size_t max_data_length = bytes_read - sizeof(UNICODE_STRING);
 
+  // NtQueryInformationProcess can return a buffer filled with 0's (for example
+  // when querying LsaIso.exe, an Isolated User Mode process). When we cast a
+  // buffer of 0's to a UNICODE_STRING struct, all members including the Buffer
+  // pointer becomed 0.
+  if (command_line->Buffer == nullptr) {
+    LOG(ERROR) << "Invalid command line buffer";
+    return false;
+  }
+
+  size_t max_data_length = bytes_read - sizeof(UNICODE_STRING);
   if (command_line->Length % sizeof(WCHAR) ||
       command_line->Length > max_data_length) {
     LOG(ERROR) << "Invalid command line length";
@@ -297,10 +279,9 @@ bool GetCommandLineLegacy(base::ProcessId pid, base::string16* process_cmd) {
 uint32_t SandboxFindFirstFile(const base::FilePath& file_name,
                               LPWIN32_FIND_DATAW lpFindFileData,
                               HANDLE* handle) {
-  uint32_t validation_result = ValidateFileForReading(file_name);
-  if (validation_result != ERROR_SUCCESS) {
+  if (!chrome_cleaner::ValidateSandboxFilePath(file_name)) {
     *handle = INVALID_HANDLE_VALUE;
-    return validation_result;
+    return SandboxErrorCode::INVALID_FILE_PATH;
   }
 
   chrome_cleaner::ScopedDisableWow64Redirection disable_wow64_redirection;
@@ -309,17 +290,29 @@ uint32_t SandboxFindFirstFile(const base::FilePath& file_name,
   if (*handle == INVALID_HANDLE_VALUE)
     return GetLastError();
 
+  // Skip remote files.
+  if (!chrome_cleaner::IsLocalFileAttributes(
+          lpFindFileData->dwFileAttributes)) {
+    uint32_t found_next_result = SandboxFindNextFile(*handle, lpFindFileData);
+    if (found_next_result != ERROR_SUCCESS) {
+      SandboxFindClose(*handle);
+      *handle = INVALID_HANDLE_VALUE;
+      return found_next_result;
+    }
+  }
+
   return 0;
 }
 
 uint32_t SandboxFindNextFile(HANDLE hFindFile,
                              LPWIN32_FIND_DATAW lpFindFileData) {
   chrome_cleaner::ScopedDisableWow64Redirection disable_wow64_redirection;
-  if (::FindNextFile(hFindFile, lpFindFileData) == FALSE) {
-    return GetLastError();
+  // Return the first local file found.
+  while (::FindNextFile(hFindFile, lpFindFileData)) {
+    if (chrome_cleaner::IsLocalFileAttributes(lpFindFileData->dwFileAttributes))
+      return 0;
   }
-
-  return 0;
+  return GetLastError();
 }
 
 uint32_t SandboxFindClose(HANDLE hFindFile) {
@@ -328,6 +321,26 @@ uint32_t SandboxFindClose(HANDLE hFindFile) {
     return GetLastError();
   }
   return 0;
+}
+
+uint32_t SandboxGetFileAttributes(const base::FilePath& file_name,
+                                  uint32_t* attributes) {
+  DCHECK(attributes);
+  if (!chrome_cleaner::ValidateSandboxFilePath(file_name)) {
+    *attributes = INVALID_FILE_ATTRIBUTES;
+    return SandboxErrorCode::INVALID_FILE_PATH;
+  }
+
+  chrome_cleaner::ScopedDisableWow64Redirection disable_wow64_redirection;
+  *attributes = ::GetFileAttributes(file_name.value().c_str());
+  if (*attributes == INVALID_FILE_ATTRIBUTES)
+    return ::GetLastError();
+  // Pretend remote files don't exist.
+  if (!chrome_cleaner::IsLocalFileAttributes(*attributes)) {
+    *attributes = INVALID_FILE_ATTRIBUTES;
+    return ERROR_FILE_NOT_FOUND;
+  }
+  return ERROR_SUCCESS;
 }
 
 bool SandboxGetKnownFolderPath(KnownFolder folder_id,
@@ -487,7 +500,7 @@ bool SandboxGetUserInfoFromSID(
 
 base::win::ScopedHandle SandboxOpenReadOnlyFile(const base::FilePath& file_name,
                                                 uint32_t dwFlagsAndAttributes) {
-  if (ValidateFileForReading(file_name) != ERROR_SUCCESS) {
+  if (!chrome_cleaner::ValidateSandboxFilePath(file_name)) {
     return base::win::ScopedHandle(INVALID_HANDLE_VALUE);
   }
 
@@ -507,7 +520,7 @@ base::win::ScopedHandle SandboxOpenReadOnlyFile(const base::FilePath& file_name,
 
   chrome_cleaner::ScopedDisableWow64Redirection disable_wow64_redirection;
 
-  if (!IsFilePresentLocally(file_name))
+  if (!chrome_cleaner::IsFilePresentLocally(file_name))
     return base::win::ScopedHandle(INVALID_HANDLE_VALUE);
 
   // Don't lock this file when opening it and allow other processes to do

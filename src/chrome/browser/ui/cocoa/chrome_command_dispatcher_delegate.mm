@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ChromeCommandDispatcherDelegate
 
@@ -63,13 +63,17 @@
   // TODO(erikchen): Detect symbolic hot keys, and force control to be passed
   // back to AppKit so that it can handle it correctly.
   // https://crbug.com/846893.
+  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
 
   NSResponder* responder = [window firstResponder];
   if ([responder conformsToProtocol:@protocol(CommandDispatcherTarget)]) {
     NSObject<CommandDispatcherTarget>* target =
         static_cast<NSObject<CommandDispatcherTarget>*>(responder);
-    if ([target isKeyLocked:event])
+    if ([target isKeyLocked:event]) {
+      if (bridge)
+        bridge->SaveKeyEventForRedispatch(event);
       return ui::PerformKeyEquivalentResult::kUnhandled;
+    }
   }
 
   if ([self eventHandledByViewsFocusManager:event
@@ -93,7 +97,6 @@
   // highlighting of the NSMenu.
   CommandForKeyEventResult result = CommandForKeyEvent(event);
   if (result.found()) {
-    auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
     if (bridge) {
       bool was_executed = false;
       bridge->host()->ExecuteCommand(
@@ -101,10 +104,11 @@
           true /* is_before_first_responder */, &was_executed);
       if (was_executed)
         return ui::PerformKeyEquivalentResult::kHandled;
-      bridge->SaveKeyEventForRedispatch(event);
     }
   }
 
+  if (bridge)
+    bridge->SaveKeyEventForRedispatch(event);
   return ui::PerformKeyEquivalentResult::kUnhandled;
 }
 

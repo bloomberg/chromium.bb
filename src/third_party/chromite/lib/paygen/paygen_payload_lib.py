@@ -10,10 +10,10 @@ from __future__ import print_function
 import base64
 import datetime
 import json
+import multiprocessing
 import os
 import shutil
 import tempfile
-import threading
 
 from chromite.lib import chroot_util
 from chromite.lib import constants
@@ -32,7 +32,8 @@ from chromite.lib.paygen import urilib
 DESCRIPTION_FILE_VERSION = 2
 
 # Only two parallel paygen for now.
-_semaphore = threading.Semaphore(2)
+_semaphore = multiprocessing.Semaphore(2)
+
 
 class Error(Exception):
   """Base class for payload generation errors."""
@@ -51,6 +52,9 @@ class PaygenPayload(object):
 
   # 50 GB of cache.
   CACHE_SIZE = 50 * 1024 * 1024 * 1024
+
+  # 10 minutes.
+  _SEMAPHORE_TIMEOUT = 10 * 60
 
   # What keys do we sign payloads with, and what size are they?
   PAYLOAD_SIGNATURE_KEYSETS = ('update_signer',)
@@ -384,11 +388,20 @@ class PaygenPayload(object):
                     '--old_key', src_image, 'key',
                     default='test' if src_image.build.channel else '')]
 
-    # Do not run the delta_generator in parallel. It already has full
-    # parallelism inside.
-    _semaphore.acquire()
-    self._RunGeneratorCmd(cmd)
-    _semaphore.release()
+    # Run delta_generator for the purpose of generating an unsigned payload with
+    # smaller number of parallel processes as it already has full internal
+    # parallelism. Sometimes if a process cannot acquire the lock for a long
+    # period of time, the builder kills the process for not outputing any
+    # logs. So here we try to acquire the lock with a timeout of ten minutes in
+    # a loop and log some output so not to be killed by the builder.
+    while not _semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT):
+      logging.info('Failed to acquire the lock in 10 minutes, trying again ...')
+
+    logging.info('Successfully acquired the lock.')
+    try:
+      self._RunGeneratorCmd(cmd)
+    finally:
+      _semaphore.release()
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.

@@ -227,7 +227,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       main_frame_routing_id_(main_frame_routing_id),
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
-      render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       updating_web_preferences_(false),
       has_notified_about_creation_(false),
       weak_factory_(this) {
@@ -502,9 +501,6 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
 
   prefs.use_solid_color_scrollbars = false;
 
-  prefs.history_entry_requires_user_gesture =
-      command_line.HasSwitch(switches::kHistoryEntryRequiresUserGesture);
-
   prefs.disable_ipc_flooding_protection =
       command_line.HasSwitch(switches::kDisableIpcFloodingProtection) ||
       command_line.HasSwitch(switches::kDisablePushStateThrottle);
@@ -731,7 +727,7 @@ void RenderViewHostImpl::RenderProcessExited(
   if (!GetWidget()->renderer_initialized())
     return;
 
-  GetWidget()->RendererExited(info.status, info.exit_code);
+  GetWidget()->RendererExited();
   delegate_->RenderViewTerminated(this, info.status, info.exit_code);
 }
 

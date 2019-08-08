@@ -497,7 +497,8 @@ void WebWorkerFetchContextImpl::SetResponseOverrideForMainScript(
   response_override_ = std::move(response_override);
 }
 
-void WebWorkerFetchContextImpl::SetApplicationCacheHostID(int id) {
+void WebWorkerFetchContextImpl::SetApplicationCacheHostID(
+    const base::UnguessableToken& id) {
   appcache_host_id_ = id;
 }
 

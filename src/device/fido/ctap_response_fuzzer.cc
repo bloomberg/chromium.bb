@@ -13,8 +13,11 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/ctap2_device_operation.h"
+#include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/get_assertion_task.h"
 
 namespace device {
 
@@ -31,8 +34,18 @@ struct IcuEnvironment {
 IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  cbor::Reader::Config config;
+  config.allow_invalid_utf8 = true;
   std::vector<uint8_t> input(data, data + size);
-  base::Optional<cbor::Value> input_cbor = cbor::Reader::Read(input);
+  base::Optional<cbor::Value> input_cbor = cbor::Reader::Read(input, config);
+  if (input_cbor) {
+    input_cbor =
+        FixInvalidUTF8(std::move(*input_cbor),
+                       [](const std::vector<const cbor::Value*>& path) {
+                         return path.size() == 2;
+                       });
+  }
+
   std::array<uint8_t, 32> relying_party_id_hash = {};
   auto response = device::ReadCTAPMakeCredentialResponse(
       FidoTransportProtocol::kUsbHumanInterfaceDevice, input_cbor);

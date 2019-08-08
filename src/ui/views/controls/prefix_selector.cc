@@ -168,10 +168,17 @@ bool PrefixSelector::ShouldDoLearning() {
   return false;
 }
 
-#if defined(OS_WIN)
-void PrefixSelector::SetCompositionFromExistingText(
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+bool PrefixSelector::SetCompositionFromExistingText(
     const gfx::Range& range,
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+#endif
+
+#if defined(OS_WIN)
 void PrefixSelector::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const base::string16& active_composition_text,

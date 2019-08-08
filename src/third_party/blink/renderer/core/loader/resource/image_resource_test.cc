@@ -358,10 +358,10 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
 
 ResourceFetcher* CreateFetcher() {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  return MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, MakeGarbageCollected<MockFetchContext>(),
-                          base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                          MakeGarbageCollected<TestLoaderFactory>()));
+  return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      properties->MakeDetachable(), MakeGarbageCollected<MockFetchContext>(),
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      MakeGarbageCollected<TestLoaderFactory>()));
 }
 
 TEST(ImageResourceTest, MultipartImage) {
@@ -386,7 +386,7 @@ TEST(ImageResourceTest, MultipartImage) {
   multipart_response.SetHttpHeaderField(
       http_names::kContentType, "multipart/x-mixed-replace; boundary=boundary");
   image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(multipart_response), nullptr);
+      WrappedResourceResponse(multipart_response));
   EXPECT_FALSE(image_resource->ResourceBuffer());
   EXPECT_FALSE(image_resource->GetContent()->HasImage());
   EXPECT_EQ(0, observer->ImageChangedCount());
@@ -467,7 +467,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
   multipart_response.SetHttpHeaderField(
       http_names::kContentType, "multipart/x-mixed-replace; boundary=boundary");
   image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(multipart_response), nullptr);
+      WrappedResourceResponse(multipart_response));
   EXPECT_FALSE(image_resource->GetContent()->HasImage());
 
   const char kBoundary[] = "--boundary\n";
@@ -1292,7 +1292,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(18);
   image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(resource_response), nullptr);
+      WrappedResourceResponse(resource_response));
 
   EXPECT_EQ(0, observer->ImageChangedCount());
 
@@ -1319,7 +1319,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
   ResourceResponse resource_response(test_url);
   resource_response.SetMimeType("image/jpeg");
   image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(resource_response), nullptr);
+      WrappedResourceResponse(resource_response));
 
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
   EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
@@ -1870,14 +1870,15 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest);
   auto* context = MakeGarbageCollected<MockFetchContext>();
-  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto& properties =
+      MakeGarbageCollected<TestResourceFetcherProperties>()->MakeDetachable();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context, task_runner,
+      ResourceFetcherInit(properties, context, task_runner,
                           MakeGarbageCollected<TestLoaderFactory>()));
   auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
-      ResourceLoadScheduler::ThrottlingPolicy::kNormal, *properties,
-      frame_scheduler.get(), *MakeGarbageCollected<NullConsoleLogger>());
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal, properties,
+      frame_scheduler.get(), *MakeGarbageCollected<DetachableConsoleLogger>());
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 
   // Ensure that |image_resource| has a loader.

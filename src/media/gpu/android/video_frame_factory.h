@@ -32,8 +32,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
   using GetStubCb = base::Callback<gpu::CommandBufferStub*()>;
   using InitCb = base::RepeatingCallback<void(scoped_refptr<TextureOwner>)>;
-  using OnceOutputCb =
-      base::OnceCallback<void(const scoped_refptr<VideoFrame>&)>;
+  using OnceOutputCb = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
 
   VideoFrameFactory() = default;
   virtual ~VideoFrameFactory() = default;

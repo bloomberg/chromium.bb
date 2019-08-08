@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
@@ -22,8 +23,9 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
+  auto* worker_global_scope = To<WorkerGlobalScope>(execution_context);
   blink::WorkerReportingProxy& worker_reporting_proxy =
-      To<WorkerGlobalScope>(execution_context)->ReportingProxy();
+      worker_global_scope->ReportingProxy();
 
   if (!module_script) {
     // Step 12: "If the algorithm asynchronously completes with null, queue
@@ -31,18 +33,13 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     worker_reporting_proxy.DidFailToFetchModuleScript();
     return;
   }
-  worker_reporting_proxy.DidFetchScript();
+  worker_reporting_proxy.DidFetchScript(mojom::blink::kAppCacheNoCacheId);
 
   // Step 12: "Otherwise, continue the rest of these steps after the algorithm's
   // asynchronous completion, with script being the asynchronous completion
   // value."
-  worker_reporting_proxy.WillEvaluateModuleScript();
-  // This |error| is always null because the second argument is |kReport|.
-  // TODO(nhiroki): Catch an error when an evaluation error happens.
-  // (https://crbug.com/680046)
-  ScriptValue error = modulator_->ExecuteModule(
-      module_script, Modulator::CaptureEvalErrorFlag::kReport);
-  worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());
+  worker_global_scope->WorkerScriptFetchFinished(
+      *module_script, base::nullopt /* v8_inspector::V8StackTraceId */);
 }
 
 void WorkerModuleTreeClient::Trace(blink::Visitor* visitor) {

@@ -19,6 +19,33 @@
 
 namespace tracing {
 
+namespace {
+
+bool StringToProcessId(const std::string& input, base::ProcessId* output) {
+  // Pid is encoded as uint in the string.
+  return base::StringToUint(input, reinterpret_cast<uint32_t*>(output));
+}
+
+}  // namespace
+
+// static
+bool PerfettoService::ParsePidFromProducerName(const std::string& producer_name,
+                                               base::ProcessId* pid) {
+  if (!base::StartsWith(producer_name, mojom::kPerfettoProducerNamePrefix,
+                        base::CompareCase::SENSITIVE)) {
+    LOG(DFATAL) << "Unexpected producer name: " << producer_name;
+    return false;
+  }
+
+  static const size_t kPrefixLength =
+      strlen(mojom::kPerfettoProducerNamePrefix);
+  if (!StringToProcessId(producer_name.substr(kPrefixLength), pid)) {
+    LOG(DFATAL) << "Unexpected producer name: " << producer_name;
+    return false;
+  }
+  return true;
+}
+
 // static
 PerfettoService* PerfettoService::GetInstance() {
   static base::NoDestructor<PerfettoService> perfetto_service;
@@ -63,31 +90,63 @@ void PerfettoService::ConnectToProducerHost(
 
 void PerfettoService::AddActiveServicePid(base::ProcessId pid) {
   active_service_pids_.insert(pid);
-  for (auto* consumer_host : consumer_hosts_) {
-    consumer_host->OnActiveServicePidAdded(pid);
+  for (auto* tracing_session : tracing_sessions_) {
+    tracing_session->OnActiveServicePidAdded(pid);
   }
 }
 
 void PerfettoService::RemoveActiveServicePid(base::ProcessId pid) {
   active_service_pids_.erase(pid);
-  for (auto* consumer_host : consumer_hosts_) {
-    consumer_host->OnActiveServicePidRemoved(pid);
+  for (auto* tracing_session : tracing_sessions_) {
+    tracing_session->OnActiveServicePidRemoved(pid);
   }
 }
 
 void PerfettoService::SetActiveServicePidsInitialized() {
   active_service_pids_initialized_ = true;
-  for (auto* consumer_host : consumer_hosts_) {
-    consumer_host->OnActiveServicePidsInitialized();
+  for (auto* tracing_session : tracing_sessions_) {
+    tracing_session->OnActiveServicePidsInitialized();
   }
 }
 
-void PerfettoService::RegisterConsumerHost(ConsumerHost* consumer_host) {
-  consumer_hosts_.insert(consumer_host);
+void PerfettoService::RegisterTracingSession(
+    ConsumerHost::TracingSession* tracing_session) {
+  tracing_sessions_.insert(tracing_session);
 }
 
-void PerfettoService::UnregisterConsumerHost(ConsumerHost* consumer_host) {
-  consumer_hosts_.erase(consumer_host);
+void PerfettoService::UnregisterTracingSession(
+    ConsumerHost::TracingSession* tracing_session) {
+  tracing_sessions_.erase(tracing_session);
+}
+
+void PerfettoService::RequestTracingSession(
+    mojom::TracingClientPriority priority,
+    base::OnceClosure callback) {
+  // TODO(oysteine): This currently assumes we only have one concurrent tracing
+  // session, which is enforced by all ConsumerHost::BeginTracing calls routing
+  // through RequestTracingSession before creating a new TracingSession.
+  // Not running the callback means we'll drop any connection requests and deny
+  // the creation of the tracing session.
+  for (auto* tracing_session : tracing_sessions_) {
+    if (!tracing_session->tracing_enabled()) {
+      continue;
+    }
+
+    if (tracing_session->tracing_priority() > priority) {
+      return;
+    }
+
+    // If the currently active session is the same or lower priority and it's
+    // tracing, then we'll disable it and re-try the request once it's shut
+    // down.
+    tracing_session->RequestDisableTracing(
+        base::BindOnce(&PerfettoService::RequestTracingSession,
+                       base::Unretained(PerfettoService::GetInstance()),
+                       priority, std::move(callback)));
+    return;
+  }
+
+  std::move(callback).Run();
 }
 
 }  // namespace tracing

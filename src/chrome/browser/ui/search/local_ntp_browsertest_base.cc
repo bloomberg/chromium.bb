@@ -14,7 +14,7 @@ namespace {
 
 // Delimiter in the Most Visited icon URL that indicates a dark icon. Keep value
 // in sync with NtpIconSource.
-const char kMVIconDarkParameter[] = "/dark/";
+const char kMVIconDarkParameter[] = "dark=true";
 
 }  // namespace
 

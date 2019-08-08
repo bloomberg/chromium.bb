@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -59,6 +59,9 @@ class DateView : public views::Button,
  public:
   explicit DateView(UnifiedSystemTrayController* controller);
   ~DateView() override;
+
+  // views::Button:
+  const char* GetClassName() const override { return "DateView"; }
 
  private:
   void Update();
@@ -144,6 +147,7 @@ class BatteryView : public views::View, public PowerStatus::Observer {
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  const char* GetClassName() const override { return "BatteryView"; }
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
@@ -227,6 +231,9 @@ class ManagedStateView : public views::Button {
  public:
   ~ManagedStateView() override = default;
 
+  // views::Button:
+  const char* GetClassName() const override { return "ManagedStateView"; }
+
  protected:
   ManagedStateView(views::ButtonListener* listener,
                    int label_id,
@@ -281,6 +288,9 @@ class EnterpriseManagedView : public ManagedStateView,
   // SessionObserver:
   void OnLoginStatusChanged(LoginStatus status) override;
 
+  // views::Button:
+  const char* GetClassName() const override { return "EnterpriseManagedView"; }
+
  private:
   void Update();
 
@@ -296,7 +306,7 @@ EnterpriseManagedView::EnterpriseManagedView(
                        kUnifiedMenuManagedIcon),
       controller_(controller) {
   DCHECK(Shell::Get());
-  set_id(VIEW_ID_TRAY_ENTERPRISE);
+  SetID(VIEW_ID_TRAY_ENTERPRISE);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   Update();
@@ -323,7 +333,8 @@ void EnterpriseManagedView::OnLoginStatusChanged(LoginStatus status) {
 void EnterpriseManagedView::Update() {
   EnterpriseDomainModel* model =
       Shell::Get()->system_tray_model()->enterprise_domain();
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   SetVisible(session_controller->ShouldDisplayManagedUI() ||
              model->active_directory_managed() ||
              !model->enterprise_display_domain().empty());
@@ -343,6 +354,9 @@ class SupervisedUserView : public ManagedStateView {
  public:
   SupervisedUserView();
   ~SupervisedUserView() override = default;
+
+  // views::Button:
+  const char* GetClassName() const override { return "SupervisedUserView"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserView);
@@ -367,7 +381,7 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
       views::BoxLayout::kHorizontal, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   AddChildView(new DateView(controller));
 
@@ -396,6 +410,10 @@ void UnifiedSystemInfoView::ChildVisibilityChanged(views::View* child) {
 
 void UnifiedSystemInfoView::ChildPreferredSizeChanged(views::View* child) {
   Layout();
+}
+
+const char* UnifiedSystemInfoView::GetClassName() const {
+  return "UnifiedSystemInfoView";
 }
 
 }  // namespace ash

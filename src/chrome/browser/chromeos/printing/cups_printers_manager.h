@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
+#include "chrome/browser/chromeos/printing/printer_installation_manager.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_service.h"
 
+class PrefService;
 class Profile;
 
 namespace user_prefs {
@@ -23,24 +23,17 @@ class PrefRegistrySyncable;
 namespace chromeos {
 
 class PpdProvider;
+class PrinterConfigurer;
 class PrinterDetector;
 class PrinterEventTracker;
 class SyncedPrintersManager;
+class UsbPrinterNotificationController;
 
 // Top level manager of available CUPS printers in ChromeOS.  All functions
 // in this class must be called from a sequenced context.
-class CupsPrintersManager : public KeyedService {
+class CupsPrintersManager : public PrinterInstallationManager,
+                            public KeyedService {
  public:
-  // Classes of printers tracked.  See doc/cups_printer_management.md for
-  // details on what these mean.
-  enum PrinterClass {
-    kEnterprise,
-    kAutomatic,
-    kDiscovered,
-    kSaved,
-    kNumPrinterClasses
-  };
-
   class Observer {
    public:
     // The list of printers in this class has changed to the given printers.
@@ -65,6 +58,9 @@ class CupsPrintersManager : public KeyedService {
       std::unique_ptr<PrinterDetector> usb_printer_detector,
       std::unique_ptr<PrinterDetector> zeroconf_printer_detector,
       scoped_refptr<PpdProvider> ppd_provider,
+      std::unique_ptr<PrinterConfigurer> printer_configurer,
+      std::unique_ptr<UsbPrinterNotificationController>
+          usb_notification_controller,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 
@@ -77,18 +73,9 @@ class CupsPrintersManager : public KeyedService {
   virtual std::vector<Printer> GetPrinters(
       PrinterClass printer_class) const = 0;
 
-  // Remove any printer from printers that we know we cannot currently
-  // talk to.  Examples would be USB printers that are not currently
-  // plugged in, or Zeroconf printers that have not been detected this
-  // session.
-  virtual void RemoveUnavailablePrinters(
-      std::vector<Printer>* printers) const = 0;
-
-  // Update or save a printer as a saved printer.  If this is the same as
-  // an existing saved printer, the entry will be updated.  If the printer
-  // appears in a class other than saved, it will be moved to the
-  // saved class.
-  virtual void UpdateSavedPrinter(const Printer& printer) = 0;
+  // Saves |printer|. If |printer| already exists in the saved class, it will
+  // be overwritten.
+  virtual void SavePrinter(const Printer& printer) = 0;
 
   // Remove the saved printer with the given id.  This is a NOP if
   // the printer_id is not that of a saved printer.
@@ -100,17 +87,15 @@ class CupsPrintersManager : public KeyedService {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Record that the given printers has been installed in CUPS for usage.  If
-  // |printer| is not a saved or enterprise printer, this will have the
-  // side effect of moving |printer| into the saved class.
+  // Record that the given printers has been installed in CUPS for usage.
   // Parameter |is_automatic| should be set to true if the printer was
   // saved automatically (without requesting additional information
   // from the user).
-  virtual void PrinterInstalled(const Printer& printer, bool is_automatic) = 0;
+  void PrinterInstalled(const Printer& printer, bool is_automatic) override = 0;
 
   // Returns true if |printer| is currently installed in CUPS with this
   // configuration.
-  virtual bool IsPrinterInstalled(const Printer& printer) const = 0;
+  bool IsPrinterInstalled(const Printer& printer) const override = 0;
 
   // Look for a printer with the given id in any class.  Returns a copy of the
   // printer if found, base::nullopt if not found.

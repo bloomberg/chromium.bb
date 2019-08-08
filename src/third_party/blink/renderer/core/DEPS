@@ -1,6 +1,7 @@
 include_rules = [
     "+base/atomic_sequence_num.h",
     "+base/barrier_closure.h",
+    "+base/bits.h",
     "+base/files/file.h",
     "+base/mac/foundation_util.h",
     "+base/mac/mac_util.h",
@@ -12,6 +13,7 @@ include_rules = [
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
     "+base/task/sequence_manager/task_time_observer.h",
+    "+base/time",
     "+base/unguessable_token.h",
     "+build/mac",
     "+build/win",
@@ -32,6 +34,7 @@ include_rules = [
     "+cc/input/snap_fling_controller.h",
     "+cc/input/snap_selection_strategy.h",
     "+cc/layers/content_layer_client.h",
+    "+cc/layers/heads_up_display_layer.h",
     "+cc/layers/layer.h",
     "+cc/layers/layer_position_constraint.h",
     "+cc/layers/layer_sticky_position_constraint.h",
@@ -43,6 +46,7 @@ include_rules = [
     "+cc/paint/paint_flags.h",
     "+cc/paint/paint_worklet_input.h",
     "+cc/paint/text_holder.h",
+    "+cc/trees/paint_holding_commit_trigger.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
     "+inspector/v8/public",
@@ -86,6 +90,7 @@ specific_include_rules = {
     # Additional allowed includes for tests.
     ".*_test(_.*)?\.(cc|h)" : [
         "+base/message_loop/message_loop.h",
+        "+base/test/test_mock_time_task_runner.h",
         # Test harness may use cc directly instead of going through WebViewImpl etc.
         "+cc",
         "+components/ukm/test_ukm_recorder.h",

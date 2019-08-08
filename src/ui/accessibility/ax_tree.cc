@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include <numeric>
 #include <set>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_language_info.h"
@@ -24,12 +26,13 @@ namespace ui {
 
 namespace {
 
-std::string TreeToStringHelper(AXNode* node, int indent) {
-  std::string result = std::string(2 * indent, ' ');
-  result += node->data().ToString() + "\n";
-  for (int i = 0; i < node->child_count(); ++i)
-    result += TreeToStringHelper(node->ChildAtIndex(i), indent + 1);
-  return result;
+std::string TreeToStringHelper(const AXNode* node, int indent) {
+  return std::accumulate(
+      node->children().cbegin(), node->children().cend(),
+      std::string(2 * indent, ' ') + node->data().ToString() + "\n",
+      [indent](const std::string& str, const auto* child) {
+        return str + TreeToStringHelper(child, indent + 1);
+      });
 }
 
 template <typename K, typename V>
@@ -106,7 +109,7 @@ struct AXTreeUpdateState {
   }
 
   // Returns whether this update removes |node|.
-  bool IsRemovedNode(const AXNode* node) {
+  bool IsRemovedNode(const AXNode* node) const {
     return removed_node_ids.find(node->id()) != removed_node_ids.end();
   }
 
@@ -115,9 +118,15 @@ struct AXTreeUpdateState {
     return new_nodes.find(node) != new_nodes.end();
   }
 
+  // If this node is removed, it should be considered reparented.
+  bool IsPotentiallyReparentedNode(const AXNode* node) const {
+    return potentially_reparented_ids.find(node->id()) !=
+           potentially_reparented_ids.end();
+  }
+
   // Returns whether this update reparents |node|.
-  bool IsReparentedNode(const AXNode* node) {
-    return IsNewNode(node) && IsRemovedNode(node);
+  bool IsReparentedNode(const AXNode* node) const {
+    return IsPotentiallyReparentedNode(node) && IsRemovedNode(node);
   }
 
   // During an update, this keeps track of all nodes that have been
@@ -131,6 +140,11 @@ struct AXTreeUpdateState {
   // us to know what nodes will be updated so we can make more intelligent
   // decisions about when to notify observers of removals or reparenting.
   std::set<int> changed_node_ids;
+
+  // Potentially reparented node ids include any child node ids touched by the
+  // update, as well as any new root node id. Nodes are considered
+  // reparented if they are in this list and removed from somewhere else.
+  std::set<int> potentially_reparented_ids;
 
   // Keeps track of new nodes created during this update.
   std::set<const AXNode*> new_nodes;
@@ -386,6 +400,15 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   if (update.has_tree_data)
     UpdateData(update.tree_data);
 
+  // Get all of the node ids that are certain to exist after the update.
+  // These are the nodes that are considered reparented if they are removed from
+  // somewhere else.
+  update_state.potentially_reparented_ids.emplace(update.root_id);
+  for (const AXNodeData& update_node_data : update.nodes) {
+    update_state.potentially_reparented_ids.insert(
+        update_node_data.child_ids.begin(), update_node_data.child_ids.end());
+  }
+
   // We distinguish between updating the root, e.g. changing its children or
   // some of its attributes, or replacing the root completely.
   bool root_updated = false;
@@ -410,8 +433,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     // If the root has simply been updated, we treat it like an update to any
     // other node.
     if (node && root_ && (node != root_ || root_updated)) {
-      for (int i = 0; i < node->child_count(); ++i)
-        DestroySubtree(node->ChildAtIndex(i), &update_state);
+      for (auto* child : node->children())
+        DestroySubtree(child, &update_state);
       std::vector<AXNode*> children;
       node->SwapChildren(children);
       update_state.pending_nodes.insert(node);
@@ -555,16 +578,15 @@ std::string AXTree::ToString() const {
 
 AXNode* AXTree::CreateNode(AXNode* parent,
                            int32_t id,
-                           int32_t index_in_parent,
+                           size_t index_in_parent,
                            AXTreeUpdateState* update_state) {
   AXNode* new_node = new AXNode(this, parent, id, index_in_parent);
   id_map_[new_node->id()] = new_node;
   for (AXTreeObserver& observer : observers_) {
-    if (update_state->IsChangedNode(new_node) &&
-        !update_state->IsRemovedNode(new_node))
-      observer.OnNodeCreated(this, new_node);
-    else
+    if (update_state->IsReparentedNode(new_node))
       observer.OnNodeReparented(this, new_node);
+    else
+      observer.OnNodeCreated(this, new_node);
   }
   return new_node;
 }
@@ -819,10 +841,10 @@ void AXTree::DestroySubtree(AXNode* node,
                             AXTreeUpdateState* update_state) {
   DCHECK(update_state);
   for (AXTreeObserver& observer : observers_) {
-    if (!update_state->IsChangedNode(node))
-      observer.OnSubtreeWillBeDeleted(this, node);
-    else
+    if (update_state->IsPotentiallyReparentedNode(node))
       observer.OnSubtreeWillBeReparented(this, node);
+    else
+      observer.OnSubtreeWillBeDeleted(this, node);
   }
   DestroyNodeAndSubtree(node, update_state);
 }
@@ -842,20 +864,20 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   }
 
   for (AXTreeObserver& observer : observers_) {
-    if (!update_state || !update_state->IsChangedNode(node))
-      observer.OnNodeWillBeDeleted(this, node);
-    else
+    if (update_state && update_state->IsPotentiallyReparentedNode(node))
       observer.OnNodeWillBeReparented(this, node);
+    else
+      observer.OnNodeWillBeDeleted(this, node);
   }
   id_map_.erase(node->id());
-  for (int i = 0; i < node->child_count(); ++i)
-    DestroyNodeAndSubtree(node->ChildAtIndex(i), update_state);
+  for (auto* child : node->children())
+    DestroyNodeAndSubtree(child, update_state);
   if (update_state) {
     update_state->pending_nodes.erase(node);
     update_state->removed_node_ids.insert(node->id());
   }
 
-  if (update_state && update_state->IsChangedNode(node)) {
+  if (update_state && update_state->IsReparentedNode(node)) {
     update_state->reparented_node_id_to_data.insert(
         std::make_pair(node->id(), node->TakeData()));
   }
@@ -895,7 +917,6 @@ bool AXTree::CreateNewChildVector(AXNode* node,
   bool success = true;
   for (size_t i = 0; i < new_child_ids.size(); ++i) {
     int32_t child_id = new_child_ids[i];
-    int32_t index_in_parent = static_cast<int32_t>(i);
     AXNode* child = GetFromId(child_id);
     if (child) {
       if (child->parent() != node) {
@@ -910,9 +931,9 @@ bool AXTree::CreateNewChildVector(AXNode* node,
         success = false;
         continue;
       }
-      child->SetIndexInParent(index_in_parent);
+      child->SetIndexInParent(i);
     } else {
-      child = CreateNode(node, child_id, index_in_parent, update_state);
+      child = CreateNode(node, child_id, i, update_state);
       update_state->pending_nodes.insert(child);
       update_state->new_nodes.insert(child);
     }
@@ -958,7 +979,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
   // If original node is ordered set, then set its hierarchical level equal to
   // its first child that sets a hierarchical level, if any.
   if (ordered_set == &original_node) {
-    for (int32_t i = 0; i < original_node.GetUnignoredChildCount(); ++i) {
+    for (size_t i = 0; i < original_node.GetUnignoredChildCount(); ++i) {
       int32_t level =
           original_node.GetUnignoredChildAtIndex(i)->GetIntAttribute(
               ax::mojom::IntAttribute::kHierarchicalLevel);
@@ -967,12 +988,12 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
             original_level ? std::min(level, original_level) : level;
     }
   }
-  int original_node_index = original_node.GetUnignoredIndexInParent();
+  size_t original_node_index = original_node.GetUnignoredIndexInParent();
   bool node_is_radio_button =
       (original_node.data().role == ax::mojom::Role::kRadioButton);
 
-  for (int i = 0; i < local_parent->child_count(); ++i) {
-    const AXNode* child = local_parent->ChildAtIndex(i);
+  for (size_t i = 0; i < local_parent->children().size(); ++i) {
+    const AXNode* child = local_parent->children()[i];
 
     // Invisible children should not be counted.
     // However, in the collapsed container case (e.g. a combobox), items can

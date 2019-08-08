@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/client/display/fake_canvas.h"
 #include "remoting/client/display/gl_renderer_delegate.h"
@@ -125,7 +125,7 @@ class GlRendererTest : public testing::Test {
     return on_desktop_frame_processed_call_count_;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<GlRenderer> renderer_;
   FakeGlRendererDelegate delegate_;
 
@@ -160,7 +160,7 @@ void GlRendererTest::SetDesktopFrameWithSize(const webrtc::DesktopSize& size) {
 void GlRendererTest::PostSetDesktopFrameTasks(const webrtc::DesktopSize& size,
                                               int count) {
   for (int i = 0; i < count; i++) {
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&GlRendererTest::SetDesktopFrameWithSize,
                                   base::Unretained(this), size));
   }
@@ -172,7 +172,8 @@ void GlRendererTest::OnDesktopFrameProcessed() {
 
 void GlRendererTest::RunTasksInCurrentQueue() {
   base::RunLoop run_loop;
-  message_loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
 }
 

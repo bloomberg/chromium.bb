@@ -22,10 +22,9 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/assistant_view_delegate_impl.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/assistant_image_downloader.mojom.h"
-#include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
@@ -73,16 +72,13 @@ class ASH_EXPORT AssistantController
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
-  void DownloadImage(
-      const GURL& url,
-      mojom::AssistantImageDownloader::DownloadCallback callback);
+  void DownloadImage(const GURL& url,
+                     AssistantImageDownloader::DownloadCallback callback);
 
   // mojom::AssistantController:
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
-  void SetAssistantImageDownloader(
-      mojom::AssistantImageDownloaderPtr assistant_image_downloader) override;
   void OpenAssistantSettings() override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
@@ -153,11 +149,13 @@ class ASH_EXPORT AssistantController
   void NotifyConstructed();
   void NotifyDestroying();
   void NotifyDeepLinkReceived(const GURL& deep_link);
+  void NotifyOpeningUrl(const GURL& url, bool from_server);
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
+  void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.
@@ -171,7 +169,6 @@ class ASH_EXPORT AssistantController
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
 
-  mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
   chromeos::assistant::mojom::DeviceActionsPtr device_actions_;
 
   // Assistant sub-controllers.

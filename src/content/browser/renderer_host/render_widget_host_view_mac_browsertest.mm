@@ -63,4 +63,24 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest, GetPageTextForSpeech) {
   EXPECT_EQ(base::ASCIIToUTF16("Hello\nWorld"), waiter.text());
 }
 
+// Test that -firstRectForCharacterRange:actualRange: works when the range
+// isn't in the active selection, which requres a sync IPC to the renderer.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest,
+                       GetFirstRectForCharacterRangeUncached) {
+  GURL url("data:text/html,Hello");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderWidgetHostView* rwhv =
+      shell()->web_contents()->GetMainFrame()->GetView();
+  RenderWidgetHostViewMac* rwhv_mac =
+      static_cast<RenderWidgetHostViewMac*>(rwhv);
+
+  NSRect rect =
+      [rwhv_mac->cocoa_view() firstRectForCharacterRange:NSMakeRange(2, 1)
+                                             actualRange:nullptr];
+  EXPECT_GT(NSMinX(rect), 0);
+  EXPECT_GT(NSWidth(rect), 0);
+  EXPECT_GT(NSHeight(rect), 0);
+}
+
 }  // namespace content

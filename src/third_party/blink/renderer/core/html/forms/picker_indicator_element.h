@@ -57,8 +57,6 @@ class PickerIndicatorElement final : public HTMLDivElement,
     virtual bool SetupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
   };
 
-  static PickerIndicatorElement* Create(Document&, PickerIndicatorOwner&);
-
   PickerIndicatorElement(Document&, PickerIndicatorOwner&);
   ~PickerIndicatorElement() override;
   void Trace(Visitor*) override;

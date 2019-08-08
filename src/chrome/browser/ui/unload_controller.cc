@@ -251,28 +251,24 @@ void UnloadController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  if (change.type() != TabStripModelChange::kInserted &&
-      change.type() != TabStripModelChange::kRemoved &&
-      change.type() != TabStripModelChange::kReplaced)
-    return;
+  std::vector<content::WebContents*> new_contents;
+  std::vector<content::WebContents*> old_contents;
 
-  for (const auto& delta : change.deltas()) {
-    content::WebContents* new_contents = nullptr;
-    content::WebContents* old_contents = nullptr;
-    if (change.type() == TabStripModelChange::kInserted) {
-      new_contents = delta.insert.contents;
-    } else if (change.type() == TabStripModelChange::kReplaced) {
-      new_contents = delta.replace.new_contents;
-      old_contents = delta.replace.old_contents;
-    } else {
-      old_contents = delta.remove.contents;
-    }
-
-    if (old_contents)
-      TabDetachedImpl(old_contents);
-    if (new_contents)
-      TabAttachedImpl(new_contents);
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& contents : change.GetInsert()->contents)
+      new_contents.push_back(contents.contents);
+  } else if (change.type() == TabStripModelChange::kReplaced) {
+    new_contents.push_back(change.GetReplace()->new_contents);
+    old_contents.push_back(change.GetReplace()->old_contents);
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    for (const auto& contents : change.GetRemove()->contents)
+      old_contents.push_back(contents.contents);
   }
+
+  for (auto* contents : old_contents)
+    TabDetachedImpl(contents);
+  for (auto* contents : new_contents)
+    TabAttachedImpl(contents);
 }
 
 void UnloadController::TabStripEmpty() {

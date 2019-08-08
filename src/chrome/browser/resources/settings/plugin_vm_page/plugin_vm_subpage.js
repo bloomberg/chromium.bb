@@ -10,13 +10,16 @@
 Polymer({
   is: 'settings-plugin-vm-subpage',
 
-  behaviors: [PrefsBehavior],
-
   properties: {
     /** Preferences state. */
     prefs: {
       type: Object,
       notify: true,
     },
+  },
+
+  /** @private */
+  onSharedPathsClick_: function() {
+    settings.navigateTo(settings.routes.PLUGIN_VM_SHARED_PATHS);
   },
 });

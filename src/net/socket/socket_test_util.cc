@@ -32,6 +32,7 @@
 #include "net/base/hex_utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -44,6 +45,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -810,6 +812,10 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
       EXPECT_FALSE(ssl_config.client_cert);
     }
   }
+  if (next_ssl_data->expected_false_start_enabled) {
+    EXPECT_EQ(*next_ssl_data->expected_false_start_enabled,
+              ssl_config.false_start_enabled);
+  }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
 }
@@ -825,7 +831,6 @@ MockClientSocketFactory::CreateProxyClientSocket(
     bool using_spdy,
     NextProto negotiated_protocol,
     ProxyDelegate* proxy_delegate,
-    bool is_https_proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   if (use_mock_proxy_client_sockets_) {
     ProxyClientSocketDataProvider* next_proxy_data = mock_proxy_data_.GetNext();
@@ -835,7 +840,7 @@ MockClientSocketFactory::CreateProxyClientSocket(
     return GetDefaultFactory()->CreateProxyClientSocket(
         std::move(stream_socket), user_agent, endpoint, proxy_server,
         http_auth_controller, tunnel, using_spdy, negotiated_protocol,
-        proxy_delegate, is_https_proxy, traffic_annotation);
+        proxy_delegate, traffic_annotation);
   }
 }
 
@@ -2108,6 +2113,8 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
           base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
+          ProxyServer::Direct(),
+          false /* is_for_websockets */,
           common_connect_job_params,
           nullptr /* ssl_config_service */),
       client_socket_factory_(common_connect_job_params->client_socket_factory),
@@ -2120,6 +2127,7 @@ MockTransportClientSocketPool::~MockTransportClientSocketPool() = default;
 int MockTransportClientSocketPool::RequestSocket(
     const ClientSocketPool::GroupId& group_id,
     scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -2153,7 +2161,8 @@ void MockTransportClientSocketPool::SetPriority(
 
 void MockTransportClientSocketPool::CancelRequest(
     const ClientSocketPool::GroupId& group_id,
-    ClientSocketHandle* handle) {
+    ClientSocketHandle* handle,
+    bool cancel_connect_job) {
   for (std::unique_ptr<MockConnectJob>& it : job_list_) {
     if (it->CancelHandle(handle)) {
       cancel_count_++;

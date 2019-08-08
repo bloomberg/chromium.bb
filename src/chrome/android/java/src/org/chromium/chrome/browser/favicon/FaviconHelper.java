@@ -170,16 +170,19 @@ public class FaviconHelper {
     }
 
     /**
-     * Get 16x16 Favicon bitmap for the requested arguments. Only retrives favicons in synced
-     * session storage. (e.g. favicons synced from other devices).
-     * TODO(apiccion): provide a way to obtain higher resolution favicons.
+     * Get foreign Favicon bitmap for the requested arguments.
      * @param profile Profile used for the FaviconService construction.
      * @param pageUrl The target Page URL to get the favicon.
-     * @return 16x16 favicon Bitmap corresponding to the pageUrl.
+     * @param desiredSizeInPixel The size of the favicon in pixel we want to get.
+     * @param faviconImageCallback A method to be called back when the result is available. Note
+     *         that this callback is not called if this method returns false.
+     * @return favicon Bitmap corresponding to the pageUrl.
      */
-    public Bitmap getSyncedFaviconImageForURL(Profile profile, String pageUrl) {
+    public boolean getForeignFaviconImageForURL(Profile profile, String pageUrl,
+            int desiredSizeInPixel, FaviconImageCallback faviconImageCallback) {
         assert mNativeFaviconHelper != 0;
-        return nativeGetSyncedFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl);
+        return nativeGetForeignFaviconImageForURL(
+                mNativeFaviconHelper, profile, pageUrl, desiredSizeInPixel, faviconImageCallback);
     }
 
     // TODO(jkrcal): Remove these two methods when FaviconHelper is not used any more by
@@ -215,8 +218,9 @@ public class FaviconHelper {
     private static native boolean nativeGetLocalFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl, int desiredSizeInDip,
             FaviconImageCallback faviconImageCallback);
-    private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
-            Profile profile, String pageUrl);
+    private static native boolean nativeGetForeignFaviconImageForURL(long nativeFaviconHelper,
+            Profile profile, String pageUrl, int desiredSizeInDip,
+            FaviconImageCallback faviconImageCallback);
     private static native void nativeEnsureIconIsAvailable(long nativeFaviconHelper,
             Profile profile, WebContents webContents, String pageUrl, String iconUrl,
             boolean isLargeIcon, IconAvailabilityCallback callback);

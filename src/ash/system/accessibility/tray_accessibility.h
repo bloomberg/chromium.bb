@@ -42,6 +42,9 @@ class ASH_EXPORT AccessibilityDetailedView : public TrayDetailedView {
 
   void OnAccessibilityStatusChanged();
 
+  // views::View
+  const char* GetClassName() const override;
+
  private:
   friend class ::ash::TrayAccessibilityLoginScreenTest;
   friend class ::ash::TrayAccessibilityTest;

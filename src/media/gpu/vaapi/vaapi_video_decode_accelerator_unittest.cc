@@ -60,6 +60,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Decode, DecodeResult());
   MOCK_CONST_METHOD0(GetPicSize, gfx::Size());
+  MOCK_CONST_METHOD0(GetVisibleRect, gfx::Rect());
   MOCK_CONST_METHOD0(GetRequiredNumOfPictures, size_t());
   MOCK_CONST_METHOD0(GetNumReferenceFrames, size_t());
 };
@@ -178,8 +179,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   ~VaapiVideoDecodeAcceleratorTest() {}
 
   void SetUp() override {
-    in_shm_.reset(new base::SharedMemory);
-    ASSERT_TRUE(in_shm_->CreateAndMapAnonymous(kInputSize));
+    in_shm_ = base::UnsafeSharedMemoryRegion::Create(kInputSize);
   }
 
   void SetVdaStateToUnitialized() {
@@ -187,9 +187,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     vda_.state_ = VaapiVideoDecodeAccelerator::kUninitialized;
   }
 
-  void QueueInputBuffer(const BitstreamBuffer& bitstream_buffer) {
-    vda_.QueueInputBuffer(bitstream_buffer.ToDecoderBuffer(),
-                          bitstream_buffer.id());
+  void QueueInputBuffer(BitstreamBuffer bitstream_buffer) {
+    auto id = bitstream_buffer.id();
+    vda_.QueueInputBuffer(bitstream_buffer.ToDecoderBuffer(), id);
   }
 
   void AssignPictureBuffers(const std::vector<PictureBuffer>& picture_buffers) {
@@ -247,11 +247,12 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                                       1, picture_size, _))
         .WillOnce(RunClosure(quit_closure));
 
-    base::SharedMemoryHandle handle;
-    handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-    BitstreamBuffer bitstream_buffer(bitstream_id, handle, kInputSize);
+    auto region = base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+        in_shm_.Duplicate());
+    BitstreamBuffer bitstream_buffer(bitstream_id, std::move(region),
+                                     kInputSize);
 
-    QueueInputBuffer(bitstream_buffer);
+    QueueInputBuffer(std::move(bitstream_buffer));
     run_loop.Run();
   }
 
@@ -330,11 +331,11 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(bitstream_id))
         .WillOnce(RunClosure(quit_closure));
 
-    base::SharedMemoryHandle handle;
-    handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-    BitstreamBuffer bitstream_buffer(bitstream_id, handle, kInputSize);
+    auto region = base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+        in_shm_.Duplicate());
+    QueueInputBuffer(
+        BitstreamBuffer(bitstream_id, std::move(region), kInputSize));
 
-    QueueInputBuffer(bitstream_buffer);
     run_loop.Run();
   }
 
@@ -363,7 +364,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   scoped_refptr<MockVaapiWrapper> mock_vaapi_wrapper_;
   scoped_refptr<MockVaapiWrapper> mock_vpp_vaapi_wrapper_;
 
-  std::unique_ptr<base::SharedMemory> in_shm_;
+  base::UnsafeSharedMemoryRegion in_shm_;
 
  private:
   base::WeakPtrFactory<VaapiVideoDecodeAcceleratorTest> weak_ptr_factory_;
@@ -391,20 +392,20 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
 TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndError) {
   SetVdaStateToUnitialized();
 
-  base::SharedMemoryHandle handle;
-  handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-  BitstreamBuffer bitstream_buffer(kBitstreamId, handle, kInputSize);
+  auto region = base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+      in_shm_.Duplicate());
+  BitstreamBuffer bitstream_buffer(kBitstreamId, std::move(region), kInputSize);
 
   EXPECT_CALL(*this,
               NotifyError(VaapiVideoDecodeAccelerator::PLATFORM_FAILURE));
-  QueueInputBuffer(bitstream_buffer);
+  QueueInputBuffer(std::move(bitstream_buffer));
 }
 
 // Verifies that Decode() returning kDecodeError ends up pinging NotifyError().
 TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndDecodeError) {
-  base::SharedMemoryHandle handle;
-  handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-  BitstreamBuffer bitstream_buffer(kBitstreamId, handle, kInputSize);
+  auto region = base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+      in_shm_.Duplicate());
+  BitstreamBuffer bitstream_buffer(kBitstreamId, std::move(region), kInputSize);
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -414,7 +415,7 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndDecodeError) {
   EXPECT_CALL(*this, NotifyError(VaapiVideoDecodeAccelerator::PLATFORM_FAILURE))
       .WillOnce(RunClosure(quit_closure));
 
-  QueueInputBuffer(bitstream_buffer);
+  QueueInputBuffer(std::move(bitstream_buffer));
   run_loop.Run();
 }
 

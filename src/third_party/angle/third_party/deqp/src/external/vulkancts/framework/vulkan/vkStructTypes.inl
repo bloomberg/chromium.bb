@@ -2396,6 +2396,13 @@ struct VkPhysicalDeviceDepthStencilResolvePropertiesKHR
 	VkBool32				independentResolve;
 };
 
+struct VkSurfaceProtectedCapabilitiesKHR
+{
+	VkStructureType	sType;
+	const void*		pNext;
+	VkBool32		supportsProtected;
+};
+
 struct VkDebugReportCallbackCreateInfoEXT
 {
 	VkStructureType					sType;
@@ -3222,6 +3229,7 @@ struct VkPhysicalDeviceVulkanMemoryModelFeaturesKHR
 	void*			pNext;
 	VkBool32		vulkanMemoryModel;
 	VkBool32		vulkanMemoryModelDeviceScope;
+	VkBool32		vulkanMemoryModelAvailabilityVisibilityChains;
 };
 
 struct VkPhysicalDeviceScalarBlockLayoutFeaturesEXT
@@ -3229,6 +3237,73 @@ struct VkPhysicalDeviceScalarBlockLayoutFeaturesEXT
 	VkStructureType	sType;
 	void*			pNext;
 	VkBool32		scalarBlockLayout;
+};
+
+struct VkPhysicalDeviceDepthClipEnableFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		depthClipEnable;
+};
+
+struct VkPipelineRasterizationDepthClipStateCreateInfoEXT
+{
+	VkStructureType										sType;
+	const void*											pNext;
+	VkPipelineRasterizationDepthClipStateCreateFlagsEXT	flags;
+	VkBool32											depthClipEnable;
+};
+
+struct VkPhysicalDeviceBufferAddressFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		bufferDeviceAddress;
+	VkBool32		bufferDeviceAddressCaptureReplay;
+	VkBool32		bufferDeviceAddressMultiDevice;
+};
+
+struct VkBufferDeviceAddressInfoEXT
+{
+	VkStructureType	sType;
+	const void*		pNext;
+	VkBuffer		buffer;
+};
+
+struct VkBufferDeviceAddressCreateInfoEXT
+{
+	VkStructureType	sType;
+	const void*		pNext;
+	VkDeviceSize	deviceAddress;
+};
+
+struct VkCooperativeMatrixPropertiesNV
+{
+	VkStructureType		sType;
+	void*				pNext;
+	deUint32			MSize;
+	deUint32			NSize;
+	deUint32			KSize;
+	VkComponentTypeNV	AType;
+	VkComponentTypeNV	BType;
+	VkComponentTypeNV	CType;
+	VkComponentTypeNV	DType;
+	VkScopeNV			scope;
+};
+
+struct VkPhysicalDeviceCooperativeMatrixPropertiesNV
+{
+	VkStructureType		sType;
+	void*				pNext;
+	VkShaderStageFlags	cooperativeMatrixSupportedStages;
+};
+
+struct VkPhysicalDeviceCooperativeMatrixFeaturesNV
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		cooperativeMatrix;
+	VkBool32		cooperativeMatrixRobustBufferAccess;
 };
 
 

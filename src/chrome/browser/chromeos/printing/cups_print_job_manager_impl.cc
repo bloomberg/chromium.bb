@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 
 #include <cups/cups.h>
-#include <algorithm>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -24,8 +22,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
-#include "chrome/browser/chromeos/printing/synced_printers_manager.h"
-#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -322,8 +320,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                       int total_page_number) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    auto printer = SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
-                       ->GetPrinter(printer_name);
+    auto printer =
+        CupsPrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinter(
+            printer_name);
     if (!printer) {
       LOG(WARNING)
           << "Printer was removed while job was in progress.  It cannot "

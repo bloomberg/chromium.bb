@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -54,6 +55,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
     virtual void OnSlideStarted(const std::string& notification_id) {}
     virtual void OnSlideChanged(const std::string& notification_id) {}
+    virtual void OnSlideOut(const std::string& notification_id) {}
   };
 
   enum class Mode {
@@ -91,6 +93,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   virtual bool IsManuallyExpandedOrCollapsed() const;
   virtual void SetManuallyExpandedOrCollapsed(bool value);
   virtual void CloseSwipeControl();
+  virtual void SlideOutAndClose(int direction);
 
   // Update corner radii of the notification. Subclasses will override this to
   // implement rounded corners if they don't use MessageView's default
@@ -135,6 +138,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnDidChangeFocus(views::View* before, views::View* now) override;
 
   void AddSlideObserver(SlideObserver* observer);
+  void RemoveSlideObserver(SlideObserver* observer);
 
   Mode GetMode() const;
 
@@ -189,7 +193,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   std::unique_ptr<views::Painter> focus_painter_;
 
   SlideOutController slide_out_controller_;
-  std::vector<SlideObserver*> slide_observers_;
+  base::ObserverList<SlideObserver>::Unchecked slide_observers_;
 
   // True if |this| is embedded in another view. Equivalent to |!top_level| in
   // MessageViewFactory parlance.

@@ -160,6 +160,8 @@ bool FontUniqueNameLookupWin::IsFontUniqueNameLookupReadyForSyncLookup() {
 }
 
 void FontUniqueNameLookupWin::EnsureServiceConnected() {
+  if (service_)
+    return;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&service_));
 }
@@ -181,7 +183,7 @@ void FontUniqueNameLookupWin::PrepareFontUniqueNameLookup(
 
   EnsureServiceConnected();
 
-  service_->GetUniqueNameLookupTable(base::BindRepeating(
+  service_->GetUniqueNameLookupTable(base::BindOnce(
       &FontUniqueNameLookupWin::ReceiveReadOnlySharedMemoryRegion,
       base::Unretained(this)));
 }

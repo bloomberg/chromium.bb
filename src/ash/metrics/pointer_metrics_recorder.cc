@@ -27,25 +27,6 @@ int GetDestination(views::Widget* target) {
   return window->GetProperty(aura::client::kAppType);
 }
 
-// Find the input type, form factor and destination combination of the down
-// event. Used to get the UMA histogram bucket.
-DownEventMetric FindCombinationDeprecated(DownEventSource input_type,
-                                          DownEventFormFactor form_factor,
-                                          int destination) {
-  if (destination == static_cast<int>(AppType::CROSTINI_APP))
-    destination = static_cast<int>(AppType::OTHERS);
-  constexpr int kAppCountDeprecated = kAppCount - 1;
-  int num_combination_per_input =
-      kAppCountDeprecated *
-      static_cast<int>(DownEventFormFactor::kFormFactorCount);
-  int result = static_cast<int>(input_type) * num_combination_per_input +
-               static_cast<int>(form_factor) * kAppCountDeprecated +
-               destination;
-  DCHECK(result >= 0 &&
-         result < static_cast<int>(DownEventMetric::kCombinationCount));
-  return static_cast<DownEventMetric>(result);
-}
-
 DownEventMetric2 FindCombination(int destination,
                                  DownEventSource input_type,
                                  DownEventFormFactor form_factor) {
@@ -96,12 +77,6 @@ void RecordUMA(ui::EventPointerType type, ui::EventTarget* event_target) {
       input_type = DownEventSource::kStylus;
       break;
   }
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Event.DownEventCount.PerInputFormFactorDestinationCombination",
-      FindCombinationDeprecated(input_type, form_factor,
-                                GetDestination(target)),
-      DownEventMetric::kCombinationCount);
 
   UMA_HISTOGRAM_ENUMERATION(
       "Event.DownEventCount.PerInputFormFactorDestinationCombination2",

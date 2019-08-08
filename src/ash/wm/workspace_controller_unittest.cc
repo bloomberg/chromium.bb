@@ -8,12 +8,11 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
@@ -443,9 +442,9 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 TEST_F(WorkspaceControllerTest, MinimizeResetsVisibility) {
   // TODO(bruthig|xiyuan): Move SessionState setup into AshTestBase or
   // AshTestHelper.
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->state = session_manager::SessionState::ACTIVE;
-  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  SessionInfo info;
+  info.state = session_manager::SessionState::ACTIVE;
+  ash::Shell::Get()->session_controller()->SetSessionInfo(info);
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   w1->Show();

@@ -40,7 +40,7 @@ void RecordAuthResultHistogram(int value) {
 class AuthRequest {
  public:
   AuthRequest(identity::IdentityManager* identity_manager,
-              const std::string& account_id,
+              const CoreAccountId& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const AuthStatusCallback& callback,
               const std::vector<std::string>& scopes);
@@ -59,7 +59,7 @@ class AuthRequest {
 
 AuthRequest::AuthRequest(
     identity::IdentityManager* identity_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes)
@@ -112,7 +112,7 @@ void AuthRequest::OnAccessTokenFetchComplete(
 
 AuthService::AuthService(
     identity::IdentityManager* identity_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<std::string>& scopes)
     : identity_manager_(identity_manager),
@@ -207,7 +207,7 @@ void AuthService::OnRefreshTokenUpdatedForAccount(
 }
 
 void AuthService::OnRefreshTokenRemovedForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   if (account_id == account_id_)
     OnHandleRefreshToken(false);
 }

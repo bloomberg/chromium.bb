@@ -125,16 +125,16 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
   }
 
   switch (quad->material) {
-    case DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::Material::kTextureContent:
       return FromTextureQuad(resource_provider,
                              TextureDrawQuad::MaterialCast(quad), candidate);
-    case DrawQuad::TILED_CONTENT:
+    case DrawQuad::Material::kTiledContent:
       return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
                           candidate);
-    case DrawQuad::VIDEO_HOLE:
+    case DrawQuad::Material::kVideoHole:
       return FromVideoHoleQuad(
           resource_provider, VideoHoleDrawQuad::MaterialCast(quad), candidate);
-    case DrawQuad::STREAM_VIDEO_CONTENT:
+    case DrawQuad::Material::kStreamVideoContent:
       return FromStreamVideoQuad(resource_provider,
                                  StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
@@ -150,7 +150,7 @@ bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
   float opacity = quad->shared_quad_state->opacity;
   if (opacity < std::numeric_limits<float>::epsilon())
     return true;
-  if (quad->material != DrawQuad::SOLID_COLOR)
+  if (quad->material != DrawQuad::Material::kSolidColor)
     return false;
   const SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
   const float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
@@ -179,12 +179,12 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 // static
 bool OverlayCandidate::RequiresOverlay(const DrawQuad* quad) {
   switch (quad->material) {
-    case DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::Material::kTextureContent:
       return TextureDrawQuad::MaterialCast(quad)->protected_video_type ==
              ui::ProtectedVideoType::kHardwareProtected;
-    case DrawQuad::VIDEO_HOLE:
+    case DrawQuad::Material::kVideoHole:
       return true;
-    case DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::Material::kYuvVideoContent:
       return YUVVideoDrawQuad::MaterialCast(quad)->protected_video_type ==
              ui::ProtectedVideoType::kHardwareProtected;
     default:
@@ -201,7 +201,7 @@ bool OverlayCandidate::IsOccludedByFilteredQuad(
         render_pass_backdrop_filters) {
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
-    if (overlap_iter->material == DrawQuad::RENDER_PASS) {
+    if (overlap_iter->material == DrawQuad::Material::kRenderPass) {
       gfx::RectF overlap_rect = cc::MathUtil::MapClippedRect(
           overlap_iter->shared_quad_state->quad_to_target_transform,
           gfx::RectF(overlap_iter->rect));
@@ -353,7 +353,7 @@ void OverlayCandidateList::AddPromotionHint(const OverlayCandidate& candidate) {
 void OverlayCandidateList::AddToPromotionHintRequestorSetIfNeeded(
     const DisplayResourceProvider* resource_provider,
     const DrawQuad* quad) {
-  if (quad->material != DrawQuad::STREAM_VIDEO_CONTENT)
+  if (quad->material != DrawQuad::Material::kStreamVideoContent)
     return;
   ResourceId id = StreamVideoDrawQuad::MaterialCast(quad)->resource_id();
   if (!resource_provider->DoesResourceWantPromotionHint(id))

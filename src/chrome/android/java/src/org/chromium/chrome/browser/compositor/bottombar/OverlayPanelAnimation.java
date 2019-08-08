@@ -164,6 +164,22 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
         }
     }
 
+    @Override
+    public void hidePanel(@StateChangeReason int reason) {
+        if (getPanelState() == PanelState.PEEKED) {
+            mPanelHidden = true;
+            animatePanelToState(PanelState.CLOSED, reason);
+        }
+    }
+
+    @Override
+    public void showPanel(@StateChangeReason int reason) {
+        if (mPanelHidden) {
+            animatePanelToState(PanelState.PEEKED, reason);
+            mPanelHidden = false;
+        }
+    }
+
     /**
      * Updates the Panel so it preserves its state when the size changes.
      */

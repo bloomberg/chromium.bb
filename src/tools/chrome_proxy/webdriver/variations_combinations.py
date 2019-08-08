@@ -17,9 +17,6 @@ import fieldtrial_util
 
 test_blacklist = [
   # These tests set their own field trials and should be ignored.
-  'lite_page.LitePage.testLitePageFallback',
-  'lofi.LoFi.testLoFiSlowConnection',
-  'lofi.LoFi.testLoFiIfHeavyFastConnection',
   'quic.Quic.testCheckPageWithQuicProxy',
   'quic.Quic.testCheckPageWithQuicProxyTransaction',
   'smoke.Smoke.testCheckPageWithHoldback',

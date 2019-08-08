@@ -46,7 +46,7 @@ class FetcherDelegate {
 
   virtual ~FetcherDelegate() {}
 
-  ResourceFetcher::Callback NewCallback() {
+  ResourceFetcher::StartCallback NewCallback() {
     return base::BindOnce(&FetcherDelegate::OnURLFetchComplete,
                           base::Unretained(this));
   }
@@ -58,7 +58,7 @@ class FetcherDelegate {
     completed_ = true;
     timer_.Stop();
     if (!timed_out_)
-      quit_task_.Run();
+      std::move(quit_task_).Run();
   }
 
   bool completed() const { return completed_; }
@@ -84,7 +84,7 @@ class FetcherDelegate {
 
     timed_out_ = true;
     if (!completed_)
-      quit_task_.Run();
+      std::move(quit_task_).Run();
     FAIL() << "fetch timed out";
   }
 
@@ -96,7 +96,7 @@ class FetcherDelegate {
   bool timed_out_;
   WebURLResponse response_;
   std::string data_;
-  base::Closure quit_task_;
+  base::OnceClosure quit_task_;
 };
 
 FetcherDelegate* FetcherDelegate::instance_ = nullptr;
@@ -309,8 +309,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
   GURL url(embedded_test_server()->GetURL("/simple_page.html"));
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&ResourceFetcherTests::ResourceFetcherDownloadOnRenderer,
-                 base::Unretained(this), url));
+      base::BindOnce(&ResourceFetcherTests::ResourceFetcherDownloadOnRenderer,
+                     base::Unretained(this), url));
 }
 
 // Test if ResourceFetcher can handle server redirects correctly.
@@ -324,8 +324,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherRedirect) {
       embedded_test_server()->GetURL("/server-redirect?" + final_url.spec()));
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&ResourceFetcherTests::ResourceFetcherRedirectOnRenderer,
-                 base::Unretained(this), url, final_url));
+      base::BindOnce(&ResourceFetcherTests::ResourceFetcherRedirectOnRenderer,
+                     base::Unretained(this), url, final_url));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
@@ -337,8 +337,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
   GURL url = embedded_test_server()->GetURL("/thisfiledoesntexist.html");
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&ResourceFetcherTests::ResourceFetcher404OnRenderer,
-                 base::Unretained(this), url));
+      base::BindOnce(&ResourceFetcherTests::ResourceFetcher404OnRenderer,
+                     base::Unretained(this), url));
 }
 
 // If this flakes, use http://crbug.com/51622.
@@ -347,8 +347,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&ResourceFetcherTests::ResourceFetcherDidFailOnRenderer,
-                 base::Unretained(this)));
+      base::BindOnce(&ResourceFetcherTests::ResourceFetcherDidFailOnRenderer,
+                     base::Unretained(this)));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
@@ -361,8 +361,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
   GURL url(embedded_test_server()->GetURL("/slow?1"));
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&ResourceFetcherTests::ResourceFetcherTimeoutOnRenderer,
-                 base::Unretained(this), url));
+      base::BindOnce(&ResourceFetcherTests::ResourceFetcherTimeoutOnRenderer,
+                     base::Unretained(this), url));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
   // timeout in 0 sec.
   GURL url(embedded_test_server()->GetURL("/slow?1"));
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &ResourceFetcherTests::ResourceFetcherDeletedInCallbackOnRenderer,
       base::Unretained(this), url));
 }
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
   // Grab a page that echos the POST body.
   GURL url(embedded_test_server()->GetURL("/echo"));
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &ResourceFetcherTests::ResourceFetcherPost, base::Unretained(this), url));
 }
 
@@ -402,8 +402,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherSetHeader) {
   GURL url(embedded_test_server()->GetURL("/echoheader?header"));
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&ResourceFetcherTests::ResourceFetcherSetHeader,
-                 base::Unretained(this), url));
+      base::BindOnce(&ResourceFetcherTests::ResourceFetcherSetHeader,
+                     base::Unretained(this), url));
 }
 
 }  // namespace content

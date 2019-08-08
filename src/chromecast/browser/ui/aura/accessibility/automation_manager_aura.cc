@@ -61,10 +61,6 @@ void AutomationManagerAura::Enable() {
 void AutomationManagerAura::Disable() {
   enabled_ = false;
   Reset(true);
-
-#if defined(OS_CHROMEOS)
-  AXHostService::SetAutomationEnabled(false);
-#endif
 }
 
 void AutomationManagerAura::OnViewEvent(views::View* view,

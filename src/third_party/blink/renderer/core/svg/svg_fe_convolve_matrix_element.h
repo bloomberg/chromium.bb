@@ -40,8 +40,6 @@ class SVGFEConvolveMatrixElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEConvolveMatrixElement);
-
   explicit SVGFEConvolveMatrixElement(Document&);
 
   SVGAnimatedBoolean* preserveAlpha() { return preserve_alpha_.Get(); }

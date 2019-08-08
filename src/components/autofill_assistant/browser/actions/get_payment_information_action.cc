@@ -11,11 +11,12 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
@@ -35,6 +36,8 @@ void GetPaymentInformationAction::InternalProcessAction(
       proto_.get_payment_information();
 
   auto payment_options = std::make_unique<PaymentRequestOptions>();
+  payment_options->request_terms_and_conditions =
+      get_payment_information.request_terms_and_conditions();
   if (get_payment_information.has_contact_details()) {
     auto contact_details = get_payment_information.contact_details();
     payment_options->request_payer_email =
@@ -52,6 +55,8 @@ void GetPaymentInformationAction::InternalProcessAction(
       !get_payment_information.shipping_address_name().empty();
   payment_options->request_payment_method =
       get_payment_information.ask_for_payment();
+  payment_options->confirm_button_text =
+      get_payment_information.confirm_button_text();
   switch (get_payment_information.terms_and_conditions_state()) {
     case GetPaymentInformationProto::NOT_SELECTED:
       payment_options->initial_terms_and_conditions = NOT_SELECTED;

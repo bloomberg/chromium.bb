@@ -245,16 +245,17 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     absolute_quad.SetP4(FloatPoint(RoundedIntPoint(absolute_quad.P4())));
     FloatQuad transformed_quad =
         paint_invalidation_container.AbsoluteToLocalQuad(
-            absolute_quad, kUseTransforms | kTraverseDocumentBoundaries);
-    FloatPoint offset_to_backing;
+            absolute_quad, kTraverseDocumentBoundaries);
+    PhysicalOffset offset_to_backing;
 
     PaintLayer::MapPointInPaintInvalidationContainerToBacking(
         paint_invalidation_container, offset_to_backing);
 
     // Adjust for offset from LayoutObject.
-    offset_to_backing.Move(-current_graphics_layer_->OffsetFromLayoutObject());
+    offset_to_backing -=
+        PhysicalOffset(current_graphics_layer_->OffsetFromLayoutObject());
 
-    transformed_quad.Move(ToFloatSize(offset_to_backing));
+    transformed_quad.Move(FloatSize(offset_to_backing));
 
     // FIXME: for now, we'll only use rounded paths if we have a single node
     // quad. The reason for this is that we may sometimes get a chain of
@@ -472,7 +473,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   size_t index = 0;
   for (const auto* fragment = &object->FirstFragment(); fragment;
        fragment = fragment->NextFragment(), ++index) {
-    auto rects = object->PhysicalOutlineRects(
+    auto rects = object->OutlineRects(
         fragment->PaintOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
     if (rects.size() > 1)
       use_rounded_rects = false;
@@ -522,8 +523,12 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
 
 void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
   DCHECK(node_);
-  if (auto* frame_view = node_->GetDocument().View())
-    frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  if (auto* frame_view = node_->GetDocument().View()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+      frame_view->SetPaintArtifactCompositorNeedsUpdate();
+    else
+      frame_view->GraphicsLayersDidChange();
+  }
 }
 
 }  // namespace blink

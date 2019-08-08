@@ -21,6 +21,7 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/get_assertion_operation.h"
 #include "device/fido/mac/make_credential_operation.h"
 #include "device/fido/mac/util.h"
@@ -30,30 +31,28 @@ namespace fido {
 namespace mac {
 
 // static
-bool TouchIdAuthenticator::IsAvailable() {
+bool TouchIdAuthenticator::IsAvailable(const AuthenticatorConfig& config) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    return TouchIdContext::TouchIdAvailable();
+    return TouchIdContext::TouchIdAvailable(config);
   }
   return false;
 }
 
 // static
 std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
-    std::string keychain_access_group,
-    std::string metadata_secret) {
-  // N.B. IsAvailable also checks for the feature flag being set.
-  return IsAvailable() ? base::WrapUnique(new TouchIdAuthenticator(
-                             std::move(keychain_access_group),
-                             std::move(metadata_secret)))
-                       : nullptr;
+    AuthenticatorConfig config) {
+  return IsAvailable(config) ? base::WrapUnique(new TouchIdAuthenticator(
+                                   std::move(config.keychain_access_group),
+                                   std::move(config.metadata_secret)))
+                             : nullptr;
 }
 
 // static
 std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateForTesting(
-    std::string keychain_access_group,
-    std::string metadata_secret) {
-  return base::WrapUnique(new TouchIdAuthenticator(
-      std::move(keychain_access_group), std::move(metadata_secret)));
+    AuthenticatorConfig config) {
+  return base::WrapUnique(
+      new TouchIdAuthenticator(std::move(config.keychain_access_group),
+                               std::move(config.metadata_secret)));
 }
 
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
@@ -61,26 +60,25 @@ TouchIdAuthenticator::~TouchIdAuthenticator() = default;
 bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
     const CtapGetAssertionRequest& request) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    std::set<std::vector<uint8_t>> allow_list_credential_ids;
+    std::set<std::vector<uint8_t>> allowed_credential_ids;
     // Extract applicable credential IDs from the allowList, if the request has
     // one. If not, any credential matching the RP works.
-    if (request.allow_list()) {
-      for (const auto& credential_descriptor : *request.allow_list()) {
-        if (credential_descriptor.credential_type() !=
-            CredentialType::kPublicKey)
-          continue;
-
-        if (!credential_descriptor.transports().empty() &&
-            !base::ContainsKey(credential_descriptor.transports(),
-                               FidoTransportProtocol::kInternal))
-          continue;
-
-        allow_list_credential_ids.insert(credential_descriptor.id());
+    for (const auto& credential_descriptor : request.allow_list) {
+      if (credential_descriptor.credential_type() ==
+              CredentialType::kPublicKey &&
+          (credential_descriptor.transports().empty() ||
+           base::ContainsKey(credential_descriptor.transports(),
+                             FidoTransportProtocol::kInternal))) {
+        allowed_credential_ids.insert(credential_descriptor.id());
       }
+    }
+    if (allowed_credential_ids.empty()) {
+      // TODO(martinkr): Implement resident keys for Touch ID.
+      return false;
     }
 
     return FindCredentialInKeychain(keychain_access_group_, metadata_secret_,
-                                    request.rp_id(), allow_list_credential_ids,
+                                    request.rp_id, allowed_credential_ids,
                                     nullptr /* LAContext */) != base::nullopt;
   }
   NOTREACHED();
@@ -144,7 +142,7 @@ namespace {
 AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
   AuthenticatorSupportedOptions options;
   options.is_platform_device = true;
-  options.supports_resident_key = true;
+  options.supports_resident_key = false;
   options.user_verification_availability = AuthenticatorSupportedOptions::
       UserVerificationAvailability::kSupportedAndConfigured;
   options.supports_user_presence = true;
@@ -166,6 +164,11 @@ bool TouchIdAuthenticator::IsInPairingMode() const {
 
 bool TouchIdAuthenticator::IsPaired() const {
   return false;
+}
+
+void TouchIdAuthenticator::GetTouch(base::OnceClosure callback) {
+  NOTREACHED();
+  std::move(callback).Run();
 }
 
 base::WeakPtr<FidoAuthenticator> TouchIdAuthenticator::GetWeakPtr() {

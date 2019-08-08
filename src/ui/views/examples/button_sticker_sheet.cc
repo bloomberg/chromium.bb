@@ -43,41 +43,45 @@ GridLayout* MakeStretchyGridLayout(View* host, int ncols) {
   return layout;
 }
 
-View* MakePlainLabel(const std::string& text) {
-  return new Label(base::ASCIIToUTF16(text));
+std::unique_ptr<View> MakePlainLabel(const std::string& text) {
+  return std::make_unique<Label>(base::ASCIIToUTF16(text));
 }
 
 // Add a row containing a label whose text is |label_text| and then all the
 // views in |views| to the supplied GridLayout, with padding between rows.
+template <typename T>
 void AddLabelledRowToGridLayout(GridLayout* layout,
                                 const std::string& label_text,
-                                std::vector<View*> views) {
+                                std::vector<std::unique_ptr<T>> views) {
   const float kRowDoesNotResizeVertically = 0.0;
   const int kPaddingRowHeight = 8;
   layout->StartRow(kRowDoesNotResizeVertically, kStretchyGridColumnSetId);
-  layout->AddView(MakePlainLabel(label_text));
-  for (auto* view : views)
-    layout->AddView(view);
+  layout->AddView(MakePlainLabel(label_text).get());
+  for (auto& view : views)
+    layout->AddView(view.release());
   // This gets added extraneously after the last row, but it doesn't hurt and
   // means there's no need to keep track of whether to add it or not.
   layout->AddPaddingRow(kRowDoesNotResizeVertically, kPaddingRowHeight);
 }
 
 // Constructs a pair of MdTextButtons in the specified |state| with the
-// specified |listener|, and returns them in |*primary| and |*secondary|. The
-// button in |*primary| is a call-to-action button, and the button in
-// |*secondary| is a regular button.
-void MakeButtonsInState(MdTextButton** primary,
-                        MdTextButton** secondary,
-                        ButtonListener* listener,
-                        Button::ButtonState state) {
+// specified |listener|, and returns them in |primary| and |secondary|. The
+// button in |primary| is a call-to-action button, and the button in
+// |secondary| is a regular button.
+std::vector<std::unique_ptr<MdTextButton>> MakeButtonsInState(
+    ButtonListener* listener,
+    Button::ButtonState state) {
+  std::vector<std::unique_ptr<MdTextButton>> buttons;
   const base::string16 button_text = base::ASCIIToUTF16("Button");
-  *primary = MdTextButton::Create(listener, button_text);
-  (*primary)->SetProminent(true);
-  (*primary)->SetState(state);
+  auto primary = MdTextButton::Create(listener, button_text);
+  primary->SetProminent(true);
+  primary->SetState(state);
+  buttons.push_back(std::move(primary));
 
-  *secondary = MdTextButton::Create(listener, button_text);
-  (*secondary)->SetState(state);
+  auto secondary = MdTextButton::Create(listener, button_text);
+  secondary->SetState(state);
+  buttons.push_back(std::move(secondary));
+  return buttons;
 }
 
 }  // namespace
@@ -91,23 +95,21 @@ void ButtonStickerSheet::CreateExampleView(View* container) {
   GridLayout* layout = MakeStretchyGridLayout(container, 3);
 
   // The title row has an empty row label.
-  AddLabelledRowToGridLayout(
-      layout, std::string(),
-      {MakePlainLabel("Primary"), MakePlainLabel("Secondary")});
+  std::vector<std::unique_ptr<View>> plainLabel;
+  plainLabel.push_back(MakePlainLabel("Primary"));
+  plainLabel.push_back(MakePlainLabel("Secondary"));
+  AddLabelledRowToGridLayout(layout, std::string(), std::move(plainLabel));
 
-  MdTextButton* primary = nullptr;
-  MdTextButton* secondary = nullptr;
-
-  MakeButtonsInState(&primary, &secondary, this, Button::STATE_NORMAL);
-  AddLabelledRowToGridLayout(layout, "Default", {primary, secondary});
-  MakeButtonsInState(&primary, &secondary, this, Button::STATE_NORMAL);
-  AddLabelledRowToGridLayout(layout, "Normal", {primary, secondary});
-  MakeButtonsInState(&primary, &secondary, this, Button::STATE_HOVERED);
-  AddLabelledRowToGridLayout(layout, "Hovered", {primary, secondary});
-  MakeButtonsInState(&primary, &secondary, this, Button::STATE_PRESSED);
-  AddLabelledRowToGridLayout(layout, "Pressed", {primary, secondary});
-  MakeButtonsInState(&primary, &secondary, this, Button::STATE_DISABLED);
-  AddLabelledRowToGridLayout(layout, "Disabled", {primary, secondary});
+  AddLabelledRowToGridLayout(layout, "Default",
+                             MakeButtonsInState(this, Button::STATE_NORMAL));
+  AddLabelledRowToGridLayout(layout, "Normal",
+                             MakeButtonsInState(this, Button::STATE_NORMAL));
+  AddLabelledRowToGridLayout(layout, "Hovered",
+                             MakeButtonsInState(this, Button::STATE_HOVERED));
+  AddLabelledRowToGridLayout(layout, "Pressed",
+                             MakeButtonsInState(this, Button::STATE_PRESSED));
+  AddLabelledRowToGridLayout(layout, "Disabled",
+                             MakeButtonsInState(this, Button::STATE_DISABLED));
 }
 
 void ButtonStickerSheet::ButtonPressed(Button* button, const ui::Event& event) {

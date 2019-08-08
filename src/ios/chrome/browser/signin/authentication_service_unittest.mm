@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -13,6 +14,7 @@
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
@@ -37,8 +39,6 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #import "services/identity/public/cpp/identity_test_environment.h"
-
-#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -277,13 +277,20 @@ TEST_F(AuthenticationServiceTest, TestSetPromptForSignIn) {
   // Verify that the default value of this flag is off.
   EXPECT_FALSE(authentication_service_->ShouldPromptForSignIn());
   // Verify that prompt-flag setter and getter functions are working correctly.
-  authentication_service_->SetPromptForSignIn(true);
+  authentication_service_->SetPromptForSignIn();
   EXPECT_TRUE(authentication_service_->ShouldPromptForSignIn());
-  authentication_service_->SetPromptForSignIn(false);
+  authentication_service_->ResetPromptForSignIn();
   EXPECT_FALSE(authentication_service_->ShouldPromptForSignIn());
 }
 
 TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Authentication Service does not force sign the user our during its
+    // initialization when Unified Consent feature is enabled. So this tests
+    // is meaningless when Unfied Consent is enabled.
+    return;
+  }
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
@@ -295,12 +302,17 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
 
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ userEmail]),
             identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_NSEQ([identity_ userEmail],
-              authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_EQ(identity_, authentication_service_->GetAuthenticatedIdentity());
 }
 
 TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Authentication Service does not force sign the user our during its
+    // initialization when Unified Consent feature is enabled. So this tests
+    // is meaningless when Unfied Consent is enabled.
+    return;
+  }
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
@@ -316,17 +328,21 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
 
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ userEmail]),
             identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_NSEQ([identity_ userEmail],
-              authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_EQ(identity_, authentication_service_->GetAuthenticatedIdentity());
 }
 
 TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Authentication Service does not force sign the user our when the app
+    // enters when Unified Consent feature is enabled. So this tests
+    // is meaningless when Unfied Consent is enabled.
+    return;
+  }
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
 
-  // User is signed out if sync initial setup isn't completed.
   EXPECT_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
       .WillOnce(Return(false));
   // Expect a call to disable sync as part of the sign out process.
@@ -334,8 +350,8 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
 
   CreateAuthenticationService();
 
+  // User is signed out if sync initial setup isn't completed.
   EXPECT_EQ("", identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_NSEQ(nil, authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_FALSE(authentication_service_->GetAuthenticatedIdentity());
 }
 
@@ -415,11 +431,11 @@ TEST_F(AuthenticationServiceTest,
 
   identity_service_->AddIdentities(@[ @"foo3" ]);
 
-  auto account_compare_func = [](const AccountInfo& first,
-                                 const AccountInfo& second) {
+  auto account_compare_func = [](const CoreAccountInfo& first,
+                                 const CoreAccountInfo& second) {
     return first.account_id < second.account_id;
   };
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());

@@ -248,10 +248,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while
   // a call to BlueZ is pending.
-  using DiscoveryParamTuple = std::tuple<device::BluetoothDiscoveryFilter*,
-                                         base::Closure,
-                                         DiscoverySessionErrorCallback>;
-  using DiscoveryCallbackQueue = base::queue<DiscoveryParamTuple>;
+  using DiscoveryCallbackQueue = base::queue<DiscoverySessionResultCallback>;
 
   // Callback pair for the profile registration queue.
   using RegisterProfileCompletionPair =
@@ -354,10 +351,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // BluetoothAdapter:
   bool SetPoweredImpl(bool powered) override;
-  void AddDiscoverySession(
-      device::BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StartScanWithFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
+  void UpdateFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
   void RemoveDiscoverySession(
       device::BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -458,9 +457,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Set in |Shutdown()|, makes IsPresent()| return false.
   bool dbus_is_shutdown_;
-
-  // Number of discovery sessions that have been added.
-  int num_discovery_sessions_;
 
   // True, if there is a pending request to start or stop discovery.
   bool discovery_request_pending_;

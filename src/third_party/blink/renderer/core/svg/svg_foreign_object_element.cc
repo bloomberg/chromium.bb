@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
+SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(svg_names::kForeignObjectTag, document),
       x_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
@@ -70,8 +70,6 @@ void SVGForeignObjectElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(height_);
   SVGGraphicsElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGForeignObjectElement)
 
 void SVGForeignObjectElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,

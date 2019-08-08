@@ -295,6 +295,7 @@ bool IsProxyBypassedAtTime(const net::ProxyRetryInfoMap& retry_map,
 }
 
 bool IsQuicProxy(const net::ProxyServer& proxy_server) {
+  // Enable QUIC for whitelisted proxies.
   return (proxy_server.is_https() || proxy_server.is_quic()) &&
          (proxy_server.host_port_pair() ==
           net::HostPortPair(kDataReductionCoreProxy, 443));

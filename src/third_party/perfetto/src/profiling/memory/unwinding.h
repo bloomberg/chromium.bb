@@ -106,9 +106,10 @@ struct UnwindingMetadata {
             new unwindstack::DexFiles(fd_mem)))
 #endif
   {
-    PERFETTO_CHECK(maps.Parse());
+    PERFETTO_DCHECK(maps.Parse());
   }
   void ReparseMaps() {
+    reparses++;
     maps.Reset();
     maps.Parse();
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
@@ -122,6 +123,7 @@ struct UnwindingMetadata {
   FileDescriptorMaps maps;
   // The API of libunwindstack expects shared_ptr for Memory.
   std::shared_ptr<unwindstack::Memory> fd_mem;
+  uint64_t reparses = 0;
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
   std::unique_ptr<unwindstack::JitDebug> jit_debug;
   std::unique_ptr<unwindstack::DexFiles> dex_files;
@@ -145,8 +147,10 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
   struct HandoffData {
     DataSourceInstanceID data_source_instance_id;
     base::UnixSocketRaw sock;
-    base::ScopedFile fds[kHandshakeSize];
+    base::ScopedFile maps_fd;
+    base::ScopedFile mem_fd;
     SharedRingBuffer shmem;
+    ClientConfiguration client_config;
   };
 
   UnwindingWorker(Delegate* delegate, base::ThreadTaskRunner thread_task_runner)
@@ -162,7 +166,7 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
   void OnDisconnect(base::UnixSocket* self) override;
   void OnNewIncomingConnection(base::UnixSocket*,
                                std::unique_ptr<base::UnixSocket>) override {
-    PERFETTO_DFATAL("This should not happen.");
+    PERFETTO_DFATAL_OR_ELOG("This should not happen.");
   }
   void OnDataAvailable(base::UnixSocket* self) override;
 
@@ -185,6 +189,7 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
     std::unique_ptr<base::UnixSocket> sock;
     UnwindingMetadata metadata;
     SharedRingBuffer shmem;
+    ClientConfiguration client_config;
   };
 
   // Task runner with a dedicated thread. Keep at the start of the data member

@@ -164,10 +164,7 @@ TEST_F(GCMRegistrationRequestTest, RequestRegistrationWithMultipleSenderIds) {
     continue;
 
   ASSERT_TRUE(data_tokenizer.GetNext());
-  std::string senders(net::UnescapeURLComponent(
-      data_tokenizer.token(),
-      net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+  std::string senders(net::UnescapeBinaryURLComponent(data_tokenizer.token()));
   base::StringTokenizer sender_tokenizer(senders, ",");
   ASSERT_TRUE(sender_tokenizer.GetNext());
   EXPECT_EQ("sender1", sender_tokenizer.token());
@@ -459,10 +456,11 @@ TEST_F(InstanceIDGetTokenRequestTest, RequestDataAndURL) {
   request_->Start();
 
   // Verify that the no-cookie flag is set.
-  int flags = 0;
-  ASSERT_TRUE(test_url_loader_factory()->IsPending(kRegistrationURL, &flags));
-  EXPECT_TRUE(flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_TRUE(flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  const network::ResourceRequest* pending_request;
+  ASSERT_TRUE(
+      test_url_loader_factory()->IsPending(kRegistrationURL, &pending_request));
+  EXPECT_TRUE(pending_request->load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  EXPECT_TRUE(pending_request->load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 
   // Verify that authorization header was put together properly.
   const net::HttpRequestHeaders* headers =

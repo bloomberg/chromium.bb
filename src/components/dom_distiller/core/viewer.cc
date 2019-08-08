@@ -10,6 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -18,6 +19,7 @@
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
+#include "components/dom_distiller/core/resource_utils.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
@@ -26,10 +28,10 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
+namespace viewer {
 
 namespace {
 
@@ -52,6 +54,17 @@ const char kMonospaceJsFontFamily[] = "monospace";
 const char kSerifCssClass[] = "serif";
 const char kSansSerifCssClass[] = "sans-serif";
 const char kMonospaceCssClass[] = "monospace";
+
+std::string GetPlatformSpecificCss() {
+#if defined(OS_IOS)
+  return base::StrCat({GetResourceFromIdAsString(IDR_DISTILLER_MOBILE_CSS),
+                       GetResourceFromIdAsString(IDR_DISTILLER_IOS_CSS)});
+#elif defined(OS_ANDROID)
+  return GetResourceFromIdAsString(IDR_DISTILLER_MOBILE_CSS);
+#else  // Desktop
+  return GetResourceFromIdAsString(IDR_DISTILLER_DESKTOP_CSS);
+#endif
+}
 
 // Maps themes to JS themes.
 const std::string GetJsTheme(DistilledPagePrefs::Theme theme) {
@@ -92,8 +105,8 @@ const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
 void EnsureNonEmptyContent(std::string* content) {
   UMA_HISTOGRAM_BOOLEAN("DomDistiller.PageHasDistilledData", !content->empty());
   if (content->empty()) {
-    *content = l10n_util::GetStringUTF8(
-        IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
+    *content =
+        l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
   }
 }
 
@@ -101,9 +114,8 @@ std::string ReplaceHtmlTemplateValues(
     const std::string& original_url,
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family) {
-  base::StringPiece html_template =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_DOM_DISTILLER_VIEWER_HTML);
+  std::string html_template =
+      GetResourceFromIdAsString(IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
 
   std::ostringstream css;
@@ -111,7 +123,7 @@ std::string ReplaceHtmlTemplateValues(
 #if defined(OS_IOS)
   // On iOS the content is inlined as there is no API to detect those requests
   // and return the local data once a page is loaded.
-  css << "<style>" << viewer::GetCss() << viewer::GetIOSCss() << "</style>";
+  css << "<style>" << viewer::GetCss() << "</style>";
   svg << viewer::GetLoadingImage();
 #else
   css << "<link rel=\"stylesheet\" href=\"/" << kViewerCssPath << "\">";
@@ -121,41 +133,36 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $1
 
-  substitutions.push_back(css.str());                                     // $2
+  substitutions.push_back(css.str());  // $2
   substitutions.push_back(GetThemeCssClass(theme) + " " +
-                          GetFontCssClass(font_family));                  // $3
+                          GetFontCssClass(font_family));  // $3
 
   substitutions.push_back(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $4
-  substitutions.push_back(
-      l10n_util::GetStringUTF8(
-          IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));                // $5
+  substitutions.push_back(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));  // $5
 
-  substitutions.push_back(svg.str());                                     // $6
+  substitutions.push_back(svg.str());  // $6
 
-  substitutions.push_back(original_url);                                  // $7
-  substitutions.push_back(
-      l10n_util::GetStringUTF8(
-          IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $8
+  substitutions.push_back(original_url);  // $7
+  substitutions.push_back(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));  // $8
 
   return base::ReplaceStringPlaceholders(html_template, substitutions, nullptr);
 }
 
 }  // namespace
 
-namespace viewer {
-
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,
-    const bool is_last_page) {
+    bool is_last_page) {
   std::string output(page_proto->html());
   EnsureNonEmptyContent(&output);
   base::Value value(output);
   base::JSONWriter::Write(value, &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
-  return page_update + GetToggleLoadingIndicatorJs(
-      is_last_page);
+  return page_update + GetToggleLoadingIndicatorJs(is_last_page);
 }
 
 const std::string GetErrorPageJs() {
@@ -187,16 +194,16 @@ const std::string GetSetTextDirectionJs(const std::string& direction) {
   return "setTextDirection(" + output + ");";
 }
 
-const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
+const std::string GetToggleLoadingIndicatorJs(bool is_last_page) {
   if (is_last_page)
     return "showLoadingIndicator(true);";
   return "showLoadingIndicator(false);";
 }
 
 const std::string GetUnsafeArticleTemplateHtml(
-    const std::string original_url,
-    const DistilledPagePrefs::Theme theme,
-    const DistilledPagePrefs::FontFamily font_family) {
+    const std::string& original_url,
+    DistilledPagePrefs::Theme theme,
+    DistilledPagePrefs::FontFamily font_family) {
   return ReplaceHtmlTemplateValues(original_url, theme, font_family);
 }
 
@@ -219,27 +226,16 @@ const std::string GetUnsafeArticleContentJs(
 }
 
 const std::string GetCss() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DISTILLER_CSS)
-      .as_string();
+  return base::StrCat(
+      {GetResourceFromIdAsString(IDR_DISTILLER_CSS), GetPlatformSpecificCss()});
 }
 
 const std::string GetLoadingImage() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DISTILLER_LOADING_IMAGE)
-      .as_string();
-}
-
-const std::string GetIOSCss() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DISTILLER_IOS_CSS)
-      .as_string();
+  return GetResourceFromIdAsString(IDR_DISTILLER_LOADING_IMAGE);
 }
 
 const std::string GetJavaScript() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DOM_DISTILLER_VIEWER_JS)
-      .as_string();
+  return GetResourceFromIdAsString(IDR_DOM_DISTILLER_VIEWER_JS);
 }
 
 std::unique_ptr<ViewerHandle> CreateViewRequest(
@@ -294,5 +290,4 @@ const std::string GetDistilledPageFontScalingJs(float scaling) {
 }
 
 }  // namespace viewer
-
 }  // namespace dom_distiller

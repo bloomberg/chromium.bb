@@ -21,9 +21,7 @@ class CPDF_TestDocument final : public CPDF_Document {
  public:
   CPDF_TestDocument() : CPDF_Document() {}
 
-  void SetRoot(CPDF_Dictionary* root) {
-    m_pRootDict = root;
-  }
+  void SetRoot(CPDF_Dictionary* root) { m_pRootDict.Reset(root); }
 };
 
 class PDFCatalogTest : public testing::Test {
@@ -32,7 +30,7 @@ class PDFCatalogTest : public testing::Test {
     CPDF_ModuleMgr::Get()->Init();
     auto pTestDoc = pdfium::MakeUnique<CPDF_TestDocument>();
     m_pDoc.reset(FPDFDocumentFromCPDFDocument(pTestDoc.release()));
-    m_pRootObj = pdfium::MakeUnique<CPDF_Dictionary>();
+    m_pRootObj = pdfium::MakeRetain<CPDF_Dictionary>();
   }
 
   void TearDown() override {
@@ -42,7 +40,7 @@ class PDFCatalogTest : public testing::Test {
 
  protected:
   ScopedFPDFDocument m_pDoc;
-  std::unique_ptr<CPDF_Dictionary> m_pRootObj;
+  RetainPtr<CPDF_Dictionary> m_pRootObj;
 };
 
 TEST_F(PDFCatalogTest, IsTagged) {
@@ -57,7 +55,7 @@ TEST_F(PDFCatalogTest, IsTagged) {
   EXPECT_FALSE(FPDFCatalog_IsTagged(m_pDoc.get()));
 
   // Empty root
-  pTestDoc->SetRoot(m_pRootObj.get());
+  pTestDoc->SetRoot(m_pRootObj.Get());
   EXPECT_FALSE(FPDFCatalog_IsTagged(m_pDoc.get()));
 
   // Root with other key

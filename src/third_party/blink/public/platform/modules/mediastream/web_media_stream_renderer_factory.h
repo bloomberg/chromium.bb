@@ -32,7 +32,6 @@ class WebMediaStreamRendererFactory {
   // |io_task_runner| is used for passing video frames.
   virtual scoped_refptr<WebMediaStreamVideoRenderer> GetVideoRenderer(
       const WebMediaStream& web_stream,
-      const base::Closure& error_cb,
       const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) = 0;

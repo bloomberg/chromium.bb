@@ -88,6 +88,9 @@ GoogCcNetworkController::GoogCcNetworkController(NetworkControllerConfig config,
       safe_reset_acknowledged_rate_("ack"),
       use_stable_bandwidth_estimate_(
           IsEnabled(key_value_config_, "WebRTC-Bwe-StableBandwidthEstimate")),
+      use_downlink_delay_for_congestion_window_(
+          IsEnabled(key_value_config_,
+                    "WebRTC-Bwe-CongestionWindowDownlinkDelay")),
       fall_back_to_probe_rate_(
           IsEnabled(key_value_config_, "WebRTC-Bwe-ProbeRateFallback")),
       use_min_allocatable_as_lower_bound_(
@@ -103,7 +106,8 @@ GoogCcNetworkController::GoogCcNetworkController(NetworkControllerConfig config,
               : nullptr),
       bandwidth_estimation_(
           absl::make_unique<SendSideBandwidthEstimation>(event_log_)),
-      alr_detector_(absl::make_unique<AlrDetector>(key_value_config_)),
+      alr_detector_(
+          absl::make_unique<AlrDetector>(key_value_config_, config.event_log)),
       probe_bitrate_estimator_(new ProbeBitrateEstimator(config.event_log)),
       network_estimator_(std::move(goog_cc_config.network_state_estimator)),
       network_state_predictor_(
@@ -113,6 +117,7 @@ GoogCcNetworkController::GoogCcNetworkController(NetworkControllerConfig config,
                                          network_state_predictor_.get())),
       acknowledged_bitrate_estimator_(
           absl::make_unique<AcknowledgedBitrateEstimator>(key_value_config_)),
+      overuse_predictor_(key_value_config_),
       initial_config_(config),
       last_raw_target_rate_(*config.constraints.starting_rate),
       last_pushback_target_rate_(last_raw_target_rate_),
@@ -219,6 +224,11 @@ NetworkControlUpdate GoogCcNetworkController::OnProcessInterval(
   update.probe_cluster_configs.insert(update.probe_cluster_configs.end(),
                                       probes.begin(), probes.end());
 
+  if (rate_control_settings_.UseCongestionWindow() &&
+      use_downlink_delay_for_congestion_window_ &&
+      last_packet_received_time_.IsFinite() && !feedback_max_rtts_.empty()) {
+    UpdateCongestionWindowSize(msg.at_time - last_packet_received_time_);
+  }
   MaybeTriggerOnNetworkChanged(&update, msg.at_time);
   return update;
 }
@@ -251,6 +261,9 @@ NetworkControlUpdate GoogCcNetworkController::OnSentPacket(
     SentPacket sent_packet) {
   alr_detector_->OnBytesSent(sent_packet.size.bytes(),
                              sent_packet.send_time.ms());
+  acknowledged_bitrate_estimator_->SetAlr(
+      alr_detector_->GetApplicationLimitedRegionStartTime().has_value());
+
   if (!first_packet_sent_) {
     first_packet_sent_ = true;
     // Initialize feedback time to send time to allow estimation of RTT until
@@ -259,15 +272,36 @@ NetworkControlUpdate GoogCcNetworkController::OnSentPacket(
                                                 TimeDelta::Zero());
   }
   bandwidth_estimation_->OnSentPacket(sent_packet);
+  bool network_changed = false;
+  if (network_estimator_ && overuse_predictor_.Enabled()) {
+    overuse_predictor_.OnSentPacket(sent_packet);
+    auto estimate = network_estimator_->GetCurrentEstimate();
+    if (estimate && overuse_predictor_.PredictOveruse(*estimate)) {
+      DataRate new_target = delay_based_bwe_->TriggerOveruse(
+          sent_packet.send_time, acknowledged_bitrate_estimator_->bitrate());
+      bandwidth_estimation_->UpdateDelayBasedEstimate(sent_packet.send_time,
+                                                      new_target);
+      network_changed = true;
+    }
+  }
   if (congestion_window_pushback_controller_) {
     congestion_window_pushback_controller_->UpdateOutstandingData(
         sent_packet.data_in_flight.bytes());
+    network_changed = true;
+  }
+  if (network_changed) {
     NetworkControlUpdate update;
     MaybeTriggerOnNetworkChanged(&update, sent_packet.send_time);
     return update;
   } else {
     return NetworkControlUpdate();
   }
+}
+
+NetworkControlUpdate GoogCcNetworkController::OnReceivedPacket(
+    ReceivedPacket received_packet) {
+  last_packet_received_time_ = received_packet.receive_time;
+  return NetworkControlUpdate();
 }
 
 NetworkControlUpdate GoogCcNetworkController::OnStreamsConfig(
@@ -370,6 +404,31 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportLossReport(
   return NetworkControlUpdate();
 }
 
+void GoogCcNetworkController::UpdateCongestionWindowSize(
+    TimeDelta time_since_last_packet) {
+  TimeDelta min_feedback_max_rtt = TimeDelta::ms(
+      *std::min_element(feedback_max_rtts_.begin(), feedback_max_rtts_.end()));
+
+  const DataSize kMinCwnd = DataSize::bytes(2 * 1500);
+  TimeDelta time_window =
+      min_feedback_max_rtt +
+      TimeDelta::ms(
+          rate_control_settings_.GetCongestionWindowAdditionalTimeMs());
+
+  if (use_downlink_delay_for_congestion_window_) {
+    time_window += time_since_last_packet;
+  }
+
+  DataSize data_window = last_raw_target_rate_ * time_window;
+  if (current_data_window_) {
+    data_window =
+        std::max(kMinCwnd, (data_window + current_data_window_.value()) / 2);
+  } else {
+    data_window = std::max(kMinCwnd, data_window);
+  }
+  current_data_window_ = data_window;
+}
+
 NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
     TransportPacketsFeedback report) {
   if (report.packet_feedbacks.empty()) {
@@ -451,12 +510,12 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
   absl::optional<int64_t> alr_start_time =
       alr_detector_->GetApplicationLimitedRegionStartTime();
 
-  if (previously_in_alr && !alr_start_time.has_value()) {
+  if (previously_in_alr_ && !alr_start_time.has_value()) {
     int64_t now_ms = report.feedback_time.ms();
     acknowledged_bitrate_estimator_->SetAlrEndedTimeMs(now_ms);
     probe_controller_->SetAlrEndedTimeMs(now_ms);
   }
-  previously_in_alr = alr_start_time.has_value();
+  previously_in_alr_ = alr_start_time.has_value();
   acknowledged_bitrate_estimator_->IncomingPacketFeedbackVector(
       received_feedback_vector);
   auto acknowledged_bitrate = acknowledged_bitrate_estimator_->bitrate();
@@ -520,21 +579,7 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
   // we don't try to limit the outstanding packets.
   if (rate_control_settings_.UseCongestionWindow() &&
       max_feedback_rtt.IsFinite()) {
-    int64_t min_feedback_max_rtt_ms =
-        *std::min_element(feedback_max_rtts_.begin(), feedback_max_rtts_.end());
-
-    const DataSize kMinCwnd = DataSize::bytes(2 * 1500);
-    TimeDelta time_window = TimeDelta::ms(
-        min_feedback_max_rtt_ms +
-        rate_control_settings_.GetCongestionWindowAdditionalTimeMs());
-    DataSize data_window = last_raw_target_rate_ * time_window;
-    if (current_data_window_) {
-      data_window =
-          std::max(kMinCwnd, (data_window + current_data_window_.value()) / 2);
-    } else {
-      data_window = std::max(kMinCwnd, data_window);
-    }
-    current_data_window_ = data_window;
+    UpdateCongestionWindowSize(/*time_since_last_packet*/ TimeDelta::Zero());
   }
   if (congestion_window_pushback_controller_ && current_data_window_) {
     congestion_window_pushback_controller_->SetDataWindow(

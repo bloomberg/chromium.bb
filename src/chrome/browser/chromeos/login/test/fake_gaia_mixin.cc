@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/child_accounts/child_account_test_utils.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -15,7 +16,6 @@ namespace chromeos {
 
 namespace {
 constexpr char kGAIAHost[] = "accounts.google.com";
-constexpr char kTestAllScopeAccessToken[] = "fake-all-scope-token";
 }  // namespace
 
 // static
@@ -25,6 +25,7 @@ const char FakeGaiaMixin::kFakeUserGaiaId[] = "fake-gaiaId";
 const char FakeGaiaMixin::kFakeAuthCode[] = "fake-auth-code";
 const char FakeGaiaMixin::kFakeRefreshToken[] = "fake-refresh-token";
 const char FakeGaiaMixin::kEmptyUserServices[] = "[]";
+const char FakeGaiaMixin::kFakeAllScopeAccessToken[] = "fake-all-scope-token";
 
 const char FakeGaiaMixin::kFakeSIDCookie[] = "fake-SID-cookie";
 const char FakeGaiaMixin::kFakeLSIDCookie[] = "fake-LSID-cookie";
@@ -54,11 +55,47 @@ void FakeGaiaMixin::SetupFakeGaiaForLogin(const std::string& user_email,
     fake_gaia_->MapEmailToGaiaId(user_email, gaia_id);
 
   FakeGaia::AccessTokenInfo token_info;
-  token_info.token = kTestAllScopeAccessToken;
+  token_info.token = kFakeAllScopeAccessToken;
   token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   token_info.email = user_email;
   token_info.any_scope = true;
   fake_gaia_->IssueOAuthToken(refresh_token, token_info);
+}
+
+void FakeGaiaMixin::SetupFakeGaiaForChildUser(const std::string& user_email,
+                                              const std::string& gaia_id,
+                                              const std::string& refresh_token,
+                                              bool issue_any_scope_token) {
+  if (!gaia_id.empty())
+    fake_gaia_->MapEmailToGaiaId(user_email, gaia_id);
+
+  FakeGaia::AccessTokenInfo user_info_token;
+  user_info_token.scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
+  user_info_token.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+  user_info_token.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+
+  user_info_token.token = "fake-userinfo-token";
+  user_info_token.email = user_email;
+  fake_gaia_->IssueOAuthToken(refresh_token, user_info_token);
+
+  if (issue_any_scope_token) {
+    FakeGaia::AccessTokenInfo all_scopes_token;
+    all_scopes_token.token = kFakeAllScopeAccessToken;
+    all_scopes_token.audience =
+        GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+    all_scopes_token.email = user_email;
+    all_scopes_token.any_scope = true;
+    fake_gaia_->IssueOAuthToken(refresh_token, all_scopes_token);
+  }
+
+  if (initialize_fake_merge_session()) {
+    fake_gaia_->SetFakeMergeSessionParams(user_email, kFakeSIDCookie,
+                                          kFakeLSIDCookie);
+
+    FakeGaia::MergeSessionParams merge_session_update;
+    merge_session_update.id_token = test::GetChildAccountOAuthIdToken();
+    fake_gaia_->UpdateMergeSessionParams(merge_session_update);
+  }
 }
 
 void FakeGaiaMixin::SetupFakeGaiaForLoginManager() {

@@ -241,16 +241,17 @@ const AXPosition AXPosition::FromPosition(
     } else {
       const AXObject* ax_child =
           ax_object_cache_impl->GetOrCreate(node_after_position);
-      DCHECK(ax_child);
-
-      if (ax_child->AccessibilityIsIgnored()) {
-        // Find the closest DOM sibling that is unignored in the accessibility
-        // tree.
+      // |ax_child| might be nullptr because not all DOM nodes can have AX
+      // objects. For example, the "head" element has no corresponding AX
+      // object.
+      if (!ax_child || ax_child->AccessibilityIsIgnored()) {
+        // Find the closest DOM sibling that is present and unignored in the
+        // accessibility tree.
         switch (adjustment_behavior) {
           case AXPositionAdjustmentBehavior::kMoveRight: {
             const AXObject* next_child = FindNeighboringUnignoredObject(
                 *document, *node_after_position,
-                ToContainerNodeOrNull(container_node), adjustment_behavior);
+                DynamicTo<ContainerNode>(container_node), adjustment_behavior);
             if (next_child) {
               return CreatePositionBeforeObject(*next_child,
                                                 adjustment_behavior);
@@ -262,7 +263,7 @@ const AXPosition AXPosition::FromPosition(
           case AXPositionAdjustmentBehavior::kMoveLeft: {
             const AXObject* previous_child = FindNeighboringUnignoredObject(
                 *document, *node_after_position,
-                ToContainerNodeOrNull(container_node), adjustment_behavior);
+                DynamicTo<ContainerNode>(container_node), adjustment_behavior);
             if (previous_child) {
               // |CreatePositionAfterObject| cannot be used here because it will
               // try to create a position before the object that comes after
@@ -441,7 +442,13 @@ const AXPosition AXPosition::CreateNextPosition() const {
   // after the last character.
   const AXObject* child = ChildAfterTreePosition();
   if (!child) {
-    const AXObject* next_in_order = container_object_->NextInTreeObject();
+    // If this is a static text object, we should not descend into its inline
+    // text boxes when present, because we'll just be creating a text position
+    // in the same piece of text.
+    const AXObject* next_in_order =
+        container_object_->ChildCount()
+            ? container_object_->DeepestLastChild()->NextInTreeObject()
+            : container_object_->NextInTreeObject();
     if (!next_in_order || !next_in_order->ParentObjectUnignored())
       return {};
 
@@ -471,7 +478,10 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
   // Handles both an "after children" position, or a text position that is
   // before the first character.
   if (!child) {
-    if (container_object_->ChildCount()) {
+    // If this is a static text object, we should not descend into its inline
+    // text boxes when present, because we'll just be creating a text position
+    // in the same piece of text.
+    if (!container_object_->IsTextObject() && container_object_->ChildCount()) {
       const AXObject* last_child = container_object_->LastChild();
       // Dont skip over any intervening text.
       if (last_child->IsTextObject() || last_child->IsNativeTextControl()) {
@@ -528,7 +538,7 @@ const AXPosition AXPosition::AsUnignoredPosition(
   // 5. We arbitrarily decided to ignore positions that are anchored to before a
   // text object. We move such positions to before the first character of the
   // text object. This is in an effort to ensure that two positions, one a
-  // "before object" position anchored to before a text object, and one a "text
+  // "before object" position anchored to a text object, and one a "text
   // position" anchored to before the first character of the same text object,
   // compare as equivalent.
 

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.res.Resources;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
@@ -40,11 +41,11 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private static final String EMPTY_QUERY = "";
 
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
-    private final HistoryProvider mHistoryProvider;
     private final HistoryManager mHistoryManager;
     private final ArrayList<HistoryItemView> mItemViews;
     private final DefaultFaviconHelper mFaviconHelper;
     private RecyclerView mRecyclerView;
+    private @Nullable HistoryProvider mHistoryProvider;
 
     private View mPrivacyDisclaimerBottomSpace;
     private Button mClearBrowsingDataButton;
@@ -77,8 +78,11 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * Called when the activity/native page is destroyed.
      */
     public void onDestroyed() {
-        mHistoryProvider.destroy();
         mIsDestroyed = true;
+
+        mHistoryProvider.destroy();
+        mHistoryProvider = null;
+
         mRecyclerView = null;
         mFaviconHelper.clearCache();
     }
@@ -243,6 +247,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     @Override
     public void onHistoryDeleted() {
+        // Return early if this call comes in after the activity/native page is destroyed.
+        if (mIsDestroyed) return;
+
         mSelectionDelegate.clearSelection();
         // TODO(twellington): Account for items that have been paged in due to infinite scroll.
         //                    This currently removes all items and re-issues a query.

@@ -112,11 +112,9 @@ void TabUsageRecorder::OnTabStripModelChanged(
   if (change.type() != TabStripModelChange::kInserted)
     return;
 
-  for (const auto& delta : change.deltas()) {
-    // Set the initial pin state.
-    TabPinnedStateChanged(tab_strip_model, delta.insert.contents,
-                          delta.insert.index);
-  }
+  // Set the initial pin state.
+  for (const auto& contents : change.GetInsert()->contents)
+    TabPinnedStateChanged(tab_strip_model, contents.contents, contents.index);
 }
 
 void TabUsageRecorder::TabPinnedStateChanged(TabStripModel* tab_strip_model,

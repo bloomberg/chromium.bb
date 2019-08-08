@@ -71,7 +71,9 @@ exec pkg-config "$@"
 
 _wrapper_dir = '/usr/local/bin'
 
-_IMPLICIT_SYSROOT_DEPS = 'IMPLICIT_SYSROOT_DEPS'
+_IMPLICIT_SYSROOT_DEPS_KEY = 'IMPLICIT_SYSROOT_DEPS'
+_IMPLICIT_SYSROOT_DEPS = ['sys-kernel/linux-headers', 'sys-libs/gcc-libs',
+                          'sys-libs/libcxxabi', 'sys-libs/libcxx']
 
 _MAKE_CONF = 'etc/make.conf'
 _MAKE_CONF_BOARD_SETUP = 'etc/make.conf.board_setup'
@@ -106,6 +108,77 @@ _ARCH_MAPPING = {
     'arm': 'arm-generic',
     'mips': 'mipsel-o32-generic',
 }
+
+
+class Error(Exception):
+  """Module base error class."""
+
+
+# This error is meant to be used with build_packages. The script has not yet
+# been ported to chromite but the error is already useful for the script wrapper
+# implementation. This exists here so the setup_board (ToolchainInstallError)
+# and build_packages errors exist in a common, sensible location.
+class PackageInstallError(Error, cros_build_lib.RunCommandError):
+  """An error installing packages."""
+
+  def __init__(self, msg, result, exception=None, packages=None):
+    """Init method.
+
+    Args:
+      msg (str): The message.
+      result (cros_build_lib.CommandResult): The command result.
+      exception (BaseException|None): An origin exception.
+      packages (list[portage_util.CPV]): The list of failed packages.
+    """
+    super(PackageInstallError, self).__init__(msg, result, exception)
+    self.failed_packages = packages
+    self.args = (self.args, packages)
+
+  def Stringify(self, error=True, output=True):
+    """Stringify override to include the failed package info.
+
+    See:
+      cros_build_lib.RunCommandError.Stringify
+    """
+    items = [super(PackageInstallError, self).Stringify(error, output)]
+
+    pkgs = []
+    for cpv in self.failed_packages:
+      if cpv.cpf:
+        pkgs.append(cpv.cpf)
+      elif cpv.cp:
+        pkgs.append(cpv.cp)
+      elif cpv.package:
+        pkgs.append(cpv.package)
+
+    if pkgs:
+      items.append('Failed Packages: %s' % ' '.join(pkgs))
+
+    return '\n'.join(items)
+
+
+class ToolchainInstallError(PackageInstallError):
+  """An error when installing a toolchain package.
+
+  Essentially identical to PackageInstallError, but has names that better
+  reflect that the packages are toolchain packages.
+  """
+
+  def __init__(self, msg, result, exception=None, tc_info=None):
+    """Init method.
+
+    Args:
+      msg (str): The message.
+      result (cros_build_lib.CommandResult): The command result.
+      exception (BaseException|None): An origin exception.
+      tc_info (list[portage_util.CPV]): The list of failed toolchain packages.
+    """
+    super(ToolchainInstallError, self).__init__(msg, result, exception,
+                                                packages=tc_info)
+
+  @property
+  def failed_toolchain_info(self):
+    return self.failed_packages
 
 
 def _CreateWrapper(wrapper_path, template, **kwargs):
@@ -472,6 +545,9 @@ class Sysroot(object):
     chrome_binhost = board and self._ChromeBinhost(board)
     postsubmit_binhost, postsubmit_binhost_internal = self._PostsubmitBinhosts(
         board)
+    # TODO(crbug.com/965244) Remove when full post-submit swap has completed.
+    parallel_postsubmit_binhost, parallel_postsubmit_binhost_internal = \
+      self._PostsubmitBinhosts(board, binhost_type='PARALLEL_POSTSUBMIT')
 
     config.append("""
 # FULL_BINHOST is populated by the full builders. It is listed first because it
@@ -497,12 +573,32 @@ source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
 """ % postsubmit_binhost_internal)
 
+    if parallel_postsubmit_binhost:
+      config.append("""
+# PARALLEL_POSTSUBMIT_BINHOST is populated by the Parallel CQ postsubmit
+# builders. If the same package is provided by both the parallel postsubmit and
+# postsubmit builders, the package is downloaded from the parallel postsubmit
+# binhost.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PARALLEL_POSTSUBMIT_BINHOST"
+""" % parallel_postsubmit_binhost)
+
+    if parallel_postsubmit_binhost_internal:
+      config.append("""
+# The internal PARALLEL_POSTSUBMIT_BINHOST is populated by the internal Parallel
+# CQ postsubmit builders. It takes priority over the public parallel postsubmit
+# binhost.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PARALLEL_POSTSUBMIT_BINHOST"
+""" % parallel_postsubmit_binhost_internal)
+
     if chrome_binhost:
       config.append("""
 # LATEST_RELEASE_CHROME_BINHOST provides prebuilts for chromeos-chrome only.
 source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
 """ % chrome_binhost)
+
 
     return '\n'.join(config)
 
@@ -538,11 +634,12 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
 
     return None
 
-  def _PostsubmitBinhosts(self, board=None):
+  def _PostsubmitBinhosts(self, board=None, binhost_type=None):
     """Returns the postsubmit binhost to use.
 
     Args:
       board (str): Board name.
+      binhost_type (str): Override the binhost type in the file name.
     """
     prefixes = []
     # The preference of picking the binhost file for a board is in the same
@@ -563,7 +660,8 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     if arch in _ARCH_MAPPING:
       prefixes.append(_ARCH_MAPPING[arch])
 
-    filenames = ['%s-POSTSUBMIT_BINHOST.conf' % p for p in prefixes]
+    binhost_type = binhost_type or 'POSTSUBMIT'
+    filenames = ['%s-%s_BINHOST.conf' % (p, binhost_type) for p in prefixes]
 
     external = internal = None
     for filename in filenames:
@@ -610,20 +708,49 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
       local_init (bool): Whether to use local packages to bootstrap the
         implicit dependencies.
     """
-    toolchain.InstallToolchain(self)
+    try:
+      toolchain.InstallToolchain(self)
+    except toolchain.ToolchainInstallError as e:
+      raise ToolchainInstallError(e.message, e.result, exception=e.exception,
+                                  tc_info=e.failed_toolchain_info)
 
-    if not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
+    if not self.IsToolchainInstalled():
       # Emerge the implicit dependencies.
-      emerge = ['emerge-%s' % board, '--root-deps=rdeps', '--select', '--quiet']
+      emerge = self._UpdateToolchainCommand(board, local_init)
 
-      if local_init:
-        emerge += ['--getbinpkg', '--usepkg']
+      # Use a tempdir to handle the status file cleanup.
+      with osutils.TempDir() as tempdir:
+        status_file = os.path.join(tempdir, 'status_file')
+        extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
 
-      cros_build_lib.SudoRunCommand(
-          emerge + ['sys-kernel/linux-headers', 'sys-libs/gcc-libs',
-                    'sys-libs/libcxx', 'sys-libs/libcxxabi'])
+        try:
+          cros_build_lib.SudoRunCommand(emerge, preserve_env=True,
+                                        extra_env=extra_env)
+        except cros_build_lib.RunCommandError as e:
+          # Include failed packages from the status file in the error.
+          cpvs = portage_util.ParseParallelEmergeStatusFile(status_file)
+          raise ToolchainInstallError(e.message, e.result, exception=e,
+                                      tc_info=cpvs)
+
       # Record we've installed them so we don't call emerge each time.
-      self.SetCachedField(_IMPLICIT_SYSROOT_DEPS, 'yes')
+      self.SetCachedField(_IMPLICIT_SYSROOT_DEPS_KEY, 'yes')
+
+  def _UpdateToolchainCommand(self, board, local_init):
+    """Helper function to build the emerge command for UpdateToolchain."""
+    emerge = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
+              '--board=%s' % board, '--root-deps=rdeps', '--select',
+              '--quiet']
+
+    if local_init:
+      emerge += ['--getbinpkg', '--usepkg']
+
+    emerge += _IMPLICIT_SYSROOT_DEPS
+
+    return emerge
+
+  def IsToolchainInstalled(self):
+    """Check if the toolchain has been installed."""
+    return self.GetCachedField(_IMPLICIT_SYSROOT_DEPS_KEY) == 'yes'
 
   def Delete(self, async=False):
     """Delete the sysroot.

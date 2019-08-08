@@ -5,17 +5,20 @@
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/data_url_loader_factory.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/common/single_request_url_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -25,6 +28,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
@@ -116,9 +120,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
       static_cast<int>(ResourceType::kSubResource);
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
-  resource_request_->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                                  net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request_->allow_credentials = false;
   resource_request_->headers.SetHeader(network::kAcceptHeader,
                                        kCertChainMimeType);
   if (force_fetch) {
@@ -140,6 +142,15 @@ void SignedExchangeCertFetcher::Start() {
     DCHECK(cert_request_id_);
     devtools_proxy_->CertificateRequestSent(*cert_request_id_,
                                             *resource_request_);
+  }
+  // When NetworkService enabled, data URL is not handled by the passed
+  // URLRequestContext's SharedURLLoaderFactory.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      resource_request_->url.SchemeIs(url::kDataScheme)) {
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+            base::BindOnce(&SignedExchangeCertFetcher::OnDataURLRequest,
+                           base::Unretained(this)));
   }
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory_), std::move(throttles_),
@@ -287,7 +298,7 @@ void SignedExchangeCertFetcher::OnUploadProgress(
 }
 
 void SignedExchangeCertFetcher::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+    mojo_base::BigBuffer data) {
   // Cert fetching doesn't use cached metadata.
   NOTREACHED();
 }
@@ -318,6 +329,17 @@ void SignedExchangeCertFetcher::OnComplete(
   MaybeNotifyCompletionToDevtools(status);
   if (!handle_watcher_)
     Abort();
+}
+
+void SignedExchangeCertFetcher::OnDataURLRequest(
+    const network::ResourceRequest& resource_request,
+    network::mojom::URLLoaderRequest url_loader_request,
+    network::mojom::URLLoaderClientPtr url_loader_client_ptr) {
+  data_url_loader_factory_ = std::make_unique<DataURLLoaderFactory>();
+  data_url_loader_factory_->CreateLoaderAndStart(
+      std::move(url_loader_request), 0, 0, 0, resource_request,
+      std::move(url_loader_client_ptr),
+      net::MutableNetworkTrafficAnnotationTag(kCertFetcherTrafficAnnotation));
 }
 
 void SignedExchangeCertFetcher::MaybeNotifyCompletionToDevtools(

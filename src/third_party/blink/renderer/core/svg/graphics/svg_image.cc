@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
+#include "third_party/blink/renderer/core/svg/graphics/dark_mode_svg_image_classifier.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_image_element.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -502,7 +504,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
 
   // Always call processUrlFragment, even if the url is empty, because
   // there may have been a previous url/fragment that needs to be reset.
-  view->ProcessUrlFragment(url);
+  view->ProcessUrlFragment(url, /*same_document_navigation=*/false);
 
   // If the image was reset, we need to rewind the timeline back to 0. This
   // needs to be done before painting, or else we wouldn't get the correct
@@ -660,10 +662,9 @@ void SVGImage::ServiceAnimations(
     // update animations directly without worrying about including
     // PaintArtifactCompositor analysis of whether animations should be
     // composited.
-    base::Optional<CompositorElementIdSet> composited_element_ids;
     DocumentAnimations::UpdateAnimations(
         frame_view->GetLayoutView()->GetDocument(),
-        DocumentLifecycle::kLayoutClean, composited_element_ids);
+        DocumentLifecycle::kLayoutClean, nullptr);
   }
 }
 
@@ -689,8 +690,7 @@ SVGImageChromeClient& SVGImage::ChromeClientForTesting() {
 void SVGImage::UpdateUseCounters(const Document& document) const {
   if (SVGSVGElement* root_element = SvgRootElement(page_.Get())) {
     if (root_element->TimeContainer()->HasAnimations()) {
-      UseCounter::Count(document,
-                        WebFeature::kSVGSMILAnimationInImageRegardlessOfCache);
+      document.CountUse(WebFeature::kSVGSMILAnimationInImageRegardlessOfCache);
     }
   }
 }
@@ -789,8 +789,8 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
     DCHECK(!frame_client_);
     frame_client_ = MakeGarbageCollected<SVGImageLocalFrameClient>(this);
-    frame = LocalFrame::Create(frame_client_, *page, nullptr);
-    frame->SetView(LocalFrameView::Create(*frame));
+    frame = MakeGarbageCollected<LocalFrame>(frame_client_, *page, nullptr);
+    frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
     frame->Init();
   }
 
@@ -808,6 +808,10 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
 
   frame->ForceSynchronousDocumentInstall("image/svg+xml", Data());
+
+  // Intrinsic sizing relies on computed style (e.g. font-size and
+  // writing-mode).
+  frame->GetDocument()->UpdateStyleAndLayoutTree();
 
   // Set the concrete object size before a container size is available.
   intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(
@@ -836,6 +840,12 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
 
 String SVGImage::FilenameExtension() const {
   return "svg";
+}
+
+DarkModeClassification SVGImage::ClassifyImageForDarkMode(
+    const FloatRect& src_rect) {
+  DarkModeSVGImageClassifier dark_mode_svg_image_classifier;
+  return dark_mode_svg_image_classifier.Classify(this, src_rect);
 }
 
 }  // namespace blink

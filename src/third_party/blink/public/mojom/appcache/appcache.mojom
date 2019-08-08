@@ -4,12 +4,11 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/appcache/appcache_info.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "url/mojom/url.mojom";
-import "services/network/public/mojom/url_loader_factory.mojom";
-
-const int64 kAppCacheNoHostId = 0;
 
 enum AppCacheEventID {
   APPCACHE_CHECKING_EVENT = 0,
@@ -66,10 +65,12 @@ interface AppCacheBackend {
   //
   // Unregistering the host is accomplished by closing the AppCacheHost pipe.
   //
-  // TODO(mek): Move this method to DocumentInterfaceBroker to stop passing
-  // frame ID over mojo.
+  // Frames go through DocumentInterfaceBroker and this is now only used for
+  // workers.
+  // TODO(mek): Once it has 'WebContextInterfaceBroker' for workers, move this
+  // to the implementation of 'WebContextInterfaceBroker'. crbug.com/718652
   RegisterHost(AppCacheHost& host_request, AppCacheFrontend frontend,
-               int32 host_id, int32 render_frame_id);
+               mojo_base.mojom.UnguessableToken host_id);
 };
 
 interface AppCacheHost {
@@ -81,12 +82,11 @@ interface AppCacheHost {
   // Called prior to the main resource load. When the system contains multiple
   // candidates for a main resource load, the appcache preferred by the host
   // that created this host is used to break ties.
-  SetSpawningHostId(int32 spawning_host_id);
+  SetSpawningHostId(mojo_base.mojom.UnguessableToken spawning_host_id);
 
   // Initiates the cache selection algorithm for the given host.
   // This is sent prior to any subresource loads. An AppCacheMsg_CacheSelected
   // message will be sent in response.
-  // 'host_id' indentifies a specific document or worker
   // 'document_url' the url of the main resource
   // 'appcache_document_was_loaded_from' the id of the appcache the main
   //     resource was loaded from or kAppCacheNoCacheId

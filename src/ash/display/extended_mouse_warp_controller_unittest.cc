@@ -450,7 +450,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
                                0);
 
   // Mouse cursor should be warped into secondary display.
-  location_in_screen_dip = Shell::Get()->aura_env()->last_mouse_location();
+  location_in_screen_dip = aura::Env::GetInstance()->last_mouse_location();
   EXPECT_TRUE(
       root_windows[1]->GetBoundsInScreen().Contains(location_in_screen_dip));
 
@@ -464,7 +464,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
                                0);
 
   // Mouse cursor should be warped into first display.
-  location_in_screen_dip = Shell::Get()->aura_env()->last_mouse_location();
+  location_in_screen_dip = aura::Env::GetInstance()->last_mouse_location();
   EXPECT_TRUE(
       root_windows[0]->GetBoundsInScreen().Contains(location_in_screen_dip));
 
@@ -473,11 +473,11 @@ TEST_F(ExtendedMouseWarpControllerTest,
   // the offset in screen coordinates should be 2/0.8, which is 2.5. The end of
   // primary display in screen coordinates is 250. So x-coordinate of mouse
   // cursor in screen coordinates should be 247.
-  EXPECT_EQ(247, Shell::Get()->aura_env()->last_mouse_location().x());
+  EXPECT_EQ(247, aura::Env::GetInstance()->last_mouse_location().x());
 
   // Get cursor's location in host native coordinates.
   gfx::Point location_in_host_dip;
-  location_in_screen_dip = Shell::Get()->aura_env()->last_mouse_location();
+  location_in_screen_dip = aura::Env::GetInstance()->last_mouse_location();
   location_in_host_dip = location_in_screen_dip;
   ::wm::ConvertPointFromScreen(root_windows[0], &location_in_host_dip);
   location_in_host_native = location_in_host_dip;

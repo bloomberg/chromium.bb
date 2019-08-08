@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "ui/views/test/desktop_window_tree_host_win_test_api.h"
+
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
 namespace views {
-
 namespace test {
 
 DesktopWindowTreeHostWinTestApi::DesktopWindowTreeHostWinTestApi(
@@ -27,6 +27,9 @@ DesktopWindowTreeHostWinTestApi::GetNativeViewAccessible() {
   return host_->GetNativeViewAccessible();
 }
 
-}  // namespace test
+HWNDMessageHandler* DesktopWindowTreeHostWinTestApi::GetHwndMessageHandler() {
+  return host_->message_handler_.get();
+}
 
+}  // namespace test
 }  // namespace views

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -54,6 +55,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -128,11 +130,14 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
 
 void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
-                    const WebURL& base_url) {
+                    const WebURL& base_url,
+                    const base::TickClock* clock) {
   auto* impl = To<WebLocalFrameImpl>(frame);
-  impl->CommitNavigation(
-      WebNavigationParams::CreateWithHTMLString(html, base_url),
-      nullptr /* extra_data */);
+  std::unique_ptr<WebNavigationParams> navigation_params =
+      WebNavigationParams::CreateWithHTMLString(html, base_url);
+  navigation_params->tick_clock = clock;
+  impl->CommitNavigation(std::move(navigation_params),
+                         nullptr /* extra_data */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -255,7 +260,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
 WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  auto* frame = WebRemoteFrameImpl::Create(WebTreeScopeType::kDocument, client);
+  auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+      WebTreeScopeType::kDocument, client);
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -535,7 +541,8 @@ void TestWebFrameClient::BeginNavigation(
     return;
   }
 
-  if (!frame_->CreatePlaceholderDocumentLoader(*info, nullptr /* extra_data */))
+  if (!frame_->WillStartNavigation(
+          *info, false /* is_history_navigation_in_new_child_frame */))
     return;
 
   navigation_callback_.Reset(
@@ -641,11 +648,24 @@ void TestWebWidgetClient::SetAllowGpuRasterization(bool allow) {
   layer_tree_host()->SetHasGpuRasterizationTrigger(allow);
 }
 
-void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
-                                                      float minimum,
-                                                      float maximum) {
+void TestWebWidgetClient::SetPageScaleStateAndLimits(
+    float page_scale_factor,
+    bool is_pinch_gesture_active,
+    float minimum,
+    float maximum) {
   layer_tree_host()->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
                                                  maximum);
+}
+
+void TestWebWidgetClient::InjectGestureScrollEvent(
+    WebGestureDevice device,
+    const WebFloatSize& delta,
+    ScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    WebInputEvent::Type injected_type) {
+  if (injected_type == WebInputEvent::kGestureScrollUpdate) {
+    injected_gesture_scroll_update_count_++;
+  }
 }
 
 void TestWebWidgetClient::RegisterViewportLayers(

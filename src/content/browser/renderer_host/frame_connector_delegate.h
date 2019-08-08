@@ -17,10 +17,6 @@
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(USE_AURA)
-#include "services/ws/public/mojom/window_tree.mojom.h"
-#endif
-
 namespace blink {
 class WebGestureEvent;
 struct WebIntrinsicSizingInfo;
@@ -246,13 +242,6 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Called to resize the child renderer. |screen_space_rect| is in pixels if
   // zoom-for-dsf is enabled, and in DIP if not.
   virtual void SetScreenSpaceRect(const gfx::Rect& screen_space_rect);
-
-#if defined(USE_AURA)
-  // Embeds a WindowTreeClient in the parent. This results in the parent
-  // creating a window in the ui server so that this can render to the screen.
-  virtual void EmbedRendererWindowTreeClientInParent(
-      ws::mojom::WindowTreeClientPtr window_tree_client) {}
-#endif
 
   // Called by RenderWidgetHostViewChildFrame when the child frame has updated
   // its visual properties and its viz::LocalSurfaceId has changed.

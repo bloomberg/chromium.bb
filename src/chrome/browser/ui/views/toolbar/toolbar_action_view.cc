@@ -28,6 +28,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -48,6 +49,8 @@ const int kBorderInset = 0;
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
 
+const char ToolbarActionView::kClassName[] = "ToolbarActionView";
+
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     ToolbarActionView::Delegate* delegate)
@@ -56,7 +59,7 @@ ToolbarActionView::ToolbarActionView(
       delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
-  set_id(VIEW_ID_BROWSER_ACTION);
+  SetID(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);
@@ -75,6 +78,10 @@ ToolbarActionView::ToolbarActionView(
 
 ToolbarActionView::~ToolbarActionView() {
   view_controller_->SetDelegate(nullptr);
+}
+
+const char* ToolbarActionView::GetClassName() const {
+  return kClassName;
 }
 
 void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -280,11 +287,11 @@ views::FocusManager* ToolbarActionView::GetFocusManagerForAccelerator() {
   return GetFocusManager();
 }
 
-views::View* ToolbarActionView::GetReferenceViewForPopup() {
+views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
   // Browser actions in the overflow menu can still show popups, so we may need
   // a reference view other than this button's parent. If so, use the overflow
-  // view.
-  return visible() ? this : delegate_->GetOverflowReferenceView();
+  // view which is a BrowserAppMenuButton.
+  return GetVisible() ? this : delegate_->GetOverflowReferenceView();
 }
 
 bool ToolbarActionView::IsMenuRunning() const {
@@ -294,13 +301,13 @@ bool ToolbarActionView::IsMenuRunning() const {
 void ToolbarActionView::OnPopupShown(bool by_user) {
   // If this was through direct user action, we press the menu button.
   if (by_user) {
-    // We set the state of the menu button we're using as a reference view,
-    // which is either this or the overflow reference view.
-    // This cast is safe because GetReferenceViewForPopup returns either |this|
-    // or delegate_->GetOverflowReferenceView(), which returns a MenuButton.
-    views::MenuButton* reference_view =
-        static_cast<views::MenuButton*>(GetReferenceViewForPopup());
-    pressed_lock_ = reference_view->button_controller()->TakeLock();
+    // GetReferenceButtonForPopup returns either |this| or
+    // delegate_->GetOverflowReferenceView() which is a BrowserAppMenuButton.
+    // This cast is safe because both will have a MenuButtonController.
+    views::MenuButtonController* reference_view_controller =
+        static_cast<views::MenuButtonController*>(
+            GetReferenceButtonForPopup()->button_controller());
+    pressed_lock_ = reference_view_controller->TakeLock();
   }
 }
 
@@ -325,7 +332,8 @@ void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   if (!context_menu_model)
     return;
 
-  DCHECK(visible());  // We should never show a context menu for a hidden item.
+  DCHECK(
+      GetVisible());  // We should never show a context menu for a hidden item.
 
   int run_types =
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
@@ -348,7 +356,8 @@ void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  menu_runner_->RunMenuAt(parent, this, GetAnchorBoundsInScreen(),
+  menu_runner_->RunMenuAt(parent, button_controller(),
+                          GetAnchorBoundsInScreen(),
                           views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
@@ -365,7 +374,7 @@ bool ToolbarActionView::CloseActiveMenuIfNeeded() {
     if (menu_controller->in_nested_run()) {
       // There is another menu showing. Close the outermost menu (since we are
       // shown in the same menu, we don't want to close the whole thing).
-      menu_controller->Cancel(views::MenuController::EXIT_OUTERMOST);
+      menu_controller->Cancel(views::MenuController::ExitType::kOutermost);
       return true;
     }
   }

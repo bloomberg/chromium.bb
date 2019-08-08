@@ -75,7 +75,7 @@ class BackgroundApplicationListModel::Application
   void RequestIcon(extension_misc::ExtensionIcons size);
 
   const Extension* extension_;
-  std::unique_ptr<gfx::ImageSkia> icon_;
+  gfx::ImageSkia icon_;
   BackgroundApplicationListModel* model_;
 };
 
@@ -128,7 +128,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
     const gfx::Image& image) {
   if (image.IsEmpty())
     return;
-  icon_.reset(new gfx::ImageSkia(*image.ToImageSkia()));
+  icon_ = image.AsImageSkia();
   model_->SendApplicationDataChangedNotifications();
 }
 
@@ -214,13 +214,13 @@ BackgroundApplicationListModel::FindApplication(
   return (found == applications_.end()) ? nullptr : found->second.get();
 }
 
-const gfx::ImageSkia* BackgroundApplicationListModel::GetIcon(
+gfx::ImageSkia BackgroundApplicationListModel::GetIcon(
     const Extension* extension) {
   const Application* application = FindApplication(extension);
   if (application)
-    return application->icon_.get();
+    return application->icon_;
   AssociateApplicationData(extension);
-  return nullptr;
+  return gfx::ImageSkia();
 }
 
 int BackgroundApplicationListModel::GetPosition(

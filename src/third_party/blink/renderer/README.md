@@ -159,8 +159,9 @@ Exceptions to this rule:
   whole purpose of which is conversion between WTF and STL,
   for example `WebString` or `WebVector`.
 
-To prevent use of random types, we control allowed types by whitelisting
-them in DEPS and a [presubmit script](../tools/audit_non_blink_usage.py).
+To prevent use of random types, we control allowed types by whitelisting them
+in DEPS and a [presubmit
+script](../tools/blinkpy/presubmit/audit_non_blink_usage.py).
 
 ### Mojo
 

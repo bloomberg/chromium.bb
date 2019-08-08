@@ -248,8 +248,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       }
     } else {
       should_rotate = true;
-      context.ConcatCTM(
-          TextPainterBase::Rotation(box_rect, TextPainterBase::kClockwise));
+      context.ConcatCTM(TextPainterBase::Rotation(PhysicalRect(box_rect),
+                                                  TextPainterBase::kClockwise));
     }
   }
 
@@ -357,10 +357,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
           EnclosingUnderlineObject(&inline_text_box_);
       const ComputedStyle* decorating_box_style =
           decorating_box ? decorating_box.Style() : nullptr;
-      text_painter.ComputeDecorationInfo(decoration_info, box_origin,
-                                         local_origin, width,
-                                         inline_text_box_.Root().BaselineType(),
-                                         style_to_use, decorating_box_style);
+      text_painter.ComputeDecorationInfo(
+          decoration_info, PhysicalOffsetToBeNoop(box_origin),
+          PhysicalOffsetToBeNoop(local_origin), width,
+          inline_text_box_.Root().BaselineType(), style_to_use,
+          decorating_box_style);
       TextDecorationOffset decoration_offset(*decoration_info.style,
                                              &inline_text_box_, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
@@ -428,13 +429,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 
   if (should_rotate) {
     context.ConcatCTM(TextPainterBase::Rotation(
-        box_rect, TextPainterBase::kCounterclockwise));
+        PhysicalRectToBeNoop(box_rect), TextPainterBase::kCounterclockwise));
   }
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    PaintTimingDetector::NotifyTextPaint(
-        InlineLayoutObject(),
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
-  }
+
+  if (!font.ShouldSkipDrawing())
+    PaintTimingDetector::NotifyTextPaint(inline_text_box_.VisualRect());
 }
 
 bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
@@ -539,12 +538,13 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
 
 DocumentMarkerVector InlineTextBoxPainter::ComputeMarkersToPaint() const {
   Node* const node = inline_text_box_.GetLineLayoutItem().GetNode();
-  if (!node || !node->IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return DocumentMarkerVector();
 
   DocumentMarkerController& document_marker_controller =
       inline_text_box_.GetLineLayoutItem().GetDocument().Markers();
-  return document_marker_controller.ComputeMarkersToPaint(ToText(*node));
+  return document_marker_controller.ComputeMarkersToPaint(*text_node);
 }
 
 void InlineTextBoxPainter::PaintDocumentMarkers(
@@ -674,8 +674,9 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
     width = LayoutUnit(marker_rect.Width());
   }
   DocumentMarkerPainter::PaintDocumentMarker(
-      context, box_origin, style, marker.GetType(),
-      LayoutRect(start, LayoutUnit(), width, inline_text_box_.LogicalHeight()));
+      context, PhysicalOffsetToBeNoop(box_origin), style, marker.GetType(),
+      PhysicalRect(start, LayoutUnit(), width,
+                   inline_text_box_.LogicalHeight()));
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
@@ -819,7 +820,7 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
   const FloatRect& marker_rect = font.SelectionRectForText(
       run, FloatPoint(), 0, marker_offsets.start, marker_offsets.end);
   DocumentMarkerPainter::PaintStyleableMarkerUnderline(
-      context, box_origin, marker, style, marker_rect,
+      context, PhysicalOffsetToBeNoop(box_origin), marker, style, marker_rect,
       inline_text_box_.LogicalHeight());
 }
 

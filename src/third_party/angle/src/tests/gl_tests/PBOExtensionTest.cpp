@@ -42,11 +42,9 @@ class PBOExtensionTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
-        if (extensionEnabled("NV_pixel_buffer_object"))
+        if (IsGLExtensionEnabled("NV_pixel_buffer_object"))
         {
             glGenBuffers(1, &mPBO);
             glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
@@ -64,10 +62,8 @@ class PBOExtensionTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
-        ANGLETest::TearDown();
-
         glDeleteBuffers(1, &mPBO);
         glDeleteProgram(mProgram);
     }
@@ -79,7 +75,7 @@ class PBOExtensionTest : public ANGLETest
 
 TEST_P(PBOExtensionTest, PBOWithOtherTarget)
 {
-    if (extensionEnabled("NV_pixel_buffer_object"))
+    if (IsGLExtensionEnabled("NV_pixel_buffer_object"))
     {
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -107,7 +103,7 @@ TEST_P(PBOExtensionTest, PBOWithOtherTarget)
 
 TEST_P(PBOExtensionTest, PBOWithExistingData)
 {
-    if (extensionEnabled("NV_pixel_buffer_object"))
+    if (IsGLExtensionEnabled("NV_pixel_buffer_object"))
     {
         // Clear backbuffer to red
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f);

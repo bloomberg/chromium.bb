@@ -16,6 +16,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/constants/quarantine_constants.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
+#include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
@@ -27,6 +28,8 @@ using mojom::ZipArchiverResultCode;
 // According to the zip structure and tests, zipping one file with STORE
 // compression level should not increase the file size more than 1KB.
 constexpr int64_t kZipAdditionalSize = 1024;
+
+constexpr size_t kDefaultMaxComponentLength = 255;
 
 constexpr wchar_t kDefaultFileStreamSuffix[] = L"::$DATA";
 constexpr uint32_t kMinimizedReadAccess =
@@ -90,10 +93,32 @@ namespace internal {
 
 // Zip file name format: "|filename|_|file_hash|.zip"
 base::string16 ConstructZipArchiveFileName(const base::string16& filename,
-                                           const std::string& file_hash) {
-  const std::string normalized_file_hash = base::ToUpperASCII(file_hash);
-  return base::StrCat(
-      {filename, L"_", base::UTF8ToUTF16(normalized_file_hash), L".zip"});
+                                           const std::string& file_hash,
+                                           size_t max_filename_length) {
+  const base::string16 normalized_hash =
+      base::UTF8ToUTF16(base::ToUpperASCII(file_hash));
+
+  // Length of the ".zip" suffix and the "_" infix.
+  constexpr size_t kAffixSize = 5;
+
+  // If the constructed filename is too long for the destination volume, use a
+  // prefix of the filename.
+  base::string16 normalized_filename;
+  if (filename.size() + normalized_hash.size() + kAffixSize >
+      max_filename_length) {
+    size_t trimmed_length =
+        max_filename_length - normalized_hash.size() - kAffixSize;
+    normalized_filename = filename.substr(0, trimmed_length);
+  } else {
+    normalized_filename = filename;
+  }
+
+  base::string16 result =
+      base::StrCat({normalized_filename, L"_", normalized_hash, L".zip"});
+  DCHECK(result.size() <= max_filename_length);
+  DCHECK(result.size() ==
+         normalized_filename.size() + normalized_hash.size() + kAffixSize);
+  return result;
 }
 
 }  // namespace internal
@@ -109,6 +134,12 @@ SandboxedZipArchiver::SandboxedZipArchiver(
       zip_password_(zip_password) {
   // Make sure the |zip_archiver_ptr| is bound with the |mojo_task_runner|.
   DCHECK(zip_archiver_ptr_.get_deleter().task_runner_ == mojo_task_runner);
+
+  int max_component_length =
+      base::GetMaximumPathComponentLength(dst_archive_folder_);
+  dst_max_component_length_ = max_component_length > 0
+                                  ? max_component_length
+                                  : kDefaultMaxComponentLength;
 }
 
 SandboxedZipArchiver::~SandboxedZipArchiver() = default;
@@ -179,8 +210,16 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
   }
 
   const base::string16 zip_filename = internal::ConstructZipArchiveFileName(
-      sanitized_src_filename, src_file_hash);
-  const base::FilePath zip_file_path = dst_archive_folder_.Append(zip_filename);
+      sanitized_src_filename, src_file_hash, dst_max_component_length_);
+  base::FilePath zip_file_path = dst_archive_folder_.Append(zip_filename);
+
+  // If the full path is longer than MAX_PATH, prepending "\\?\" allows to
+  // extend the path limit (see CreateFile documentation).
+  if (zip_file_path.value().size() >= MAX_PATH) {
+    base::string16 long_file_path =
+        base::string16(L"\\\\?\\") + zip_file_path.value();
+    zip_file_path = base::FilePath(long_file_path);
+  }
 
   // Fail if the zip file exists.
   if (base::PathExists(zip_file_path)) {
@@ -193,7 +232,8 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
                                    kMinimizedWriteAccess, 0, nullptr,
                                    CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
   if (!zip_file.IsValid()) {
-    LOG(ERROR) << "Unable to create the zip file.";
+    PLOG(ERROR) << "Unable to create the zip file at path "
+                << SanitizePath(zip_file_path);
     std::move(result_callback)
         .Run(ZipArchiverResultCode::kErrorCannotCreateZipFile);
     return;

@@ -31,7 +31,6 @@
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
-#include "components/sync/device_info/device_info.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
@@ -51,10 +50,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using ::testing::_;
-using ::testing::InvokeWithoutArgs;
-using ::testing::StrictMock;
 
 namespace syncer {
 
@@ -141,23 +136,6 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
   ModelTypeSet progress_marker_types_;
   ModelTypeSet configure_fail_types_;
   FakeSyncManager** fake_manager_;
-};
-
-class NullEncryptionObserver : public SyncEncryptionHandler::Observer {
- public:
-  void OnPassphraseRequired(
-      PassphraseRequiredReason reason,
-      const KeyDerivationParams& key_derivation_params,
-      const sync_pb::EncryptedData& pending_keys) override {}
-  void OnPassphraseAccepted() override {}
-  void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
-                               BootstrapTokenType type) override {}
-  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                               bool encrypt_everything) override {}
-  void OnEncryptionComplete() override {}
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override {}
-  void OnPassphraseTypeChanged(PassphraseType type,
-                               base::Time passphrase_time) override {}
 };
 
 class MockInvalidationService : public invalidation::InvalidationService {
@@ -247,15 +225,12 @@ class SyncEngineImplTest : public testing::Test {
     params.host = &host_;
     params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&CreateModelWorkerForGroup));
-    params.encryption_observer_proxy =
-        std::make_unique<NullEncryptionObserver>();
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.authenticated_account_id = "user@example.com";
     params.sync_manager_factory = std::move(fake_manager_factory_);
     params.delete_sync_data_folder = true;
     params.unrecoverable_error_handler =
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
-    params.saved_nigori_state = std::move(saved_nigori_state_);
     sync_prefs_->GetInvalidationVersions(&params.invalidation_versions);
 
     backend_->Initialize(std::move(params));
@@ -329,7 +304,6 @@ class SyncEngineImplTest : public testing::Test {
   ModelTypeSet engine_types_;
   ModelTypeSet enabled_types_;
   std::unique_ptr<NetworkResources> network_resources_;
-  std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state_;
   base::OnceClosure quit_loop_;
   testing::NiceMock<MockInvalidationService> invalidator_;
 };

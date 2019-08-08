@@ -241,6 +241,7 @@ void SkiaPaintCanvas::drawImage(const PaintImage& image,
                                 SkScalar left,
                                 SkScalar top,
                                 const PaintFlags* flags) {
+  DCHECK(!image.IsPaintWorklet());
   base::Optional<ScopedRasterFlags> scoped_flags;
   if (flags) {
     scoped_flags.emplace(flags, image_provider_, canvas_->getTotalMatrix(),

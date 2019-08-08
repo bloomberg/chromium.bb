@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -65,10 +64,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -188,8 +188,8 @@ bool IsProxyError(NetworkStateInformer::State state,
            frame_error == net::ERR_TUNNEL_CONNECTION_FAILED));
 }
 
-bool IsSigninScreen(const OobeScreen screen) {
-  return screen == OobeScreen::SCREEN_GAIA_SIGNIN ||
+bool IsSigninScreen(const OobeScreenId screen) {
+  return screen == GaiaView::kScreenId ||
          screen == OobeScreen::SCREEN_ACCOUNT_PICKER;
 }
 
@@ -233,7 +233,6 @@ SigninScreenHandler::SigninScreenHandler(
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
-      observer_binding_(this),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
@@ -268,12 +267,12 @@ SigninScreenHandler::SigninScreenHandler(
   tablet_mode_client->AddObserver(this);
   OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
 
-  ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
-  observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-  WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
+  WallpaperControllerClient::Get()->AddObserver(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
+  if (auto* wallpaper_controller_client = WallpaperControllerClient::Get())
+    wallpaper_controller_client->RemoveObserver(this);
   TabletModeClient::Get()->RemoveObserver(this);
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui && oobe_ui_observer_added_)
@@ -569,7 +568,7 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state) {
   switch (ui_state) {
     case UI_STATE_GAIA_SIGNIN:
       ui_state_ = UI_STATE_GAIA_SIGNIN;
-      ShowScreen(OobeScreen::SCREEN_GAIA_SIGNIN);
+      ShowScreen(GaiaView::kScreenId);
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
@@ -650,7 +649,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
       FrameError() != net::OK && FrameError() != net::ERR_NETWORK_CHANGED;
   const bool is_gaia_signin = IsGaiaVisible() || IsGaiaHiddenByError();
   const bool offline_login_active =
-      gaia_screen_handler_->offline_login_is_active();
+      gaia_screen_handler_->IsOfflineLoginActive();
   const bool error_screen_should_overlay =
       !offline_login_active && IsGaiaVisible();
   const bool from_not_online_to_online_transition =
@@ -770,9 +769,9 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
   error_screen_->AllowGuestSignin(guest_signin_allowed);
   error_screen_->AllowOfflineLogin(offline_login_allowed);
 
-  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
+  if (GetCurrentScreen() != ErrorScreenView::kScreenId) {
     error_screen_->SetUIState(NetworkError::UI_STATE_SIGNIN);
-    error_screen_->SetParentScreen(OobeScreen::SCREEN_GAIA_SIGNIN);
+    error_screen_->SetParentScreen(GaiaView::kScreenId);
     error_screen_->Show();
     histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
   }
@@ -820,22 +819,20 @@ void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kUsersLastInputMethod);
 }
 
-void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
-                                                 OobeScreen new_screen) {
+void SigninScreenHandler::OnCurrentScreenChanged(OobeScreenId current_screen,
+                                                 OobeScreenId new_screen) {
   if (new_screen == OobeScreen::SCREEN_ACCOUNT_PICKER) {
     // Restore active IME state if returning to user pod row screen.
     input_method::InputMethodManager::Get()->SetState(ime_state_);
   }
 }
 
-void SigninScreenHandler::OnWallpaperChanged(uint32_t image_id) {}
-
-void SigninScreenHandler::OnWallpaperColorsChanged(
-    const std::vector<SkColor>& prominent_colors) {
+void SigninScreenHandler::OnWallpaperColorsChanged() {
   // Updates the color of the scrollable container on account picker screen,
   // based on wallpaper color extraction results.
+  auto colors = WallpaperControllerClient::Get()->GetWallpaperColors();
   SkColor dark_muted_color =
-      prominent_colors[static_cast<int>(ash::ColorProfileType::DARK_MUTED)];
+      colors[static_cast<int>(ash::ColorProfileType::DARK_MUTED)];
   if (dark_muted_color == ash::kInvalidWallpaperColor)
     dark_muted_color = ash::login_constants::kDefaultBaseColor;
 
@@ -851,9 +848,10 @@ void SigninScreenHandler::OnWallpaperColorsChanged(
          color_utils::SkColorToRgbaString(scroll_color));
 }
 
-void SigninScreenHandler::OnWallpaperBlurChanged(bool blurred) {
-  CallJS("login.AccountPickerScreen.togglePodBackground",
-         !blurred /*show_pod_background=*/);
+void SigninScreenHandler::OnWallpaperBlurChanged() {
+  const bool show_pod_background =
+      !WallpaperControllerClient::Get()->IsWallpaperBlurred();
+  CallJS("login.AccountPickerScreen.togglePodBackground", show_pod_background);
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -1209,12 +1207,8 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   // The wallpaper may have been set before the instance is initialized, so make
   // sure the colors and blur state are updated.
-  WallpaperControllerClient::Get()->GetWallpaperColors(
-      base::BindOnce(&SigninScreenHandler::OnWallpaperColorsChanged,
-                     weak_factory_.GetWeakPtr()));
-  WallpaperControllerClient::Get()->IsWallpaperBlurred(
-      base::BindOnce(&SigninScreenHandler::OnWallpaperBlurChanged,
-                     weak_factory_.GetWeakPtr()));
+  OnWallpaperColorsChanged();
+  OnWallpaperBlurChanged();
 
   session_manager::SessionManager* session_manager =
       session_manager::SessionManager::Get();
@@ -1323,7 +1317,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
       user_manager::UserManager::Get()->FindUser(account_id);
   // |user| may be nullptr in kiosk mode or unit tests.
   if (user && user->is_logged_in() && !user->is_active()) {
-    SessionControllerClient::DoSwitchActiveUser(account_id);
+    SessionControllerClientImpl::DoSwitchActiveUser(account_id);
   } else {
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());
@@ -1446,7 +1440,7 @@ bool SigninScreenHandler::IsGaiaHiddenByError() const {
 }
 
 bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
-  return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE) &&
+  return (GetCurrentScreen() == ErrorScreenView::kScreenId) &&
          (IsSigninScreen(error_screen_->GetParentScreen()));
 }
 

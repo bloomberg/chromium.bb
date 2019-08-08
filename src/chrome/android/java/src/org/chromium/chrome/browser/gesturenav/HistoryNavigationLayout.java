@@ -10,20 +10,17 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.tab.Tab;
-
 /**
  * FrameLayout that supports side-wise slide gesture for history navigation. Inheriting
  * class may need to override {@link #wasLastSideSwipeGestureConsumed()} if
  * {@link #onTouchEvent} cannot be relied upon to know whether the side-swipe related
  * event was handled. Namely {@link android.support.v7.widget.RecyclerView}) always
  * claims to handle touch events.
+ * TODO(jinsukkim): Write a test verifying UI logic.
  */
 public class HistoryNavigationLayout extends FrameLayout {
-    private final boolean mDelegateSwipes;
-    private final boolean mNavigationEnabled;
+    private boolean mDelegateSwipes;
+    private boolean mNavigationEnabled;
     private GestureDetector mDetector;
     private NavigationHandler mNavigationHandler;
 
@@ -33,22 +30,19 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     public HistoryNavigationLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mDelegateSwipes = ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES);
-        mNavigationEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
-                && (context instanceof ChromeActivity);
     }
 
     /**
-     * Sets the tab which the native page for this layout is running on.
-     * @param tab Tab instance.
-     * TODO(jinsukkim): Look into replacing tab with an interface which will make this a pure
-     *     UI class. Then navigation tests will also be a pure UI one using a dummy activity.
+     * Initializes navigation logic and internal objects if navigation is enabled.
+     * @param delegate {@link HistoryNavigationDelegate} providing info and a factory method.
      */
-    public void setTab(Tab tab) {
+    public void setNavigationDelegate(HistoryNavigationDelegate delegate) {
+        mNavigationEnabled = delegate.isEnabled();
         if (!mNavigationEnabled) return;
+        mDelegateSwipes = delegate.delegateSwipes();
         mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-        mNavigationHandler = new NavigationHandler(this, () -> tab);
+        mNavigationHandler = new NavigationHandler(
+                this, delegate.createActionDelegate(), NavigationGlowFactory.forJavaLayer(this));
     }
 
     @Override

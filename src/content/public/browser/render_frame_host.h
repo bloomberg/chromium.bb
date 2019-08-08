@@ -19,7 +19,9 @@
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
@@ -159,6 +161,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // of its size.
   virtual const base::Optional<gfx::Size>& GetFrameSize() = 0;
 
+  // Returns the distance from this frame to the root frame.
+  virtual size_t GetFrameDepth() = 0;
+
   // Returns true if the frame is out of process.
   virtual bool IsCrossProcessSubframe() = 0;
 
@@ -182,7 +187,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   using JavaScriptResultCallback = base::OnceCallback<void(base::Value)>;
 
   // This is the default API to run JavaScript in this frame. This API can only
-  // be called on chrome:// or chrome-devtools:// URLs.
+  // be called on chrome:// or devtools:// URLs.
   virtual void ExecuteJavaScript(const base::string16& javascript,
                                  JavaScriptResultCallback callback) = 0;
 
@@ -394,6 +399,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Used in case we need to add or remove intercepting proxies to the
   // running renderer, or in case of Network Service connection errors.
   virtual void UpdateSubresourceLoaderFactories() = 0;
+
+  // Returns the type of frame owner element for the FrameTreeNode associated
+  // with this RenderFrameHost (e.g., <iframe>, <object>, etc). Note that it
+  // returns blink::FrameOwnerElementType::kNone if the RenderFrameHost is a
+  // main frame.
+  virtual blink::FrameOwnerElementType GetFrameOwnerElementType() = 0;
 
  private:
   // This interface should only be implemented inside content.

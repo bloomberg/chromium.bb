@@ -17,7 +17,7 @@ namespace content {
 // different threads, but that's safe since it's read-only.
 class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
  public:
-  WebRtcVideoFrameAdapter(const scoped_refptr<media::VideoFrame>& frame);
+  explicit WebRtcVideoFrameAdapter(scoped_refptr<media::VideoFrame> frame);
 
   scoped_refptr<media::VideoFrame> getMediaVideoFrame() const { return frame_; }
 
@@ -27,9 +27,16 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
   int height() const override;
 
   rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() override;
+  const webrtc::I420BufferInterface* GetI420() const override;
 
  protected:
   ~WebRtcVideoFrameAdapter() override;
+
+  rtc::scoped_refptr<webrtc::I420BufferInterface> CreateFrameAdapter() const;
+
+  // Used to cache result of CreateFrameAdapter. Which is called from const
+  // GetI420().
+  mutable rtc::scoped_refptr<webrtc::I420BufferInterface> frame_adapter_;
 
   scoped_refptr<media::VideoFrame> frame_;
 };

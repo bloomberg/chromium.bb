@@ -16,6 +16,16 @@ proto_library("webui_proto") {
   ]
 }
 
+proto_library("realtimeapi_proto") {
+  sources = [
+    "proto/realtimeapi.proto",
+  ]
+
+  deps = [
+    ":csd_proto",
+  ]
+}
+
 source_set("safe_browsing") {
   sources = [
     "base_blocking_page.cc",
@@ -29,6 +39,10 @@ source_set("safe_browsing") {
   deps = [
     ":features",
     ":ping_manager",
+
+    # TODO(vakh): This is here temporarily until we start actually using the
+    # proto. If it isn't a DEP, it isn't built.
+    ":realtimeapi_proto",
     "//base:base",
     "//base:i18n",
     "//components/safe_browsing/common:common",
@@ -54,7 +68,6 @@ static_library("ping_manager") {
 
   deps = [
     "//base:base",
-    "//components/data_use_measurement/core:core",
     "//components/safe_browsing/db:hit_report",
     "//components/safe_browsing/db:util",
     "//content/public/browser:browser",
@@ -86,5 +99,17 @@ static_library("features") {
 
   deps = [
     "//base:base",
+  ]
+}
+
+source_set("public") {
+  sources = [
+    "safe_browsing_service_interface.cc",
+    "safe_browsing_service_interface.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//content/public/browser",
   ]
 }

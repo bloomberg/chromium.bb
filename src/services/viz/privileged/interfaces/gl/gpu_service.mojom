@@ -13,13 +13,14 @@ import "components/arc/common/video_encode_accelerator.mojom";
 [EnableIf=is_chromeos]
 import "components/arc/common/video_protected_buffer_allocator.mojom";
 [EnableIf=is_chromeos]
+import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
+[EnableIf=is_chromeos]
 import "components/chromeos_camera/common/jpeg_encode_accelerator.mojom";
 import "gpu/ipc/common/dx_diag_node.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
-import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
 import "media/mojo/interfaces/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
@@ -55,11 +56,13 @@ interface GpuService {
   CreateArcProtectedBufferManager(arc.mojom.ProtectedBufferManager& pbm);
 
   // Creates a new MjpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
+  [EnableIf=is_chromeos]
+  CreateJpegDecodeAccelerator(
+      chromeos_camera.mojom.MjpegDecodeAccelerator& jda);
 
   // Creates a new JpegEncodeAccelerator and binds it to |jea|.
   [EnableIf=is_chromeos]
-  CreateJpegEncodeAccelerator(media.mojom.JpegEncodeAccelerator& jea);
+  CreateJpegEncodeAccelerator(chromeos_camera.mojom.JpegEncodeAccelerator& jea);
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(

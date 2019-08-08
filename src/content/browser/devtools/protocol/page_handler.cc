@@ -192,7 +192,6 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       screencast_max_height_(-1),
       capture_every_nth_frame_(1),
       capture_retry_count_(0),
-      has_compositor_frame_metadata_(false),
       session_id_(0),
       frame_counter_(0),
       frames_in_flight_(0),
@@ -269,17 +268,10 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(
-    viz::CompositorFrameMetadata frame_metadata) {
-  if (has_compositor_frame_metadata_) {
-    last_compositor_frame_metadata_ =
-        std::move(next_compositor_frame_metadata_);
-  } else {
-    last_compositor_frame_metadata_ = frame_metadata.Clone();
-  }
-  next_compositor_frame_metadata_ = std::move(frame_metadata);
-
-  has_compositor_frame_metadata_ = true;
-
+    const DevToolsFrameMetadata& frame_metadata) {
+  // Cache |frame_metadata_| as InnerSwapCompositorFrame may also be called on
+  // screencast start.
+  frame_metadata_ = frame_metadata;
   if (screencast_enabled_)
     InnerSwapCompositorFrame();
 }
@@ -519,6 +511,13 @@ void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
           navigation_request->devtools_navigation_token().ToString()),
       success ? Maybe<std::string>() : Maybe<std::string>(error_string));
   navigate_callbacks_.erase(navigate_callback);
+}
+
+void PageHandler::DownloadWillBegin(FrameTreeNode* ftn, const GURL& url) {
+  if (!enabled_)
+    return;
+  frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
+                               url.spec());
 }
 
 static const char* TransitionTypeName(ui::PageTransition type) {
@@ -822,7 +821,7 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   if (!visible)
     return Response::FallThrough();
 
-  if (has_compositor_frame_metadata_) {
+  if (frame_metadata_) {
     InnerSwapCompositorFrame();
   } else {
     widget_host->Send(
@@ -975,17 +974,15 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (snapshot_size.IsEmpty())
     return;
 
-  double top_controls_height =
-      last_compositor_frame_metadata_.top_controls_height;
-  double top_controls_shown_ratio =
-      last_compositor_frame_metadata_.top_controls_shown_ratio;
+  double top_controls_height = frame_metadata_->top_controls_height;
+  double top_controls_shown_ratio = frame_metadata_->top_controls_shown_ratio;
 
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
       BuildScreencastFrameMetadata(
-          surface_size, last_compositor_frame_metadata_.device_scale_factor,
-          last_compositor_frame_metadata_.page_scale_factor,
-          last_compositor_frame_metadata_.root_scroll_offset,
-          top_controls_height, top_controls_shown_ratio);
+          surface_size, frame_metadata_->device_scale_factor,
+          frame_metadata_->page_scale_factor,
+          frame_metadata_->root_scroll_offset, top_controls_height,
+          top_controls_shown_ratio);
   if (!page_metadata)
     return;
 

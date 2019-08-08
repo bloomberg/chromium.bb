@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/dom/element.h"
 
+#include <bitset>
 #include <memory>
 
 #include "cc/input/snap_selection_strategy.h"
@@ -154,9 +155,9 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -175,23 +176,28 @@ class DisplayLockStyleScope {
   DisplayLockStyleScope(DisplayLockContext* context)
       : context_(context),
         should_update_self_(!context ||
-                            context->ShouldStyle(DisplayLockContext::kSelf)),
-        should_update_children_(
-            !context || context->ShouldStyle(DisplayLockContext::kChildren)) {}
+                            context->ShouldStyle(DisplayLockContext::kSelf)) {}
+
   ~DisplayLockStyleScope() {
     if (!context_)
       return;
     if (did_update_children_)
       context_->DidStyle(DisplayLockContext::kChildren);
-    // There is no other condition to block us form updating self, so if we
-    // "should" update, then we "did" update.
-    if (should_update_self_)
-      context_->DidStyle(DisplayLockContext::kSelf);
   }
 
   bool ShouldUpdateSelfStyle() const { return should_update_self_; }
-  bool ShouldUpdateChildStyle() const { return should_update_children_; }
+  bool ShouldUpdateChildStyle() const {
+    // We can't calculate this on construction time, because the element might
+    // get unlocked after self-style calculation due to lack of containment,
+    // which might change the value of ShouldStyle(children).
+    return !context_ || context_->ShouldStyle(DisplayLockContext::kChildren);
+  }
   void DidUpdateChildStyle() { did_update_children_ = true; }
+  void DidUpdateSelfStyle() {
+    DCHECK(should_update_self_);
+    if (context_)
+      context_->DidStyle(DisplayLockContext::kSelf);
+  }
 
   void NotifyUpdateWasBlocked(DisplayLockContext::StyleType style) {
     DCHECK(!ShouldUpdateChildStyle());
@@ -201,7 +207,6 @@ class DisplayLockStyleScope {
  private:
   UntracedMember<DisplayLockContext> context_;
   const bool should_update_self_;
-  const bool should_update_children_;
   bool did_update_children_ = false;
 };
 
@@ -273,9 +278,21 @@ bool DefinitelyNewFormattingContext(const Node& node,
   if (node.GetDocument().documentElement() == &node)
     return true;
   if (const Element* element = ToElementOrNull(&node)) {
-    if (IsHTMLImageElement(element) || element->IsFormControlElement() ||
-        element->IsMediaElement() || element->IsFrameOwnerElement())
+    // Replaced elements are considered to create a new formatting context, in
+    // the sense that they can't possibly have children that participate in the
+    // same formatting context as their parent.
+    if (IsHTMLObjectElement(element)) {
+      // OBJECT elements are special, though. If they use fallback content, they
+      // act as regular elements, and we can't claim that they establish a
+      // formatting context, just based on element type, since children may very
+      // well participate in the same formatting context as the parent of the
+      // OBJECT.
+      if (!element->ChildrenCanHaveStyle())
+        return true;
+    } else if (IsHTMLImageElement(element) || element->IsFormControlElement() ||
+               element->IsMediaElement() || element->IsFrameOwnerElement()) {
       return true;
+    }
   }
   if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(node))
     return parent->ComputedStyleRef().IsDisplayFlexibleOrGridBox();
@@ -386,6 +403,11 @@ bool Element::IsFocusableStyle() const {
            canvas->GetLayoutObject()->Style()->Visibility() ==
                EVisibility::kVisible;
   }
+
+  // Update style if we're in a display-locked subtree, because it isn't
+  // included in the normal style updates.
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this))
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
 
   if (IsInsideInvisibleSubtree()) {
     const ComputedStyle* style =
@@ -554,7 +576,7 @@ void Element::SynchronizeAllAttributes() const {
     SynchronizeStyleAttributeInternal();
   }
   if (GetElementData()->animated_svg_attributes_are_dirty_)
-    ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
+    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
 }
 
 inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
@@ -569,7 +591,7 @@ inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
   if (UNLIKELY(GetElementData()->animated_svg_attributes_are_dirty_)) {
     // See comment in the AtomicString version of SynchronizeAttribute()
     // also.
-    ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(name);
+    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(name);
   }
 }
 
@@ -597,7 +619,7 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
     // AnyQName(). This means that even if Element::SynchronizeAttribute()
     // is called on all attributes, animated_svg_attributes_are_dirty_ remains
     // true.
-    ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(
+    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(
         QualifiedName(g_null_atom, local_name, g_null_atom));
   }
 }
@@ -820,7 +842,7 @@ int Element::clientWidth() {
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
         return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                   layout_view->OverflowClipRect(LayoutPoint()).Width(),
+                   layout_view->OverflowClipRect(PhysicalOffset()).Width(),
                    layout_view->StyleRef())
             .Round();
       return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -856,7 +878,7 @@ int Element::clientHeight() {
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
         return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                   layout_view->OverflowClipRect(LayoutPoint()).Height(),
+                   layout_view->OverflowClipRect(PhysicalOffset()).Height(),
                    layout_view->StyleRef())
             .Round();
       return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1223,13 +1245,15 @@ IntRect Element::BoundsInViewport() const {
   // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
   // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
   // codepath below.
-  if (IsSVGElement() && GetLayoutObject() &&
+  auto* svg_element = DynamicTo<SVGElement>(this);
+  if (svg_element && GetLayoutObject() &&
       !GetLayoutObject()->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): This should include stroke.
-    if (ToSVGElement(this)->IsSVGGraphicsElement())
+    if (svg_element->IsSVGGraphicsElement()) {
       quads.push_back(GetLayoutObject()->LocalToAbsoluteQuad(
           GetLayoutObject()->ObjectBoundingBox()));
+    }
   } else {
     // Get the bounding rectangle from the box model.
     if (GetLayoutBoxModelObject())
@@ -1253,10 +1277,10 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
 
   // We don't use absoluteBoundingBoxRect() because it can return an IntRect
   // larger the actual size by 1px. crbug.com/470503
-  LayoutRect rect(
+  PhysicalRect rect(
       RoundedIntRect(GetLayoutObject()->AbsoluteBoundingBoxFloatRect()));
-  LayoutRect frame_clip_rect =
-      GetDocument().View()->GetLayoutView()->ClippingRect(LayoutPoint());
+  PhysicalRect frame_clip_rect =
+      GetDocument().View()->GetLayoutView()->ClippingRect(PhysicalOffset());
   rect.Intersect(frame_clip_rect);
 
   // MapToVisualRectInAncestorSpace, called with a null ancestor argument,
@@ -1264,8 +1288,7 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
   // MapToVisualRectInAncestorSpace applies ancestors' frame's clipping but does
   // not apply (overflow) element clipping.
   GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(
-      nullptr, rect, kUseTransforms | kTraverseDocumentBoundaries,
-      kDefaultVisualRectFlags);
+      nullptr, rect, kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
 
   IntRect visible_rect = PixelSnappedIntRect(rect);
   // If the rect is in the coordinates of the main frame, then it should
@@ -1293,22 +1316,24 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
   // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
   // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
   // codepath below.
-  if (IsSVGElement() && !element_layout_object->IsSVGRoot() &&
+  auto* svg_element = DynamicTo<SVGElement>(this);
+  if (svg_element && !element_layout_object->IsSVGRoot() &&
       !element_layout_object->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): ObjectBoundingBox does not include stroke and the spec is not
     // clear (see: https://github.com/w3c/svgwg/issues/339, crbug.com/529734).
     // If stroke is desired, we can update this to use AbsoluteQuads, below.
-    if (ToSVGElement(this)->IsSVGGraphicsElement())
+    if (svg_element->IsSVGGraphicsElement()) {
       quads.push_back(element_layout_object->LocalToAbsoluteQuad(
           element_layout_object->ObjectBoundingBox()));
+    }
     return;
   }
 
   // FIXME: Handle table/inline-table with a caption.
   if (element_layout_object->IsBoxModelObject() ||
       element_layout_object->IsBR())
-    element_layout_object->AbsoluteQuads(quads, kUseTransforms);
+    element_layout_object->AbsoluteQuads(quads);
 }
 
 DOMRectList* Element::getClientRects() {
@@ -1402,9 +1427,10 @@ void Element::DispatchActivateInvisibleEventIfNeeded() {
   HeapVector<Member<Element>> invisible_ancestors;
   HeapVector<Member<Element>> activated_elements;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() &&
-        ToElement(ancestor).Invisible() != InvisibleState::kMissing) {
-      invisible_ancestors.push_back(ToElement(ancestor));
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (ancestor_element &&
+        ancestor_element->Invisible() != InvisibleState::kMissing) {
+      invisible_ancestors.push_back(ancestor_element);
       activated_elements.push_back(ancestor.GetTreeScope().Retarget(*this));
     }
   }
@@ -1421,8 +1447,9 @@ bool Element::IsInsideInvisibleStaticSubtree() const {
   if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
     return false;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() &&
-        ToElement(ancestor).Invisible() == InvisibleState::kStatic)
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (ancestor_element &&
+        ancestor_element->Invisible() == InvisibleState::kStatic)
       return true;
   }
   return false;
@@ -1433,8 +1460,9 @@ bool Element::IsInsideInvisibleSubtree() const {
       !CanParticipateInFlatTree())
     return false;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() &&
-        ToElement(ancestor).Invisible() != InvisibleState::kMissing)
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (ancestor_element &&
+        ancestor_element->Invisible() != InvisibleState::kMissing)
       return true;
   }
   return false;
@@ -1881,20 +1909,6 @@ void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
   }
 }
 
-void Element::PictureInPicturePseudoStateChanged() {
-  if (!RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
-    return;
-
-  // Recurse up author shadow trees to mark shadow hosts if it matches pseudo
-  // class ":picture-in-picture".
-  if (ShadowRoot* root = ContainingShadowRoot()) {
-    if (!root->IsUserAgent())
-      OwnerShadowHost()->PictureInPicturePseudoStateChanged();
-  }
-
-  PseudoStateChanged(CSSSelector::kPseudoPictureInPicture);
-}
-
 bool Element::ShouldInvalidateDistributionWhenAttributeChanged(
     ShadowRoot& shadow_root,
     const QualifiedName& name,
@@ -2109,24 +2123,15 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
 void Element::RemovedFrom(ContainerNode& insertion_point) {
   bool was_in_document = insertion_point.isConnected();
-  if (HasRareData()) {
-    // If we detached the layout tree with LazyReattachIfAttached, we might not
-    // have cleared the pseudo elements if we remove the element before calling
-    // AttachLayoutTree again. We don't clear pseudo elements on
-    // DetachLayoutTree() if we intend to attach again to avoid recreating the
-    // pseudo elements.
-    ElementRareData* rare_data = GetElementRareData();
-    rare_data->ClearPseudoElements();
-  }
 
   SetComputedStyle(nullptr);
 
   if (Fullscreen::IsFullscreenElement(*this)) {
     SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-    if (insertion_point.IsElementNode()) {
-      ToElement(insertion_point).SetContainsFullScreenElement(false);
-      ToElement(insertion_point)
-          .SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
+    if (auto* insertion_point_element = DynamicTo<Element>(insertion_point)) {
+      insertion_point_element->SetContainsFullScreenElement(false);
+      insertion_point_element
+          ->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
               false);
     }
   }
@@ -2181,6 +2186,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       GetDocument().EnsureIntersectionObserverController().RemoveTrackedTarget(
           *this);
     }
+    DCHECK(!data->HasPseudoElements());
   }
 
   if (GetDocument().GetFrame())
@@ -2377,6 +2383,9 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       child_change = child_change.ForceRecalcDescendants();
     ClearNeedsStyleRecalc();
   }
+  // We're done with self-style, notify so that containment checks etc for
+  // display locking can happen..
+  display_lock_style_scope.DidUpdateSelfStyle();
 
   if (child_change.TraversePseudoElements(*this)) {
     UpdatePseudoElement(kPseudoIdBackdrop, child_change);
@@ -2394,7 +2403,6 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     } else {
       RecalcDescendantStyles(child_change);
     }
-    display_lock_style_scope.DidUpdateChildStyle();
   }
 
   if (child_change.TraversePseudoElements(*this)) {
@@ -2409,6 +2417,8 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
 
   if (should_update_child_style) {
     ClearChildNeedsStyleRecalc();
+    // We've updated all the children that needs an update (might be 0).
+    display_lock_style_scope.DidUpdateChildStyle();
   } else if (child_change.RecalcChildren()) {
     // If we should've calculated the style for children but was blocked,
     // notify so that we'd come back.
@@ -2578,9 +2588,9 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
     DCHECK(new_style);
-    if (IsPseudoElement() && new_style->Display() == EDisplay::kContents) {
-      new_style =
-          ToPseudoElement(this)->LayoutStyleForDisplayContents(*new_style);
+    auto* this_element = DynamicTo<PseudoElement>(this);
+    if (this_element && new_style->Display() == EDisplay::kContents) {
+      new_style = this_element->LayoutStyleForDisplayContents(*new_style);
     }
     // kEqual means that the computed style didn't change, but there are
     // additional flags in ComputedStyle which may have changed. For instance,
@@ -2643,7 +2653,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     ClearChildNeedsReattachLayoutTree();
   }
   DCHECK(!NeedsStyleRecalc());
-  DCHECK(!ChildNeedsStyleRecalc());
+  DCHECK(!ChildNeedsStyleRecalc() ||
+         StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
   DCHECK(!NeedsReattachLayoutTree());
   DCHECK(!ChildNeedsReattachLayoutTree());
 }
@@ -2714,10 +2725,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
 
   auto* shadow_root = MakeGarbageCollected<ShadowRoot>(GetDocument(), type);
 
-  if (type != ShadowRootType::V0 && InActiveDocument()) {
-    // Detach the host's children here for v1 (including UA shadow root),
-    // because we skip SetNeedsDistributionRecalc() in attaching v1 shadow root.
-    // See https://crrev.com/2822113002 for details.
+  if (InActiveDocument()) {
     // We need to call child.RemovedFromFlatTree() before setting a shadow
     // root to the element because detach must use the original flat tree
     // structure before attachShadow happens. We cannot use
@@ -2849,7 +2857,7 @@ bool Element::DidAttachInternals() const {
 }
 
 ElementInternals& Element::EnsureElementInternals() {
-  return EnsureElementRareData().EnsureElementInternals(ToHTMLElement(*this));
+  return EnsureElementRareData().EnsureElementInternals(To<HTMLElement>(*this));
 }
 
 ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
@@ -2915,8 +2923,25 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
     return nullptr;
   }
 
+  // Checking IsCustomElement() here is just an optimization because
+  // IsValidName() is not cheap.
+  if (RuntimeEnabledFeatures::ElementInternalsEnabled() && IsCustomElement() &&
+      (CustomElement::IsValidName(localName()) || !IsValue().IsNull())) {
+    auto* registry = CustomElement::Registry(*this);
+    auto* definition =
+        registry ? registry->DefinitionForName(IsValue().IsNull() ? localName()
+                                                                  : IsValue())
+                 : nullptr;
+    if (definition && definition->DisableShadow()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "attachShadow() is disabled by disabledFeatures static field.");
+      return nullptr;
+    }
+  }
+
   if (GetShadowRoot()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Shadow root cannot be created on a host "
                                       "which already hosts a shadow tree.");
     return nullptr;
@@ -3031,7 +3056,8 @@ bool HasSiblingsForNonEmpty(const Node* sibling,
   for (; sibling; sibling = next_func(*sibling)) {
     if (sibling->IsElementNode())
       return true;
-    if (sibling->IsTextNode() && !ToText(sibling)->data().IsEmpty())
+    auto* text_node = DynamicTo<Text>(sibling);
+    if (text_node && !text_node->data().IsEmpty())
       return true;
   }
   return false;
@@ -3063,7 +3089,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
     CheckForSiblingStyleChanges(
         change.type == kElementRemoved ? kSiblingElementRemoved
                                        : kSiblingElementInserted,
-        ToElement(change.sibling_changed), change.sibling_before_change,
+        To<Element>(change.sibling_changed.Get()), change.sibling_before_change,
         change.sibling_after_change);
 
   if (ShadowRoot* shadow_root = GetShadowRoot())
@@ -3364,7 +3390,9 @@ void Element::focus(const FocusParams& params) {
     return;
 
   if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus()) {
-    if (IsShadowIncludingInclusiveAncestorOf(GetDocument().FocusedElement()))
+    Element* focused_element = GetDocument().FocusedElement();
+    if (focused_element &&
+        IsShadowIncludingInclusiveAncestorOf(*focused_element))
       return;
 
     // Slide the focus to its inner node.
@@ -3372,7 +3400,7 @@ void Element::focus(const FocusParams& params) {
                          .GetPage()
                          ->GetFocusController()
                          .FindFocusableElementInShadowHost(*this);
-    if (found && IsShadowIncludingInclusiveAncestorOf(found)) {
+    if (found && IsShadowIncludingInclusiveAncestorOf(*found)) {
       found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                                kWebFocusTypeForward, nullptr, params.options));
       return;
@@ -3550,14 +3578,15 @@ void Element::ActivateDisplayLockIfNeeded() {
 
   HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
       continue;
-    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+    if (auto* context = ancestor_element->GetDisplayLockContext()) {
       // If any of the ancestors is not activatable, we can't activate.
       if (!context->IsActivatable())
         return;
       activatable_targets.push_back(std::make_pair(
-          &ToElement(ancestor), &ancestor.GetTreeScope().Retarget(*this)));
+          ancestor_element, &ancestor.GetTreeScope().Retarget(*this)));
     }
   }
 
@@ -3588,9 +3617,10 @@ bool Element::DisplayLockPreventsActivation() const {
   // check whether a node is in a locked subtree quickly.
   // See crbug.com/924550 for more details.
   for (const Node& current : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (!current.IsElementNode())
+    auto* current_element = DynamicTo<Element>(current);
+    if (!current_element)
       continue;
-    if (auto* context = ToElement(current).GetDisplayLockContext()) {
+    if (auto* context = current_element->GetDisplayLockContext()) {
       if (!context->IsActivatable())
         return true;
     }
@@ -3616,6 +3646,16 @@ void Element::SetShouldForceLegacyLayoutForChildInternal(bool force) {
 
 void Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
                                       const ComputedStyle* old_style) {
+  // ::first-letter may cause structure discrepancies between DOM and layout
+  //  tree (in layout the layout object will be wrapped around the actual text
+  //  layout object, which may be deep down in the tree somewhere, while in DOM,
+  //  the pseudo element will be a direct child of the node that matched the
+  //  ::first-letter selector). Because of that, it's going to be tricky to
+  //  determine whether we need to force legacy layout or not. Luckily, the
+  //  ::first-letter pseudo element cannot introduce the need for legacy layout
+  //  on its own, so just bail. We'll do whatever the parent layout object does.
+  if (IsFirstLetterPseudoElement())
+    return;
   bool old_force = old_style && ShouldForceLegacyLayout();
   SetStyleShouldForceLegacyLayout(
       CalculateStyleShouldForceLegacyLayout(*this, new_style));
@@ -3773,7 +3813,9 @@ void Element::SetOuterHTMLFromString(const String& html,
         "This element has no parent node.");
     return;
   }
-  if (!p->IsElementNode()) {
+
+  auto* parent = DynamicTo<Element>(p);
+  if (!parent) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNoModificationAllowedError,
         "This element's parent is of type '" + p->nodeName() +
@@ -3781,7 +3823,6 @@ void Element::SetOuterHTMLFromString(const String& html,
     return;
   }
 
-  Element* parent = ToElement(p);
   Node* prev = previousSibling();
   Node* next = nextSibling();
 
@@ -3791,12 +3832,21 @@ void Element::SetOuterHTMLFromString(const String& html,
     return;
 
   parent->ReplaceChild(fragment, this, exception_state);
-  Node* node = next ? next->previousSibling() : nullptr;
-  if (!exception_state.HadException() && node && node->IsTextNode())
-    MergeWithNextTextNode(ToText(node), exception_state);
+  if (exception_state.HadException())
+    return;
 
-  if (!exception_state.HadException() && prev && prev->IsTextNode())
-    MergeWithNextTextNode(ToText(prev), exception_state);
+  Node* node = next ? next->previousSibling() : nullptr;
+  if (auto* text = DynamicTo<Text>(node)) {
+    MergeWithNextTextNode(text, exception_state);
+    if (exception_state.HadException())
+      return;
+  }
+
+  if (auto* prev_text = DynamicTo<Text>(prev)) {
+    MergeWithNextTextNode(prev_text, exception_state);
+    if (exception_state.HadException())
+      return;
+  }
 }
 
 void Element::setOuterHTML(const StringOrTrustedHTML& string_or_html,
@@ -3930,7 +3980,7 @@ Element* Element::insertAdjacentElement(const String& where,
                                         Element* new_child,
                                         ExceptionState& exception_state) {
   Node* return_value = InsertAdjacent(where, new_child, exception_state);
-  return ToElement(return_value);
+  return To<Element>(return_value);
 }
 
 void Element::insertAdjacentText(const String& where,
@@ -4023,14 +4073,14 @@ String Element::TextFromChildren() {
   unsigned total_length = 0;
 
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
-    if (!child->IsTextNode())
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (!child_text_node)
       continue;
-    Text* text = ToText(child);
     if (!first_text_node)
-      first_text_node = text;
+      first_text_node = child_text_node;
     else
       found_multiple_text_nodes = true;
-    unsigned length = text->data().length();
+    unsigned length = child_text_node->data().length();
     if (length > std::numeric_limits<unsigned>::max() - total_length)
       return g_empty_string;
     total_length += length;
@@ -4047,9 +4097,10 @@ String Element::TextFromChildren() {
   StringBuilder content;
   content.ReserveCapacity(total_length);
   for (Node* child = first_text_node; child; child = child->nextSibling()) {
-    if (!child->IsTextNode())
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (!child_text_node)
       continue;
-    content.Append(ToText(child)->data());
+    content.Append(child_text_node->data());
   }
 
   DCHECK_EQ(content.length(), total_length);
@@ -4130,9 +4181,13 @@ const ComputedStyle* Element::EnsureComputedStyle(
       if (layout_parent)
         layout_parent->EnsureComputedStyle();
     }
-    scoped_refptr<ComputedStyle> new_style =
-        HasCustomStyleCallbacks() ? CustomStyleForLayoutObject()
-                                  : OriginalStyleForLayoutObject();
+    scoped_refptr<ComputedStyle> new_style = nullptr;
+    // TODO(crbug.com/953707): Avoid setting inline style during
+    // HTMLImageElement::CustomStyleForLayoutObject.
+    if (HasCustomStyleCallbacks() && !IsHTMLImageElement(*this))
+      new_style = CustomStyleForLayoutObject();
+    else
+      new_style = OriginalStyleForLayoutObject();
     element_style = new_style.get();
     element_style->SetIsEnsuredInDisplayNone();
     SetComputedStyle(std::move(new_style));
@@ -4173,8 +4228,8 @@ bool Element::HasDisplayContentsStyle() const {
 bool Element::ShouldStoreComputedStyle(const ComputedStyle& style) const {
   if (LayoutObjectIsNeeded(style))
     return true;
-  if (IsSVGElement()) {
-    if (!ToSVGElement(*this).HasSVGParent())
+  if (auto* svg_element = DynamicTo<SVGElement>(this)) {
+    if (!svg_element->HasSVGParent())
       return false;
     if (IsSVGStopElement(*this))
       return true;
@@ -4189,7 +4244,7 @@ AtomicString Element::ComputeInheritedLanguage() const {
   // the first language.
   do {
     if (n->IsElementNode()) {
-      if (const ElementData* element_data = ToElement(n)->GetElementData()) {
+      if (const auto* element_data = To<Element>(n)->GetElementData()) {
         AttributeCollection attributes = element_data->Attributes();
         // Spec: xml:lang takes precedence -- http://www.w3.org/TR/xhtml1/#C_7
         if (const Attribute* attribute =
@@ -4279,11 +4334,11 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
 
   bool text_node_changed =
       remaining_text_layout_object !=
-      ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject();
+      To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject();
 
   if (phase == StyleUpdatePhase::kAttachLayoutTree) {
     // RemainingTextLayoutObject should have been cleared from DetachLayoutTree.
-    DCHECK(!ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject());
+    DCHECK(!To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject());
     DCHECK(text_node_changed);
     scoped_refptr<ComputedStyle> pseudo_style = element->StyleForLayoutObject();
     if (PseudoElementLayoutObjectIsNeeded(pseudo_style.get()))
@@ -4637,13 +4692,13 @@ void Element::SetContainsPersistentVideo(bool value) {
   // the tree, part of the tree might still carry the flag.
   if (!value && Fullscreen::IsFullscreenElement(*this)) {
     for (Node* node = firstChild(); node;) {
-      if (!node->IsElementNode() ||
-          !ToElement(node)->ContainsPersistentVideo()) {
+      auto* element = DynamicTo<Element>(node);
+      if (!element || !element->ContainsPersistentVideo()) {
         node = node->nextSibling();
         break;
       }
 
-      ToElement(node)->SetContainsPersistentVideo(false);
+      element->SetContainsPersistentVideo(false);
       node = node->firstChild();
     }
   }
@@ -4702,8 +4757,8 @@ bool Element::FastAttributeLookupAllowed(const QualifiedName& name) const {
   if (name == html_names::kStyleAttr)
     return false;
 
-  if (IsSVGElement())
-    return !ToSVGElement(this)->IsAnimatableAttribute(name);
+  if (auto* svg_element = DynamicTo<SVGElement>(this))
+    return !svg_element->IsAnimatableAttribute(name);
 
   return true;
 }
@@ -5125,7 +5180,7 @@ MutableCSSPropertyValueSet& Element::EnsureMutableInlineStyle() {
     CSSParserMode mode = (!IsHTMLElement() || GetDocument().InQuirksMode())
                              ? kHTMLQuirksMode
                              : kHTMLStandardMode;
-    inline_style = MutableCSSPropertyValueSet::Create(mode);
+    inline_style = MakeGarbageCollected<MutableCSSPropertyValueSet>(mode);
   } else if (!inline_style->IsMutable()) {
     inline_style = inline_style->MutableCopy();
   }
@@ -5178,10 +5233,9 @@ void Element::StyleAttributeChanged(
   if (new_style_string.IsNull()) {
     EnsureUniqueElementData().inline_style_.Clear();
   } else if (modification_reason == AttributeModificationReason::kByCloning ||
-             ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument()) ||
              (ContainingShadowRoot() &&
               ContainingShadowRoot()->IsUserAgent()) ||
-             GetDocument().GetContentSecurityPolicy()->AllowInline(
+             GetDocument().GetContentSecurityPolicyForWorld()->AllowInline(
                  ContentSecurityPolicy::InlineType::kStyleAttribute, this,
                  new_style_string, String() /* nonce */, GetDocument().Url(),
                  start_line_number)) {

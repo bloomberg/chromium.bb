@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv) {
   // Instantiate various global structures.
-  base::ThreadPool::CreateAndStartWithDefaultParams("HTTP Service");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("HTTP Service");
   base::CommandLine::Init(argc, argv);
   base::MessageLoopForIO loop;
   base::AtExitManager exit_manager;

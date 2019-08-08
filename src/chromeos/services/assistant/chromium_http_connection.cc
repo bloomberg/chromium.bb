@@ -154,9 +154,7 @@ void ChromiumHttpConnection::Start() {
       resource_request->method = "HEAD";
       break;
   }
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->allow_credentials = false;
 
   const bool chunked_upload =
       !chunked_upload_content_type_.empty() && method_ == Method::POST;
@@ -289,22 +287,15 @@ void ChromiumHttpConnection::OnComplete(bool success) {
       delegate_->OnPartialResponse(partial_response);
   }
 
-  if (success) {
-    DCHECK_NE(response_code, kResponseCodeInvalid);
-    delegate_->OnCompleteResponse(response_code, raw_headers, "");
-    return;
-  }
-
-  if (url_loader_->NetError() != net::OK) {
-    delegate_->OnNetworkError(kResponseCodeInvalid,
-                              net::ErrorToString(url_loader_->NetError()));
+  if (response_code != kResponseCodeInvalid) {
+    delegate_->OnCompleteResponse(response_code, raw_headers, /*response=*/"");
     return;
   }
 
   const std::string message = net::ErrorToString(url_loader_->NetError());
   VLOG(2) << "ChromiumHttpConnection completed with network error="
-          << response_code << ": " << message;
-  delegate_->OnNetworkError(response_code, message);
+          << url_loader_->NetError() << ": " << message;
+  delegate_->OnNetworkError(url_loader_->NetError(), message);
 }
 
 void ChromiumHttpConnection::OnRetry(base::OnceClosure start_retry) {

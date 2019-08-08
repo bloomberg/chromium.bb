@@ -16,22 +16,11 @@
 #include "build/build_config.h"
 #include "components/webcrypto/webcrypto_impl.h"
 #include "content/common/content_export.h"
-#include "media/blink/webmediacapabilitiesclient_impl.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/layout.h"
-
-#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
-#include "content/child/webthemeengine_impl_default.h"
-#elif defined(OS_WIN)
-#include "content/child/webthemeengine_impl_win.h"
-#elif defined(OS_MACOSX)
-#include "content/child/webthemeengine_impl_mac.h"
-#elif defined(OS_ANDROID)
-#include "content/child/webthemeengine_impl_android.h"
-#endif
 
 namespace content {
 
@@ -47,6 +36,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
 
   // Platform methods (partial implementation):
   blink::WebThemeEngine* ThemeEngine() override;
+  bool IsURLSupportedForAppCache(const blink::WebURL& url) override;
   base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
                               int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
@@ -77,7 +67,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
   const char* GetBrowserServiceName() const override;
-  blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
@@ -86,9 +75,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
-  WebThemeEngineImpl native_theme_engine_;
+  std::unique_ptr<blink::WebThemeEngine> native_theme_engine_;
   webcrypto::WebCryptoImpl web_crypto_;
-  media::WebMediaCapabilitiesClientImpl media_capabilities_client_;
 };
 
 }  // namespace content

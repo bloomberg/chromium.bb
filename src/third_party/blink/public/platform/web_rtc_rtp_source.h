@@ -26,6 +26,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSource {
   virtual double TimestampMs() const = 0;
   virtual uint32_t Source() const = 0;
   virtual base::Optional<double> AudioLevel() const = 0;
+  virtual uint32_t RtpTimestamp() const = 0;
 };
 
 }  // namespace blink

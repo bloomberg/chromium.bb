@@ -30,6 +30,8 @@ class BluetoothHost;
 class BluetoothInstance;
 class BootPhaseMonitorHost;
 class BootPhaseMonitorInstance;
+class CameraHost;
+class CameraInstance;
 class CastReceiverInstance;
 class CertStoreHost;
 class CertStoreInstance;
@@ -71,6 +73,8 @@ class PowerHost;
 class PowerInstance;
 class PrintHost;
 class PrintInstance;
+class PrintSpoolerHost;
+class PrintSpoolerInstance;
 class ProcessInstance;
 class PropertyInstance;
 class RotationLockInstance;
@@ -131,6 +135,9 @@ class ArcBridgeService {
                    mojom::BootPhaseMonitorHost>*
   boot_phase_monitor() {
     return &boot_phase_monitor_;
+  }
+  ConnectionHolder<mojom::CameraInstance, mojom::CameraHost>* camera() {
+    return &camera_;
   }
   ConnectionHolder<mojom::CastReceiverInstance>* cast_receiver() {
     return &cast_receiver_;
@@ -204,6 +211,10 @@ class ArcBridgeService {
   ConnectionHolder<mojom::PrintInstance, mojom::PrintHost>* print() {
     return &print_;
   }
+  ConnectionHolder<mojom::PrintSpoolerInstance, mojom::PrintSpoolerHost>*
+  print_spooler() {
+    return &print_spooler_;
+  }
   ConnectionHolder<mojom::ProcessInstance>* process() { return &process_; }
   ConnectionHolder<mojom::PropertyInstance>* property() { return &property_; }
   ConnectionHolder<mojom::RotationLockInstance>* rotation_lock() {
@@ -252,6 +263,7 @@ class ArcBridgeService {
   ConnectionHolder<mojom::BluetoothInstance, mojom::BluetoothHost> bluetooth_;
   ConnectionHolder<mojom::BootPhaseMonitorInstance, mojom::BootPhaseMonitorHost>
       boot_phase_monitor_;
+  ConnectionHolder<mojom::CameraInstance, mojom::CameraHost> camera_;
   ConnectionHolder<mojom::CastReceiverInstance> cast_receiver_;
   ConnectionHolder<mojom::CertStoreInstance, mojom::CertStoreHost> cert_store_;
   ConnectionHolder<mojom::ClipboardInstance, mojom::ClipboardHost> clipboard_;
@@ -282,6 +294,8 @@ class ArcBridgeService {
   ConnectionHolder<mojom::PolicyInstance, mojom::PolicyHost> policy_;
   ConnectionHolder<mojom::PowerInstance, mojom::PowerHost> power_;
   ConnectionHolder<mojom::PrintInstance, mojom::PrintHost> print_;
+  ConnectionHolder<mojom::PrintSpoolerInstance, mojom::PrintSpoolerHost>
+      print_spooler_;
   ConnectionHolder<mojom::ProcessInstance> process_;
   ConnectionHolder<mojom::PropertyInstance> property_;
   ConnectionHolder<mojom::RotationLockInstance> rotation_lock_;

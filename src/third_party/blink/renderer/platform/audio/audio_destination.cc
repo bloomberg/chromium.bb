@@ -107,11 +107,13 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     scale_factor =
         context_sample_rate.value() / web_audio_device_->SampleRate();
 
-    resampler_.reset(new MediaMultiChannelResampler(
-        MaxChannelCount(), scale_factor, audio_utilities::kRenderQuantumFrames,
-        ConvertToBaseCallback(
+    resampler_.reset(
+        new MediaMultiChannelResampler(
+            number_of_output_channels,
+            scale_factor,
+            audio_utilities::kRenderQuantumFrames,
             CrossThreadBind(&AudioDestination::ProvideResamplerInput,
-                            CrossThreadUnretained(this)))));
+                            CrossThreadUnretained(this))));
     resampler_bus_ =
         media::AudioBus::CreateWrapper(render_bus_->NumberOfChannels());
     for (unsigned int i = 0; i < render_bus_->NumberOfChannels(); ++i) {
@@ -187,11 +189,11 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   // Use the dual-thread rendering model if the AudioWorklet is activated.
   if (worklet_task_runner_) {
     PostCrossThreadTask(
-        *worklet_task_runner_,
-        FROM_HERE,
-        CrossThreadBind(&AudioDestination::RequestRender, WrapRefCounted(this),
-                        number_of_frames, frames_to_render, delay,
-                        delay_timestamp, prior_frames_skipped));
+        *worklet_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&AudioDestination::RequestRender,
+                            WrapRefCounted(this), number_of_frames,
+                            frames_to_render, delay, delay_timestamp,
+                            prior_frames_skipped));
   } else {
     // Otherwise use the single-thread rendering with AudioDeviceThread.
     RequestRender(number_of_frames, frames_to_render, delay,

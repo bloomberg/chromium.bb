@@ -30,10 +30,10 @@ function CrostiniImpl() {
 CrostiniImpl.DEFAULT_VM = 'termina';
 
 /**
- * Plugin VM 'PluginVm'.
+ * Plugin VM 'PvmDefault'.
  * @const
  */
-CrostiniImpl.PLUGIN_VM = 'PluginVm';
+CrostiniImpl.PLUGIN_VM = 'PvmDefault';
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
@@ -247,6 +247,14 @@ CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
   // we can ensure it will not also share Downloads.
   if (root === VolumeManagerCommon.RootType.ANDROID_FILES &&
       entry.fullPath === '/') {
+    return false;
+  }
+
+  // Special case to disallow PluginVm sharing on /MyFiles/PluginVm and
+  // subfolders since it gets shared by default.
+  if (vmName === CrostiniImpl.PLUGIN_VM &&
+      root === VolumeManagerCommon.RootType.DOWNLOADS &&
+      entry.fullPath.split('/')[1] === CrostiniImpl.PLUGIN_VM) {
     return false;
   }
 

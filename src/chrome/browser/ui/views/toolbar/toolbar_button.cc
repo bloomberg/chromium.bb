@@ -120,7 +120,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
 
     // Some subclasses (AvatarToolbarButton) may be change alignment. This adds
     // an inset to the text-label side.
-    if (horizontal_alignment() == gfx::ALIGN_RIGHT) {
+    if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
       new_insets += gfx::Insets(0, text_side_inset, 0, 0);
     } else {
       new_insets += gfx::Insets(0, 0, 0, text_side_inset);
@@ -178,8 +178,8 @@ gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
 }
 
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (trigger_menu_on_long_press_ && IsTriggerableEvent(event) && enabled() &&
-      ShouldShowMenu() && HitTestPoint(event.location())) {
+  if (trigger_menu_on_long_press_ && IsTriggerableEvent(event) &&
+      GetEnabled() && ShouldShowMenu() && HitTestPoint(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
     // determine if the user dragged the mouse down (which should pop up the
     // drag down menu immediately, instead of waiting for the timer)
@@ -248,7 +248,7 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
-  if (enabled())
+  if (GetEnabled())
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kPress);
 }
 
@@ -282,7 +282,7 @@ views::InkDrop* ToolbarButton::GetInkDrop() {
 void ToolbarButton::ShowContextMenuForViewImpl(View* source,
                                                const gfx::Point& point,
                                                ui::MenuSourceType source_type) {
-  if (!enabled())
+  if (!GetEnabled())
     return;
 
   show_menu_factory_.InvalidateWeakPtrs();
@@ -313,11 +313,10 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
 
   // Add a fudge factor to the minimum contrast ratio since we'll actually be
   // blending with the adjusted color.
-  const SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
-      contrasting_color, limit, base_color,
-      color_utils::kMinimumReadableContrastRatio * 1.05);
-
-  return color_utils::AlphaBlend(limit, contrasting_color, blend_alpha);
+  return color_utils::BlendForMinContrast(
+             contrasting_color, base_color, limit,
+             color_utils::kMinimumReadableContrastRatio * 1.05)
+      .color;
 }
 
 bool ToolbarButton::ShouldShowMenu() {

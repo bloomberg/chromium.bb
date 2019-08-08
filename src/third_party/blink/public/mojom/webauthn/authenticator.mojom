@@ -18,7 +18,11 @@ enum AuthenticatorStatus {
   NOT_ALLOWED_ERROR,
   INVALID_DOMAIN,
   CREDENTIAL_EXCLUDED,
+
+  // TODO(crbug/964439): Unused in Desktop, but kept around for Android. Delete
+  // once it's fully obsolete.
   CREDENTIAL_NOT_RECOGNIZED,
+
   NOT_IMPLEMENTED,
   NOT_FOCUSED,
   RESIDENT_CREDENTIALS_UNSUPPORTED,
@@ -26,6 +30,8 @@ enum AuthenticatorStatus {
   ALGORITHM_UNSUPPORTED,
   EMPTY_ALLOW_CREDENTIALS,
   ANDROID_NOT_SUPPORTED_ERROR,
+  PROTECTION_POLICY_INCONSISTENT,
+  ABORT_ERROR,
   UNKNOWN_ERROR,
 };
 
@@ -251,6 +257,14 @@ enum AuthenticatorAttachment {
     CROSS_PLATFORM,
 };
 
+enum ProtectionPolicy {
+    // UNSPECIFIED means that no value was given at the Javascript level.
+    UNSPECIFIED,
+    NONE,
+    UV_OR_CRED_ID_REQUIRED,
+    UV_REQUIRED,
+};
+
 // See https://w3c.github.io/webauthn/#dictdef-authenticatorselectioncriteria.
 struct AuthenticatorSelectionCriteria {
   // Filter authenticators by attachment type.
@@ -313,6 +327,13 @@ struct PublicKeyCredentialCreationOptions {
   // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
   [EnableIf=is_android]
   bool user_verification_methods;
+
+  // The value of the `credentialProtectionPolicy` extension, or UNSPECIFIED if
+  // none was provided.
+  ProtectionPolicy protection_policy;
+  // The value of the `enforceCredentialProtectionPolicy`, or false if none was
+  // provided.
+  bool enforce_protection_policy;
 };
 
 enum PublicKeyCredentialType {
@@ -350,4 +371,9 @@ interface Authenticator {
   // Parties use this method to determine whether they can create a new
   // credential using a user-verifying platform authenticator.
   IsUserVerifyingPlatformAuthenticatorAvailable() => (bool available);
+
+  // Cancel an ongoing MakeCredential or GetAssertion request
+  // Only one MakeCredential or GetAssertion call at a time is allowed,
+  // any future calls are cancelled
+  Cancel();
 };

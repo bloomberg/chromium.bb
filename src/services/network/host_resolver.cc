@@ -15,6 +15,7 @@
 #include "net/dns/host_resolver_source.h"
 #include "net/log/net_log.h"
 #include "services/network/host_resolver_mdns_listener.h"
+#include "services/network/public/cpp/host_resolver_mojom_traits.h"
 #include "services/network/resolve_host_request.h"
 
 namespace network {
@@ -41,6 +42,8 @@ ConvertOptionalParameters(
   parameters.include_canonical_name = mojo_parameters->include_canonical_name;
   parameters.loopback_only = mojo_parameters->loopback_only;
   parameters.is_speculative = mojo_parameters->is_speculative;
+  parameters.secure_dns_mode_override = mojo::FromOptionalSecureDnsMode(
+      mojo_parameters->secure_dns_mode_override);
   return parameters;
 }
 }  // namespace

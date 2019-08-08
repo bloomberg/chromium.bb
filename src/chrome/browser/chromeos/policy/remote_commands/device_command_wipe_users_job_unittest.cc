@@ -39,8 +39,9 @@ constexpr base::TimeDelta kVeryoldCommandAge = base::TimeDelta::FromDays(175);
 class TestingRemoteCommandsService : public RemoteCommandsService {
  public:
   explicit TestingRemoteCommandsService(MockCloudPolicyClient* client)
-      : RemoteCommandsService(std::make_unique<DeviceCommandsFactoryChromeOS>(),
-                              client) {}
+      : RemoteCommandsService(
+            std::make_unique<DeviceCommandsFactoryChromeOS>(nullptr),
+            client) {}
   // RemoteCommandsService:
   void SetOnCommandAckedCallback(base::OnceClosure callback) override {
     on_command_acked_callback_ = std::move(callback);

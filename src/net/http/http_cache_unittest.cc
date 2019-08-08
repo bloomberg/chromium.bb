@@ -555,10 +555,8 @@ const char kFullRangeData[] =
 // Verifies the response headers (|response|) match a partial content
 // response for the range starting at |start| and ending at |end|.
 void Verify206Response(const std::string& response, int start, int end) {
-  std::string raw_headers(
-      HttpUtil::AssembleRawHeaders(response.data(), response.size()));
-  scoped_refptr<HttpResponseHeaders> headers(
-      new HttpResponseHeaders(raw_headers));
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(response));
 
   ASSERT_EQ(206, headers->response_code());
 
@@ -580,13 +578,11 @@ void CreateTruncatedEntry(std::string raw_headers, MockHttpCache* cache) {
   ASSERT_TRUE(
       cache->CreateBackendEntry(kRangeGET_TransactionOK.url, &entry, nullptr));
 
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
-
   HttpResponseInfo response;
   response.response_time = base::Time::Now();
   response.request_time = base::Time::Now();
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   // Set the last argument for this to be an incomplete request.
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, true));
 
@@ -5822,14 +5818,14 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   MockTransaction transaction(kSimpleGET_Transaction);
   AddMockTransaction(&transaction);
   MockHttpRequest req1(transaction);
-  req1.top_frame_origin = origin_a;
+  req1.network_isolation_key = NetworkIsolationKey(origin_a);
 
   // Attempt to populate the cache.
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   // Same for a different origin.
   MockHttpRequest req1b(transaction);
-  req1b.top_frame_origin = origin_b;
+  req1b.network_isolation_key = NetworkIsolationKey(origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b,
                                 nullptr);
 
@@ -5846,7 +5842,7 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   transaction.status = "HTTP/1.1 205 No Content";
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
-  req2.top_frame_origin = origin_a;
+  req2.network_isolation_key = NetworkIsolationKey(origin_a);
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
@@ -7736,11 +7732,10 @@ TEST_F(HttpCacheTest, GET_Previous206_NotSparse) {
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
   raw_headers.append(kRangeGET_TransactionOK.response_headers);
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
 
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, false));
 
   scoped_refptr<IOBuffer> buf(base::MakeRefCounted<IOBuffer>(500));
@@ -7784,11 +7779,10 @@ TEST_F(HttpCacheTest, RangeGET_Previous206_NotSparse_2) {
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
   raw_headers.append(kRangeGET_TransactionOK.response_headers);
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
 
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, false));
 
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(500);
@@ -7826,11 +7820,10 @@ TEST_F(HttpCacheTest, GET_Previous206_NotValidation) {
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
   raw_headers.append("Content-Length: 80\n");
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
 
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, false));
 
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(500);
@@ -8459,10 +8452,9 @@ TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
   ASSERT_TRUE(
       cache.CreateBackendEntry("http://www.google.com", &entry, nullptr));
 
-  std::string headers("HTTP/1.1 200 OK");
-  headers = HttpUtil::AssembleRawHeaders(headers.data(), headers.size());
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK"));
 
   // Set the last argument for this to be an incomplete request.
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, true));
@@ -9632,7 +9624,7 @@ TEST_F(HttpCacheTest, SplitCache) {
 
   // Now request with a.com as the top frame origin. It shouldn't be cached
   // since the cached resource has a different top frame origin.
-  trans_info.top_frame_origin = origin_a;
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9645,7 +9637,7 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_TRUE(response.was_cached);
 
   // Now request with b.com as the top frame origin. It shouldn't be cached.
-  trans_info.top_frame_origin = origin_b;
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9656,15 +9648,15 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_TRUE(response.was_cached);
 
   // a.com should still be cached.
-  trans_info.top_frame_origin = origin_a;
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
 
   // Now make a request with an opaque top frame origin.  It shouldn't be
   // cached.
-  trans_info.top_frame_origin = origin_data;
-  EXPECT_TRUE(trans_info.top_frame_origin->opaque());
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_data);
+  EXPECT_TRUE(trans_info.network_isolation_key.ToString().empty());
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9684,7 +9676,7 @@ TEST_F(HttpCacheTest, SplitCache) {
                                               kUploadId);
 
   MockHttpRequest post_info = MockHttpRequest(kSimplePOST_Transaction);
-  post_info.top_frame_origin = origin_a;
+  post_info.network_isolation_key = NetworkIsolationKey(origin_a);
   post_info.upload_data_stream = &upload_data_stream;
 
   RunTransactionTestWithRequest(cache.http_cache(), kSimplePOST_Transaction,
@@ -9714,7 +9706,8 @@ TEST_F(HttpCacheTest, NonSplitCache) {
 
   // Now request with a.com as the top frame origin. It should use the same
   // cached object.
-  trans_info.top_frame_origin = url::Origin::Create(GURL("http://a.com/"));
+  trans_info.network_isolation_key =
+      NetworkIsolationKey(url::Origin::Create(GURL("http://a.com/")));
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);

@@ -14,6 +14,7 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -41,6 +42,20 @@ constexpr int kOverlayScrollbarBorderPatchWidth = 2;
 constexpr int kOverlayScrollbarCenterPatchSize = 1;
 
 const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
+
+const int kCheckboxBorderRadius = 2;
+const int kCheckboxAndRadioBorderWidth = 1;
+const SkColor kCheckboxAndRadioTinyColor = SK_ColorGRAY;
+const SkColor kCkeckboxAndRadioBackgroundColor =
+    SkColorSetRGB(0xFF, 0xFF, 0xFF);
+const SkColor kCheckboxAndRadioBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kCheckboxAndRadioBorderHoveredColor =
+    SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kCheckboxAndRadioBorderDisabledColor =
+    SkColorSetRGB(0xC5, 0xC5, 0xC5);
+const SkColor kCheckboxAndRadioStrokeColor = SkColorSetRGB(0x73, 0x73, 0x73);
+const SkColor kCheckboxAndRadioStrokeDisabledColor =
+    SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
 }  // namespace
 
@@ -298,6 +313,135 @@ void NativeThemeAura::PaintScrollbarCorner(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(SkColorSetRGB(0xDC, 0xDC, 0xDC));
   canvas->drawIRect(RectToSkIRect(rect), flags);
+}
+
+void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect,
+                                    const ButtonExtraParams& button) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintCheckbox(canvas, state, rect, button);
+  }
+
+  SkRect skrect = PaintCheckboxRadioCommon(
+      canvas, state, rect, SkIntToScalar(kCheckboxBorderRadius));
+
+  if (!skrect.isEmpty()) {
+    // Draw the checkmark / dash.
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+
+    if (state == kDisabled) {
+      flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
+    } else {
+      flags.setColor(kCheckboxAndRadioStrokeColor);
+    }
+
+    if (button.indeterminate) {
+      const auto indeterminate =
+          skrect.makeInset(skrect.width() * 0.2, skrect.height() * 0.2);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      canvas->drawRoundRect(indeterminate, SkIntToScalar(kCheckboxBorderRadius),
+                            SkIntToScalar(kCheckboxBorderRadius), flags);
+    } else if (button.checked) {
+      SkPath check;
+      check.moveTo(skrect.x() + skrect.width() * 0.2, skrect.centerY());
+      check.rLineTo(skrect.width() * 0.2, skrect.height() * 0.2);
+      check.lineTo(skrect.right() - skrect.width() * 0.2,
+                   skrect.y() + skrect.height() * 0.2);
+      flags.setStyle(cc::PaintFlags::kStroke_Style);
+      flags.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.16));
+      canvas->drawPath(check, flags);
+    }
+  }
+}
+
+void NativeThemeAura::PaintRadio(cc::PaintCanvas* canvas,
+                                 State state,
+                                 const gfx::Rect& rect,
+                                 const ButtonExtraParams& button) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintRadio(canvas, state, rect, button);
+  }
+
+  // Most of a radio button is the same as a checkbox, except the the rounded
+  // square is a circle (i.e. border radius >= 100%).
+  const SkScalar radius = SkFloatToScalar(
+      static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
+
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, radius);
+  if (!skrect.isEmpty() && button.checked) {
+    // Draw the dot.
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    if (state == kDisabled) {
+      flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
+    } else {
+      flags.setColor(kCheckboxAndRadioStrokeColor);
+    }
+    skrect.inset(skrect.width() * 0.2, skrect.height() * 0.2);
+    // Use drawRoundedRect instead of drawOval to be completely consistent
+    // with the border in PaintCheckboxRadioNewCommon.
+    canvas->drawRoundRect(skrect, radius, radius, flags);
+  }
+}
+
+// Draws the common elements of checkboxes and radio buttons.
+// Returns the rectangle within which any additional decorations should be
+// drawn, or empty if none.
+SkRect NativeThemeAura::PaintCheckboxRadioCommon(
+    cc::PaintCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const SkScalar borderRadius) const {
+  SkRect skrect = gfx::RectToSkRect(rect);
+
+  // Use the largest square that fits inside the provided rectangle.
+  // No other browser seems to support non-square widget, so accidentally
+  // having non-square sizes is common (eg. amazon and webkit dev tools).
+  if (skrect.width() != skrect.height()) {
+    SkScalar size = SkMinScalar(skrect.width(), skrect.height());
+    skrect.inset((skrect.width() - size) / 2, (skrect.height() - size) / 2);
+  }
+
+  // If the rectangle is too small then paint only a rectangle. We don't want
+  // to have to worry about '- 1' and '+ 1' calculations below having overflow
+  // or underflow.
+  if (skrect.width() <= 2) {
+    cc::PaintFlags flags;
+    flags.setColor(kCheckboxAndRadioTinyColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->drawRect(skrect, flags);
+    // Too small to draw anything more.
+    return SkRect::MakeEmpty();
+  }
+
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+
+  const SkScalar borderWidth = SkIntToScalar(kCheckboxAndRadioBorderWidth);
+
+  // Paint the background (is not visible behind the rounded corners).
+  skrect.inset(borderWidth / 2, borderWidth / 2);
+  flags.setColor(kCkeckboxAndRadioBackgroundColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
+
+  // Draw the border.
+  if (state == kHovered) {
+    flags.setColor(kCheckboxAndRadioBorderHoveredColor);
+  } else if (state == kDisabled) {
+    flags.setColor(kCheckboxAndRadioBorderDisabledColor);
+  } else {
+    flags.setColor(kCheckboxAndRadioBorderColor);
+  }
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(borderWidth);
+  canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
+
+  // Return the rectangle for drawing any additional decorations.
+  return skrect;
 }
 
 gfx::Size NativeThemeAura::GetPartSize(Part part,

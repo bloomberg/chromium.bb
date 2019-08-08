@@ -70,6 +70,7 @@ class CvcUnmaskViewController
   base::string16 GetSheetTitle() override;
   void FillContentView(views::View* content_view) override;
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  bool ShouldShowSecondaryButton() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:

@@ -430,6 +430,12 @@ message CreateLxdContainerRequest {
 
   // LXD image alias.
   string image_alias = 5;
+
+  // rootfs path to create the container from.
+  string rootfs_path = 6;
+
+  // metadata path to create the container from.
+  string metadata_path = 7;
 }
 
 // Response for creating an LXD container.
@@ -981,4 +987,15 @@ message ImportLxdContainerProgressSignal {
   // Architecture of container which failed to import.
   // Set when status is FAILED_ARCHITECTURE.
   string architecture_container = 9;
+}
+
+message PendingAppListUpdatesSignal {
+  // Name of the VM on which the app list updates will run.
+  string vm_name = 1;
+
+  // Name of the container on which the app list updates will run.
+  string container_name = 2;
+
+  // Number of currently scheduled app list updates for this container.
+  uint32 count = 3;
 }

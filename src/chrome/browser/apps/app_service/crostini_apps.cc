@@ -8,9 +8,12 @@
 
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/apps/app_service/launch_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "components/prefs/pref_change_registrar.h"
 
 // TODO(crbug.com/826982): the equivalent of
 // CrostiniAppModelBuilder::MaybeCreateRootFolder. Does some sort of "root
@@ -19,7 +22,11 @@
 
 namespace apps {
 
-CrostiniApps::CrostiniApps() : binding_(this), registry_(nullptr) {}
+CrostiniApps::CrostiniApps()
+    : binding_(this),
+      profile_(nullptr),
+      registry_(nullptr),
+      crostini_enabled_(false) {}
 
 CrostiniApps::~CrostiniApps() {
   if (registry_) {
@@ -29,6 +36,10 @@ CrostiniApps::~CrostiniApps() {
 
 void CrostiniApps::Initialize(const apps::mojom::AppServicePtr& app_service,
                               Profile* profile) {
+  profile_ = nullptr;
+  registry_ = nullptr;
+  crostini_enabled_ = false;
+
   if (!crostini::IsCrostiniUIAllowedForProfile(profile)) {
     return;
   }
@@ -36,13 +47,32 @@ void CrostiniApps::Initialize(const apps::mojom::AppServicePtr& app_service,
   if (!registry_) {
     return;
   }
+  profile_ = profile;
+  crostini_enabled_ = crostini::IsCrostiniEnabled(profile);
 
   registry_->AddObserver(this);
+
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(profile->GetPrefs());
+  pref_change_registrar_->Add(
+      crostini::prefs::kCrostiniEnabled,
+      base::BindRepeating(&CrostiniApps::OnCrostiniEnabledChanged,
+                          base::Unretained(this)));
 
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));
   app_service->RegisterPublisher(std::move(publisher),
                                  apps::mojom::AppType::kCrostini);
+}
+
+void CrostiniApps::ReInitializeForTesting(
+    const apps::mojom::AppServicePtr& app_service,
+    Profile* profile) {
+  // Some test code creates a profile (and therefore profile-linked services
+  // like the App Service) before it creates the fake user that lets
+  // IsCrostiniUIAllowedForProfile return true. To work around that, we issue a
+  // second Initialize call.
+  Initialize(app_service, profile);
 }
 
 void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
@@ -141,6 +171,21 @@ void CrostiniApps::OnAppIconUpdated(const std::string& app_id,
   Publish(std::move(app));
 }
 
+void CrostiniApps::OnCrostiniEnabledChanged() {
+  crostini_enabled_ = profile_ && crostini::IsCrostiniEnabled(profile_);
+  auto show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
+                                : apps::mojom::OptionalBool::kFalse;
+
+  // The Crostini Terminal app is a hard-coded special case. It is the entry
+  // point to installing other Crostini apps.
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kCrostini;
+  app->app_id = crostini::kCrostiniTerminalId;
+  app->show_in_launcher = show;
+  app->show_in_search = show;
+  Publish(std::move(app));
+}
+
 void CrostiniApps::LoadIconFromVM(const std::string app_id,
                                   apps::mojom::IconCompression icon_compression,
                                   int32_t size_hint_in_dip,
@@ -201,16 +246,25 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   app->last_launch_time = registration.LastLaunchTime();
   app->install_time = registration.InstallTime();
 
-  app->installed_internally = apps::mojom::OptionalBool::kFalse;
-  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+  // TODO(crbug.com/955937): Change after deciding how crostini apps will
+  // show in App Management.
+  app->install_source = apps::mojom::InstallSource::kUser;
 
-  // TODO(crbug.com/826982): if Crostini isn't enabled, don't show the Terminal
-  // item until it becomes enabled.
+  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+  app->recommendable = apps::mojom::OptionalBool::kTrue;
+  app->searchable = apps::mojom::OptionalBool::kTrue;
+
   auto show = !registration.NoDisplay() ? apps::mojom::OptionalBool::kTrue
                                         : apps::mojom::OptionalBool::kFalse;
+  if (registration.is_terminal_app()) {
+    show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
+                             : apps::mojom::OptionalBool::kFalse;
+  }
   app->show_in_launcher = show;
   app->show_in_search = show;
-  app->show_in_management = show;
+  // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
+  // Management.
+  app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }

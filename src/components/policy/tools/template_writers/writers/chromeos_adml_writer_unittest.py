@@ -86,7 +86,9 @@ class ChromeOsAdmlWriterUnittest(adml_writer_unittest.AdmlWriterUnittest):
     expected_output = (
         '<string id="DictionaryPolicyStub">Dictionary policy caption</string>\n'
         '<string id="DictionaryPolicyStub_Explain">'
-        'This is a test description.</string>\n'
+        'This is a test description.\n'
+        'See https://www.chromium.org/administrators/policy-list-3#'
+        'DictionaryPolicyStub\n</string>\n'
         '<string id="DictionaryPolicyStub_Legacy">'
         'Dictionary policy label (deprecated)</string>')
     self.AssertXMLEquals(output, expected_output)

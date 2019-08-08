@@ -15,8 +15,8 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "ios/web/public/deprecated/url_verification_constants.h"
 #include "ios/web/public/referrer.h"
-#include "ios/web/public/web_state/url_verification_constants.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"
@@ -237,7 +237,7 @@ class WebState : public base::SupportsUserData {
   // Returns the WebState view of the current URL. Moreover, this method
   // will set the trustLevel enum to the appropriate level from a security point
   // of view. The caller has to handle the case where |trust_level| is not
-  // appropriate.
+  // appropriate.  Passing |null| will skip the trust check.
   // TODO(stuartmorgan): Figure out a clean API for this.
   // See http://crbug.com/457679
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;

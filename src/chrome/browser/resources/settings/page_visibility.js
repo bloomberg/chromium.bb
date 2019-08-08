@@ -8,23 +8,32 @@
  * project is completed this can be changed to only consider incognito and
  * guest mode. https://crbug.com/950007
  * @typedef {{
+ *   a11y: (boolean|undefined|A11yPageVisibility),
  *   advancedSettings: (boolean|undefined),
  *   appearance: (boolean|undefined|AppearancePageVisibility),
  *   autofill: (boolean|undefined),
  *   bluetooth: (boolean|undefined),
- *   dateTime: (boolean|undefined|DateTimePageVisibility),
+ *   dateTime: (boolean|undefined),
  *   defaultBrowser: (boolean|undefined),
  *   device: (boolean|undefined),
  *   downloads: (boolean|undefined|DownloadsPageVisibility),
  *   internet: (boolean|undefined),
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
- *   people: (boolean|undefined),
+ *   people: (boolean|undefined|PeoplePageVisibility),
+ *   printing: (boolean|undefined),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
- *   reset:(boolean|undefined),
+ *   reset:(boolean|undefined|ResetPageVisibility),
  * }}
  */
 let PageVisibility;
+
+/**
+ * @typedef {{
+ *   webstoreLink: boolean,
+ * }}
+ */
+let A11yPageVisibility;
 
 /**
  * @typedef {{
@@ -39,25 +48,38 @@ let AppearancePageVisibility;
 
 /**
  * @typedef {{
- *   timeZoneSelector: boolean,
- * }}
- */
-let DateTimePageVisibility;
-
-/**
- * @typedef {{
- *   googleDrive: boolean
+ *   googleDrive: boolean,
+ *   smbShares: boolean,
  * }}
  */
 let DownloadsPageVisibility;
 
 /**
  * @typedef {{
+ *   googleAccounts: boolean,
+ *   kerberosAccounts: boolean,
+ *   lockScreen: boolean,
+ *   manageUsers: boolean,
+ * }}
+ */
+let PeoplePageVisibility;
+
+/**
+ * @typedef {{
+ *   contentProtectionAttestation: boolean,
  *   networkPrediction: boolean,
  *   searchPrediction: boolean,
+ *   wakeOnWifi: boolean,
  * }}
  */
 let PrivacyPageVisibility;
+
+/**
+ * @typedef {{
+ *   powerwash: boolean,
+ * }}
+ */
+let ResetPageVisibility;
 
 cr.define('settings', function() {
   /**
@@ -81,6 +103,7 @@ cr.define('settings', function() {
       defaultBrowser: false,
       advancedSettings: false,
       extensions: false,
+      printing: false,
     };
     // </if>
     // <if expr="chromeos">
@@ -91,7 +114,9 @@ cr.define('settings', function() {
       autofill: false,
       people: false,
       onStartup: false,
-      reset: false,
+      reset: {
+        powerwash: false,
+      },
       appearance: {
         setWallpaper: false,
         setTheme: false,
@@ -101,14 +126,22 @@ cr.define('settings', function() {
       },
       device: showOSSettings,
       advancedSettings: true,
+      dateTime: showOSSettings,
       privacy: {
+        contentProtectionAttestation: showOSSettings,
         searchPrediction: false,
         networkPrediction: false,
+        wakeOnWifi: showOSSettings,
       },
       downloads: {
         googleDrive: false,
+        smbShares: false,
+      },
+      a11y: {
+        webstoreLink: showOSSettings,
       },
       extensions: false,
+      printing: showOSSettings,
     };
     // </if>
   } else {
@@ -120,11 +153,18 @@ cr.define('settings', function() {
       bluetooth: showOSSettings,
       multidevice: showOSSettings,
       autofill: true,
-      people: true,
+      people: {
+        lockScreen: showOSSettings,
+        kerberosAccounts: showOSSettings,
+        googleAccounts: showOSSettings,
+        manageUsers: showOSSettings,
+      },
       onStartup: true,
-      reset: true,
+      reset: {
+        powerwash: showOSSettings,
+      },
       appearance: {
-        setWallpaper: true,
+        setWallpaper: showOSSettings,
         setTheme: true,
         homeButton: true,
         bookmarksBar: true,
@@ -132,14 +172,22 @@ cr.define('settings', function() {
       },
       device: showOSSettings,
       advancedSettings: true,
+      dateTime: showOSSettings,
       privacy: {
+        contentProtectionAttestation: showOSSettings,
         searchPrediction: true,
         networkPrediction: true,
+        wakeOnWifi: showOSSettings,
       },
       downloads: {
-        googleDrive: true,
+        googleDrive: showOSSettings,
+        smbShares: showOSSettings,
+      },
+      a11y: {
+        webstoreLink: showOSSettings,
       },
       extensions: true,
+      printing: showOSSettings,
     };
     // </if>
   }

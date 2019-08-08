@@ -12,7 +12,6 @@
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_audio_configuration.h"
-#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_callbacks.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
 #include "third_party/blink/public/platform/web_string.h"

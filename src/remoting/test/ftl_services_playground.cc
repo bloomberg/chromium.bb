@@ -21,8 +21,8 @@
 #include "base/task/post_task.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
-#include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/test/cli_util.h"
 #include "remoting/test/test_device_id_provider.h"
 #include "remoting/test/test_oauth_token_getter.h"
@@ -136,9 +136,10 @@ void FtlServicesPlayground::GetIceServer(base::OnceClosure on_done) {
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
                      base::Unretained(peer_to_peer_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request,
+      request,
       base::BindOnce(&FtlServicesPlayground::OnGetIceServerResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
@@ -288,7 +289,7 @@ void FtlServicesPlayground::StopReceivingMessages(base::OnceClosure on_done) {
 }
 
 void FtlServicesPlayground::OnMessageReceived(
-    const std::string& sender_id,
+    const ftl::Id& sender_id,
     const std::string& sender_registration_id,
     const ftl::ChromotingMessage& message) {
   std::string message_text = message.xmpp().stanza();
@@ -297,7 +298,8 @@ void FtlServicesPlayground::OnMessageReceived(
       "  Sender ID=%s\n"
       "  Sender Registration ID=%s\n"
       "  Message=%s\n",
-      sender_id.c_str(), sender_registration_id.c_str(), message_text.c_str());
+      sender_id.id().c_str(), sender_registration_id.c_str(),
+      message_text.c_str());
 }
 
 void FtlServicesPlayground::OnReceiveMessagesStreamReady() {

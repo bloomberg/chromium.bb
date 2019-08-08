@@ -17,17 +17,11 @@ namespace viz {
 
 class OutputDeviceBacking;
 
-// Creates an appropriate SoftwareOutputDevice implementation for the browser
-// process.
+// Creates an appropriate SoftwareOutputDevice implementation.
 VIZ_SERVICE_EXPORT std::unique_ptr<SoftwareOutputDevice>
-CreateSoftwareOutputDeviceWinBrowser(HWND hwnd, OutputDeviceBacking* backing);
-
-// Creates an appropriate SoftwareOutputDevice implementation for the GPU
-// process.
-VIZ_SERVICE_EXPORT std::unique_ptr<SoftwareOutputDevice>
-CreateSoftwareOutputDeviceWinGpu(HWND hwnd,
-                                 OutputDeviceBacking* backing,
-                                 mojom::DisplayClient* display_client);
+CreateSoftwareOutputDeviceWin(HWND hwnd,
+                              OutputDeviceBacking* backing,
+                              mojom::DisplayClient* display_client);
 
 }  // namespace viz
 

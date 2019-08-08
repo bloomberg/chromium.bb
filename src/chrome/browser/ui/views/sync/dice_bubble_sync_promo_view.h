@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 class Profile;

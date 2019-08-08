@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "extensions/common/extension_id.h"
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -17,6 +19,7 @@ namespace extensions {
 class Extension;
 
 namespace declarative_net_request {
+
 class RulesetSource;
 class RulesetMatcher;
 struct TestRule;
@@ -42,7 +45,8 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
 // Helper to return a RulesetSource bound to temporary files.
 RulesetSource CreateTemporarySource(size_t id = 1,
                                     size_t priority = 1,
-                                    size_t rule_count_limit = 100);
+                                    size_t rule_count_limit = 100,
+                                    ExtensionId extension_id = "extensionid");
 
 }  // namespace declarative_net_request
 }  // namespace extensions

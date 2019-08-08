@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
-#include "ui/base/models/table_model.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -436,9 +435,8 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
   ForClientPinErrorAuthenticatorRemoved(
       AuthenticatorRequestDialogModel* dialog_model);
   static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-  ForMissingResidentKeysSupport(AuthenticatorRequestDialogModel* dialog_model);
-  static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-  ForMissingUserVerificationSupport(
+  ForMissingCapability(AuthenticatorRequestDialogModel* dialog_model);
+  static std::unique_ptr<AuthenticatorGenericErrorSheetModel> ForStorageFull(
       AuthenticatorRequestDialogModel* dialog_model);
 
  private:
@@ -459,9 +457,29 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
   base::string16 description_;
 };
 
+class AuthenticatorResidentCredentialConfirmationSheetView
+    : public AuthenticatorSheetModelBase {
+ public:
+  AuthenticatorResidentCredentialConfirmationSheetView(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorResidentCredentialConfirmationSheetView() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  bool IsBackButtonVisible() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  void OnAccept() override;
+};
+
 // The sheet shown when the user needs to select an account.
-class AuthenticatorSelectAccountSheetModel : public AuthenticatorSheetModelBase,
-                                             public ui::TableModel {
+class AuthenticatorSelectAccountSheetModel
+    : public AuthenticatorSheetModelBase {
  public:
   explicit AuthenticatorSelectAccountSheetModel(
       AuthenticatorRequestDialogModel* dialog_model);
@@ -482,11 +500,6 @@ class AuthenticatorSelectAccountSheetModel : public AuthenticatorSheetModelBase,
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
-
-  // ui::TableModel:
-  int RowCount() override;
-  base::string16 GetText(int row, int column_id) override;
-  void SetObserver(ui::TableModelObserver* observer) override;
 
   size_t selected_ = 0;
 };

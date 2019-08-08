@@ -13,6 +13,7 @@
 
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/submission_indicator_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -50,28 +51,11 @@ using ValueElementVector = std::vector<ValueElementPair>;
 // entry to the database and how they can affect the matching process.
 
 struct PasswordForm {
-  // Enum to keep track of what information has been sent to the server about
-  // this form regarding password generation.
-  enum GenerationUploadStatus {
-    NO_SIGNAL_SENT,
-    POSITIVE_SIGNAL_SENT,
-    NEGATIVE_SIGNAL_SENT,
-    // Reserve a few values for future use.
-    UNKNOWN_STATUS = 10
-  };
+  using Scheme = mojom::PasswordForm_Scheme;
+  using Type = mojom::PasswordForm_Type;
+  using GenerationUploadStatus = mojom::PasswordForm_GenerationUploadStatus;
 
-  // Enum to differentiate between HTML form based authentication, and dialogs
-  // using basic or digest schemes. Default is SCHEME_HTML. Only PasswordForms
-  // of the same Scheme will be matched/autofilled against each other.
-  enum Scheme : int {
-    SCHEME_HTML,
-    SCHEME_BASIC,
-    SCHEME_DIGEST,
-    SCHEME_OTHER,
-    SCHEME_USERNAME_ONLY,
-
-    SCHEME_LAST = SCHEME_USERNAME_ONLY
-  } scheme;
+  Scheme scheme = Scheme::kHtml;
 
   // The "Realm" for the sign-on. This is scheme, host, port for SCHEME_HTML.
   // Dialog based forms also contain the HTTP realm. Android based forms will
@@ -154,7 +138,7 @@ struct PasswordForm {
 
   // Whether the |username_element| has an autocomplete=username attribute. This
   // is only used in parsed HTML forms.
-  bool username_marked_by_site;
+  bool username_marked_by_site = false;
 
   // The username. Optional.
   //
@@ -175,7 +159,7 @@ struct PasswordForm {
   ValueElementVector all_possible_passwords;
 
   // True if |all_possible_passwords| have autofilled value or its part.
-  bool form_has_autofilled_value;
+  bool form_has_autofilled_value = false;
 
   // The name of the input element corresponding to the current password.
   // Optional (improves scoring).
@@ -219,7 +203,7 @@ struct PasswordForm {
 
   // Whether the |new_password_element| has an autocomplete=new-password
   // attribute. This is only used in parsed HTML forms.
-  bool new_password_marked_by_site;
+  bool new_password_marked_by_site = false;
 
   // True if this PasswordForm represents the last username/password login the
   // user selected to log in to the site. If there is only one saved entry for
@@ -228,7 +212,7 @@ struct PasswordForm {
   // to true. Default to false.
   //
   // When parsing an HTML form, this is not used.
-  bool preferred;
+  bool preferred = false;
 
   // When the login was saved (by chrome).
   //
@@ -245,24 +229,16 @@ struct PasswordForm {
   // to false.
   //
   // When parsing an HTML form, this is not used.
-  bool blacklisted_by_user;
-
-  // Enum to differentiate between manually filled forms, forms with auto-
-  // generated passwords, and forms generated from the DOM API.
-  //
-  // Always append new types at the end. This enum is converted to int and
-  // stored in password store backends, so it is important to keep each
-  // value assigned to the same integer.
-  enum Type { TYPE_MANUAL, TYPE_GENERATED, TYPE_API, TYPE_LAST = TYPE_API };
+  bool blacklisted_by_user = false;
 
   // The form type.
-  Type type;
+  Type type = Type::kManual;
 
   // The number of times that this username/password has been used to
   // authenticate the user.
   //
   // When parsing an HTML form, this is not used.
-  int times_used;
+  int times_used = 0;
 
   // Autofill representation of this form. Used to communicate with the
   // Autofill servers if necessary. Currently this is only used to help
@@ -272,7 +248,8 @@ struct PasswordForm {
   FormData form_data;
 
   // What information has been sent to the Autofill server about this form.
-  GenerationUploadStatus generation_upload_status;
+  GenerationUploadStatus generation_upload_status =
+      GenerationUploadStatus::kNoSignalSent;
 
   // These following fields are set by a website using the Credential Manager
   // API. They will be empty and remain unused for sites which do not use that
@@ -295,30 +272,30 @@ struct PasswordForm {
   // If true, Chrome will not return this credential to a site in response to
   // 'navigator.credentials.request()' without user interaction.
   // Once user selects this credential the flag is reseted.
-  bool skip_zero_click;
+  bool skip_zero_click = false;
 
   // If true, this form was parsed using Autofill predictions.
-  bool was_parsed_using_autofill_predictions;
+  bool was_parsed_using_autofill_predictions = false;
 
   // If true, this match was found using public suffix matching.
-  bool is_public_suffix_match;
+  bool is_public_suffix_match = false;
 
   // If true, this is a credential saved through an Android application, and
   // found using affiliation-based match.
-  bool is_affiliation_based_match;
+  bool is_affiliation_based_match = false;
 
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is not persisted and filled
   // out only for submitted forms.
-  SubmissionIndicatorEvent submission_event;
+  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
 
   // True iff heuristics declined this form for normal saving or filling (e.g.
   // only credit card fields were found). But this form can be saved or filled
   // only with the fallback.
-  bool only_for_fallback;
+  bool only_for_fallback = false;
 
   // True iff this is Gaia form which should be skipped on saving.
-  bool is_gaia_with_skip_save_password_form;
+  bool is_gaia_with_skip_save_password_form = false;
 
   // True iff the new password field was found with server hints or autocomplete
   // attributes. Only set on form parsing for filling, and not persisted. Used
@@ -355,8 +332,8 @@ struct PasswordForm {
 
 // True if the unique keys for the forms are the same. The unique key is
 // (origin, username_element, username_value, password_element, signon_realm).
-bool ArePasswordFormUniqueKeyEqual(const PasswordForm& left,
-                                   const PasswordForm& right);
+bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
+                                    const PasswordForm& right);
 
 // A comparator for the unique key.
 struct LessThanUniqueKey {

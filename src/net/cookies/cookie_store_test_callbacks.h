@@ -90,6 +90,12 @@ class NoResultCookieCallback : public CookieCallback {
   NoResultCookieCallback();
   explicit NoResultCookieCallback(base::Thread* run_in_thread);
 
+  // Makes a callback that will invoke Run. Assumes that |this| will be kept
+  // alive till the time the callback is used.
+  base::OnceCallback<void()> MakeCallback() {
+    return base::BindOnce(&NoResultCookieCallback::Run, base::Unretained(this));
+  }
+
   void Run() {
     CallbackEpilogue();
   }

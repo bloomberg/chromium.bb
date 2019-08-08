@@ -41,8 +41,8 @@ const char kApkMimeType[] = "application/vnd.android.package-archive";
 // The number of user gestures to trace back for the referrer chain.
 const int kAndroidTelemetryUserGestureLimit = 2;
 
-bool IsFeatureEnabled() {
-  return base::FeatureList::IsEnabled(safe_browsing::kTelemetryForApkDownloads);
+bool CanCaptureSafetyNetId() {
+  return base::FeatureList::IsEnabled(safe_browsing::kCaptureSafetyNetId);
 }
 
 void RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome outcome) {
@@ -120,7 +120,6 @@ void AndroidTelemetryService::OnDownloadCreated(
 
 void AndroidTelemetryService::OnDownloadUpdated(download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(IsFeatureEnabled());
   DCHECK_EQ(kApkMimeType, item->GetMimeType());
 
   if (item->GetState() == download::DownloadItem::COMPLETE) {
@@ -161,12 +160,6 @@ bool AndroidTelemetryService::CanSendPing(download::DownloadItem* item) {
   if (!IsExtendedReportingEnabled(*GetPrefs())) {
     RecordApkDownloadTelemetryOutcome(
         ApkDownloadTelemetryOutcome::NOT_SENT_EXTENDED_REPORTING_DISABLED);
-    return false;
-  }
-
-  if (!IsFeatureEnabled()) {
-    RecordApkDownloadTelemetryOutcome(
-        ApkDownloadTelemetryOutcome::NOT_SENT_FEATURE_NOT_ENABLED);
     return false;
   }
 
@@ -249,8 +242,7 @@ AndroidTelemetryService::GetReport(download::DownloadItem* item) {
 void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(sb_service_->database_manager());
-  if (!base::FeatureList::IsEnabled(safe_browsing::kCaptureSafetyNetId) ||
-      !safety_net_id_on_ui_thread_.empty() ||
+  if (!CanCaptureSafetyNetId() || !safety_net_id_on_ui_thread_.empty() ||
       !sb_service_->database_manager()->IsSupported()) {
     return;
   }

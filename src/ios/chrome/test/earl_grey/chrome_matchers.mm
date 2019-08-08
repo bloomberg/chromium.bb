@@ -197,6 +197,10 @@ id<GREYMatcher> SettingsDoneButton() {
   return [ChromeMatchersAppInterface settingsDoneButton];
 }
 
+id<GREYMatcher> SyncSettingsConfirmButton() {
+  return [ChromeMatchersAppInterface syncSettingsConfirmButton];
+}
+
 id<GREYMatcher> ToolsMenuView() {
   return [ChromeMatchersAppInterface toolsMenuView];
 }
@@ -227,6 +231,14 @@ id<GREYMatcher> SettingsImportDataImportButton() {
 
 id<GREYMatcher> SettingsImportDataKeepSeparateButton() {
   return [ChromeMatchersAppInterface settingsImportDataKeepSeparateButton];
+}
+
+id<GREYMatcher> SettingsImportDataContinueButton() {
+  return [ChromeMatchersAppInterface settingsImportDataContinueButton];
+}
+
+id<GREYMatcher> SettingsPrivacyTableView() {
+  return [ChromeMatchersAppInterface settingsPrivacyTableView];
 }
 
 id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
@@ -329,8 +341,20 @@ id<GREYMatcher> NewTabPageOmnibox() {
   return [ChromeMatchersAppInterface NTPOmnibox];
 }
 
+id<GREYMatcher> FakeOmnibox() {
+  return [ChromeMatchersAppInterface fakeOmnibox];
+}
+
 id<GREYMatcher> WebViewMatcher() {
   return [ChromeMatchersAppInterface webViewMatcher];
+}
+
+id<GREYMatcher> WebStateScrollViewMatcher() {
+  return [ChromeMatchersAppInterface webStateScrollViewMatcher];
+}
+
+id<GREYMatcher> HistoryClearBrowsingDataButton() {
+  return [ChromeMatchersAppInterface historyClearBrowsingDataButton];
 }
 
 }  // namespace chrome_test_util

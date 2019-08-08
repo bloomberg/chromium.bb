@@ -431,22 +431,19 @@ LayoutRect NodeRectInRootFrame(const Node* node) {
 
   LayoutObject* object = node->GetLayoutObject();
 
-  LayoutRect rect = LayoutRect(object->LocalBoundingBoxRectForAccessibility());
+  PhysicalRect rect = PhysicalRect::EnclosingRect(
+      object->LocalBoundingBoxRectForAccessibility());
 
   // Inset the bounding box by the border.
   // TODO(bokan): As far as I can tell, this is to work around empty iframes
   // that have a border. It's unclear if that's still useful.
-  rect.Move(node->GetLayoutObject()->Style()->BorderLeftWidth(),
-            node->GetLayoutObject()->Style()->BorderTopWidth());
-  rect.SetWidth(LayoutUnit(
-      rect.Width() - node->GetLayoutObject()->Style()->BorderLeftWidth() -
-      node->GetLayoutObject()->Style()->BorderRightWidth()));
-  rect.SetHeight(LayoutUnit(
-      rect.Height() - node->GetLayoutObject()->Style()->BorderTopWidth() -
-      node->GetLayoutObject()->Style()->BorderBottomWidth()));
+  rect.ContractEdges(LayoutUnit(object->StyleRef().BorderTopWidth()),
+                     LayoutUnit(object->StyleRef().BorderRightWidth()),
+                     LayoutUnit(object->StyleRef().BorderBottomWidth()),
+                     LayoutUnit(object->StyleRef().BorderLeftWidth()));
 
   object->MapToVisualRectInAncestorSpace(/*ancestor=*/nullptr, rect);
-  return rect;
+  return rect.ToLayoutRect();
 }
 
 // This method calculates the exitPoint from the startingRect and the entryPoint

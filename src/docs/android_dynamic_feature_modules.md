@@ -70,14 +70,14 @@ and add:
         <dist:fusing dist:include="false" />
     </dist:module>
 
-    <!-- Remove hasCode="false" when adding Java code. -->
-    <application hasCode="false" />
+    <!-- Remove android:hasCode="false" when adding Java code. -->
+    <application android:hasCode="false" />
 </manifest>
 ```
 
 Then, add a package ID for Foo so that Foo's resources have unique identifiers.
 For this, add a new ID to
-`//chrome/android/features/module_names_to_package_ids.gni`:
+`//chrome/android/features/dynamic_feature_modules.gni`:
 
 ```gn
 resource_packages_id_mapping = [
@@ -100,7 +100,7 @@ the following:
 ```gn
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//chrome/android/features/module_names_to_package_ids.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
 
 template("foo_module_tmpl") {
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
@@ -134,21 +134,22 @@ template("foo_module_tmpl") {
 ```
 
 Then, instantiate the module template in `//chrome/android/BUILD.gn` inside the
-`monochrome_public_bundle_tmpl` template and add it to the bundle target:
+`monochrome_or_trichrome_public_bundle_tmpl` template and add it to the bundle
+target:
 
 ```gn
 ...
 import("modules/foo/foo_module_tmpl.gni")
 ...
-template("monochrome_public_bundle_tmpl") {
+template("monochrome_or_trichrome_public_bundle_tmpl") {
   ...
   foo_module_tmpl("${target_name}__foo_bundle_module") {
     manifest_package = manifest_package
     module_name = "Foo" + _bundle_name
     base_module_target = ":$_base_module_target_name"
-    version_code = monochrome_version_code
-    version_name = chrome_version_name
     uncompress_shared_libraries = true
+    version_code = _version_code
+    version_name = _version_name
   }
   ...
   android_app_bundle(target_name) {
@@ -190,6 +191,11 @@ UI. To do this, add a string to
 </message>
 ...
 ```
+
+*** note
+**Note:** This is for module title only. Other strings specific to the module
+should go in the module, not here (in the base module).
+***
 
 Congrats! You added the DFM Foo to Monochrome. That is a big step but not very
 useful so far. In the next sections you'll learn how to add code and resources
@@ -245,13 +251,19 @@ $ adb shell dumpsys package org.chromium.chrome | grep splits
 To make Foo useful, let's add some Java code to it. This section will walk you
 through the required steps.
 
-First, define a module interface in the new file
+First, define a module interface for Foo. This is accomplished by adding the
+`@ModuleInterface` annotation to the Foo interface. This annotation
+automatically creates a `FooModule` class that can be used later to install and
+access the module. To do this, add the following in the new file
 `//chrome/android/features/foo/public/java/src/org/chromium/chrome/features/foo/Foo.java`:
 
 ```java
 package org.chromium.chrome.features.foo;
 
+import org.chromium.components.module_installer.ModuleInterface;
+
 /** Interface to call into Foo feature. */
+@ModuleInterface(module = "foo", impl = "org.chromium.chrome.features.FooImpl")
 public interface Foo {
     /** Magical function. */
     void bar();
@@ -271,7 +283,9 @@ Next, define an implementation that goes into the module in the new file
 package org.chromium.chrome.features.foo;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.UsedByReflection;
 
+@UsedByReflection("FooModule")
 public class FooImpl implements Foo {
     @Override
     public void bar() {
@@ -280,58 +294,25 @@ public class FooImpl implements Foo {
 }
 ```
 
-In order to get the Foo implementation depending on whether the Foo DFM
-is present, we will add a module provider class handling that logic. For
-this, create the file
-`//chrome/android/features/foo/public/java/src/org/chromium/chrome/features/foo/FooModuleProvider.java`
-and add:
-
-```java
-package org.chromium.chrome.features.foo;
-
-/** Provides the Foo implementation. */
-public class FooModuleProvider {
-    private static Foo sFoo;
-
-    /**
-     * Returns Foo implementation or null if Foo module is not installed.
-     */
-    public static Foo getFoo {
-        if (sFoo == null) {
-            try {
-                sFoo = (Foo) Class
-                    .forName("org.chromium.chrome.features.foo.FooImpl")
-                    .newInstance();
-            } catch (ClassNotFoundException | InstantiationException
-                    | IllegalAccessException | IllegalArgumentException e) {
-                // Foo module is not installed. Leave sFoo as null.
-            }
-        }
-        return sFoo;
-    }
-}
-```
-
 You can then use this provider to access the module if it is installed. To test
 that, instantiate Foo and call `bar()` somewhere in Chrome:
 
 ```java
-if (FooModuleProvider.getFoo() != null) {
-    FooModuleProvider.getFoo().bar();
+if (FooModule.isInstalled()) {
+    FooModule.getImpl().bar();
 } else {
     Log.i("FOO", "module not installed");
 }
 ```
 
-The interface and module provider have to be available regardless of whether the
-Foo DFM is present. Therefore, put those classes into the base module. For this
-create a list of those Java files in
+The interface has to be available regardless of whether the Foo DFM is present.
+Therefore, put those classes into the base module. For this create a list of
+those Java files in
 `//chrome/android/features/foo/public/foo_public_java_sources.gni`:
 
 ```gn
 foo_public_java_sources = [
   "//chrome/android/features/foo/public/java/src/org/chromium/chrome/features/foo/Foo.java",
-  "//chrome/android/features/foo/public/java/src/org/chromium/chrome/features/foo/FooModuleProvider.java",
 ]
 ```
 
@@ -386,7 +367,7 @@ android_app_bundle_module(target_name) {
 ```
 
 Finally, tell Android that your module is now containing code. Do that by
-removing the `hasCode="false"` attribute from the `<application>` tag in
+removing the `android:hasCode="false"` attribute from the `<application>` tag in
 `//chrome/android/features/foo/java/AndroidManifest.xml`. You should be left
 with an empty tag like so:
 
@@ -516,8 +497,10 @@ package org.chromium.chrome.features.foo;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.features.foo.R;
 
+@UsedByReflection("FooModule")
 public class FooImpl implements Foo {
     @Override
     public void bar() {
@@ -551,41 +534,19 @@ On-demand requesting a module will try to download and install the
 module as soon as possible regardless of whether the user is on a metered
 connection or whether they have turned updates off in the Play Store app.
 
-To request a module on-demand we can make use of the `ModuleInstaller` from
-`//components/module_installer/`. For this add, the following function to
-`FooModuleProvider` in
-`//chrome/android/features/foo/public/java/src/org/chromium/chrome/foo/FooModuleProvider.java`:
+You can use the autogenerated module class to on-demand install the module like
+so:
 
 ```java
-/**
- * On-demand install Foo module.
- * @param onFinishedListener listener to be called when install has finished.
- */
-public static installModule(
-        OnModuleInstallFinishedListener onFinishedListener) {
-    ModuleInstaller.install("foo", (success) -> {
-        if (success) {
-            assert getFoo() != null;
-        }
-        onFinishedListener.onFinished(success);
-    });
-}
-```
-
-Then, use this new function to request the module and call `bar()` on install
-completion:
-
-```java
-// Need to call init before accessing any modules. Can be called multiple times.
-ModuleInstaller.init();
-FooModuleProvider.installModule((success) -> {
-    FooModuleProvider.getFoo().bar();
+FooModule.install((success) -> {
+    if (success) {
+        FooModule.getImpl().bar();
+    }
 });
 ```
 
 **Optionally**, you can show UI telling the user about the install flow. For
-this, add the function below to `FooModuleProvider`. Then use
-`installModuleWithUi(...)` instead of `installModule(...)`. Note, it is possible
+this, add a function like the one below. Note, it is possible
 to only show either one of the  install, failure and success UI or any
 combination of the three.
 
@@ -609,7 +570,7 @@ public static void installModuleWithUi(
                     });
     // At the time of writing, shows toast informing user about install start.
     ui.showInstallStartUi();
-    installModule(
+    FooModule.install(
             (success) -> {
                 if (!success) {
                     // At the time of writing, shows infobar allowing user
@@ -631,8 +592,7 @@ Fake-install and launch Chrome with the following command:
 
 ```shell
 $ $OUTDIR/bin/monochrome_public_bundle install -m base -f foo
-$ $OUTDIR/bin/monochrome_public_bundle launch \
-    --args="--fake-feature-module-install"
+$ $OUTDIR/bin/monochrome_public_bundle launch --args="--fake-feature-module-install"
 ```
 
 When running the install code, the Foo DFM module will be emulated.
@@ -657,7 +617,7 @@ not be faked installed.
 To defer install Foo do the following:
 
 ```java
-ModuleInstaller.installDeferred("foo");
+FooModule.installDeferred();
 ```
 
 

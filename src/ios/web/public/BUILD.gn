@@ -8,6 +8,7 @@ source_set("public") {
   public_deps = [
     ":referrer",
     ":user_agent",
+    ":web_state_types",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
@@ -15,6 +16,7 @@ source_set("public") {
 
   deps = [
     "//ios/web/common",
+    "//ios/web/public/deprecated",
     "//services/service_manager/public/cpp",
     "//ui/base",
   ]
@@ -22,66 +24,31 @@ source_set("public") {
   sources = [
     "browser_state.h",
     "browser_url_rewriter.h",
-    "browsing_data_removing_util.h",
-    "cert_policy.h",
-    "certificate_policy_cache.h",
-    "crw_navigation_item_storage.h",
-    "crw_session_certificate_policy_cache_storage.h",
-    "crw_session_certificate_policy_cache_storage.mm",
-    "crw_session_storage.h",
-    "crw_session_storage.mm",
     "favicon_status.cc",
     "favicon_status.h",
     "favicon_url.cc",
     "favicon_url.h",
-    "interstitials/web_interstitial.h",
-    "interstitials/web_interstitial_delegate.h",
     "java_script_dialog_callback.h",
     "java_script_dialog_presenter.h",
     "java_script_dialog_type.h",
     "navigation_item.h",
-    "navigation_item_list.h",
-    "navigation_item_list.mm",
     "navigation_manager.h",
-    "origin_util.h",
-    "origin_util.mm",
     "reload_type.h",
-    "security_style.h",
-    "serializable_user_data_manager.h",
     "service_manager_connection.h",
-    "ssl_status.cc",
-    "ssl_status.h",
-    "system_cookie_store_util.h",
-    "url_data_source_ios.h",
     "url_scheme_util.h",
     "url_schemes.h",
     "url_schemes.mm",
     "web_client.h",
-    "web_state/context_menu_params.h",
-    "web_state/global_web_state_observer.h",
-    "web_state/js/crw_js_injection_evaluator.h",
-    "web_state/js/crw_js_injection_manager.h",
-    "web_state/js/crw_js_injection_receiver.h",
     "web_state/navigation_context.h",
     "web_state/page_display_state.h",
     "web_state/page_display_state.mm",
-    "web_state/session_certificate_policy_cache.h",
-    "web_state/ui/crw_context_menu_delegate.h",
-    "web_state/ui/crw_native_content.h",
-    "web_state/ui/crw_native_content_provider.h",
     "web_state/ui/crw_web_view_proxy.h",
     "web_state/ui/crw_web_view_scroll_view_proxy.h",
-    "web_state/url_verification_constants.h",
-    "web_state/web_frame.h",
-    "web_state/web_frame_user_data.h",
-    "web_state/web_frame_util.h",
-    "web_state/web_frames_manager.h",
     "web_state/web_state.h",
     "web_state/web_state_delegate.h",
     "web_state/web_state_delegate_bridge.h",
     "web_state/web_state_interface_provider.cc",
     "web_state/web_state_interface_provider.h",
-    "web_state/web_state_observer.h",
     "web_state/web_state_observer_bridge.h",
     "web_state/web_state_policy_decider.h",
     "web_state/web_state_policy_decider_bridge.h",
@@ -90,17 +57,26 @@ source_set("public") {
     "web_task_traits.h",
     "web_thread.h",
     "web_thread_delegate.h",
-    "web_ui_ios_data_source.h",
     "web_view_creation_util.h",
-    "webui/web_ui_ios.h",
-    "webui/web_ui_ios_controller.cc",
-    "webui/web_ui_ios_controller.h",
-    "webui/web_ui_ios_controller_factory.h",
-    "webui/web_ui_ios_message_handler.cc",
-    "webui/web_ui_ios_message_handler.h",
   ]
 
   libs = [ "WebKit.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+# Un-separate this once the things in public/deprecated that need it are
+# deprecated.
+source_set("web_state_types") {
+  deps = [
+    ":referrer",
+    "//base",
+    "//url",
+  ]
+  sources = [
+    "web_state/context_menu_params.h",
+    "web_state/web_state_observer.h",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

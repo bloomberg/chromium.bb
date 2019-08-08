@@ -34,9 +34,10 @@ void OmniboxController::StartAutocomplete(
     const AutocompleteInput& input) const {
   ClearPopupKeywordMode();
 
-  if (client_->GetOmniboxControllerEmitter())
+  if (client_->GetOmniboxControllerEmitter()) {
     client_->GetOmniboxControllerEmitter()->NotifyOmniboxQuery(
-        autocomplete_controller_.get());
+        autocomplete_controller_.get(), input.text());
+  }
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.

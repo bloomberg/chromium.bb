@@ -11,6 +11,9 @@ namespace declarative_net_request {
 // Permission name.
 extern const char kAPIPermission[];
 
+// Feedback permission name.
+extern const char kFeedbackAPIPermission[];
+
 // Minimum valid value of a declarative rule ID.
 constexpr int kMinValidID = 1;
 

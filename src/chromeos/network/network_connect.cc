@@ -31,14 +31,6 @@ namespace {
 void IgnoreDisconnectError(const std::string& error_name,
                            std::unique_ptr<base::DictionaryValue> error_data) {}
 
-// Returns true for carriers that can be activated through Shill instead of
-// through a WebUI dialog.
-bool IsDirectActivatedCarrier(const std::string& carrier) {
-  if (carrier == shill::kCarrierSprint)
-    return true;
-  return false;
-}
-
 const NetworkState* GetNetworkStateFromId(const std::string& network_id) {
   // Note: network_id === NetworkState::guid.
   return NetworkHandler::Get()
@@ -76,10 +68,6 @@ class NetworkConnectImpl : public NetworkConnect {
   void OnConnectSucceeded(const std::string& network_id);
   void CallConnectToNetwork(const std::string& network_id,
                             bool check_error_state);
-  void OnActivateFailed(const std::string& network_id,
-                        const std::string& error_name,
-                        std::unique_ptr<base::DictionaryValue> error_data);
-  void OnActivateSucceeded(const std::string& network_id);
   void OnConfigureFailed(const std::string& error_name,
                          std::unique_ptr<base::DictionaryValue> error_data);
   void OnConfigureSucceeded(bool connect_on_configure,
@@ -234,19 +222,6 @@ void NetworkConnectImpl::CallConnectToNetwork(const std::string& network_id,
       check_error_state, ConnectCallbackMode::ON_COMPLETED);
 }
 
-void NetworkConnectImpl::OnActivateFailed(
-    const std::string& network_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  NET_LOG_ERROR("Unable to activate network", network_id);
-  delegate_->ShowNetworkConnectError(
-      NetworkConnectionHandler::kErrorActivateFailed, network_id);
-}
-
-void NetworkConnectImpl::OnActivateSucceeded(const std::string& network_id) {
-  NET_LOG_USER("Activation Succeeded", network_id);
-}
-
 void NetworkConnectImpl::OnConfigureFailed(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
@@ -359,8 +334,9 @@ void NetworkConnectImpl::ConnectToNetworkId(const std::string& network_id) {
   NET_LOG_USER("ConnectToNetwork", network_id);
   const NetworkState* network = GetNetworkStateFromId(network_id);
   if (network) {
-    if (!network->error().empty() && !network->security_class().empty()) {
-      NET_LOG_USER("Configure: " + network->error(), network_id);
+    const std::string& network_error = network->GetError();
+    if (!network_error.empty() && !network->security_class().empty()) {
+      NET_LOG_USER("Configure: " + network_error, network_id);
       // If the network is in an error state, show the configuration UI
       // directly to avoid a spurious notification.
       HandleUnconfiguredNetwork(network_id);
@@ -442,31 +418,9 @@ void NetworkConnectImpl::ActivateCellular(const std::string& network_id) {
     NET_LOG_ERROR("ActivateCellular with no Service", network_id);
     return;
   }
-  const DeviceState* cellular_device =
-      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
-          cellular->device_path());
-  if (!cellular_device) {
-    NET_LOG_ERROR("ActivateCellular with no Device", network_id);
-    return;
-  }
-  if (!IsDirectActivatedCarrier(cellular_device->carrier())) {
-    // For non direct activation, show the mobile setup dialog which can be
-    // used to activate the network.
-    ShowMobileSetup(network_id);
-    return;
-  }
-  if (cellular->activation_state() == shill::kActivationStateActivated) {
-    NET_LOG_ERROR("ActivateCellular for activated service", network_id);
-    return;
-  }
-
-  NetworkHandler::Get()->network_activation_handler()->Activate(
-      cellular->path(),
-      "",  // carrier
-      base::Bind(&NetworkConnectImpl::OnActivateSucceeded,
-                 weak_factory_.GetWeakPtr(), network_id),
-      base::Bind(&NetworkConnectImpl::OnActivateFailed,
-                 weak_factory_.GetWeakPtr(), network_id));
+  // Cellular activation now always goes through an online portal shown by the
+  // mobile setup dialog.
+  ShowMobileSetup(network_id);
 }
 
 void NetworkConnectImpl::ShowMobileSetup(const std::string& network_id) {

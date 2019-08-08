@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
@@ -67,6 +68,12 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // Adds the spell check service item to the context menu.
   static void AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
                                        bool is_checked);
+
+  // Range of command IDs to use for the items in the send tab to self submenu.
+  static const int kMinSendTabToSelfSubMenuCommandId =
+      send_tab_to_self::SendTabToSelfSubMenuModel::kMinCommandId;
+  static const int kMaxSendTabToSelfSubMenuCommandId =
+      send_tab_to_self::SendTabToSelfSubMenuModel::kMaxCommandId;
 
   // RenderViewContextMenuBase:
   bool IsCommandIdChecked(int command_id) const override;
@@ -277,6 +284,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // embeds the MimeHandlerViewGuest. Otherwise this will be the same as
   // |source_web_contents_|.
   content::WebContents* const embedder_web_contents_;
+
+  // Send tab to self submenu.
+  std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
+      send_tab_to_self_sub_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

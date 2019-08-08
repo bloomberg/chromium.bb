@@ -56,7 +56,6 @@
 #include "net/http/http_response_headers.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
-#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
@@ -66,13 +65,13 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/native_theme/dark_mode_observer.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/nfc_host.h"
 #include "content/public/browser/android/child_process_importance.h"
 #endif
-
-struct ViewHostMsg_DateTimeDialogValue_Params;
 
 namespace service_manager {
 class InterfaceProvider;
@@ -86,6 +85,7 @@ class DisplayCutoutHostImpl;
 class FindRequestManager;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
+class JavaScriptDialogNavigationDeferrer;
 class LoaderIOThreadNotifier;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
@@ -463,7 +463,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
-  virtual WebContentsAndroid* GetWebContentsAndroid();
+  WebContentsAndroid* GetWebContentsAndroid();
+  void ClearWebContentsAndroid();
   void ActivateNearestFindResult(float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
@@ -539,7 +540,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       int browser_plugin_instance_id) override;
   device::mojom::GeolocationContext* GetGeolocationContext() override;
   device::mojom::WakeLockContext* GetWakeLockContext() override;
-  device::mojom::WakeLock* GetRendererWakeLock() override;
 #if defined(OS_ANDROID)
   void GetNFC(device::mojom::NFCRequest request) override;
 #endif
@@ -606,6 +606,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   void AudioContextPlaybackStopped(RenderFrameHost* host,
                                    int context_id) override;
+  RenderFrameHostImpl* GetMainFrameForInnerDelegate(
+      FrameTreeNode* frame_tree_node) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -626,7 +628,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RequestSetBounds(const gfx::Rect& new_bounds) override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
-  bool DidAddMessageToConsole(int32_t level,
+  bool DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
@@ -760,6 +762,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderWidgetHostImpl* render_widget_host,
       base::RepeatingClosure hang_monitor_restarter) override;
   void RendererResponsive(RenderWidgetHostImpl* render_widget_host) override;
+  void SubframeCrashed(blink::mojom::FrameVisibility visibility) override;
   void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,
                           bool user_gesture,
                           bool last_unlocked_by_target,
@@ -1034,6 +1037,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // call this directly.
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
 
+  JavaScriptDialogNavigationDeferrer* GetJavaScriptDialogNavigationDeferrer() {
+    return javascript_dialog_navigation_deferrer_.get();
+  }
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1255,11 +1262,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    const std::string& protocol,
                                    const GURL& url,
                                    bool user_gesture);
-#if defined(OS_ANDROID)
-  void OnOpenDateTimeDialog(
-      RenderViewHostImpl* source,
-      const ViewHostMsg_DateTimeDialogValue_Params& value);
-#endif
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);
   void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,
@@ -1470,6 +1472,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
 
+  // Called by DarkModeObserver when the dark mode state changes; triggers a
+  // preference update.
+  void OnDarkModeChanged(bool dark_mode);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1509,6 +1515,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // True if this tab was opened by another tab. This is not unset if the opener
   // is closed.
   bool created_with_opener_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<WebContentsAndroid> web_contents_android_;
+#endif
 
   // Helper classes ------------------------------------------------------------
 
@@ -1738,8 +1748,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 
-  device::mojom::WakeLockPtr renderer_wake_lock_;
-
   service_manager::BinderRegistry registry_;
 
   mojo::BindingSet<blink::mojom::ColorChooserFactory>
@@ -1862,10 +1870,22 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
 
+  // Observe dark mode native theme changes to notify the renderer about
+  // preferred color scheme changes.
+  ui::DarkModeObserver dark_mode_observer_{
+      ui::NativeTheme::GetInstanceForWeb(),
+      base::BindRepeating(&WebContentsImpl::OnDarkModeChanged,
+                          base::Unretained(this))};
+
   // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
   // user gesture is properly propagated. This is a temporary fix for history
   // intervention to be disabled for pdfs (crbug.com/965434).
   bool had_inner_webcontents_;
+
+  // Prevents navigations in this contents while a javascript modal dialog is
+  // showing.
+  std::unique_ptr<JavaScriptDialogNavigationDeferrer>
+      javascript_dialog_navigation_deferrer_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

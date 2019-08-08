@@ -39,10 +39,10 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
@@ -59,6 +59,7 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
+#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -75,6 +76,7 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -196,8 +198,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Services ------------------------------------------------------------
 
-  // A frame specific cookie jar.  May return null, in which case
-  // WebKitPlatformSupport::cookieJar() will be called to access cookies.
+  // A frame specific cookie jar.  May return null.
   virtual WebCookieJar* CookieJar() { return nullptr; }
 
   // Returns a blame context for attributing work belonging to this frame.
@@ -238,7 +239,8 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Request the creation of a new portal.
   virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
-      mojo::ScopedInterfaceEndpointHandle pipe) {
+      mojo::ScopedInterfaceEndpointHandle request_pipe,
+      mojo::ScopedInterfaceEndpointHandle client_pipe) {
     return std::pair<WebRemoteFrame*, base::UnguessableToken>(
         nullptr, base::UnguessableToken());
   }
@@ -403,10 +405,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // A new provisional load has been started.
   virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader) {}
 
-  // The provisional load failed. The WebHistoryCommitType is the commit type
-  // that would have been used had the load succeeded.
+  // The provisional load failed, which used |http_method| to load the main
+  // resource.
   virtual void DidFailProvisionalLoad(const WebURLError&,
-                                      WebHistoryCommitType) {}
+                                      const WebString& http_method) {}
 
   // The provisional datasource is now committed.  The first part of the
   // response body has been received, and the encoding of the response
@@ -482,9 +484,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // non-navigational events related to the data held by WebHistoryItem.
   // WARNING: This method may be called very frequently.
   virtual void DidUpdateCurrentHistoryItem() {}
-
-  // The frame's manifest has changed.
-  virtual void DidChangeManifest() {}
 
   // The frame's theme color has changed.
   virtual void DidChangeThemeColor() {}
@@ -609,9 +608,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // made.
   virtual void WillSendRequest(WebURLRequest&) {}
 
-  // Response headers have been received.
-  virtual void DidReceiveResponse(const WebURLResponse&) {}
-
   // The specified request was satified from WebCore's memory cache.
   virtual void DidLoadResourceFromMemoryCache(const WebURLRequest&,
                                               const WebURLResponse&) {}
@@ -679,7 +675,8 @@ class BLINK_EXPORT WebLocalFrameClient {
                                              bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
-  virtual void DidObserveLayoutJank(double jank_fraction) {}
+  virtual void DidObserveLayoutJank(double jank_fraction,
+                                    bool after_input_or_scroll) {}
 
   enum class LazyLoadBehavior {
     kDeferredImage,    // An image is being deferred by the lazy load feature.
@@ -725,7 +722,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // will be continued in the parent process.
   virtual void BubbleLogicalScrollInParentFrame(
       WebScrollDirection direction,
-      WebScrollGranularity granularity) {}
+      ui::input_types::ScrollGranularity granularity) {}
 
   // MediaStream -----------------------------------------------------
 
@@ -762,8 +759,11 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Accessibility -------------------------------------------------------
 
-  // Notifies embedder about an accessibility event.
-  virtual void PostAccessibilityEvent(const WebAXObject&, ax::mojom::Event) {}
+  // Notifies embedder about an accessibility event on a target WebAXObject for
+  // the ax::mojom::Event type and ax::mojom::EventFrom source.
+  virtual void PostAccessibilityEvent(const WebAXObject&,
+                                      ax::mojom::Event,
+                                      ax::mojom::EventFrom) {}
 
   // Notifies embedder that a WebAXObject is dirty and its state needs
   // to be serialized again. If |subtree| is true, the entire subtree is
@@ -849,11 +849,10 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
-  // externally to load the required handelrs (MimeHandlerView).
-  virtual bool MaybeCreateMimeHandlerView(
-      const WebElement& plugin_element,
-      const WebURL& url,
-      const WebString& suggested_mime_type) {
+  // externally to load the required handlers.
+  virtual bool IsPluginHandledExternally(const WebElement& plugin_element,
+                                         const WebURL& url,
+                                         const WebString& suggested_mime_type) {
     return false;
   }
 
@@ -864,6 +863,13 @@ class BLINK_EXPORT WebLocalFrameClient {
                                                     v8::Isolate*) {
     return v8::Local<v8::Object>();
   }
+
+  // Transfers user activation state from |source_frame| to the current frame.
+  virtual void TransferUserActivationFrom(WebLocalFrame* source_frame) {}
+
+  // AppCache ------------------------------------------------------------
+  virtual void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
 };
 
 }  // namespace blink

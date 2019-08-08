@@ -77,7 +77,7 @@ class ScriptPreconditionTest : public testing::Test {
     BatchElementChecker batch_checks;
     precondition->Check(url_, &batch_checks, parameters_, executed_scripts_,
                         callback.Get());
-    batch_checks.Run(&mock_web_controller_, /* all_done=*/base::DoNothing());
+    batch_checks.Run(&mock_web_controller_);
     return callback.GetResultOrDie();
   }
 

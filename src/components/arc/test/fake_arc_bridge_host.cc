@@ -14,6 +14,7 @@
 #include "components/arc/common/backup_settings.mojom.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
+#include "components/arc/common/camera.mojom.h"
 #include "components/arc/common/cast_receiver.mojom.h"
 #include "components/arc/common/cert_store.mojom.h"
 #include "components/arc/common/clipboard.mojom.h"
@@ -37,6 +38,7 @@
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/common/print.mojom.h"
+#include "components/arc/common/print_spooler.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/common/property.mojom.h"
 #include "components/arc/common/rotation_lock.mojom.h"
@@ -83,6 +85,9 @@ void FakeArcBridgeHost::OnBluetoothInstanceReady(
 
 void FakeArcBridgeHost::OnBootPhaseMonitorInstanceReady(
     mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) {}
+
+void FakeArcBridgeHost::OnCameraInstanceReady(
+    mojom::CameraInstancePtr camera_ptr) {}
 
 void FakeArcBridgeHost::OnCastReceiverInstanceReady(
     mojom::CastReceiverInstancePtr cast_receiver_ptr) {}
@@ -149,6 +154,9 @@ void FakeArcBridgeHost::OnPowerInstanceReady(
 
 void FakeArcBridgeHost::OnPrintInstanceReady(
     mojom::PrintInstancePtr print_ptr) {}
+
+void FakeArcBridgeHost::OnPrintSpoolerInstanceReady(
+    mojom::PrintSpoolerInstancePtr print_spooler_ptr) {}
 
 void FakeArcBridgeHost::OnProcessInstanceReady(
     mojom::ProcessInstancePtr process_ptr) {}

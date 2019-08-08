@@ -7,11 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -84,8 +87,18 @@ void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
   arc_app_list_prefs_->AddObserver(this);
 }
 
+void ApkWebAppService::SetWebAppInstalledCallbackForTesting(
+    WebAppCallbackForTesting web_app_installed_callback) {
+  web_app_installed_callback_ = std::move(web_app_installed_callback);
+}
+
+void ApkWebAppService::SetWebAppUninstalledCallbackForTesting(
+    WebAppCallbackForTesting web_app_uninstalled_callback) {
+  web_app_uninstalled_callback_ = std::move(web_app_uninstalled_callback);
+}
+
 void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
-  if (!web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+  if (!web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile_->GetPrefs(), web_app_id, web_app::InstallSource::kArc)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
     return;
@@ -113,6 +126,9 @@ void ApkWebAppService::Shutdown() {
 
 void ApkWebAppService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   // This method is called when a) new packages are installed, and b) existing
   // packages are updated. In (b), there are two cases to handle: the package
   // could previously have been an Android app and has now become a web app, and
@@ -162,6 +178,28 @@ void ApkWebAppService::OnPackageInstalled(
 
 void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
                                         bool uninstalled) {
+  // Called when an Android package is uninstalled. The package may be
+  // associated with an installed web app. If it is, there are 2 potential
+  // cases:
+  // 1) The user has uninstalled the web app already (e.g. via the
+  // launcher), which has called OnExtensionUninstalled() below and triggered
+  // the uninstallation of the Android package.
+  //
+  // In this case, OnExtensionUninstalled() will have removed the associated
+  // web_app_id from the pref dict before triggering uninstallation, so this
+  // method will do nothing.
+  //
+  // 2) The user has uninstalled the Android package in ARC (e.g. via the Play
+  // Store app).
+  //
+  // In this case, the web app is *not yet* uninstalled when this method is
+  // called, so the associated web_app_id is in the pref dict, and this method
+  // will trigger the uninstallation of the web app. Similarly, this method
+  // removes the associated web_app_id before triggering uninstallation, so
+  // OnExtensionUninstalled() will do nothing.
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
 
@@ -187,6 +225,9 @@ void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
 }
 
 void ApkWebAppService::OnPackageListInitialRefreshed() {
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   // Scan through the list of apps to see if any were uninstalled while ARC
   // wasn't running.
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -229,29 +270,42 @@ void ApkWebAppService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
 
   // Find the package name associated with the provided web app id.
   const base::Value* package_name_value = web_apps_to_apks->FindPathOfType(
       {extension->id(), kPackageNameKey}, base::Value::Type::STRING);
-  if (!package_name_value)
-    return;
+  const std::string package_name =
+      package_name_value ? package_name_value->GetString() : "";
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_app_list_prefs_->app_connection_holder(), UninstallPackage);
-  if (!instance) {
-    // Set that the app should be removed next time the ARC container is ready.
-    web_apps_to_apks->SetPath({extension->id(), kShouldRemoveKey},
-                              base::Value(true));
-    return;
+
+  if (package_name_value) {
+    if (instance) {
+      // Remove the web app id from prefs, otherwise the corresponding call to
+      // OnPackageRemoved will start an uninstallation cycle.
+      web_apps_to_apks->RemoveKey(extension->id());
+      instance->UninstallPackage(package_name);
+    } else {
+      // Set that the app should be removed next time the ARC container is
+      // ready.
+      web_apps_to_apks->SetPath({extension->id(), kShouldRemoveKey},
+                                base::Value(true));
+    }
   }
 
-  // Remove the web app id from prefs, otherwise the corresponding call to
-  // OnPackageRemoved will start an uninstallation cycle.
-  std::string package_name = package_name_value->GetString();
-  web_apps_to_apks->RemoveKey(extension->id());
-  instance->UninstallPackage(package_name);
+  // Post task to make sure that all OnExtensionUninstalled observers get
+  // fired before the callback called.
+  if (web_app_uninstalled_callback_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(web_app_uninstalled_callback_),
+                                  package_name, extension->id()));
+  }
 }
 
 void ApkWebAppService::OnDidGetWebAppIcon(
@@ -282,6 +336,9 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
   // while the ARC container isn't running can be marked for uninstallation
   // when the container starts up again.
   dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
+
+  if (web_app_installed_callback_)
+    std::move(web_app_installed_callback_).Run(package_name, web_app_id);
 }
 
 }  // namespace chromeos

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -43,8 +44,10 @@ void PageAnimator::ServiceScriptedAnimations(
     TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
     DocumentAnimations::UpdateAnimationTimingForAnimationFrame(*document);
     if (document->View()) {
-      if (document->View()->ShouldThrottleRendering())
+      if (document->View()->ShouldThrottleRendering()) {
+        document->SetCurrentFrameIsThrottled(true);
         continue;
+      }
       // Disallow throttling in case any script needs to do a synchronous
       // lifecycle update in other frames which are throttled.
       DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
@@ -79,6 +82,18 @@ void PageAnimator::ServiceScriptedAnimations(
   }
 
   page_->GetValidationMessageClient().LayoutOverlay();
+}
+
+void PageAnimator::RunPostAnimationFrameCallbacks() {
+  HeapVector<Member<Document>, 32> documents;
+  for (Frame* frame = page_->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->IsLocalFrame())
+      documents.push_back(To<LocalFrame>(frame)->GetDocument());
+  }
+
+  for (auto& document : documents)
+    document->RunPostAnimationFrameCallbacks();
 }
 
 void PageAnimator::SetSuppressFrameRequestsWorkaroundFor704763Only(

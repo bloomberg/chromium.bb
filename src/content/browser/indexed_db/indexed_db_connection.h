@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
@@ -21,18 +22,27 @@ class IndexedDBDatabaseCallbacks;
 class IndexedDBDatabaseError;
 class IndexedDBObserver;
 class IndexedDBTransaction;
+class IndexedDBOriginStateHandle;
 
 class CONTENT_EXPORT IndexedDBConnection {
  public:
+  // Used to report irrecoverable backend errors. The second argument can be
+  // null.
+  using ErrorCallback =
+      base::RepeatingCallback<void(leveldb::Status, const char*)>;
+
   IndexedDBConnection(int child_process_id,
-                      scoped_refptr<IndexedDBDatabase> db,
+                      IndexedDBOriginStateHandle origin_state_handle,
+                      base::WeakPtr<IndexedDBDatabase> database,
+                      base::RepeatingClosure on_version_change_ignored,
+                      base::OnceCallback<void(IndexedDBConnection*)> on_close,
+                      ErrorCallback error_callback,
                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
   virtual ~IndexedDBConnection();
 
-  // These methods are virtual to allow subclassing in unit tests.
-  virtual void ForceClose();
-  virtual void Close();
-  virtual bool IsConnected();
+  void Close();
+  void CloseAndReportForceClose();
+  bool IsConnected();
 
   void VersionChangeIgnored();
 
@@ -46,7 +56,7 @@ class CONTENT_EXPORT IndexedDBConnection {
   int32_t id() const { return id_; }
   int child_process_id() const { return child_process_id_; }
 
-  IndexedDBDatabase* database() const { return database_.get(); }
+  base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
   const std::vector<std::unique_ptr<IndexedDBObserver>>& active_observers()
       const {
@@ -87,14 +97,22 @@ class CONTENT_EXPORT IndexedDBConnection {
   }
 
  private:
+  void ClearStateAfterClose();
+
   const int32_t id_;
 
   // The process id of the child process this connection is associated with.
   // Tracked for IndexedDBContextImpl::GetAllOriginsDetails and debugging.
   const int child_process_id_;
 
-  // NULL in some unit tests, and after the connection is closed.
-  scoped_refptr<IndexedDBDatabase> database_;
+  // Keeps the factory for this origin alive.
+  IndexedDBOriginStateHandle origin_state_handle_;
+
+  base::WeakPtr<IndexedDBDatabase> database_;
+  base::RepeatingClosure on_version_change_ignored_;
+  // Note: Calling |on_close_| can destroy this object.
+  base::OnceCallback<void(IndexedDBConnection*)> on_close_;
+  ErrorCallback error_callback_;
 
   // The connection owns transactions created on this connection.
   std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>>
@@ -107,7 +125,7 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<IndexedDBConnection> weak_factory_;
+  base::WeakPtrFactory<IndexedDBConnection> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBConnection);
 };

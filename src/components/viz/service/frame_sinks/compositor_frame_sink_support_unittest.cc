@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -97,6 +98,8 @@ class CompositorFrameSinkSupportTest : public testing::Test {
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
     manager_.SetLocalClient(&frame_sink_manager_client_);
+    now_src_ = std::make_unique<base::SimpleTestTickClock>();
+    manager_.surface_manager()->SetTickClockForTesting(now_src_.get());
     manager_.surface_manager()->AddObserver(&surface_observer_);
     manager_.RegisterFrameSinkId(kArbitraryFrameSinkId,
                                  true /* report_activation */);
@@ -230,6 +233,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
   MockFrameSinkManagerClient frame_sink_manager_client_;

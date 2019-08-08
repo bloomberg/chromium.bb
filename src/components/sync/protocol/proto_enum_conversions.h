@@ -110,6 +110,24 @@ const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
 
 const char* ProtoEnumToString(
+    sync_pb::WifiConfigurationSpecificsData::SecurityType security_type);
+
+const char* ProtoEnumToString(
+    sync_pb::WifiConfigurationSpecificsData::AutomaticallyConnectOption
+        automatically_connect_option);
+
+const char* ProtoEnumToString(
+    sync_pb::WifiConfigurationSpecificsData::IsPreferredOption
+        is_preferred_option);
+
+const char* ProtoEnumToString(
+    sync_pb::WifiConfigurationSpecificsData::MeteredOption metered_option);
+
+const char* ProtoEnumToString(
+    sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration::ProxyOption
+        proxy_option);
+
+const char* ProtoEnumToString(
     sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
 
 }  // namespace syncer

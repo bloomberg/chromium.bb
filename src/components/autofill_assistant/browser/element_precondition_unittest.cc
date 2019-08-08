@@ -49,7 +49,7 @@ class ElementPreconditionTest : public testing::Test {
     ElementPrecondition precondition(exist_, value_match_);
     BatchElementChecker batch_checks;
     precondition.Check(&batch_checks, std::move(callback));
-    batch_checks.Run(&mock_web_controller_, base::DoNothing());
+    batch_checks.Run(&mock_web_controller_);
   }
 
   MockWebController mock_web_controller_;

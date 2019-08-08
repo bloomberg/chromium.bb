@@ -115,6 +115,14 @@ RTCQuicTransport* RTCQuicTransport::Create(
                                       "has a connected RTCQuicTransport.");
     return nullptr;
   }
+  if (transport->IsFromPeerConnection()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot construct an RTCQuicTransport "
+        "with an RTCIceTransport that came from an "
+        "RTCPeerConnection.");
+    return nullptr;
+  }
   for (const auto& certificate : certificates) {
     if (certificate->expires() < ConvertSecondsToDOMTimeStamp(CurrentTime())) {
       exception_state.ThrowTypeError(
@@ -257,8 +265,8 @@ static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
     const RTCDtlsFingerprint* dtls_fingerprint) {
   std::string algorithm = WebString(dtls_fingerprint->algorithm()).Utf8();
   std::string value = WebString(dtls_fingerprint->value()).Utf8();
-  std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint(
-      rtc::SSLFingerprint::CreateFromRfc4572(algorithm, value));
+  std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint =
+      rtc::SSLFingerprint::CreateUniqueFromRfc4572(algorithm, value);
   DCHECK(rtc_fingerprint);
   return rtc_fingerprint;
 }

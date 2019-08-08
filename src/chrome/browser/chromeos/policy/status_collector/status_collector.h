@@ -8,10 +8,28 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/optional.h"
+#include "base/threading/thread_checker.h"
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
+
+class PrefRegistrySimple;
+class Profile;
+
+namespace chromeos {
+class CrosSettings;
+namespace system {
+class StatisticsProvider;
+}
+}  // namespace chromeos
 
 namespace policy {
 
+class ActivityStorage;
 struct DeviceLocalAccount;
 
 // Groups parameters that are necessary either directly in the
@@ -49,8 +67,18 @@ using StatusCollectorCallback =
 // Defines the API for a status collector.
 class StatusCollector {
  public:
-  StatusCollector() = default;
-  virtual ~StatusCollector() = default;
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Simplifies filling the boot mode for any of the relevant status report
+  // requests.
+  static base::Optional<std::string> GetBootMode(
+      chromeos::system::StatisticsProvider* statistics_provider);
+
+  StatusCollector(chromeos::system::StatisticsProvider* provider,
+                  chromeos::CrosSettings* cros_settings,
+                  chromeos::PowerManagerClient* power_manager,
+                  session_manager::SessionManager* session_manager);
+  virtual ~StatusCollector();
 
   // Gathers status information and calls the passed response callback.
   virtual void GetStatusAsync(const StatusCollectorCallback& callback) = 0;
@@ -72,6 +100,51 @@ class StatusCollector {
   // functionality such as network reporting). If it isn't a kiosk session,
   // nullptr is returned.
   virtual std::unique_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
+
+ protected:
+  // Gets the DMToken associated with a profile. Returns an empty string if no
+  // DMToken could be retrieved. Virtual to allow mocking.
+  virtual std::string GetDMTokenForProfile(Profile* profile) const;
+
+  // Used instead of base::Time::Now(), to make testing possible.
+  // TODO(crbug.com/827386): pass a Clock object and use SimpleTestClock to test
+  // it.
+  virtual base::Time GetCurrentTime();
+
+  // The timeout in the past to store activity.
+  // This is kept in case status uploads fail for a number of days.
+  base::TimeDelta max_stored_past_activity_interval_;
+
+  // The timeout in the future to store activity.
+  // When changing the system time and/or timezones, it's possible to record
+  // activity time that is slightly in the future.
+  base::TimeDelta max_stored_future_activity_interval_;
+
+  chromeos::system::StatisticsProvider* const statistics_provider_;
+
+  chromeos::CrosSettings* const cros_settings_;
+
+  // Power manager client. Used to listen to suspend and idle events.
+  chromeos::PowerManagerClient* const power_manager_;
+
+  // Session manager. Used to listen to session state changes.
+  session_manager::SessionManager* const session_manager_;
+
+  // Cached values of the reporting settings.
+  bool report_version_info_ = false;
+  bool report_activity_times_ = false;
+  bool report_boot_mode_ = false;
+
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      version_info_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      boot_mode_subscription_;
+
+  // Task runner in the creation thread where responses are sent to.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_ = nullptr;
+  // TODO(crbug.com/827386): check if it is possible to use the SequenceChecker
+  // instead.
+  base::ThreadChecker thread_checker_;
 };
 
 }  // namespace policy

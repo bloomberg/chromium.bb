@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/zeroconf_printer_detector.h"
 
-#include <map>
-#include <string>
 #include <utility>
 #include <vector>
 

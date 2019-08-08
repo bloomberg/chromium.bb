@@ -23,6 +23,7 @@ namespace {
 class RegistryTestMockFactory : public MockIndexedDBFactory {
  public:
   RegistryTestMockFactory() : duplicate_calls_(false) {}
+  ~RegistryTestMockFactory() override = default;
 
   void ReportOutstandingBlobs(const url::Origin& origin,
                               bool blobs_outstanding) override {
@@ -50,8 +51,6 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
   }
 
  private:
-  ~RegistryTestMockFactory() override {}
-
   std::set<url::Origin> origins_;
   bool duplicate_calls_;
 
@@ -67,6 +66,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
                       base::SequencedTaskRunner* task_runner)
       : IndexedDBFakeBackingStore(factory, task_runner),
         duplicate_calls_(false) {}
+  ~MockIDBBackingStore() override = default;
 
   void ReportBlobUnused(int64_t database_id, int64_t blob_key) override {
     unused_blobs_.insert(std::make_pair(database_id, blob_key));
@@ -81,9 +81,6 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
   }
 
   const KeyPairSet& unused_blobs() const { return unused_blobs_; }
-
- protected:
-  ~MockIDBBackingStore() override {}
 
  private:
   KeyPairSet unused_blobs_;
@@ -118,8 +115,8 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_refptr<RegistryTestMockFactory> factory_;
-  scoped_refptr<MockIDBBackingStore> backing_store_;
+  std::unique_ptr<RegistryTestMockFactory> factory_;
+  std::unique_ptr<MockIDBBackingStore> backing_store_;
   std::unique_ptr<IndexedDBActiveBlobRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBActiveBlobRegistryTest);

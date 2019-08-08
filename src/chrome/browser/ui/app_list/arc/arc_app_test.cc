@@ -132,13 +132,9 @@ void ArcAppTest::SetUp(Profile* profile) {
   if (wait_default_apps_)
     WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
-    // Ensure that the singleton apps::ArcApps is constructed, and let it
-    // complete its set-up (including integrating with the App Service, an
-    // async Mojo service).
+  // Ensure that the singleton apps::ArcApps is constructed.
+  if (base::FeatureList::IsEnabled(features::kAppServiceAsh))
     apps::ArcAppsFactory::GetForProfile(profile_);
-    base::RunLoop().RunUntilIdle();
-  }
 }
 
 void ArcAppTest::WaitForDefaultApps() {

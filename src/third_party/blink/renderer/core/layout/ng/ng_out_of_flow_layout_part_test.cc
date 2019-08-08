@@ -61,7 +61,8 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   scoped_refptr<const NGLayoutResult> result =
       block_flow->GetCachedLayoutResult();
   EXPECT_TRUE(result);
-  EXPECT_EQ(result->OutOfFlowPositionedDescendants().size(), (size_t)2);
+  EXPECT_EQ(result->PhysicalFragment().OutOfFlowPositionedDescendants().size(),
+            2u);
 
   // Test the final result.
   Element* fixed_1 = GetDocument().getElementById("fixed1");

@@ -22,24 +22,25 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.components.omnibox.AnswerType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -61,28 +62,30 @@ class AutocompleteMediator
         implements OnSuggestionsReceivedListener, SuggestionHost, StartStopWithNativeObserver {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo {
+        /** Processor managing the suggestion. */
+        public final SuggestionProcessor processor;
+
         /** The suggestion this info represents. */
         public final OmniboxSuggestion suggestion;
 
         /** The model the view uses to render the suggestion. */
         public final PropertyModel model;
 
-        /** The view type ID. */
-        public final int typeId;
-
-        public SuggestionViewInfo(
-                OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel, int id) {
+        public SuggestionViewInfo(SuggestionProcessor suggestionProcessor,
+                OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel) {
+            processor = suggestionProcessor;
             suggestion = omniboxSuggestion;
             model = propertyModel;
-            typeId = id;
         }
     }
 
     private static final String TAG = "cr_Autocomplete";
+    private static final int SUGGESTION_NOT_FOUND = -1;
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
+    private static final int OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS = 10;
 
     private final Context mContext;
     private final AutocompleteDelegate mDelegate;
@@ -92,12 +95,14 @@ class AutocompleteMediator
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
-    private EditUrlSuggestionProcessor mEditUrlProcessor;
-    private final AnswerSuggestionProcessor mAnswerSuggestionProcessor;
+    private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
+    private AnswerSuggestionProcessor mAnswerSuggestionProcessor;
+    private final EntitySuggestionProcessor mEntitySuggestionProcessor;
 
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
     private AutocompleteController mAutocomplete;
+    private long mUrlFocusTime;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
             SuggestionVisibilityState.ALLOWED})
@@ -141,6 +146,7 @@ class AutocompleteMediator
 
     private WindowAndroid mWindowAndroid;
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private ActivityTabTabObserver mTabObserver;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -154,7 +160,16 @@ class AutocompleteMediator
         mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
         mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this, textProvider);
         mEditUrlProcessor = new EditUrlSuggestionProcessor(
-                delegate, (suggestion) -> onSelection(suggestion, 0));
+                mContext, this, delegate, (suggestion) -> onSelection(suggestion, 0));
+        mEntitySuggestionProcessor = new EntitySuggestionProcessor(mContext, this);
+    }
+
+    public void destroy() {
+        mAnswerSuggestionProcessor.destroy();
+        mAnswerSuggestionProcessor = null;
+        if (mTabObserver != null) {
+            mTabObserver.destroy();
+        }
     }
 
     @Override
@@ -162,7 +177,7 @@ class AutocompleteMediator
 
     @Override
     public void onStopWithNative() {
-        recordAnswersHistogram();
+        recordSuggestionsShown();
     }
 
     /**
@@ -175,19 +190,23 @@ class AutocompleteMediator
     }
 
     /**
-     * Record presence of AiS answers.
-     *
-     * Note: At the time of writing this functionality, AiS was offering at most one answer to any
-     * query. If this changes before the metric is expired, the code below may need either
-     * revisiting or a secondary metric telling us how many answer suggestions have been shown.
+     * Record histograms for presented suggestions.
      */
-    private void recordAnswersHistogram() {
+    private void recordSuggestionsShown() {
+        int richEntitiesCount = 0;
         for (SuggestionViewInfo info : mCurrentModels) {
-            if (info.suggestion.hasAnswer()) {
-                RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
-                        info.suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+            info.processor.recordSuggestionPresented(info.suggestion, info.model);
+
+            if (info.processor.getViewTypeId() == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
+                richEntitiesCount++;
             }
         }
+
+        // Note: valid range for histograms must start with (at least) 1. This does not prevent us
+        // from reporting 0 as a count though - values lower than 'min' fall in the 'underflow'
+        // bucket, while values larger than 'max' will be reported in 'overflow' bucket.
+        RecordHistogram.recordLinearCountHistogram("Omnibox.RichEntityShown", richEntitiesCount, 1,
+                OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS, OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS + 1);
     }
 
     /**
@@ -215,7 +234,7 @@ class AutocompleteMediator
         List<Pair<Integer, PropertyModel>> models = new ArrayList<>(mCurrentModels.size());
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).model;
-            models.add(new Pair<>(mCurrentModels.get(i).typeId, model));
+            models.add(new Pair<>(mCurrentModels.get(i).processor.getViewTypeId(), model));
         }
         mListPropertyModel.set(SuggestionListProperties.SUGGESTION_MODELS, models);
     }
@@ -317,6 +336,7 @@ class AutocompleteMediator
         mDeferredNativeRunnables.clear();
         mAnswerSuggestionProcessor.onNativeInitialized();
         mBasicSuggestionProcessor.onNativeInitialized();
+        mEntitySuggestionProcessor.onNativeInitialized();
         if (mEditUrlProcessor != null) mEditUrlProcessor.onNativeInitialized();
     }
 
@@ -325,11 +345,43 @@ class AutocompleteMediator
      */
     void setActivityTabProvider(ActivityTabProvider provider) {
         if (mEditUrlProcessor != null) mEditUrlProcessor.setActivityTabProvider(provider);
+
+        if (mTabObserver != null) {
+            mTabObserver.destroy();
+            mTabObserver = null;
+        }
+
+        if (provider != null) {
+            mTabObserver = new ActivityTabTabObserver(provider) {
+                @Override
+                public void onPageLoadFinished(Tab tab, String url) {
+                    maybeTriggerCacheRefresh(url);
+                }
+
+                @Override
+                protected void onObservingDifferentTab(Tab tab) {
+                    if (tab == null) return;
+                    maybeTriggerCacheRefresh(tab.getUrl());
+                }
+
+                /**
+                 * Trigger ZeroSuggest cache refresh in case user is accessing a new tab page.
+                 * Avoid issuing multiple concurrent server requests for the same event to reduce
+                 * server pressure.
+                 */
+                private void maybeTriggerCacheRefresh(String url) {
+                    if (url == null) return;
+                    if (!UrlConstants.NTP_URL.equals(url)) return;
+                    AutocompleteController.nativePrefetchZeroSuggestResults();
+                }
+            };
+        }
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
     void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
+            mUrlFocusTime = System.currentTimeMillis();
             mSuggestionVisibilityState = SuggestionVisibilityState.PENDING_ALLOW;
             if (mNativeInitialized) {
                 startZeroSuggest();
@@ -341,9 +393,7 @@ class AutocompleteMediator
                 });
             }
         } else {
-            // Record presence of answers as user stops interacting with omnibox.
-            // This covers actions such as pressing 'back' button or choosing an answer.
-            recordAnswersHistogram();
+            if (mNativeInitialized) recordSuggestionsShown();
 
             mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
             mHasStartedNewOmniboxEditSession = false;
@@ -355,6 +405,7 @@ class AutocompleteMediator
         if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
         mAnswerSuggestionProcessor.onUrlFocusChange(hasFocus);
         mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
+        mEntitySuggestionProcessor.onUrlFocusChange(hasFocus);
     }
 
     /**
@@ -374,6 +425,7 @@ class AutocompleteMediator
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
         mBasicSuggestionProcessor.setProfile(profile);
+        if (mEditUrlProcessor != null) mEditUrlProcessor.setProfile(profile);
     }
 
     /**
@@ -481,6 +533,15 @@ class AutocompleteMediator
             };
             return;
         }
+
+        // Note: this call is typically scheduled for execution, rather than invoked directly.
+        // In some situations this means the content of mCurrentModels may change meanwhile.
+        int verifiedIndex = findSuggestionInModel(suggestion, position);
+        if (verifiedIndex != SUGGESTION_NOT_FOUND) {
+            SuggestionViewInfo info = mCurrentModels.get(verifiedIndex);
+            info.processor.recordSuggestionUsed(info.suggestion, info.model);
+        }
+
         loadUrlFromOmniboxMatch(position, suggestion, mLastActionUpTimestamp, true);
         mDelegate.hideKeyboard();
     }
@@ -596,7 +657,6 @@ class AutocompleteMediator
      * @param skipCheck Whether to skip an out of bounds check.
      * @return The url to navigate to.
      */
-    @SuppressWarnings("ReferenceEquality")
     private String updateSuggestionUrlIfNeeded(
             OmniboxSuggestion suggestion, int selectedIndex, boolean skipCheck) {
         // Only called once we have suggestions, and don't have a listener though which we can
@@ -606,25 +666,13 @@ class AutocompleteMediator
 
         if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST) return suggestion.getUrl();
 
-        int verifiedIndex = -1;
+        int verifiedIndex = SUGGESTION_NOT_FOUND;
         if (!skipCheck) {
-            if (getSuggestionCount() > selectedIndex
-                    && getSuggestionAt(selectedIndex) == suggestion) {
-                verifiedIndex = selectedIndex;
-            } else {
-                // Underlying omnibox results may have changed since the selection was made,
-                // find the suggestion item, if possible.
-                for (int i = 0; i < getSuggestionCount(); i++) {
-                    if (suggestion.equals(getSuggestionAt(i))) {
-                        verifiedIndex = i;
-                        break;
-                    }
-                }
-            }
+            verifiedIndex = findSuggestionInModel(suggestion, selectedIndex);
         }
 
         // If we do not have the suggestion as part of our results, skip the URL update.
-        if (verifiedIndex == -1) return suggestion.getUrl();
+        if (verifiedIndex == SUGGESTION_NOT_FOUND) return suggestion.getUrl();
 
         // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
         // for query in the omnibox and voice suggestions, but it's currently difficult to do.
@@ -635,6 +683,34 @@ class AutocompleteMediator
                 verifiedIndex, suggestion.hashCode(), elapsedTimeSinceInputChange);
 
         return updatedUrl == null ? suggestion.getUrl() : updatedUrl;
+    }
+
+    /**
+     * Check if the supplied suggestion is still in the current model and return its index.
+     *
+     * This call should be used to confirm that model has not been changed ahead of an event being
+     * called by all the methods that are dispatched rather than called directly.
+     *
+     * @param suggestion Suggestion to look for.
+     * @param index Last known position of the suggestion.
+     * @return Current index of the supplied suggestion, or SUGGESTION_NOT_FOUND if it is no longer
+     *         part of the model.
+     */
+    @SuppressWarnings("ReferenceEquality")
+    private int findSuggestionInModel(OmniboxSuggestion suggestion, int position) {
+        if (getSuggestionCount() > position && getSuggestionAt(position) == suggestion) {
+            return position;
+        }
+
+        // Underlying omnibox results may have changed since the selection was made,
+        // find the suggestion item, if possible.
+        for (int index = 0; index < getSuggestionCount(); index++) {
+            if (suggestion.equals(getSuggestionAt(index))) {
+                return index;
+            }
+        }
+
+        return SUGGESTION_NOT_FOUND;
     }
 
     /**
@@ -705,6 +781,8 @@ class AutocompleteMediator
     private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion) {
         if (mAnswerSuggestionProcessor.doesProcessSuggestion(suggestion)) {
             return mAnswerSuggestionProcessor;
+        } else if (mEntitySuggestionProcessor.doesProcessSuggestion(suggestion)) {
+            return mEntitySuggestionProcessor;
         } else if (mEditUrlProcessor != null
                 && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
             return mEditUrlProcessor;
@@ -766,8 +844,7 @@ class AutocompleteMediator
             // Before populating the model, add it to the list of current models.  If the suggestion
             // has an image and the image was already cached, it will be updated synchronously and
             // the model will only have the image populated if it is tracked as a current model.
-            mCurrentModels.add(
-                    new SuggestionViewInfo(suggestion, model, processor.getViewTypeId()));
+            mCurrentModels.add(new SuggestionViewInfo(processor, suggestion, model));
 
             processor.populateModel(suggestion, model, i);
         }
@@ -831,6 +908,10 @@ class AutocompleteMediator
      */
     private void loadUrlFromOmniboxMatch(int matchPosition, OmniboxSuggestion suggestion,
             long inputStart, boolean inVisibleSuggestionList) {
+        final long activationTime = System.currentTimeMillis();
+        RecordHistogram.recordMediumTimesHistogram(
+                "Omnibox.FocusToOpenTimeAnyPopupState3", activationTime - mUrlFocusTime);
+
         String url =
                 updateSuggestionUrlIfNeeded(suggestion, matchPosition, !inVisibleSuggestionList);
 

@@ -108,13 +108,10 @@ class TabListSceneLayer : public SceneLayer {
                    jfloat side_border_scale,
                    jboolean inset_border);
 
-  void PutCreateGroupTextButtonLayer(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj,
-      jint text_button_resource_id,
-      jfloat x,
-      jfloat y,
-      jboolean is_visible);
+  void PutBackgroundLayer(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& jobj,
+                          jint resource_id,
+                          jfloat alpha);
 
   void OnDetach() override;
   bool ShouldShowBackground() override;
@@ -128,13 +125,13 @@ class TabListSceneLayer : public SceneLayer {
   TabMap tab_map_;
   std::set<int> visible_tabs_this_frame_;
 
+  scoped_refptr<cc::UIResourceLayer> background_layer_;
+
   bool content_obscures_self_;
   ui::ResourceManager* resource_manager_;
   LayerTitleCache* layer_title_cache_;
   TabContentManager* tab_content_manager_;
   SkColor background_color_;
-
-  scoped_refptr<cc::UIResourceLayer> tab_group_layer_;
 
   scoped_refptr<cc::Layer> own_tree_;
 

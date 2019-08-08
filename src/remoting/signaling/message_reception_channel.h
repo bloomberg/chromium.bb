@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "remoting/signaling/ftl.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace remoting {
@@ -49,7 +49,7 @@ class MessageReceptionChannel {
   virtual void StopReceivingMessages() = 0;
 
   // Returns true if the streaming channel is open.
-  virtual bool IsReceivingMessages() = 0;
+  virtual bool IsReceivingMessages() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MessageReceptionChannel);

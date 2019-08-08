@@ -22,6 +22,15 @@ suite('CrActionMenu', function() {
   /** @type {HTMLElement} */
   let container = null;
 
+  /** @type {Element} */
+  let checkbox = null;
+
+  /** @override */
+  suiteSetup(() => {
+    return PolymerTest.importHtml(
+        'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html');
+  });
+
   setup(function() {
     PolymerTest.clearBody();
 
@@ -31,13 +40,14 @@ suite('CrActionMenu', function() {
         <button class="dropdown-item">Un</button>
         <hr>
         <button class="dropdown-item">Dos</button>
-        <button class="dropdown-item">Tres</button>
+        <cr-checkbox class="dropdown-item">Tres</cr-checkbox>
       </cr-action-menu>
     `;
 
     menu = document.querySelector('cr-action-menu');
     dialog = menu.getDialog();
     items = menu.querySelectorAll('.dropdown-item');
+    checkbox = items[2].getFocusableElement();
     dots = document.querySelector('#dots');
     assertEquals(3, items.length);
   });
@@ -72,19 +82,19 @@ suite('CrActionMenu', function() {
   test('hidden or disabled items', function() {
     menu.showAt(dots);
     down();
-    assertEquals(getDeepActiveElement(), items[0]);
+    assertEquals(items[0], getDeepActiveElement());
 
     menu.close();
     items[0].hidden = true;
     menu.showAt(dots);
     down();
-    assertEquals(getDeepActiveElement(), items[1]);
+    assertEquals(items[1], getDeepActiveElement());
 
     menu.close();
     items[1].disabled = true;
     menu.showAt(dots);
     down();
-    assertEquals(getDeepActiveElement(), items[2]);
+    assertEquals(checkbox, getDeepActiveElement());
   });
 
   test('focus after down/up arrow', function() {
@@ -94,24 +104,24 @@ suite('CrActionMenu', function() {
     assertEquals(menu, document.activeElement);
     assertNotEquals(items[0], getDeepActiveElement());
     assertNotEquals(items[1], getDeepActiveElement());
-    assertNotEquals(items[2], getDeepActiveElement());
+    assertNotEquals(checkbox, getDeepActiveElement());
 
     down();
     assertEquals(items[0], getDeepActiveElement());
     down();
     assertEquals(items[1], getDeepActiveElement());
     down();
-    assertEquals(items[2], getDeepActiveElement());
+    assertEquals(checkbox, getDeepActiveElement());
     down();
     assertEquals(items[0], getDeepActiveElement());
     up();
-    assertEquals(items[2], getDeepActiveElement());
+    assertEquals(checkbox, getDeepActiveElement());
     up();
     assertEquals(items[1], getDeepActiveElement());
     up();
     assertEquals(items[0], getDeepActiveElement());
     up();
-    assertEquals(items[2], getDeepActiveElement());
+    assertEquals(checkbox, getDeepActiveElement());
 
     items[1].disabled = true;
     up();
@@ -123,7 +133,7 @@ suite('CrActionMenu', function() {
     assertEquals(menu, document.activeElement);
 
     up();
-    assertEquals(items[items.length - 1], getDeepActiveElement());
+    assertEquals(checkbox, getDeepActiveElement());
   });
 
   test('pressing enter when no focus', function() {
@@ -163,7 +173,7 @@ suite('CrActionMenu', function() {
 
     up();
     // Focus should have wrapped around to final item.
-    assertEquals(items[2], getDeepActiveElement());
+    assertEquals(checkbox, getDeepActiveElement());
   });
 
   test('close on click away', function() {
@@ -230,7 +240,7 @@ suite('CrActionMenu', function() {
     // Moving mouse on a disabled item should focus the menu.
     items[2].setAttribute('disabled', '');
     makeMouseoverEvent(items[2]);
-    assertNotEquals(items[2], getDeepActiveElement());
+    assertNotEquals(checkbox, getDeepActiveElement());
     assertEquals(menu, document.activeElement);
 
     // Mouse movements should override keyboard focus.

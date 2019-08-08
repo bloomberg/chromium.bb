@@ -58,8 +58,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
   }
 
  private:
-  Member<ConsoleLogger> console_logger_ =
-      MakeGarbageCollected<NullConsoleLogger>();
+  Member<DetachableConsoleLogger> console_logger_ =
+      MakeGarbageCollected<DetachableConsoleLogger>();
   MockClientDelegate* delegate_;
   bool was_run_ = false;
 };
@@ -72,14 +72,15 @@ class ResourceLoadSchedulerTest : public testing::Test {
     USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
 
    public:
-    void AddConsoleMessage(mojom::ConsoleMessageSource,
-                           mojom::ConsoleMessageLevel,
-                           const String&) override {
-      has_message_ = true;
-    }
     bool HasMessage() const { return has_message_; }
 
    private:
+    void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
+                               mojom::ConsoleMessageLevel,
+                               const String&,
+                               bool discard_duplicates) override {
+      has_message_ = true;
+    }
     bool has_message_ = false;
   };
 
@@ -91,8 +92,9 @@ class ResourceLoadSchedulerTest : public testing::Test {
     auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
     console_logger_ = MakeGarbageCollected<MockConsoleLogger>();
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
-        ResourceLoadScheduler::ThrottlingPolicy::kTight, *properties,
-        frame_scheduler.get(), *console_logger_);
+        ResourceLoadScheduler::ThrottlingPolicy::kTight,
+        properties->MakeDetachable(), frame_scheduler.get(),
+        *MakeGarbageCollected<DetachableConsoleLogger>(console_logger_));
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }

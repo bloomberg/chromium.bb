@@ -263,6 +263,15 @@ class AppListSyncableServiceTest : public AppListTestBase {
     content::RunAllTasksUntilIdle();
   }
 
+  void InstallExtension(extensions::Extension* extension) {
+    const syncer::StringOrdinal& page_ordinal =
+        syncer::StringOrdinal::CreateInitialOrdinal();
+    service()->OnExtensionInstalled(extension, page_ordinal,
+                                    extensions::kInstallFlagNone);
+    // Allow async callbacks to run.
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<AppListModelUpdater::TestApi> model_updater_test_api_;
@@ -280,7 +289,7 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   scoped_refptr<extensions::Extension> store =
       MakeApp("webstore", web_store_app_id,
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
-  service_->AddExtension(store.get());
+  InstallExtension(store.get());
 
   // Create some app. Note its id should be greater than web store app id in
   // order to move app in case of conflicting pos after web store app.
@@ -288,7 +297,7 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   scoped_refptr<extensions::Extension> some_app =
       MakeApp(kSomeAppName, some_app_id,
               extensions ::Extension::WAS_INSTALLED_BY_DEFAULT);
-  service_->AddExtension(some_app.get());
+  InstallExtension(some_app.get());
 
   ChromeAppListItem* web_store_item =
       model_updater()->FindItem(web_store_app_id);
@@ -305,7 +314,7 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   const std::string oem_app_id = CreateNextAppId(some_app_id);
   scoped_refptr<extensions::Extension> oem_app = MakeApp(
       kOemAppName, oem_app_id, extensions::Extension::WAS_INSTALLED_BY_OEM);
-  service_->AddExtension(oem_app.get());
+  InstallExtension(oem_app.get());
 
   size_t web_store_app_index;
   size_t some_app_index;
@@ -329,7 +338,7 @@ TEST_F(AppListSyncableServiceTest, OEMItemIgnoreSyncParent) {
   const std::string oem_app_id = CreateNextAppId(extensions::kWebStoreAppId);
   scoped_refptr<extensions::Extension> oem_app = MakeApp(
       kOemAppName, oem_app_id, extensions::Extension::WAS_INSTALLED_BY_OEM);
-  service_->AddExtension(oem_app.get());
+  InstallExtension(oem_app.get());
 
   // OEM item is not top level element.
   ChromeAppListItem* oem_app_item = model_updater()->FindItem(oem_app_id);
@@ -357,7 +366,7 @@ TEST_F(AppListSyncableServiceTest, NonOEMItemIgnoreSyncToOEMFolder) {
   const std::string app_id = CreateNextAppId(extensions::kWebStoreAppId);
   scoped_refptr<extensions::Extension> app = MakeApp(
       kSomeAppName, app_id, extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
-  service_->AddExtension(app.get());
+  InstallExtension(app.get());
 
   ChromeAppListItem* app_item = model_updater()->FindItem(app_id);
   ASSERT_TRUE(app_item);
@@ -853,13 +862,13 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
   scoped_refptr<extensions::Extension> webstore =
       MakeApp(kSomeAppName, extensions::kWebStoreAppId,
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
-  service_->AddExtension(webstore.get());
+  InstallExtension(webstore.get());
 
   // Chrome is an existing app to transfer attributes to.
   scoped_refptr<extensions::Extension> chrome =
       MakeApp(kSomeAppName, extension_misc::kChromeAppId,
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
-  service_->AddExtension(chrome.get());
+  InstallExtension(chrome.get());
 
   // Youtube is a future app to be installed.
   scoped_refptr<extensions::Extension> youtube =
@@ -915,7 +924,7 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
       AreAllAppAtributesEqualInSync(webstore_sync_item, chrome_sync_item));
 
   // Install Youtube now.
-  service_->AddExtension(youtube.get());
+  InstallExtension(youtube.get());
 
   const app_list::AppListSyncableService::SyncItem* youtube_sync_item =
       GetSyncItem(extension_misc::kYoutubeAppId);
@@ -923,13 +932,6 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
       model_updater()->FindItem(extension_misc::kYoutubeAppId);
   ASSERT_TRUE(youtube_item);
   ASSERT_TRUE(youtube_sync_item);
-
-  // Note, attributes are not transferred inline for pending app.
-  EXPECT_TRUE(AreAllAppAtributesNotEqualInAppList(webstore_item, youtube_item));
-  EXPECT_TRUE(
-      AreAllAppAtributesNotEqualInSync(webstore_sync_item, youtube_sync_item));
-
-  content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(AreAllAppAtributesEqualInAppList(webstore_item, youtube_item));
   EXPECT_TRUE(

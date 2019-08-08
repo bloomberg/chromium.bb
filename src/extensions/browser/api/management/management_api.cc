@@ -123,6 +123,8 @@ management::ExtensionInfo CreateExtensionInfo(
       info.type = management::EXTENSION_TYPE_PACKAGED_APP;
   } else if (extension.is_theme()) {
     info.type = management::EXTENSION_TYPE_THEME;
+  } else if (extension.is_login_screen_extension()) {
+    info.type = management::EXTENSION_TYPE_LOGIN_SCREEN_EXTENSION;
   } else {
     info.type = management::EXTENSION_TYPE_EXTENSION;
   }
@@ -347,13 +349,12 @@ ManagementGetPermissionWarningsByManifestFunction::Run() {
 }
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
-    std::unique_ptr<base::Value> value) {
-  if (!value->is_dict()) {
+    base::Value value) {
+  const base::DictionaryValue* parsed_manifest;
+  if (!value.GetAsDictionary(&parsed_manifest)) {
     OnParseFailure(keys::kManifestParseError);
     return;
   }
-  const base::DictionaryValue* parsed_manifest =
-      static_cast<const base::DictionaryValue*>(value.get());
 
   std::string error;
   scoped_refptr<Extension> extension =

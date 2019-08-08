@@ -194,8 +194,9 @@ View* FocusSearch::FindNextFocusableViewImpl(
   if (can_go_down) {
     if (!starting_view->children().empty()) {
       View* v = FindNextFocusableViewImpl(
-          starting_view->child_at(0), StartingViewPolicy::kCheckStartingView,
-          false, true, can_go_into_anchored_dialog, skip_group_id, seen_views,
+          starting_view->children().front(),
+          StartingViewPolicy::kCheckStartingView, false, true,
+          can_go_into_anchored_dialog, skip_group_id, seen_views,
           focus_traversable, focus_traversable_view);
       if (v || *focus_traversable)
         return v;

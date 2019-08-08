@@ -13,11 +13,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -54,9 +54,11 @@ const PaymentRequestData kPaymentRequestData[]{
     {autofill::kVisaCard, "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
 };
 
+#if defined(GOOGLE_CHROME_BUILD)
 const PaymentRequestData kGooglePayBrandingRequestData = {
     "googlePay", "googlePay", IDR_AUTOFILL_GOOGLE_PAY,
     IDS_AUTOFILL_CC_GOOGLE_PAY};
+#endif  // GOOGLE_CHROME_BUILD
 
 const PaymentRequestData kGenericPaymentRequestData = {
     autofill::kGenericCard, "generic", IDR_AUTOFILL_CC_GENERIC,
@@ -290,6 +292,36 @@ uint32_t DetermineGroups(const std::vector<ServerFieldType>& types) {
   return group_bitmask;
 }
 
+bool IsSupportedFormType(uint32_t groups) {
+  return ContainsAddress(groups) ||
+         ContainsName(groups) + ContainsEmail(groups) + ContainsPhone(groups) >=
+             2;
+}
+
+std::string GetSuffixForProfileFormType(uint32_t bitmask) {
+  switch (bitmask) {
+    case kAddress | kEmail | kPhone:
+    case kName | kAddress | kEmail | kPhone:
+      return ".AddressPlusEmailPlusPhone";
+    case kAddress | kPhone:
+    case kName | kAddress | kPhone:
+      return ".AddressPlusPhone";
+    case kAddress | kEmail:
+    case kName | kAddress | kEmail:
+      return ".AddressPlusEmail";
+    case kAddress:
+    case kName | kAddress:
+      return ".AddressOnly";
+    case kEmail | kPhone:
+    case kName | kEmail | kPhone:
+    case kName | kEmail:
+    case kName | kPhone:
+      return ".ContactOnly";
+    default:
+      return ".Other";
+  }
+}
+
 std::string TruncateUTF8(const std::string& data) {
   std::string trimmed_value;
   base::TruncateUTF8ToByteSize(data, AutofillTable::kMaxDataLength,
@@ -490,9 +522,11 @@ const PaymentRequestData& GetPaymentRequestData(
     if (issuer_network == data.issuer_network)
       return data;
   }
+#if defined(GOOGLE_CHROME_BUILD)
   if (issuer_network == kGooglePayBrandingRequestData.issuer_network) {
     return kGooglePayBrandingRequestData;
   }
+#endif  // GOOGLE_CHROME_BUILD
   return kGenericPaymentRequestData;
 }
 

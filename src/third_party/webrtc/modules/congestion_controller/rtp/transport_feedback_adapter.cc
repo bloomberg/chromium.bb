@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "api/units/timestamp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
@@ -43,9 +44,6 @@ PacketResult NetworkPacketFeedbackFromRtpPacketFeedback(
 }  // namespace
 const int64_t kNoTimestamp = -1;
 const int64_t kSendTimeHistoryWindowMs = 60000;
-const int64_t kBaseTimestampScaleFactor =
-    rtcp::TransportFeedback::kDeltaScaleFactor * (1 << 8);
-const int64_t kBaseTimestampRangeSizeUs = kBaseTimestampScaleFactor * (1 << 24);
 
 TransportFeedbackAdapter::TransportFeedbackAdapter()
     : allow_duplicates_(field_trial::IsEnabled(
@@ -78,23 +76,28 @@ void TransportFeedbackAdapter::DeRegisterPacketFeedbackObserver(
   observers_.erase(it);
 }
 
-void TransportFeedbackAdapter::AddPacket(uint32_t ssrc,
-                                         uint16_t sequence_number,
-                                         size_t length,
-                                         const PacedPacketInfo& pacing_info,
+void TransportFeedbackAdapter::AddPacket(const RtpPacketSendInfo& packet_info,
+                                         size_t overhead_bytes,
                                          Timestamp creation_time) {
   {
     rtc::CritScope cs(&lock_);
-    send_time_history_.AddAndRemoveOld(
-        PacketFeedback(creation_time.ms(), sequence_number, length,
-                       local_net_id_, remote_net_id_, pacing_info),
-        creation_time.ms());
+    PacketFeedback packet_feedback(
+        creation_time.ms(), packet_info.transport_sequence_number,
+        packet_info.length + overhead_bytes, local_net_id_, remote_net_id_,
+        packet_info.pacing_info);
+    if (packet_info.has_rtp_sequence_number) {
+      packet_feedback.ssrc = packet_info.ssrc;
+      packet_feedback.rtp_sequence_number = packet_info.rtp_sequence_number;
+    }
+    send_time_history_.RemoveOld(creation_time.ms());
+    send_time_history_.AddNewPacket(std::move(packet_feedback));
   }
 
   {
     rtc::CritScope cs(&observers_lock_);
     for (auto* observer : observers_) {
-      observer->OnPacketAdded(ssrc, sequence_number);
+      observer->OnPacketAdded(packet_info.ssrc,
+                              packet_info.transport_sequence_number);
     }
   }
 }
@@ -187,26 +190,15 @@ DataSize TransportFeedbackAdapter::GetOutstandingData() const {
 std::vector<PacketFeedback> TransportFeedbackAdapter::GetPacketFeedbackVector(
     const rtcp::TransportFeedback& feedback,
     Timestamp feedback_time) {
-  int64_t timestamp_us = feedback.GetBaseTimeUs();
-
   // Add timestamp deltas to a local time base selected on first packet arrival.
   // This won't be the true time base, but makes it easier to manually inspect
   // time stamps.
   if (last_timestamp_us_ == kNoTimestamp) {
     current_offset_ms_ = feedback_time.ms();
   } else {
-    int64_t delta = timestamp_us - last_timestamp_us_;
-
-    // Detect and compensate for wrap-arounds in base time.
-    if (std::abs(delta - kBaseTimestampRangeSizeUs) < std::abs(delta)) {
-      delta -= kBaseTimestampRangeSizeUs;  // Wrap backwards.
-    } else if (std::abs(delta + kBaseTimestampRangeSizeUs) < std::abs(delta)) {
-      delta += kBaseTimestampRangeSizeUs;  // Wrap forwards.
-    }
-
-    current_offset_ms_ += delta / 1000;
+    current_offset_ms_ += feedback.GetBaseDeltaUs(last_timestamp_us_) / 1000;
   }
-  last_timestamp_us_ = timestamp_us;
+  last_timestamp_us_ = feedback.GetBaseTimeUs();
 
   std::vector<PacketFeedback> packet_feedback_vector;
   if (feedback.GetPacketStatusCount() == 0) {

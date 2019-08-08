@@ -40,7 +40,7 @@ TEST_F(MruWindowTrackerTest, Basic) {
   wm::ActivateWindow(w1.get());
 
   MruWindowTracker::WindowList window_list =
-      mru_window_tracker()->BuildMruWindowList();
+      mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   ASSERT_EQ(3u, window_list.size());
   EXPECT_EQ(w1.get(), window_list[0]);
   EXPECT_EQ(w2.get(), window_list[1]);
@@ -71,7 +71,7 @@ TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
 
   MruWindowTracker::WindowList window_list =
-      mru_window_tracker()->BuildMruWindowList();
+      mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   EXPECT_EQ(w2.get(), window_list[0]);
   EXPECT_EQ(w1.get(), window_list[1]);
   EXPECT_EQ(w3.get(), window_list[2]);
@@ -91,7 +91,7 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
 
   // The dragged window should only be in the list once.
   MruWindowTracker::WindowList window_list =
-      mru_window_tracker()->BuildWindowListIgnoreModal();
+      mru_window_tracker()->BuildWindowListIgnoreModal(kActiveDesk);
   EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1.get()));
 }
 

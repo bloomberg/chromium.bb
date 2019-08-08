@@ -13,8 +13,4 @@ HTMLTimeElement::HTMLTimeElement(Document& document)
   UseCounter::Count(document, WebFeature::kTimeElement);
 }
 
-HTMLTimeElement* HTMLTimeElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLTimeElement>(document);
-}
-
 }  // namespace blink

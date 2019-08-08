@@ -21,17 +21,15 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/synchronization/lock.h"
-#include "base/test/gtest_util.h"
-#include "base/thread_annotations.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_types.h"
-#include "media/filters/jpeg_parser.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "media/parsers/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -64,12 +62,6 @@ constexpr double kMinSsim = 0.997;
 // This file is not supported by the VAAPI, so we don't define expectations on
 // the decode result.
 constexpr const char* kUnsupportedFilename = "pixel-1280x720-grayscale.jpg";
-
-constexpr VAImageFormat kImageFormatI420 = {
-    .fourcc = VA_FOURCC_I420,
-    .byte_order = VA_LSB_FIRST,
-    .bits_per_pixel = 12,
-};
 
 // The size of the minimum coded unit for a YUV 4:2:0 image (both the width and
 // the height of the MCU are the same for 4:2:0).
@@ -342,6 +334,8 @@ int GetMaxSupportedDimension(int max_surface_supported) {
 
 }  // namespace
 
+class VASurface;
+
 class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
  protected:
   VaapiJpegDecoderTest() {
@@ -366,16 +360,6 @@ class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
       base::span<const uint8_t> encoded_image,
       VaapiJpegDecodeStatus* status = nullptr);
 
-  base::Lock* GetVaapiWrapperLock() const
-      LOCK_RETURNED(decoder_.vaapi_wrapper_->va_lock_) {
-    return decoder_.vaapi_wrapper_->va_lock_;
-  }
-
-  VADisplay GetVaapiWrapperVaDisplay() const
-      EXCLUSIVE_LOCKS_REQUIRED(decoder_.vaapi_wrapper_->va_lock_) {
-    return decoder_.vaapi_wrapper_->va_display_;
-  }
-
  protected:
   std::string test_data_path_;
   VaapiJpegDecoder decoder_;
@@ -399,12 +383,22 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     uint32_t preferred_fourcc,
     VaapiJpegDecodeStatus* status) {
-  VaapiJpegDecodeStatus tmp_status;
-  std::unique_ptr<ScopedVAImage> scoped_image =
-      decoder_.DoDecode(encoded_image, preferred_fourcc, &tmp_status);
-  EXPECT_EQ(!!scoped_image, tmp_status == VaapiJpegDecodeStatus::kSuccess);
-  if (status)
-    *status = tmp_status;
+  VaapiJpegDecodeStatus decode_status;
+  scoped_refptr<VASurface> surface =
+      decoder_.Decode(encoded_image, &decode_status);
+  EXPECT_EQ(!!surface, decode_status == VaapiJpegDecodeStatus::kSuccess);
+
+  // Still try to get image when decode fails.
+  VaapiJpegDecodeStatus image_status;
+  std::unique_ptr<ScopedVAImage> scoped_image;
+  scoped_image = decoder_.GetImage(preferred_fourcc, &image_status);
+  EXPECT_EQ(!!scoped_image, image_status == VaapiJpegDecodeStatus::kSuccess);
+
+  // Record the first fail status.
+  if (status) {
+    *status = decode_status != VaapiJpegDecodeStatus::kSuccess ? decode_status
+                                                               : image_status;
+  }
   return scoped_image;
 }
 
@@ -660,79 +654,6 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
           reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size()),
       &status));
   EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedSubsampling, status);
-}
-
-// This test exercises the usual ScopedVAImage lifetime.
-//
-// TODO(andrescj): move ScopedVAImage and ScopedVABufferMapping to a separate
-// file so that we don't have to use |decoder_.vaapi_wrapper_|. See
-// https://crbug.com/924310.
-TEST_F(VaapiJpegDecoderTest, ScopedVAImage) {
-  std::vector<VASurfaceID> va_surfaces;
-  const gfx::Size coded_size(64, 64);
-  ASSERT_TRUE(decoder_.vaapi_wrapper_->CreateContextAndSurfaces(
-      VA_RT_FORMAT_YUV420, coded_size, 1, &va_surfaces));
-  ASSERT_EQ(va_surfaces.size(), 1u);
-
-  std::unique_ptr<ScopedVAImage> scoped_image;
-  {
-    // On Stoney-Ridge devices the output image format is dependent on the
-    // surface format. However when DoDecode() is not called the output image
-    // format seems to default to I420. https://crbug.com/828119
-    VAImageFormat va_image_format = kImageFormatI420;
-    base::AutoLock auto_lock(*GetVaapiWrapperLock());
-    scoped_image = std::make_unique<ScopedVAImage>(
-        GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), va_surfaces[0],
-        &va_image_format, coded_size);
-
-    EXPECT_TRUE(scoped_image->image());
-    ASSERT_TRUE(scoped_image->IsValid());
-    EXPECT_TRUE(scoped_image->va_buffer()->IsValid());
-    EXPECT_TRUE(scoped_image->va_buffer()->data());
-  }
-}
-
-// This test exercises creation of a ScopedVAImage with a bad VASurfaceID.
-TEST_F(VaapiJpegDecoderTest, BadScopedVAImage) {
-#if DCHECK_IS_ON()
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-#endif
-
-  const std::vector<VASurfaceID> va_surfaces = {VA_INVALID_ID};
-  const gfx::Size coded_size(64, 64);
-
-  std::unique_ptr<ScopedVAImage> scoped_image;
-  {
-    VAImageFormat va_image_format = kImageFormatI420;
-    base::AutoLock auto_lock(*GetVaapiWrapperLock());
-    scoped_image = std::make_unique<ScopedVAImage>(
-        GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), va_surfaces[0],
-        &va_image_format, coded_size);
-
-    EXPECT_TRUE(scoped_image->image());
-    EXPECT_FALSE(scoped_image->IsValid());
-#if DCHECK_IS_ON()
-    EXPECT_DCHECK_DEATH(scoped_image->va_buffer());
-#else
-    EXPECT_FALSE(scoped_image->va_buffer());
-#endif
-  }
-}
-
-// This test exercises creation of a ScopedVABufferMapping with bad VABufferIDs.
-TEST_F(VaapiJpegDecoderTest, BadScopedVABufferMapping) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  base::AutoLock auto_lock(*GetVaapiWrapperLock());
-
-  // A ScopedVABufferMapping with a VA_INVALID_ID VABufferID is DCHECK()ed.
-  EXPECT_DCHECK_DEATH(std::make_unique<ScopedVABufferMapping>(
-      GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), VA_INVALID_ID));
-
-  // This should not hit any DCHECK() but will create an invalid
-  // ScopedVABufferMapping.
-  auto scoped_buffer = std::make_unique<ScopedVABufferMapping>(
-      GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), VA_INVALID_ID - 1);
-  EXPECT_FALSE(scoped_buffer->IsValid());
 }
 
 std::string TestParamToString(

@@ -82,6 +82,7 @@ class JniClient : public ChromotingSession::Delegate {
                const base::android::JavaParamRef<jstring>& username,
                const base::android::JavaParamRef<jstring>& auth_token,
                const base::android::JavaParamRef<jstring>& host_jid,
+               const base::android::JavaParamRef<jstring>& host_ftl_id,
                const base::android::JavaParamRef<jstring>& host_id,
                const base::android::JavaParamRef<jstring>& host_pubkey,
                const base::android::JavaParamRef<jstring>& pair_id,

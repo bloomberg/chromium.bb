@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">ஸ்லைடர்</translation>
 <translation id="1211441953136645838">முடிவுக்குறிப்பு</translation>
 <translation id="1281252709823657822">உரையாடல்</translation>
-<translation id="1289247557029249093">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையிலிருந்து வெளியேறு</translation>
 <translation id="1335095011850992622">பங்களித்தவர்கள்</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">பேனர்</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">இன்று</translation>
 <translation id="2158401438286456825">பக்கப் பட்டியல்</translation>
 <translation id="2226276347425096477">இந்த உரையை <ph name="MAX_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் குறைவாக சுருக்கிடுங்கள் (நீங்கள் தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்).</translation>
+<translation id="2246498165605549352">அகக் கோப்பு</translation>
 <translation id="2247351761944213033">வாரம் <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ட்ராக் <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">செக்பாக்ஸ்</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">லேபிளிடப்படாத படம்</translation>
 <translation id="3706100364254443312">ஸ்விட்ச்</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">’பிக்ச்சர்-இன்-பிக்ச்சரில்' இருந்து வெளியேறு</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">சொல்</translation>
 <translation id="3822383571486410024">இந்த உரையை <ph name="MIN_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் அதிகமாக (தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்) நீட்டிக்கவும்.</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' ஐத் தொடரும் பகுதியில், '<ph name="INVALIDCHARACTER" />' சின்னம் இருக்கக்கூடாது.</translation>
 <translation id="4668956016107839909">பிற்சேர்க்கை</translation>
+<translation id="4718048029184481307">’பிக்ச்சர்-இன்-பிக்ச்சர்' பயன்முறையில் பிளே ஆகிறது</translation>
 <translation id="4742539557769756338">அட்டை</translation>
 <translation id="4748357248530471599">டிஸ்ப்ளே கட்அவுட் முழுத்திரை நிலைமாற்ற பட்டன்</translation>
 <translation id="4757246831282535685">தாவல் பலகம்</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">பின்னுரை</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> போலத் தோன்றுகிறது.</translation>
 <translation id="6213469881011901533">அருஞ்சொல் திரட்டு</translation>
-<translation id="628938136236500310">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையில் இயக்குகிறது</translation>
+<translation id="6310801910862476708">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையிலிருந்து வெளியேறு</translation>
 <translation id="6398862346408813489">மாதம் தேர்ந்தெடுப்புப் பலகத்தைக் காட்டு</translation>
 <translation id="6404546809543547843">ஆடியோ நேர ஸ்கிரப்பர்</translation>
 <translation id="6443871981718447451">விரிவான வசனங்கள் மெனுவைக் காட்டும்</translation>

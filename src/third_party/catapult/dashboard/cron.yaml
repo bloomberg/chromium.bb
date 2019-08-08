@@ -22,10 +22,6 @@ cron:
   url: /deprecate_tests
   schedule: every 48 hours
 
-- description: Update bugs with completed bisect job results.
-  url: /update_bug_with_results
-  schedule: every 15 minutes
-
 - description: Update dashboard stats.
   url: /update_dashboard_stats
   schedule: every 24 hours
@@ -59,6 +55,11 @@ cron:
   url: /cron/isolate-cleanup
   schedule: every 24 hours
   target: pinpoint
+
+- description: Poll luci-config for sheriff configurations.
+  url: /configs/update
+  schedule: every 1 minutes
+  target: sheriff-config
 
 # The backup cron job is disabled temporarily in order to check whether
 # it is responsible for increased cost on the weekends.

@@ -103,10 +103,6 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return ash::mojom::SearchResultType::kInstantApp;
       case ash::SearchResultType::kInternalApp:
         return ash::mojom::SearchResultType::kInternalApp;
-      case ash::SearchResultType::kWebStoreApp:
-        return ash::mojom::SearchResultType::kWebStoreApp;
-      case ash::SearchResultType::kWebStoreSearch:
-        return ash::mojom::SearchResultType::kWebStoreSearch;
       case ash::SearchResultType::kOmnibox:
         return ash::mojom::SearchResultType::kOmnibox;
       case ash::SearchResultType::kLauncher:
@@ -138,12 +134,6 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return true;
       case ash::mojom::SearchResultType::kInternalApp:
         *out = ash::SearchResultType::kInternalApp;
-        return true;
-      case ash::mojom::SearchResultType::kWebStoreApp:
-        *out = ash::SearchResultType::kWebStoreApp;
-        return true;
-      case ash::mojom::SearchResultType::kWebStoreSearch:
-        *out = ash::SearchResultType::kWebStoreSearch;
         return true;
       case ash::mojom::SearchResultType::kOmnibox:
         *out = ash::SearchResultType::kOmnibox;

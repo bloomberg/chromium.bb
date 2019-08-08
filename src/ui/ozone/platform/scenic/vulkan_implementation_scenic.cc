@@ -22,16 +22,20 @@
 #include "gpu/vulkan/vulkan_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/ozone/platform/scenic/scenic_surface.h"
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
+#include "ui/ozone/platform/scenic/sysmem_buffer_collection.h"
 
 namespace ui {
 
 VulkanImplementationScenic::VulkanImplementationScenic(
-    ScenicSurfaceFactory* scenic_surface_factory)
-    : scenic_surface_factory_(scenic_surface_factory) {}
+    ScenicSurfaceFactory* scenic_surface_factory,
+    SysmemBufferManager* sysmem_buffer_manager)
+    : scenic_surface_factory_(scenic_surface_factory),
+      sysmem_buffer_manager_(sysmem_buffer_manager) {}
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
 
@@ -111,7 +115,9 @@ bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
 std::vector<const char*>
 VulkanImplementationScenic::GetRequiredDeviceExtensions() {
   return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME};
+          VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME,
+          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+          VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME};
 }
 
 VkFence VulkanImplementationScenic::CreateVkFenceForGpuFence(
@@ -197,6 +203,47 @@ gpu::SemaphoreHandle VulkanImplementationScenic::GetSemaphoreHandle(
 VkExternalMemoryHandleTypeFlagBits
 VulkanImplementationScenic::GetExternalImageHandleType() {
   return VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+}
+
+bool VulkanImplementationScenic::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return memory_buffer_type == gfx::NATIVE_PIXMAP;
+}
+
+bool VulkanImplementationScenic::CreateImageFromGpuMemoryHandle(
+    VkDevice vk_device,
+    gfx::GpuMemoryBufferHandle gmb_handle,
+    gfx::Size size,
+    VkImage* vk_image,
+    VkImageCreateInfo* vk_image_info,
+    VkDeviceMemory* vk_device_memory,
+    VkDeviceSize* mem_allocation_size) {
+  if (gmb_handle.type != gfx::NATIVE_PIXMAP)
+    return false;
+
+  if (!gmb_handle.native_pixmap_handle.buffer_collection_id) {
+    DLOG(ERROR) << "NativePixmapHandle.buffer_collection_id is not set.";
+    return false;
+  }
+
+  auto collection = sysmem_buffer_manager_->GetCollectionById(
+      gmb_handle.native_pixmap_handle.buffer_collection_id.value());
+  if (!collection) {
+    DLOG(ERROR) << "Tried to use an unknown buffer collection ID";
+    return false;
+  }
+
+  if (gmb_handle.native_pixmap_handle.buffer_index >=
+          collection->num_buffers() ||
+      size != collection->size()) {
+    DLOG(ERROR)
+        << "Can't import GpuMemoryBuffer to an image with a different size.";
+    return false;
+  }
+
+  return collection->CreateVkImage(gmb_handle.native_pixmap_handle.buffer_index,
+                                   vk_device, vk_image, vk_image_info,
+                                   vk_device_memory, mem_allocation_size);
 }
 
 }  // namespace ui

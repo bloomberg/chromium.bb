@@ -17,12 +17,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
+#include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_util.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
@@ -45,7 +49,7 @@ using base::android::ConvertUTF8ToJavaString;
 
 namespace {
 
-void OnLocalFaviconAvailable(
+void OnFaviconBitmapResultAvailable(
     const JavaRef<jobject>& j_favicon_image_callback,
     const favicon_base::FaviconRawBitmapResult& result) {
   JNIEnv* env = AttachCurrentThread();
@@ -63,7 +67,7 @@ void OnLocalFaviconAvailable(
       j_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
   }
 
-  // Call java side OnLocalFaviconAvailable method.
+  // Call java side OnFaviconBitmapResultAvailable method.
   Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,
                                                j_favicon_bitmap, j_icon_url);
 }
@@ -74,6 +78,30 @@ void OnEnsureIconIsAvailableFinished(
   JNIEnv* env = AttachCurrentThread();
   Java_IconAvailabilityCallback_onIconAvailabilityChecked(
       env, j_availability_callback, newly_available);
+}
+
+sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  DCHECK(session_sync_service);
+  return session_sync_service->GetOpenTabsUIDelegate();
+}
+
+scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
+    Profile* profile,
+    const GURL& page_url) {
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile);
+  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
+                   : nullptr;
+}
+
+// Check if user settings allow querying a Google server using history
+// information.
+bool CanSendHistoryDataToServer(Profile* profile) {
+  return syncer::GetUploadToGoogleState(
+             ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
+             syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
+         syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -110,8 +138,8 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
     return false;
 
   favicon_base::FaviconRawBitmapCallback callback_runner =
-      base::Bind(&OnLocalFaviconAvailable,
-                 ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
+      base::BindOnce(&OnFaviconBitmapResultAvailable,
+                     ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
 
   // |j_page_url| is an origin, and it may not have had a favicon associated
   // with it. A trickier case is when |j_page_url| only has domain-scoped
@@ -127,42 +155,40 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
        favicon_base::IconType::kTouchPrecomposedIcon,
        favicon_base::IconType::kWebManifestIcon},
       static_cast<int>(j_desired_size_in_pixel), fallback_to_host,
-      callback_runner, cancelable_task_tracker_.get());
+      std::move(callback_runner), cancelable_task_tracker_.get());
 
   return true;
 }
 
-ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
+jboolean FaviconHelper::GetForeignFaviconImageForURL(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jprofile,
-    const JavaParamRef<jstring>& j_page_url) {
+    const JavaParamRef<jstring>& j_page_url,
+    jint j_desired_size_in_pixel,
+    const base::android::JavaParamRef<jobject>& j_favicon_image_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  DCHECK(profile);
+  if (!profile)
+    return false;
 
-  std::string page_url = ConvertJavaStringToUTF8(env, j_page_url);
+  GURL page_url(ConvertJavaStringToUTF8(env, j_page_url));
 
-  sync_sessions::SessionSyncService* session_sync_service =
-      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  DCHECK(session_sync_service);
-
-  scoped_refptr<base::RefCountedMemory> favicon_png;
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      session_sync_service->GetOpenTabsUIDelegate();
-  DCHECK(open_tabs);
-
-  if (!open_tabs->GetSyncedFaviconForPageURL(page_url, &favicon_png))
-    return ScopedJavaLocalRef<jobject>();
-
-  // Convert favicon_image_result to java objects.
-  gfx::Image favicon_image = gfx::Image::CreateFrom1xPNGBytes(favicon_png);
-  SkBitmap favicon_bitmap = favicon_image.AsBitmap();
-
-  ScopedJavaLocalRef<jobject> j_favicon_bitmap;
-  if (favicon_bitmap.isNull())
-    return ScopedJavaLocalRef<jobject>();
-
-  return gfx::ConvertToJavaBitmap(&favicon_bitmap);
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile);
+  // TODO(victorvianna): Consider passing icon types to the API.
+  favicon_request_handler_.GetRawFaviconForPageURL(
+      page_url, static_cast<int>(j_desired_size_in_pixel),
+      base::BindOnce(&OnFaviconBitmapResultAvailable,
+                     ScopedJavaGlobalRef<jobject>(j_favicon_image_callback)),
+      favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
+      favicon::FaviconRequestPlatform::kMobile,
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS),
+      LargeIconServiceFactory::GetForBrowserContext(profile),
+      /*icon_url_for_uma=*/
+      open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL(),
+      base::BindOnce(&GetSyncedFaviconForPageURL, profile),
+      CanSendHistoryDataToServer(profile), cancelable_task_tracker_.get());
+  return true;
 }
 
 void FaviconHelper::EnsureIconIsAvailable(
@@ -188,13 +214,13 @@ void FaviconHelper::EnsureIconIsAvailable(
   // TODO(treib): Optimize this by creating a FaviconService::HasFavicon method
   // so that we don't have to actually get the image.
   ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
-  favicon_base::FaviconImageCallback callback_runner = base::Bind(
+  favicon_base::FaviconImageCallback callback_runner = base::BindOnce(
       &FaviconHelper::OnFaviconImageResultAvailable, j_scoped_callback, profile,
       web_contents, page_url, icon_url, icon_type);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   favicon::GetFaviconImageForPageURL(service, page_url, icon_type,
-                                     callback_runner,
+                                     std::move(callback_runner),
                                      cancelable_task_tracker_.get());
 }
 

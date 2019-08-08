@@ -54,20 +54,6 @@ PublicKeyCredentialUserEntity::CreateFromCBORValue(const cbor::Value& cbor) {
   return user;
 }
 
-// static
-cbor::Value PublicKeyCredentialUserEntity::ConvertToCBOR(
-    const PublicKeyCredentialUserEntity& user) {
-  cbor::Value::MapValue user_map;
-  user_map.emplace(kEntityIdMapKey, user.id);
-  if (user.name)
-    user_map.emplace(kEntityNameMapKey, *user.name);
-  if (user.icon_url)
-    user_map.emplace(kIconUrlMapKey, user.icon_url->spec());
-  if (user.display_name)
-    user_map.emplace(kDisplayNameMapKey, *user.display_name);
-  return cbor::Value(std::move(user_map));
-}
-
 PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
     std::vector<uint8_t> in_id)
     : id(std::move(in_id)) {}
@@ -86,6 +72,17 @@ PublicKeyCredentialUserEntity& PublicKeyCredentialUserEntity::operator=(
 
 PublicKeyCredentialUserEntity::~PublicKeyCredentialUserEntity() = default;
 
-
+cbor::Value AsCBOR(const PublicKeyCredentialUserEntity& user) {
+  cbor::Value::MapValue user_map;
+  user_map.emplace(kEntityIdMapKey, user.id);
+  if (user.name)
+    user_map.emplace(kEntityNameMapKey, *user.name);
+  // Empty icon URLs result in CTAP1_ERR_INVALID_LENGTH on some security keys.
+  if (user.icon_url && !user.icon_url->is_empty())
+    user_map.emplace(kIconUrlMapKey, user.icon_url->spec());
+  if (user.display_name)
+    user_map.emplace(kDisplayNameMapKey, *user.display_name);
+  return cbor::Value(std::move(user_map));
+}
 
 }  // namespace device

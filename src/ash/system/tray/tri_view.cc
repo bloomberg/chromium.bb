@@ -67,7 +67,7 @@ TriView::TriView(Orientation orientation, int padding_between_containers) {
   auto layout = std::make_unique<views::BoxLayout>(
       GetOrientation(orientation), gfx::Insets(), padding_between_containers);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   box_layout_ = SetLayoutManager(std::move(layout));
 
   enable_hierarchy_changed_dcheck_ = true;
@@ -123,7 +123,7 @@ void TriView::SetContainerBorder(Container container,
 }
 
 void TriView::SetContainerVisible(Container container, bool visible) {
-  if (GetContainer(container)->visible() == visible)
+  if (GetContainer(container)->GetVisible() == visible)
     return;
   GetContainer(container)->SetVisible(visible);
   Layout();
@@ -161,7 +161,7 @@ const char* TriView::GetClassName() const {
 }
 
 views::View* TriView::GetContainer(Container container) {
-  return child_at(static_cast<int>(container));
+  return children()[static_cast<size_t>(container)];
 }
 
 SizeRangeLayout* TriView::GetLayoutManager(Container container) {

@@ -21,10 +21,8 @@ class MaxTextureSizeTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] = R"(precision highp float;
 attribute vec4 position;
 varying vec2 texcoord;
@@ -66,12 +64,10 @@ void main()
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteProgram(mTextureProgram);
         glDeleteProgram(mBlueProgram);
-
-        ANGLETest::TearDown();
     }
 
     GLuint mTextureProgram;
@@ -145,8 +141,8 @@ TEST_P(MaxTextureSizeTest, SpecificationTexImage)
 
 TEST_P(MaxTextureSizeTest, SpecificationTexStorage)
 {
-    if (getClientMajorVersion() < 3 &&
-        (!extensionEnabled("GL_EXT_texture_storage") || !extensionEnabled("GL_OES_rgb8_rgba8")))
+    if (getClientMajorVersion() < 3 && (!IsGLExtensionEnabled("GL_EXT_texture_storage") ||
+                                        !IsGLExtensionEnabled("GL_OES_rgb8_rgba8")))
     {
         return;
     }
@@ -218,7 +214,7 @@ TEST_P(MaxTextureSizeTest, SpecificationTexStorage)
 TEST_P(MaxTextureSizeTest, RenderToTexture)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       (!extensionEnabled("GL_ANGLE_framebuffer_blit")));
+                       (!IsGLExtensionEnabled("GL_ANGLE_framebuffer_blit")));
 
     GLuint fbo       = 0;
     GLuint textureId = 0;
@@ -291,8 +287,4 @@ TEST_P(MaxTextureSizeTest, RenderToTexture)
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
-ANGLE_INSTANTIATE_TEST(MaxTextureSizeTest,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
-                       ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST(MaxTextureSizeTest, ES2_D3D9(), ES2_D3D11(), ES2_VULKAN());

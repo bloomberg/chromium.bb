@@ -44,16 +44,23 @@ struct PasswordFormGenerationData {
 // TODO(https://crbug.com/866444): Remove old PasswordFormGenerationData and
 // rename to PasswordFormGenerationData when the old parser is gone.
 struct NewPasswordFormGenerationData {
+  NewPasswordFormGenerationData();
+  NewPasswordFormGenerationData(const NewPasswordFormGenerationData& other);
+  NewPasswordFormGenerationData(uint32_t new_password_renderer_id,
+                                uint32_t confirmation_password_renderer_id);
 #if defined(OS_IOS)
+  NewPasswordFormGenerationData(base::string16 form_name,
+                                base::string16 new_password_element,
+                                base::string16 confirmation_password_element);
+
   base::string16 form_name;
   base::string16 new_password_element;
   base::string16 confirmation_password_element;
-#else
+#endif
   uint32_t new_password_renderer_id =
       FormFieldData::kNotSetFormControlRendererId;
   uint32_t confirmation_password_renderer_id =
       FormFieldData::kNotSetFormControlRendererId;
-#endif
 };
 
 }  // namespace autofill

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
+#include "cc/layers/heads_up_display_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -13,12 +15,13 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -67,9 +70,9 @@ static bool SmallerThanRegionGranularity(const FloatRect& rect,
          rect.Height() * granularity_scale < 0.5;
 }
 
-static const TransformPaintPropertyNode& TransformNodeFor(
-    LayoutObject& object) {
-  return object.FirstFragment().LocalBorderBoxProperties().Transform();
+static const PropertyTreeState PropertyTreeStateFor(
+    const LayoutObject& object) {
+  return object.FirstFragment().LocalBorderBoxProperties();
 }
 
 static void RegionToTracedValue(const Region& region,
@@ -96,17 +99,26 @@ static void RegionToTracedValue(const JankRegion& region,
   RegionToTracedValue(old_region, granularity_scale, value);
 }
 
+#if DCHECK_IS_ON()
+static bool ShouldLog(const LocalFrame& frame) {
+  return !frame.GetDocument()->Url().GetString().StartsWith("chrome-devtools:");
+}
+#endif
+
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
+      score_with_move_distance_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &JankTracker::TimerFired),
-      max_distance_(0.0) {}
+      frame_max_distance_(0.0),
+      overall_max_distance_(0.0),
+      observed_input_or_scroll_(false) {}
 
 void JankTracker::AccumulateJank(const LayoutObject& source,
-                                 const PaintLayer& painting_layer,
+                                 const PropertyTreeState& property_tree_state,
                                  FloatRect old_rect,
                                  FloatRect new_rect) {
   if (old_rect.IsEmpty() || new_rect.IsEmpty())
@@ -136,26 +148,51 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   if (source.IsSVG())
     return;
 
-  const auto& local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
-  const auto& root_xform = TransformNodeFor(*source.View());
+  const auto root_state = PropertyTreeStateFor(*source.View());
 
-  GeometryMapper::SourceToDestinationRect(local_xform, root_xform, old_rect);
-  GeometryMapper::SourceToDestinationRect(local_xform, root_xform, new_rect);
+  FloatClipRect clip_rect =
+      GeometryMapper::LocalToAncestorClipRect(property_tree_state, root_state);
 
-  if (!old_rect.Intersects(viewport) && !new_rect.Intersects(viewport))
+  // If the clip region is empty, then the resulting layout shift isn't visible
+  // in the viewport so ignore it.
+  if (!clip_rect.IsInfinite() && clip_rect.Rect().IsEmpty())
     return;
 
-  DVLOG(2) << source.DebugName() << " moved from " << old_rect.ToString()
-           << " to " << new_rect.ToString();
+  GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
+                                          root_state.Transform(), old_rect);
+  GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
+                                          root_state.Transform(), new_rect);
 
-  max_distance_ =
-      std::max(max_distance_, GetMoveDistance(old_rect, new_rect, source));
+  FloatRect clipped_old_rect(old_rect), clipped_new_rect(new_rect);
+  if (!clip_rect.IsInfinite()) {
+    clipped_old_rect.Intersect(clip_rect.Rect());
+    clipped_new_rect.Intersect(clip_rect.Rect());
+  }
 
-  IntRect visible_old_rect = RoundedIntRect(old_rect);
+  IntRect visible_old_rect = RoundedIntRect(clipped_old_rect);
   visible_old_rect.Intersect(viewport);
-
-  IntRect visible_new_rect = RoundedIntRect(new_rect);
+  IntRect visible_new_rect = RoundedIntRect(clipped_new_rect);
   visible_new_rect.Intersect(viewport);
+
+  if (visible_old_rect.IsEmpty() && visible_new_rect.IsEmpty())
+    return;
+
+  // Compute move distance based on unclipped rects, to accurately determine how
+  // much the element moved.
+  float move_distance = GetMoveDistance(old_rect, new_rect, source);
+  frame_max_distance_ = std::max(frame_max_distance_, move_distance);
+
+#if DCHECK_IS_ON()
+  LocalFrame& frame = frame_view_->GetFrame();
+  if (ShouldLog(frame)) {
+    DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+             << frame.GetDocument()->Url().GetString() << ", "
+             << source.DebugName() << " moved from " << old_rect.ToString()
+             << " to " << new_rect.ToString() << " (visible from "
+             << visible_old_rect.ToString() << " to "
+             << visible_new_rect.ToString() << ")";
+  }
+#endif
 
   visible_old_rect.Scale(scale);
   visible_new_rect.Scale(scale);
@@ -169,34 +206,30 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   }
 }
 
-void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
-                                       const IntRect& old_visual_rect,
-                                       const PaintLayer& painting_layer) {
+void JankTracker::NotifyObjectPrePaint(
+    const LayoutObject& object,
+    const PropertyTreeState& property_tree_state,
+    const IntRect& old_visual_rect,
+    const IntRect& new_visual_rect) {
   if (!IsActive())
     return;
 
-  AccumulateJank(object, painting_layer, FloatRect(old_visual_rect),
-                 FloatRect(object.FirstFragment().VisualRect()));
+  AccumulateJank(object, property_tree_state, FloatRect(old_visual_rect),
+                 FloatRect(new_visual_rect));
 }
 
-void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
+void JankTracker::NotifyCompositedLayerMoved(const LayoutObject& layout_object,
                                              FloatRect old_layer_rect,
                                              FloatRect new_layer_rect) {
   if (!IsActive())
     return;
 
   // Make sure we can access a transform node.
-  LayoutObject& layout_object = paint_layer.GetLayoutObject();
   if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
     return;
 
-  // Convert to the local transform space, whose origin is the layer's previous
-  // location because the property trees haven't been updated yet.
-  FloatPoint transform_parent_offset = -old_layer_rect.Location();
-  old_layer_rect.MoveBy(transform_parent_offset);
-  new_layer_rect.MoveBy(transform_parent_offset);
-
-  AccumulateJank(layout_object, paint_layer, old_layer_rect, new_layer_rect);
+  AccumulateJank(layout_object, PropertyTreeStateFor(layout_object),
+                 old_layer_rect, new_layer_rect);
 }
 
 double JankTracker::SubframeWeightingFactor() const {
@@ -210,7 +243,7 @@ double JankTracker::SubframeWeightingFactor() const {
   GeometryMapper::LocalToAncestorVisualRect(
       frame_view_->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
       PropertyTreeState::Root(), subframe_cliprect);
-  LayoutRect subframe_rect = LayoutRect(subframe_cliprect.Rect());
+  auto subframe_rect = PhysicalRect::EnclosingRect(subframe_cliprect.Rect());
 
   // Intersect with the portion of the local root that overlaps the main frame.
   frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);
@@ -249,37 +282,71 @@ void JankTracker::NotifyPrePaintFinished() {
 
   score_ += jank_fraction;
 
-  DVLOG(1) << "viewport " << (jank_fraction * 100)
-           << "% janked, raising score to " << score_;
+  DCHECK_GT(frame_max_distance_, 0.0);
+  double viewport_max_dimension = std::max(viewport.Width(), viewport.Height());
+  double move_distance_factor =
+      (frame_max_distance_ < viewport_max_dimension)
+          ? double(frame_max_distance_) / viewport_max_dimension
+          : 1.0;
+  double jank_fraction_with_move_distance =
+      jank_fraction * move_distance_factor;
+
+  score_with_move_distance_ += jank_fraction_with_move_distance;
+
+  overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
 
   LocalFrame& frame = frame_view_->GetFrame();
+#if DCHECK_IS_ON()
+  if (ShouldLog(frame)) {
+    DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+             << frame.GetDocument()->Url().GetString() << ", viewport was "
+             << (jank_fraction * 100) << "% janked; raising score to "
+             << score_;
+  }
+#endif
 
-  TRACE_EVENT_INSTANT2("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
-                       "data",
-                       PerFrameTraceData(jank_fraction, granularity_scale),
-                       "frame", ToTraceValue(&frame));
+  TRACE_EVENT_INSTANT2(
+      "loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD, "data",
+      PerFrameTraceData(jank_fraction, jank_fraction_with_move_distance,
+                        granularity_scale),
+      "frame", ToTraceValue(&frame));
 
   double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
   if (weighted_jank_fraction > 0) {
     weighted_score_ += weighted_jank_fraction;
-    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction);
+    if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
+      weighted_jank_fraction *= move_distance_factor;
+    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction,
+                                         observed_input_or_scroll_);
   }
 
-  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(frame.GetDocument()) &&
+  if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
+          frame.GetDocument()) &&
       frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance &&
         (performance->HasObserverFor(PerformanceEntry::kLayoutJank) ||
          performance->ShouldBufferEntries())) {
-      performance->AddLayoutJankFraction(jank_fraction);
+      performance->AddLayoutJankFraction(
+          RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled()
+              ? jank_fraction_with_move_distance
+              : jank_fraction);
     }
   }
 
-  if (use_sweep_line)
+  if (use_sweep_line) {
+    if (!region_experimental_.IsEmpty()) {
+      SetLayoutShiftRects(region_experimental_.GetRects(), 1);
+    }
     region_experimental_.Reset();
-  else
+  } else {
+    if (!region_.IsEmpty()) {
+      SetLayoutShiftRects(region_.Rects(), granularity_scale);
+    }
     region_ = Region();
+  }
+  frame_max_distance_ = 0.0;
 }
 
 void JankTracker::NotifyInput(const WebInputEvent& event) {
@@ -296,6 +363,22 @@ void JankTracker::NotifyInput(const WebInputEvent& event) {
   if (!event_is_meaningful)
     return;
 
+  observed_input_or_scroll_ = true;
+
+  // This cancels any previously scheduled task from the same timer.
+  timer_.StartOneShot(kTimerDelay, FROM_HERE);
+}
+
+void JankTracker::NotifyScroll(ScrollType scroll_type) {
+  // Only include user-initiated scrolls. Ignore scrolls due to e.g. hash
+  // fragment navigations.
+  if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
+    return;
+
+  observed_input_or_scroll_ = true;
+}
+
+void JankTracker::NotifyViewportSizeChanged() {
   // This cancels any previously scheduled task from the same timer.
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
 }
@@ -314,17 +397,59 @@ bool JankTracker::IsActive() {
 
 std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     double jank_fraction,
+    double jank_fraction_with_move_distance,
     double granularity_scale) const {
   auto value = std::make_unique<TracedValue>();
-  value->SetDouble("jank_fraction", jank_fraction);
+  value->SetDouble("score", jank_fraction);
+  value->SetDouble("score_with_move_distance",
+                   jank_fraction_with_move_distance);
   value->SetDouble("cumulative_score", score_);
-  value->SetDouble("max_distance", max_distance_);
+  value->SetDouble("cumulative_score_with_move_distance",
+                   score_with_move_distance_);
+  value->SetDouble("overall_max_distance", overall_max_distance_);
+  value->SetDouble("frame_max_distance", frame_max_distance_);
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     RegionToTracedValue(region_experimental_, granularity_scale, *value);
   else
     RegionToTracedValue(region_, granularity_scale, *value);
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   return value;
+}
+
+std::vector<gfx::Rect> JankTracker::ConvertIntRectsToGfxRects(
+    const Vector<IntRect>& int_rects,
+    double granularity_scale) {
+  std::vector<gfx::Rect> rects;
+  for (const IntRect& rect : int_rects) {
+    gfx::Rect r = gfx::Rect(
+        rect.X() / granularity_scale, rect.Y() / granularity_scale,
+        rect.Width() / granularity_scale, rect.Height() / granularity_scale);
+    rects.emplace_back(r);
+  }
+  return rects;
+}
+
+void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
+                                      double granularity_scale) {
+  // Store the layout shift rects in the HUD layer.
+  GraphicsLayer* root_graphics_layer =
+      frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
+  if (!root_graphics_layer)
+    return;
+
+  cc::Layer* cc_layer = root_graphics_layer->CcLayer();
+  if (!cc_layer)
+    return;
+  if (cc_layer->layer_tree_host()) {
+    if (!cc_layer->layer_tree_host()->GetDebugState().show_layout_shift_regions)
+      return;
+    if (cc_layer->layer_tree_host()->hud_layer()) {
+      std::vector<gfx::Rect> rects =
+          ConvertIntRectsToGfxRects(int_rects, granularity_scale);
+      cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(rects);
+      cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
+    }
+  }
 }
 
 }  // namespace blink

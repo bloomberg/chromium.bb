@@ -47,7 +47,7 @@ class TabletModeWindowState : public wm::WindowState::State {
   void OnWMEvent(wm::WindowState* window_state,
                  const wm::WMEvent* event) override;
 
-  mojom::WindowStateType GetType() const override;
+  WindowStateType GetType() const override;
   void AttachState(wm::WindowState* window_state,
                    wm::WindowState::State* previous_state) override;
   void DetachState(wm::WindowState* window_state) override;
@@ -60,21 +60,20 @@ class TabletModeWindowState : public wm::WindowState::State {
   // change, only the bounds will be changed. If |animate| is set, the bound
   // change get animated.
   void UpdateWindow(wm::WindowState* window_state,
-                    mojom::WindowStateType new_state_type,
+                    WindowStateType new_state_type,
                     bool animate);
 
   // Depending on the capabilities of the window we either return
-  // |WindowStateType::MAXIMIZED| or |WindowStateType::NORMAL|.
-  mojom::WindowStateType GetMaximizedOrCenteredWindowType(
+  // |WindowStateType::kMaximized| or |WindowStateType::kNormal|.
+  WindowStateType GetMaximizedOrCenteredWindowType(
       wm::WindowState* window_state);
 
   // If |target_state| is LEFT/RIGHT_SNAPPED and the window can be snapped,
   // returns |target_state|. Otherwise depending on the capabilities of the
-  // window either returns |WindowStateType::MAXIMIZED| or
-  // |WindowStateType::NORMAL|.
-  mojom::WindowStateType GetSnappedWindowStateType(
-      wm::WindowState* window_state,
-      mojom::WindowStateType target_state);
+  // window either returns |WindowStateType::kMaximized| or
+  // |WindowStateType::kNormal|.
+  WindowStateType GetSnappedWindowStateType(wm::WindowState* window_state,
+                                            WindowStateType target_state);
 
   // Updates the bounds to the maximum possible bounds according to the current
   // window state. If |animated| is set we animate the change.
@@ -95,7 +94,7 @@ class TabletModeWindowState : public wm::WindowState::State {
   // The state type to be established in AttachState(), unless
   // previous_state->GetType() is MAXIMIZED, MINIMIZED, FULLSCREEN, PINNED, or
   // TRUSTED_PINNED.
-  mojom::WindowStateType state_type_on_attach_;
+  WindowStateType state_type_on_attach_;
 
   // Whether to animate in case of a bounds update when switching to
   // |state_type_on_attach_|.
@@ -103,7 +102,7 @@ class TabletModeWindowState : public wm::WindowState::State {
 
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
-  mojom::WindowStateType current_state_type_;
+  WindowStateType current_state_type_;
 
   // If true, the state will not process events.
   bool ignore_wm_events_ = false;

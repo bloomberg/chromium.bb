@@ -60,12 +60,17 @@ class TestFontDelegate : public SkiaFontDelegate {
 
 class PlatformFontSkiaTest : public testing::Test {
  public:
-  PlatformFontSkiaTest() {
+  PlatformFontSkiaTest() = default;
+  ~PlatformFontSkiaTest() override = default;
+
+  void SetUp() override {
     original_font_delegate_ = SkiaFontDelegate::instance();
     SkiaFontDelegate::SetInstance(&test_font_delegate_);
+    PlatformFontSkia::ReloadDefaultFont();
   }
 
-  ~PlatformFontSkiaTest() override {
+  void TearDown() override {
+    DCHECK_EQ(&test_font_delegate_, SkiaFontDelegate::instance());
     SkiaFontDelegate::SetInstance(
         const_cast<SkiaFontDelegate*>(original_font_delegate_));
     PlatformFontSkia::ReloadDefaultFont();

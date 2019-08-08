@@ -4,7 +4,6 @@
   "android_chromium_compile": {
     "additional_compile_targets": [
       "blink_unittests",
-      "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",

@@ -99,10 +99,11 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
   const int kRendererProcessId = 1;
   const int kBrowserProcessId = -1;
 
-  // Returns a WebRequestInfo instance constructed as per the given parameters.
-  auto create_request = [](const GURL& url, content::ResourceType type,
-                           int render_process_id) {
-    WebRequestInfo request;
+  // Returns a WebRequestInfoInitParams instance constructed as per the given
+  // parameters.
+  auto create_request_params = [](const GURL& url, content::ResourceType type,
+                                  int render_process_id) {
+    WebRequestInfoInitParams request;
     request.url = url;
     request.type = type;
     request.render_process_id = render_process_id;
@@ -122,8 +123,9 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
 
     {
       SCOPED_TRACE("Renderer initiated sub-resource request");
-      WebRequestInfo request = create_request(
-          request_url, content::ResourceType::kSubResource, kRendererProcessId);
+      WebRequestInfo request(create_request_params(
+          request_url, content::ResourceType::kSubResource,
+          kRendererProcessId));
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_RENDERER_REQUEST;
       EXPECT_EQ(expect_hidden,
@@ -132,8 +134,8 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
 
     {
       SCOPED_TRACE("Browser initiated sub-resource request");
-      WebRequestInfo request = create_request(
-          request_url, content::ResourceType::kSubResource, kBrowserProcessId);
+      WebRequestInfo request(create_request_params(
+          request_url, content::ResourceType::kSubResource, kBrowserProcessId));
       bool expect_hidden = test_case.expected_hide_request_mask &
                            HIDE_BROWSER_SUB_RESOURCE_REQUEST;
       EXPECT_EQ(expect_hidden,
@@ -142,8 +144,8 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
 
     {
       SCOPED_TRACE("Main-frame navigation");
-      WebRequestInfo request = create_request(
-          request_url, content::ResourceType::kMainFrame, kBrowserProcessId);
+      WebRequestInfo request(create_request_params(
+          request_url, content::ResourceType::kMainFrame, kBrowserProcessId));
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_MAIN_FRAME_NAVIGATION;
       EXPECT_EQ(expect_hidden,
@@ -152,8 +154,8 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
 
     {
       SCOPED_TRACE("Sub-frame navigation");
-      WebRequestInfo request = create_request(
-          request_url, content::ResourceType::kSubFrame, kBrowserProcessId);
+      WebRequestInfo request(create_request_params(
+          request_url, content::ResourceType::kSubFrame, kBrowserProcessId));
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_SUB_FRAME_NAVIGATION;
       EXPECT_EQ(expect_hidden,
@@ -164,10 +166,13 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
   // Check protection of requests originating from the frame showing the Chrome
   // WebStore. Normally this request is not protected:
   GURL non_sensitive_url("http://www.google.com/test.js");
-  WebRequestInfo non_sensitive_request_info = create_request(
-      non_sensitive_url, content::ResourceType::kScript, kRendererProcessId);
-  EXPECT_FALSE(WebRequestPermissions::HideRequest(info_map.get(),
-                                                  non_sensitive_request_info));
+
+  {
+    WebRequestInfo non_sensitive_request(create_request_params(
+        non_sensitive_url, content::ResourceType::kScript, kRendererProcessId));
+    EXPECT_FALSE(WebRequestPermissions::HideRequest(info_map.get(),
+                                                    non_sensitive_request));
+  }
 
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
   {
@@ -175,17 +180,23 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
     const int kSiteInstanceId = 23;
     info_map->RegisterExtensionProcess(extensions::kWebStoreAppId,
                                        kWebstoreProcessId, kSiteInstanceId);
-    WebRequestInfo sensitive_request_info = create_request(
-        non_sensitive_url, content::ResourceType::kScript, kWebstoreProcessId);
+    WebRequestInfo sensitive_request_info(create_request_params(
+        non_sensitive_url, content::ResourceType::kScript, kWebstoreProcessId));
     EXPECT_TRUE(WebRequestPermissions::HideRequest(info_map.get(),
                                                    sensitive_request_info));
   }
 
-  // Check that a request for a non-sensitive URL is rejected if it's a PAC
-  // script fetch.
-  non_sensitive_request_info.is_pac_request = true;
-  EXPECT_TRUE(WebRequestPermissions::HideRequest(info_map.get(),
-                                                 non_sensitive_request_info));
+  {
+    // Check that a request for a non-sensitive URL is rejected if it's a PAC
+    // script fetch.
+    WebRequestInfoInitParams non_sensitive_request_params =
+        create_request_params(non_sensitive_url, content::ResourceType::kScript,
+                              kRendererProcessId);
+    non_sensitive_request_params.is_pac_request = true;
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(
+        info_map.get(),
+        WebRequestInfo(std::move(non_sensitive_request_params))));
+  }
 }
 
 TEST(ExtensionWebRequestPermissions,

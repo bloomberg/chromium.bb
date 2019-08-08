@@ -50,12 +50,10 @@ const char kClientConfigURL[] =
 const char kPingbackURL[] =
     "https://datasaver.googleapis.com/v1/metrics:recordPageloadMetrics";
 
-// The name of the server side experiment field trial.
-const char kServerExperimentsFieldTrial[] =
-    "DataReductionProxyServerExperiments";
-
 // LitePage black list version.
 const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
+
+const char kExperimentsOption[] = "exp";
 
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(base::FieldTrialList::FindFullName(name), kEnabled,
@@ -112,12 +110,6 @@ bool IsIncludedInHoldbackFieldTrial() {
          IsIncludedInFieldTrial("DataCompressionProxyHoldback");
 }
 
-bool IsIncludedInSecureProxyHoldbackFieldTrial() {
-  return base::StartsWith(
-      base::FieldTrialList::FindFullName("DataCompressionProxyHoldback"),
-      "SecureProxy_Disabled", base::CompareCase::SENSITIVE);
-}
-
 std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
 }
@@ -130,13 +122,6 @@ const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
 }
 
-bool IsIncludedInServerExperimentsFieldTrial() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             data_reduction_proxy::switches::
-                 kDataReductionProxyServerExperimentsDisabled) &&
-         base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
-                 .find(kDisabled) != 0;
-}
 
 bool FetchWarmupProbeURLEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -345,9 +330,38 @@ bool GetOverrideProxiesForHttpFromCommandLine(
   return true;
 }
 
-const char* GetServerExperimentsFieldTrialName() {
-  return kServerExperimentsFieldTrial;
+std::string GetDataSaverServerExperimentsOptionName() {
+  return kExperimentsOption;
 }
+
+std::string GetDataSaverServerExperiments() {
+  const std::string cmd_line_experiment =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyExperiment);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::
+              kDataReductionProxyServerExperimentsDisabled)) {
+    // Both kDataReductionProxyExperiment and
+    // kDataReductionProxyServerExperimentsDisabled switches can't be set at the
+    // same time.
+    DCHECK(cmd_line_experiment.empty());
+    return std::string();
+  }
+
+  // Experiment set using command line overrides field trial.
+  if (!cmd_line_experiment.empty())
+    return cmd_line_experiment;
+
+  // First check if the feature is enabled.
+  if (!base::FeatureList::IsEnabled(
+          features::kDataReductionProxyServerExperiments)) {
+    return std::string();
+  }
+  return base::GetFieldTrialParamValueByFeature(
+      features::kDataReductionProxyServerExperiments, kExperimentsOption);
+}
+
 
 GURL GetSecureProxyCheckURL() {
   std::string secure_proxy_check_url =

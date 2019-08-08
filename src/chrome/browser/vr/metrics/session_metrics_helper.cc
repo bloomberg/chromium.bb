@@ -134,6 +134,17 @@ class SessionMetricsHelperData : public base::SupportsUserData::Data {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SessionMetricsHelperData);
 };
 
+device::SessionMode ConvertRuntimeOptionsToSessionMode(
+    const device::mojom::XRRuntimeSessionOptions& options) {
+  if (!options.immersive)
+    return device::SessionMode::kInline;
+
+  if (options.environment_integration)
+    return device::SessionMode::kImmersiveAr;
+
+  return device::SessionMode::kImmersiveVr;
+}
+
 }  // namespace
 
 template <SessionEventName SessionType>
@@ -197,15 +208,21 @@ void SessionTimer::StopSession(bool continuable, base::Time stop_time) {
 // static
 SessionMetricsHelper* SessionMetricsHelper::FromWebContents(
     content::WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   if (!web_contents)
     return NULL;
   SessionMetricsHelperData* data = static_cast<SessionMetricsHelperData*>(
       web_contents->GetUserData(kSessionMetricsHelperDataKey));
   return data ? data->get() : NULL;
 }
+
+// static
 SessionMetricsHelper* SessionMetricsHelper::CreateForWebContents(
     content::WebContents* contents,
     Mode initial_mode) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // This is not leaked as the SessionMetricsHelperData will clean it up.
   return new SessionMetricsHelper(contents, initial_mode);
 }
@@ -218,9 +235,6 @@ SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
   num_videos_playing_ = contents->GetCurrentlyPlayingVideoCount();
   is_fullscreen_ = contents->IsFullscreen();
   origin_ = contents->GetLastCommittedURL();
-
-  session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR>>(
-      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
 
   is_webvr_ = initial_mode == Mode::kWebXrVrPresentation;
   is_vr_enabled_ = initial_mode != Mode::kNoVr;
@@ -265,25 +279,89 @@ void SessionMetricsHelper::RecordVrStartAction(VrStartAction action) {
   }
 }
 
+void SessionMetricsHelper::RecordInlineSessionStart(size_t session_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DCHECK(webxr_inline_session_trackers_.find(session_id) ==
+         webxr_inline_session_trackers_.end());
+
+  auto result = webxr_inline_session_trackers_.emplace(
+      session_id,
+      std::make_unique<SessionTracker<ukm::builders::XR_WebXR_Session>>(
+          std::make_unique<ukm::builders::XR_WebXR_Session>(
+              ukm::GetSourceIdForWebContentsDocument(web_contents()))));
+
+  // TODO(https://crbug.com/968648): Use chain notation to set values for
+  // metrics.
+  // TODO(https://crbug.com/968546): StartAction is currently not present in
+  // XR.WebXR.Session event. Remove this & change the below code with
+  // replacement metrics once they are designed:
+  // result.first->second->ukm_entry()->SetStartAction(
+  //    PresentationStartAction::kOther);
+  // WebVR does not come through this path as it does not have a separate
+  // concept of inline sessions.
+  result.first->second->ukm_entry()->SetIsLegacyWebVR(false);
+  result.first->second->ukm_entry()->SetMode(
+      static_cast<int64_t>(device::SessionMode::kInline));
+}
+
+void SessionMetricsHelper::RecordInlineSessionStop(size_t session_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto it = webxr_inline_session_trackers_.find(session_id);
+
+  if (it == webxr_inline_session_trackers_.end())
+    return;
+
+  it->second->ukm_entry()->SetDuration(
+      it->second->GetRoundedDurationInSeconds());
+  it->second->RecordEntry();
+
+  webxr_inline_session_trackers_.erase(it);
+}
+
 void SessionMetricsHelper::RecordPresentationStartAction(
-    PresentationStartAction action) {
-  if (!presentation_session_tracker_ || mode_ != Mode::kWebXrVrPresentation) {
-    pending_presentation_start_action_ = action;
+    PresentationStartAction action,
+    const device::mojom::XRRuntimeSessionOptions& options) {
+  bool is_webvr = options.is_legacy_webvr;
+  auto xr_session_mode = ConvertRuntimeOptionsToSessionMode(options);
+
+  // TODO(https://crbug.com/965729): Ensure we correctly handle AR cases
+  // throughout session metrics helper.
+  if (!webxr_immersive_session_tracker_ ||
+      mode_ != Mode::kWebXrVrPresentation) {
+    pending_immersive_session_start_info_ =
+        PendingImmersiveSessionStartInfo{action, is_webvr, xr_session_mode};
   } else {
-    LogPresentationStartAction(action);
+    LogPresentationStartAction(action, is_webvr, xr_session_mode);
   }
 }
 
-void SessionMetricsHelper::ReportRequestPresent() {
-  // If we're not in VR, log this as an entry into VR from 2D.
-  if (mode_ == Mode::kNoVr) {
-    RecordVrStartAction(VrStartAction::kPresentationRequest);
-    RecordPresentationStartAction(
-        PresentationStartAction::kRequestFrom2dBrowsing);
-  } else {
-    RecordPresentationStartAction(
-        PresentationStartAction::kRequestFromVrBrowsing);
+void SessionMetricsHelper::ReportRequestPresent(
+    const device::mojom::XRRuntimeSessionOptions& options) {
+  DCHECK(options.immersive);
+
+  // TODO(https://crbug.com/965729): Ensure we correctly handle AR cases
+  // throughout session metrics helper.
+  switch (mode_) {
+    case Mode::kNoVr:
+      // If we're not in VR, log this as an entry into VR from 2D.
+      RecordVrStartAction(VrStartAction::kPresentationRequest);
+      RecordPresentationStartAction(
+          PresentationStartAction::kRequestFrom2dBrowsing, options);
+      return;
+
+    case Mode::kVr:
+    case Mode::kVrBrowsing:
+    case Mode::kVrBrowsingRegular:
+    case Mode::kVrBrowsingFullscreen:
+    case Mode::kWebXrVrPresentation:
+      RecordPresentationStartAction(
+          PresentationStartAction::kRequestFromVrBrowsing, options);
+      return;
   }
+
+  NOTREACHED();
 }
 
 void SessionMetricsHelper::LogVrStartAction(VrStartAction action) {
@@ -293,17 +371,28 @@ void SessionMetricsHelper::LogVrStartAction(VrStartAction action) {
   if (action == VrStartAction::kHeadsetActivation ||
       action == VrStartAction::kPresentationRequest) {
     page_session_tracker_->ukm_entry()->SetEnteredVROnPageReason(
-        static_cast<int>(action));
+        static_cast<int64_t>(action));
   }
 }
 
 void SessionMetricsHelper::LogPresentationStartAction(
-    PresentationStartAction action) {
-  DCHECK(presentation_session_tracker_);
+    PresentationStartAction action,
+    bool is_legacy_webvr,
+    device::SessionMode xr_session_mode) {
+  DCHECK(webxr_immersive_session_tracker_);
 
   UMA_HISTOGRAM_ENUMERATION("XR.WebXR.PresentationSession", action);
 
-  presentation_session_tracker_->ukm_entry()->SetStartAction(action);
+  // TODO(https://crbug.com/968648): Use chain notation to set values for
+  // metrics.
+  // TODO(https://crbug.com/968546): StartAction is currently not present in
+  // XR.WebXR.Session event. Remove this & change the below code with
+  // replacement metrics once they are designed:
+  // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(action);
+  webxr_immersive_session_tracker_->ukm_entry()->SetIsLegacyWebVR(
+      is_legacy_webvr);
+  webxr_immersive_session_tracker_->ukm_entry()->SetMode(
+      static_cast<int64_t>(xr_session_mode));
 }
 
 void SessionMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
@@ -321,11 +410,15 @@ void SessionMetricsHelper::SetVRActive(bool is_vr_enabled) {
 }
 
 void SessionMetricsHelper::RecordVoiceSearchStarted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   num_voice_search_started_++;
 }
 
 void SessionMetricsHelper::RecordUrlRequested(GURL url,
                                               NavigationMethod method) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   last_requested_url_ = url;
   last_url_request_method_ = method;
 }
@@ -453,29 +546,31 @@ void SessionMetricsHelper::OnEnterPresentation() {
 
   // If we are switching to WebVR presentation, start the new presentation
   // session.
-  presentation_session_tracker_ = std::make_unique<
-      SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
-      std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
-          ukm::GetSourceIdForWebContentsDocument(web_contents())));
+  webxr_immersive_session_tracker_ =
+      std::make_unique<SessionTracker<ukm::builders::XR_WebXR_Session>>(
+          std::make_unique<ukm::builders::XR_WebXR_Session>(
+              ukm::GetSourceIdForWebContentsDocument(web_contents())));
 
-  if (!pending_presentation_start_action_) {
-    pending_presentation_start_action_ = PresentationStartAction::kOther;
-  }
+  // TODO(https://crbug.com/967764): Can pending_immersive_session_start_info_
+  // be not set? What is the ordering of calls to RecordPresentationStartAction?
+  auto start_info = pending_immersive_session_start_info_.value_or(
+      PendingImmersiveSessionStartInfo{PresentationStartAction::kOther, false,
+                                       device::SessionMode::kUnknown});
 
-  LogPresentationStartAction(*pending_presentation_start_action_);
-  pending_presentation_start_action_ = base::nullopt;
+  LogPresentationStartAction(start_info.action, start_info.is_legacy_webvr,
+                             start_info.mode);
 }
 
 void SessionMetricsHelper::OnExitPresentation() {
   // If we are switching off WebVR presentation, then the presentation session
   // is done. As with the page session, do not assume
-  // presentation_session_tracker_ is valid.
-  if (presentation_session_tracker_) {
-    presentation_session_tracker_->SetSessionEnd(base::Time::Now());
-    presentation_session_tracker_->ukm_entry()->SetDuration(
-        presentation_session_tracker_->GetRoundedDurationInSeconds());
-    presentation_session_tracker_->RecordEntry();
-    presentation_session_tracker_ = nullptr;
+  // webxr_immersive_session_tracker_ is valid.
+  if (webxr_immersive_session_tracker_) {
+    webxr_immersive_session_tracker_->SetSessionEnd(base::Time::Now());
+    webxr_immersive_session_tracker_->ukm_entry()->SetDuration(
+        webxr_immersive_session_tracker_->GetRoundedDurationInSeconds());
+    webxr_immersive_session_tracker_->RecordEntry();
+    webxr_immersive_session_tracker_ = nullptr;
   }
 }
 
@@ -538,6 +633,8 @@ void SessionMetricsHelper::MediaStoppedPlaying(
 
 void SessionMetricsHelper::DidStartNavigation(
     content::NavigationHandle* handle) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   if (handle && handle->IsInMainFrame() && !handle->IsSameDocument()) {
     if (page_session_tracker_) {
       page_session_tracker_->SetSessionEnd(base::Time::Now());
@@ -547,13 +644,22 @@ void SessionMetricsHelper::DidStartNavigation(
       page_session_tracker_ = nullptr;
     }
 
-    if (presentation_session_tracker_) {
-      presentation_session_tracker_->SetSessionEnd(base::Time::Now());
-      presentation_session_tracker_->ukm_entry()->SetDuration(
-          presentation_session_tracker_->GetRoundedDurationInSeconds());
-      presentation_session_tracker_->RecordEntry();
-      presentation_session_tracker_ = nullptr;
+    if (webxr_immersive_session_tracker_) {
+      webxr_immersive_session_tracker_->SetSessionEnd(base::Time::Now());
+      webxr_immersive_session_tracker_->ukm_entry()->SetDuration(
+          webxr_immersive_session_tracker_->GetRoundedDurationInSeconds());
+      webxr_immersive_session_tracker_->RecordEntry();
+      webxr_immersive_session_tracker_ = nullptr;
     }
+
+    for (auto& inline_session_tracker : webxr_inline_session_trackers_) {
+      inline_session_tracker.second->SetSessionEnd(base::Time::Now());
+      inline_session_tracker.second->ukm_entry()->SetDuration(
+          inline_session_tracker.second->GetRoundedDurationInSeconds());
+      inline_session_tracker.second->RecordEntry();
+    }
+
+    webxr_inline_session_trackers_.clear();
   }
 }
 
@@ -602,14 +708,23 @@ void SessionMetricsHelper::DidFinishNavigation(
     last_requested_url_ = GURL();
 
     if (mode_ == Mode::kWebXrVrPresentation) {
-      presentation_session_tracker_ = std::make_unique<
-          SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
-          std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
-              ukm::GetSourceIdForWebContentsDocument(web_contents())));
-      if (pending_presentation_start_action_) {
-        presentation_session_tracker_->ukm_entry()->SetStartAction(
-            *pending_presentation_start_action_);
-        pending_presentation_start_action_ = base::nullopt;
+      webxr_immersive_session_tracker_ =
+          std::make_unique<SessionTracker<ukm::builders::XR_WebXR_Session>>(
+              std::make_unique<ukm::builders::XR_WebXR_Session>(
+                  ukm::GetSourceIdForWebContentsDocument(web_contents())));
+      if (pending_immersive_session_start_info_) {
+        // TODO(https://crbug.com/968648): Use chain notation to set values for
+        // metrics.
+        // TODO(https://crbug.com/968546): StartAction is currently not present
+        // in XR.WebXR.Session event. Remove this & change the below code with
+        // replacement metrics once they are designed:
+        // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(
+        //    pending_immersive_session_start_info_->action);
+        webxr_immersive_session_tracker_->ukm_entry()->SetIsLegacyWebVR(
+            pending_immersive_session_start_info_->is_legacy_webvr);
+        webxr_immersive_session_tracker_->ukm_entry()->SetMode(
+            static_cast<int64_t>(pending_immersive_session_start_info_->mode));
+        pending_immersive_session_start_info_ = base::nullopt;
       }
     }
 

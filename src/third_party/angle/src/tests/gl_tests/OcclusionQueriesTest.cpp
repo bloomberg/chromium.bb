@@ -25,20 +25,13 @@ class OcclusionQueriesTest : public ANGLETest
         setConfigDepthBits(24);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
         ASSERT_NE(0u, mProgram);
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram;
     RNG mRNG;
@@ -47,7 +40,7 @@ class OcclusionQueriesTest : public ANGLETest
 TEST_P(OcclusionQueriesTest, IsOccluded)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_EXT_occlusion_query_boolean"));
+                       !IsGLExtensionEnabled("GL_EXT_occlusion_query_boolean"));
 
     glDepthMask(GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -91,7 +84,7 @@ TEST_P(OcclusionQueriesTest, IsOccluded)
 TEST_P(OcclusionQueriesTest, IsNotOccluded)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_EXT_occlusion_query_boolean"));
+                       !IsGLExtensionEnabled("GL_EXT_occlusion_query_boolean"));
 
     // TODO(syoussefi): Using render pass ops to clear the framebuffer attachment results in
     // AMD/Windows misbehaving in this test.  http://anglebug.com/3286
@@ -125,7 +118,7 @@ TEST_P(OcclusionQueriesTest, IsNotOccluded)
 TEST_P(OcclusionQueriesTest, Errors)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_EXT_occlusion_query_boolean"));
+                       !IsGLExtensionEnabled("GL_EXT_occlusion_query_boolean"));
 
     glDepthMask(GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -191,7 +184,7 @@ TEST_P(OcclusionQueriesTest, Errors)
 TEST_P(OcclusionQueriesTest, MultiContext)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_EXT_occlusion_query_boolean"));
+                       !IsGLExtensionEnabled("GL_EXT_occlusion_query_boolean"));
 
     // TODO(cwallez@chromium.org): Suppression for http://anglebug.com/3080
     ANGLE_SKIP_TEST_IF(IsWindows() && IsNVIDIA() && IsVulkan());

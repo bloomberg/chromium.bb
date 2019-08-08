@@ -32,7 +32,7 @@ class BASE_EXPORT StartupContext {
     return incoming_services_.get();
   }
 
-  // Returns the "public" directory into which this component binds services.
+  // Returns the outgoing directory into which this component binds services.
   // Note that all services should be bound immediately after the first call to
   // this API, before returning control to the message loop, at which point we
   // will start processing service connection requests.

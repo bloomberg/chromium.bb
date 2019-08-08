@@ -17,7 +17,8 @@ class TraceConfig;
 namespace tracing {
 
 perfetto::TraceConfig COMPONENT_EXPORT(TRACING_CPP) GetDefaultPerfettoConfig(
-    const base::trace_event::TraceConfig& chrome_config);
+    const base::trace_event::TraceConfig& chrome_config,
+    bool privacy_filtering_enabled = false);
 
 }  // namespace tracing
 

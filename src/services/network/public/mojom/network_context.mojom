@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -19,6 +20,7 @@ import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/origin_policy_manager.mojom";
 import "services/network/public/mojom/p2p.mojom";
 import "services/network/public/mojom/p2p_trusted.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
@@ -461,20 +463,6 @@ struct URLLoaderFactoryParams {
 
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
-  // TODO(lukasza): The field below in practice is always set to
-  // ResourceType::kPrefetch by the //content layer, but in the long-term we
-  // want to avoid using resource types (even as an opaque int) in
-  // //services/network.  See also the TODO comment for
-  // network::ResourceRequest::resource_type.
-  int32 corb_detachable_resource_type = -1;
-  // TODO(lukasza): https://crbug.com/846339: Remove the field below and instead
-  // make plugins use a separate URLoaderFactory. Note requests of this type are
-  // only excluded if ResourceRequest::fetch_request_mode is kNoCors. The field
-  // below in practice is always set to ResourceType::kPluginResource by the
-  //  content layer, but in the long-term we want to avoid using resource types
-  // (even as an opaque int) in //services/network.  See also the TODO comment
-  // for network::ResourceRequest::resource_type.
-  int32 corb_excluded_resource_type = -1;
 
   // True if web related security (e.g., CORS) should be disabled. This is
   // mainly used by people testing their sites, via a command line switch.
@@ -506,6 +494,17 @@ interface NetworkContextClient {
 
   // Checks if a Domain Reliability report can be uploaded for the given origin.
   OnCanSendDomainReliabilityUpload(url.mojom.Url origin) => (bool allowed);
+
+  // Called when the Clear-Site-Data header has been received. The callback
+  // should be run after the data is deleted.
+  // https://www.w3.org/TR/clear-site-data/
+  // TODO(crbug.com/876931): We might want to move header parsing work to
+  // Network Service for security concerns (e.g. |header_value| => booleans).
+  OnClearSiteData(uint32 process_id,
+                  int32 routing_id,
+                  url.mojom.Url url,
+                  string header_value,
+                  int32 load_flags) => ();
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -538,7 +537,7 @@ interface NetworkContext {
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies
-  // to network objects without more specific methods (Channel ID, Cookies,
+  // to network objects without more specific methods (Cookies,
   // and the cache have, or will have, their own clearing APIs). This currently
   // only covers server properties and transport security state.
   //
@@ -583,18 +582,7 @@ interface NetworkContext {
   WriteCacheMetadata(url.mojom.Url url,
                      RequestPriority priority,
                      mojo_base.mojom.Time expected_response_time,
-                     array<uint8> data);
-
-  // Clears channel IDs. A specific range of time can be specified with
-  // |start_time| and |end_time|. This supports unbounded deletes in either
-  // direction by using null Time values for either argument.
-  //
-  // If a non-null |filter| is specified, will clear only IDs matching the
-  // filter. Filtering by origins is not supported. If |filter| is non-null,
-  // |filter.origins| must be empty.
-  ClearChannelIds(mojo_base.mojom.Time start_time,
-                  mojo_base.mojom.Time end_time,
-                  ClearDataFilter? filter) => ();
+                     mojo_base.mojom.BigBuffer data);
 
   // Clears the host cache. This will affect all NetworkContexts that share the
   // same HostResolved as the NetworkContext this is called on.
@@ -821,7 +809,7 @@ interface NetworkContext {
   // See |load_flags.h| for possible values.
   // |privacy_mode_enabled| is also passed into the HttpRequestInfo class: if
   // it is true, then the request must be sent over a connection that cannot be
-  // tracked by the server (e.g. without channel id).
+  // tracked by the server.
   PreconnectSockets(uint32 num_streams,
                     url.mojom.Url url,
                     int32 load_flags,
@@ -933,7 +921,8 @@ interface NetworkContext {
   // Verifies the given certificate using the context's CertVerifier.
   VerifyCertificateForTesting(X509Certificate certificate,
                               string hostname,
-                              string ocsp_response) => (int32 error_code);
+                              string ocsp_response,
+                              string sct_list) => (int32 error_code);
 
   [Sync]
   // Adds a Domain Reliability Context.
@@ -944,4 +933,7 @@ interface NetworkContext {
   // Forces all pending Domain Reliability uploads to run now, even if their
   // minimum delay has not yet passed.
   ForceDomainReliabilityUploadsForTesting() => ();
+
+  // Gets the OriginPolicyManager associated with this network context.
+  GetOriginPolicyManager(OriginPolicyManager& origin_policy_manager);
 };

@@ -40,6 +40,8 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
@@ -58,7 +60,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
-#include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -116,11 +117,11 @@ struct AnnotatedRegionValue {
     return draggable == o.draggable && bounds == o.bounds;
   }
 
-  LayoutRect bounds;
+  PhysicalRect bounds;
   bool draggable;
 };
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 const int kShowTreeCharacterOffset = 39;
 #endif
 
@@ -221,6 +222,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
+  FRIEND_TEST_ALL_PREFIXES(
+      LayoutObjectTest,
+      ContainingBlockAbsoluteLayoutObjectShouldBeNonStaticallyPositionedBlockAncestor);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockFixedLayoutObjectInTransformedDiv);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockFixedLayoutObjectInTransformedDiv);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockFixedLayoutObjectInBody);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           ContainingBlockAbsoluteLayoutObjectInBody);
+  FRIEND_TEST_ALL_PREFIXES(
+      LayoutObjectTest,
+      ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor);
+
   friend class VisualRectMappingTest;
 
  public:
@@ -351,6 +367,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Element at that rect is visible in the viewport. Returns the new absolute
   // rect of the target rect after all scrolls are completed, in the coordinate
   // space of the local root frame.
+  // TODO(nburris): The returned rect is actually in document coordinates, not
+  // root frame coordinates.
   LayoutRect ScrollRectToVisible(const LayoutRect&,
                                  const WebScrollIntoViewParams&);
 
@@ -359,6 +377,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutBox* EnclosingBox() const;
 
   LayoutBox* EnclosingScrollableBox() const;
+
+  // Returns the root of the inline formatting context |this| belongs to. |this|
+  // must be |IsInline()|. The root is the object that holds |NGPaintFragment|
+  // if it's in LayoutNG context.
+  LayoutBlockFlow* RootInlineFormattingContext() const;
 
   // Returns the containing block flow if it's a LayoutNGBlockFlow, or nullptr
   // otherwise. Note that the semantics is different from |EnclosingBox| for
@@ -394,16 +417,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   };
 
   void AssertLaidOut() const {
-#ifndef NDEBUG
-    if (NeedsLayout() && !LayoutBlockedByDisplayLock())
+    if (NeedsLayout() &&
+        !LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
       ShowLayoutTreeForThis();
-#endif
-    SECURITY_DCHECK(!NeedsLayout() || LayoutBlockedByDisplayLock());
+    SECURITY_DCHECK(!NeedsLayout() ||
+                    LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   }
 
   void AssertSubtreeIsLaidOut() const {
     for (const LayoutObject* layout_object = this; layout_object;
-         layout_object = layout_object->LayoutBlockedByDisplayLock()
+         layout_object = layout_object->LayoutBlockedByDisplayLock(
+                             DisplayLockContext::kChildren)
                              ? layout_object->NextInPreOrderAfterChildren()
                              : layout_object->NextInPreOrder()) {
       layout_object->AssertLaidOut();
@@ -411,12 +435,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   void AssertClearedPaintInvalidationFlags() const {
-#ifndef NDEBUG
     if (PaintInvalidationStateIsDirty() && !PrePaintBlockedByDisplayLock()) {
       ShowLayoutTreeForThis();
       NOTREACHED();
     }
-#endif
   }
 
   void AssertSubtreeClearedPaintInvalidationFlags() const {
@@ -428,7 +450,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
   }
 
-#endif
+#endif  // DCHECK_IS_ON()
 
   // LayoutObject tree manipulation
   //////////////////////////////////////////
@@ -512,12 +534,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return StyleRef().ContainsStyle();
   }
   inline bool ShouldApplyContentContainment() const {
-    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
-           ShouldApplyStyleContainment();
+    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment();
   }
   inline bool ShouldApplyStrictContainment() const {
     return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
-           ShouldApplyStyleContainment() && ShouldApplySizeContainment();
+           ShouldApplySizeContainment();
   }
 
  private:
@@ -550,12 +571,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool RequiresAnonymousTableWrappers(const LayoutObject*) const;
 
  public:
+#if DCHECK_IS_ON()
   // Dump this layout object to the specified string builder.
   void DumpLayoutObject(StringBuilder&,
                         bool dump_address,
                         unsigned show_tree_character_offset) const;
-
-#ifndef NDEBUG
   void ShowTreeForThis() const;
   void ShowLayoutTreeForThis() const;
   void ShowLineTreeForThis() const;
@@ -572,7 +592,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                              const LayoutObject* marked_object2 = nullptr,
                              const char* marked_label2 = nullptr,
                              unsigned depth = 0) const;
-#endif
+#endif  // DCHECK_IS_ON()
 
   // This function is used to create the appropriate LayoutObject based
   // on the style, in particular 'display' and 'content'.
@@ -630,6 +650,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGListItem() const { return IsOfType(kLayoutObjectNGListItem); }
   bool IsLayoutNGListMarker() const {
     return IsOfType(kLayoutObjectNGListMarker);
+  }
+  bool IsLayoutNGInsideListMarker() const {
+    return IsOfType(kLayoutObjectNGInsideListMarker);
   }
   bool IsLayoutNGListMarkerImage() const {
     return IsOfType(kLayoutObjectNGListMarkerImage);
@@ -871,6 +894,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !IsListMarker() && !IsLayoutFlowThread() &&
            !IsLayoutMultiColumnSet();
   }
+  // If node has been split into continuations, it returns the first layout
+  // object generated for the node.
+  const LayoutObject* ContinuationRoot() const {
+    return GetNode() ? GetNode()->GetLayoutObject() : this;
+  }
   bool IsElementContinuation() const {
     return GetNode() && GetNode()->GetLayoutObject() != this;
   }
@@ -918,6 +946,45 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return StyleRef().IsFlippedBlocksWritingMode();
   }
 
+  // If HasFlippedBlocksWritingMode() is true, these functions flip the input
+  // rect/point in blocks direction in this object's local coordinate space
+  // (which is the ContainerBlock()'s space if this object is not a box).
+  // For non-boxes, for better performance, the caller can prepare
+  // |block_for_flipping| (= ContainingBlock()) if it will loop through many
+  // rects/points to flip to avoid the cost of repeated ContainingBlock() calls.
+  WARN_UNUSED_RESULT LayoutRect
+  FlipForWritingMode(const PhysicalRect& r,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return r.ToLayoutRect();
+    return {FlipForWritingModeInternal(r.X(), r.Width(), box_for_flipping),
+            r.Y(), r.Width(), r.Height()};
+  }
+  WARN_UNUSED_RESULT PhysicalRect
+  FlipForWritingMode(const LayoutRect& r,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return PhysicalRect(r);
+    return {FlipForWritingModeInternal(r.X(), r.Width(), box_for_flipping),
+            r.Y(), r.Width(), r.Height()};
+  }
+  WARN_UNUSED_RESULT LayoutPoint
+  FlipForWritingMode(const PhysicalOffset& p,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return p.ToLayoutPoint();
+    return {FlipForWritingModeInternal(p.left, LayoutUnit(), box_for_flipping),
+            p.top};
+  }
+  WARN_UNUSED_RESULT PhysicalOffset
+  FlipForWritingMode(const LayoutPoint& p,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return PhysicalOffset(p);
+    return {FlipForWritingModeInternal(p.X(), LayoutUnit(), box_for_flipping),
+            p.Y()};
+  }
+
   bool HasLayer() const { return bitfields_.HasLayer(); }
 
   // This may be different from StyleRef().hasBoxDecorationBackground() because
@@ -945,6 +1012,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !bitfields_.NeedsSimplifiedNormalFlowLayout();
   }
 
+  bool NeedsSimplifiedLayoutOnly() const {
+    // We don't need to check |SelfNeedsLayoutForAvailableSpace| as an
+    // additional check will determine if we need to perform full layout based
+    // on the available space.
+    return (bitfields_.PosChildNeedsLayout() ||
+            bitfields_.NeedsSimplifiedNormalFlowLayout()) &&
+           !bitfields_.SelfNeedsLayoutForStyle() &&
+           !bitfields_.NormalChildNeedsLayout() &&
+           !bitfields_.NeedsPositionedMovementLayout();
+  }
+
   bool SelfNeedsLayout() const {
     return bitfields_.SelfNeedsLayoutForStyle() ||
            bitfields_.SelfNeedsLayoutForAvailableSpace();
@@ -968,6 +1046,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool NeedsCollectInlines() const { return bitfields_.NeedsCollectInlines(); }
 
+  // Return true if the min/max preferred logical widths aren't up-to-date. Note
+  // that for objects that *don't* need to calculate preferred logical widths
+  // (e.g. if inline-size is a fixed value, and no other inline lengths are
+  // intrinsic, and the object isn't a descendant of something that needs
+  // min/max), this flag will never be cleared (since the values will never be
+  // calculated).
   bool PreferredLogicalWidthsDirty() const {
     return bitfields_.PreferredLogicalWidthsDirty();
   }
@@ -1189,15 +1273,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Finds the container as if this object is absolute-position.
   LayoutObject* ContainerForFixedPosition(AncestorSkipInfo* = nullptr) const;
 
-  // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
-  // containing LayoutBlock of it.
-  LayoutBlock* ContainingBlockForAbsolutePosition(
-      AncestorSkipInfo* = nullptr) const;
-  // Returns ContainerForFixedPosition() if it's a LayoutBlock, or the
-  // containing LayoutBlock of it.
-  LayoutBlock* ContainingBlockForFixedPosition(
-      AncestorSkipInfo* = nullptr) const;
-
   bool CanContainOutOfFlowPositionedElement(EPosition position) const {
     DCHECK(position == EPosition::kAbsolute || position == EPosition::kFixed);
     return (position == EPosition::kAbsolute &&
@@ -1219,6 +1294,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
   // marked too if needed.
   void SetNeedsCollectInlines();
+  void SetChildNeedsCollectInlines();
   void ClearNeedsCollectInlines() { SetNeedsCollectInlines(false); }
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,
@@ -1231,7 +1307,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutInvalidationReasonForTracing,
       MarkingBehavior = kMarkContainerChain,
       SubtreeLayoutScope* = nullptr);
-  void ClearNeedsLayout();
+
+  void ClearNeedsLayoutWithoutPaintInvalidation(
+      bool clear_child_dirty_bits = true);
+  // |ClearNeedsLayout()| calls |SetShouldCheckForPaintInvalidation()|.
+  void ClearNeedsLayout(bool clear_child_dirty_bits = true);
+  void ClearNeedsLayoutWithFullPaintInvalidation(
+      bool clear_child_dirty_bits = true);
+
   void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain,
                            SubtreeLayoutScope* = nullptr);
   void SetNeedsPositionedMovementLayout();
@@ -1262,8 +1345,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns the associated |NGPaintFragment|. When this is not a |nullptr|,
   // this is the root of an inline formatting context, laid out by LayoutNG.
-  virtual NGPaintFragment* PaintFragment() const { return nullptr; }
+  virtual const NGPaintFragment* PaintFragment() const { return nullptr; }
 
+  // Paint/Physical fragments are not in sync with LayoutObject tree until it is
+  // laid out. For inline, it needs to check if the containing block is
+  // layout-clean. crbug.com/963103
+  bool IsFirstInlineFragmentSafe() const;
   void SetIsInLayoutNGInlineFormattingContext(bool);
   virtual NGPaintFragment* FirstInlineFragment() const { return nullptr; }
   virtual void SetFirstInlineFragment(NGPaintFragment*) {}
@@ -1452,77 +1539,79 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.CanContainFixedPositionObjects();
   }
 
-  // Convert the given local point to absolute coordinates
-  // FIXME: Temporary. If UseTransforms is true, take transforms into account.
-  // Eventually localToAbsolute() will always be transform-aware.
-  FloatPoint LocalToAbsolute(const FloatPoint& local_point = FloatPoint(),
-                             MapCoordinatesFlags = 0) const;
-
-  // If the LayoutBoxModelObject ancestor is non-null, the input point is in the
+  // Convert a rect/quad/point in ancestor coordinates to local physical
+  // coordinates, taking transforms into account unless kIgnoreTransforms (not
+  // allowed in the quad versions) is specified.
+  // PhysicalRect parameter/return value is preferred to Float because they
+  // force physical coordinates, unless we do need quads or float precision.
+  // If the LayoutBoxModelObject ancestor is non-null, the input is in the
   // space of the ancestor.
   // Otherwise:
-  //   If TraverseDocumentBoundaries is specified, the input point is in the
-  //   space of the local root frame.
-  //   Otherwise, the input point is in the space of the containing frame.
-  FloatPoint AncestorToLocal(LayoutBoxModelObject*,
-                             const FloatPoint&,
-                             MapCoordinatesFlags = 0) const;
-  FloatPoint AbsoluteToLocal(const FloatPoint& point,
-                             MapCoordinatesFlags mode = 0) const {
-    return AncestorToLocal(nullptr, point, mode);
+  //   If kTraverseDocumentBoundaries is specified, the input is in the space of
+  //   the local root frame.
+  //   Otherwise, the input is in the space of the containing frame.
+  PhysicalRect AncestorToLocalRect(const LayoutBoxModelObject* ancestor,
+                                   const PhysicalRect& rect,
+                                   MapCoordinatesFlags mode = 0) const {
+    return PhysicalRect::EnclosingRect(
+        AncestorToLocalQuad(ancestor, FloatRect(rect), mode).BoundingBox());
   }
-
-  // Convert a local quad to absolute coordinates, taking transforms into
-  // account.
-  FloatQuad LocalToAbsoluteQuad(const FloatQuad& quad,
-                                MapCoordinatesFlags mode = 0) const {
-    return LocalToAncestorQuad(quad, nullptr, mode);
-  }
-
-  // Convert a quad in ancestor coordinates to local coordinates.
-  // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the
-  // space of the ancestor.
-  // Otherwise:
-  //   If TraverseDocumentBoundaries is specified, the input quad is in the
-  //   space of the local root frame.
-  //   Otherwise, the input quad is in the space of the containing frame.
-  FloatQuad AncestorToLocalQuad(LayoutBoxModelObject*,
+  FloatQuad AncestorToLocalQuad(const LayoutBoxModelObject*,
                                 const FloatQuad&,
                                 MapCoordinatesFlags mode = 0) const;
-  FloatQuad AbsoluteToLocalQuad(const FloatQuad& quad,
-                                MapCoordinatesFlags mode = 0) const {
-    return AncestorToLocalQuad(nullptr, quad, mode);
+  PhysicalOffset AncestorToLocalPoint(const LayoutBoxModelObject* ancestor,
+                                      const PhysicalOffset& p,
+                                      MapCoordinatesFlags mode = 0) const {
+    return PhysicalOffset::FromFloatPointRound(
+        AncestorToLocalFloatPoint(ancestor, FloatPoint(p), mode));
   }
+  FloatPoint AncestorToLocalFloatPoint(const LayoutBoxModelObject* ancestor,
+                                       const FloatPoint& p,
+                                       MapCoordinatesFlags = 0) const;
 
-  // Convert a local quad into the coordinate system of container, taking
-  // transforms into account.
+  // Convert a rect/quad/point in local physical coordinates into ancestor
+  // coordinates, taking transforms into account unless kIgnoreTransforms is
+  // specified.
+  // PhysicalRect parameter/return value is preferred to Float because they
+  // force physical coordinates, unless we do need quads or float precision.
   // If the LayoutBoxModelObject ancestor is non-null, the result will be in the
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the result will be in the
   //   space of the local root frame.
   //   Otherwise, the result will be in the space of the containing frame.
+  PhysicalRect LocalToAncestorRect(const PhysicalRect& rect,
+                                   const LayoutBoxModelObject* ancestor,
+                                   MapCoordinatesFlags mode = 0) const {
+    return PhysicalRect::EnclosingRect(
+        LocalToAncestorQuad(FloatRect(rect), ancestor, mode).BoundingBox());
+  }
+  FloatQuad LocalRectToAncestorQuad(const PhysicalRect& rect,
+                                    const LayoutBoxModelObject* ancestor,
+                                    MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorQuad(FloatRect(rect), ancestor, mode);
+  }
   FloatQuad LocalToAncestorQuad(const FloatQuad&,
                                 const LayoutBoxModelObject* ancestor,
                                 MapCoordinatesFlags = 0) const;
-  FloatPoint LocalToAncestorPoint(const FloatPoint&,
-                                  const LayoutBoxModelObject* ancestor,
-                                  MapCoordinatesFlags = 0) const;
-  void LocalToAncestorRects(Vector<LayoutRect>&,
+  PhysicalOffset LocalToAncestorPoint(const PhysicalOffset& p,
+                                      const LayoutBoxModelObject* ancestor,
+                                      MapCoordinatesFlags mode = 0) const {
+    return PhysicalOffset::FromFloatPointRound(
+        LocalToAncestorFloatPoint(FloatPoint(p), ancestor, mode));
+  }
+  FloatPoint LocalToAncestorFloatPoint(const FloatPoint&,
+                                       const LayoutBoxModelObject* ancestor,
+                                       MapCoordinatesFlags = 0) const;
+  void LocalToAncestorRects(Vector<PhysicalRect>&,
                             const LayoutBoxModelObject* ancestor,
-                            const LayoutPoint& pre_offset,
-                            const LayoutPoint& post_offset) const;
-
-  // Convert a local quad into the coordinate system of container, not
-  // include transforms. See localToAncestorQuad for details.
-  FloatQuad LocalToAncestorQuadWithoutTransforms(
-      const FloatQuad&,
-      const LayoutBoxModelObject* ancestor,
-      MapCoordinatesFlags = 0) const;
+                            const PhysicalOffset& pre_offset,
+                            const PhysicalOffset& post_offset) const;
 
   // Return the transformation matrix to map points from local to the coordinate
-  // system of a container, taking transforms into account.
-  // Passing null for |ancestor| behaves the same as localToAncestorQuad.
+  // system of a container, taking transforms into account (kIgnoreTransforms is
+  // not allowed).
+  // Passing null for |ancestor| behaves the same as LocalToAncestorRect.
   TransformationMatrix LocalToAncestorTransform(
       const LayoutBoxModelObject* ancestor,
       MapCoordinatesFlags = 0) const;
@@ -1531,28 +1620,70 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return LocalToAncestorTransform(nullptr, mode);
   }
 
+  // Shorthands of the above LocalToAncestor* and AncestorToLocal* functions,
+  // with nullptr as the ancestor. See the above functions for the meaning of
+  // "absolute" coordinates.
+  PhysicalRect LocalToAbsoluteRect(const PhysicalRect& rect,
+                                   MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorRect(rect, nullptr, mode);
+  }
+  FloatQuad LocalRectToAbsoluteQuad(const PhysicalRect& rect,
+                                    MapCoordinatesFlags mode = 0) const {
+    return LocalRectToAncestorQuad(rect, nullptr, mode);
+  }
+  FloatQuad LocalToAbsoluteQuad(const FloatQuad& quad,
+                                MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorQuad(quad, nullptr, mode);
+  }
+  PhysicalOffset LocalToAbsolutePoint(const PhysicalOffset& p,
+                                      MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorPoint(p, nullptr, mode);
+  }
+  FloatPoint LocalToAbsoluteFloatPoint(const FloatPoint& p,
+                                       MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorFloatPoint(p, nullptr, mode);
+  }
+  PhysicalRect AbsoluteToLocalRect(const PhysicalRect& rect,
+                                   MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalRect(nullptr, rect, mode);
+  }
+  FloatQuad AbsoluteToLocalQuad(const FloatQuad& quad,
+                                MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalQuad(nullptr, quad, mode);
+  }
+  PhysicalOffset AbsoluteToLocalPoint(const PhysicalOffset& p,
+                                      MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalPoint(nullptr, p, mode);
+  }
+  FloatPoint AbsoluteToLocalFloatPoint(const FloatPoint& p,
+                                       MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalFloatPoint(nullptr, p, mode);
+  }
+
   // Return the offset from the container() layoutObject (excluding transforms
   // and multicol).
-  LayoutSize OffsetFromContainer(const LayoutObject*,
-                                 bool ignore_scroll_offset = false) const;
+  PhysicalOffset OffsetFromContainer(const LayoutObject*,
+                                     bool ignore_scroll_offset = false) const;
   // Return the offset from an object from the ancestor. The ancestor need
   // not be on the containing block chain of |this|.
-  LayoutSize OffsetFromAncestor(const LayoutObject*) const;
-
-  virtual void AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {}
+  PhysicalOffset OffsetFromAncestor(const LayoutObject*) const;
 
   FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;
   // This returns an IntRect enclosing this object. If this object has an
   // integral size and the position has fractional values, the resultant
   // IntRect can be larger than the integral size.
   IntRect AbsoluteBoundingBoxRect(MapCoordinatesFlags = 0) const;
-  // FIXME: This function should go away eventually
-  IntRect AbsoluteBoundingBoxRectIgnoringTransforms() const;
-  // These two handles inline anchors without content as well.
-  LayoutRect AbsoluteBoundingBoxRectHandlingEmptyAnchor() const;
+
+  // These two functions also handle inlines without content for which the
+  // location of the result rect (which may be empty) should be the absolute
+  // location of the inline. This is especially useful to get the bounding
+  // box of named anchors.
+  // TODO(crbug.com/953479): After the bug is fixed, investigate whether we
+  // can combine this with AbsoluteBoundingBoxRect().
+  virtual PhysicalRect AbsoluteBoundingBoxRectHandlingEmptyInline() const;
   // This returns an IntRect expanded from
-  // AbsoluteBoundingBoxRectHandlingEmptyAnchor by ScrollMargin.
-  LayoutRect AbsoluteBoundingBoxRectForScrollIntoView() const;
+  // AbsoluteBoundingBoxRectHandlingEmptyInline by ScrollMargin.
+  PhysicalRect AbsoluteBoundingBoxRectForScrollIntoView() const;
 
   // Build an array of quads in absolute coords for line boxes
   virtual void AbsoluteQuads(Vector<FloatQuad>&,
@@ -1633,31 +1764,31 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Invalidate the raster of a specific sub-rectangle within the object. The
   // rect is in the object's local coordinate space. This is useful e.g. when
   // a small region of a canvas changes.
-  void InvalidatePaintRectangle(const LayoutRect&);
+  void InvalidatePaintRectangle(const PhysicalRect&);
 
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the coordinate space of the document's scrolling
   // contents. This method deals with outlines and overflow.
-  virtual LayoutRect VisualRectInDocument(
+  virtual PhysicalRect VisualRectInDocument(
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Returns the rect that should have raster invalidated whenever this object
-  // changes. The rect is in the object's local coordinate space. This is for
-  // non-SVG objects and LayoutSVGRoot only. SVG objects (except LayoutSVGRoot)
-  // should use VisualRectInLocalSVGCoordinates() and map with SVG transforms
-  // instead.
-  LayoutRect LocalVisualRect() const {
+  // changes. The rect is in the object's local physical coordinate space.
+  // This is for non-SVG objects and LayoutSVGRoot only. SVG objects (except
+  // LayoutSVGRoot) should use VisualRectInLocalSVGCoordinates() and map with
+  // SVG transforms instead.
+  PhysicalRect LocalVisualRect() const {
     if (StyleRef().Visibility() != EVisibility::kVisible &&
         VisualRectRespectsVisibility())
-      return LayoutRect();
+      return PhysicalRect();
     return LocalVisualRectIgnoringVisibility();
   }
 
-  // Given a rect in the object's coordinate space, mutates the rect into one
-  // representing the size of its visual painted output as if |ancestor| was the
-  // root of the page: the rect is modified by any intervening clips, transforms
-  // and scrolls between |this| and |ancestor| (not inclusive of |ancestor|),
-  // but not any above |ancestor|.
+  // Given a rect in the object's physical coordinate space, mutates the rect
+  // into one representing the size of its visual painted output as if
+  // |ancestor| was the root of the page: the rect is modified by any
+  // intervening clips, transforms and scrolls between |this| and |ancestor|
+  // (not inclusive of |ancestor|), but not any above |ancestor|.
   // The output is in the physical, painted coordinate pixel space of
   // |ancestor|.
   // Overflow clipping, CSS clipping and scrolling is *not* applied for
@@ -1668,16 +1799,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // the rect to the main frame's space which includes the root view's scroll
   // and clip. This is even true if the main frame is remote.
   //
-  // If visualRectFlags has the EdgeInclusive bit set, clipping operations will
+  // If VisualRectFlags has the kEdgeInclusive bit set, clipping operations will
   // use LayoutRect::InclusiveIntersect, and the return value of
   // InclusiveIntersect will be propagated to the return value of this method.
-  // Otherwise, clipping operations will use LayoutRect::intersect, and the
+  // Otherwise, clipping operations will use LayoutRect::Intersect, and the
   // return value will be true only if the clipped rect has non-zero area.
   // See the documentation for LayoutRect::InclusiveIntersect for more
   // information.
   bool MapToVisualRectInAncestorSpace(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      PhysicalRect&,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Do not call this method directly. Call mapToVisualRectInAncestorSpace
@@ -1690,7 +1821,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Do a rect-based hit test with this object as the stop node.
   HitTestResult HitTestForOcclusion(const LayoutRect&) const;
   HitTestResult HitTestForOcclusion() const {
-    return HitTestForOcclusion(VisualRectInDocument());
+    return HitTestForOcclusion(VisualRectInDocument().ToLayoutRect());
   }
 
   // Return the offset to the column in which the specified point (in
@@ -1721,10 +1852,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // A single rectangle that encompasses all of the selected objects within this
   // object. Used to determine the tightest possible bounding box for the
-  // selection. The rect returned is in the object's local coordinate space.
-  virtual LayoutRect LocalSelectionRect() const { return LayoutRect(); }
+  // selection. The rect is in the object's local physical coordinate space.
+  virtual PhysicalRect LocalSelectionVisualRect() const {
+    return PhysicalRect();
+  }
 
-  LayoutRect AbsoluteSelectionRect() const;
+  PhysicalRect AbsoluteSelectionRect() const;
 
   bool CanBeSelectionLeaf() const;
   bool IsSelected() const;
@@ -1742,6 +1875,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const InlineBox*,
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const;
+  PhysicalRect PhysicalLocalCaretRect(
+      const InlineBox* inline_box,
+      int caret_offset,
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const {
+    return FlipForWritingMode(
+        LocalCaretRect(inline_box, caret_offset, extra_width_to_end_of_line));
+  }
 
   // When performing a global document tear-down, the layoutObject of the
   // document is cleared. We use this as a hook to detect the case of document
@@ -1773,8 +1913,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsListItem() || IsLayoutNGListItem();
   }
 
+  // There are 3 types of list marker. LayoutNG creates different types for
+  // inside and outside; outside is derived from LayoutBlockFlow, and inside
+  // from LayoutInline. Legacy is derived from LayoutBox.
   bool IsListMarkerIncludingNG() const {
     return IsListMarker() || IsLayoutNGListMarker();
+  }
+  bool IsLayoutNGListMarkerIncludingInside() const {
+    return IsLayoutNGListMarker() || IsLayoutNGInsideListMarker();
+  }
+  bool IsListMarkerIncludingNGInside() const {
+    return IsListMarker() || IsLayoutNGListMarkerIncludingInside();
   }
 
   virtual bool IsCombineText() const { return false; }
@@ -1810,20 +1959,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Map points and quads through elements, potentially via 3d transforms. You
   // should never need to call these directly; use localToAbsolute/
   // absoluteToLocal methods instead.
-  virtual void MapLocalToAncestor(
-      const LayoutBoxModelObject* ancestor,
-      TransformState&,
-      MapCoordinatesFlags = kApplyContainerFlip) const;
+  virtual void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                                  TransformState&,
+                                  MapCoordinatesFlags) const;
   // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the input quad is in the
   //   space of the local root frame.
   //   Otherwise, the input quad is in the space of the containing frame.
-  virtual void MapAncestorToLocal(
-      const LayoutBoxModelObject*,
-      TransformState&,
-      MapCoordinatesFlags = kApplyContainerFlip) const;
+  virtual void MapAncestorToLocal(const LayoutBoxModelObject*,
+                                  TransformState&,
+                                  MapCoordinatesFlags) const;
 
   // Pushes state onto LayoutGeometryMap about how to map coordinates from this
   // layoutObject to its container, or ancestorToStopAt (whichever is
@@ -1835,7 +1982,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool ShouldUseTransformFromContainer(const LayoutObject* container) const;
   void GetTransformFromContainer(const LayoutObject* container,
-                                 const LayoutSize& offset_in_container,
+                                 const PhysicalOffset& offset_in_container,
                                  TransformationMatrix&) const;
 
   bool CreatesGroup() const {
@@ -1843,15 +1990,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            HasFilterInducingProperty() || StyleRef().HasBlendMode();
   }
 
+  Vector<PhysicalRect> OutlineRects(const PhysicalOffset& additional_offset,
+                                    NGOutlineType) const;
+
   // Collects rectangles that the outline of this object would be drawing along
   // the outside of, even if the object isn't styled with a outline for now. The
   // rects also cover continuations.
-  virtual void AddOutlineRects(Vector<LayoutRect>&,
-                               const LayoutPoint& additional_offset,
+  virtual void AddOutlineRects(Vector<PhysicalRect>&,
+                               const PhysicalOffset& additional_offset,
                                NGOutlineType) const {}
-
-  Vector<LayoutRect> PhysicalOutlineRects(const LayoutPoint& additional_offset,
-                                          NGOutlineType) const;
 
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.
@@ -1871,7 +2018,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   static RespectImageOrientationEnum ShouldRespectImageOrientation(
       const LayoutObject*);
 
-  bool IsRelayoutBoundaryForInspector() const;
+  bool IsRelayoutBoundary() const;
 
   // The visual rect, in the the space of the paint invalidation container
   // (*not* the graphics layer that paints this object).
@@ -1958,7 +2105,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetShouldInvalidateSelection();
 
-  virtual LayoutRect ViewRect() const;
+  virtual PhysicalRect ViewRect() const;
 
   // Called by PaintInvalidator during PrePaint. Checks paint invalidation flags
   // and other changes that will cause different painting, and invalidate
@@ -1983,7 +2130,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns a rect corresponding to this LayoutObject's bounds for use in
   // debugging output
-  virtual LayoutRect DebugRect() const;
+  virtual PhysicalRect DebugRect() const;
 
   // Each LayoutObject has one or more painting fragments (exactly one
   // in the absence of multicol/pagination).
@@ -2225,7 +2372,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   IntRect SelectionVisualRect() const {
     return fragment_.SelectionVisualRect();
   }
-  LayoutRect PartialInvalidationLocalRect() const {
+  PhysicalRect PartialInvalidationLocalRect() const {
     return fragment_.PartialInvalidationLocalRect();
   }
 
@@ -2239,9 +2386,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetOutlineMayBeAffectedByDescendants(b);
   }
 
-  bool LayoutBlockedByDisplayLock() const {
+  bool LayoutBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
-    return context && !context->ShouldLayout();
+    return context && !context->ShouldLayout(target);
+  }
+
+  bool DisplayLockInducesSizeContainment() const {
+    auto* context = GetDisplayLockContext();
+    return context && context->IsLocked();
   }
 
   bool PrePaintBlockedByDisplayLock() const {
@@ -2307,6 +2460,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGMixin,
     kLayoutObjectNGListItem,
     kLayoutObjectNGListMarker,
+    kLayoutObjectNGInsideListMarker,
     kLayoutObjectNGListMarkerImage,
     kLayoutObjectNGText,
     kLayoutObjectProgress,
@@ -2388,7 +2542,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // The return value of this method is whether the fast path could be used.
   bool MapToVisualRectInAncestorSpaceInternalFastPath(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      PhysicalRect&,
       VisualRectFlags,
       bool& intersects) const;
 
@@ -2434,20 +2588,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(b);
   }
 
+  // See LocalVisualRect().
   virtual bool VisualRectRespectsVisibility() const { return true; }
-  virtual LayoutRect LocalVisualRectIgnoringVisibility() const;
+  virtual PhysicalRect LocalVisualRectIgnoringVisibility() const;
 
   virtual bool CanBeSelectionLeafInternal() const { return false; }
 
-  virtual LayoutSize OffsetFromContainerInternal(
+  virtual PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
       bool ignore_scroll_offset) const;
-  LayoutSize OffsetFromScrollableContainer(const LayoutObject*,
-                                           bool ignore_scroll_offset) const;
+  PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
+                                               bool ignore_scroll_offset) const;
 
-  void NotifyDisplayLockDidLayout() {
+  void NotifyDisplayLockDidLayout(DisplayLockContext::LifecycleTarget target) {
     if (auto* context = GetDisplayLockContext())
-      context->DidLayout();
+      context->DidLayout(target);
   }
 
   bool BackgroundIsKnownToBeObscured() const {
@@ -2460,6 +2615,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
               DocumentLifecycle::kInPrePaint);
     bitfields_.SetBackgroundIsKnownToBeObscured(b);
   }
+
+  // Returns |container|'s containing block.
+  LayoutBlock* FindNonAnonymousContainingBlock(
+      LayoutObject* container,
+      LayoutObject::AncestorSkipInfo* = nullptr) const;
+  // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
+  // containing LayoutBlock of it.
+  LayoutBlock* ContainingBlockForAbsolutePosition(
+      AncestorSkipInfo* = nullptr) const;
+  // Returns ContainerForFixedPosition() if it's a LayoutBlock, or the
+  // containing LayoutBlock of it.
+  LayoutBlock* ContainingBlockForFixedPosition(
+      AncestorSkipInfo* = nullptr) const;
 
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
@@ -2514,13 +2682,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   const ComputedStyle* CachedFirstLineStyle() const;
   StyleDifference AdjustStyleDifference(StyleDifference) const;
 
-  // These are helper functions for AbsoluteBoudingBoxRectHandlingEmptyAnchor()
-  // and AbsoluteBoundingBoxRectForScrollIntoView().
-  enum class ExpandScrollMargin { kExpand, kIgnore };
-  LayoutRect AbsoluteBoundingBoxRectHelper(ExpandScrollMargin) const;
-  bool GetUpperLeftCorner(ExpandScrollMargin, FloatPoint&) const;
-  bool GetLowerRightCorner(ExpandScrollMargin, FloatPoint&) const;
-
 #if DCHECK_IS_ON()
   void CheckBlockPositionedObjectsNeedLayout();
 #endif
@@ -2541,6 +2702,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
 
   IntRect AdjustVisualRectForInlineBox(const IntRect&) const;
+
+  virtual LayoutUnit FlipForWritingModeInternal(
+      LayoutUnit position,
+      LayoutUnit width,
+      const LayoutBox* box_for_flipping) const;
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from
@@ -3113,25 +3279,39 @@ inline void LayoutObject::SetNeedsLayoutAndFullPaintInvalidation(
   SetShouldDoFullPaintInvalidation();
 }
 
-inline void LayoutObject::ClearNeedsLayout() {
+inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation(
+    bool clear_child_dirty_bits) {
   // Set flags for later stages/cycles.
   SetEverHadLayout();
-  SetShouldCheckForPaintInvalidation();
 
   // Clear needsLayout flags.
   SetSelfNeedsLayoutForStyle(false);
   SetSelfNeedsLayoutForAvailableSpace(false);
-  SetPosChildNeedsLayout(false);
-  SetNeedsSimplifiedNormalFlowLayout(false);
-  SetNormalChildNeedsLayout(false);
   SetNeedsPositionedMovementLayout(false);
   SetAncestorLineBoxDirty(false);
+
+  if (clear_child_dirty_bits) {
+    SetPosChildNeedsLayout(false);
+    SetNormalChildNeedsLayout(false);
+    SetNeedsSimplifiedNormalFlowLayout(false);
+  }
 
 #if DCHECK_IS_ON()
   CheckBlockPositionedObjectsNeedLayout();
 #endif
 
   SetScrollAnchorDisablingStyleChanged(false);
+}
+
+inline void LayoutObject::ClearNeedsLayout(bool clear_child_dirty_bits) {
+  ClearNeedsLayoutWithoutPaintInvalidation(clear_child_dirty_bits);
+  SetShouldCheckForPaintInvalidation();
+}
+
+inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation(
+    bool clear_child_dirty_bits) {
+  ClearNeedsLayoutWithoutPaintInvalidation(clear_child_dirty_bits);
+  SetShouldDoFullPaintInvalidation();
 }
 
 inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents,
@@ -3199,7 +3379,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const LayoutObject&);
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 // Outside the blink namespace for ease of invocation from gdb.
 CORE_EXPORT void showTree(const blink::LayoutObject*);
 CORE_EXPORT void showLineTree(const blink::LayoutObject*);

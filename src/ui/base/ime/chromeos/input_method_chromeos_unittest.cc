@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
@@ -27,7 +26,6 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -232,53 +230,6 @@ class CachingInputMethodDelegate : public internal::InputMethodDelegate {
   std::queue<DispatchKeyEventPostIMECallback> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CachingInputMethodDelegate);
-};
-
-class MojoInputMethodDelegate : public ui::internal::InputMethodDelegate,
-                                public ime::mojom::ImeEngine {
- public:
-  MojoInputMethodDelegate() : engine_binding_(this) {}
-  ~MojoInputMethodDelegate() override = default;
-
-  ime::mojom::ImeEngineClientProxy* engine_client() const {
-    return engine_client_.get();
-  }
-
-  void FlushForTesting() { engine_client_.FlushForTesting(); }
-
- private:
-  // Overridden from ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event,
-      DispatchKeyEventPostIMECallback callback) override {
-    event->StopPropagation();
-    RunDispatchKeyEventPostIMECallback(event, std::move(callback));
-    return ui::EventDispatchDetails();
-  }
-  bool ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
-                          ime::mojom::ImeEngineClientPtr client) override {
-    engine_binding_.Bind(std::move(engine_request));
-    engine_client_ = std::move(client);
-    return true;
-  }
-
-  // ime::mojom::ImeEngine:
-  void StartInput(ime::mojom::EditorInfoPtr info) override {}
-  void FinishInput() override {}
-  void CancelInput() override {}
-  void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
-                       ProcessKeyEventCallback callback) override {}
-  void UpdateSurroundingInfo(const std::string& text,
-                             int32_t cursor,
-                             int32_t anchor,
-                             int32_t offset) override {}
-  void UpdateCompositionBounds(const std::vector<gfx::Rect>& bounds) override {}
-
-  mojo::Binding<ime::mojom::ImeEngine> engine_binding_;
-
-  ime::mojom::ImeEngineClientPtr engine_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoInputMethodDelegate);
 };
 
 class InputMethodChromeOSTest : public internal::InputMethodDelegate,
@@ -968,15 +919,6 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_EventOrder) {
     ime_->OnTextInputTypeChanged(this);
   }
   IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
-}
-
-TEST_F(InputMethodChromeOSTest, MojoInteractions) {
-  MojoInputMethodDelegate delegate;
-  TestableInputMethodChromeOS im(&delegate);
-  im.OnFocus();
-  delegate.engine_client()->CommitText("test");
-  delegate.FlushForTesting();
-  EXPECT_EQ("test", im.text_committed());
 }
 
 class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {

@@ -19,10 +19,10 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
-#include "device/usb/public/cpp/fake_usb_device_info.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/cpp/test/fake_usb_device_info.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -141,7 +141,7 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
 }  // namespace
 
 TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
-  GURL origin(kDefaultTestUrl);
+  const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto device1 = base::MakeRefCounted<FakeUsbDeviceInfo>(
       0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
@@ -211,7 +211,7 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
 }
 
 TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
-  GURL origin(kDefaultTestUrl);
+  const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto* context = GetChooserContext();
   auto device = base::MakeRefCounted<FakeUsbDeviceInfo>(0x1234, 0x5678, "ACME",
@@ -289,7 +289,7 @@ TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
 }
 
 TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
-  GURL origin(kDefaultTestUrl);
+  const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto* context = GetChooserContext();
   auto device_info = device_manager()->CreateAndAddDevice(

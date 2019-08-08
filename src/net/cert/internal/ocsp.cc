@@ -13,10 +13,10 @@
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/internal/revocation_util.h"
 #include "net/cert/internal/verify_name_match.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/x509_util.h"
-#include "net/der/encode_values.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
@@ -705,7 +705,11 @@ OCSPRevocationStatus GetRevocationStatusForCert(
     // serial numbers. If an OCSP responder provides both an up to date
     // response and an expired response, the up to date response takes
     // precedence (PROVIDED > INVALID_DATE).
-    if (!CheckOCSPDateValid(single_response, verify_time, max_age)) {
+    if (!CheckRevocationDateValid(single_response.this_update,
+                                  single_response.has_next_update
+                                      ? &single_response.next_update
+                                      : nullptr,
+                                  verify_time, max_age)) {
       if (*response_details != OCSPVerifyResult::PROVIDED)
         *response_details = OCSPVerifyResult::INVALID_DATE;
       continue;
@@ -813,30 +817,6 @@ OCSPRevocationStatus CheckOCSP(
   }
 
   return status;
-}
-
-bool CheckOCSPDateValid(const OCSPSingleResponse& response,
-                        const base::Time& verify_time,
-                        const base::TimeDelta& max_age) {
-  der::GeneralizedTime verify_time_der;
-  if (!der::EncodeTimeAsGeneralizedTime(verify_time, &verify_time_der))
-    return false;
-
-  if (response.this_update > verify_time_der)
-    return false;  // Response is not yet valid.
-
-  if (response.has_next_update && (response.next_update <= verify_time_der))
-    return false;  // Response is no longer valid.
-
-  der::GeneralizedTime earliest_this_update;
-  if (!der::EncodeTimeAsGeneralizedTime(verify_time - max_age,
-                                        &earliest_this_update)) {
-    return false;
-  }
-  if (response.this_update < earliest_this_update)
-    return false;  // Response is too old.
-
-  return true;
 }
 
 bool CreateOCSPRequest(const ParsedCertificate* cert,

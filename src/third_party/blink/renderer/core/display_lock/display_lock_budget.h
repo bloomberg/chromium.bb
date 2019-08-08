@@ -8,6 +8,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class DisplayLockContext;
@@ -39,6 +43,10 @@ class CORE_EXPORT DisplayLockBudget {
   // true indicating that another frame is needed.
   virtual bool NeedsLifecycleUpdates() const = 0;
 
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // DisplayLockBudget.
+  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+
  protected:
   // Marks the ancestor chain dirty for the given phase if it's needed. Returns
   // true if the ancestors were marked dirty and false otherwise.
@@ -46,6 +54,8 @@ class CORE_EXPORT DisplayLockBudget {
 
   // Returns true if there is likely to be work for the given phase.
   bool IsElementDirtyForPhase(Phase) const;
+
+  const base::TickClock* clock_;
 
  private:
   // This is a backpointer to the context, which should always outlive this

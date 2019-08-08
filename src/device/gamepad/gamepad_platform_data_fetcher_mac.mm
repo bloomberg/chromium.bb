@@ -28,11 +28,11 @@ const uint16_t kGameUsageNumber = 0x05;
 const uint16_t kMultiAxisUsageNumber = 0x08;
 
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     UChar* dest,
+                                     base::char16* dest,
                                      size_t dest_len) {
   NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
   memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(UChar)];
+  [as16 getBytes:dest length:dest_len - sizeof(base::char16)];
 }
 
 NSDictionary* DeviceMatching(uint32_t usage_page, uint32_t usage) {

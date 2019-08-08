@@ -5,14 +5,22 @@
  * found in the LICENSE file.
  */
 
-#include "VkTestUtils.h"
+#include "tools/gpu/vk/VkTestUtils.h"
 
 #ifdef SK_VULKAN
 
-#include "SkAutoMalloc.h"
-#include "vk/GrVkBackendContext.h"
-#include "vk/GrVkExtensions.h"
-#include "../ports/SkOSLibrary.h"
+#ifndef SK_GPU_TOOLS_VK_LIBRARY_NAME
+    #if defined _WIN32
+        #define SK_GPU_TOOLS_VK_LIBRARY_NAME "vulkan-1.dll"
+    #else
+        #define SK_GPU_TOOLS_VK_LIBRARY_NAME "libvulkan.so"
+    #endif
+#endif
+
+#include "include/gpu/vk/GrVkBackendContext.h"
+#include "include/gpu/vk/GrVkExtensions.h"
+#include "src/core/SkAutoMalloc.h"
+#include "src/ports/SkOSLibrary.h"
 
 #if defined(SK_ENABLE_SCOPED_LSAN_SUPPRESSIONS)
 #include <sanitizer/lsan_interface.h>
@@ -32,11 +40,7 @@ bool LoadVkLibraryAndGetProcAddrFuncs(PFN_vkGetInstanceProcAddr* instProc,
     static PFN_vkGetInstanceProcAddr localInstProc = nullptr;
     static PFN_vkGetDeviceProcAddr localDevProc = nullptr;
     if (!vkLib) {
-#if defined _WIN32
-        vkLib = DynamicLoadLibrary("vulkan-1.dll");
-#else
-        vkLib = DynamicLoadLibrary("libvulkan.so");
-#endif
+        vkLib = DynamicLoadLibrary(SK_GPU_TOOLS_VK_LIBRARY_NAME);
         if (!vkLib) {
             return false;
         }

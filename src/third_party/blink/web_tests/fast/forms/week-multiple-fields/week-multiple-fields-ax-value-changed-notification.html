@@ -10,10 +10,10 @@
 async_test((t) => {
     var testInput = document.getElementById('test');
     var expected = [
-        [ "Focus", "Week", "10" ],
-        [ "Focus", "Year", "2012" ],
+        [ "Focus", "Week", "10", "\t" ],
+        [ "Focus", "Year", "2012", "4" ],
         [ "ValueChanged", "Year", "0004" ],
-        [ "ValueChanged", "Year", "0004" ],
+        [ "ValueChanged", "Year", "0004", "ArrowUp" ],
         [ "ValueChanged", "Year", "0005" ],
         [ "ValueChanged", "Year", "0005" ] ];
 
@@ -24,15 +24,14 @@ async_test((t) => {
                 assert_equals(notification, next_expectation[0]);
                 assert_equals(element.name.trim(), next_expectation[1]);
                 assert_equals(element.valueDescription.substr(20), next_expectation[2]);
+                if (next_expectation.length > 3)
+                    eventSender.keyDown(next_expectation[3]);
             }
             if (expected.length === 0)
                 t.done();
         }));
 
     testInput.focus();
-    eventSender.keyDown('\t');
-    eventSender.keyDown('4');
-    eventSender.keyDown('ArrowUp');
 
     window.setTimeout(function() {
         assert_unreached("Did not receive all accessibility notifications");

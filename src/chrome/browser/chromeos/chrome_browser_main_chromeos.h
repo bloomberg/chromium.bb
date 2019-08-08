@@ -27,6 +27,10 @@ class ArcServiceLauncher;
 class VoiceInteractionControllerClient;
 }  // namespace arc
 
+namespace policy {
+class LockToSingleUserManager;
+}  // namespace policy
+
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 class AssistantClient;
 #endif
@@ -35,11 +39,13 @@ namespace chromeos {
 
 class ArcKioskAppManager;
 class CrosUsbDetector;
+class CupsProxyServiceManager;
 class DemoModeResourcesRemover;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
 class IdleActionWarningObserver;
+class KerberosCredentialsManager;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
@@ -47,9 +53,11 @@ class NetworkThrottlingObserver;
 class PowerMetricsReporter;
 class RendererFreezer;
 class SchedulerConfigurationManager;
+class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
 class WilcoDtcSupportdManager;
+class GnubbyNotification;
 
 namespace default_app_order {
 class ExternalLoader;
@@ -164,7 +172,14 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
 
+  std::unique_ptr<SessionTerminationManager> session_termination_manager_;
+  std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
+  std::unique_ptr<KerberosCredentialsManager> kerberos_credentials_manager_;
+
+  std::unique_ptr<GnubbyNotification> gnubby_notification_;
+  std::unique_ptr<chromeos::CupsProxyServiceManager>
+      cups_proxy_service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

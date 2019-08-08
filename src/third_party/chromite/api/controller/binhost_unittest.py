@@ -7,10 +7,9 @@
 
 from __future__ import print_function
 
-import mock
-
 from chromite.api.controller import binhost
 from chromite.api.gen.chromite.api import binhost_pb2
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import binhost as binhost_service
 
@@ -66,7 +65,35 @@ class SetBinhostTest(cros_test_lib.MockTestCase):
     binhost.SetBinhost(input_proto, output_proto)
 
     self.assertEqual(output_proto.output_file, '/path/to/BINHOST.conf')
-    self.assertEqual(
-        set_binhost.call_args_list,
-        [mock.call('target', 'POSTSUBMIT_BINHOST',
-                   'gs://chromeos-prebuilt/target', private=True)])
+    set_binhost.assert_called_once_with(
+        'target', 'PARALLEL_POSTSUBMIT_BINHOST',
+        'gs://chromeos-prebuilt/target', private=True)
+
+class RegenBuildCacheTest(cros_test_lib.MockTestCase):
+  """Unittests for RegenBuildCache."""
+
+  def testRegenBuildCache(self):
+    """RegenBuildCache calls service with the correct args."""
+    regen_cache = self.PatchObject(binhost_service, 'RegenBuildCache')
+
+    input_proto = binhost_pb2.RegenBuildCacheRequest()
+    input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
+    input_proto.sysroot.path = '/path/to/chroot'
+    input_proto.sysroot.build_target.name = 'target'
+
+    binhost.RegenBuildCache(input_proto)
+    regen_cache.assert_called_once_with('both', '/path/to/chroot')
+
+  def testRequiresOverlayType(self):
+    """RegenBuildCache dies if overlay_type not specified."""
+    regen_cache = self.PatchObject(binhost_service, 'RegenBuildCache')
+    die = self.PatchObject(cros_build_lib, 'Die')
+
+    input_proto = binhost_pb2.RegenBuildCacheRequest()
+    input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_UNSPECIFIED
+    input_proto.sysroot.path = '/path/to/chroot'
+    input_proto.sysroot.build_target.name = 'target'
+
+    binhost.RegenBuildCache(input_proto)
+    die.assert_called_once()
+    regen_cache.assert_not_called()

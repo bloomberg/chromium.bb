@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -24,8 +23,8 @@ namespace {
 
 struct SameSizeAsNGPhysicalFragment
     : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
-  void* pointers[2];
-  NGPhysicalSize size;
+  void* layout_object;
+  PhysicalSize size;
   unsigned flags;
 };
 
@@ -33,12 +32,11 @@ static_assert(sizeof(NGPhysicalFragment) ==
                   sizeof(SameSizeAsNGPhysicalFragment),
               "NGPhysicalFragment should stay small");
 
-bool AppendFragmentOffsetAndSize(
-    const NGPhysicalFragment* fragment,
-    base::Optional<NGPhysicalOffset> fragment_offset,
-    StringBuilder* builder,
-    NGPhysicalFragment::DumpFlags flags,
-    bool has_content) {
+bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
+                                 base::Optional<PhysicalOffset> fragment_offset,
+                                 StringBuilder* builder,
+                                 NGPhysicalFragment::DumpFlags flags,
+                                 bool has_content) {
   if (flags & NGPhysicalFragment::DumpOffset) {
     if (has_content)
       builder->Append(" ");
@@ -83,10 +81,10 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
       result.Append("block-flow-root");
       break;
   }
-  if (fragment.IsOldLayoutRoot()) {
+  if (fragment.IsLegacyLayoutRoot()) {
     if (result.length())
       result.Append(" ");
-    result.Append("old-layout-root");
+    result.Append("legacy-layout-root");
   }
   if (fragment.IsBlockFlow()) {
     if (result.length())
@@ -114,7 +112,7 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
 }
 
 void AppendFragmentToString(const NGPhysicalFragment* fragment,
-                            base::Optional<NGPhysicalOffset> fragment_offset,
+                            base::Optional<PhysicalOffset> fragment_offset,
                             StringBuilder* builder,
                             NGPhysicalFragment::DumpFlags flags,
                             unsigned indent = 2) {
@@ -210,10 +208,6 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   builder->Append("\n");
 }
 
-LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
-  return (edges & edge) ? LayoutUnit(border_width) : LayoutUnit();
-}
-
 }  // namespace
 
 // static
@@ -224,31 +218,32 @@ void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
 NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
-    : layout_object_(builder->layout_object_),
-      size_(ToNGPhysicalSize(builder->size_, builder->GetWritingMode())),
-      break_token_(std::move(builder->break_token_)),
+    : layout_object_(*builder->layout_object_),
+      size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
-      is_old_layout_root_(false) {}
+      is_legacy_layout_root_(false) {
+  DCHECK(builder->layout_object_);
+}
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGStyleVariant style_variant,
-                                       NGPhysicalSize size,
+                                       PhysicalSize size,
                                        NGFragmentType type,
-                                       unsigned sub_type,
-                                       scoped_refptr<NGBreakToken> break_token)
-    : layout_object_(layout_object),
+                                       unsigned sub_type)
+    : layout_object_(*layout_object),
       size_(size),
-      break_token_(std::move(break_token)),
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)style_variant),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
-      is_old_layout_root_(false) {}
+      is_legacy_layout_root_(false) {
+  DCHECK(layout_object);
+}
 
 // Keep the implementation of the destructor here, to avoid dependencies on
 // ComputedStyle in the header file.
@@ -272,29 +267,34 @@ void NGPhysicalFragment::Destroy() const {
   }
 }
 
-const ComputedStyle& NGPhysicalFragment::Style() const {
-  if (auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(this))
-    return line_box->Style();
+const ComputedStyle& NGPhysicalFragment::SlowEffectiveStyle() const {
   switch (StyleVariant()) {
     case NGStyleVariant::kStandard:
-      DCHECK(GetLayoutObject());
-      return *GetLayoutObject()->Style();
+      return layout_object_.StyleRef();
     case NGStyleVariant::kFirstLine:
-      DCHECK(GetLayoutObject());
-      return *GetLayoutObject()->FirstLineStyle();
+      return layout_object_.FirstLineStyleRef();
     case NGStyleVariant::kEllipsis:
-      return To<NGPhysicalTextFragment>(this)->Style();
+      DCHECK_EQ(Type(), kFragmentText);
+      DCHECK_EQ(StyleVariant(), NGStyleVariant::kEllipsis);
+      // The ellipsis is styled according to the line style.
+      // https://drafts.csswg.org/css-ui/#ellipsing-details
+      // Use first-line style if exists since most cases it is the first line.
+      // TODO(kojii): Should determine if it's really in the first line.
+      DCHECK(layout_object_.IsInline());
+      if (LayoutObject* block = layout_object_.ContainingBlock())
+        return block->FirstLineStyleRef();
+      return layout_object_.FirstLineStyleRef();
   }
   NOTREACHED();
-  return *GetLayoutObject()->Style();
+  return layout_object_.StyleRef();
 }
 
 Node* NGPhysicalFragment::GetNode() const {
-  return layout_object_ ? layout_object_->GetNode() : nullptr;
+  return !IsLineBox() ? layout_object_.GetNode() : nullptr;
 }
 
 bool NGPhysicalFragment::HasLayer() const {
-  return layout_object_ && layout_object_->HasLayer();
+  return !IsLineBox() && layout_object_.HasLayer();
 }
 
 PaintLayer* NGPhysicalFragment::Layer() const {
@@ -303,7 +303,7 @@ PaintLayer* NGPhysicalFragment::Layer() const {
 
   // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject*>(layout_object_)->Layer();
+  return static_cast<LayoutBoxModelObject&>(layout_object_).Layer();
 }
 
 bool NGPhysicalFragment::HasSelfPaintingLayer() const {
@@ -312,45 +312,48 @@ bool NGPhysicalFragment::HasSelfPaintingLayer() const {
 
   // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject*>(layout_object_)
-      ->HasSelfPaintingLayer();
+  return static_cast<LayoutBoxModelObject&>(layout_object_)
+      .HasSelfPaintingLayer();
 }
 
 bool NGPhysicalFragment::HasOverflowClip() const {
-  return layout_object_ && layout_object_->HasOverflowClip();
+  return !IsLineBox() && layout_object_.HasOverflowClip();
 }
 
 bool NGPhysicalFragment::ShouldClipOverflow() const {
-  return layout_object_ && layout_object_->ShouldClipOverflow();
+  return !IsLineBox() && layout_object_.ShouldClipOverflow();
 }
 
 bool NGPhysicalFragment::IsBlockFlow() const {
-  return layout_object_ && layout_object_->IsLayoutBlockFlow();
+  return !IsLineBox() && layout_object_.IsLayoutBlockFlow();
 }
 
 bool NGPhysicalFragment::IsListMarker() const {
-  return layout_object_ && layout_object_->IsLayoutNGListMarker();
+  return !IsLineBox() && layout_object_.IsLayoutNGListMarker();
 }
 
 bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // TODO(kojii): Move this to a flag for |LayoutNGBlockFlow::UpdateBlockLayout|
   // to set.
-  if (!layout_object_)
+  if (IsLineBox())
     return false;
-  const LayoutBlock* container = layout_object_->ContainingBlock();
+  const LayoutBlock* container = layout_object_.ContainingBlock();
   if (!container)
     return false;
   return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();
 }
 
-NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
-  unsigned edges = BorderEdges();
-  NGPhysicalBoxStrut box_strut(
-      BorderWidth(edges, NGBorderEdges::kTop, Style().BorderTopWidth()),
-      BorderWidth(edges, NGBorderEdges::kRight, Style().BorderRightWidth()),
-      BorderWidth(edges, NGBorderEdges::kBottom, Style().BorderBottomWidth()),
-      BorderWidth(edges, NGBorderEdges::kLeft, Style().BorderLeftWidth()));
-  return box_strut.SnapToDevicePixels();
+const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
+  if (IsBox() && !IsInlineBox()) {
+    if (const auto* block = DynamicTo<LayoutBlockFlow>(GetLayoutObject())) {
+      if (block->IsRelayoutBoundary()) {
+        const NGPhysicalFragment* new_fragment = block->CurrentFragment();
+        if (new_fragment && new_fragment != this)
+          return new_fragment;
+      }
+    }
+  }
+  return nullptr;
 }
 
 #if DCHECK_IS_ON()
@@ -365,7 +368,7 @@ void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
 }
 #endif
 
-NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
+PhysicalRect NGPhysicalFragment::ScrollableOverflow() const {
   switch (Type()) {
     case kFragmentBox:
     case kFragmentRenderedLegend:
@@ -381,16 +384,17 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   return {{}, Size()};
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflowForPropagation(
+PhysicalRect NGPhysicalFragment::ScrollableOverflowForPropagation(
     const LayoutObject* container) const {
   DCHECK(container);
-  NGPhysicalOffsetRect overflow = ScrollableOverflow();
+  PhysicalRect overflow = ScrollableOverflow();
   if (GetLayoutObject() &&
       GetLayoutObject()->ShouldUseTransformFromContainer(container)) {
     TransformationMatrix transform;
-    GetLayoutObject()->GetTransformFromContainer(container, LayoutSize(),
+    GetLayoutObject()->GetTransformFromContainer(container, PhysicalOffset(),
                                                  transform);
-    overflow = NGPhysicalOffsetRect(transform.MapRect(overflow.ToLayoutRect()));
+    overflow =
+        PhysicalRect::EnclosingRect(transform.MapRect(FloatRect(overflow)));
   }
   return overflow;
 }
@@ -447,6 +451,22 @@ TextDirection NGPhysicalFragment::ResolvedDirection() const {
   return TextDirection::kLtr;
 }
 
+bool NGPhysicalFragment::ShouldPaintCursorCaret() const {
+  // TODO(xiaochengh): Merge cursor caret painting functions from LayoutBlock to
+  // FrameSelection.
+  if (const auto* block = DynamicTo<LayoutBlock>(GetLayoutObject()))
+    return block->ShouldPaintCursorCaret();
+  return false;
+}
+
+bool NGPhysicalFragment::ShouldPaintDragCaret() const {
+  // TODO(xiaochengh): Merge drag caret painting functions from LayoutBlock to
+  // DragCaret.
+  if (const auto* block = DynamicTo<LayoutBlock>(GetLayoutObject()))
+    return block->ShouldPaintDragCaret();
+  return false;
+}
+
 String NGPhysicalFragment::ToString() const {
   StringBuilder output;
   output.AppendFormat("Type: '%d' Size: '%s'", Type(),
@@ -473,7 +493,7 @@ String NGPhysicalFragment::ToString() const {
 
 String NGPhysicalFragment::DumpFragmentTree(
     DumpFlags flags,
-    base::Optional<NGPhysicalOffset> fragment_offset,
+    base::Optional<PhysicalOffset> fragment_offset,
     unsigned indent) const {
   StringBuilder string_builder;
   if (flags & DumpHeaderText)
@@ -482,14 +502,14 @@ String NGPhysicalFragment::DumpFragmentTree(
   return string_builder.ToString();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void NGPhysicalFragment::ShowFragmentTree() const {
   DumpFlags dump_flags = DumpAll;
   LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
 }
-#endif  // !NDEBUG
+#endif
 
-NGPhysicalOffsetRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
+PhysicalRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
   return {offset_to_container_box, fragment->Size()};
 }
 

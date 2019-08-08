@@ -89,9 +89,6 @@ TestChildModalParent* TestChildModalParent::Show(aura::Window* context) {
 
 TestChildModalParent::TestChildModalParent(aura::Window* context)
     : modal_parent_(std::make_unique<Widget>()),
-      button_(views::MdTextButton::Create(
-          this,
-          base::ASCIIToUTF16("Show/Hide Child Modal Window"))),
       textfield_(new views::Textfield),
       host_(new views::NativeViewHost) {
   textfield_->set_placeholder_text(base::ASCIIToUTF16("top level window"));
@@ -108,7 +105,9 @@ TestChildModalParent::TestChildModalParent(aura::Window* context)
   modal_parent_textfield->set_placeholder_text(
       base::ASCIIToUTF16("modal parent window"));
   modal_parent_->GetNativeView()->SetName("ModalParent");
-  AddChildView(button_);
+  auto button = views::MdTextButton::Create(
+      this, base::ASCIIToUTF16("Show/Hide Child Modal Window"));
+  button_ = AddChildView(std::move(button));
   AddChildView(textfield_);
   AddChildView(host_);
 }

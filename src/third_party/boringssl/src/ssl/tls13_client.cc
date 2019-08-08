@@ -188,6 +188,7 @@ static enum ssl_hs_wait_t do_read_hello_retry_request(SSL_HANDSHAKE *hs) {
   hs->tls13_state = state_send_second_client_hello;
   // 0-RTT is rejected if we receive a HelloRetryRequest.
   if (hs->in_early_data) {
+    ssl->s3->early_data_reason = ssl_early_data_hello_retry_request;
     return ssl_hs_early_data_rejected;
   }
   return ssl_hs_ok;
@@ -900,7 +901,7 @@ bool tls13_process_new_session_ticket(SSL *ssl, const SSLMessage &msg) {
     return false;
   }
 
-  if (have_early_data_info && ssl->enable_early_data) {
+  if (have_early_data_info) {
     if (!CBS_get_u32(&early_data_info, &session->ticket_max_early_data) ||
         CBS_len(&early_data_info) != 0) {
       ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);

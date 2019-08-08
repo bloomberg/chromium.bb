@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
@@ -192,14 +191,14 @@ void URLFetcherFileWriter::OnIOCompleted(int result) {
     CloseAndDeleteFile();
 
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
 }
 
 void URLFetcherFileWriter::CloseComplete(int result) {
   // Destroy |file_stream_| whether or not the close succeeded.
   file_stream_.reset();
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
 }
 
 }  // namespace net

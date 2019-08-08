@@ -56,13 +56,11 @@ bool TargetCanHaveMotionTransform(const SVGElement& target) {
 }
 }
 
-inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
+SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
     : SVGAnimationElement(svg_names::kAnimateMotionTag, document),
       has_to_point_at_end_of_duration_(false) {
   SetCalcMode(kCalcModePaced);
 }
-
-DEFINE_NODE_FACTORY(SVGAnimateMotionElement)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement() = default;
 

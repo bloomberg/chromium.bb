@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -55,10 +54,11 @@ class DesktopSessionProxy::IpcSharedBufferCore
       LOG(ERROR) << "Failed to map a shared buffer: id=" << id
                  << ", size=" << region.GetSize();
     }
+    // After being mapped, |region| is no longer needed and can be discarded.
   }
 
-  int id() { return id_; }
-  size_t size() { return mapping_.size(); }
+  int id() const { return id_; }
+  size_t size() const { return mapping_.size(); }
   const void* memory() const { return mapping_.memory(); }
 
  private:
@@ -73,6 +73,8 @@ class DesktopSessionProxy::IpcSharedBufferCore
 
 class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
  public:
+  // Note that the webrtc::SharedMemory class is used for both read-only and
+  // writable shared memory, necessitating the ugly const_cast here.
   IpcSharedBuffer(scoped_refptr<IpcSharedBufferCore> core)
       : SharedMemory(const_cast<void*>(core->memory()),
                      core->size(),
@@ -536,6 +538,13 @@ void DesktopSessionProxy::OnReleaseSharedBuffer(int id) {
 void DesktopSessionProxy::OnDesktopDisplayChanged(
     const protocol::VideoLayout& displays) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "DSP::OnDesktopDisplayChanged";
+  for (int display_id = 0; display_id < displays.video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout track = displays.video_track(display_id);
+    LOG(INFO) << "   #" << display_id << " : "
+              << " [" << track.x_dpi() << "," << track.y_dpi() << "]";
+  }
 
   if (client_session_control_) {
     auto layout = std::make_unique<protocol::VideoLayout>();

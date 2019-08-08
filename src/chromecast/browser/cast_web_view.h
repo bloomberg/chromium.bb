@@ -36,7 +36,7 @@ class CastWebView {
     // Returning true indicates that the delegate handled the message.
     // If false is returned the default logging mechanism will be used.
     virtual bool OnAddMessageToConsoleReceived(
-        int32_t level,
+        blink::mojom::ConsoleMessageLevel log_level,
         const base::string16& message,
         int32_t line_no,
         const base::string16& source_id) = 0;
@@ -68,6 +68,11 @@ class CastWebView {
     // The delegate for the CastWebView. Must be non-null.
     Delegate* delegate = nullptr;
 
+    // Parameters for initializing CastWebContents. These will be passed as-is
+    // to a CastWebContents instance, which should be used by all CastWebView
+    // implementations.
+    CastWebContents::InitParams web_contents_params;
+
     // Parameters for creating the content window for this CastWebView.
     shell::CastContentWindow::CreateParams window_params;
 
@@ -79,14 +84,6 @@ class CastWebView {
 
     // Whether this CastWebView is granted media access.
     bool allow_media_access = false;
-
-    // Whether this CastWebView will use CMA for media playback.
-    bool use_cma_renderer = true;
-
-    // Enable development mode for this CastWebView. Whitelists certain
-    // functionality for the WebContents, like remote debugging and debugging
-    // interfaces.
-    bool enabled_for_dev = false;
 
     // Enable/Force 720p resolution for this CastWebView instance.
     bool force_720p_resolution = false;

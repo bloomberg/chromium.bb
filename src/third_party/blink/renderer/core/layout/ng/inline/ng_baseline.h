@@ -149,6 +149,17 @@ class CORE_EXPORT NGBaselineList {
 
   void emplace_back(NGBaselineRequest request, LayoutUnit offset);
 
+#if DCHECK_IS_ON()
+  bool operator==(const NGBaselineList& other) const {
+    for (wtf_size_t i = 0; i < NGBaselineRequest::kTypeIdCount; ++i) {
+      if (offsets_[i] != other.offsets_[i])
+        return false;
+    }
+
+    return true;
+  }
+#endif
+
   class const_iterator {
    public:
     explicit const_iterator(unsigned type_id, const LayoutUnit* offset)

@@ -59,13 +59,18 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/webrtc/api/create_peerconnection_factory.h"
+#include "third_party/webrtc/api/call/call_factory_interface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
 #include "third_party/webrtc/api/video_track_source_proxy.h"
 #include "third_party/webrtc/media/engine/fake_video_codec_factory.h"
 #include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
+#include "third_party/webrtc/media/engine/webrtc_media_engine.h"
+#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "third_party/webrtc/rtc_base/ssl_adapter.h"
+#include "third_party/webrtc_overrides/task_queue_factory.h"
 
 namespace content {
 
@@ -313,12 +318,24 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
         std::make_unique<webrtc::FakeVideoDecoderFactory>();
   }
 
-  pc_factory_ = webrtc::CreatePeerConnectionFactory(
-      worker_thread_ /* network thread */, worker_thread_, signaling_thread_,
-      audio_device_.get(), CreateWebrtcAudioEncoderFactory(),
-      CreateWebrtcAudioDecoderFactory(), std::move(webrtc_encoder_factory),
-      std::move(webrtc_decoder_factory), nullptr /* audio_mixer */,
-      nullptr /* audio_processing */);
+  webrtc::PeerConnectionFactoryDependencies pcf_deps;
+  pcf_deps.worker_thread = worker_thread_;
+  pcf_deps.network_thread = worker_thread_;
+  pcf_deps.signaling_thread = signaling_thread_;
+  pcf_deps.task_queue_factory = CreateWebRtcTaskQueueFactory();
+  pcf_deps.call_factory = webrtc::CreateCallFactory();
+  pcf_deps.event_log_factory = std::make_unique<webrtc::RtcEventLogFactory>(
+      pcf_deps.task_queue_factory.get());
+  cricket::MediaEngineDependencies media_deps;
+  media_deps.task_queue_factory = pcf_deps.task_queue_factory.get();
+  media_deps.adm = audio_device_.get();
+  media_deps.audio_encoder_factory = CreateWebrtcAudioEncoderFactory();
+  media_deps.audio_decoder_factory = CreateWebrtcAudioDecoderFactory();
+  media_deps.video_encoder_factory = std::move(webrtc_encoder_factory);
+  media_deps.video_decoder_factory = std::move(webrtc_decoder_factory);
+  media_deps.audio_processing = webrtc::AudioProcessingBuilder().Create();
+  pcf_deps.media_engine = cricket::CreateMediaEngine(std::move(media_deps));
+  pc_factory_ = webrtc::CreateModularPeerConnectionFactory(std::move(pcf_deps));
   CHECK(pc_factory_.get());
 
   webrtc::PeerConnectionFactoryInterface::Options factory_options;

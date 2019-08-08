@@ -40,12 +40,10 @@ namespace blink {
 
 class Document;
 
-inline HTMLShadowElement::HTMLShadowElement(Document& document)
+HTMLShadowElement::HTMLShadowElement(Document& document)
     : V0InsertionPoint(html_names::kShadowTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLShadowElement);
 }
-
-DEFINE_NODE_FACTORY(HTMLShadowElement)
 
 HTMLShadowElement::~HTMLShadowElement() = default;
 

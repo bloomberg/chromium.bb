@@ -48,11 +48,6 @@ class GpuArcVideoEncodeAccelerator
   void Initialize(const media::VideoEncodeAccelerator::Config& config,
                   VideoEncodeClientPtr client,
                   InitializeCallback callback) override;
-  void EncodeDeprecated(mojo::ScopedHandle fd,
-                        std::vector<::arc::VideoFramePlane> planes,
-                        int64_t timestamp,
-                        bool force_keyframe,
-                        EncodeCallback callback) override;
   void Encode(media::VideoPixelFormat format,
               mojo::ScopedHandle fd,
               std::vector<::arc::VideoFramePlane> planes,

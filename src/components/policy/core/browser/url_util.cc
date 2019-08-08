@@ -77,10 +77,7 @@ class EmbeddedURLExtractor {
       if (re2::RE2::FullMatch(url.path(), google_amp_viewer_path_regex_, &s,
                               &embedded)) {
         // The embedded URL may be percent-encoded. Undo that.
-        embedded = net::UnescapeURLComponent(
-            embedded,
-            net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+        embedded = net::UnescapeBinaryURLComponent(embedded);
         return BuildURL(!s.empty(), embedded);
       }
     }

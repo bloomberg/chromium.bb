@@ -34,6 +34,7 @@ namespace blink {
 
 struct PaintInfo;
 class LineLayoutBox;
+class NGBlockNode;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
@@ -391,9 +392,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
  public:
   void Paint(const PaintInfo&) const override;
   virtual void PaintObject(const PaintInfo&,
-                           const LayoutPoint& paint_offset) const;
+                           const PhysicalOffset& paint_offset) const;
   virtual void PaintChildren(const PaintInfo&,
-                             const LayoutPoint& paint_offset) const;
+                             const PhysicalOffset& paint_offset) const;
   void UpdateAfterLayout() override;
 
  protected:
@@ -460,8 +461,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual void AddLayoutOverflowFromChildren();
   void AddVisualOverflowFromChildren();
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,

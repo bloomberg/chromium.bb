@@ -15,9 +15,9 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -30,7 +30,6 @@
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -199,48 +198,48 @@ void WindowState::SetDelegate(std::unique_ptr<WindowStateDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
-mojom::WindowStateType WindowState::GetStateType() const {
+WindowStateType WindowState::GetStateType() const {
   return current_state_->GetType();
 }
 
 bool WindowState::IsMinimized() const {
-  return GetStateType() == mojom::WindowStateType::MINIMIZED;
+  return GetStateType() == WindowStateType::kMinimized;
 }
 
 bool WindowState::IsMaximized() const {
-  return GetStateType() == mojom::WindowStateType::MAXIMIZED;
+  return GetStateType() == WindowStateType::kMaximized;
 }
 
 bool WindowState::IsFullscreen() const {
-  return GetStateType() == mojom::WindowStateType::FULLSCREEN;
+  return GetStateType() == WindowStateType::kFullscreen;
 }
 
 bool WindowState::IsMaximizedOrFullscreenOrPinned() const {
-  return GetStateType() == mojom::WindowStateType::MAXIMIZED ||
-         GetStateType() == mojom::WindowStateType::FULLSCREEN || IsPinned();
+  return GetStateType() == WindowStateType::kMaximized ||
+         GetStateType() == WindowStateType::kFullscreen || IsPinned();
 }
 
 bool WindowState::IsSnapped() const {
-  return GetStateType() == mojom::WindowStateType::LEFT_SNAPPED ||
-         GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED;
+  return GetStateType() == WindowStateType::kLeftSnapped ||
+         GetStateType() == WindowStateType::kRightSnapped;
 }
 
 bool WindowState::IsPinned() const {
-  return GetStateType() == mojom::WindowStateType::PINNED ||
-         GetStateType() == mojom::WindowStateType::TRUSTED_PINNED;
+  return GetStateType() == WindowStateType::kPinned ||
+         GetStateType() == WindowStateType::kTrustedPinned;
 }
 
 bool WindowState::IsTrustedPinned() const {
-  return GetStateType() == mojom::WindowStateType::TRUSTED_PINNED;
+  return GetStateType() == WindowStateType::kTrustedPinned;
 }
 
 bool WindowState::IsPip() const {
-  return GetStateType() == mojom::WindowStateType::PIP;
+  return GetStateType() == WindowStateType::kPip;
 }
 
 bool WindowState::IsNormalStateType() const {
-  return GetStateType() == mojom::WindowStateType::NORMAL ||
-         GetStateType() == mojom::WindowStateType::DEFAULT;
+  return GetStateType() == WindowStateType::kNormal ||
+         GetStateType() == WindowStateType::kDefault;
 }
 
 bool WindowState::IsNormalOrSnapped() const {
@@ -266,7 +265,7 @@ bool WindowState::HasMaximumWidthOrHeight() const {
 bool WindowState::CanMaximize() const {
   // Window must allow maximization and have no maximum width or height.
   if ((window_->GetProperty(aura::client::kResizeBehaviorKey) &
-       ws::mojom::kResizeBehaviorCanMaximize) == 0) {
+       aura::client::kResizeBehaviorCanMaximize) == 0) {
     return false;
   }
 
@@ -275,12 +274,12 @@ bool WindowState::CanMaximize() const {
 
 bool WindowState::CanMinimize() const {
   return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-          ws::mojom::kResizeBehaviorCanMinimize) != 0;
+          aura::client::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool WindowState::CanResize() const {
   return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-          ws::mojom::kResizeBehaviorCanResize) != 0;
+          aura::client::kResizeBehaviorCanResize) != 0;
 }
 
 bool WindowState::CanActivate() const {
@@ -551,7 +550,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-  OnPrePipStateChange(mojom::WindowStateType::DEFAULT);
+  OnPrePipStateChange(WindowStateType::kDefault);
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -581,9 +580,9 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     bounds->set_width(
         static_cast<int>(*snapped_width_ratio_ * maximized_bounds.width()));
   }
-  if (GetStateType() == mojom::WindowStateType::LEFT_SNAPPED)
+  if (GetStateType() == WindowStateType::kLeftSnapped)
     bounds->set_x(maximized_bounds.x());
-  else if (GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED)
+  else if (GetStateType() == WindowStateType::kRightSnapped)
     bounds->set_x(maximized_bounds.right() - bounds->width());
   bounds->set_y(maximized_bounds.y());
   bounds->set_height(maximized_bounds.height());
@@ -610,9 +609,9 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
 
   // sync up current window show state with PinType property.
   ash::mojom::WindowPinType pin_type = ash::mojom::WindowPinType::NONE;
-  if (GetStateType() == mojom::WindowStateType::PINNED)
+  if (GetStateType() == WindowStateType::kPinned)
     pin_type = ash::mojom::WindowPinType::PINNED;
-  else if (GetStateType() == mojom::WindowStateType::TRUSTED_PINNED)
+  else if (GetStateType() == WindowStateType::kTrustedPinned)
     pin_type = ash::mojom::WindowPinType::TRUSTED_PINNED;
   if (pin_type != GetPinType()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
@@ -621,22 +620,21 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
 }
 
 void WindowState::NotifyPreStateTypeChange(
-    mojom::WindowStateType old_window_state_type) {
+    WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
   OnPrePipStateChange(old_window_state_type);
 }
 
 void WindowState::NotifyPostStateTypeChange(
-    mojom::WindowStateType old_window_state_type) {
+    WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPostWindowStateTypeChange(this, old_window_state_type);
   OnPostPipStateChange(old_window_state_type);
 }
 
-void WindowState::OnPostPipStateChange(
-    mojom::WindowStateType old_window_state_type) {
-  if (old_window_state_type == mojom::WindowStateType::PIP) {
+void WindowState::OnPostPipStateChange(WindowStateType old_window_state_type) {
+  if (old_window_state_type == WindowStateType::kPip) {
     // The animation type may be FADE_OUT_SLIDE_IN at this point, which we don't
     // want it to be anymore if the window is not PIP anymore.
     ::wm::SetWindowVisibilityAnimationType(
@@ -720,10 +718,11 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
 }
 
-void WindowState::OnPrePipStateChange(
-    mojom::WindowStateType old_window_state_type) {
+void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window());
   if (IsPip()) {
+    CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
+        window(), CollisionDetectionUtils::RelativePriority::kPictureInPicture);
     // widget may not exit in some unit tests.
     // TODO(oshima): Fix unit tests and add DCHECK.
     if (widget) {
@@ -736,13 +735,13 @@ void WindowState::OnPrePipStateChange(
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
     // There may already be a system ui window on the initial position.
     UpdatePipBounds();
-    if (old_window_state_type != mojom::WindowStateType::PIP) {
+    if (old_window_state_type != WindowStateType::kPip) {
       window()->SetProperty(ash::kPrePipWindowStateTypeKey,
                             old_window_state_type);
     }
 
     CollectPipEnterExitMetrics(window(), /*enter=*/true);
-  } else if (old_window_state_type == mojom::WindowStateType::PIP) {
+  } else if (old_window_state_type == WindowStateType::kPip) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
       Shell::Get()->focus_cycler()->RemoveWidget(widget);
@@ -759,8 +758,7 @@ void WindowState::UpdatePipBounds() {
       PipPositioner::GetPositionAfterMovementAreaChange(this);
   ::wm::ConvertRectFromScreen(window()->GetRootWindow(), &new_bounds);
   if (window()->bounds() != new_bounds) {
-    wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, new_bounds,
-                             /*animate=*/true);
+    wm::SetBoundsEvent event(new_bounds, /*animate=*/true);
     OnWMEvent(&event);
   }
 }

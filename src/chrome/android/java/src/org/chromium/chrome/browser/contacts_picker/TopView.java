@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.text.SpanApplier;
 
 import java.text.NumberFormat;
@@ -60,6 +61,9 @@ public class TopView extends RelativeLayout implements CompoundButton.OnCheckedC
         super.onFinishInflate();
 
         mCheckboxContainer = findViewById(R.id.content);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTACTS_PICKER_SELECT_ALL)) {
+            mCheckboxContainer.setVisibility(View.VISIBLE);
+        }
         mSelectAllBox = findViewById(R.id.checkbox);
         mContactCount = findViewById(R.id.checkbox_details);
 
@@ -111,7 +115,9 @@ public class TopView extends RelativeLayout implements CompoundButton.OnCheckedC
      * Toggles the Select All checkbox.
      */
     public void toggle() {
-        mSelectAllBox.setChecked(!mSelectAllBox.isChecked());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTACTS_PICKER_SELECT_ALL)) {
+            mSelectAllBox.setChecked(!mSelectAllBox.isChecked());
+        }
     }
 
     /**

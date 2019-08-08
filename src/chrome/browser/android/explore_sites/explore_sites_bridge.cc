@@ -115,6 +115,12 @@ jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env) {
 }
 
 // static
+jint JNI_ExploreSitesBridge_GetIconVariation(JNIEnv* env) {
+  return static_cast<jint>(
+      chrome::android::explore_sites::GetMostLikelyVariation());
+}
+
+// static
 void JNI_ExploreSitesBridge_GetIcon(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
@@ -252,4 +258,27 @@ void JNI_ExploreSitesBridge_GetCategoryImage(
       base::BindOnce(&ImageReady,
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
+
+// static
+void JNI_ExploreSitesBridge_GetSummaryImage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    const jint j_pixel_size,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    base::android::RunBooleanCallbackAndroid(j_callback_obj, false);
+    return;
+  }
+
+  service->GetSummaryImage(
+      j_pixel_size, base::BindOnce(&ImageReady, ScopedJavaGlobalRef<jobject>(
+                                                    j_callback_obj)));
+}
+
 }  // namespace explore_sites

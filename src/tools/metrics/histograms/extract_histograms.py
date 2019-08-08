@@ -53,6 +53,7 @@ XML below will generate the following five histograms:
 
 """
 
+import HTMLParser
 import bisect
 import copy
 import datetime
@@ -78,7 +79,8 @@ class Error(Exception):
 def _JoinChildNodes(tag):
   """Join child nodes into a single text.
 
-  Applicable to leafs like 'summary' and 'detail'.
+  Applicable to leafs like 'summary' and 'detail'. Removes any comment in the
+  node.
 
   Args:
     tag: parent node
@@ -86,13 +88,15 @@ def _JoinChildNodes(tag):
   Returns:
     a string with concatenated nodes' text representation.
   """
-  return ''.join(c.toxml() for c in tag.childNodes).strip()
+  return ''.join(c.toxml()
+                 for c in tag.childNodes
+                 if c.nodeType != xml.dom.minidom.Node.COMMENT_NODE).strip()
 
 
 def _NormalizeString(s):
-  """Replaces all whitespace sequences with a single space.
+  r"""Replaces all whitespace sequences with a single space.
 
-  The function properly handles multi-line strings.
+  The function properly handles multi-line strings and XML escaped characters.
 
   Args:
     s: The string to normalize, ('  \\n a  b c\\n d  ').
@@ -100,7 +104,11 @@ def _NormalizeString(s):
   Returns:
     The normalized string (a b c d).
   """
-  return ' '.join(s.split())
+  singleline_value = ' '.join(s.split())
+
+  # Unescape using default ASCII encoding. Unescapes any HTML escaped character
+  # like &quot; etc.
+  return HTMLParser.HTMLParser().unescape(singleline_value)
 
 
 def _NormalizeAllAttributeValues(node):
@@ -179,7 +187,7 @@ def _ExpandHistogramNameWithSuffixes(suffix_name, histogram_name,
   return cluster + suffix_name + separator + remainder
 
 
-def _ExtractEnumsFromXmlTree(tree):
+def ExtractEnumsFromXmlTree(tree):
   """Extract all <enum> nodes in the tree into a dictionary."""
 
   enums = {}
@@ -555,7 +563,7 @@ def ExtractHistogramsFromDom(tree):
   """
   _NormalizeAllAttributeValues(tree)
 
-  enums, enum_errors = _ExtractEnumsFromXmlTree(tree)
+  enums, enum_errors = ExtractEnumsFromXmlTree(tree)
   histograms, histogram_errors = _ExtractHistogramsFromXmlTree(tree, enums)
   update_errors = _UpdateHistogramsWithSuffixes(tree, histograms)
 

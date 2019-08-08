@@ -200,7 +200,7 @@ std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
 bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
   static uint32_t kEGLImageDrmFmtsSupported[] = {
     DRM_FORMAT_ARGB8888,
-#if defined(ARCH_CPU_ARMEL)
+#if defined(ARCH_CPU_ARM_FAMILY)
     DRM_FORMAT_NV12,
     DRM_FORMAT_YVU420,
 #endif

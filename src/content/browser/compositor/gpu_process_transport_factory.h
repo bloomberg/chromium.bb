@@ -40,7 +40,6 @@ class GpuChannelEstablishFactory;
 
 namespace viz {
 class CompositingModeReporterImpl;
-class OutputDeviceBacking;
 class RasterContextProvider;
 class ServerSharedBitmapManager;
 class SoftwareOutputDevice;
@@ -101,6 +100,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void IssueExternalBeginFrame(ui::Compositor* compositor,
                                const viz::BeginFrameArgs& args) override;
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override;
+  void AddVSyncParameterObserver(
+      ui::Compositor* compositor,
+      viz::mojom::VSyncParameterObserverPtr observer) override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;
@@ -142,11 +144,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       ws::command_buffer_metrics::ContextType type);
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
-
-#if defined(OS_WIN)
-  // Used by output surface, stored in PerCompositorData.
-  std::unique_ptr<viz::OutputDeviceBacking> software_backing_;
-#endif
 
   // Depends on SurfaceManager.
   typedef std::map<ui::Compositor*, std::unique_ptr<PerCompositorData>>

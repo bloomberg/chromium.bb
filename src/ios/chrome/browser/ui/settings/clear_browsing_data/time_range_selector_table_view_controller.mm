@@ -6,12 +6,12 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/stl_util.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -52,23 +52,17 @@ static_assert(
   IntegerPrefMember _timeRangePref;
 }
 
-@property(nonatomic, weak) id<TimeRangeSelectorTableViewControllerDelegate>
-    delegate;
-
 @end
 
 @implementation TimeRangeSelectorTableViewController
 
 #pragma mark Initialization
 
-- (instancetype)initWithPrefs:(PrefService*)prefs
-                     delegate:(id<TimeRangeSelectorTableViewControllerDelegate>)
-                                  delegate {
+- (instancetype)initWithPrefs:(PrefService*)prefs {
   UITableViewStyle style = UITableViewStylePlain;
   self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    _delegate = delegate;
     self.title = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
     _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod, prefs);
@@ -156,10 +150,6 @@ static_assert(
   DCHECK_LE(timePeriod,
             static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST));
   [self updatePrefValue:timePeriod];
-  [self.delegate
-      timeRangeSelectorViewController:self
-                  didSelectTimePeriod:static_cast<browsing_data::TimePeriod>(
-                                          timePeriod)];
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 

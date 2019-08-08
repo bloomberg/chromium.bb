@@ -53,14 +53,10 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
@@ -78,6 +74,7 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -107,6 +104,10 @@
 #include "extensions/common/manifest.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_service_factory.h"
+#endif
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
@@ -117,10 +118,12 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/metrics/android_profile_session_durations_service_factory.h"
-#include "chrome/browser/ntp_snippets/content_suggestions_notifier_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #else
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1149,6 +1152,10 @@ void ProfileManager::Observe(
       break;
     }
     case chrome::NOTIFICATION_BROWSER_OPENED: {
+#if defined(OS_ANDROID)
+      NOTREACHED();
+      break;
+#else
       Browser* browser = content::Source<Browser>(source).ptr();
       DCHECK(browser);
       Profile* profile = browser->profile();
@@ -1166,8 +1173,13 @@ void ProfileManager::Observe(
       // a new browser window was opened.
       closing_all_browsers_ = false;
       break;
+#endif
     }
     case chrome::NOTIFICATION_BROWSER_CLOSED: {
+#if defined(OS_ANDROID)
+      NOTREACHED();
+      break;
+#else
       Browser* browser = content::Source<Browser>(source).ptr();
       DCHECK(browser);
       Profile* profile = browser->profile();
@@ -1178,6 +1190,7 @@ void ProfileManager::Observe(
         save_active_profiles = !closing_all_browsers_;
       }
       break;
+#endif
     }
     default: {
       NOTREACHED();
@@ -1337,10 +1350,14 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)->
       MaybeActivateDataReductionProxy(true);
 
+  auto* proto_db_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
+          profile->GetProfileKey());
+
   // Create the Previews Service and begin loading opt out history from
   // persistent memory.
   PreviewsServiceFactory::GetForProfile(profile)->Initialize(
-      g_browser_process->optimization_guide_service(),
+      g_browser_process->optimization_guide_service(), proto_db_provider,
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
       profile->GetPath());
 
@@ -1356,8 +1373,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // TODO(b/678590): create services during profile startup.
   // Service is responsible for fetching content snippets for the NTP.
   ContentSuggestionsServiceFactory::GetForProfile(profile);
-  // Generates notifications from the above, if experiment is enabled.
-  ContentSuggestionsNotifierServiceFactory::GetForProfile(profile);
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -1393,14 +1408,15 @@ Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
   SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateProfileHelperTime");
 
-  return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
+      .release();
 }
 
 Profile* ProfileManager::CreateProfileAsyncHelper(const base::FilePath& path,
                                                   Delegate* delegate) {
-  return Profile::CreateProfile(path,
-                                delegate,
-                                Profile::CREATE_MODE_ASYNCHRONOUS);
+  return Profile::CreateProfile(path, delegate,
+                                Profile::CREATE_MODE_ASYNCHRONOUS)
+      .release();
 }
 
 Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
@@ -1440,23 +1456,24 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
 #endif
 }
 
-bool ProfileManager::AddProfile(Profile* profile) {
+bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfile");
 
   DCHECK(profile);
+  Profile* profile_ptr = profile.get();
 
   // Make sure that we're not loading a profile with the same ID as a profile
   // that's already loaded.
-  if (GetProfileByPathInternal(profile->GetPath())) {
-    NOTREACHED() << "Attempted to add profile with the same path (" <<
-                    profile->GetPath().value() <<
-                    ") as an already-loaded profile.";
+  if (GetProfileByPathInternal(profile_ptr->GetPath())) {
+    NOTREACHED() << "Attempted to add profile with the same path ("
+                 << profile_ptr->GetPath().value()
+                 << ") as an already-loaded profile.";
     return false;
   }
 
-  RegisterProfile(profile, true);
-  InitProfileUserPrefs(profile);
-  DoFinalInit(profile, ShouldGoOffTheRecord(profile));
+  RegisterProfile(profile.release(), true);
+  InitProfileUserPrefs(profile_ptr);
+  DoFinalInit(profile_ptr, ShouldGoOffTheRecord(profile_ptr));
   return true;
 }
 
@@ -1472,7 +1489,7 @@ Profile* ProfileManager::CreateAndInitializeProfile(
   CHECK(!GetProfileByPathInternal(profile_dir));
   Profile* profile = CreateProfileHelper(profile_dir);
   if (profile) {
-    bool result = AddProfile(profile);
+    bool result = AddProfile(base::WrapUnique(profile));
     DCHECK(result);
   }
   return profile;

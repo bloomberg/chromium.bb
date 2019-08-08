@@ -28,7 +28,7 @@ class AppLaunchSplashScreenView {
     APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI,
   };
 
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_APP_LAUNCH_SPLASH;
+  constexpr static StaticOobeScreenId kScreenId{"app-launch-splash"};
 
   virtual ~AppLaunchSplashScreenView() {}
 
@@ -60,6 +60,8 @@ class AppLaunchSplashScreenHandler
       public AppLaunchSplashScreenView,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
+  using TView = AppLaunchSplashScreenView;
+
   AppLaunchSplashScreenHandler(
       JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,

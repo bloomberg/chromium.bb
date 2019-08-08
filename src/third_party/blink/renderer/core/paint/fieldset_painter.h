@@ -9,9 +9,9 @@
 
 namespace blink {
 
-struct PaintInfo;
-class LayoutPoint;
 class LayoutFieldset;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class FieldsetPainter {
   STACK_ALLOCATED();
@@ -21,8 +21,8 @@ class FieldsetPainter {
       : layout_fieldset_(layout_fieldset) {}
 
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paint_offset);
-  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+                                    const PhysicalOffset& paint_offset);
+  void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   const LayoutFieldset& layout_fieldset_;

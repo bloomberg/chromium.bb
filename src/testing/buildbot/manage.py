@@ -38,13 +38,6 @@ SKIP = {
   # instance on GCE.  Swarming doesn't work in that environment yet.
   'Android Cloud Tests',
 
-  # Recipes don't promise execution on jelly bean.  This could work if the
-  # OS dimensions go into the recipe, they're set in the json file, and
-  # jelly bean devices are in the pool.  For now, just blacklist.
-  'Jelly Bean Tester',
-  'Lollipop Consumer Tester',
-  'Lollipop Low-end Tester',
-
   # Android bots need custom dimension_sets entries for swarming, and capacity
   # is not there yet -- so don't let manage.py add swarming automatically there.
   'Android User Builder Tests',
@@ -105,12 +98,10 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'ios_chrome_smoke_egtests',
   'ios_chrome_translate_egtests',
   'ios_chrome_ui_egtests',
-  'ios_chrome_ui_payments_egtests',
-  'ios_chrome_ui_qr_scanner_egtests',
-  'ios_chrome_ui_settings_egtests',
-  'ios_chrome_ui_signin_interaction_egtests',
+  'ios_chrome_unified_consent_egtests',
   'ios_chrome_unittests',
   'ios_chrome_web_egtests',
+  'ios_chrome_smoke_eg2tests',
   'ios_components_unittests',
   'ios_net_unittests',
   "ios_remoting_unittests",
@@ -134,6 +125,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'content_junit_tests',
   'device_junit_tests',
   'junit_unit_tests',
+  'keyboard_accessory_junit_tests',
   'media_router_e2e_tests',
   'media_router_junit_tests',
   'media_router_perf_tests',

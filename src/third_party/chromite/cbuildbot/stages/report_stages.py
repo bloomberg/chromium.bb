@@ -20,6 +20,7 @@ from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -38,8 +39,8 @@ from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import risk_report
 from chromite.lib import toolchain
-from chromite.lib import tree_status
 from chromite.lib import triage_lib
+from chromite.lib import uri_lib
 
 
 def WriteBasicMetadata(builder_run):
@@ -286,10 +287,10 @@ class BuildStartStage(generic_stages.BuilderStage):
             build_ids=[master_build_id])[0]
 
         if master_build_status['buildbucket_id']:
-          master_url = tree_status.ConstructLegolandBuildURL(
+          master_url = uri_lib.ConstructMiloBuildUri(
               master_build_status['buildbucket_id'])
         else:
-          master_url = tree_status.ConstructDashboardURL(
+          master_url = uri_lib.ConstructDashboardUri(
               master_build_status['waterfall'],
               master_build_status['builder_name'],
               master_build_status['build_number'])
@@ -344,7 +345,7 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
       if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
           failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
         continue
-      slave_stage_url = tree_status.ConstructLegolandBuildURL(
+      slave_stage_url = uri_lib.ConstructMiloBuildUri(
           failure.buildbucket_id)
       logging.PrintBuildbotLink('%s %s' % (failure.build_config,
                                            failure.stage_name),
@@ -378,11 +379,11 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
              (not self._run.options.buildbot) or
              self._run.options.debug)
     build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
+    buildbucket_id = build_identifier.buildbucket_id
     if self.buildstore.AreClientsReady():
       builds = self.buildstore.GetBuildHistory(
           self._run.config.name, 2, branch=self._run.options.branch,
-          ignore_build_id=build_id)
+          ignore_build_id=buildbucket_id)
       for build in builds:
         old_version = build['full_version']
         if old_version is None:
@@ -396,9 +397,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
                   build='%s/%s' % (self._run.config.name, old_version),
                   board=self._run.config.boards[0],
                   debug=False, # For tryjob
-                  suite=suite_config.suite,
-                  priority=suite_config.priority,
-                  pool=suite_config.pool)
+                  suite=suite_config.suite)
             else:
               commands.AbortHWTests(self._run.config.name, old_version,
                                     debug, suite_config.suite)
@@ -585,8 +584,8 @@ class ReportStage(generic_stages.BuilderStage,
         subject = '%s health alert' % builder_run.config.name
         body = self._HealthAlertMessage(-streak_value)
         extra_fields = {'X-cbuildbot-alert': 'cq-health'}
-        tree_status.SendHealthAlert(builder_run, subject, body,
-                                    extra_fields=extra_fields)
+        alerts.SendHealthAlert(builder_run, subject, body,
+                               extra_fields=extra_fields)
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -637,8 +636,8 @@ class ReportStage(generic_stages.BuilderStage,
       body = ['%s failed on %s' % (name, cros_build_lib.GetHostName()),
               '%s' % msg]
       extra_fields = {'X-cbuildbot-alert': 'pre-cq-infra-alert'}
-      tree_status.SendHealthAlert(self._run, title, '\n\n'.join(body),
-                                  extra_fields=extra_fields)
+      alerts.SendHealthAlert(self._run, title, '\n\n'.join(body),
+                             extra_fields=extra_fields)
 
   def _LinkArtifacts(self, builder_run):
     """Upload an HTML index and uploaded.json for artifacts.
@@ -883,9 +882,9 @@ class ReportStage(generic_stages.BuilderStage,
           logging.PrintBuildbotLink('Slaves timeline', timeline)
 
       if build_id is not None:
-        details_link = tree_status.ConstructViceroyBuildDetailsURL(build_id)
+        details_link = uri_lib.ConstructViceroyBuildDetailsUri(build_id)
         logging.PrintBuildbotLink('Build details', details_link)
-        suite_details_link = tree_status.ConstructGoldenEyeSuiteDetailsURL(
+        suite_details_link = uri_lib.ConstructGoldenEyeSuiteDetailsUri(
             build_id=build_id)
         logging.PrintBuildbotLink('Build details', details_link)
         logging.PrintBuildbotLink('Suite details', suite_details_link)
@@ -1050,7 +1049,7 @@ class ReportStage(generic_stages.BuilderStage,
                       'self_destructed': self_destructed}
         metrics.CumulativeSecondsDistribution(
             constants.MON_CQ_BUILD_DURATION).add(duration, fields=mon_fields)
-        annotator_link = tree_status.ConstructAnnotatorURL(build_id)
+        annotator_link = uri_lib.ConstructAnnotatorUri(build_id)
         logging.PrintBuildbotLink('Build annotator', annotator_link)
 
       # From this point forward, treat all exceptions as warnings.

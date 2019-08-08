@@ -88,4 +88,9 @@
     Undo
   </message>
 
+  <!-- Translate Combobox Text -->
+  <message name="IDS_TRANSLATE_UNKNOWN_SOURCE_LANGUAGE" desc="This text is added to source language combobox dropdown menu for source language not supported or detected.">
+    Unknown
+  </message>
+
 </grit-part>

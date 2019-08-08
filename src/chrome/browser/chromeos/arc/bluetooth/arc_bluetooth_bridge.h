@@ -151,16 +151,16 @@ class ArcBluetoothBridge
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       int offset,
-      const ValueCallback& callback,
-      const ErrorCallback& error_callback) override;
+      ValueCallback callback,
+      ErrorCallback error_callback) override;
 
   void OnCharacteristicWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value,
       int offset,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      ErrorCallback error_callback) override;
 
   void OnCharacteristicPrepareWriteRequest(
       const device::BluetoothDevice* device,
@@ -168,23 +168,23 @@ class ArcBluetoothBridge
       const std::vector<uint8_t>& value,
       int offset,
       bool has_subsequent_write,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      ErrorCallback error_callback) override;
 
   void OnDescriptorReadRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       int offset,
-      const ValueCallback& callback,
-      const ErrorCallback& error_callback) override;
+      ValueCallback callback,
+      ErrorCallback error_callback) override;
 
   void OnDescriptorWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       const std::vector<uint8_t>& value,
       int offset,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      ErrorCallback error_callback) override;
 
   void OnNotificationsStart(
       const device::BluetoothDevice* device,
@@ -420,8 +420,8 @@ class ArcBluetoothBridge
       const LocalGattAttribute* attribute,
       int offset,
       mojom::BluetoothGattDBAttributeType attribute_type,
-      const ValueCallback& success_callback,
-      const ErrorCallback& error_callback);
+      ValueCallback success_callback,
+      ErrorCallback error_callback);
 
   // Common code for OnCharacteristicWriteRequest and OnDescriptorWriteRequest
   // |is_prepare| is only set when a local characteristic receives a prepare
@@ -436,8 +436,8 @@ class ArcBluetoothBridge
       mojom::BluetoothGattDBAttributeType attribute_type,
       bool is_prepare,
       bool has_subsequent_write,
-      const base::Closure& success_callback,
-      const ErrorCallback& error_callback);
+      base::OnceClosure success_callback,
+      ErrorCallback error_callback);
 
   void OnSetDiscoverable(bool discoverable, bool success, uint32_t timeout);
   void SetDiscoverable(bool discoverable, uint32_t timeout);
@@ -499,8 +499,8 @@ class ArcBluetoothBridge
 
   void OnGattServerPrepareWrite(mojom::BluetoothAddressPtr addr,
                                 bool has_subsequent_write,
-                                const base::Closure& success_callback,
-                                const ErrorCallback& error_callback,
+                                base::OnceClosure success_callback,
+                                ErrorCallback error_callback,
                                 mojom::BluetoothGattStatus status);
 
   void SendDevice(const device::BluetoothDevice* device) const;

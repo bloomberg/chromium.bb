@@ -3,17 +3,21 @@
    found in the LICENSE file.
 */
 'use strict';
-tr.exportTo('cp', () => {
-  class TestSuitesRequest extends cp.RequestBase {
-    constructor(options) {
-      super(options);
-      this.method_ = 'POST';
-    }
 
-    get url_() {
-      return TestSuitesRequest.URL;
-    }
+import RequestBase from './request-base.js';
+
+export default class TestSuitesRequest extends RequestBase {
+  constructor(options) {
+    super(options);
+    this.method_ = 'POST';
   }
-  TestSuitesRequest.URL = '/api/test_suites';
-  return {TestSuitesRequest};
-});
+
+  get url_() {
+    return TestSuitesRequest.URL;
+  }
+
+  get description_() {
+    return 'loading suites';
+  }
+}
+TestSuitesRequest.URL = '/api/test_suites';

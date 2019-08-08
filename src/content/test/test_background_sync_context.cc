@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/test_background_sync_manager.h"
@@ -16,7 +16,7 @@ namespace content {
 
 void TestBackgroundSyncContext::CreateBackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context) {
+    scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!background_sync_manager());
 

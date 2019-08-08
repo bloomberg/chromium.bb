@@ -12,10 +12,7 @@
 namespace ui_devtools {
 
 DOMAgentMac::DOMAgentMac() {}
-DOMAgentMac::~DOMAgentMac() {
-  for (views::Widget* widget : roots_)
-    widget->RemoveObserver(this);
-}
+DOMAgentMac::~DOMAgentMac() {}
 
 protocol::Response DOMAgentMac::enable() {
   views::NativeWidgetMac::SetInitNativeWidgetCallback(base::BindRepeating(
@@ -26,6 +23,9 @@ protocol::Response DOMAgentMac::enable() {
 protocol::Response DOMAgentMac::disable() {
   views::NativeWidgetMac::SetInitNativeWidgetCallback(
       base::RepeatingCallback<void(views::NativeWidgetMac*)>());
+  for (views::Widget* widget : roots_)
+    widget->RemoveObserver(this);
+  roots_.clear();
   return DOMAgent::disable();
 }
 

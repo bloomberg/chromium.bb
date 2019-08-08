@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromecast/base/pref_names.h"
-#include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/metrics/cast_metrics_service_client.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

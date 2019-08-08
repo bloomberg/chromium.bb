@@ -491,30 +491,6 @@ void AudioHandler::MakeConnection() {
   EnableOutputsIfNecessary();
 }
 
-void AudioHandler::BreakConnection() {
-  // The actual work for deref happens completely within the audio context's
-  // graph lock. In the case of the audio thread, we must use a tryLock to
-  // avoid glitches.
-  bool has_lock = false;
-  if (Context()->IsAudioThread()) {
-    // Real-time audio thread must not contend lock (to avoid glitches).
-    has_lock = Context()->TryLock();
-  } else {
-    Context()->lock();
-    has_lock = true;
-  }
-
-  if (has_lock) {
-    BreakConnectionWithLock();
-    Context()->unlock();
-  } else {
-    // We were unable to get the lock, so put this in a list to finish up
-    // later.
-    DCHECK(Context()->IsAudioThread());
-    Context()->GetDeferredTaskHandler().AddDeferredBreakConnection(*this);
-  }
-}
-
 void AudioHandler::BreakConnectionWithLock() {
   deferred_task_handler_->AssertGraphOwner();
   connection_ref_count_--;

@@ -33,6 +33,7 @@
 #include "base/macros.h"
 #include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
@@ -88,7 +89,7 @@ class PLATFORM_EXPORT GraphicsContext {
   bool ContextDisabled() const { return disabled_state_; }
 
   const DarkModeSettings& dark_mode_settings() const {
-    return dark_mode_settings_;
+    return dark_mode_filter_.settings();
   }
 
   // ---------- State management methods -----------------
@@ -464,9 +465,6 @@ class PLATFORM_EXPORT GraphicsContext {
                                const Color&);
 
   class DarkModeFlags;
-  bool ShouldApplyDarkModeFilterToImage(Image& image,
-                                        const FloatRect& src_rect);
-  Color ApplyDarkModeFilter(const Color& input) const;
 
   // null indicates painting is contextDisabled. Never delete this object.
   cc::PaintCanvas* canvas_;
@@ -497,8 +495,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   float device_scale_factor_;
 
-  DarkModeSettings dark_mode_settings_;
-  sk_sp<SkColorFilter> dark_mode_filter_;
+  // TODO(gilmanmh): Investigate making this base::Optional<DarkModeFilter>
+  DarkModeFilter dark_mode_filter_;
 
   unsigned printing_ : 1;
   unsigned in_drawing_recorder_ : 1;

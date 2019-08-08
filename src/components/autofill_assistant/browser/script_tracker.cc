@@ -26,8 +26,10 @@ void SortScripts(std::vector<Script*>* scripts) {
               // Order of scripts with the same priority is arbitrary. Fallback
               // to ordering by name and path, arbitrarily, for the behavior to
               // be consistent across runs.
-              return std::tie(a->priority, a->handle.name, a->handle.path) <
-                     std::tie(b->priority, b->handle.name, a->handle.path);
+              return std::tie(a->priority, a->handle.chip.text(),
+                              a->handle.path) < std::tie(b->priority,
+                                                         b->handle.chip.text(),
+                                                         a->handle.path);
             });
 }
 
@@ -77,8 +79,8 @@ void ScriptTracker::CheckScripts() {
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
-    if (script->handle.name.empty() &&
-        script->handle.chip_icon == ChipIcon::NO_ICON &&
+    if (script->handle.chip.text().empty() &&
+        script->handle.chip.icon() == ChipIcon::NO_ICON &&
         !script->handle.autostart)
       continue;
 
@@ -99,9 +101,9 @@ void ScriptTracker::CheckScripts() {
     TerminatePendingChecks();
     return;
   }
-  batch_element_checker_->Run(delegate_->GetWebController(),
-                              base::BindOnce(&ScriptTracker::OnCheckDone,
-                                             weak_ptr_factory_.GetWeakPtr()));
+  batch_element_checker_->AddAllDoneCallback(base::BindOnce(
+      &ScriptTracker::OnCheckDone, weak_ptr_factory_.GetWeakPtr()));
+  batch_element_checker_->Run(delegate_->GetWebController());
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
@@ -127,6 +129,45 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
 
 void ScriptTracker::ClearRunnableScripts() {
   runnable_scripts_.clear();
+}
+
+base::Value ScriptTracker::GetDebugContext() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+
+  std::string last_global_payload_js = last_global_payload_;
+  base::Base64Encode(last_global_payload_js, &last_global_payload_js);
+  dict.SetKey("last-global-payload", base::Value(last_global_payload_js));
+
+  std::string last_script_payload_js = last_script_payload_;
+  base::Base64Encode(last_script_payload_js, &last_script_payload_js);
+  dict.SetKey("last-script-payload", base::Value(last_script_payload_js));
+
+  std::vector<base::Value> scripts_state_js;
+  for (const auto& entry : scripts_state_) {
+    base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
+    script_js.SetKey(entry.first, base::Value(entry.second));
+    scripts_state_js.push_back(std::move(script_js));
+  }
+  dict.SetKey("executed-scripts", base::Value(scripts_state_js));
+
+  std::vector<base::Value> available_scripts_js;
+  for (const auto& entry : available_scripts_)
+    available_scripts_js.push_back(base::Value(entry.second->handle.path));
+  dict.SetKey("available-scripts", base::Value(available_scripts_js));
+
+  std::vector<base::Value> runnable_scripts_js;
+  for (const auto& entry : runnable_scripts_) {
+    base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
+    script_js.SetKey("name", base::Value(entry.chip.text()));
+    script_js.SetKey("path", base::Value(entry.path));
+    script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
+    script_js.SetKey("autostart", base::Value(entry.autostart));
+    script_js.SetKey("chip_type", base::Value(entry.chip.type()));
+    runnable_scripts_js.push_back(std::move(script_js));
+  }
+  dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));
+
+  return dict;
 }
 
 void ScriptTracker::OnScriptRun(

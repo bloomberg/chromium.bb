@@ -35,7 +35,7 @@
 
 namespace blink {
 
-inline SVGImageElement::SVGImageElement(Document& document)
+SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(svg_names::kImageTag, document),
       SVGURIReference(this),
       is_default_overridden_intrinsic_size_(false),
@@ -81,8 +81,6 @@ inline SVGImageElement::SVGImageElement(Document& document)
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
   }
 }
-
-DEFINE_NODE_FACTORY(SVGImageElement)
 
 void SVGImageElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(x_);

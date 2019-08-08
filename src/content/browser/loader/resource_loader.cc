@@ -90,6 +90,9 @@ void PopulateResourceResponse(
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
       response_info.async_revalidation_requested;
+  response->head.was_in_prefetch_cache =
+      !(request->load_flags() & net::LOAD_PREFETCH) &&
+      response_info.unused_since_prefetch;
   if (info->ShouldReportRawHeaders()) {
     response->head.raw_request_response_info =
         network::BuildRawRequestResponseInfo(*request, raw_request_headers,
@@ -135,6 +138,7 @@ void PopulateResourceResponse(
     DCHECK_EQ(request->ssl_info().peer_signature_algorithm, 0);
     DCHECK_EQ(request->ssl_info().connection_status, 0);
   }
+  response->head.auth_challenge_info = request->auth_challenge_info();
 }
 
 }  // namespace
@@ -442,13 +446,15 @@ void ResourceLoader::OnCertificateRequested(
 }
 
 void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
+                                           int net_error,
                                            const net::SSLInfo& ssl_info,
                                            bool fatal) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   SSLManager::OnSSLCertificateError(
-      weak_ptr_factory_.GetWeakPtr(), info->GetResourceType(), request_->url(),
-      info->GetWebContentsGetterForRequest(), ssl_info, fatal);
+      weak_ptr_factory_.GetWeakPtr(),
+      info->GetResourceType() == ResourceType::kMainFrame, request_->url(),
+      info->GetWebContentsGetterForRequest(), net_error, ssl_info, fatal);
 }
 
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused, int net_error) {

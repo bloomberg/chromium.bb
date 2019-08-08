@@ -66,7 +66,7 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
   // for the reason of adding ScrollOrigin(). contents_paint_offset will
   // be used only for the scrolling contents that are not painted through
   // descendant objects' Paint() method, e.g. inline boxes.
-  paint_offset_ += box.ScrollOrigin();
+  paint_offset_ += PhysicalOffset(box.ScrollOrigin());
 
   // If a LayoutView is using infinite cull rect, we are painting with viewport
   // clip disabled, so don't cull the scrolling contents. This is just for

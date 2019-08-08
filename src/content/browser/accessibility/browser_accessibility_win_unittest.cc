@@ -179,7 +179,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
   AXEventNotificationDetails event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].nodes.push_back(text2);
-  manager->OnAccessibilityEvents(event_bundle);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
@@ -243,7 +243,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChangeNoLeaks) {
   AXEventNotificationDetails event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].nodes.push_back(root);
-  manager->OnAccessibilityEvents(event_bundle);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
@@ -677,7 +677,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   event_bundle.updates[0].root_id = tree1_1.id;
   event_bundle.updates[0].nodes.push_back(tree1_1);
   event_bundle.updates[0].nodes.push_back(tree1_2);
-  manager->OnAccessibilityEvents(event_bundle);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
   // Save for later comparison.
   BrowserAccessibility* acc1_2 = manager->GetFromID(2);
@@ -704,7 +704,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   event_bundle.updates[0].nodes.push_back(tree2_2);
 
   // Fire another load complete.
-  manager->OnAccessibilityEvents(event_bundle);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
   BrowserAccessibility* acc2_2 = manager->GetFromID(3);
 
@@ -2516,7 +2516,7 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   AXEventNotificationDetails event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].nodes.push_back(child1);
-  manager->OnAccessibilityEvents(event_bundle);
+  ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
   EXPECT_HRESULT_SUCCEEDED(ax_child1->GetCOM()->get_nRelations(&n_relations));
   EXPECT_EQ(2, n_relations);

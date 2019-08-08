@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_LOCAL_POLICY_TEST_SERVER_MIXIN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
@@ -31,8 +33,23 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
+  // Updates device policy blob served by the local policy test server.
   bool UpdateDevicePolicy(
       const enterprise_management::ChromeDeviceSettingsProto& policy);
+
+  // Updates user policy blob served by the local policy test server.
+  // |policy_user| - the policy user's email.
+  bool UpdateUserPolicy(
+      const enterprise_management::CloudPolicySettings& policy,
+      const std::string& policy_user);
+
+  // Updates user policies served by the local policy test server, by
+  // configuring ser of mandatory and recommended policies that should be
+  // returned for the policy user.
+  // |policy_user| - the policy user's email.
+  bool UpdateUserPolicy(const base::Value& mandatory_policy,
+                        const base::Value& recommended_policy,
+                        const std::string& policy_user);
 
   // Configures and sets expectations for enrollment flow with license
   // selection. Non-negative values indicate number of available licenses.

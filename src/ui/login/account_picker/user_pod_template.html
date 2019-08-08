@@ -6,6 +6,8 @@
 
 <style is="custom-style" include="user-pod-template-shared-styles"></style>
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+
 <iron-iconset-svg name="user-pod" size="24">
   <svg>
     <defs>
@@ -63,10 +65,9 @@
           <img class="capslock-hint"
                src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt>
         </div>
-        <paper-icon-button class="submit-button" disabled
+        <cr-icon-button class="submit-button" disabled
             aria-label="$i18n{submitButtonAccessibleName}"
-            icon="user-pod:arrow-forward" tabindex="-1">
-        </paper-icon-button>
+            iron-icon="user-pod:arrow-forward" tabindex="-1"></cr-icon-button>
 </if>
       </div>
       <!-- User Click Authentication -->

@@ -10,6 +10,7 @@ include_rules = [
   "+third_party/skia",
   "+ui/gl/dc_renderer_layer_params.h",
   "+ui/latency",
+  "+gpu/ipc/common/vulkan_ycbcr_info.h",
 ]
 
 specific_include_rules = {

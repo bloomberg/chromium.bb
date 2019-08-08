@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -16,7 +18,6 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/presentation_request.h"
@@ -60,8 +61,9 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
 #ifndef NDEBUG
   // Verify that there was a request containing the source id the sink was
   // selected for.
-  auto sources =
-      MediaSourcesForPresentationUrls(presentation_request.presentation_urls);
+  std::vector<MediaSource> sources;
+  for (const auto& url : presentation_request.presentation_urls)
+    sources.push_back(MediaSource::ForPresentationUrl(url));
   bool is_source_from_request = false;
   for (const auto& source : sources) {
     if (source.id() == source_id) {
@@ -146,8 +148,10 @@ void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  auto sources = MediaSourcesForPresentationUrls(
-      start_presentation_context_->presentation_request().presentation_urls);
+  std::vector<MediaSource> sources;
+  for (const auto& url :
+       start_presentation_context_->presentation_request().presentation_urls)
+    sources.push_back(MediaSource::ForPresentationUrl(url));
 
   // If it's a single route with the same source, show the controller dialog
   // instead of the device picker.

@@ -25,37 +25,8 @@ namespace blink {
 
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/C/#module-script
-class CORE_EXPORT ModuleScript final : public Script, public NameClient {
+class CORE_EXPORT ModuleScript : public Script {
  public:
-  // https://html.spec.whatwg.org/C/#creating-a-module-script
-  static ModuleScript* Create(
-      const ParkableString& source_text,
-      SingleCachedMetadataHandler*,
-      ScriptSourceLocationType,
-      Modulator*,
-      const KURL& source_url,
-      const KURL& base_url,
-      const ScriptFetchOptions&,
-      const TextPosition& start_position = TextPosition::MinimumPosition());
-
-  // Mostly corresponds to Create() but accepts ModuleRecord as the argument
-  // and allows null ModuleRecord.
-  static ModuleScript* CreateForTest(
-      Modulator*,
-      ModuleRecord,
-      const KURL& base_url,
-      const ScriptFetchOptions& = ScriptFetchOptions());
-
-  ModuleScript(Modulator* settings_object,
-               ModuleRecord record,
-               const KURL& source_url,
-               const KURL& base_url,
-               const ScriptFetchOptions&,
-               const ParkableString& source_text,
-               const TextPosition& start_position,
-               ModuleRecordProduceCacheData*);
-  ~ModuleScript() override = default;
-
   ModuleRecord Record() const;
   bool HasEmptyRecord() const;
 
@@ -73,36 +44,31 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   bool HasErrorToRethrow() const { return !error_to_rethrow_.IsEmpty(); }
   ScriptValue CreateErrorToRethrow() const;
 
-  const TextPosition& StartPosition() const { return start_position_; }
-
   // Resolves a module specifier with the module script's base URL.
   KURL ResolveModuleSpecifier(const String& module_request,
                               String* failure_reason = nullptr) const;
 
   void Trace(blink::Visitor*) override;
-  const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
 
-  void ProduceCache();
+  virtual void ProduceCache() {}
+
+ protected:
+  ModuleScript(Modulator*,
+               ModuleRecord,
+               const KURL& source_url,
+               const KURL& base_url,
+               const ScriptFetchOptions&);
+
+  const KURL& SourceURL() const { return source_url_; }
+  Modulator* SettingsObject() const { return settings_object_; }
 
  private:
-  static ModuleScript* CreateInternal(const ParkableString& source_text,
-                                      Modulator*,
-                                      ModuleRecord,
-                                      const KURL& source_url,
-                                      const KURL& base_url,
-                                      const ScriptFetchOptions&,
-                                      const TextPosition&,
-                                      ModuleRecordProduceCacheData*);
-
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kModule;
   }
   void RunScript(LocalFrame*, const SecurityOrigin*) override;
-  String InlineSourceTextForCSP() const override;
 
-  friend class ModulatorImplBase;
   friend class ModuleTreeLinkerTestModulator;
-  friend class ModuleScriptTest;
 
   // https://html.spec.whatwg.org/C/#settings-object
   Member<Modulator> settings_object_;
@@ -153,24 +119,8 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   // https://html.spec.whatwg.org/C/#concept-script-error-to-rethrow
   TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
 
-  // For CSP check.
-  const ParkableString source_text_;
-
-  const TextPosition start_position_;
   mutable HashMap<String, KURL> specifier_to_url_cache_;
   KURL source_url_;
-
-  // Only for ProduceCache(). ModuleScript keeps |produce_cache_data| because:
-  // - CompileModule() and ProduceCache() should be called at different
-  //   timings, and
-  // - There are no persistent object that can hold this in
-  //   bindings/core/v8 side. ModuleRecord should be short-lived and is
-  //   constructed every time in ModuleScript::Record().
-  //
-  // Cleared once ProduceCache() is called, to avoid
-  // calling V8CodeCache::ProduceCache() multiple times, as a ModuleScript
-  // can appear multiple times in multiple module graphs.
-  Member<ModuleRecordProduceCacheData> produce_cache_data_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleScript&);

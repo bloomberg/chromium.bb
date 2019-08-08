@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.graphics.drawable.Drawable;
 
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModel.ReadableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
@@ -16,7 +16,8 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  * List of properties to designate information about a single tab.
  */
 public class TabProperties {
-    public static final PropertyModel.ReadableIntPropertyKey TAB_ID = new ReadableIntPropertyKey();
+    public static final PropertyModel.WritableIntPropertyKey TAB_ID =
+            new PropertyModel.WritableIntPropertyKey();
 
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             TAB_SELECTED_LISTENER = new WritableObjectPropertyKey<>();
@@ -28,7 +29,7 @@ public class TabProperties {
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<TabListMediator.ThumbnailFetcher>
-            THUMBNAIL_FETCHER = new WritableObjectPropertyKey<>();
+            THUMBNAIL_FETCHER = new WritableObjectPropertyKey<>(true);
 
     public static final WritableObjectPropertyKey<TabListMediator.IphProvider> IPH_PROVIDER =
             new WritableObjectPropertyKey<>();
@@ -43,9 +44,19 @@ public class TabProperties {
     public static final PropertyModel.WritableFloatPropertyKey ALPHA =
             new PropertyModel.WritableFloatPropertyKey();
 
+    public static final PropertyModel.WritableIntPropertyKey CARD_ANIMATION_STATUS =
+            new PropertyModel.WritableIntPropertyKey();
+
+    public static final PropertyModel.WritableObjectPropertyKey<TabListMediator.TabActionListener>
+            SELECTABLE_TAB_CLICKED_LISTENER = new PropertyModel.WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<SelectionDelegate> TAB_SELECTION_DELEGATE =
+            new WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
-            TITLE, IS_SELECTED, CREATE_GROUP_LISTENER, ALPHA};
+            TITLE, IS_SELECTED, CREATE_GROUP_LISTENER, ALPHA, CARD_ANIMATION_STATUS,
+            SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
             TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED, TITLE};

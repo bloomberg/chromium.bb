@@ -10,18 +10,16 @@ import static org.junit.Assert.assertTrue;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ServicificationBackgroundService;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.Features;
@@ -34,14 +32,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class PrefetchConfigurationTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
     @Before
     public void setUp() throws Exception {
         // Start Chrome.
-        mActivityTestRule.startMainActivityOnBlankPage();
+        ServicificationBackgroundService.launchChromeInBackground(true /*serviceManagerOnlyMode*/);
     }
 
     @Test

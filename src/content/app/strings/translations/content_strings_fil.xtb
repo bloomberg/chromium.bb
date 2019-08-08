@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">slider</translation>
 <translation id="1211441953136645838">endnote</translation>
 <translation id="1281252709823657822">dialog</translation>
-<translation id="1289247557029249093">Lumabas sa picture-in-picture mode</translation>
 <translation id="1335095011850992622">mga credit</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2158401438286456825">listahan ng page</translation>
 <translation id="2226276347425096477">Mangyaring paikliin ang tekstong ito ng <ph name="MAX_CHARACTERS" /> (na) character o mas mababa (kasalukuyan kang gumagamit ng <ph name="CURRENT_LENGTH" /> (na) character).</translation>
+<translation id="2246498165605549352">Lokal na File</translation>
 <translation id="2247351761944213033">Linggo <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Track <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">checkbox</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Walang label na larawan</translation>
 <translation id="3706100364254443312">lumipat</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Lumabas sa picture-in-picture</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> (na) GB</translation>
 <translation id="3808586225841795776">termino</translation>
 <translation id="3822383571486410024">Pakihabaan ang text na ito hanggang <ph name="MIN_CHARACTERS" /> (na) character o higit pa (kasalukuyan kang gumagamit ng <ph name="CURRENT_LENGTH" /> (na) character).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER" />' ang bahagi pagkatapos ng '<ph name="ATSIGN" />.'</translation>
 <translation id="4668956016107839909">appendix</translation>
+<translation id="4718048029184481307">Nagpe-play sa picture-in-picture</translation>
 <translation id="4742539557769756338">cover</translation>
 <translation id="4748357248530471599">i-toggle ang fullscreen ng cutout ng display</translation>
 <translation id="4757246831282535685">panel ng tab</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6209276755895393898">Mukhang: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosaryo</translation>
-<translation id="628938136236500310">Nagpe-play sa picture-in-picture mode</translation>
+<translation id="6310801910862476708">Lumabas sa Picture-in-Picture</translation>
 <translation id="6398862346408813489">Ipakita ang panel ng pagpipilian ng buwan</translation>
 <translation id="6404546809543547843">scrubber ng oras ng audio</translation>
 <translation id="6443871981718447451">Ipakita ang menu ng mga nakasarang caption</translation>

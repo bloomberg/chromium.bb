@@ -18,7 +18,8 @@ static_library("grpc_support") {
     "grpc_channel.cc",
     "grpc_channel.h",
     "grpc_executor.h",
-    "root_certs_prod.inc",
+    "grpc_util.cc",
+    "grpc_util.h",
     "scoped_grpc_server_stream.cc",
     "scoped_grpc_server_stream.h",
     "using_grpc_channel_shared_ptr.inc",
@@ -26,6 +27,7 @@ static_library("grpc_support") {
 
   deps = [
     "//base",
+    "//third_party/google_trust_services",
     "//third_party/grpc:grpcpp",
   ]
 }
@@ -33,22 +35,6 @@ static_library("grpc_support") {
 cc_grpc_library("unit_tests_grpc_library") {
   sources = [
     "grpc_support_test_services.proto",
-  ]
-}
-
-source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "grpc_async_test_server.cc",
-    "grpc_async_test_server.h",
-    "grpc_test_util.cc",
-    "grpc_test_util.h",
-  ]
-
-  deps = [
-    "//base",
-    "//third_party/grpc:grpcpp",
   ]
 }
 
@@ -61,8 +47,8 @@ source_set("unit_tests") {
   ]
   deps = [
     ":grpc_support",
-    ":test_support",
     ":unit_tests_grpc_library",
+    "//remoting/base/grpc_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

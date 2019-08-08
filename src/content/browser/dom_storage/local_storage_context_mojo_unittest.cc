@@ -37,7 +37,6 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/file/user_id_map.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -1037,8 +1036,7 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
 
 TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  file_service()->GetBinderRegistryForTesting()->AddInterface(
-      leveldb::mojom::LevelDBService::Name_,
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
 
@@ -1186,8 +1184,7 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
 TEST_F(LocalStorageContextMojoTestWithService,
        DontRecreateOnRepeatedCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  file_service()->GetBinderRegistryForTesting()->AddInterface(
-      leveldb::mojom::LevelDBService::Name_,
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
 

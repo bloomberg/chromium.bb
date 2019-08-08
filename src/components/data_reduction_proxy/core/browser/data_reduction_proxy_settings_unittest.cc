@@ -180,8 +180,9 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 
     network::ResourceResponseHead resource_response_head;
     std::string headers(test_case.response_headers);
-    resource_response_head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    resource_response_head.headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            net::HttpUtil::AssembleRawHeaders(headers));
     test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
         test_url_loader_factory.GetPendingRequest(0), resource_response_head,
         test_case.response_body,

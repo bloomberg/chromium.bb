@@ -30,10 +30,10 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHideArcMediaNotifications{
-    "HideArcMediaNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kMediaSessionNotification{
-    "MediaSessionNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMediaSessionNotification{"MediaSessionNotification",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -73,7 +73,13 @@ const base::Feature kUseShaderRoundedCorner{"UseShaderRoundedCorner",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNotificationStackingBarRedesign{
-    "NotificationStackingBarRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NotificationStackingBarRedesign", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSystemTrayFeaturePodsPagination{
+    "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSwapSideVolumeButtonsForOrientation{
+    "SwapSideVolumeButtonsForOrientation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
@@ -138,6 +144,14 @@ bool ShouldUseShaderRoundedCorner() {
 
 bool IsNotificationStackingBarRedesignEnabled() {
   return base::FeatureList::IsEnabled(kNotificationStackingBarRedesign);
+}
+
+bool IsSystemTrayFeaturePodsPaginationEnabled() {
+  return base::FeatureList::IsEnabled(kSystemTrayFeaturePodsPagination);
+}
+
+bool IsSwapSideVolumeButtonsForOrientationEnabled() {
+  return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
 }
 
 }  // namespace features

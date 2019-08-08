@@ -76,7 +76,7 @@ void DeviceEventRouter::OnDiskRemoved(const chromeos::disks::Disk& disk) {
   if (is_resuming_ || is_starting_up_)
     return;
 
-  const std::string& device_path = disk.system_path_prefix();
+  const std::string& device_path = disk.storage_device_path();
   if (!disk.is_read_only() && disk.is_mounted() &&
       GetDeviceState(device_path) != DEVICE_HARD_UNPLUGGED_AND_REPORTED) {
     OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
@@ -89,7 +89,7 @@ void DeviceEventRouter::OnVolumeMounted(chromeos::MountError error_code,
                                         const Volume& volume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const std::string& device_path = volume.system_path_prefix().AsUTF8Unsafe();
+  const std::string& device_path = volume.storage_device_path().AsUTF8Unsafe();
   SetDeviceState(device_path, DEVICE_STATE_USUAL);
 }
 

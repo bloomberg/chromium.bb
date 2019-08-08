@@ -269,6 +269,17 @@ ChooserContextBase* GetChooserContext(ContentSettingsType type) {
   }
 }
 
+std::string GetChooserObjectName(ContentSettingsType type,
+                                 base::Value& object) {
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA:
+      return UsbChooserContext::GetObjectName(object);
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
 bool OriginMatcher(const url::Origin& origin, const GURL& other) {
   return origin == url::Origin::Create(other);
 }
@@ -545,8 +556,9 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
     JNIEnv* env,
     jint content_settings_type,
     const JavaParamRef<jobject>& list) {
-  ChooserContextBase* context = GetChooserContext(
-      static_cast<ContentSettingsType>(content_settings_type));
+  ContentSettingsType type =
+      static_cast<ContentSettingsType>(content_settings_type);
+  ChooserContextBase* context = GetChooserContext(type);
   for (const auto& object : context->GetAllGrantedObjects()) {
     // Remove the trailing slash so that origins are matched correctly in
     // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
@@ -563,7 +575,7 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
       jembedder = ConvertUTF8ToJavaString(env, embedder);
 
     ScopedJavaLocalRef<jstring> jname =
-        ConvertUTF8ToJavaString(env, context->GetObjectName(object->value));
+        ConvertUTF8ToJavaString(env, GetChooserObjectName(type, object->value));
 
     std::string serialized;
     bool written = base::JSONWriter::Write(object->value, &serialized);
@@ -598,7 +610,8 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
   DCHECK(object);
   ChooserContextBase* context = GetChooserContext(
       static_cast<ContentSettingsType>(content_settings_type));
-  context->RevokeObjectPermission(origin, embedder, *object);
+  context->RevokeObjectPermission(url::Origin::Create(origin),
+                                  url::Origin::Create(embedder), *object);
 }
 
 namespace {

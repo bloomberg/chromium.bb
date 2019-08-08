@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -59,7 +58,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 }
 
 @interface SideSwipeController () <CRWWebStateObserver,
-                                   TabModelObserver,
                                    UIGestureRecognizerDelegate,
                                    WebStateListObserving> {
  @private
@@ -134,6 +132,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Removes the |curtain_| and calls |completionHandler| when the curtain is
 // removed.
 - (void)dismissCurtainWithCompletionHandler:(ProceduralBlock)completionHandler;
+
+// Removes the |curtain_| if there was an active swipe, and resets
+// |inSwipe_| value.
+- (void)dismissCurtain;
 @end
 
 @implementation SideSwipeController
@@ -153,7 +155,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   self = [super init];
   if (self) {
     model_ = model;
-    [model_ addObserver:self];
     webStateListObserver_ = std::make_unique<WebStateListObserverBridge>(self);
     model_.webStateList->AddObserver(webStateListObserver_.get());
     webStateObserverBridge_ =
@@ -161,6 +162,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     scopedWebStateObserver_ =
         std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
             webStateObserverBridge_.get());
+    if (self.activeWebState)
+      scopedWebStateObserver_->Add(self.activeWebState);
 
     browserState_ = browserState;
   }
@@ -173,7 +176,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     // |model_| is still alive before accessing |webStateList|.
     model_.webStateList->RemoveObserver(webStateListObserver_.get());
   }
-  [model_ removeObserver:self];
 
   scopedWebStateObserver_.reset();
   webStateObserverBridge_.reset();
@@ -497,8 +499,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         if (webState &&
             (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
              webState->IsLoading())) {
-          scopedWebStateObserver_->RemoveAll();
-          scopedWebStateObserver_->Add(webState);
           [self addCurtainWithCompletionHandler:^{
             inSwipe_ = NO;
           }];
@@ -593,10 +593,17 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
 - (void)dismissCurtainWithCompletionHandler:(ProceduralBlock)completionHandler {
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  scopedWebStateObserver_->RemoveAll();
   [curtain_ removeFromSuperview];
   curtain_ = nil;
   completionHandler();
+}
+
+- (void)dismissCurtain {
+  if (!inSwipe_)
+    return;
+  [self dismissCurtainWithCompletionHandler:^{
+    inSwipe_ = NO;
+  }];
 }
 
 - (void)updateNavigationEdgeSwipeForWebState:(web::WebState*)webState {
@@ -645,27 +652,18 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
     return;
-  [self dismissCurtainWithCompletionHandler:^{
-    inSwipe_ = NO;
-  }];
+  [self dismissCurtain];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
     return;
-  [self dismissCurtainWithCompletionHandler:^{
-    inSwipe_ = NO;
-  }];
+  [self dismissCurtain];
 }
 
-- (void)webStateDestroyed:(web::WebState*)webState {
-  scopedWebStateObserver_->Remove(webState);
-}
-
-#pragma mark - TabModelObserver Methods
-
-- (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
-  [self updateNavigationEdgeSwipeForWebState:tab.webState];
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  [self updateNavigationEdgeSwipeForWebState:webState];
 }
 
 #pragma mark - WebStateListObserving Methods
@@ -675,10 +673,19 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(int)reason {
+  // If there is any an ongoing swipe for the old webState, cancel it and
+  // dismiss the curtain.
+  [self dismissCurtain];
   // Toggling the gesture's enabled state off and on will effectively cancel
   // the gesture recognizer.
   [swipeGestureRecognizer_ setEnabled:NO];
   [swipeGestureRecognizer_ setEnabled:YES];
+  // Track the new active WebState for navigation events. Also remove the old if
+  // there was one.
+  if (oldWebState)
+    scopedWebStateObserver_->Remove(oldWebState);
+  if (newWebState)
+    scopedWebStateObserver_->Add(newWebState);
 
   [self updateNavigationEdgeSwipeForWebState:newWebState];
 }

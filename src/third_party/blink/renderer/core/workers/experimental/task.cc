@@ -167,9 +167,10 @@ void TaskBase::RegisterDependencies(
 
     PostCrossThreadTask(
         *prerequisite->worker_thread_->GetTaskRunner(task_type_), FROM_HERE,
-        CrossThreadBind(&TaskBase::PassResultToDependentOnWorkerThread,
-                        WrapCrossThreadPersistent(prerequisite),
-                        prerequisite_index, WrapCrossThreadPersistent(this)));
+        CrossThreadBindOnce(&TaskBase::PassResultToDependentOnWorkerThread,
+                            WrapCrossThreadPersistent(prerequisite),
+                            prerequisite_index,
+                            WrapCrossThreadPersistent(this)));
   }
 }
 
@@ -241,8 +242,8 @@ void TaskBase::MaybeStartTask() {
     return;
   DCHECK(state_ == State::kPending || state_ == State::kCancelPending);
   PostCrossThreadTask(*worker_thread_->GetTaskRunner(task_type_), FROM_HERE,
-                      CrossThreadBind(&TaskBase::StartTaskOnWorkerThread,
-                                      WrapCrossThreadPersistent(this)));
+                      CrossThreadBindOnce(&TaskBase::StartTaskOnWorkerThread,
+                                          WrapCrossThreadPersistent(this)));
 }
 
 bool TaskBase::WillStartTaskOnWorkerThread() {
@@ -286,10 +287,11 @@ void TaskBase::TaskCompletedOnWorkerThread(v8::Local<v8::Value> v8_result,
 
   PostCrossThreadTask(
       *worker_thread_->GetParentExecutionContextTaskRunners()->Get(
-          TaskType::kInternalWorker),
+          TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&TaskBase::TaskCompleted, WrapCrossThreadPersistent(this),
-                      state == State::kCompleted));
+      CrossThreadBindOnce(&TaskBase::TaskCompleted,
+                          WrapCrossThreadPersistent(this),
+                          state == State::kCompleted));
 }
 
 void TaskBase::RunTaskOnWorkerThread() {

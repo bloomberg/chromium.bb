@@ -30,6 +30,7 @@
  */
 
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #include <memory>
 #include <utility>
@@ -92,10 +93,12 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -164,6 +167,7 @@ ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
 
 void ChromeClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(popup_opening_observers_);
+  visitor->Trace(external_date_time_chooser_);
   ChromeClient::Trace(visitor);
 }
 
@@ -214,16 +218,21 @@ void ChromeClientImpl::TakeFocus(WebFocusType type) {
     web_view_->Client()->FocusNext();
 }
 
-void ChromeClientImpl::FocusedNodeChanged(Node* from_node, Node* to_node) {
+void ChromeClientImpl::FocusedElementChanged(Element* from_element,
+                                             Element* to_element) {
+  web_view_->GetPage()->GetValidationMessageClient().DidChangeFocusTo(
+      to_element);
+
   if (!web_view_->Client())
     return;
 
-  web_view_->Client()->FocusedNodeChanged(WebNode(from_node), WebNode(to_node));
+  web_view_->Client()->FocusedElementChanged(WebElement(from_element),
+                                             WebElement(to_element));
 
   WebURL focus_url;
-  if (to_node && to_node->IsElementNode() && ToElement(to_node)->IsLiveLink() &&
-      to_node->ShouldHaveFocusAppearance())
-    focus_url = ToElement(to_node)->HrefURL();
+  if (to_element && to_element->IsLiveLink() &&
+      to_element->ShouldHaveFocusAppearance())
+    focus_url = to_element->HrefURL();
   web_view_->Client()->SetKeyboardFocusURL(focus_url);
 }
 
@@ -251,6 +260,7 @@ bool ChromeClientImpl::AcceptsLoadDrops() const {
 Page* ChromeClientImpl::CreateWindowDelegate(
     LocalFrame* frame,
     const FrameLoadRequest& r,
+    const AtomicString& name,
     const WebWindowFeatures& features,
     WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
@@ -263,8 +273,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
 
   NotifyPopupOpeningObservers();
   const AtomicString& frame_name =
-      !EqualIgnoringASCIICase(r.FrameName(), "_blank") ? r.FrameName()
-                                                       : g_empty_atom;
+      !EqualIgnoringASCIICase(name, "_blank") ? name : g_empty_atom;
   WebViewImpl* new_view =
       static_cast<WebViewImpl*>(web_view_->Client()->CreateView(
           WebLocalFrameImpl::FromFrame(frame),
@@ -286,6 +295,19 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
   web_view_->WidgetClient()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
       velocity_in_viewport);
+}
+
+void ChromeClientImpl::InjectGestureScrollEvent(
+    LocalFrame& local_frame,
+    WebGestureDevice device,
+    const WebFloatSize& delta,
+    ScrollGranularity granularity,
+    CompositorElementId scrollable_area_element_id,
+    WebInputEvent::Type injected_type) {
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::FromFrame(&local_frame)->LocalRootFrameWidget();
+  widget->Client()->InjectGestureScrollEvent(
+      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void ChromeClientImpl::SetOverscrollBehavior(
@@ -584,6 +606,7 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
 }
 
 DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
+    LocalFrame* frame,
     DateTimeChooserClient* picker_client,
     const DateTimeChooserParameters& parameters) {
   // TODO(crbug.com/779126): add support for the chooser in immersive mode.
@@ -598,8 +621,20 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
     return MakeGarbageCollected<DateTimeChooserImpl>(this, picker_client,
                                                      parameters);
   }
-  return ExternalDateTimeChooser::Create(this, web_view_->Client(),
-                                         picker_client, parameters);
+
+  // JavaScript may try to open a date time chooser while one is already open.
+  if (external_date_time_chooser_ &&
+      external_date_time_chooser_->IsShowingDateTimeChooserUI())
+    return nullptr;
+
+  external_date_time_chooser_ = ExternalDateTimeChooser::Create(picker_client);
+  external_date_time_chooser_->OpenDateTimeChooser(frame, parameters);
+  return external_date_time_chooser_;
+}
+
+ExternalDateTimeChooser*
+ChromeClientImpl::GetExternalDateTimeChooserForTesting() {
+  return external_date_time_chooser_;
 }
 
 void ChromeClientImpl::OpenFileChooser(
@@ -816,7 +851,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
     return MakeGarbageCollected<ExternalPopupMenu>(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
-  return InternalPopupMenu::Create(this, select);
+  return MakeGarbageCollected<InternalPopupMenu>(this, select);
 }
 
 PagePopup* ChromeClientImpl::OpenPagePopup(PagePopupClient* client) {
@@ -892,15 +927,14 @@ void ChromeClientImpl::RequestDecode(LocalFrame* frame,
   web_frame->LocalRootFrameWidget()->RequestDecode(image, std::move(callback));
 }
 
-void ChromeClientImpl::NotifySwapTime(
-    LocalFrame& frame,
-    WebWidgetClient::ReportTimeCallback callback) {
+void ChromeClientImpl::NotifySwapTime(LocalFrame& frame,
+                                      ReportTimeCallback callback) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   if (!widget)
     return;
   WebWidgetClient* client = widget->Client();
-  client->NotifySwapTime(std::move(callback));
+  client->NotifySwapTime(ConvertToBaseOnceCallback(std::move(callback)));
 }
 
 void ChromeClientImpl::FallbackCursorModeLockCursor(LocalFrame* frame,
@@ -977,8 +1011,8 @@ void ChromeClientImpl::SetEventListenerProperties(
           tree_view->EventListenerProperties(
               cc::EventListenerClass::kTouchStartOrMove) !=
               cc::EventListenerProperties::kNone);
-    } else if (event_class == cc::EventListenerClass::kPointerRawMove) {
-      client->HasPointerRawMoveEventHandlers(
+    } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
+      client->HasPointerRawUpdateEventHandlers(
           properties != cc::EventListenerProperties::kNone);
     }
   } else {
@@ -998,8 +1032,9 @@ void ChromeClientImpl::StartDeferringCommits(base::TimeDelta timeout) {
   web_view_->StartDeferringCommits(timeout);
 }
 
-void ChromeClientImpl::StopDeferringCommits() {
-  web_view_->StopDeferringCommits();
+void ChromeClientImpl::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  web_view_->StopDeferringCommits(trigger);
 }
 
 cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(

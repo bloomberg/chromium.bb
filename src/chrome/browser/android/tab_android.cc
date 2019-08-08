@@ -131,9 +131,7 @@ TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
       session_window_id_(SessionID::InvalidValue()),
       content_layer_(cc::Layer::Create()),
       tab_content_manager_(nullptr),
-      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)),
-      picture_in_picture_enabled_(false),
-      embedded_media_experience_enabled_(false) {
+      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
 
@@ -293,38 +291,51 @@ void TabAndroid::UpdateDelegates(
   web_contents()->SetDelegate(web_contents_delegate_.get());
 }
 
+namespace {
+void WillRemoveWebContentsFromTab(content::WebContents* contents) {
+  DCHECK(contents);
+
+  if (contents->GetNativeView())
+    contents->GetNativeView()->GetLayer()->RemoveFromParent();
+
+  contents->SetDelegate(nullptr);
+}
+}  // namespace
+
 void TabAndroid::DestroyWebContents(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj,
-                                    jboolean delete_native) {
-  DCHECK(web_contents());
+                                    const JavaParamRef<jobject>& obj) {
+  WillRemoveWebContentsFromTab(web_contents());
 
-  if (web_contents()->GetNativeView())
-    web_contents()->GetNativeView()->GetLayer()->RemoveFromParent();
+  // Terminate the renderer process if this is the last tab.
+  // If there's no unload listener, FastShutdownIfPossible kills the
+  // renderer process. Otherwise, we go with the slow path where renderer
+  // process shuts down itself when ref count becomes 0.
+  // This helps the render process exit quickly which avoids some issues
+  // during shutdown. See https://codereview.chromium.org/146693011/
+  // and http://crbug.com/338709 for details.
+  content::RenderProcessHost* process =
+      web_contents()->GetMainFrame()->GetProcess();
+  if (process)
+    process->FastShutdownIfPossible(1, false);
 
-  web_contents()->SetDelegate(nullptr);
+  web_contents_.reset();
 
-  if (delete_native) {
-    // Terminate the renderer process if this is the last tab.
-    // If there's no unload listener, FastShutdownIfPossible kills the
-    // renderer process. Otherwise, we go with the slow path where renderer
-    // process shuts down itself when ref count becomes 0.
-    // This helps the render process exit quickly which avoids some issues
-    // during shutdown. See https://codereview.chromium.org/146693011/
-    // and http://crbug.com/338709 for details.
-    content::RenderProcessHost* process =
-        web_contents()->GetMainFrame()->GetProcess();
-    if (process)
-      process->FastShutdownIfPossible(1, false);
+  synced_tab_delegate_->ResetWebContents();
+}
 
-    web_contents_.reset();
-    synced_tab_delegate_->ResetWebContents();
-  } else {
-    // Remove the link from the native WebContents to |this|, since the
-    // lifetimes of the two objects are no longer intertwined.
-    TabAndroidHelper::SetTabForWebContents(web_contents(), nullptr);
-    // Release the WebContents so it does not get deleted by the scoped_ptr.
-    ignore_result(web_contents_.release());
-  }
+void TabAndroid::ReleaseWebContents(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
+  WillRemoveWebContentsFromTab(web_contents());
+
+  // Ownership of |released_contents| is assumed by the code that initiated the
+  // release.
+  content::WebContents* released_contents = web_contents_.release();
+
+  // Remove the link from the native WebContents to |this|, since the
+  // lifetimes of the two objects are no longer intertwined.
+  TabAndroidHelper::SetTabForWebContents(released_contents, nullptr);
+
+  synced_tab_delegate_->ResetWebContents();
 }
 
 void TabAndroid::OnPhysicalBackingSizeChanged(
@@ -545,54 +556,6 @@ bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,
   return HasPrerenderedUrl(gurl);
 }
 
-void TabAndroid::EnableEmbeddedMediaExperience(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  embedded_media_experience_enabled_ = enabled;
-
-  if (!web_contents() || !web_contents()->GetRenderViewHost())
-    return;
-
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
-bool TabAndroid::ShouldEnableEmbeddedMediaExperience() const {
-  return embedded_media_experience_enabled_;
-}
-
-void TabAndroid::SetNightModeEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  if (night_mode_enabled_ == enabled)
-    return;
-
-  night_mode_enabled_ = enabled;
-  if (web_contents() && web_contents()->GetRenderViewHost())
-    web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
-bool TabAndroid::NightModeEnabled() const {
-  return night_mode_enabled_;
-}
-
-void TabAndroid::SetPictureInPictureEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  picture_in_picture_enabled_ = enabled;
-
-  if (!web_contents() || !web_contents()->GetRenderViewHost())
-    return;
-
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
-bool TabAndroid::IsPictureInPictureEnabled() const {
-  return picture_in_picture_enabled_;
-}
-
 void TabAndroid::AttachDetachedTab(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
@@ -604,17 +567,6 @@ void TabAndroid::AttachDetachedTab(
         profile, ServiceAccessType::IMPLICIT_ACCESS));
     background_tab_manager->UnregisterBackgroundTab();
   }
-}
-
-void TabAndroid::SetWebappManifestScope(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj,
-                                        const JavaParamRef<jstring>& scope) {
-  webapp_manifest_scope_ = GURL(base::android::ConvertJavaStringToUTF8(scope));
-
-  if (!web_contents() || !web_contents()->GetRenderViewHost())
-    return;
-
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 
 bool TabAndroid::AreRendererInputEventsIgnored(

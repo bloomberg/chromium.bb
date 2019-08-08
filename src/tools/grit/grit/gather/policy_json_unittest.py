@@ -81,6 +81,85 @@ class PolicyJsonUnittest(unittest.TestCase):
     expected = self.GetExpectedOutput(original)
     self.failUnless(expected == eval(gatherer.Translate('en')))
 
+  def testSchema(self):
+    original = ("{"
+                "  'policy_definitions': ["
+                "    {"
+                "      'name': 'Policy1',"
+                "      'schema': {"
+                "        'type': 'object',"
+                "        'properties': {"
+                "          'outer': {"
+                "            'description': 'outer description',"
+                "            'type': 'object',"
+                "            'inner': {"
+                "              'description': 'inner description',"
+                "              'type': 'integer', 'minimum': 0, 'maximum': 100"
+                "            },"
+                "            'inner2': {"
+                "              'description': 'inner2 description',"
+                "              'type': 'integer',"
+                "              'enum': [ 1, 2, 3 ],"
+                "              'sensitiveValue': True"
+                "            },"
+                "          },"
+                "        },"
+                "      },"
+                "      'caption': 'nothing special',"
+                "    },"
+                "  ],"
+                "  'messages': {}"
+                "}")
+    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer.Parse()
+    self.failUnless(len(gatherer.GetCliques()) == 4)
+    expected = self.GetExpectedOutput(original)
+    self.failUnless(expected == eval(gatherer.Translate('en')))
+
+  def testValidationSchema(self):
+    original = ("{"
+                "  'policy_definitions': ["
+                "    {"
+                "      'name': 'Policy1',"
+                "      'validation_schema': {"
+                "        'type': 'object',"
+                "        'properties': {"
+                "          'description': 'properties description',"
+                "          'type': 'object',"
+                "        },"
+                "      },"
+                "    },"
+                "  ],"
+                "  'messages': {}"
+                "}")
+    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer.Parse()
+    self.failUnless(len(gatherer.GetCliques()) == 1)
+    expected = self.GetExpectedOutput(original)
+    self.failUnless(expected == eval(gatherer.Translate('en')))
+
+  def testDescriptionSchema(self):
+    original = ("{"
+                "  'policy_definitions': ["
+                "    {"
+                "      'name': 'Policy1',"
+                "      'description_schema': {"
+                "        'type': 'object',"
+                "        'properties': {"
+                "          'description': 'properties description',"
+                "          'type': 'object',"
+                "        },"
+                "      },"
+                "    },"
+                "  ],"
+                "  'messages': {}"
+                "}")
+    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer.Parse()
+    self.failUnless(len(gatherer.GetCliques()) == 1)
+    expected = self.GetExpectedOutput(original)
+    self.failUnless(expected == eval(gatherer.Translate('en')))
+
   # Keeping for backwards compatibility.
   def testSubPolicyOldFormat(self):
     original = (

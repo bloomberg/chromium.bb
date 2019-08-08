@@ -139,11 +139,7 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
 
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
   // Turn on rich text output settings.
-  localStorage['customizeRichTextIndication'] = 'true';
-  localStorage['indicateMisspell'] = 'announce';
-  localStorage['indicateBold'] = 'announce';
-  localStorage['indicateItalic'] = 'announce';
-  localStorage['indicateUnderline'] = 'announce';
+  localStorage['announceRichTextAttributes'] = 'true';
 
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -195,11 +191,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
 
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   // Turn on rich text output settings.
-  localStorage['customizeRichTextIndication'] = 'true';
-  localStorage['indicateMisspell'] = 'announce';
-  localStorage['indicateBold'] = 'announce';
-  localStorage['indicateItalic'] = 'announce';
-  localStorage['indicateUnderline'] = 'announce';
+  localStorage['announceRichTextAttributes'] = 'true';
 
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -271,8 +263,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   });
 });
 
-// Flakily times out. crbug.com/942241
-TEST_F('ChromeVoxEditingTest', 'DISABLED_RichTextMoveByCharacterAllAttributes', function() {
+TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function() {
+  // Turn on rich text output settings.
+  localStorage['announceRichTextAttributes'] = 'true';
+
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>
@@ -498,11 +492,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
 
 TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
   // Turn on rich text output settings.
-  localStorage['customizeRichTextIndication'] = 'true';
-  localStorage['indicateMisspell'] = 'announce';
-  localStorage['indicateBold'] = 'announce';
-  localStorage['indicateItalic'] = 'announce';
-  localStorage['indicateUnderline'] = 'announce';
+  localStorage['announceRichTextAttributes'] = 'true';
 
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -587,7 +577,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p contenteditable>
-      <img alt="dog"></img> is a <img alt="cat"</img> test
+      <img alt="dog"> is a <img alt="cat"> test
     </p>
     <button id="go">Go</button>
     <script>
@@ -603,8 +593,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
 
     this.listenOnce(input, 'focus', function() {
       var lineText = 'dog is a cat test mled';
-      var lineOnDogText = 'dog img is a cat test mled';
-      var lineOnCatText = 'dog is a cat img test';
+      var lineOnCatText = 'dog is a cat img test mled';
       mockFeedback
           // This is initial output from focusing the contenteditable (which has
           // no role).
@@ -612,10 +601,11 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
           .expectBraille('dog img is a cat img test')
           .clearPendingOutput()
           .call(moveByChar)
-          .expectSpeech('dog', 'Image')
-          .expectBraille(lineOnDogText, {startIndex: 1, endIndex: 1})
+          // This is actually wrong; should say space.
+          .expectSpeech('dog')
+          .expectBraille(lineText, {startIndex: 3, endIndex: 3})
           .call(moveByChar)
-          .expectSpeech('og ')
+          .expectSpeech('i')
           .expectBraille(lineText, {startIndex: 4, endIndex: 4})
           .call(moveByChar)
           .expectSpeech('s')
@@ -629,11 +619,9 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
           .call(moveByChar)
           .expectSpeech(' ')
           .expectBraille(lineText, {startIndex: 8, endIndex: 8})
+          .clearPendingOutput()
           .call(moveByChar)
-
-          // This is technically wrong because we're actually over the entire
-          // image. This is broken because of bad node offsets.
-          .expectSpeech('c')
+          .expectSpeech('cat', 'Image')
           .expectBraille(lineOnCatText, {startIndex: 9, endIndex: 9})
 
           // Unfortunately, the node offset being wrong here means there's no

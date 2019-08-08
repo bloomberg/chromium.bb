@@ -17,6 +17,7 @@
 
 #include "Nucleus.hpp"
 #include "Routine.hpp"
+#include "Traits.hpp"
 
 #include <cassert>
 #include <cstddef>
@@ -28,9 +29,9 @@
 
 #undef Bool // b/127920555
 
-#if !defined(NDEBUG) && (REACTOR_LLVM_VERSION >= 7)
+#if !defined(NDEBUG)
 #define ENABLE_RR_PRINT 1 // Enables RR_PRINT(), RR_WATCH()
-#endif // !defined(NDEBUG) && (REACTOR_LLVM_VERSION >= 7)
+#endif // !defined(NDEBUG)
 
 #ifdef ENABLE_RR_DEBUG_INFO
 	// Functions used for generating JIT debug info.
@@ -57,7 +58,8 @@ namespace rr
 {
 	struct Capabilities
 	{
-		bool CallSupported; // Support for rr::Call()
+		bool CallSupported;       // Support for rr::Call()
+		bool CoroutinesSupported; // Support for rr::Coroutine<F>
 	};
 	extern const Capabilities Caps;
 
@@ -160,6 +162,8 @@ namespace rr
 	class Reference
 	{
 	public:
+		using reference_underlying_type = T;
+
 		explicit Reference(Value *pointer, int alignment = 1);
 
 		RValue<T> operator=(RValue<T> rhs) const;
@@ -230,6 +234,8 @@ namespace rr
 	class RValue
 	{
 	public:
+		using rvalue_underlying_type = T;
+
 		explicit RValue(Value *rvalue);
 
 #ifdef ENABLE_RR_DEBUG_INFO
@@ -1267,6 +1273,19 @@ namespace rr
 	RValue<UInt> Max(RValue<UInt> x, RValue<UInt> y);
 	RValue<UInt> Min(RValue<UInt> x, RValue<UInt> y);
 	RValue<UInt> Clamp(RValue<UInt> x, RValue<UInt> min, RValue<UInt> max);
+
+	RValue<UInt> AddAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> SubAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> AndAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> OrAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> XorAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<Int> MinAtomic(RValue<Pointer<Int>> x, RValue<Int> y, std::memory_order memoryOrder);
+	RValue<Int> MaxAtomic(RValue<Pointer<Int>> x, RValue<Int> y, std::memory_order memoryOrder);
+	RValue<UInt> MinAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> MaxAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> ExchangeAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, std::memory_order memoryOrder);
+	RValue<UInt> CompareExchangeAtomic(RValue<Pointer<UInt>> x, RValue<UInt> y, RValue<UInt> compare, std::memory_order memoryOrderEqual, std::memory_order memoryOrderUnequal);
+
 //	RValue<UInt> RoundUInt(RValue<Float> cast);
 
 	class Int2 : public LValue<Int2>
@@ -1380,6 +1399,8 @@ namespace rr
 //	RValue<Bool> operator==(RValue<UInt2> lhs, RValue<UInt2> rhs);
 
 //	RValue<UInt2> RoundInt(RValue<Float4> cast);
+	RValue<UInt> Extract(RValue<UInt2> val, int i);
+	RValue<UInt2> Insert(RValue<UInt2> val, RValue<UInt> element, int i);
 
 	template<class T>
 	struct Scalar;
@@ -1945,6 +1966,9 @@ namespace rr
 		UInt4(const Int4 &rhs);
 		UInt4(const Reference<Int4> &rhs);
 		UInt4(RValue<UInt2> lo, RValue<UInt2> hi);
+		UInt4(RValue<UInt> rhs);
+		UInt4(const UInt &rhs);
+		UInt4(const Reference<UInt> &rhs);
 
 		RValue<UInt4> operator=(RValue<UInt4> rhs);
 		RValue<UInt4> operator=(const UInt4 &rhs);
@@ -2006,6 +2030,7 @@ namespace rr
 	RValue<UInt> Extract(RValue<UInt4> val, int i);
 	RValue<UInt4> Insert(RValue<UInt4> val, RValue<UInt> element, int i);
 //	RValue<UInt4> RoundInt(RValue<Float4> cast);
+	RValue<UInt4> Swizzle(RValue<UInt4> x, unsigned char select);
 
 	class Half : public LValue<Half>
 	{
@@ -2337,10 +2362,40 @@ namespace rr
 	}
 
 	template<typename T>
+	RValue<T> Load(Pointer<T> pointer, unsigned int alignment, bool atomic, std::memory_order memoryOrder)
+	{
+		return Load(RValue<Pointer<T>>(pointer), alignment, atomic, memoryOrder);
+	}
+
+	// TODO: Use SIMD to template these.
+	RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment);
+	RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment);
+	void Scatter(RValue<Pointer<Float>> base, RValue<Float4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment);
+	void Scatter(RValue<Pointer<Int>> base, RValue<Int4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment);
+
+	template<typename T>
 	void Store(RValue<T> value, RValue<Pointer<T>> pointer, unsigned int alignment, bool atomic, std::memory_order memoryOrder)
 	{
 		Nucleus::createStore(value.value, pointer.value, T::getType(), false, alignment, atomic, memoryOrder);
 	}
+
+	template<typename T>
+	void Store(RValue<T> value, Pointer<T> pointer, unsigned int alignment, bool atomic, std::memory_order memoryOrder)
+	{
+		Store(value, RValue<Pointer<T>>(pointer), alignment, atomic, memoryOrder);
+	}
+
+	template<typename T>
+	void Store(T value, Pointer<T> pointer, unsigned int alignment, bool atomic, std::memory_order memoryOrder)
+	{
+		Store(RValue<T>(value), RValue<Pointer<T>>(pointer), alignment, atomic, memoryOrder);
+	}
+
+	// Fence adds a memory barrier that enforces ordering constraints on memory
+	// operations. memoryOrder can only be one of:
+	// std::memory_order_acquire, std::memory_order_release,
+	// std::memory_order_acq_rel, or std::memory_order_seq_cst.
+	void Fence(std::memory_order memoryOrder);
 
 	template<class T, int S = 1>
 	class Array : public LValue<T>
@@ -2361,14 +2416,24 @@ namespace rr
 
 	void branch(RValue<Bool> cmp, BasicBlock *bodyBB, BasicBlock *endBB);
 
+	// ValueOf returns a rr::Value* for the given C-type, RValue<T>, LValue<T>
+	// or Reference<T>.
+	template <typename T>
+	inline Value* ValueOf(const T &v)
+	{
+		return ReactorType<T>(v).loadValue();
+	}
+
 	void Return();
-	void Return(RValue<Int> ret);
 
 	template<class T>
-	void Return(const Pointer<T> &ret);
-
-	template<class T>
-	void Return(RValue<Pointer<T>> ret);
+	void Return(const T &ret)
+	{
+		static_assert(CanBeUsedAsReturn< ReactorType<T> >::value, "Unsupported type for Return()");
+		Nucleus::createRet(ValueOf<T>(ret));
+		// Place any unreachable instructions in an unreferenced block.
+		Nucleus::setInsertBlock(Nucleus::createBasicBlock());
+	}
 
 	// Generic template, leave undefined!
 	template<typename FunctionType>
@@ -2378,6 +2443,9 @@ namespace rr
 	template<typename Return, typename... Arguments>
 	class Function<Return(Arguments...)>
 	{
+		// Static assert that the function signature is valid.
+		static_assert(sizeof(AssertFunctionSignatureIsValid<Return(Arguments...)>) >= 0, "Invalid function signature");
+
 	public:
 		Function();
 
@@ -2930,24 +2998,6 @@ namespace rr
 		return RValue<T>(Nucleus::createSelect(condition.value, trueValue, falseValue));
 	}
 
-	template<class T>
-	void Return(const Pointer<T> &ret)
-	{
-		RR_DEBUG_INFO_UPDATE_LOC();
-		Nucleus::createRet(Nucleus::createLoad(ret.address, Pointer<T>::getType()));
-		Nucleus::setInsertBlock(Nucleus::createBasicBlock());
-		Nucleus::createUnreachable();
-	}
-
-	template<class T>
-	void Return(RValue<Pointer<T>> ret)
-	{
-		RR_DEBUG_INFO_UPDATE_LOC();
-		Nucleus::createRet(ret.value);
-		Nucleus::setInsertBlock(Nucleus::createBasicBlock());
-		Nucleus::createUnreachable();
-	}
-
 	template<typename Return, typename... Arguments>
 	Function<Return(Arguments...)>::Function()
 	{
@@ -3031,25 +3081,6 @@ namespace rr
 		return ReinterpretCast<T>(val);
 	}
 
-	template <typename T>
-	inline Value* valueOf(RValue<T> v) { return v.value; }
-
-	template <typename T>
-	inline Value* valueOf(LValue<T> v) { return valueOf(RValue<T>(v.loadValue())); }
-
-	template<typename T>
-	struct CToReactor;
-
-	template<> struct CToReactor<void>    { using type = Void; };
-	template<> struct CToReactor<int>     { using type = Int; };
-	template<> struct CToReactor<float>   { using type = Float; };
-	template<> struct CToReactor<int*>     { using type = Pointer<Int>; };
-	template<> struct CToReactor<float*>   { using type = Pointer<Float>; };
-
-	// Pointers to non-reactor types are treated as uint8_t*.
-	template<typename T>
-	struct CToReactor<T*> { using type = Pointer<Byte>; };
-
 	// Returns a reactor pointer to the fixed-address ptr.
 	RValue<Pointer<Byte>> ConstantPointer(void const * ptr);
 
@@ -3065,24 +3096,24 @@ namespace rr
 	class CallHelper<Return(Arguments...)>
 	{
 	public:
-		using RReturn = typename CToReactor<Return>::type;
+		using RReturn = CToReactor<Return>;
 
-		static inline RReturn Call(Return(fptr)(Arguments...), typename CToReactor<Arguments>::type... args)
+		static inline RReturn Call(Return(fptr)(Arguments...), CToReactor<Arguments>... args)
 		{
 			return RValue<RReturn>(rr::Call(
 				ConstantPointer(reinterpret_cast<void*>(fptr)),
 				RReturn::getType(),
-				{ valueOf(args) ... },
-				{ CToReactor<Arguments>::type::getType() ... }));
+				{ ValueOf(args) ... },
+				{ CToReactor<Arguments>::getType() ... }));
 		}
 
-		static inline RReturn Call(Pointer<Byte> fptr, typename CToReactor<Arguments>::type... args)
+		static inline RReturn Call(Pointer<Byte> fptr, CToReactor<Arguments>... args)
 		{
 			return RValue<RReturn>(rr::Call(
 				fptr,
 				RReturn::getType(),
-				{ valueOf(args) ... },
-				{ CToReactor<Arguments>::type::getType() ... }));
+				{ ValueOf(args) ... },
+				{ CToReactor<Arguments>::getType() ... }));
 		}
 	};
 
@@ -3090,26 +3121,26 @@ namespace rr
 	class CallHelper<void(Arguments...)>
 	{
 	public:
-		static inline void Call(void(fptr)(Arguments...), typename CToReactor<Arguments>::type... args)
+		static inline void Call(void(fptr)(Arguments...), CToReactor<Arguments>... args)
 		{
 			rr::Call(ConstantPointer(reinterpret_cast<void*>(fptr)),
 				Void::getType(),
-				{ valueOf(args) ... },
-				{ CToReactor<Arguments>::type::getType() ... });
+				{ ValueOf(args) ... },
+				{ CToReactor<Arguments>::getType() ... });
 		}
 
-		static inline void Call(Pointer<Byte> fptr, typename CToReactor<Arguments>::type... args)
+		static inline void Call(Pointer<Byte> fptr, CToReactor<Arguments>... args)
 		{
 			rr::Call(fptr,
 				Void::getType(),
-				{ valueOf(args) ... },
-				{ CToReactor<Arguments>::type::getType() ... });
+				{ ValueOf(args) ... },
+				{ CToReactor<Arguments>::getType() ... });
 		}
 	};
 
 	// Calls the function pointer fptr with the given arguments args.
 	template<typename Return, typename ... Arguments>
-	inline typename CToReactor<Return>::type Call(Return(fptr)(Arguments...), typename CToReactor<Arguments>::type... args)
+	inline CToReactor<Return> Call(Return(fptr)(Arguments...), CToReactor<Arguments>... args)
 	{
 		return CallHelper<Return(Arguments...)>::Call(fptr, args...);
 	}
@@ -3152,16 +3183,16 @@ namespace rr
 
 		// returns the printf value(s) for the given LValue.
 		template <typename T>
-		static std::vector<Value*> val(const LValue<T>& v) { return val(RValue<T>(v.loadValue())); };
+		static std::vector<Value*> val(const LValue<T>& v) { return val(RValue<T>(v.loadValue())); }
 
 		// returns the printf value(s) for the given RValue.
 		template <typename T>
-		static std::vector<Value*> val(const RValue<T>& v) { return Ty<T>::val(v); };
+		static std::vector<Value*> val(const RValue<T>& v) { return Ty<T>::val(v); }
 
 		// returns the printf value from for the given type with a
 		// PrintValue::Ty<T> specialization.
 		template <typename T>
-		static std::vector<Value*> val(const T& v) { return Ty<T>::val(v); };
+		static std::vector<Value*> val(const T& v) { return Ty<T>::val(v); }
 
 		// returns the printf values for all the values in the given array.
 		template <typename T>
@@ -3174,7 +3205,7 @@ namespace rr
 				values.insert(values.end(), v.begin(), v.end());
 			}
 			return values;
-		};
+		}
 
 		// fmt returns a comma-delimited list of the string el repeated count
 		// times enclosed in square brackets.
@@ -3225,8 +3256,6 @@ namespace rr
 		PrintValue(uint64_t v) : format(std::to_string(v)) {}
 		PrintValue(float v) : format(std::to_string(v)) {}
 		PrintValue(double v) : format(std::to_string(v)) {}
-		PrintValue(const char* v) : format(v) {}
-		PrintValue(const std::string& v) : format(v) {}
 
 		template <typename T>
 		PrintValue(const T* v) : format(addr(v)) {}
@@ -3268,6 +3297,18 @@ namespace rr
 		}
 	};
 
+	// PrintValue::Ty<T> specializations for basic types.
+	template <> struct PrintValue::Ty<const char*>
+	{
+		static constexpr const char* fmt = "%s";
+		static std::vector<Value*> val(const char* v);
+	};
+	template <> struct PrintValue::Ty<std::string>
+	{
+		static constexpr const char* fmt = PrintValue::Ty<const char*>::fmt;
+		static std::vector<Value*> val(const std::string& v) { return PrintValue::Ty<const char*>::val(v.c_str()); }
+	};
+
 	// PrintValue::Ty<T> specializations for standard Reactor types.
 	template <> struct PrintValue::Ty<Bool>
 	{
@@ -3287,7 +3328,12 @@ namespace rr
 	template <> struct PrintValue::Ty<Int>
 	{
 		static constexpr const char* fmt = "%d";
-		static std::vector<Value*> val(const RValue<Int>& v) { return {v.value}; }
+		static std::vector<Value*> val(const RValue<Int>& v);
+	};
+	template <> struct PrintValue::Ty<Int2>
+	{
+		static constexpr const char* fmt = "[%d, %d]";
+		static std::vector<Value*> val(const RValue<Int2>& v);
 	};
 	template <> struct PrintValue::Ty<Int4>
 	{
@@ -3297,7 +3343,12 @@ namespace rr
 	template <> struct PrintValue::Ty<UInt>
 	{
 		static constexpr const char* fmt = "%u";
-		static std::vector<Value*> val(const RValue<UInt>& v) { return {v.value}; }
+		static std::vector<Value*> val(const RValue<UInt>& v);
+	};
+	template <> struct PrintValue::Ty<UInt2>
+	{
+		static constexpr const char* fmt = "[%u, %u]";
+		static std::vector<Value*> val(const RValue<UInt2>& v);
 	};
 	template <> struct PrintValue::Ty<UInt4>
 	{
@@ -3393,7 +3444,11 @@ namespace rr
 	//
 	// RR_LOG() is intended to be used for debugging JIT compiled code, and is
 	// not intended for production use.
-	#define RR_LOG(msg, ...) Print(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg "\n", ##__VA_ARGS__)
+	#if defined(_WIN32)
+		#define RR_LOG(msg, ...) Print(__FUNCSIG__, __FILE__, __LINE__, msg "\n", ##__VA_ARGS__)
+	#else
+		#define RR_LOG(msg, ...) Print(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg "\n", ##__VA_ARGS__)
+	#endif
 
 	// Macro magic to perform variadic dispatch.
 	// See: https://renenyffenegger.ch/notes/development/languages/C-C-plus-plus/preprocessor/macros/__VA_ARGS__/count-arguments

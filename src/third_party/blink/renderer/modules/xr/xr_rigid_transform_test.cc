@@ -52,11 +52,14 @@ static void TestComposeDecompose(DOMPointInit* position,
 
 static void TestDoubleInverse(DOMPointInit* position,
                               DOMPointInit* orientation) {
-  XRRigidTransform transform(position, orientation);
-  XRRigidTransform inverse_transform(transform.InverseTransformMatrix());
-  XRRigidTransform inverse_inverse_transform(
-      inverse_transform.InverseTransformMatrix());
-  AssertTransformsEqualForTest(transform, inverse_inverse_transform);
+  XRRigidTransform* transform =
+      MakeGarbageCollected<XRRigidTransform>(position, orientation);
+  XRRigidTransform* inverse_transform = MakeGarbageCollected<XRRigidTransform>(
+      transform->InverseTransformMatrix());
+  XRRigidTransform* inverse_inverse_transform =
+      MakeGarbageCollected<XRRigidTransform>(
+          inverse_transform->InverseTransformMatrix());
+  AssertTransformsEqualForTest(*transform, *inverse_inverse_transform);
 }
 
 TEST(XRRigidTransformTest, Compose) {
@@ -104,6 +107,17 @@ TEST(XRRigidTransformTest, DoubleInverse2) {
   TestDoubleInverse(MakePointForTest(1.0, -1.0, 4.0, 1.0),
                     MakePointForTest(0.3701005885691383, -0.5678993882056005,
                                      0.31680366148754113, 0.663438979322567));
+}
+
+TEST(XRRigidTransformTest, InverseObjectEquality) {
+  XRRigidTransform* transform = MakeGarbageCollected<XRRigidTransform>(
+      MakePointForTest(1.0, 2.0, 3.0, 4.0),
+      MakePointForTest(1.0, 0.0, 0.0, 1.0));
+  XRRigidTransform* transform_inverse = transform->inverse();
+  ASSERT_TRUE(transform_inverse != transform);
+  ASSERT_TRUE(transform_inverse == transform->inverse());
+  ASSERT_TRUE(transform_inverse->inverse() == transform);
+  ASSERT_TRUE(transform->inverse()->inverse() == transform);
 }
 
 }  // namespace

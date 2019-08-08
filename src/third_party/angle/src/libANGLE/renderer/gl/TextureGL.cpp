@@ -158,7 +158,7 @@ angle::Result TextureGL::setImage(const gl::Context *context,
     gl::TextureTarget target = index.getTarget();
     size_t level             = static_cast<size_t>(index.getLevelIndex());
 
-    if (workarounds.unpackOverlappingRowsSeparatelyUnpackBuffer && unpackBuffer &&
+    if (workarounds.unpackOverlappingRowsSeparatelyUnpackBuffer.enabled && unpackBuffer &&
         unpack.rowLength != 0 && unpack.rowLength < size.width)
     {
         // The rows overlap in unpack memory. Upload the texture row by row to work around
@@ -175,7 +175,7 @@ angle::Result TextureGL::setImage(const gl::Context *context,
                                              unpackBuffer, pixels);
     }
 
-    if (workarounds.unpackLastRowSeparatelyForPaddingInclusion)
+    if (workarounds.unpackLastRowSeparatelyForPaddingInclusion.enabled)
     {
         bool apply = false;
         ANGLE_TRY(ShouldApplyLastRowPaddingWorkaround(
@@ -281,14 +281,14 @@ angle::Result TextureGL::setSubImage(const gl::Context *context,
            GetLevelInfo(format, texSubImageFormat.format).lumaWorkaround.enabled);
 
     stateManager->bindTexture(getType(), mTextureID);
-    if (workarounds.unpackOverlappingRowsSeparatelyUnpackBuffer && unpackBuffer &&
+    if (workarounds.unpackOverlappingRowsSeparatelyUnpackBuffer.enabled && unpackBuffer &&
         unpack.rowLength != 0 && unpack.rowLength < area.width)
     {
         return setSubImageRowByRowWorkaround(context, target, level, area, format, type, unpack,
                                              unpackBuffer, pixels);
     }
 
-    if (workarounds.unpackLastRowSeparatelyForPaddingInclusion)
+    if (workarounds.unpackLastRowSeparatelyForPaddingInclusion.enabled)
     {
         gl::Extents size(area.width, area.height, area.depth);
 
@@ -785,7 +785,8 @@ angle::Result TextureGL::copySubTextureHelper(const gl::Context *context,
         sourceGL->mState.getImageDesc(NonCubeTextureTypeToTarget(source->getType()), sourceLevel);
 
     // Check is this is a simple copySubTexture that can be done with a copyTexSubImage
-    ASSERT(sourceGL->getType() == gl::TextureType::_2D);
+    ASSERT(sourceGL->getType() == gl::TextureType::_2D ||
+           source->getType() == gl::TextureType::External);
     const LevelInfoGL &sourceLevelInfo =
         sourceGL->getLevelInfo(NonCubeTextureTypeToTarget(source->getType()), sourceLevel);
     bool needsLumaWorkaround = sourceLevelInfo.lumaWorkaround.enabled;
@@ -800,7 +801,7 @@ angle::Result TextureGL::copySubTextureHelper(const gl::Context *context,
     bool destSRGB              = destFormat.colorEncoding == GL_SRGB;
     if (!unpackFlipY && unpackPremultiplyAlpha == unpackUnmultiplyAlpha && !needsLumaWorkaround &&
         sourceFormatContainSupersetOfDestFormat && sourceComponentType == destComponentType &&
-        !destSRGB)
+        !destSRGB && sourceGL->getType() == gl::TextureType::_2D)
     {
         bool copySucceeded = false;
         ANGLE_TRY(blitter->copyTexSubImage(sourceGL, sourceLevel, this, target, level, sourceArea,
@@ -1306,7 +1307,7 @@ angle::Result TextureGL::setBaseLevel(const gl::Context *context, GLuint baseLev
         mLocalDirtyBits.set(gl::Texture::DIRTY_BIT_BASE_LEVEL);
 
         // Signal to the GL layer that the Impl has dirty bits.
-        onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
 
         stateManager->bindTexture(getType(), mTextureID);
         functions->texParameteri(ToGLenum(getType()), GL_TEXTURE_BASE_LEVEL, baseLevel);
@@ -1325,7 +1326,7 @@ void TextureGL::setMinFilter(const gl::Context *context, GLenum filter)
         mLocalDirtyBits.set(gl::Texture::DIRTY_BIT_MIN_FILTER);
 
         // Signal to the GL layer that the Impl has dirty bits.
-        onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
 
         stateManager->bindTexture(getType(), mTextureID);
         functions->texParameteri(ToGLenum(getType()), GL_TEXTURE_MIN_FILTER, filter);
@@ -1342,7 +1343,7 @@ void TextureGL::setMagFilter(const gl::Context *context, GLenum filter)
         mLocalDirtyBits.set(gl::Texture::DIRTY_BIT_MAG_FILTER);
 
         // Signal to the GL layer that the Impl has dirty bits.
-        onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
 
         stateManager->bindTexture(getType(), mTextureID);
         functions->texParameteri(ToGLenum(getType()), GL_TEXTURE_MAG_FILTER, filter);
@@ -1366,7 +1367,7 @@ void TextureGL::setSwizzle(const gl::Context *context, GLint swizzle[4])
         mLocalDirtyBits.set(gl::Texture::DIRTY_BIT_SWIZZLE_ALPHA);
 
         // Signal to the GL layer that the Impl has dirty bits.
-        onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
 
         stateManager->bindTexture(getType(), mTextureID);
         functions->texParameteriv(ToGLenum(getType()), GL_TEXTURE_SWIZZLE_RGBA, swizzle);
@@ -1508,7 +1509,7 @@ void TextureGL::setLevelInfo(const gl::Context *context,
     if (updateWorkarounds)
     {
         mLocalDirtyBits |= GetLevelWorkaroundDirtyBits();
-        onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
     }
 }
 
@@ -1558,9 +1559,11 @@ angle::Result TextureGL::initializeContents(const gl::Context *context,
     StateManagerGL *stateManager     = GetStateManagerGL(context);
     const WorkaroundsGL &workarounds = GetWorkaroundsGL(context);
 
+    bool shouldUseClear = !nativegl::SupportsTexImage(getType());
     GLenum nativeInternalFormat =
         getLevelInfo(imageIndex.getTarget(), imageIndex.getLevelIndex()).nativeInternalFormat;
-    if (nativegl::SupportsNativeRendering(functions, mState.getType(), nativeInternalFormat))
+    if ((workarounds.allowClearForRobustResourceInit.enabled || shouldUseClear) &&
+        nativegl::SupportsNativeRendering(functions, mState.getType(), nativeInternalFormat))
     {
         BlitGL *blitter = GetBlitGL(context);
 
@@ -1577,6 +1580,7 @@ angle::Result TextureGL::initializeContents(const gl::Context *context,
 
     // Either the texture is not renderable or was incomplete when clearing, fall back to a data
     // upload
+    ASSERT(nativegl::SupportsTexImage(getType()));
     const gl::ImageDesc &desc                    = mState.getImageDesc(imageIndex);
     const gl::InternalFormat &internalFormatInfo = *desc.format.info;
 
@@ -1584,6 +1588,7 @@ angle::Result TextureGL::initializeContents(const gl::Context *context,
     unpackState.alignment = 1;
     stateManager->setPixelUnpackState(unpackState);
 
+    stateManager->bindTexture(getType(), mTextureID);
     if (internalFormatInfo.compressed)
     {
         nativegl::CompressedTexSubImageFormat nativeSubImageFormat =

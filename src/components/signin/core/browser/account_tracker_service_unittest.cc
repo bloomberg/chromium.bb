@@ -120,12 +120,16 @@ class TrackingEvent {
  public:
   TrackingEvent(TrackingEventType type,
                 const std::string& account_id,
-                const std::string& gaia_id)
-      : type_(type), account_id_(account_id), gaia_id_(gaia_id) {}
+                const std::string& gaia_id,
+                const std::string& email)
+      : type_(type),
+        account_id_(account_id),
+        gaia_id_(gaia_id),
+        email_(email) {}
 
   bool operator==(const TrackingEvent& event) const {
     return type_ == event.type_ && account_id_ == event.account_id_ &&
-           (gaia_id_.empty() || gaia_id_ == event.gaia_id_);
+           gaia_id_ == event.gaia_id_ && email_ == event.email_;
   }
 
   std::string ToString() const {
@@ -138,8 +142,9 @@ class TrackingEvent {
         typestr = "REM";
         break;
     }
-    return base::StringPrintf("{ type: %s, account_id: %s, gaia: %s }", typestr,
-                              account_id_.c_str(), gaia_id_.c_str());
+    return base::StringPrintf(
+        "{ type: %s, account_id: %s, gaia: %s, email: %s }", typestr,
+        account_id_.c_str(), gaia_id_.c_str(), email_.c_str());
   }
 
  private:
@@ -148,6 +153,7 @@ class TrackingEvent {
   TrackingEventType type_;
   std::string account_id_;
   std::string gaia_id_;
+  std::string email_;
 };
 
 bool CompareByUser(TrackingEvent a, TrackingEvent b) {
@@ -187,11 +193,13 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
 };
 
 void AccountTrackerObserver::OnAccountUpdated(const AccountInfo& ids) {
-  events_.push_back(TrackingEvent(UPDATED, ids.account_id, ids.gaia));
+  events_.push_back(
+      TrackingEvent(UPDATED, ids.account_id, ids.gaia, ids.email));
 }
 
 void AccountTrackerObserver::OnAccountRemoved(const AccountInfo& ids) {
-  events_.push_back(TrackingEvent(REMOVED, ids.account_id, ids.gaia));
+  events_.push_back(
+      TrackingEvent(REMOVED, ids.account_id, ids.gaia, ids.email));
 }
 
 void AccountTrackerObserver::Clear() {
@@ -331,8 +339,8 @@ class AccountTrackerServiceTest : public testing::Test {
   PrefService* prefs() { return &pref_service_; }
   AccountTrackerObserver* observer() { return &observer_; }
 
-  network::TestURLLoaderFactory* test_url_loader_factory() {
-    return signin_client_.test_url_loader_factory();
+  network::TestURLLoaderFactory* GetTestURLLoaderFactory() {
+    return signin_client_.GetTestURLLoaderFactory();
   }
 
   bool* force_account_id_to_email_for_legacy_tests_pointer() {
@@ -398,11 +406,11 @@ void AccountTrackerServiceTest::ReturnFetchResults(
     net::HttpStatusCode response_code,
     const std::string& response_string) {
   GURL url = GaiaUrls::GetInstance()->oauth_user_info_url();
-  EXPECT_TRUE(test_url_loader_factory()->IsPending(url.spec()));
+  EXPECT_TRUE(GetTestURLLoaderFactory()->IsPending(url.spec()));
 
   // It's possible for multiple requests to be pending. Respond to all of them.
-  while (test_url_loader_factory()->IsPending(url.spec())) {
-    test_url_loader_factory()->SimulateResponseForPendingRequest(
+  while (GetTestURLLoaderFactory()->IsPending(url.spec())) {
+    GetTestURLLoaderFactory()->SimulateResponseForPendingRequest(
         url, network::URLLoaderCompletionStatus(net::OK),
         network::CreateResourceResponseHead(response_code), response_string,
         network::TestURLLoaderFactory::kMostRecentMatch);
@@ -430,14 +438,14 @@ void AccountTrackerServiceTest::ReturnAccountInfoFetchFailure(
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchSuccess(
     AccountKey account_key) {
-  test_url_loader_factory()->AddResponse(
+  GetTestURLLoaderFactory()->AddResponse(
       AccountKeyToPictureURLWithSize(account_key), "image data");
   scoped_task_environment_.RunUntilIdle();
 }
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchFailure(
     AccountKey account_key) {
-  test_url_loader_factory()->AddResponse(
+  GetTestURLLoaderFactory()->AddResponse(
       AccountKeyToPictureURLWithSize(account_key), std::string(),
       net::HTTP_BAD_REQUEST);
   scoped_task_environment_.RunUntilIdle();
@@ -464,7 +472,8 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageSuccess) {
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 
   EXPECT_TRUE(account_tracker()
@@ -473,7 +482,8 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageSuccess) {
   ReturnAccountImageFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
   EXPECT_FALSE(account_tracker()
                    ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
@@ -486,7 +496,8 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageFailure) {
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 
   EXPECT_TRUE(account_tracker()
@@ -504,12 +515,14 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_Revoked) {
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
   SimulateTokenRevoked(kAccountKeyAlpha);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 }
 
@@ -526,7 +539,8 @@ TEST_F(AccountTrackerServiceTest, TokenAvailableTwice_UserInfoOnce) {
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 
   SimulateTokenAvailable(kAccountKeyAlpha);
@@ -549,9 +563,11 @@ TEST_F(AccountTrackerServiceTest, TwoTokenAvailable_TwoUserInfo) {
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyBeta),
-                    AccountKeyToGaiaId(kAccountKeyBeta)),
+                    AccountKeyToGaiaId(kAccountKeyBeta),
+                    AccountKeyToEmail(kAccountKeyBeta)),
   }));
 }
 
@@ -562,13 +578,15 @@ TEST_F(AccountTrackerServiceTest, TwoTokenAvailable_OneUserInfo) {
   EXPECT_FALSE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyBeta),
-                    AccountKeyToGaiaId(kAccountKeyBeta)),
+                    AccountKeyToGaiaId(kAccountKeyBeta),
+                    AccountKeyToEmail(kAccountKeyBeta)),
   }));
   ReturnAccountInfoFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 }
 
@@ -619,7 +637,7 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
   SimulateTokenAvailable(kAccountKeyAlpha);
   IssueAccessToken(kAccountKeyAlpha);
   // No fetcher has been created yet.
-  EXPECT_EQ(0, test_url_loader_factory()->NumPending());
+  EXPECT_EQ(0, GetTestURLLoaderFactory()->NumPending());
 
   // Enable the network to create the fetcher then issue the access token.
   account_fetcher()->EnableNetworkFetchesForTest();
@@ -689,17 +707,21 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
 
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyBeta),
-                    AccountKeyToGaiaId(kAccountKeyBeta)),
+                    AccountKeyToGaiaId(kAccountKeyBeta),
+                    AccountKeyToEmail(kAccountKeyBeta)),
   }));
   // Wait until all account images are loaded.
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyBeta),
-                    AccountKeyToGaiaId(kAccountKeyBeta)),
+                    AccountKeyToGaiaId(kAccountKeyBeta),
+                    AccountKeyToEmail(kAccountKeyBeta)),
   }));
 
   std::vector<AccountInfo> infos = account_tracker()->GetAccounts();
@@ -740,20 +762,36 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
 }
 
 TEST_F(AccountTrackerServiceTest, SeedAccountInfo) {
-  std::vector<AccountInfo> infos = account_tracker()->GetAccounts();
-  EXPECT_EQ(0u, infos.size());
+  EXPECT_TRUE(account_tracker()->GetAccounts().empty());
 
-  const std::string gaia_id = AccountKeyToGaiaId(kAccountKeyAlpha);
-  const std::string email = AccountKeyToEmail(kAccountKeyAlpha);
+  const std::string gaia_id = AccountKeyToGaiaId(kAccountKeyFooBar);
+  const std::string email = AccountKeyToEmail(kAccountKeyFooBar);
+  const std::string email_dotted = AccountKeyToEmail(kAccountKeyFooDotBar);
   const std::string account_id =
       account_tracker()->PickAccountIdForAccount(gaia_id, email);
-  account_tracker()->SeedAccountInfo(gaia_id, email);
 
-  infos = account_tracker()->GetAccounts();
+  account_tracker()->SeedAccountInfo(gaia_id, email);
+  auto infos = account_tracker()->GetAccounts();
   ASSERT_EQ(1u, infos.size());
   EXPECT_EQ(account_id, infos[0].account_id);
   EXPECT_EQ(gaia_id, infos[0].gaia);
   EXPECT_EQ(email, infos[0].email);
+  EXPECT_TRUE(observer()->CheckEvents({
+      TrackingEvent(UPDATED, account_id, gaia_id, email),
+  }));
+
+  account_tracker()->SeedAccountInfo(gaia_id, email_dotted);
+  infos = account_tracker()->GetAccounts();
+  ASSERT_EQ(1u, infos.size()) << "Seeding information to an existing account "
+                                 "should not add a new account";
+  EXPECT_EQ(account_id, infos[0].account_id)
+      << "Account id is either the canonicalized email or gaia, it should "
+         "remain the same";
+  EXPECT_EQ(gaia_id, infos[0].gaia);
+  EXPECT_EQ(email_dotted, infos[0].email) << "Email should be changed";
+  EXPECT_TRUE(observer()->CheckEvents({
+      TrackingEvent(UPDATED, account_id, gaia_id, email_dotted),
+  }));
 }
 
 TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
@@ -770,7 +808,7 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   EXPECT_EQ(info.email, stored_info.email);
   EXPECT_EQ(info.full_name, stored_info.full_name);
   EXPECT_TRUE(observer()->CheckEvents({
-      TrackingEvent(UPDATED, info.account_id, info.gaia),
+      TrackingEvent(UPDATED, info.account_id, info.gaia, info.email),
   }));
 
   // Validate that seeding new full informations to an existing account works
@@ -785,7 +823,7 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   EXPECT_EQ(info.email, stored_info.email);
   EXPECT_EQ(info.given_name, stored_info.given_name);
   EXPECT_TRUE(observer()->CheckEvents({
-      TrackingEvent(UPDATED, info.account_id, info.gaia),
+      TrackingEvent(UPDATED, info.account_id, info.gaia, info.email),
   }));
 
   // Validate that seeding invalid information to an existing account doesn't
@@ -827,7 +865,8 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
 
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyIncomplete),
-                    AccountKeyToGaiaId(kAccountKeyIncomplete)),
+                    AccountKeyToGaiaId(kAccountKeyIncomplete),
+                    AccountKeyToEmail(kAccountKeyIncomplete)),
   }));
 
   // Enabling network fetches shouldn't cause any actual fetch since the
@@ -921,48 +960,6 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
   infos = account_tracker()->GetAccounts();
   ASSERT_EQ(1u, infos.size());
   EXPECT_EQ(AccountKeyToEmail(kAccountKeyFooBar), infos[0].email);
-}
-
-TEST_F(AccountTrackerServiceTest, NoDeprecatedServiceFlags) {
-  const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
-  const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
-
-  ListPrefUpdate update(prefs(), prefs::kAccountInfo);
-
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("account_id", email_alpha);
-  dict->SetString("email", email_alpha);
-  dict->SetString("gaia", gaia_alpha);
-  update->Append(std::move(dict));
-
-  base::HistogramTester tester;
-
-  ResetAccountTracker();
-  tester.ExpectBucketCount("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
-                           false, 1);
-}
-
-TEST_F(AccountTrackerServiceTest, MigrateDeprecatedServiceFlags) {
-  const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
-  const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
-
-  ListPrefUpdate update(prefs(), prefs::kAccountInfo);
-
-  std::unique_ptr<base::ListValue> service_flags(new base::ListValue());
-  service_flags->Append(std::make_unique<base::Value>("uca"));
-
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("account_id", email_alpha);
-  dict->SetString("email", email_alpha);
-  dict->SetString("gaia", gaia_alpha);
-  dict->SetList("service_flags", std::move(service_flags));
-  update->Append(std::move(dict));
-
-  base::HistogramTester tester;
-
-  ResetAccountTracker();
-  tester.ExpectBucketCount("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
-                           true, 1);
 }
 
 TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
@@ -1158,7 +1155,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevoked) {
                      GenerateValidTokenInfoResponse(kAccountKeyChild));
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
   AccountInfo info = account_tracker()->GetAccountInfo(
       AccountKeyToAccountId(kAccountKeyChild));
@@ -1166,7 +1164,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevoked) {
   SimulateTokenRevoked(kAccountKeyChild);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 }
 
@@ -1184,7 +1183,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevokedWithUpdate) {
                      GenerateValidTokenInfoResponse(kAccountKeyChild));
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
   AccountInfo info = account_tracker()->GetAccountInfo(
       AccountKeyToAccountId(kAccountKeyChild));
@@ -1194,14 +1194,17 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevokedWithUpdate) {
   // On Android, is_child_account is set to false before removing it.
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 #else
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 #endif
 }
@@ -1221,23 +1224,28 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedTwiceThenRevoked) {
 #endif
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
   SimulateTokenRevoked(kAccountKeyChild);
 #if defined(OS_ANDROID)
   // On Android, is_child_account is set to false before removing it.
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 #else
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 #endif
 }
@@ -1261,7 +1269,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
                      GenerateValidTokenInfoResponse(kAccountKeyChild));
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 
   // Now simulate child account graduation.
@@ -1277,13 +1286,15 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
   EXPECT_FALSE(info.is_child_account);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 
   SimulateTokenRevoked(kAccountKeyChild);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyChild),
-                    AccountKeyToGaiaId(kAccountKeyChild)),
+                    AccountKeyToGaiaId(kAccountKeyChild),
+                    AccountKeyToEmail(kAccountKeyChild)),
   }));
 }
 
@@ -1293,14 +1304,16 @@ TEST_F(AccountTrackerServiceTest, RemoveAccountBeforeImageFetchDone) {
   ReturnAccountInfoFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 
   SimulateTokenRevoked(kAccountKeyAlpha);
   ReturnAccountImageFetchFailure(kAccountKeyAlpha);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(REMOVED, AccountKeyToAccountId(kAccountKeyAlpha),
-                    AccountKeyToGaiaId(kAccountKeyAlpha)),
+                    AccountKeyToGaiaId(kAccountKeyAlpha),
+                    AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 }
 

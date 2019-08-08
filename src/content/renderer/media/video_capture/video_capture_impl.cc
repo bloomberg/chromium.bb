@@ -248,21 +248,21 @@ void VideoCaptureImpl::RequestRefreshFrame() {
 }
 
 void VideoCaptureImpl::GetDeviceSupportedFormats(
-    const blink::VideoCaptureDeviceFormatsCB& callback) {
+    blink::VideoCaptureDeviceFormatsCB callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->GetDeviceSupportedFormats(
       device_id_, session_id_,
       base::BindOnce(&VideoCaptureImpl::OnDeviceSupportedFormats,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void VideoCaptureImpl::GetDeviceFormatsInUse(
-    const blink::VideoCaptureDeviceFormatsCB& callback) {
+    blink::VideoCaptureDeviceFormatsCB callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->GetDeviceFormatsInUse(
       device_id_, session_id_,
       base::BindOnce(&VideoCaptureImpl::OnDeviceFormatsInUse,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void VideoCaptureImpl::OnFrameDropped(
@@ -549,17 +549,17 @@ void VideoCaptureImpl::StartCaptureInternal() {
 }
 
 void VideoCaptureImpl::OnDeviceSupportedFormats(
-    const blink::VideoCaptureDeviceFormatsCB& callback,
+    blink::VideoCaptureDeviceFormatsCB callback,
     const media::VideoCaptureFormats& supported_formats) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  callback.Run(supported_formats);
+  std::move(callback).Run(supported_formats);
 }
 
 void VideoCaptureImpl::OnDeviceFormatsInUse(
-    const blink::VideoCaptureDeviceFormatsCB& callback,
+    blink::VideoCaptureDeviceFormatsCB callback,
     const media::VideoCaptureFormats& formats_in_use) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  callback.Run(formats_in_use);
+  std::move(callback).Run(formats_in_use);
 }
 
 bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {

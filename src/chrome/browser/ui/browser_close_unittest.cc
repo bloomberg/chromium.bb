@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -200,6 +201,8 @@ TEST_F(BrowserCloseTest, LastIncognito) {
   EXPECT_EQ(Browser::DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
             browser->OkToCloseWithInProgressDownloads(&num_downloads_blocking));
   EXPECT_EQ(num_downloads_blocking, 1);
+
+  EXPECT_EQ(false, browser->CanCloseWithInProgressDownloads());
 }
 
 // Last incognito window close with no downloads => no warning.
@@ -258,6 +261,11 @@ TEST_F(BrowserCloseTest, LastRegular) {
   EXPECT_EQ(Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN,
             browser->OkToCloseWithInProgressDownloads(&num_downloads_blocking));
   EXPECT_EQ(num_downloads_blocking, 1);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(true, browser->CanCloseWithInProgressDownloads());
+#else
+  EXPECT_EQ(false, browser->CanCloseWithInProgressDownloads());
+#endif
 }
 
 // Last regular window triggers browser close warning if download is on a

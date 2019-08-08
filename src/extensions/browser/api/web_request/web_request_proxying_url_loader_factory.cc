@@ -98,12 +98,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // https://developer.chrome.com/extensions/webRequest#event-onBeforeRequest.
   network::ResourceRequest request_for_info = request_;
   request_for_info.request_initiator = original_initiator_;
-  info_.emplace(
+  info_.emplace(WebRequestInfoInitParams(
       request_id_, factory_->render_process_id_, request_.render_frame_id,
       factory_->navigation_ui_data_ ? factory_->navigation_ui_data_->DeepCopy()
                                     : nullptr,
       routing_id_, factory_->resource_context_, request_for_info, is_download_,
-      !(options_ & network::mojom::kURLLoadOptionSynchronous));
+      !(options_ & network::mojom::kURLLoadOptionSynchronous)));
 
   current_request_uses_header_client_ =
       factory_->url_loader_header_client_binding_ &&
@@ -260,7 +260,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     // Set-Cookie if it existed.
     auto saved_headers = current_response_.headers;
     current_response_ = head;
-    current_response_.headers = saved_headers;
+    if (saved_headers)
+      current_response_.headers = saved_headers;
     ContinueToBeforeRedirect(redirect_info, net::OK);
   } else {
     current_response_ = head;
@@ -279,8 +280,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnUploadProgress(
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
-  target_client_->OnReceiveCachedMetadata(data);
+    OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
+  target_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -427,7 +428,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     }
   }
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.encoded_data_length = 0;
 
   current_response_ = head;
@@ -757,6 +758,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   net::CompletionRepeatingCallback copyable_callback =
       base::AdaptCallbackForRepeating(std::move(continuation));
   if (request_.url.SchemeIsHTTPOrHTTPS()) {
+    DCHECK(info_.has_value());
     int result =
         ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
             factory_->browser_context_, factory_->info_map_, &info_.value(),

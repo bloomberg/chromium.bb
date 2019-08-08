@@ -13,8 +13,27 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/public/graph/system_node.h"
 
 namespace performance_manager {
+
+// Observer interface for SystemNodeImpl objects. This must be declared first as
+// the type is referenced by members of SystemNodeImpl.
+class SystemNodeImplObserver {
+ public:
+  SystemNodeImplObserver();
+  virtual ~SystemNodeImplObserver();
+
+  // Events with no property changes.
+
+  // Fired when a batch of consistent process CPU measurements is available on
+  // the graph.
+  // TODO(siggi): Deprecate this as the CPU measurement code is reworked.
+  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemNodeImplObserver);
+};
 
 // TODO(siggi): In the end game, this should be private implementation detail
 //     of the performance measurement graph decorator. It's here for now because
@@ -45,13 +64,18 @@ struct ProcessResourceMeasurementBatch {
   std::vector<ProcessResourceMeasurement> measurements;
 };
 
-class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
+class SystemNodeImpl
+    : public PublicNodeImpl<SystemNodeImpl, SystemNode>,
+      public TypedNodeBase<SystemNodeImpl, SystemNodeImplObserver> {
  public:
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kSystem;
-  }
+  // A do-nothing implementation of the observer. Derive from this if you want
+  // to selectively override a few methods and not have to worry about
+  // continuously updating your implementation as new methods are added.
+  class ObserverDefaultImpl;
 
-  explicit SystemNodeImpl(Graph* graph);
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kSystem; }
+
+  explicit SystemNodeImpl(GraphImpl* graph);
   ~SystemNodeImpl() override;
 
   void DistributeMeasurementBatch(
@@ -71,6 +95,19 @@ class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
   base::TimeTicks last_measurement_end_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNodeImpl);
+};
+
+// A do-nothing default implementation of a SystemNodeImpl::Observer.
+class SystemNodeImpl::ObserverDefaultImpl : public SystemNodeImpl::Observer {
+ public:
+  ObserverDefaultImpl();
+  ~ObserverDefaultImpl() override;
+
+  // SystemNodeImpl::Observer implementation:
+  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

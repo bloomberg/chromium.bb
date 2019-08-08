@@ -957,7 +957,8 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint pipeline, GLenum pname, GLint* params', },
 { 'return_type': 'GLuint',
-  'names': ['glGetProgramResourceIndex'],
+  'versions': [{'name': 'glGetProgramResourceIndex',
+                'extensions': ['GL_ARB_program_interface_query']}],
   'arguments':
       'GLuint program, GLenum programInterface, const GLchar* name', },
 { 'return_type': 'void',

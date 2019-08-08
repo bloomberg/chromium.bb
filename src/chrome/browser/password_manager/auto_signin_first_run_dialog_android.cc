@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "jni/AutoSigninFirstRunDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,8 +57,7 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
           : IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE);
   base::string16 ok_button_text =
       l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK);
-  base::string16 turn_off_button_text =
-      l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF);
+  base::string16 turn_off_button_text = l10n_util::GetStringUTF16(IDS_TURN_OFF);
 
   dialog_jobject_.Reset(Java_AutoSigninFirstRunDialog_createAndShowDialog(
       env, native_window->GetJavaObject(), reinterpret_cast<intptr_t>(this),

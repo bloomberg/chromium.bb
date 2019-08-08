@@ -70,7 +70,7 @@ void BookmarksSyncPerfTest::UpdateURLs(int profile) {
 }
 
 void BookmarksSyncPerfTest::RemoveURLs(int profile) {
-  while (!GetBookmarkBarNode(profile)->empty()) {
+  while (!GetBookmarkBarNode(profile)->children().empty()) {
     Remove(profile, GetBookmarkBarNode(profile), 0);
   }
 }

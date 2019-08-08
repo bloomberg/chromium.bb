@@ -18,7 +18,7 @@ static const gfx::Size kNaturalSize(320, 240);
 TEST(VideoDecoderConfigTest, Invalid_UnsupportedPixelFormat) {
   VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
                             PIXEL_FORMAT_UNKNOWN, VideoColorSpace(),
-                            VIDEO_ROTATION_0, kCodedSize, kVisibleRect,
+                            kNoTransformation, kCodedSize, kVisibleRect,
                             kNaturalSize, EmptyExtraData(), Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());
 }
@@ -26,7 +26,7 @@ TEST(VideoDecoderConfigTest, Invalid_UnsupportedPixelFormat) {
 TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorZero) {
   gfx::Size natural_size = GetNaturalSize(kVisibleRect.size(), 0, 1);
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, kVideoFormat,
-                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, natural_size, EmptyExtraData(),
                             Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());
@@ -35,7 +35,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorZero) {
 TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorZero) {
   gfx::Size natural_size = GetNaturalSize(kVisibleRect.size(), 1, 0);
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, kVideoFormat,
-                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, natural_size, EmptyExtraData(),
                             Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());
@@ -44,7 +44,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorZero) {
 TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorNegative) {
   gfx::Size natural_size = GetNaturalSize(kVisibleRect.size(), -1, 1);
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, kVideoFormat,
-                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, natural_size, EmptyExtraData(),
                             Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());
@@ -53,7 +53,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorNegative) {
 TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorNegative) {
   gfx::Size natural_size = GetNaturalSize(kVisibleRect.size(), 1, -1);
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, kVideoFormat,
-                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, natural_size, EmptyExtraData(),
                             Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());
@@ -64,7 +64,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorTooLarge) {
   int num = ceil(static_cast<double>(limits::kMaxDimension + 1) / width);
   gfx::Size natural_size = GetNaturalSize(kVisibleRect.size(), num, 1);
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, kVideoFormat,
-                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, natural_size, EmptyExtraData(),
                             Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());
@@ -78,7 +78,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorVeryLarge) {
   EXPECT_EQ(320, natural_size.width());
   EXPECT_EQ(240 * 641, natural_size.height());
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, kVideoFormat,
-                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, natural_size, EmptyExtraData(),
                             Unencrypted());
   EXPECT_FALSE(config.IsValidConfig());

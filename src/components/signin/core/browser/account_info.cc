@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/signin/core/browser/account_info.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
 
@@ -102,6 +103,21 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
                           other.is_under_advanced_protection);
 
   return modified;
+}
+bool operator==(const CoreAccountInfo& l, const CoreAccountInfo& r) {
+  return l.account_id == r.account_id && l.gaia == r.gaia &&
+         gaia::AreEmailsSame(l.email, r.email) &&
+         l.is_under_advanced_protection == r.is_under_advanced_protection;
+}
+bool operator!=(const CoreAccountInfo& l, const CoreAccountInfo& r) {
+  return !(l == r);
+}
+
+std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account) {
+  os << "account_id: " << account.account_id << ", gaia: " << account.gaia
+     << ", email: " << account.email << ", adv_prot: " << std::boolalpha
+     << account.is_under_advanced_protection;
+  return os;
 }
 
 AccountId AccountIdFromAccountInfo(const CoreAccountInfo& account_info) {

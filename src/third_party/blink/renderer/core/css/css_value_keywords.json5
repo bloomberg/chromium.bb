@@ -640,6 +640,7 @@
     // normal
     "strict",
     "after-white-space",
+    "anywhere",
 
     // hyphens
     "manual",
@@ -1177,6 +1178,9 @@
     // (prefers-color-scheme:) media feature
     "dark",
     "light",
+
+    // color-scheme
+    "only",
 
     // (prefers-reduced-motion:) media feature
     "reduce",

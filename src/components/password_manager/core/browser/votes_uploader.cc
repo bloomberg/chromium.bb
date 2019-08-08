@@ -216,18 +216,20 @@ void VotesUploader::SendVoteOnCredentialsReuse(
       if (UploadPasswordVote(*pending, submitted_form,
                              autofill::ACCOUNT_CREATION_PASSWORD,
                              observed_structure.FormSignatureAsStr())) {
-        pending->generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
+        pending->generation_upload_status =
+            PasswordForm::GenerationUploadStatus::kPositiveSignalSent;
       }
     }
   } else if (pending->generation_upload_status ==
-             PasswordForm::POSITIVE_SIGNAL_SENT) {
+             PasswordForm::GenerationUploadStatus::kPositiveSignalSent) {
     // A signal was sent that this was an account creation form, but the
     // credential is now being used on the same form again. This cancels out
     // the previous vote.
     if (UploadPasswordVote(*pending, submitted_form,
                            autofill::NOT_ACCOUNT_CREATION_PASSWORD,
                            std::string())) {
-      pending->generation_upload_status = PasswordForm::NEGATIVE_SIGNAL_SENT;
+      pending->generation_upload_status =
+          PasswordForm::GenerationUploadStatus::kNegativeSignalSent;
     }
   } else if (generation_popup_was_shown_) {
     // Even if there is no autofill vote to be sent, send the vote about the
@@ -449,19 +451,23 @@ void VotesUploader::SetKnownValueFlag(
     const PasswordForm& pending_credentials,
     const std::map<base::string16, const PasswordForm*>& best_matches,
     FormStructure* form) {
-  DCHECK(!password_overridden_ ||
-         best_matches.find(pending_credentials.username_value) !=
-             best_matches.end())
-      << "The credential is being overriden, but it does not exist in "
-         "the best matches.";
-
   const base::string16& known_username = pending_credentials.username_value;
+  base::string16 known_password;
+  if (password_overridden_) {
+    // If we are updating a password, the known value should be the old
+    // password, not the new one.
+    auto it = best_matches.find(known_username);
+    if (it == best_matches.end()) {
+      // Username was not found, do nothing.
+      return;
+    }
+    known_password = it->second->password_value;
+  } else {
+    known_password = pending_credentials.password_value;
+  }
+
   // If we are updating a password, the known value is the old password, not
   // the new one.
-  const base::string16& known_password =
-      password_overridden_ ? best_matches.at(known_username)->password_value
-                           : pending_credentials.password_value;
-
   for (auto& field : *form) {
     if (field->value.empty())
       continue;

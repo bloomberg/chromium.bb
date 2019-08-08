@@ -66,14 +66,13 @@ class CONTENT_EXPORT AppCacheDiskCache {
 
   // Initializes the object to use disk backed storage.
   net::Error InitWithDiskBackend(const base::FilePath& disk_cache_directory,
-                                 int disk_cache_size,
                                  bool force,
                                  base::OnceClosure post_cleanup_callback,
                                  net::CompletionOnceCallback callback);
 
   // Initializes the object to use memory only storage.
   // This is used for Chrome's incognito browsing.
-  net::Error InitWithMemBackend(int disk_cache_size,
+  net::Error InitWithMemBackend(int64_t disk_cache_size,
                                 net::CompletionOnceCallback callback);
 
   void Disable();
@@ -141,7 +140,7 @@ class CONTENT_EXPORT AppCacheDiskCache {
 
   net::Error Init(net::CacheType cache_type,
                   const base::FilePath& directory,
-                  int cache_size,
+                  int64_t cache_size,
                   bool force,
                   base::OnceClosure post_cleanup_callback,
                   net::CompletionOnceCallback callback);

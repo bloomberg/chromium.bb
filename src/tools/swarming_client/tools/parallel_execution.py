@@ -4,7 +4,6 @@
 
 """Toolset to run multiple Swarming tasks in parallel."""
 
-import getpass
 import json
 import os
 import optparse
@@ -13,12 +12,14 @@ import sys
 import tempfile
 import time
 
-BASE_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
-ROOT_DIR = os.path.dirname(BASE_DIR)
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
+sys.path.insert(0, CLIENT_DIR)
 
-sys.path.insert(0, ROOT_DIR)
+from utils import tools
+tools.force_local_third_party()
 
+# pylint: disable=ungrouped-imports
 import auth
 import isolateserver
 from utils import logging_utils
@@ -38,7 +39,7 @@ def capture(cmd):
   assert all(isinstance(i, basestring) for i in cmd), cmd
   start = time.time()
   p = subprocess.Popen(
-      [sys.executable] + cmd, cwd=ROOT_DIR, stdout=subprocess.PIPE)
+      [sys.executable] + cmd, cwd=CLIENT_DIR, stdout=subprocess.PIPE)
   out = p.communicate()[0]
   return p.returncode, out, time.time() - start
 
@@ -108,6 +109,7 @@ class Runner(object):
           'Failed %s:\n%s' % (step_name, stdout), index=1)
       return (task_name, dimensions, stdout)
     self.progress.update_item('Passed %s' % step_name, index=1)
+    return None, None, None
 
 
 def run_swarming_tasks_parallel(

@@ -166,7 +166,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     web_gesture_event.data.scroll_update.velocity_x = 40;
     web_gesture_event.data.scroll_update.velocity_y = 42;
     web_gesture_event.data.scroll_update.inertial_phase =
-        WebGestureEvent::kMomentumPhase;
+        WebGestureEvent::InertialPhaseState::kMomentum;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
@@ -182,7 +182,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     // order to remain consist with delta values.
     EXPECT_EQ(40, scaled_gesture_event.VelocityX());
     EXPECT_EQ(42, scaled_gesture_event.VelocityY());
-    EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+    EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
               scaled_gesture_event.InertialPhase());
   }
 
@@ -202,7 +202,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     EXPECT_EQ(6, position.Y());
     EXPECT_EQ(20, scaled_gesture_event.PositionInScreen().x);
     EXPECT_EQ(22, scaled_gesture_event.PositionInScreen().y);
-    EXPECT_EQ(WebGestureEvent::kUnknownMomentumPhase,
+    EXPECT_EQ(WebGestureEvent::InertialPhaseState::kUnknownMomentum,
               scaled_gesture_event.InertialPhase());
   }
 

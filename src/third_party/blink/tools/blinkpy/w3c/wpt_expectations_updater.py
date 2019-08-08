@@ -19,7 +19,6 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -74,9 +73,6 @@ class WPTExpectationsUpdater(object):
         _log.debug('Latest try jobs: %r', build_to_status)
         if not build_to_status:
             raise ScriptError('No try job information was collected.')
-
-        # The manifest may be used below to do check which tests are reference tests.
-        WPTManifest.ensure_manifest(self.host)
 
         # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}
@@ -134,7 +130,9 @@ class WPTExpectationsUpdater(object):
         if port_name in self.ports_with_all_pass:
             # All tests passed, so there should be no failing results.
             return {}
-        web_test_results = self.host.buildbot.fetch_results(build)
+
+        master = self.host.builders.master_for_builder(build.builder_name)
+        web_test_results = self.host.buildbot.fetch_full_results(build, master=master)
         if web_test_results is None:
             _log.warning('No results for build %s', build)
             self.ports_with_no_results.add(self.port_name(build))
@@ -262,6 +260,7 @@ class WPTExpectationsUpdater(object):
             capitalized. Example: {'Failure', 'Timeout'}.
         """
         actual_results = set(result.actual.split())
+
         # If the result is MISSING, this implies that the test was not
         # rebaselined and has an actual result but no baseline. We can't
         # add a Missing expectation (this is not allowed), but no other
@@ -273,7 +272,7 @@ class WPTExpectationsUpdater(object):
         if '-manual.' in test_name and 'TIMEOUT' in actual_results:
             return {'WontFix'}
         expectations = set()
-        failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO'}
+        failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'FAIL'}
         other_types = {'TIMEOUT', 'CRASH', 'PASS'}
         for actual in actual_results:
             if actual in failure_types:
@@ -434,6 +433,8 @@ class WPTExpectationsUpdater(object):
 
             # Only consider version specifiers that have corresponding try bots.
             versions = {s.lower() for s in versions if s.lower() in covered_by_try_bots}
+            if len(versions) == 0:
+                continue
             if versions <= specifiers:
                 specifiers -= versions
                 specifiers.add(macro)
@@ -462,31 +463,41 @@ class WPTExpectationsUpdater(object):
             line_dict: A dictionary from test names to a list of test expectation lines.
         """
         if not line_dict:
-            _log.info('No lines to write to TestExpectations nor NeverFixTests.')
+            _log.info(
+                'No lines to write to TestExpectations, WebdriverExpectations or NeverFixTests.')
             return
 
         line_list = []
         wont_fix_list = []
+        webdriver_list = []
         for lines in line_dict.itervalues():
             for line in lines:
                 if 'WontFix' in line:
                     wont_fix_list.append(line)
+                elif self.finder.webdriver_prefix() in line:
+                    webdriver_list.append(line)
                 else:
                     line_list.append(line)
 
-        if line_list:
-            _log.info('Lines to write to TestExpectations:\n %s', '\n'.join(line_list))
+        list_to_expectation = {
+            self.port.path_to_generic_test_expectations_file(): line_list,
+            self.port.path_to_webdriver_expectations_file(): webdriver_list
+        }
+        for expectations_file_path, lines in list_to_expectation.iteritems():
+            if not lines:
+                continue
+
+            _log.info('Lines to write to %s:\n %s', expectations_file_path, '\n'.join(lines))
             # Writes to TestExpectations file.
-            expectations_file_path = self.port.path_to_generic_test_expectations_file()
             file_contents = self.host.filesystem.read_text_file(expectations_file_path)
 
             marker_comment_index = file_contents.find(MARKER_COMMENT)
             if marker_comment_index == -1:
                 file_contents += '\n%s\n' % MARKER_COMMENT
-                file_contents += '\n'.join(line_list)
+                file_contents += '\n'.join(lines)
             else:
                 end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index
-                file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(line_list) + file_contents[end_of_marker_line:]
+                file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(lines) + file_contents[end_of_marker_line:]
 
             self.host.filesystem.write_text_file(expectations_file_path, file_contents)
 
@@ -578,11 +589,17 @@ class WPTExpectationsUpdater(object):
             return False
         if any(x in result.actual for x in ('CRASH', 'TIMEOUT', 'MISSING')):
             return False
+        if self.is_webdriver_test(test_name):
+            return False
         return True
 
     def is_reference_test(self, test_name):
         """Checks whether a given test is a reference test."""
         return bool(self.port.reference_files(test_name))
+
+    def is_webdriver_test(self, test_name):
+        """Checks whether a given test is a WebDriver test."""
+        return self.finder.is_webdriver_test_path(test_name)
 
     def _get_try_bots(self):
         return self.host.builders.all_try_builder_names()

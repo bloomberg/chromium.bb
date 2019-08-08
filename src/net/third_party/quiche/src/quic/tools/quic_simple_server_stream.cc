@@ -29,7 +29,9 @@ QuicSimpleServerStream::QuicSimpleServerStream(
     QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicSpdyServerStreamBase(id, session, type),
       content_length_(-1),
-      quic_simple_server_backend_(quic_simple_server_backend) {}
+      quic_simple_server_backend_(quic_simple_server_backend) {
+  DCHECK(quic_simple_server_backend_);
+}
 
 QuicSimpleServerStream::QuicSimpleServerStream(
     PendingStream pending,
@@ -38,7 +40,9 @@ QuicSimpleServerStream::QuicSimpleServerStream(
     QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicSpdyServerStreamBase(std::move(pending), session, type),
       content_length_(-1),
-      quic_simple_server_backend_(quic_simple_server_backend) {}
+      quic_simple_server_backend_(quic_simple_server_backend) {
+  DCHECK(quic_simple_server_backend_);
+}
 
 QuicSimpleServerStream::~QuicSimpleServerStream() {
   quic_simple_server_backend_->CloseBackendResponseStream(this);
@@ -137,6 +141,12 @@ void QuicSimpleServerStream::SendResponse() {
   if (!QuicContainsKey(request_headers_, ":authority") ||
       !QuicContainsKey(request_headers_, ":path")) {
     QUIC_DVLOG(1) << "Request headers do not contain :authority or :path.";
+    SendErrorResponse();
+    return;
+  }
+
+  if (quic_simple_server_backend_ == nullptr) {
+    QUIC_DVLOG(1) << "Backend is missing.";
     SendErrorResponse();
     return;
   }

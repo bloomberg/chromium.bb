@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -45,8 +44,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     }
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, ExecutionException,
-            TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         // The user has a valid credit card without a billing address on file. This is sufficient
         // for canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
@@ -57,8 +55,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePayment()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCanMakePayment() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
@@ -96,8 +93,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePaymentDisabled()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCanMakePaymentDisabled() throws InterruptedException, TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });

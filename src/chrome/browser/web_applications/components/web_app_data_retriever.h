@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_render_frame.mojom.h"
 
 class GURL;
+enum class WebappInstallSource;
 struct InstallableData;
 struct WebApplicationInfo;
 
@@ -40,7 +41,9 @@ class WebAppDataRetriever {
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
   // |is_installable| is false if installability check failed.
   using CheckInstallabilityCallback =
-      base::OnceCallback<void(const blink::Manifest&, bool is_installable)>;
+      base::OnceCallback<void(const blink::Manifest&,
+                              bool valid_manifest_for_web_app,
+                              bool is_installable)>;
   // Returns empty map if error.
   using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
 
@@ -55,13 +58,15 @@ class WebAppDataRetriever {
   // Performs installability check and invokes |callback| with manifest.
   virtual void CheckInstallabilityAndRetrieveManifest(
       content::WebContents* web_contents,
+      bool bypass_service_worker_check,
       CheckInstallabilityCallback callback);
 
   // Downloads icons from |icon_urls|. Runs |callback| with a map of
   // the retrieved icons.
   virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
-                        bool skip_page_fav_icons,
+                        bool skip_page_favicons,
+                        WebappInstallSource install_source,
                         GetIconsCallback callback);
 
  private:

@@ -32,7 +32,7 @@ class JingleInfoRequest : public IceConfigRequest {
   ~JingleInfoRequest() override;
 
   // IceConfigRequest interface.
-  void Send(const OnIceConfigCallback& callback) override;
+  void Send(OnIceConfigCallback callback) override;
 
  private:
   void OnResponse(IqRequest* request, const jingle_xmpp::XmlElement* stanza);

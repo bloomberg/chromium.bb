@@ -29,7 +29,6 @@ EocInternalsUI::EocInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("eoc_internals.mojom-lite.js",
                           IDR_EOC_INTERNALS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_EOC_INTERNALS_HTML);
-  source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   contextual_content_suggestions_service_ =

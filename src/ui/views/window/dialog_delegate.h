@@ -101,6 +101,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // must remain open.
   virtual bool Close();
 
+  // Dialogs should not be draggable unless the dialog can be created with no
+  // parent browser window.
+  virtual bool IsDialogDraggable() const;
+
   // Updates the properties and appearance of |button| which has been created
   // for type |type|. Override to do special initialization above and beyond
   // the typical.

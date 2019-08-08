@@ -317,9 +317,14 @@ SkBitmap IconUtil::CreateSkBitmapFromHICON(HICON icon) {
 base::win::ScopedHICON IconUtil::CreateCursorFromSkBitmap(
     const SkBitmap& bitmap,
     const gfx::Point& hotspot) {
-  // Only 32 bit ARGB bitmaps are supported.
-  if (bitmap.empty() || bitmap.colorType() != kN32_SkColorType)
+  if (bitmap.empty())
     return base::win::ScopedHICON();
+
+  // Only 32 bit ARGB bitmaps are supported.
+  if (bitmap.colorType() != kN32_SkColorType) {
+    NOTIMPLEMENTED() << " unsupported color type: " << bitmap.colorType();
+    return base::win::ScopedHICON();
+  }
 
   BITMAPINFO icon_bitmap_info = {};
   skia::CreateBitmapHeader(

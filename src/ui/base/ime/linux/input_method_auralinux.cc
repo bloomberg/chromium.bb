@@ -92,8 +92,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
   // or the ET_KEY_RELEASED event of all key.
   // 2) |filtered| == true && NeedInsertChar(): the ET_KEY_PRESSED event of
   // character key.
-  if (text_input_type_ != TEXT_INPUT_TYPE_PASSWORD &&
-      GetEngine() && GetEngine()->IsInterestedInKeyEvent() &&
+  if (text_input_type_ != TEXT_INPUT_TYPE_PASSWORD && GetEngine() &&
       (!filtered || NeedInsertChar())) {
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
         base::BindOnce(&InputMethodAuraLinux::ProcessKeyEventByEngineDone,

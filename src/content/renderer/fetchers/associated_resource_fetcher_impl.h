@@ -36,7 +36,7 @@ class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
              blink::mojom::RequestContextType request_context,
              network::mojom::FetchRequestMode request_mode,
              network::mojom::FetchCredentialsMode fetch_credentials_mode,
-             const Callback& callback) override;
+             StartCallback callback) override;
 
  private:
   friend class AssociatedResourceFetcher;

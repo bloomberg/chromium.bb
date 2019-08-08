@@ -35,6 +35,7 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -1484,49 +1485,6 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-}
-
-// Opens a page with password input, focuses it, clocks "Show All" in the
-// keyboard accessory and verifies that the password list is presented.
-- (void)testOpenSettingsFromManualFallback {
-  // Saving a form is needed for using the "password details" view.
-  SaveExamplePasswordForm();
-
-  const GURL kPasswordURL(web::test::HttpServer::MakeUrl("http://form/"));
-  std::map<GURL, std::string> responses;
-  responses[kPasswordURL] = "<input id='password' type='password'>";
-  web::test::SetUpSimpleHttpServer(responses);
-  [ChromeEarlGrey loadURL:kPasswordURL];
-
-  // Focus the password field.
-  // Brings up the keyboard by tapping on one of the form's field.
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewInWebState(
-                                   chrome_test_util::GetCurrentWebState())]
-      performAction:web::WebViewTapElement(
-                        chrome_test_util::GetCurrentWebState(),
-                        [ElementSelector selectorWithElementID:"password"])];
-
-  // Wait until the keyboard shows up before tapping.
-  id<GREYMatcher> showAll = grey_allOf(
-      grey_accessibilityLabel(@"Show All\u2026"), grey_interactable(), nil);
-  GREYCondition* condition =
-      [GREYCondition conditionWithName:@"Wait for the keyboard to show up."
-                                 block:^BOOL {
-                                   NSError* error = nil;
-                                   [[EarlGrey selectElementWithMatcher:showAll]
-                                       assertWithMatcher:grey_notNil()
-                                                   error:&error];
-                                   return (error == nil);
-                                 }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"No keyboard with 'Show All' button showed up.");
-  [[EarlGrey selectElementWithMatcher:showAll] performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
-                                          @"example.com, concrete username")]
-      assertWithMatcher:grey_notNil()];
 }
 
 // Test export flow

@@ -20,8 +20,7 @@
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_rotation.h"
-#include "media/filters/context_3d.h"
+#include "media/base/video_transformation.h"
 
 namespace gfx {
 class RectF;
@@ -29,7 +28,14 @@ class RectF;
 
 namespace gpu {
 struct Capabilities;
-class ContextSupport;
+
+namespace gles2 {
+class GLES2Interface;
+}
+}  // namespace gpu
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace media {
@@ -47,22 +53,20 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   //
   // If |video_frame| is nullptr or an unsupported format, |dest_rect| will be
   // painted black.
-  void Paint(const scoped_refptr<VideoFrame>& video_frame,
+  void Paint(scoped_refptr<VideoFrame> video_frame,
              cc::PaintCanvas* canvas,
              const gfx::RectF& dest_rect,
              cc::PaintFlags& flags,
-             VideoRotation video_rotation,
-             const Context3D& context_3d,
-             gpu::ContextSupport* context_support);
+             VideoTransformation video_transformation,
+             viz::ContextProvider* context_provider);
 
   // Paints |video_frame| scaled to its visible size on |canvas|.
   //
   // If the format of |video_frame| is PIXEL_FORMAT_NATIVE_TEXTURE, |context_3d|
   // and |context_support| must be provided.
-  void Copy(const scoped_refptr<VideoFrame>& video_frame,
+  void Copy(scoped_refptr<VideoFrame> video_frame,
             cc::PaintCanvas* canvas,
-            const Context3D& context_3d,
-            gpu::ContextSupport* context_support);
+            viz::ContextProvider* context_provider);
 
   // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|
   // should point into a buffer large enough to hold as many 32 bit RGBA pixels
@@ -91,10 +95,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   //
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
   bool CopyVideoFrameTexturesToGLTexture(
-      const Context3D& context_3d,
-      gpu::ContextSupport* context_support,
+      viz::ContextProvider* context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
-      const scoped_refptr<VideoFrame>& video_frame,
+      scoped_refptr<VideoFrame> video_frame,
       unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
@@ -104,9 +107,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
-  bool PrepareVideoFrameForWebGL(const Context3D& context_3d,
+  bool PrepareVideoFrameForWebGL(viz::ContextProvider* context_provider,
                                  gpu::gles2::GLES2Interface* gl,
-                                 const scoped_refptr<VideoFrame>& video_frame,
+                                 scoped_refptr<VideoFrame> video_frame,
                                  unsigned int target,
                                  unsigned int texture);
 
@@ -118,9 +121,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // CorrectLastImageDimensions() ensures that the source texture will be
   // cropped to |visible_rect|. Returns true on success.
   bool CopyVideoFrameYUVDataToGLTexture(
-      const Context3D& context_3d,
+      viz::ContextProvider* context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
-      const scoped_refptr<VideoFrame>& video_frame,
+      const VideoFrame& video_frame,
       unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
@@ -182,18 +185,23 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
  private:
   // Update the cache holding the most-recently-painted frame. Returns false
   // if the image couldn't be updated.
-  bool UpdateLastImage(const scoped_refptr<VideoFrame>& video_frame,
-                       const Context3D& context_3d);
+  bool UpdateLastImage(scoped_refptr<VideoFrame> video_frame,
+                       viz::ContextProvider* context_provider,
+                       bool allow_wrap_texture);
 
   void CorrectLastImageDimensions(const SkIRect& visible_rect);
 
-  bool PrepareVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                         const Context3D& context_3d,
+  bool PrepareVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                         viz::ContextProvider* context_provider,
                          unsigned int textureTarget,
                          unsigned int texture);
 
   // Last image used to draw to the canvas.
   cc::PaintImage last_image_;
+
+  // last_image_ directly wraps a texture from a VideoFrame, in which case we
+  // need to synchronize access before releasing the VideoFrame.
+  bool last_image_wraps_video_frame_texture_ = false;
 
   // VideoFrame::unique_id() of the videoframe used to generate |last_image_|.
   base::Optional<int> last_id_;

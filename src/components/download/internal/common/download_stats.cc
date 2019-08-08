@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_util.h"
@@ -447,6 +448,29 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".configprofile"),    // 362
     FILE_PATH_LITERAL(".internetconnect"),  // 363
     FILE_PATH_LITERAL(".networkconnect"),   // 364
+    FILE_PATH_LITERAL(".bmp"),              // 365
+    FILE_PATH_LITERAL(".css"),              // 366
+    FILE_PATH_LITERAL(".ehtml"),            // 367
+    FILE_PATH_LITERAL(".flac"),             // 368
+    FILE_PATH_LITERAL(".ico"),              // 369
+    FILE_PATH_LITERAL(".jfif"),             // 370
+    FILE_PATH_LITERAL(".m4a"),              // 371
+    FILE_PATH_LITERAL(".m4v"),              // 372
+    FILE_PATH_LITERAL(".mpeg"),             // 373
+    FILE_PATH_LITERAL(".mpg"),              // 374
+    FILE_PATH_LITERAL(".oga"),              // 375
+    FILE_PATH_LITERAL(".ogg"),              // 376
+    FILE_PATH_LITERAL(".ogm"),              // 377
+    FILE_PATH_LITERAL(".ogv"),              // 378
+    FILE_PATH_LITERAL(".opus"),             // 379
+    FILE_PATH_LITERAL(".pjp"),              // 380
+    FILE_PATH_LITERAL(".pjpeg"),            // 381
+    FILE_PATH_LITERAL(".svgz"),             // 382
+    FILE_PATH_LITERAL(".text"),             // 383
+    FILE_PATH_LITERAL(".tiff"),             // 384
+    FILE_PATH_LITERAL(".weba"),             // 385
+    FILE_PATH_LITERAL(".webm"),             // 386
+    FILE_PATH_LITERAL(".xbm"),              // 387
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
@@ -543,7 +567,9 @@ void RecordDownloadCountWithSource(DownloadCountTypes type,
 
 void RecordDownloadCompleted(int64_t download_len,
                              bool is_parallelizable,
-                             DownloadSource download_source) {
+                             DownloadSource download_source,
+                             bool has_resumed,
+                             bool has_strong_validators) {
   RecordDownloadCountWithSource(COMPLETED_COUNT, download_source);
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
   download_len /= 1024;              // In Kilobytes
@@ -552,6 +578,11 @@ void RecordDownloadCompleted(int64_t download_len,
   if (is_parallelizable) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize.Parallelizable",
                                 download_len, 1, max, 256);
+  }
+
+  if (has_resumed) {
+    base::UmaHistogramBoolean("Download.ResumptionComplete.HasStrongValidators",
+                              has_strong_validators);
   }
 }
 
@@ -1222,5 +1253,30 @@ void RecordDuplicateInProgressDownloadIdCount(int count) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DuplicateInProgressDownloadIdCount",
                               count, 1, 10, 11);
 }
+
+void RecordResumptionRestartReason(DownloadInterruptReason reason) {
+  base::UmaHistogramSparse("Download.ResumptionRestart.Reason", reason);
+}
+
+void RecordResumptionRestartCount(ResumptionRestartCountTypes type) {
+  base::UmaHistogramEnumeration("Download.ResumptionRestart.Counts", type);
+}
+
+void RecordDownloadResumed(bool has_strong_validators) {
+  base::UmaHistogramBoolean("Download.ResumptionStart.HasStrongValidators",
+                            has_strong_validators);
+}
+
+#if defined(OS_ANDROID)
+void RecordFirstBackgroundDownloadInterruptReason(
+    DownloadInterruptReason reason,
+    bool download_started) {
+  if (download_started)
+    base::UmaHistogramSparse("MobileDownload.FirstBackground.StartedReason",
+                             reason);
+  else
+    base::UmaHistogramSparse("MobileDownload.FirstBackground.Reason", reason);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace download

@@ -34,8 +34,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 using extensions::api::file_manager_private::Verb;
@@ -528,6 +530,81 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   FindFileHandlerTasks(&test_profile_, entries, &tasks);
   // Confirm no tasks are found.
   ASSERT_TRUE(tasks.empty());
+}
+
+TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
+  const char kGraphrId[] = "ppcpljkgngnngojbghcdiojhbneibgdg";
+  const char kGraphrFileAction[] = "https://graphr.tld/open-files/?name=raw";
+  extensions::ExtensionBuilder graphr;
+  graphr.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Graphr")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder()
+                   .Set("launch", extensions::DictionaryBuilder()
+                                      .Set("web_url", "https://graphr.tld")
+                                      .Build())
+                   .Build())
+          .Set(
+              "file_handlers",
+              extensions::DictionaryBuilder()
+                  .Set(kGraphrFileAction,
+                       extensions::DictionaryBuilder()
+                           .Set("title", "Raw")
+                           .Set("types", extensions::ListBuilder()
+                                             .Append("text/csv")
+                                             .Build())
+                           .Set("extensions",
+                                extensions::ListBuilder().Append("csv").Build())
+                           .Build())
+                  .Build())
+          .Build());
+  graphr.SetID(kGraphrId);
+  graphr.AddFlags(extensions::Extension::InitFromValueFlags::FROM_BOOKMARK);
+
+  extension_service_->AddExtension(graphr.Build().get());
+  const extensions::Extension* extension =
+      extension_service_->GetExtensionById(kGraphrId, false);
+
+  ASSERT_EQ(extension->GetType(), extensions::Manifest::Type::TYPE_HOSTED_APP);
+  ASSERT_TRUE(extension->from_bookmark());
+
+  std::vector<FullTaskDescriptor> tasks;
+  std::vector<extensions::EntryInfo> entries;
+  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
+                           .AppendASCII("foo.csv"),
+                       "text/csv", false);
+
+  {
+    // Bookmark Apps should not be able to handle files unless
+    // kNativeFileSystemAPI and kFileHandlingAPI are enabled.
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({},
+                                         {blink::features::kNativeFileSystemAPI,
+                                          blink::features::kFileHandlingAPI});
+    FindFileHandlerTasks(&test_profile_, entries, &tasks);
+    EXPECT_EQ(0u, tasks.size());
+    tasks.clear();
+  }
+
+  {
+    // When the flags are enabled, it should be possible to handle files from
+    // bookmark apps.
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
+                                          blink::features::kFileHandlingAPI},
+                                         {});
+    // Test that when enabled, bookmark apps can handle files
+    FindFileHandlerTasks(&test_profile_, entries, &tasks);
+    // Graphr should be a valid handler.
+    ASSERT_EQ(1u, tasks.size());
+    EXPECT_EQ(kGraphrId, tasks[0].task_descriptor().app_id);
+    EXPECT_EQ(kGraphrFileAction, tasks[0].task_descriptor().action_id);
+    EXPECT_EQ(file_tasks::TaskType::TASK_TYPE_FILE_HANDLER,
+              tasks[0].task_descriptor().task_type);
+  }
 }
 
 // The basic logic is similar to a test case for FindFileHandlerTasks above.

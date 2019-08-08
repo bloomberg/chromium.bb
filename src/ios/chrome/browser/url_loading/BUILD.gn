@@ -7,6 +7,8 @@ source_set("url_loading") {
   sources = [
     "app_url_loading_service.h",
     "app_url_loading_service.mm",
+    "image_search_param_generator.h",
+    "image_search_param_generator.mm",
     "test_app_url_loading_service.h",
     "test_app_url_loading_service.mm",
     "test_url_loading_service.h",
@@ -29,6 +31,7 @@ source_set("url_loading") {
   deps = [
     "//base",
     "//components/keyed_service/ios",
+    "//components/search_engines",
     "//components/sessions",
     "//ios/chrome/app:mode",
     "//ios/chrome/browser",
@@ -39,7 +42,6 @@ source_set("url_loading") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/web",
@@ -54,6 +56,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "image_search_param_generator_unittest.mm",
     "url_loading_service_unittest.mm",
   ]
   deps = [
@@ -64,6 +67,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:web_internal",

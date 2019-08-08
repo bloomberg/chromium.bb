@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -765,8 +766,6 @@ class MockCTVerifier : public CTVerifier {
                     base::StringPiece,
                     SignedCertificateTimestampAndStatusList*,
                     const NetLogWithSource&));
-  MOCK_METHOD1(SetObserver, void(CTVerifier::Observer*));
-  MOCK_CONST_METHOD0(GetObserver, CTVerifier::Observer*());
 };
 
 // A mock CTPolicyEnforcer that returns a custom verification result.
@@ -810,8 +809,18 @@ class SSLClientSocketTest : public PlatformTest,
   }
 
  protected:
-  // The address of the spawned test server, after calling StartTestServer().
+  // The address of the test server, after calling StartEmbeddedTestServer() or
+  // StartTestServer().
   const AddressList& addr() const { return addr_; }
+
+  // The hostname of the test server, after calling StartEmbeddedTestServer() or
+  // StartTestServer().
+  const HostPortPair& host_port_pair() const { return host_port_pair_; }
+
+  // The EmbeddedTestServer object, after calling StartEmbeddedTestServer().
+  EmbeddedTestServer* embedded_test_server() {
+    return embedded_test_server_.get();
+  }
 
   // The SpawnedTestServer object, after calling StartTestServer().
   const SpawnedTestServer* spawned_test_server() const {
@@ -830,11 +839,39 @@ class SSLClientSocketTest : public PlatformTest,
     context_.ct_policy_enforcer = policy_enforcer;
   }
 
-  // Starts the test server with SSL configuration |ssl_options|. Returns true
+  // Starts the embedded test server with the specified parameters. Returns true
   // on success.
+  bool StartEmbeddedTestServer(EmbeddedTestServer::ServerCertificate cert,
+                               const SSLServerConfig& server_config) {
+    spawned_test_server_ = nullptr;
+    embedded_test_server_ =
+        std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
+    RegisterEmbeddedTestServerHandlers(embedded_test_server_.get());
+    embedded_test_server_->SetSSLConfig(cert, server_config);
+    if (!embedded_test_server_->Start()) {
+      LOG(ERROR) << "Could not start EmbeddedTestServer";
+      return false;
+    }
+
+    if (!embedded_test_server_->GetAddressList(&addr_)) {
+      LOG(ERROR) << "Could not get EmbeddedTestServer address list";
+      return false;
+    }
+    host_port_pair_ = embedded_test_server_->host_port_pair();
+    return true;
+  }
+
+  // May be overridden by the subclass to customize the EmbeddedTestServer.
+  virtual void RegisterEmbeddedTestServerHandlers(EmbeddedTestServer* server) {
+    server->AddDefaultHandlers(base::FilePath());
+  }
+
+  // Starts the spawned test server with SSL configuration |ssl_options|.
+  // Returns true on success. Prefer StartEmbeddedTestServer().
   bool StartTestServer(const SpawnedTestServer::SSLOptions& ssl_options) {
-    spawned_test_server_.reset(new SpawnedTestServer(
-        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath()));
+    embedded_test_server_ = nullptr;
+    spawned_test_server_ = std::make_unique<SpawnedTestServer>(
+        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
     if (!spawned_test_server_->Start()) {
       LOG(ERROR) << "Could not start SpawnedTestServer";
       return false;
@@ -844,6 +881,7 @@ class SSLClientSocketTest : public PlatformTest,
       LOG(ERROR) << "Could not get SpawnedTestServer address list";
       return false;
     }
+    host_port_pair_ = spawned_test_server_->host_port_pair();
     return true;
   }
 
@@ -889,8 +927,8 @@ class SSLClientSocketTest : public PlatformTest,
 
   bool CreateAndConnectSSLClientSocket(const SSLConfig& ssl_config,
                                        int* result) {
-    return CreateAndConnectSSLClientSocketWithHost(
-        ssl_config, spawned_test_server()->host_port_pair(), result);
+    return CreateAndConnectSSLClientSocketWithHost(ssl_config, host_port_pair(),
+                                                   result);
   }
 
   // Adds the server certificate with provided cert status.
@@ -920,21 +958,106 @@ class SSLClientSocketTest : public PlatformTest,
 
  private:
   std::unique_ptr<SpawnedTestServer> spawned_test_server_;
+  std::unique_ptr<EmbeddedTestServer> embedded_test_server_;
   TestCompletionCallback callback_;
   AddressList addr_;
+  HostPortPair host_port_pair_;
+};
+
+enum ReadIfReadyTransport {
+  // ReadIfReady() is implemented by the underlying transport.
+  READ_IF_READY_SUPPORTED,
+  // ReadIfReady() is not implemented by the underlying transport.
+  READ_IF_READY_NOT_SUPPORTED,
+};
+
+enum ReadIfReadySSL {
+  // Test reads by calling ReadIfReady() on the SSL socket.
+  TEST_SSL_READ_IF_READY,
+  // Test reads by calling Read() on the SSL socket.
+  TEST_SSL_READ,
+};
+
+class StreamSocketWithoutReadIfReady : public WrappedStreamSocket {
+ public:
+  explicit StreamSocketWithoutReadIfReady(
+      std::unique_ptr<StreamSocket> transport)
+      : WrappedStreamSocket(std::move(transport)) {}
+
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  CompletionOnceCallback callback) override {
+    return ERR_READ_IF_READY_NOT_IMPLEMENTED;
+  }
+
+  int CancelReadIfReady() override { return ERR_READ_IF_READY_NOT_IMPLEMENTED; }
+};
+
+class ClientSocketFactoryWithoutReadIfReady : public ClientSocketFactory {
+ public:
+  explicit ClientSocketFactoryWithoutReadIfReady(ClientSocketFactory* factory)
+      : factory_(factory) {}
+
+  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+      DatagramSocket::BindType bind_type,
+      NetLog* net_log,
+      const NetLogSource& source) override {
+    return factory_->CreateDatagramClientSocket(bind_type, net_log, source);
+  }
+
+  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+      const AddressList& addresses,
+      std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      NetLog* net_log,
+      const NetLogSource& source) override {
+    return factory_->CreateTransportClientSocket(
+        addresses, std::move(socket_performance_watcher), net_log, source);
+  }
+
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> stream_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override {
+    stream_socket = std::make_unique<StreamSocketWithoutReadIfReady>(
+        std::move(stream_socket));
+    return factory_->CreateSSLClientSocket(std::move(stream_socket),
+                                           host_and_port, ssl_config, context);
+  }
+
+  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<StreamSocket> stream_socket,
+      const std::string& user_agent,
+      const HostPortPair& endpoint,
+      const ProxyServer& proxy_server,
+      HttpAuthController* http_auth_controller,
+      bool tunnel,
+      bool using_spdy,
+      NextProto negotiated_protocol,
+      ProxyDelegate* proxy_delegate,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return factory_->CreateProxyClientSocket(
+        std::move(stream_socket), user_agent, endpoint, proxy_server,
+        http_auth_controller, tunnel, using_spdy, negotiated_protocol,
+        proxy_delegate, traffic_annotation);
+  }
+
+ private:
+  ClientSocketFactory* const factory_;
 };
 
 // If GetParam(), try ReadIfReady() and fall back to Read() if needed.
-class SSLClientSocketReadTest : public SSLClientSocketTest,
-                                public ::testing::WithParamInterface<bool> {
+class SSLClientSocketReadTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<
+          std::tuple<ReadIfReadyTransport, ReadIfReadySSL>> {
  protected:
-  SSLClientSocketReadTest()
-      : SSLClientSocketTest(), read_if_ready_enabled_(GetParam()) {}
-
-  void SetUp() override {
-    if (!read_if_ready_enabled()) {
-      scoped_feature_list_.InitAndDisableFeature(
-          Socket::kReadIfReadyExperiment);
+  SSLClientSocketReadTest() : SSLClientSocketTest() {
+    if (!read_if_ready_supported()) {
+      wrapped_socket_factory_ =
+          std::make_unique<ClientSocketFactoryWithoutReadIfReady>(
+              socket_factory_);
+      socket_factory_ = wrapped_socket_factory_.get();
     }
   }
 
@@ -944,7 +1067,7 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
            IOBuffer* buf,
            int buf_len,
            CompletionOnceCallback callback) {
-    if (read_if_ready_enabled())
+    if (test_ssl_read_if_ready())
       return socket->ReadIfReady(buf, buf_len, std::move(callback));
     return socket->Read(buf, buf_len, std::move(callback));
   }
@@ -955,7 +1078,7 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
                             int buf_len,
                             TestCompletionCallback* callback,
                             int rv) {
-    if (!read_if_ready_enabled())
+    if (!test_ssl_read_if_ready())
       return callback->GetResult(rv);
     while (rv == ERR_IO_PENDING) {
       rv = callback->GetResult(rv);
@@ -975,16 +1098,24 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
     return WaitForReadCompletion(socket, buf, buf_len, &callback, rv);
   }
 
-  bool read_if_ready_enabled() const { return read_if_ready_enabled_; }
+  bool test_ssl_read_if_ready() const {
+    return std::get<1>(GetParam()) == TEST_SSL_READ_IF_READY;
+  }
+
+  bool read_if_ready_supported() const {
+    return std::get<0>(GetParam()) == READ_IF_READY_SUPPORTED;
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  const bool read_if_ready_enabled_;
+  std::unique_ptr<ClientSocketFactory> wrapped_socket_factory_;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         SSLClientSocketReadTest,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SSLClientSocketReadTest,
+    ::testing::Combine(
+        ::testing::Values(READ_IF_READY_SUPPORTED, READ_IF_READY_NOT_SUPPORTED),
+        ::testing::Values(TEST_SSL_READ_IF_READY, TEST_SSL_READ)));
 
 // Verifies the correctness of GetSSLCertRequestInfo.
 class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
@@ -1186,30 +1317,20 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
   SSLClientSocketZeroRTTTest() : SSLClientSocketTest() {}
 
   bool StartServer() {
-    test_server_.reset(
-        new EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     SSLServerConfig server_config;
     server_config.early_data_enabled = true;
     server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-    test_server_->AddDefaultHandlers(base::FilePath());
-    test_server_->RegisterRequestHandler(
-        base::BindRepeating(&HandleZeroRTTRequest));
-    test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK, server_config);
-    if (!test_server_->Start()) {
-      LOG(ERROR) << "Could not start EmbeddedTestServer";
-      return false;
-    }
+    return StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config);
+  }
 
-    if (!test_server_->GetAddressList(&address_)) {
-      LOG(ERROR) << "Could not get EmbeddedTestServer address list";
-      return false;
-    }
-    return true;
+  void RegisterEmbeddedTestServerHandlers(EmbeddedTestServer* server) override {
+    SSLClientSocketTest::RegisterEmbeddedTestServerHandlers(server);
+    server->RegisterRequestHandler(base::BindRepeating(&HandleZeroRTTRequest));
   }
 
   void SetServerConfig(SSLServerConfig server_config) {
-    test_server_->ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
-                                 server_config);
+    embedded_test_server()->ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
+                                           server_config);
   }
 
   FakeBlockingStreamSocket* MakeClient(bool early_data_enabled) {
@@ -1218,7 +1339,7 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
     ssl_config.early_data_enabled = early_data_enabled;
 
     real_transport_.reset(
-        new TCPClientSocket(address_, nullptr, nullptr, NetLogSource()));
+        new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
     std::unique_ptr<FakeBlockingStreamSocket> transport(
         new FakeBlockingStreamSocket(std::move(real_transport_)));
     FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -1226,8 +1347,8 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
     int rv = callback_.GetResult(transport->Connect(callback_.callback()));
     EXPECT_THAT(rv, IsOk());
 
-    ssl_socket_ = CreateSSLClientSocket(
-        std::move(transport), test_server_->host_port_pair(), ssl_config);
+    ssl_socket_ = CreateSSLClientSocket(std::move(transport), host_port_pair(),
+                                        ssl_config);
     EXPECT_FALSE(ssl_socket_->IsConnected());
 
     return raw_transport;
@@ -1279,8 +1400,6 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
   SSLClientSocket* ssl_socket() { return ssl_socket_.get(); }
 
  private:
-  std::unique_ptr<EmbeddedTestServer> test_server_;
-  AddressList address_;
   TestCompletionCallback callback_;
   std::unique_ptr<StreamSocket> real_transport_;
   std::unique_ptr<SSLClientSocket> ssl_socket_;
@@ -1941,7 +2060,7 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
   // |read_callback| deletes |sock| so if ReadIfReady() is used, we will get OK
   // asynchronously but can't continue reading because the socket is gone.
   rv = read_callback.WaitForResult();
-  if (read_if_ready_enabled()) {
+  if (test_ssl_read_if_ready()) {
     EXPECT_THAT(rv, IsOk());
   } else {
     EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
@@ -3085,37 +3204,6 @@ TEST_F(SSLClientSocketTest, NoDHE) {
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
-}
-
-// Tests that the version_interference_probe option rejects successful
-// connections and passes errors through.
-TEST_F(SSLClientSocketTest, VersionInterferenceProbe) {
-  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
-
-  SSLConfig ssl_config;
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  ssl_config.version_interference_probe = true;
-
-  // Successful connections map to a dedicated error.
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_INTERFERENCE));
-
-  // Failed connections pass through.
-  TestCompletionCallback callback;
-  std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
-  std::unique_ptr<SynchronousErrorStreamSocket> transport(
-      new SynchronousErrorStreamSocket(std::move(real_transport)));
-  rv = callback.GetResult(transport->Connect(callback.callback()));
-  EXPECT_THAT(rv, IsOk());
-  SynchronousErrorStreamSocket* raw_transport = transport.get();
-  std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      ssl_config));
-  raw_transport->SetNextWriteError(ERR_CONNECTION_RESET);
-  rv = callback.GetResult(sock->Connect(callback.callback()));
-  EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
 }
 
 TEST_F(SSLClientSocketTest, RequireECDHE) {
@@ -4728,7 +4816,7 @@ TEST_P(SSLClientSocketReadTest, DumpMemoryStats) {
   StreamSocket::SocketMemoryStats stats2;
   sock_->DumpMemoryStats(&stats2);
 
-  if (read_if_ready_enabled()) {
+  if (read_if_ready_supported()) {
     EXPECT_EQ(0u, stats2.buffer_size);
     EXPECT_EQ(stats.cert_size, stats2.total_size);
   } else {
@@ -4814,6 +4902,104 @@ TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
   EXPECT_EQ(1u, stats.cert_count);
   EXPECT_LT(0u, stats.cert_size);
   EXPECT_EQ(stats.cert_size, stats.total_size);
+}
+
+// Test that certificate errors are properly reported when the underlying
+// transport is itself a TLS connection, such as when tunneling over an HTTPS
+// proxy. See https://crbug.com/959305.
+TEST_F(SSLClientSocketTest, SSLOverSSLBadCertificate) {
+  // Load a pair of certificates.
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<net::X509Certificate> ok_cert =
+      ImportCertFromFile(certs_dir, "ok_cert.pem");
+  ASSERT_TRUE(ok_cert);
+  bssl::UniquePtr<EVP_PKEY> ok_pkey =
+      key_util::LoadEVP_PKEYFromPEM(certs_dir.AppendASCII("ok_cert.pem"));
+  ASSERT_TRUE(ok_pkey);
+
+  scoped_refptr<net::X509Certificate> expired_cert =
+      ImportCertFromFile(certs_dir, "expired_cert.pem");
+  ASSERT_TRUE(expired_cert);
+  bssl::UniquePtr<EVP_PKEY> expired_pkey =
+      key_util::LoadEVP_PKEYFromPEM(certs_dir.AppendASCII("expired_cert.pem"));
+  ASSERT_TRUE(expired_pkey);
+
+  CertVerifyResult expired_result;
+  expired_result.verified_cert = expired_cert;
+  expired_result.cert_status = CERT_STATUS_DATE_INVALID;
+  cert_verifier_->AddResultForCert(expired_cert, expired_result,
+                                   ERR_CERT_DATE_INVALID);
+
+  // Set up a TCP server.
+  TCPServerSocket server_listener(nullptr, NetLogSource());
+  ASSERT_THAT(
+      server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 1),
+      IsOk());
+  IPEndPoint server_address;
+  ASSERT_THAT(server_listener.GetLocalAddress(&server_address), IsOk());
+
+  // Connect a TCP client and server socket.
+  TestCompletionCallback server_callback;
+  std::unique_ptr<StreamSocket> server_transport;
+  int server_rv =
+      server_listener.Accept(&server_transport, server_callback.callback());
+
+  TestCompletionCallback client_callback;
+  auto client_transport = std::make_unique<TCPClientSocket>(
+      AddressList(server_address), nullptr, nullptr, NetLogSource());
+  int client_rv = client_transport->Connect(client_callback.callback());
+
+  ASSERT_THAT(server_callback.GetResult(server_rv), IsOk());
+  ASSERT_THAT(client_callback.GetResult(client_rv), IsOk());
+
+  // Set up a pair of SSL servers.
+  std::unique_ptr<crypto::RSAPrivateKey> ok_key =
+      crypto::RSAPrivateKey::CreateFromKey(ok_pkey.get());
+  ASSERT_TRUE(ok_key);
+  std::unique_ptr<SSLServerContext> ok_server_context =
+      CreateSSLServerContext(ok_cert.get(), *ok_key.get(), SSLServerConfig());
+
+  std::unique_ptr<crypto::RSAPrivateKey> expired_key =
+      crypto::RSAPrivateKey::CreateFromKey(expired_pkey.get());
+  ASSERT_TRUE(expired_key);
+  std::unique_ptr<SSLServerContext> expired_server_context =
+      CreateSSLServerContext(expired_cert.get(), *expired_key.get(),
+                             SSLServerConfig());
+
+  // Complete the proxy SSL handshake with ok_cert.pem. This should succeed.
+  std::unique_ptr<SSLClientSocket> client =
+      CreateSSLClientSocket(std::move(client_transport),
+                            HostPortPair("proxy.test", 443), SSLConfig());
+  std::unique_ptr<SSLServerSocket> server =
+      ok_server_context->CreateSSLServerSocket(std::move(server_transport));
+
+  client_rv = client->Connect(client_callback.callback());
+  server_rv = server->Handshake(server_callback.callback());
+  ASSERT_THAT(client_callback.GetResult(client_rv), IsOk());
+  ASSERT_THAT(server_callback.GetResult(server_rv), IsOk());
+
+  // Run the tunneled SSL handshake on with expired_cert.pem. This should fail.
+  client = CreateSSLClientSocket(std::move(client),
+                                 HostPortPair("server.test", 443), SSLConfig());
+  server = expired_server_context->CreateSSLServerSocket(std::move(server));
+
+  client_rv = client->Connect(client_callback.callback());
+  server_rv = server->Handshake(server_callback.callback());
+
+  // The client should observe the bad certificate error.
+  EXPECT_THAT(client_callback.GetResult(client_rv),
+              IsError(ERR_CERT_DATE_INVALID));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(client->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(ssl_info.cert_status, expired_result.cert_status);
+
+  // TODO(https://crbug.com/912383): The server sees
+  // ERR_BAD_SSL_CLIENT_AUTH_CERT because its peer (the client) alerts it with
+  // bad_certificate. The alert-mapping code assumes it is running on a client,
+  // so it translates bad_certificate to ERR_BAD_SSL_CLIENT_AUTH_CERT, which
+  // shouldn't be the error for a bad server certificate.
+  EXPECT_THAT(server_callback.GetResult(server_rv),
+              IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
 }
 
 TEST_F(SSLClientSocketTest, Tag) {

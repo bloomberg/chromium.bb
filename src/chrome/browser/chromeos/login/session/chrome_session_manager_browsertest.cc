@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -92,7 +92,7 @@ class ChromeSessionManagerTest : public LoginManagerTest {
         WizardController::default_controller();
     ASSERT_TRUE(wizard_controller);
     wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
   }
 
  protected:
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
   session_start_waiter.Wait();
@@ -209,7 +209,7 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
     session_start_waiter.Wait();

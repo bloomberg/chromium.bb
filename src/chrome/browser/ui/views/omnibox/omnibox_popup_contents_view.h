@@ -21,12 +21,12 @@ class LocationBarView;
 class OmniboxEditModel;
 class OmniboxResultView;
 enum class OmniboxTint;
-class OmniboxView;
+class OmniboxViewViews;
 
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
  public:
-  OmniboxPopupContentsView(OmniboxView* omnibox_view,
+  OmniboxPopupContentsView(OmniboxViewViews* omnibox_view,
                            OmniboxEditModel* edit_model,
                            LocationBarView* location_bar_view);
   ~OmniboxPopupContentsView() override;
@@ -47,7 +47,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
                           SkColor vector_icon_color) const;
 
   // Returns the theme color tint (e.g. dark or light).
-  OmniboxTint GetTint() const;
+  OmniboxTint CalculateTint() const;
 
   // Sets the line specified by |index| as selected.
   virtual void SetSelectedLine(size_t index);
@@ -65,6 +65,10 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   // Called to inform result view of button focus.
   void ProvideButtonFocusHint(size_t line);
+
+  // Returns whether we're in experimental keyword mode and the input gives
+  // sufficient confidence that the user wants keyword mode.
+  bool InExplicitExperimentalKeywordMode();
 
   // OmniboxPopupView:
   bool IsOpen() const override;
@@ -118,7 +122,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   base::WeakPtr<AutocompletePopupWidget> popup_;
 
   // The edit view that invokes us.
-  OmniboxView* omnibox_view_;
+  OmniboxViewViews* omnibox_view_;
 
   LocationBarView* location_bar_view_;
 

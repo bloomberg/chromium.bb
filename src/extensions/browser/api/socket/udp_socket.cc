@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "extensions/browser/api/api_resource.h"
@@ -89,7 +88,7 @@ void UDPSocket::Disconnect(bool socket_destroying) {
   read_callback_.Reset();
   // TODO(devlin): Should we do this for all callbacks?
   if (!recv_from_callback_.is_null()) {
-    base::ResetAndReturn(&recv_from_callback_)
+    std::move(recv_from_callback_)
         .Run(net::ERR_CONNECTION_CLOSED, nullptr, true /* socket_destroying */,
              std::string(), 0);
   }
@@ -227,7 +226,7 @@ void UDPSocket::OnReceived(int32_t result,
           .Run(result, nullptr, false /* socket_destroying */);
       return;
     }
-    base::ResetAndReturn(&recv_from_callback_)
+    std::move(recv_from_callback_)
         .Run(result, nullptr, false /* socket_destroying */, ip, port);
     return;
   }
@@ -242,7 +241,7 @@ void UDPSocket::OnReceived(int32_t result,
   }
 
   IPEndPointToStringAndPort(src_addr.value(), &ip, &port);
-  base::ResetAndReturn(&recv_from_callback_)
+  std::move(recv_from_callback_)
       .Run(data.value().size(), io_buffer, false /* socket_destroying */, ip,
            port);
 }

@@ -10,6 +10,8 @@ and safer, and avoids errors that can cause slow goma builds or swap-storms
 on non-goma builds.
 """
 
+from __future__ import print_function
+
 import multiprocessing
 import os
 import re
@@ -60,7 +62,7 @@ try:
     with open(os.path.join(output_dir, 'args.gn')) as file_handle:
       for line in file_handle:
         # This regex pattern copied from create_installer_archive.py
-        m = re.match('^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
+        m = re.match(r'^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
         if m:
           use_goma = True
 except IOError:
@@ -108,4 +110,4 @@ for i in range(len(args)):
   if (i == 0 and sys.platform.startswith('win')) or ' ' in args[i]:
     args[i] = '"%s"' % args[i].replace('"', '\\"')
 
-print ' '.join(args)
+print(' '.join(args))

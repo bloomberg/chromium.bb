@@ -94,6 +94,7 @@ class CBOR_EXPORT Value {
     TAG = 6,
     SIMPLE_VALUE = 7,
     NONE = -1,
+    INVALID_UTF8 = -2,
   };
 
   enum class SimpleValue {
@@ -142,6 +143,7 @@ class CBOR_EXPORT Value {
   // Returns true if the current object represents a given type.
   bool is_type(Type type) const { return type == type_; }
   bool is_none() const { return type() == Type::NONE; }
+  bool is_invalid_utf8() const { return type() == Type::INVALID_UTF8; }
   bool is_simple() const { return type() == Type::SIMPLE_VALUE; }
   bool is_bool() const {
     return is_simple() && (simple_value_ == SimpleValue::TRUE_VALUE ||
@@ -167,8 +169,14 @@ class CBOR_EXPORT Value {
   const std::string& GetString() const;
   const ArrayValue& GetArray() const;
   const MapValue& GetMap() const;
+  const BinaryValue& GetInvalidUTF8() const;
 
  private:
+  friend class Reader;
+  // This constructor allows INVALID_UTF8 values to be created, which only
+  // |Reader| may do.
+  Value(base::span<const uint8_t> in_bytes, Type type);
+
   Type type_;
 
   union {

@@ -62,8 +62,7 @@ class AudioArray {
     CHECK_LE(n, std::numeric_limits<unsigned>::max() / sizeof(T));
     uint32_t initial_size = static_cast<uint32_t>(sizeof(T) * n);
 
-#if defined(ARCH_CPU_X86_FAMILY) || defined(WTF_USE_WEBAUDIO_FFMPEG) || \
-    defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
+#if defined(ARCH_CPU_X86_FAMILY) || defined(WTF_USE_WEBAUDIO_FFMPEG)
     const unsigned kAlignment = 32;
 #else
     const unsigned kAlignment = 16;

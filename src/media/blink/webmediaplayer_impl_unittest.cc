@@ -456,7 +456,9 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnError(status);
   }
 
-  void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
+  void OnMetadata(const PipelineMetadata& metadata) {
+    wmpi_->OnMetadata(metadata);
+  }
 
   void OnWaiting(WaitingReason reason) { wmpi_->OnWaiting(reason); }
 
@@ -498,14 +500,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
   }
 
-  bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
+  bool IsSuspended() { return wmpi_->pipeline_controller_->IsSuspended(); }
 
   int64_t GetDataSourceMemoryUsage() const {
     return wmpi_->data_source_->GetMemoryUsage();
   }
 
   void AddBufferedRanges() {
-    wmpi_->buffered_data_source_host_.AddBufferedByteRange(0, 1);
+    wmpi_->buffered_data_source_host_->AddBufferedByteRange(0, 1);
   }
 
   void SetDelegateState(WebMediaPlayerImpl::DelegateState state) {
@@ -575,6 +577,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     return GetVideoStatsReporter()->codec_profile_;
   }
 
+  bool ShouldCancelUponDefer() const {
+    return wmpi_->mb_data_source_->cancel_on_defer_for_testing();
+  }
+
+  bool IsDataSourceMarkedAsPlaying() const {
+    return wmpi_->mb_data_source_->media_has_played();
+  }
+
   enum class LoadType { kFullyBuffered, kStreaming };
   void Load(std::string data_file,
             LoadType load_type = LoadType::kFullyBuffered) {
@@ -632,14 +642,14 @@ class WebMediaPlayerImplTest : public testing::Test {
       client->DidFinishLoading();
   }
 
-  void LoadAndWaitForMetadata(std::string data_file) {
+  // This runs until we reach the |ready_state_|. Attempting to wait for ready
+  // states < kReadyStateHaveCurrentData in non-startup-suspend test cases is
+  // unreliable due to asynchronous execution of tasks on the
+  // base::test:ScopedTaskEnvironment.
+  void LoadAndWaitForReadyState(std::string data_file,
+                                blink::WebMediaPlayer::ReadyState ready_state) {
     Load(data_file);
-
-    // This runs until we reach the have current data state. Attempting to wait
-    // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
-    // execution of tasks on the base::test:ScopedTaskEnvironment.
-    while (wmpi_->GetReadyState() <
-           blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+    while (wmpi_->GetReadyState() < ready_state) {
       base::RunLoop loop;
       EXPECT_CALL(client_, ReadyStateChanged())
           .WillRepeatedly(RunClosure(loop.QuitClosure()));
@@ -652,7 +662,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     // Verify we made it through pipeline startup.
     EXPECT_TRUE(wmpi_->data_source_);
     EXPECT_TRUE(wmpi_->demuxer_);
-    EXPECT_FALSE(wmpi_->seeking_);
+
+    if (ready_state > blink::WebMediaPlayer::kReadyStateHaveCurrentData)
+      EXPECT_FALSE(wmpi_->seeking_);
+  }
+
+  void LoadAndWaitForCurrentData(std::string data_file) {
+    LoadAndWaitForReadyState(data_file,
+                             blink::WebMediaPlayer::kReadyStateHaveCurrentData);
   }
 
   void CycleThreads() {
@@ -725,12 +742,12 @@ TEST_F(WebMediaPlayerImplTest, ConstructAndDestroy) {
   EXPECT_FALSE(IsSuspended());
 }
 
-// Verify LoadAndWaitForMetadata() functions without issue.
+// Verify LoadAndWaitForCurrentData() functions without issue.
 TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   InitializeWebMediaPlayerImpl();
   EXPECT_FALSE(IsSuspended());
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
-  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  LoadAndWaitForCurrentData(kAudioOnlyTestFile);
   EXPECT_FALSE(IsSuspended());
   CycleThreads();
 
@@ -741,7 +758,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   EXPECT_GT(reported_memory_ - data_source_size, 0);
 }
 
-// Verify LoadAndWaitForMetadata() functions without issue.
+// Verify LoadAndWaitForCurrentData() functions without issue.
 TEST_F(WebMediaPlayerImplTest, LoadAndDestroyDataUrl) {
   InitializeWebMediaPlayerImpl();
   EXPECT_FALSE(IsSuspended());
@@ -829,17 +846,45 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
-  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
   EXPECT_TRUE(IsSuspended());
+  EXPECT_TRUE(ShouldCancelUponDefer());
 
   // The data source contains the entire file, so subtract it from the memory
   // usage to ensure there's no other memory usage.
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
+}
+
+// Verify that Play() before kReadyStateHaveEnough doesn't increase buffer size.
+TEST_F(WebMediaPlayerImplTest, NoBufferSizeIncreaseUntilHaveEnough) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(true));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  wmpi_->Play();
+  EXPECT_FALSE(IsDataSourceMarkedAsPlaying());
+
+  while (wmpi_->GetReadyState() <
+         blink::WebMediaPlayer::kReadyStateHaveEnoughData) {
+    // Clear the mock so it doesn't have a stale QuitClosure.
+    testing::Mock::VerifyAndClearExpectations(&client_);
+
+    base::RunLoop loop;
+    EXPECT_CALL(client_, ReadyStateChanged())
+        .WillRepeatedly(RunClosure(loop.QuitClosure()));
+    loop.Run();
+  }
+
+  EXPECT_TRUE(IsDataSourceMarkedAsPlaying());
 }
 
 // Verify that preload=metadata suspend works properly for streaming sources.
@@ -853,11 +898,9 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoStreaming) {
   constexpr char kLargeAudioOnlyTestFile[] = "bear_192kHz.wav";
   Load(kLargeAudioOnlyTestFile, LoadType::kStreaming);
 
-  // This runs until we reach the have current data state. Attempting to wait
-  // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
-  // execution of tasks on the base::test:ScopedTaskEnvironment.
+  // This runs until we reach the metadata state.
   while (wmpi_->GetReadyState() <
-         blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+         blink::WebMediaPlayer::kReadyStateHaveMetadata) {
     base::RunLoop loop;
     EXPECT_CALL(client_, ReadyStateChanged())
         .WillRepeatedly(RunClosure(loop.QuitClosure()));
@@ -894,12 +937,14 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
-  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  LoadAndWaitForReadyState(kVideoOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
   EXPECT_TRUE(IsSuspended());
   EXPECT_TRUE(wmpi_->DidLazyLoad());
+  EXPECT_FALSE(ShouldCancelUponDefer());
 
   // The data source contains the entire file, so subtract it from the memory
   // usage to ensure there's no other memory usage.
@@ -928,7 +973,8 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
-  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  LoadAndWaitForReadyState(kVideoOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
@@ -949,7 +995,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendCouldPlay) {
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(true));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
-  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  LoadAndWaitForCurrentData(kAudioOnlyTestFile);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   base::RunLoop().RunUntilIdle();
@@ -1371,6 +1417,7 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
 
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   InitializeWebMediaPlayerImpl();
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
 
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
@@ -1392,7 +1439,7 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
 
   // Use non-encrypted file here since we don't have a CDM. Otherwise pipeline
   // initialization will stall waiting for a CDM to be set.
-  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  LoadAndWaitForCurrentData(kVideoOnlyTestFile);
 
   EXPECT_CALL(encrypted_client_, DidBlockPlaybackWaitingForKey());
   EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
@@ -1746,18 +1793,17 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureStateChange) {
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, int, int, bool, bool, bool, bool, bool>> {
+          std::tuple<bool, int, int, bool, bool, bool, bool, bool>> {
  public:
   // Indices of the tuple parameters.
   static const int kIsMediaSuspendEnabled = 0;
-  static const int kIsBackgroundOptimizationEnabled = 1;
-  static const int kDurationSec = 2;
-  static const int kAverageKeyframeDistanceSec = 3;
-  static const int kIsResumeBackgroundVideoEnabled = 4;
-  static const int kIsMediaSource = 5;
-  static const int kIsBackgroundPauseEnabled = 6;
-  static const int kIsPictureInPictureEnabled = 7;
-  static const int kIsBackgroundVideoPlaybackEnabled = 8;
+  static const int kDurationSec = 1;
+  static const int kAverageKeyframeDistanceSec = 2;
+  static const int kIsResumeBackgroundVideoEnabled = 3;
+  static const int kIsMediaSource = 4;
+  static const int kIsBackgroundPauseEnabled = 5;
+  static const int kIsPictureInPictureEnabled = 6;
+  static const int kIsBackgroundVideoPlaybackEnabled = 7;
 
   void SetUp() override {
     WebMediaPlayerImplTest::SetUp();
@@ -1766,11 +1812,6 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
     std::string enabled_features;
     std::string disabled_features;
-    if (IsBackgroundOptimizationOn()) {
-      enabled_features += kBackgroundSrcVideoTrackOptimization.name;
-    } else {
-      disabled_features += kBackgroundSrcVideoTrackOptimization.name;
-    }
 
     if (IsBackgroundPauseOn()) {
       if (!enabled_features.empty())
@@ -1821,10 +1862,6 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
   bool IsMediaSuspendOn() {
     return std::get<kIsMediaSuspendEnabled>(GetParam());
-  }
-
-  bool IsBackgroundOptimizationOn() {
-    return std::get<kIsBackgroundOptimizationEnabled>(GetParam());
   }
 
   bool IsResumeBackgroundVideoEnabled() {
@@ -1915,8 +1952,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
        (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec()));
 
   EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
-  EXPECT_EQ(IsBackgroundOptimizationOn() && matches_requirements,
-            ShouldDisableVideoWhenHidden());
+  EXPECT_EQ(matches_requirements, ShouldDisableVideoWhenHidden());
 
   // Only pause audible videos if both media suspend and resume background
   // videos is on and background video playback is disabled. Background video
@@ -1926,8 +1962,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
                 (IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled()),
             ShouldPausePlaybackWhenHidden());
 
-  if (!IsBackgroundOptimizationOn() || !matches_requirements ||
-      !ShouldDisableVideoWhenHidden() || IsMediaSuspendOn()) {
+  if (!matches_requirements || !ShouldDisableVideoWhenHidden() ||
+      IsMediaSuspendOn()) {
     return;
   }
 
@@ -1951,7 +1987,6 @@ INSTANTIATE_TEST_SUITE_P(
     BackgroundBehaviorTestInstances,
     WebMediaPlayerImplBackgroundBehaviorTest,
     ::testing::Combine(
-        ::testing::Bool(),
         ::testing::Bool(),
         ::testing::Values(
             WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /

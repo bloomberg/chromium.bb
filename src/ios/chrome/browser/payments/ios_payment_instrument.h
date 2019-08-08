@@ -62,6 +62,8 @@ class IOSPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
+  bool IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier) const override;
 
   // Given that the icon for the iOS payment instrument can only be determined
   // at run-time, the icon is obtained using this UIImage object rather than

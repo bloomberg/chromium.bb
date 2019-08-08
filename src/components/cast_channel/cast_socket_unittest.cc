@@ -345,7 +345,6 @@ class TestSocketFactory : public net::ClientSocketFactory {
       bool using_spdy,
       net::NextProto negotiated_protocol,
       net::ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTIMPLEMENTED();
     return nullptr;

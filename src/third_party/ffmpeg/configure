@@ -2253,6 +2253,7 @@ TOOLCHAIN_FEATURES="
 
 TYPES_LIST="
     kCMVideoCodecType_HEVC
+    kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange
     socklen_t
     struct_addrinfo
     struct_group_source_req
@@ -2712,6 +2713,7 @@ jpegls_decoder_select="mjpeg_decoder"
 jv_decoder_select="blockdsp"
 lagarith_decoder_select="llviddsp"
 ljpeg_encoder_select="idctdsp jpegtables mpegvideoenc"
+lscr_decoder_deps="zlib"
 magicyuv_decoder_select="llviddsp"
 magicyuv_encoder_select="llvidencdsp"
 mdec_decoder_select="blockdsp idctdsp mpegvideo"
@@ -3076,6 +3078,7 @@ vc1_parser_select="vc1dsp"
 
 # bitstream_filters
 aac_adtstoasc_bsf_select="adts_header"
+av1_frame_split_bsf_select="cbs_av1"
 av1_metadata_bsf_select="cbs_av1"
 eac3_core_bsf_select="ac3_parser"
 filter_units_bsf_select="cbs"
@@ -3409,6 +3412,7 @@ bm3d_filter_select="dct"
 boxblur_filter_deps="gpl"
 boxblur_opencl_filter_deps="opencl gpl"
 bs2b_filter_deps="libbs2b"
+colorkey_opencl_filter_deps="opencl"
 colormatrix_filter_deps="gpl"
 convolution_opencl_filter_deps="opencl"
 convolve_filter_deps="avcodec"
@@ -4109,22 +4113,22 @@ case "$toolchain" in
         # behaviour if the regexp was unable to match anything, since this
         # successfully parses the version number of existing supported
         # versions that require the converter (MSVC 2010 and 2012).
-        cl_major_ver=$(cl 2>&1 | sed -n 's/.*Version \([[:digit:]]\{1,\}\)\..*/\1/p')
+        cl_major_ver=$(cl.exe 2>&1 | sed -n 's/.*Version \([[:digit:]]\{1,\}\)\..*/\1/p')
         if [ -z "$cl_major_ver" ] || [ $cl_major_ver -ge 18 ]; then
-            cc_default="cl"
-            cxx_default="cl"
+            cc_default="cl.exe"
+            cxx_default="cl.exe"
         else
             die "Unsupported MSVC version (2013 or newer required)"
         fi
         ld_default="$source_path/compat/windows/mslink"
-        nm_default="dumpbin -symbols"
-        ar_default="lib"
+        nm_default="dumpbin.exe -symbols"
+        ar_default="lib.exe"
         case "$arch" in
         aarch64|arm64)
-            as_default="armasm64"
+            as_default="armasm64.exe"
             ;;
         arm*)
-            as_default="armasm"
+            as_default="armasm.exe"
             ;;
         esac
         target_os_default="win32"
@@ -6017,6 +6021,7 @@ enabled avfoundation && {
 enabled videotoolbox && {
     check_lib coreservices CoreServices/CoreServices.h UTGetOSTypeFromString "-framework CoreServices"
     check_func_headers CoreMedia/CMFormatDescription.h kCMVideoCodecType_HEVC "-framework CoreMedia"
+    check_func_headers CoreVideo/CVPixelBuffer.h kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange "-framework CoreVideo"
 }
 
 check_struct "sys/time.h sys/resource.h" "struct rusage" ru_maxrss

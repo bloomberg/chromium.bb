@@ -45,21 +45,16 @@ enum PolicyControlledIntervention {
   kPageLifecycleTransitions,
 };
 
-struct CoordinationUnitID {
-  CoordinationUnitType type;
-  int64 id;
-};
-
-// A FrameCoordinationUnit has at most one ProcessCoordinationUnit as its
-// parent, at most one PageCoordinationUnit as its parent, at most one
-// FrameCoordinationUnit as parent frame, and can have many child frames.
-interface FrameCoordinationUnit {
+// Interface used by a blink::Document to communicate state associated with
+// resource management to the embedder.
+interface DocumentCoordinationUnit {
   // Property signals.
-  SetNetworkAlmostIdle(bool idle);
+  SetNetworkAlmostIdle();
   SetLifecycleState(LifecycleState state);
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
   SetInterventionPolicy(PolicyControlledIntervention intervention,
                         InterventionPolicy policy);
+  SetIsAdFrame();
 
   // Event signals.
   OnNonPersistentNotificationCreated();

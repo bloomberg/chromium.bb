@@ -5,11 +5,11 @@ include_rules = [
   "+chromeos/audio",
   "+crypto",
   "+device/udev_linux",
-  "+device/usb",
   "+gpu",
   "+jni",
   "+mojo/public/cpp/bindings/callback_helpers.h",
   "+mojo/public/cpp/system/platform_handle.h",
+  "+services/device/public",
   "+services/ws/public/cpp/gpu/context_provider_command_buffer.h",
   "+skia/ext",
   "+third_party/dav1d",
@@ -43,5 +43,8 @@ specific_include_rules = {
   ],
   "gpu_memory_buffer_video_frame_pool_unittest.cc": [
     "+components/viz/test/test_context_provider.h",
+  ],
+  "null_video_sink_unittest.cc": [
+    "+components/viz/common/frame_sinks/begin_frame_args.h",
   ]
 }

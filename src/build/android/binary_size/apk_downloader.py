@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -38,10 +40,10 @@ def MaybeDownloadApk(builder, milestone, apk, download_path, bucket):
   sha1_path = apk_path + '.sha1'
   base_url = os.path.join(bucket, builder, milestone)
   if os.path.exists(apk_path):
-    print '%s already exists' % apk_path
+    print('%s already exists' % apk_path)
     return apk_path
   elif not os.path.exists(sha1_path):
-    print 'Skipping %s, file not found' % sha1_path
+    print('Skipping %s, file not found' % sha1_path)
     return None
   else:
     download_from_google_storage.download_from_google_storage(

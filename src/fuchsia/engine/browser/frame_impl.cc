@@ -19,10 +19,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/message_port_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/logging/logging_utils.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -76,56 +77,30 @@ class LayoutManagerImpl : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
 
-fuchsia::web::NavigationState ConvertContentNavigationEntry(
-    content::NavigationEntry* entry) {
+void UpdateNavigationStateFromNavigationEntry(
+    content::NavigationEntry* entry,
+    content::WebContents* web_contents,
+    fuchsia::web::NavigationState* navigation_state) {
   DCHECK(entry);
+  DCHECK(web_contents);
+  DCHECK(navigation_state);
 
-  fuchsia::web::NavigationState converted;
-  converted.set_title(base::UTF16ToUTF8(entry->GetTitleForDisplay()));
-  converted.set_url(entry->GetURL().spec());
+  navigation_state->set_title(base::UTF16ToUTF8(entry->GetTitleForDisplay()));
+  navigation_state->set_url(entry->GetURL().spec());
 
   switch (entry->GetPageType()) {
     case content::PageType::PAGE_TYPE_NORMAL:
     case content::PageType::PAGE_TYPE_INTERSTITIAL:
-      converted.set_page_type(fuchsia::web::PageType::NORMAL);
+      navigation_state->set_page_type(fuchsia::web::PageType::NORMAL);
       break;
     case content::PageType::PAGE_TYPE_ERROR:
-      converted.set_page_type(fuchsia::web::PageType::ERROR);
+      navigation_state->set_page_type(fuchsia::web::PageType::ERROR);
       break;
   }
-  return converted;
-}
 
-// Computes the observable differences between |old_entry| and |new_entry|.
-// Returns true if they are different, |false| if their observable fields are
-// identical.
-bool DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
-                           const fuchsia::web::NavigationState& new_entry,
-                           fuchsia::web::NavigationState* difference) {
-  DCHECK(difference);
-
-  bool is_changed = false;
-
-  DCHECK(new_entry.has_title());
-  if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {
-    is_changed = true;
-    difference->set_title(new_entry.title());
-  }
-
-  DCHECK(new_entry.has_url());
-  if (!old_entry.has_url() || (new_entry.url() != old_entry.url())) {
-    is_changed = true;
-    difference->set_url(new_entry.url());
-  }
-
-  DCHECK(new_entry.has_page_type());
-  if (!old_entry.has_page_type() ||
-      (new_entry.page_type() != old_entry.page_type())) {
-    is_changed = true;
-    difference->set_page_type(new_entry.page_type());
-  }
-
-  return is_changed;
+  navigation_state->set_can_go_back(web_contents->GetController().CanGoBack());
+  navigation_state->set_can_go_forward(
+      web_contents->GetController().CanGoForward());
 }
 
 class FrameFocusRules : public wm::BaseFocusRules {
@@ -221,8 +196,8 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
                      fidl::InterfaceRequest<fuchsia::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
-      log_level_(kLogSeverityNone),
       context_(context),
+      log_level_(kLogSeverityNone),
       binding_(this, std::move(frame_request)),
       weak_factory_(this) {
   web_contents_->SetDelegate(this);
@@ -418,7 +393,7 @@ void FrameImpl::PostMessage(std::string origin,
     for (fuchsia::web::OutgoingTransferable& outgoing :
          *message.mutable_outgoing_transfer()) {
       mojo::ScopedMessagePipeHandle port =
-          MessagePortImpl::FromFidl(std::move(outgoing.message_port()));
+          cr_fuchsia::MessagePortFromFidl(std::move(outgoing.message_port()));
       if (!port) {
         result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
         callback(std::move(result));
@@ -439,9 +414,8 @@ void FrameImpl::SetNavigationEventListener(
     fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener) {
   // Reset the event buffer state.
   waiting_for_navigation_event_ack_ = false;
-  cached_navigation_state_ = {};
+  previous_navigation_state_ = {};
   pending_navigation_event_ = {};
-  pending_navigation_event_is_dirty_ = false;
 
   if (listener) {
     navigation_listener_.Bind(std::move(listener));
@@ -493,12 +467,17 @@ void FrameImpl::TearDownView() {
   }
 }
 
-void FrameImpl::OnNavigationEntryChanged(content::NavigationEntry* entry) {
-  fuchsia::web::NavigationState entry_converted =
-      ConvertContentNavigationEntry(entry);
-  pending_navigation_event_is_dirty_ |= DiffNavigationEntries(
-      cached_navigation_state_, entry_converted, &pending_navigation_event_);
-  cached_navigation_state_ = std::move(entry_converted);
+void FrameImpl::OnNavigationEntryChanged() {
+  fuchsia::web::NavigationState new_state;
+  new_state.set_is_main_document_loaded(is_main_document_loaded_);
+  UpdateNavigationStateFromNavigationEntry(
+      web_contents_->GetController().GetVisibleEntry(), web_contents_.get(),
+      &new_state);
+
+  DiffNavigationEntries(previous_navigation_state_, new_state,
+                        &pending_navigation_event_);
+  previous_navigation_state_ = std::move(new_state);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FrameImpl::MaybeSendNavigationEvent,
                                 weak_factory_.GetWeakPtr()));
@@ -508,12 +487,11 @@ void FrameImpl::MaybeSendNavigationEvent() {
   if (!navigation_listener_)
     return;
 
-  if (!pending_navigation_event_is_dirty_ ||
+  if (pending_navigation_event_.IsEmpty() ||
       waiting_for_navigation_event_ack_) {
     return;
   }
 
-  pending_navigation_event_is_dirty_ = false;
   waiting_for_navigation_event_ack_ = true;
 
   // Send the event to the observer and, upon acknowledgement, revisit this
@@ -608,7 +586,10 @@ void FrameImpl::GetVisibleEntry(
     return;
   }
 
-  callback(ConvertContentNavigationEntry(entry));
+  fuchsia::web::NavigationState state;
+  state.set_is_main_document_loaded(is_main_document_loaded_);
+  UpdateNavigationStateFromNavigationEntry(entry, web_contents_.get(), &state);
+  callback(std::move(state));
 }
 
 bool FrameImpl::ShouldCreateWebContents(
@@ -634,33 +615,36 @@ bool FrameImpl::ShouldCreateWebContents(
   return false;
 }
 
-bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
-                                       int32_t level,
-                                       const base::string16& message,
-                                       int32_t line_no,
-                                       const base::string16& source_id) {
-  if (log_level_ > level) {
+bool FrameImpl::DidAddMessageToConsole(
+    content::WebContents* source,
+    blink::mojom::ConsoleMessageLevel log_level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
+  logging::LogSeverity log_severity =
+      blink::ConsoleMessageLevelToLogSeverity(log_level);
+  if (log_level_ > log_severity) {
     return false;
   }
 
   std::string formatted_message =
       base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
                          line_no, base::UTF16ToUTF8(message).data());
-  switch (level) {
-    case logging::LOG_VERBOSE:
+  switch (log_level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
       LOG(INFO) << "debug:" << formatted_message;
       break;
-    case logging::LOG_INFO:
+    case blink::mojom::ConsoleMessageLevel::kInfo:
       LOG(INFO) << "info:" << formatted_message;
       break;
-    case logging::LOG_WARNING:
+    case blink::mojom::ConsoleMessageLevel::kWarning:
       LOG(WARNING) << "warn:" << formatted_message;
       break;
-    case logging::LOG_ERROR:
+    case blink::mojom::ConsoleMessageLevel::kError:
       LOG(ERROR) << "error:" << formatted_message;
       break;
     default:
-      DLOG(WARNING) << "Unknown log level: " << level;
+      DLOG(WARNING) << "Unknown log level: " << log_severity;
       return false;
   }
 
@@ -668,15 +652,6 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
     console_log_message_hook_.Run(formatted_message);
 
   return true;
-}
-
-void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url) {
-  if (web_contents_->GetMainFrame() != render_frame_host) {
-    return;
-  }
-
-  OnNavigationEntryChanged(web_contents_->GetController().GetVisibleEntry());
 }
 
 void FrameImpl::ReadyToCommitNavigation(
@@ -706,5 +681,72 @@ void FrameImpl::ReadyToCommitNavigation(
 }
 
 void FrameImpl::TitleWasSet(content::NavigationEntry* entry) {
-  OnNavigationEntryChanged(entry);
+  // The title was changed after the document was loaded.
+  OnNavigationEntryChanged();
+}
+
+void FrameImpl::DocumentAvailableInMainFrame() {
+  // The main document is loaded, but not necessarily all the subresources. Some
+  // fields like "title" will change here.
+
+  OnNavigationEntryChanged();
+}
+
+void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url) {
+  // The document and its statically-declared subresources are loaded.
+
+  is_main_document_loaded_ = true;
+  OnNavigationEntryChanged();
+}
+
+void FrameImpl::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSameDocument())
+    return;
+
+  is_main_document_loaded_ = false;
+  OnNavigationEntryChanged();
+}
+
+void DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
+                           const fuchsia::web::NavigationState& new_entry,
+                           fuchsia::web::NavigationState* difference) {
+  DCHECK(difference);
+
+  DCHECK(new_entry.has_title());
+  if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {
+    difference->set_title(new_entry.title());
+  }
+
+  DCHECK(new_entry.has_url());
+  if (!old_entry.has_url() || (new_entry.url() != old_entry.url())) {
+    difference->set_url(new_entry.url());
+  }
+
+  DCHECK(new_entry.has_page_type());
+  if (!old_entry.has_page_type() ||
+      (new_entry.page_type() != old_entry.page_type())) {
+    difference->set_page_type(new_entry.page_type());
+  }
+
+  DCHECK(new_entry.has_can_go_back());
+  if (!old_entry.has_can_go_back() ||
+      old_entry.can_go_back() != new_entry.can_go_back()) {
+    difference->set_can_go_back(new_entry.can_go_back());
+  }
+
+  DCHECK(new_entry.has_can_go_forward());
+  if (!old_entry.has_can_go_forward() ||
+      old_entry.can_go_forward() != new_entry.can_go_forward()) {
+    difference->set_can_go_forward(new_entry.can_go_forward());
+  }
+
+  DCHECK(new_entry.has_is_main_document_loaded());
+  if (!old_entry.has_is_main_document_loaded() ||
+      old_entry.is_main_document_loaded() !=
+          new_entry.is_main_document_loaded()) {
+    difference->set_is_main_document_loaded(
+        new_entry.is_main_document_loaded());
+  }
 }

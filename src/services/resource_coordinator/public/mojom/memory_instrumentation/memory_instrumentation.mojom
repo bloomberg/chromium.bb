@@ -4,6 +4,7 @@
 
 module memory_instrumentation.mojom;
 
+import "mojo/public/mojom/base/big_string.mojom";
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
@@ -138,6 +139,10 @@ struct PlatformPrivateFootprint {
 
 struct RawOSMemDump {
   uint32 resident_set_kb = 0;
+  // peak_resident_set_kb is an experimental field. Please do not use it until
+  // crbug.com/957978 reaches to a conclusion.
+  uint32 peak_resident_set_kb = 0;
+  bool is_peak_rss_resettable = false;
   PlatformPrivateFootprint platform_private_footprint;
   array<VmRegion> memory_maps;
 
@@ -150,6 +155,15 @@ struct RawOSMemDump {
 
 struct OSMemDump {
   uint32 resident_set_kb = 0;
+
+  // The peak resident set size as observed by the kernel. This is currently
+  // reported on Linux and Android only. Also, this is an experimental field.
+  // Please do not use it until crbug.com/957978 reaches to a conclusion.
+  uint32 peak_resident_set_kb = 0;
+
+  // Indicates whether the above peak_resident_set_kb is the peak from the start
+  // of the process or from the previous memory dump.
+  bool is_peak_rss_resettable = false;
 
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
@@ -189,6 +203,11 @@ struct ProcessMemoryDump {
   // less in flux, they will probably be merged into a single service, and this
   // parameter can be removed.
   mojo_base.mojom.ProcessId pid;
+
+  // Shows which services the given process is running, to help separate out
+  // the statistics for a given service.  Clients should look through the entire
+  // list since there may be other entities used internally listed, too.
+  array<string> service_names;
 };
 
 // Metrics aggregated across all processes.
@@ -235,10 +254,9 @@ interface ClientProcess {
       (bool success, map<mojo_base.mojom.ProcessId, RawOSMemDump> dumps);
 };
 
-struct SharedBufferWithSize {
-  handle<shared_buffer> buffer;
-  uint32 size;
+struct HeapProfileResult {
   mojo_base.mojom.ProcessId pid;
+  mojo_base.mojom.BigString json;
 };
 
 // HeapProfilers expose a single interface to memory_instrumentation, allowing
@@ -249,17 +267,17 @@ struct SharedBufferWithSize {
 // with the Coordinator (see RegisterHeapProfiler) and is invoked when a memory
 // dump is requested (via Coordinator::RequestGlobalMemoryDump).
 interface HeapProfiler {
-  // Dumps the memory log of all profiled processes into shared buffers. The
-  // contents of each shared buffer is a JSON string compatible with
+  // Dumps the memory log of all profiled processes into BigString's.
+  // The contents of each BigString is a JSON string compatible with
   // TRACE_EVENT* macros. Processes that fail to dump will be omitted from
-  // |buffers|. When |strip_path_from_mapped_files| is true, only the base name
+  // |result|. When |strip_path_from_mapped_files| is true, only the base name
   // of mapped files is emitted. This prevents usernames from sneaking into the
   // trace.
   // |strip_path_from_mapped_files| should only be true for traces that will be
   // uploaded to the crash servers - this strips potential PII, but prevents
   // symbolization of local builds.
   DumpProcessesForTracing(bool strip_path_from_mapped_files) =>
-      (array<SharedBufferWithSize> buffers);
+      (array<HeapProfileResult> results);
 };
 
 // Implemented by resource_coordinator to provide additional information needed

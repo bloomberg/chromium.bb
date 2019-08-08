@@ -13,5 +13,8 @@ namespace arc {
 // Returns invalid ScopedFD on failure.
 base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
 
+// Return the file size of |fd|.
+bool GetFileSize(const int fd, size_t* size);
+
 }  // namespace arc
 #endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_

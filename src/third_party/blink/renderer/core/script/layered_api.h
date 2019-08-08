@@ -43,11 +43,11 @@ CORE_EXPORT String GetBuiltinPath(const KURL&);
 // accepted. https://crbug.com/864748
 CORE_EXPORT KURL ResolveFetchingURL(const Modulator&, const KURL&);
 
-// Returns std-internal://x/index.js if the URL is Layered API, or null URL
+// Returns std-internal://x/index.mjs if the URL is Layered API, or null URL
 // otherwise (not specced).
 CORE_EXPORT KURL GetInternalURL(const KURL&);
 
-// Gets source text for std-internal://x/index.js.
+// Gets source text for std-internal://x/index.mjs.
 CORE_EXPORT String GetSourceText(const Modulator&, const KURL&);
 
 }  // namespace layered_api

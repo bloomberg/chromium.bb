@@ -84,6 +84,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/generic_handler.h"
@@ -186,10 +187,6 @@ namespace {
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 const char kDotGoogleDotCom[] = ".google.com";
-
-#if defined(OS_ANDROID)
-const void* const kWebContentsAndroidKey = &kWebContentsAndroidKey;
-#endif
 
 base::LazyInstance<std::vector<
     WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
@@ -613,6 +610,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   registry_.AddInterface(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
+
+  dark_mode_observer_.Start();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -716,6 +715,12 @@ WebContentsImpl::~WebContentsImpl() {
 
   for (auto& observer : observers_)
     observer.RenderViewDeleted(root->current_host());
+
+#if defined(OS_ANDROID)
+  // For simplicity, destroy the Java WebContents before we notify of the
+  // destruction of the WebContents.
+  ClearWebContentsAndroid();
+#endif
 
   for (auto& observer : observers_)
     observer.WebContentsDestroyed();
@@ -863,9 +868,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
-#endif
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog, OnOpenDateTimeDialog)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1936,11 +1938,10 @@ void WebContentsImpl::ReattachToOuterWebContentsFrame() {
 }
 
 void WebContentsImpl::DidChangeVisibleSecurityState() {
-  if (delegate_) {
+  if (delegate_)
     delegate_->VisibleSecurityStateChanged(this);
-    for (auto& observer : observers_)
-      observer.DidChangeVisibleSecurityState();
-  }
+  for (auto& observer : observers_)
+    observer.DidChangeVisibleSecurityState();
 }
 
 void WebContentsImpl::NotifyPreferencesChanged() {
@@ -2105,7 +2106,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   manifest_manager_host_.reset(new ManifestManagerHost(this));
 
 #if defined(OS_ANDROID)
-  date_time_chooser_.reset(new DateTimeChooserAndroid());
+  date_time_chooser_.reset(new DateTimeChooserAndroid(this));
 #endif
 
   // BrowserPluginGuest::Init needs to be called after this WebContents has
@@ -3213,23 +3214,6 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
   return wake_lock_context_host_->GetWakeLockContext();
 }
 
-device::mojom::WakeLock* WebContentsImpl::GetRendererWakeLock() {
-  // WebContents creates a long-lived connection to one WakeLock.
-  // All the frames' requests will be added into the BindingSet of
-  // WakeLock via this connection.
-  if (!renderer_wake_lock_) {
-    device::mojom::WakeLockContext* wake_lock_context = GetWakeLockContext();
-    if (!wake_lock_context) {
-      return nullptr;
-    }
-    wake_lock_context->GetWakeLock(
-        device::mojom::WakeLockType::kPreventDisplaySleep,
-        device::mojom::WakeLockReason::kOther, "Wake Lock API",
-        mojo::MakeRequest(&renderer_wake_lock_));
-  }
-  return renderer_wake_lock_.get();
-}
-
 #if defined(OS_ANDROID)
 void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
   if (!nfc_host_)
@@ -3659,6 +3643,8 @@ void WebContentsImpl::Paste() {
     return;
 
   focused_frame->GetFrameInputHandler()->Paste();
+  for (auto& observer : observers_)
+    observer.OnPaste();
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
@@ -3668,6 +3654,8 @@ void WebContentsImpl::PasteAndMatchStyle() {
     return;
 
   focused_frame->GetFrameInputHandler()->PasteAndMatchStyle();
+  for (auto& observer : observers_)
+    observer.OnPaste();
   RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
 }
 
@@ -4841,16 +4829,6 @@ void WebContentsImpl::OnUpdatePageImportanceSignals(
   page_importance_signals_ = signals;
 }
 
-#if defined(OS_ANDROID)
-void WebContentsImpl::OnOpenDateTimeDialog(
-    RenderViewHostImpl* source,
-    const ViewHostMsg_DateTimeDialogValue_Params& value) {
-  date_time_chooser_->ShowDialog(
-      GetTopLevelNativeWindow(), source, value.dialog_type, value.dialog_value,
-      value.minimum, value.maximum, value.step, value.suggestions);
-}
-#endif
-
 void WebContentsImpl::OnDomOperationResponse(RenderFrameHostImpl* source,
                                              const std::string& json_string) {
   // TODO(nick, lukasza): The notification below should probably be updated to
@@ -5356,6 +5334,10 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   if (delegate_)
     dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
 
+  // While a JS message dialog is showing, defer commits in this WebContents.
+  javascript_dialog_navigation_deferrer_ =
+      std::make_unique<JavaScriptDialogNavigationDeferrer>();
+
   // Suppress JavaScript dialogs when requested. Also suppress messages when
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
@@ -5432,6 +5414,11 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
   if (delegate_)
     dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
+
+  // While a JS beforeunload dialog is showing, defer commits in this
+  // WebContents.
+  javascript_dialog_navigation_deferrer_ =
+      std::make_unique<JavaScriptDialogNavigationDeferrer>();
 
   bool should_suppress = ShowingInterstitialPage() || !rfhi->is_active() ||
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
@@ -5586,9 +5573,13 @@ WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
 std::vector<WebContents*> WebContentsImpl::GetInnerWebContents() {
   std::vector<WebContents*> all_inner_contents;
   if (browser_plugin_embedder_) {
-    GetBrowserContext()->GetGuestManager()->ForEachGuest(
-        this,
-        base::BindRepeating(&GetInnerWebContentsHelper, &all_inner_contents));
+    BrowserPluginGuestManager* guest_manager =
+        GetBrowserContext()->GetGuestManager();
+    if (guest_manager) {
+      guest_manager->ForEachGuest(
+          this,
+          base::BindRepeating(&GetInnerWebContentsHelper, &all_inner_contents));
+    }
   }
   const auto& inner_contents = node_.GetInnerWebContents();
   all_inner_contents.insert(all_inner_contents.end(), inner_contents.begin(),
@@ -5863,8 +5854,22 @@ void WebContentsImpl::DidChangeLoadProgress() {
 std::vector<std::unique_ptr<NavigationThrottle>>
 WebContentsImpl::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {
-  return GetContentClient()->browser()->CreateThrottlesForNavigation(
+  auto throttles = GetContentClient()->browser()->CreateThrottlesForNavigation(
       navigation_handle);
+
+  // This is not a normal place to be adding a throttle. However, in the case
+  // javascript dialogs, related logic is present in the web_contents/ layer,
+  // and the purpose of the throttle is to ensure that navigation commits are
+  // deferred for the entire WebContents. Most throttles are either added by
+  // the embederrer outside of content/, or are per-frame and added by
+  // NavigationThrottleRunner.
+  std::unique_ptr<content::NavigationThrottle> dialog_throttle =
+      JavaScriptDialogNavigationThrottle::MaybeCreateThrottleFor(
+          navigation_handle);
+  if (dialog_throttle)
+    throttles.push_back(std::move(dialog_throttle));
+
+  return throttles;
 }
 
 std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
@@ -6203,13 +6208,14 @@ void WebContentsImpl::OnFocusedElementChangedInFrame(
       Details<FocusedNodeDetails>(&details));
 }
 
-bool WebContentsImpl::DidAddMessageToConsole(int32_t level,
-                                             const base::string16& message,
-                                             int32_t line_no,
-                                             const base::string16& source_id) {
+bool WebContentsImpl::DidAddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel log_level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
   if (!delegate_)
     return false;
-  return delegate_->DidAddMessageToConsole(this, level, message, line_no,
+  return delegate_->DidAddMessageToConsole(this, log_level, message, line_no,
                                            source_id);
 }
 
@@ -6295,6 +6301,29 @@ void WebContentsImpl::RendererResponsive(
     RenderWidgetHostImpl* render_widget_host) {
   if (delegate_)
     delegate_->RendererResponsive(this, render_widget_host);
+}
+
+void WebContentsImpl::SubframeCrashed(
+    blink::mojom::FrameVisibility visibility) {
+  // If a subframe crashed on a hidden tab, mark the tab for reload to avoid
+  // showing a sad frame to the user if they ever switch back to that tab. Do
+  // this for subframes that are either visible in viewport or visible but
+  // scrolled out of view, but skip subframes that are not rendered (e.g., via
+  // "display:none"), since in that case the user wouldn't see a sad frame
+  // anyway.
+  bool did_mark_for_reload = false;
+  if (IsHidden() && visibility != blink::mojom::FrameVisibility::kNotRendered &&
+      base::FeatureList::IsEnabled(
+          features::kReloadHiddenTabsWithCrashedSubframes)) {
+    controller_.SetNeedsReload(
+        NavigationControllerImpl::NeedsReloadType::kCrashedSubframe);
+    did_mark_for_reload = true;
+    UMA_HISTOGRAM_ENUMERATION(
+        "Stability.ChildFrameCrash.TabMarkedForReload.Visibility", visibility);
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("Stability.ChildFrameCrash.TabMarkedForReload",
+                        did_mark_for_reload);
 }
 
 void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
@@ -6463,13 +6492,15 @@ WebContentsImpl::GetJavaWebContents() {
 }
 
 WebContentsAndroid* WebContentsImpl::GetWebContentsAndroid() {
-  WebContentsAndroid* web_contents_android =
-      static_cast<WebContentsAndroid*>(GetUserData(kWebContentsAndroidKey));
-  if (!web_contents_android) {
-    web_contents_android = new WebContentsAndroid(this);
-    SetUserData(kWebContentsAndroidKey, base::WrapUnique(web_contents_android));
+  if (!web_contents_android_) {
+    web_contents_android_ = std::make_unique<WebContentsAndroid>(this);
   }
-  return web_contents_android;
+  return web_contents_android_.get();
+}
+
+void WebContentsImpl::ClearWebContentsAndroid() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  web_contents_android_.reset();
 }
 
 void WebContentsImpl::ActivateNearestFindResult(float x,
@@ -6524,6 +6555,8 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(render_process_id,
                                                          render_frame_id);
   last_dialog_suppressed_ = dialog_was_suppressed;
+
+  javascript_dialog_navigation_deferrer_.reset();
 
   if (is_showing_before_unload_dialog_ && !success) {
     // It is possible for the current RenderFrameHost to have changed in the
@@ -6914,6 +6947,13 @@ void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
     observer.AudioContextPlaybackStopped(audio_context_id);
 }
 
+RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
+    FrameTreeNode* frame_tree_node) {
+  if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
+    return web_contents->GetMainFrame();
+  return nullptr;
+}
+
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
   // (for power and speed impact assessment) or when
@@ -7056,6 +7096,10 @@ void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
 
 void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
   GetMainFrame()->SetVisibilityForChildViews(visible);
+}
+
+void WebContentsImpl::OnDarkModeChanged(bool dark_mode) {
+  NotifyPreferencesChanged();
 }
 
 }  // namespace content

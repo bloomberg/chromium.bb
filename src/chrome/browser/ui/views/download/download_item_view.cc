@@ -29,6 +29,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -128,7 +129,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                                    DownloadShelfView* parent,
                                    views::View* accessible_alert)
     : shelf_(parent),
-      status_text_(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING)),
       dropdown_state_(NORMAL),
       mode_(NORMAL_MODE),
       dragging_(false),
@@ -136,10 +136,8 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       model_(std::move(download)),
       save_button_(nullptr),
       discard_button_(nullptr),
-      dropdown_button_(views::CreateVectorImageButton(this)),
       dangerous_download_label_(nullptr),
       dangerous_download_label_sized_(false),
-      disabled_while_opening_(false),
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       accessible_alert_(accessible_alert),
@@ -149,21 +147,32 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   model_->AddObserver(this);
   set_context_menu_controller(this);
 
-  dropdown_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  font_list_ = rb.GetFontListWithDelta(1);
+  status_font_list_ = rb.GetFontListWithDelta(-2);
+
+  auto file_name_label = std::make_unique<views::Label>();
+  file_name_label->SetFontList(font_list_);
+  file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  file_name_label->SetText(ElidedFilename());
+  file_name_label_ = AddChildView(std::move(file_name_label));
+
+  auto status_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING));
+  status_label->SetFontList(status_font_list_);
+  status_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  status_label_ = AddChildView(std::move(status_label));
+
+  auto dropdown_button = views::CreateVectorImageButton(this);
+  dropdown_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
 
-  dropdown_button_->SetBorder(
+  dropdown_button->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
-  dropdown_button_->set_has_ink_drop_action_on_click(false);
-  AddChildView(dropdown_button_);
+  dropdown_button->set_has_ink_drop_action_on_click(false);
+  dropdown_button_ = AddChildView(std::move(dropdown_button));
 
   LoadIcon();
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  font_list_ =
-      rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(1);
-  status_font_list_ =
-      rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(-2);
 
   focus_ring_ = views::FocusRing::Install(this);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -207,8 +216,8 @@ SkColor DownloadItemView::GetTextColorForThemeProvider(
                : gfx::kPlaceholderColor;
 }
 
-void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
-  if (icon_bitmap)
+void DownloadItemView::OnExtractIconComplete(gfx::Image icon_bitmap) {
+  if (!icon_bitmap.IsEmpty())
     shelf_->SchedulePaint();
 }
 
@@ -235,7 +244,8 @@ void DownloadItemView::OnDownloadUpdated() {
   if (IsShowingWarningDialog() != model_->IsDangerous()) {
     ToggleWarningDialog();
   } else {
-    status_text_ = GetStatusText();
+    status_label_->SetText(GetStatusText());
+    file_name_label_->SetY(GetYForFilenameText());
     switch (model_->GetState()) {
       case DownloadItem::IN_PROGRESS:
         // No need to send accessible alert for "paused", as the button ends
@@ -310,7 +320,18 @@ void DownloadItemView::OnDownloadDestroyed() {
 }
 
 void DownloadItemView::OnDownloadOpened() {
-  disabled_while_opening_ = true;
+  // First, Calculate the download status opening string width.
+  base::string16 status_string =
+      l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, base::string16());
+  int status_string_width = gfx::GetStringWidth(status_string, font_list_);
+  // Then, elide the file name.
+  base::string16 filename_string =
+      gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
+                         kTextWidth - status_string_width);
+  // Last, concat the whole string to be set on the label.
+  file_name_label_->SetText(
+      l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, filename_string));
+
   SetEnabled(false);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -344,6 +365,19 @@ void DownloadItemView::Layout() {
       child_origin.Offset(button_size.width() + kSaveDiscardButtonPadding, 0);
     }
     discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
+  } else {
+    int mirrored_x = GetMirroredXWithWidthInView(
+        kStartPadding + DownloadShelf::kProgressIndicatorSize +
+            kProgressTextPadding,
+        kTextWidth);
+    int file_name_y = GetYForFilenameText();
+    file_name_label_->SetBoundsRect(
+        gfx::Rect(mirrored_x, file_name_y, kTextWidth, font_list_.GetHeight()));
+
+    int status_y =
+        file_name_y + font_list_.GetBaseline() + kVerticalTextPadding;
+    status_label_->SetBoundsRect(gfx::Rect(mirrored_x, status_y, kTextWidth,
+                                           status_font_list_.GetHeight()));
   }
 
   if (mode_ != DANGEROUS_MODE) {
@@ -570,67 +604,15 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF));
 
-  DrawStatusText(canvas);
-  DrawFilename(canvas);
   DrawIcon(canvas);
   OnPaintBorder(canvas);
 }
 
 int DownloadItemView::GetYForFilenameText() const {
   int text_height = font_list_.GetBaseline();
-  if (!status_text_.empty())
+  if (!status_label_->text().empty())
     text_height += kVerticalTextPadding + status_font_list_.GetBaseline();
   return (height() - text_height) / 2;
-}
-
-void DownloadItemView::DrawStatusText(gfx::Canvas* canvas) {
-  if (status_text_.empty() || IsShowingWarningDialog())
-    return;
-
-  int mirrored_x = GetMirroredXWithWidthInView(
-      kStartPadding + DownloadShelf::kProgressIndicatorSize +
-          kProgressTextPadding,
-      kTextWidth);
-  int y =
-      GetYForFilenameText() + font_list_.GetBaseline() + kVerticalTextPadding;
-  canvas->DrawStringRect(
-      status_text_, status_font_list_, GetDimmedTextColor(),
-      gfx::Rect(mirrored_x, y, kTextWidth, status_font_list_.GetHeight()));
-}
-
-void DownloadItemView::DrawFilename(gfx::Canvas* canvas) {
-  if (IsShowingWarningDialog())
-    return;
-
-  // Print the text, left aligned and always print the file extension.
-  // Last value of x was the end of the right image, just before the button.
-  // Note that in dangerous mode we use a label (as the text is multi-line).
-  base::string16 filename;
-  if (!disabled_while_opening_) {
-    filename = gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
-                                  kTextWidth);
-  } else {
-    // First, Calculate the download status opening string width.
-    base::string16 status_string = l10n_util::GetStringFUTF16(
-        IDS_DOWNLOAD_STATUS_OPENING, base::string16());
-    int status_string_width = gfx::GetStringWidth(status_string, font_list_);
-    // Then, elide the file name.
-    base::string16 filename_string =
-        gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
-                           kTextWidth - status_string_width);
-    // Last, concat the whole string.
-    filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
-                                          filename_string);
-  }
-
-  int mirrored_x = GetMirroredXWithWidthInView(
-      kStartPadding + DownloadShelf::kProgressIndicatorSize +
-          kProgressTextPadding,
-      kTextWidth);
-  canvas->DrawStringRect(filename, font_list_,
-                         enabled() ? GetTextColor() : GetDimmedTextColor(),
-                         gfx::Rect(mirrored_x, GetYForFilenameText(),
-                                   kTextWidth, font_list_.GetHeight()));
 }
 
 void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
@@ -683,7 +665,7 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   int icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
   cc::PaintFlags flags;
   // Use an alpha to make the image look disabled.
-  if (!enabled())
+  if (!GetEnabled())
     flags.setAlpha(120);
   canvas->DrawImageInt(*icon->ToImageSkia(), icon_x, icon_y, flags);
 }
@@ -762,6 +744,16 @@ void DownloadItemView::UpdateColorsFromTheme() {
 
   SetBorder(std::make_unique<SeparatorBorder>(GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR)));
+
+  // Use a slightly dimmed version of the base text color.
+  SkColor dimmed_text_color = SkColorSetA(GetTextColor(), 0xC7);
+  file_name_label_->SetEnabledColor(GetEnabled() ? GetTextColor()
+                                                 : dimmed_text_color);
+  status_label_->SetEnabledColor(dimmed_text_color);
+  SkColor background_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
+  file_name_label_->SetBackgroundColor(background_color);
+  status_label_->SetBackgroundColor(background_color);
 
   if (dangerous_download_label_)
     dangerous_download_label_->SetEnabledColor(GetTextColor());
@@ -888,6 +880,8 @@ void DownloadItemView::ClearWarningDialog() {
   // We need to load the icon now that the download has the real path.
   LoadIcon();
 
+  file_name_label_->SetVisible(true);
+  status_label_->SetVisible(true);
   dropdown_button_->SetVisible(true);
 }
 
@@ -906,23 +900,26 @@ void DownloadItemView::ShowWarningDialog() {
 
   dropdown_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {
-    save_button_ = views::MdTextButton::Create(
+    auto save_button = views::MdTextButton::Create(
         this, model_->GetWarningConfirmButtonText());
-    AddChildView(save_button_);
+    save_button_ = AddChildView(std::move(save_button));
   }
-  discard_button_ = views::MdTextButton::Create(
+  auto discard_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-  AddChildView(discard_button_);
+  discard_button_ = AddChildView(std::move(discard_button));
 
   base::string16 dangerous_label =
       model_->GetWarningText(font_list_, kTextWidth);
-  dangerous_download_label_ = new views::Label(dangerous_label);
-  dangerous_download_label_->SetMultiLine(true);
-  dangerous_download_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
-  AddChildView(dangerous_download_label_);
+  auto dangerous_download_label =
+      std::make_unique<views::Label>(dangerous_label);
+  dangerous_download_label->SetMultiLine(true);
+  dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  dangerous_download_label->SetAutoColorReadabilityEnabled(false);
+  dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
   SizeLabelToMinWidth();
 
+  file_name_label_->SetVisible(false);
+  status_label_->SetVisible(false);
   dropdown_button_->SetVisible(mode_ == MALICIOUS_MODE);
 }
 
@@ -930,13 +927,21 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
   switch (model_->GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       return gfx::CreateVectorIcon(vector_icons::kWarningIcon, kWarningIconSize,
                                    gfx::kGoogleRed700);
 
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      if (safe_browsing::AdvancedProtectionStatusManager::
+              RequestsAdvancedProtectionVerdicts(model()->profile())) {
+        return gfx::CreateVectorIcon(vector_icons::kErrorIcon, kErrorIconSize,
+                                     gfx::kGoogleYellow500);
+      } else {
+        return gfx::CreateVectorIcon(vector_icons::kWarningIcon,
+                                     kWarningIconSize, gfx::kGoogleRed700);
+      }
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
@@ -1027,7 +1032,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
 }
 
 void DownloadItemView::Reenable() {
-  disabled_while_opening_ = false;
+  file_name_label_->SetText(ElidedFilename());
   SetEnabled(true);  // Triggers a repaint.
 }
 
@@ -1042,7 +1047,7 @@ void DownloadItemView::UpdateAccessibleName() {
   if (IsShowingWarningDialog()) {
     new_name = dangerous_download_label_->text();
   } else {
-    new_name = status_text_ + base::char16(' ') +
+    new_name = status_label_->text() + base::char16(' ') +
                model_->GetFileNameToReportUser().LossyDisplayName();
   }
 
@@ -1139,10 +1144,6 @@ SkColor DownloadItemView::GetTextColor() const {
   return GetTextColorForThemeProvider(GetThemeProvider());
 }
 
-SkColor DownloadItemView::GetDimmedTextColor() const {
-  return SkColorSetA(GetTextColor(), 0xC7);
-}
-
 base::string16 DownloadItemView::GetStatusText() const {
   if (!model_->ShouldPromoteOrigin() ||
       model_->GetOriginalURL().GetOrigin().is_empty()) {
@@ -1158,4 +1159,9 @@ base::string16 DownloadItemView::GetStatusText() const {
   NOTREACHED();
   return base::string16();
 #endif
+}
+
+base::string16 DownloadItemView::ElidedFilename() {
+  return gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
+                            kTextWidth);
 }

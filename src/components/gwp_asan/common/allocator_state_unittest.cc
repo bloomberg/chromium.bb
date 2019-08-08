@@ -150,36 +150,37 @@ TEST_F(AllocatorStateTest, GetMetadataForAddress) {
   AllocatorState::MetadataIdx slot_to_metadata[kTestSlots];
 
   AllocatorState::MetadataIdx idx;
+  std::string error;
 #if defined(GTEST_HAS_DEATH_TEST)
   EXPECT_DEATH(
       {
         state_.GetMetadataForAddress(state_.pages_base_addr - 1, md,
-                                     slot_to_metadata, &idx);
+                                     slot_to_metadata, &idx, &error);
       },
       "");
 #endif
 
   slot_to_metadata[0] = AllocatorState::kInvalidMetadataIdx;
   EXPECT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md,
-                                         slot_to_metadata, &idx),
+                                         slot_to_metadata, &idx, &error),
             GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
 
   slot_to_metadata[0] = 0;
   ASSERT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md,
-                                         slot_to_metadata, &idx),
+                                         slot_to_metadata, &idx, &error),
             GetMetadataReturnType::kGwpAsanCrash);
   EXPECT_EQ(idx, 0);
 
   slot_to_metadata[0] = kTestSlots;
   EXPECT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md,
-                                         slot_to_metadata, &idx),
+                                         slot_to_metadata, &idx, &error),
             GetMetadataReturnType::kErrorBadMetadataIndex);
 
   // Metadata[0] is for slot 1, slot_to_metadata_idx[0] point to metadata 0.
   md[0].alloc_ptr = state_.first_page_addr + state_.page_size * 2;
   slot_to_metadata[0] = 0;
   EXPECT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md,
-                                         slot_to_metadata, &idx),
+                                         slot_to_metadata, &idx, &error),
             GetMetadataReturnType::kErrorOutdatedMetadataIndex);
 
   // It's impossible to trigger kErrorBadSlotIndex.

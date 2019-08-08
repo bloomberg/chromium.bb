@@ -4,6 +4,7 @@
 
 #include "ash/system/locale/locale_detailed_view.h"
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -91,6 +92,8 @@ class LocaleItem : public ActionableView {
     ScrollViewToVisible();
   }
 
+  const char* GetClassName() const override { return "LocaleItem"; }
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     ActionableView::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kCheckBox;
@@ -130,7 +133,7 @@ void LocaleDetailedView::CreateItems() {
     LocaleItem* item =
         new LocaleItem(this, entry->iso_code, entry->display_name, checked);
     scroll_content()->AddChildView(item);
-    item->set_id(id);
+    item->SetID(id);
     id_to_locale_[id] = entry->iso_code;
     ++id;
   }
@@ -138,14 +141,18 @@ void LocaleDetailedView::CreateItems() {
 }
 
 void LocaleDetailedView::HandleViewClicked(views::View* view) {
-  auto it = id_to_locale_.find(view->id());
+  auto it = id_to_locale_.find(view->GetID());
   DCHECK(it != id_to_locale_.end());
   const std::string locale_iso_code = it->second;
   if (locale_iso_code !=
       Shell::Get()->system_tray_model()->locale()->current_locale_iso_code()) {
-    Shell::Get()->system_tray_model()->client_ptr()->SetLocaleAndExit(
+    Shell::Get()->system_tray_model()->client()->SetLocaleAndExit(
         locale_iso_code);
   }
+}
+
+const char* LocaleDetailedView::GetClassName() const {
+  return "LocaleDetailedView";
 }
 
 }  // namespace tray

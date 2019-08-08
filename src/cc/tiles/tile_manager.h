@@ -212,7 +212,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       }
       bool exported = resource_pool_->PrepareForExport(resource);
       DCHECK(exported);
-      draw_info.SetResource(std::move(resource), false, false, false);
+      draw_info.SetResource(std::move(resource), false, false);
       draw_info.set_resource_ready_for_draw();
     }
   }
@@ -355,6 +355,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<TileTask> CreateRasterTask(
       const PrioritizedTile& prioritized_tile,
+      const gfx::ColorSpace& raster_color_space,
       PrioritizedWorkToSchedule* work_to_schedule);
 
   std::unique_ptr<EvictionTilePriorityQueue>
@@ -387,12 +388,14 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   void PartitionImagesForCheckering(
       const PrioritizedTile& prioritized_tile,
+      const gfx::ColorSpace& raster_color_space,
       std::vector<DrawImage>* sync_decoded_images,
       std::vector<PaintImage>* checkered_images,
       const gfx::Rect* invalidated_rect,
       base::flat_map<PaintImage::Id, size_t>* image_to_frame_index = nullptr);
   void AddCheckeredImagesToDecodeQueue(
       const PrioritizedTile& prioritized_tile,
+      const gfx::ColorSpace& raster_color_space,
       CheckerImageTracker::DecodeType decode_type,
       CheckerImageTracker::ImageDecodeQueue* image_decode_queue);
 

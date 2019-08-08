@@ -9,8 +9,7 @@
 #include <set>
 #include <string>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
-#include "ash/public/interfaces/login_user_info.mojom.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -58,13 +57,6 @@ class ScreenLocker : public AuthStatusConsumer,
     // Called by ScreenLocker to notify that ash lock animation finishes.
     virtual void OnAshLockAnimationFinished() = 0;
 
-    // Called when fingerprint state has changed.
-    virtual void SetFingerprintState(const AccountId& account_id,
-                                     ash::mojom::FingerprintState state) = 0;
-
-    // Called after a fingerprint authentication attempt.
-    virtual void NotifyFingerprintAuthResult(const AccountId& account_id,
-                                             bool success) = 0;
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
@@ -97,7 +89,7 @@ class ScreenLocker : public AuthStatusConsumer,
   // Enables authentication for the user with |account_id|. Notifies lock screen
   // UI. |auth_disabled_data| is used to display information in the UI.
   void DisableAuthForUser(const AccountId& account_id,
-                          ash::mojom::AuthDisabledDataPtr auth_disabled_data);
+                          const ash::AuthDisabledData& auth_disabled_data);
 
   // Authenticates the user with given |user_context|.
   void Authenticate(const UserContext& user_context,

@@ -1,39 +1,38 @@
 // Copyright 2019 Google LLC.
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
-#include "CommandLineFlags.h"
-#include "CommonFlags.h"
-#include "CrashHandler.h"
-#include "EventTracingPriv.h"
-#include "GrContextFactory.h"
-#include "GrContextOptions.h"
-#include "GrContextPriv.h"
-#include "GrGpu.h"
-#include "GrPersistentCacheUtils.h"
-#include "HashAndEncode.h"
-#include "MemoryCache.h"
-#include "SkCodec.h"
-#include "SkColorSpace.h"
-#include "SkColorSpacePriv.h"
-#include "SkGraphics.h"
-#include "SkMD5.h"
-#include "SkOSFile.h"
-#include "SkOSPath.h"
-#include "SkPDFDocument.h"
-#include "SkPicture.h"
-#include "SkPictureRecorder.h"
-#include "SkSVGDOM.h"
-#include "SkTHash.h"
-#include "ToolUtils.h"
-#include "gm.h"
+#include "experimental/svg/model/SkSVGDOM.h"
+#include "gm/gm.h"
+#include "include/codec/SkCodec.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkGraphics.h"
+#include "include/core/SkPicture.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/docs/SkPDFDocument.h"
+#include "include/gpu/GrContextOptions.h"
+#include "include/private/SkTHash.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/core/SkMD5.h"
+#include "src/core/SkOSFile.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGpu.h"
+#include "src/utils/SkOSPath.h"
+#include "tools/CrashHandler.h"
+#include "tools/HashAndEncode.h"
+#include "tools/ToolUtils.h"
+#include "tools/flags/CommandLineFlags.h"
+#include "tools/flags/CommonFlags.h"
+#include "tools/gpu/GrContextFactory.h"
+#include "tools/gpu/MemoryCache.h"
+#include "tools/trace/EventTracingPriv.h"
 #include <chrono>
 #include <functional>
 #include <stdio.h>
 #include <stdlib.h>
 
 #if defined(SK_ENABLE_SKOTTIE)
-    #include "Skottie.h"
-    #include "SkottieUtils.h"
+    #include "modules/skottie/include/Skottie.h"
+    #include "modules/skottie/utils/SkottieUtils.h"
 #endif
 
 using sk_gpu_test::GrContextFactory;
@@ -281,13 +280,11 @@ static sk_sp<SkImage> draw_with_gpu(std::function<bool(SkCanvas*)> draw,
             break;
 
         case SurfaceType::kBackendTexture:
-            backendTexture = context->priv().getGpu()
-                ->createTestingOnlyBackendTexture(nullptr,
-                                                  info.width(),
-                                                  info.height(),
-                                                  info.colorType(),
-                                                  true,
-                                                  GrMipMapped::kNo);
+            backendTexture = context->createBackendTexture(info.width(),
+                                                           info.height(),
+                                                           info.colorType(),
+                                                           GrMipMapped::kNo,
+                                                           GrRenderable::kYes);
             surface = SkSurface::MakeFromBackendTexture(context,
                                                         backendTexture,
                                                         kTopLeft_GrSurfaceOrigin,
@@ -334,7 +331,7 @@ static sk_sp<SkImage> draw_with_gpu(std::function<bool(SkCanvas*)> draw,
     if (!context->abandoned()) {
         surface.reset();
         if (backendTexture.isValid()) {
-            context->priv().getGpu()->deleteTestingOnlyBackendTexture(backendTexture);
+            context->deleteBackendTexture(backendTexture);
         }
         if (backendRT.isValid()) {
             context->priv().getGpu()->deleteTestingOnlyBackendRenderTarget(backendRT);
@@ -473,7 +470,7 @@ int main(int argc, char** argv) {
     };
     const FlagOption<skcms_TransferFunction> kTransferFunctions[] = {
         { "srgb"   , SkNamedTransferFn::kSRGB },
-        { "rec2020", {2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0} },
+        { "rec2020", SkNamedTransferFn::kRec2020 },
         { "2.2"    , SkNamedTransferFn::k2Dot2 },
         { "linear" , SkNamedTransferFn::kLinear },
     };

@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -803,7 +804,6 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
   CompositeFrame();  // Throttle the frame.
-  CompositeFrame();  // Update touch handler regions.
 
   // In here, throttle iframe doesn't throttle the main frame.
   EXPECT_TRUE(
@@ -824,7 +824,6 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   // there is only one rectangle in total.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
   CompositeFrame();  // Unthrottle the frame.
-  CompositeFrame();  // Update touch handler regions.
   EXPECT_EQ(1u, TouchHandlerRegionSize());
 }
 
@@ -857,7 +856,6 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
   CompositeFrame();  // Throttle the frame.
-  CompositeFrame();  // Update touch handler regions.
 
   // In here, throttle iframe doesn't throttle the main frame.
   EXPECT_TRUE(
@@ -876,7 +874,6 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   // Unthrottling the frame makes the touch handler active again.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
   CompositeFrame();  // Unthrottle the frame.
-  CompositeFrame();  // Update touch handler regions.
   EXPECT_EQ(1u, TouchHandlerRegionSize());
 }
 
@@ -1390,6 +1387,72 @@ TEST_P(FrameThrottlingTest, LifecycleUpdateAfterUnthrottledCompositingUpdate) {
     EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
     UpdateAllLifecyclePhases();
   }
+}
+
+TEST_P(FrameThrottlingTest, GraphicsLayerCollection) {
+  // This test is for BlinkGenPropertyTrees only.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  // The frame is initially throttled.
+  main_resource.Complete(
+      "<iframe id='frame' sandbox src='iframe.html'></iframe>");
+  frame_resource.Complete(
+      "<div id='div' style='will-change: transform'>Foo</div>");
+
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      GetDocument().Lifecycle());
+  CompositeFrame();
+
+  auto* frame_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRendering());
+  auto* paint_controller = GetDocument().View()->GetPaintController();
+  ASSERT_NE(nullptr, paint_controller);
+  auto display_item_count = paint_controller->GetDisplayItemList().size();
+
+  // Moving the child fully outside the parent makes it invisible.
+  frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
+  CompositeFrame();
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
+  // Change of throttling clears paint controller, to force re-collection of
+  // graphics layers in the next frame.
+  EXPECT_EQ(nullptr, GetDocument().View()->GetPaintController());
+
+  // Force a frame update. We should re-collect the graphics layers.
+  GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
+      GetDocument().GetFrame());
+  CompositeFrame();
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
+  paint_controller = GetDocument().View()->GetPaintController();
+  ASSERT_NE(nullptr, paint_controller);
+  // We no longer collect the graphics layers of the iframe and the composited
+  // content.
+  EXPECT_GT(display_item_count, paint_controller->GetDisplayItemList().size());
+
+  // Move the child back to the visible viewport.
+  frame_element->setAttribute(kStyleAttr,
+                              "transform: translate(-50px, 0px, 0px)");
+  // Update throttling, which will schedule visual update on unthrottling of the
+  // frame.
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRendering());
+  // Change of throttling clears paint controller, to force re-collection of
+  // graphics layers in the next frame.
+  EXPECT_EQ(nullptr, GetDocument().View()->GetPaintController());
+
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRendering());
+  paint_controller = GetDocument().View()->GetPaintController();
+  ASSERT_NE(nullptr, paint_controller);
+  // Now we should collect all graphics layers again.
+  EXPECT_EQ(display_item_count, paint_controller->GetDisplayItemList().size());
 }
 
 }  // namespace blink

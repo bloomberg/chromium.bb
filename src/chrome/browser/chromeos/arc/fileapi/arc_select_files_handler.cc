@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_select_files_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -35,6 +36,10 @@ namespace arc {
 // Script for clicking OK button on the selector.
 const char kScriptClickOk[] =
     "(function() { document.querySelector('#ok-button').click(); })();";
+
+// Script for clicking Cancel button on the selector.
+const char kScriptClickCancel[] =
+    "(function() { document.querySelector('#cancel-button').click(); })();";
 
 // Script for clicking a directory element in the left pane of the selector.
 // %s should be replaced by the target directory name wrapped by double-quotes.
@@ -138,7 +143,8 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
   for (const std::string& mime_type : request->mime_types) {
     std::vector<base::FilePath::StringType> extensions;
     net::GetExtensionsForMimeType(mime_type, &extensions);
-    file_type_info->extensions.push_back(extensions);
+    if (!extensions.empty())
+      file_type_info->extensions.push_back(extensions);
   }
 }
 
@@ -171,13 +177,29 @@ void ArcSelectFilesHandler::SelectFiles(
   BuildFileTypeInfo(request, &file_type_info);
   base::FilePath default_path = GetInitialFilePath(request);
 
-  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info);
+  // Android picker apps should be shown in GET_CONTENT mode.
+  bool show_android_picker_apps =
+      request->action_type == mojom::SelectFilesActionType::GET_CONTENT;
+
+  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
+                             show_android_picker_apps);
 }
 
 void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(callback_);
+
+  const std::string& activity = ConvertFilePathToAndroidActivity(path);
+  if (!activity.empty()) {
+    // The user selected an Android picker activity instead of a file.
+    mojom::SelectFilesResultPtr result = mojom::SelectFilesResult::New();
+    result->picker_activity = activity;
+    std::move(callback_).Run(std::move(result));
+    return;
+  }
+
   std::vector<base::FilePath> files;
   files.push_back(path);
   FilesSelectedInternal(files, params);
@@ -231,6 +253,9 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
     case mojom::FileSelectorEventType::CLICK_OK:
       script = kScriptClickOk;
       break;
+    case mojom::FileSelectorEventType::CLICK_CANCEL:
+      script = kScriptClickCancel;
+      break;
     case mojom::FileSelectorEventType::CLICK_DIRECTORY:
       script = base::StringPrintf(kScriptClickDirectory,
                                   quotedClickTargetName.c_str());
@@ -274,14 +299,15 @@ SelectFileDialogHolder::~SelectFileDialogHolder() {
 void SelectFileDialogHolder::SelectFile(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path,
-    const ui::SelectFileDialog::FileTypeInfo* file_types) {
-  select_file_dialog_->SelectFile(
+    const ui::SelectFileDialog::FileTypeInfo* file_types,
+    bool show_android_picker_apps) {
+  select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/base::string16(), default_path, file_types,
       /*file_type_index=*/0,
       /*default_extension=*/base::FilePath::StringType(),
       /*owning_window=*/nullptr,
-      /*params=*/nullptr);
+      /*params=*/nullptr, show_android_picker_apps);
 }
 
 void SelectFileDialogHolder::ExecuteJavaScript(

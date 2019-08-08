@@ -49,7 +49,8 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
 
   // Public for testing.
   // Copies data to be committed from CommitRequestData into SyncEntity proto.
-  static void PopulateCommitProto(const CommitRequestData& commit_entity,
+  static void PopulateCommitProto(ModelType type,
+                                  const CommitRequestData& commit_entity,
                                   sync_pb::SyncEntity* commit_proto);
 
  private:

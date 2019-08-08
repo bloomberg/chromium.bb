@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashScreenController;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
+import org.chromium.chrome.browser.webapps.SplashController;
 
 /**
  * A CustomTabActivity that has a translucent theme. This is used to ensure seamless transition of
- * a splash screen from client app to a Trusted Web Activity, see {@link SplashScreenController}.
+ * a splash screen from client app to a Trusted Web Activity, see {@link SplashController}.
  *
  * This class is intended to be empty. Try to avoid adding code here, put it in
- * {@link SplashScreenController} or other specialized class.
+ * {@link TwaSplashController} or other specialized class.
  */
 public class TranslucentCustomTabActivity extends CustomTabActivity {}

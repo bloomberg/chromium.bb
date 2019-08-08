@@ -64,6 +64,7 @@ class OmniboxPopupModel {
   bool IsOpen() const;
 
   OmniboxPopupView* view() const { return view_; }
+  OmniboxEditModel* edit_model() const { return edit_model_; }
 
   // Returns the AutocompleteController used by this popup.
   AutocompleteController* autocomplete_controller() const {
@@ -153,6 +154,8 @@ class OmniboxPopupModel {
   // If |closes| is set true, the popup will close when the omnibox is blurred.
   bool popup_closes_on_blur() const { return popup_closes_on_blur_; }
   void set_popup_closes_on_blur(bool closes) { popup_closes_on_blur_ = closes; }
+
+  OmniboxEditModel* edit_model() { return edit_model_; }
 
   // The token value for selected_line_ and functions dealing with a "line
   // number" that indicates "no line".

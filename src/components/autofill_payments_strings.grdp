@@ -14,6 +14,23 @@
     sign in to Chrome
   </message>
 
+  <if expr="not use_titlecase">
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_LOCAL_SAVE" desc="The label for cancel button used in autofill credit card local save bubble on desktop.">
+      No thanks
+    </message>
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_UPLOAD_SAVE" desc="The label for cancel button used in autofill credit card upload save bubble on desktop.">
+      No thanks
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_LOCAL_SAVE" desc="In Title Case: The label for cancel button used in autofill credit card local save bubble on desktop.">
+      No Thanks
+    </message>
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_UPLOAD_SAVE" desc="In Title Case: The label for cancel button used in autofill credit card upload save bubble on desktop.">
+      No Thanks
+    </message>
+  </if>
+
   <!-- Autofill Credit Card Assisted Filling Infobar -->
   <if expr="is_android">
     <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_TITLE" desc="Title text for the Autofill Credit Card Assisted Filling Infobar">
@@ -29,6 +46,16 @@
     <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card Assisted Filling infobar accept button.">
       Fill in
     </message>
+    <if expr="not use_titlecase">
+      <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_NO_THANKS" desc="Text to show for the Autofill credit card Assisted Filling infobar cancel button.">
+        No thanks
+      </message>
+    </if>
+    <if expr="use_titlecase">
+      <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_NO_THANKS" desc="In Title Case: Text to show for the Autofill credit card Assisted Filling infobar cancel button.">
+        No Thanks
+      </message>
+    </if>
   </if>
 
   <if expr="not is_android">
@@ -41,12 +68,26 @@
   </if>
 
   <!-- Autofill save credit card bubble or infobar prompt -->
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT" desc="Text to show for the Autofill save credit card prompt accept button. The prompt can be either a bubble or an infobar.">
-    Save
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered." formatter_data="android_java">
-    Confirm
-  </message>
+  <if expr="is_android or is_ios">
+    <then>
+      <message name="IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT" desc="Text to show for the Autofill save credit card infobar accept button.">
+        Save
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_LOCAL_SAVE_ACCEPT" desc="Text to show for the Autofill save credit card local save bubble accept button.">
+        Save
+      </message>
+      <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_SAVE_ACCEPT" desc="Text to show for the Autofill save credit card upload save bubble accept button.">
+        Save
+      </message>
+    </else>
+  </if>
+  <if expr="is_android">
+    <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered." formatter_data="android_java">
+      Confirm
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered.">
     Continue
   </message>
@@ -83,6 +124,12 @@
   <message name="IDS_AUTOFILL_DONE" desc="Text to show for the button in the save card manager bubble when the card has been saved either locally or to Google Payments.">
     Done
   </message>
+  <message name="IDS_AUTOFILL_FAILURE_BUBBLE_TITLE" desc="Title text for the Autofill credit card upload failure bubble.">
+    Can't save card
+  </message>
+  <message name="IDS_AUTOFILL_FAILURE_BUBBLE_EXPLANATION" desc="Explanation text for the Autofill credit card upload failure bubble main content. Shown as user-facing descripion.">
+    Sorry, your card can't be saved right now
+  </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
   </message>
@@ -112,6 +159,56 @@
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP" desc="The tooltip hover text that explains why credit card upload to Google Payments is being offered.">
     Chrome is offering to save your cards in your Google Account because you are signed in. You can change this behavior in settings.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP" desc="The tooltip hover text that explains why credit card upload to Google Account is being offered and where the suggested cardholder name came from.">
+    Chrome is offering to save your cards in your Google Account because you are signed in. You can change this behavior in settings. The cardholder name comes from your account.
+  </message>
+
+  <!-- Chrome Autofill Upstream Copy Tests -->
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
+    Store card in Google Account?
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_BILLING_DETAILS" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
+    Store billing details in Google Account?
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_ADD_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
+    Add card to Google Account?
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
+    Confirm &amp; save card to Google Account?
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
+    To pay faster next time, store your card and billing address in your Google Account and on this device.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
+    To pay faster next time, add your card and billing address to your Google Account and to this device.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
+    To pay faster next time, save your card and billing address to your Google Account and to this device.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
+    To pay faster next time, store your card and billing address in your Google Account.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
+    To pay faster next time, add your card and billing address to your Google Account.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
+    To pay faster next time, save your card and billing address to your Google Account.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
+    Yes, store
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt no-thanks button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
+    Don't store
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_ADD" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
+    Yes, add
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_ADD" desc="Text to show for the Autofill save credit card prompt no-thanks button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
+    No, don't add
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_CONFIRM_AND_SAVE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
+    Confirm &amp; save
   </message>
 
   <!-- Autofill Local card migration bubble or dialog -->
@@ -191,18 +288,20 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt." formatter_data="android_java">
     Check your CVC and try again
   </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_DATE" desc="Error message that encourages the user to try to re-enter their credit card expiration date after a previous failed attempt." formatter_data="android_java">
-    Check your expiration date and try again
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC_AND_EXPIRATION" desc="Error message that encourages the user to try to re-enter their credit card expiration date and CVC after a previous failed attempt." formatter_data="android_java">
-    Check your expiration date and CVC and try again
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_MONTH" desc="Error message that encourages the user to try to re-enter their credit card expiration month after a previous failed attempt." formatter_data="android_java">
-    Check your expiration month and try again
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_YEAR" desc="Error message that encourages the user to try to re-enter their credit card expiration year after a previous failed attempt." formatter_data="android_java">
-    Check your expiration year and try again
-  </message>
+  <if expr="is_android">
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_DATE" desc="Error message that encourages the user to try to re-enter their credit card expiration date after a previous failed attempt." formatter_data="android_java">
+      Check your expiration date and try again
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC_AND_EXPIRATION" desc="Error message that encourages the user to try to re-enter their credit card expiration date and CVC after a previous failed attempt." formatter_data="android_java">
+      Check your expiration date and CVC and try again
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_MONTH" desc="Error message that encourages the user to try to re-enter their credit card expiration month after a previous failed attempt." formatter_data="android_java">
+      Check your expiration month and try again
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_YEAR" desc="Error message that encourages the user to try to re-enter their credit card expiration year after a previous failed attempt." formatter_data="android_java">
+      Check your expiration year and try again
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">
     This card can't be verified right now
   </message>
@@ -246,7 +345,7 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device. If checked, the dialog won't show up again for the given credit card." formatter_data="android_java">
     Keep a copy of this card on this device
   </message>
-  <if expr="not is_ios">
+  <if expr="is_android">
     <if expr="_google_chrome">
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device." formatter_data="android_java">
         If checked, Chrome will store a copy of your card on this device for faster form filling.

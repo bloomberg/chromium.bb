@@ -193,7 +193,8 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
                                  GetKnownTypeStrings(),
                                  this,
                                  file_system_options.is_incognito()))),
-      file_system_usage_cache_(std::make_unique<FileSystemUsageCache>()),
+      file_system_usage_cache_(std::make_unique<FileSystemUsageCache>(
+          file_system_options.is_incognito())),
       quota_observer_(new SandboxQuotaObserver(quota_manager_proxy,
                                                file_task_runner,
                                                obfuscated_file_util(),

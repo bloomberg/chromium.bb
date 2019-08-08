@@ -71,7 +71,9 @@
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -163,8 +165,8 @@ void StyleEngine::InjectSheet(const StyleSheetKey& key,
       injected_style_sheets =
           origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
                                              : injected_author_style_sheets_;
-  injected_style_sheets.push_back(
-      std::make_pair(key, CSSStyleSheet::Create(sheet, *document_)));
+  injected_style_sheets.push_back(std::make_pair(
+      key, MakeGarbageCollected<CSSStyleSheet>(sheet, *document_)));
   if (origin == WebDocument::kUserOrigin)
     MarkUserStyleDirty();
   else
@@ -196,9 +198,10 @@ CSSStyleSheet& StyleEngine::EnsureInspectorStyleSheet() {
   if (inspector_style_sheet_)
     return *inspector_style_sheet_;
 
-  StyleSheetContents* contents =
-      StyleSheetContents::Create(CSSParserContext::Create(*document_));
-  inspector_style_sheet_ = CSSStyleSheet::Create(contents, *document_);
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(
+      MakeGarbageCollected<CSSParserContext>(*document_));
+  inspector_style_sheet_ =
+      MakeGarbageCollected<CSSStyleSheet>(contents, *document_);
   MarkDocumentDirty();
   // TODO(futhark@chromium.org): Making the active stylesheets up-to-date here
   // is required by some inspector tests, at least. I theory this should not be
@@ -858,8 +861,7 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
 
   // Class vectors tend to be very short. This is faster than using a hash
   // table.
-  BitVector remaining_class_bits;
-  remaining_class_bits.EnsureSize(old_classes.size());
+  WTF::Vector<bool> remaining_class_bits(old_classes.size());
 
   InvalidationLists invalidation_lists;
   const RuleFeatureSet& features = GetRuleFeatureSet();
@@ -871,7 +873,7 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
         // Mark each class that is still in the newClasses so we can skip doing
         // an n^2 search below when looking for removals. We can't break from
         // this loop early since a class can appear more than once.
-        remaining_class_bits.QuickSet(j);
+        remaining_class_bits[j] = true;
         found = true;
       }
     }
@@ -883,13 +885,12 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
   }
 
   for (unsigned i = 0; i < old_classes.size(); ++i) {
-    if (remaining_class_bits.QuickGet(i))
+    if (remaining_class_bits[i])
       continue;
     // Class was removed.
     features.CollectInvalidationSetsForClass(invalidation_lists, element,
                                              old_classes[i]);
   }
-
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          element);
 }
@@ -1598,9 +1599,9 @@ void StyleEngine::MarkForWhitespaceReattachment() {
 }
 
 void StyleEngine::NodeWillBeRemoved(Node& node) {
-  if (node.IsElementNode()) {
+  if (auto* element = DynamicTo<Element>(node)) {
     pending_invalidations_.RescheduleSiblingInvalidationsAsDescendants(
-        ToElement(node));
+        *element);
   }
 
   // Mark closest ancestor with with LayoutObject to have all whitespace
@@ -1619,8 +1620,9 @@ void StyleEngine::NodeWillBeRemoved(Node& node) {
     layout_object = layout_object->Parent();
   DCHECK(layout_object);
   DCHECK(layout_object->GetNode());
-  if (layout_object->GetNode()->IsElementNode()) {
-    whitespace_reattach_set_.insert(ToElement(layout_object->GetNode()));
+  if (auto* layout_object_element =
+          DynamicTo<Element>(layout_object->GetNode())) {
+    whitespace_reattach_set_.insert(layout_object_element);
     GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
   }
 }
@@ -1735,8 +1737,8 @@ void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
   }
   for (ContainerNode* ancestor = root_element.ParentOrShadowHostNode();
        ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
-    if (ancestor->IsElementNode())
-      ToElement(ancestor)->RecalcStyleForTraversalRootAncestor();
+    if (auto* ancestor_element = DynamicTo<Element>(ancestor))
+      ancestor_element->RecalcStyleForTraversalRootAncestor();
     ancestor->ClearChildNeedsStyleRecalc();
   }
   style_recalc_root_.Clear();
@@ -1756,8 +1758,8 @@ void StyleEngine::RebuildLayoutTree() {
 
   for (ContainerNode* ancestor = root_element.GetReattachParent(); ancestor;
        ancestor = ancestor->GetReattachParent()) {
-    if (ancestor->IsElementNode())
-      ToElement(ancestor)->RebuildLayoutTreeForTraversalRootAncestor();
+    if (auto* ancestor_element = DynamicTo<Element>(ancestor))
+      ancestor_element->RebuildLayoutTreeForTraversalRootAncestor();
     ancestor->ClearChildNeedsStyleRecalc();
     ancestor->ClearChildNeedsReattachLayoutTree();
   }
@@ -1768,59 +1770,99 @@ void StyleEngine::RebuildLayoutTree() {
 void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
   DCHECK(IsMaster());
-  if (GetDocument().IsActive())
+  if (GetDocument().IsActive()) {
+    if (in_dom_removal_) {
+      ancestor = nullptr;
+      dirty_node = document_;
+    }
     style_invalidation_root_.Update(ancestor, dirty_node);
+  }
 }
 
 void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
                                         Node* dirty_node) {
   if (GetDocument().IsActive()) {
     DCHECK(!in_layout_tree_rebuild_);
+    if (in_dom_removal_) {
+      ancestor = nullptr;
+      dirty_node = document_;
+    }
     style_recalc_root_.Update(ancestor, dirty_node);
   }
 }
 
 void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
+  DCHECK(!in_dom_removal_);
   if (GetDocument().IsActive())
     layout_tree_rebuild_root_.Update(ancestor, dirty_node);
+}
+
+bool StyleEngine::SupportsDarkColorScheme() {
+  if (!meta_color_scheme_)
+    return false;
+  if (const auto* scheme_list = DynamicTo<CSSValueList>(*meta_color_scheme_)) {
+    for (auto& item : *scheme_list) {
+      if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
+        if (ident->GetValueID() == CSSValueID::kDark)
+          return true;
+      }
+    }
+  }
+  return false;
 }
 
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
   DCHECK(settings);
-  PreferredColorScheme old_preferred_scheme = preferred_color_scheme_;
-  ColorScheme old_color_scheme = color_scheme_;
-
+  PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
-  color_scheme_ = ColorScheme::kLight;
-
-  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
-    if (supported_color_schemes_.Contains(ColorScheme::kDark)) {
-      color_scheme_ = ColorScheme::kDark;
-    } else if (settings->ForceDarkModeEnabled()) {
-      // Make sure we don't match (prefers-color-scheme: dark) when forced
-      // darkening is enabled.
-      preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
-    }
+  bool use_dark_scheme =
+      preferred_color_scheme_ == PreferredColorScheme::kDark &&
+      SupportsDarkColorScheme();
+  if (!use_dark_scheme && settings->ForceDarkModeEnabled()) {
+    // Make sure we don't match (prefers-color-scheme: dark) when forced
+    // darkening is enabled.
+    preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
-
-  if (color_scheme_ != old_color_scheme) {
+  if (preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
-    if (LocalFrameView* view = GetDocument().View()) {
-      if (color_scheme_ == ColorScheme::kDark) {
-        view->SetBaseBackgroundColor(color_scheme_ == ColorScheme::kDark
-                                         ? Color::kBlack
-                                         : Color::kWhite);
-      }
-    }
-  }
-  if (preferred_color_scheme_ != old_preferred_scheme)
-    MediaQueryAffectingValueChanged();
+  UpdateColorSchemeBackground();
 }
 
 void StyleEngine::ColorSchemeChanged() {
   UpdateColorScheme();
+}
+
+void StyleEngine::SetColorSchemeFromMeta(const CSSValue* color_scheme) {
+  meta_color_scheme_ = color_scheme;
+  DCHECK(GetDocument().documentElement());
+  GetDocument().documentElement()->SetNeedsStyleRecalc(
+      kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                             style_change_reason::kPlatformColorChange));
+  UpdateColorScheme();
+}
+
+void StyleEngine::UpdateColorSchemeBackground() {
+  LocalFrameView* view = GetDocument().View();
+  if (!view)
+    return;
+
+  bool use_dark_background = false;
+
+  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
+    const ComputedStyle* style = nullptr;
+    if (auto* root_element = GetDocument().documentElement())
+      style = root_element->GetComputedStyle();
+    if (style) {
+      if (style->UsedColorScheme() == ColorScheme::kDark)
+        use_dark_background = true;
+    } else if (SupportsDarkColorScheme()) {
+      use_dark_background = true;
+    }
+  }
+
+  view->SetUseDarkSchemeBackground(use_dark_background);
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {
@@ -1849,6 +1891,7 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(text_to_sheet_cache_);
   visitor->Trace(sheet_to_text_cache_);
   visitor->Trace(tracker_);
+  visitor->Trace(meta_color_scheme_);
   FontSelectorClient::Trace(visitor);
 }
 

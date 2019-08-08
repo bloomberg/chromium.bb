@@ -39,6 +39,7 @@
 #include "url/gurl.h"
 
 using autofill::FormStructure;
+using autofill::PasswordRequirementsSpec;
 using base::ASCIIToUTF16;
 using testing::_;
 
@@ -58,7 +59,10 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   explicit TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
         password_generation_manager_(client, this),
-        password_autofill_manager_(this, nullptr, client) {}
+        password_autofill_manager_(this, nullptr, client) {
+    ON_CALL(*this, GetLastCommittedURL())
+        .WillByDefault(testing::Return(empty_url_));
+  }
   ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.
@@ -82,8 +86,10 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   }
 
   MOCK_METHOD0(AllowToRunFormClassifier, void());
+  MOCK_CONST_METHOD0(GetLastCommittedURL, GURL());
 
  private:
+  GURL empty_url_;
   PasswordManager password_manager_;
   PasswordGenerationFrameHelper password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
@@ -91,15 +97,15 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
       found_forms_eligible_for_generation_;
 };
 
-autofill::PasswordRequirementsSpec GetDomainWideRequirements() {
-  autofill::PasswordRequirementsSpec spec;
+PasswordRequirementsSpec GetDomainWideRequirements() {
+  PasswordRequirementsSpec spec;
   spec.set_max_length(7);
   spec.set_priority(20);
   return spec;
 }
 
-autofill::PasswordRequirementsSpec GetFieldRequirements() {
-  autofill::PasswordRequirementsSpec spec;
+PasswordRequirementsSpec GetFieldRequirements() {
+  PasswordRequirementsSpec spec;
   spec.set_max_length(8);
   spec.set_priority(10);
   return spec;
@@ -117,7 +123,7 @@ class FakePasswordRequirementsSpecFetcher
   void Fetch(GURL origin, FetchCallback callback) override {
     if (origin.GetOrigin().host_piece().find(kNoServerResponse) !=
         std::string::npos) {
-      std::move(callback).Run(autofill::PasswordRequirementsSpec());
+      std::move(callback).Run(PasswordRequirementsSpec());
     } else if (origin.GetOrigin().host_piece().find(kHasServerResponse) !=
                std::string::npos) {
       std::move(callback).Run(GetDomainWideRequirements());
@@ -241,27 +247,35 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
     const char* name;
     bool has_domain_wide_requirements = false;
     bool has_field_requirements = false;
-    autofill::PasswordRequirementsSpec expected_spec;
+    PasswordRequirementsSpec expected_spec;
+    // Assuming that a second form existed on the page for which no
+    // per-formsignature-requirements exists, this indicates the expected
+    // requirements that Chrome should conclude.
+    PasswordRequirementsSpec expected_spec_for_unknown_signature;
   } kTests[] = {
       {
           .name = "No known requirements",
-          .expected_spec = autofill::PasswordRequirementsSpec(),
+          .expected_spec = PasswordRequirementsSpec(),
+          .expected_spec_for_unknown_signature = PasswordRequirementsSpec(),
       },
       {
           .name = "Only domain wide requirements",
           .has_domain_wide_requirements = true,
           .expected_spec = GetDomainWideRequirements(),
+          .expected_spec_for_unknown_signature = GetDomainWideRequirements(),
       },
       {
           .name = "Only field requirements",
           .has_field_requirements = true,
           .expected_spec = GetFieldRequirements(),
+          .expected_spec_for_unknown_signature = GetFieldRequirements(),
       },
       {
           .name = "Domain wide requirements take precedence",
           .has_domain_wide_requirements = true,
           .has_field_requirements = true,
           .expected_spec = GetDomainWideRequirements(),
+          .expected_spec_for_unknown_signature = GetDomainWideRequirements(),
       },
   };
 
@@ -275,19 +289,25 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
     ++test_counter;
 
     autofill::FormFieldData username;
-    username.label = ASCIIToUTF16("username");
     username.name = ASCIIToUTF16("login");
     username.form_control_type = "text";
 
     autofill::FormFieldData password;
-    password.label = ASCIIToUTF16("password");
     password.name =
         ASCIIToUTF16(base::StringPrintf("password%d", test_counter));
     password.form_control_type = "password";
 
+    // Configure the last committed entry URL with some magic constants for
+    // which the FakePasswordRequirementsFetcher is configured to respond
+    // with a filled or empty response.
+    GURL origin(base::StringPrintf("https://%d-%s/", test_counter,
+                                   test.has_domain_wide_requirements
+                                       ? kHasServerResponse
+                                       : kNoServerResponse));
+
     autofill::FormData account_creation_form;
-    account_creation_form.url = GURL("http://accounts.yahoo.com/");
-    account_creation_form.action = GURL("http://accounts.yahoo.com/signup");
+    account_creation_form.url = origin;
+    account_creation_form.action = origin;
     account_creation_form.name = ASCIIToUTF16("account_creation_form");
     account_creation_form.fields.push_back(username);
     account_creation_form.fields.push_back(password);
@@ -306,13 +326,7 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
       *response.mutable_field(1)->mutable_password_requirements() =
           GetFieldRequirements();
     }
-    // Configure the last committed entry URL with some magic constants for
-    // which the FakePasswordRequirementsFetcher is configured to respond
-    // with a filled or empty response.
-    GURL origin(base::StringPrintf("https://%d-%s/", test_counter,
-                                   test.has_domain_wide_requirements
-                                       ? kHasServerResponse
-                                       : kNoServerResponse));
+
     client_->SetLastCommittedEntryUrl(origin);
 
     std::string response_string;
@@ -332,10 +346,16 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
         autofill::CalculateFormSignature(account_creation_form);
     autofill::FieldSignature field_signature =
         autofill::CalculateFieldSignatureForField(password);
-    autofill::PasswordRequirementsSpec spec =
+    PasswordRequirementsSpec spec =
         client_->GetPasswordRequirementsService()->GetSpec(
             origin, form_signature, field_signature);
     EXPECT_EQ(test.expected_spec.max_length(), spec.max_length());
+
+    PasswordRequirementsSpec spec_for_unknown_signature =
+        client_->GetPasswordRequirementsService()->GetSpec(
+            origin, form_signature + 1, field_signature);
+    EXPECT_EQ(test.expected_spec_for_unknown_signature.max_length(),
+              spec.max_length());
   }
 }
 
@@ -462,6 +482,33 @@ TEST_F(PasswordGenerationFrameHelperTest, UpdatePasswordSyncStateIncognito) {
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
 
   EXPECT_FALSE(IsGenerationEnabled());
+}
+
+TEST_F(PasswordGenerationFrameHelperTest, GenerationDisabledForGoogle) {
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
+
+  GURL accounts_url = GURL("https://accounts.google.com/path?q=1");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(accounts_url));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  GURL myaccount_url = GURL("https://myaccount.google.com/path?q=1");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(myaccount_url));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  GURL google_url = GURL("https://subdomain1.subdomain2.google.com/path");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(google_url));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  GURL non_google_url = GURL("https://example.com");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(non_google_url));
+  EXPECT_TRUE(IsGenerationEnabled());
 }
 
 }  // namespace password_manager

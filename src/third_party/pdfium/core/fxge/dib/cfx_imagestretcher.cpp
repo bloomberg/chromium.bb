@@ -9,6 +9,7 @@
 #include <climits>
 #include <tuple>
 
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/cstretchengine.h"
@@ -59,7 +60,9 @@ CFX_ImageStretcher::CFX_ImageStretcher(ScanlineComposerIface* pDest,
       m_ClipRect(bitmap_rect),
       m_DestFormat(GetStretchedFormat(*pSource)),
       m_DestBPP(GetBppFromFormat(m_DestFormat)),
-      m_LineIndex(0) {}
+      m_LineIndex(0) {
+  ASSERT(m_ClipRect.Valid());
+}
 
 CFX_ImageStretcher::~CFX_ImageStretcher() {}
 

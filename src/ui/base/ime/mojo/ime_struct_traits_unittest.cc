@@ -99,7 +99,8 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
 TEST_F(IMEStructTraitsTest, CompositionText) {
   ui::CompositionText input;
   input.text = base::UTF8ToUTF16("abcdefghij");
-  ui::ImeTextSpan ime_text_span_1(0, 2, ui::ImeTextSpan::Thickness::kThin);
+  ui::ImeTextSpan ime_text_span_1(ui::ImeTextSpan::Type::kComposition, 0, 2,
+                                  ui::ImeTextSpan::Thickness::kThin);
   ime_text_span_1.underline_color = SK_ColorGRAY;
   input.ime_text_spans.push_back(ime_text_span_1);
   ui::ImeTextSpan ime_text_span_2(ui::ImeTextSpan::Type::kComposition, 3, 6,

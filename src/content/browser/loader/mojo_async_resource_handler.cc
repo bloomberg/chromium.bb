@@ -23,6 +23,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/resource_scheduler.h"
@@ -30,7 +31,7 @@
 namespace content {
 namespace {
 
-int g_allocation_size = MojoAsyncResourceHandler::kDefaultAllocationSize;
+int g_allocation_size = network::kDataPipeDefaultAllocationSize;
 
 // MimeTypeResourceHandler *implicitly* requires that the buffer size
 // returned from OnWillRead should be larger than certain size.

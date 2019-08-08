@@ -4,16 +4,17 @@
 
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/browser/notifications/scheduler/notification_params.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 
 namespace notifications {
 
 NotificationScheduleServiceImpl::NotificationScheduleServiceImpl(
-    std::unique_ptr<NotificationSchedulerContext> context)
-    : scheduler_(NotificationScheduler::Create(std::move(context))) {}
+    std::unique_ptr<NotificationScheduler> scheduler)
+    : scheduler_(std::move(scheduler)) {}
 
 NotificationScheduleServiceImpl::~NotificationScheduleServiceImpl() = default;
 

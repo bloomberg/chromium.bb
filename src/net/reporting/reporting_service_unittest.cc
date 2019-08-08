@@ -95,15 +95,7 @@ TEST_F(ReportingServiceTest, ProcessHeader) {
                                       "\","
                                       "\"max_age\":86400}");
 
-  const ReportingClient* client =
-      FindClientInCache(context()->cache(), kOrigin_, kEndpoint_);
-  ASSERT_TRUE(client != nullptr);
-  EXPECT_EQ(kOrigin_, client->origin);
-  EXPECT_EQ(kEndpoint_, client->endpoint);
-  EXPECT_EQ(ReportingClient::Subdomains::EXCLUDE, client->subdomains);
-  EXPECT_EQ(kGroup_, client->group);
-  EXPECT_EQ(context()->tick_clock()->NowTicks() + base::TimeDelta::FromDays(1),
-            client->expires);
+  EXPECT_EQ(1u, context()->cache()->GetEndpointCount());
 }
 
 TEST_F(ReportingServiceTest, ProcessHeader_TooLong) {
@@ -117,9 +109,7 @@ TEST_F(ReportingServiceTest, ProcessHeader_TooLong) {
       "\"junk\":\"" + std::string(32 * 1024, 'a') + "\"}";
   service()->ProcessHeader(kUrl_, header_too_long);
 
-  const ReportingClient* client =
-      FindClientInCache(context()->cache(), kOrigin_, kEndpoint_);
-  EXPECT_FALSE(client);
+  EXPECT_EQ(0u, context()->cache()->GetEndpointCount());
 }
 
 TEST_F(ReportingServiceTest, ProcessHeader_TooDeep) {
@@ -133,9 +123,7 @@ TEST_F(ReportingServiceTest, ProcessHeader_TooDeep) {
                                       "\"junk\":[[[[[[[[[[]]]]]]]]]]}";
   service()->ProcessHeader(kUrl_, header_too_deep);
 
-  const ReportingClient* client =
-      FindClientInCache(context()->cache(), kOrigin_, kEndpoint_);
-  EXPECT_FALSE(client);
+  EXPECT_EQ(0u, context()->cache()->GetEndpointCount());
 }
 
 }  // namespace

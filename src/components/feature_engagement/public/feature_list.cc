@@ -36,18 +36,24 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDownloadInfoBarDownloadsAreFasterFeature,
     &kIPHHomePageButtonFeature,
     &kIPHHomepageTileFeature,
+    &kIPHIdentityDiscFeature,
+    &kIPHKeyboardAccessoryAddressFillingFeature,
+    &kIPHKeyboardAccessoryPasswordFillingFeature,
+    &kIPHKeyboardAccessoryPaymentFillingFeature,
     &kIPHNewTabPageButtonFeature,
     &kIPHPreviewsOmniboxUIFeature,
     &kIPHTabGroupsQuicklyComparePagesFeature,
     &kIPHTabGroupsTapToSeeAnotherTabFeature,
     &kIPHTabGroupsYourTabsAreTogetherFeature,
     &kIPHTranslateMenuButtonFeature,
+    &kIPHExploreSitesTileFeature,
 #endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
     &kIPHBookmarkFeature,
     &kIPHIncognitoWindowFeature,
     &kIPHNewTabFeature,
     &kIPHReopenTabFeature,
+    &kIPHFocusModeFeature,
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #if defined(OS_IOS)
     &kIPHBottomToolbarTipFeature,

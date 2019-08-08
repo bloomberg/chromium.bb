@@ -5,10 +5,10 @@
 #include "chromeos/services/device_sync/cryptauth_device_manager_impl.h"
 
 #include <stddef.h>
-#include <stdexcept>
-#include <utility>
 
 #include <memory>
+#include <stdexcept>
+#include <utility>
 
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -759,7 +759,9 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesFailure(
   RecordDeviceSyncResult(false /* success */);
 }
 
-void CryptAuthDeviceManagerImpl::OnResyncMessage() {
+void CryptAuthDeviceManagerImpl::OnResyncMessage(
+    const base::Optional<std::string>& session_id,
+    const base::Optional<CryptAuthFeatureType>& feature_type) {
   ForceSyncNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 }
 

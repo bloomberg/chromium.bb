@@ -149,7 +149,14 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
         device_information_(std::move(device_information)),
         watcher_(Make<FakeBluetoothLEAdvertisementWatcherWinrt>()),
         bluetooth_test_winrt_(bluetooth_test_winrt) {
-    Init(std::move(init_cb));
+    ComPtr<IBluetoothAdapterStatics> bluetooth_adapter_statics;
+    Make<FakeBluetoothAdapterStaticsWinrt>(adapter_).CopyTo(
+        (IBluetoothAdapterStatics**)&bluetooth_adapter_statics);
+    ComPtr<IDeviceInformationStatics> device_information_statics;
+    Make<FakeDeviceInformationStaticsWinrt>(device_information_)
+        .CopyTo((IDeviceInformationStatics**)&device_information_statics);
+    InitForTests(std::move(init_cb), std::move(bluetooth_adapter_statics),
+                 std::move(device_information_statics), nullptr);
   }
 
   FakeBluetoothLEAdvertisementWatcherWinrt* watcher() { return watcher_.Get(); }
@@ -157,15 +164,15 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
  protected:
   ~TestBluetoothAdapterWinrt() override = default;
 
-  HRESULT GetBluetoothAdapterStaticsActivationFactory(
-      IBluetoothAdapterStatics** statics) const override {
+  HRESULT GetTestBluetoothAdapterStaticsActivationFactory(
+      IBluetoothAdapterStatics** statics) const {
     auto adapter_statics = Make<FakeBluetoothAdapterStaticsWinrt>(adapter_);
     return adapter_statics.CopyTo(statics);
   }
 
   HRESULT
-  GetDeviceInformationStaticsActivationFactory(
-      IDeviceInformationStatics** statics) const override {
+  GetTestDeviceInformationStaticsActivationFactory(
+      IDeviceInformationStatics** statics) const {
     auto device_information_statics =
         Make<FakeDeviceInformationStaticsWinrt>(device_information_);
     return device_information_statics.CopyTo(statics);
@@ -260,7 +267,7 @@ void BluetoothTestWin::InitWithFakeAdapter() {
   auto fake_bt_classic_wrapper =
       std::make_unique<win::BluetoothClassicWrapperFake>();
   fake_bt_classic_wrapper->SimulateARadio(
-      base::SysUTF8ToWide(kTestAdapterName),
+      base::UTF8ToUTF16(kTestAdapterName),
       CanonicalStringToBLUETOOTH_ADDRESS(kTestAdapterAddress));
 
   auto fake_bt_le_wrapper =
@@ -647,7 +654,7 @@ void BluetoothTestWin::FinishPendingTasks() {
 BluetoothTestWinrt::BluetoothTestWinrt() {
   if (GetParam()) {
     scoped_feature_list_.InitAndEnableFeature(kNewBLEWinImplementation);
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
       scoped_winrt_initializer_.emplace();
     }
   } else {
@@ -662,7 +669,7 @@ BluetoothTestWinrt::~BluetoothTestWinrt() {
 }
 
 bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
-  return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10
+  return GetParam() ? base::win::GetVersion() >= base::win::Version::WIN10
                     : BluetoothTestWin::PlatformSupportsLowEnergy();
 }
 

@@ -62,6 +62,7 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
+  void DidChangeVisibleSecurityState() override;
 
   base::string16 window_title_;
 

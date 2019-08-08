@@ -251,15 +251,50 @@ TEST_F(QuicTimeWaitListManagerTest, CheckStatelessConnectionIdInTimeWait) {
 
 TEST_F(QuicTimeWaitListManagerTest, SendVersionNegotiationPacket) {
   std::unique_ptr<QuicEncryptedPacket> packet(
-      QuicFramer::BuildVersionNegotiationPacket(connection_id_, false,
+      QuicFramer::BuildVersionNegotiationPacket(connection_id_,
+                                                EmptyQuicConnectionId(), false,
                                                 AllSupportedVersions()));
   EXPECT_CALL(writer_, WritePacket(_, packet->length(), self_address_.host(),
                                    peer_address_, _))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
 
   time_wait_list_manager_.SendVersionNegotiationPacket(
-      connection_id_, false, AllSupportedVersions(), self_address_,
-      peer_address_, QuicMakeUnique<QuicPerPacketContext>());
+      connection_id_, EmptyQuicConnectionId(), false, AllSupportedVersions(),
+      self_address_, peer_address_, QuicMakeUnique<QuicPerPacketContext>());
+  EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
+}
+
+TEST_F(QuicTimeWaitListManagerTest, SendIetfVersionNegotiationPacket) {
+  std::unique_ptr<QuicEncryptedPacket> packet(
+      QuicFramer::BuildVersionNegotiationPacket(connection_id_,
+                                                EmptyQuicConnectionId(), true,
+                                                AllSupportedVersions()));
+  EXPECT_CALL(writer_, WritePacket(_, packet->length(), self_address_.host(),
+                                   peer_address_, _))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+
+  time_wait_list_manager_.SendVersionNegotiationPacket(
+      connection_id_, EmptyQuicConnectionId(), true, AllSupportedVersions(),
+      self_address_, peer_address_, QuicMakeUnique<QuicPerPacketContext>());
+  EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
+}
+
+TEST_F(QuicTimeWaitListManagerTest,
+       SendIetfVersionNegotiationPacketWithClientConnectionId) {
+  // Client connection IDs cannot be used unless this flag is true.
+  SetQuicRestartFlag(quic_do_not_override_connection_id, true);
+
+  std::unique_ptr<QuicEncryptedPacket> packet(
+      QuicFramer::BuildVersionNegotiationPacket(connection_id_,
+                                                TestConnectionId(0x33), true,
+                                                AllSupportedVersions()));
+  EXPECT_CALL(writer_, WritePacket(_, packet->length(), self_address_.host(),
+                                   peer_address_, _))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+
+  time_wait_list_manager_.SendVersionNegotiationPacket(
+      connection_id_, TestConnectionId(0x33), true, AllSupportedVersions(),
+      self_address_, peer_address_, QuicMakeUnique<QuicPerPacketContext>());
   EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
 }
 
@@ -560,18 +595,11 @@ TEST_F(QuicTimeWaitListManagerTest,
       QuicTimeWaitListManager::SEND_TERMINATION_PACKETS, ENCRYPTION_INITIAL,
       &termination_packets);
 
-  if (GetQuicReloadableFlag(quic_always_reset_short_header_packets)) {
-    // Termination packet is not encrypted, instead, send stateless reset.
-    EXPECT_CALL(writer_,
-                WritePacket(_, _, self_address_.host(), peer_address_, _))
-        .With(Args<0, 1>(PublicResetPacketEq(connection_id_)))
-        .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
-  } else {
-    // An unprocessable connection close is sent to peer.
-    EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
-                                     self_address_.host(), peer_address_, _))
-        .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
-  }
+  // Termination packet is not encrypted, instead, send stateless reset.
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, self_address_.host(), peer_address_, _))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id_)))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
   // Processes IETF short header packet.
   time_wait_list_manager_.ProcessPacket(
       self_address_, peer_address_, connection_id_,

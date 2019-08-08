@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -36,7 +37,7 @@ class AssociatedInterfacePtr {
 
   // Constructs an unbound AssociatedInterfacePtr.
   AssociatedInterfacePtr() {}
-  AssociatedInterfacePtr(decltype(nullptr)) {}
+  AssociatedInterfacePtr(std::nullptr_t) {}
 
   AssociatedInterfacePtr(AssociatedInterfacePtr&& other) {
     internal_state_.Swap(&other.internal_state_);
@@ -52,7 +53,7 @@ class AssociatedInterfacePtr {
 
   // Assigning nullptr to this class causes it to closes the associated
   // interface (if any) and returns the pointer to the unbound state.
-  AssociatedInterfacePtr& operator=(decltype(nullptr)) {
+  AssociatedInterfacePtr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }

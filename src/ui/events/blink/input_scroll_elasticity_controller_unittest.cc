@@ -23,11 +23,12 @@ enum Phase {
 };
 
 enum InertialPhaseState {
-  UnknownMomentumPhase =
-      blink::WebGestureEvent::InertialPhaseState::kUnknownMomentumPhase,
-  NonMomentumPhase =
-      blink::WebGestureEvent::InertialPhaseState::kNonMomentumPhase,
-  MomentumPhase = blink::WebGestureEvent::InertialPhaseState::kMomentumPhase,
+  UnknownMomentumPhase = static_cast<int>(
+      blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum),
+  NonMomentumPhase = static_cast<int>(
+      blink::WebGestureEvent::InertialPhaseState::kNonMomentum),
+  MomentumPhase =
+      static_cast<int>(blink::WebGestureEvent::InertialPhaseState::kMomentum),
 };
 
 class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {

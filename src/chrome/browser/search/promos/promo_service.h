@@ -69,7 +69,7 @@ class PromoService : public KeyedService {
 
  private:
   void OnLoadDone(std::unique_ptr<std::string> response_body);
-  void OnJsonParsed(std::unique_ptr<base::Value> value);
+  void OnJsonParsed(base::Value value);
   void OnJsonParseFailed(const std::string& message);
 
   void NotifyObservers();

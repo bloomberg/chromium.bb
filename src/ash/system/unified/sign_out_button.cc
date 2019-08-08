@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/sign_out_button.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -82,6 +82,10 @@ std::unique_ptr<views::InkDropMask> RoundedLabelButton::CreateInkDropMask()
                                                        kTrayItemSize / 2);
 }
 
+const char* RoundedLabelButton::GetClassName() const {
+  return "RoundedLabelButton";
+}
+
 SignOutButton::SignOutButton(views::ButtonListener* listener)
     : RoundedLabelButton(listener,
                          user::GetLocalizedSignOutStringForStatus(
@@ -92,5 +96,9 @@ SignOutButton::SignOutButton(views::ButtonListener* listener)
 }
 
 SignOutButton::~SignOutButton() = default;
+
+const char* SignOutButton::GetClassName() const {
+  return "SignOutButton";
+}
 
 }  // namespace ash

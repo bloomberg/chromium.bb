@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_TYPE_H_
 
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -63,7 +64,10 @@ class DocumentType final : public Node {
   String system_id_;
 };
 
-DEFINE_NODE_TYPE_CASTS(DocumentType, IsDocumentTypeNode());
+template <>
+struct DowncastTraits<DocumentType> {
+  static bool AllowFrom(const Node& node) { return node.IsDocumentTypeNode(); }
+};
 
 }  // namespace blink
 

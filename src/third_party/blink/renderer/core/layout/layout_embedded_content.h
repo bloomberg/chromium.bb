@@ -57,7 +57,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   WebPluginContainerImpl* Plugin() const;
   EmbeddedContentView* GetEmbeddedContentView() const;
 
-  LayoutRect ReplacedContentRect() const final;
+  PhysicalRect ReplacedContentRect() const final;
 
   void UpdateOnEmbeddedContentViewChange();
   void UpdateGeometry(EmbeddedContentView&);
@@ -72,7 +72,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
   void UpdateLayout() override;
   void PaintReplaced(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
   void InvalidatePaint(const PaintInvalidatorContext&) const final;
   CursorDirective GetCursor(const LayoutPoint&, Cursor&) const final;
 

@@ -37,6 +37,8 @@ class VoiceInteractionControllerClient
   // Notify the controller about state changes.
   void NotifyStatusChanged(ash::mojom::VoiceInteractionState state);
 
+  void NotifyLockedFullScreenStateChanged(bool enabled);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

@@ -312,11 +312,6 @@ void Display_logInfo(angle::PlatformMethods *platform, const char *infoMessage)
 void ANGLESetDefaultDisplayPlatform(angle::EGLDisplayType display)
 {
     angle::PlatformMethods *platformMethods = ANGLEPlatformCurrent();
-    if (platformMethods->logError != angle::DefaultLogError)
-    {
-        // Don't reset pre-set Platform to Default
-        return;
-    }
 
     ANGLEResetDisplayPlatform(display);
     platformMethods->logError   = Display_logError;
@@ -490,12 +485,6 @@ void Display::setAttributes(rx::DisplayImpl *impl, const AttributeMap &attribMap
     mImplementation = impl;
 
     mAttributeMap = attribMap;
-}
-
-Error Display::initialize()
-{
-    ASSERT(mImplementation != nullptr);
-    mImplementation->setBlobCache(&mBlobCache);
 
     // TODO(jmadill): Store Platform in Display and init here.
     const angle::PlatformMethods *platformMethods =
@@ -509,6 +498,12 @@ Error Display::initialize()
     {
         ANGLESetDefaultDisplayPlatform(this);
     }
+}
+
+Error Display::initialize()
+{
+    ASSERT(mImplementation != nullptr);
+    mImplementation->setBlobCache(&mBlobCache);
 
     gl::InitializeDebugAnnotations(&mAnnotator);
 
@@ -547,6 +542,9 @@ Error Display::initialize()
 
         config.second.renderableType |= EGL_OPENGL_ES_BIT;
     }
+
+    mFeatures.clear();
+    mImplementation->populateFeatureList(&mFeatures);
 
     initDisplayExtensions();
     initVendorString();
@@ -600,7 +598,7 @@ Error Display::terminate(const Thread *thread)
         ANGLE_TRY(destroyContext(thread, *mContextSet.begin()));
     }
 
-    ANGLE_TRY(makeCurrent(nullptr, nullptr, nullptr));
+    ANGLE_TRY(makeCurrent(thread, nullptr, nullptr, nullptr));
 
     // The global texture manager should be deleted with the last context that uses it.
     ASSERT(mGlobalTextureShareGroupUsers == 0 && mTextureManager == nullptr);
@@ -921,10 +919,22 @@ Error Display::createSync(const gl::Context *currentContext,
     return NoError();
 }
 
-Error Display::makeCurrent(egl::Surface *drawSurface,
+Error Display::makeCurrent(const Thread *thread,
+                           egl::Surface *drawSurface,
                            egl::Surface *readSurface,
                            gl::Context *context)
 {
+    if (!mInitialized)
+    {
+        return NoError();
+    }
+
+    gl::Context *previousContext = thread->getContext();
+    if (previousContext)
+    {
+        ANGLE_TRY(previousContext->unMakeCurrent(this));
+    }
+
     ANGLE_TRY(mImplementation->makeCurrent(drawSurface, readSurface, context));
 
     if (context != nullptr)
@@ -995,13 +1005,15 @@ void Display::destroyStream(egl::Stream *stream)
 Error Display::destroyContext(const Thread *thread, gl::Context *context)
 {
     gl::Context *currentContext   = thread->getContext();
+    Surface *currentDrawSurface   = thread->getCurrentDrawSurface();
+    Surface *currentReadSurface   = thread->getCurrentReadSurface();
     bool changeContextForDeletion = context != currentContext;
 
     // Make the context being deleted current during it's deletion.  This allows it to delete any
     // resources it's holding.
     if (changeContextForDeletion)
     {
-        ANGLE_TRY(makeCurrent(nullptr, nullptr, context));
+        ANGLE_TRY(makeCurrent(thread, nullptr, nullptr, context));
     }
 
     if (context->usingDisplayTextureShareGroup())
@@ -1024,8 +1036,7 @@ Error Display::destroyContext(const Thread *thread, gl::Context *context)
     // Set the previous context back to current
     if (changeContextForDeletion)
     {
-        ANGLE_TRY(makeCurrent(thread->getCurrentDrawSurface(), thread->getCurrentReadSurface(),
-                              currentContext));
+        ANGLE_TRY(makeCurrent(thread, currentDrawSurface, currentReadSurface, currentContext));
     }
 
     return NoError();
@@ -1236,6 +1247,9 @@ void Display::initDisplayExtensions()
     // that ANativeWindow is not recordable.
     mDisplayExtensions.recordable = true;
 
+    // EGL_ANGLE_workaround_control is implemented on all backends.
+    mDisplayExtensions.workaroundControlANGLE = true;
+
     mDisplayExtensionString = GenerateExtensionsString(mDisplayExtensions);
 }
 
@@ -1427,6 +1441,40 @@ EGLint Display::programCacheResize(EGLint limit, EGLenum mode)
             UNREACHABLE();
             return 0;
     }
+}
+
+const char *Display::queryStringi(const EGLint name, const EGLint index)
+{
+    const char *result = nullptr;
+    switch (name)
+    {
+        case EGL_WORKAROUND_NAME_ANGLE:
+            result = mFeatures[index]->name;
+            break;
+        case EGL_WORKAROUND_CATEGORY_ANGLE:
+            result = angle::FeatureCategoryToString(mFeatures[index]->category);
+            break;
+        case EGL_WORKAROUND_DESCRIPTION_ANGLE:
+            result = mFeatures[index]->description;
+            break;
+        case EGL_WORKAROUND_BUG_ANGLE:
+            result = mFeatures[index]->bug;
+            break;
+        case EGL_WORKAROUND_ENABLED_ANGLE:
+            if (mFeatures[index]->enabled)
+            {
+                result = "true";
+            }
+            else
+            {
+                result = "false";
+            }
+            break;
+        default:
+            UNREACHABLE();
+            return nullptr;
+    }
+    return result;
 }
 
 }  // namespace egl

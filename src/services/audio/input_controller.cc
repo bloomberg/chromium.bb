@@ -158,8 +158,8 @@ void CopySamplesWithClamping(const media::AudioBus& src_bus,
 InputController::ProcessingHelper::ProcessingHelper(
     const media::AudioParameters& params,
     media::AudioProcessingSettings processing_settings,
-    mojom::AudioProcessorControlsRequest controls_request)
-    : binding_(this, std::move(controls_request)),
+    mojo::PendingReceiver<mojom::AudioProcessorControls> controls_receiver)
+    : receiver_(this, std::move(controls_receiver)),
       params_(params),
       audio_processor_(
           std::make_unique<media::AudioProcessor>(params,
@@ -414,9 +414,9 @@ InputController::InputController(
     if (processing_config_->settings.requires_apm() && CanRunApm()) {
       processing_helper_.emplace(
           params, processing_config_->settings,
-          std::move(processing_config_->controls_request));
+          std::move(processing_config_->controls_receiver));
     } else {
-      processing_config_->controls_request.ResetWithReason(0, "");
+      processing_config_->controls_receiver.reset();
     }
   }
 #endif  // defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)

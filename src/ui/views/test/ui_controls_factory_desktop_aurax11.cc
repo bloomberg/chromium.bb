@@ -252,15 +252,14 @@ class UIControlsDesktopX11 : public UIControlsAura {
     // doesn't rely on having a DesktopScreenX11.
     std::vector<aura::Window*> windows =
         DesktopWindowTreeHostX11::GetAllOpenWindows();
-    for (std::vector<aura::Window*>::const_iterator it = windows.begin();
-         it != windows.end(); ++it) {
-      if ((*it)->GetBoundsInScreen().Contains(point) || (*it)->HasCapture())
-        return (*it)->GetRootWindow();
-    }
-
-    NOTREACHED() << "Couldn't find RW for " << point.ToString() << " among "
-                 << windows.size() << " RWs.";
-    return nullptr;
+    const auto i =
+        std::find_if(windows.cbegin(), windows.cend(), [point](auto* window) {
+          return window->GetBoundsInScreen().Contains(point) ||
+                 window->HasCapture();
+        });
+    DCHECK(i != windows.cend()) << "Couldn't find RW for " << point.ToString()
+                                << " among " << windows.size() << " RWs.";
+    return (*i)->GetRootWindow();
   }
 
   void SetKeycodeAndSendThenMask(aura::WindowTreeHost* host,

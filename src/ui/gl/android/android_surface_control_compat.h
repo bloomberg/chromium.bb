@@ -39,6 +39,10 @@ class GL_EXPORT SurfaceControl {
   // SurfaceControl API, if it is supported.
   static uint64_t RequiredUsage();
 
+  // Enables usage bits requires for getting UBWC on Qualcomm devices. Must be
+  // called early at process startup, before any buffer allocations are made.
+  static void EnableQualcommUBWC();
+
   class GL_EXPORT Surface : public base::RefCounted<Surface> {
    public:
     Surface();
@@ -82,6 +86,7 @@ class GL_EXPORT SurfaceControl {
     // display.
     base::ScopedFD present_fence;
     std::vector<SurfaceStats> surface_stats;
+    base::TimeTicks latch_time;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TransactionStats);

@@ -55,6 +55,9 @@ test_harness_script = r"""
 
 class PixelIntegrationTest(
     cloud_storage_integration_test_base.CloudStorageIntegrationTestBase):
+
+  test_base_name = 'Pixel'
+
   @classmethod
   def Name(cls):
     """The name by which this test is invoked on the command line."""
@@ -107,24 +110,20 @@ class PixelIntegrationTest(
            'Meant for testing locally instead of on the bots.')
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def GenerateGpuTests(cls, options):
     cls.SetParsedCommandLineOptions(options)
-    name = 'Pixel'
-    pages = pixel_test_pages.DefaultPages(name)
-    pages += pixel_test_pages.GpuRasterizationPages(name)
-    pages += pixel_test_pages.ExperimentalCanvasFeaturesPages(name)
-    # pages += pixel_test_pages.NoGpuProcessPages(name)
+    namespace = pixel_test_pages.PixelTestPages
+    pages = namespace.DefaultPages(cls.test_base_name)
+    pages += namespace.GpuRasterizationPages(cls.test_base_name)
+    pages += namespace.ExperimentalCanvasFeaturesPages(cls.test_base_name)
+    # pages += namespace.NoGpuProcessPages(cls.test_base_name)
     # The following pages should run only on platforms where SwiftShader is
     # enabled. They are skipped on other platforms through test expectations.
-    # pages += pixel_test_pages.SwiftShaderPages(name)
+    # pages += namespace.SwiftShaderPages(cls.test_base_name)
     if sys.platform.startswith('darwin'):
-      pages += pixel_test_pages.MacSpecificPages(name)
+      pages += namespace.MacSpecificPages(cls.test_base_name)
     if sys.platform.startswith('win'):
-      pages += pixel_test_pages.DirectCompositionPages(name)
+      pages += namespace.DirectCompositionPages(cls.test_base_name)
     for p in pages:
       yield(p.name, gpu_relative_path + p.url, (p))
 
@@ -288,7 +287,6 @@ class PixelIntegrationTest(
           self._UploadTestResultToSkiaGold(
             image_name, screenshot,
             tab, page,
-            is_check_mode=True,
             build_id_args=build_id_args)
         except CalledProcessError:
           self.fail('Gold said the test failed, so fail.')

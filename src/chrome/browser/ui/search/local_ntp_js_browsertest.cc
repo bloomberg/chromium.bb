@@ -75,6 +75,28 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomBackgroundsTests) {
   EXPECT_TRUE(success);
 }
 
+// A test class that sets up most_visited_browsertest.html as the NTP URL. It's
+// mostly a copy of the real most_visited_single.html, but it adds some testing
+// JS.
+class LocalNTPMostVisitedJavascriptTest : public LocalNTPJavascriptTestBase {
+ public:
+  LocalNTPMostVisitedJavascriptTest()
+      : LocalNTPJavascriptTestBase("/most_visited_browsertest.html") {}
+};
+
+// This runs a bunch of pure JS-side tests for the most visited iframe, i.e.
+// those that don't require any interaction from the native side.
+IN_PROC_BROWSER_TEST_F(LocalNTPMostVisitedJavascriptTest, MostVistedTests) {
+  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Run the tests.
+  bool success = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!runSimpleTests('mostVisited')", &success));
+  EXPECT_TRUE(success);
+}
+
 // A test class that sets up voice_browsertest.html as the NTP URL. It's
 // mostly a copy of the real local_ntp.html, but it adds some testing JS.
 class LocalNTPVoiceJavascriptTest : public LocalNTPJavascriptTestBase {

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -37,10 +38,6 @@ namespace ntp_tiles {
 
 namespace {
 
-// The maximum number of custom links that can be shown. This is independent of
-// the maximum number of Most Visited sites that can be shown.
-const size_t kMaxNumCustomLinks = 10;
-
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -60,11 +57,9 @@ const char* kKnownGenericPagePrefixes[] = {
     ""};  // The no-www domain matches domains on same level .
 
 // Determine whether we need any tiles from PopularSites to fill up a grid of
-// |num_tiles| tiles. If exploration sections are used, we need popular sites
-// regardless of how many tiles we already have.
+// |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
-  return base::FeatureList::IsEnabled(kSiteExplorationUiFeature) ||
-         prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
+  return prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
 }
 
 bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
@@ -189,6 +184,8 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
       return supervisor_ != nullptr;
     case TileSource::CUSTOM_LINKS:
       return custom_links_ != nullptr;
+    case TileSource::EXPLORE:
+      return explore_sites_client_ != nullptr;
     case TileSource::SEARCH_PAGE:
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
       return true;
@@ -204,6 +201,11 @@ void MostVisitedSites::SetHomepageClient(
     std::unique_ptr<HomepageClient> client) {
   DCHECK(client);
   homepage_client_ = std::move(client);
+}
+
+void MostVisitedSites::SetExploreSitesClient(
+    std::unique_ptr<ExploreSitesClient> client) {
+  explore_sites_client_ = std::move(client);
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
@@ -295,6 +297,7 @@ bool MostVisitedSites::AddCustomLink(const GURL& url,
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
+  bool is_first_action = !custom_links_->IsInitialized();
   // Initialize custom links if they have not been initialized yet.
   InitializeCustomLinks();
 
@@ -303,6 +306,10 @@ bool MostVisitedSites::AddCustomLink(const GURL& url,
     if (custom_links_action_count_ != -1)
       custom_links_action_count_++;
     BuildCurrentTiles();
+  } else if (is_first_action) {
+    // We don't want to keep custom links initialized if the first action after
+    // initialization failed.
+    UninitializeCustomLinks();
   }
   return success;
 }
@@ -313,6 +320,7 @@ bool MostVisitedSites::UpdateCustomLink(const GURL& url,
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
+  bool is_first_action = !custom_links_->IsInitialized();
   // Initialize custom links if they have not been initialized yet.
   InitializeCustomLinks();
 
@@ -321,6 +329,10 @@ bool MostVisitedSites::UpdateCustomLink(const GURL& url,
     if (custom_links_action_count_ != -1)
       custom_links_action_count_++;
     BuildCurrentTiles();
+  } else if (is_first_action) {
+    // We don't want to keep custom links initialized if the first action after
+    // initialization failed.
+    UninitializeCustomLinks();
   }
   return success;
 }
@@ -329,6 +341,7 @@ bool MostVisitedSites::ReorderCustomLink(const GURL& url, size_t new_pos) {
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
+  bool is_first_action = !custom_links_->IsInitialized();
   // Initialize custom links if they have not been initialized yet.
   InitializeCustomLinks();
 
@@ -337,6 +350,10 @@ bool MostVisitedSites::ReorderCustomLink(const GURL& url, size_t new_pos) {
     if (custom_links_action_count_ != -1)
       custom_links_action_count_++;
     BuildCurrentTiles();
+  } else if (is_first_action) {
+    // We don't want to keep custom links initialized if the first action after
+    // initialization failed.
+    UninitializeCustomLinks();
   }
   return success;
 }
@@ -345,6 +362,7 @@ bool MostVisitedSites::DeleteCustomLink(const GURL& url) {
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
+  bool is_first_action = !custom_links_->IsInitialized();
   // Initialize custom links if they have not been initialized yet.
   InitializeCustomLinks();
 
@@ -353,6 +371,10 @@ bool MostVisitedSites::DeleteCustomLink(const GURL& url) {
     if (custom_links_action_count_ != -1)
       custom_links_action_count_++;
     BuildCurrentTiles();
+  } else if (is_first_action) {
+    // We don't want to keep custom links initialized if the first action after
+    // initialization failed.
+    UninitializeCustomLinks();
   }
   return success;
 }
@@ -707,6 +729,19 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
   return new_tiles;
 }
 
+base::Optional<NTPTile> MostVisitedSites::CreateExploreSitesTile() {
+  if (!explore_sites_client_)
+    return base::nullopt;
+
+  NTPTile explore_sites_tile;
+  explore_sites_tile.url = explore_sites_client_->GetExploreSitesUrl();
+  explore_sites_tile.title = explore_sites_client_->GetExploreSitesTitle();
+  explore_sites_tile.source = TileSource::EXPLORE;
+  explore_sites_tile.title_source = TileTitleSource::UNKNOWN;
+
+  return explore_sites_tile;
+}
+
 NTPTilesVector MostVisitedSites::InsertSearchTile(NTPTilesVector tiles) const {
   DCHECK_GT(max_num_sites_, 0u);
 
@@ -771,6 +806,8 @@ void MostVisitedSites::BuildCustomLinks(
   DCHECK(custom_links_);
 
   NTPTilesVector tiles;
+  // The maximum number of custom links that can be shown is independent of the
+  // maximum number of Most Visited sites that can be shown.
   size_t num_tiles = std::min(links.size(), kMaxNumCustomLinks);
   for (size_t i = 0; i < num_tiles; ++i) {
     const CustomLinksManager::Link& link = links.at(i);
@@ -813,7 +850,15 @@ void MostVisitedSites::InitiateNotificationForNewTiles(
 
 void MostVisitedSites::MergeMostVisitedTiles(NTPTilesVector personal_tiles) {
   std::set<std::string> used_hosts;
-  size_t num_actual_tiles = 0u;
+
+  base::Optional<NTPTile> explore_tile = CreateExploreSitesTile();
+  size_t num_actual_tiles = explore_tile ? 1 : 0;
+
+  // The explore sites tile may have taken a space that was utilized by the
+  // personal tiles.
+  if (personal_tiles.size() + num_actual_tiles > max_num_sites_) {
+    personal_tiles.pop_back();
+  }
   AddToHostsAndTotalCount(personal_tiles, &used_hosts, &num_actual_tiles);
 
   NTPTilesVector whitelist_tiles =
@@ -827,7 +872,7 @@ void MostVisitedSites::MergeMostVisitedTiles(NTPTilesVector personal_tiles) {
 
   NTPTilesVector new_tiles =
       MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
-                 std::move(sections[SectionType::PERSONALIZED]));
+                 std::move(sections[SectionType::PERSONALIZED]), explore_tile);
 
   SaveTilesAndNotify(std::move(new_tiles), std::move(sections));
 }
@@ -854,9 +899,11 @@ void MostVisitedSites::SaveTilesAndNotify(
 }
 
 // static
-NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
-                                            NTPTilesVector whitelist_tiles,
-                                            NTPTilesVector popular_tiles) {
+NTPTilesVector MostVisitedSites::MergeTiles(
+    NTPTilesVector personal_tiles,
+    NTPTilesVector whitelist_tiles,
+    NTPTilesVector popular_tiles,
+    base::Optional<NTPTile> explore_tile) {
   NTPTilesVector merged_tiles;
   std::move(personal_tiles.begin(), personal_tiles.end(),
             std::back_inserter(merged_tiles));
@@ -864,6 +911,9 @@ NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
             std::back_inserter(merged_tiles));
   std::move(popular_tiles.begin(), popular_tiles.end(),
             std::back_inserter(merged_tiles));
+  if (explore_tile)
+    merged_tiles.push_back(*explore_tile);
+
   return merged_tiles;
 }
 

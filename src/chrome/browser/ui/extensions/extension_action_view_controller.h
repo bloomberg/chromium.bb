@@ -19,7 +19,7 @@ class ExtensionAction;
 class ExtensionActionPlatformDelegate;
 class GURL;
 class IconWithBadgeImageSource;
-class ToolbarActionsBar;
+class ExtensionsContainer;
 
 namespace extensions {
 class Command;
@@ -45,7 +45,7 @@ class ExtensionActionViewController
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
                                 ExtensionAction* extension_action,
-                                ToolbarActionsBar* main_bar,
+                                ExtensionsContainer* extensions_container,
                                 bool in_overflow_mode);
   ~ExtensionActionViewController() override;
 
@@ -58,6 +58,8 @@ class ExtensionActionViewController
   base::string16 GetAccessibleName(content::WebContents* web_contents) const
       override;
   base::string16 GetTooltip(content::WebContents* web_contents) const override;
+  PageInteractionStatus GetPageInteractionStatus(
+      content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
   bool WantsToRun(content::WebContents* web_contents) const override;
   bool HasPopup(content::WebContents* web_contents) const override;
@@ -94,21 +96,6 @@ class ExtensionActionViewController
 
   // ExtensionHostObserver:
   void OnExtensionHostDestroyed(const extensions::ExtensionHost* host) override;
-
-  // The status of the extension's interaction for the page. This is independent
-  // of the action's clickability.
-  enum class PageInteractionStatus {
-    // The extension cannot run on the page.
-    kNone,
-    // The extension tried to access the page, but is pending user approval.
-    kPending,
-    // The extension has permission to run on the page.
-    kActive,
-  };
-
-  // Returns the PageInteractionStatus for the current page.
-  PageInteractionStatus GetPageInteractionStatus(
-      content::WebContents* web_contents) const;
 
   // Checks if the associated |extension| is still valid by checking its
   // status in the registry. Since the OnExtensionUnloaded() notifications are
@@ -171,16 +158,10 @@ class ExtensionActionViewController
 
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
-  ExtensionAction* extension_action_;
+  ExtensionAction* const extension_action_;
 
-  // The main ToolbarActionsBar on the toolbar (not in 3-dot menu).
-  // TODO(pbos): Rename this toolbar_actions_bar_ and update comment when
-  // there's only one ToolbarActionsBar (ToolbarActionsBar disappears from the
-  // 3-dot menu).
-  // TODO(devlin): Would this be better behind a delegate interface? On the one
-  // hand, it's odd for this class to know about ToolbarActionsBar, but on the
-  // other, yet-another-delegate-class might just confuse things.
-  ToolbarActionsBar* const main_bar_;
+  // The corresponding ExtensionsContainer on the toolbar.
+  ExtensionsContainer* const extensions_container_;
 
   // The extension popup's host if the popup is visible; null otherwise.
   extensions::ExtensionViewHost* popup_host_;

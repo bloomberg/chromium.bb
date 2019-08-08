@@ -151,6 +151,9 @@
 /* GL_CHROMIUM_command_buffer_latency_query */
 #define GL_LATENCY_QUERY_CHROMIUM                        0x6007
 
+/* GL_CHROMIUM_program_completion_query */
+#define GL_PROGRAM_COMPLETION_QUERY_CHROMIUM 0x6009
+
 /* GL_CHROMIUM_async_pixel_transfers */
 #define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM           0x6006
 

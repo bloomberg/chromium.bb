@@ -103,7 +103,7 @@ ExtensionControlledPrefsTest::ExtensionControlledPrefsTest()
     : PrefsPrepopulatedTestBase(),
       content_settings_(ContentSettingsService::Get(&profile_)),
       test_preference_api_(&prefs_, content_settings_) {
-  prefs_.prefs()->AddObserver(content_settings_);
+  content_settings_->OnExtensionPrefsAvailable(prefs_.prefs());
 }
 
 ExtensionControlledPrefsTest::~ExtensionControlledPrefsTest() {

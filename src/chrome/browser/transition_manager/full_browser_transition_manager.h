@@ -32,10 +32,11 @@ class FullBrowserTransitionManager {
   // Return the singleton instance of the class
   static FullBrowserTransitionManager* Get();
 
-  // Register a callback to be called on profile creation. If a profile matching
-  // the key has already been created (i.e. full browser has been loaded), the
-  // callback is run immediately.
-  void RegisterCallbackOnProfileCreation(SimpleFactoryKey* key,
+  // Register a |callback| to be called on profile creation. If a profile
+  // matching the |key| has already been created (i.e. full browser has been
+  // loaded), the |callback| is run immediately and this method returns true.
+  // Otherwise, it returns false and will be run when/if the profile is created.
+  bool RegisterCallbackOnProfileCreation(SimpleFactoryKey* key,
                                          OnProfileCreationCallback callback);
 
   // Marks that a |profile| has been created.

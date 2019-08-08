@@ -119,6 +119,62 @@ TIntermTyped* TIntermediate::addBinaryMath(TOperator op, TIntermTyped* left, TIn
     if (left->getType().getBasicType() == EbtBlock || right->getType().getBasicType() == EbtBlock)
         return nullptr;
 
+    // Convert "reference +/- int" and "reference - reference" to integer math
+    if ((op == EOpAdd || op == EOpSub) && extensionRequested(E_GL_EXT_buffer_reference2)) {
+
+        // No addressing math on struct with unsized array.
+        if ((left->getBasicType() == EbtReference && left->getType().getReferentType()->containsUnsizedArray()) ||
+            (right->getBasicType() == EbtReference && right->getType().getReferentType()->containsUnsizedArray())) {
+            return nullptr;
+        }
+
+        if (left->getBasicType() == EbtReference && isTypeInt(right->getBasicType())) {
+            const TType& referenceType = left->getType();
+            TIntermConstantUnion* size = addConstantUnion((unsigned long long)computeBufferReferenceTypeSize(left->getType()), loc, true);
+            left  = addBuiltInFunctionCall(loc, EOpConvPtrToUint64, true, left, TType(EbtUint64));
+
+            right = createConversion(EbtInt64, right);
+            right = addBinaryMath(EOpMul, right, size, loc);
+
+            TIntermTyped *node = addBinaryMath(op, left, right, loc);
+            node = addBuiltInFunctionCall(loc, EOpConvUint64ToPtr, true, node, referenceType);
+            return node;
+        }
+
+        if (op == EOpAdd && right->getBasicType() == EbtReference && isTypeInt(left->getBasicType())) {
+            const TType& referenceType = right->getType();
+            TIntermConstantUnion* size = addConstantUnion((unsigned long long)computeBufferReferenceTypeSize(right->getType()), loc, true);
+            right = addBuiltInFunctionCall(loc, EOpConvPtrToUint64, true, right, TType(EbtUint64));
+
+            left  = createConversion(EbtInt64, left);
+            left  = addBinaryMath(EOpMul, left, size, loc);
+
+            TIntermTyped *node = addBinaryMath(op, left, right, loc);
+            node = addBuiltInFunctionCall(loc, EOpConvUint64ToPtr, true, node, referenceType);
+            return node;
+        }
+
+        if (op == EOpSub && left->getBasicType() == EbtReference && right->getBasicType() == EbtReference) {
+            TIntermConstantUnion* size = addConstantUnion((long long)computeBufferReferenceTypeSize(left->getType()), loc, true);
+
+            left = addBuiltInFunctionCall(loc, EOpConvPtrToUint64, true, left, TType(EbtUint64));
+            right = addBuiltInFunctionCall(loc, EOpConvPtrToUint64, true, right, TType(EbtUint64));
+
+            left = addBuiltInFunctionCall(loc, EOpConvUint64ToInt64, true, left, TType(EbtInt64));
+            right = addBuiltInFunctionCall(loc, EOpConvUint64ToInt64, true, right, TType(EbtInt64));
+
+            left = addBinaryMath(EOpSub, left, right, loc);
+
+            TIntermTyped *node = addBinaryMath(EOpDiv, left, size, loc);
+            return node;
+        }
+
+        // No other math operators supported on references
+        if (left->getBasicType() == EbtReference || right->getBasicType() == EbtReference) {
+            return nullptr;
+        }
+    }
+
     // Try converting the children's base types to compatible types.
     auto children = addConversion(op, left, right);
     left = std::get<0>(children);
@@ -230,6 +286,26 @@ TIntermTyped* TIntermediate::addAssign(TOperator op, TIntermTyped* left, TInterm
     // No block assignment
     if (left->getType().getBasicType() == EbtBlock || right->getType().getBasicType() == EbtBlock)
         return nullptr;
+
+    // Convert "reference += int" to "reference = reference + int". We need this because the
+    // "reference + int" calculation involves a cast back to the original type, which makes it
+    // not an lvalue.
+    if ((op == EOpAddAssign || op == EOpSubAssign) && left->getBasicType() == EbtReference &&
+        extensionRequested(E_GL_EXT_buffer_reference2)) {
+
+        if (!(right->getType().isScalar() && right->getType().isIntegerDomain()))
+            return nullptr;
+
+        TIntermTyped* node = addBinaryMath(op == EOpAddAssign ? EOpAdd : EOpSub, left, right, loc);
+        if (!node)
+            return nullptr;
+
+        TIntermSymbol* symbol = left->getAsSymbolNode();
+        left = addSymbol(*symbol);
+
+        node = addAssign(EOpAssign, left, node, loc);
+        return node;
+    }
 
     //
     // Like adding binary math, except the conversion can only go
@@ -410,7 +486,7 @@ TIntermTyped* TIntermediate::addBuiltInFunctionCall(const TSourceLoc& loc, TOper
 //
 // This is the safe way to change the operator on an aggregate, as it
 // does lots of error checking and fixing.  Especially for establishing
-// a function call's operation on it's set of parameters.  Sequences
+// a function call's operation on its set of parameters.  Sequences
 // of instructions are also aggregates, but they just directly set
 // their operator to EOpSequence.
 //
@@ -497,6 +573,58 @@ TIntermTyped* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped
     TIntermUnary* newNode = nullptr;
 
     TOperator newOp = EOpNull;
+
+    // Certain explicit conversions are allowed conditionally
+    bool arithemeticInt8Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                  extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8);
+#ifdef AMD_EXTENSIONS
+    bool arithemeticInt16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                   extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16) ||
+                                   extensionRequested(E_GL_AMD_gpu_shader_int16);
+
+    bool arithemeticFloat16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                     extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16) ||
+                                     extensionRequested(E_GL_AMD_gpu_shader_half_float);
+#else
+    bool arithemeticInt16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                   extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16);
+
+    bool arithemeticFloat16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                     extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16);
+#endif
+    bool convertToIntTypes = (convertTo == EbtInt8  || convertTo == EbtUint8  ||
+                              convertTo == EbtInt16 || convertTo == EbtUint16 ||
+                              convertTo == EbtInt   || convertTo == EbtUint   ||
+                              convertTo == EbtInt64 || convertTo == EbtUint64);
+
+    bool convertFromIntTypes = (node->getBasicType() == EbtInt8  || node->getBasicType() == EbtUint8  ||
+                                node->getBasicType() == EbtInt16 || node->getBasicType() == EbtUint16 ||
+                                node->getBasicType() == EbtInt   || node->getBasicType() == EbtUint   ||
+                                node->getBasicType() == EbtInt64 || node->getBasicType() == EbtUint64);
+
+    bool convertToFloatTypes = (convertTo == EbtFloat16 || convertTo == EbtFloat || convertTo == EbtDouble);
+
+    bool convertFromFloatTypes = (node->getBasicType() == EbtFloat16 ||
+                                  node->getBasicType() == EbtFloat ||
+                                  node->getBasicType() == EbtDouble);
+
+    if (! arithemeticInt8Enabled) {
+        if (((convertTo == EbtInt8 || convertTo == EbtUint8) && ! convertFromIntTypes) ||
+            ((node->getBasicType() == EbtInt8 || node->getBasicType() == EbtUint8) && ! convertToIntTypes))
+            return nullptr;
+    }
+
+    if (! arithemeticInt16Enabled) {
+        if (((convertTo == EbtInt16 || convertTo == EbtUint16) && ! convertFromIntTypes) ||
+            ((node->getBasicType() == EbtInt16 || node->getBasicType() == EbtUint16) && ! convertToIntTypes))
+            return nullptr;
+    }
+
+    if (! arithemeticFloat16Enabled) {
+        if ((convertTo == EbtFloat16 && ! convertFromFloatTypes) ||
+            (node->getBasicType() == EbtFloat16 && ! convertToFloatTypes))
+            return nullptr;
+    }
 
     switch (convertTo) {
     case EbtDouble:

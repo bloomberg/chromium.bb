@@ -11,9 +11,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -23,13 +20,19 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 
+namespace ash {
+enum class AppListViewState;
+}
+
 namespace ui {
 class GestureEvent;
+class SimpleMenuModel;
 }  // namespace ui
 
 namespace app_list {
 
 class AppListModel;
+struct AppLaunchedMetricParams;
 class SearchModel;
 
 class ASH_PUBLIC_EXPORT AppListViewDelegate {
@@ -60,8 +63,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // histograms to log to.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
-                                ash::mojom::AppListLaunchedFrom launched_from,
-                                ash::mojom::AppListLaunchType launch_type,
+                                ash::AppListLaunchedFrom launched_from,
+                                ash::AppListLaunchType launch_type,
                                 int suggestion_index) = 0;
 
   // Called to log UMA metrics for the launch of an item either in the app tile
@@ -88,20 +91,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // or NULL if there is currently no menu for the result.
   // Note the returned menu model is owned by that result.
   using GetContextMenuModelCallback =
-      base::OnceCallback<void(std::vector<ash::mojom::MenuItemPtr>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) = 0;
-
-  // Invoked when a context menu item of a search result is clicked.
-  // |result_id| is the clicked SearchResult's id
-  // |command_id| is the clicked menu item's command id
-  // |event_flags| is flags from the event which triggered this command
-  virtual void SearchResultContextMenuItemSelected(
-      const std::string& result_id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchType launch_type) = 0;
 
   // Invoked when the app list is shown.
   virtual void ViewShown(int64_t display_id) = 0;
@@ -117,31 +110,18 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void ViewClosed() = 0;
 
   // Gets the wallpaper prominent colors.
-  using GetWallpaperProminentColorsCallback =
-      base::OnceCallback<void(const std::vector<SkColor>&)>;
-  virtual void GetWallpaperProminentColors(
-      GetWallpaperProminentColorsCallback callback) = 0;
+  virtual const std::vector<SkColor>& GetWallpaperProminentColors() = 0;
 
   // Activates (opens) the item.
   virtual void ActivateItem(const std::string& id,
                             int event_flags,
-                            ash::mojom::AppListLaunchedFrom launched_from) = 0;
+                            ash::AppListLaunchedFrom launched_from) = 0;
 
   // Returns the context menu model for a ChromeAppListItem with |id|, or NULL
   // if there is currently no menu for the item (e.g. during install).
   // Note the returned menu model is owned by that item.
   virtual void GetContextMenuModel(const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
-
-  // Invoked when a context menu item of an app list item is clicked.
-  // |id| is the clicked AppListItem's id
-  // |command_id| is the clicked menu item's command id
-  // |event_flags| is flags from the event which triggered this command
-  virtual void ContextMenuItemSelected(
-      const std::string& id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchedFrom launched_from) = 0;
 
   // Show wallpaper context menu from the specified onscreen location.
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
@@ -176,12 +156,27 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void OnSearchResultVisibilityChanged(const std::string& id,
                                                bool visibility) = 0;
 
-  // Returns if the Assistant feature is allowed and enabled.
+  // Returns true if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
+
+  // Returns true if the Assistant privacy info view should be shown.
+  virtual bool ShouldShowAssistantPrivacyInfo() const = 0;
+
+  // If the |prefs::kAssistantPrivacyInfoShownInLauncher| value is in the range
+  // of allowed, we will increment this value.
+  virtual void MaybeIncreaseAssistantPrivacyInfoShownCount() = 0;
+
+  // Called when close button in the Assistant privacy info view is pressed to
+  // indicate not to show the view any more.
+  virtual void MarkAssistantPrivacyInfoDismissed() = 0;
 
   // Called when the app list view animation is completed.
   virtual void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) = 0;
+      ash::AppListViewState state) = 0;
+
+  // Fills the given AppLaunchedMetricParams with info known by the delegate.
+  virtual void GetAppLaunchedMetricParams(
+      AppLaunchedMetricParams* metric_params) = 0;
 };
 
 }  // namespace app_list

@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -25,11 +26,13 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
@@ -59,7 +62,6 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
@@ -320,7 +322,12 @@ void URLRequestHttpJob::Start() {
 
   request_info_.url = request_->url();
   request_info_.method = request_->method();
-  request_info_.top_frame_origin = request_->top_frame_origin();
+
+  // TODO(crbug.com/963476): Remove this when network_isolation_key is being set
+  // in request_.
+  request_info_.network_isolation_key =
+      NetworkIsolationKey(request_->top_frame_origin());
+
   request_info_.load_flags = request_->load_flags();
   request_info_.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(request_->traffic_annotation());
@@ -341,8 +348,17 @@ void URLRequestHttpJob::Start() {
   // Our consumer should have made sure that this is a safe referrer. See for
   // instance WebCore::FrameLoader::HideReferrer.
   if (referrer.is_valid()) {
+    std::string referer_value = referrer.spec();
+    UMA_HISTOGRAM_COUNTS_10000("Referrer.HeaderLength", referer_value.length());
+    if (base::FeatureList::IsEnabled(features::kCapRefererHeaderLength) &&
+        base::saturated_cast<int>(referer_value.length()) >
+            features::kMaxRefererHeaderLength.Get()) {
+      // Strip the referrer down to its origin, but ensure that it's serialized
+      // as a URL (e.g. retaining a trailing `/` character).
+      referer_value = url::Origin::Create(referrer).GetURL().spec();
+    }
     request_info_.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
-                                          referrer.spec());
+                                          referer_value);
   }
 
   request_info_.extra_headers.SetHeaderIfMissing(
@@ -389,6 +405,7 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
+  DCHECK(request_->not_stored_cookies().empty());
 
   response_info_ = transaction_->GetResponseInfo();
 
@@ -405,7 +422,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
 
   // Clear |cs_status_list_| after any processing in case
   // SaveCookiesAndNotifyHeadersComplete is called again.
-  cs_status_list_.clear();
+  request_->set_not_stored_cookies(std::move(cs_status_list_));
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -597,7 +614,8 @@ void URLRequestHttpJob::AddExtraHeaders() {
     // specified.
     std::string accept_language =
         http_user_agent_settings_->GetAcceptLanguage();
-    if (!accept_language.empty()) {
+    if (base::FeatureList::IsEnabled(features::kAcceptLanguageHeader) &&
+        !accept_language.empty()) {
       request_info_.extra_headers.SetHeaderIfMissing(
           HttpRequestHeaders::kAcceptLanguage,
           accept_language);
@@ -609,6 +627,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
   CookieStore* cookie_store = request_->context()->cookie_store();
   if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
     CookieOptions options;
+    options.set_return_excluded_cookies();
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForRequest(
@@ -617,21 +636,22 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
         base::Bind(&URLRequestHttpJob::SetCookieHeaderAndStart,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(), options));
   } else {
     StartTransaction();
   }
 }
 
 void URLRequestHttpJob::SetCookieHeaderAndStart(
+    const CookieOptions& options,
     const CookieList& cookie_list,
     const CookieStatusList& excluded_list) {
+  DCHECK(request_->not_sent_cookies().empty());
+  CookieStatusList excluded_cookies = excluded_list;
+
   if (!cookie_list.empty()) {
-    // |excluded_cookies| isn't currently being used, but it will be as part of
-    // crbug.com/856777
-    CookieStatusList excluded_cookies = excluded_list;
     if (!CanGetCookies(cookie_list)) {
-      for (auto cookie : cookie_list) {
+      for (const auto& cookie : cookie_list) {
         excluded_cookies.push_back(
             {cookie,
              CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
@@ -648,6 +668,27 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
     }
   }
+
+  // Copy any cookies that would not be sent under SameSiteByDefaultCookies
+  // and/or CookiesWithoutSameSiteMustBeSecure, into the |excluded_cookies| list
+  // so that we can display appropriate console warning messages about them.
+  // I.e. they are still included in the Cookie header, but they are *also*
+  // copied into |excluded_cookies| with the CookieInclusionStatus that *would*
+  // apply. This special-casing will go away once SameSiteByDefaultCookies and
+  // CookiesWithoutSameSiteMustBeSecure are on by default, as the affected
+  // cookies will just be excluded in the first place.
+  for (const CanonicalCookie& cookie : cookie_list) {
+    CanonicalCookie::CookieInclusionStatus
+        include_but_maybe_would_exclude_status =
+            cookie_util::CookieWouldBeExcludedDueToSameSite(cookie, options);
+    if (include_but_maybe_would_exclude_status !=
+        CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      excluded_cookies.push_back(
+          {cookie, include_but_maybe_would_exclude_status});
+    }
+  }
+
+  request_->set_not_sent_cookies(std::move(excluded_cookies));
 
   StartTransaction();
 }
@@ -681,9 +722,11 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   options.set_include_httponly();
   options.set_server_time(response_date);
   options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContextForRequest(
-          request_->method(), request_->url(), request_->site_for_cookies(),
-          request_->initiator(), request_->attach_same_site_cookies()));
+      net::cookie_util::ComputeSameSiteContextForResponse(
+          request_->url(), request_->site_for_cookies(),
+          request_->initiator()));
+
+  options.set_return_excluded_cookies();
 
   // Set all cookies, without waiting for them to be set. Any subsequent read
   // will see the combined result of all cookie operation.
@@ -711,12 +754,14 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
         &returned_status);
 
     if (returned_status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-      OnSetCookieResult(std::move(cookie_string), returned_status);
+      OnSetCookieResult(options, base::nullopt, std::move(cookie_string),
+                        returned_status);
       continue;
     }
 
     if (!CanSetCookie(*cookie, &options)) {
       OnSetCookieResult(
+          options, base::make_optional<CanonicalCookie>(*cookie),
           std::move(cookie_string),
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
       continue;
@@ -725,7 +770,9 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     request_->context()->cookie_store()->SetCookieWithOptionsAsync(
         request_->url(), cookie_string, options,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
-                       weak_factory_.GetWeakPtr(), cookie_string));
+                       weak_factory_.GetWeakPtr(), options,
+                       base::make_optional<CanonicalCookie>(*cookie),
+                       cookie_string));
   }
   // Removing the 1 that |num_cookie_lines_left| started with, signifing that
   // loop has been exited.
@@ -736,10 +783,33 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 }
 
 void URLRequestHttpJob::OnSetCookieResult(
+    const CookieOptions& options,
+    base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
-  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE)
-    cs_status_list_.emplace_back(std::move(cookie_string), status);
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
+                                 status);
+  } else {
+    DCHECK(cookie.has_value());
+    // Even if the status is INCLUDE, copy any cookies that would not be set
+    // under SameSiteByDefaultCookies and/or CookiesWithoutSameSiteMustBeSecure
+    // into |cs_status_list_| so that we can display appropriate console warning
+    // messages about them. I.e. they are still set, but they are *also* copied
+    // into |cs_status_list_| with the CookieInclusionStatus that *would* apply.
+    // This special-casing will go away once SameSiteByDefaultCookies and
+    // CookiesWithoutSameSiteMustBeSecure are on by default, as the affected
+    // cookies will just be excluded in the first place.
+    CanonicalCookie::CookieInclusionStatus
+        include_but_maybe_would_exclude_status =
+            cookie_util::CookieWouldBeExcludedDueToSameSite(cookie.value(),
+                                                            options);
+    if (include_but_maybe_would_exclude_status !=
+        CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
+                                   include_but_maybe_would_exclude_status);
+    }
+  }
 
   num_cookie_lines_left_--;
 
@@ -866,7 +936,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     // Maybe overridable, maybe not. Ask the delegate to decide.
     TransportSecurityState* state = context->transport_security_state();
     NotifySSLCertificateError(
-        transaction_->GetResponseInfo()->ssl_info,
+        result, transaction_->GetResponseInfo()->ssl_info,
         state->ShouldSSLErrorsBeFatal(request_info_.url.host()));
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     NotifyCertificateRequested(
@@ -920,6 +990,12 @@ void URLRequestHttpJob::RestartTransactionWithAuth(
   // headers in the 401/407. Since cookies were already appended to
   // extra_headers, we need to strip them out before adding them again.
   request_info_.extra_headers.RemoveHeader(HttpRequestHeaders::kCookie);
+
+  // TODO(https://crbug.com/968327/): This is weird, as all other clearing is at
+  // the URLRequest layer. Should this call into URLRequest so it can share
+  // logic at that layer with SetAuth()?
+  request_->set_not_sent_cookies({});
+  request_->set_not_stored_cookies({});
 
   AddCookieHeaderAndStart();
 }

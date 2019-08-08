@@ -1,0 +1,39 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package chrome_browser_sharing;
+
+// Required in Chrome.
+option optimize_for = LITE_RUNTIME;
+
+// Message for sending between devices in Sharing.
+message SharingMessage {
+  // Unique message identifier. required.
+  string message_id = 1;
+
+  // Identifier of sender. required.
+  string sender_guid = 2;
+
+  // Timestamp at which message was sent. required.
+  int64 send_timestamp = 3;
+
+  // Payload of the message, contains one of the messages below. required.
+  oneof payload {
+    PingMessage ping_message = 4;
+    AckMessage ack_message = 5;
+  }
+}
+
+// Message for pinging the receiver expecting an acknowledgement.
+message PingMessage {
+  // Intentionally empty.
+}
+
+// Message for acknowledging the sender after a non-AckMessage is received.
+message AckMessage {
+  // required.
+  string original_message_id = 1;
+}

@@ -105,10 +105,7 @@ def _ParseArgs(args):
       multidex_config = json.loads(multidex_config_file.read())
     options.multi_dex = multidex_config.get('enabled', False)
 
-  if options.multi_dex and not options.main_dex_list_path:
-    logging.warning('multidex cannot be enabled without --main-dex-list-path')
-    options.multi_dex = False
-  elif options.main_dex_list_path and not options.multi_dex:
+  if options.main_dex_list_path and not options.multi_dex:
     logging.warning('--main-dex-list-path is unused if multidex is not enabled')
 
   if options.inputs:
@@ -315,11 +312,11 @@ def main(args):
              os.path.relpath(p, options.output_directory) in exclude_paths]
 
   input_paths = list(paths)
-  if options.multi_dex:
+  if options.multi_dex and options.main_dex_list_path:
     input_paths.append(options.main_dex_list_path)
 
   dex_cmd = ['java', '-jar', options.d8_jar_path, '--no-desugaring']
-  if options.multi_dex:
+  if options.multi_dex and options.main_dex_list_path:
     dex_cmd += ['--main-dex-list', options.main_dex_list_path]
   if options.release:
     dex_cmd += ['--release']

@@ -2101,8 +2101,8 @@ class GerritPatch(GerritFetchOnlyPatch):
       return PatchNotSubmittable(self, 'is not marked Code-Review=+2.')
     elif not self.HasApproval('VRIF', '1'):
       return PatchNotSubmittable(self, 'is not marked Verified=+1.')
-    elif not self.HasApproval('COMR', ('1', '2')):
-      return PatchNotSubmittable(self, 'is not marked Commit-Queue>=+1.')
+    elif not self.HasApproval('COMR', '2'):
+      return PatchNotSubmittable(self, 'is not marked Commit-Queue=+2.')
 
     return None
 
@@ -2167,6 +2167,7 @@ FOOTER_TAGS_BY_APPROVAL_TYPE = {
     'COMR': 'Commit-Ready',
     'TRY': None,
     'SUBM': 'Submitted-by',
+    'LCQ': 'Legacy-Commit-Queue',
 }
 
 

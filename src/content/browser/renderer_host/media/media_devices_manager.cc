@@ -346,7 +346,7 @@ class MediaDevicesManager::AudioServiceDeviceListener
     audio::mojom::DeviceListenerPtr audio_device_listener_ptr;
     binding_.Bind(mojo::MakeRequest(&audio_device_listener_ptr));
     mojo_audio_device_notifier_->RegisterListener(
-        std::move(audio_device_listener_ptr));
+        audio_device_listener_ptr.PassInterface());
   }
 
   void OnConnectionError(service_manager::Connector* connector) {

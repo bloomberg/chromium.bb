@@ -135,7 +135,9 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &browser_management_notice,
+      &extension_reporting_title,
+      &subtitle,
+      &browser_management_notice,
       &managed};
 
   handler_.SetAccountManagedForTesting(false);
@@ -162,7 +164,9 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &browser_management_notice,
+      &extension_reporting_title,
+      &subtitle,
+      &browser_management_notice,
       &managed};
 
   handler_.SetAccountManagedForTesting(true);
@@ -191,7 +195,10 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extensions_installed, &subtitle, &browser_management_notice, &managed};
+      &extensions_installed,
+      &subtitle,
+      &browser_management_notice,
+      &managed};
 
   handler_.SetAccountManagedForTesting(true);
   auto data = handler_.GetContextualManagedDataForTesting(profile.get());
@@ -219,7 +226,9 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &browser_management_notice,
+      &extension_reporting_title,
+      &subtitle,
+      &browser_management_notice,
       &managed};
 
   handler_.SetAccountManagedForTesting(false);
@@ -251,7 +260,9 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &browser_management_notice,
+      &extension_reporting_title,
+      &subtitle,
+      &browser_management_notice,
       &managed};
 
   handler_.SetAccountManagedForTesting(false);
@@ -282,7 +293,9 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &browser_management_notice,
+      &extension_reporting_title,
+      &subtitle,
+      &browser_management_notice,
       &managed};
 
   handler_.SetAccountManagedForTesting(true);
@@ -319,7 +332,10 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &management_overview, &managed};
+      &extension_reporting_title,
+      &subtitle,
+      &management_overview,
+      &managed};
 
   handler_.SetAccountManagedForTesting(true);
   handler_.SetDeviceManagedForTesting(false);
@@ -351,7 +367,10 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &management_overview, &managed};
+      &extension_reporting_title,
+      &subtitle,
+      &management_overview,
+      &managed};
 
   handler_.SetAccountManagedForTesting(true);
   handler_.SetDeviceManagedForTesting(false);
@@ -380,7 +399,10 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &management_overview, &managed};
+      &extension_reporting_title,
+      &subtitle,
+      &management_overview,
+      &managed};
 
   handler_.SetAccountManagedForTesting(false);
   handler_.SetDeviceManagedForTesting(true);
@@ -410,7 +432,10 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &management_overview, &managed};
+      &extension_reporting_title,
+      &subtitle,
+      &management_overview,
+      &managed};
 
   handler_.SetAccountManagedForTesting(true);
   handler_.SetDeviceManagedForTesting(true);
@@ -442,7 +467,10 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &management_overview, &managed};
+      &extension_reporting_title,
+      &subtitle,
+      &management_overview,
+      &managed};
 
   handler_.SetAccountManagedForTesting(true);
   handler_.SetDeviceManagedForTesting(true);
@@ -472,7 +500,10 @@ TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &subtitle, &management_overview, &managed};
+      &extension_reporting_title,
+      &subtitle,
+      &management_overview,
+      &managed};
 
   handler_.SetAccountManagedForTesting(false);
   handler_.SetDeviceDomain("");

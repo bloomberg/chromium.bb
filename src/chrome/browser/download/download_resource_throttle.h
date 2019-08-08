@@ -62,7 +62,7 @@ class DownloadResourceThrottle
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
 
   void ContinueDownload(bool storage_permission_granted, bool allow);
 

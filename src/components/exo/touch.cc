@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/exo/touch.h"
+
+#include "components/exo/input_trace.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/touch_delegate.h"
@@ -78,6 +80,8 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       if (!target)
         return;
 
+      TRACE_EXO_INPUT_EVENT(event);
+
       // If this is the first touch point then target becomes the focus surface
       // until all touch points have been released.
       if (touch_points_.empty()) {
@@ -109,6 +113,9 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       auto it = FindVectorItem(touch_points_, touch_pointer_id);
       if (it == touch_points_.end())
         return;
+
+      TRACE_EXO_INPUT_EVENT(event);
+
       touch_points_.erase(it);
 
       // Reset focus surface if this is the last touch point.
@@ -125,6 +132,8 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       if (it == touch_points_.end())
         return;
 
+      TRACE_EXO_INPUT_EVENT(event);
+
       DCHECK(focus_);
       // Convert location to focus surface coordinate space.
       gfx::PointF location = EventLocationInWindow(event, focus_->window());
@@ -135,6 +144,8 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       auto it = FindVectorItem(touch_points_, touch_pointer_id);
       if (it == touch_points_.end())
         return;
+
+      TRACE_EXO_INPUT_EVENT(event);
 
       DCHECK(focus_);
       focus_->RemoveSurfaceObserver(this);

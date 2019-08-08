@@ -44,7 +44,7 @@ void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalMedia),
       FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,
           GetAudioWorkletMessagingProxyWeakPtr(),
           WTF::Passed(std::move(processor_info_list))));

@@ -67,7 +67,37 @@ static std::string ToStringOrDefault(v8::Isolate* isolate,
   return ascii_value.empty() ? dflt : ascii_value;
 }
 
+using FrameToDocumentLoader =
+    base::flat_map<blink::WebLocalFrame*, blink::WebDocumentLoader*>;
+
+FrameToDocumentLoader& FrameDocumentLoaderMap() {
+  static base::NoDestructor<FrameToDocumentLoader> map;
+  return *map;
+}
+
+blink::WebDocumentLoader* CurrentDocumentLoader(
+    const blink::WebLocalFrame* frame) {
+  auto& map = FrameDocumentLoaderMap();
+  auto it = map.find(frame);
+  return it == map.end() ? frame->GetDocumentLoader() : it->second;
+}
+
 }  // namespace
+
+ScriptContext::ScopedFrameDocumentLoader::ScopedFrameDocumentLoader(
+    blink::WebLocalFrame* frame,
+    blink::WebDocumentLoader* document_loader)
+    : frame_(frame), document_loader_(document_loader) {
+  auto& map = FrameDocumentLoaderMap();
+  DCHECK(map.find(frame_) == map.end());
+  map[frame_] = document_loader_;
+}
+
+ScriptContext::ScopedFrameDocumentLoader::~ScopedFrameDocumentLoader() {
+  auto& map = FrameDocumentLoaderMap();
+  DCHECK_EQ(document_loader_, map.find(frame_)->second);
+  map.erase(frame_);
+}
 
 ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
                              blink::WebLocalFrame* web_frame,
@@ -264,10 +294,7 @@ GURL ScriptContext::GetDocumentLoaderURLForFrame(
   // changes to match the parent document after Gmail document.writes into
   // it to create the editor.
   // http://code.google.com/p/chromium/issues/detail?id=86742
-  blink::WebDocumentLoader* document_loader =
-      frame->GetProvisionalDocumentLoader()
-          ? frame->GetProvisionalDocumentLoader()
-          : frame->GetDocumentLoader();
+  blink::WebDocumentLoader* document_loader = CurrentDocumentLoader(frame);
   return document_loader ? GURL(document_loader->GetUrl()) : GURL();
 }
 
@@ -276,10 +303,7 @@ GURL ScriptContext::GetAccessCheckedFrameURL(
     const blink::WebLocalFrame* frame) {
   const blink::WebURL& weburl = frame->GetDocument().Url();
   if (weburl.IsEmpty()) {
-    blink::WebDocumentLoader* document_loader =
-        frame->GetProvisionalDocumentLoader()
-            ? frame->GetProvisionalDocumentLoader()
-            : frame->GetDocumentLoader();
+    blink::WebDocumentLoader* document_loader = CurrentDocumentLoader(frame);
     if (document_loader &&
         frame->GetSecurityOrigin().CanAccess(
             blink::WebSecurityOrigin::Create(document_loader->GetUrl()))) {
@@ -297,6 +321,30 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
   // extensions), or if the frame is not an about:-page, just return
   // |document_url| (supposedly the URL of the frame).
   if (!match_about_blank || !document_url.SchemeIs(url::kAboutScheme))
+    return document_url;
+
+  blink::WebSecurityOrigin web_frame_origin = frame->GetSecurityOrigin();
+  url::Origin frame_origin = web_frame_origin;
+  // Check the origin of the frame, including whether it is an opaque origin
+  // (like about:blank) that has a non-opaque opener.
+  // Unfortunately, we still have to traverse the frame tree, because match
+  // patterns are associated with paths as well, not just origins. For instance,
+  // if an extension wants to run on google.com/maps/* with match_about_blank
+  // true, then it should run on about:blank frames created by google.com/maps,
+  // but not about:blank frames created by google.com (which is what the
+  // precursor tuple origin would be).
+  const url::SchemeHostPort& tuple_or_precursor_tuple_origin =
+      frame_origin.GetTupleOrPrecursorTupleIfOpaque();
+
+  // There is no valid tuple origin (which can happen in the case of e.g. a
+  // browser-initiated navigation to an opaque URL). Bail.
+  if (tuple_or_precursor_tuple_origin.IsInvalid())
+    return document_url;
+
+  url::Origin precursor_origin =
+      url::Origin::Create(tuple_or_precursor_tuple_origin.GetURL());
+  // The frame can't access its precursor. Bail.
+  if (!web_frame_origin.CanAccess(blink::WebSecurityOrigin(precursor_origin)))
     return document_url;
 
   // Non-sandboxed about:blank and about:srcdoc pages inherit their security
@@ -320,17 +368,45 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
     parent_document = parent && parent->IsWebLocalFrame()
                           ? parent->ToWebLocalFrame()->GetDocument()
                           : blink::WebDocument();
-  } while (!parent_document.IsNull() &&
-           GURL(parent_document.Url()).SchemeIs(url::kAboutScheme));
 
-  if (!parent_document.IsNull()) {
-    // Only return the parent URL if the frame can access it.
-    if (frame->GetDocument().GetSecurityOrigin().CanAccess(
-            parent_document.GetSecurityOrigin())) {
-      return parent_document.Url();
+    // We reached the end of the ancestral chain without finding a valid parent.
+    // Bail and use the original URL.
+    if (parent_document.IsNull())
+      return document_url;
+
+    url::SchemeHostPort parent_tuple_origin =
+        url::Origin(parent->GetSecurityOrigin())
+            .GetTupleOrPrecursorTupleIfOpaque();
+    if (parent_tuple_origin.IsInvalid() ||
+        parent_tuple_origin != tuple_or_precursor_tuple_origin) {
+      // The parent has a different tuple origin than frame; this could happen
+      // in edge cases where a parent navigates an iframe or popup of a child
+      // frame at a different origin. [1] In this case, bail, since we can't
+      // find a full URL (i.e., one including the path) with the same security
+      // origin to use for the frame in question.
+      // [1] Consider a frame tree like:
+      // <html> <!--example.com-->
+      //   <iframe id="a" src="a.com">
+      //     <iframe id="b" src="b.com"></iframe>
+      //   </iframe>
+      // </html>
+      // Frame "a" is cross-origin from the top-level frame, and so the
+      // example.com top-level frame can't directly access frame "b". However,
+      // it can navigate it through
+      // window.frames[0].frames[0].location.href = 'about:blank';
+      // In that case, the precursor origin tuple origin of frame "b" would be
+      // example.com, but the parent tuple origin is a.com.
+      return document_url;
     }
-  }
-  return document_url;
+  } while (GURL(parent_document.Url()).SchemeIs(url::kAboutScheme));
+
+  DCHECK(!parent_document.IsNull());
+
+  // We should know that the frame can access the parent document, since it
+  // has the same tuple origin as the frame, and we checked the frame access
+  // above.
+  DCHECK(web_frame_origin.CanAccess(parent_document.GetSecurityOrigin()));
+  return parent_document.Url();
 }
 
 bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {

@@ -24,6 +24,7 @@ namespace {
 constexpr char kExpectedMountDir[] = "drivefs-salt-g-ID";
 constexpr char kExpectedMountPath[] = "/media/drivefsroot/mountdir";
 constexpr char kExpectedDataDir[] = "/path/to/profile/GCache/v2/salt-g-ID";
+constexpr char kExpectedMyFilesDir[] = "/path/to/profile/MyFiles";
 
 static const base::Optional<base::TimeDelta> kEmptyDelay;
 static const base::Optional<base::TimeDelta> kDefaultDelay =
@@ -43,11 +44,15 @@ class DriveFsDiskMounterTest : public testing::Test {
         disk_manager_,
         MountPath(
             testing::StartsWith("drivefs://"), "", kExpectedMountDir,
-            testing::Contains("datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+            testing::AllOf(testing::Contains(
+                               "datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+                           testing::Not(testing::Contains(
+                               "myfiles=/path/to/profile/MyFiles"))),
             _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 
-    mounter->Mount(token, base::FilePath(kExpectedDataDir), kExpectedMountDir,
+    mounter->Mount(token, base::FilePath(kExpectedDataDir),
+                   base::FilePath(kExpectedMyFilesDir), kExpectedMountDir,
                    base::BindOnce(&DriveFsDiskMounterTest::OnCompleted,
                                   base::Unretained(this)));
     testing::Mock::VerifyAndClear(&disk_manager_);
@@ -168,6 +173,7 @@ class MockDiskMounter : public DiskMounter {
 
   void Mount(const base::UnguessableToken& token,
              const base::FilePath& data_path,
+             const base::FilePath& my_files_path,
              const std::string& desired_mount_dir_name,
              base::OnceCallback<void(base::FilePath)> callback) override {
     callback_ = std::move(callback);
@@ -237,12 +243,14 @@ class DriveFsSessionForTest : public DriveFsSession {
                         std::unique_ptr<DiskMounter> disk_mounter,
                         std::unique_ptr<DriveFsConnection> connection,
                         const base::FilePath& data_path,
+                        const base::FilePath& my_files_path,
                         const std::string& desired_mount_dir_name,
                         MountObserver* observer)
       : DriveFsSession(timer,
                        std::move(disk_mounter),
                        std::move(connection),
                        data_path,
+                       my_files_path,
                        desired_mount_dir_name,
                        observer) {}
   ~DriveFsSessionForTest() override = default;
@@ -291,7 +299,7 @@ class DriveFsSessionTest : public ::testing::Test,
                 OnMountCalled(_, data_path, kExpectedMountDir));
     session_ = std::make_unique<DriveFsSessionForTest>(
         &timer_, std::move(mounter), std::move(connection), data_path,
-        kExpectedMountDir, this);
+        base::FilePath(kExpectedMyFilesDir), kExpectedMountDir, this);
     holder_->delegate = session_.get();
     ASSERT_FALSE(session_->is_mounted());
   }

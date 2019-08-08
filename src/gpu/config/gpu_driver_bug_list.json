@@ -348,7 +348,7 @@
         "value": "2"
       },
       "features": [
-        "force_discrete_gpu"
+        "force_high_performance_gpu"
       ]
     },
     {
@@ -1865,10 +1865,6 @@
       },
       "gl_type": "gl",
       "gl_version_string": ".*Mesa.*",
-      "direct_rendering_version": {
-        "op" : "<",
-        "value": "2.3"
-      },
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
@@ -2363,7 +2359,7 @@
       "device_id": ["0x0116", "0x0126"],
       "multi_gpu_style": "amd_switchable",
       "features": [
-        "force_discrete_gpu"
+        "force_high_performance_gpu"
       ]
     },
     {
@@ -3067,41 +3063,6 @@
       ]
     },
     {
-      "id": 287,
-      "description": "glCopyTexImage2D on Adreno fails if source is GL_RGB10_A2 and destination is not.",
-      "cr_bugs": [925986],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": ">=",
-          "value": "5.0.0"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "gl_renderer": ".*4\\d\\d",
-      "gl_renderer": "Adreno \\(TM\\) [345].*",
-      "features": [
-        "disable_copy_tex_image_2d_rgb10_a2_adreno"
-      ]
-    },
-    {
-      "id": 288,
-      "description": "glCopyTexImage2D on NVIDIA Tegra fails in certain cases if source is GL_RGB10_A2.",
-      "cr_bugs": [925986],
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "NVIDIA.*",
-      "gl_type": "gles",
-      "gl_version": {
-        "op": ">=",
-        "value": "3.0"
-      },
-      "features": [
-        "disable_copy_tex_image_2d_rgb10_a2_tegra"
-      ]
-    },
-    {
       "id": 289,
       "description": "Fake entry for testing command buffer init failures on ES 2.0",
       "cr_bugs": [923134],
@@ -3266,29 +3227,16 @@
       "description": "Mesa hangs the system when allocating large textures",
       "cr_bugs": [927470],
       "os": {
-        "type" : "linux"
+        "type" : "linux",
+        "version": {
+          "op": "<",
+          "value": "5.0"
+        }
       },
-      "driver_vendor": "Mesa",
-      "driver_version": {
-        "op": ">=",
-        "value": "18"
-      },
+      "vendor_id": "0x8086",
       "features": [
         "max_texture_size_limit_4096",
         "max_3d_array_texture_size_1024"
-      ]
-    },
-    {
-      "id": 302,
-      "description": "glCopyTexImage2D on Mali-T820 fails in certain cases if source is GL_RGB10_A2.",
-      "cr_bugs": [953771],
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "ARM.*",
-      "gl_renderer": "Mali-T820",
-      "features": [
-        "disable_copy_tex_image_2d_rgb10_a2_mali"
       ]
     },
     {
@@ -3304,7 +3252,36 @@
         "value": "24"
       },
       "features": [
-        "disable_nv12_dynamic_textures"
+          "disable_nv12_dynamic_textures"
+      ]
+    },
+    {
+      "id": 304,
+      "cr_bugs": [911349],
+      "description": "Video processor blit to swap chain results in column of black pixels on older NVIDIA drivers at certain scaling factors",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "value": "419"
+      },
+      "features": [
+        "disable_direct_composition_layers"
+      ]
+    },
+    {
+      "id": 306,
+      "description": "Program binaries don't contain transform feedback varyings on Mali GPUs",
+      "cr_bugs": [961950],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali.*",
+      "features": [
+        "disable_program_caching_for_transform_feedback"
       ]
     }
   ]

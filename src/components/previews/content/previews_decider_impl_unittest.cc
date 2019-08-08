@@ -36,12 +36,16 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/content/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -83,6 +87,8 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
       return params::IsResourceLoadingHintsEnabled();
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
       return params::IsLitePageServerPreviewsEnabled();
+    case PreviewsType::DEFER_ALL_SCRIPT:
+      return params::IsDeferAllScriptPreviewsEnabled();
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::LAST:
@@ -154,12 +160,16 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& test_path,
+      PrefService* pref_service,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
       PreviewsTopHostProvider* previews_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
                                   background_task_runner,
                                   test_path,
+                                  pref_service,
+                                  database_provider,
                                   previews_top_host_provider,
                                   url_loader_factory) {}
   ~TestPreviewsOptimizationGuide() override {}
@@ -365,7 +375,7 @@ class TestOptOutStore : public blacklist::OptOutStore {
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {}
 };
 
-class PreviewsDeciderImplTest : public testing::Test {
+class PreviewsDeciderImplTest : public ProtoDatabaseProviderTestBase {
  public:
   PreviewsDeciderImplTest()
       : field_trial_list_(nullptr),
@@ -384,9 +394,17 @@ class PreviewsDeciderImplTest : public testing::Test {
     variations::testing::ClearAllVariationParams();
   }
 
-  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+  void SetUp() override {
+    // Enable DataSaver for checks with PreviewsOptimizationGuide.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
+    ProtoDatabaseProviderTestBase::SetUp();
+  }
 
-  void TearDown() override { ui_service_.reset(); }
+  void TearDown() override {
+    ProtoDatabaseProviderTestBase::TearDown();
+    ui_service_.reset();
+  }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
@@ -400,6 +418,7 @@ class PreviewsDeciderImplTest : public testing::Test {
     std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl =
         std::make_unique<TestPreviewsDeciderImpl>(&clock_);
     previews_decider_impl_ = previews_decider_impl.get();
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     ui_service_.reset(new TestPreviewsUIService(
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
@@ -407,8 +426,8 @@ class PreviewsDeciderImplTest : public testing::Test {
             scoped_task_environment_.GetMainThreadTaskRunner(),
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-            temp_dir_.GetPath(), &previews_top_host_provider_,
-            url_loader_factory_),
+            temp_dir_.GetPath(), pref_service_.get(), db_provider_,
+            &previews_top_host_provider_, url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -446,13 +465,13 @@ class PreviewsDeciderImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::ScopedTempDir temp_dir_;
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
   TestPreviewsTopHostProvider previews_top_host_provider_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<network::TestSharedURLLoaderFactory> url_loader_factory_;
 };
 
@@ -1469,9 +1488,10 @@ TEST_F(PreviewsDeciderImplTest, LogPreviewDecisionMadePassInCorrectParams) {
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons(
       passed_reasons);
   const uint64_t page_id = 1234;
+  PreviewsUserData data(page_id);
 
   previews_decider_impl()->LogPreviewDecisionMade(
-      reason, url, time, type, std::move(passed_reasons), page_id);
+      reason, url, time, type, std::move(passed_reasons), &data);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(ui_service()->decision_reasons(), ::testing::ElementsAre(reason));
@@ -1480,6 +1500,7 @@ TEST_F(PreviewsDeciderImplTest, LogPreviewDecisionMadePassInCorrectParams) {
   EXPECT_THAT(ui_service()->decision_times(), ::testing::ElementsAre(time));
   EXPECT_THAT(ui_service()->decision_ids(), ::testing::ElementsAre(page_id));
 
+  EXPECT_EQ(data.EligibilityReasonForPreview(type).value(), reason);
   auto actual_passed_reasons = ui_service()->decision_passed_reasons();
   EXPECT_EQ(1UL, actual_passed_reasons.size());
   EXPECT_EQ(expected_passed_reasons.size(), actual_passed_reasons[0].size());
@@ -1627,6 +1648,39 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesIgnore) {
   }
 }
 
+TEST_F(PreviewsDeciderImplTest, LogDecisionMadeMediaSuffixesAreExcluded) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  auto expected_reason = PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX;
+  auto expected_type = PreviewsType::RESOURCE_LOADING_HINTS;
+
+  PreviewsEligibilityReason blacklist_decisions[] = {
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+  };
+
+  for (auto blacklist_decision : blacklist_decisions) {
+    std::unique_ptr<TestPreviewsBlackList> blacklist =
+        std::make_unique<TestPreviewsBlackList>(blacklist_decision,
+                                                previews_decider_impl());
+    previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
+    PreviewsUserData user_data(kDefaultPageId);
+    previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+        &user_data, GURL("http://www.google.com/video.mp4"), false,
+        expected_type);
+
+    base::RunLoop().RunUntilIdle();
+    // Testing correct log method is called.
+    EXPECT_THAT(ui_service()->decision_reasons(),
+                ::testing::Contains(expected_reason));
+    EXPECT_THAT(ui_service()->decision_types(),
+                ::testing::Contains(expected_type));
+  }
+}
+
 TEST_F(PreviewsDeciderImplTest, IgnoreFlagDoesNotCheckBlacklist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1649,9 +1703,7 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagDoesNotCheckBlacklist) {
 TEST_F(PreviewsDeciderImplTest, ReloadsTriggerFiveMinuteRule) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kClientLoFi,
-       features::kPreviewsReloadsAreSoftOptOuts},
-      {});
+      {features::kPreviews, features::kClientLoFi}, {});
   InitializeUIService();
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
@@ -1693,6 +1745,8 @@ TEST_F(PreviewsDeciderImplTest,
   auto expected_type = PreviewsType::LOFI;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1739,6 +1793,8 @@ TEST_F(PreviewsDeciderImplTest,
   auto expected_type = PreviewsType::RESOURCE_LOADING_HINTS;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1784,6 +1840,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
   auto expected_type = PreviewsType::LOFI;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1826,6 +1884,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
   auto expected_type = PreviewsType::OFFLINE;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1861,8 +1921,7 @@ TEST_F(PreviewsDeciderImplTest, IgnoreBlacklistEnabledViaFlag) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitch(switches::kIgnorePreviewsBlacklist);
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnorePreviewsBlacklist));
+  ASSERT_TRUE(switches::ShouldIgnorePreviewsBlacklist());
 
   InitializeUIService();
 
@@ -1899,6 +1958,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowClientPreviewsWithECT) {
   auto expected_type = PreviewsType::LOFI;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -1949,6 +2010,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
   auto expected_type = PreviewsType::NOSCRIPT;
 
   std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
+      PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
       PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,

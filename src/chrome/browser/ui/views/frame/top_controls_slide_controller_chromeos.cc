@@ -441,25 +441,21 @@ void TopControlsSlideControllerChromeOS::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& delta : change.deltas()) {
-      content::WebContents* contents = delta.insert.contents;
-      observed_tabs_.emplace(
-          contents,
-          std::make_unique<TopControlsSlideTabObserver>(contents, this));
+    for (const auto& contents : change.GetInsert()->contents) {
+      observed_tabs_.emplace(contents.contents,
+                             std::make_unique<TopControlsSlideTabObserver>(
+                                 contents.contents, this));
     }
   } else if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& delta : change.deltas())
-      observed_tabs_.erase(delta.remove.contents);
+    for (const auto& contents : change.GetRemove()->contents)
+      observed_tabs_.erase(contents.contents);
   } else if (change.type() == TabStripModelChange::kReplaced) {
-    for (const auto& delta : change.deltas()) {
-      observed_tabs_.erase(delta.replace.old_contents);
-
-      DCHECK(!observed_tabs_.count(delta.replace.new_contents));
-
-      observed_tabs_.emplace(delta.replace.new_contents,
-                             std::make_unique<TopControlsSlideTabObserver>(
-                                 delta.replace.new_contents, this));
-    }
+    auto* replace = change.GetReplace();
+    observed_tabs_.erase(replace->old_contents);
+    DCHECK(!observed_tabs_.count(replace->new_contents));
+    observed_tabs_.emplace(replace->new_contents,
+                           std::make_unique<TopControlsSlideTabObserver>(
+                               replace->new_contents, this));
   }
 
   if (tab_strip_model->empty() || !selection.active_tab_changed())

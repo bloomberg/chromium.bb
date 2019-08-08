@@ -990,7 +990,7 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnResponseStartedCallback) {
             EXPECT_TRUE(final_url.is_valid());
             std::move(quit_closure).Run();
           },
-          base::Passed(std::move(test_helper)), run_loop.QuitClosure()));
+          std::move(test_helper), run_loop.QuitClosure()));
 
   unowned_test_helper->StartSimpleLoader(url_loader_factory_.get());
 
@@ -1797,8 +1797,8 @@ class MockURLLoader : public network::mojom::URLLoader {
               "HTTP/1.0 301 The Response Has Moved to Another Server\n"
               "Location: bar://foo/");
           response_info.headers =
-              new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-                  headers.c_str(), headers.size()));
+              base::MakeRefCounted<net::HttpResponseHeaders>(
+                  net::HttpUtil::AssembleRawHeaders(headers));
           client_->OnReceiveRedirect(redirect_info, response_info);
           break;
         }
@@ -1806,8 +1806,8 @@ class MockURLLoader : public network::mojom::URLLoader {
           network::ResourceResponseHead response_info;
           std::string headers("HTTP/1.0 200 OK");
           response_info.headers =
-              new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-                  headers.c_str(), headers.size()));
+              base::MakeRefCounted<net::HttpResponseHeaders>(
+                  net::HttpUtil::AssembleRawHeaders(headers));
           client_->OnReceiveResponse(response_info);
           break;
         }
@@ -1815,8 +1815,8 @@ class MockURLLoader : public network::mojom::URLLoader {
           network::ResourceResponseHead response_info;
           std::string headers("HTTP/1.0 401 Client Borkage");
           response_info.headers =
-              new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-                  headers.c_str(), headers.size()));
+              base::MakeRefCounted<net::HttpResponseHeaders>(
+                  net::HttpUtil::AssembleRawHeaders(headers));
           client_->OnReceiveResponse(response_info);
           break;
         }
@@ -1824,8 +1824,8 @@ class MockURLLoader : public network::mojom::URLLoader {
           network::ResourceResponseHead response_info;
           std::string headers("HTTP/1.0 501 Server Borkage");
           response_info.headers =
-              new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-                  headers.c_str(), headers.size()));
+              base::MakeRefCounted<net::HttpResponseHeaders>(
+                  net::HttpUtil::AssembleRawHeaders(headers));
           client_->OnReceiveResponse(response_info);
           break;
         }

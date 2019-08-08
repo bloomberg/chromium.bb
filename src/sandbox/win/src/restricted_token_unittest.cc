@@ -745,7 +745,7 @@ TEST(RestrictedTokenTest, LockdownDefaultDaclNoLogonSid) {
 }
 
 TEST(RestrictedTokenTest, LowBoxToken) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
   base::win::ScopedHandle token;
 

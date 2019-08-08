@@ -111,7 +111,8 @@ void BrowserDownloadService::OnDownloadCreated(
     if (tab_helper) {
       tab_helper->Download(std::move(task));
     }
-  } else if (IsUsdzFileFormat(task->GetMimeType()) &&
+  } else if (IsUsdzFileFormat(task->GetMimeType(),
+                              task->GetSuggestedFilename()) &&
              download::IsUsdzPreviewEnabled()) {
     ARQuickLookTabHelper* tab_helper =
         ARQuickLookTabHelper::FromWebState(web_state);

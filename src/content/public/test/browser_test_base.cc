@@ -58,6 +58,18 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_ANDROID)
+#include "content/app/mojo/mojo_init.h"
+#include "content/common/url_schemes.h"
+#include "content/public/app/content_main_delegate.h"
+#include "content/public/common/content_paths.h"
+#include "ui/base/ui_base_paths.h"
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/v8_initializer.h"
+#endif
+#endif
+
 #if defined(OS_MACOSX)
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
@@ -103,10 +115,11 @@ void DumpStackTraceSignalHandler(int signal) {
 }
 #endif  // defined(OS_POSIX)
 
-void RunTaskOnRendererThread(const base::Closure& task,
-                             const base::Closure& quit_task) {
-  task.Run();
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_task);
+void RunTaskOnRendererThread(base::OnceClosure task,
+                             base::OnceClosure quit_task) {
+  std::move(task).Run();
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           std::move(quit_task));
 }
 
 void TraceStopTracingComplete(const base::Closure& quit,
@@ -157,8 +170,8 @@ BrowserTestBase::BrowserTestBase()
   embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
 
 #if defined(USE_AURA)
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
-      &aura::test::EventGeneratorDelegateAura::Create, nullptr));
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
 #elif defined(OS_MACOSX)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&views::test::CreateEventGeneratorDelegateMac));
@@ -172,10 +185,11 @@ BrowserTestBase::~BrowserTestBase() {
   spawned_test_server_.reset();
 #endif
 
-  CHECK(set_up_called_) << "SetUp was not called. This probably means that the "
-                           "developer has overridden the method and not called "
-                           "the superclass version. In this case, the test "
-                           "does not run and reports a false positive result.";
+  CHECK(set_up_called_ || IsSkipped())
+      << "SetUp was not called. This probably means that the "
+         "developer has overridden the method and not called "
+         "the superclass version. In this case, the test "
+         "does not run and reports a false positive result.";
 }
 
 void BrowserTestBase::SetUp() {
@@ -329,17 +343,73 @@ void BrowserTestBase::SetUp() {
           &BrowserTestBase::CreatedBrowserMainParts, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-  MainFunctionParams params(*command_line);
-  params.ui_task = ui_task.release();
-  params.created_main_parts_closure = created_main_parts_closure.release();
-  base::ThreadPool::Create("Browser");
-  DCHECK(!field_trial_list_);
-  field_trial_list_ = SetUpFieldTrialsAndFeatureList();
-  StartBrowserThreadPool();
-  BrowserTaskExecutor::Create();
-  BrowserTaskExecutor::PostFeatureListSetup();
-  // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
-  BrowserMain(params);
+  // For all other platforms, we call ContentMain for browser tests which goes
+  // through the normal browser initialization paths. For Android, we must set
+  // things up manually. A meager re-implementation of ContentMainRunnerImpl
+  // follows.
+
+  base::i18n::AllowMultipleInitializeCallsForTesting();
+  base::i18n::InitializeICU();
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Natives();
+#endif
+
+  ContentMainDelegate* delegate = GetContentMainDelegateForTesting();
+  // The delegate should have been set by JNI_OnLoad for the test target.
+  DCHECK(delegate);
+
+  bool startup_error = delegate->BasicStartupComplete(/*exit_code=*/nullptr);
+  DCHECK(!startup_error);
+
+  InitializeMojo();
+
+  {
+    SetBrowserClientForTesting(delegate->CreateContentBrowserClient());
+    if (command_line->HasSwitch(switches::kSingleProcess))
+      SetRendererClientForTesting(delegate->CreateContentRendererClient());
+
+    content::RegisterPathProvider();
+    content::RegisterContentSchemes(false);
+    ui::RegisterPathProvider();
+
+    delegate->PreSandboxStartup();
+
+    DCHECK(!field_trial_list_);
+    if (delegate->ShouldCreateFeatureList()) {
+      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+      delegate->PostFieldTrialInitialization();
+    }
+
+    base::ThreadPoolInstance::Create("Browser");
+
+    delegate->PreCreateMainMessageLoop();
+    BrowserTaskExecutor::Create();
+    delegate->PostEarlyInitialization(/*is_running_tests=*/true);
+
+    StartBrowserThreadPool();
+    BrowserTaskExecutor::PostFeatureListSetup();
+    delegate->PostTaskSchedulerStart();
+  }
+
+  // ContentMain would normally call RunProcess() on the delegate and fallback
+  // to BrowserMain() if it did not run it (or equivalent) itself. On Android,
+  // RunProcess() will return 0 so we don't have to fallback to BrowserMain().
+  {
+    MainFunctionParams params(*command_line);
+    params.ui_task = ui_task.release();
+    params.created_main_parts_closure = created_main_parts_closure.release();
+    // Passing "" as the process type to indicate the browser process.
+    int exit_code = delegate->RunProcess("", params);
+    DCHECK_EQ(exit_code, 0);
+  }
+
+  // Normally the BrowserMainLoop does this during shutdown but on Android we
+  // don't go through shutdown, so this doesn't happen there. We do need it
+  // for the test harness to be able to delete temp dirs.
+  base::ThreadRestrictions::SetIOAllowed(true);
+
   BrowserTaskExecutor::ResetForTesting();
 #else
   GetContentMainParams()->ui_task = ui_task.release();
@@ -467,7 +537,7 @@ void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
 }
 
 void BrowserTestBase::PostTaskToInProcessRendererAndWait(
-    const base::Closure& task) {
+    base::OnceClosure task) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess));
 
@@ -477,8 +547,8 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
 
   base::RunLoop run_loop;
   renderer_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RunTaskOnRendererThread, task, run_loop.QuitClosure()));
+      FROM_HERE, base::BindOnce(&RunTaskOnRendererThread, std::move(task),
+                                run_loop.QuitClosure()));
   run_loop.Run();
 }
 

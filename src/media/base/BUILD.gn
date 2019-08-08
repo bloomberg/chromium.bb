@@ -285,10 +285,10 @@ jumbo_source_set("base") {
     "video_frame_pool.h",
     "video_renderer.cc",
     "video_renderer.h",
-    "video_rotation.cc",
-    "video_rotation.h",
     "video_thumbnail_decoder.cc",
     "video_thumbnail_decoder.h",
+    "video_transformation.cc",
+    "video_transformation.h",
     "video_types.cc",
     "video_types.h",
     "video_util.cc",
@@ -311,6 +311,7 @@ jumbo_source_set("base") {
   deps = [
     "//base/allocator:buildflags",
     "//gpu/command_buffer/common",
+    "//gpu/ipc/common:common",
     "//skia",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
@@ -319,6 +320,7 @@ jumbo_source_set("base") {
     "//ui/events:events_base",
     "//url:url",
   ]
+
   libs = []
   configs += [
     "//build/config:precompiled_headers",
@@ -550,6 +552,7 @@ source_set("unit_tests") {
   ]
   deps = [
     "//base/test:test_support",
+    "//components/viz/common",
     "//gpu/command_buffer/common",
     "//media:test_support",
     "//skia",

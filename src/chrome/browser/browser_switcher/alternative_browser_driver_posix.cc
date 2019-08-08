@@ -150,11 +150,13 @@ AlternativeBrowserDriverImpl::AlternativeBrowserDriverImpl(
 AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
 
 bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
+#if !defined(OS_MACOSX)
   if (prefs_->GetAlternativeBrowserPath().empty()) {
     LOG(ERROR) << "Alternative browser not configured. "
                << "Aborting browser switch.";
     return false;
   }
+#endif
 
   VLOG(2) << "Launching alternative browser...";
   VLOG(2) << "  path = " << prefs_->GetAlternativeBrowserPath();

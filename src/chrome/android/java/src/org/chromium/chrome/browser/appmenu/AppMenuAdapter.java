@@ -11,6 +11,7 @@ import android.animation.ObjectAnimator;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -207,7 +208,7 @@ class AppMenuAdapter extends BaseAdapter {
                     holder.text.setText(itemState.title);
                     holder.text.setContentDescription(resources.getString(itemState.title));
                     holder.text.setTextColor(
-                            ApiCompatibilityUtils.getColor(resources, itemState.titleColor));
+                            ApiCompatibilityUtils.getColor(resources, itemState.titleColorId));
 
                     if (!TextUtils.isEmpty(itemState.summary)) {
                         holder.summary.setText(itemState.summary);
@@ -218,6 +219,10 @@ class AppMenuAdapter extends BaseAdapter {
                     }
 
                     holder.image.setImageResource(itemState.icon);
+                    if (itemState.iconTintId != 0) {
+                        DrawableCompat.setTint(holder.image.getDrawable(),
+                                ApiCompatibilityUtils.getColor(resources, itemState.iconTintId));
+                    }
                     convertView.setEnabled(itemState.enabled);
                 }
                 break;

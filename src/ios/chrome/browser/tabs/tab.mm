@@ -67,17 +67,17 @@
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/favicon_url.h"
-#include "ios/web/public/interstitials/web_interstitial.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
-#import "ios/web/public/serializable_user_data_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
+#include "ios/web/public/security/web_interstitial.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -101,12 +101,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabIsShowingExportableNotificationForCrashReporting =
-    @"kTabIsShowingExportableNotificationForCrashReporting";
-NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
-    @"kTabClosingCurrentDocumentNotificationForCrashReporting";
-
-NSString* const kTabUrlKey = @"url";
 
 @interface Tab ()<CRWWebStateObserver> {
   // Browser state associated with this Tab.
@@ -233,9 +227,6 @@ NSString* const kTabUrlKey = @"url";
   if (self.webState->GetContentsMimeType() != "application/pdf")
     return;
 
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabIsShowingExportableNotificationForCrashReporting
-                    object:self];
   // Try to generate a filename by first looking at |content_disposition_|, then
   // at the last component of WebState's last committed URL and if both of these
   // fail use the default filename "document".

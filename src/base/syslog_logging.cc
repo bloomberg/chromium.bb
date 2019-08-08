@@ -69,8 +69,8 @@ EventLogMessage::~EventLogMessage() {
     return;
   }
 
-  base::ScopedClosureRunner auto_deregister(
-      base::Bind(base::IgnoreResult(&DeregisterEventSource), event_log_handle));
+  base::ScopedClosureRunner auto_deregister(base::BindOnce(
+      base::IgnoreResult(&DeregisterEventSource), event_log_handle));
   std::string message(log_message_.str());
   WORD log_type = EVENTLOG_ERROR_TYPE;
   switch (log_message_.severity()) {

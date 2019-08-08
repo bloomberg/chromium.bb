@@ -373,7 +373,7 @@ class ParameterizedComputeCaretRectTest
   ParameterizedComputeCaretRectTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
-  LayoutRect ComputeCaretRect(const PositionWithAffinity& position) const {
+  PhysicalRect ComputeCaretRect(const PositionWithAffinity& position) const {
     return CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(position)
         .caret_rect;
   }

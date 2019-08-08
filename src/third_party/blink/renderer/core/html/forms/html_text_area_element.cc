@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -75,13 +76,8 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
       cols_(kDefaultCols),
       wrap_(kSoftWrap),
       is_dirty_(false),
-      is_placeholder_visible_(false) {}
-
-HTMLTextAreaElement* HTMLTextAreaElement::Create(Document& document) {
-  HTMLTextAreaElement* text_area =
-      MakeGarbageCollected<HTMLTextAreaElement>(document);
-  text_area->EnsureUserAgentShadowRoot();
-  return text_area;
+      is_placeholder_visible_(false) {
+  EnsureUserAgentShadowRoot();
 }
 
 void HTMLTextAreaElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
@@ -108,7 +104,7 @@ void HTMLTextAreaElement::ChildrenChanged(const ChildrenChange& change) {
   if (is_dirty_)
     SetInnerEditorValue(value());
   else
-    SetNonDirtyValue(defaultValue());
+    SetNonDirtyValue(defaultValue(), TextControlSetValueSelection::kClamp);
 }
 
 bool HTMLTextAreaElement::IsPresentationAttribute(
@@ -231,7 +227,8 @@ void HTMLTextAreaElement::AppendToFormData(FormData& form_data) {
 }
 
 void HTMLTextAreaElement::ResetImpl() {
-  SetNonDirtyValue(defaultValue());
+  SetNonDirtyValue(defaultValue(),
+                   TextControlSetValueSelection::kSetSelectionToEnd);
 }
 
 bool HTMLTextAreaElement::HasCustomFocusLogic() const {
@@ -386,9 +383,10 @@ void HTMLTextAreaElement::setValue(const String& value,
   is_dirty_ = true;
 }
 
-void HTMLTextAreaElement::SetNonDirtyValue(const String& value) {
-  SetValueCommon(value, TextFieldEventBehavior::kDispatchNoEvent,
-                 TextControlSetValueSelection::kSetSelectionToEnd);
+void HTMLTextAreaElement::SetNonDirtyValue(
+    const String& value,
+    TextControlSetValueSelection selection) {
+  SetValueCommon(value, TextFieldEventBehavior::kDispatchNoEvent, selection);
   is_dirty_ = false;
 }
 
@@ -411,6 +409,13 @@ void HTMLTextAreaElement::SetValueCommon(
   if (normalized_value == value())
     return;
 
+  // selectionStart and selectionEnd values can be changed by
+  // SetInnerEditorValue(). We need to get them before SetInnerEditorValue() to
+  // clamp them later in a case of kClamp.
+  const bool is_clamp = selection == TextControlSetValueSelection::kClamp;
+  const unsigned selection_start = is_clamp ? selectionStart() : 0;
+  const unsigned selection_end = is_clamp ? selectionEnd() : 0;
+
   if (event_behavior != TextFieldEventBehavior::kDispatchNoEvent)
     SetValueBeforeFirstUserEditIfNotSet();
   value_ = normalized_value;
@@ -424,11 +429,14 @@ void HTMLTextAreaElement::SetValueCommon(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kControlValue));
   SetNeedsValidityCheck();
-  if (IsFinishedParsingChildren() &&
-      selection == TextControlSetValueSelection::kSetSelectionToEnd) {
+  if (selection == TextControlSetValueSelection::kSetSelectionToEnd) {
     // Set the caret to the end of the text value except for initialize.
     unsigned end_of_string = value_.length();
     SetSelectionRange(end_of_string, end_of_string);
+  } else if (is_clamp) {
+    const unsigned end_of_string = value_.length();
+    SetSelectionRange(std::min(end_of_string, selection_start),
+                      std::min(end_of_string, selection_end));
   }
 
   NotifyFormStateChanged();
@@ -452,8 +460,8 @@ String HTMLTextAreaElement::defaultValue() const {
 
   // Since there may be comments, ignore nodes other than text nodes.
   for (Node* n = firstChild(); n; n = n->nextSibling()) {
-    if (n->IsTextNode())
-      value.Append(ToText(n)->data());
+    if (auto* text_node = DynamicTo<Text>(n))
+      value.Append(text_node->data());
   }
 
   return value.ToString();
@@ -584,7 +592,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     return;
   }
   if (!placeholder) {
-    HTMLDivElement* new_element = HTMLDivElement::Create(GetDocument());
+    auto* new_element = MakeGarbageCollected<HTMLDivElement>(GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());

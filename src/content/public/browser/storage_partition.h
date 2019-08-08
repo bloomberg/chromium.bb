@@ -54,6 +54,7 @@ class BackgroundSyncContext;
 class BrowserContext;
 class CacheStorageContext;
 class DOMStorageContext;
+class DevToolsBackgroundServicesContext;
 class IndexedDBContext;
 class GeneratedCodeCacheContext;
 class PlatformNotificationContext;
@@ -111,6 +112,8 @@ class CONTENT_EXPORT StoragePartition {
   virtual SharedWorkerService* GetSharedWorkerService() = 0;
   virtual CacheStorageContext* GetCacheStorageContext() = 0;
   virtual GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() = 0;
+  virtual DevToolsBackgroundServicesContext*
+  GetDevToolsBackgroundServicesContext() = 0;
 #if !defined(OS_ANDROID)
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;

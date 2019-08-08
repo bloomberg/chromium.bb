@@ -54,7 +54,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
  private:
   // Add |example| to the training data, and process it.
-  void AddFinishedExample(LabelledExample example);
+  void AddFinishedExample(LabelledExample example, ukm::SourceId source_id);
 
   // Called by |training_cb_| when the model is trained.  |training_weight| and
   // |training_size| are the training set's total weight and number of examples.

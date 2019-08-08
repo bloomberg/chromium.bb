@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
@@ -33,16 +34,6 @@ class WorkerClients;
 // fetch is enabled for all worker types (https://crbug.com/835717).
 enum class OffMainThreadWorkerScriptFetchOption { kDisabled, kEnabled };
 
-// Indicates where the CSP list comes from.
-// https://w3c.github.io/webappsec-csp/#initialize-global-object-csp
-enum class GlobalScopeCSPApplyMode {
-  // For dedicated workers, worklets, on-the-main-thread service workers, and
-  // on-the-main-thread shared workers.
-  kUseCreationParamsCSP,
-  // For off-the-main-thread service/shared workers.
-  kUseResponseCSP,
-};
-
 // GlobalScopeCreationParams contains parameters for initializing
 // WorkerGlobalScope or WorkletGlobalScope.
 struct CORE_EXPORT GlobalScopeCreationParams final {
@@ -62,7 +53,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       bool starter_secure_context,
       HttpsState starter_https_state,
       WorkerClients*,
-      mojom::IPAddressSpace,
+      base::Optional<mojom::IPAddressSpace>,
       const Vector<String>* origin_trial_tokens,
       const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
@@ -71,9 +62,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
       BeginFrameProviderParams begin_frame_provider_params = {},
       const FeaturePolicy* parent_feature_policy = nullptr,
-      base::UnguessableToken agent_cluster_id = {},
-      GlobalScopeCSPApplyMode csp_apply_mode =
-          GlobalScopeCSPApplyMode::kUseCreationParamsCSP);
+      base::UnguessableToken agent_cluster_id = {});
 
   ~GlobalScopeCreationParams() = default;
 
@@ -143,7 +132,10 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // supplies no extra 'clients', m_workerClients can be left as empty/null.
   CrossThreadPersistent<WorkerClients> worker_clients;
 
-  mojom::IPAddressSpace address_space;
+  // Worker script response's address space. This is valid only when the worker
+  // script is fetched on the main thread (i.e., when
+  // |off_main_thread_fetch_option| is kDisabled).
+  base::Optional<mojom::IPAddressSpace> response_address_space;
 
   base::UnguessableToken parent_devtools_token;
 
@@ -163,8 +155,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // context that created it (e.g. for a dedicated worker).
   // See https://tc39.github.io/ecma262/#sec-agent-clusters
   base::UnguessableToken agent_cluster_id;
-
-  GlobalScopeCSPApplyMode csp_apply_mode;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

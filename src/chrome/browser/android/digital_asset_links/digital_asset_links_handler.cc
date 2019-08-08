@@ -137,11 +137,11 @@ void DigitalAssetLinksHandler::OnURLLoadComplete(
   data_decoder::SafeJsonParser::Parse(
       /* connector=*/nullptr,  // Connector is unused on Android.
       *response_body,
-      base::Bind(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
-                 weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
-                 relationship),
-      base::Bind(&DigitalAssetLinksHandler::OnJSONParseFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
+                     weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
+                     relationship),
+      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   url_loader_.reset(nullptr);
 }
@@ -150,8 +150,8 @@ void DigitalAssetLinksHandler::OnJSONParseSucceeded(
     const std::string& package,
     const std::string& fingerprint,
     const std::string& relationship,
-    std::unique_ptr<base::Value> statement_list) {
-  if (!statement_list->is_list()) {
+    base::Value statement_list) {
+  if (!statement_list.is_list()) {
     std::move(callback_).Run(RelationshipCheckResult::FAILURE);
     LOG(WARNING) << "Statement List is not a list.";
     return;
@@ -160,7 +160,7 @@ void DigitalAssetLinksHandler::OnJSONParseSucceeded(
   // We only output individual statement failures if none match.
   std::vector<std::string> failures;
 
-  for (const auto& statement : statement_list->GetList()) {
+  for (const auto& statement : statement_list.GetList()) {
     if (!statement.is_dict()) {
       failures.push_back("Statement is not a dictionary.");
       continue;

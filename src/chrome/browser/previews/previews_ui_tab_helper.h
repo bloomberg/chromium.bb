@@ -55,7 +55,6 @@ class PreviewsUITabHelper
 
   // Trigger the Previews UI to be shown to the user.
   void ShowUIElement(previews::PreviewsType previews_type,
-                     bool is_data_saver_user,
                      OnDismissPreviewsUICallback on_dismiss_callback);
 
   // Reloads the content of the page without previews.

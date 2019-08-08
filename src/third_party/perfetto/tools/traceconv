@@ -30,9 +30,11 @@ import sys
 import tempfile
 import urllib
 
+# Keep this in sync with the SHAs in catapult file
+# systrace/systrace/tracing_agents/atrace_from_file_agent.py.
 TRACE_TO_TEXT_SHAS = {
-  'linux': '91cbc8addb9adc4dcc0cbf398e7ff67a8ad14ece',
-  'mac': '36a1313c8900b3b59b40e6f07488a6d2c7ffaa94',
+  'linux': 'ec020c3424ea32d8a79372b40567b528df3cd902',
+  'mac': '66df2dc8c52c2c93569aa34d7997cdcd7bd09e3b',
 }
 TRACE_TO_TEXT_PATH = tempfile.gettempdir()
 TRACE_TO_TEXT_BASE_URL = (

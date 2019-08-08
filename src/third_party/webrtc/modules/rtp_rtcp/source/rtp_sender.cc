@@ -106,8 +106,6 @@ RTPSender::RTPSender(
     bool extmap_allow_mixed,
     const WebRtcKeyValueConfig& field_trials)
     : clock_(clock),
-      // TODO(holmer): Remove this conversion?
-      clock_delta_ms_(clock_->TimeInMilliseconds() - rtc::TimeMillis()),
       random_(clock_->TimeInMicroseconds()),
       audio_configured_(audio),
       flexfec_ssrc_(flexfec_ssrc),
@@ -126,6 +124,7 @@ RTPSender::RTPSender(
       send_delays_(),
       max_delay_it_(send_delays_.end()),
       sum_delays_ms_(0),
+      total_packet_send_delay_ms_(0),
       rtp_stats_callback_(nullptr),
       total_bitrate_sent_(kBitrateStatisticsWindowMs,
                           RateStatistics::kBpsScale),
@@ -149,6 +148,12 @@ RTPSender::RTPSender(
       populate_network2_timestamp_(populate_network2_timestamp),
       send_side_bwe_with_overhead_(
           field_trials.Lookup("WebRTC-SendSideBwe-WithOverhead")
+              .find("Enabled") == 0),
+      legacy_packet_history_storage_mode_(
+          field_trials.Lookup("WebRTC-UseRtpPacketHistoryLegacyStorageMode")
+              .find("Enabled") == 0),
+      payload_padding_prefer_useful_packets_(
+          field_trials.Lookup("WebRTC-PayloadPadding-UseMostUsefulPacket")
               .find("Enabled") == 0) {
   // This random initialization is not intended to be cryptographic strong.
   timestamp_offset_ = random_.Rand<uint32_t>();
@@ -159,9 +164,13 @@ RTPSender::RTPSender(
   // Store FlexFEC packets in the packet history data structure, so they can
   // be found when paced.
   if (flexfec_ssrc_) {
+    RtpPacketHistory::StorageMode storage_mode =
+        legacy_packet_history_storage_mode_
+            ? RtpPacketHistory::StorageMode::kStore
+            : RtpPacketHistory::StorageMode::kStoreAndCull;
+
     flexfec_packet_history_.SetStorePacketsStatus(
-        RtpPacketHistory::StorageMode::kStore,
-        kMinFlexfecPacketsToStoreForPacing);
+        storage_mode, kMinFlexfecPacketsToStoreForPacing);
   }
 }
 
@@ -282,8 +291,13 @@ size_t RTPSender::TrySendRedundantPayloads(size_t bytes_to_send,
 
   int bytes_left = static_cast<int>(bytes_to_send);
   while (bytes_left > 0) {
-    std::unique_ptr<RtpPacketToSend> packet =
-        packet_history_.GetBestFittingPacket(bytes_left);
+    std::unique_ptr<RtpPacketToSend> packet;
+    if (payload_padding_prefer_useful_packets_) {
+      packet = packet_history_.GetPayloadPaddingPacket();
+    } else {
+      packet = packet_history_.GetBestFittingPacket(bytes_left);
+    }
+
     if (!packet)
       break;
     size_t payload_size = packet->payload_size();
@@ -423,9 +437,14 @@ size_t RTPSender::SendPadData(size_t bytes,
 }
 
 void RTPSender::SetStorePacketsStatus(bool enable, uint16_t number_to_store) {
-  RtpPacketHistory::StorageMode mode =
-      enable ? RtpPacketHistory::StorageMode::kStore
-             : RtpPacketHistory::StorageMode::kDisabled;
+  RtpPacketHistory::StorageMode mode;
+  if (enable) {
+    mode = legacy_packet_history_storage_mode_
+               ? RtpPacketHistory::StorageMode::kStore
+               : RtpPacketHistory::StorageMode::kStoreAndCull;
+  } else {
+    mode = RtpPacketHistory::StorageMode::kDisabled;
+  }
   packet_history_.SetStorePacketsStatus(mode, number_to_store);
 }
 
@@ -439,8 +458,8 @@ int32_t RTPSender::ReSendPacket(uint16_t packet_id) {
   // don't retransmit too often.
   absl::optional<RtpPacketHistory::PacketState> stored_packet =
       packet_history_.GetPacketState(packet_id);
-  if (!stored_packet) {
-    // Packet not found.
+  if (!stored_packet || stored_packet->pending_transmission) {
+    // Packet not found or already queued for retransmission, ignore.
     return 0;
   }
 
@@ -456,13 +475,15 @@ int32_t RTPSender::ReSendPacket(uint16_t packet_id) {
   }
 
   if (paced_sender_) {
-    // Convert from TickTime to Clock since capture_time_ms is based on
-    // TickTime.
-    int64_t corrected_capture_tims_ms =
-        stored_packet->capture_time_ms + clock_delta_ms_;
+    // Mark packet as being in pacer queue again, to prevent duplicates.
+    if (!packet_history_.SetPendingTransmission(packet_id)) {
+      // Packet has already been removed from history, return early.
+      return 0;
+    }
+
     paced_sender_->InsertPacket(
         RtpPacketSender::kNormalPriority, stored_packet->ssrc,
-        stored_packet->rtp_sequence_number, corrected_capture_tims_ms,
+        stored_packet->rtp_sequence_number, stored_packet->capture_time_ms,
         stored_packet->packet_size, true);
 
     return packet_size;
@@ -520,13 +541,15 @@ void RTPSender::OnReceivedNack(
 }
 
 // Called from pacer when we can send the packet.
-bool RTPSender::TimeToSendPacket(uint32_t ssrc,
-                                 uint16_t sequence_number,
-                                 int64_t capture_time_ms,
-                                 bool retransmission,
-                                 const PacedPacketInfo& pacing_info) {
-  if (!SendingMedia())
-    return true;
+RtpPacketSendResult RTPSender::TimeToSendPacket(
+    uint32_t ssrc,
+    uint16_t sequence_number,
+    int64_t capture_time_ms,
+    bool retransmission,
+    const PacedPacketInfo& pacing_info) {
+  if (!SendingMedia()) {
+    return RtpPacketSendResult::kPacketNotFound;
+  }
 
   std::unique_ptr<RtpPacketToSend> packet;
   if (ssrc == SSRC()) {
@@ -536,14 +559,16 @@ bool RTPSender::TimeToSendPacket(uint32_t ssrc,
   }
 
   if (!packet) {
-    // Packet cannot be found or was resend too recently.
-    return true;
+    // Packet cannot be found or was resent too recently.
+    return RtpPacketSendResult::kPacketNotFound;
   }
 
   return PrepareAndSendPacket(
-      std::move(packet),
-      retransmission && (RtxStatus() & kRtxRetransmitted) > 0, retransmission,
-      pacing_info);
+             std::move(packet),
+             retransmission && (RtxStatus() & kRtxRetransmitted) > 0,
+             retransmission, pacing_info)
+             ? RtpPacketSendResult::kSuccess
+             : RtpPacketSendResult::kTransportUnavailable;
 }
 
 bool RTPSender::PrepareAndSendPacket(std::unique_ptr<RtpPacketToSend> packet,
@@ -668,9 +693,7 @@ bool RTPSender::SendToNetwork(std::unique_ptr<RtpPacketToSend> packet,
   uint32_t ssrc = packet->Ssrc();
   if (paced_sender_) {
     uint16_t seq_no = packet->SequenceNumber();
-    // Correct offset between implementations of millisecond time stamps in
-    // TickTime and Clock.
-    int64_t corrected_time_ms = packet->capture_time_ms() + clock_delta_ms_;
+    int64_t capture_time_ms = packet->capture_time_ms();
     size_t packet_size =
         send_side_bwe_with_overhead_ ? packet->size() : packet->payload_size();
     if (ssrc == FlexfecSsrc()) {
@@ -682,7 +705,7 @@ bool RTPSender::SendToNetwork(std::unique_ptr<RtpPacketToSend> packet,
       packet_history_.PutRtpPacket(std::move(packet), storage, absl::nullopt);
     }
 
-    paced_sender_->InsertPacket(priority, ssrc, seq_no, corrected_time_ms,
+    paced_sender_->InsertPacket(priority, ssrc, seq_no, capture_time_ms,
                                 packet_size, false);
     return true;
   }
@@ -760,6 +783,7 @@ void RTPSender::UpdateDelayStatistics(int64_t capture_time_ms, int64_t now_ms) {
   uint32_t ssrc;
   int avg_delay_ms = 0;
   int max_delay_ms = 0;
+  uint64_t total_packet_send_delay_ms = 0;
   {
     rtc::CritScope lock(&send_critsect_);
     if (!ssrc_)
@@ -817,6 +841,8 @@ void RTPSender::UpdateDelayStatistics(int64_t capture_time_ms, int64_t now_ms) {
       max_delay_it_ = it;
     }
     sum_delays_ms_ += new_send_delay;
+    total_packet_send_delay_ms_ += new_send_delay;
+    total_packet_send_delay_ms = total_packet_send_delay_ms_;
 
     size_t num_delays = send_delays_.size();
     RTC_DCHECK(max_delay_it_ != send_delays_.end());
@@ -828,8 +854,8 @@ void RTPSender::UpdateDelayStatistics(int64_t capture_time_ms, int64_t now_ms) {
     avg_delay_ms =
         rtc::dchecked_cast<int>((sum_delays_ms_ + num_delays / 2) / num_delays);
   }
-  send_side_delay_observer_->SendSideDelayUpdated(avg_delay_ms, max_delay_ms,
-                                                  ssrc);
+  send_side_delay_observer_->SendSideDelayUpdated(
+      avg_delay_ms, max_delay_ms, total_packet_send_delay_ms, ssrc);
 }
 
 void RTPSender::UpdateOnSendPacket(int packet_id,
@@ -1198,14 +1224,20 @@ void RTPSender::AddPacketToTransportFeedback(
     uint16_t packet_id,
     const RtpPacketToSend& packet,
     const PacedPacketInfo& pacing_info) {
-  size_t packet_size = packet.payload_size() + packet.padding_size();
-  if (send_side_bwe_with_overhead_) {
-    packet_size = packet.size();
-  }
-
   if (transport_feedback_observer_) {
-    transport_feedback_observer_->AddPacket(SSRC(), packet_id, packet_size,
-                                            pacing_info);
+    size_t packet_size = packet.payload_size() + packet.padding_size();
+    if (send_side_bwe_with_overhead_) {
+      packet_size = packet.size();
+    }
+
+    RtpPacketSendInfo packet_info;
+    packet_info.ssrc = SSRC();
+    packet_info.transport_sequence_number = packet_id;
+    packet_info.has_rtp_sequence_number = true;
+    packet_info.rtp_sequence_number = packet.SequenceNumber();
+    packet_info.length = packet_size;
+    packet_info.pacing_info = pacing_info;
+    transport_feedback_observer_->OnAddPacket(packet_info);
   }
 }
 
@@ -1232,5 +1264,10 @@ int64_t RTPSender::LastTimestampTimeMs() const {
 void RTPSender::SetRtt(int64_t rtt_ms) {
   packet_history_.SetRtt(rtt_ms);
   flexfec_packet_history_.SetRtt(rtt_ms);
+}
+
+void RTPSender::OnPacketsAcknowledged(
+    rtc::ArrayView<const uint16_t> sequence_numbers) {
+  packet_history_.CullAcknowledgedPackets(sequence_numbers);
 }
 }  // namespace webrtc

@@ -309,13 +309,7 @@ class HistoryEnumerator {
   std::vector<GURL>& urls() { return urls_; }
 
  private:
-  void HistoryQueryComplete(
-      const base::Closure& quit_task,
-      history::QueryResults* results);
-
   std::vector<GURL> urls_;
-
-  base::CancelableTaskTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryEnumerator);
 };

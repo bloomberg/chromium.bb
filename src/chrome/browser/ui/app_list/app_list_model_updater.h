@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
@@ -18,6 +18,10 @@
 
 class ChromeAppListItem;
 class ChromeSearchResult;
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
 
 // An interface to wrap AppListModel access in browser.
 class AppListModelUpdater {
@@ -85,7 +89,7 @@ class AppListModelUpdater {
 
   virtual void SetSearchResultMetadata(
       const std::string& id,
-      ash::mojom::SearchResultMetadataPtr metadata) {}
+      std::unique_ptr<ash::SearchResultMetadata> metadata) {}
   virtual void SetSearchResultIsInstalling(const std::string& id,
                                            bool is_installing) {}
   virtual void SetSearchResultPercentDownloaded(const std::string& id,
@@ -107,9 +111,6 @@ class AppListModelUpdater {
       base::OnceCallback<void(const base::flat_map<std::string, uint16_t>&)>;
   virtual void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) {
   }
-  virtual void ContextMenuItemSelected(const std::string& id,
-                                       int command_id,
-                                       int event_flags) {}
   virtual syncer::StringOrdinal GetFirstAvailablePosition() const = 0;
 
   // Methods for AppListSyncableService:
@@ -129,7 +130,7 @@ class AppListModelUpdater {
       bool update_folder) {}
 
   using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(const std::string& id,
                                    GetMenuModelCallback callback) = 0;
   virtual size_t BadgedItemCount() = 0;
@@ -137,9 +138,12 @@ class AppListModelUpdater {
   virtual bool SearchEngineIsGoogle() = 0;
 
   // Methods for handle model updates in ash:
-  virtual void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) = 0;
-  virtual void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) = 0;
-  virtual void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) = 0;
+  virtual void OnFolderCreated(
+      std::unique_ptr<ash::AppListItemMetadata> item) = 0;
+  virtual void OnFolderDeleted(
+      std::unique_ptr<ash::AppListItemMetadata> item) = 0;
+  virtual void OnItemUpdated(
+      std::unique_ptr<ash::AppListItemMetadata> item) = 0;
   virtual void OnPageBreakItemAdded(const std::string& id,
                                     const syncer::StringOrdinal& position) = 0;
   virtual void OnPageBreakItemDeleted(const std::string& id) = 0;

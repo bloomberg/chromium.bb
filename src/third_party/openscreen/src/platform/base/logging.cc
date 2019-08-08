@@ -39,7 +39,8 @@ void LogWithLevel(LogLevel level,
 
   std::stringstream ss;
   ss << "[" << level << ":" << file << ":" << line << "] " << msg << std::endl;
-  write(g_log_fd, ss.str().c_str(), ss.str().size());
+  const auto bytes_written = write(g_log_fd, ss.str().c_str(), ss.str().size());
+  OSP_DCHECK(bytes_written);
 }
 
 void Break() {

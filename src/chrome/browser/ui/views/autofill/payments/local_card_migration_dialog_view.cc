@@ -76,8 +76,14 @@ std::unique_ptr<views::Label> CreateTitle(
   auto title = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(message_id, card_list_size));
   constexpr int kMigrationDialogTitleFontSize = 8;
+#if defined(GOOGLE_CHROME_BUILD)
+  constexpr int kMigrationDialogTitleMarginTop = 0;
+#else
+  constexpr int kMigrationDialogTitleMarginTop = 12;
+#endif
   title->SetBorder(views::CreateEmptyBorder(
-      /*top=*/0, /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
+      /*top=*/kMigrationDialogTitleMarginTop,
+      /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
       /*right=*/kMigrationDialogInsets.right()));
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
@@ -148,7 +154,7 @@ std::unique_ptr<views::ScrollView> CreateCardList(
               : provider->GetDistanceMetric(
                     views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   card_list_view_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+      views::BoxLayout::MainAxisAlignment::kStart);
   for (size_t index = 0; index < migratable_credit_cards.size(); ++index) {
     card_list_view->AddChildView(new MigratableCardView(
         migratable_credit_cards[index], dialog_view, should_show_checkbox));
@@ -197,7 +203,8 @@ std::unique_ptr<views::View> CreateTip(
       dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
           ? gfx::kGoogleYellow300
           : gfx::kGoogleYellow700));
-  lightbulb_outline_image->SetVerticalAlignment(views::ImageView::LEADING);
+  lightbulb_outline_image->SetVerticalAlignment(
+      views::ImageView::Alignment::kLeading);
   tip_text_container->AddChildView(lightbulb_outline_image);
 
   auto* tip = new views::Label(tip_message, CONTEXT_BODY_TEXT_SMALL,
@@ -473,11 +480,12 @@ void LocalCardMigrationDialogView::ConstructView() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
+#if defined(GOOGLE_CHROME_BUILD)
   auto* image = new views::ImageView();
   constexpr int kImageBorderBottom = 8;
   image->SetBorder(views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
       rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
                                ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
@@ -485,6 +493,7 @@ void LocalCardMigrationDialogView::ConstructView() {
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
+#endif  // GOOGLE_CHROME_BUILD
 
   LocalCardMigrationDialogState view_state = controller_->GetViewState();
   AddChildView(CreateTitle(view_state, this, controller_->GetCardList().size())
@@ -492,7 +501,7 @@ void LocalCardMigrationDialogView::ConstructView() {
 
   if (view_state == LocalCardMigrationDialogState::kOffered) {
     offer_view_ = new LocalCardMigrationOfferView(controller_, this);
-    offer_view_->set_id(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
+    offer_view_->SetID(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
     card_list_view_ = offer_view_->card_list_view_;
     AddChildView(offer_view_);
   } else {

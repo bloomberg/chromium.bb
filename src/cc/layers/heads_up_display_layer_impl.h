@@ -64,6 +64,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
   void SetHUDTypeface(sk_sp<SkTypeface> typeface);
+  void SetLayoutShiftRects(const std::vector<gfx::Rect>& rects);
+  const std::vector<gfx::Rect>& LayoutShiftRects() const;
 
   // This evicts hud quad appended during render pass preparation.
   void EvictHudQuad(const viz::RenderPassList& list);
@@ -148,6 +150,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   sk_sp<SkSurface> staging_surface_;
 
   sk_sp<SkTypeface> typeface_;
+  std::vector<gfx::Rect> layout_shift_rects_;
 
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;

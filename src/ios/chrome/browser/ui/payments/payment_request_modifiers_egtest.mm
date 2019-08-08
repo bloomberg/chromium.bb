@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,16 +81,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 - (void)addProfile {
   _profile = autofill::test::GetFullProfile();
-  NSError* autofillProfileError = [self addAutofillProfile:_profile];
-  GREYAssertNil(autofillProfileError,
-                autofillProfileError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile]);
 }
 
 - (void)addLocalCard {
   _localCard = autofill::test::GetCreditCard();  // Visa.
   _localCard.set_billing_address_id(_profile.guid());
-  NSError* creditCardError = [self addCreditCard:_localCard];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_localCard]);
 }
 
 - (void)addServerCardWithType:(autofill::CreditCard::CardType)cardType {
@@ -103,9 +101,10 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 // Tests that no modifier should be applied if there is no selected instrument.
 - (void)testNoModifierAppliedNoSelectedInstrument {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Verify there's no line item.
   [[EarlGrey selectElementWithMatcher:PriceCellMatcher(@"Total, USD $5.00", NO)]
@@ -115,11 +114,12 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // Tests that modifiers should be applied if there is a selected local credit
 // card instrument and the modifiers are for basic-card.
 - (void)testModifierAppliedSelectedLocalInstrumentWithoutTypeOrNetwork {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addLocalCard];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_localCard)]
@@ -143,11 +143,12 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addServerCardWithType:CREDIT];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]
@@ -171,11 +172,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addServerCardWithType:CREDIT];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"credit_supported_type"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"credit_supported_type"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]
@@ -195,11 +198,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // Tests that no modifier should be applied if there is a selected credit card
 // instrument but the modifiers are for basic-card of mismatching type.
 - (void)testNoModifierAppliedSelectedInstrumentWithMismatchingSupportedType {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addServerCardWithType:CREDIT];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"debit_supported_type"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"debit_supported_type"]);
 
   // Verify there's no line item.
   [[EarlGrey selectElementWithMatcher:PriceCellMatcher(@"Total, USD $5.00", NO)]
@@ -213,11 +218,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addServerCardWithType:CREDIT];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"mastercard_any_supported_type"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      tapWebStateElementWithID:@"mastercard_any_supported_type"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]
@@ -237,11 +244,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 // Tests that no modifier should be applied if there is a selected credit card
 // instrument but the modifiers are for basic-card of mismatching network.
 - (void)testNoModifierAppliedSelectedInstrumentWithMismatchingSupportedNetwork {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addLocalCard];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"mastercard_any_supported_type"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      tapWebStateElementWithID:@"mastercard_any_supported_type"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_localCard)]
@@ -260,11 +269,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
   [self addServerCardWithType:CREDIT];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"mastercard_supported_network"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      tapWebStateElementWithID:@"mastercard_supported_network"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]

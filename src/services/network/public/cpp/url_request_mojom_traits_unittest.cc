@@ -63,7 +63,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.plugin_child_id = 5;
   original.resource_type = 2;
   original.priority = net::IDLE;
-  original.appcache_host_id = 3;
+  original.appcache_host_id = base::UnguessableToken::Create();
   original.should_reset_appcache = true;
   original.is_external_request = false;
   original.cors_preflight_policy =
@@ -75,7 +75,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.fetch_redirect_mode = mojom::FetchRedirectMode::kFollow;
   original.fetch_integrity = "dummy_fetch_integrity";
   original.fetch_request_context_type = 0;
-  original.fetch_frame_type = mojom::RequestContextFrameType::kAuxiliary;
   original.keepalive = true;
   original.has_user_gesture = false;
   original.enable_load_timing = true;

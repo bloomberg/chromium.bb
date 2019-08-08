@@ -92,6 +92,8 @@ class RecordingProofVerifier : public ProofVerifier {
   QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
       const std::vector<std::string>& certs,
+      const std::string& ocsp_response,
+      const std::string& cert_sct,
       const ProofVerifyContext* context,
       std::string* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
@@ -207,8 +209,8 @@ MockableQuicClient::MockableQuicClient(
                                                                this),
           QuicWrapUnique(
               new RecordingProofVerifier(std::move(proof_verifier)))),
-      override_connection_id_(EmptyQuicConnectionId()),
-      connection_id_overridden_(false) {}
+      override_server_connection_id_(EmptyQuicConnectionId()),
+      server_connection_id_overridden_(false) {}
 
 MockableQuicClient::~MockableQuicClient() {
   if (connected()) {
@@ -229,13 +231,15 @@ MockableQuicClient::mockable_network_helper() const {
 }
 
 QuicConnectionId MockableQuicClient::GenerateNewConnectionId() {
-  return connection_id_overridden_ ? override_connection_id_
-                                   : QuicClient::GenerateNewConnectionId();
+  return server_connection_id_overridden_
+             ? override_server_connection_id_
+             : QuicClient::GenerateNewConnectionId();
 }
 
-void MockableQuicClient::UseConnectionId(QuicConnectionId connection_id) {
-  connection_id_overridden_ = true;
-  override_connection_id_ = connection_id;
+void MockableQuicClient::UseConnectionId(
+    QuicConnectionId server_connection_id) {
+  server_connection_id_overridden_ = true;
+  override_server_connection_id_ = server_connection_id;
 }
 
 void MockableQuicClient::UseWriter(QuicPacketWriterWrapper* writer) {
@@ -395,16 +399,6 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
   } else {
     stream->WriteOrBufferBody(std::string(body), fin);
     ret = body.length();
-  }
-  if (GetQuicReloadableFlag(enable_quic_stateless_reject_support)) {
-    std::unique_ptr<spdy::SpdyHeaderBlock> new_headers;
-    if (headers) {
-      new_headers = QuicMakeUnique<spdy::SpdyHeaderBlock>(headers->Clone());
-    }
-    std::unique_ptr<QuicSpdyClientBase::QuicDataToResend> data_to_resend(
-        new TestClientDataToResend(std::move(new_headers), body, fin, this,
-                                   ack_listener));
-    client()->MaybeAddQuicDataToResend(std::move(data_to_resend));
   }
   return ret;
 }
@@ -629,8 +623,8 @@ bool QuicTestClient::WaitUntil(int timeout_ms, std::function<bool()> trigger) {
     epoll_server()->set_timeout_in_us(old_timeout_us);
   }
   if (trigger && !trigger()) {
-    VLOG(1) << "Client WaitUntil returning with trigger returning false."
-            << QuicStackTrace();
+    QUIC_VLOG(1) << "Client WaitUntil returning with trigger returning false."
+                 << QuicStackTrace();
     return false;
   }
   return true;
@@ -651,9 +645,7 @@ bool QuicTestClient::response_headers_complete() const {
 
 const spdy::SpdyHeaderBlock* QuicTestClient::response_headers() const {
   for (std::pair<QuicStreamId, QuicSpdyClientStream*> stream : open_streams_) {
-    size_t bytes_read =
-        stream.second->stream_bytes_read() + stream.second->header_bytes_read();
-    if (bytes_read > 0) {
+    if (stream.second->headers_decompressed()) {
       response_headers_ = stream.second->response_headers().Clone();
       break;
     }
@@ -759,9 +751,9 @@ void QuicTestClient::UseWriter(QuicPacketWriterWrapper* writer) {
   client_->UseWriter(writer);
 }
 
-void QuicTestClient::UseConnectionId(QuicConnectionId connection_id) {
+void QuicTestClient::UseConnectionId(QuicConnectionId server_connection_id) {
   DCHECK(!connected());
-  client_->UseConnectionId(connection_id);
+  client_->UseConnectionId(server_connection_id);
 }
 
 bool QuicTestClient::MigrateSocket(const QuicIpAddress& new_host) {

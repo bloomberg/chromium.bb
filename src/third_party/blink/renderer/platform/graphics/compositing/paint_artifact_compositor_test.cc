@@ -137,22 +137,15 @@ class PaintArtifactCompositorTest : public testing::Test,
     return property_trees->element_id_to_scroll_node_index[element_id];
   }
 
-  void Update(scoped_refptr<const PaintArtifact> artifact) {
-    CompositorElementIdSet element_ids;
-    Update(artifact, element_ids);
-  }
-
   using ViewportProperties = PaintArtifactCompositor::ViewportProperties;
   using Settings = PaintArtifactCompositor::Settings;
 
   void Update(
       scoped_refptr<const PaintArtifact> artifact,
-      CompositorElementIdSet& element_ids,
       const ViewportProperties& viewport_properties = ViewportProperties(),
       const Settings& settings = Settings()) {
     paint_artifact_compositor_->SetNeedsUpdate();
-    paint_artifact_compositor_->Update(artifact, element_ids,
-                                       viewport_properties, settings);
+    paint_artifact_compositor_->Update(artifact, viewport_properties, settings);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
 
@@ -1044,10 +1037,7 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
       .RectDrawing(FloatRect(-110, 12, 170, 19), Color::kWhite);
 
   // Scroll node ElementIds are referenced by scroll animations.
-  CompositorElementIdSet composited_element_ids;
-  Update(artifact.Build(), composited_element_ids);
-  EXPECT_EQ(1u, composited_element_ids.size());
-  EXPECT_TRUE(composited_element_ids.count(scroll_element_id));
+  Update(artifact.Build());
 
   const cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
   // Node #0 reserved for null; #1 for root render surface.
@@ -2033,7 +2023,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMask) {
   EXPECT_EQ(gfx::Size(200, 200), masked_layer->bounds());
   const cc::EffectNode* masked_group =
       GetPropertyTrees().effect_tree.Node(masked_layer->effect_tree_index());
-  EXPECT_TRUE(masked_group->has_render_surface);
+  EXPECT_TRUE(masked_group->HasRenderSurface());
 
   const cc::Layer* masking_layer = ContentLayerAt(1);
   EXPECT_THAT(
@@ -2043,7 +2033,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMask) {
   EXPECT_EQ(gfx::Size(100, 100), masking_layer->bounds());
   const cc::EffectNode* masking_group =
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
-  EXPECT_FALSE(masking_group->has_render_surface);
+  EXPECT_FALSE(masking_group->HasRenderSurface());
   EXPECT_EQ(masked_group->id, masking_group->parent_id);
   ASSERT_EQ(1u, masking_group->filters.size());
   EXPECT_EQ(cc::FilterOperation::REFERENCE,
@@ -2081,7 +2071,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskTwoChildren) {
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
 
   // There is a render surface because there are two children.
-  EXPECT_TRUE(masking_group->has_render_surface);
+  EXPECT_TRUE(masking_group->HasRenderSurface());
   ASSERT_EQ(1u, masking_group->filters.size());
   EXPECT_EQ(cc::FilterOperation::REFERENCE,
             masking_group->filters.at(0).type());
@@ -2112,7 +2102,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedExoticBlendMode) {
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
 
   /// This requires a render surface.
-  EXPECT_TRUE(masking_group->has_render_surface);
+  EXPECT_TRUE(masking_group->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
@@ -2351,50 +2341,6 @@ TEST_P(PaintArtifactCompositorTest, DecompositedEffectNotMergingDueToOverlap) {
   EXPECT_EQ(1, layer4->effect_tree_index());
 }
 
-TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
-  auto transform = CreateAnimatingTransform(t0());
-  auto effect = CreateAnimatingOpacityEffect(e0());
-  TestPaintArtifact artifact;
-  artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-      .Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
-
-  CompositorElementIdSet composited_element_ids;
-  Update(artifact.Build(), composited_element_ids);
-
-  EXPECT_EQ(2u, composited_element_ids.size());
-  EXPECT_TRUE(
-      composited_element_ids.count(transform->GetCompositorElementId()));
-  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
-}
-
-// If we have both a transform and an opacity animation, they should both be
-// included in the composited element id set returned from
-// |PaintArtifactCompositor::Update(...)|.
-TEST_P(PaintArtifactCompositorTest, UniqueAnimationCompositedElementIds) {
-  auto animating_transform = CreateAnimatingTransform(t0());
-  auto non_animating_transform = CreateTransform(
-      *animating_transform, TransformationMatrix().Translate(10, 20));
-  auto animating_effect = CreateAnimatingOpacityEffect(e0());
-  auto non_animating_effect = CreateOpacityEffect(*animating_effect, 0.5f);
-
-  CompositorElementIdSet composited_element_ids;
-  Update(TestPaintArtifact()
-             .Chunk(*animating_transform, c0(), *animating_effect)
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-             .Chunk(*non_animating_transform, c0(), *non_animating_effect)
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-             .Build(),
-         composited_element_ids);
-
-  EXPECT_EQ(2u, composited_element_ids.size());
-  EXPECT_EQ(1u, composited_element_ids.count(
-                    animating_transform->GetCompositorElementId()));
-  EXPECT_EQ(1u, composited_element_ids.count(
-                    animating_effect->GetCompositorElementId()));
-}
-
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {
   UpdateWithArtifactWithOpacity(0, false, false);
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -2556,17 +2502,17 @@ TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
 
     Update(artifact.Build());
     ASSERT_EQ(1u, ContentLayerCount());
-    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
+    ASSERT_TRUE(GetLayerTreeHost().IsElementInPropertyTrees(
         element_id, cc::ElementListType::ACTIVE));
   }
 
   {
     TestPaintArtifact artifact;
-    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
+    ASSERT_TRUE(GetLayerTreeHost().IsElementInPropertyTrees(
         element_id, cc::ElementListType::ACTIVE));
     Update(artifact.Build());
     ASSERT_EQ(0u, ContentLayerCount());
-    ASSERT_FALSE(GetLayerTreeHost().IsElementInList(
+    ASSERT_FALSE(GetLayerTreeHost().IsElementInPropertyTrees(
         element_id, cc::ElementListType::ACTIVE));
   }
 }
@@ -2584,12 +2530,46 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //          l0
+    // [ mask_isolation_0 ]
+    // [        e0        ]
+    // One content layer.
+    ASSERT_EQ(1u, RootLayer()->children().size());
+    ASSERT_EQ(1u, ContentLayerCount());
+    // There is still a "synthesized layer" but it's null.
+    ASSERT_EQ(1u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+    return;
+  }
+
   // Expectation in effect stack diagram:
   //           l1
   // l0 [ mask_effect_0 ]
   // [ mask_isolation_0 ]
   // [        e0        ]
-  // One content layer, one clip mask.
+  // One content layer.
   ASSERT_EQ(2u, RootLayer()->children().size());
   ASSERT_EQ(1u, ContentLayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
@@ -2610,6 +2590,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
@@ -2623,6 +2604,369 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   // The masks DrawsContent because it has content that it masks which also
   // DrawsContent.
   EXPECT_TRUE(clip_mask0->DrawsContent());
+}
+
+TEST_P(PaintArtifactCompositorTest, SynthesizedClipRotatedNotSupported) {
+  // Synthesized clips are not currently supported when rotated (or any
+  // transform that is not 2D axis-aligned).
+  auto transform = CreateTransform(t0(), TransformationMatrix().Rotate(45),
+                                   FloatPoint3D(100, 100, 0),
+                                   CompositingReason::k3DTransform);
+
+  FloatSize corner(5, 5);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), *transform, rrect);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*transform, *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //           l1
+  // l0 [ mask_effect_0 ]
+  // [ mask_isolation_0 ]
+  // [        e0        ]
+  // One content layer.
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(1u, SynthesizedClipLayerCount());
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+
+  constexpr int c0_id = 1;
+  constexpr int e0_id = 1;
+
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+  int mask_isolation_0_id = content0->effect_tree_index();
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
+
+  EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
+  EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
+  int mask_effect_0_id = clip_mask0->effect_tree_index();
+  const cc::EffectNode& mask_effect_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
+  ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
+}
+
+TEST_P(PaintArtifactCompositorTest, SynthesizedClip90DegRotationSupported) {
+  // 90-degree rotations are axis-aligned, and so the synthetic clip is
+  // supported.
+  auto transform = CreateTransform(t0(), TransformationMatrix().Rotate(90),
+                                   FloatPoint3D(100, 100, 0),
+                                   CompositingReason::k3DTransform);
+
+  FloatSize corner(5, 5);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), *transform, rrect);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*transform, *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //          l0
+    // [ mask_isolation_0 ]
+    // [        e0        ]
+    // One content layer.
+    ASSERT_EQ(1u, RootLayer()->children().size());
+    ASSERT_EQ(1u, ContentLayerCount());
+    // There is still a "synthesized layer" but it's null.
+    ASSERT_EQ(1u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+    return;
+  }
+
+  // Expectation in effect stack diagram:
+  //           l1
+  // l0 [ mask_effect_0 ]
+  // [ mask_isolation_0 ]
+  // [        e0        ]
+  // One content layer.
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(1u, SynthesizedClipLayerCount());
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+
+  constexpr int c0_id = 1;
+  constexpr int e0_id = 1;
+
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+  int mask_isolation_0_id = content0->effect_tree_index();
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
+
+  EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
+  EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
+  int mask_effect_0_id = clip_mask0->effect_tree_index();
+  const cc::EffectNode& mask_effect_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
+  ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       SynthesizedClipSimpleFastBorderNotSupported1) {
+  // This tests the simplist case that a single layer needs to be clipped
+  // by a single composited rounded clip. Because the radius is too big,
+  // it falls back to a mask layer.
+  FloatSize corner(200, 200);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), t0(), rrect);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //           l1
+  // l0 [ mask_effect_0 ]
+  // [ mask_isolation_0 ]
+  // [        e0        ]
+  // One content layer.
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(1u, SynthesizedClipLayerCount());
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+
+  constexpr int c0_id = 1;
+  constexpr int e0_id = 1;
+
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+  int mask_isolation_0_id = content0->effect_tree_index();
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
+
+  EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
+  EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
+  int mask_effect_0_id = clip_mask0->effect_tree_index();
+  const cc::EffectNode& mask_effect_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
+  ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
+
+  // The masks DrawsContent because it has content that it masks which also
+  // DrawsContent.
+  EXPECT_TRUE(clip_mask0->DrawsContent());
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       SynthesizedClipSimpleFastBorderNotSupported2) {
+  // This tests the simplist case that a single layer needs to be clipped
+  // by a single composited rounded clip. Because the radius is unsymmetric,
+  // it falls back to a mask layer.
+  FloatSize corner(30, 40);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), t0(), rrect);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //           l1
+  // l0 [ mask_effect_0 ]
+  // [ mask_isolation_0 ]
+  // [        e0        ]
+  // One content layer.
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(1u, ContentLayerCount());
+  ASSERT_EQ(1u, SynthesizedClipLayerCount());
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+
+  constexpr int c0_id = 1;
+  constexpr int e0_id = 1;
+
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+  int mask_isolation_0_id = content0->effect_tree_index();
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
+
+  EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
+  EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
+  int mask_effect_0_id = clip_mask0->effect_tree_index();
+  const cc::EffectNode& mask_effect_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
+  ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
+
+  // The masks DrawsContent because it has content that it masks which also
+  // DrawsContent.
+  EXPECT_TRUE(clip_mask0->DrawsContent());
+}
+
+TEST_P(PaintArtifactCompositorTest, SynthesizedClipNested) {
+  // This tests the simplist case that a single layer needs to be clipped
+  // by a single composited rounded clip.
+  if (!RuntimeEnabledFeatures::FastBorderRadiusEnabled())
+    return;
+
+  FloatSize corner(5, 5);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), t0(), rrect);
+  auto c2 = CreateClip(*c1, t0(), rrect);
+  auto c3 = CreateClip(*c2, t0(), rrect);
+  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                            CompositingReason::kWillChangeTransform);
+  CompositorFilterOperations filter_operations;
+  filter_operations.AppendBlurFilter(5);
+  auto filter = CreateFilterEffect(e0(), t0(), c1.get(), filter_operations);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, *filter)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  artifact.Chunk(*t1, *c3, *filter)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //            l0
+  //    [ mask_isolation_2 ]
+  // l1 [ mask_isolation_1 ]
+  // [       filter        ]
+  // [  mask_isolation_0   ]
+  // [         e0          ]
+  // Two content layers.
+  ///
+  // mask_isolation_1 will have a render surface. mask_isolation_2 will not
+  // because non-leaf synthetic rounded clips must have a render surface.
+  // mask_isolation_0 will not because it is a leaf synthetic rounded clip
+  // in the render surface created by the filter.
+
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(2u, ContentLayerCount());
+  // There is still a "synthesized layer" but it's null.
+  ASSERT_EQ(3u, SynthesizedClipLayerCount());
+  EXPECT_FALSE(SynthesizedClipLayerAt(0));
+  EXPECT_FALSE(SynthesizedClipLayerAt(1));
+  EXPECT_FALSE(SynthesizedClipLayerAt(2));
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  const cc::Layer* content1 = RootLayer()->children()[1].get();
+  EXPECT_EQ(ContentLayerAt(1), content1);
+
+  constexpr int c0_id = 1;
+  constexpr int c1_id = 2;
+  constexpr int e0_id = 1;
+  constexpr int e1_id = 2;
+
+  int c3_id = content1->clip_tree_index();
+  const cc::ClipNode& cc_c3 = *GetPropertyTrees().clip_tree.Node(c3_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c3.clip);
+  const cc::ClipNode& cc_c2 =
+      *GetPropertyTrees().clip_tree.Node(cc_c3.parent_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c2.clip);
+  ASSERT_EQ(c1_id, cc_c2.parent_id);
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+
+  int mask_isolation_2_id = content1->effect_tree_index();
+  const cc::EffectNode& mask_isolation_2 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_2_id);
+  const cc::EffectNode& mask_isolation_1 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_2.parent_id);
+  const cc::EffectNode& cc_filter =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_1.parent_id);
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(cc_filter.parent_id);
+
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_0.rounded_corner_bounds);
+  EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+
+  ASSERT_EQ(e1_id, cc_filter.parent_id);
+  EXPECT_EQ(cc_filter.id, content0->effect_tree_index());
+  EXPECT_EQ(SkBlendMode::kSrcOver, cc_filter.blend_mode);
+  EXPECT_FALSE(cc_filter.is_fast_rounded_corner);
+  EXPECT_TRUE(cc_filter.HasRenderSurface());
+
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+  EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_1.rounded_corner_bounds);
+  EXPECT_TRUE(mask_isolation_1.HasRenderSurface());
+
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_2.blend_mode);
+  EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_2.rounded_corner_bounds);
+  EXPECT_FALSE(mask_isolation_2.HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
@@ -2725,6 +3069,45 @@ TEST_P(PaintArtifactCompositorTest,
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //   l0         l1
+    // [ e1 ]
+    // [  mask_isolation_0   ]
+    // [         e0          ]
+    // One content layer, one clip mask.
+    ASSERT_EQ(1u, RootLayer()->children().size());
+    ASSERT_EQ(1u, ContentLayerCount());
+    // There is still a "synthesized layer" but it's null.
+    ASSERT_EQ(1u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int e1_id = content0->effect_tree_index();
+    const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+    EXPECT_EQ(c1_id, cc_e1.clip_id);
+    int mask_isolation_0_id = cc_e1.parent_id;
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(c1_id, mask_isolation_0.clip_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 0),
+              mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+    return;
+  }
+
   // Expectation in effect stack diagram:
   //   l0         l1
   // [ e1 ][ mask_effect_0 ]
@@ -2784,6 +3167,53 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   artifact.Chunk(*t1, *c1, e0())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
+
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //              l2
+    // l0 l1
+    // [  mask_isolation_0   ]
+    // [         e0          ]
+    // Two content layers, one clip mask.
+    ASSERT_EQ(2u, RootLayer()->children().size());
+    ASSERT_EQ(2u, ContentLayerCount());
+    // There is still a "synthesized layer" but it's null.
+    ASSERT_EQ(1u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+    const cc::Layer* content1 = RootLayer()->children()[1].get();
+
+    constexpr int t0_id = 1;
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    EXPECT_EQ(t0_id, content0->transform_tree_index());
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+
+    EXPECT_EQ(ContentLayerAt(1), content1);
+    int t1_id = content1->transform_tree_index();
+    const cc::TransformNode& cc_t1 =
+        *GetPropertyTrees().transform_tree.Node(t1_id);
+    ASSERT_EQ(t0_id, cc_t1.parent_id);
+    EXPECT_EQ(c1_id, content1->clip_tree_index());
+    EXPECT_EQ(mask_isolation_0_id, content1->effect_tree_index());
+
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+    return;
+  }
 
   // Expectation in effect stack diagram:
   //              l2
@@ -2855,6 +3285,68 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //           l1                      l4
+    // l0                   l3
+    // [ mask_isolation_0 ] l2 [ mask_isolation_1 ]
+    // [                    e0                    ]
+    // Three content layers.
+    ASSERT_EQ(3u, RootLayer()->children().size());
+    ASSERT_EQ(3u, ContentLayerCount());
+    // There are still "synthesized layers" but they're null.
+    ASSERT_EQ(2u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+    EXPECT_FALSE(SynthesizedClipLayerAt(1));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+    const cc::Layer* content1 = RootLayer()->children()[1].get();
+    const cc::Layer* content2 = RootLayer()->children()[2].get();
+
+    constexpr int t0_id = 1;
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    EXPECT_EQ(t0_id, content0->transform_tree_index());
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+
+    EXPECT_EQ(ContentLayerAt(1), content1);
+    int t1_id = content1->transform_tree_index();
+    const cc::TransformNode& cc_t1 =
+        *GetPropertyTrees().transform_tree.Node(t1_id);
+    ASSERT_EQ(t0_id, cc_t1.parent_id);
+    EXPECT_EQ(c0_id, content1->clip_tree_index());
+    EXPECT_EQ(e0_id, content1->effect_tree_index());
+
+    EXPECT_EQ(ContentLayerAt(2), content2);
+    EXPECT_EQ(t0_id, content2->transform_tree_index());
+    EXPECT_EQ(c1_id, content2->clip_tree_index());
+    int mask_isolation_1_id = content2->effect_tree_index();
+    const cc::EffectNode& mask_isolation_1 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_1_id);
+    EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
+    ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+    EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_1.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_1.HasRenderSurface());
+    return;
+  }
+
   // Expectation in effect stack diagram:
   //           l1                      l4
   // l0 [ mask_effect_0 ]    l3 [ mask_effect_1 ]
@@ -2886,6 +3378,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
@@ -2914,6 +3407,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
   ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+  EXPECT_TRUE(mask_isolation_1.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(1), clip_mask1);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask1->bounds());
@@ -2945,6 +3439,56 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //      l1             l3
+    // l0 [ e1 ] l2
+    // [      mask_isolation_0      ]
+    // [             e0             ]
+    // Three content layers.
+    ASSERT_EQ(3u, RootLayer()->children().size());
+    ASSERT_EQ(3u, ContentLayerCount());
+    // There is still a "synthesized layer" but it's null.
+    ASSERT_EQ(1u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+    const cc::Layer* content1 = RootLayer()->children()[1].get();
+    const cc::Layer* content2 = RootLayer()->children()[2].get();
+
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+
+    EXPECT_EQ(ContentLayerAt(1), content1);
+    EXPECT_EQ(c1_id, content1->clip_tree_index());
+    int e1_id = content1->effect_tree_index();
+    const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+    ASSERT_EQ(mask_isolation_0_id, cc_e1.parent_id);
+
+    EXPECT_EQ(ContentLayerAt(2), content2);
+    EXPECT_EQ(c1_id, content2->clip_tree_index());
+    EXPECT_EQ(mask_isolation_0_id, content2->effect_tree_index());
+
+    int e2_id = content2->effect_tree_index();
+    const cc::EffectNode& cc_e2 = *GetPropertyTrees().effect_tree.Node(e2_id);
+    EXPECT_TRUE(cc_e2.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+    return;
+  }
+
   // Expectation in effect stack diagram:
   //      l1             l3
   // l0 [ e1 ] l2 [ mask_effect_0 ]
@@ -2973,6 +3517,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(ContentLayerAt(1), content1);
   EXPECT_EQ(c1_id, content1->clip_tree_index());
@@ -3016,6 +3561,75 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   artifact.Chunk(t0(), *c1, e0())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
+
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //                               l3
+    //           l1        l2                         l5
+    // l0                   [ mask_isolation_1 ] l4
+    // [ mask_isolation_0 ][        e1        ][ mask_isolation_2  ]
+    // [                            e0                             ]
+    // Three content layers.
+    ASSERT_EQ(3u, RootLayer()->children().size());
+    ASSERT_EQ(3u, ContentLayerCount());
+    // There are still "synthesized layers" but they're null.
+    ASSERT_EQ(3u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+    EXPECT_FALSE(SynthesizedClipLayerAt(1));
+    EXPECT_FALSE(SynthesizedClipLayerAt(2));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+    const cc::Layer* content1 = RootLayer()->children()[1].get();
+    const cc::Layer* content2 = RootLayer()->children()[2].get();
+
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+
+    EXPECT_EQ(ContentLayerAt(1), content1);
+    EXPECT_EQ(c1_id, content1->clip_tree_index());
+    int mask_isolation_1_id = content1->effect_tree_index();
+    const cc::EffectNode& mask_isolation_1 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_1_id);
+    EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+    int e1_id = mask_isolation_1.parent_id;
+    const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+    ASSERT_EQ(e0_id, cc_e1.parent_id);
+    EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_1.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_1.HasRenderSurface());
+
+    EXPECT_EQ(ContentLayerAt(2), content2);
+    EXPECT_EQ(c1_id, content2->clip_tree_index());
+    int mask_isolation_2_id = content2->effect_tree_index();
+    const cc::EffectNode& mask_isolation_2 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_2_id);
+    EXPECT_NE(mask_isolation_0_id, mask_isolation_2_id);
+    EXPECT_NE(mask_isolation_1_id, mask_isolation_2_id);
+    ASSERT_EQ(e0_id, mask_isolation_2.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_2.blend_mode);
+    EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_2.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_2.HasRenderSurface());
+    return;
+  }
 
   // Expectation in effect stack diagram:
   //                               l3
@@ -3122,6 +3736,73 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   artifact.Chunk(t0(), *c1, e0())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
+
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+    // Expectation in effect stack diagram:
+    //           l1          l2         l3                   l5
+    // l0                  [ e1 ]               l4
+    // [ mask_isolation_0 ][  mask_isolation_1   ][ mask_isolation_2  ]
+    // [                              e0                              ]
+    // Three content layers.
+    ASSERT_EQ(3u, RootLayer()->children().size());
+    ASSERT_EQ(3u, ContentLayerCount());
+    // There are still "synthesized layers" but they're null.
+    ASSERT_EQ(3u, SynthesizedClipLayerCount());
+    EXPECT_FALSE(SynthesizedClipLayerAt(0));
+    EXPECT_FALSE(SynthesizedClipLayerAt(1));
+    EXPECT_FALSE(SynthesizedClipLayerAt(2));
+
+    const cc::Layer* content0 = RootLayer()->children()[0].get();
+    const cc::Layer* content1 = RootLayer()->children()[1].get();
+    const cc::Layer* content2 = RootLayer()->children()[2].get();
+
+    constexpr int c0_id = 1;
+    constexpr int e0_id = 1;
+
+    EXPECT_EQ(ContentLayerAt(0), content0);
+    int c1_id = content0->clip_tree_index();
+    const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+    EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+    ASSERT_EQ(c0_id, cc_c1.parent_id);
+    int mask_isolation_0_id = content0->effect_tree_index();
+    const cc::EffectNode& mask_isolation_0 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+    ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_0.rounded_corner_bounds);
+
+    EXPECT_EQ(ContentLayerAt(1), content1);
+    EXPECT_EQ(c1_id, content1->clip_tree_index());
+    int e1_id = content1->effect_tree_index();
+    const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, cc_e1.blend_mode);
+    int mask_isolation_1_id = cc_e1.parent_id;
+    const cc::EffectNode& mask_isolation_1 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_1_id);
+    EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
+    ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
+    EXPECT_EQ(SkBlendMode::kMultiply, mask_isolation_1.blend_mode);
+    EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_1.rounded_corner_bounds);
+
+    EXPECT_EQ(ContentLayerAt(2), content2);
+    EXPECT_EQ(c1_id, content2->clip_tree_index());
+    int mask_isolation_2_id = content2->effect_tree_index();
+    const cc::EffectNode& mask_isolation_2 =
+        *GetPropertyTrees().effect_tree.Node(mask_isolation_2_id);
+    EXPECT_NE(mask_isolation_0_id, mask_isolation_2_id);
+    EXPECT_NE(mask_isolation_1_id, mask_isolation_2_id);
+    ASSERT_EQ(e0_id, mask_isolation_2.parent_id);
+    EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
+    EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+              mask_isolation_2.rounded_corner_bounds);
+
+    return;
+  }
 
   // Expectation in effect stack diagram:
   //           l1          l2         l3                   l5
@@ -3408,8 +4089,7 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   TestPaintArtifact artifact;
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = scale_transform_node.get();
-  CompositorElementIdSet element_ids;
-  Update(artifact.Build(), element_ids, viewport_properties);
+  Update(artifact.Build(), viewport_properties);
 
   cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
   cc::TransformNode* cc_transform_node = transform_tree.FindNodeFromElementId(
@@ -3450,8 +4130,7 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
       .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = page_scale_transform.get();
-  CompositorElementIdSet element_ids;
-  Update(artifact.Build(), element_ids, viewport_properties);
+  Update(artifact.Build(), viewport_properties);
 
   cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
   const auto* cc_page_scale_transform = transform_tree.FindNodeFromElementId(
@@ -3473,6 +4152,50 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
   EXPECT_TRUE(cc_descendant_transform->in_subtree_of_page_scale_layer);
 }
 
+// Test that PaintArtifactCompositor pushes page scale to the transform tree.
+TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
+  // Create a page scale transform node with a page scale factor of 2.0.
+  TransformationMatrix matrix;
+  matrix.Scale(2);
+  TransformPaintPropertyNode::State transform_state{matrix};
+  transform_state.in_subtree_of_page_scale = false;
+  transform_state.compositor_element_id =
+      CompositorElementIdFromUniqueObjectId(1);
+  auto scale_transform_node = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(transform_state));
+
+  // Create a viewport scroll node with container size 20x10 and contents size
+  // 27x32.
+  ScrollPaintPropertyNode::State scroll_state;
+  scroll_state.container_rect = IntRect(5, 5, 20, 10);
+  scroll_state.contents_size = IntSize(27, 32);
+  scroll_state.user_scrollable_vertical = true;
+  scroll_state.max_scroll_offset_affected_by_page_scale = true;
+  scroll_state.compositor_element_id = ScrollElementId(2);
+
+  auto scroll =
+      CreateScroll(ScrollPaintPropertyNode::Root(), scroll_state,
+                   kNotScrollingOnMain, scroll_state.compositor_element_id);
+  auto scroll_translation =
+      CreateScrollTranslation(*scale_transform_node, 0, 0, *scroll);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*scroll_translation, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
+  ViewportProperties viewport_properties;
+  viewport_properties.page_scale = scale_transform_node.get();
+  Update(artifact.Build(), viewport_properties);
+
+  cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
+  cc::ScrollNode* cc_scroll_node =
+      scroll_tree.FindNodeFromElementId(scroll_state.compositor_element_id);
+  auto max_scroll_offset = scroll_tree.MaxScrollOffset(cc_scroll_node->id);
+  // The max scroll offset should be scaled by the page scale factor (see:
+  // |ScrollTree::MaxScrollOffset|). This adjustment scales the contents from
+  // 27x32 to 54x64 so the max scroll offset becomes (54-20)/2 x (64-10)/2.
+  EXPECT_EQ(gfx::ScrollOffset(17, 27), max_scroll_offset);
+}
+
 enum {
   kNoRenderSurface = 0,
   kHasRenderSurface = 1 << 0,
@@ -3483,7 +4206,7 @@ enum {
     const auto* effect = GetPropertyTrees().effect_tree.Node(effect_id); \
     EXPECT_EQ(expected_opacity, effect->opacity);                        \
     EXPECT_EQ(!!((expected_flags)&kHasRenderSurface),                    \
-              effect->has_render_surface);                               \
+              effect->HasRenderSurface());                               \
   } while (false)
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
@@ -3664,8 +4387,9 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
 }
 
 TEST_P(PaintArtifactCompositorTest,
-       DirectCompositingReasonsCausesRenderSurface) {
-  // When an effect has an animated transform, we should get a render surface.
+       DirectTransformAnimationCausesRenderSurfaceFor2dAxisMisalignedClip) {
+  // When a clip is affected by an animated transform, we should get a render
+  // surface for the effect node.
   auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
                             CompositingReason::kActiveTransformAnimation);
   auto e1 = CreateOpacityEffect(e0(), *t1, nullptr, 1.f);
@@ -3679,7 +4403,28 @@ TEST_P(PaintArtifactCompositorTest,
 
   const auto* effect = GetPropertyTrees().effect_tree.Node(
       ContentLayerAt(1)->effect_tree_index());
-  EXPECT_TRUE(effect->has_render_surface);
+  EXPECT_TRUE(effect->HasRenderSurface());
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       IndirectTransformAnimationCausesRenderSurfaceFor2dAxisMisalignedClip) {
+  // When a clip is affected by an animated transform, we should get a render
+  // surface for the effect node.
+  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                            CompositingReason::kActiveTransformAnimation);
+  auto t2 = Create2DTranslation(*t1, 10, 20);
+  auto e1 = CreateOpacityEffect(e0(), *t2, nullptr, 1.f);
+  auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(50, 50, 50, 50));
+  TestPaintArtifact artifact;
+  FloatRect r(150, 150, 100, 100);
+  artifact.Chunk(t0(), c0(), e0()).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), *c1, *e1).RectDrawing(r, Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, ContentLayerCount());
+
+  const auto* effect = GetPropertyTrees().effect_tree.Node(
+      ContentLayerAt(1)->effect_tree_index());
+  EXPECT_TRUE(effect->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
@@ -3829,6 +4574,31 @@ TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedClip) {
   EXPECT_OPACITY(effect_id, 1.f, kHasRenderSurface);
   EXPECT_OPACITY(cc_effect->parent_id, 0.5f, kNoRenderSurface);
   EXPECT_EQ(cc_effect->clip_id, cc_clip->parent_id);
+}
+
+TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedRoundedRectClip) {
+  auto rotate = CreateTransform(t0(), TransformationMatrix().Rotate(45));
+  FloatSize corner(5, 5);
+  FloatRoundedRect rounded_clip(FloatRect(50, 50, 50, 50), corner, corner,
+                                corner, corner);
+  auto clip = CreateClip(c0(), *rotate, rounded_clip);
+  auto opacity = CreateOpacityEffect(
+      e0(), 0.5f, CompositingReason::kActiveOpacityAnimation);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *clip, *opacity)
+      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+
+  // We should create a synthetic effect node for the non-2d-axis-aligned clip.
+  int clip_id = ContentLayerAt(0)->clip_tree_index();
+  const auto* cc_clip = GetPropertyTrees().clip_tree.Node(clip_id);
+  int effect_id = ContentLayerAt(0)->effect_tree_index();
+  const auto* cc_effect = GetPropertyTrees().effect_tree.Node(effect_id);
+  EXPECT_OPACITY(effect_id, 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(cc_effect->parent_id, 0.5f, kNoRenderSurface);
+  EXPECT_EQ(cc_effect->clip_id, cc_clip->id);
 }
 
 TEST_P(PaintArtifactCompositorTest,

@@ -13,18 +13,15 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
-class NGBreakToken;
 class NGConstraintSpace;
-struct NGLogicalSize;
+struct LogicalSize;
 
 class CORE_EXPORT NGPageLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGPageLayoutAlgorithm(NGBlockNode node,
-                        const NGConstraintSpace& space,
-                        const NGBreakToken* break_token = nullptr);
+  NGPageLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
@@ -33,7 +30,10 @@ class CORE_EXPORT NGPageLayoutAlgorithm
 
  private:
   NGConstraintSpace CreateConstraintSpaceForPages(
-      const NGLogicalSize& size) const;
+      const LogicalSize& size) const;
+
+  NGBoxStrut border_padding_;
+  NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

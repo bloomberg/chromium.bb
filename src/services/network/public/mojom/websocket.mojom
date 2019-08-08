@@ -136,13 +136,11 @@ interface WebSocket {
   //   UTF-8. If |fin| is not set, |data| must be non-empty.
   SendFrame(bool fin, WebSocketMessageType type, array<uint8> data);
 
-  // Add |quota| tokens of send quota for the channel. |quota| must be a
-  // positive integer. Both the browser and the renderer set send quota for the
-  // other side, and check that quota has not been exceeded when receiving
-  // messages.  Both sides start a new channel with a quota of 0, and must wait
-  // for a FlowControl message before calling SendFrame. The total available
-  // quota on one side must never exceed 0x7FFFFFFFFFFFFFFF tokens.
-  SendFlowControl(int64 quota);
+  // Add |quota| bytes of receive quota. |quota| must be positive. Initial quota
+  // is 0. The browser will wait for an AddReceiveFlowControlQuota() message
+  // before forwarding any messages to the renderer. Total quota must never
+  // exceed 0x7FFFFFFFFFFFFFFF bytes.
+  AddReceiveFlowControlQuota(int64 quota);
 
   // Close the channel gracefully.
   //

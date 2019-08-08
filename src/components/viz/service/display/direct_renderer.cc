@@ -109,12 +109,14 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
-      overlay_processor_(std::make_unique<OverlayProcessor>(output_surface)) {}
+      overlay_processor_(std::make_unique<OverlayProcessor>(
+          output_surface->context_provider())) {}
 
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
-  overlay_processor_->Initialize();
+  overlay_processor_->SetOverlayCandidateValidator(
+      output_surface_->TakeOverlayCandidateValidator());
 
   auto* context_provider = output_surface_->context_provider();
 
@@ -215,7 +217,7 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
   // The quad is expected to be the entire layer so that AA edges are correct.
   if (quad->shared_quad_state->quad_layer_rect != quad->rect)
     return nullptr;
-  if (quad->material != DrawQuad::TILED_CONTENT)
+  if (quad->material != DrawQuad::Material::kTiledContent)
     return nullptr;
 
   // TODO(chrishtr): support could be added for opacity, but care needs
@@ -233,7 +235,7 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
   if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
     return nullptr;
   // Tile quad features not supported in render pass shaders.
-  if (tile_quad->swizzle_contents || tile_quad->nearest_neighbor)
+  if (tile_quad->nearest_neighbor)
     return nullptr;
   // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
   // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.
@@ -339,6 +341,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     output_surface_->Reshape(
         reshape_surface_size_, reshape_device_scale_factor_,
         reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+    overlay_processor_->SetValidatorViewportSize(reshape_surface_size_);
     did_reshape = true;
   }
 
@@ -351,14 +354,15 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       render_pass_filters_[pass->id] = &pass->filters;
     if (!pass->backdrop_filters.IsEmpty()) {
       render_pass_backdrop_filters_[pass->id] = &pass->backdrop_filters;
-      // |backdrop_filter_bounds| only apply if there is a non-empty
-      // backdrop-filter to apply.
-      if (!pass->backdrop_filter_bounds.IsEmpty()) {
-        render_pass_backdrop_filter_bounds_[pass->id] =
-            &pass->backdrop_filter_bounds;
-      }
+      render_pass_backdrop_filter_bounds_[pass->id] =
+          pass->backdrop_filter_bounds;
     }
   }
+
+  // Display transform is needed for overlay validator on Android
+  // SurfaceControl. This needs to called before ProcessForOverlays.
+  overlay_processor_->SetDisplayTransformHint(
+      output_surface_->GetDisplayTransform());
 
   // Create the overlay candidate for the output surface, and mark it as
   // always handled.
@@ -533,10 +537,12 @@ const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const gfx::RRectF* DirectRenderer::BackdropFilterBoundsForPass(
+const base::Optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
-  return it == render_pass_backdrop_filter_bounds_.end() ? nullptr : it->second;
+  return it == render_pass_backdrop_filter_bounds_.end()
+             ? base::Optional<gfx::RRectF>()
+             : it->second;
 }
 
 void DirectRenderer::FlushPolygons(
@@ -814,6 +820,10 @@ void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
 bool DirectRenderer::HasAllocatedResourcesForTesting(
     const RenderPassId& render_pass_id) const {
   return IsRenderPassResourceAllocated(render_pass_id);
+}
+
+bool DirectRenderer::OverlayNeedsSurfaceOccludingDamageRect() const {
+  return overlay_processor_->NeedsSurfaceOccludingDamageRect();
 }
 
 bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {

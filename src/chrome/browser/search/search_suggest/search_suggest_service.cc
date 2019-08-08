@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -19,18 +20,13 @@
 
 namespace {
 
-constexpr char kSuggestionHashRegex[] = "[a-z0-9]{1,4}";
+constexpr char kSuggestionHashRegex[] = "[a-z0-9]{4}";
 
-std::string* ValidateHash(const uint8_t hash[4]) {
-  const std::string hash_string = reinterpret_cast<const char*>(hash);
+bool ValidateHash(const uint8_t hash[4], std::string& result) {
+  const std::string hash_string(reinterpret_cast<const char*>(hash), 4);
+  result = hash_string;
 
-  std::string* trimmed_string = new std::string("");
-  // The uint8_t array received via IPC ends in an EOT byte (\4), remove it.
-  base::TrimString(hash_string, "\4", trimmed_string);
-
-  if (!re2::RE2::FullMatch(*trimmed_string, kSuggestionHashRegex))
-    return nullptr;
-  return trimmed_string;
+  return re2::RE2::FullMatch(hash_string, kSuggestionHashRegex);
 }
 
 const char kFirstShownTimeMs[] = "first_shown_time_ms";
@@ -267,7 +263,7 @@ void SearchSuggestService::BlocklistSearchSuggestion(int task_version,
     return;
 
   std::string task_version_id =
-      std::to_string(task_version) + "_" + std::to_string(task_id);
+      base::NumberToString(task_version) + "_" + base::NumberToString(task_id);
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kNtpSearchSuggestionsBlocklist);
   base::DictionaryValue* blocklist = update.Get();
@@ -284,13 +280,12 @@ void SearchSuggestService::BlocklistSearchSuggestionWithHash(
   if (!search::DefaultSearchProviderIsGoogle(profile_))
     return;
 
-  std::string* hash_string = ValidateHash(hash);
-
-  if (!hash_string)
+  std::string hash_string;
+  if (!ValidateHash(hash, hash_string))
     return;
 
   std::string task_version_id =
-      std::to_string(task_version) + "_" + std::to_string(task_id);
+      base::NumberToString(task_version) + "_" + base::NumberToString(task_id);
 
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kNtpSearchSuggestionsBlocklist);
@@ -298,7 +293,7 @@ void SearchSuggestService::BlocklistSearchSuggestionWithHash(
   base::Value* value = blocklist->FindKey(task_version_id);
   if (!value)
     value = blocklist->SetKey(task_version_id, base::ListValue());
-  value->GetList().emplace_back(base::Value(*hash_string));
+  value->GetList().emplace_back(base::Value(hash_string));
 
   search_suggest_data_ = base::nullopt;
   Refresh();
@@ -310,13 +305,13 @@ void SearchSuggestService::SearchSuggestionSelected(int task_version,
   if (!search::DefaultSearchProviderIsGoogle(profile_))
     return;
 
-  std::string* hash_string = ValidateHash(hash);
-
-  if (!hash_string)
+  std::string hash_string;
+  if (!ValidateHash(hash, hash_string))
     return;
 
-  std::string blocklist_item = std::to_string(task_version) + "_" +
-                               std::to_string(task_id) + ":" + *hash_string;
+  std::string blocklist_item = base::NumberToString(task_version) + "_" +
+                               base::NumberToString(task_id) + ":" +
+                               hash_string;
 
   std::string blocklist = GetBlocklistAsString();
   if (!blocklist.empty())

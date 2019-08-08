@@ -52,8 +52,11 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   void ClearAffectedElementTypes(const PropertyToElementIdMap& element_id_map);
 
-  void ElementRegistered(ElementId element_id, ElementListType list_type);
-  void ElementUnregistered(ElementId element_id, ElementListType list_type);
+  // Called when |element_id| is available to animate in |list_type|.
+  void ElementIdRegistered(ElementId element_id, ElementListType list_type);
+
+  // Called when |element_id| is no longer avialable to animate in |list_type|.
+  void ElementIdUnregistered(ElementId element_id, ElementListType list_type);
 
   void AddKeyframeEffect(KeyframeEffect* keyframe_effect);
   void RemoveKeyframeEffect(KeyframeEffect* keyframe_effect);
@@ -107,19 +110,17 @@ class CC_ANIMATION_EXPORT ElementAnimations
     has_element_in_pending_list_ = has_element_in_pending_list;
   }
 
-  bool HasOnlyTranslationTransforms(ElementListType list_type) const;
-
   bool AnimationsPreserveAxisAlignment() const;
 
-  // Returns the maximum of starting animation scale along any dimension at any
-  // destination in active scale animations, or kNotScaled if there is no active
-  // scale animation or the starting scale cannot be computed.
-  float AnimationStartScale(ElementListType list_type) const;
-
-  // Returns the maximum scale along any dimension at any destination in active
-  // scale animations, or kNotScaled if there is no active scale animation or
-  // the maximum scale cannot be computed.
-  float MaximumTargetScale(ElementListType list_type) const;
+  // Gets scales transform animations. On return, |maximum_scale| is the maximum
+  // scale along any dimension at any destination in active scale animations,
+  // and |starting_scale| is the maximum of starting animation scale along any
+  // dimension at any destination in active scale animations. They are set to
+  // kNotScaled if there is no active scale animation or the scales cannot be
+  // computed.
+  void GetAnimationScales(ElementListType list_type,
+                          float* maximum_scale,
+                          float* starting_scale) const;
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 
@@ -179,6 +180,9 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters,
                         KeyframeModel* keyframe_model);
+  void OnBackdropFilterAnimated(ElementListType list_type,
+                                const FilterOperations& backdrop_filters,
+                                KeyframeModel* keyframe_model);
   void OnOpacityAnimated(ElementListType list_type,
                          float opacity,
                          KeyframeModel* keyframe_model);

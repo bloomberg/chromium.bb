@@ -66,6 +66,9 @@
   // The dictionary that contains additional server parameters to send when
   // uploading crash reports.
   NSDictionary* uploadTimeParameters_;
+
+  // The callback to call on report upload completion.
+  BreakpadUploadCompletionCallback uploadCompleteCallback_;
 }
 
 // Singleton.
@@ -94,6 +97,10 @@
 // Specify an upload parameter that will be added to the crash report when a
 // crash report is generated. See |BreakpadAddUploadParameter|.
 - (void)addUploadParameter:(NSString*)value forKey:(NSString*)key;
+
+// Sets the callback to be called after uploading a crash report to the server.
+// Only the latest callback registered will be called.
+- (void)setUploadCallback:(BreakpadUploadCompletionCallback)callback;
 
 // Remove a previously-added parameter from the upload parameter set. See
 // |BreakpadRemoveUploadParameter|.

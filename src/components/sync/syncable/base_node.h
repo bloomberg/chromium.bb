@@ -31,6 +31,7 @@ class EntitySpecifics;
 class NigoriSpecifics;
 class PasswordSpecificsData;
 class TypedUrlSpecifics;
+class WifiConfigurationSpecificsData;
 }  // namespace sync_pb
 
 namespace syncer {
@@ -119,6 +120,11 @@ class BaseNode {
   // Getter specific to the PASSWORD datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PASSWORD.
   const sync_pb::PasswordSpecificsData& GetPasswordSpecifics() const;
+
+  // Getter specific to the WIFI_CONFIGURATION datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == WIFI_CONFIGURATION.
+  const sync_pb::WifiConfigurationSpecificsData& GetWifiConfigurationSpecifics()
+      const;
 
   // Getter specific to the TYPED_URLS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == TYPED_URLS.
@@ -218,6 +224,8 @@ class BaseNode {
 
   // Same as |unencrypted_data_|, but for legacy password encryption.
   std::unique_ptr<sync_pb::PasswordSpecificsData> password_data_;
+  std::unique_ptr<sync_pb::WifiConfigurationSpecificsData>
+      wifi_configuration_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };

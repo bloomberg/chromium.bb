@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-import lib
+import pynacl.lib
 
 # Define a list of supported operating systems here. The OS is based on the
 # "sys.platform" variable. The list and variable names need to be kept in sync,
@@ -55,7 +55,7 @@ def IsCygWin(platform=None):
 # Define a list of supported architectures here. Our architecture definition
 # comes in 2 flavors, ones that care about 32/64 bit differences, and ones that
 # do not (a flattened list). The architecture is based on the
-# lib.platform.machine() variable which can return many variations even
+# pynacl.lib.platform.machine() variable which can return many variations even
 # on the same architecture (see variations of x86-32). The list and variable
 # names needs to be kept in sync, it is written so there will be a syntax error
 # if an item was added to 1 list but not the other, although there is no check
@@ -120,13 +120,13 @@ ARCH_DICT = dict([(arch3264_name, arch_name)
 
 def GetArch3264(machine=None):
   if machine is None:
-    machine = lib.platform.machine()
+    machine = pynacl.lib.platform.machine()
     # platform.machine is based on running kernel. It's possible to use 64-bit
     # kernel with 32-bit userland, e.g. to give linker slightly more memory.
     # Distinguish between different userland bitness by querying
     # the python binary.
     if (ARCH3264_DICT.get(machine) == ARCH3264_X86_64 and
-        lib.platform.architecture()[0] == '32bit'):
+        pynacl.lib.platform.architecture()[0] == '32bit'):
       machine = 'ia32'
 
   machine = machine.lower()

@@ -21,11 +21,6 @@
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -41,8 +36,6 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
-#include "components/translate/core/common/language_detection_logging_helper.h"
-#include "components/translate/core/common/translation_logging_helper.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -53,12 +46,19 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
+#else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
 namespace {
 using base::FeatureList;
 using metrics::TranslateEventProto;
 
+#if !defined(OS_ANDROID)
 TranslateEventProto::EventType BubbleResultToTranslateEvent(
     ShowTranslateBubbleResult result) {
   switch (result) {
@@ -77,6 +77,7 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
       return metrics::TranslateEventProto::UNKNOWN;
   }
 }
+#endif
 
 }  // namespace
 
@@ -196,18 +197,17 @@ bool ChromeTranslateClient::ShowTranslateUI(
 // Translate uses a bubble UI on desktop and an infobar on Android (here)
 // and iOS (in ios/chrome/browser/translate/chrome_ios_translate_client.mm).
 #if defined(OS_ANDROID)
-  if (!TranslateService::IsTranslateBubbleEnabled()) {
-    // Infobar UI.
-    translate::TranslateInfoBarDelegate::Create(
-        step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-        translate_manager_->GetWeakPtr(),
-        InfoBarService::FromWebContents(web_contents()),
-        web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
-        source_language, target_language, error_type, triggered_from_menu);
-    return true;
-  }
-#endif
-
+  // Infobar UI.
+  DCHECK(!TranslateService::IsTranslateBubbleEnabled());
+  translate::TranslateInfoBarDelegate::Create(
+      step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+      translate_manager_->GetWeakPtr(),
+      InfoBarService::FromWebContents(web_contents()),
+      web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
+      source_language, target_language, error_type, triggered_from_menu);
+  return true;
+#else
+  DCHECK(TranslateService::IsTranslateBubbleEnabled());
   // Bubble UI.
   if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
       translate_manager_->ShouldSuppressBubbleUI(triggered_from_menu,
@@ -222,6 +222,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
     translate_manager_->RecordTranslateEvent(
         BubbleResultToTranslateEvent(result));
   }
+#endif
 
   return true;
 }
@@ -335,14 +336,14 @@ void ChromeTranslateClient::OnPageTranslated(
       content::Details<translate::PageTranslatedDetails>(&details));
 }
 
+// The bubble is implemented only on the desktop platforms.
+#if !defined(OS_ANDROID)
 ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
     translate::TranslateErrors::Type error_type) {
   DCHECK(translate_manager_);
-// The bubble is implemented only on the desktop platforms.
-#if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
 
   // |browser| might be NULL when testing. In this case, Show(...) should be
@@ -374,10 +375,7 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   return TranslateBubbleFactory::Show(browser->window(), web_contents(), step,
                                       source_language, target_language,
                                       error_type);
-#else
-  NOTREACHED();
-  return ShowTranslateBubbleResult::SUCCESS;
-#endif
 }
+#endif
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeTranslateClient)

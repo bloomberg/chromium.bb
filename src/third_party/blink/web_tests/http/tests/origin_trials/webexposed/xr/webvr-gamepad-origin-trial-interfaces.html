@@ -36,13 +36,13 @@ if (!self.internals.runtimeFlags.webVREnabled) {
 OriginTrialsHelper.add_token(token);
 
 test(t => {
-  OriginTrialsHelper.check_properties(this, properties_to_check);
+  OriginTrialsHelper.check_properties_exist(this, properties_to_check);
 }, 'The WebVR-specific Gamepad properties are available.');
 
 test(t => {
-  OriginTrialsHelper.check_interfaces(this, interfaces_to_check);
+  OriginTrialsHelper.check_interfaces_exist(this, interfaces_to_check);
   // Check the properties of the interfaces_to_check.
-  OriginTrialsHelper.check_properties(this, {
+  OriginTrialsHelper.check_properties_exist(this, {
     'GamepadPose': [
       'hasOrientation',
       'hasPosition',

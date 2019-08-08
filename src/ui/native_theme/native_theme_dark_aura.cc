@@ -64,7 +64,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:
-      return gfx::kGoogleBlue300;
+      return SkColorSetA(gfx::kGoogleBlue300, 0x66);
 
     // Alert icons
     case kColorId_AlertSeverityLow:

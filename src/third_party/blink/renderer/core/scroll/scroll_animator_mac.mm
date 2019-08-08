@@ -747,7 +747,8 @@ ScrollResult ScrollAnimatorMac::UserScroll(ScrollGranularity granularity,
   if (!scrollable_area_->ScrollAnimatorEnabled())
     return ScrollAnimatorBase::UserScroll(granularity, delta);
 
-  if (granularity == kScrollByPixel || granularity == kScrollByPrecisePixel)
+  if (granularity == ScrollGranularity::kScrollByPixel ||
+      granularity == ScrollGranularity::kScrollByPrecisePixel)
     return ScrollAnimatorBase::UserScroll(granularity, delta);
 
   ScrollOffset consumed_delta = ComputeDeltaToConsume(delta);

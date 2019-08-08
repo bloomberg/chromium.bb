@@ -304,9 +304,7 @@ storage::WatcherManager* FileSystemBackend::GetWatcherManager(
   if (type == storage::kFileSystemTypeProvided)
     return file_system_provider_delegate_->GetWatcherManager(type);
 
-  if (type == storage::kFileSystemTypeDeviceMediaAsFileStorage &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableMtpWriteSupport)) {
+  if (type == storage::kFileSystemTypeDeviceMediaAsFileStorage) {
     return mtp_delegate_->GetWatcherManager(type);
   }
 

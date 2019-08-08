@@ -83,8 +83,11 @@ void SandboxStatusExtension::Install() {
           ->GetFunction(context)
           .ToLocal(&function);
   if (success) {
-    success = chrome->Set(
-        gin::StringToSymbol(isolate, "getAndroidSandboxStatus"), function);
+    success = chrome
+                  ->Set(context,
+                        gin::StringToSymbol(isolate, "getAndroidSandboxStatus"),
+                        function)
+                  .IsJust();
   }
   DCHECK(success);
 }

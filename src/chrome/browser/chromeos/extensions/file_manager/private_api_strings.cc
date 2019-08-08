@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/arc/arc_features.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -46,6 +48,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
+  dict->SetBoolean("ARC_USB_STORAGE_UI_ENABLED",
+                   base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
   dict->SetBoolean("CROSTINI_ENABLED",
                    crostini::IsCrostiniEnabled(
                        Profile::FromBrowserContext(browser_context())));

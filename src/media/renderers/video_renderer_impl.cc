@@ -328,6 +328,11 @@ void VideoRendererImpl::OnFrameDropped() {
   algorithm_->OnLastFrameDropped();
 }
 
+base::TimeDelta VideoRendererImpl::GetPreferredRenderInterval() {
+  base::AutoLock auto_lock(lock_);
+  return algorithm_->average_frame_duration();
+}
+
 void VideoRendererImpl::OnVideoDecoderStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
@@ -472,7 +477,7 @@ void VideoRendererImpl::OnTimeStopped() {
 }
 
 void VideoRendererImpl::FrameReady(VideoDecoderStream::Status status,
-                                   const scoped_refptr<VideoFrame>& frame) {
+                                   scoped_refptr<VideoFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
@@ -530,7 +535,7 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::Status status,
                                       video_decoder_stream_->AverageDuration());
     }
 
-    AddReadyFrame_Locked(frame);
+    AddReadyFrame_Locked(std::move(frame));
   }
 
   // Attempt to purge bad frames in case of underflow or backgrounding.
@@ -627,8 +632,7 @@ void VideoRendererImpl::TransitionToHaveNothing_Locked() {
                                 weak_factory_.GetWeakPtr(), buffering_state_));
 }
 
-void VideoRendererImpl::AddReadyFrame_Locked(
-    const scoped_refptr<VideoFrame>& frame) {
+void VideoRendererImpl::AddReadyFrame_Locked(scoped_refptr<VideoFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
   DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
@@ -642,7 +646,7 @@ void VideoRendererImpl::AddReadyFrame_Locked(
     ++stats_.video_frames_decoded_power_efficient;
   }
 
-  algorithm_->EnqueueFrame(frame);
+  algorithm_->EnqueueFrame(std::move(frame));
 }
 
 void VideoRendererImpl::AttemptRead_Locked() {

@@ -73,6 +73,7 @@ python_library("devil_chromium_py") {
 }
 
 python_library("test_runner_py") {
+  testonly = true
   pydeps_file = "test_runner.pydeps"
   data = [
     "pylib/gtest/filter/",
@@ -107,10 +108,18 @@ python_library("resource_sizes_py") {
   pydeps_file = "resource_sizes.pydeps"
   data_deps = [
     ":devil_chromium_py",
+    "//third_party/catapult/tracing:convert_chart_json",
   ]
   data = [
     android_build_vars,
     android_readelf,
+  ]
+}
+
+python_library("bundle_wrapper_script_py") {
+  pydeps_file = "gyp/create_bundle_wrapper_script.pydeps"
+  data = [
+    "//third_party/android_build_tools/bundletool/bundletool-all-0.9.0.jar",
   ]
 }
 

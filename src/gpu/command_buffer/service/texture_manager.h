@@ -50,6 +50,9 @@ class SharedImageRepresentationSkiaGLAHB;
 class SharedImageBackingIOSurface;
 class SharedImageRepresentationGLTextureIOSurface;
 class SharedImageRepresentationSkiaIOSurface;
+class SharedImageBackingDXGISwapChain;
+class StreamTexture;
+class SwapChainFactoryDXGI;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -83,6 +86,12 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   void SetLevelImage(GLenum target, GLint level, gl::GLImage* image);
   gl::GLImage* GetLevelImage(GLenum target, GLint level) const;
 
+  void SetStreamLevelImage(GLenum target,
+                           GLint level,
+                           GLStreamTextureImage* stream_texture_image,
+                           GLuint service_id);
+  GLStreamTextureImage* GetStreamLevelImage(GLenum target, GLint level) const;
+
   // Return true if and only if the decoder should BindTexImage / CopyTexImage
   // us before sampling.
   bool is_bind_pending() const { return is_bind_pending_; }
@@ -97,7 +106,17 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   ~TexturePassthrough() override;
 
  private:
+  bool LevelInfoExists(GLenum target, GLint level, size_t* out_face_idx) const;
+
+  void SetLevelImageInternal(GLenum target,
+                             GLint level,
+                             gl::GLImage* image,
+                             GLStreamTextureImage* stream_texture_image,
+                             GLuint service_id);
+
   friend class base::RefCounted<TexturePassthrough>;
+
+  GLuint owned_service_id_ = 0;
 
   bool have_context_;
   bool is_bind_pending_ = false;
@@ -105,7 +124,16 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   size_t estimated_size_ = 0;
 
   // Bound images divided into faces and then levels
-  std::vector<std::vector<scoped_refptr<gl::GLImage>>> level_images_;
+  struct LevelInfo {
+    LevelInfo();
+    LevelInfo(const LevelInfo& rhs);
+    ~LevelInfo();
+
+    scoped_refptr<gl::GLImage> image;
+    scoped_refptr<GLStreamTextureImage> stream_texture_image;
+  };
+
+  std::vector<std::vector<LevelInfo>> level_images_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturePassthrough);
 };
@@ -386,8 +414,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class gpu::SharedImageRepresentationGLTextureAHB;
   friend class gpu::SharedImageRepresentationSkiaGLAHB;
   friend class gpu::SharedImageBackingIOSurface;
+  friend class gpu::SharedImageBackingDXGISwapChain;
+  friend class gpu::SwapChainFactoryDXGI;
   friend class gpu::SharedImageRepresentationGLTextureIOSurface;
   friend class gpu::SharedImageRepresentationSkiaIOSurface;
+  friend class gpu::StreamTexture;
   friend class AbstractTextureImplOnSharedContext;
   friend class TextureDefinition;
   friend class TextureManager;
@@ -607,6 +638,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 
   void UpdateBaseLevel(GLint base_level, const FeatureInfo* feature_info);
   void UpdateMaxLevel(GLint max_level);
+  void UpdateFaceNumMipLevels(size_t face_index,
+                              GLint width,
+                              GLint height,
+                              GLint depth);
+  void UpdateFaceNumMipLevels(size_t face_index);
   void UpdateNumMipLevels();
 
   // Increment the generation counter for all managers that have a reference to

@@ -48,6 +48,11 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     base::span<const uint8_t> buffer);
 
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<cbor::Value> FixInvalidUTF8(
+    cbor::Value in,
+    bool (*predicate)(const std::vector<const cbor::Value*>&));
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_DEVICE_RESPONSE_CONVERTER_H_

@@ -32,8 +32,6 @@ class CORE_EXPORT HTMLMeterElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLMeterElement* Create(Document&);
-
   explicit HTMLMeterElement(Document&);
 
   enum GaugeRegion {

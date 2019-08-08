@@ -286,25 +286,6 @@ TEST_F(ShillDeviceClientTest, Register) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ShillDeviceClientTest, SetCarrier) {
-  const char kCarrier[] = "carrier";
-  // Create response.
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-
-  // Set expectations.
-  base::MockCallback<base::Closure> mock_closure;
-  base::MockCallback<ShillDeviceClient::ErrorCallback> mock_error_callback;
-  PrepareForMethodCall(shill::kSetCarrierFunction,
-                       base::Bind(&ExpectStringArgument, kCarrier),
-                       response.get());
-  EXPECT_CALL(mock_closure, Run()).Times(1);
-  // Call method.
-  client_->SetCarrier(dbus::ObjectPath(kExampleDevicePath), kCarrier,
-                      mock_closure.Get(), mock_error_callback.Get());
-  // Run the message loop.
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(ShillDeviceClientTest, Reset) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());

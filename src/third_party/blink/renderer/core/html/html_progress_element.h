@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -34,8 +35,6 @@ class CORE_EXPORT HTMLProgressElement final : public HTMLElement {
  public:
   static const double kIndeterminatePosition;
   static const double kInvalidPosition;
-
-  static HTMLProgressElement* Create(Document&);
 
   explicit HTMLProgressElement(Document&);
 

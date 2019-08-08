@@ -53,7 +53,9 @@ class OverlayAgentTest : public views::ViewsTestBase {
   void TearDown() override {
     // Ensure DOMAgent shuts down before the root window closes to avoid
     // lifetime issues.
+    overlay_agent_->disable();
     overlay_agent_.reset();
+    dom_agent_->disable();
     dom_agent_.reset();
     uber_dispatcher_.reset();
     fake_frontend_channel_.reset();

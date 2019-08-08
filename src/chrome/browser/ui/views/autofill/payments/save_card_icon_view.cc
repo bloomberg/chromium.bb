@@ -28,7 +28,7 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
                          font_list),
       browser_(browser) {
   DCHECK(delegate);
-  set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
+  SetID(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
 
   SetUpForInOutAnimation();
 }
@@ -48,7 +48,7 @@ bool SaveCardIconView::Update() {
   if (!GetWebContents())
     return false;
 
-  const bool was_visible = visible();
+  const bool was_visible = GetVisible();
 
   // |controller| may be nullptr due to lazy initialization.
   SaveCardBubbleControllerImpl* controller = GetController();
@@ -57,11 +57,10 @@ bool SaveCardIconView::Update() {
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
 
-  if (enabled && controller->CanAnimate()) {
+  if (enabled && controller->ShouldShowCardSavedAnimation())
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
-  }
 
-  return was_visible != visible();
+  return was_visible != GetVisible();
 }
 
 void SaveCardIconView::OnExecuting(

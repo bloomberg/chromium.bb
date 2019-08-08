@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
@@ -477,7 +476,7 @@ void ShillClientHelper::AddRef() {
 void ShillClientHelper::Release() {
   --active_refs_;
   if (active_refs_ == 0 && !released_callback_.is_null())
-    base::ResetAndReturn(&released_callback_).Run(this);  // May delete this
+    std::move(released_callback_).Run(this);  // May delete this
 }
 
 void ShillClientHelper::OnSignalConnected(const std::string& interface,

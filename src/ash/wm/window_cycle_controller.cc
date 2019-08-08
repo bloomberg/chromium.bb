@@ -8,7 +8,7 @@
 #include "ash/metrics/task_switch_source.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -57,7 +57,7 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 
 void WindowCycleController::StartCycling() {
   WindowCycleList::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
   // Window cycle list windows will handle showing their transient related
   // windows, so if a window in |window_list| has a transient root also in
   // |window_list|, we can remove it as the tranisent root will handle showing
@@ -96,8 +96,8 @@ void WindowCycleController::StopCycling() {
                            window_cycle_list_->current_index() + 1);
   window_cycle_list_.reset();
 
-  aura::Window* active_window_after_window_cycle =
-      GetActiveWindow(Shell::Get()->mru_window_tracker()->BuildMruWindowList());
+  aura::Window* active_window_after_window_cycle = GetActiveWindow(
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
 
   // Remove our key event filter.
   event_filter_.reset();

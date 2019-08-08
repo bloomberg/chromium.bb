@@ -26,6 +26,9 @@ class EngineRequestsImpl : public mojom::EngineRequests {
   void Bind(mojom::EngineRequestsAssociatedPtrInfo* ptr_info);
 
   // mojom::EngineRequests
+  void SandboxGetFileAttributes(
+      const base::FilePath& file_name,
+      SandboxGetFileAttributesCallback result_callback) override;
   void SandboxGetKnownFolderPath(
       mojom::KnownFolder folder_id,
       SandboxGetKnownFolderPathCallback result_callback) override;
@@ -56,6 +59,8 @@ class EngineRequestsImpl : public mojom::EngineRequests {
       SandboxNtOpenReadOnlyRegistryCallback result_callback) override;
 
  private:
+  void GetFileAttributes(const base::FilePath& file_name,
+                         SandboxGetFileAttributesCallback result_callback);
   void GetKnownFolderPath(mojom::KnownFolder folder_id,
                           SandboxGetKnownFolderPathCallback result_callback);
   void GetProcesses(SandboxGetProcessesCallback result_callback);

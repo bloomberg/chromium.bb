@@ -10,14 +10,14 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_EPOLL_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_EPOLL_IMPL_H_
 
-#include "net/tools/epoll_server/epoll_server.h"
+#include "net/third_party/quiche/src/epoll_server/simple_epoll_server.h"
 
 namespace quic {
 
-using QuicEpollServerImpl = ::net::EpollServer;
-using QuicEpollEventImpl = ::net::EpollEvent;
-using QuicEpollAlarmBaseImpl = ::net::EpollAlarm;
-using QuicEpollCallbackInterfaceImpl = ::net::EpollCallbackInterface;
+using QuicEpollServerImpl = epoll_server::SimpleEpollServer;
+using QuicEpollEventImpl = epoll_server::EpollEvent;
+using QuicEpollAlarmBaseImpl = epoll_server::EpollAlarm;
+using QuicEpollCallbackInterfaceImpl = epoll_server::EpollCallbackInterface;
 
 }  // namespace quic
 

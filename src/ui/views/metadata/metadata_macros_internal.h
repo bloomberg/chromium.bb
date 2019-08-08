@@ -5,8 +5,10 @@
 #ifndef UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_
 #define UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_
 
+#include <utility>
+
 #include "base/compiler_specific.h"
-#include "ui/views/metadata/metadata_cache.h"
+#include "ui/views/metadata/metadata_types.h"
 
 // Internal Metadata Generation Helpers ---------------------------------------
 
@@ -33,10 +35,18 @@
     DISALLOW_COPY_AND_ASSIGN(METADATA_CLASS_NAME_INTERNAL(class_name));      \
   }
 
-#define METADATA_PROPERTY_TYPE_INTERNAL(class_name, property_type,        \
-                                        property_name)                    \
-  views::metadata::ClassPropertyMetaData<class_name, property_type,       \
-                                         &class_name::Set##property_name, \
-                                         &class_name::Get##property_name>
+#define METADATA_PROPERTY_TYPE_INTERNAL(class_name, property_type, \
+                                        property_name)             \
+  views::metadata::ClassPropertyMetaData<                          \
+      class_name, property_type, &class_name::Set##property_name,  \
+      decltype(std::declval<class_name>().Get##property_name()),   \
+      &class_name::Get##property_name>
+
+#define METADATA_READONLY_PROPERTY_TYPE_INTERNAL(class_name, property_type, \
+                                                 property_name)             \
+  views::metadata::ClassPropertyReadOnlyMetaData<                           \
+      class_name, property_type,                                            \
+      decltype(std::declval<class_name>().Get##property_name()),            \
+      &class_name::Get##property_name>
 
 #endif  // UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_

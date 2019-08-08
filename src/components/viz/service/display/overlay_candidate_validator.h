@@ -17,20 +17,24 @@ namespace viz {
 // configurations for a particular output device.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
  public:
-  // Populates a list of strategies that may work with this validator.
-  virtual void GetStrategies(OverlayProcessor::StrategyList* strategies) = 0;
+  OverlayCandidateValidator();
+  virtual ~OverlayCandidateValidator();
+
+  // Populates a list of strategies that may work with this validator. Should be
+  // called at most once.
+  virtual void InitializeStrategies() {}
 
   // Returns true if draw quads can be represented as CALayers (Mac only).
-  virtual bool AllowCALayerOverlays() = 0;
+  virtual bool AllowCALayerOverlays() const = 0;
 
   // Returns true if draw quads can be represented as Direct Composition
   // Visuals (Windows only).
-  virtual bool AllowDCLayerOverlays() = 0;
+  virtual bool AllowDCLayerOverlays() const = 0;
 
   // Returns true if the platform supports hw overlays and surface occluding
   // damage rect needs to be computed since it will be used by overlay
   // processor.
-  virtual bool NeedsSurfaceOccludingDamageRect() = 0;
+  virtual bool NeedsSurfaceOccludingDamageRect() const = 0;
 
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
@@ -40,7 +44,39 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // coordinates if necessary.
   virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) = 0;
 
-  virtual ~OverlayCandidateValidator() {}
+  // The OverlayCandidate for the OutputSurface. Allows the validator to update
+  // any properties of the |surface| required by the platform.
+  virtual void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) {}
+
+  // Set the overlay display transform and viewport size. Value only used for
+  // Android Surface Control.
+  virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+  virtual void SetViewportSize(const gfx::Size& size) {}
+
+  // Returns the overlay damage rect covering the main plane rendered by the
+  // OutputSurface. This rect is in the same space where the OutputSurface
+  // renders the content for the main plane, including the display transform if
+  // needed.
+  virtual gfx::Rect GetOverlayDamageRectForOutputSurface(
+      const OverlayCandidate& candidate) const;
+
+  // Disables overlays when software mirroring display. This only needs to be
+  // implemented for Chrome OS.
+  virtual void SetSoftwareMirrorMode(bool enabled) {}
+
+  // Iterate through a list of strategies and attempt to overlay with each.
+  // Returns true if one of the attempts is successful. Has to be called after
+  // InitializeStrategies().
+  bool AttemptWithStrategies(
+      const SkMatrix44& output_color_matrix,
+      const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+      DisplayResourceProvider* resource_provider,
+      RenderPassList* render_pass_list,
+      OverlayCandidateList* candidates,
+      std::vector<gfx::Rect>* content_bounds) const;
+
+ protected:
+  OverlayProcessor::StrategyList strategies_;
 };
 
 }  // namespace viz

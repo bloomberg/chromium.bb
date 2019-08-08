@@ -89,9 +89,10 @@ struct StructTraits<gfx::mojom::RRectFDataView, gfx::RRectF> {
     gfx::Vector2dF upper_left;
     if (!data.ReadUpperLeft(&upper_left))
       return false;
-    *out = gfx::RRectF(rect, upper_left.x(), upper_left.y());
-    if (type <= gfx::RRectF::Type::kSimple)
+    if (type <= gfx::RRectF::Type::kSimple) {
+      *out = gfx::RRectF(rect, upper_left.x(), upper_left.y());
       return true;
+    }
     gfx::Vector2dF upper_right;
     gfx::Vector2dF lower_right;
     gfx::Vector2dF lower_left;
@@ -100,9 +101,9 @@ struct StructTraits<gfx::mojom::RRectFDataView, gfx::RRectF> {
         !data.ReadLowerLeft(&lower_left)) {
       return false;
     }
-    out->SetCornerRadii(gfx::RRectF::Corner::kUpperRight, upper_right);
-    out->SetCornerRadii(gfx::RRectF::Corner::kLowerRight, lower_right);
-    out->SetCornerRadii(gfx::RRectF::Corner::kLowerLeft, lower_left);
+    *out = gfx::RRectF(rect, upper_left.x(), upper_left.y(), upper_right.x(),
+                       upper_right.y(), lower_right.x(), lower_right.y(),
+                       lower_left.x(), lower_left.y());
     return true;
   }
 };

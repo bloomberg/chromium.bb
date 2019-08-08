@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 
+#include "base/containers/adapters.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
@@ -25,9 +26,7 @@ namespace {
 void GetViewsWithAssociatedWindow(
     const aura::Window& parent_window,
     std::map<views::View*, aura::Window*>* hosted_windows) {
-  const std::vector<aura::Window*>& child_windows = parent_window.children();
-  for (size_t i = 0; i < child_windows.size(); ++i) {
-    aura::Window* child = child_windows[i];
+  for (auto* child : parent_window.children()) {
     View* host_view = child->GetProperty(kHostViewKey);
     if (host_view)
       (*hosted_windows)[host_view] = child;
@@ -128,9 +127,8 @@ WindowReorderer::WindowReorderer(aura::Window* parent_window,
       root_view_(root_view),
       association_observer_(new AssociationObserver(this)) {
   parent_window_->AddObserver(this);
-  const std::vector<aura::Window*>& windows = parent_window_->children();
-  for (size_t i = 0; i < windows.size(); ++i)
-    association_observer_->StartObserving(windows[i]);
+  for (auto* window : parent_window_->children())
+    association_observer_->StartObserving(window);
   ReorderChildWindows();
 }
 
@@ -169,9 +167,7 @@ void WindowReorderer::ReorderChildWindows() {
   // |view_with_layer_order| backwards and stack windows at the bottom so that
   // windows not associated to a view are stacked above windows with an
   // associated view.
-  for (auto it = view_with_layer_order.rbegin();
-       it != view_with_layer_order.rend(); ++it) {
-    View* view = *it;
+  for (View* view : base::Reversed(view_with_layer_order)) {
     ui::Layer* layer = view->layer();
     aura::Window* window = nullptr;
 

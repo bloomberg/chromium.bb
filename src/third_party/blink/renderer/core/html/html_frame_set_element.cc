@@ -41,7 +41,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
+HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     : HTMLElement(kFramesetTag, document),
       border_(6),
       border_set_(false),
@@ -51,8 +51,6 @@ inline HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
       noresize_(false) {
   SetHasCustomStyleCallbacks();
 }
-
-DEFINE_NODE_FACTORY(HTMLFrameSetElement)
 
 bool HTMLFrameSetElement::IsPresentationAttribute(
     const QualifiedName& name) const {

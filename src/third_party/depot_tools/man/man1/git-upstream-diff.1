@@ -2,12 +2,12 @@
 .\"     Title: git-upstream-diff
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 06/20/2018
+.\"      Date: 05/03/2019
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 79d42dfb
+.\"    Source: depot_tools e58cce6c
 .\"  Language: English
 .\"
-.TH "GIT\-UPSTREAM\-DIFF" "1" "06/20/2018" "depot_tools 79d42dfb" "Chromium depot_tools Manual"
+.TH "GIT\-UPSTREAM\-DIFF" "1" "05/03/2019" "depot_tools e58cce6c" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -86,17 +86,11 @@ $ # etc\&.
 \-\-wordwise
 .RS 4
 Print a colorized word\-wise diff instead of a line\-wise diff\&.
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-Show a diff between the specified branch and its upstream, instead of using
-the current branch\&.
-.fi
-.if n \{\
 .RE
-.\}
+.PP
+\-\-branch branch
+.RS 4
+Show a diff between the specified branch and its upstream, instead of using the current branch\&.
 .RE
 .PP
 <extra args for git\-diff>

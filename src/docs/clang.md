@@ -38,7 +38,7 @@ is used by default when clang is used.
 
 If you're working on the plugin, you can build it locally like so:
 
-1.  Run `./tools/clang/scripts/update.py --force-local-build --without-android`
+1.  Run `./tools/clang/scripts/build.py --without-android`
     to build the plugin.
 1.  Run `ninja -C third_party/llvm-build/Release+Asserts/` to build incrementally.
 1.  Build with clang like described above, but, if you use goma, disable it.

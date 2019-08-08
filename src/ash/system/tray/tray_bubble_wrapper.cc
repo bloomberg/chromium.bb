@@ -10,7 +10,6 @@
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/container_finder.h"
-#include "ash/wm/widget_finder.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -129,7 +128,7 @@ void TrayBubbleWrapper::OnWindowActivated(ActivationReason reason,
   views::Widget* bubble_widget = bubble_view()->GetWidget();
   // Don't close the bubble if a transient child is gaining or losing
   // activation.
-  if (bubble_widget == GetInternalWidgetForWindow(gained_active) ||
+  if (bubble_widget == views::Widget::GetWidgetForNativeView(gained_active) ||
       ::wm::HasTransientAncestor(gained_active,
                                  bubble_widget->GetNativeWindow()) ||
       (lost_active && ::wm::HasTransientAncestor(

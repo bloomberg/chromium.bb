@@ -65,8 +65,8 @@ TEST_F(DisplayTest, DISABLED_CreateLinuxDMABufBuffer) {
   scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(gfx::kNullAcceleratedWidget, buffer_size,
-                               gfx::BufferFormat::RGBA_8888,
+          ->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
+                               buffer_size, gfx::BufferFormat::RGBA_8888,
                                gfx::BufferUsage::GPU_READ);
   gfx::NativePixmapHandle native_pixmap_handle = pixmap->ExportHandle();
   std::unique_ptr<Buffer> buffer1 = display->CreateLinuxDMABufBuffer(
@@ -120,11 +120,12 @@ TEST_F(DisplayTest, CreateClientControlledShellSurface) {
   ASSERT_TRUE(surface2);
 
   // Create a remote shell surface for surface1.
-  std::unique_ptr<ShellSurfaceBase> shell_surface1 =
+  std::unique_ptr<ClientControlledShellSurface> shell_surface1 =
       display->CreateClientControlledShellSurface(
           surface1.get(), ash::kShellWindowId_SystemModalContainer,
           2.0 /* default_scale_factor */);
-  EXPECT_TRUE(shell_surface1);
+  ASSERT_TRUE(shell_surface1);
+  EXPECT_EQ(shell_surface1->scale(), 2.0);
 
   // Create a remote shell surface for surface2.
   std::unique_ptr<ShellSurfaceBase> shell_surface2 =
@@ -203,7 +204,9 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
  public:
   // Overriden from DataDeviceDelegate:
   void OnDataDeviceDestroying(DataDevice* data_device) override {}
-  DataOffer* OnDataOffer() override { return nullptr; }
+  DataOffer* OnDataOffer(DataOffer::Purpose purpose) override {
+    return nullptr;
+  }
   void OnEnter(Surface* surface,
                const gfx::PointF& location,
                const DataOffer& data_offer) override {}

@@ -15,6 +15,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_prefetch.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
@@ -382,14 +383,23 @@ QuicStreamId QuicUtils::GetInvalidStreamId(QuicTransportVersion version) {
 
 // static
 QuicStreamId QuicUtils::GetCryptoStreamId(QuicTransportVersion version) {
-  // TODO(nharper): Change this to return GetInvalidStreamId for version 47 or
-  // greater. Currently, too many things break with that change.
-  return version == QUIC_VERSION_99 ? 0 : 1;
+  QUIC_BUG_IF(QuicVersionUsesCryptoFrames(version))
+      << "CRYPTO data aren't in stream frames; they have no stream ID.";
+  return QuicVersionUsesCryptoFrames(version) ? GetInvalidStreamId(version) : 1;
+}
+
+// static
+bool QuicUtils::IsCryptoStreamId(QuicTransportVersion version,
+                                 QuicStreamId stream_id) {
+  if (QuicVersionUsesCryptoFrames(version)) {
+    return false;
+  }
+  return stream_id == GetCryptoStreamId(version);
 }
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  return version == QUIC_VERSION_99 ? 4 : 3;
+  return GetFirstBidirectionalStreamId(version, Perspective::IS_CLIENT);
 }
 
 // static
@@ -451,18 +461,26 @@ QuicStreamId QuicUtils::StreamIdDelta(QuicTransportVersion version) {
 QuicStreamId QuicUtils::GetFirstBidirectionalStreamId(
     QuicTransportVersion version,
     Perspective perspective) {
-  if (perspective == Perspective::IS_CLIENT) {
-    return version == QUIC_VERSION_99 ? 4 : 3;
+  if (version == QUIC_VERSION_99) {
+    return perspective == Perspective::IS_CLIENT ? 0 : 1;
+  } else if (QuicVersionUsesCryptoFrames(version)) {
+    return perspective == Perspective::IS_CLIENT ? 1 : 2;
   }
-  return version == QUIC_VERSION_99 ? 1 : 2;
+  return perspective == Perspective::IS_CLIENT ? 3 : 2;
 }
 
 // static
 QuicStreamId QuicUtils::GetFirstUnidirectionalStreamId(
     QuicTransportVersion version,
     Perspective perspective) {
+  if (version == QUIC_VERSION_99) {
+    return perspective == Perspective::IS_CLIENT ? 2 : 3;
+  } else if (QuicVersionUsesCryptoFrames(version)) {
+    return perspective == Perspective::IS_CLIENT ? 1 : 2;
+  }
+  return perspective == Perspective::IS_CLIENT ? 3 : 2;
   if (perspective == Perspective::IS_CLIENT) {
-    return version == QUIC_VERSION_99 ? 2 : 3;
+    return version == QUIC_VERSION_99 ? 2 : 1;
   }
   return version == QUIC_VERSION_99 ? 3 : 2;
 }
@@ -505,7 +523,16 @@ QuicConnectionId QuicUtils::CreateRandomConnectionId(
 // static
 bool QuicUtils::VariableLengthConnectionIdAllowedForVersion(
     QuicTransportVersion version) {
-  return version >= QUIC_VERSION_47;
+  if (!GetQuicRestartFlag(
+          quic_allow_variable_length_connection_id_for_negotiation)) {
+    return version >= QUIC_VERSION_47;
+  }
+  QUIC_RESTART_FLAG_COUNT(
+      quic_allow_variable_length_connection_id_for_negotiation);
+  // We allow variable length connection IDs for unsupported versions to
+  // ensure that IETF version negotiation works when other implementations
+  // trigger version negotiation with custom connection ID lengths.
+  return version >= QUIC_VERSION_47 || version == QUIC_VERSION_UNSUPPORTED;
 }
 
 // static
@@ -541,6 +568,24 @@ QuicUint128 QuicUtils::GenerateStatelessResetToken(
       QuicEndian::NetToHost64(sizeof(uint64_t) ^ connection_id.length() ^
                               data_bytes[1] ^ data_bytes[2]),
       QuicEndian::NetToHost64(data_bytes[0]));
+}
+
+// Returns the maximum value that a stream count may have, taking into account
+// the fact that bidirectional, client initiated, streams have one fewer stream
+// available than the others. This is because the old crypto streams, with ID ==
+// 0 are not included in the count.
+// The version is not included in the call, nor does the method take the version
+// into account, because this is called only from code used for IETF QUIC.
+// TODO(fkastenholz): Remove this method and replace calls to it with direct
+// references to kMaxQuicStreamIdCount when streamid 0 becomes a normal stream
+// id.
+// static
+QuicStreamCount QuicUtils::GetMaxStreamCount(bool unidirectional,
+                                             Perspective perspective) {
+  if (!unidirectional && perspective == Perspective::IS_CLIENT) {
+    return kMaxQuicStreamCount >> 2;
+  }
+  return (kMaxQuicStreamCount >> 2) + 1;
 }
 
 // static

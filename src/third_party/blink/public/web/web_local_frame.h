@@ -213,10 +213,6 @@ class WebLocalFrame : public WebFrame {
   // Start navigation to the given URL.
   virtual void StartNavigation(const WebURLRequest&) = 0;
 
-  // Returns the document loader that is currently loading.  May be null.
-  // TODO(dgozman): move this to WebNavigationControl.
-  virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;
-
   // View-source rendering mode.  Set this before loading an URL to cause
   // it to be rendered in view-source mode.
   virtual void EnableViewSourceMode(bool) = 0;
@@ -328,6 +324,10 @@ class WebLocalFrame : public WebFrame {
   ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
                                              const WebScriptSource&) = 0;
 
+  // Clears the isolated world CSP stored for |world_id| by this frame's
+  // Document.
+  virtual void ClearIsolatedWorldCSPForTesting(int world_id) = 0;
+
   // Sets up an isolated world by associating a |world_id| with |info|.
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
@@ -373,22 +373,6 @@ class WebLocalFrame : public WebFrame {
                                         v8::Local<v8::Value> argv[],
                                         WebScriptExecutionCallback*) = 0;
 
-  enum class PausableTaskResult {
-    // The context was invalid or destroyed.
-    kContextInvalidOrDestroyed,
-    // Script is not paused.
-    kReady,
-  };
-  using PausableTaskCallback = base::OnceCallback<void(PausableTaskResult)>;
-
-  // Queues a callback to run script when the context is not paused, e.g. for a
-  // modal JS dialog or window.print(). This callback can run immediately if the
-  // context is not paused. If the context is invalidated before becoming
-  // unpaused, the callback will be run with a kContextInvalidOrDestroyed value.
-  // This asserts that the context is valid at the time of this
-  // call.
-  virtual void PostPausableTask(PausableTaskCallback) = 0;
-
   enum ScriptExecutionType {
     // Execute script synchronously, unless the page is suspended.
     kSynchronous,
@@ -408,8 +392,13 @@ class WebLocalFrame : public WebFrame {
       ScriptExecutionType,
       WebScriptExecutionCallback*) = 0;
 
-  // Logs to the console associated with this frame.
-  virtual void AddMessageToConsole(const WebConsoleMessage&) = 0;
+  // Logs to the console associated with this frame. If |discard_duplicates| is
+  // set, the message will only be added if it is unique (i.e. has not been
+  // added to the console previously from this page).
+  void AddMessageToConsole(const WebConsoleMessage& message,
+                           bool discard_duplicates = false) {
+    AddMessageToConsoleImpl(message, discard_duplicates);
+  }
 
   // Expose modal dialog methods to avoid having to go through JavaScript.
   virtual void Alert(const WebString& message) = 0;
@@ -628,18 +617,21 @@ class WebLocalFrame : public WebFrame {
   // Portals -------------------------------------------------------------
 
   // Dispatches an event when a Portal gets activated. |portal_token| is the
-  // portal's unique identifier, and the message pipe |portal_pipe| is the
-  // portal's mojo interface. |data| is an optional message sent together with
-  // the portal's activation.
+  // portal's unique identifier, the message pipe |portal_pipe| is the
+  // portal's mojo interface, and the message pipe |portal_client_pipe| is
+  // a mojo interface to communicate back with the caller of the portal's
+  // mojo interface. |data| is an optional message sent together with the
+  // portal's activation.
   using OnPortalActivatedCallback = base::OnceCallback<void(bool)>;
   virtual void OnPortalActivated(
       const base::UnguessableToken& portal_token,
       mojo::ScopedInterfaceEndpointHandle portal_pipe,
+      mojo::ScopedInterfaceEndpointHandle portal_client_pipe,
       TransferableMessage data,
       OnPortalActivatedCallback callback) = 0;
 
-  // Forwards message to the PortalHost associated with frame.
-  virtual void ForwardMessageToPortalHost(
+  // Forwards message to the PortalHost object exposed by the frame.
+  virtual void ForwardMessageFromHost(
       TransferableMessage message,
       const WebSecurityOrigin& source_origin,
       const base::Optional<WebSecurityOrigin>& target_origin) = 0;
@@ -721,12 +713,18 @@ class WebLocalFrame : public WebFrame {
   // This function should be called after pairs of PrintBegin() and PrintEnd().
   virtual void DispatchAfterPrintEvent() = 0;
 
+  // Focus --------------------------------------------------------------
+
   // Advance the focus of the WebView to next text input element from current
   // input field wrt sequential navigation with TAB or Shift + TAB
   // WebFocusTypeForward simulates TAB and WebFocusTypeBackward simulates
   // Shift + TAB. (Will be extended to other form controls like select element,
   // checkbox, radio etc.)
   virtual void AdvanceFocusInForm(WebFocusType) = 0;
+
+  // Returns whether the currently focused field could be autofilled by the
+  // active WebAutofillClient.
+  virtual bool CanFocusedFieldBeAutofilled() const = 0;
 
   // Performance --------------------------------------------------------
 
@@ -766,6 +764,9 @@ class WebLocalFrame : public WebFrame {
 
   virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;
 
+  virtual void WasHidden() = 0;
+  virtual void WasShown() = 0;
+
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 
@@ -775,6 +776,10 @@ class WebLocalFrame : public WebFrame {
   WebLocalFrame* ToWebLocalFrame() override = 0;
   bool IsWebRemoteFrame() const override = 0;
   WebRemoteFrame* ToWebRemoteFrame() override = 0;
+
+ private:
+  virtual void AddMessageToConsoleImpl(const WebConsoleMessage&,
+                                       bool discard_duplicates) = 0;
 };
 
 }  // namespace blink

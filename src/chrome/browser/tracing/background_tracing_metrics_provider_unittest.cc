@@ -34,7 +34,7 @@ TEST_F(BackgroundTracingMetricsProviderTest, UploadsTraceLog) {
   EXPECT_FALSE(provider.HasIndependentMetrics());
 
   content::BackgroundTracingManager::GetInstance()->SetTraceToUploadForTesting(
-      kDummyTrace);
+      std::make_unique<std::string>(kDummyTrace));
 
   EXPECT_TRUE(provider.HasIndependentMetrics());
   metrics::ChromeUserMetricsExtension uma_proto;
@@ -57,11 +57,11 @@ TEST_F(BackgroundTracingMetricsProviderTest, HandleMissingTrace) {
   EXPECT_FALSE(provider.HasIndependentMetrics());
 
   content::BackgroundTracingManager::GetInstance()->SetTraceToUploadForTesting(
-      kDummyTrace);
+      std::make_unique<std::string>(kDummyTrace));
   EXPECT_TRUE(provider.HasIndependentMetrics());
 
   content::BackgroundTracingManager::GetInstance()->SetTraceToUploadForTesting(
-      "");
+      nullptr);
   metrics::ChromeUserMetricsExtension uma_proto;
   uma_proto.set_client_id(100);
   uma_proto.set_session_id(15);

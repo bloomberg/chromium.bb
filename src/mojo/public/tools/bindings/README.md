@@ -558,6 +558,12 @@ struct definition (*i.e*., existing fields must not change **ordinal value**)
 with the `MinVersion` attribute set to a number greater than any previous
 existing versions.
 
+*** note
+**NOTE:** do not change existing fields in versioned structs, as this is
+not backwards-compatible. Instead, rename the old field to make its
+deprecation clear and add a new field with the new version number.
+***
+
 **Ordinal value** refers to the relative positional layout of a struct's fields
 (and an interface's methods) when encoded in a message. Implicitly, ordinal
 numbers are assigned to fields according to lexical position. In the example

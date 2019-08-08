@@ -58,12 +58,13 @@ Profile* CreateTestingProfile(const base::FilePath& path) {
   if (!base::PathExists(path) && !base::CreateDirectory(path))
     NOTREACHED() << "Could not create directory at " << path.MaybeAsASCII();
 
-  Profile* profile =
+  std::unique_ptr<Profile> profile =
       Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
-  profile_manager->RegisterTestingProfile(profile, true, false);
+  Profile* profile_ptr = profile.get();
+  profile_manager->RegisterTestingProfile(profile.release(), true, false);
   EXPECT_EQ(starting_number_of_profiles + 1,
             profile_manager->GetNumberOfProfiles());
-  return profile;
+  return profile_ptr;
 }
 
 Profile* CreateTestingProfile(const std::string& profile_name) {
@@ -225,7 +226,7 @@ class ProfileChooserViewExtensionsTest
         ProfileChooserView::GetBubbleForTesting());
   }
 
-  views::LabelButton* signin_current_profile_button() {
+  views::Button* signin_current_profile_button() {
     return current_profile_bubble()->signin_current_profile_button_;
   }
 

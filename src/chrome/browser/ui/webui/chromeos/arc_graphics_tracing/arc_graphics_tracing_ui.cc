@@ -40,7 +40,6 @@ content::WebUIDataSource* CreateDataSource() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
   source->AddLocalizedStrings(localized_strings);
-  source->UseGzip();
 
   return source;
 }

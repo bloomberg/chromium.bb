@@ -216,13 +216,6 @@ const char kDisableNotifications[]          = "disable-notifications";
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
 
-// By default, in devtools_session.cc, we use CBOR for protocol messages
-// except for sending JSON to clients that request it.
-// This switch undoes this default. We plan to remove it after after transition
-// to binary is sufficiently complete (2019-04-15).
-const char kDisableInternalDevToolsBinaryProtocol[] =
-    "disable-internal-devtools-binary-protocol";
-
 // Enable partial raster in the renderer.
 const char kEnablePartialRaster[] = "enable-partial-raster";
 
@@ -326,11 +319,9 @@ const char kDomAutomationController[]       = "dom-automation";
 // Disable antialiasing on 2d canvas clips
 const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 
-// Disable partially decoding jpeg images using the GPU.
-// At least YUV decoding will be accelerated when not using this flag.
+// Disable YUV image decoding for those formats and cases where it's supported.
 // Has no effect unless GPU rasterization is enabled.
-const char kDisableAcceleratedJpegDecoding[] =
-    "disable-accelerated-jpeg-decoding";
+const char kDisableYUVImageDecoding[] = "disable-yuv-image-decoding";
 
 // Logs Runtime Call Stats for Blink. --single-process also needs to be
 // used along with this for the stats to be logged.
@@ -533,11 +524,6 @@ const char kGpuSandboxStartEarly[] = "gpu-sandbox-start-early";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
-// Don't allow content to arbitrarily append to the back/forward list.
-// The page must prcoess a user gesture before an entry can be added.
-const char kHistoryEntryRequiresUserGesture[] =
-    "history-entry-requires-user-gesture";
-
 // Start the renderer with an initial virtual time override specified in
 // seconds since the epoch.
 const char kInitialVirtualTime[] = "initial-virtual-time";
@@ -580,6 +566,10 @@ const char kLogFile[] = "log-file";
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
 
+// Allows user to override maximum number of active WebGL contexts per
+// renderer process.
+const char kMaxActiveWebGLContexts[] = "max-active-webgl-contexts";
+
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
 
@@ -589,6 +579,10 @@ const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 
 // Indicates the utility process should run with a message loop type of UI.
 const char kMessageLoopTypeUi[] = "message-loop-type-ui";
+
+// Set the default result for MockCertVerifier. This only works in test code.
+const char kMockCertVerifierDefaultResultForTesting[] =
+    "mock-cert-verifier-default-result-for-testing";
 
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
@@ -618,12 +612,6 @@ const char kNumRasterThreads[]              = "num-raster-threads";
 // value to 'never' to disable throttling.
 const char kOverridePluginPowerSaverForTesting[] =
     "override-plugin-power-saver-for-testing";
-
-// Controls the value of the threshold to start horizontal overscroll relative
-// to the default value.
-// E.g. set the value to '133' to have the overscroll start threshold be 133%
-// of the default threshold.
-const char kOverscrollStartThreshold[] = "overscroll-start-threshold";
 
 // Override the default value for the 'passive' field in javascript
 // addEventListener calls. Values are defined as:
@@ -722,15 +710,12 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // that's needed to show a dialog.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
-// Reduce the default `referer` header's granularity.
-const char kReducedReferrerGranularity[] =
-  "reduced-referrer-granularity";
-
-// Enables native memory sampling profiler with a given rate (default 128 KiB).
-const char kSamplingHeapProfiler[]          = "sampling-heap-profiler";
-
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
+
+// Visibly render a border around layout shift rects in the web page to help
+// debug and study layout shifts.
+const char kShowLayoutShiftRegions[] = "show-layout-shift-regions";
 
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
@@ -768,11 +753,6 @@ const char kSitePerProcess[]                = "site-per-process";
 // on desktop since M67.  The name of the switch is preserved for
 // backcompatibility of chrome://flags.
 const char kDisableSiteIsolation[] = "disable-site-isolation-trials";
-
-// Just like kDisableSiteIsolation, but doesn't show the "stability and security
-// will suffer" butter bar warning.
-const char kDisableSiteIsolationForPolicy[] =
-    "disable-site-isolation-for-policy";
 
 // Specifies if the browser should start in fullscreen mode, like if the user
 // had pressed F11 right after startup.
@@ -851,6 +831,13 @@ const char kValidateInputEventStream[] = "validate-input-event-stream";
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 
+// Set the antialiasing method used for webgl. (none, explicit, implicit, or
+// screenspace)
+const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
+
+// Set a default sample count for webgl if msaa is enabled.
+const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
+
 // Disables encryption of RTP Media for WebRTC. When Chrome embeds Content, it
 // ignores this switch on its stable and beta channels.
 const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
@@ -868,6 +855,7 @@ const char kEnableWebRtcSrtpAesGcm[] = "enable-webrtc-srtp-aes-gcm";
 // Enables negotiation of encrypted header extensions from RFC 6904 for SRTP
 // in WebRTC.
 // See https://tools.ietf.org/html/rfc6904 for further information.
+// TODO(https://crbug.com/954201): Remove this.
 const char kEnableWebRtcSrtpEncryptedHeaders[] =
     "enable-webrtc-srtp-encrypted-headers";
 
@@ -917,6 +905,11 @@ const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 // Disable the locking feature of the screen orientation API.
 const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 
+// Just like kDisableSiteIsolation, but doesn't show the "stability and security
+// will suffer" butter bar warning.
+const char kDisableSiteIsolationForPolicy[] =
+    "disable-site-isolation-for-policy";
+
 // Disable timeouts that may cause the browser to die when running slowly. This
 // is useful if running with profiling (such as debug malloc).
 const char kDisableTimeoutsForProfiling[] = "disable-timeouts-for-profiling";
@@ -938,9 +931,6 @@ const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 // Block ChildProcessMain thread of the renderer's ChildProcessService until a
 // Java debugger is attached.
 const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
-
-// Enables overscrolling for the OSK on Android.
-const char kEnableOSKOverscroll[]               = "enable-osk-overscroll";
 #endif
 
 // Enable the experimental Accessibility Object Model APIs in development.
@@ -997,10 +987,6 @@ const char kDeviceScaleFactor[]     = "device-scale-factor";
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 
-// Enables experimental hardware acceleration for VP8/VP9 video decoding.
-// Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all.
-const char kEnableAcceleratedVpxDecode[] = "enable-accelerated-vpx-decode";
-
 // Enables H264 HW decode acceleration for WebRtc on Win 7.
 const char kEnableWin7WebRtcHWH264Decoding[] =
     "enable-win7-webrtc-hw-h264-decoding";
@@ -1008,12 +994,6 @@ const char kEnableWin7WebRtcHWH264Decoding[] =
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
 // This switch allows us to pass the shared memory handle to the renderer.
 const char kFontCacheSharedHandle[] = "font-cache-shared-handle";
-
-// Sets the free memory thresholds below which the system is considered to be
-// under moderate and critical memory pressure. Used in the browser process,
-// and ignored if invalid. Specified as a pair of comma separated integers.
-// See base/win/memory_pressure_monitor.cc for defaults.
-const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
 
 // The boolean value (0/1) of FontRenderParams::antialiasing to be passed to
 // Ppapi processes.

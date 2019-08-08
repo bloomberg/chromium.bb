@@ -51,7 +51,7 @@ bool ShouldUseLayoutNGTextContent(const Node& node) {
   DCHECK(layout_object);
   if (layout_object->IsInline())
     return layout_object->ContainingNGBlockFlow();
-  if (LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(layout_object))
+  if (auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object))
     return NGBlockNode::CanUseNewLayout(*block_flow);
   return false;
 }
@@ -457,12 +457,13 @@ static base::Optional<unsigned> ComputeStartOffset(
 static base::Optional<unsigned> ComputeEndOffset(
     const Node& node,
     const PositionInFlatTree& selection_end) {
-  if (!node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return base::nullopt;
 
   if (&node == selection_end.AnchorNode())
     return selection_end.OffsetInContainerNode();
-  return ToText(node).length();
+  return text_node->length();
 }
 
 #if DCHECK_IS_ON()
@@ -597,7 +598,7 @@ static Text* AssociatedTextNode(const LayoutText& text) {
   if (const LayoutTextFragment* fragment = ToLayoutTextFragmentOrNull(text))
     return fragment->AssociatedTextNode();
   if (Node* node = text.GetNode())
-    return ToTextOrNull(node);
+    return DynamicTo<Text>(node);
   return nullptr;
 }
 
@@ -840,12 +841,12 @@ void LayoutSelection::OnDocumentShutdown() {
   paint_range_->end_offset = base::nullopt;
 }
 
-static LayoutRect SelectionRectForLayoutObject(const LayoutObject* object) {
+static PhysicalRect SelectionRectForLayoutObject(const LayoutObject* object) {
   if (!object->IsRooted())
-    return LayoutRect();
+    return PhysicalRect();
 
   if (!object->CanUpdateSelectionOnRootLineBoxes())
-    return LayoutRect();
+    return PhysicalRect();
 
   return object->AbsoluteSelectionRect();
 }
@@ -876,7 +877,7 @@ IntRect LayoutSelection::AbsoluteSelectionBounds() {
     void Visit(LayoutObject* layout_object) {
       selected_rect.Unite(SelectionRectForLayoutObject(layout_object));
     }
-    LayoutRect selected_rect;
+    PhysicalRect selected_rect;
   } visitor;
   VisitSelectedInclusiveDescendantsOf(frame_selection_->GetDocument(),
                                       &visitor);

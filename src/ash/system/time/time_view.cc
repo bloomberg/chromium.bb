@@ -4,7 +4,7 @@
 
 #include "ash/system/time/time_view.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/clock_model.h"
@@ -124,6 +124,10 @@ void TimeView::Refresh() {
 
 base::HourClockType TimeView::GetHourTypeForTesting() const {
   return model_->hour_clock_type();
+}
+
+const char* TimeView::GetClassName() const {
+  return "TimeView";
 }
 
 bool TimeView::PerformAction(const ui::Event& event) {

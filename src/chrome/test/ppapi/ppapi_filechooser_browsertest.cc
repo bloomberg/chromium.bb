@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "chrome/test/ppapi/ppapi_test_select_file_dialog_factory.h"
-#include "components/download/quarantine/test_support.h"
+#include "components/services/quarantine/test_support.h"
 #include "ppapi/shared_impl/test_utils.h"
 
 #if defined(FULL_SAFE_BROWSING)
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
       temp_dir.GetPath().AppendASCII("dangerous.exe");
 
   ASSERT_TRUE(base::PathExists(actual_filename));
-  EXPECT_TRUE(download::IsFileQuarantined(actual_filename, GURL(), GURL()));
+  EXPECT_TRUE(quarantine::IsFileQuarantined(actual_filename, GURL(), GURL()));
 }
 #endif  // defined(OS_WIN)
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_inspector_overlay_host.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -79,6 +80,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "v8/include/v8.h"
 
@@ -208,7 +210,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_ = cc::PictureLayer::Create(this);
       layer_->SetIsDrawable(true);
-      layer_->SetHitTestable(true);
+      layer_->SetHitTestable(false);
     }
   }
   ~InspectorPageOverlayDelegate() override {
@@ -596,13 +598,26 @@ Response InspectorOverlayAgent::hideHighlight() {
 
 Response InspectorOverlayAgent::getHighlightObjectForTest(
     int node_id,
+    Maybe<bool> include_distance,
     std::unique_ptr<protocol::DictionaryValue>* result) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig(),
-                               InspectorHighlightContrastInfo(), true);
+  bool is_locked_ancestor = false;
+
+  // If |node| is in a display locked subtree, highlight the highest locked
+  // ancestor element instead.
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    node = locked_ancestor;
+    is_locked_ancestor = true;
+  }
+
+  InspectorHighlight highlight(
+      node, InspectorHighlight::DefaultConfig(),
+      InspectorHighlightContrastInfo(), true /* append_element_info */,
+      include_distance.fromMaybe(false), is_locked_ancestor);
   *result = highlight.AsProtocolValue();
   return Response::OK();
 }
@@ -832,9 +847,9 @@ void InspectorOverlayAgent::EnsureOverlayPageCreated() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  LocalFrame* frame =
-      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
-  frame->SetView(LocalFrameView::Create(*frame));
+  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
+                                                 *overlay_page_, nullptr);
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
@@ -848,9 +863,9 @@ void InspectorOverlayAgent::LoadFrameForTool() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  LocalFrame* frame =
-      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
-  frame->SetView(LocalFrameView::Create(*frame));
+  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
+                                                 *overlay_page_, nullptr);
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);

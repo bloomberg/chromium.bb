@@ -67,7 +67,6 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   void ScheduleCALayerInUseQuery(
       std::vector<CALayerInUseQuery> queries) override;
   bool IsSurfaceless() const override;
-  bool SupportsPresentationCallback() override;
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;

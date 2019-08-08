@@ -42,10 +42,6 @@ const SVGEnumerationMap& GetEnumerationMap<EdgeModeType>() {
 
 class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
  public:
-  static SVGAnimatedOrder* Create(SVGElement* context_element) {
-    return MakeGarbageCollected<SVGAnimatedOrder>(context_element);
-  }
-
   SVGAnimatedOrder(SVGElement* context_element)
       : SVGAnimatedIntegerOptionalInteger(context_element,
                                           svg_names::kOrderAttr,
@@ -75,8 +71,7 @@ SVGParsingError SVGAnimatedOrder::AttributeChanged(const String& value) {
   return parse_status;
 }
 
-inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
-    Document& document)
+SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEConvolveMatrixTag,
                                            document),
       bias_(MakeGarbageCollected<SVGAnimatedNumber>(this,
@@ -134,8 +129,6 @@ void SVGFEConvolveMatrixElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_y_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEConvolveMatrixElement)
 
 IntSize SVGFEConvolveMatrixElement::MatrixOrder() const {
   if (!order_->IsSpecified())

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.download.home;
 
 import android.view.View;
 
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 
 /**
  * A coordinator that represents the main download manager UI page. This visually shows a list of
@@ -49,6 +49,9 @@ public interface DownloadManagerCoordinator {
     /** Stops notifying {@code observer} of url state changes. */
     void removeObserver(Observer observer);
 
-    /** Sets the {@link Tab} object that the manager is working on. */
-    void setTab(Tab tab);
+    /**
+     * Sets the {@link HistoryNavigationDelegate} object that takes care of history navigation.
+     * @param delegate The delegate instance the history navigation logic needs.
+     */
+    void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate);
 }

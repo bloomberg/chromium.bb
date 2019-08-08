@@ -32,8 +32,6 @@ SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(svg_names::kTitleTag, document),
       ignore_title_updates_when_children_change_(false) {}
 
-DEFINE_NODE_FACTORY(SVGTitleElement)
-
 Node::InsertionNotificationRequest SVGTitleElement::InsertedInto(
     ContainerNode& root_parent) {
   SVGElement::InsertedInto(root_parent);

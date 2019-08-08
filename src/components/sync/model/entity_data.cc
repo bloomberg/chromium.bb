@@ -10,7 +10,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -47,8 +46,6 @@ EntityData::EntityData(EntityData&& other)
   unique_position.Swap(&other.unique_position);
 }
 
-EntityData::EntityData(const EntityData& src) = default;
-
 EntityData::~EntityData() = default;
 
 EntityData& EntityData::operator=(EntityData&& other) {
@@ -65,10 +62,6 @@ EntityData& EntityData::operator=(EntityData&& other) {
   specifics.Swap(&other.specifics);
   unique_position.Swap(&other.unique_position);
   return *this;
-}
-
-std::unique_ptr<EntityData> EntityData::Clone() const {
-  return base::WrapUnique(new EntityData(*this));
 }
 
 #define ADD_TO_DICT(dict, value) \

@@ -21,21 +21,6 @@ class Commands {
      * @private {!Map<!SAConstants.Command, !function(): void>}
      */
     this.commandMap_ = this.buildCommandMap_();
-
-    /**
-     * A map from the command name to the default key code for the command.
-     * @private {!Map<!SAConstants.Command, number>}
-     */
-    this.defaultKeyCodeMap_ = this.buildDefaultKeyCodeMap_();
-  }
-
-  /**
-   * Return the default key code for a command.
-   * @param {!SAConstants.Command} command
-   * @return {number}
-   */
-  getDefaultKeyCodeFor(command) {
-    return this.defaultKeyCodeMap_.get(command);
   }
 
   /**
@@ -68,19 +53,6 @@ class Commands {
         SAConstants.Command.SELECT,
         this.switchAccess_.selectCurrentNode.bind(this.switchAccess_)
       ]
-    ]);
-  }
-
-  /**
-   * Build a map from command name to the default key code for the command.
-   * @return {!Map<!SAConstants.Command, number>}
-   */
-  buildDefaultKeyCodeMap_() {
-    return new Map([
-      [SAConstants.Command.MENU, '1'.charCodeAt(0)],
-      [SAConstants.Command.NEXT, '3'.charCodeAt(0)],
-      [SAConstants.Command.PREVIOUS, '2'.charCodeAt(0)],
-      [SAConstants.Command.SELECT, '0'.charCodeAt(0)]
     ]);
   }
 }

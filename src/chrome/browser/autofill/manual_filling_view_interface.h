@@ -52,8 +52,8 @@ class ManualFillingViewInterface {
 
   virtual ~ManualFillingViewInterface() = default;
 
-  // Called with data that should replace the data currently shown on the
-  // accessory sheet.
+  // Called with data that should replace the data currently shown in an
+  // accessory sheet of the same type.
   virtual void OnItemsAvailable(const autofill::AccessorySheetData& data) = 0;
 
   // Called when the generation action should be offered or rescinded
@@ -68,6 +68,10 @@ class ManualFillingViewInterface {
 
   // Shows the accessory bar when the keyboard is also shown.
   virtual void ShowWhenKeyboardIsVisible() = 0;
+
+  // Requests to show the touch to fill sheet. This will hide the keyboard if
+  // shown.
+  virtual void ShowTouchToFillSheet() = 0;
 
   // Hides the accessory bar and the accessory sheet (if open).
   virtual void Hide() = 0;

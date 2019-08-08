@@ -225,7 +225,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private Surface getViewSurface(int surfaceId) {
+    private SurfaceWrapper getViewSurface(int surfaceId) {
         if (mGpuCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return null;
@@ -233,7 +233,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
         try {
             SurfaceWrapper wrapper = mGpuCallback.getViewSurface(surfaceId);
-            return wrapper != null ? wrapper.getSurface() : null;
+            return wrapper;
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call getViewSurface: %s", e);
             return null;

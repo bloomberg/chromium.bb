@@ -33,9 +33,9 @@
 #include <memory>
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
-#include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
@@ -64,6 +63,8 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource_client.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -92,6 +93,19 @@ void RegisterMockedURLLoad(const KURL& url) {
   url_test_helpers::RegisterMockedURLLoad(
       url, test::PlatformTestDataPath(kTestResourceFilename),
       kTestResourceMimeType);
+}
+
+const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
+    mojom::IPAddressSpace address_space) {
+  return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+      KURL("https://example.com/foo.html"),
+      KURL("https://example.com/foo.html"),
+      SecurityOrigin::Create(KURL("https://example.com/")),
+      network::mojom::ReferrerPolicy::kDefault, "https://example.com/foo.html",
+      HttpsState::kModern, AllowedByNosniff::MimeTypeCheck::kStrict,
+      address_space, kLeaveInsecureRequestsAlone,
+      FetchClientSettingsObject::InsecureNavigationsSet(),
+      false /* mixed_autoupgrade_opt_out */);
 }
 
 }  // namespace
@@ -148,13 +162,15 @@ class ResourceFetcherTest : public testing::Test {
   scoped_refptr<scheduler::FakeTaskRunner> CreateTaskRunner() {
     return base::MakeRefCounted<scheduler::FakeTaskRunner>();
   }
-  ResourceFetcher* CreateFetcher(const ResourceFetcherProperties& properties,
-                                 FetchContext* context) {
-    return MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(properties, context, CreateTaskRunner(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+  ResourceFetcher* CreateFetcher(
+      const TestResourceFetcherProperties& properties,
+      FetchContext* context) {
+    return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties.MakeDetachable(), context, CreateTaskRunner(),
+        MakeGarbageCollected<TestLoaderFactory>()));
   }
-  ResourceFetcher* CreateFetcher(const ResourceFetcherProperties& properties) {
+  ResourceFetcher* CreateFetcher(
+      const TestResourceFetcherProperties& properties) {
     return CreateFetcher(properties, MakeGarbageCollected<MockFetchContext>());
   }
   ResourceFetcher* CreateFetcher() {
@@ -175,9 +191,8 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   KURL secure_url("https://secureorigin.test/image.png");
   // Try to request a url. The request should fail, and a resource in an error
   // state should be returned, and no resource should be present in the cache.
-  auto* fetcher =
-      CreateFetcher(*MakeGarbageCollected<NullResourceFetcherProperties>(),
-                    &FetchContext::NullInstance());
+  auto* fetcher = CreateFetcher();
+  fetcher->ClearContext();
   ResourceRequest resource_request(secure_url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   FetchParameters fetch_params(resource_request);
@@ -358,9 +373,10 @@ class RequestSameResourceOnComplete
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(source_origin_);
     MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-    auto* fetcher2 = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *properties, context, base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-        MakeGarbageCollected<TestLoaderFactory>()));
+    auto* fetcher2 = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(properties->MakeDetachable(), context,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
     ResourceRequest resource_request2(GetResource()->Url());
     resource_request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
     FetchParameters fetch_params2(resource_request2);
@@ -511,9 +527,9 @@ class ScopedMockRedirectRequester {
 
   void Request(const WebString& url) {
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context_, task_runner_,
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context_, task_runner_,
+        MakeGarbageCollected<TestLoaderFactory>()));
     ResourceRequest resource_request(url);
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     FetchParameters fetch_params(resource_request);
@@ -974,114 +990,176 @@ TEST_F(ResourceFetcherTest, CachedResourceShouldNotCrashByNullURL) {
   ASSERT_EQ(fetcher->CachedResource(KURL()), nullptr);
 }
 
-TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
-  const auto& original_client_settings_object =
-      *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-          KURL("https://example.com/foo.html"),
-          KURL("https://example.com/foo.html"),
-          SecurityOrigin::Create(KURL("https://example.com/")),
-          network::mojom::ReferrerPolicy::kDefault,
-          "https://example.com/foo.html", HttpsState::kModern,
-          AllowedByNosniff::MimeTypeCheck::kStrict,
-          mojom::IPAddressSpace::kPublic);
-  const auto& original_properties =
-      *MakeGarbageCollected<TestResourceFetcherProperties>(
-          original_client_settings_object);
-  auto* const fetcher = CreateFetcher(original_properties);
-  const auto& properties = fetcher->GetProperties();
+TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
+  auto& properties = *MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = CreateFetcher(properties);
+  ResourceRequest request(KURL("https://www.example.com/"));
 
-  EXPECT_NE(&original_properties, &properties);
+  {
+    // Subframe depriotization is disabled (main frame case).
+    properties.SetIsMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(false);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
+  }
 
-  const auto& client_settings_object =
-      properties.GetFetchClientSettingsObject();
-  EXPECT_EQ(&original_client_settings_object, &client_settings_object);
-  EXPECT_FALSE(properties.IsMainFrame());
-  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
-            mojom::ControllerServiceWorkerMode::kNoController);
-  // We cannot call ServiceWorkerId as the service worker mode is kNoController.
-  EXPECT_FALSE(properties.IsPaused());
-  EXPECT_FALSE(properties.IsDetached());
-  EXPECT_FALSE(properties.IsLoadComplete());
-  EXPECT_FALSE(properties.ShouldBlockLoadingSubResource());
-  EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
+  {
+    // Subframe depriotization is disabled (nested frame case).
+    properties.SetIsMainFrame(false);
+    properties.SetIsSubframeDeprioritizationEnabled(false);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
+  }
 
-  fetcher->ClearContext();
-  // ResourceFetcher::GetProperties always returns the same object.
-  EXPECT_EQ(&properties, &fetcher->GetProperties());
+  {
+    // Subframe depriotization is enabled (main frame case), kHigh.
+    properties.SetIsMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
+  }
 
-  EXPECT_NE(&client_settings_object,
-            &properties.GetFetchClientSettingsObject());
-  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseUrl(),
-            KURL("https://example.com/foo.html"));
-  EXPECT_FALSE(properties.IsMainFrame());
-  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
-            mojom::ControllerServiceWorkerMode::kNoController);
-  // We cannot call ServiceWorkerId as the service worker mode is kNoController.
-  EXPECT_FALSE(properties.IsPaused());
-  EXPECT_TRUE(properties.IsDetached());
-  EXPECT_FALSE(properties.IsLoadComplete());
-  EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
-  EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
+  {
+    // Subframe depriotization is enabled (nested frame case), kHigh => kLow.
+    properties.SetIsMainFrame(false);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kScript, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kLow);
+  }
+  {
+    // Subframe depriotization is enabled (main frame case), kMedium.
+    properties.SetIsMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kMock, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kMedium);
+  }
+
+  {
+    // Subframe depriotization is enabled (nested frame case), kMedium =>
+    // kLowest.
+    properties.SetIsMainFrame(false);
+    properties.SetIsSubframeDeprioritizationEnabled(true);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kMock, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */, false /* is_stale_revalidation */);
+    EXPECT_EQ(priority, ResourceLoadPriority::kLowest);
+  }
 }
 
-TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
-  const auto& original_client_settings_object =
-      *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-          KURL("https://example.com/foo.html"),
-          KURL("https://example.com/foo.html"),
-          SecurityOrigin::Create(KURL("https://example.com/")),
-          network::mojom::ReferrerPolicy::kDefault,
-          "https://example.com/foo.html", HttpsState::kModern,
-          AllowedByNosniff::MimeTypeCheck::kStrict,
-          mojom::IPAddressSpace::kPublic);
-  auto& original_properties =
-      *MakeGarbageCollected<TestResourceFetcherProperties>(
-          original_client_settings_object);
-  auto* const fetcher = CreateFetcher(original_properties);
-  const auto& properties = fetcher->GetProperties();
+TEST_F(ResourceFetcherTest, Detach) {
+  DetachableResourceFetcherProperties& properties =
+      MakeGarbageCollected<TestResourceFetcherProperties>()->MakeDetachable();
+  auto* const fetcher =
+      MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+          properties, MakeGarbageCollected<MockFetchContext>(),
+          CreateTaskRunner(), MakeGarbageCollected<TestLoaderFactory>()));
 
-  EXPECT_NE(&original_properties, &properties);
-
-  original_properties.SetIsMainFrame(true);
-  original_properties.SetControllerServiceWorkerMode(
-      mojom::ControllerServiceWorkerMode::kControlled);
-  original_properties.SetServiceWorkerId(133);
-  original_properties.SetIsPaused(true);
-  original_properties.SetIsLoadComplete(true);
-  original_properties.SetShouldBlockLoadingSubResource(true);
-  original_properties.SetFrameStatus(scheduler::FrameStatus::kMainFrameVisible);
-
-  const auto& client_settings_object =
-      properties.GetFetchClientSettingsObject();
-  EXPECT_EQ(&original_client_settings_object, &client_settings_object);
-  EXPECT_TRUE(properties.IsMainFrame());
-  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
-            mojom::ControllerServiceWorkerMode::kControlled);
-  EXPECT_EQ(properties.ServiceWorkerId(), 133);
-  EXPECT_TRUE(properties.IsPaused());
+  EXPECT_EQ(&properties, &fetcher->GetProperties());
   EXPECT_FALSE(properties.IsDetached());
-  EXPECT_TRUE(properties.IsLoadComplete());
-  EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
-  EXPECT_EQ(scheduler::FrameStatus::kMainFrameVisible,
-            properties.GetFrameStatus());
 
   fetcher->ClearContext();
   // ResourceFetcher::GetProperties always returns the same object.
   EXPECT_EQ(&properties, &fetcher->GetProperties());
 
-  EXPECT_NE(&client_settings_object,
-            &properties.GetFetchClientSettingsObject());
-  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseUrl(),
-            KURL("https://example.com/foo.html"));
-  EXPECT_TRUE(properties.IsMainFrame());
-  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
-            mojom::ControllerServiceWorkerMode::kNoController);
-  // We cannot call ServiceWorkerId as the service worker mode is kNoController.
-  EXPECT_TRUE(properties.IsPaused());
   EXPECT_TRUE(properties.IsDetached());
-  EXPECT_TRUE(properties.IsLoadComplete());
-  EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
-  EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
+}
+
+// TODO(crbug.com/850785): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_SetIsExternalRequest DISABLED_SetIsExternalRequest
+#else
+#define MAYBE_SetIsExternalRequest SetIsExternalRequest
+#endif
+TEST_F(ResourceFetcherTest, MAYBE_SetIsExternalRequest) {
+  struct TestCase {
+    const char* url;
+    bool is_external_expectation_public;
+    bool is_external_expectation_private;
+    bool is_external_expectation_local;
+  } cases[] = {{"data:text/html,whatever", false, false, false},
+               {"file:///etc/passwd", false, false, false},
+               {"blob:http://example.com/", false, false, false},
+
+               {"http://example.com/", false, false, false},
+               {"https://example.com/", false, false, false},
+
+               {"http://192.168.1.1:8000/", true, false, false},
+               {"http://10.1.1.1:8000/", true, false, false},
+
+               {"http://localhost/", true, true, false},
+               {"http://127.0.0.1/", true, true, false},
+               {"http://127.0.0.1:8000/", true, true, false}};
+
+  for (const auto address_space :
+       {mojom::IPAddressSpace::kPublic, mojom::IPAddressSpace::kPrivate,
+        mojom::IPAddressSpace::kLocal}) {
+    auto* fetcher =
+        CreateFetcher(*MakeGarbageCollected<TestResourceFetcherProperties>(
+                          CreateFetchClientSettingsObject(address_space)),
+                      MakeGarbageCollected<MockFetchContext>());
+    EXPECT_EQ(address_space, fetcher->GetProperties()
+                                 .GetFetchClientSettingsObject()
+                                 .GetAddressSpace());
+
+    for (const bool enabled : {false, true}) {
+      ScopedCorsRFC1918ForTest cors_rfc1918(enabled);
+      for (const auto& test : cases) {
+        SCOPED_TRACE(test.url);
+        FetchParameters fetch_params(ResourceRequest(test.url));
+        RegisterMockedURLLoad(fetch_params.Url());
+
+        Resource* new_resource =
+            MockResource::Fetch(fetch_params, fetcher, nullptr);
+        ASSERT_TRUE(new_resource);
+
+        if (enabled) {
+          bool expected;
+          switch (address_space) {
+            case mojom::IPAddressSpace::kPublic:
+              expected = test.is_external_expectation_public;
+              break;
+            case mojom::IPAddressSpace::kPrivate:
+              expected = test.is_external_expectation_private;
+              break;
+            case mojom::IPAddressSpace::kLocal:
+              expected = test.is_external_expectation_local;
+              break;
+          }
+          EXPECT_EQ(expected,
+                    new_resource->GetResourceRequest().IsExternalRequest());
+        } else {
+          EXPECT_FALSE(new_resource->GetResourceRequest().IsExternalRequest());
+        }
+
+        // Clear mocked URLs from mock loader and MemoryCache.
+        platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+        platform_->GetURLLoaderMockFactory()
+            ->UnregisterAllURLsAndClearMemoryCache();
+      }
+    }
+  }
 }
 
 }  // namespace blink

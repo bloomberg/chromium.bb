@@ -55,11 +55,16 @@ void PasswordStoreDefault::ReportMetricsImpl(
 }
 
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
-    const PasswordForm& form) {
+    const PasswordForm& form,
+    AddLoginError* error) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  if (!login_db_)
+  if (!login_db_) {
+    if (error) {
+      *error = AddLoginError::kDbNotAvailable;
+    }
     return PasswordStoreChangeList();
-  return login_db_->AddLogin(form);
+  }
+  return login_db_->AddLogin(form, error);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(

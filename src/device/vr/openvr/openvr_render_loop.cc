@@ -4,7 +4,6 @@
 
 #include "device/vr/openvr/openvr_render_loop.h"
 
-#include "base/metrics/histogram_functions.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 #include "device/vr/openvr/openvr_gamepad_helper.h"
 #include "device/vr/openvr/openvr_type_converters.h"
@@ -43,7 +42,28 @@ gfx::Transform HmdMatrix34ToTransform(const vr::HmdMatrix34_t& mat) {
                         0, 0, 1);
 }
 
+device::mojom::XRHandedness ConvertToMojoHandedness(
+    vr::ETrackedControllerRole controller_role) {
+  switch (controller_role) {
+    case vr::TrackedControllerRole_LeftHand:
+      return device::mojom::XRHandedness::LEFT;
+    case vr::TrackedControllerRole_RightHand:
+      return device::mojom::XRHandedness::RIGHT;
+    case vr::TrackedControllerRole_Invalid:
+      return device::mojom::XRHandedness::NONE;
+  }
+
+  NOTREACHED();
+}
+
 }  // namespace
+
+void OpenVRRenderLoop::InputActiveState::MarkAsInactive() {
+  active = false;
+  primary_input_pressed = false;
+  device_class = vr::TrackedDeviceClass_Invalid;
+  controller_role = vr::TrackedControllerRole_Invalid;
+}
 
 OpenVRRenderLoop::OpenVRRenderLoop() : XRCompositorCommon() {}
 
@@ -149,7 +169,7 @@ void OpenVRRenderLoop::OnSessionStart() {
   else if (model == "Vive MV")
     type = VrViewerType::OPENVR_VIVE;
 
-  base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
+  LogViewerType(type);
 }
 
 mojom::XRGamepadDataPtr OpenVRRenderLoop::GetNextGamepadData() {
@@ -220,12 +240,8 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
     if (!pose.bDeviceIsConnected) {
       // If this was an active controller on the last frame report it as
       // disconnected.
-      if (input_active_state.active) {
-        input_active_state.active = false;
-        input_active_state.primary_input_pressed = false;
-        input_active_state.device_class = vr::TrackedDeviceClass_Invalid;
-        input_active_state.controller_role = vr::TrackedControllerRole_Invalid;
-      }
+      if (input_active_state.active)
+        input_active_state.MarkAsInactive();
       continue;
     }
 
@@ -247,8 +263,13 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
         device::mojom::XRInputSourceState::New();
 
     vr::VRControllerState_t controller_state;
-    openvr_->GetSystem()->GetControllerState(i, &controller_state,
-                                             sizeof(vr::VRControllerState_t));
+    bool have_state = openvr_->GetSystem()->GetControllerState(
+        i, &controller_state, sizeof(vr::VRControllerState_t));
+    if (!have_state) {
+      input_active_state.MarkAsInactive();
+      continue;
+    }
+
     bool pressed = controller_state.ulButtonPressed &
                    vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger);
 
@@ -270,6 +291,12 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
     vr::ETrackedControllerRole controller_role =
         openvr_->GetSystem()->GetControllerRoleForTrackedDeviceIndex(i);
 
+    device::mojom::XRHandedness handedness =
+        ConvertToMojoHandedness(controller_role);
+
+    state->gamepad = OpenVRGamepadHelper::GetXRGamepad(
+        openvr_->GetSystem(), i, controller_state, handedness);
+
     // If this is a newly active controller or if the handedness has changed
     // since the last update, re-send the controller's description.
     if (newly_active || controller_role != input_active_state.controller_role) {
@@ -279,18 +306,7 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
       // It's a handheld pointing device.
       desc->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
 
-      // Set handedness.
-      switch (controller_role) {
-        case vr::TrackedControllerRole_LeftHand:
-          desc->handedness = device::mojom::XRHandedness::LEFT;
-          break;
-        case vr::TrackedControllerRole_RightHand:
-          desc->handedness = device::mojom::XRHandedness::RIGHT;
-          break;
-        default:
-          desc->handedness = device::mojom::XRHandedness::NONE;
-          break;
-      }
+      desc->handedness = handedness;
       input_active_state.controller_role = controller_role;
 
       // OpenVR controller are fully 6DoF.

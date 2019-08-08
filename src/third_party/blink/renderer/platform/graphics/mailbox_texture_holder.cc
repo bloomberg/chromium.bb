@@ -38,8 +38,9 @@ MailboxTextureHolder::MailboxTextureHolder(
     unsigned texture_id_to_delete_after_mailbox_consumed,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size)
-    : TextureHolder(std::move(context_provider_wrapper)),
+    IntSize mailbox_size,
+    bool is_origin_top_left)
+    : TextureHolder(std::move(context_provider_wrapper), is_origin_top_left),
       mailbox_(mailbox),
       sync_token_(sync_token),
       texture_id_(texture_id_to_delete_after_mailbox_consumed),
@@ -52,7 +53,8 @@ MailboxTextureHolder::MailboxTextureHolder(
 MailboxTextureHolder::MailboxTextureHolder(
     std::unique_ptr<TextureHolder> texture_holder,
     GLenum filter)
-    : TextureHolder(texture_holder->ContextProviderWrapper()),
+    : TextureHolder(texture_holder->ContextProviderWrapper(),
+                    texture_holder->IsOriginTopLeft()),
       texture_id_(0),
       is_converted_from_skia_texture_(true),
       thread_id_(0) {
@@ -145,10 +147,10 @@ MailboxTextureHolder::~MailboxTextureHolder() {
       thread_id_ != Thread::Current()->ThreadId()) {
     PostCrossThreadTask(
         *texture_thread_task_runner_, FROM_HERE,
-        CrossThreadBind(&ReleaseTexture, is_converted_from_skia_texture_,
-                        texture_id_, WTF::Passed(std::move(passed_mailbox)),
-                        WTF::Passed(ContextProviderWrapper()),
-                        WTF::Passed(std::move(passed_sync_token))));
+        CrossThreadBindOnce(&ReleaseTexture, is_converted_from_skia_texture_,
+                            texture_id_, WTF::Passed(std::move(passed_mailbox)),
+                            WTF::Passed(ContextProviderWrapper()),
+                            WTF::Passed(std::move(passed_sync_token))));
   } else {
     ReleaseTexture(is_converted_from_skia_texture_, texture_id_,
                    std::move(passed_mailbox), ContextProviderWrapper(),

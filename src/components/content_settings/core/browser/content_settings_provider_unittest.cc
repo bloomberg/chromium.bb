@@ -18,9 +18,9 @@ TEST(ContentSettingsProviderTest, Mock) {
   GURL url("http://www.youtube.com");
 
   MockProvider mock_provider(false);
-  mock_provider.SetWebsiteSetting(pattern, pattern,
-                                  CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-                                  new base::Value(CONTENT_SETTING_BLOCK));
+  mock_provider.SetWebsiteSetting(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
+      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(&mock_provider, url, url,
@@ -51,7 +51,7 @@ TEST(ContentSettingsProviderTest, Mock) {
 
   bool owned = mock_provider.SetWebsiteSetting(
       pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-      new base::Value(CONTENT_SETTING_ALLOW));
+      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             TestUtils::GetContentSetting(&mock_provider, url, url,
@@ -60,12 +60,9 @@ TEST(ContentSettingsProviderTest, Mock) {
 
   mock_provider.set_read_only(true);
   std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_BLOCK));
-  owned = mock_provider.SetWebsiteSetting(
-      pattern,
-      pattern,
-      CONTENT_SETTINGS_TYPE_PLUGINS,
-      "java_plugin",
-      value.get());
+  owned = mock_provider.SetWebsiteSetting(pattern, pattern,
+                                          CONTENT_SETTINGS_TYPE_PLUGINS,
+                                          "java_plugin", std::move(value));
   EXPECT_FALSE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             TestUtils::GetContentSetting(&mock_provider, url, url,
@@ -77,7 +74,7 @@ TEST(ContentSettingsProviderTest, Mock) {
   mock_provider.set_read_only(false);
   owned = mock_provider.SetWebsiteSetting(
       pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
-      new base::Value(CONTENT_SETTING_BLOCK));
+      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(&mock_provider, url, url,

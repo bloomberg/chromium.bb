@@ -2553,7 +2553,7 @@ def main():
     os.environ['LC_ALL'] = 'C'
     RealMain(sys.argv)
   except KeyboardInterrupt:
-    print
+    print()
     StatusUpdate("Interrupted.")
     sys.exit(1)
   except auth.AuthenticationError as e:

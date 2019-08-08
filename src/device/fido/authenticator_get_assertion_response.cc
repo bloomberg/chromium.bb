@@ -101,15 +101,14 @@ std::vector<uint8_t> GetSerializedCtapDeviceResponse(
     const AuthenticatorGetAssertionResponse& response) {
   cbor::Value::MapValue response_map;
   if (response.credential()) {
-    response_map.emplace(1, response.credential()->ConvertToCBOR());
+    response_map.emplace(1, AsCBOR(*response.credential()));
   }
 
   response_map.emplace(2, response.auth_data().SerializeToByteArray());
   response_map.emplace(3, response.signature());
 
   if (response.user_entity()) {
-    response_map.emplace(4, PublicKeyCredentialUserEntity::ConvertToCBOR(
-                                *response.user_entity()));
+    response_map.emplace(4, AsCBOR(*response.user_entity()));
   }
   if (response.num_credentials()) {
     response_map.emplace(5, response.num_credentials().value());

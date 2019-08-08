@@ -1936,6 +1936,56 @@ TEST_F(WidgetTest, DestroyedWithCaptureViaEventMonitor) {
   EXPECT_TRUE(observer.widget_closed());
 }
 
+TEST_F(WidgetTest, LockPaintAsActive) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->ShowInactive();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+
+  // First lock causes widget to paint as active.
+  auto lock = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Second lock has no effect.
+  auto lock2 = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Have to release twice to get back to inactive state.
+  lock2.reset();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+  lock.reset();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+}
+
+TEST_F(WidgetTest, LockPaintAsActive_AlreadyActive) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->Show();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Lock has no effect.
+  auto lock = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  // Remove lock has no effect.
+  lock.reset();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+}
+
+TEST_F(WidgetTest, LockPaintAsActive_BecomesActive) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->ShowInactive();
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+
+  // Lock toggles render mode.
+  auto lock = widget->LockPaintAsActive();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+
+  widget->Activate();
+
+  // Remove lock has no effect.
+  lock.reset();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+}
+
 // Widget used to destroy itself when OnNativeWidgetDestroyed is called.
 class TestNativeWidgetDestroyedWidget : public Widget {
  public:
@@ -2350,7 +2400,7 @@ TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
   generator.MoveMouseTo(10, 10);
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
   generator.ClickLeftButton();
 #else
   generator.PressTouch();
@@ -3941,7 +3991,7 @@ class WidgetShadowTest : public WidgetTest {
 };
 
 // Disabled on Mac: All drop shadows are managed out of process for now.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_ShadowsInRootWindow DISABLED_ShadowsInRootWindow
 #else
 #define MAYBE_ShadowsInRootWindow ShadowsInRootWindow
@@ -3951,8 +4001,13 @@ class WidgetShadowTest : public WidgetTest {
 // activation. Test that shadows are added to non-root windows even if not
 // activated.
 TEST_F(WidgetShadowTest, MAYBE_ShadowsInRootWindow) {
-  // A desktop window clips to its bounds, so it shouldn't have a shadow.
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, top-levels have shadows.
+  bool top_level_window_should_have_shadow = true;
+#else
+  // On non-chromeos platforms, the hosting OS is responsible for the shadow.
   bool top_level_window_should_have_shadow = false;
+#endif
 
   // To start, just create a Widget. This constructs the first ShadowController
   // which will start observing the environment for additional aura::Window

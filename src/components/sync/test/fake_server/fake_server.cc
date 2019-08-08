@@ -309,6 +309,11 @@ std::string FakeServer::GetTopLevelPermanentItemId(
   return loopback_server_->GetTopLevelPermanentItemId(model_type);
 }
 
+const std::vector<std::string>& FakeServer::GetKeystoreKeys() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return loopback_server_->GetKeystoreKeysForTesting();
+}
+
 void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA)

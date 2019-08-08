@@ -17,6 +17,7 @@ constexpr char kXmppServerAddressForMe2MeHost[] = "talk.google.com:5222";
 constexpr bool kXmppServerUseTls = true;
 constexpr char kGcdJid[] = "clouddevices.gserviceaccount.com";
 constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
+constexpr char kRemotingServerEndpoint[] = "remotedesktop-pa.googleapis.com";
 
 // Command line switches.
 #if !defined(NDEBUG)
@@ -27,6 +28,7 @@ constexpr char kXmppServerDisableTlsSwitch[] = "disable-xmpp-server-tls";
 constexpr char kDirectoryBotJidSwitch[] = "directory-bot-jid";
 constexpr char kGcdJidSwitch[] = "gcd-jid";
 constexpr char kFtlServerEndpointSwitch[] = "ftl-server-endpoint";
+constexpr char kRemotingServerEndpointSwitch[] = "remoting-server-endpoint";
 #endif  // !defined(NDEBUG)
 
 // Non-configurable service paths.
@@ -43,7 +45,8 @@ ServiceUrls::ServiceUrls()
       xmpp_server_use_tls_(kXmppServerUseTls),
       directory_bot_jid_(kRemotingBotJid),
       gcd_jid_(kGcdJid),
-      ftl_server_endpoint_(kFtlServerEndpoint) {
+      ftl_server_endpoint_(kFtlServerEndpoint),
+      remoting_server_endpoint_(kRemotingServerEndpoint) {
 #if !defined(NDEBUG)
   // The command line may not be initialized when running as a PNaCl plugin.
   if (base::CommandLine::InitializedForCurrentProcess()) {
@@ -75,6 +78,10 @@ ServiceUrls::ServiceUrls()
     if (command_line->HasSwitch(kFtlServerEndpointSwitch)) {
       ftl_server_endpoint_ =
           command_line->GetSwitchValueASCII(kFtlServerEndpointSwitch);
+    }
+    if (command_line->HasSwitch(kRemotingServerEndpointSwitch)) {
+      remoting_server_endpoint_ =
+          command_line->GetSwitchValueASCII(kRemotingServerEndpointSwitch);
     }
   }
 #endif  // !defined(NDEBUG)

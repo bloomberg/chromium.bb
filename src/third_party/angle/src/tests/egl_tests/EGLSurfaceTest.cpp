@@ -30,8 +30,7 @@ using namespace angle;
 namespace
 {
 
-class EGLSurfaceTest : public EGLTest,
-                       public ::testing::WithParamInterface<angle::PlatformParameters>
+class EGLSurfaceTest : public ANGLETest
 {
   protected:
     EGLSurfaceTest()
@@ -43,16 +42,14 @@ class EGLSurfaceTest : public EGLTest,
           mOSWindow(nullptr)
     {}
 
-    void SetUp() override
+    void testSetUp() override
     {
-        EGLTest::SetUp();
-
         mOSWindow = OSWindow::New();
         mOSWindow->initialize("EGLSurfaceTest", 64, 64);
     }
 
     // Release any resources created in the test body
-    void TearDown() override
+    void testTearDown() override
     {
         if (mDisplay != EGL_NO_DISPLAY)
         {
@@ -542,8 +539,7 @@ TEST_P(EGLSurfaceTest, FixedSizeWindow)
     initializeDisplay();
     ANGLE_SKIP_TEST_IF(EGLWindow::FindEGLConfig(mDisplay, configAttributes, &mConfig) == EGL_FALSE);
 
-    ANGLE_SKIP_TEST_IF(
-        !ANGLETest::eglDisplayExtensionEnabled(mDisplay, "EGL_ANGLE_window_fixed_size"));
+    ANGLE_SKIP_TEST_IF(!IsEGLDisplayExtensionEnabled(mDisplay, "EGL_ANGLE_window_fixed_size"));
 
     constexpr EGLint kInitialSize = 64;
     constexpr EGLint kUpdateSize  = 32;
@@ -598,11 +594,7 @@ class EGLSurfaceTestD3D11 : public EGLSurfaceTest
 // Test that rendering to an IDCompositionSurface using a pbuffer works.
 TEST_P(EGLSurfaceTestD3D11, CreateDirectCompositionSurface)
 {
-    if (!ANGLETest::eglDisplayExtensionEnabled(EGL_NO_DISPLAY, "EGL_ANGLE_platform_angle_d3d"))
-    {
-        std::cout << "D3D Platform not supported in ANGLE" << std::endl;
-        return;
-    }
+    ANGLE_SKIP_TEST_IF(!IsEGLClientExtensionEnabled("EGL_ANGLE_platform_angle_d3d"));
     initializeDisplay();
 
     EGLAttrib device       = 0;
@@ -673,11 +665,7 @@ TEST_P(EGLSurfaceTestD3D11, CreateDirectCompositionSurface)
 
 TEST_P(EGLSurfaceTestD3D11, CreateSurfaceWithMSAA)
 {
-    if (!ANGLETest::eglDisplayExtensionEnabled(EGL_NO_DISPLAY, "EGL_ANGLE_platform_angle_d3d"))
-    {
-        std::cout << "D3D Platform not supported in ANGLE" << std::endl;
-        return;
-    }
+    ANGLE_SKIP_TEST_IF(!IsEGLClientExtensionEnabled("EGL_ANGLE_platform_angle_d3d"));
 
     // clang-format off
     const EGLint configAttributes[] =
@@ -747,15 +735,15 @@ TEST_P(EGLSurfaceTestD3D11, CreateSurfaceWithMSAA)
 }  // anonymous namespace
 
 ANGLE_INSTANTIATE_TEST(EGLSurfaceTest,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES3_D3D11(),
-                       ES2_OPENGL(),
-                       ES3_OPENGL(),
-                       ES2_OPENGLES(),
-                       ES3_OPENGLES(),
-                       ES2_VULKAN());
+                       WithNoFixture(ES2_D3D9()),
+                       WithNoFixture(ES2_D3D11()),
+                       WithNoFixture(ES3_D3D11()),
+                       WithNoFixture(ES2_OPENGL()),
+                       WithNoFixture(ES3_OPENGL()),
+                       WithNoFixture(ES2_OPENGLES()),
+                       WithNoFixture(ES3_OPENGLES()),
+                       WithNoFixture(ES2_VULKAN()));
 
 #if defined(ANGLE_ENABLE_D3D11)
-ANGLE_INSTANTIATE_TEST(EGLSurfaceTestD3D11, ES2_D3D11(), ES3_D3D11());
+ANGLE_INSTANTIATE_TEST(EGLSurfaceTestD3D11, WithNoFixture(ES2_D3D11()), WithNoFixture(ES3_D3D11()));
 #endif

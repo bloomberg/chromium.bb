@@ -31,7 +31,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -194,8 +193,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
 #if defined(OS_CHROMEOS)
   UserCloudPolicyManagerChromeOS* policy_manager() {
-    return UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-        browser()->profile());
+    return browser()->profile()->GetUserCloudPolicyManagerChromeOS();
   }
 #else
   UserCloudPolicyManager* policy_manager() {

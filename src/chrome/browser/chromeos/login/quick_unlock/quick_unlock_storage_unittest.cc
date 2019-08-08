@@ -113,7 +113,7 @@ TEST_F(QuickUnlockStorageUnitTest,
   PrefService* pref_service = profile_->GetPrefs();
   QuickUnlockStorageTestApi test_api(quick_unlock_storage);
 
-  // The default is one day, so verify moving the last strong auth time back 12
+  // The default is two days, so verify moving the last strong auth time back 24
   // hours(half of the expiration time) should not request strong auth.
   quick_unlock_storage->MarkStrongAuth();
   base::TimeDelta expiration_time = GetExpirationTime(pref_service);

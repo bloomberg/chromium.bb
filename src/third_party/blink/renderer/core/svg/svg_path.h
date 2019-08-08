@@ -42,11 +42,6 @@ class SVGPath final : public SVGPropertyBase {
  public:
   typedef void TearOffType;
 
-  static SVGPath* Create() { return MakeGarbageCollected<SVGPath>(); }
-  static SVGPath* Create(cssvalue::CSSPathValue* path_value) {
-    return MakeGarbageCollected<SVGPath>(path_value);
-  }
-
   SVGPath();
   explicit SVGPath(cssvalue::CSSPathValue*);
   ~SVGPath() override;

@@ -111,8 +111,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,
-                bool record_presentation_time,
-                base::TimeTicks tab_switch_start_time = base::TimeTicks());
+                const base::Optional<RecordTabSwitchTimeRequest>&
+                    record_tab_switch_time_request);
   void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
                     const gfx::Size& dip_size,
                     cc::DeadlinePolicy deadline_policy);

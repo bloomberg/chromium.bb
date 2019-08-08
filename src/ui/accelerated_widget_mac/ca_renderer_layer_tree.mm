@@ -81,22 +81,19 @@ bool AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(
 
   [av_layer enqueueSampleBuffer:sample_buffer];
 
-  if (@available(macOS 10.10, *)) {
-    AVQueuedSampleBufferRenderingStatus status = [av_layer status];
-    switch (status) {
-      case AVQueuedSampleBufferRenderingStatusUnknown:
-        LOG(ERROR)
-            << "AVSampleBufferDisplayLayer has status unknown, but should "
-               "be rendering.";
-        return false;
-      case AVQueuedSampleBufferRenderingStatusFailed:
-        LOG(ERROR) << "AVSampleBufferDisplayLayer has status failed, error: "
-                   << [[[av_layer error] description]
-                          cStringUsingEncoding:NSUTF8StringEncoding];
-        return false;
-      case AVQueuedSampleBufferRenderingStatusRendering:
-        break;
-    }
+  AVQueuedSampleBufferRenderingStatus status = [av_layer status];
+  switch (status) {
+    case AVQueuedSampleBufferRenderingStatusUnknown:
+      LOG(ERROR) << "AVSampleBufferDisplayLayer has status unknown, but should "
+                    "be rendering.";
+      return false;
+    case AVQueuedSampleBufferRenderingStatusFailed:
+      LOG(ERROR) << "AVSampleBufferDisplayLayer has status failed, error: "
+                 << [[[av_layer error] description]
+                        cStringUsingEncoding:NSUTF8StringEncoding];
+      return false;
+    case AVQueuedSampleBufferRenderingStatusRendering:
+      break;
   }
 
   return true;

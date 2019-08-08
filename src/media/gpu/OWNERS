@@ -10,6 +10,3 @@ sandersd@chromium.org
 # For Android media gpu files.
 per-file *android*=liberato@chromium.org
 per-file *avda*=liberato@chromium.org
-
-# For Mac encoder files.
-per-file *vt_video_encode*=emircan@chromium.org

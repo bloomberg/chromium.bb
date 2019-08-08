@@ -10,11 +10,14 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#include "components/remote_cocoa/app_shim/ns_view_ids.h"
+#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
-#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
@@ -23,9 +26,6 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @class NativeWidgetMacNSWindow;
 @class NSAccessibilityRemoteUIElement;
@@ -45,9 +45,9 @@ class TextInputHost;
 // communicates to the BridgedNativeWidgetImpl, which interacts with the Cocoa
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
-    : public views_bridge_mac::BridgedNativeWidgetHostHelper,
+    : public remote_cocoa::BridgedNativeWidgetHostHelper,
       public BridgeFactoryHost::Observer,
-      public views_bridge_mac::mojom::BridgedNativeWidgetHost,
+      public remote_cocoa::mojom::BridgedNativeWidgetHost,
       public DialogObserver,
       public FocusChangeListener,
       public ui::internal::InputMethodDelegate,
@@ -103,7 +103,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The mojo interface through which to communicate with the underlying
   // NSWindow and NSView.
-  views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
+  remote_cocoa::mojom::BridgedNativeWidget* bridge() const;
 
   // Direct access to the BridgedNativeWidgetImpl that this is hosting.
   // TODO(ccameron): Remove all accesses to this member, and replace them
@@ -122,7 +122,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Create and set the bridge object to be potentially in another process.
   void CreateRemoteBridge(
       BridgeFactoryHost* bridge_factory_host,
-      views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params);
+      remote_cocoa::mojom::CreateWindowParamsPtr window_create_params);
 
   void InitWindow(const Widget::InitParams& params);
 
@@ -233,13 +233,13 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  bool* found_word,
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
-  views_bridge_mac::DragDropClient* GetDragDropClient() override;
+  remote_cocoa::DragDropClient* GetDragDropClient() override;
   ui::TextInputClient* GetTextInputClient() override;
 
   // BridgeFactoryHost::Observer:
   void OnBridgeFactoryHostDestroying(BridgeFactoryHost* host) override;
 
-  // views_bridge_mac::mojom::BridgedNativeWidgetHost:
+  // remote_cocoa::mojom::BridgedNativeWidgetHost:
   void OnVisibilityChanged(bool visible) override;
   void OnWindowNativeThemeChanged() override;
   void OnViewSizeChanged(const gfx::Size& new_size) override;
@@ -296,7 +296,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                                      std::vector<uint8_t>* token) override;
   bool ValidateUserInterfaceItem(
       int32_t command,
-      views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result)
+      remote_cocoa::mojom::ValidateUserInterfaceItemResultPtr* out_result)
       override;
   bool ExecuteCommand(int32_t command,
                       WindowOpenDisposition window_open_disposition,
@@ -306,7 +306,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                          bool require_priority_handler,
                          bool* was_handled) override;
 
-  // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
+  // remote_cocoa::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void GetSheetOffsetY(GetSheetOffsetYCallback callback) override;
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
                               DispatchKeyEventRemoteCallback callback) override;
@@ -395,7 +395,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
   // process.
-  views_bridge_mac::mojom::BridgedNativeWidgetAssociatedPtr bridge_ptr_;
+  remote_cocoa::mojom::BridgedNativeWidgetAssociatedPtr bridge_ptr_;
 
   // Remote accessibility objects corresponding to the NSWindow and its root
   // NSView.
@@ -416,7 +416,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   base::scoped_nsobject<NativeWidgetMacNSWindow> local_window_;
 
   // Id mapping for |local_window_|'s content NSView.
-  std::unique_ptr<ui::ScopedNSViewIdMapping> local_view_id_mapping_;
+  std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping> local_view_id_mapping_;
 
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<ui::InputMethod> input_method_;
@@ -456,7 +456,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Contains NativeViewHost->gfx::NativeView associations.
   std::map<const views::View*, NSView*> associated_views_;
 
-  mojo::AssociatedBinding<views_bridge_mac::mojom::BridgedNativeWidgetHost>
+  mojo::AssociatedBinding<remote_cocoa::mojom::BridgedNativeWidgetHost>
       host_mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetHostImpl);
 };

@@ -142,8 +142,6 @@ bool UserScriptListener::ShouldDelayRequest(const GURL& url) {
 }
 
 void UserScriptListener::StartDelayedRequests() {
-  UMA_HISTOGRAM_COUNTS_100("Extensions.ThrottledNetworkRequests",
-                           throttles_.size());
   WeakThrottleList::const_iterator it;
   for (it = throttles_.begin(); it != throttles_.end(); ++it) {
     if (it->get())

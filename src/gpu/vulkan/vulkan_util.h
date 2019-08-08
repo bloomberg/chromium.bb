@@ -12,9 +12,18 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {
+
+// Submits semaphores to be signaled to the vulkan queue. Semaphores are
+// signaled once this submission is executed. vk_fence is an optional handle
+// to fence to be signaled once this submission completes execution.
+VULKAN_EXPORT bool SubmitSignalVkSemaphores(
+    VkQueue vk_queue,
+    const base::span<VkSemaphore>& vk_semaphore,
+    VkFence vk_fence = VK_NULL_HANDLE);
 
 // Submits a semaphore to be signaled to the vulkan queue. Semaphore is
 // signaled once this submission is executed. vk_fence is an optional handle
@@ -28,7 +37,7 @@ VULKAN_EXPORT bool SubmitSignalVkSemaphore(VkQueue vk_queue,
 // handle to fence to be signaled once this submission completes execution.
 VULKAN_EXPORT bool SubmitWaitVkSemaphores(
     VkQueue vk_queue,
-    const std::vector<VkSemaphore>& vk_semaphores,
+    const base::span<VkSemaphore>& vk_semaphores,
     VkFence vk_fence = VK_NULL_HANDLE);
 
 // Submits a semaphore to be waited upon to the vulkan queue. Semaphore is

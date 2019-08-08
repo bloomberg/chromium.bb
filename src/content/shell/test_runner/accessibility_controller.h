@@ -35,6 +35,8 @@ class TEST_RUNNER_EXPORT AccessibilityController {
   bool ShouldLogAccessibilityEvents();
   void NotificationReceived(const blink::WebAXObject& target,
                             const std::string& notification_name);
+  void PostNotification(const blink::WebAXObject& target,
+                        const std::string& notification_name);
 
  private:
   friend class AccessibilityControllerBindings;

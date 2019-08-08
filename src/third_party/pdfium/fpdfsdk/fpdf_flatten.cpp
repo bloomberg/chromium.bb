@@ -53,7 +53,7 @@ void GetContentsRect(CPDF_Document* pDoc,
   auto pPDFPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict, false);
   pPDFPage->ParseContent();
 
-  for (const auto& pPageObject : *pPDFPage->GetPageObjectList()) {
+  for (const auto& pPageObject : *pPDFPage) {
     const CFX_FloatRect& rc = pPageObject->GetRect();
     if (IsValidRect(rc, pDict->GetRectFor(pdfium::page_object::kMediaBox)))
       pRectArray->push_back(rc);
@@ -213,11 +213,11 @@ void SetPageContents(const ByteString& key,
       sStream += "\nQ";
     }
     pContentsStream->SetDataAndRemoveFilter(sStream.AsRawSpan());
-
     pContentsArray = pDocument->NewIndirect<CPDF_Array>();
-    pContentsArray->Add(pContentsStream->MakeReference(pDocument));
-    pPage->SetFor(pdfium::page_object::kContents,
-                  pContentsArray->MakeReference(pDocument));
+    pContentsArray->AddNew<CPDF_Reference>(pDocument,
+                                           pContentsStream->GetObjNum());
+    pPage->SetNewFor<CPDF_Reference>(pdfium::page_object::kContents, pDocument,
+                                     pContentsArray->GetObjNum());
   }
   if (!key.IsEmpty()) {
     pContentsArray->Add(
@@ -316,7 +316,9 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
 
   CPDF_Dictionary* pNewXORes = nullptr;
   if (!key.IsEmpty()) {
-    pPageXObject->SetFor(key, pNewXObject->MakeReference(pDocument));
+    pPageXObject->SetNewFor<CPDF_Reference>(key, pDocument,
+                                            pNewXObject->GetObjNum());
+
     CPDF_Dictionary* pNewOXbjectDic = pNewXObject->GetDict();
     pNewXORes = pNewOXbjectDic->SetNewFor<CPDF_Dictionary>("Resources");
     pNewOXbjectDic->SetNewFor<CPDF_Name>("Type", "XObject");
@@ -349,7 +351,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
       } else {
         if (pAPDict->size() > 0) {
           CPDF_DictionaryLocker locker(pAPDict);
-          CPDF_Object* pFirstObj = locker.begin()->second.get();
+          CPDF_Object* pFirstObj = locker.begin()->second.Get();
           if (pFirstObj) {
             if (pFirstObj->IsReference())
               pFirstObj = pFirstObj->GetDirect();
@@ -376,8 +378,8 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
 
     CPDF_Object* pObj = pAPStream;
     if (pObj->IsInline()) {
-      std::unique_ptr<CPDF_Object> pNew = pObj->Clone();
-      pObj = pNew.get();
+      RetainPtr<CPDF_Object> pNew = pObj->Clone();
+      pObj = pNew.Get();
       pDocument->AddIndirectObject(std::move(pNew));
     }
 
@@ -392,7 +394,8 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
       pXObject = pNewXORes->SetNewFor<CPDF_Dictionary>("XObject");
 
     ByteString sFormName = ByteString::Format("F%d", i);
-    pXObject->SetFor(sFormName, pObj->MakeReference(pDocument));
+    pXObject->SetNewFor<CPDF_Reference>(sFormName, pDocument,
+                                        pObj->GetObjNum());
 
     ByteString sStream;
     {

@@ -32,106 +32,28 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
 
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
-#include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-shared.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
-#include "third_party/blink/public/platform/web_canonical_cookie.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 #include <memory>
 
 namespace blink {
 
-struct WebCanMakePaymentEventData;
-class WebSecurityOrigin;
-class WebServiceWorkerRequest;
-class WebString;
-struct WebNotificationData;
-struct WebPaymentRequestEventData;
-struct WebServiceWorkerClientInfo;
 struct WebServiceWorkerError;
-struct WebServiceWorkerObjectInfo;
-struct WebServiceWorkerRegistrationObjectInfo;
 class WebURLResponse;
 
 // A proxy interface to talk to the worker's GlobalScope implementation.
 // All methods of this class must be called on the worker thread.
 class WebServiceWorkerContextProxy {
  public:
-  using FetchHandlerExistence = mojom::FetchHandlerExistence;
-
   virtual ~WebServiceWorkerContextProxy() = default;
 
-  virtual void BindServiceWorkerHost(
-      mojo::ScopedInterfaceEndpointHandle service_worker_host) = 0;
-
-  virtual void SetRegistration(WebServiceWorkerRegistrationObjectInfo) = 0;
-  virtual void SetFetchHandlerExistence(
-      FetchHandlerExistence fetch_handler_existence) = 0;
-
-  // Script evaluation does not start until this function is called.
-  virtual void ReadyToEvaluateScript() = 0;
-
-  virtual void DispatchActivateEvent(int event_id) = 0;
-
-  virtual void DispatchBackgroundFetchAbortEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) = 0;
-  virtual void DispatchBackgroundFetchClickEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) = 0;
-  virtual void DispatchBackgroundFetchFailEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) = 0;
-  virtual void DispatchBackgroundFetchSuccessEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) = 0;
-  virtual void DispatchCookieChangeEvent(
-      int event_id,
-      const WebCanonicalCookie& cookie,
-      network::mojom::CookieChangeCause change_cause) = 0;
-  virtual void DispatchExtendableMessageEvent(
-      int event_id,
-      TransferableMessage,
-      const WebSecurityOrigin& source_origin,
-      const WebServiceWorkerClientInfo&) = 0;
-  virtual void DispatchExtendableMessageEvent(
-      int event_id,
-      TransferableMessage,
-      const WebSecurityOrigin& source_origin,
-      WebServiceWorkerObjectInfo) = 0;
-  virtual void DispatchInstallEvent(int event_id) = 0;
-  virtual void DispatchFetchEvent(int fetch_event_id,
-                                  const WebServiceWorkerRequest& web_request,
-                                  bool navigation_preload_sent) = 0;
-  virtual void DispatchNotificationClickEvent(int event_id,
-                                              const WebString& notification_id,
-                                              const WebNotificationData&,
-                                              int action_index,
-                                              const WebString& reply) = 0;
-  virtual void DispatchNotificationCloseEvent(int event_id,
-                                              const WebString& notification_id,
-                                              const WebNotificationData&) = 0;
-  virtual void DispatchPushEvent(int event_id, const WebString& data) = 0;
-
-  virtual bool HasFetchEventHandler() = 0;
-
-  // Once the ServiceWorker has finished handling the sync event,
-  // didHandleSyncEvent is called on the context client.
-  virtual void DispatchSyncEvent(int sync_event_id,
-                                 const WebString& tag,
-                                 bool last_chance) = 0;
-
-  virtual void DispatchAbortPaymentEvent(int event_id) = 0;
-
-  virtual void DispatchCanMakePaymentEvent(
-      int event_id,
-      const WebCanMakePaymentEventData&) = 0;
-
-  virtual void DispatchPaymentRequestEvent(
-      int event_id,
-      const WebPaymentRequestEventData&) = 0;
+  virtual void BindServiceWorker(
+      // A handle for mojom::ServiceWorkerRequest.
+      mojo::ScopedMessagePipeHandle request) = 0;
+  virtual void BindControllerServiceWorker(
+      // A handle for mojom::ControllerServiceWorkerRequest.
+      mojo::ScopedMessagePipeHandle request) = 0;
 
   virtual void OnNavigationPreloadResponse(
       int fetch_event_id,

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/webui/autofill_internals_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_ui.h"
+#include "chrome/browser/ui/webui/chromeos/account_migration_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/insession_password_change_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -119,7 +120,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/eoc_internals/eoc_internals_ui.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
@@ -148,6 +148,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
 #include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_ui.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
@@ -160,6 +161,7 @@
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/power_ui.h"
@@ -174,6 +176,7 @@
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #endif
 
@@ -187,7 +190,7 @@
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/browser/ui/webui/browser_switcher/browser_switch_ui.h"
+#include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
@@ -499,6 +502,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIAccountManagerWelcomeHost)
     return &NewWebUI<chromeos::AccountManagerWelcomeUI>;
+  if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
+    return &NewWebUI<chromeos::AccountMigrationWelcomeUI>;
+  if (chromeos::switches::IsAddSupervisionEnabled()) {
+    if (url.host_piece() == chrome::kChromeUIAddSupervisionHost)
+      return &NewWebUI<chromeos::AddSupervisionUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIBluetoothPairingHost)
     return &NewWebUI<chromeos::BluetoothPairingDialogUI>;
   if (url.host_piece() == chrome::kChromeUICellularSetupHost)
@@ -511,6 +520,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
+  if (url.host_piece() == chrome::kChromeUIMachineLearningInternalsHost)
+    return &NewWebUI<chromeos::machine_learning::MachineLearningInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<chromeos::cellular_setup::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIMultiDeviceSetupHost)
@@ -557,9 +568,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)
-  if (url.host_piece() == chrome::kChromeUIEocInternalsHost &&
-      !profile->IsOffTheRecord())
-    return &NewWebUI<EocInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIExploreSitesInternalsHost &&
       !profile->IsOffTheRecord())
     return &NewWebUI<explore_sites::ExploreSitesInternalsUI>;
@@ -710,15 +718,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   return NULL;
 }
 
-void RunFaviconCallbackAsync(
-    const favicon_base::FaviconResultsCallback& callback,
-    const std::vector<favicon_base::FaviconRawBitmapResult>* results) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&favicon::FaviconService::FaviconResultsCallbackRunner,
-                     callback, base::Owned(results)));
-}
-
 }  // namespace
 
 WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
@@ -757,7 +756,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
     const std::vector<int>& desired_sizes_in_pixel,
-    const favicon_base::FaviconResultsCallback& callback) const {
+    favicon_base::FaviconResultsCallback callback) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
   // allows to use ExtensionWebUI::GetFaviconForURL.
@@ -767,13 +766,12 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 
   // All extensions get their favicon from the icons part of the manifest.
   if (url.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionWebUI::GetFaviconForURL(profile, url, callback);
+    ExtensionWebUI::GetFaviconForURL(profile, url, std::move(callback));
     return;
   }
 #endif
 
-  std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results =
-      new std::vector<favicon_base::FaviconRawBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult> favicon_bitmap_results;
 
   // Use ui::GetSupportedScaleFactors instead of
   // favicon_base::GetFaviconScales() because chrome favicons comes from
@@ -807,11 +805,13 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       // Leave |bitmap_result|'s icon URL as the default of GURL().
       bitmap_result.icon_type = favicon_base::IconType::kFavicon;
       bitmap_result.pixel_size = candidate_sizes[selected_index];
-      favicon_bitmap_results->push_back(bitmap_result);
+      favicon_bitmap_results.push_back(bitmap_result);
     }
   }
 
-  RunFaviconCallbackAsync(callback, favicon_bitmap_results);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(favicon_bitmap_results)));
 }
 
 // static

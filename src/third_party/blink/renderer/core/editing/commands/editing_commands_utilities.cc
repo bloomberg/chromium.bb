@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -174,7 +175,7 @@ static HTMLElement* FirstInSpecialElement(const Position& pos) {
     if (RootEditableElement(runner) != element)
       break;
     if (IsSpecialHTMLElement(runner)) {
-      HTMLElement* special_element = ToHTMLElement(&runner);
+      auto* special_element = To<HTMLElement>(&runner);
       VisiblePosition v_pos = CreateVisiblePosition(pos);
       VisiblePosition first_in_element =
           CreateVisiblePosition(FirstPositionInOrBeforeNode(*special_element));
@@ -197,7 +198,7 @@ static HTMLElement* LastInSpecialElement(const Position& pos) {
     if (RootEditableElement(runner) != element)
       break;
     if (IsSpecialHTMLElement(runner)) {
-      HTMLElement* special_element = ToHTMLElement(&runner);
+      auto* special_element = To<HTMLElement>(&runner);
       VisiblePosition v_pos = CreateVisiblePosition(pos);
       VisiblePosition last_in_element =
           CreateVisiblePosition(LastPositionInOrAfterNode(*special_element));
@@ -255,11 +256,10 @@ bool LineBreakExistsAtPosition(const Position& position) {
   if (!position.AnchorNode()->GetLayoutObject())
     return false;
 
-  if (!position.AnchorNode()->IsTextNode() ||
-      !position.AnchorNode()->GetLayoutObject()->Style()->PreserveNewline())
+  const auto* text_node = DynamicTo<Text>(position.AnchorNode());
+  if (!text_node || !text_node->GetLayoutObject()->Style()->PreserveNewline())
     return false;
 
-  const Text* text_node = ToText(position.AnchorNode());
   unsigned offset = position.OffsetInContainerNode();
   return offset < text_node->length() && text_node->data()[offset] == '\n';
 }
@@ -317,7 +317,8 @@ Position LeadingCollapsibleWhitespacePosition(const Position& position,
   if (prev == position)
     return Position();
   const Node* const anchor_node = prev.AnchorNode();
-  if (!anchor_node || !anchor_node->IsTextNode())
+  auto* anchor_text_node = DynamicTo<Text>(anchor_node);
+  if (!anchor_text_node)
     return Position();
   if (EnclosingBlockFlowElement(*anchor_node) !=
       EnclosingBlockFlowElement(*position.AnchorNode()))
@@ -326,7 +327,7 @@ Position LeadingCollapsibleWhitespacePosition(const Position& position,
       anchor_node->GetLayoutObject() &&
       !anchor_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
     return Position();
-  const String& string = ToText(anchor_node)->data();
+  const String& string = anchor_text_node->data();
   const UChar previous_character = string[prev.ComputeOffsetInContainerNode()];
   const bool is_space = option == kConsiderNonCollapsibleWhitespace
                             ? (IsSpaceOrNewline(previous_character) ||
@@ -354,7 +355,7 @@ bool LineBreakExistsAtVisiblePosition(const VisiblePosition& visible_position) {
 HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
   DCHECK_EQ(name.NamespaceURI(), html_names::xhtmlNamespaceURI)
       << "Unexpected namespace: " << name;
-  return ToHTMLElement(document.CreateElement(
+  return To<HTMLElement>(document.CreateElement(
       name, CreateElementFlags::ByCloneNode(), g_null_atom));
 }
 
@@ -366,7 +367,7 @@ HTMLElement* EnclosingList(const Node* node) {
 
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
-      return ToHTMLElement(&runner);
+      return To<HTMLElement>(&runner);
     if (runner == root)
       return nullptr;
   }

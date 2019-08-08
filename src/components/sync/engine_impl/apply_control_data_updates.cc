@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/conflict_util.h"
 #include "components/sync/engine_impl/syncer_util.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_handler.h"

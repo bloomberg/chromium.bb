@@ -4,12 +4,8 @@
 
 /** @fileoverview Tests for the Material Design downloads page. */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * @constructor
@@ -27,7 +23,19 @@ DownloadsTest.prototype = {
   },
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+  loaderFile: 'subpage_loader.html',
+
+  // The name of the custom element under test. Should be overridden by
+  // subclasses that are loading the URL of a non-element.
+  get customElementName() {
+    const r = /chrome\:\/\/downloads\/([a-zA-Z-_]+)\.html/;
+    const result = r.exec(this.browsePreload);
+    if (!result || result.length < 1) {
+      // Loading the main page, so wait for downloads manager.
+      return 'downloads-manager';
+    }
+    return 'downloads-' + result[1].replace(/_/gi, '-');
+  },
 
   /** @override */
   runAccessibilityChecks: true,
@@ -47,7 +55,7 @@ DownloadsItemTest.prototype = {
 
   /** @override */
   extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/cr.js',
+    '//ui/webui/resources/js/cr.js',
     '../test_browser_proxy.js',
     'test_support.js',
     'item_tests.js',
@@ -72,8 +80,8 @@ DownloadsManagerTest.prototype = {
 
   /** @override */
   extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/cr.js',
-    ROOT_PATH + 'chrome/browser/resources/downloads/constants.js',
+    '//ui/webui/resources/js/cr.js',
+    '//chrome/browser/resources/downloads/constants.js',
     '../test_browser_proxy.js',
     'test_support.js',
     'manager_tests.js',
@@ -117,12 +125,22 @@ DownloadsUrlTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://downloads/a/b/',
+
+  /** @override */
+  loaderFile: '',
+
+  /** @override */
+  get customElementName() {
+    return null;
+  }
 };
 
 TEST_F('DownloadsUrlTest', 'All', function() {
   suite('loading a nonexistent URL of /a/b/', function() {
-    test('should yield no console errors', function() {
-      assertEquals(location.href, DownloadsUrlTest.prototype.browsePreload);
+    test('should load main page with no console errors', function() {
+      return customElements.whenDefined('downloads-manager').then(() => {
+        assertEquals('chrome://downloads/', location.href);
+      });
     });
   });
   mocha.run();

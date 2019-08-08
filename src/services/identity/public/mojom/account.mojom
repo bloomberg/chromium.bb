@@ -4,13 +4,13 @@
 
 module identity.mojom;
 
-import "services/identity/public/mojom/account_info.mojom";
+import "services/identity/public/mojom/core_account_info.mojom";
 import "services/identity/public/mojom/account_state.mojom";
 
 // Represents a user's Google account on this device.
 struct Account {
   // The details of the account.
-  AccountInfo info;
+  CoreAccountInfo info;
 
   // The current state of the account on this device.
   AccountState state;

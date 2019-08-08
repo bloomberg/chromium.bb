@@ -11,7 +11,7 @@ namespace chromeos {
 
 class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
  public:
-  explicit FakeBaseScreen(chromeos::OobeScreen screen_id)
+  explicit FakeBaseScreen(chromeos::OobeScreenId screen_id)
       : BaseScreen(screen_id) {}
 
   ~FakeBaseScreen() override = default;
@@ -59,7 +59,7 @@ void FakeLoginDisplayHost::Finalize(base::OnceClosure) {}
 
 void FakeLoginDisplayHost::SetStatusAreaVisible(bool visible) {}
 
-void FakeLoginDisplayHost::StartWizard(OobeScreen first_screen) {
+void FakeLoginDisplayHost::StartWizard(OobeScreenId first_screen) {
   wizard_controller_ = std::make_unique<WizardController>();
 
   fake_screen_ = std::make_unique<FakeBaseScreen>(first_screen);
@@ -112,16 +112,14 @@ bool FakeLoginDisplayHost::IsUserWhitelisted(const AccountId& account_id) {
   return false;
 }
 
-void FakeLoginDisplayHost::ShowGaiaDialog(
-    bool can_close,
-    const base::Optional<AccountId>& prefilled_account) {}
+void FakeLoginDisplayHost::ShowGaiaDialog(bool can_close,
+                                          const AccountId& prefilled_account) {}
 
 void FakeLoginDisplayHost::HideOobeDialog() {}
 
 void FakeLoginDisplayHost::UpdateOobeDialogSize(int width, int height) {}
 
-void FakeLoginDisplayHost::UpdateOobeDialogState(
-    ash::mojom::OobeDialogState state) {}
+void FakeLoginDisplayHost::UpdateOobeDialogState(ash::OobeDialogState state) {}
 
 const user_manager::UserList FakeLoginDisplayHost::GetUsers() {
   return user_manager::UserList();

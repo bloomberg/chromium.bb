@@ -107,6 +107,14 @@ void InputDeviceClientTestApi::SetTouchpadDevices(
   }
 }
 
+void InputDeviceClientTestApi::SetUncategorizedDevices(
+    const std::vector<ui::InputDevice>& devices) {
+  if (ui::DeviceDataManager::instance_)
+    ui::DeviceDataManager::instance_->OnUncategorizedDevicesUpdated(devices);
+  else
+    GetInputDeviceClient()->OnUncategorizedDeviceConfigurationChanged(devices);
+}
+
 InputDeviceClient* InputDeviceClientTestApi::GetInputDeviceClient() {
   if (ui::DeviceDataManager::instance_ ||
       !ui::InputDeviceManager::HasInstance())

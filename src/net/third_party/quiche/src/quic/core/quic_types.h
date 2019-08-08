@@ -27,6 +27,10 @@ typedef uint32_t QuicMessageId;
 // TODO(fkastenholz): Should update this to 64 bits for V99.
 typedef uint32_t QuicStreamId;
 
+// Count of stream IDs. Used in MAX_STREAMS and STREAMS_BLOCKED
+// frames.
+typedef uint32_t QuicStreamCount;
+
 typedef uint64_t QuicByteCount;
 typedef uint64_t QuicPacketCount;
 typedef uint64_t QuicPublicResetNonceProof;
@@ -169,8 +173,7 @@ enum class ConnectionCloseSource { FROM_PEER, FROM_SELF };
 // Should a connection be closed silently or not.
 enum class ConnectionCloseBehavior {
   SILENT_CLOSE,
-  SEND_CONNECTION_CLOSE_PACKET,
-  SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK
+  SEND_CONNECTION_CLOSE_PACKET
 };
 
 enum QuicFrameType : uint8_t {
@@ -198,8 +201,8 @@ enum QuicFrameType : uint8_t {
   // QUIC has been negotiated. Values are not important, they are not
   // the values that are in the packets (see QuicIetfFrameType, below).
   NEW_CONNECTION_ID_FRAME,
-  MAX_STREAM_ID_FRAME,
-  STREAM_ID_BLOCKED_FRAME,
+  MAX_STREAMS_FRAME,
+  STREAMS_BLOCKED_FRAME,
   PATH_RESPONSE_FRAME,
   PATH_CHALLENGE_FRAME,
   STOP_SENDING_FRAME,
@@ -296,6 +299,7 @@ enum QuicPacketNumberLength : uint8_t {
   PACKET_2BYTE_PACKET_NUMBER = 2,
   PACKET_3BYTE_PACKET_NUMBER = 3,  // Used in version > QUIC_VERSION_44.
   PACKET_4BYTE_PACKET_NUMBER = 4,
+  IETF_MAX_PACKET_NUMBER_LENGTH = 4,
   // TODO(rch): Remove this when we remove QUIC_VERSION_39.
   PACKET_6BYTE_PACKET_NUMBER = 6,
   PACKET_8BYTE_PACKET_NUMBER = 8
@@ -386,6 +390,10 @@ enum EncryptionLevel : int8_t {
   NUM_ENCRYPTION_LEVELS,
 };
 
+inline bool EncryptionLevelIsValid(EncryptionLevel level) {
+  return ENCRYPTION_INITIAL <= level && level < NUM_ENCRYPTION_LEVELS;
+}
+
 enum AddressChangeType : uint8_t {
   // IP address and port remain unchanged.
   NO_CHANGE,
@@ -475,6 +483,10 @@ typedef std::vector<AckedPacket> AckedPacketVector;
 struct LostPacket {
   LostPacket(QuicPacketNumber packet_number, QuicPacketLength bytes_lost)
       : packet_number(packet_number), bytes_lost(bytes_lost) {}
+
+  friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+      std::ostream& os,
+      const LostPacket& lost_packet);
 
   QuicPacketNumber packet_number;
   // Number of bytes sent in the packet that was lost.
@@ -572,6 +584,9 @@ enum StreamType {
   // Unidirectional streams carry data in one direction only.
   WRITE_UNIDIRECTIONAL,
   READ_UNIDIRECTIONAL,
+  // Not actually a stream type. Used only by QuicCryptoStream when it uses
+  // CRYPTO frames and isn't actually a QuicStream.
+  CRYPTO,
 };
 
 // A packet number space is the context in which a packet can be processed and

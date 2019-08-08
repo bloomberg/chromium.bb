@@ -5,19 +5,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_EVENT_TRACKER_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_EVENT_TRACKER_H_
 
-#include <stdint.h>
-
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/printing/printer_detector.h"
-#include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/metrics_proto/printer_event.pb.h"
 
 namespace chromeos {
+
+class Printer;
 
 // Aggregates printer events for logging.  This class is thread-safe.
 class PrinterEventTracker : public KeyedService {

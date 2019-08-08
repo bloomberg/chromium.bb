@@ -7,13 +7,11 @@
 #include "base/command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/embed_root.h"
-#include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 namespace wm {
@@ -169,59 +167,6 @@ TEST_F(ImeUtilChromeosTest, EnsureWindowNotInRectHelper) {
 
   embedding_root->ClearProperty(aura::client::kEmbeddedWindowEnsureNotInRect);
   EXPECT_EQ(original_bounds, top_level->bounds());
-}
-
-class TestEmbedRootDelegate : public aura::EmbedRootDelegate {
- public:
-  TestEmbedRootDelegate() = default;
-  ~TestEmbedRootDelegate() override = default;
-
-  // EmbedRootDelegate:
-  void OnEmbedTokenAvailable(const base::UnguessableToken& token) override {}
-  void OnEmbed(aura::Window* window) override {}
-  void OnUnembed() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestEmbedRootDelegate);
-};
-
-class ImeUtilChromeosEmbeddedTest : public ImeUtilChromeosTest {
- public:
-  ImeUtilChromeosEmbeddedTest() = default;
-  ~ImeUtilChromeosEmbeddedTest() override = default;
-
-  // ImeUtilChromeosTest:
-  void SetUp() override {
-    EnableMusWithTestWindowTree();
-    ImeUtilChromeosTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ImeUtilChromeosEmbeddedTest);
-};
-
-// Tests that EnsureWindowNotInRect on an embedded window sets the
-// kEmbeddedWindowEnsureNotInRect property on the embedded root window and
-// RestoreWindowBoundsOnClientFocusLost resets the property.
-TEST_F(ImeUtilChromeosEmbeddedTest, EnsureWindowNotInRect) {
-  // Simulates embedding and create an embedded root.
-  TestEmbedRootDelegate embed_root_delegate;
-  std::unique_ptr<aura::EmbedRoot> embed_root =
-      window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
-  aura::WindowTreeClientTestApi(window_tree_client_impl())
-      .CallOnEmbedFromToken(embed_root.get());
-  ASSERT_TRUE(embed_root->window());
-
-  // EnsureWindowNotInRect on embedded window sets the property.
-  gfx::Rect occluded_rect(50, 50, 200, 200);
-  EnsureWindowNotInRect(embed_root->window(), occluded_rect);
-  EXPECT_EQ(occluded_rect, *embed_root->window()->GetProperty(
-                               aura::client::kEmbeddedWindowEnsureNotInRect));
-
-  // RestoreWindowBoundsOnClientFocusLost clears the property.
-  RestoreWindowBoundsOnClientFocusLost(embed_root->window());
-  EXPECT_EQ(nullptr, embed_root->window()->GetProperty(
-                         aura::client::kEmbeddedWindowEnsureNotInRect));
 }
 
 }  // namespace wm

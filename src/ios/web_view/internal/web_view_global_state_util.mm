@@ -4,9 +4,10 @@
 
 #include "ios/web_view/internal/web_view_global_state_util.h"
 
+#import <UIKit/UIKit.h>
 #include <memory>
 
-#include "ios/web/public/app/web_main.h"
+#include "ios/web/public/init/web_main.h"
 #import "ios/web_view/internal/web_view_web_client.h"
 #import "ios/web_view/internal/web_view_web_main_delegate.h"
 
@@ -30,6 +31,18 @@ void InitializeGlobalState() {
         std::make_unique<ios_web_view::WebViewWebMainDelegate>();
     web::WebMainParams params(web_main_delegate.get());
     web_main = std::make_unique<web::WebMain>(std::move(params));
+
+    [NSNotificationCenter.defaultCenter
+        addObserverForName:UIApplicationWillTerminateNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification* _Nonnull note) {
+                  // These global variables should be destructed when the app is
+                  // about to terminate, and in reverse order to construction.
+                  web_main.reset();
+                  web_main_delegate.reset();
+                  web_client.reset();
+                }];
   });
 }
 

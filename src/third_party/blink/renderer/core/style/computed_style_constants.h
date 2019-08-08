@@ -170,9 +170,8 @@ enum Containment {
   kContainsStyle = 0x2,
   kContainsPaint = 0x4,
   kContainsSize = 0x8,
-  kContainsStrict =
-      kContainsLayout | kContainsStyle | kContainsPaint | kContainsSize,
-  kContainsContent = kContainsLayout | kContainsStyle | kContainsPaint,
+  kContainsStrict = kContainsLayout | kContainsPaint | kContainsSize,
+  kContainsContent = kContainsLayout | kContainsPaint,
 };
 inline Containment operator|(Containment a, Containment b) {
   return Containment(int(a) | int(b));

@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/containers/id_map.h"
+#include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -515,6 +516,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // whether the service worker should be kept at foreground priority.
   void UpdateForegroundPriority();
 
+  // TODO(crbug.com/951571): Remove once the bug is debugged.
+  const base::debug::StackTrace& redundant_state_callstack() const {
+    return redundant_state_callstack_;
+  }
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;
@@ -964,6 +970,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This holds a mojo interface pointer info to this instance until
   // InitializeGlobalScope() is called.
   blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host_;
+
+  // TODO(crbug.com/951571): Remove once the bug is debugged.
+  // This is set when this service worker becomes redundant.
+  base::debug::StackTrace redundant_state_callstack_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

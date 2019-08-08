@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_test_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_test_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
@@ -161,6 +160,19 @@ TEST_P(QpackEncoderTest, DecoderStreamError) {
                        &encoder_stream_sender_delegate_);
   encoder.DecodeDecoderStreamData(
       QuicTextUtils::HexDecode("ffffffffffffffffffffff"));
+}
+
+TEST_P(QpackEncoderTest, SplitAlongNullCharacter) {
+  spdy::SpdyHeaderBlock header_list;
+  header_list["foo"] = QuicStringPiece("bar\0bar\0baz", 11);
+  std::string output = Encode(&header_list);
+
+  EXPECT_EQ(QuicTextUtils::HexDecode("0000"            // prefix
+                                     "2a94e703626172"  // foo: bar
+                                     "2a94e703626172"  // foo: bar
+                                     "2a94e70362617a"  // foo: baz
+                                     ),
+            output);
 }
 
 }  // namespace

@@ -1112,12 +1112,6 @@ std::string FragmentShader::GetShaderSource() const {
     SRC("texColor += background_color * (1.0 - texColor.a);");
   }
 
-  // Apply swizzle.
-  if (swizzle_mode_ == DO_SWIZZLE) {
-    SRC("// Apply swizzle");
-    SRC("texColor = texColor.bgra;\n");
-  }
-
   // Finally apply the output color matrix to texColor.
   if (has_output_color_matrix_) {
     HDR("uniform mat4 output_color_matrix;");

@@ -7,7 +7,8 @@ module ws.mojom;
 import "gpu/ipc/common/gpu_feature_info.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/sync_token.mojom";
-import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
+[EnableIf=is_chromeos]
+import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
 import "media/mojo/interfaces/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
@@ -40,7 +41,9 @@ interface Gpu {
                             gpu.mojom.GpuFeatureInfo gpu_feature_info);
 
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
+  [EnableIf=is_chromeos]
+  CreateJpegDecodeAccelerator(
+      chromeos_camera.mojom.MjpegDecodeAccelerator& jda);
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(

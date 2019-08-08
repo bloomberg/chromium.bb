@@ -5,14 +5,10 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
-
-void ThreadHeapStatsCollector::IncreaseMarkedObjectSize(size_t bytes) {
-  DCHECK(is_started_);
-  current_.marked_bytes += bytes;
-}
 
 void ThreadHeapStatsCollector::IncreaseCompactionFreedSize(size_t bytes) {
   DCHECK(is_started_);
@@ -27,12 +23,19 @@ void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
 void ThreadHeapStatsCollector::IncreaseAllocatedObjectSize(size_t bytes) {
   // The current GC may not have been started. This is ok as recording considers
   // the whole time range between garbage collections.
-  allocated_bytes_since_prev_gc_ += bytes;
+  allocated_bytes_since_prev_gc_ += static_cast<int64_t>(bytes);
 }
 
 void ThreadHeapStatsCollector::DecreaseAllocatedObjectSize(size_t bytes) {
   // See IncreaseAllocatedObjectSize.
-  allocated_bytes_since_prev_gc_ -= bytes;
+  allocated_bytes_since_prev_gc_ -= static_cast<int64_t>(bytes);
+}
+
+void ThreadHeapStatsCollector::AllocatedObjectSizeSafepoint() {
+  if (unified_heap_controller_) {
+    unified_heap_controller_->UpdateAllocatedObjectSize(
+        allocated_bytes_since_prev_gc_);
+  }
 }
 
 void ThreadHeapStatsCollector::IncreaseAllocatedSpace(size_t bytes) {
@@ -62,7 +65,8 @@ void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
   current_.reason = reason;
 }
 
-void ThreadHeapStatsCollector::NotifyMarkingCompleted() {
+void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {
+  current_.marked_bytes = marked_bytes;
   current_.object_size_in_bytes_before_sweeping = object_size_in_bytes();
   current_.allocated_space_in_bytes_before_sweeping = allocated_space_bytes();
   current_.partition_alloc_bytes_before_sweeping =
@@ -93,7 +97,11 @@ void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
 }
 
 size_t ThreadHeapStatsCollector::object_size_in_bytes() const {
-  return previous().marked_bytes + allocated_bytes_since_prev_gc_;
+  DCHECK_GE(static_cast<int64_t>(previous().marked_bytes) +
+                allocated_bytes_since_prev_gc_,
+            0);
+  return static_cast<size_t>(static_cast<int64_t>(previous().marked_bytes) +
+                             allocated_bytes_since_prev_gc_);
 }
 
 double ThreadHeapStatsCollector::estimated_marking_time_in_seconds() const {
@@ -129,8 +137,12 @@ TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }
 
-size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
+int64_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
   return allocated_bytes_since_prev_gc_;
+}
+
+size_t ThreadHeapStatsCollector::marked_bytes() const {
+  return current_.marked_bytes;
 }
 
 size_t ThreadHeapStatsCollector::allocated_space_bytes() const {

@@ -36,7 +36,7 @@ BackgroundFetchContext::BackgroundFetchContext(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     const scoped_refptr<CacheStorageContextImpl>& cache_storage_context,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
+    scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
     : browser_context_(browser_context),
       service_worker_context_(service_worker_context),
       devtools_context_(std::move(devtools_context)),

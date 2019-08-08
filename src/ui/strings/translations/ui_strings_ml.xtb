@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> എന്നതിലേക്ക് അയ‌യ്‌ക്കുന്നു...</translation>
 <translation id="111910763555783249">അറിയിപ്പ് ക്രമീകരണം</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{ഒരു ദിവസം മുമ്പ്}other{# ദിവസം മുമ്പ്}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{ഒരു മിനിറ്റിന് മുമ്പ്}other{# മിനിറ്റ് മുമ്പ്}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
 <translation id="1409544243779336081">ആപ്പ് നിർദ്ദേശങ്ങൾ</translation>
-<translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> എന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{ഒരു മിനിറ്റും }other{# മിനിറ്റും }}</translation>
 <translation id="1643823602425662293">അറിയിപ്പ്</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">ഇപ്പോള്‍</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{ഒരു മിനിറ്റ്}other{# മിനിറ്റ്}}</translation>
-<translation id="1756116796893109054">ടാബ് അയയ്‌ക്കുന്നു...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">കാലയളവ്</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{ഒരു മാസം}other{# മാസം}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">എല്ലാ ആപ്പുകളിലേക്കും വികസിപ്പിക്കുക</translation>
+<translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6264365405983206840">എല്ലാം &amp;തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6351032674660237738">ആപ്പ് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="6364916375976753737">ഇടത്തേക്ക് സ്ക്രോള്‍ ചെയ്യുക</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{ഒന്നിലധികം വായിക്കാത്ത അറിയിപ്പ് ഉണ്ട്}other{#-ലധികം വായിക്കാത്ത അറിയിപ്പുകൾ ഉണ്ട്}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{ഒരു മിനിറ്റിൽ}other{# മിനിറ്റിൽ}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google അസിസ്‌റ്റൻ്റ് ശബ്‌ദ ചോദ്യം ഉപയോഗിച്ച് തുടങ്ങൂ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{ഒരു മണിക്കൂര്‍ മുമ്പ്}other{# മണിക്കൂർ മുമ്പ്}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു}other{# സെക്കൻഡ് ശേഷിക്കുന്നു}}</translation>
+<translation id="8144660977431427332">നിങ്ങളുടെ തിരയലുകൾ നൽകുന്നത് Google അസിസ്‌റ്റൻ്റ് ആണ്. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, സ്വയമേവ പൂർത്തിയാക്കുക</translation>
 <translation id="815598010540052116">താഴേക്ക് സ്ക്രോള്‍ ചെയ്യൂ</translation>
 <translation id="8170087467028567933">ഈ നിർദ്ദേശം നീക്കം ചെയ്യുന്നത്, നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലെയും അക്കൗണ്ടിൽ നിന്ന് ഇത് മറയ്ക്കും.</translation>

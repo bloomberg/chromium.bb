@@ -16,8 +16,7 @@ import threading
 import time
 
 import utils
-from utils import fs
-from utils import zip_package
+from . import zip_package
 
 
 # Path to (possibly extracted from zip) cacert.pem bundle file.
@@ -296,7 +295,7 @@ def write_json(filepath_or_handle, data, dense):
   If dense is True, the json is packed. Otherwise, it is human readable.
   """
   if dense:
-    kwargs = {'sort_keys': True, 'separators': (',',':')}
+    kwargs = {'sort_keys': True, 'separators': (',', ':')}
   else:
     kwargs = {'sort_keys': True, 'indent': 2}
 
@@ -370,3 +369,23 @@ def sliding_timeout(timeout):
     return lambda: None
   deadline = time.time() + timeout
   return lambda: deadline - time.time()
+
+
+_THIRD_PARTY_FIXED = False
+
+
+def force_local_third_party():
+  """Put the local third_party in front of sys.path.
+
+  This is important for tools, especially the Swarming bot, as we don't know
+  what python packages are installed and which version.
+  """
+  global _THIRD_PARTY_FIXED
+  if _THIRD_PARTY_FIXED:
+    return
+  _THIRD_PARTY_FIXED = True
+  src = os.path.abspath(zip_package.get_main_script_path())
+  root = os.path.dirname(src)
+  sys.path.insert(0, os.path.join(root, 'third_party', 'pyasn1'))
+  sys.path.insert(0, os.path.join(root, 'third_party', 'rsa'))
+  sys.path.insert(0, os.path.join(root, 'third_party'))

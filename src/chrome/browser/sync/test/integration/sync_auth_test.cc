@@ -12,7 +12,11 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "chrome/common/pref_names.h"
+#include "components/bookmarks/browser/bookmark_node.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -20,7 +24,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
-using bookmarks_helper::AddURL;
+namespace {
 
 constexpr char kShortLivedOAuth2Token[] = R"(
     {
@@ -49,6 +53,11 @@ constexpr char kEmptyOAuth2Token[] = "";
 
 constexpr char kMalformedOAuth2Token[] = R"({ "foo": )";
 
+bool HasUserPrefValue(const PrefService* pref_service,
+                      const std::string& pref) {
+  return pref_service->GetUserPrefValue(pref) != nullptr;
+}
+
 // Waits until local changes are committed or an auth error is encountered.
 class TestForAuthError : public UpdatedProgressMarkerChecker {
  public:
@@ -57,7 +66,12 @@ class TestForAuthError : public UpdatedProgressMarkerChecker {
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override {
-    return (service()->GetSyncTokenStatus().last_get_token_error.state() !=
+    // Note: This is quite fragile. It relies on Sync trying to fetch a new
+    // access token, even though it might already be in a persistent auth error
+    // state.
+    return (service()
+                ->GetSyncTokenStatusForDebugging()
+                .last_get_token_error.state() !=
             GoogleServiceAuthError::NONE) ||
            UpdatedProgressMarkerChecker::IsExitConditionSatisfied();
   }
@@ -93,13 +107,14 @@ class SyncAuthTest : public SyncTest {
     int bookmark_index = GetNextBookmarkIndex();
     std::string title = base::StringPrintf("Bookmark %d", bookmark_index);
     GURL url = GURL(base::StringPrintf("http://www.foo%d.com", bookmark_index));
-    EXPECT_NE(nullptr, AddURL(0, title, url));
+    EXPECT_NE(nullptr, bookmarks_helper::AddURL(0, title, url));
 
     // Run until the bookmark is committed or an auth error is encountered.
     TestForAuthError(GetSyncService(0)).Wait();
 
-    GoogleServiceAuthError oauth_error =
-        GetSyncService(0)->GetSyncTokenStatus().last_get_token_error;
+    GoogleServiceAuthError oauth_error = GetSyncService(0)
+                                             ->GetSyncTokenStatusForDebugging()
+                                             .last_get_token_error;
 
     return oauth_error.state() != GoogleServiceAuthError::NONE;
   }
@@ -338,14 +353,22 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   // Enter the "Sync paused" state.
   GetClient(0)->EnterSyncPausedStateForPrimaryAccount();
   ASSERT_TRUE(GetSyncService(0)->GetAuthError().IsPersistentError());
-  ASSERT_TRUE(AttemptToTriggerAuthError());
 
-  // Pausing sync may issue a reconfiguration, so wait until it finishes.
-  SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    // Sync should have shut itself down.
+    EXPECT_EQ(GetSyncService(0)->GetTransportState(),
+              syncer::SyncService::TransportState::DISABLED);
+    EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
+        syncer::SyncService::DISABLE_REASON_PAUSED));
+  } else {
+    ASSERT_TRUE(AttemptToTriggerAuthError());
 
-  // While Sync itself is still considered active, the active data types should
-  // now be empty.
-  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+    // Pausing sync may issue a reconfiguration, so wait until it finishes.
+    SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  }
+
+  // The active data types should now be empty.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Empty());
 
   // Clear the "Sync paused" state again.
   GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
@@ -354,10 +377,98 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   NoAuthErrorChecker(GetSyncService(0)).Wait();
   ASSERT_FALSE(GetSyncService(0)->GetAuthError().IsPersistentError());
 
-  // Resuming sync could issue a reconfiguration, so wait until it finishes.
-  SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    // Once the auth error is gone, wait for Sync to start up again.
+    GetClient(0)->AwaitSyncSetupCompletion();
+  } else {
+    // Resuming sync could issue a reconfiguration, so wait until it finishes.
+    SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  }
 
   // Now the active data types should be back.
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
   EXPECT_EQ(GetSyncService(0)->GetActiveDataTypes(), active_types);
 }
+
+IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_EQ(GetSyncService(0)->GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+
+  // USS type.
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
+  // Pseudo-USS type.
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PREFERENCES));
+
+  const GURL kTestURL("http://mail.google.com");
+
+  PrefService* pref_service = GetProfile(0)->GetPrefs();
+
+  // Create a bookmark...
+  const bookmarks::BookmarkNode* bar = bookmarks_helper::GetBookmarkBarNode(0);
+  ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
+  const bookmarks::BookmarkNode* bookmark =
+      bookmarks_helper::AddURL(0, bar, bar->child_count(), "Title", kTestURL);
+
+  // ...set a pref...
+  ASSERT_FALSE(HasUserPrefValue(pref_service, prefs::kHomePageIsNewTabPage));
+  pref_service->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+
+  // ...and wait for both to be synced up.
+  UpdatedProgressMarkerChecker(GetSyncService(0)).Wait();
+
+  // Enter the "Sync paused" state.
+  GetClient(0)->EnterSyncPausedStateForPrimaryAccount();
+  ASSERT_TRUE(GetSyncService(0)->GetAuthError().IsPersistentError());
+
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    // Sync should have shut itself down.
+    EXPECT_EQ(GetSyncService(0)->GetTransportState(),
+              syncer::SyncService::TransportState::DISABLED);
+    EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
+        syncer::SyncService::DISABLE_REASON_PAUSED));
+  } else {
+    ASSERT_TRUE(AttemptToTriggerAuthError());
+
+    // Pausing sync may issue a reconfiguration, so wait until it finishes.
+    SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  }
+
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
+  ASSERT_FALSE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::PREFERENCES));
+
+  // Delete the bookmark and the pref.
+  // Note that AttemptToTriggerAuthError() also creates bookmarks, so the index
+  // of our test bookmark might have changed.
+  ASSERT_EQ(bar->GetChild(bar->child_count() - 1), bookmark);
+  bookmarks_helper::Remove(0, bar, bar->child_count() - 1);
+  ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
+  pref_service->ClearPref(prefs::kHomePageIsNewTabPage);
+
+  // Clear the "Sync paused" state again.
+  GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
+  // SyncService will clear its auth error state only once it gets a valid
+  // access token again, so wait for that to happen.
+  NoAuthErrorChecker(GetSyncService(0)).Wait();
+  ASSERT_FALSE(GetSyncService(0)->GetAuthError().IsPersistentError());
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    // Once the auth error is gone, wait for Sync to start up again.
+    GetClient(0)->AwaitSyncSetupCompletion();
+  } else {
+    // Resuming sync could issue a reconfiguration, so wait until it finishes.
+    SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  }
+
+  // Resuming sync could issue a reconfiguration, so wait until it finishes.
+  SyncTransportActiveChecker(GetSyncService(0)).Wait();
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Resuming sync should *not* have re-created the deleted items.
+  EXPECT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
+  EXPECT_FALSE(HasUserPrefValue(pref_service, prefs::kHomePageIsNewTabPage));
+}
+
+}  // namespace

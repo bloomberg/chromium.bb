@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 
-#include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace {
@@ -85,14 +85,14 @@ class AnimationDocumentTimelineTest : public PageTestBase {
 
   void UpdateClockAndService(double time) {
     GetAnimationClock().UpdateTime(TimeTicksFromSecondsD(time));
-    GetPendingAnimations().Update(base::Optional<CompositorElementIdSet>(),
-                                  false);
+    GetPendingAnimations().Update(nullptr, false);
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
     timeline->ScheduleNextService();
   }
 
   KeyframeEffectModelBase* CreateEmptyEffectModel() {
-    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+    return MakeGarbageCollected<StringKeyframeEffectModel>(
+        StringKeyframeVector());
   }
 
   Persistent<Document> document;
@@ -107,10 +107,10 @@ class AnimationDocumentTimelineTest : public PageTestBase {
 };
 
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
-  StringKeyframeEffectModel* effect =
-      StringKeyframeEffectModel::Create(StringKeyframeVector());
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), effect, timing);
+  auto* effect =
+      MakeGarbageCollected<StringKeyframeEffectModel>(StringKeyframeVector());
+  auto* keyframe_effect =
+      MakeGarbageCollected<KeyframeEffect>(element.Get(), effect, timing);
 
   timeline->Play(keyframe_effect);
 
@@ -123,11 +123,11 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation) {
-  StringKeyframeEffectModel* effect =
-      StringKeyframeEffectModel::Create(StringKeyframeVector());
+  auto* effect =
+      MakeGarbageCollected<StringKeyframeEffectModel>(StringKeyframeVector());
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), effect, timing);
+  auto* keyframe_effect =
+      MakeGarbageCollected<KeyframeEffect>(element.Get(), effect, timing);
 
   timeline->Play(keyframe_effect);
 
@@ -163,7 +163,7 @@ TEST_F(AnimationDocumentTimelineTest, EffectiveTime) {
   EXPECT_EQ(200, timeline->CurrentTimeInternal(is_null));
   EXPECT_FALSE(is_null);
 
-  Document* document_without_frame = Document::CreateForTest();
+  auto* document_without_frame = MakeGarbageCollected<Document>();
   DocumentTimeline* inactive_timeline = DocumentTimeline::Create(
       document_without_frame, TimeDelta(), platform_timing);
 
@@ -378,10 +378,10 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   float seek_time = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  KeyframeEffect* anim1 =
-      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
-  KeyframeEffect* anim2 =
-      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
+  auto* anim1 = MakeGarbageCollected<KeyframeEffect>(
+      element.Get(), CreateEmptyEffectModel(), timing);
+  auto* anim2 = MakeGarbageCollected<KeyframeEffect>(
+      element.Get(), CreateEmptyEffectModel(), timing);
   Animation* animation1 = timeline->Play(anim1);
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);
@@ -394,8 +394,8 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
   timing.start_delay = 5;
 
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      element.Get(), CreateEmptyEffectModel(), timing);
 
   timeline->Play(keyframe_effect);
 
@@ -429,8 +429,8 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
   timeline = &document->Timeline();
   document = nullptr;
 
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      nullptr, CreateEmptyEffectModel(), timing);
   // Test passes if this does not crash.
   timeline->Play(keyframe_effect);
 }

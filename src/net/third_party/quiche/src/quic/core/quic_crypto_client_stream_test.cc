@@ -64,9 +64,8 @@ class QuicCryptoClientStreamTest : public QuicTest {
         .Times(testing::AnyNumber());
     stream()->CryptoConnect();
     QuicConfig config;
-    crypto_test_utils::HandshakeWithFakeServer(&config, &server_helper_,
-                                               &alarm_factory_, connection_,
-                                               stream(), server_options_);
+    crypto_test_utils::HandshakeWithFakeServer(
+        &config, &server_helper_, &alarm_factory_, connection_, stream());
   }
 
   QuicCryptoClientStream* stream() {
@@ -82,7 +81,6 @@ class QuicCryptoClientStreamTest : public QuicTest {
   QuicServerId server_id_;
   CryptoHandshakeMessage message_;
   QuicCryptoClientConfig crypto_config_;
-  crypto_test_utils::FakeServerOptions server_options_;
 };
 
 TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {
@@ -97,7 +95,7 @@ TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, ConnectedAfterTlsHandshake) {
-  FLAGS_quic_supports_tls_handshake = true;
+  SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
   supported_versions_.clear();
   for (QuicTransportVersion transport_version :
        AllSupportedTransportVersions()) {
@@ -262,9 +260,8 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateWithCert) {
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
       crypto_test_utils::ProofSourceForTesting(), KeyExchangeSource::Default(),
       TlsServerHandshaker::CreateSslCtx());
-  crypto_test_utils::FakeServerOptions options;
   crypto_test_utils::SetupCryptoServerConfigForTest(
-      connection_->clock(), QuicRandom::GetInstance(), &crypto_config, options);
+      connection_->clock(), QuicRandom::GetInstance(), &crypto_config);
   SourceAddressTokens tokens;
   QuicCompressedCertsCache cache(1);
   CachedNetworkParameters network_params;
@@ -321,14 +318,6 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
       stream(), server_config_update, Perspective::IS_SERVER);
 }
 
-TEST_F(QuicCryptoClientStreamTest, NoChannelID) {
-  crypto_config_.SetChannelIDSource(nullptr);
-
-  CompleteCryptoHandshake();
-  EXPECT_FALSE(stream()->WasChannelIDSent());
-  EXPECT_FALSE(stream()->WasChannelIDSourceCallbackRun());
-}
-
 TEST_F(QuicCryptoClientStreamTest, PreferredVersion) {
   // This mimics the case where client receives version negotiation packet, such
   // that, the preferred version is different from the packets' version.
@@ -358,115 +347,6 @@ TEST_F(QuicCryptoClientStreamTest, PreferredVersion) {
             client_version_label);
   EXPECT_NE(CreateQuicVersionLabel(connection_->version()),
             client_version_label);
-}
-
-class QuicCryptoClientStreamStatelessTest : public QuicTest {
- public:
-  QuicCryptoClientStreamStatelessTest()
-      : client_crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
-                              TlsClientHandshaker::CreateSslCtx()),
-        server_crypto_config_(QuicCryptoServerConfig::TESTING,
-                              QuicRandom::GetInstance(),
-                              crypto_test_utils::ProofSourceForTesting(),
-                              KeyExchangeSource::Default(),
-                              TlsServerHandshaker::CreateSslCtx()),
-        server_compressed_certs_cache_(
-            QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
-        server_id_(kServerHostname, kServerPort, false) {
-    TestQuicSpdyClientSession* client_session = nullptr;
-    CreateClientSessionForTest(server_id_,
-                               /* supports_stateless_rejects= */ true,
-                               QuicTime::Delta::FromSeconds(100000),
-                               AllSupportedVersions(), &helper_,
-                               &alarm_factory_, &client_crypto_config_,
-                               &client_connection_, &client_session);
-    CHECK(client_session);
-    client_session_.reset(client_session);
-  }
-
-  QuicCryptoServerStream* server_stream() {
-    return server_session_->GetMutableCryptoStream();
-  }
-
-  void AdvanceHandshakeWithFakeServer() {
-    client_session_->GetMutableCryptoStream()->CryptoConnect();
-    EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
-        .Times(testing::AnyNumber());
-    EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_, _))
-        .Times(testing::AnyNumber());
-    crypto_test_utils::AdvanceHandshake(
-        client_connection_, client_session_->GetMutableCryptoStream(), 0,
-        server_connection_, server_stream(), 0);
-  }
-
-  // Initializes the server_stream_ for stateless rejects.
-  void InitializeFakeStatelessRejectServer() {
-    TestQuicSpdyServerSession* server_session = nullptr;
-    CreateServerSessionForTest(
-        server_id_, QuicTime::Delta::FromSeconds(100000),
-        ParsedVersionOfIndex(AllSupportedVersions(), 0), &helper_,
-        &alarm_factory_, &server_crypto_config_,
-        &server_compressed_certs_cache_, &server_connection_, &server_session);
-    CHECK(server_session);
-    server_session_.reset(server_session);
-    server_session_->OnSuccessfulVersionNegotiation(AllSupportedVersions()[0]);
-    crypto_test_utils::FakeServerOptions options;
-    crypto_test_utils::SetupCryptoServerConfigForTest(
-        server_connection_->clock(), server_connection_->random_generator(),
-        &server_crypto_config_, options);
-    SetQuicReloadableFlag(enable_quic_stateless_reject_support, true);
-  }
-
-  MockQuicConnectionHelper helper_;
-  MockAlarmFactory alarm_factory_;
-
-  // Client crypto stream state
-  PacketSavingConnection* client_connection_;
-  std::unique_ptr<TestQuicSpdyClientSession> client_session_;
-  QuicCryptoClientConfig client_crypto_config_;
-
-  // Server crypto stream state
-  PacketSavingConnection* server_connection_;
-  std::unique_ptr<TestQuicSpdyServerSession> server_session_;
-  QuicCryptoServerConfig server_crypto_config_;
-  QuicCompressedCertsCache server_compressed_certs_cache_;
-  QuicServerId server_id_;
-};
-
-TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
-  SetQuicReloadableFlag(enable_quic_stateless_reject_support, true);
-
-  QuicCryptoClientConfig::CachedState* client_state =
-      client_crypto_config_.LookupOrCreate(server_id_);
-
-  EXPECT_FALSE(client_state->has_server_designated_connection_id());
-  EXPECT_CALL(*client_session_, OnProofValid(testing::_));
-
-  InitializeFakeStatelessRejectServer();
-  EXPECT_CALL(*client_connection_,
-              CloseConnection(QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, _, _));
-  EXPECT_CALL(*server_connection_,
-              CloseConnection(QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, _, _));
-  AdvanceHandshakeWithFakeServer();
-
-  EXPECT_EQ(1, server_stream()->NumHandshakeMessages());
-  EXPECT_EQ(0, server_stream()->NumHandshakeMessagesWithServerNonces());
-
-  EXPECT_FALSE(client_session_->IsEncryptionEstablished());
-  EXPECT_FALSE(client_session_->IsCryptoHandshakeConfirmed());
-  // Even though the handshake was not complete, the cached client_state is
-  // complete, and can be used for a subsequent successful handshake.
-  EXPECT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
-
-  ASSERT_TRUE(client_state->has_server_nonce());
-  ASSERT_FALSE(client_state->GetNextServerNonce().empty());
-  ASSERT_TRUE(client_state->has_server_designated_connection_id());
-  QuicConnectionId server_designated_id =
-      client_state->GetNextServerDesignatedConnectionId();
-  QuicConnectionId expected_id = QuicUtils::CreateRandomConnectionId(
-      server_session_->connection()->random_generator());
-  EXPECT_EQ(expected_id, server_designated_id);
-  EXPECT_FALSE(client_state->has_server_designated_connection_id());
 }
 
 }  // namespace

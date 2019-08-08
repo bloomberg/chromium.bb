@@ -71,6 +71,21 @@ mojom::IPAddressSpace FetchClientSettingsObjectImpl::GetAddressSpace() const {
   return execution_context_->GetSecurityContext().AddressSpace();
 }
 
+WebInsecureRequestPolicy
+FetchClientSettingsObjectImpl::GetInsecureRequestsPolicy() const {
+  return execution_context_->GetSecurityContext().GetInsecureRequestPolicy();
+}
+
+const FetchClientSettingsObject::InsecureNavigationsSet&
+FetchClientSettingsObjectImpl::GetUpgradeInsecureNavigationsSet() const {
+  return execution_context_->GetSecurityContext()
+      .InsecureNavigationsToUpgrade();
+}
+
+bool FetchClientSettingsObjectImpl::GetMixedAutoUpgradeOptOut() const {
+  return execution_context_->GetSecurityContext().GetMixedAutoUpgradeOptOut();
+}
+
 void FetchClientSettingsObjectImpl::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   FetchClientSettingsObject::Trace(visitor);

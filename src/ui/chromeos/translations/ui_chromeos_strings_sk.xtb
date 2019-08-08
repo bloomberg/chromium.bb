@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Prepis (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Zobrazenie snímky</translation>
 <translation id="1045157690796831147">Prepis (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Zadávanie japončiny (americká klávesnica)</translation>
 <translation id="1047956942837015229">Prebieha odstraňovanie <ph name="COUNT" /> položiek...</translation>
 <translation id="1049926623896334335">Dokument aplikácie Word</translation>
 <translation id="1062407476771304334">Nahradiť</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351692861129622852">Importujú sa súbory (počet: <ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Thajská klávesnica (Pattachote)</translation>
-<translation id="1358032944105037487">japonská klávesnica</translation>
 <translation id="1358735829858566124">Súbor alebo adresár nie je možné použiť.</translation>
 <translation id="1363028406613469049">Stopa</translation>
 <translation id="1378727793141957596">Vitajte v službe Disk Google!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">Počet fotiek zálohovaných na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Prebieha kopírovanie...</translation>
 <translation id="3475447146579922140">Tabuľka Google</translation>
-<translation id="3494768541638400973">Japonská metóda vstupu Google (pre japonskú klávesnicu)</translation>
 <translation id="3495304270784461826">Počet chýb: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Prepis (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalčina</translation>
 <translation id="3527085408025491307">Priečinok</translation>
 <translation id="3549797760399244642">Prejsť na adresu drive.google.com...</translation>
 <translation id="357479282490346887">Litovčina</translation>
+<translation id="3583509704582854624">Zadávanie alfanumerických znakov (japonská klávesnica)</translation>
 <translation id="3603385196401704894">Kanadská francúzska klávesnica</translation>
 <translation id="3606220979431771195">Turecká (typ F)</translation>
 <translation id="3609785682760573515">Prebieha synchronizácia...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">Ak chcete pristupovať k tomuto súboru, musíte byť online.</translation>
 <translation id="4212740939091998969">Priečinok s názvom <ph name="FOLDER_NAME" /> už existuje. Vyberte iný názov.</translation>
 <translation id="4215448920900139318">Zálohujú sa fotky (<ph name="FILE_COUNT" />)</translation>
+<translation id="4242533952199664413">Otvoriť nastavenia</translation>
 <translation id="426015154560005552">Arabská klávesnica</translation>
 <translation id="4261901459838235729">Prezentácia Google</translation>
 <translation id="4290535918735525311">So systémom Linux zdieľate 1 priečinok</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984">Súbor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Viac...</translation>
 <translation id="4582497162516204941">Nainštalovať pomocou systému Linux (beta)</translation>
-<translation id="4584780943629874245">Zdieľať doplnkom Plugin VM</translation>
 <translation id="4631887759990505102">Interpret</translation>
 <translation id="4656293982926141856">Tento počítač</translation>
 <translation id="4669606053856530811">Členovia zdroja <ph name="SOURCE_NAME" /> stratia prístup, pokiaľ s nimi tieto položky nezačnete zdieľať.</translation>
 <translation id="4690246192099372265">Švédčina</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Opica</translation>
+<translation id="4697043402264950621">Zoznam súborov je usporiadaný podľa stĺpca <ph name="COLUMN_NAME" /> vo vzostupnom poradí.</translation>
 <translation id="4711094779914110278">Turečtina</translation>
 <translation id="4713544552769165154">Tento súbor je určený pre počítač so softvérom Macintosh. Nie je kompatibilný s vaším zariadením používajúcim OS Chrome. Vyhľadajte vhodnú náhradnú aplikáciu v <ph name="BEGIN_LINK" />Internetovom obchode Chrome<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Ďalšie informácie<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Počet zálohovaných fotiek: <ph name="FILE_COUNT" /></translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242">Počet vybratých položiek: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="485316830061041779">Nemčina</translation>
+<translation id="4867079195717347957">Kliknutím zoradíte stĺpec v zostupnom poradí.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> B</translation>
 <translation id="4880214202172289027">Posúvač hlasitosti</translation>
 <translation id="4880520557730313061">Automatická oprava</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">Holandská klávesnica</translation>
 <translation id="5170477580121653719">Voľné miesto v službe Disk Google: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5177526793333269655">Zobrazenie miniatúr</translation>
+<translation id="5194713942430106590">Kliknutím zoradíte stĺpec vo vzostupnom poradí.</translation>
 <translation id="5218183485292899140">Švajčiarska francúzska klávesnica</translation>
 <translation id="5234764350956374838">Zatvoriť</translation>
 <translation id="5241298539944515331">Vietnamská klávesnica (VIQR)</translation>
@@ -411,6 +414,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5818003990515275822">Kórejčina</translation>
 <translation id="5819442873484330149">Hangul 3 Set (konečné)</translation>
 <translation id="5833610766403489739">Umiestnenie tohto súboru sa zmenilo. Skontrolujte nastavenie umiestnenia pre sťahované súbory a skúste to znova.</translation>
+<translation id="5838051104334203064">Aplikácie z Obchodu Play nemajú prístup k tomuto zariadeniu</translation>
 <translation id="5838825566232597749">US Workman international – medzinárodná</translation>
 <translation id="5850516540536751549">Tento typ súboru nie je podporovaný. Navštívte <ph name="BEGIN_LINK" />Internetový obchod Chrome<ph name="END_LINK" />, kde nájdete aplikáciu, pomocou ktorej môžete otvoriť tento typ súboru.
         <ph name="BEGIN_LINK_HELP" />Ďalšie informácie<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5892290200158927959">Francúzska klávesnica BÉPO</translation>
 <translation id="5911887972742538906">Pri inštalácii aplikácie pre Linux sa vyskytla chyba.</translation>
 <translation id="5913638992615760742">Kopírovanie zlyhalo, neočakávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Zadávanie japončiny (japonská klávesnica)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Udeľte aplikáciám pre systém Linux povolenie meniť súbory na Disku Google. Zmeny sa budú synchronizovať do vašich ďalších zariadení.</translation>
 <translation id="5982621672636444458">Usporiadať možnosti</translation>
@@ -497,7 +502,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
     <ph name="LINE_BREAK1" />
     Počet nájdených súborov: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Hore nohami</translation>
-<translation id="6937152069980083337">Japonská metóda vstupu Google (pre americkú klávesnicu)</translation>
 <translation id="6939777852457331078">Klávesnica US Workman</translation>
 <translation id="696203921837389374">Povoliť synchronizáciu prostredníctvom mobilných dát</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -527,7 +531,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="7348749398828259943">Medzinárodná klávesnica US Workman</translation>
 <translation id="7359359531237882347">Kopíruje sa viacero položiek (<ph name="NUMBER_OF_ITEMS" />)…</translation>
-<translation id="7379734276381389090">Doplnkom Plugin VM zdieľate tento počet priečinkov: <ph name="NUMBER_OF_ITEMS" /></translation>
+<translation id="7375951387215729722">Zoznam súborov je usporiadaný podľa stĺpca <ph name="COLUMN_NAME" /> v zostupnom poradí.</translation>
 <translation id="7389722738210761877">Thajská klávesnica (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindská klávesnica (fonetický prepis)</translation>
 <translation id="7417453074306512035">Etiópska klávesnica</translation>
@@ -590,7 +594,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7969525169268594403">Slovinčina</translation>
 <translation id="7982283708762922719">Výška</translation>
 <translation id="7987485481246785146">Kurdská klávesnica (sorání) s arabským rozložením</translation>
-<translation id="7990715602172183602">1 priečinok sa zdieľa doplnkom Plugin VM</translation>
 <translation id="799547531016638432">Odstrániť skratku</translation>
 <translation id="799923393800005025">Môže zobraziť</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
@@ -631,7 +634,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8342318071240498787">Súbor alebo priečinok s daným názvom už existuje.</translation>
 <translation id="8391950649760071442">Prepis (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Rozmery</translation>
-<translation id="8400874747056634633">Spravovať zdieľanie doplnkom Plugin VM</translation>
 <translation id="8412586565681117057">Rýchla metóda vstupu</translation>
 <translation id="8418113698656761985">rumunská klávesnica</translation>
 <translation id="8432745813735585631">americká klávesnica s rozložením klávesov Colemak</translation>

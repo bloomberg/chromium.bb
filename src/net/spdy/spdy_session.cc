@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -224,241 +223,234 @@ bool IsPushEnabled(const spdy::SettingsMap& initial_settings) {
   return it->second == 1;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
-    const spdy::SpdyHeaderBlock* headers,
-    bool fin,
-    spdy::SpdyStreamId stream_id,
-    bool has_priority,
-    int weight,
-    spdy::SpdyStreamId parent_stream_id,
-    bool exclusive,
-    NetLogSource source_dependency,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
-  dict->SetBoolean("fin", fin);
-  dict->SetInteger("stream_id", stream_id);
-  dict->SetBoolean("has_priority", has_priority);
+base::Value NetLogSpdyHeadersSentCallback(const spdy::SpdyHeaderBlock* headers,
+                                          bool fin,
+                                          spdy::SpdyStreamId stream_id,
+                                          bool has_priority,
+                                          int weight,
+                                          spdy::SpdyStreamId parent_stream_id,
+                                          bool exclusive,
+                                          NetLogSource source_dependency,
+                                          NetLogCaptureMode capture_mode) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+  dict.SetBoolKey("fin", fin);
+  dict.SetIntKey("stream_id", stream_id);
+  dict.SetBoolKey("has_priority", has_priority);
   if (has_priority) {
-    dict->SetInteger("parent_stream_id", parent_stream_id);
-    dict->SetInteger("weight", weight);
-    dict->SetBoolean("exclusive", exclusive);
+    dict.SetIntKey("parent_stream_id", parent_stream_id);
+    dict.SetIntKey("weight", weight);
+    dict.SetBoolKey("exclusive", exclusive);
   }
   if (source_dependency.IsValid()) {
-    source_dependency.AddToEventParameters(dict.get());
+    source_dependency.AddToEventParameters(&dict);
   }
-  return std::move(dict);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyHeadersReceivedCallback(
+base::Value NetLogSpdyHeadersReceivedCallback(
     const spdy::SpdyHeaderBlock* headers,
     bool fin,
     spdy::SpdyStreamId stream_id,
     NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
-  dict->SetBoolean("fin", fin);
-  dict->SetInteger("stream_id", stream_id);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+  dict.SetBoolKey("fin", fin);
+  dict.SetIntKey("stream_id", stream_id);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdySessionCloseCallback(
+base::Value NetLogSpdySessionCloseCallback(
     int net_error,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("net_error", net_error);
-  dict->SetString("description", *description);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("net_error", net_error);
+  dict.SetStringKey("description", *description);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdySessionCallback(
-    const HostPortProxyPair* host_pair,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("host", host_pair->first.ToString());
-  dict->SetString("proxy", host_pair->second.ToPacString());
-  return std::move(dict);
+base::Value NetLogSpdySessionCallback(const HostPortProxyPair* host_pair,
+                                      NetLogCaptureMode /* capture_mode */) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("host", host_pair->first.ToString());
+  dict.SetStringKey("proxy", host_pair->second.ToPacString());
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyInitializedCallback(
+base::Value NetLogSpdyInitializedCallback(
     NetLogSource source,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
+  base::Value dict(base::Value::Type::DICTIONARY);
   if (source.IsValid()) {
-    source.AddToEventParameters(dict.get());
+    source.AddToEventParameters(&dict);
   }
-  dict->SetString("protocol", NextProtoToString(kProtoHTTP2));
-  return std::move(dict);
+  dict.SetStringKey("protocol", NextProtoToString(kProtoHTTP2));
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
+base::Value NetLogSpdySendSettingsCallback(
     const spdy::SettingsMap* settings,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  auto settings_list = std::make_unique<base::ListValue>();
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::ListValue settings_list;
   for (auto it = settings->begin(); it != settings->end(); ++it) {
     const spdy::SpdySettingsId id = it->first;
     const uint32_t value = it->second;
-    settings_list->AppendString(
+    settings_list.AppendString(
         base::StringPrintf("[id:%u (%s) value:%u]", id,
                            spdy::SettingsIdToString(id).c_str(), value));
   }
-  dict->Set("settings", std::move(settings_list));
-  return std::move(dict);
+  dict.SetKey("settings", std::move(settings_list));
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyRecvSettingCallback(
+base::Value NetLogSpdyRecvSettingCallback(
     spdy::SpdySettingsId id,
     uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString(
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey(
       "id",
       base::StringPrintf("%u (%s)", id, spdy::SettingsIdToString(id).c_str()));
-  dict->SetInteger("value", value);
-  return std::move(dict);
+  dict.SetIntKey("value", value);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyWindowUpdateFrameCallback(
+base::Value NetLogSpdyWindowUpdateFrameCallback(
     spdy::SpdyStreamId stream_id,
     uint32_t delta,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetInteger("delta", delta);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetIntKey("delta", delta);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdySessionWindowUpdateCallback(
+base::Value NetLogSpdySessionWindowUpdateCallback(
     int32_t delta,
     int32_t window_size,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("delta", delta);
-  dict->SetInteger("window_size", window_size);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("delta", delta);
+  dict.SetIntKey("window_size", window_size);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyDataCallback(
-    spdy::SpdyStreamId stream_id,
-    int size,
-    bool fin,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetInteger("size", size);
-  dict->SetBoolean("fin", fin);
-  return std::move(dict);
+base::Value NetLogSpdyDataCallback(spdy::SpdyStreamId stream_id,
+                                   int size,
+                                   bool fin,
+                                   NetLogCaptureMode /* capture_mode */) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetIntKey("size", size);
+  dict.SetBoolKey("fin", fin);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyRecvRstStreamCallback(
+base::Value NetLogSpdyRecvRstStreamCallback(
     spdy::SpdyStreamId stream_id,
     spdy::SpdyErrorCode error_code,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetString(
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetStringKey(
       "error_code",
       base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
-  return std::move(dict);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdySendRstStreamCallback(
+base::Value NetLogSpdySendRstStreamCallback(
     spdy::SpdyStreamId stream_id,
     spdy::SpdyErrorCode error_code,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetString(
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetStringKey(
       "error_code",
       base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
-  dict->SetString("description", *description);
-  return std::move(dict);
+  dict.SetStringKey("description", *description);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyPingCallback(
-    spdy::SpdyPingId unique_id,
-    bool is_ack,
-    const char* type,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("unique_id", static_cast<int>(unique_id));
-  dict->SetString("type", type);
-  dict->SetBoolean("is_ack", is_ack);
-  return std::move(dict);
+base::Value NetLogSpdyPingCallback(spdy::SpdyPingId unique_id,
+                                   bool is_ack,
+                                   const char* type,
+                                   NetLogCaptureMode /* capture_mode */) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("unique_id", static_cast<int>(unique_id));
+  dict.SetStringKey("type", type);
+  dict.SetBoolKey("is_ack", is_ack);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
-    spdy::SpdyStreamId last_stream_id,
-    int active_streams,
-    int unclaimed_streams,
-    spdy::SpdyErrorCode error_code,
-    base::StringPiece debug_data,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("last_accepted_stream_id", static_cast<int>(last_stream_id));
-  dict->SetInteger("active_streams", active_streams);
-  dict->SetInteger("unclaimed_streams", unclaimed_streams);
-  dict->SetString(
+base::Value NetLogSpdyRecvGoAwayCallback(spdy::SpdyStreamId last_stream_id,
+                                         int active_streams,
+                                         int unclaimed_streams,
+                                         spdy::SpdyErrorCode error_code,
+                                         base::StringPiece debug_data,
+                                         NetLogCaptureMode capture_mode) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("last_accepted_stream_id", static_cast<int>(last_stream_id));
+  dict.SetIntKey("active_streams", active_streams);
+  dict.SetIntKey("unclaimed_streams", unclaimed_streams);
+  dict.SetStringKey(
       "error_code",
       base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
-  dict->SetKey("debug_data",
-               ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
-  return std::move(dict);
+  dict.SetKey("debug_data",
+              ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyPushPromiseReceivedCallback(
+base::Value NetLogSpdyPushPromiseReceivedCallback(
     const spdy::SpdyHeaderBlock* headers,
     spdy::SpdyStreamId stream_id,
     spdy::SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
-  dict->SetInteger("id", stream_id);
-  dict->SetInteger("promised_stream_id", promised_stream_id);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+  dict.SetIntKey("id", stream_id);
+  dict.SetIntKey("promised_stream_id", promised_stream_id);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyAdoptedPushStreamCallback(
+base::Value NetLogSpdyAdoptedPushStreamCallback(
     spdy::SpdyStreamId stream_id,
     const GURL* url,
     NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", stream_id);
-  dict->SetString("url", url->spec());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", stream_id);
+  dict.SetStringKey("url", url->spec());
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdySessionStalledCallback(
-    size_t num_active_streams,
-    size_t num_created_streams,
-    size_t num_pushed_streams,
-    size_t max_concurrent_streams,
-    const std::string& url,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("num_active_streams", num_active_streams);
-  dict->SetInteger("num_created_streams", num_created_streams);
-  dict->SetInteger("num_pushed_streams", num_pushed_streams);
-  dict->SetInteger("max_concurrent_streams", max_concurrent_streams);
-  dict->SetString("url", url);
-  return std::move(dict);
+base::Value NetLogSpdySessionStalledCallback(size_t num_active_streams,
+                                             size_t num_created_streams,
+                                             size_t num_pushed_streams,
+                                             size_t max_concurrent_streams,
+                                             const std::string& url,
+                                             NetLogCaptureMode capture_mode) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("num_active_streams", num_active_streams);
+  dict.SetIntKey("num_created_streams", num_created_streams);
+  dict.SetIntKey("num_pushed_streams", num_pushed_streams);
+  dict.SetIntKey("max_concurrent_streams", max_concurrent_streams);
+  dict.SetStringKey("url", url);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyPriorityCallback(
-    spdy::SpdyStreamId stream_id,
-    spdy::SpdyStreamId parent_stream_id,
-    int weight,
-    bool exclusive,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", stream_id);
-  dict->SetInteger("parent_stream_id", parent_stream_id);
-  dict->SetInteger("weight", weight);
-  dict->SetBoolean("exclusive", exclusive);
-  return std::move(dict);
+base::Value NetLogSpdyPriorityCallback(spdy::SpdyStreamId stream_id,
+                                       spdy::SpdyStreamId parent_stream_id,
+                                       int weight,
+                                       bool exclusive,
+                                       NetLogCaptureMode capture_mode) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", stream_id);
+  dict.SetIntKey("parent_stream_id", parent_stream_id);
+  dict.SetIntKey("weight", weight);
+  dict.SetBoolKey("exclusive", exclusive);
+  return dict;
 }
 
 // Helper function to return the total size of an array of objects
@@ -890,7 +882,7 @@ SpdySession::SpdySession(
     HttpServerProperties* http_server_properties,
     TransportSecurityState* transport_security_state,
     SSLConfigService* ssl_config_service,
-    const quic::QuicTransportVersionVector& quic_supported_versions,
+    const quic::ParsedQuicVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
     bool support_ietf_format_quic_altsvc,
@@ -1392,6 +1384,8 @@ void SpdySession::MakeUnavailable() {
 void SpdySession::StartGoingAway(spdy::SpdyStreamId last_good_stream_id,
                                  Error status) {
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
+  DCHECK_NE(OK, status);
+  DCHECK_NE(ERR_IO_PENDING, status);
 
   // The loops below are carefully written to avoid reentrancy problems.
 
@@ -1404,7 +1398,7 @@ void SpdySession::StartGoingAway(spdy::SpdyStreamId last_good_stream_id,
     // No new stream requests should be added while the session is
     // going away.
     DCHECK_GT(old_size, GetTotalSize(pending_create_stream_queues_));
-    pending_request->OnRequestCompleteFailure(ERR_ABORTED);
+    pending_request->OnRequestCompleteFailure(status);
   }
 
   while (true) {
@@ -1442,45 +1436,45 @@ void SpdySession::MaybeFinishGoingAway() {
   }
 }
 
-std::unique_ptr<base::Value> SpdySession::GetInfoAsValue() const {
-  auto dict = std::make_unique<base::DictionaryValue>();
+base::Value SpdySession::GetInfoAsValue() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
 
-  dict->SetInteger("source_id", net_log_.source().id);
+  dict.SetIntKey("source_id", net_log_.source().id);
 
-  dict->SetString("host_port_pair", host_port_pair().ToString());
+  dict.SetStringKey("host_port_pair", host_port_pair().ToString());
   if (!pooled_aliases_.empty()) {
-    auto alias_list = std::make_unique<base::ListValue>();
+    base::Value alias_list(base::Value::Type::LIST);
     for (const auto& alias : pooled_aliases_) {
-      alias_list->AppendString(alias.host_port_pair().ToString());
+      alias_list.GetList().emplace_back(alias.host_port_pair().ToString());
     }
-    dict->Set("aliases", std::move(alias_list));
+    dict.SetKey("aliases", std::move(alias_list));
   }
-  dict->SetString("proxy", host_port_proxy_pair().second.ToURI());
+  dict.SetStringKey("proxy", host_port_proxy_pair().second.ToURI());
 
-  dict->SetInteger("active_streams", active_streams_.size());
+  dict.SetIntKey("active_streams", active_streams_.size());
 
-  dict->SetInteger("unclaimed_pushed_streams",
-                   pool_->push_promise_index()->CountStreamsForSession(this));
+  dict.SetIntKey("unclaimed_pushed_streams",
+                 pool_->push_promise_index()->CountStreamsForSession(this));
 
-  dict->SetString("negotiated_protocol",
-                  NextProtoToString(socket_->GetNegotiatedProtocol()));
+  dict.SetStringKey("negotiated_protocol",
+                    NextProtoToString(socket_->GetNegotiatedProtocol()));
 
-  dict->SetInteger("error", error_on_close_);
-  dict->SetInteger("max_concurrent_streams", max_concurrent_streams_);
+  dict.SetIntKey("error", error_on_close_);
+  dict.SetIntKey("max_concurrent_streams", max_concurrent_streams_);
 
-  dict->SetInteger("streams_initiated_count", streams_initiated_count_);
-  dict->SetInteger("streams_pushed_count", streams_pushed_count_);
-  dict->SetInteger("streams_pushed_and_claimed_count",
-                   streams_pushed_and_claimed_count_);
-  dict->SetInteger("streams_abandoned_count", streams_abandoned_count_);
+  dict.SetIntKey("streams_initiated_count", streams_initiated_count_);
+  dict.SetIntKey("streams_pushed_count", streams_pushed_count_);
+  dict.SetIntKey("streams_pushed_and_claimed_count",
+                 streams_pushed_and_claimed_count_);
+  dict.SetIntKey("streams_abandoned_count", streams_abandoned_count_);
   DCHECK(buffered_spdy_framer_.get());
-  dict->SetInteger("frames_received", buffered_spdy_framer_->frames_received());
+  dict.SetIntKey("frames_received", buffered_spdy_framer_->frames_received());
 
-  dict->SetInteger("send_window_size", session_send_window_size_);
-  dict->SetInteger("recv_window_size", session_recv_window_size_);
-  dict->SetInteger("unacked_recv_window_bytes",
-                   session_unacked_recv_window_bytes_);
-  return std::move(dict);
+  dict.SetIntKey("send_window_size", session_send_window_size_);
+  dict.SetIntKey("recv_window_size", session_recv_window_size_);
+  dict.SetIntKey("unacked_recv_window_bytes",
+                 session_unacked_recv_window_bytes_);
+  return dict;
 }
 
 bool SpdySession::IsReused() const {
@@ -1649,10 +1643,10 @@ bool SpdySession::ChangeSocketTag(const SocketTag& new_tag) {
 
   socket_->ApplySocketTag(new_tag);
 
-  SpdySessionKey new_key(spdy_session_key_.host_port_pair(),
-                         spdy_session_key_.proxy_server(),
-                         spdy_session_key_.privacy_mode(),
-                         spdy_session_key_.is_proxy_session(), new_tag);
+  SpdySessionKey new_key(
+      spdy_session_key_.host_port_pair(), spdy_session_key_.proxy_server(),
+      spdy_session_key_.privacy_mode(), spdy_session_key_.is_proxy_session(),
+      new_tag, spdy_session_key_.network_isolation_key());
   spdy_session_key_ = new_key;
 
   return true;
@@ -2246,25 +2240,22 @@ int SpdySession::DoRead() {
 
   CHECK(socket_);
   read_state_ = READ_STATE_DO_READ_COMPLETE;
-  int rv = ERR_READ_IF_READY_NOT_IMPLEMENTED;
   read_buffer_ = base::MakeRefCounted<IOBuffer>(kReadBufferSize);
-  if (base::FeatureList::IsEnabled(Socket::kReadIfReadyExperiment)) {
-    rv = socket_->ReadIfReady(
-        read_buffer_.get(), kReadBufferSize,
-        base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
-                   READ_STATE_DO_READ));
-    if (rv == ERR_IO_PENDING) {
-      read_buffer_ = nullptr;
-      read_state_ = READ_STATE_DO_READ;
-      return rv;
-    }
+  int rv = socket_->ReadIfReady(
+      read_buffer_.get(), kReadBufferSize,
+      base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                     READ_STATE_DO_READ));
+  if (rv == ERR_IO_PENDING) {
+    read_buffer_ = nullptr;
+    read_state_ = READ_STATE_DO_READ;
+    return rv;
   }
   if (rv == ERR_READ_IF_READY_NOT_IMPLEMENTED) {
     // Fallback to regular Read().
     return socket_->Read(
         read_buffer_.get(), kReadBufferSize,
-        base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
-                   READ_STATE_DO_READ_COMPLETE));
+        base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                       READ_STATE_DO_READ_COMPLETE));
   }
   return rv;
 }
@@ -3400,7 +3391,7 @@ void SpdySession::OnAltSvc(
       continue;
 
     // Check if QUIC version is supported. Filter supported QUIC versions.
-    quic::QuicTransportVersionVector advertised_versions;
+    quic::ParsedQuicVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !altsvc.version.empty()) {
       advertised_versions = FilterSupportedAltSvcVersions(
           altsvc, quic_supported_versions_, support_ietf_format_quic_altsvc_);

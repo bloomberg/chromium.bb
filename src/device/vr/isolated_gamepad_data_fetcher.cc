@@ -215,24 +215,35 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // a headset.  This doesn't change behavior, but the device/display naming
     // could be confusing here.
     if (this->source() == GAMEPAD_SOURCE_OPENVR) {
-      swprintf(dest.id, Gamepad::kIdLengthCap, L"OpenVR Gamepad");
+      swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+               L"OpenVR Gamepad");
     } else if (this->source() == GAMEPAD_SOURCE_OCULUS) {
       if (dest.hand == GamepadHand::kLeft) {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Touch (Left)");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Oculus Touch (Left)");
       } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Touch (Right)");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Oculus Touch (Right)");
       } else {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Remote");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Oculus Remote");
       }
     } else if (this->source() == GAMEPAD_SOURCE_WIN_MR) {
-      if (dest.hand == GamepadHand::kLeft) {
-        swprintf(dest.id, Gamepad::kIdLengthCap,
-                 L"Windows Mixed Reality (Left)");
-      } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(dest.id, Gamepad::kIdLengthCap,
-                 L"Windows Mixed Reality (Right)");
+      // For compatibility with Edge and existing libraries, Win MR may plumb
+      // an input_state and corresponding gamepad up via the Pose for the
+      // purposes of exposing the Gamepad ID that should be used.
+      // If it is present, use that, otherwise, just use the same prefix as
+      // Edge uses.
+      if (source->pose && source->pose->input_state &&
+          source->pose->input_state.value().size() > 0 &&
+          source->pose->input_state.value()[0]->gamepad) {
+        Gamepad id_gamepad =
+            source->pose->input_state.value()[0]->gamepad.value();
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 id_gamepad.id);
       } else {
-        swprintf(dest.id, Gamepad::kIdLengthCap, L"Windows Mixed Reality");
+        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
+                 L"Spatial Controller (Spatial Interaction Source) 0000-0000");
       }
     }
 

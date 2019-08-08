@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -56,9 +57,19 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/strings/string_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
+#endif
 
 namespace extensions {
 
@@ -173,8 +184,8 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
             downloaded_bitmaps_, sizes_to_generate, web_app_info_.app_url,
             &web_app_info_.generated_icon_color);
 
-    BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(size_map,
-                                                             &web_app_info_);
+    web_app::UpdateWebAppIconsWithoutChangingLinks(size_map, &web_app_info_);
+
     scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
     installer->set_error_on_unsupported_requirements(true);
     installer->set_installer_callback(base::BindOnce(
@@ -202,41 +213,30 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   std::vector<web_app::BitmapAndSource> downloaded_bitmaps_;
 };
 
+#if defined(OS_CHROMEOS)
+const char kChromeOsPlayPlatform[] = "chromeos_play";
+const char kPlayIntentPrefix[] =
+    "https://play.google.com/store/apps/details?id=";
+
+std::string ExtractQueryValueForName(const GURL& url, const std::string& name) {
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() == name)
+      return it.GetValue();
+  }
+  return std::string();
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
-// static
-void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
-    std::map<int, web_app::BitmapAndSource> bitmap_map,
-    WebApplicationInfo* web_app_info) {
-  // First add in the icon data that have urls with the url / size data from the
-  // original web app info, and the data from the new icons (if any).
-  for (auto& icon : web_app_info->icons) {
-    if (!icon.url.is_empty() && icon.data.empty()) {
-      const auto& it = bitmap_map.find(icon.width);
-      if (it != bitmap_map.end() && it->second.source_url == icon.url)
-        icon.data = it->second.bitmap;
-    }
-  }
-
-  // Now add in any icons from the updated list that don't have URLs.
-  for (const auto& pair : bitmap_map) {
-    if (pair.second.source_url.is_empty()) {
-      WebApplicationInfo::IconInfo icon_info;
-      icon_info.data = pair.second.bitmap;
-      icon_info.width = pair.first;
-      icon_info.height = pair.first;
-      web_app_info->icons.push_back(icon_info);
-    }
-  }
-}
-
-BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
-                                     WebApplicationInfo web_app_info,
-                                     content::WebContents* contents,
-                                     WebappInstallSource install_source)
+BookmarkAppHelper::BookmarkAppHelper(
+    Profile* profile,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    content::WebContents* contents,
+    WebappInstallSource install_source)
     : profile_(profile),
       contents_(contents),
-      web_app_info_(web_app_info),
+      web_app_info_(*web_app_info),
       crx_installer_(CrxInstaller::CreateSilent(
           ExtensionSystem::Get(profile)->extension_service())),
       for_installable_site_(web_app::ForInstallableSite::kUnknown),
@@ -244,14 +244,6 @@ BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
       weak_factory_(this) {
   if (contents)
     installable_manager_ = InstallableManager::FromWebContents(contents);
-
-  // Use the last bookmark app creation type. The launch container is decided by
-  // the system for desktop PWAs.
-  if (!base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
-    web_app_info_.open_as_window =
-        profile_->GetPrefs()->GetInteger(
-            pref_names::kBookmarkAppCreationLaunchType) == LAUNCH_TYPE_WINDOW;
-  }
 
   // The default app title is the page title, which can be quite long. Limit the
   // default name used to something sensible.
@@ -328,7 +320,7 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
                                         for_installable_site_);
 
   const std::vector<GURL> web_app_info_icon_urls =
-      web_app::GetValidIconUrlsToDownload(data, web_app_info_);
+      web_app::GetValidIconUrlsToDownload(web_app_info_, &data);
 
   web_app::MergeInstallableDataIcon(data, &web_app_info_);
 
@@ -343,6 +335,11 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
   if (!data.manifest->icons.empty() ||
       contents_->GetVisibleURL().SchemeIs(content::kChromeUIScheme))
     web_app_icon_downloader_->SkipPageFavicons();
+
+  // If we tried to check for an intent to the Play Store, wait for the async
+  // reply.
+  if (DidCheckForIntentToPlayStore(*data.manifest))
+    return;
 
   web_app_icon_downloader_->Start();
 }
@@ -367,36 +364,37 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
   if (!contents_) {
     // The web contents can be null in tests.
-    OnBubbleCompleted(true, web_app_info_);
+    OnBubbleCompleted(true,
+                      std::make_unique<WebApplicationInfo>(web_app_info_));
     return;
   }
 
   Browser* browser = chrome::FindBrowserWithWebContents(contents_);
   if (!browser) {
     // The browser can be null in tests.
-    OnBubbleCompleted(true, web_app_info_);
+    OnBubbleCompleted(true,
+                      std::make_unique<WebApplicationInfo>(web_app_info_));
     return;
   }
 
   // TODO(alancutter): Get user confirmation before entering the install flow,
   // installation code shouldn't have to perform UI work.
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      for_installable_site_ == web_app::ForInstallableSite::kYes) {
+  if (for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
     if (install_source_ == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
       chrome::ShowPWAInstallBubble(
-          contents_, web_app_info_,
+          contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
           base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                          weak_factory_.GetWeakPtr()));
     } else {
       chrome::ShowPWAInstallDialog(
-          contents_, web_app_info_,
+          contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
           base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                          weak_factory_.GetWeakPtr()));
     }
   } else {
     chrome::ShowBookmarkAppDialog(
-        contents_, web_app_info_,
+        contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
         base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                        weak_factory_.GetWeakPtr()));
   }
@@ -404,9 +402,10 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
 void BookmarkAppHelper::OnBubbleCompleted(
     bool user_accepted,
-    const WebApplicationInfo& web_app_info) {
+    std::unique_ptr<WebApplicationInfo> web_app_info) {
   if (user_accepted) {
-    web_app_info_ = web_app_info;
+    DCHECK(web_app_info);
+    web_app_info_ = *web_app_info;
 
     if (is_policy_installed_app_)
       crx_installer_->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
@@ -451,9 +450,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   LaunchType launch_type =
       web_app_info_.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
-  profile_->GetPrefs()->SetInteger(pref_names::kBookmarkAppCreationLaunchType,
-                                   launch_type);
-
   if (forced_launch_type_)
     launch_type = forced_launch_type_.value();
 
@@ -471,6 +467,8 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   }
 
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
+  web_app::RecordWebAppInstallationTimestamp(profile_->GetPrefs(),
+                                             extension->id(), install_source_);
 
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
   // from adding a shortcut to desktop.
@@ -516,6 +514,78 @@ void BookmarkAppHelper::OnShortcutCreationCompleted(
   }
 
   callback_.Run(extension, web_app_info_);
+}
+
+bool BookmarkAppHelper::DidCheckForIntentToPlayStore(
+    const blink::Manifest& manifest) {
+#if defined(OS_CHROMEOS)
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return false;
+
+  if (for_installable_site_ != web_app::ForInstallableSite::kYes)
+    return false;
+
+  for (const auto& application : manifest.related_applications) {
+    std::string id = base::UTF16ToUTF8(application.id.string());
+    if (!base::EqualsASCII(application.platform.string(),
+                           kChromeOsPlayPlatform)) {
+      continue;
+    }
+
+    std::string id_from_app_url =
+        ExtractQueryValueForName(application.url, "id");
+
+    if (id.empty()) {
+      if (id_from_app_url.empty())
+        continue;
+      id = id_from_app_url;
+    }
+
+    // Attach the referrer value.
+    std::string referrer =
+        ExtractQueryValueForName(application.url, "referrer");
+    if (!referrer.empty())
+      referrer = "&referrer=" + referrer;
+
+    std::string intent = kPlayIntentPrefix + id + referrer;
+
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->app(), IsInstallable);
+      if (instance) {
+        instance->IsInstallable(
+            id,
+            base::BindOnce(&BookmarkAppHelper::OnDidCheckForIntentToPlayStore,
+                           weak_factory_.GetWeakPtr(), intent));
+        return true;
+      }
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+  return false;
+}
+
+void BookmarkAppHelper::OnDidCheckForIntentToPlayStore(
+    const std::string& intent,
+    bool should_intent_to_store) {
+#if defined(OS_CHROMEOS)
+  if (should_intent_to_store) {
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleUrl);
+      if (instance) {
+        instance->HandleUrl(intent, arc::kPlayStorePackage);
+        callback_.Run(nullptr, web_app_info_);
+        return;
+      }
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  web_app_icon_downloader_->Start();
 }
 
 void BookmarkAppHelper::Observe(int type,

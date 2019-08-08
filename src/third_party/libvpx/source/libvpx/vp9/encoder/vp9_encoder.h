@@ -119,10 +119,11 @@ typedef enum {
   COMPLEXITY_AQ = 2,
   CYCLIC_REFRESH_AQ = 3,
   EQUATOR360_AQ = 4,
-  PSNR_AQ = 5,
+  PERCEPTUAL_AQ = 5,
+  PSNR_AQ = 6,
   // AQ based on lookahead temporal
   // variance (only valid for altref frames)
-  LOOKAHEAD_AQ = 6,
+  LOOKAHEAD_AQ = 7,
   AQ_MODE_COUNT  // This should always be the last member of the enum
 } AQ_MODE;
 
@@ -293,10 +294,6 @@ typedef struct TplDepStats {
 
 #if CONFIG_NON_GREEDY_MV
   int ready[3];
-  double mv_dist[3];
-  double mv_cost[3];
-  int64_t inter_cost_arr[3];
-  int64_t recon_error_arr[3];
   int64_t sse_arr[3];
   double feature_score;
 #endif
@@ -323,8 +320,6 @@ typedef struct TplDepFrame {
   int base_qindex;
 #if CONFIG_NON_GREEDY_MV
   double lambda;
-  double mv_dist_sum[3];
-  double mv_cost_sum[3];
   int_mv *pyramid_mv_arr[3][SQUARE_BLOCK_SIZES];
   int *mv_mode_arr[3];
   double *rd_diff_arr[3];
@@ -649,8 +644,9 @@ typedef struct VP9_COMP {
 
   int64_t norm_wiener_variance;
   int64_t *mb_wiener_variance;
+  int mb_wiener_var_rows;
+  int mb_wiener_var_cols;
   double *mi_ssim_rdmult_scaling_factors;
-  int *stack_rank_buffer;
 
   YV12_BUFFER_CONFIG last_frame_uf;
 

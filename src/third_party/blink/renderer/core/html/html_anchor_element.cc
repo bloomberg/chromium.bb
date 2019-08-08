@@ -69,10 +69,6 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
       cached_visited_link_hash_(0),
       rel_list_(MakeGarbageCollected<RelList>(this)) {}
 
-HTMLAnchorElement* HTMLAnchorElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLAnchorElement>(kATag, document);
-}
-
 HTMLAnchorElement::~HTMLAnchorElement() = default;
 
 bool HTMLAnchorElement::SupportsFocus() const {
@@ -130,12 +126,13 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
 
   // The coordinates sent in the query string are relative to the height and
   // width of the image element, ignoring CSS transform/zoom.
-  LayoutPoint map_point(layout_object->AbsoluteToLocal(
-      FloatPoint(ToMouseEvent(event)->AbsoluteLocation()), kUseTransforms));
+  FloatPoint map_point = layout_object->AbsoluteToLocalFloatPoint(
+      FloatPoint(ToMouseEvent(event)->AbsoluteLocation()));
 
   // The origin (0,0) is at the upper left of the content area, inside the
   // padding and border.
-  map_point -= ToLayoutBox(layout_object)->PhysicalContentBoxOffset();
+  map_point -=
+      FloatSize(ToLayoutBox(layout_object)->PhysicalContentBoxOffset());
 
   // CSS zoom is not reflected in the map coordinates.
   float scale_factor = 1 / layout_object->Style()->EffectiveZoom();
@@ -430,12 +427,10 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   const AtomicString& target = getAttribute(kTargetAttr);
-  FrameLoadRequest frame_request(
-      &GetDocument(), request,
-      target.IsEmpty() ? GetDocument().BaseTarget() : target);
+  FrameLoadRequest frame_request(&GetDocument(), request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
-    frame_request.SetShouldSendReferrer(kNeverSendReferrer);
+    frame_request.SetNoReferrer();
     frame_request.SetNoOpener();
   }
   if (HasRel(kRelationNoOpener))
@@ -450,11 +445,17 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                         : WebTriggeringEventInfo::kFromUntrustedEvent);
   frame_request.SetInputStartTime(event.PlatformTimeStamp());
-  // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
-  // Why doesn't this go through NavigationScheduler?
 
   frame->MaybeLogAdClickNavigation();
-  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard);
+
+  Frame* target_frame =
+      frame->Tree()
+          .FindOrCreateFrameForNavigation(
+              frame_request,
+              target.IsEmpty() ? GetDocument().BaseTarget() : target)
+          .frame;
+  if (target_frame)
+    target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {

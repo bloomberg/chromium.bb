@@ -8,11 +8,13 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
+#include "ash/ash_export.h"
+#include "ash/public/cpp/split_view.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
@@ -27,13 +29,6 @@ class EventHandler;
 }
 
 namespace ash {
-namespace mojom {
-enum class WindowStateType;
-}
-
-namespace wm {
-class WindowState;
-}
 
 class BackdropDelegate;
 
@@ -44,28 +39,34 @@ class BackdropDelegate;
 // 1) Has a aura::client::kHasBackdrop property = true.
 // 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
 // 3) Active ARC window when the spoken feedback is enabled.
-class BackdropController : public AccessibilityObserver,
-                           public ShellObserver,
-                           public OverviewObserver,
-                           public SplitViewController::Observer,
-                           public WallpaperControllerObserver {
+class ASH_EXPORT BackdropController : public AccessibilityObserver,
+                                      public ShellObserver,
+                                      public OverviewObserver,
+                                      public SplitViewObserver,
+                                      public WallpaperControllerObserver {
  public:
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
 
-  void OnWindowAddedToLayout(aura::Window* child);
-  void OnWindowRemovedFromLayout(aura::Window* child);
-  void OnChildWindowVisibilityChanged(aura::Window* child, bool visible);
-  void OnWindowStackingChanged(aura::Window* window);
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type);
+  void OnWindowAddedToLayout();
+  void OnWindowRemovedFromLayout();
+  void OnChildWindowVisibilityChanged();
+  void OnWindowStackingChanged();
+  void OnPostWindowStateTypeChange();
   void OnDisplayMetricsChanged();
+
+  // Called when the desk content is changed in order to update the state of the
+  // backdrop even if overview mode is active.
+  void OnDeskContentChanged();
 
   void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   // Update the visibility of, and restack the backdrop relative to
   // the other windows in the container.
   void UpdateBackdrop();
+
+  // Returns the current visible top level window in the container.
+  aura::Window* GetTopmostWindowWithBackdrop();
 
   aura::Window* backdrop_window() { return backdrop_window_; }
 
@@ -81,9 +82,9 @@ class BackdropController : public AccessibilityObserver,
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
-  // SplitViewController::Observer:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
   void OnSplitViewDividerPositionChanged() override;
 
   // WallpaperControllerObserver:
@@ -92,22 +93,22 @@ class BackdropController : public AccessibilityObserver,
  private:
   friend class WorkspaceControllerTestApi;
 
+  void UpdateBackdropInternal();
+
   void EnsureBackdropWidget();
 
   void UpdateAccessibilityMode();
 
   void Layout();
 
-  // Returns the current visible top level window in the container.
-  aura::Window* GetTopmostWindowWithBackdrop();
-
   bool WindowShouldHaveBackdrop(aura::Window* window);
 
   // Show the backdrop window.
   void Show();
 
-  // Hide the backdrop window.
-  void Hide(bool animate = true);
+  // Hide the backdrop window. If |destroy| is true, the backdrop widget will be
+  // destroyed, otherwise it'll be just hidden.
+  void Hide(bool destroy, bool animate = true);
 
   // Returns true if the backdrop window should be fullscreen. It should not be
   // fullscreen only if 1) split view is active and 2) there is only one snapped

@@ -45,7 +45,7 @@ std::string Unescape(const std::string& url) {
   int loop_var = 0;
   do {
     old_size = unescaped_str.size();
-    net::UnescapeBinaryURLComponent(unescaped_str, &unescaped_str);
+    unescaped_str = net::UnescapeBinaryURLComponent(unescaped_str);
   } while (old_size != unescaped_str.size() &&
            ++loop_var <= kMaxLoopIterations);
 
@@ -422,6 +422,15 @@ void V4ProtocolManagerUtil::GeneratePatternsToCheck(
       urls->push_back(hosts[h] + paths[p]);
     }
   }
+}
+
+// static
+FullHash V4ProtocolManagerUtil::GetFullHash(const GURL& url) {
+  std::string host;
+  std::string path;
+  CanonicalizeUrl(url, &host, &path, nullptr);
+
+  return crypto::SHA256HashString(host + path);
 }
 
 // static

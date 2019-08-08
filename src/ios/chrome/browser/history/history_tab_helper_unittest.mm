@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -36,14 +37,6 @@ class HistoryTabHelperTest : public PlatformTest {
     HistoryTabHelper::CreateForWebState(&web_state_);
   }
 
-  void OnQueryURLReceived(const base::Closure& quit_closure,
-                          bool success,
-                          const history::URLRow& row,
-                          const history::VisitVector& visits) {
-    latest_row_result_ = row;
-    quit_closure.Run();
-  }
-
   // Queries the history service for information about the given |url| and
   // returns the response.  Spins the runloop until a response is received.
   void QueryURL(const GURL& url) {
@@ -52,10 +45,13 @@ class HistoryTabHelperTest : public PlatformTest {
             chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
 
     base::RunLoop loop;
-    service->QueryURL(url, false,
-                      base::Bind(&HistoryTabHelperTest::OnQueryURLReceived,
-                                 base::Unretained(this), loop.QuitClosure()),
-                      &tracker_);
+    service->QueryURL(
+        url, false,
+        base::BindLambdaForTesting([&](history::QueryURLResult result) {
+          latest_row_result_ = std::move(result.row);
+          loop.Quit();
+        }),
+        &tracker_);
     loop.Run();
   }
 

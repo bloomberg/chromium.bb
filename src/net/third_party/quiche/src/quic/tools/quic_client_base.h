@@ -102,7 +102,7 @@ class QuicClientBase {
 
   // Wait for events until the handshake is confirmed.
   // Returns true if the crypto handshake succeeds, false otherwise.
-  bool WaitForCryptoHandshakeConfirmed() QUIC_MUST_USE_RESULT;
+  QUIC_MUST_USE_RESULT bool WaitForCryptoHandshakeConfirmed();
 
   // Wait up to 50ms, and handle any events which occur.
   // Returns true if there are any outstanding requests.
@@ -129,13 +129,6 @@ class QuicClientBase {
 
   void SetUserAgentID(const std::string& user_agent_id) {
     crypto_config_.set_user_agent_id(user_agent_id);
-  }
-
-  // SetChannelIDSource sets a ChannelIDSource that will be called, when the
-  // server supports channel IDs, to obtain a channel ID for signing a message
-  // proving possession of the channel ID.
-  void SetChannelIDSource(std::unique_ptr<ChannelIDSource> source) {
-    crypto_config_.SetChannelIDSource(std::move(source));
   }
 
   const ParsedQuicVersionVector& supported_versions() const {

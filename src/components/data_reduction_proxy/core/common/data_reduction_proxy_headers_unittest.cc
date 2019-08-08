@@ -24,7 +24,21 @@
 
 namespace data_reduction_proxy {
 
-TEST(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
+class DataReductionProxyHeadersTest : public testing::Test {
+ public:
+  void SetUp() override {
+    // TODO(crbug.com/968214): Modify these tests to work correctly with the
+    // network service (and DRP) enabled by default. This class can be deleted
+    // and TEST_F => TEST with that change.
+    scoped_feature_list_.InitWithFeatures(
+        {}, {features::kDataReductionProxyEnabledWithNetworkService});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -72,7 +86,7 @@ TEST(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
+TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   const struct {
     const char* chrome_proxy_content_transform_header;
     const char* chrome_proxy_header;
@@ -93,7 +107,7 @@ TEST(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, IsLitePagePreview) {
+TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -141,7 +155,7 @@ TEST(DataReductionProxyHeadersTest, IsLitePagePreview) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
+TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   const struct {
      const char* headers;
      std::string action_key;
@@ -235,7 +249,7 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
+TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   const struct {
      const char* headers;
      bool expected_result;
@@ -487,7 +501,7 @@ TEST(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
+TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
   std::string headers =
       "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -504,7 +518,7 @@ TEST(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
   EXPECT_FALSE(data_reduction_proxy_info.bypass_all);
 }
 
-TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
+TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -602,8 +616,7 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   }
 }
 
-
-TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
+TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;
      DataReductionProxyBypassType expected_result;
@@ -735,8 +748,8 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest,
-     GetDataReductionProxyBypassEventTypeURLRedirectCycle) {
+TEST_F(DataReductionProxyHeadersTest,
+       GetDataReductionProxyBypassEventTypeURLRedirectCycle) {
   const struct {
     const char* headers;
     std::vector<GURL> url_chain;

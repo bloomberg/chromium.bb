@@ -51,6 +51,8 @@ OPENSSL_MSVC_PRAGMA(warning(pop))
 #include "../crypto/internal.h"
 #include "internal.h"
 
+#include "../third_party/sike/sike.h"
+
 
 // TimeResults represents the results of benchmarking a function.
 struct TimeResults {
@@ -294,6 +296,64 @@ static bool SpeedRSAKeyGen(const std::string &selected) {
   return true;
 }
 
+static bool SpeedSIKEP503(const std::string &selected) {
+  if (!selected.empty() && selected.find("SIKE") == std::string::npos) {
+    return true;
+  }
+  // speed generation
+  uint8_t public_SIKE[SIKEp503_PUB_BYTESZ];
+  uint8_t private_SIKE[SIKEp503_PRV_BYTESZ];
+  uint8_t ct[SIKEp503_CT_BYTESZ];
+  bool res;
+
+  {
+    TimeResults results;
+    res = TimeFunction(&results,
+                [&private_SIKE, &public_SIKE]() -> bool {
+      return (SIKE_keypair(private_SIKE, public_SIKE) == 1);
+    });
+    results.Print("SIKE/P503 generate");
+  }
+
+  if (!res) {
+    fprintf(stderr, "Failed to time SIKE_keypair.\n");
+    return false;
+  }
+
+  {
+    TimeResults results;
+    TimeFunction(&results,
+                [&ct, &public_SIKE]() -> bool {
+      uint8_t ss[SIKEp503_SS_BYTESZ];
+      SIKE_encaps(ss, ct, public_SIKE);
+      return true;
+    });
+    results.Print("SIKE/P503 encap");
+  }
+
+  if (!res) {
+    fprintf(stderr, "Failed to time SIKE_encaps.\n");
+    return false;
+  }
+
+  {
+    TimeResults results;
+    TimeFunction(&results,
+                [&ct, &public_SIKE, &private_SIKE]() -> bool {
+      uint8_t ss[SIKEp503_SS_BYTESZ];
+      SIKE_decaps(ss, ct, public_SIKE, private_SIKE);
+      return true;
+    });
+    results.Print("SIKE/P503 decap");
+  }
+
+  if (!res) {
+    fprintf(stderr, "Failed to time SIKE_decaps.\n");
+    return false;
+  }
+  return true;
+}
+
 static uint8_t *align(uint8_t *in, unsigned alignment) {
   return reinterpret_cast<uint8_t *>(
       (reinterpret_cast<uintptr_t>(in) + alignment) &
@@ -435,7 +495,7 @@ static bool SpeedAEADOpen(const EVP_AEAD *aead, const std::string &name,
 static bool SpeedHashChunk(const EVP_MD *md, std::string name,
                            size_t chunk_len) {
   bssl::ScopedEVP_MD_CTX ctx;
-  uint8_t scratch[8192];
+  uint8_t scratch[16384];
 
   if (chunk_len > sizeof(scratch)) {
     return false;
@@ -476,7 +536,7 @@ static bool SpeedHash(const EVP_MD *md, const std::string &name,
 }
 
 static bool SpeedRandomChunk(std::string name, size_t chunk_len) {
-  uint8_t scratch[8192];
+  uint8_t scratch[16384];
 
   if (chunk_len > sizeof(scratch)) {
     return false;
@@ -938,6 +998,7 @@ bool Speed(const std::vector<std::string> &args) {
       !SpeedECDH(selected) ||
       !SpeedECDSA(selected) ||
       !Speed25519(selected) ||
+      !SpeedSIKEP503(selected) ||
       !SpeedSPAKE2(selected) ||
       !SpeedScrypt(selected) ||
       !SpeedRSAKeyGen(selected) ||

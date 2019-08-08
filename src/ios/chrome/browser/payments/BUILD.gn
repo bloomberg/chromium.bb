@@ -47,6 +47,7 @@ source_set("payments") {
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/signin",
     "//ios/web",
+    "//ios/web/public/security",
     "//net",
     "//services/identity/public/cpp:cpp",
     "//ui/base",

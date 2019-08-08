@@ -108,7 +108,8 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   offline_pages::OfflinePageModel* offline_page_model =
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
   offline_pages::PrefetchService* prefetch_service =
-      offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile);
+      offline_pages::PrefetchServiceFactory::GetForKey(
+          profile->GetProfileKey());
   // Using base::Unretained is safe because the FeedSchedulerHost ensures the
   // |scheduler_host| will outlive the |offline_host|, and calls to
   // |the scheduler_host| are never posted to a message loop.

@@ -48,7 +48,7 @@ using EchoCancellationType =
 namespace {
 
 using webrtc::AudioProcessing;
-using webrtc::NoiseSuppression;
+using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
 
 constexpr int kAudioProcessingNumberOfChannels = 1;
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
@@ -378,7 +378,6 @@ void MediaStreamAudioProcessor::Stop() {
   if (!audio_processing_.get())
     return;
 
-  audio_processing_.get()->UpdateHistogramsOnCallEnd();
   blink::StopEchoCancellationDump(audio_processing_.get());
   worker_queue_.reset(nullptr);
 
@@ -610,22 +609,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     playout_data_source_->AddPlayoutSink(this);
   }
 
-  if (properties.EchoCancellationIsWebRtcProvided()) {
-    blink::EnableEchoCancellation(audio_processing_.get());
-  }
-
-  if (properties.goog_noise_suppression)
-    blink::EnableNoiseSuppression(audio_processing_.get(),
-                                  NoiseSuppression::kHigh);
-
-  if (goog_typing_detection) {
-    // TODO(xians): Remove this |typing_detector_| after the typing suppression
-    // is enabled by default.
-    typing_detector_.reset(new webrtc::TypingDetection());
-    blink::EnableTypingDetection(audio_processing_.get(),
-                                 typing_detector_.get());
-  }
-
   // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
   // webrtc::AudioProcessing::Config, crbug.com/895814.
   base::Optional<double> pre_amplifier_fixed_gain_factor,
@@ -634,36 +617,44 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
                             &pre_amplifier_fixed_gain_factor,
                             &gain_control_compression_gain_db);
 
-  if (properties.goog_auto_gain_control) {
-    blink::EnableAutomaticGainControl(audio_processing_.get(),
-                                      gain_control_compression_gain_db);
-  }
-
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
   apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
 
-  if (properties.goog_experimental_auto_gain_control) {
-    apm_config.gain_controller2.enabled =
-        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
-    apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
-
-    apm_config.gain_controller2.adaptive_digital.enabled = true;
-
-    const bool use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
-        features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
-    using Shortcut =
-        webrtc::AudioProcessing::Config::GainController2::LevelEstimator;
-    apm_config.gain_controller2.adaptive_digital.level_estimator =
-        use_peaks_not_rms ? Shortcut::kPeak : Shortcut::kRms;
-
-    const int saturation_margin = base::GetFieldTrialParamByFeatureAsInt(
-        features::kWebRtcHybridAgc, "saturation_margin", -1);
-    if (saturation_margin != -1) {
-      apm_config.gain_controller2.adaptive_digital.extra_saturation_margin_db =
-          saturation_margin;
+  if (properties.goog_auto_gain_control ||
+      properties.goog_experimental_auto_gain_control) {
+    bool use_hybrid_agc = false;
+    base::Optional<bool> use_peaks_not_rms;
+    base::Optional<int> saturation_margin;
+    if (properties.goog_experimental_auto_gain_control) {
+      use_hybrid_agc = base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
+      if (use_hybrid_agc) {
+        DCHECK(properties.goog_auto_gain_control)
+            << "Cannot enable hybrid AGC when AGC is disabled.";
+      }
+      use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
+          features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
+      saturation_margin = base::GetFieldTrialParamByFeatureAsInt(
+          features::kWebRtcHybridAgc, "saturation_margin", -1);
     }
+    blink::ConfigAutomaticGainControl(
+        &apm_config, properties.goog_auto_gain_control,
+        properties.goog_experimental_auto_gain_control, use_hybrid_agc,
+        use_peaks_not_rms, saturation_margin, gain_control_compression_gain_db);
   }
+
   blink::ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
+  if (goog_typing_detection) {
+    // TODO(xians): Remove this |typing_detector_| after the typing suppression
+    // is enabled by default.
+    typing_detector_.reset(new webrtc::TypingDetection());
+    blink::EnableTypingDetection(&apm_config, typing_detector_.get());
+  }
+  if (properties.goog_noise_suppression) {
+    blink::EnableNoiseSuppression(&apm_config, NoiseSuppression::kHigh);
+  }
+  if (properties.EchoCancellationIsWebRtcProvided()) {
+    blink::EnableEchoCancellation(&apm_config);
+  }
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
@@ -681,7 +672,13 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // convert at output) or ideally, have a backchannel from the sink to know
   // what format it would prefer.
   const int output_sample_rate = audio_processing_
-                                     ? blink::kAudioProcessingSampleRate
+                                     ?
+#if defined(IS_CHROMECAST)
+                                     std::min(blink::kAudioProcessingSampleRate,
+                                              input_format.sample_rate())
+#else
+                                     blink::kAudioProcessingSampleRate
+#endif  // defined(IS_CHROMECAST)
                                      : input_format.sample_rate();
   media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
@@ -770,19 +767,13 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   ap->set_stream_delay_ms(total_delay_ms);
 
   DCHECK_LE(volume, WebRtcAudioDeviceImpl::kMaxVolumeLevel);
-  webrtc::GainControl* agc = ap->gain_control();
-  int err = agc->set_stream_analog_level(volume);
-  DCHECK_EQ(err, 0) << "set_stream_analog_level() error: " << err;
-
+  ap->set_stream_analog_level(volume);
   ap->set_stream_key_pressed(key_pressed);
 
-  err = ap->ProcessStream(process_ptrs,
-                          process_frames,
-                          input_format_.sample_rate(),
-                          MapLayout(input_format_.channel_layout()),
-                          output_format_.sample_rate(),
-                          MapLayout(output_format_.channel_layout()),
-                          output_ptrs);
+  int err = ap->ProcessStream(
+      process_ptrs, process_frames, input_format_.sample_rate(),
+      MapLayout(input_format_.channel_layout()), output_format_.sample_rate(),
+      MapLayout(output_format_.channel_layout()), output_ptrs);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
   if (typing_detector_) {
@@ -801,8 +792,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                      rtc::scoped_refptr<MediaStreamAudioProcessor>(this)));
 
   // Return 0 if the volume hasn't been changed, and otherwise the new volume.
-  return (agc->stream_analog_level() == volume) ?
-      0 : agc->stream_analog_level();
+  const int recommended_volume = ap->recommended_stream_analog_level();
+  return (recommended_volume == volume) ? 0 : recommended_volume;
 }
 
 void MediaStreamAudioProcessor::UpdateAecStats() {

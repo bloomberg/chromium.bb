@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -16,6 +17,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -91,6 +93,41 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
 
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLGbm);
 };
+
+std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
+  std::vector<gfx::BufferFormat> supported_buffer_formats;
+  // We cannot use FileEnumerator here because the sandbox is already closed.
+  constexpr char kRenderNodeFilePattern[] = "/dev/dri/renderD%d";
+  for (int i = 128; /* end on first card# that does not exist */; i++) {
+    base::FilePath dev_path(FILE_PATH_LITERAL(
+        base::StringPrintf(kRenderNodeFilePattern, i).c_str()));
+
+    base::ThreadRestrictions::ScopedAllowIO scoped_allow_io;
+    base::File dev_path_file(dev_path,
+                             base::File::FLAG_OPEN | base::File::FLAG_READ);
+    if (!dev_path_file.IsValid())
+      break;
+
+    gbm_device* device = gbm_create_device(dev_path_file.GetPlatformFile());
+    if (!device) {
+      LOG(ERROR) << "Couldn't create Gbm Device at " << dev_path.MaybeAsASCII();
+      return supported_buffer_formats;
+    }
+
+    for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
+      const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
+      if (base::ContainsValue(supported_buffer_formats, buffer_format))
+        continue;
+      if (gbm_device_is_format_supported(
+              device, GetFourCCFormatFromBufferFormat(buffer_format),
+              GBM_BO_USE_TEXTURING)) {
+        supported_buffer_formats.push_back(buffer_format);
+      }
+    }
+    gbm_device_destroy(device);
+  }
+  return supported_buffer_formats;
+}
 
 }  // namespace
 
@@ -224,6 +261,7 @@ std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
 
 scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
@@ -296,6 +334,11 @@ void GbmSurfaceFactory::SetGetProtectedNativePixmapDelegate(
     const GetProtectedNativePixmapCallback&
         get_protected_native_pixmap_callback) {
   get_protected_native_pixmap_callback_ = get_protected_native_pixmap_callback;
+}
+
+std::vector<gfx::BufferFormat>
+GbmSurfaceFactory::GetSupportedFormatsForTexturing() const {
+  return EnumerateSupportedBufferFormatsForTexturing();
 }
 
 }  // namespace ui

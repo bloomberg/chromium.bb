@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>backdrop-filter: backdrop-filter plus transform should be applied correctly</title>
+
+<!--Expected: A green box with an overlapping rotated box that inverts content behind it. -->
+
+<div class="colorbox"></div>
+<div class="filterbox"></div>
+
+<!-- See [1] for an implementation of this test in WPT format. It requires the
+  WPT Fuzzy Matching [2] feature to be implemented, due to AA on the border
+  radii.
+
+  [1] https://chromium-review.googlesource.com/c/chromium/src/+/1521959/15
+  [2] https://github.com/web-platform-tests/wpt/blob/1f570a686843ca10f151a79956ee16110f4a4d42/docs/_writing-tests/reftests.md#fuzzy-matching
+-->
+
+<style>
+div {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    left: 100px;
+    top: 100px;
+}
+.colorbox {
+    background: green;
+}
+.filterbox {
+    top: 140px;
+    backdrop-filter: invert(1);
+    transform: rotate(30deg);
+    border-radius: 10px;
+}
+</style>
+

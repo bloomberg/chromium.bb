@@ -197,7 +197,7 @@ void FullscreenShellSurface::OnWindowDestroying(aura::Window* window) {
 
 void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
     ui::WindowShowState show_state) {
-  DCHECK(enabled());
+  DCHECK(GetEnabled());
   DCHECK(!widget_);
 
   views::Widget::InitParams params;
@@ -237,7 +237,7 @@ void FullscreenShellSurface::CommitWidget() {
 }
 
 bool FullscreenShellSurface::OnPreWidgetCommit() {
-  if (!widget_ && enabled() && host_window()->bounds().IsEmpty())
+  if (!widget_ && GetEnabled() && host_window()->bounds().IsEmpty())
     return false;
 
   return true;

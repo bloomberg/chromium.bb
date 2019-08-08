@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import distutils.version
 import os
 import sys
@@ -13,12 +15,12 @@ ROOT_PATH = os.path.abspath(os.path.join(
 
 
 def native_error(msg, version):
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   ERROR: Native python-coverage (version: %s) is required to be
   installed on your PYTHONPATH to run this test. Recommendation:
      sudo apt-get install pip
      sudo pip install --upgrade coverage
-  %s""") % (version, msg)
+  %s""") % (version, msg))
   sys.exit(1)
 
 def covered_main(includes, require_native=None, required_percentage=100.0,
@@ -56,7 +58,7 @@ def covered_main(includes, require_native=None, required_percentage=100.0,
       sys.path.insert(0, os.path.join(ROOT_PATH, 'third_party'))
       import coverage
     else:
-      print ("ERROR: python-coverage (%s) is required to be installed on your "
+      print("ERROR: python-coverage (%s) is required to be installed on your "
              "PYTHONPATH to run this test." % require_native)
       sys.exit(1)
 
@@ -71,7 +73,7 @@ def covered_main(includes, require_native=None, required_percentage=100.0,
 
   COVERAGE.stop()
   if COVERAGE.report() < required_percentage:
-    print 'FATAL: not at required %f%% coverage.' % required_percentage
+    print('FATAL: not at required %f%% coverage.' % required_percentage)
     retcode = 2
 
   return retcode

@@ -8,8 +8,8 @@
 
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -22,14 +22,11 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         scoped_refptr<ws::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
-        const viz::UpdateVSyncParametersCallback&
-            update_vsync_parameters_callback,
-        std::unique_ptr<viz::CompositorOverlayCandidateValidator>
+        std::unique_ptr<viz::OverlayCandidateValidator>
             overlay_candidate_validator,
         gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       use_gpu_fence_(
           context_provider_->ContextCapabilities().chromium_gpu_fence &&

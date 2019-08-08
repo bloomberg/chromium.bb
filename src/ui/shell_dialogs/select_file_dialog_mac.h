@@ -28,8 +28,9 @@ namespace test {
 class SelectFileDialogMacTest;
 }  // namespace test
 
-// TODO(https://crbug.com/913303): Move this structure to ui/views_bridge_mac.
-// This structure provides a C++ (or mojo) interface for creating a NSSavePanel.
+// TODO(https://crbug.com/913303): Move this structure to
+// components/remote_cocoa. This structure provides a C++ (or mojo) interface
+// for creating a NSSavePanel.
 class SavePanelBridge {
  public:
   // Callback made from the NSSavePanel's completion block.

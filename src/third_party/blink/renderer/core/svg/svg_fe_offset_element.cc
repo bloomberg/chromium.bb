@@ -27,7 +27,7 @@
 
 namespace blink {
 
-inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
+SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEOffsetTag, document),
       dx_(MakeGarbageCollected<SVGAnimatedNumber>(this,
                                                   svg_names::kDxAttr,
@@ -47,8 +47,6 @@ void SVGFEOffsetElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(in1_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEOffsetElement)
 
 void SVGFEOffsetElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == svg_names::kInAttr || attr_name == svg_names::kDxAttr ||

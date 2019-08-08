@@ -154,9 +154,9 @@ IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
     : IndexedDBBackingStore::Transaction(nullptr), result_(result) {}
 void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
-    scoped_refptr<BlobWriteCallback> callback) {
-  callback->Run(IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC);
-  return leveldb::Status::OK();
+    BlobWriteCallback callback) {
+  return std::move(callback).Run(
+      IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC);
 }
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
   return result_;

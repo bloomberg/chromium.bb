@@ -39,6 +39,10 @@ public class AssistantOverlayCoordinator {
         model.addObserver((source, propertyKey) -> {
             if (AssistantOverlayModel.STATE == propertyKey) {
                 setState(model.get(AssistantOverlayModel.STATE));
+            } else if (AssistantOverlayModel.VISUAL_VIEWPORT == propertyKey) {
+                RectF rect = model.get(AssistantOverlayModel.VISUAL_VIEWPORT);
+                mEventFilter.setVisualViewport(rect);
+                mDrawable.setVisualViewport(rect);
             } else if (AssistantOverlayModel.TOUCHABLE_AREA == propertyKey) {
                 List<RectF> area = model.get(AssistantOverlayModel.TOUCHABLE_AREA);
                 mEventFilter.setTouchableArea(area);
@@ -47,8 +51,11 @@ public class AssistantOverlayCoordinator {
                 AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
                 mEventFilter.setDelegate(delegate);
                 mDrawable.setDelegate(delegate);
-            } else if (AssistantOverlayModel.WEB_CONTENTS == propertyKey) {
-                mDrawable.setWebContents(model.get(AssistantOverlayModel.WEB_CONTENTS));
+            } else if (AssistantOverlayModel.BACKGROUND_COLOR == propertyKey) {
+                mDrawable.setBackgroundColor(model.get(AssistantOverlayModel.BACKGROUND_COLOR));
+            } else if (AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR == propertyKey) {
+                mDrawable.setHighlightBorderColor(
+                        model.get(AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR));
             }
         });
     }
@@ -57,8 +64,6 @@ public class AssistantOverlayCoordinator {
      * Destroy this coordinator.
      */
     public void destroy() {
-        if (mActivity.isViewObscuringAllTabs()) mActivity.removeViewObscuringAllTabs(mScrim);
-
         setScrimEnabled(false);
         mEventFilter.destroy();
         mDrawable.destroy();
@@ -85,14 +90,6 @@ public class AssistantOverlayCoordinator {
             setScrimEnabled(true);
             mDrawable.setPartial(state == AssistantOverlayState.PARTIAL);
             mEventFilter.setPartial(state == AssistantOverlayState.PARTIAL);
-        }
-
-        if (state == AssistantOverlayState.FULL && !mActivity.isViewObscuringAllTabs()) {
-            mActivity.addViewObscuringAllTabs(mScrim);
-        }
-
-        if (state != AssistantOverlayState.FULL && mActivity.isViewObscuringAllTabs()) {
-            mActivity.removeViewObscuringAllTabs(mScrim);
         }
     }
 

@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/notifications/scheduler/internal_types.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 
 namespace notifications {

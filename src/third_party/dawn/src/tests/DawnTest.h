@@ -16,8 +16,10 @@
 #include "dawn_native/DawnNative.h"
 
 #include <gtest/gtest.h>
+
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 // Getting data back from Dawn is done in an async manners so all expectations are "deferred"
 // until the end of the test. Also expectations use a copy to a MapRead buffer to get the data
@@ -46,6 +48,7 @@
 #define ASSERT_DEVICE_ERROR(statement) \
     StartExpectDeviceError();          \
     statement;                         \
+    FlushWire();                       \
     ASSERT_TRUE(EndExpectDeviceError());
 
 struct RGBA8 {
@@ -60,22 +63,34 @@ struct RGBA8 {
 };
 std::ostream& operator<<(std::ostream& stream, const RGBA8& color);
 
+struct DawnTestParam {
+    explicit DawnTestParam(dawn_native::BackendType backendType) : backendType(backendType) {
+    }
+
+    dawn_native::BackendType backendType;
+
+    std::vector<const char*> forceEnabledWorkarounds;
+};
+
 // Shorthands for backend types used in the DAWN_INSTANTIATE_TEST
-static constexpr dawn_native::BackendType D3D12Backend = dawn_native::BackendType::D3D12;
-static constexpr dawn_native::BackendType MetalBackend = dawn_native::BackendType::Metal;
-static constexpr dawn_native::BackendType OpenGLBackend = dawn_native::BackendType::OpenGL;
-static constexpr dawn_native::BackendType VulkanBackend = dawn_native::BackendType::Vulkan;
+extern const DawnTestParam D3D12Backend;
+extern const DawnTestParam MetalBackend;
+extern const DawnTestParam OpenGLBackend;
+extern const DawnTestParam VulkanBackend;
+
+DawnTestParam ForceWorkarounds(const DawnTestParam& originParam,
+                               std::initializer_list<const char*> forceEnabledWorkarounds);
 
 struct GLFWwindow;
 
 namespace utils {
     class BackendBinding;
     class TerribleCommandBuffer;
-}
+}  // namespace utils
 
 namespace detail {
     class Expectation;
-}
+}  // namespace detail
 
 namespace dawn_wire {
     class WireClient;
@@ -91,7 +106,7 @@ class DawnTestEnvironment : public testing::Environment {
 
     void SetUp() override;
 
-    bool UseWire() const;
+    bool UsesWire() const;
     dawn_native::Instance* GetInstance() const;
     GLFWwindow* GetWindowForBackend(dawn_native::BackendType type) const;
 
@@ -99,6 +114,7 @@ class DawnTestEnvironment : public testing::Environment {
     void CreateBackendWindow(dawn_native::BackendType type);
 
     bool mUseWire = false;
+    bool mEnableBackendValidation = false;
     std::unique_ptr<dawn_native::Instance> mInstance;
 
     // Windows don't usually like to be bound to one API than the other, for example switching
@@ -107,7 +123,7 @@ class DawnTestEnvironment : public testing::Environment {
     std::unordered_map<dawn_native::BackendType, GLFWwindow*> mWindows;
 };
 
-class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
+class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
   public:
     DawnTest();
     ~DawnTest();
@@ -131,6 +147,8 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
     bool IsLinux() const;
     bool IsMacOS() const;
 
+    bool UsesWire() const;
+
     void StartExpectDeviceError();
     bool EndExpectDeviceError();
 
@@ -138,6 +156,9 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
     dawn::Device device;
     dawn::Queue queue;
     dawn::SwapChain swapchain;
+
+    DawnProcTable backendProcs = {};
+    DawnDevice backendDevice = nullptr;
 
     // Helper methods to implement the EXPECT_ macros
     std::ostringstream& AddBufferExpectation(const char* file,
@@ -159,6 +180,7 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
                                               detail::Expectation* expectation);
 
     void WaitABit();
+    void FlushWire();
 
     void SwapBuffersForCapture();
 
@@ -168,7 +190,6 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
     std::unique_ptr<dawn_wire::WireClient> mWireClient;
     std::unique_ptr<utils::TerribleCommandBuffer> mC2sBuf;
     std::unique_ptr<utils::TerribleCommandBuffer> mS2cBuf;
-    void FlushWire();
 
     // Tracking for validation errors
     static void OnDeviceError(const char* message, DawnCallbackUserdata userdata);
@@ -242,9 +263,8 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
 namespace detail {
     // Helper functions used for DAWN_INSTANTIATE_TEST
     bool IsBackendAvailable(dawn_native::BackendType type);
-    std::vector<dawn_native::BackendType> FilterBackends(const dawn_native::BackendType* types,
-                                                         size_t numParams);
-    std::string GetParamName(const testing::TestParamInfo<dawn_native::BackendType>& info);
+    std::vector<DawnTestParam> FilterBackends(const DawnTestParam* params, size_t numParams);
+    std::string GetParamName(const testing::TestParamInfo<DawnTestParam>& info);
 
     // All classes used to implement the deferred expectations should inherit from this.
     class Expectation {

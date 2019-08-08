@@ -36,6 +36,7 @@
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -62,6 +63,7 @@ class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
+class WorkerResourceTimingNotifier;
 struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
 struct WorkerDevToolsParams;
@@ -118,6 +120,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to fetch and run a top-level module script on the worker
@@ -125,6 +128,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void FetchAndRunModuleScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::FetchCredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
@@ -191,8 +195,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
     for (WorkerThread* thread : WorkerThreads()) {
       PostCrossThreadTask(
           *thread->GetTaskRunner(task_type), FROM_HERE,
-          CrossThreadBind(function, WTF::CrossThreadUnretained(thread),
-                          parameters...));
+          CrossThreadBindOnce(function, WTF::CrossThreadUnretained(thread),
+                              parameters...));
     }
   }
 
@@ -229,6 +233,23 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
   void ChildThreadStartedOnWorkerThread(WorkerThread*);
   void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
+
+  // Changes the lifecycle state of the associated execution context for
+  // this worker to Paused and may enter a nested run loop. Only one nested
+  // message loop will be entered but |pause_or_freeze_count_| will be
+  // incremented on each call. Inspector can call pause when this thread is
+  // first created. May be called multiple times and from any thread.
+  void Pause();
+
+  // Changes the lifecycle state of the associated execution context for
+  // this worker to FrozenPaused and may enter a nested run loop. Only one
+  // nested message loop will be entered but |pause_or_freeze_count_| will be
+  // incremented on each call. May be called multiple times and from any thread.
+  void Freeze();
+
+  // Decrements |pause_or_freeze_count_| and if count is zero then
+  // it will exit the entered nested run loop. Might be called from any thread.
+  void Resume();
 
  protected:
   explicit WorkerThread(WorkerReportingProxy&);
@@ -274,9 +295,16 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // normal shutdown sequence does not start within a certain time period.
   void ScheduleToTerminateScriptExecution();
 
+  enum class TerminationState {
+    kTerminate,
+    kPostponeTerminate,
+    kTerminationUnnecessary,
+  };
+
   // Returns true if we should synchronously terminate the script execution so
   // that a shutdown task can be handled by the thread event loop.
-  bool ShouldTerminateScriptExecution() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  TerminationState ShouldTerminateScriptExecution()
+      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   // Terminates worker script execution if the worker thread is running and not
   // already shutting down. Does not terminate if a debugger task is running,
@@ -301,11 +329,13 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
   void FetchAndRunModuleScriptOnWorkerThread(
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       network::mojom::FetchCredentialsMode);
 
   // These are called in this order during worker thread termination.
@@ -316,6 +346,16 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void SetExitCode(ExitCode) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   bool CheckRequestedToTerminate() LOCKS_EXCLUDED(mutex_);
+
+  class InterruptData;
+  void PauseOrFreeze(mojom::FrameLifecycleState state);
+  void PauseOrFreezeOnWorkerThread(mojom::FrameLifecycleState state);
+  void ResumeOnWorkerThread();
+  void PauseOrFreezeWithInterruptDataOnWorkerThread(InterruptData*);
+  static void PauseOrFreezeInsideV8InterruptOnWorkerThread(v8::Isolate*,
+                                                           void* data);
+  static void PauseOrFreezeInsidePostTaskOnWorkerThread(
+      InterruptData* interrupt_data);
 
   // A unique identifier among all WorkerThreads.
   const int worker_thread_id_;
@@ -346,6 +386,14 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // file.
   Mutex mutex_;
 
+  // Whether the thread is paused in a nested message loop or not. Used
+  // only on the worker thread.
+  int pause_or_freeze_count_ = 0;
+
+  // A nested message loop for handling pausing. Pointer is not owned. Used only
+  // on the worker thread.
+  Platform::NestedMessageLoopRunner* nested_runner_ = nullptr;
+
   CrossThreadPersistent<ConsoleMessageStorage> console_message_storage_;
   CrossThreadPersistent<WorkerOrWorkletGlobalScope> global_scope_;
   CrossThreadPersistent<WorkerInspectorController> worker_inspector_controller_;
@@ -361,6 +409,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   TaskHandle forcible_termination_task_handle_;
 
   HashSet<WorkerThread*> child_threads_;
+
+  // List of data to passed into the interrupt callbacks. The V8 API takes
+  // a void* and we need to pass more data that just a ptr, so we pass
+  // a pointer to a member in this list.
+  HashSet<std::unique_ptr<InterruptData>> pending_interrupts_
+      GUARDED_BY(mutex_);
 
   THREAD_CHECKER(parent_thread_checker_);
 };

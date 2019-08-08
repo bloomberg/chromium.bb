@@ -17,8 +17,10 @@ namespace notifications {
 // Represents the in-memory counterpart of scheduled notification database
 // record.
 struct NotificationEntry {
+  NotificationEntry();
   NotificationEntry(SchedulerClientType type, const std::string& guid);
   NotificationEntry(const NotificationEntry& other);
+  bool operator==(const NotificationEntry& other) const;
   ~NotificationEntry();
 
   // The type of the notification.

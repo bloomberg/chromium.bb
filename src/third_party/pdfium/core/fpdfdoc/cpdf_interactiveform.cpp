@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "constants/form_fields.h"
 #include "constants/stream_dict_common.h"
 #include "core/fpdfapi/font/cpdf_font.h"
@@ -81,8 +82,8 @@ void InitDict(CPDF_Dictionary*& pFormDict, CPDF_Document* pDocument) {
 
   if (!pFormDict) {
     pFormDict = pDocument->NewIndirect<CPDF_Dictionary>();
-    pDocument->GetRoot()->SetFor("AcroForm",
-                                 pFormDict->MakeReference(pDocument));
+    pDocument->GetRoot()->SetNewFor<CPDF_Reference>("AcroForm", pDocument,
+                                                    pFormDict->GetObjNum());
   }
 
   ByteString csDA;
@@ -288,7 +289,8 @@ void AddFont(CPDF_Dictionary*& pFormDict,
 
   csNameTag->Remove(' ');
   *csNameTag = GenerateNewFontResourceName(pDR, *csNameTag);
-  pFonts->SetFor(*csNameTag, pFont->GetFontDict()->MakeReference(pDocument));
+  pFonts->SetNewFor<CPDF_Reference>(*csNameTag, pDocument,
+                                    pFont->GetFontDict()->GetObjNum());
 }
 
 CPDF_Font* AddNativeFont(CPDF_Dictionary*& pFormDict,
@@ -340,7 +342,7 @@ class CFieldNameExtractor {
   const wchar_t* m_pEnd;
 };
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
 struct PDF_FONTDATA {
   bool bFind;
   LOGFONTA lf;
@@ -386,7 +388,7 @@ bool RetrieveSpecificFont(uint8_t charSet,
   }
   return RetrieveSpecificFont(lf);
 }
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -587,7 +589,7 @@ CPDF_InteractiveForm::CPDF_InteractiveForm(CPDF_Document* pDocument)
   if (!pRoot)
     return;
 
-  m_pFormDict = pRoot->GetDictFor("AcroForm");
+  m_pFormDict.Reset(pRoot->GetDictFor("AcroForm"));
   if (!m_pFormDict)
     return;
 
@@ -626,7 +628,7 @@ CPDF_Font* CPDF_InteractiveForm::AddStandardFont(CPDF_Document* pDocument,
 ByteString CPDF_InteractiveForm::GetNativeFont(uint8_t charSet,
                                                void* pLogFont) {
   ByteString csFontName;
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
   LOGFONTA lf = {};
   if (charSet == FX_CHARSET_ANSI) {
     csFontName = CFX_Font::kDefaultAnsiFontName;
@@ -667,7 +669,7 @@ CPDF_Font* CPDF_InteractiveForm::AddNativeFont(uint8_t charSet,
   if (!pDocument)
     return nullptr;
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
   LOGFONTA lf;
   ByteString csFontName = GetNativeFont(charSet, &lf);
   if (!csFontName.IsEmpty()) {
@@ -932,7 +934,7 @@ void CPDF_InteractiveForm::AddTerminalField(CPDF_Dictionary* pFieldDict) {
     pField = newField.get();
     CPDF_Object* pTObj = pDict->GetObjectFor(pdfium::form_fields::kT);
     if (ToReference(pTObj)) {
-      std::unique_ptr<CPDF_Object> pClone = pTObj->CloneDirectObject();
+      RetainPtr<CPDF_Object> pClone = pTObj->CloneDirectObject();
       if (pClone)
         pDict->SetFor(pdfium::form_fields::kT, std::move(pClone));
       else
@@ -1034,7 +1036,7 @@ std::unique_ptr<CFDF_Document> CPDF_InteractiveForm::ExportToFDF(
     } else {
       auto pNewDict = pDoc->New<CPDF_Dictionary>();
       pNewDict->SetNewFor<CPDF_Name>("Type", "Filespec");
-      CPDF_FileSpec filespec(pNewDict.get());
+      CPDF_FileSpec filespec(pNewDict.Get());
       filespec.SetFileName(pdf_path);
       pMainDict->SetFor("F", std::move(pNewDict));
     }

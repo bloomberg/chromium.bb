@@ -101,7 +101,7 @@ void PerformNewDeskMiniViewAnimation(
 
     layer->SetTransform(gfx::Transform());
     auto* controller = Shell::Get()->overview_controller();
-    DCHECK(controller->IsSelecting());
+    DCHECK(controller->InOverviewSession());
     controller->overview_session()->PositionWindows(true);
   }
 

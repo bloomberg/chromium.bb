@@ -70,11 +70,20 @@ class FakeOutputSurface : public OutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override {}
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   unsigned UpdateGpuFence() override;
+  void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
+#if defined(USE_X11)
+  void SetNeedsSwapSizeNotifications(
+      bool needs_swap_size_notifications) override;
+#endif
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;
@@ -85,10 +94,6 @@ class FakeOutputSurface : public OutputSurface {
 
   void set_overlay_texture_id(unsigned overlay_texture_id) {
     overlay_texture_id_ = overlay_texture_id;
-  }
-
-  void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
-    overlay_candidate_validator_ = validator;
   }
 
   void set_has_external_stencil_test(bool has_test) {

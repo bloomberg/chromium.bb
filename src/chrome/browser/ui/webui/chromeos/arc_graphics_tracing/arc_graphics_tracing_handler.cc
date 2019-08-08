@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "components/arc/arc_prefs.h"
@@ -41,8 +42,8 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/event.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -271,13 +272,7 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
 
   exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
   DCHECK(surface);
-  surface->SetCommitCallback(base::BindRepeating(
-      &ArcGraphicsTracingHandler::OnCommit, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  jank_detector_->OnSample();
+  surface->AddSurfaceObserver(this);
 }
 
 void ArcGraphicsTracingHandler::OnJankDetected(const base::Time& timestamp) {
@@ -317,6 +312,15 @@ void ArcGraphicsTracingHandler::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
+void ArcGraphicsTracingHandler::OnSurfaceDestroying(exo::Surface* surface) {
+  DiscardActiveArcWindow();
+}
+
+void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  jank_detector_->OnSample();
+}
+
 void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
   DCHECK(arc_active_window_);
   base::DictionaryValue task_information;
@@ -347,8 +351,8 @@ void ArcGraphicsTracingHandler::DiscardActiveArcWindow() {
     return;
 
   exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
-  DCHECK(surface);
-  surface->SetCommitCallback(exo::Surface::CommitCallback());
+  if (surface)
+    surface->RemoveSurfaceObserver(this);
 
   arc_active_window_->RemovePreTargetHandler(this);
   arc_active_window_->RemoveObserver(this);
@@ -364,13 +368,7 @@ void ArcGraphicsTracingHandler::Activate() {
     return;
   }
 
-  views::Widget* const widget = views::Widget::GetWidgetForNativeWindow(window);
-  if (!widget) {
-    LOG(ERROR) << "Failed to activate, no widget for top level window.";
-    return;
-  }
-
-  widget->Activate();
+  platform_util::ActivateWindow(window);
 }
 
 void ArcGraphicsTracingHandler::StartTracing() {

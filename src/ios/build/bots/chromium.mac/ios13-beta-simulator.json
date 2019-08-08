@@ -1,0 +1,20 @@
+{
+  "comments": [
+    "Run tests on iOS13beta track on 64-bit iOS 13 simulators.",
+    "Note: Xcode 11 will requires OSX 10.14.",
+    "Note: This file exists only to support the trybot.",
+    "It should be kept in sync with the CI configuration in ../chromium.fyi/."
+  ],
+  "xcode build version": "10b61",
+  "gn_args": [
+    "goma_dir=\"$(goma_dir)\"",
+    "is_component_build=false",
+    "is_debug=true",
+    "symbol_level=1",
+    "target_cpu=\"x64\"",
+    "target_os=\"ios\"",
+    "use_goma=true"
+  ],
+  "tests": [
+  ]
+}

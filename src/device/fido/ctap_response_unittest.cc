@@ -438,8 +438,7 @@ TEST(CTAPResponseTest, TestParseU2fAttestationStatementCBOR) {
       FidoAttestationStatement::CreateFromU2fRegisterResponse(
           test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(fido_attestation_statement);
-  auto cbor = cbor::Writer::Write(
-      cbor::Value(fido_attestation_statement->GetAsCBORMap()));
+  auto cbor = cbor::Writer::Write(AsCBOR(*fido_attestation_statement));
   ASSERT_TRUE(cbor);
   EXPECT_THAT(*cbor, ::testing::ElementsAreArray(
                          test_data::kU2fAttestationStatementCBOR));
@@ -500,7 +499,8 @@ TEST(CTAPResponseTest, TestSerializeU2fAttestationObject) {
 
   ASSERT_TRUE(attestation_object);
   EXPECT_EQ(GetTestAttestationObjectBytes(),
-            attestation_object->SerializeToCBOREncodedBytes());
+            cbor::Writer::Write(AsCBOR(*attestation_object))
+                .value_or(std::vector<uint8_t>()));
 }
 
 // Tests that U2F authenticator data is properly serialized.
@@ -577,21 +577,21 @@ TEST(CTAPResponseTest, TestReadGetInfoResponse) {
   auto get_info_response =
       ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice);
   ASSERT_TRUE(get_info_response);
-  ASSERT_TRUE(get_info_response->max_msg_size());
-  EXPECT_EQ(*get_info_response->max_msg_size(), 1200u);
+  ASSERT_TRUE(get_info_response->max_msg_size);
+  EXPECT_EQ(*get_info_response->max_msg_size, 1200u);
   EXPECT_TRUE(
-      base::ContainsKey(get_info_response->versions(), ProtocolVersion::kCtap));
+      base::ContainsKey(get_info_response->versions, ProtocolVersion::kCtap2));
   EXPECT_TRUE(
-      base::ContainsKey(get_info_response->versions(), ProtocolVersion::kU2f));
-  EXPECT_TRUE(get_info_response->options().is_platform_device);
-  EXPECT_TRUE(get_info_response->options().supports_resident_key);
-  EXPECT_TRUE(get_info_response->options().supports_user_presence);
+      base::ContainsKey(get_info_response->versions, ProtocolVersion::kU2f));
+  EXPECT_TRUE(get_info_response->options.is_platform_device);
+  EXPECT_TRUE(get_info_response->options.supports_resident_key);
+  EXPECT_TRUE(get_info_response->options.supports_user_presence);
   EXPECT_EQ(AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured,
-            get_info_response->options().user_verification_availability);
+            get_info_response->options.user_verification_availability);
   EXPECT_EQ(AuthenticatorSupportedOptions::ClientPinAvailability::
                 kSupportedButPinNotSet,
-            get_info_response->options().client_pin_availability);
+            get_info_response->options.client_pin_availability);
 }
 
 TEST(CTAPResponseTest, TestReadGetInfoResponseWithDuplicateVersion) {
@@ -612,8 +612,8 @@ TEST(CTAPResponseTest, TestReadGetInfoResponseWithDuplicateVersion) {
   base::Optional<AuthenticatorGetInfoResponse> response =
       ReadCTAPGetInfoResponse(get_info);
   ASSERT_TRUE(response);
-  EXPECT_EQ(1u, response->versions().size());
-  EXPECT_TRUE(response->versions().contains(ProtocolVersion::kU2f));
+  EXPECT_EQ(1u, response->versions.size());
+  EXPECT_TRUE(response->versions.contains(ProtocolVersion::kU2f));
 }
 
 TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectFormat) {
@@ -625,8 +625,8 @@ TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectFormat) {
 
 TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
   AuthenticatorGetInfoResponse response(
-      {ProtocolVersion::kCtap, ProtocolVersion::kU2f}, kTestDeviceAaguid);
-  response.SetExtensions({"uvm", "hmac-secret"});
+      {ProtocolVersion::kCtap2, ProtocolVersion::kU2f}, kTestDeviceAaguid);
+  response.extensions.emplace({std::string("uvm"), std::string("hmac-secret")});
   AuthenticatorSupportedOptions options;
   options.supports_resident_key = true;
   options.is_platform_device = true;
@@ -634,11 +634,11 @@ TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
       ClientPinAvailability::kSupportedButPinNotSet;
   options.user_verification_availability = AuthenticatorSupportedOptions::
       UserVerificationAvailability::kSupportedAndConfigured;
-  response.SetOptions(std::move(options));
-  response.SetMaxMsgSize(1200);
-  response.SetPinProtocols({1});
+  response.options = std::move(options);
+  response.max_msg_size = 1200;
+  response.pin_protocols.emplace({static_cast<uint8_t>(1)});
 
-  EXPECT_THAT(EncodeToCBOR(response),
+  EXPECT_THAT(AuthenticatorGetInfoResponse::EncodeToCBOR(response),
               ::testing::ElementsAreArray(
                   base::make_span(test_data::kTestGetInfoResponsePlatformDevice)
                       .subspan(1)));
@@ -703,7 +703,7 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
           std::make_unique<OpaqueAttestationStatement>(
               "packed", cbor::Value(std::move(attestation_map)))));
   EXPECT_THAT(
-      GetSerializedCtapDeviceResponse(response),
+      AsCTAPStyleCBORBytes(response),
       ::testing::ElementsAreArray(
           base::make_span(test_data::kTestMakeCredentialResponse).subspan(1)));
 }

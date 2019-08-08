@@ -755,6 +755,28 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
     The paths to the tarballs.
   """
   images_dir = os.path.join(buildroot, 'chroot', test_results_dir.lstrip('/'))
+  return ArchiveVMFilesFromImageDir(images_dir, archive_path)
+
+
+def ArchiveVMFilesFromImageDir(images_dir, archive_path):
+  """Archives the VM memory and disk images into tarballs.
+
+  This method performs the work that used to be done in ArchiveVMFiles, but
+  removes the dependence on the default chroot location. This was created for
+  the build api. Unless you're working on that you probably want the other one.
+
+  TODO(crbug.com/954344): Refactor to an appropriate lib module.
+
+  See:
+    ArchiveVMFiles()
+
+  Args:
+    images_dir (str): The directory containing the images to archive.
+    archive_path (str): The directory where the archives should be created.
+
+  Returns:
+    list[str] - The paths to the tarballs.
+  """
   images = []
   for path, _, filenames in os.walk(images_dir):
     images.extend([
@@ -782,6 +804,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
         compression=cros_build_lib.COMP_BZIP2,
         inputs=[image_file])
     tar_files.append(tarball_path)
+
   return tar_files
 
 
@@ -838,7 +861,7 @@ def _RunTestSuiteUsingChromite(board,
   vm_image_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
 
   cmd = [
-      'cros_run_vm_test',
+      'cros_run_test',
       '--debug',
       '--board=%s' % board,
       '--image-path=%s' % path_util.ToChrootPath(vm_image_path),

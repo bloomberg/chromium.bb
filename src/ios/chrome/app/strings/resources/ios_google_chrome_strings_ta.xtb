@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="1282031177488366470">Chromeமின் அம்சங்களையும் செயல்திறனையும் மேம்படுத்த உதவுக</translation>
 <translation id="1326317727527857210">உங்கள் பிற சாதனங்களிலிருந்து தாவல்களைப் பெற, Chrome இல் உள்நுழையவும்.</translation>
+<translation id="1682483655351012182">Chrome தரவை ஒத்திசை</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome தனியுரிமை அறிக்கை</translation>
 <translation id="1863312987075920112">இந்தப் பயன்பாட்டைப் பயன்படுத்துவதன் மூலம், Chrome இன் <ph name="BEGIN_LINK_TOS" />சேவை விதிமுறைகள்<ph name="END_LINK_TOS" /> மற்றும் <ph name="BEGIN_LINK_PRIVACY" />தனியுரிமை அறிக்கையை<ph name="END_LINK_PRIVACY" /> ஏற்கிறீர்கள்.</translation>
-<translation id="1984705450038014246">உங்கள் Chrome தரவை ஒத்திசைக்கவும்</translation>
 <translation id="2147651015520127414">இந்த இணையதளச் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது.</translation>
 <translation id="2199719347983604670">Chrome ஒத்திசைவுத் தரவு</translation>
 <translation id="2342981853652716282">உங்கள் எல்லாச் சாதனங்களிலும் உங்கள் புக்மார்க்குகள், கடவுச்சொற்கள் மற்றும் பலவற்றைப் பெற, Chrome இல் உள்நுழையவும்.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">பயன்பாட்டுப் புள்ளிவிவரங்களையும், சிதைவு அறிக்கைகளையும் Googleளுக்கு அனுப்புவதன் மூலம் Chromeஐ மேலும் சிறப்பானதாக்க உதவவும்.</translation>
 <translation id="415767770115540173">உங்கள் இருப்பிடத்தின் அடிப்படையில், Chrome இல் சிறந்த Google அனுபவத்தைப் பெறவும்.</translation>
 <translation id="424864128008805179">Chrome இலிருந்து வெளியேறவா?</translation>
-<translation id="447252321002412580">Chrome இன் அம்சங்களையும் செயல்திறனையும் மேம்படுத்த உதவுக</translation>
 <translation id="4523886039239821078">சில செருகு நிரல்களினால் Chrome சிதைவுக்குட்படுகிறது. பின்வருபவற்றை நிறுவல் நீக்கம் செய்யவும்:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> நிர்வகிக்கும் கணக்கிலிருந்து வெளியேறுகிறீர்கள். இவ்வாறு செய்வதால், இந்தச் சாதனத்திலிருந்து Chrome தரவு நீக்கப்படும், எனினும் உங்கள் Google கணக்கில் தரவு தொடர்ந்து இருக்கும்.</translation>
 <translation id="5389212809648216794">கேமராவை மற்றொரு ஆப்ஸ் உபயோகிப்பதால், Google Chrome ஆல் அதைப் பயன்படுத்த முடியாது</translation>

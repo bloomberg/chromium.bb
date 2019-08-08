@@ -307,7 +307,7 @@ void AwDrawFnImpl::DrawVkDirect(AwDrawFn_DrawVkParams* params) {
   if (!vulkan_context_provider_)
     return;
 
-  DCHECK(!draw_context_);
+  DCHECK(!scoped_secondary_cb_draw_);
 
   auto color_space = CreateColorSpace(params);
   if (!color_space) {
@@ -315,13 +315,13 @@ void AwDrawFnImpl::DrawVkDirect(AwDrawFn_DrawVkParams* params) {
     LOG(ERROR) << "Received invalid colorspace.";
     color_space = SkColorSpace::MakeSRGB();
   }
-  draw_context_ = CreateDrawContext(vulkan_context_provider_->gr_context(),
-                                    params, color_space);
+  auto draw_context = CreateDrawContext(vulkan_context_provider_->gr_context(),
+                                        params, color_space);
 
   // Set the draw contexct in |vulkan_context_provider_|, so the SkiaRenderer
   // and SkiaOutputSurface* will use it as frame render target.
-  AwVulkanContextProvider::ScopedDrawContext scoped_draw_context(
-      vulkan_context_provider_.get(), draw_context_.get());
+  scoped_secondary_cb_draw_.emplace(vulkan_context_provider_.get(),
+                                    std::move(draw_context));
   DrawInternal(params, color_space.get());
 }
 
@@ -329,16 +329,8 @@ void AwDrawFnImpl::PostDrawVkDirect(AwDrawFn_PostDrawVkParams* params) {
   if (!vulkan_context_provider_)
     return;
 
-  gpu::VulkanFenceHelper* fence_helper =
-      vulkan_context_provider_->GetDeviceQueue()->GetFenceHelper();
-
-  fence_helper->EnqueueCleanupTaskForSubmittedWork(
-      base::BindOnce(&CleanupInFlightDraw, std::move(draw_context_),
-                     static_cast<VkSemaphore>(VK_NULL_HANDLE)));
-
-  // Process cleanup tasks and generate fences at the end of each PostDrawVk.
-  fence_helper->GenerateCleanupFence();
-  fence_helper->ProcessCleanupTasks();
+  DCHECK(scoped_secondary_cb_draw_);
+  scoped_secondary_cb_draw_.reset();
 }
 
 void AwDrawFnImpl::DrawVkInterop(AwDrawFn_DrawVkParams* params) {

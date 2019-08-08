@@ -51,23 +51,32 @@ class TestDataSourceDelegate : public DataSourceDelegate {
   void OnDataSourceDestroying(DataSource* device) override {}
   void OnTarget(const std::string& mime_type) override {}
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {
-    std::string test_data = "TestData";
-    ASSERT_TRUE(base::WriteFileDescriptor(fd.get(), test_data.data(),
-                                          test_data.size()));
+    if (!data_.has_value()) {
+      std::string test_data = "TestData";
+      ASSERT_TRUE(base::WriteFileDescriptor(fd.get(), test_data.data(),
+                                            test_data.size()));
+    } else {
+      ASSERT_TRUE(base::WriteFileDescriptor(
+          fd.get(), reinterpret_cast<const char*>(data_->data()),
+          data_->size()));
+    }
   }
   void OnCancelled() override { cancelled_ = true; }
   void OnDndDropPerformed() override {}
   void OnDndFinished() override {}
   void OnAction(DndAction dnd_action) override {}
 
+  void SetData(std::vector<uint8_t> data) { data_ = std::move(data); }
+
  private:
   bool cancelled_ = false;
+  base::Optional<std::vector<uint8_t>> data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataSourceDelegate);
 };
 
 void RunReadingTask() {
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -97,6 +106,152 @@ TEST_F(SeatTest, SetSelection) {
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
       ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard);
+
+  EXPECT_EQ(clipboard, std::string("TestData"));
+}
+
+TEST_F(SeatTest, SetSelectionTextUTF8) {
+  Seat seat;
+
+  // UTF8 encoded data
+  const uint8_t data[] = {
+      0xe2, 0x9d, 0x84,       // SNOWFLAKE
+      0xf0, 0x9f, 0x94, 0xa5  // FIRE
+  };
+  base::string16 converted_data;
+  EXPECT_TRUE(base::UTF8ToUTF16(reinterpret_cast<const char*>(data),
+                                sizeof(data), &converted_data));
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/plain;charset=utf-8");
+  source.Offer("text/html;charset=utf-8");
+  delegate.SetData(std::vector<uint8_t>(data, data + sizeof(data)));
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  base::string16 clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &clipboard);
+  EXPECT_EQ(clipboard, converted_data);
+
+  std::string url;
+  uint32_t start, end;
+  ui::Clipboard::GetForCurrentThread()->ReadHTML(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard, &url, &start, &end);
+  EXPECT_EQ(clipboard, converted_data);
+}
+
+TEST_F(SeatTest, SetSelectionTextUTF16LE) {
+  Seat seat;
+
+  // UTF16 little endian encoded data
+  const uint8_t data[] = {
+      0xff, 0xfe,              // Byte order mark
+      0x44, 0x27,              // SNOWFLAKE
+      0x3d, 0xd8, 0x25, 0xdd,  // FIRE
+  };
+  base::string16 converted_data;
+  converted_data.push_back(0x2744);
+  converted_data.push_back(0xd83d);
+  converted_data.push_back(0xdd25);
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/plain;charset=utf-16");
+  source.Offer("text/html;charset=utf-16");
+  delegate.SetData(std::vector<uint8_t>(data, data + sizeof(data)));
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  base::string16 clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &clipboard);
+  EXPECT_EQ(clipboard, converted_data);
+
+  std::string url;
+  uint32_t start, end;
+  ui::Clipboard::GetForCurrentThread()->ReadHTML(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard, &url, &start, &end);
+  EXPECT_EQ(clipboard, converted_data);
+}
+
+TEST_F(SeatTest, SetSelectionTextUTF16BE) {
+  Seat seat;
+
+  // UTF16 big endian encoded data
+  const uint8_t data[] = {
+      0xfe, 0xff,              // Byte order mark
+      0x27, 0x44,              // SNOWFLAKE
+      0xd8, 0x3d, 0xdd, 0x25,  // FIRE
+  };
+  base::string16 converted_data;
+  converted_data.push_back(0x2744);
+  converted_data.push_back(0xd83d);
+  converted_data.push_back(0xdd25);
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/plain;charset=utf-16");
+  source.Offer("text/html;charset=utf-16");
+  delegate.SetData(std::vector<uint8_t>(data, data + sizeof(data)));
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  base::string16 clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &clipboard);
+  EXPECT_EQ(clipboard, converted_data);
+
+  std::string url;
+  uint32_t start, end;
+  ui::Clipboard::GetForCurrentThread()->ReadHTML(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard, &url, &start, &end);
+  EXPECT_EQ(clipboard, converted_data);
+}
+
+TEST_F(SeatTest, SetSelectionTextEmptyString) {
+  Seat seat;
+
+  const uint8_t data[] = {};
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/plain;charset=utf-8");
+  source.Offer("text/html;charset=utf-16");
+  delegate.SetData(std::vector<uint8_t>(data, data + sizeof(data)));
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  base::string16 clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &clipboard);
+  EXPECT_EQ(clipboard.size(), 0u);
+
+  std::string url;
+  uint32_t start, end;
+  ui::Clipboard::GetForCurrentThread()->ReadHTML(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard, &url, &start, &end);
+  EXPECT_EQ(clipboard.size(), 0u);
+}
+
+TEST_F(SeatTest, SetSelectionRTF) {
+  Seat seat;
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/rtf");
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  std::string clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadRTF(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                &clipboard);
 
   EXPECT_EQ(clipboard, std::string("TestData"));
 }

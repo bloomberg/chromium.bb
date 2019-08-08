@@ -67,7 +67,7 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
     network::ResourceResponseHead head;
     std::string headers("HTTP/1.1 200 OK\n\n");
     head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+        net::HttpUtil::AssembleRawHeaders(headers));
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response.size();
     test_url_loader_factory_.AddResponse(permission_creator_->GetApiUrl(), head,

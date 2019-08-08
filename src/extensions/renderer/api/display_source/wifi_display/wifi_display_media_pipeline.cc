@@ -60,10 +60,10 @@ WiFiDisplayMediaPipeline::~WiFiDisplayMediaPipeline() {
 }
 
 void WiFiDisplayMediaPipeline::InsertRawVideoFrame(
-    const scoped_refptr<media::VideoFrame>& video_frame,
+    scoped_refptr<media::VideoFrame> video_frame,
     base::TimeTicks reference_time) {
   DCHECK(video_encoder_);
-  video_encoder_->InsertRawVideoFrame(video_frame, reference_time);
+  video_encoder_->InsertRawVideoFrame(std::move(video_frame), reference_time);
 }
 
 void WiFiDisplayMediaPipeline::RequestIDRPicture() {

@@ -10,7 +10,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/cookie_store.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -53,11 +52,8 @@ WebEngineURLRequestContextGetter::GetURLRequestContext() {
           data_dir_path_.Append(FILE_PATH_LITERAL("Cookies")), false, false,
           NULL);
 
-      // Platform encryption support is not yet implemented, so store cookies in
-      // plaintext for now.
-      // TODO(crbug.com/884355): Add OSCrypt impl for Fuchsia and encrypt the
-      // cookie store with it.
-      NOTIMPLEMENTED() << "Persistent cookie store is NOT encrypted!";
+      // Fuchsia protects the local data at rest so there is no need to encrypt
+      // cookie store.
       builder.SetCookieStore(
           content::CreateCookieStore(cookie_config, nullptr));
     }

@@ -61,7 +61,7 @@ class TracingUmaTracker {
         metric_name_(metric_name) {
     TRACE_EVENT_ASYNC_BEGIN0(
         kTracingCategory, metric_name_,
-        TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
+        TRACE_ID_WITH_SCOPE("UmaTracker", TRACE_ID_LOCAL(id_)));
   }
   ~TracingUmaTracker() = default;
   TracingUmaTracker(TracingUmaTracker&& tracker) = default;
@@ -74,7 +74,7 @@ class TracingUmaTracker {
   void Stop() {
     TRACE_EVENT_ASYNC_END0(
         kTracingCategory, metric_name_,
-        TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
+        TRACE_ID_WITH_SCOPE("UmaTracker", TRACE_ID_LOCAL(id_)));
   }
 
  private:

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 
@@ -36,9 +37,8 @@ class BASE_EXPORT SequenceCheckerImpl {
  private:
   class Core;
 
-  // Guards all variables below.
   mutable Lock lock_;
-  mutable std::unique_ptr<Core> core_;
+  mutable std::unique_ptr<Core> core_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(SequenceCheckerImpl);
 };

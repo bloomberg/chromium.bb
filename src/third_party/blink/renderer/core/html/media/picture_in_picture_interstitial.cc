@@ -11,9 +11,11 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
@@ -70,10 +72,11 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
   background_image_ = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
-  background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
+  background_image_->setAttribute(
+      html_names::kSrcAttr, videoElement.getAttribute(html_names::kPosterAttr));
   ParserAppendChild(background_image_);
 
-  message_element_ = HTMLDivElement::Create(GetDocument());
+  message_element_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   message_element_->SetShadowPseudoId(
       AtomicString("-internal-picture-in-picture-interstitial-message"));
   message_element_->setInnerText(
@@ -145,6 +148,11 @@ void PictureInPictureInterstitial::NotifyElementSizeChanged(
   message_element_->setAttribute(
       "class", MediaControls::GetSizingCSSClass(
                    MediaControls::GetSizingClass(new_size.width())));
+
+  // Force a layout since |LayoutMedia::UpdateLayout()| will sometimes miss a
+  // layout otherwise.
+  if (GetLayoutObject())
+    GetLayoutObject()->SetNeedsLayout(layout_invalidation_reason::kSizeChanged);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
@@ -159,7 +167,8 @@ void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
 }
 
 void PictureInPictureInterstitial::OnPosterImageChanged() {
-  background_image_->SetSrc(
+  background_image_->setAttribute(
+      html_names::kSrcAttr,
       GetVideoElement().getAttribute(html_names::kPosterAttr));
 }
 

@@ -115,7 +115,9 @@ enum LineDirectionMode { kHorizontalLine, kVerticalLine };
 // - physical coordinates with flipped block-flow direction: those are physical
 //   coordinates but we flipped the block direction. Almost all geometries
 //   in box layout use this coordinate space, except those having explicit
-//   "Logical" or "Physical" prefix in their names.
+//   "Logical" or "Physical" prefix in their names, or the name implies logical
+//   (e.g. InlineStart, BlockEnd) or physical (e.g. Top, Left), or the return
+//   type is PhysicalRect.
 //
 // For more, see Source/core/layout/README.md ### Coordinate Spaces.
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
@@ -126,11 +128,13 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // This is the only way layers should ever be destroyed.
   void DestroyLayer();
 
-  LayoutSize RelativePositionOffset() const;
+  PhysicalOffset RelativePositionOffset() const;
   LayoutSize RelativePositionLogicalOffset() const {
-    return StyleRef().IsHorizontalWritingMode()
-               ? RelativePositionOffset()
-               : RelativePositionOffset().TransposedSize();
+    // TODO(layout-dev): This seems incorrect in flipped blocks writing mode,
+    // but seems for legacy layout only.
+    auto offset = RelativePositionOffset().ToLayoutSize();
+    return StyleRef().IsHorizontalWritingMode() ? offset
+                                                : offset.TransposedSize();
   }
 
   // Populates StickyPositionConstraints, setting the sticky box rect,
@@ -138,10 +142,10 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // available space.
   FloatRect ComputeStickyConstrainingRect() const;
   void UpdateStickyPositionConstraints() const;
-  LayoutSize StickyPositionOffset() const;
+  PhysicalOffset StickyPositionOffset() const;
   bool IsSlowRepaintConstrainedObject() const;
 
-  LayoutSize OffsetForInFlowPosition() const;
+  PhysicalOffset OffsetForInFlowPosition() const;
 
   // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
   // (LayoutInline) to return the remaining width on a given line (and the
@@ -173,7 +177,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // border boxes.
   virtual IntRect BorderBoundingBox() const = 0;
 
-  virtual LayoutRect VisualOverflowRect() const = 0;
+  virtual PhysicalRect PhysicalVisualOverflowRect() const = 0;
 
   bool UsesCompositedScrolling() const;
 
@@ -411,7 +415,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // Returns true if the background is painted opaque in the given rect.
   // The query rect is given in local coordinate system.
-  virtual bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const {
+  virtual bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
     return false;
   }
 
@@ -460,16 +464,16 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   void WillBeDestroyed() override;
 
-  LayoutPoint AdjustedPositionRelativeTo(const LayoutPoint&,
-                                         const Element*) const;
+  PhysicalOffset AdjustedPositionRelativeTo(const PhysicalOffset&,
+                                            const Element*) const;
 
   // Set the next link in the continuation chain.
   //
   // See continuation above for more details.
   void SetContinuation(LayoutBoxModelObject*);
 
-  virtual LayoutSize AccumulateInFlowPositionOffsets() const {
-    return LayoutSize();
+  virtual PhysicalOffset AccumulateInFlowPositionOffsets() const {
+    return PhysicalOffset();
   }
 
   LayoutRect LocalCaretRectForEmptyElement(LayoutUnit width,
@@ -484,12 +488,12 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutBlock* ContainingBlockForAutoHeightDetection(
       const Length& logical_height) const;
 
-  void AddOutlineRectsForNormalChildren(Vector<LayoutRect>&,
-                                        const LayoutPoint& additional_offset,
+  void AddOutlineRectsForNormalChildren(Vector<PhysicalRect>&,
+                                        const PhysicalOffset& additional_offset,
                                         NGOutlineType) const;
   void AddOutlineRectsForDescendant(const LayoutObject& descendant,
-                                    Vector<LayoutRect>&,
-                                    const LayoutPoint& additional_offset,
+                                    Vector<PhysicalRect>&,
+                                    const PhysicalOffset& additional_offset,
                                     NGOutlineType) const;
 
   void StyleWillChange(StyleDifference,

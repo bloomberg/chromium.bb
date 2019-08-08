@@ -34,8 +34,6 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
   USING_GARBAGE_COLLECTED_MIXIN(SVGMaskElement);
 
  public:
-  DECLARE_NODE_FACTORY(SVGMaskElement);
-
   explicit SVGMaskElement(Document&);
 
   SVGAnimatedLength* x() const { return x_.Get(); }

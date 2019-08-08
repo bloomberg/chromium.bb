@@ -196,6 +196,11 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
             // Execute default task.
             chrome.fileManagerPrivate.executeTask(
                 defaultTask.taskId, [entry], result => {
+                  if (chrome.runtime.lastError) {
+                    console.warn(
+                        'Unable to execute task: ' +
+                        chrome.runtime.lastError.message);
+                  }
                   if (result === 'opened' || result === 'message_sent') {
                     return;
                   }

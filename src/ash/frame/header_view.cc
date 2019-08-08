@@ -15,8 +15,8 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "base/auto_reset.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/image_view.h"
@@ -62,7 +62,7 @@ HeaderView::HeaderView(views::Widget* target_widget)
   AddChildView(header_content_view_);
 
   caption_button_container_ =
-      new FrameCaptionButtonContainerView(target_widget_, &caption_controller_);
+      new FrameCaptionButtonContainerView(target_widget_);
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
@@ -95,7 +95,10 @@ int HeaderView::GetPreferredOnScreenHeight() {
     return static_cast<int>(GetPreferredHeight() *
                             fullscreen_visible_fraction_);
   }
-  return GetPreferredHeight();
+
+  return (target_widget_ && target_widget_->IsFullscreen())
+             ? 0
+             : GetPreferredHeight();
 }
 
 int HeaderView::GetPreferredHeight() {
@@ -163,6 +166,12 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
   // May be null during view initialization.
   if (parent())
     parent()->Layout();
+}
+
+bool HeaderView::IsDrawn() const {
+  if (is_drawn_override_)
+    return true;
+  return views::View::IsDrawn();
 }
 
 void HeaderView::OnTabletModeStarted() {
@@ -279,6 +288,7 @@ void HeaderView::SetVisibleFraction(double visible_fraction) {
 
 std::vector<gfx::Rect> HeaderView::GetVisibleBoundsInScreen() const {
   // TODO(pkotwicz): Implement views::View::ConvertRectToScreen().
+  base::AutoReset<bool> reset(&is_drawn_override_, true);
   gfx::Rect visible_bounds(GetVisibleBounds());
   gfx::Point visible_origin_in_screen(visible_bounds.origin());
   views::View::ConvertPointToScreen(this, &visible_origin_in_screen);

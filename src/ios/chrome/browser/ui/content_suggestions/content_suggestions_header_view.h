@@ -15,6 +15,9 @@
 // Returns the toolbar view.
 @property(nonatomic, readonly) UIView* toolBarView;
 
+// The Identity Disc showing the current user's avatar on NTP.
+@property(nonatomic, strong) UIView* identityDiscView;
+
 // Voice search button.
 @property(nonatomic, strong, readonly) UIButton* voiceSearchButton;
 

@@ -45,9 +45,12 @@ enum class PreviewsType {
   // Allows the browser to redirect navigations to a Lite Page server.
   LITE_PAGE_REDIRECT = 8,
 
+  // Preview that defers script execution until after parsing completes.
+  DEFER_ALL_SCRIPT = 9,
+
   // Insert new enum values here. Keep values sequential to allow looping from
   // NONE+1 to LAST-1. Also add the enum to Previews.Types histogram suffix.
-  LAST = 9,
+  LAST = 10,
 };
 
 enum class CoinFlipHoldbackResult {
@@ -86,6 +89,10 @@ size_t MaxInMemoryHostsInBlackList();
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 
+// The amount of time a fetched hint will be considered fresh enough
+// to be used and remain in the HintCacheStore.
+base::TimeDelta StoredFetchedHintsFreshnessDuration();
+
 // The number of recent navigations that were opted out of for a given host that
 // would trigger that host to be blacklisted.
 int PerHostBlackListOptOutThreshold();
@@ -122,10 +129,6 @@ GURL GetOptimizationGuideServiceURL();
 
 // The duration of a single bypass for Lite Page Server Previews.
 base::TimeDelta LitePagePreviewsSingleBypassDuration();
-
-// A list of all path suffixes to blacklist from Lite Page Server Previews.
-// Primarily used to prohibit URLs that look like media requests.
-std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
 
 // Whether or not to trigger a preview for a navigation to localhost. Provided
 // as an experiment for automated and manual testing.
@@ -165,15 +168,13 @@ net::EffectiveConnectionType GetSessionMaxECTThreshold();
 // Whether any previews are allowed. Acts as a kill-switch or holdback check.
 bool ArePreviewsAllowed();
 
-// Whether the Previews UI is in the omnibox instead of an infobar.
-bool IsPreviewsOmniboxUiEnabled();
-
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
 bool IsClientLoFiEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 bool IsLitePageServerPreviewsEnabled();
+bool IsDeferAllScriptPreviewsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
@@ -181,6 +182,7 @@ int ClientLoFiVersion();
 int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
+int DeferAllScriptPreviewsVersion();
 
 // The maximum number of page hints that should be loaded to memory.
 size_t GetMaxPageHintsInMemoryThreshhold();
@@ -209,8 +211,18 @@ int ResourceLoadingHintsPreviewsInflationPercent();
 // bytes to for inflating the original_bytes count.
 int ResourceLoadingHintsPreviewsInflationBytes();
 
+// The maximum number of pref entries that should be kept by
+// PreviewsOfflineHelper.
+size_t OfflinePreviewsHelperMaxPrefSize();
+
 // Forces the coin flip holdback, if enabled, to always come up "holdback".
-bool ShouldOverrideCoinFlipHoldbackResult();
+bool ShouldOverrideNavigationCoinFlipToHoldback();
+
+// Forces the coin flip holdback, if enabled, to always come up "allowed".
+bool ShouldOverrideNavigationCoinFlipToAllowed();
+
+// Returns true if the given url matches an excluded media suffix.
+bool ShouldExcludeMediaSuffix(const GURL& url);
 
 }  // namespace params
 

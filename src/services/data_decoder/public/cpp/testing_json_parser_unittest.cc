@@ -22,11 +22,12 @@ class TestingJsonParserTest : public testing::Test {
  public:
   void Parse(const std::string& input) {
     base::RunLoop run_loop;
-    SafeJsonParser::Parse(/* connector=*/nullptr, input,
-                          base::Bind(&SuccessCallback, base::Unretained(this),
-                                     run_loop.QuitClosure()),
-                          base::Bind(&ErrorCallback, base::Unretained(this),
-                                     run_loop.QuitClosure()));
+    SafeJsonParser::Parse(
+        /* connector=*/nullptr, input,
+        base::BindOnce(&SuccessCallback, base::Unretained(this),
+                       run_loop.QuitClosure()),
+        base::BindOnce(&ErrorCallback, base::Unretained(this),
+                       run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -36,16 +37,14 @@ class TestingJsonParserTest : public testing::Test {
  private:
   static void SuccessCallback(TestingJsonParserTest* test,
                               base::Closure quit_closure,
-                              std::unique_ptr<base::Value> value) {
+                              base::Value value) {
     test->did_success_ = true;
     quit_closure.Run();
 
-    ASSERT_TRUE(value->is_dict());
-    base::DictionaryValue* dict;
-    ASSERT_TRUE(value->GetAsDictionary(&dict));
-    int key_value = 0;
-    EXPECT_TRUE(dict->GetInteger("key", &key_value));
-    EXPECT_EQ(2, key_value);
+    ASSERT_TRUE(value.is_dict());
+    base::Optional<int> key_value = value.FindIntKey("key");
+    ASSERT_TRUE(key_value.has_value());
+    EXPECT_EQ(2, *key_value);
   }
 
   static void ErrorCallback(TestingJsonParserTest* test,

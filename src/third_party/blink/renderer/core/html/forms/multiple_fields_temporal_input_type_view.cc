@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -134,23 +135,26 @@ bool DateTimeFormatValidator::ValidateFormat(
 
 DateTimeEditElement*
 MultipleFieldsTemporalInputTypeView::GetDateTimeEditElement() const {
-  return ToDateTimeEditElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::DateTimeEdit()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::DateTimeEdit());
+  CHECK(!element || IsA<DateTimeEditElement>(element));
+  return To<DateTimeEditElement>(element);
 }
 
 SpinButtonElement* MultipleFieldsTemporalInputTypeView::GetSpinButtonElement()
     const {
-  return ToSpinButtonElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::SpinButton()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::SpinButton());
+  CHECK(!element || IsA<SpinButtonElement>(element));
+  return To<SpinButtonElement>(element);
 }
 
 ClearButtonElement* MultipleFieldsTemporalInputTypeView::GetClearButtonElement()
     const {
-  return ToClearButtonElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::ClearButton()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::ClearButton());
+  CHECK(!element || IsA<ClearButtonElement>(element));
+  return To<ClearButtonElement>(element);
 }
 
 PickerIndicatorElement*
@@ -355,24 +359,30 @@ MultipleFieldsTemporalInputTypeView::CustomStyleForLayoutObject(
 void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
 
-  // Element must not have a layoutObject here, because if it did
-  // DateTimeEditElement::customStyleForLayoutObject() is called in
-  // appendChild() before the field wrapper element is created.
-  // FIXME: This code should not depend on such craziness.
-  DCHECK(!GetElement().GetLayoutObject());
-
   Document& document = GetElement().GetDocument();
   ContainerNode* container = GetElement().UserAgentShadowRoot();
 
-  container->AppendChild(DateTimeEditElement::Create(document, *this));
+  container->AppendChild(
+      MakeGarbageCollected<DateTimeEditElement, Document&,
+                           DateTimeEditElement::EditControlOwner&>(document,
+                                                                   *this));
   GetElement().UpdateView();
-  container->AppendChild(ClearButtonElement::Create(document, *this));
-  container->AppendChild(SpinButtonElement::Create(document, *this));
+  container->AppendChild(
+      MakeGarbageCollected<ClearButtonElement, Document&,
+                           ClearButtonElement::ClearButtonOwner&>(document,
+                                                                  *this));
+  container->AppendChild(
+      MakeGarbageCollected<SpinButtonElement, Document&,
+                           SpinButtonElement::SpinButtonOwner&>(document,
+                                                                *this));
 
   if (LayoutTheme::GetTheme().SupportsCalendarPicker(
           input_type_->FormControlType()))
     picker_indicator_is_always_visible_ = true;
-  container->AppendChild(PickerIndicatorElement::Create(document, *this));
+  container->AppendChild(
+      MakeGarbageCollected<PickerIndicatorElement, Document&,
+                           PickerIndicatorElement::PickerIndicatorOwner&>(
+          document, *this));
   picker_indicator_is_visible_ = true;
   UpdatePickerIndicatorVisibility();
 }

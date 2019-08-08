@@ -1250,25 +1250,15 @@ TEST_F(FramebufferInfoTest, DrawBufferMasks) {
   // Test ValidateAndAdjustDrawBuffers().
 
   // gl_FragColor situation.
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_TRUE(framebuffer_->ValidateAndAdjustDrawBuffers(0x3u, 0x3u));
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _)).Times(0);
+  EXPECT_FALSE(framebuffer_->ValidateAndAdjustDrawBuffers(0x3u, 0x3u));
   // gl_FragData situation.
   EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
       .Times(0);
   EXPECT_FALSE(
       framebuffer_->ValidateAndAdjustDrawBuffers(0xFFFFFFFFu, 0xFFFFFFFFu));
   // User defined output variables, fully match.
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_TRUE(
-      framebuffer_->ValidateAndAdjustDrawBuffers(0x31Bu, 0x33Fu));
-  // Call it a second time - this test is critical, making sure we don't
-  // call DrawBuffers() every draw call if program doesn't change.
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(0);
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _)).Times(0);
   EXPECT_TRUE(
       framebuffer_->ValidateAndAdjustDrawBuffers(0x31Bu, 0x33Fu));
   // User defined output variables, fully on, one type mismatch.
@@ -1277,23 +1267,12 @@ TEST_F(FramebufferInfoTest, DrawBufferMasks) {
   EXPECT_FALSE(
       framebuffer_->ValidateAndAdjustDrawBuffers(0x32Bu, 0x33Fu));
   // Empty output.
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_TRUE(
-      framebuffer_->ValidateAndAdjustDrawBuffers(0u, 0u));
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _)).Times(0);
+  EXPECT_FALSE(framebuffer_->ValidateAndAdjustDrawBuffers(0u, 0u));
   // User defined output variables, some active buffers have no corresponding
   // output variables, but if they do, types match.
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_TRUE(
-      framebuffer_->ValidateAndAdjustDrawBuffers(0x310u, 0x330u));
-  // Call it a second time - making sure DrawBuffers isn't triggered.
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(0);
-  EXPECT_TRUE(
-      framebuffer_->ValidateAndAdjustDrawBuffers(0x310u, 0x330u));
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _)).Times(0);
+  EXPECT_FALSE(framebuffer_->ValidateAndAdjustDrawBuffers(0x310u, 0x330u));
 }
 
 class FramebufferInfoFloatTest : public FramebufferInfoTestBase {

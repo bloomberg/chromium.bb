@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
@@ -20,7 +21,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "components/variations/variations_associated_data.h"
 
 using fake_server::FakeServer;
@@ -252,6 +253,38 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
   sessions_helper::OpenTab(0, GURL("http://www.one.com/"));
   EXPECT_TRUE(ServerCountMatchStatusChecker(syncer::SESSIONS, 2).Wait());
   EXPECT_TRUE(ExpectUserEvents({test_event1}));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest,
+                       ShouldNotUploadInSyncPausedState) {
+  const UserEventSpecifics test_event =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Enter the sync paused state.
+  GetClient(0)->EnterSyncPausedStateForPrimaryAccount();
+  ASSERT_TRUE(GetSyncService(0)->GetAuthError().IsPersistentError());
+
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+  event_service->RecordUserEvent(test_event);
+
+  // Clear the "Sync paused" state again.
+  GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Just checking that we don't see test_event isn't very convincing yet,
+  // because it may simply not have reached the server yet. So let's send
+  // something else through the system that we can wait on before checking.
+  ASSERT_TRUE(
+      bookmarks_helper::AddURL(0, "What are you syncing about?",
+                               GURL("https://google.com/synced-bookmark-1")));
+  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::BOOKMARKS, 1).Wait());
+
+  // No event should get synced up.
+  EXPECT_TRUE(ExpectUserEvents({}));
 }
 
 }  // namespace

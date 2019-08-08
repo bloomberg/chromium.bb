@@ -29,7 +29,7 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
 
   AXPositionInstance Clone() const override;
 
-  base::string16 GetInnerText() const override;
+  base::string16 GetText() const override;
 
  protected:
   BrowserAccessibilityPosition(const BrowserAccessibilityPosition& other) =
@@ -39,6 +39,7 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
                    int32_t* child_id) const override;
   int AnchorChildCount() const override;
   int AnchorIndexInParent() const override;
+  base::stack<BrowserAccessibility*> GetAncestorAnchors() const override;
   void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,
                                       int32_t node_id) const override;

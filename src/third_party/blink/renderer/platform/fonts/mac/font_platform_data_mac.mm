@@ -199,6 +199,11 @@ void FontPlatformData::SetupSkFont(SkFont* skfont,
   skfont->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
   skfont->setSubpixel(should_subpixel_position);
 
+  // CoreText always provides linear metrics if it can, so the linear metrics
+  // flag setting doesn't affect typefaces backed by CoreText. However, it
+  // does affect FreeType backed typefaces, so set the flag for consistency.
+  skfont->setLinearMetrics(should_subpixel_position);
+
   // When rendering using CoreGraphics, disable hinting when
   // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is
   // used.  See crbug.com/152304

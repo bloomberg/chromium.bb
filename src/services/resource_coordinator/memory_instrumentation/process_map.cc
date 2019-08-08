@@ -72,4 +72,13 @@ base::ProcessId ProcessMap::GetProcessId(
   return it != instances_.end() ? it->second : base::kNullProcessId;
 }
 
+std::map<base::ProcessId, std::vector<std::string>>
+ProcessMap::ComputePidToServiceNamesMap() const {
+  std::map<base::ProcessId, std::vector<std::string>> result;
+  for (const auto& identity_and_pid : instances_) {
+    result[identity_and_pid.second].push_back(identity_and_pid.first.name());
+  }
+  return result;
+}
+
 }  // namespace memory_instrumentation

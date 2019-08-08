@@ -138,6 +138,9 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .SERIAL_PORTS] =
         'enableExperimentalWebPlatformFeatures';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .BLUETOOTH_SCANNING] =
+        'enableBluetoothScanningContentSetting';
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.
@@ -228,7 +231,7 @@ suite('SiteDetails', function() {
     const api =
         document.createElement('mock-website-usage-private-api-storage');
     testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
+    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Call onOriginChanged_() manually to simulate a new navigation.
@@ -272,7 +275,7 @@ suite('SiteDetails', function() {
     const api =
         document.createElement('mock-website-usage-private-api-cookies');
     testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
+    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Call onOriginChanged_() manually to simulate a new navigation.
@@ -394,7 +397,7 @@ suite('SiteDetails', function() {
     });
     let api = document.createElement('mock1-website-usage-private-api');
     testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
+    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Check both cancelling and accepting the dialog closes it.

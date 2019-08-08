@@ -293,46 +293,7 @@ content::RenderViewHost* SelectFileDialogExtension::GetRenderViewHost() {
   return NULL;
 }
 
-bool SelectFileDialogExtension::IsResizeable() const {
-  DCHECK(extension_dialog_.get());
-  return extension_dialog_->CanResize();
-}
-
-void SelectFileDialogExtension::NotifyListener() {
-  if (!listener_)
-    return;
-  switch (selection_type_) {
-    case CANCEL:
-      listener_->FileSelectionCanceled(params_);
-      break;
-    case SINGLE_FILE:
-      listener_->FileSelectedWithExtraInfo(selection_files_[0],
-                                           selection_index_,
-                                           params_);
-      break;
-    case MULTIPLE_FILES:
-      listener_->MultiFilesSelectedWithExtraInfo(selection_files_, params_);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void SelectFileDialogExtension::AddPending(RoutingID routing_id) {
-  PendingDialog::GetInstance()->Add(routing_id, this);
-}
-
-// static
-bool SelectFileDialogExtension::PendingExists(RoutingID routing_id) {
-  return PendingDialog::GetInstance()->Find(routing_id).get() != NULL;
-}
-
-bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
-  return has_multiple_file_type_choices_;
-}
-
-void SelectFileDialogExtension::SelectFileImpl(
+void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     Type type,
     const base::string16& title,
     const base::FilePath& default_path,
@@ -340,7 +301,8 @@ void SelectFileDialogExtension::SelectFileImpl(
     int file_type_index,
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
-    void* params) {
+    void* params,
+    bool show_android_picker_apps) {
   if (owner_window_) {
     LOG(ERROR) << "File dialog already in use!";
     return;
@@ -422,14 +384,9 @@ void SelectFileDialogExtension::SelectFileImpl(
 
   GURL file_manager_url =
       file_manager::util::GetFileManagerMainPageUrlWithParams(
-          type,
-          title,
-          current_directory_url,
-          selection_url,
-          default_path.BaseName().value(),
-          file_types,
-          file_type_index,
-          default_extension);
+          type, title, current_directory_url, selection_url,
+          default_path.BaseName().value(), file_types, file_type_index,
+          default_extension, show_android_picker_apps);
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       file_manager_url,
@@ -450,4 +407,56 @@ void SelectFileDialogExtension::SelectFileImpl(
   params_ = params;
   routing_id_ = routing_id;
   owner_window_ = owner_window;
+}
+
+void SelectFileDialogExtension::SelectFileImpl(
+    Type type,
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const FileTypeInfo* file_types,
+    int file_type_index,
+    const base::FilePath::StringType& default_extension,
+    gfx::NativeWindow owner_window,
+    void* params) {
+  SelectFileWithFileManagerParams(
+      type, title, default_path, file_types, file_type_index, default_extension,
+      owner_window, params, false /* show_android_picker_apps */);
+}
+
+bool SelectFileDialogExtension::IsResizeable() const {
+  DCHECK(extension_dialog_.get());
+  return extension_dialog_->CanResize();
+}
+
+void SelectFileDialogExtension::NotifyListener() {
+  if (!listener_)
+    return;
+  switch (selection_type_) {
+    case CANCEL:
+      listener_->FileSelectionCanceled(params_);
+      break;
+    case SINGLE_FILE:
+      listener_->FileSelectedWithExtraInfo(selection_files_[0],
+                                           selection_index_, params_);
+      break;
+    case MULTIPLE_FILES:
+      listener_->MultiFilesSelectedWithExtraInfo(selection_files_, params_);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void SelectFileDialogExtension::AddPending(RoutingID routing_id) {
+  PendingDialog::GetInstance()->Add(routing_id, this);
+}
+
+// static
+bool SelectFileDialogExtension::PendingExists(RoutingID routing_id) {
+  return PendingDialog::GetInstance()->Find(routing_id).get() != NULL;
+}
+
+bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
+  return has_multiple_file_type_choices_;
 }

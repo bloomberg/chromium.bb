@@ -49,13 +49,6 @@ class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-namespace certificate_transparency {
-class STHDistributor;
-class STHReporter;
-}  // namespace certificate_transparency
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
 namespace network {
 
 class CRLSetDistributor;
@@ -149,8 +142,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // mojom::NetworkService implementation:
   void SetClient(mojom::NetworkServiceClientPtr client,
                  mojom::NetworkServiceParamsPtr params) override;
+#if defined(OS_CHROMEOS)
+  void ReinitializeLogging(mojom::LoggingSettingsPtr settings) override;
+#endif
   void StartNetLog(base::File file,
-                   mojom::NetLogCaptureMode capture_mode,
+                   net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
   void SetSSLKeyLogFile(const base::FilePath& file) override;
   void CreateNetworkContext(mojom::NetworkContextRequest request,
@@ -166,6 +162,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) override;
   void SetRawHeadersAccess(uint32_t process_id,
                            const std::vector<url::Origin>& origins) override;
+  void SetMaxConnectionsPerProxy(int32_t max_connections) override;
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
   void GetNetworkQualityEstimatorManager(
@@ -177,9 +174,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void GetNetworkList(
       uint32_t policy,
       mojom::NetworkService::GetNetworkListCallback callback) override;
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
-#endif  // !BUILDFLAG(IS_CT_SUPPORTED)
   void UpdateCRLSet(base::span<const uint8_t> crl_set) override;
   void OnCertDBChanged() override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -190,6 +184,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void AddCorbExceptionForPlugin(uint32_t process_id) override;
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
+  void AddExtraMimeTypesForCorb(
+      const std::vector<std::string>& mime_types) override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
 #if defined(OS_ANDROID)
@@ -228,10 +224,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   HttpAuthCacheCopier* http_auth_cache_copier() {
     return http_auth_cache_copier_.get();
   }
-
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  certificate_transparency::STHReporter* sth_reporter();
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   CRLSetDistributor* crl_set_distributor() {
     return crl_set_distributor_.get();
@@ -344,9 +336,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool os_crypt_config_set_ = false;
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
 
   // A timer that periodically calls UpdateLoadInfo while there are pending

@@ -84,8 +84,7 @@ class LayoutTreeBuilder {
     // AddChild() implementations to walk up the tree to find the correct
     // layout tree parent/siblings.
     if (next && next->IsText() && next->Parent()->IsAnonymous() &&
-        next->Parent()->IsInline() &&
-        !ToLayoutInline(next->Parent())->IsFirstLineAnonymous()) {
+        next->Parent()->IsInline()) {
       return next->Parent();
     }
     return next;

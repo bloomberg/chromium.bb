@@ -76,7 +76,12 @@ class IncludeNode(base.Node):
     # We have no control over code that calles ToRealPath later, so convert
     # the path to be relative against our basedir.
     if self.attrs.get('use_base_dir', 'true') != 'true':
-      return os.path.relpath(self.attrs['file'], self.GetRoot().GetBaseDir())
+      # Normalize the directory path to use the appropriate OS separator.
+      # GetBaseDir() may return paths\like\this or paths/like/this, since it is
+      # read from the base_dir attribute in the grd file.
+      norm_base_dir = os.path.normpath(
+              self.GetRoot().GetBaseDir().replace('\\', '/'))
+      return os.path.relpath(self.attrs['file'], norm_base_dir)
 
     return self.attrs['file']
 

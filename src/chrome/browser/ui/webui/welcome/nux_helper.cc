@@ -17,7 +17,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
@@ -53,9 +52,20 @@ bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
   return true;
 }
 
-bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies) {
-  // We shouldn't show this module if any policy is set that overrides the NTP.
-  return !policies.GetValue(policy::key::kNewTabPageLocation);
+bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowGoogleAppModule(policies);
+}
+
+bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
+                                Profile* profile) {
+  // We can't set the background if the NTP is something other than Google.
+  return !policies.GetValue(policy::key::kNewTabPageLocation) &&
+         search::DefaultSearchProviderIsGoogle(profile);
+}
+
+bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
+                                          Profile* profile) {
+  return CanShowNTPBackgroundModule(policies, profile);
 }
 
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
@@ -63,6 +73,10 @@ bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
       policies.GetValue(policy::key::kDefaultBrowserSettingEnabled);
 
   return !set_default_value || set_default_value->GetBool();
+}
+
+bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowSetDefaultModule(policies);
 }
 
 bool CanShowSigninModule(const policy::PolicyMap& policies) {
@@ -78,6 +92,10 @@ bool CanShowSigninModule(const policy::PolicyMap& policies) {
 
   return static_cast<policy::BrowserSigninMode>(int_browser_signin_value) !=
          policy::BrowserSigninMode::kDisabled;
+}
+
+bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowSigninModule(policies);
 }
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
@@ -113,16 +131,9 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowGoogleApp = {
     &kNuxOnboardingForceEnabled, "app-variation-enabled", false};
 
-// Our current running experiment of testing the nux-ntp-background module
-// depends on the Local NTP feature/experiment being enabled. To avoid polluting
-// our data with users who cannot use the nux-ntp-background module, we need
-// to check to make sure the Local NTP feature is enabled before running
-// any experiment or even reading any feature params from our experiment.
+// Onboarding experiments depend on Google being the default search provider.
 bool CanExperimentWithVariations(Profile* profile) {
-  return (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kForceLocalNtp) ||
-          base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp)) &&
-         search::DefaultSearchProviderIsGoogle(profile);
+  return search::DefaultSearchProviderIsGoogle(profile);
 }
 
 // Must match study name in configs.
@@ -206,19 +217,19 @@ bool IsAppVariationEnabled() {
 
 const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {
   policy::ProfilePolicyConnector* profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   DCHECK(profile_connector);
   return profile_connector->policy_service()->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
 }
 
-std::vector<std::string> GetAvailableModules(
-    const policy::PolicyMap& policies) {
+std::vector<std::string> GetAvailableModules(Profile* profile) {
+  const policy::PolicyMap& policies = GetPoliciesFromProfile(profile);
   std::vector<std::string> available_modules;
 
   if (CanShowGoogleAppModule(policies))
     available_modules.push_back("nux-google-apps");
-  if (CanShowNTPBackgroundModule(policies))
+  if (CanShowNTPBackgroundModule(policies, profile))
     available_modules.push_back("nux-ntp-background");
   if (CanShowSetDefaultModule(policies))
     available_modules.push_back("nux-set-as-default");
@@ -226,6 +237,19 @@ std::vector<std::string> GetAvailableModules(
     available_modules.push_back("signin-view");
 
   return available_modules;
+}
+
+bool DoesOnboardingHaveModulesToShow(Profile* profile) {
+  const base::Value* force_ephemeral_profiles_value =
+      GetPoliciesFromProfile(profile).GetValue(
+          policy::key::kForceEphemeralProfiles);
+  // Modules won't have a lasting effect if profile is ephemeral.
+  if (force_ephemeral_profiles_value &&
+      force_ephemeral_profiles_value->GetBool()) {
+    return false;
+  }
+
+  return !GetAvailableModules(profile).empty();
 }
 
 std::string FilterModules(const std::string& requested_modules,
@@ -260,8 +284,7 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
     returning_user_modules = kNuxOnboardingReturningUserModules.Get();
   }
 
-  const policy::PolicyMap& policies = GetPoliciesFromProfile(profile);
-  std::vector<std::string> available_modules = GetAvailableModules(policies);
+  std::vector<std::string> available_modules = GetAvailableModules(profile);
 
   base::DictionaryValue modules;
   modules.SetString("new-user",

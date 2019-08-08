@@ -7,6 +7,7 @@
 #include <zircon/syscalls.h>
 
 #include "base/compiler_specific.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/time/time_override.h"
 
@@ -28,8 +29,10 @@ ALWAYS_INLINE int64_t ZxTimeToMicroseconds(zx_time_t nanos) {
 
 namespace subtle {
 Time TimeNowIgnoringOverride() {
-  const zx_time_t nanos_since_unix_epoch = zx_clock_get(ZX_CLOCK_UTC);
-  CHECK(nanos_since_unix_epoch != 0);
+  zx_time_t nanos_since_unix_epoch;
+  zx_status_t status = zx_clock_get_new(ZX_CLOCK_UTC, &nanos_since_unix_epoch);
+  ZX_CHECK(status == ZX_OK, status);
+  DCHECK(nanos_since_unix_epoch != 0);
   // The following expression will overflow in the year 289938 A.D.:
   return Time() + TimeDelta::FromMicroseconds(
                       ZxTimeToMicroseconds(nanos_since_unix_epoch) +
@@ -46,7 +49,7 @@ Time TimeNowFromSystemTimeIgnoringOverride() {
 
 namespace subtle {
 TimeTicks TimeTicksNowIgnoringOverride() {
-  const zx_time_t nanos_since_boot = zx_clock_get(ZX_CLOCK_MONOTONIC);
+  const zx_time_t nanos_since_boot = zx_clock_get_monotonic();
   CHECK(nanos_since_boot != 0);
   return TimeTicks() +
          TimeDelta::FromMicroseconds(ZxTimeToMicroseconds(nanos_since_boot));
@@ -83,8 +86,11 @@ zx_time_t TimeTicks::ToZxTime() const {
 
 namespace subtle {
 ThreadTicks ThreadTicksNowIgnoringOverride() {
-  const zx_time_t nanos_since_thread_started = zx_clock_get(ZX_CLOCK_THREAD);
-  CHECK(nanos_since_thread_started != 0);
+  zx_time_t nanos_since_thread_started;
+  zx_status_t status =
+      zx_clock_get_new(ZX_CLOCK_THREAD, &nanos_since_thread_started);
+  ZX_CHECK(status == ZX_OK, status);
+  DCHECK(nanos_since_thread_started != 0);
   return ThreadTicks() + TimeDelta::FromMicroseconds(
                              ZxTimeToMicroseconds(nanos_since_thread_started));
 }

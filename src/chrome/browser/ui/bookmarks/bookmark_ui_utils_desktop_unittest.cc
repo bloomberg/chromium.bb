@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -71,10 +72,9 @@ TEST_F(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
   std::vector<const BookmarkNode*> nodes;
 
   // This tests that |nodes| contains an disabled-in-incognito URL.
-  const BookmarkNode* page1 = model->AddURL(model->bookmark_bar_node(),
-                                            0,
-                                            ASCIIToUTF16("BookmarkManager"),
-                                            GURL("chrome://bookmarks"));
+  const BookmarkNode* page1 = model->AddURL(
+      model->bookmark_bar_node(), 0, ASCIIToUTF16("BookmarkManager"),
+      GURL(chrome::kChromeUIBookmarksURL));
   nodes.push_back(page1);
   EXPECT_FALSE(chrome::HasBookmarkURLsAllowedInIncognitoMode(nodes, &profile));
   nodes.clear();
@@ -99,7 +99,8 @@ TEST_F(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
   // This verifies if HasBookmarkURLsAllowedInIncognitoMode iterates through
   // immediate children.
   // Add disabled-in-incognito url.
-  model->AddURL(folder1, 0, ASCIIToUTF16("Foo"), GURL("chrome://bookmarks"));
+  model->AddURL(folder1, 0, ASCIIToUTF16("Foo"),
+                GURL(chrome::kChromeUIBookmarksURL));
   EXPECT_FALSE(chrome::HasBookmarkURLsAllowedInIncognitoMode(nodes, &profile));
   // Add normal url.
   model->AddURL(folder1, 0, ASCIIToUTF16("Foo"), GURL("http://randomsite.com"));

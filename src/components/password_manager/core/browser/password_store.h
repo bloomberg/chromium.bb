@@ -189,6 +189,11 @@ class PasswordStore : protected PasswordStoreSync,
   // The request will be cancelled if the consumer is destroyed.
   virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
+  // Gets the complete list of PasswordForms that are blacklist entries and
+  // notifies |consumer| on completion. The request will be cancelled if the
+  // consumer is destroyed.
+  virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
+
   // Gets the complete list of PasswordForms (regardless of their blacklist
   // status) and notify |consumer| on completion. The request will be cancelled
   // if the consumer is destroyed.
@@ -299,8 +304,6 @@ class PasswordStore : protected PasswordStoreSync,
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
 
-  typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
-
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Represents a single CheckReuse() request. Implements functionality to
@@ -385,7 +388,8 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation provided by subclasses to add the given login.
   virtual PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form,
+      AddLoginError* error = nullptr) = 0;
 
   // Synchronous implementation provided by subclasses to update the given
   // login.
@@ -417,8 +421,8 @@ class PasswordStore : protected PasswordStoreSync,
   void LogStatsForBulkDeletionDuringRollback(int num_deletions);
 
   // PasswordStoreSync:
-  PasswordStoreChangeList AddLoginSync(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList AddLoginSync(const autofill::PasswordForm& form,
+                                       AddLoginError* error) override;
   PasswordStoreChangeList UpdateLoginSync(
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginSync(
@@ -553,6 +557,9 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds all non-blacklist PasswordForms and returns the result.
   std::vector<std::unique_ptr<autofill::PasswordForm>>
   GetAutofillableLoginsImpl();
+
+  // Finds all blacklist PasswordForms and returns the result.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetBlacklistLoginsImpl();
 
   // Finds all PasswordForms and returns the result.
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllLoginsImpl();

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -90,11 +91,16 @@ class CONTENT_EXPORT LevelDBDatabase
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  LevelDBState* leveldb_state() { return level_db_state_.get(); }
   leveldb::DB* db() { return level_db_state_->db(); }
   leveldb::Env* env() { return level_db_state_->in_memory_env(); }
   base::Time LastModified() const { return last_modified_; }
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+
+  base::WeakPtr<LevelDBDatabase> AsWeakPtr() {
+    return weak_factory_for_iterators_.GetWeakPtr();
+  }
 
  private:
   friend class LevelDBSnapshot;
@@ -137,6 +143,8 @@ class CONTENT_EXPORT LevelDBDatabase
   uint32_t max_iterators_ = 0;
 
   std::string file_name_for_tracing;
+
+  base::WeakPtrFactory<LevelDBDatabase> weak_factory_for_iterators_{this};
 };
 
 }  // namespace content

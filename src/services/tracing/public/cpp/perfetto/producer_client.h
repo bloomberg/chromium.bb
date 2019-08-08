@@ -17,102 +17,38 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
 namespace perfetto {
 class SharedMemoryArbiter;
-class StartupTraceWriterRegistry;
 }  // namespace perfetto
 
 namespace tracing {
 
 class MojoSharedMemory;
 
-class ScopedPerfettoPostTaskBlocker {
- public:
-  explicit ScopedPerfettoPostTaskBlocker(bool enable);
-  ~ScopedPerfettoPostTaskBlocker();
-
- private:
-  const bool enabled_;
-};
-
 // This class is the per-process client side of the Perfetto
 // producer, and is responsible for creating specific kinds
 // of DataSources (like ChromeTracing) on demand, and provide
 // them with TraceWriters and a configuration to start logging.
-
-// Implementations of new DataSources should:
-// * Implement ProducerClient::DataSourceBase.
-// * Add a new data source name in perfetto_service.mojom.
-// * Register the data source with Perfetto in ProducerHost::OnConnect.
-// * Construct the new implementation when requested to
-//   in ProducerClient::StartDataSource.
 class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
-    : public mojom::ProducerClient,
-      public perfetto::TracingService::ProducerEndpoint {
+    : public PerfettoProducer,
+      public mojom::ProducerClient {
  public:
-  class DataSourceBase {
-   public:
-    explicit DataSourceBase(const std::string& name);
-    virtual ~DataSourceBase();
-
-    void StartTracingWithID(
-        uint64_t data_source_id,
-        ProducerClient* producer_client,
-        const perfetto::DataSourceConfig& data_source_config);
-
-    virtual void StartTracing(
-        ProducerClient* producer_client,
-        const perfetto::DataSourceConfig& data_source_config) = 0;
-    virtual void StopTracing(
-        base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
-
-    // Flush the data source.
-    virtual void Flush(base::RepeatingClosure flush_complete_callback) = 0;
-
-    const std::string& name() const { return name_; }
-    uint64_t data_source_id() const { return data_source_id_; }
-
-   private:
-    uint64_t data_source_id_ = 0;
-    std::string name_;
-  };
-
-  // Returns the process-wide instance of the ProducerClient.
-  static ProducerClient* Get();
-
+  ProducerClient(PerfettoTaskRunner* task_runner);
   ~ProducerClient() override;
 
-  static void DeleteSoonForTesting(std::unique_ptr<ProducerClient>);
-
-  // Returns the taskrunner used by Perfetto.
-  static PerfettoTaskRunner* GetTaskRunner();
+  void NewDataSourceAdded(
+      const PerfettoTracedProcess::DataSourceBase* const data_source) override;
 
   void Connect(mojom::PerfettoServicePtr perfetto_service);
 
-  // Create the messagepipes that'll be used to connect
-  // to the service-side ProducerHost, on the correct
-  // sequence. The callback will be called on same sequence
-  // as CreateMojoMessagepipes() got called on.
-  using MessagepipesReadyCallback =
-      base::OnceCallback<void(mojom::ProducerClientPtr,
-                              mojom::ProducerHostRequest)>;
-  void CreateMojoMessagepipes(MessagepipesReadyCallback);
-
-  // Binds the registry and its trace writers to the ProducerClient's SMB, to
-  // write into the given target buffer. The ownership of |registry| is
-  // transferred to ProducerClient (and its SharedMemoryArbiter).
-  void BindStartupTraceWriterRegistry(
-      std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
-      perfetto::BufferID target_buffer);
-
-  // Add a new data source to the ProducerClient; the caller
-  // retains ownership and is responsible for making sure
-  // the data source outlives the ProducerClient.
-  void AddDataSource(DataSourceBase*);
+  void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
+    DCHECK(!in_process_arbiter_);
+    in_process_arbiter_ = arbiter;
+  }
 
   // mojom::ProducerClient implementation.
   // Called through Mojo by the ProducerHost on the service-side to control
@@ -134,8 +70,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
                   CommitDataCallback callback) override;
   // Used by the DataSource implementations to create TraceWriters
   // for writing their protobufs, and respond to flushes.
-  std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
-      perfetto::BufferID target_buffer) override;
   void NotifyFlushComplete(perfetto::FlushRequestID) override;
   perfetto::SharedMemory* shared_memory() const override;
   void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
@@ -151,32 +85,24 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   size_t shared_buffer_page_size_kb() const override;
   perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
 
-  static void ResetTaskRunnerForTesting();
+  void BindClientAndHostPipesForTesting(mojom::ProducerClientRequest,
+                                        mojom::ProducerHostPtrInfo);
 
  protected:
-  // protected for testing.
-  ProducerClient();
+  perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() override;
 
  private:
   friend class base::NoDestructor<ProducerClient>;
 
   void CommitDataOnSequence(const perfetto::CommitDataRequest& request);
-  void AddDataSourceOnSequence(DataSourceBase*);
-  void RegisterDataSourceWithHost(DataSourceBase* data_source);
-
-  // The callback will be run on the |origin_task_runner|, meaning
-  // the same sequence as CreateMojoMessagePipes() got called on.
-  void CreateMojoMessagepipesOnSequence(
-      scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
-      MessagepipesReadyCallback,
-      mojom::ProducerClientRequest,
-      mojom::ProducerClientPtr);
+  void BindClientAndHostPipesOnSequence(mojom::ProducerClientRequest,
+                                        mojom::ProducerHostPtrInfo);
 
   std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
-  std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
   mojom::ProducerHostPtr producer_host_;
   std::unique_ptr<MojoSharedMemory> shared_memory_;
-  std::set<DataSourceBase*> data_sources_;
+  std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
+  perfetto::SharedMemoryArbiter* in_process_arbiter_ = nullptr;
   // First value is the flush ID, the second is the number of
   // replies we're still waiting for.
   std::pair<uint64_t, size_t> pending_replies_for_latest_flush_;

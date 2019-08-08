@@ -38,6 +38,7 @@ class DummyFrameScheduler : public FrameScheduler {
   void SetIsAdFrame() override {}
   bool IsAdFrame() const override { return false; }
   void TraceUrlChange(const String&) override {}
+  void AddTaskTime(base::TimeDelta) override {}
   FrameType GetFrameType() const override { return FrameType::kMainFrame; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const String& name,

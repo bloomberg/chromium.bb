@@ -18,6 +18,7 @@
 #ifndef IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_
 #define IOS_WEB_NAVIGATION_WK_NAVIGATION_UTIL_H_
 
+#import <Foundation/Foundation.h>
 #include <memory>
 #include <vector>
 
@@ -38,6 +39,9 @@ extern const char kRestoreSessionSessionHashPrefix[];
 
 // URL fragment prefix used to encode target URL in a restore_session.html URL.
 extern const char kRestoreSessionTargetUrlHashPrefix[];
+
+// The "Referer" [sic] HTTP header.
+extern NSString* const kReferrerHeaderName;
 
 // Returns true if |url| is a placeholder URL or restore_session.html URL.
 bool IsWKInternalUrl(const GURL& url);

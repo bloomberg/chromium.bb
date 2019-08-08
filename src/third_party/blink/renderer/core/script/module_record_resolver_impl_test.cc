@@ -7,8 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
@@ -79,7 +79,7 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
       ASSERT_NO_EXCEPTION);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
-      ModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
+      JSModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
   return referrer_module_script;
 }
 
@@ -92,7 +92,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   KURL url("https://example.com/target.js");
-  auto* module_script = ModuleScript::CreateForTest(modulator, record, url);
+  auto* module_script = JSModuleScript::CreateForTest(modulator, record, url);
   if (has_parse_error) {
     v8::Local<v8::Value> error =
         V8ThrowException::CreateError(scope.GetIsolate(), "hoge");

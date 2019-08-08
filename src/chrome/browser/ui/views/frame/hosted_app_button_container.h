@@ -33,7 +33,6 @@ class HostedAppOriginText;
 class HostedAppMenuButton;
 
 namespace views {
-class MenuButton;
 class Widget;
 }
 
@@ -90,7 +89,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   const char* GetClassName() const override;
 
   // BrowserActionsContainer::Delegate:
-  views::MenuButton* GetOverflowReferenceView() override;
+  views::LabelButton* GetOverflowReferenceView() override;
   base::Optional<int> GetMaxBrowserActionsWidth() const override;
   std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
       ToolbarActionsBarDelegate* delegate,

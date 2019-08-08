@@ -166,7 +166,7 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
 
   // Type:"isolated" + virtual_path:"isolated_id/name" mapped on a Drive path.
   std::string isolated_name;
-  std::string isolated_id =
+  storage::IsolatedContext::ScopedFSHandle isolated_fs =
       storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
           storage::kFileSystemTypeNativeForPlatformApp, std::string(),
           GetDriveMountPointPath(&profile).AppendASCII("bar/buz"),
@@ -174,7 +174,7 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/bar/buz"),
             ExtractDrivePathFromFileSystemUrl(context->CrackURL(
                 GURL("filesystem:chrome-extension://dummy-id/isolated/" +
-                     isolated_id + "/" + isolated_name))));
+                     isolated_fs.id() + "/" + isolated_name))));
 }
 
 TEST_F(ProfileRelatedFileSystemUtilTest, GetCacheRootPath) {

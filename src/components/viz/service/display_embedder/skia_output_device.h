@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/swap_result.h"
 
+class GrBackendSemaphore;
 class SkSurface;
 
 namespace gfx {
@@ -31,7 +32,8 @@ class SkiaOutputDevice {
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
                                    const gfx::Size& pixel_size)>;
-  explicit SkiaOutputDevice(
+  SkiaOutputDevice(
+      bool need_swap_semaphore,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   virtual ~SkiaOutputDevice();
 
@@ -45,8 +47,10 @@ class SkiaOutputDevice {
                        bool has_alpha) = 0;
 
   // Presents DrawSurface.
-  virtual gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) = 0;
+  virtual gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
+                                        BufferPresentedCallback feedback) = 0;
   virtual gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
+                                          const GrBackendSemaphore& semaphore,
                                           BufferPresentedCallback feedback);
   const OutputSurface::Capabilities& capabilities() const {
     return capabilities_;
@@ -58,6 +62,8 @@ class SkiaOutputDevice {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
+  bool need_swap_semaphore() const { return need_swap_semaphore_; }
+
  protected:
   void StartSwapBuffers(base::Optional<BufferPresentedCallback> feedback);
   gfx::SwapResponse FinishSwapBuffers(gfx::SwapResult result);
@@ -66,6 +72,7 @@ class SkiaOutputDevice {
   OutputSurface::Capabilities capabilities_;
 
  private:
+  const bool need_swap_semaphore_;
   uint64_t swap_id_ = 0;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
@@ -149,6 +150,37 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
   return false;
 }
 
+int64_t TabContentsSyncedTabDelegate::GetTaskIdForNavigationId(
+    int nav_id) const {
+  const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
+  if (task_tab_helper &&
+      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
+    return task_tab_helper->get_context_record_task_id(nav_id)->task_id();
+  }
+  return -1;
+}
+
+int64_t TabContentsSyncedTabDelegate::GetParentTaskIdForNavigationId(
+    int nav_id) const {
+  const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
+  if (task_tab_helper &&
+      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
+    return task_tab_helper->get_context_record_task_id(nav_id)
+        ->parent_task_id();
+  }
+  return -1;
+}
+
+int64_t TabContentsSyncedTabDelegate::GetRootTaskIdForNavigationId(
+    int nav_id) const {
+  const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
+  if (task_tab_helper &&
+      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
+    return task_tab_helper->get_context_record_task_id(nav_id)->root_task_id();
+  }
+  return -1;
+}
+
 const content::WebContents* TabContentsSyncedTabDelegate::web_contents() const {
   return web_contents_;
 }
@@ -160,4 +192,11 @@ content::WebContents* TabContentsSyncedTabDelegate::web_contents() {
 void TabContentsSyncedTabDelegate::SetWebContents(
     content::WebContents* web_contents) {
   web_contents_ = web_contents;
+}
+
+const tasks::TaskTabHelper* TabContentsSyncedTabDelegate::task_tab_helper()
+    const {
+  if (web_contents_ == nullptr)
+    return nullptr;
+  return tasks::TaskTabHelper::FromWebContents(web_contents_);
 }

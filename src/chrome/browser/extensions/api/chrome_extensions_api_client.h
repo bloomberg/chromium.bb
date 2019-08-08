@@ -11,6 +11,7 @@
 
 namespace extensions {
 
+class ChromeAutomationInternalApiDelegate;
 class ChromeMetricsPrivateDelegate;
 class ClipboardExtensionHelper;
 
@@ -76,6 +77,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       const base::Callback<void(const std::string&)>& error_callback) override;
 #endif
 
+  AutomationInternalApiDelegate* GetAutomationInternalApiDelegate() override;
+
  private:
   std::unique_ptr<ChromeMetricsPrivateDelegate> metrics_private_delegate_;
   std::unique_ptr<NetworkingCastPrivateDelegate>
@@ -89,6 +92,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<NonNativeFileSystemDelegate> non_native_file_system_delegate_;
   std::unique_ptr<ClipboardExtensionHelper> clipboard_extension_helper_;
 #endif
+  std::unique_ptr<extensions::ChromeAutomationInternalApiDelegate>
+      extensions_automation_api_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
 };

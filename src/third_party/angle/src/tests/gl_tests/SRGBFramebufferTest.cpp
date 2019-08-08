@@ -25,10 +25,8 @@ class SRGBFramebufferTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
         ASSERT_NE(0u, mProgram);
 
@@ -36,12 +34,7 @@ class SRGBFramebufferTest : public ANGLETest
         ASSERT_NE(-1, mColorLocation);
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram      = 0;
     GLint mColorLocation = -1;
@@ -51,7 +44,7 @@ class SRGBFramebufferTest : public ANGLETest
 TEST_P(SRGBFramebufferTest, Validation)
 {
     GLenum expectedError =
-        extensionEnabled("GL_EXT_sRGB_write_control") ? GL_NO_ERROR : GL_INVALID_ENUM;
+        IsGLExtensionEnabled("GL_EXT_sRGB_write_control") ? GL_NO_ERROR : GL_INVALID_ENUM;
 
     GLboolean value = GL_FALSE;
     glEnable(GL_FRAMEBUFFER_SRGB_EXT);
@@ -78,8 +71,8 @@ TEST_P(SRGBFramebufferTest, Validation)
 // Test basic functionality of GL_EXT_sRGB_write_control
 TEST_P(SRGBFramebufferTest, BasicUsage)
 {
-    if (!extensionEnabled("GL_EXT_sRGB_write_control") ||
-        (!extensionEnabled("GL_EXT_sRGB") && getClientMajorVersion() < 3))
+    if (!IsGLExtensionEnabled("GL_EXT_sRGB_write_control") ||
+        (!IsGLExtensionEnabled("GL_EXT_sRGB") && getClientMajorVersion() < 3))
     {
         std::cout
             << "Test skipped because GL_EXT_sRGB_write_control and GL_EXT_sRGB are not available."

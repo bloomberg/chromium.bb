@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 #include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner_host.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -71,13 +72,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   USING_PRE_FINALIZER(HTMLDocumentParser, Dispose);
 
  public:
-  static HTMLDocumentParser* Create(
-      HTMLDocument& document,
-      ParserSynchronizationPolicy background_parsing_policy) {
-    return MakeGarbageCollected<HTMLDocumentParser>(document,
-                                                    background_parsing_policy);
-  }
-
   HTMLDocumentParser(HTMLDocument&, ParserSynchronizationPolicy);
   HTMLDocumentParser(DocumentFragment*,
                      Element* context_element,
@@ -119,7 +113,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
    public:
     CompactHTMLTokenStream tokens;
     PreloadRequestStream preloads;
-    ViewportDescriptionWrapper viewport;
+    base::Optional<ViewportDescription> viewport;
     XSSInfoStream xss_infos;
     HTMLTokenizer::State tokenizer_state;
     HTMLTreeBuilderSimulator::State tree_builder_state;
@@ -150,12 +144,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void ForcePlaintextForTextDocument();
 
  private:
-  static HTMLDocumentParser* Create(DocumentFragment* fragment,
-                                    Element* context_element,
-                                    ParserContentPolicy parser_content_policy) {
-    return MakeGarbageCollected<HTMLDocumentParser>(fragment, context_element,
-                                                    parser_content_policy);
-  }
   HTMLDocumentParser(Document&,
                      ParserContentPolicy,
                      ParserSynchronizationPolicy);

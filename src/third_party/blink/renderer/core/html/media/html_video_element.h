@@ -55,8 +55,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
  public:
   static const int kNoAlreadyUploadedFrame = -1;
 
-  static HTMLVideoElement* Create(Document&);
-
   HTMLVideoElement(Document&);
   void Trace(Visitor*) override;
 
@@ -186,7 +184,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   bool SupportsPictureInPicture() const final;
-  void PictureInPictureStopped() final;
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
   WebMediaPlayer::DisplayType DisplayType() const final;
   bool IsInAutoPIP() const final;

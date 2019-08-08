@@ -33,3 +33,9 @@ $ out/Default/bin/system_webview_shell_apk launch "https://www.google.com/"
 # For more commands:
 $ out/Default/bin/system_webview_shell_apk --help
 ```
+
+*** note
+**Note:** `system_webview_shell_apk` does not support modifying CLI flags. See
+https://crbug.com/959425. Instead, you should modify WebView's flags by
+following [commandline-flags.md](./commandline-flags.md).
+***

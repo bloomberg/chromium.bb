@@ -4,18 +4,17 @@
 
 #include "ash/keyboard/ash_keyboard_controller.h"
 
-#include "ash/keyboard/ash_keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_ui_factory.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 using keyboard::mojom::KeyboardConfig;
@@ -24,27 +23,8 @@ using keyboard::mojom::KeyboardEnableFlag;
 
 namespace ash {
 
-namespace {
-
-class AshKeyboardUIFactory : public keyboard::KeyboardUIFactory {
- public:
-  explicit AshKeyboardUIFactory(AshKeyboardController* controller)
-      : controller_(controller) {}
-
-  // keyboard::KeyboardUIFactory:
-  std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override {
-    return std::make_unique<AshKeyboardUI>(controller_);
-  }
-
- private:
-  AshKeyboardController* controller_;
-  DISALLOW_COPY_AND_ASSIGN(AshKeyboardUIFactory);
-};
-
-}  // namespace
-
 AshKeyboardController::AshKeyboardController(
-    SessionController* session_controller)
+    SessionControllerImpl* session_controller)
     : session_controller_(session_controller),
       keyboard_controller_(std::make_unique<keyboard::KeyboardController>()) {
   if (session_controller_)  // May be null in tests.
@@ -65,13 +45,10 @@ void AshKeyboardController::BindRequest(
 
 void AshKeyboardController::CreateVirtualKeyboard(
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
-  DCHECK(keyboard_ui_factory || features::IsUsingWindowService())
-      << "keyboard_ui_factory can be null only when window service is used.";
+  DCHECK(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
-  keyboard_controller_->Initialize(
-      keyboard_ui_factory ? std::move(keyboard_ui_factory)
-                          : std::make_unique<AshKeyboardUIFactory>(this),
-      virtual_keyboard_controller_.get());
+  keyboard_controller_->Initialize(std::move(keyboard_ui_factory),
+                                   virtual_keyboard_controller_.get());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kEnableVirtualKeyboard)) {
@@ -110,9 +87,8 @@ void AshKeyboardController::SendOnKeyboardUIDestroyed() {
 // mojom::KeyboardController
 
 void AshKeyboardController::KeyboardContentsLoaded(
-    const base::UnguessableToken& token,
     const gfx::Size& size) {
-  keyboard_controller()->KeyboardContentsLoaded(token, size);
+  keyboard_controller()->KeyboardContentsLoaded(size);
 }
 
 void AshKeyboardController::GetKeyboardConfig(

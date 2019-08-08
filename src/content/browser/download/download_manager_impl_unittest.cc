@@ -19,6 +19,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -135,6 +136,7 @@ class MockDownloadItemFactory
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
+      const base::Optional<url::Origin>& request_initiator,
       const std::string& mime_type,
       const std::string& original_mime_type,
       base::Time start_time,
@@ -214,6 +216,7 @@ download::DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
+    const base::Optional<url::Origin>& request_initiator,
     const std::string& mime_type,
     const std::string& original_mime_type,
     base::Time start_time,
@@ -380,7 +383,8 @@ TestInProgressManager::TestInProgressManager()
           nullptr,
           base::FilePath(),
           download::InProgressDownloadManager::IsOriginSecureCallback(),
-          base::BindRepeating(&URLAlwaysSafe)) {}
+          base::BindRepeating(&URLAlwaysSafe),
+          nullptr) {}
 
 void TestInProgressManager::AddDownloadItem(
     std::unique_ptr<download::DownloadItemImpl> item) {
@@ -523,7 +527,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
   void OnInProgressDownloadManagerInitialized() {
-    download_manager_->OnInProgressDownloadManagerInitialized();
+    download_manager_->OnDownloadsInitialized();
   }
 
   void OnHistoryDBInitialized() {
@@ -695,6 +699,7 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
           kGuid, 10, base::FilePath(), base::FilePath(), url_chain,
           GURL("http://example.com/a"), GURL("http://example.com/a"),
           GURL("http://example.com/a"), GURL("http://example.com/a"),
+          url::Origin::Create(GURL("http://example.com/")),
           "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time::Now(), std::string(), std::string(),
           10, 10, std::string(), download::DownloadItem::INTERRUPTED,
@@ -747,6 +752,7 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
       in_progress_manager.get(), kGuid, 10, base::FilePath(), base::FilePath(),
       url_chain, GURL("http://example.com/a"), GURL("http://example.com/a"),
       GURL("http://example.com/a"), GURL("http://example.com/a"),
+      url::Origin::Create(GURL("http://example.com")),
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time::Now(), std::string(), std::string(), 10, 10, 0, std::string(),
       download::DownloadItem::INTERRUPTED,
@@ -759,7 +765,10 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
       .WillOnce(Return());
   OnInProgressDownloadManagerInitialized();
-  ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
+  ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
+  std::vector<download::DownloadItem*> vector;
+  download_manager_->GetAllDownloads(&vector);
+  ASSERT_EQ(1u, vector.size());
 
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId(_))
       .WillOnce(RunCallback<0>(1));

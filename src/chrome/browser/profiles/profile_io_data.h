@@ -60,8 +60,8 @@ class InfoMap;
 }
 
 namespace net {
+class CertNetFetcherImpl;
 class CertVerifier;
-class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
 class HttpTransactionFactory;
@@ -278,8 +278,6 @@ class ProfileIOData {
     AppRequestContext();
 
     void SetCookieStore(std::unique_ptr<net::CookieStore> cookie_store);
-    void SetChannelIDService(
-        std::unique_ptr<net::ChannelIDService> channel_id_service);
     void SetHttpNetworkSession(
         std::unique_ptr<net::HttpNetworkSession> http_network_session);
     void SetHttpTransactionFactory(
@@ -290,7 +288,6 @@ class ProfileIOData {
     ~AppRequestContext() override;
 
     std::unique_ptr<net::CookieStore> cookie_store_;
-    std::unique_ptr<net::ChannelIDService> channel_id_service_;
     std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
@@ -550,6 +547,10 @@ class ProfileIOData {
   // When the network service is disabled, this owns |system_request_context|.
   mutable network::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;
+  // When the network service is disabled, this holds the CertNetFetcher used
+  // by the profile's CertVerifier. May be nullptr if CertNetFetcher is not
+  // used by the current platform.
+  mutable scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher_;
 
   // One URLRequestContext per isolated app for main and media requests.
   mutable URLRequestContextMap app_request_context_map_;

@@ -24,6 +24,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_dependency_deadline.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,7 +43,6 @@ class LatencyInfo;
 
 namespace viz {
 
-class SurfaceClient;
 class SurfaceAllocationGroup;
 class SurfaceManager;
 
@@ -74,16 +74,16 @@ class SurfaceManager;
 // deadline passes, then the CompositorFrame will activate despite missing
 // dependencies. The activated CompositorFrame can specify fallback behavior in
 // the event of missing dependencies at display time.
-class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
+class VIZ_SERVICE_EXPORT Surface final {
  public:
   using PresentedCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
+  enum QueueFrameResult { REJECTED, ACCEPTED_ACTIVE, ACCEPTED_PENDING };
 
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           SurfaceAllocationGroup* allocation_group,
           base::WeakPtr<SurfaceClient> surface_client,
-          bool needs_sync_tokens,
           bool block_activation_on_parent);
   ~Surface();
 
@@ -114,7 +114,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Decrements the reference count on resources specified by |resources|.
   void UnrefResources(const std::vector<ReturnedResource>& resources);
 
-  bool needs_sync_tokens() const { return needs_sync_tokens_; }
+  // If |surface_client_| is dead, we can't return resources so sync tokens
+  // don't matter anyway.
+  bool needs_sync_tokens() const {
+    return surface_client_ ? surface_client_->NeedsSyncTokens() : false;
+  }
 
   bool block_activation_on_parent() const {
     return block_activation_on_parent_;
@@ -123,13 +127,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.
-  // |presented_callback| is called when the |frame| has been turned into light
-  // the first time on display, or if the |frame| is replaced by another prior
-  // to display.
-  bool QueueFrame(CompositorFrame frame,
-                  uint64_t frame_index,
-                  base::ScopedClosureRunner frame_rejected_callback,
-                  PresentedCallback presented_callback);
+  QueueFrameResult QueueFrame(
+      CompositorFrame frame,
+      uint64_t frame_index,
+      base::ScopedClosureRunner frame_rejected_callback);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
@@ -137,8 +138,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
-  void ActivatePendingFrameForDeadline(
-      base::Optional<base::TimeDelta> duration);
+  void ActivatePendingFrameForDeadline();
 
   using CopyRequestsMap =
       std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>;
@@ -174,6 +174,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void TakeActiveAndPendingLatencyInfo(
       std::vector<ui::LatencyInfo>* latency_info);
   bool TakePresentedCallback(PresentedCallback* callback);
+  void DidPresentSurface(uint32_t presentation_token,
+                         const gfx::PresentationFeedback& feedback);
   void SendAckToClient();
   void MarkAsDrawn();
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
@@ -208,9 +210,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   SurfaceAllocationGroup* allocation_group() const { return allocation_group_; }
 
-  // SurfaceDeadlineClient implementation:
-  void OnDeadline(base::TimeDelta duration) override;
-
   // Called when this surface will be included in the next display frame.
   void OnWillBeDrawn();
 
@@ -235,9 +234,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void OnActivationDependencyResolved(const SurfaceId& activation_dependency,
                                       SurfaceAllocationGroup* group);
 
-  // Called when this surface's activation no longer has to block on the parent.
-  void ResetBlockActivationOnParent();
-
   // Notifies that this surface is no longer the primary surface of the
   // embedder. All future CompositorFrames will activate as soon as they arrive
   // and if a pending frame currently exists it will immediately activate as
@@ -245,11 +241,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // surfaces and be able to submit to the primary surface.
   void SetIsFallbackAndMaybeActivate();
 
+  void ActivateIfDeadlinePassed();
+
  private:
   struct FrameData {
-    FrameData(CompositorFrame&& frame,
-              uint64_t frame_index,
-              PresentedCallback presented_callback);
+    FrameData(CompositorFrame&& frame, uint64_t frame_index);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
@@ -259,8 +255,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     // Whether the frame has been displayed or not.
     bool frame_drawn = false;
     bool frame_acked = false;
-    // TODO(sad): This callback would ideally become part of SurfaceClient API.
-    PresentedCallback presented_callback;
+    // Whether there is a presentation feedback callback bound to this frame.
+    // This typically happens when a frame is swapped - the Display will ask
+    // for a callback that will supply presentation feedback to the client.
+    bool is_presented_callback_bound = false;
   };
 
   // Updates surface references of the surface using the referenced
@@ -279,7 +277,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // in the submitted compositor frame.
   void RecomputeActiveReferencedSurfaces();
 
-  void ActivatePendingFrame(base::Optional<base::TimeDelta> duration);
+  void ActivatePendingFrame();
 
   // Called when all of the surface's dependencies have been resolved.
   void ActivateFrame(FrameData frame_data,
@@ -314,8 +312,12 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   base::Optional<FrameData> active_frame_data_;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
+  // Indicates whether another surface adds this surface as a dependency. When
+  // set to true, this surface will be unthrottled and the surface that is
+  // created after it will also not be throttled.
   bool seen_first_surface_dependency_ = false;
-  const bool needs_sync_tokens_;
+  // When false, this surface will not be subject to child throttling even if
+  // it's not embedded yet.
   bool block_activation_on_parent_ = false;
 
   // A set of all valid SurfaceIds contained |last_surface_id_for_range_| to
@@ -346,6 +348,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   bool is_latency_info_taken_ = false;
 
   SurfaceAllocationGroup* const allocation_group_;
+
+  base::WeakPtrFactory<Surface> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

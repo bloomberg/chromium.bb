@@ -28,34 +28,12 @@ namespace quic {
 QuicCryptoServerStreamBase::QuicCryptoServerStreamBase(QuicSession* session)
     : QuicCryptoStream(session) {}
 
-// TODO(jokulik): Once stateless rejects support is inherent in the version
-// number, this function will likely go away entirely.
-// static
-bool QuicCryptoServerStreamBase::DoesPeerSupportStatelessRejects(
-    const CryptoHandshakeMessage& message) {
-  QuicTagVector received_tags;
-  QuicErrorCode error = message.GetTaglist(kCOPT, &received_tags);
-  if (error != QUIC_NO_ERROR) {
-    return false;
-  }
-  for (const QuicTag tag : received_tags) {
-    if (tag == kSREJ) {
-      return true;
-    }
-  }
-  return false;
-}
-
 QuicCryptoServerStream::QuicCryptoServerStream(
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache,
-    bool use_stateless_rejects_if_peer_supported,
     QuicSession* session,
     Helper* helper)
     : QuicCryptoServerStreamBase(session),
-      use_stateless_rejects_if_peer_supported_(
-          use_stateless_rejects_if_peer_supported),
-      peer_supports_stateless_rejects_(false),
       crypto_config_(crypto_config),
       compressed_certs_cache_(compressed_certs_cache),
       helper_(helper) {
@@ -97,21 +75,8 @@ QuicCryptoServerStream::PreviousCachedNetworkParams() const {
   return handshaker()->PreviousCachedNetworkParams();
 }
 
-bool QuicCryptoServerStream::UseStatelessRejectsIfPeerSupported() const {
-  return use_stateless_rejects_if_peer_supported_;
-}
-
-bool QuicCryptoServerStream::PeerSupportsStatelessRejects() const {
-  return peer_supports_stateless_rejects_;
-}
-
 bool QuicCryptoServerStream::ZeroRttAttempted() const {
   return handshaker()->ZeroRttAttempted();
-}
-
-void QuicCryptoServerStream::SetPeerSupportsStatelessRejects(
-    bool peer_supports_stateless_rejects) {
-  peer_supports_stateless_rejects_ = peer_supports_stateless_rejects;
 }
 
 void QuicCryptoServerStream::SetPreviousCachedNetworkParams(

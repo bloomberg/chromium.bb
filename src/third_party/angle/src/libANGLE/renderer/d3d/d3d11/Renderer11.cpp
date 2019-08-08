@@ -918,7 +918,7 @@ void Renderer11::populateRenderer11DeviceCaps()
     mRenderer11DeviceCaps.supportsMultisampledDepthStencilSRVs =
         mRenderer11DeviceCaps.featureLevel > D3D_FEATURE_LEVEL_10_0;
 
-    if (getWorkarounds().disableB5G6R5Support)
+    if (getWorkarounds().disableB5G6R5Support.enabled)
     {
         mRenderer11DeviceCaps.B5G6R5support    = 0;
         mRenderer11DeviceCaps.B5G6R5maxSamples = 0;
@@ -1496,7 +1496,7 @@ angle::Result Renderer11::drawArrays(const gl::Context *context,
             return drawTriangleFan(context, clampedVertexCount, gl::DrawElementsType::InvalidEnum,
                                    nullptr, 0, adjustedInstanceCount);
         case gl::PrimitiveMode::Points:
-            if (getWorkarounds().useInstancedPointSpriteEmulation)
+            if (getWorkarounds().useInstancedPointSpriteEmulation.enabled)
             {
                 // This code should not be reachable by multi-view programs.
                 ASSERT(programD3D->getState().usesMultiview() == false);
@@ -2176,7 +2176,7 @@ const angle::WorkaroundsD3D &RendererD3D::getWorkarounds() const
 {
     if (!mWorkaroundsInitialized)
     {
-        mWorkarounds            = generateWorkarounds();
+        generateWorkarounds(&mWorkarounds);
         mWorkaroundsInitialized = true;
     }
 
@@ -2715,15 +2715,13 @@ angle::Result Renderer11::loadExecutable(d3d::Context *context,
 {
     ShaderData shaderData(function, length);
 
-    Context11 *context11 = static_cast<Context11 *>(context);
-
     switch (type)
     {
         case gl::ShaderType::Vertex:
         {
             d3d11::VertexShader vertexShader;
             d3d11::GeometryShader streamOutShader;
-            ANGLE_TRY(allocateResource(context11, shaderData, &vertexShader));
+            ANGLE_TRY(allocateResource(context, shaderData, &vertexShader));
 
             if (!streamOutVaryings.empty())
             {
@@ -2743,8 +2741,7 @@ angle::Result Renderer11::loadExecutable(d3d::Context *context,
                     soDeclaration.push_back(entry);
                 }
 
-                ANGLE_TRY(
-                    allocateResource(context11, shaderData, &soDeclaration, &streamOutShader));
+                ANGLE_TRY(allocateResource(context, shaderData, &soDeclaration, &streamOutShader));
             }
 
             *outExecutable = new ShaderExecutable11(function, length, std::move(vertexShader),
@@ -2754,26 +2751,26 @@ angle::Result Renderer11::loadExecutable(d3d::Context *context,
         case gl::ShaderType::Fragment:
         {
             d3d11::PixelShader pixelShader;
-            ANGLE_TRY(allocateResource(context11, shaderData, &pixelShader));
+            ANGLE_TRY(allocateResource(context, shaderData, &pixelShader));
             *outExecutable = new ShaderExecutable11(function, length, std::move(pixelShader));
         }
         break;
         case gl::ShaderType::Geometry:
         {
             d3d11::GeometryShader geometryShader;
-            ANGLE_TRY(allocateResource(context11, shaderData, &geometryShader));
+            ANGLE_TRY(allocateResource(context, shaderData, &geometryShader));
             *outExecutable = new ShaderExecutable11(function, length, std::move(geometryShader));
         }
         break;
         case gl::ShaderType::Compute:
         {
             d3d11::ComputeShader computeShader;
-            ANGLE_TRY(allocateResource(context11, shaderData, &computeShader));
+            ANGLE_TRY(allocateResource(context, shaderData, &computeShader));
             *outExecutable = new ShaderExecutable11(function, length, std::move(computeShader));
         }
         break;
         default:
-            ANGLE_HR_UNREACHABLE(context11);
+            ANGLE_HR_UNREACHABLE(context);
     }
 
     return angle::Result::Continue;
@@ -3692,9 +3689,9 @@ void Renderer11::generateCaps(gl::Caps *outCaps,
                            outCaps, outTextureCaps, outExtensions, outLimitations);
 }
 
-angle::WorkaroundsD3D Renderer11::generateWorkarounds() const
+void Renderer11::generateWorkarounds(angle::WorkaroundsD3D *workarounds) const
 {
-    return d3d11::GenerateWorkarounds(mRenderer11DeviceCaps, mAdapterDescription);
+    d3d11::GenerateWorkarounds(mRenderer11DeviceCaps, mAdapterDescription, workarounds);
 }
 
 DeviceImpl *Renderer11::createEGLDevice()
@@ -3750,8 +3747,8 @@ angle::Result Renderer11::dispatchCompute(const gl::Context *context,
 }
 angle::Result Renderer11::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
-    const auto &glState          = context->getState();
-    const gl::Program *program   = glState.getProgram();
+    const auto &glState        = context->getState();
+    const gl::Program *program = glState.getProgram();
     if (program->getActiveShaderStorageBlockCount() > 0 ||
         program->getActiveAtomicCounterBufferCount() > 0)
     {
@@ -3925,7 +3922,7 @@ angle::Result Renderer11::clearRenderTarget(const gl::Context *context,
 
 bool Renderer11::canSelectViewInVertexShader() const
 {
-    return !getWorkarounds().selectViewInGeometryShader &&
+    return !getWorkarounds().selectViewInGeometryShader.enabled &&
            getRenderer11DeviceCaps().supportsVpRtIndexWriteFromVertexShader;
 }
 

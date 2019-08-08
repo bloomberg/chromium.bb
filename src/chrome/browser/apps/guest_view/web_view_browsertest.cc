@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -49,6 +48,7 @@
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_features.h"
@@ -73,6 +73,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -91,6 +92,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_embedder.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
@@ -103,6 +105,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -2397,7 +2400,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuLanguageSettings) {
 
   // Verify that a new WebContents has been created that is at the Language
   // Settings page.
-  EXPECT_EQ(GURL("chrome://settings/languages"),
+  EXPECT_EQ(GURL(std::string(chrome::kChromeUISettingsURL) +
+                 chrome::kLanguageOptionsSubPage),
             new_contents->GetVisibleURL());
 }
 
@@ -2900,14 +2904,14 @@ class DownloadHistoryWaiter : public DownloadHistory::Observer {
     stored_downloads_.insert(item);
     if (!quit_closure_.is_null() &&
         stored_downloads_.size() >= stored_download_target_) {
-      base::ResetAndReturn(&quit_closure_).Run();
+      std::move(quit_closure_).Run();
     }
   }
 
   void OnHistoryQueryComplete() override {
     history_query_complete_ = true;
     if (!quit_closure_.is_null())
-      base::ResetAndReturn(&quit_closure_).Run();
+      std::move(quit_closure_).Run();
   }
 
   std::unordered_set<download::DownloadItem*> stored_downloads_;
@@ -3101,9 +3105,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation_CrossSession) {
         base::GenerateGUID(), download->GetId() + 2, download->GetFullPath(),
         download->GetTargetFilePath(), url_chain, download->GetReferrerUrl(),
         download->GetSiteUrl(), download->GetTabUrl(),
-        download->GetTabReferrerUrl(), download->GetMimeType(),
-        download->GetOriginalMimeType(), download->GetStartTime(),
-        download->GetEndTime(), download->GetETag(),
+        download->GetTabReferrerUrl(), download->GetRequestInitiator(),
+        download->GetMimeType(), download->GetOriginalMimeType(),
+        download->GetStartTime(), download->GetEndTime(), download->GetETag(),
         download->GetLastModifiedTime(), download->GetReceivedBytes(),
         download->GetTotalBytes(), download->GetHash(), download->GetState(),
         download->GetDangerType(), download->GetLastReason(),
@@ -3318,6 +3322,16 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
+#if defined(OS_CHROMEOS)
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame() &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // The test times out when using the legacy loading code. This could be due
+    // to creating a MimeHandlerViewEmbedder after loading has started so the
+    // MHVE cannot lock onto the navigation process and create a MHVG in time.
+    // (https://crbug.com/949656).
+    return;
+  }
+#endif
   const char kTestMimeType[] = "application/pdf";
   const char kTestFileType[] = "pdf";
   content::WebPluginInfo plugin_info;
@@ -3328,7 +3342,13 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
                                                                 true);
 
   TestHelper("testPluginLoadInternalResource", "web_view/shim", NO_TEST_SERVER);
+  // Sanity check to ensure no GuestView was created.
+  for (auto* guest_wc : GetEmbedderWebContents()->GetInnerWebContents()) {
+    EXPECT_FALSE(extensions::MimeHandlerViewEmbedder::Get(
+        guest_wc->GetMainFrame()->GetFrameTreeNodeId()));
+  }
 }
+
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 class WebViewCaptureTest : public WebViewTest {

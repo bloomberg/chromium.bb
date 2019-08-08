@@ -68,7 +68,8 @@ class ClearPrimaryAccountTestObserver
     on_primary_account_cleared_.Run(account_info);
   }
 
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override {
     on_refresh_token_removed_.Run(account_id);
   }
 
@@ -187,9 +188,9 @@ void RunClearPrimaryAccountTest(
       EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
           secondary_account_info.account_id));
       EXPECT_TRUE(base::ContainsKey(observed_removals,
-                                    former_primary_account.account_id));
+                                    former_primary_account.account_id.id));
       EXPECT_FALSE(base::ContainsKey(observed_removals,
-                                     secondary_account_info.account_id));
+                                     secondary_account_info.account_id.id));
       break;
     case RemoveAccountExpectation::kRemoveAll:
       EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
@@ -197,9 +198,9 @@ void RunClearPrimaryAccountTest(
       EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
           secondary_account_info.account_id));
       EXPECT_TRUE(base::ContainsKey(observed_removals,
-                                    former_primary_account.account_id));
+                                    former_primary_account.account_id.id));
       EXPECT_TRUE(base::ContainsKey(observed_removals,
-                                    secondary_account_info.account_id));
+                                    secondary_account_info.account_id.id));
       break;
   }
 }

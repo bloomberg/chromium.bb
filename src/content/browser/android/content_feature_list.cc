@@ -24,7 +24,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
     &kEnhancedSelectionInsertionHandle,
-    &features::kServiceWorkerForegroundPriority,
+    &kServiceGroupImportance,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -44,6 +44,8 @@ const base::Feature kEnhancedSelectionInsertionHandle{
     "EnhancedSelectionInsertionHandle", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kRequestUnbufferedDispatch{
     "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kServiceGroupImportance{"ServiceGroupImportance",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 static jboolean JNI_ContentFeatureList_IsEnabled(
     JNIEnv* env,

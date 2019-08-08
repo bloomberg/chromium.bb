@@ -146,6 +146,9 @@ Console.ConsoleView = class extends UI.VBox {
         Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
     settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._consoleHistoryAutocompleteSetting));
+    const userGestureCheckbox =
+        new UI.ToolbarSettingCheckbox(Common.settings.moduleSetting('consoleUserActivationEval'));
+    settingsToolbarRight.appendToolbarItem(userGestureCheckbox);
     if (!this._showSettingsPaneSetting.get())
       settingsPane.element.classList.add('hidden');
     this._showSettingsPaneSetting.addChangeListener(
@@ -225,10 +228,14 @@ Console.ConsoleView = class extends UI.VBox {
     UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._executionContextChanged, this);
 
     this._messagesElement.addEventListener(
-        'mousedown', event => this._updateStickToBottomOnMouseDown(event.button === 2), false);
-    this._messagesElement.addEventListener('mouseup', this._updateStickToBottomOnMouseUp.bind(this), false);
-    this._messagesElement.addEventListener('mouseleave', this._updateStickToBottomOnMouseUp.bind(this), false);
+        'mousedown', event => this._updateStickToBottomOnPointerDown(event.button === 2), false);
+    this._messagesElement.addEventListener('mouseup', this._updateStickToBottomOnPointerUp.bind(this), false);
+    this._messagesElement.addEventListener('mouseleave', this._updateStickToBottomOnPointerUp.bind(this), false);
     this._messagesElement.addEventListener('wheel', this._updateStickToBottomOnWheel.bind(this), false);
+    this._messagesElement.addEventListener(
+        'touchstart', this._updateStickToBottomOnPointerDown.bind(this, false), false);
+    this._messagesElement.addEventListener('touchend', this._updateStickToBottomOnPointerUp.bind(this), false);
+    this._messagesElement.addEventListener('touchcancel', this._updateStickToBottomOnPointerUp.bind(this), false);
 
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
@@ -917,35 +924,8 @@ Console.ConsoleView = class extends UI.VBox {
 
   _registerShortcuts() {
     this._shortcuts = {};
-
-    const shortcut = UI.KeyboardShortcut;
-    const section = UI.shortcutsScreen.section(Common.UIString('Console'));
-
-    const shortcutL = shortcut.makeDescriptor('l', UI.KeyboardShortcut.Modifiers.Ctrl);
-    let keys = [shortcutL];
-    if (Host.isMac()) {
-      const shortcutK = shortcut.makeDescriptor('k', UI.KeyboardShortcut.Modifiers.Meta);
-      keys.unshift(shortcutK);
-    }
-    section.addAlternateKeys(keys, Common.UIString('Clear console'));
-
-    keys = [shortcut.makeDescriptor(shortcut.Keys.Tab), shortcut.makeDescriptor(shortcut.Keys.Right)];
-    section.addRelatedKeys(keys, Common.UIString('Accept suggestion'));
-
-    const shortcutU = shortcut.makeDescriptor('u', UI.KeyboardShortcut.Modifiers.Ctrl);
-    this._shortcuts[shortcutU.key] = this._clearPromptBackwards.bind(this);
-    section.addAlternateKeys([shortcutU], Common.UIString('Clear console prompt'));
-
-    keys = [shortcut.makeDescriptor(shortcut.Keys.Down), shortcut.makeDescriptor(shortcut.Keys.Up)];
-    section.addRelatedKeys(keys, Common.UIString('Next/previous line'));
-
-    if (Host.isMac()) {
-      keys =
-          [shortcut.makeDescriptor('N', shortcut.Modifiers.Alt), shortcut.makeDescriptor('P', shortcut.Modifiers.Alt)];
-      section.addRelatedKeys(keys, Common.UIString('Next/previous command'));
-    }
-
-    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Enter), Common.UIString('Execute command'));
+    this._shortcuts[UI.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl)] =
+        this._clearPromptBackwards.bind(this);
   }
 
   _clearPromptBackwards() {
@@ -1169,7 +1149,7 @@ Console.ConsoleView = class extends UI.VBox {
   /**
    * @param {boolean=} isRightClick
    */
-  _updateStickToBottomOnMouseDown(isRightClick) {
+  _updateStickToBottomOnPointerDown(isRightClick) {
     this._muteViewportUpdates = !isRightClick;
     this._viewport.setStickToBottom(false);
     if (this._waitForScrollTimeout) {
@@ -1178,7 +1158,7 @@ Console.ConsoleView = class extends UI.VBox {
     }
   }
 
-  _updateStickToBottomOnMouseUp() {
+  _updateStickToBottomOnPointerUp() {
     if (!this._muteViewportUpdates)
       return;
 
@@ -1208,8 +1188,8 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _updateStickToBottomOnWheel() {
-    this._updateStickToBottomOnMouseDown();
-    this._updateStickToBottomOnMouseUp();
+    this._updateStickToBottomOnPointerDown();
+    this._updateStickToBottomOnPointerUp();
   }
 
   _promptTextChanged() {

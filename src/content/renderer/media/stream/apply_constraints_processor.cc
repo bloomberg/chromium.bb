@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
@@ -346,7 +345,7 @@ void ApplyConstraintsProcessor::CleanupRequest(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK(request_completed_cb_);
-  base::ResetAndReturn(&request_completed_cb_).Run();
+  std::move(request_completed_cb_).Run();
   std::move(web_request_callback).Run();
   current_request_.Reset();
   video_source_ = nullptr;

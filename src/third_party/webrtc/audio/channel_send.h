@@ -19,8 +19,10 @@
 #include "api/audio_codecs/audio_encoder.h"
 #include "api/crypto/crypto_options.h"
 #include "api/function_view.h"
+#include "api/media_transport_config.h"
 #include "api/media_transport_interface.h"
 #include "api/task_queue/task_queue_factory.h"
+#include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp.h"
 #include "modules/rtp_rtcp/source/rtp_sender_audio.h"
 
@@ -40,6 +42,11 @@ struct CallSendStatistics {
   int packetsSent;
   // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedpacketssent
   uint64_t retransmitted_packets_sent;
+  // A snapshot of Report Blocks with additional data of interest to statistics.
+  // Within this list, the sender-source SSRC pair is unique and per-pair the
+  // ReportBlockData represents the latest Report Block that was received for
+  // that pair.
+  std::vector<ReportBlockData> report_block_datas;
 };
 
 // See section 6.4.2 in http://www.ietf.org/rfc/rfc3550.txt for details.
@@ -125,7 +132,7 @@ std::unique_ptr<ChannelSendInterface> CreateChannelSend(
     Clock* clock,
     TaskQueueFactory* task_queue_factory,
     ProcessThread* module_process_thread,
-    MediaTransportInterface* media_transport,
+    const MediaTransportConfig& media_transport_config,
     OverheadObserver* overhead_observer,
     Transport* rtp_transport,
     RtcpRttStats* rtcp_rtt_stats,

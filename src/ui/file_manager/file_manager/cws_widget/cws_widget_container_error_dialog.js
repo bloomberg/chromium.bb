@@ -15,24 +15,25 @@ class CWSWidgetContainerErrorDialog extends cr.ui.dialogs.BaseDialog {
    * @return {boolean}
    */
   shown() {
-    return this.container_.classList.contains('shown');
+    return this.container.classList.contains('shown');
   }
 
   /**
    * One-time initialization of DOM.
    * @protected
+   * @override
    */
-  initDom_() {
-    super.initDom_();
-    this.frame_.classList.add('cws-widget-error-dialog-frame');
+  initDom() {
+    super.initDom();
+    this.frame.classList.add('cws-widget-error-dialog-frame');
     const img = this.document_.createElement('div');
     img.className = 'cws-widget-error-dialog-img';
-    this.frame_.insertBefore(img, this.text_);
+    this.frame.insertBefore(img, this.text);
 
-    this.title_.hidden = true;
-    this.closeButton_.hidden = true;
-    this.cancelButton_.hidden = true;
-    this.text_.classList.add('cws-widget-error-dialog-text');
+    this.title.hidden = true;
+    this.closeButton.hidden = true;
+    this.cancelButton.hidden = true;
+    this.text.classList.add('cws-widget-error-dialog-text');
 
     // Don't allow OK button to lose focus, in order to prevent webview content
     // from stealing focus.
@@ -40,7 +41,7 @@ class CWSWidgetContainerErrorDialog extends cr.ui.dialogs.BaseDialog {
     // order (by setting their tabIndex to -1). This doesn't work for webviews
     // because the webview embedder cannot access the webview DOM tree, and thus
     // fails to remove elements in the webview from tab order.
-    this.okButton_.addEventListener('blur', this.refocusOkButton_.bind(this));
+    this.okButton.addEventListener('blur', this.refocusOkButton_.bind(this));
   }
 
   /**
@@ -49,7 +50,7 @@ class CWSWidgetContainerErrorDialog extends cr.ui.dialogs.BaseDialog {
    */
   refocusOkButton_() {
     if (this.shown()) {
-      this.okButton_.focus();
+      this.okButton.focus();
     }
   }
 }

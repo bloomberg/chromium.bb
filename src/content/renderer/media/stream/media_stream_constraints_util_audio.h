@@ -144,8 +144,6 @@ using AudioDeviceCaptureCapabilities =
 //    Moreover, the echo_cancellation constraint influences most other
 //    audio-processing properties for which no explicit value is provided in
 //    their corresponding constraints.
-// TODO(guidou): Add support for other standard constraints such as sampleRate,
-// channelCount and groupId. https://crbug.com/731170
 CONTENT_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints,

@@ -13,6 +13,7 @@
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
@@ -117,9 +118,85 @@ bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
   return is_enrolled;
 }
 
+HRESULT ExtractRegistrationData(const base::Value& registration_data,
+                                base::string16* out_email,
+                                base::string16* out_id_token,
+                                base::string16* out_access_token,
+                                base::string16* out_sid,
+                                base::string16* out_username,
+                                base::string16* out_domain) {
+  DCHECK(out_email);
+  DCHECK(out_id_token);
+  DCHECK(out_access_token);
+  DCHECK(out_sid);
+  DCHECK(out_username);
+  DCHECK(out_domain);
+  if (!registration_data.is_dict()) {
+    LOGFN(ERROR) << "Registration data is not a dictionary";
+    return E_INVALIDARG;
+  }
+
+  *out_email = GetDictString(registration_data, kKeyEmail);
+  *out_id_token = GetDictString(registration_data, kKeyMdmIdToken);
+  *out_access_token = GetDictString(registration_data, kKeyAccessToken);
+  *out_sid = GetDictString(registration_data, kKeySID);
+  *out_username = GetDictString(registration_data, kKeyUsername);
+  *out_domain = GetDictString(registration_data, kKeyDomain);
+
+  if (out_email->empty()) {
+    LOGFN(ERROR) << "Email is empty";
+    return E_INVALIDARG;
+  }
+
+  if (out_id_token->empty()) {
+    LOGFN(ERROR) << "MDM id token is empty";
+    return E_INVALIDARG;
+  }
+
+  if (out_access_token->empty()) {
+    LOGFN(ERROR) << "Access token is empty";
+    return E_INVALIDARG;
+  }
+
+  if (out_sid->empty()) {
+    LOGFN(ERROR) << "SID is empty";
+    return E_INVALIDARG;
+  }
+
+  if (out_username->empty()) {
+    LOGFN(ERROR) << "username is empty";
+    return E_INVALIDARG;
+  }
+
+  if (out_domain->empty()) {
+    LOGFN(ERROR) << "domain is empty";
+    return E_INVALIDARG;
+  }
+
+  return S_OK;
+}
+
 HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
-                                           const base::string16& email,
-                                           const std::string& data) {
+                                           const base::Value& properties) {
+  // Make sure all the needed data is present in the dictionary.
+  base::string16 email;
+  base::string16 id_token;
+  base::string16 access_token;
+  base::string16 sid;
+  base::string16 username;
+  base::string16 domain;
+
+  HRESULT hr = ExtractRegistrationData(properties, &email, &id_token,
+                                       &access_token, &sid, &username, &domain);
+
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "ExtractRegistrationData hr=" << putHR(hr);
+    return E_INVALIDARG;
+  }
+
+  LOGFN(INFO) << "MDM_URL=" << mdm_url
+              << " token=" << base::string16(id_token.c_str(), 10);
+
   switch (g_enrollment_status) {
     case EnrollmentStatus::kForceSuccess:
       return S_OK;
@@ -129,11 +206,27 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
       break;
   }
 
-  // TODO(crbug.com/935577): Check if machine is already enrolled because
-  // attempting to enroll when already enrolled causes a crash.
-  if (IsEnrolledWithGoogleMdm(mdm_url)) {
-    LOGFN(INFO) << "Already enrolled to Google MDM";
-    return S_OK;
+  // Add the serial number to the registration data dictionary.
+  base::string16 serial_number =
+      base::win::WmiComputerSystemInfo::Get().serial_number();
+
+  if (serial_number.empty()) {
+    LOGFN(ERROR) << "Failed to get serial number.";
+    return E_FAIL;
+  }
+
+  // Build the json data needed by the server.
+  base::Value registration_data(base::Value::Type::DICTIONARY);
+  registration_data.SetStringKey("id_token", id_token);
+  registration_data.SetStringKey("access_token", access_token);
+  registration_data.SetStringKey("sid", sid);
+  registration_data.SetStringKey("username", username);
+  registration_data.SetStringKey("domain", domain);
+  registration_data.SetStringKey("serial_number", serial_number);
+  std::string registration_data_str;
+  if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
+    LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
+    return E_FAIL;
   }
 
   base::ScopedNativeLibrary library(
@@ -146,7 +239,7 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   }
 
   std::string data_encoded;
-  base::Base64Encode(data, &data_encoded);
+  base::Base64Encode(registration_data_str, &data_encoded);
 
   // This register call is blocking.  It won't return until the machine is
   // properly registered with the MDM server.
@@ -167,50 +260,21 @@ bool MdmEnrollmentEnabled() {
 }
 
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
-  USES_CONVERSION;
   LOGFN(INFO);
-
-  base::string16 email = GetDictString(properties, kKeyEmail);
-  base::string16 token = GetDictString(properties, kKeyMdmIdToken);
-
-  if (email.empty()) {
-    LOGFN(ERROR) << "Email is empty";
-    return E_INVALIDARG;
-  }
-
-  if (token.empty()) {
-    LOGFN(ERROR) << "MDM id token is empty";
-    return E_INVALIDARG;
-  }
 
   // Only enroll with MDM if configured.
   base::string16 mdm_url = GetMdmUrl();
   if (mdm_url.empty())
     return S_OK;
 
-  LOGFN(INFO) << "MDM_URL=" << mdm_url
-              << " token=" << base::string16(token.c_str(), 10);
-
-  // Build the json data needed by the server.
-  base::string16 serial_number =
-      base::win::WmiComputerSystemInfo::Get().serial_number();
-
-  if (serial_number.empty()) {
-    LOGFN(ERROR) << "Failed to get serial number.";
-    return -1;
+  // TODO(crbug.com/935577): Check if machine is already enrolled because
+  // attempting to enroll when already enrolled causes a crash.
+  if (IsEnrolledWithGoogleMdm(mdm_url)) {
+    LOGFN(INFO) << "Already enrolled to Google MDM";
+    return S_OK;
   }
 
-  base::Value registration_data(base::Value::Type::DICTIONARY);
-  registration_data.SetStringKey("serial_number", serial_number);
-  registration_data.SetStringKey("id_token", token);
-  std::string registration_data_str;
-  if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
-    LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
-    return E_FAIL;
-  }
-
-  HRESULT hr =
-      RegisterWithGoogleDeviceManagement(mdm_url, email, registration_data_str);
+  HRESULT hr = RegisterWithGoogleDeviceManagement(mdm_url, properties);
   if (FAILED(hr))
     LOGFN(ERROR) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
 

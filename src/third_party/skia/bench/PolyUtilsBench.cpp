@@ -5,9 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "Benchmark.h"
-#include "SkRect.h"
-#include "SkPolyUtils.h"
+#include "bench/Benchmark.h"
+#include "include/core/SkRect.h"
+#include "src/utils/SkPolyUtils.h"
 
 class PolyUtilsBench : public Benchmark {
 public:

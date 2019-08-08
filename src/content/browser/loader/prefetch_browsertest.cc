@@ -2,22 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/loader/prefetch_url_loader_service.h"
-#include "content/browser/storage_partition_impl.h"
+#include "content/browser/loader/prefetch_browsertest_base.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
-#include "content/browser/web_package/signed_exchange_loader.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -27,8 +18,6 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
 
 namespace content {
@@ -40,130 +29,6 @@ struct PrefetchBrowserTestParam {
         network_service_enabled(network_service_enabled) {}
   const bool signed_exchange_enabled;
   const bool network_service_enabled;
-};
-
-struct ScopedSignedExchangeHandlerFactory {
-  explicit ScopedSignedExchangeHandlerFactory(
-      SignedExchangeHandlerFactory* factory) {
-    SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(factory);
-  }
-  ~ScopedSignedExchangeHandlerFactory() {
-    SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(nullptr);
-  }
-};
-
-class PrefetchBrowserTestBase : public ContentBrowserTest {
- public:
-  struct ResponseEntry {
-    ResponseEntry() = default;
-    explicit ResponseEntry(
-        const std::string& content,
-        const std::string& content_type = "text/html",
-        const std::vector<std::pair<std::string, std::string>>& headers = {})
-        : content(content), content_type(content_type), headers(headers) {}
-    ~ResponseEntry() = default;
-    std::string content;
-    std::string content_type;
-    std::vector<std::pair<std::string, std::string>> headers;
-  };
-  PrefetchBrowserTestBase() = default;
-  ~PrefetchBrowserTestBase() override = default;
-
-  void SetUpOnMainThread() override {
-    ContentBrowserTest::SetUpOnMainThread();
-    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext()));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        BindOnce(
-            &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
-            base::RetainedRef(partition->GetPrefetchURLLoaderService()),
-            base::BindRepeating(
-                &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
-                base::Unretained(this))));
-  }
-
- protected:
-  void RegisterResponse(const std::string& url, const ResponseEntry& entry) {
-    response_map_[url] = entry;
-  }
-
-  std::unique_ptr<net::test_server::HttpResponse> ServeResponses(
-      const net::test_server::HttpRequest& request) {
-    auto found = response_map_.find(request.relative_url);
-    if (found != response_map_.end()) {
-      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_code(net::HTTP_OK);
-      response->set_content(found->second.content);
-      response->set_content_type(found->second.content_type);
-      for (const auto& header : found->second.headers) {
-        response->AddCustomHeader(header.first, header.second);
-      }
-      return std::move(response);
-    }
-    return nullptr;
-  }
-
-  void WatchURLAndRunClosure(
-      const std::string& relative_url,
-      int* visit_count,
-      base::OnceClosure closure,
-      const net::test_server::HttpRequest& request) {
-    if (request.relative_url == relative_url) {
-      (*visit_count)++;
-      if (closure)
-        std::move(closure).Run();
-    }
-  }
-
-  void OnPrefetchURLLoaderCalled() { prefetch_url_loader_called_++; }
-
-  void RegisterRequestMonitor(net::EmbeddedTestServer* test_server,
-                              const std::string& path,
-                              int* count,
-                              base::RunLoop* waiter) {
-    test_server->RegisterRequestMonitor(base::BindRepeating(
-        &PrefetchBrowserTestBase::WatchURLAndRunClosure, base::Unretained(this),
-        path, count,
-        waiter ? waiter->QuitClosure() : base::RepeatingClosure()));
-  }
-
-  void RegisterRequestHandler(net::EmbeddedTestServer* test_server) {
-    test_server->RegisterRequestHandler(base::BindRepeating(
-        &PrefetchBrowserTestBase::ServeResponses, base::Unretained(this)));
-  }
-
-  void NavigateToURLAndWaitTitle(const GURL& url, const std::string& title) {
-    base::string16 title16 = base::ASCIIToUTF16(title);
-    TitleWatcher title_watcher(shell()->web_contents(), title16);
-    // Execute the JavaScript code to triger the followup navigation from the
-    // current page.
-    EXPECT_TRUE(ExecuteScript(
-        shell()->web_contents(),
-        base::StringPrintf("location.href = '%s';", url.spec().c_str())));
-    EXPECT_EQ(title16, title_watcher.WaitAndGetTitle());
-  }
-
-  void WaitUntilLoaded(const GURL& url) {
-    int entry_count = 0;
-    while (entry_count == 0) {
-      const bool result = ExecuteScriptAndExtractInt(
-          shell()->web_contents(),
-          base::StringPrintf("window.domAutomationController.send("
-                             "performance.getEntriesByName('%s').length);",
-                             url.spec().c_str()),
-          &entry_count);
-      ASSERT_TRUE(result);
-    }
-  }
-
-  int prefetch_url_loader_called_ = 0;
-
- private:
-  std::map<std::string, ResponseEntry> response_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestBase);
 };
 
 class PrefetchBrowserTest
@@ -514,7 +379,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
       target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
       GURL(embedded_test_server()->GetURL(target_path)), "text/html",
       {base::StringPrintf("Link: <%s>;rel=\"preload\";as=\"script\"",
-                          preload_url_in_sxg.spec().c_str())})});
+                          preload_url_in_sxg.spec().c_str())},
+      net::SHA256HashValue({{0x00}}))});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   // Loading a page that prefetches the target URL would increment both
@@ -586,7 +452,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
       target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
       GURL(cross_origin_server_->GetURL(target_path)), "text/html",
       {base::StringPrintf("Link: <%s>;rel=\"preload\";as=\"script\"",
-                          preload_url_in_sxg.spec().c_str())})});
+                          preload_url_in_sxg.spec().c_str())},
+      net::SHA256HashValue({{0x00}}))});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   // Loading a page that prefetches the target URL would increment both
@@ -623,107 +490,4 @@ INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
                                          PrefetchBrowserTestParam(true, false),
                                          PrefetchBrowserTestParam(true, true)));
 
-class SignedExchangeSubresourcePrefetchBrowserTest
-    : public PrefetchBrowserTestBase,
-      public testing::WithParamInterface<PrefetchBrowserTestParam> {
- public:
-  SignedExchangeSubresourcePrefetchBrowserTest() = default;
-  ~SignedExchangeSubresourcePrefetchBrowserTest() = default;
-
-  void SetUp() override {
-    std::vector<base::Feature> enable_features;
-    std::vector<base::Feature> disabled_features;
-    enable_features.push_back(features::kSignedHTTPExchange);
-    enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
-    if (GetParam().network_service_enabled) {
-      enable_features.push_back(network::features::kNetworkService);
-    } else {
-      disabled_features.push_back(network::features::kNetworkService);
-    }
-    feature_list_.InitWithFeatures(enable_features, disabled_features);
-    PrefetchBrowserTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SignedExchangeSubresourcePrefetchBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
-                       PrefetchAlternativeSubresourceSXG) {
-  int script_sxg_fetch_count = 0;
-  const char* prefetch_path = "/prefetch.html";
-  const char* target_sxg_path = "/target.sxg";
-  const char* target_path = "/target.html";
-  const char* script_path_in_sxg = "/script.js";
-  const char* script_sxg_path = "/script_js.sxg";
-
-  base::RunLoop script_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
-                         &script_sxg_fetch_count, &script_sxg_prefetch_waiter);
-  RegisterRequestHandler(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
-
-  const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
-  const GURL target_url = embedded_test_server()->GetURL(target_path);
-  const GURL script_sxg_url = embedded_test_server()->GetURL(script_sxg_path);
-  const GURL script_url = embedded_test_server()->GetURL(script_path_in_sxg);
-
-  const std::string outer_link_header = base::StringPrintf(
-      "<%s>;"
-      "rel=\"alternate\";"
-      "type=\"application/signed-exchange;v=b3\";"
-      "anchor=\"%s\"",
-      script_sxg_url.spec().c_str(), script_url.spec().c_str());
-  const std::string inner_link_headers = base::StringPrintf(
-      "Link: <%s>;"
-      "rel=\"allowed-alt-sxg\";header-integrity=\"%s\","
-      "<%s>;rel=\"preload\";as=\"script\"",
-      script_url.spec().c_str(),
-      // This is just a dummy data as of now.
-      // TODO(crbug.com/935267): When we will implement the header integrity
-      // checking logic, add tests for it.
-      "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      script_url.spec().c_str());
-
-  RegisterResponse(
-      prefetch_path,
-      ResponseEntry(base::StringPrintf(
-          "<body><link rel='prefetch' href='%s'></body>", target_sxg_path)));
-  RegisterResponse(
-      target_sxg_path,
-      // We mock the SignedExchangeHandler, so just return a HTML content
-      // as "application/signed-exchange;v=b3".
-      ResponseEntry("<head><title>Prefetch Target (SXG)</title><script "
-                    "src=\"./preload.js\"></script></head>",
-                    "application/signed-exchange;v=b3",
-                    {{"x-content-type-options", "nosniff"},
-                     {"link", outer_link_header}}));
-  RegisterResponse(script_sxg_path,
-                   // We mock the SignedExchangeHandler, so just return a JS
-                   // content as "application/signed-exchange;v=b3".
-                   ResponseEntry("document.title=\"done\";",
-                                 "application/signed-exchange;v=b3",
-                                 {{"x-content-type-options", "nosniff"}}));
-
-  MockSignedExchangeHandlerFactory factory(
-      {MockSignedExchangeHandlerParams(
-           target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
-           target_url, "text/html", {inner_link_headers}),
-       MockSignedExchangeHandlerParams(
-           script_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
-           script_url, "text/javascript", {})});
-  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
-
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
-  script_sxg_prefetch_waiter.Run();
-  EXPECT_EQ(1, script_sxg_fetch_count);
-}
-
-INSTANTIATE_TEST_SUITE_P(SignedExchangeSubresourcePrefetchBrowserTest,
-                         SignedExchangeSubresourcePrefetchBrowserTest,
-                         testing::Values(PrefetchBrowserTestParam(true, false),
-                                         PrefetchBrowserTestParam(true, true)));
 }  // namespace content

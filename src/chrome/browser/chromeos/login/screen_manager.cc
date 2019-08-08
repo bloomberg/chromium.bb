@@ -20,14 +20,13 @@ void ScreenManager::Init(std::vector<std::unique_ptr<BaseScreen>> screens) {
     screens_[screen->screen_id()] = std::move(screen);
 }
 
-BaseScreen* ScreenManager::GetScreen(OobeScreen screen) {
+BaseScreen* ScreenManager::GetScreen(OobeScreenId screen) {
   auto iter = screens_.find(screen);
-  DCHECK(iter != screens_.end())
-      << "Failed to find screen " << GetOobeScreenName(screen);
+  DCHECK(iter != screens_.end()) << "Failed to find screen " << screen;
   return iter->second.get();
 }
 
-bool ScreenManager::HasScreen(OobeScreen screen) {
+bool ScreenManager::HasScreen(OobeScreenId screen) {
   return screens_.count(screen) > 0;
 }
 
@@ -38,7 +37,7 @@ void ScreenManager::SetScreenForTesting(std::unique_ptr<BaseScreen> value) {
   screens_[id] = std::move(value);
 }
 
-void ScreenManager::DeleteScreenForTesting(OobeScreen screen) {
+void ScreenManager::DeleteScreenForTesting(OobeScreenId screen) {
   screens_[screen] = nullptr;
 }
 

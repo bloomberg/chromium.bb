@@ -138,9 +138,10 @@ void LayoutScrollbar::SetHoveredPart(ScrollbarPart part) {
   UpdateScrollbarPart(kTrackBGPart);
 }
 
-void LayoutScrollbar::SetPressedPart(ScrollbarPart part) {
+void LayoutScrollbar::SetPressedPart(ScrollbarPart part,
+                                     WebInputEvent::Type type) {
   ScrollbarPart old_part = pressed_part_;
-  Scrollbar::SetPressedPart(part);
+  Scrollbar::SetPressedPart(part, type);
 
   UpdateScrollbarPart(old_part);
   UpdateScrollbarPart(part);

@@ -13,15 +13,11 @@
 #include "ash/session/test_session_controller_client.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 class PrefService;
 
 namespace aura {
 class Window;
-namespace test {
-class EnvWindowTreeClientSetter;
-}
 }
 
 namespace chromeos {
@@ -34,16 +30,9 @@ namespace display {
 class Display;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 class ScopedAnimationDurationScaleMode;
-}
-
-namespace views {
-class MusClient;
+class TestContextFactories;
 }
 
 namespace wm {
@@ -55,6 +44,8 @@ namespace ash {
 class AppListTestHelper;
 class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
+class TestNewWindowDelegate;
+class TestPrefServiceProvider;
 class TestShellDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -72,12 +63,6 @@ class AshTestHelper {
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
-
-  // Call this only if this code is being run outside of ash, for example, in
-  // browser tests that use AshTestBase. This disables CHECKs that are
-  // applicable only when used inside ash.
-  // TODO: remove this and ban usage of AshTestHelper outside of ash.
-  void SetRunningOutsideAsh();
 
   // Returns a root Window. Usually this is the active root Window, but that
   // method can return NULL sometimes, and in those cases, we fall back on the
@@ -103,6 +88,7 @@ class AshTestHelper {
       std::unique_ptr<TestSessionControllerClient> session_controller_client) {
     session_controller_client_ = std::move(session_controller_client);
   }
+  TestPrefServiceProvider* prefs_provider() { return prefs_provider_.get(); }
 
   AppListTestHelper* app_list_test_helper() {
     return app_list_test_helper_.get();
@@ -114,20 +100,9 @@ class AshTestHelper {
 
   void reset_commandline() { command_line_.reset(); }
 
-  // Creates a MusClient. aura::Env's *must* be set to Mode::MUS. Easiest way
-  // to ensure that is by subclassing SingleProcessMashTestBase.
-  void CreateMusClient();
-
-  // Gets a Connector that talks directly to the WindowService.
-  service_manager::Connector* GetWindowServiceConnector();
-
  private:
-  // Forces creation of the WindowService. The WindowService is normally created
-  // on demand, this force the creation.
-  void CreateWindowService();
-
   // Called when running in ash to create Shell.
-  void CreateShell();
+  void CreateShell(bool provide_local_state);
 
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
@@ -143,22 +118,20 @@ class AshTestHelper {
   bool power_policy_controller_initialized_ = false;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
+  std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
+
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
 
+  std::unique_ptr<TestNewWindowDelegate> new_window_delegate_;
+
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;
 
-  service_manager::TestConnectorFactory test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> window_service_connector_;
-
-  // |window_tree_client_setter_| and |mus_client_| are created by
-  // CreateMusClient(). See it for details.
-  std::unique_ptr<aura::test::EnvWindowTreeClientSetter>
-      window_tree_client_setter_;
-  std::unique_ptr<views::MusClient> mus_client_;
+  std::unique_ptr<PrefService> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

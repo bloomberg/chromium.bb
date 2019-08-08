@@ -72,8 +72,8 @@ class HTMLResourcePreloaderTest : public PageTestBase {
     DCHECK(preload_request);
     if (test_case.is_cors)
       preload_request->SetCrossOrigin(kCrossOriginAttributeAnonymous);
-    HTMLResourcePreloader* preloader =
-        HTMLResourcePreloader::Create(GetDocument());
+    auto* preloader =
+        MakeGarbageCollected<HTMLResourcePreloader>(GetDocument());
     preloader->Preload(std::move(preload_request));
     ASSERT_TRUE(platform_->GetMockPrescientNetworking().DidPreconnect());
     ASSERT_NE(test_case.is_cors,

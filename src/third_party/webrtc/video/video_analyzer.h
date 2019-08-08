@@ -180,7 +180,7 @@ class VideoAnalyzer : public PacketReceiver,
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_);
 
   void PollStats();
-  static bool FrameComparisonThread(void* obj);
+  static void FrameComparisonThread(void* obj);
   bool CompareFrames();
   bool PopComparison(FrameComparison* comparison);
   // Increment counter for number of frames received for comparison.
@@ -230,13 +230,21 @@ class VideoAnalyzer : public PacketReceiver,
   Statistics fec_bitrate_bps_ RTC_GUARDED_BY(comparison_lock_);
   Statistics send_bandwidth_bps_ RTC_GUARDED_BY(comparison_lock_);
   Statistics memory_usage_ RTC_GUARDED_BY(comparison_lock_);
-  Statistics time_between_freezes_ RTC_GUARDED_BY(comparison_lock_);
   Statistics audio_expand_rate_ RTC_GUARDED_BY(comparison_lock_);
   Statistics audio_accelerate_rate_ RTC_GUARDED_BY(comparison_lock_);
   Statistics audio_jitter_buffer_ms_ RTC_GUARDED_BY(comparison_lock_);
   Statistics pixels_ RTC_GUARDED_BY(comparison_lock_);
   // Rendered frame with worst PSNR is saved for further analysis.
   absl::optional<FrameWithPsnr> worst_frame_ RTC_GUARDED_BY(comparison_lock_);
+  // Freeze metrics.
+  Statistics time_between_freezes_ RTC_GUARDED_BY(comparison_lock_);
+  uint32_t freeze_count_ RTC_GUARDED_BY(comparison_lock_);
+  uint32_t total_freezes_duration_ms_ RTC_GUARDED_BY(comparison_lock_);
+  uint32_t total_frames_duration_ms_ RTC_GUARDED_BY(comparison_lock_);
+  double sum_squared_frame_durations_ RTC_GUARDED_BY(comparison_lock_);
+
+  double decode_frame_rate_ RTC_GUARDED_BY(comparison_lock_);
+  double render_frame_rate_ RTC_GUARDED_BY(comparison_lock_);
 
   size_t last_fec_bytes_;
 
@@ -275,6 +283,7 @@ class VideoAnalyzer : public PacketReceiver,
   std::vector<rtc::PlatformThread*> comparison_thread_pool_;
   rtc::Event comparison_available_event_;
   std::deque<FrameComparison> comparisons_ RTC_GUARDED_BY(comparison_lock_);
+  bool quit_ RTC_GUARDED_BY(comparison_lock_);
   rtc::Event done_;
   test::SingleThreadedTaskQueueForTesting::TaskId stats_polling_task_id_
       RTC_GUARDED_BY(comparison_lock_);

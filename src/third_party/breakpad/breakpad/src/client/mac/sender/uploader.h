@@ -42,6 +42,13 @@ extern NSString *const kGoogleServerType;
 extern NSString *const kSocorroServerType;
 extern NSString *const kDefaultServerType;
 
+// Optional user-defined function that will be called after a network upload
+// of a crash report.
+// |report_id| will be the id returned by the server, or "ERR" if an error
+// occurred.
+// |error| will contain the error, or nil if no error occured.
+typedef void (^UploadCompletionBlock)(NSString *reportId, NSError *error);
+
 @interface Uploader : NSObject {
  @private
   NSMutableDictionary *parameters_;        // Key value pairs of data (STRONG)
@@ -61,6 +68,12 @@ extern NSString *const kDefaultServerType;
                                            // that are uploaded to the
                                            // crash server with the
                                            // minidump.
+  UploadCompletionBlock uploadCompletion_;  // A block called on network upload
+                                            // completion. Parameters are:
+                                            // The report ID returned by the
+                                            // server,
+                                            // the NSError triggered during
+                                            // upload.
 }
 
 - (id)initWithConfigFile:(const char *)configFile;
@@ -85,5 +98,9 @@ extern NSString *const kDefaultServerType;
 // This method process the HTTP response and renames the minidump file with the
 // new ID.
 - (void)handleNetworkResponse:(NSData *)data withError:(NSError *)error;
+
+// Sets the callback to be called after uploading a crash report to the server.
+// Only the latest callback registered will be called.
+- (void)setUploadCompletionBlock:(UploadCompletionBlock)uploadCompletion;
 
 @end

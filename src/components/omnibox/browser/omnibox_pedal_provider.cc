@@ -10,10 +10,10 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/grit/components_resources.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
+#include "components/omnibox/resources/grit/omnibox_resources.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -96,9 +96,11 @@ OmniboxPedal::Tokens OmniboxPedalProvider::Tokenize(
 
 void OmniboxPedalProvider::LoadPedalConcepts() {
   // Get raw gzipped data, uncompress it, then parse to base::Value for loading.
-  base::StringPiece compressed_data =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+  scoped_refptr<base::RefCountedMemory> bytes =
+      ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceBytes(
           IDR_OMNIBOX_PEDAL_CONCEPTS);
+  DCHECK(bytes);
+  base::StringPiece compressed_data(bytes->front_as<char>(), bytes->size());
   std::string uncompressed_data;
   uncompressed_data.resize(compression::GetUncompressedSize(compressed_data));
   CHECK(compression::GzipUncompress(compressed_data, uncompressed_data));

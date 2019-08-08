@@ -140,7 +140,7 @@ void CheckLpacToken(HANDLE process) {
 class AppContainerProfileTest : public ::testing::Test {
  public:
   void SetUp() override {
-    if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    if (base::win::GetVersion() < base::win::Version::WIN8)
       return;
     package_name_ = GenerateRandomPackageName();
     broker_services_ = GetBroker();
@@ -186,7 +186,7 @@ class AppContainerProfileTest : public ::testing::Test {
 
 
 TEST(AppContainerTest, DenyOpenEventForLowBox) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
   TestRunner runner(JOB_UNPROTECTED, USER_UNPROTECTED, USER_UNPROTECTED);
@@ -307,7 +307,7 @@ TEST_F(AppContainerProfileTest, WithImpersonationCapabilities) {
 }
 
 TEST_F(AppContainerProfileTest, NoCapabilitiesLPAC) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
   profile_->SetEnableLowPrivilegeAppContainer(true);

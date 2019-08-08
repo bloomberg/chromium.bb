@@ -13,6 +13,7 @@
 namespace blink {
 
 class CSSToLengthConversionData;
+class CSSValue;
 
 class LengthInterpolationFunctions {
   STATIC_ONLY(LengthInterpolationFunctions);

@@ -242,10 +242,8 @@ class AttributeLayoutTest : public ANGLETest
 
     void GetTestCases(void);
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glClearColor(.2f, .2f, .2f, .0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -277,12 +275,11 @@ class AttributeLayoutTest : public ANGLETest
         GetTestCases();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         mTestCases.clear();
         glDeleteProgram(mProgram);
         glDeleteBuffers(1, &mIndexBuffer);
-        ANGLETest::TearDown();
     }
 
     virtual bool Skip(const TestCase &) { return false; }
@@ -464,9 +461,9 @@ TEST_P(AttributeLayoutBufferIndexed, Test)
     Run(false);
 }
 
-#define PARAMS                                                                            \
-    ES2_VULKAN(), ES2_OPENGL(), ES2_D3D9(), ES2_D3D11(), ES2_D3D11_FL9_3(), ES3_OPENGL(), \
-        ES2_OPENGLES(), ES3_OPENGLES()
+#define PARAMS                                                                         \
+    ES2_VULKAN(), ES2_OPENGL(), ES2_D3D9(), ES2_D3D11(), ES3_OPENGL(), ES2_OPENGLES(), \
+        ES3_OPENGLES()
 
 ANGLE_INSTANTIATE_TEST(AttributeLayoutNonIndexed, PARAMS);
 ANGLE_INSTANTIATE_TEST(AttributeLayoutMemoryIndexed, PARAMS);

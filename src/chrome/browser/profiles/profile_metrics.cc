@@ -18,11 +18,14 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/profile_metrics/counts.h"
 #include "content/public/browser/browser_thread.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_finder.h"
+#endif
 
 namespace {
 

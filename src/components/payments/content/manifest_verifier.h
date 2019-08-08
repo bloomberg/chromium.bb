@@ -46,6 +46,11 @@ class PaymentManifestWebDataService;
 //   ManifestVerifer verifier(std::move(downloader), std::move(parser), cache);
 //   verifier.Verify(std::move(apps), base::BindOnce(&OnFinishedVerification),
 //                   base::BindOnce(&OnFinishedUsingResources));
+//
+// The command line must be initialized to use this class in tests, because it
+// checks for --unsafely-treat-insecure-origin-as-secure=<origin> flag. For
+// example:
+//  base::CommandLine::Init(0, nullptr);
 class ManifestVerifier final : public WebDataServiceConsumer {
  public:
   // The callback that will be invoked with the validated payment handlers.

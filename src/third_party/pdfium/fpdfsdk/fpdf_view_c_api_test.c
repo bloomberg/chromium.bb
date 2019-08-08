@@ -44,6 +44,7 @@ int CheckPDFiumCApi() {
     CHK(FPDFAnnot_GetAttachmentPoints);
     CHK(FPDFAnnot_GetColor);
     CHK(FPDFAnnot_GetFlags);
+    CHK(FPDFAnnot_GetFontSize);
     CHK(FPDFAnnot_GetFormFieldAtPoint);
     CHK(FPDFAnnot_GetFormFieldFlags);
     CHK(FPDFAnnot_GetLinkedAnnot);
@@ -196,19 +197,12 @@ int CheckPDFiumCApi() {
     CHK(FPDFPath_Close);
     CHK(FPDFPath_CountSegments);
     CHK(FPDFPath_GetDrawMode);
-    CHK(FPDFPath_GetFillColor);
     CHK(FPDFPath_GetMatrix);
     CHK(FPDFPath_GetPathSegment);
-    CHK(FPDFPath_GetStrokeColor);
     CHK(FPDFPath_LineTo);
     CHK(FPDFPath_MoveTo);
     CHK(FPDFPath_SetDrawMode);
-    CHK(FPDFPath_SetFillColor);
-    CHK(FPDFPath_SetLineCap);
-    CHK(FPDFPath_SetLineJoin);
     CHK(FPDFPath_SetMatrix);
-    CHK(FPDFPath_SetStrokeColor);
-    CHK(FPDFPath_SetStrokeWidth);
     CHK(FPDFTextObj_GetFontName);
     CHK(FPDFTextObj_GetFontSize);
     CHK(FPDFTextObj_GetText);
@@ -216,7 +210,6 @@ int CheckPDFiumCApi() {
     CHK(FPDFText_GetTextRenderMode);
     CHK(FPDFText_LoadFont);
     CHK(FPDFText_LoadStandardFont);
-    CHK(FPDFText_SetFillColor);
     CHK(FPDFText_SetText);
     CHK(FPDF_CreateNewDocument);
 

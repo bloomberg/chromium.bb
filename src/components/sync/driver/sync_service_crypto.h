@@ -68,9 +68,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Creates a proxy observer object that will post calls to this thread.
   std::unique_ptr<SyncEncryptionHandler::Observer> GetEncryptionObserverProxy();
 
-  // Takes the previously saved nigori state; null if there isn't any.
-  std::unique_ptr<SyncEncryptionHandler::NigoriState> TakeSavedNigoriState();
-
   PassphraseRequiredReason passphrase_required_reason() const {
     return state_.passphrase_required_reason;
   }
@@ -114,11 +111,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     // complete. We track this at this layer in order to allow the user to
     // cancel if they e.g. don't remember their explicit passphrase.
     bool encryption_pending = false;
-
-    // Nigori state after user switching to custom passphrase, saved until
-    // transition steps complete. It will be injected into new engine after sync
-    // restart.
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
 
     // We cache the cryptographer's pending keys whenever
     // NotifyPassphraseRequired is called. This way, before the UI calls

@@ -182,11 +182,11 @@ base::Lock* InProcessContextProvider::GetLock() {
 }
 
 void InProcessContextProvider::AddObserver(viz::ContextLostObserver* obs) {
-  // Pixel tests do not test lost context.
+  observers_.AddObserver(obs);
 }
 
 void InProcessContextProvider::RemoveObserver(viz::ContextLostObserver* obs) {
-  // Pixel tests do not test lost context.
+  observers_.RemoveObserver(obs);
 }
 
 uint32_t InProcessContextProvider::GetCopyTextureInternalFormat() {
@@ -196,6 +196,11 @@ uint32_t InProcessContextProvider::GetCopyTextureInternalFormat() {
   DCHECK_NE(attribs_.green_size, 0);
   DCHECK_NE(attribs_.blue_size, 0);
   return GL_RGB;
+}
+
+void InProcessContextProvider::SendOnContextLost() {
+  for (auto& observer : observers_)
+    observer.OnContextLost();
 }
 
 }  // namespace ui

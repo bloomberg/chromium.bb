@@ -34,8 +34,10 @@ import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -60,20 +62,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * {@link TabObserver}s.
  */
 public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
-    /**
-     * Listener to be notified when a find result is received.
-     */
-    public interface FindResultListener {
-        public void onFindResult(FindNotificationDetails result);
-    }
-
-    /**
-     * Listener to be notified when the rects corresponding to find matches are received.
-     */
-    public interface FindMatchRectsListener {
-        public void onFindMatchRects(FindMatchRectsDetails result);
-    }
-
     /** Used for logging. */
     private static final String TAG = "WebContentsDelegate";
 
@@ -83,38 +71,25 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     private final ArrayMap<WebContents, String> mWebContentsUrlMapping = new ArrayMap<>();
 
     protected Handler mHandler;
-    private FindResultListener mFindResultListener;
-    private FindMatchRectsListener mFindMatchRectsListener;
-    private @WebDisplayMode int mDisplayMode = WebDisplayMode.BROWSER;
 
     public TabWebContentsDelegateAndroid(Tab tab) {
         mTab = tab;
         mHandler = new Handler();
         mCloseContentsRunnable = () -> {
-            // TODO(jinsukkim): Move |closeTab| to TabModelSelector by making it observe its tabs.
-            TabModelSelector.from(mTab).closeTab(mTab);
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) observers.next().onCloseContents(mTab);
         };
     }
 
-    /**
-     * Sets the current display mode which can be queried using media queries.
-     */
-    public void setDisplayMode(@WebDisplayMode int displayMode) {
-        mDisplayMode = displayMode;
-    }
-
     @CalledByNative
-    private @WebDisplayMode int getDisplayMode() {
-        return mDisplayMode;
+    protected @WebDisplayMode int getDisplayMode() {
+        return WebDisplayMode.BROWSER;
     }
 
     @CalledByNative
     private void onFindResultAvailable(FindNotificationDetails result) {
-        if (mFindResultListener != null) {
-            mFindResultListener.onFindResult(result);
-        }
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) observers.next().onFindResultAvailable(result);
     }
 
     @Override
@@ -125,19 +100,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @CalledByNative
     private void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
-        if (mFindMatchRectsListener != null) {
-            mFindMatchRectsListener.onFindMatchRects(result);
-        }
-    }
-
-    /** Register to receive the results of startFinding calls. */
-    public void setFindResultListener(FindResultListener listener) {
-        mFindResultListener = listener;
-    }
-
-    /** Register to receive the results of requestFindMatchRects calls. */
-    public void setFindMatchRectsListener(FindMatchRectsListener listener) {
-        mFindMatchRectsListener = listener;
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) observers.next().onFindMatchRectsAvailable(result);
     }
 
     // Helper functions used to create types that are part of the public interface
@@ -173,8 +137,9 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void onLoadProgressChanged(int progress) {
+        // TODO(jinsukkim): Move this interface to WebContentsObserver.
         if (!mTab.isLoading()) return;
-        mTab.notifyLoadProgress(mTab.getProgress());
+        mTab.notifyLoadProgress(progress);
     }
 
     @Override
@@ -285,8 +250,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public boolean isFullscreenForTabOrPending() {
-        return mTab.getFullscreenManager() == null
-                ? false : mTab.getFullscreenManager().getPersistentFullscreenMode();
+        FullscreenManager manager = FullscreenManager.from(mTab);
+        return manager != null ? manager.getPersistentFullscreenMode() : false;
     }
 
     protected TabModel getTabModel() {
@@ -508,29 +473,28 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     }
 
     private ChromeFullscreenManager getFullscreenManager() {
-        // Following get* methods use this method instead of |Tab.getFullscreenManager|
+        // Following get* methods use this method instead of |FullscreenManager.from()|
         // because the latter can return null if invoked while the tab is in detached state.
         ChromeActivity activity = mTab.getActivity();
-        return activity != null && !activity.isActivityFinishingOrDestroyed() ?
-                activity.getFullscreenManager() : null;
+        return activity != null ? activity.getFullscreenManager() : null;
     }
 
     @Override
     public int getTopControlsHeight() {
-        ChromeFullscreenManager manager = getFullscreenManager();
+        FullscreenManager manager = getFullscreenManager();
         return manager != null ? manager.getTopControlsHeight() : 0;
     }
 
     @Override
     public int getBottomControlsHeight() {
-        ChromeFullscreenManager manager = getFullscreenManager();
+        FullscreenManager manager = getFullscreenManager();
         return manager != null ? manager.getBottomControlsHeight() : 0;
     }
 
     @Override
     public boolean controlsResizeView() {
-        ChromeFullscreenManager manager = getFullscreenManager();
-        return manager != null ? manager.controlsResizeView() : false;
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null ? ((ChromeFullscreenManager) manager).controlsResizeView() : false;
     }
 
     /**
@@ -621,6 +585,44 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
             super.onDestroyed(tab);
             mModalDialogManager.dismissDialog(mDialogModel, DialogDismissalCause.TAB_DESTROYED);
         }
+    }
+
+    /**
+     * Provides info on web preferences for viewing downloaded media.
+     * @return enabled Whether embedded media experience should be enabled.
+     */
+    @CalledByNative
+    protected boolean shouldEnableEmbeddedMediaExperience() {
+        return false;
+    }
+
+    /**
+     * @return web preferences for enabling Picture-in-Picture.
+     */
+    @CalledByNative
+    protected boolean isPictureInPictureEnabled() {
+        ChromeActivity activity = mTab.getActivity();
+        return activity != null ? PictureInPicture.isEnabled(activity.getApplicationContext())
+                                : false;
+    }
+
+    /**
+     * @return Night mode enabled/disabled for this Tab. To be used to propagate
+     *         the preferred color scheme to the renderer.
+     */
+    @CalledByNative
+    protected boolean isNightModeEnabled() {
+        ChromeActivity activity = mTab.getActivity();
+        return activity != null ? activity.getNightModeStateProvider().isInNightMode() : false;
+    }
+
+    /**
+     * @return the Webapp manifest scope, which is used to allow frames within the scope to
+     *         autoplay media unmuted.
+     */
+    @CalledByNative
+    protected String getManifestScope() {
+        return null;
     }
 
     private static native void nativeOnRendererUnresponsive(WebContents webContents);

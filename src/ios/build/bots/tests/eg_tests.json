@@ -41,6 +41,10 @@
       "app": "ios_showcase_egtests",
       "xctest": true,
       "xcode parallelization": true
+    },
+    {
+      "app": "ios_chrome_unified_consent_egtests",
+      "xctest": true
     }
   ]
 }

@@ -49,13 +49,9 @@ public class ApplicationTestUtils {
     // TODO(jbudorick): fix deprecation warning crbug.com/537347
     @SuppressWarnings("deprecation")
     @SuppressLint("WakelockTimeout")
-    public static void setUp(Context context, boolean clearAppData) {
-        if (clearAppData) {
-            // Clear data and remove any tasks listed in Android's Overview menu between test runs.
-            clearAppData(context);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                finishAllChromeTasks(context);
-            }
+    public static void setUp(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAllChromeTasks(context);
         }
 
         // Make sure the screen is on during test runs.
@@ -79,15 +75,6 @@ public class ApplicationTestUtils {
             } catch (AssertionError exception) {
             }
         }
-    }
-
-    /**
-     * Clear all files and folders in the Chrome application directory except 'lib'.
-     * The 'cache' directory is recreated as an empty directory.
-     * @param context Target instrumentation context.
-     */
-    public static void clearAppData(Context context) {
-        ApplicationData.clearAppData(context);
     }
 
     // TODO(bauerb): make this function throw more specific exception and update

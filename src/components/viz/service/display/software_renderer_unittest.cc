@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -77,17 +78,15 @@ class SoftwareRendererTest : public testing::Test {
 
   ResourceId AllocateAndFillSoftwareResource(const gfx::Size& size,
                                              const SkBitmap& source) {
-    std::unique_ptr<base::SharedMemory> shm =
-        bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
+    base::MappedReadOnlyRegion shm =
+        bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
     SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-    source.readPixels(info, shm->memory(), info.minRowBytes(), 0, 0);
+    source.readPixels(info, shm.mapping.memory(), info.minRowBytes(), 0, 0);
 
     // Registers the SharedBitmapId in the display compositor.
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-    shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-        bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
-                                                         RGBA_8888),
-        shared_bitmap_id);
+    shared_bitmap_manager_->ChildAllocatedSharedBitmap(shm.region.Map(),
+                                                       shared_bitmap_id);
 
     // Makes a resource id that refers to the registered SharedBitmapId.
     return child_resource_provider_->ImportResource(
@@ -220,11 +219,11 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   auto* inner_quad = root_render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   inner_quad->SetNew(shared_quad_state, inner_rect, inner_rect, needs_blending,
                      mapped_resource_cyan, gfx::RectF(gfx::SizeF(inner_size)),
-                     inner_size, false, false, false, false);
+                     inner_size, false, false, false);
   auto* outer_quad = root_render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   outer_quad->SetNew(shared_quad_state, outer_rect, outer_rect, needs_blending,
                      mapped_resource_yellow, gfx::RectF(gfx::SizeF(outer_size)),
-                     outer_size, false, false, false, false);
+                     outer_size, false, false, false);
 
   RenderPassList list;
   list.push_back(std::move(root_render_pass));
@@ -281,7 +280,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   auto* quad = root_render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(shared_quad_state, tile_rect, tile_rect, needs_blending,
                mapped_resource_cyan, gfx::RectF(gfx::SizeF(tile_size)),
-               tile_size, false, false, false, false);
+               tile_size, false, false, false);
   quad->visible_rect = visible_rect;
 
   RenderPassList list;

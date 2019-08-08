@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
@@ -502,7 +503,7 @@ void SignedExchangeHandler::OnCertReceived(
   DCHECK(version_.has_value());
   const SignedExchangeSignatureVerifier::Result verify_result =
       SignedExchangeSignatureVerifier::Verify(
-          *version_, *envelope_, unverified_cert_chain_->cert(),
+          *version_, *envelope_, unverified_cert_chain_.get(),
           GetVerificationTime(), devtools_proxy_.get());
   UMA_HISTOGRAM_ENUMERATION(kHistogramSignatureVerificationResult,
                             verify_result);
@@ -552,7 +553,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
           net::x509_util::CryptoBufferAsStringPiece(
               verified_cert->cert_buffer())) &&
       !base::FeatureList::IsEnabled(
-          features::kAllowSignedHTTPExchangeCertsWithoutExtension)) {
+          features::kAllowSignedHTTPExchangeCertsWithoutExtension) &&
+      !unverified_cert_chain_->ShouldIgnoreErrors()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         "Certificate must have CanSignHttpExchangesDraft extension. To ignore "
@@ -575,7 +577,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
     // 2019-05-01 00:00:00 UTC.
     const base::Time kRequirementStartDateForIssuance =
         base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1556668800);
-    if (verified_cert->valid_start() >= kRequirementStartDateForIssuance) {
+    if (verified_cert->valid_start() >= kRequirementStartDateForIssuance &&
+        !unverified_cert_chain_->ShouldIgnoreErrors()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy_.get(),
           "Signed Exchange's certificate issued after 2019-05-01 must not have "
@@ -587,7 +590,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
     // 2019-08-01 00:00:00 UTC.
     const base::Time kRequirementStartDateForVerification =
         base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1564617600);
-    if (GetVerificationTime() >= kRequirementStartDateForVerification) {
+    if (GetVerificationTime() >= kRequirementStartDateForVerification &&
+        !unverified_cert_chain_->ShouldIgnoreErrors()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy_.get(),
           "After 2019-08-01, Signed Exchange's certificate must not have a "
@@ -704,6 +708,7 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.load_timing.send_start = now;
   response_head.load_timing.send_end = now;
   response_head.load_timing.receive_headers_end = now;
+  response_head.content_length = response_head.headers->GetContentLength();
 
   auto body_stream = CreateResponseBodyStream();
   if (!body_stream) {
@@ -776,6 +781,13 @@ SignedExchangeHandler::CreateResponseBodyStream() {
 
   return std::make_unique<MerkleIntegritySourceStream>(digest_iter->second,
                                                        std::move(source_));
+}
+
+base::Optional<net::SHA256HashValue>
+SignedExchangeHandler::ComputeHeaderIntegrity() const {
+  if (!envelope_)
+    return base::nullopt;
+  return envelope_->ComputeHeaderIntegrity();
 }
 
 }  // namespace content

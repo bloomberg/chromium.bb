@@ -56,6 +56,7 @@ void OverscrollRefresh::Reset() {
 
 void OverscrollRefresh::OnScrollBegin(const gfx::PointF& pos) {
   scroll_begin_x_ = pos.x();
+  scroll_begin_y_ = pos.y();
   top_at_scroll_start_ = scrolled_to_top_;
   ReleaseWithoutActivation();
   scroll_consumption_state_ = AWAITING_SCROLL_UPDATE_ACK;
@@ -72,7 +73,8 @@ void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
 
   float ydelta = cumulative_scroll_.y();
   float xdelta = cumulative_scroll_.x();
-  bool in_y_direction = std::abs(ydelta) * kWeightAngle30 > std::abs(xdelta);
+  bool in_y_direction = std::abs(ydelta) > std::abs(xdelta);
+  bool in_x_direction = std::abs(ydelta) * kWeightAngle30 < std::abs(xdelta);
   OverscrollAction type = OverscrollAction::NONE;
   bool navigate_forward = false;
   if (ydelta > 0 && in_y_direction) {
@@ -83,7 +85,7 @@ void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
       return;
     }
     type = OverscrollAction::PULL_TO_REFRESH;
-  } else if (!in_y_direction &&
+  } else if (in_x_direction &&
              (scroll_begin_x_ < edge_width_ ||
               viewport_width_ - scroll_begin_x_ < edge_width_)) {
     // Swipe-to-navigate. Check overscroll-behavior-x
@@ -98,7 +100,10 @@ void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
 
   if (type != OverscrollAction::NONE) {
     scroll_consumption_state_ =
-        handler_->PullStart(type, navigate_forward) ? ENABLED : DISABLED;
+        handler_->PullStart(type, scroll_begin_x_, scroll_begin_y_,
+                            navigate_forward)
+            ? ENABLED
+            : DISABLED;
   }
 }
 

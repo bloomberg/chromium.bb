@@ -45,12 +45,10 @@ namespace aura {
 
 // static
 std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
-    ui::PlatformWindowInitProperties properties,
-    Env* env) {
+    ui::PlatformWindowInitProperties properties) {
   return std::make_unique<WindowTreeHostPlatform>(
       std::move(properties),
-      std::make_unique<aura::Window>(nullptr, client::WINDOW_TYPE_UNKNOWN,
-                                     env ? env : Env::GetInstance()));
+      std::make_unique<aura::Window>(nullptr, client::WINDOW_TYPE_UNKNOWN));
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(
@@ -121,11 +119,8 @@ gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
   return platform_window_ ? platform_window_->GetBounds() : gfx::Rect();
 }
 
-void WindowTreeHostPlatform::SetBoundsInPixels(
-    const gfx::Rect& bounds,
-    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+void WindowTreeHostPlatform::SetBoundsInPixels(const gfx::Rect& bounds) {
   pending_size_ = bounds.size();
-  pending_local_surface_id_allocation_ = local_surface_id_allocation;
   platform_window_->SetBounds(bounds);
 }
 
@@ -199,27 +194,30 @@ void WindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
 }
 
 void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  for (WindowTreeHostObserver& observer : observers())
-    observer.OnHostWillProcessBoundsChange(this);
+  // It's possible this function may be called recursively. Only notify
+  // observers on initial entry. This way observers can safely assume that
+  // OnHostDidProcessBoundsChange() is called when all bounds changes have
+  // completed.
+  if (++on_bounds_changed_recursion_depth_ == 1) {
+    for (WindowTreeHostObserver& observer : observers())
+      observer.OnHostWillProcessBoundsChange(this);
+  }
   float current_scale = compositor()->device_scale_factor();
   float new_scale = ui::GetScaleFactorForNativeView(window());
   gfx::Rect old_bounds = bounds_in_pixels_;
   bounds_in_pixels_ = new_bounds;
   if (bounds_in_pixels_.origin() != old_bounds.origin())
     OnHostMovedInPixels(bounds_in_pixels_.origin());
-  if (pending_local_surface_id_allocation_.IsValid() ||
-      bounds_in_pixels_.size() != old_bounds.size() ||
+  if (bounds_in_pixels_.size() != old_bounds.size() ||
       current_scale != new_scale) {
-    viz::LocalSurfaceIdAllocation local_surface_id_allocation;
-    if (bounds_in_pixels_.size() == pending_size_)
-      local_surface_id_allocation = pending_local_surface_id_allocation_;
-    pending_local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
     pending_size_ = gfx::Size();
-    OnHostResizedInPixels(bounds_in_pixels_.size(),
-                          local_surface_id_allocation);
+    OnHostResizedInPixels(bounds_in_pixels_.size());
   }
-  for (WindowTreeHostObserver& observer : observers())
-    observer.OnHostDidProcessBoundsChange(this);
+  DCHECK_GT(on_bounds_changed_recursion_depth_, 0);
+  if (--on_bounds_changed_recursion_depth_ == 0) {
+    for (WindowTreeHostObserver& observer : observers())
+      observer.OnHostDidProcessBoundsChange(this);
+  }
 }
 
 void WindowTreeHostPlatform::OnDamageRect(const gfx::Rect& damage_rect) {

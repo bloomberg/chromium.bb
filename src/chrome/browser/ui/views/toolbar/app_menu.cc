@@ -19,10 +19,10 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -271,7 +271,8 @@ class InMenuButton : public LabelButton {
   }
 
   // views::LabelButton
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+  void OnThemeChanged() override {
+    ui::NativeTheme* theme = GetNativeTheme();
     if (theme) {
       SetTextColor(
           views::Button::STATE_DISABLED,
@@ -521,8 +522,8 @@ class AppMenu::ZoomView : public AppMenuView {
     // focusable regardless of the platform.
     fullscreen_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
     fullscreen_button_->set_tag(fullscreen_index);
-    fullscreen_button_->SetImageAlignment(
-        ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
+    fullscreen_button_->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
+    fullscreen_button_->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
     fullscreen_button_->SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::LEADING_BORDER));
     fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
@@ -531,7 +532,7 @@ class AppMenu::ZoomView : public AppMenuView {
     AddChildView(fullscreen_button_);
 
     // Need to set a font list for the zoom label width calculations.
-    OnNativeThemeChanged(nullptr);
+    OnThemeChanged();
     UpdateZoomControls();
   }
 
@@ -577,14 +578,15 @@ class AppMenu::ZoomView : public AppMenuView {
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    AppMenuView::OnNativeThemeChanged(theme);
+  void OnThemeChanged() override {
+    AppMenuView::OnThemeChanged();
 
     zoom_label_->SetBorder(views::CreateEmptyBorder(
         0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
     zoom_label_->SetFontList(MenuConfig::instance().font_list);
     zoom_label_max_width_valid_ = false;
 
+    ui::NativeTheme* theme = GetNativeTheme();
     if (theme) {
       zoom_label_->SetEnabledColor(theme->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
@@ -813,12 +815,13 @@ void AppMenu::Init(ui::MenuModel* model) {
   menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 
-void AppMenu::RunMenu(views::MenuButton* host) {
+void AppMenu::RunMenu(views::MenuButtonController* host) {
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
 
-  menu_runner_->RunMenuAt(
-      host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
-      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
+  menu_runner_->RunMenuAt(host->button()->GetWidget(), host,
+                          host->button()->GetAnchorBoundsInScreen(),
+                          views::MenuAnchorPosition::kTopRight,
+                          ui::MENU_SOURCE_NONE);
 }
 
 void AppMenu::CloseMenu() {

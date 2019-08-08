@@ -334,7 +334,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                               is_new_pending_master_entry);
   }
 
-  BrowserThread::PostAfterStartupTask(
+  BrowserThread::PostBestEffortTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
       base::BindOnce(&AppCacheUpdateJob::FetchManifest,
                      weak_factory_.GetWeakPtr(), true));

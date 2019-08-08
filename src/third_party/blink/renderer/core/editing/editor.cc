@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
@@ -154,11 +155,11 @@ static bool IsCaretAtStartOfWrappedLine(const FrameSelection& selection) {
   // character is not a space, but typing another space will do.
   Position prev =
       PreviousPositionOf(position, PositionMoveType::kGraphemeCluster);
-  const Node* prev_node = prev.ComputeContainerNode();
-  if (!prev_node || !prev_node->IsTextNode())
+  const auto* prev_node = DynamicTo<Text>(prev.ComputeContainerNode());
+  if (!prev_node)
     return false;
   int prev_offset = prev.ComputeOffsetInContainerNode();
-  UChar prev_char = ToText(prev_node)->data()[prev_offset];
+  UChar prev_char = prev_node->data()[prev_offset];
   return prev_char == kSpaceCharacter;
 }
 
@@ -643,8 +644,8 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
     return;
   }
 
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(
       CSSPropertyID::kDirection,
       direction == WritingDirection::kLeftToRight
@@ -774,10 +775,10 @@ static Range* FindStringBetweenPositions(
     if (result_range.IsCollapsed())
       return nullptr;
 
-    Range* range_object =
-        Range::Create(result_range.GetDocument(),
-                      ToPositionInDOMTree(result_range.StartPosition()),
-                      ToPositionInDOMTree(result_range.EndPosition()));
+    auto* range_object = MakeGarbageCollected<Range>(
+        result_range.GetDocument(),
+        ToPositionInDOMTree(result_range.StartPosition()),
+        ToPositionInDOMTree(result_range.EndPosition()));
     if (!range_object->collapsed())
       return range_object;
 

@@ -121,7 +121,7 @@
 
     <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
         unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
-        notify-dom-change on-dom-change="focusPassphraseInput_">
+        on-dom-change="focusPassphraseInput_">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
             <div class="start settings-box-text">
@@ -171,7 +171,7 @@
             Consent feature is launched. -->
         <template is="dom-if" if="[[shouldShowExistingPassphraseInSyncSection_(
             unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
-            notify-dom-change on-dom-change="focusPassphraseInput_">
+            on-dom-change="focusPassphraseInput_">
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
               <div class="settings-box-text"
@@ -350,7 +350,7 @@
     </template>
 
     <template is="dom-if" if="[[!unifiedConsentEnabled]]">
-      <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
+      <cr-toast id="toast" open="[[syncStatus.firstSetupInProgress]]">
         <div>$i18n{syncWillStart}</div>
         <paper-button on-click="onSyncSetupCancel_">
           $i18n{cancelSync}

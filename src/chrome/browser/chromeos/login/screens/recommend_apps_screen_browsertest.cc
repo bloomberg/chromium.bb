@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -108,14 +110,19 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
-    fetcher_factory_callback_ = base::BindRepeating(
-        &RecommendAppsScreenTest::CreateRecommendAppsFetcher,
-        base::Unretained(this));
-    RecommendAppsFetcher::SetFactoryCallbackForTesting(
-        &fetcher_factory_callback_);
+    recommend_apps_fetcher_factory_ =
+        std::make_unique<ScopedTestRecommendAppsFetcherFactory>(
+            base::BindRepeating(
+                &RecommendAppsScreenTest::CreateRecommendAppsFetcher,
+                base::Unretained(this)));
 
+    // Delete initial screen before we create the new screen, as the screen ctor
+    // will bind to the handler.
+    WizardController::default_controller()
+        ->screen_manager()
+        ->DeleteScreenForTesting(RecommendAppsScreenView::kScreenId);
     auto recommend_apps_screen = std::make_unique<RecommendAppsScreen>(
-        GetOobeUI()->GetRecommendAppsScreenView(),
+        GetOobeUI()->GetView<RecommendAppsScreenHandler>(),
         base::BindRepeating(&RecommendAppsScreenTest::HandleScreenExit,
                             base::Unretained(this)));
     recommend_apps_screen_ = recommend_apps_screen.get();
@@ -126,9 +133,8 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
   void TearDownOnMainThread() override {
-    RecommendAppsFetcher::SetFactoryCallbackForTesting(nullptr);
-    fetcher_factory_callback_.Reset();
     recommend_apps_fetcher_ = nullptr;
+    recommend_apps_fetcher_factory_.reset();
 
     InProcessBrowserTest::TearDownOnMainThread();
   }
@@ -218,10 +224,8 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     return fetcher;
   }
 
-  // The callback passed to
-  // RecommendAppsFetcher::SetFactoryCallbackForTesting(). Bound to
-  // CreateRecommendAppsFetcher().
-  RecommendAppsFetcher::FactoryCallback fetcher_factory_callback_;
+  std::unique_ptr<ScopedTestRecommendAppsFetcherFactory>
+      recommend_apps_fetcher_factory_;
 
   base::OnceClosure screen_exit_callback_;
 };
@@ -229,7 +233,7 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -296,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -364,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -426,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -494,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -536,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -579,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -597,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipOnLoadError) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -639,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipOnLoadError) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, RetryOnLoadError) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 

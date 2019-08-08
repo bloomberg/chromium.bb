@@ -168,13 +168,21 @@ void ServiceWorkerInstalledScriptsSender::Abort(
         kResponseReaderError:
       owner_->SetStartWorkerStatusCode(
           blink::ServiceWorkerStatusCode::kErrorDiskCache);
-      // Abort the worker by deleting from the registration since the data was
-      // corrupted.
+
+      // Break the Mojo connection with the renderer so the service worker knows
+      // to stop waiting for the script data to arrive and terminate. Note that
+      // DeleteVersion() below sends the Stop IPC, but without breaking the
+      // connection here, the service worker would be blocked waiting for the
+      // script data and won't respond to Stop.
+      manager_.reset();
+      binding_.Close();
+
+      // Delete the registration data since the data was corrupted.
       if (owner_->context()) {
         ServiceWorkerRegistration* registration =
             owner_->context()->GetLiveRegistration(owner_->registration_id());
-        // This ends up with destructing |this|.
-        registration->DeleteVersion(owner_);
+        // This can destruct |this|.
+        registration->ForceDelete();
       }
       return;
     case ServiceWorkerInstalledScriptReader::FinishedReason::
@@ -182,9 +190,9 @@ void ServiceWorkerInstalledScriptsSender::Abort(
     case ServiceWorkerInstalledScriptReader::FinishedReason::kConnectionError:
     case ServiceWorkerInstalledScriptReader::FinishedReason::
         kMetaDataSenderError:
-      // Notify the renderer that a connection failure happened. Usually the
-      // failure means the renderer gets killed, and the error handler of
-      // EmbeddedWorkerInstance is invoked soon.
+      // Break the Mojo connection with the renderer. This usually causes the
+      // service worker to stop, and the error handler of EmbeddedWorkerInstance
+      // is invoked soon.
       manager_.reset();
       binding_.Close();
       return;

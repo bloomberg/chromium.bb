@@ -127,33 +127,19 @@ void StepsTimingFunction::Range(double* min_value, double* max_value) const {
   *max_value = 1;
 }
 
+double StepsTimingFunction::Evaluate(double fraction,
+                                     LimitDirection limit_direction,
+                                     double) const {
+  return steps_->GetPreciseValue(fraction, limit_direction);
+}
+
 double StepsTimingFunction::Evaluate(double fraction, double) const {
-  return steps_->GetPreciseValue(fraction);
+  NOTREACHED() << "Use Evaluate(fraction, limit_direction, ...) instead.";
+  return steps_->GetPreciseValue(fraction, LimitDirection::RIGHT);
 }
 
 std::unique_ptr<cc::TimingFunction> StepsTimingFunction::CloneToCC() const {
   return steps_->Clone();
-}
-
-String FramesTimingFunction::ToString() const {
-  StringBuilder builder;
-  builder.Append("frames(");
-  builder.Append(String::NumberToStringECMAScript(this->NumberOfFrames()));
-  builder.Append(")");
-  return builder.ToString();
-}
-
-void FramesTimingFunction::Range(double* min_value, double* max_value) const {
-  *min_value = 0;
-  *max_value = 1;
-}
-
-double FramesTimingFunction::Evaluate(double fraction, double) const {
-  return frames_->GetPreciseValue(fraction);
-}
-
-std::unique_ptr<cc::TimingFunction> FramesTimingFunction::CloneToCC() const {
-  return frames_->Clone();
 }
 
 scoped_refptr<TimingFunction> CreateCompositorTimingFunctionFromCC(
@@ -217,14 +203,6 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs) {
          (lhs.GetStepPosition() == stf.GetStepPosition());
 }
 
-bool operator==(const FramesTimingFunction& lhs, const TimingFunction& rhs) {
-  if (rhs.GetType() != TimingFunction::Type::FRAMES)
-    return false;
-
-  const FramesTimingFunction& ftf = ToFramesTimingFunction(rhs);
-  return lhs.NumberOfFrames() == ftf.NumberOfFrames();
-}
-
 // The generic operator== *must* come after the
 // non-generic operator== otherwise it will end up calling itself.
 bool operator==(const TimingFunction& lhs, const TimingFunction& rhs) {
@@ -240,10 +218,6 @@ bool operator==(const TimingFunction& lhs, const TimingFunction& rhs) {
     case TimingFunction::Type::STEPS: {
       const StepsTimingFunction& step = ToStepsTimingFunction(lhs);
       return (step == rhs);
-    }
-    case TimingFunction::Type::FRAMES: {
-      const FramesTimingFunction& frame = ToFramesTimingFunction(lhs);
-      return (frame == rhs);
     }
     default:
       NOTREACHED();

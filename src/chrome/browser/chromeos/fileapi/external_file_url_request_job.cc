@@ -62,7 +62,7 @@ void ExternalFileURLRequestJob::OnRedirectURLObtained(
 
 void ExternalFileURLRequestJob::OnStreamObtained(
     const std::string& mime_type,
-    std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+    storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope,
     std::unique_ptr<storage::FileStreamReader> stream_reader,
     int64_t size) {
   mime_type_ = mime_type;
@@ -82,7 +82,7 @@ void ExternalFileURLRequestJob::Kill() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   resolver_.reset();
   stream_reader_.reset();
-  isolated_file_system_scope_.reset();
+  isolated_file_system_scope_ = {};
   net::URLRequestJob::Kill();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }

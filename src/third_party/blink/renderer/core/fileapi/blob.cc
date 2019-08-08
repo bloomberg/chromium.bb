@@ -31,14 +31,23 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fileapi/blob_property_bag.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/core/url/dom_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -51,6 +60,55 @@ class BlobURLRegistry final : public URLRegistry {
   void UnregisterURL(const KURL&) override;
 
   static URLRegistry& Registry();
+};
+
+// Helper class to asynchronously read from a Blob using a FileReaderLoader.
+// Each client is only good for one Blob read operation.
+// Each instance owns itself and will delete itself in the callbacks.
+// This class is not thread-safe.
+class BlobFileReaderClient : public blink::FileReaderLoaderClient {
+ public:
+  BlobFileReaderClient(
+      const scoped_refptr<BlobDataHandle> blob_data_handle,
+      const scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const FileReaderLoader::ReadType read_type,
+      ScriptPromiseResolver* resolver)
+      : loader_(std::make_unique<FileReaderLoader>(read_type,
+                                                   this,
+                                                   std::move(task_runner))),
+        resolver_(resolver),
+        read_type_(read_type) {
+    if (read_type_ == FileReaderLoader::kReadAsText) {
+      loader_->SetEncoding("UTF-8");
+    }
+    loader_->Start(std::move(blob_data_handle));
+  }
+
+  ~BlobFileReaderClient() override = default;
+  void DidStartLoading() override {}
+  void DidReceiveData() override {}
+  void DidFail(FileErrorCode error_code) override {
+    resolver_->Reject(file_error::CreateDOMException(error_code));
+    delete this;
+  }
+
+  void DidFinishLoading() override {
+    if (read_type_ == FileReaderLoader::kReadAsText) {
+      String result = loader_->StringResult();
+      resolver_->Resolve(result);
+    } else if (read_type_ == FileReaderLoader::kReadAsArrayBuffer) {
+      DOMArrayBuffer* result = loader_->ArrayBufferResult();
+      resolver_->Resolve(result);
+    } else {
+      NOTREACHED() << "Unknown ReadType supplied to BlobFileReaderClient";
+    }
+    delete this;
+  }
+
+ private:
+  const std::unique_ptr<FileReaderLoader> loader_;
+  Persistent<ScriptPromiseResolver> resolver_;
+  const FileReaderLoader::ReadType read_type_;
 };
 
 void BlobURLRegistry::RegisterURL(SecurityOrigin* origin,
@@ -179,6 +237,41 @@ Blob* Blob::slice(int64_t start,
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+}
+
+ReadableStream* Blob::stream(ScriptState* script_state) const {
+  BodyStreamBuffer* body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
+      script_state,
+      MakeGarbageCollected<BlobBytesConsumer>(
+          ExecutionContext::From(script_state), blob_data_handle_),
+      nullptr);
+
+  return body_buffer->Stream();
+}
+
+blink::ScriptPromise Blob::text(ScriptState* script_state) {
+  auto read_type = FileReaderLoader::kReadAsText;
+  return ReadBlobInternal(script_state, read_type);
+}
+
+blink::ScriptPromise Blob::arrayBuffer(ScriptState* script_state) {
+  auto read_type = FileReaderLoader::kReadAsArrayBuffer;
+  return ReadBlobInternal(script_state, read_type);
+}
+
+blink::ScriptPromise Blob::ReadBlobInternal(
+    ScriptState* script_state,
+    FileReaderLoader::ReadType read_type) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto promise = resolver->Promise();
+
+  new BlobFileReaderClient(blob_data_handle_,
+                           ExecutionContext::From(script_state)
+                               ->GetTaskRunner(TaskType::kFileReading),
+                           read_type, resolver);
+
+  return promise;
 }
 
 void Blob::AppendTo(BlobData& blob_data) const {

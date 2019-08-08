@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import("//build_overrides/build.gni")
+import("generator/dawn_generator.gni")
 import("scripts/dawn_component.gni")
 import("scripts/dawn_features.gni")
 import("scripts/dawn_overrides_with_defaults.gni")
-import("generator/dawn_generator.gni")
 
 import("//testing/test.gni")
 
@@ -153,6 +153,7 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Texture.cpp",
     "src/dawn_native/Texture.h",
     "src/dawn_native/ToBackend.h",
+    "src/dawn_native/Toggles.h",
     "src/dawn_native/dawn_platform.h",
   ]
 
@@ -403,11 +404,11 @@ dawn_generator("libdawn_wire_gen") {
     "dawn_wire/client/ApiProcs_autogen.h",
     "dawn_wire/client/ClientBase_autogen.h",
     "dawn_wire/client/ClientHandlers_autogen.cpp",
-    "dawn_wire/client/ClientPrototypes_autogen.inl",
+    "dawn_wire/client/ClientPrototypes_autogen.inc",
     "dawn_wire/server/ServerBase_autogen.h",
     "dawn_wire/server/ServerDoers_autogen.cpp",
     "dawn_wire/server/ServerHandlers_autogen.cpp",
-    "dawn_wire/server/ServerPrototypes_autogen.inl",
+    "dawn_wire/server/ServerPrototypes_autogen.inc",
   ]
 }
 
@@ -572,18 +573,20 @@ test("dawn_unittests") {
     "src/tests/unittests/validation/DebugMarkerValidationTests.cpp",
     "src/tests/unittests/validation/DynamicStateCommandValidationTests.cpp",
     "src/tests/unittests/validation/FenceValidationTests.cpp",
-    "src/tests/unittests/validation/InputStateValidationTests.cpp",
     "src/tests/unittests/validation/PushConstantsValidationTests.cpp",
     "src/tests/unittests/validation/QueueSubmitValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassDescriptorValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassValidationTests.cpp",
     "src/tests/unittests/validation/RenderPipelineValidationTests.cpp",
+    "src/tests/unittests/validation/SamplerValidationTests.cpp",
     "src/tests/unittests/validation/ShaderModuleValidationTests.cpp",
     "src/tests/unittests/validation/TextureValidationTests.cpp",
     "src/tests/unittests/validation/TextureViewValidationTests.cpp",
+    "src/tests/unittests/validation/ToggleValidationTests.cpp",
     "src/tests/unittests/validation/ValidationTest.cpp",
     "src/tests/unittests/validation/ValidationTest.h",
     "src/tests/unittests/validation/VertexBufferValidationTests.cpp",
+    "src/tests/unittests/validation/VertexInputValidationTests.cpp",
     "src/tests/unittests/wire/WireArgumentTests.cpp",
     "src/tests/unittests/wire/WireBasicTests.cpp",
     "src/tests/unittests/wire/WireBufferMappingTests.cpp",
@@ -630,16 +633,19 @@ test("dawn_end2end_tests") {
     "src/tests/end2end/ClipSpaceTests.cpp",
     "src/tests/end2end/ColorStateTests.cpp",
     "src/tests/end2end/ComputeCopyStorageBufferTests.cpp",
+    "src/tests/end2end/ComputeSharedMemoryTests.cpp",
     "src/tests/end2end/CopyTests.cpp",
     "src/tests/end2end/DebugMarkerTests.cpp",
     "src/tests/end2end/DepthStencilStateTests.cpp",
     "src/tests/end2end/DestroyTests.cpp",
     "src/tests/end2end/DrawIndexedTests.cpp",
     "src/tests/end2end/DrawTests.cpp",
+    "src/tests/end2end/DynamicBufferOffsetTests.cpp",
     "src/tests/end2end/FenceTests.cpp",
     "src/tests/end2end/IndexFormatTests.cpp",
-    "src/tests/end2end/InputStateTests.cpp",
     "src/tests/end2end/MultisampledRenderingTests.cpp",
+    "src/tests/end2end/NonzeroTextureCreationTests.cpp",
+    "src/tests/end2end/ObjectCachingTests.cpp",
     "src/tests/end2end/PrimitiveTopologyTests.cpp",
     "src/tests/end2end/PushConstantTests.cpp",
     "src/tests/end2end/RenderPassLoadOpTests.cpp",
@@ -647,6 +653,8 @@ test("dawn_end2end_tests") {
     "src/tests/end2end/SamplerTests.cpp",
     "src/tests/end2end/ScissorTests.cpp",
     "src/tests/end2end/TextureViewTests.cpp",
+    "src/tests/end2end/VertexFormatTests.cpp",
+    "src/tests/end2end/VertexInputTests.cpp",
     "src/tests/end2end/ViewportOrientationTests.cpp",
   ]
 
@@ -756,17 +764,6 @@ if (dawn_standalone) {
     ]
   }
 
-  dawn_sample("glTFViewer") {
-    sources = [
-      "examples/glTFViewer/Camera.inl",
-      "examples/glTFViewer/glTFViewer.cpp",
-    ]
-    deps = [
-      "third_party:glm",
-      "third_party:tiny_gltf_loader",
-    ]
-  }
-
   group("dawn_samples") {
     deps = [
       ":Animometer",
@@ -774,7 +771,6 @@ if (dawn_standalone) {
       ":ComputeBoids",
       ":CppHelloTriangle",
       ":CubeReflection",
-      ":glTFViewer",
     ]
   }
 }

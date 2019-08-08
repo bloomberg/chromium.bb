@@ -30,7 +30,7 @@
 
 namespace blink {
 
-inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
+SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     : SVGGradientElement(svg_names::kLinearGradientTag, document),
       // Spec: If the x1|y1|y2 attribute is not specified, the effect is as if a
       // value of "0%" were specified.
@@ -69,8 +69,6 @@ void SVGLinearGradientElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(y2_);
   SVGGradientElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGLinearGradientElement)
 
 void SVGLinearGradientElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {

@@ -4,6 +4,8 @@
 
 #include "media/learning/common/learning_task.h"
 
+#include "base/hash/hash.h"
+
 namespace media {
 namespace learning {
 
@@ -22,6 +24,10 @@ LearningTask::LearningTask(
 LearningTask::LearningTask(const LearningTask&) = default;
 
 LearningTask::~LearningTask() = default;
+
+LearningTask::Id LearningTask::GetId() const {
+  return base::PersistentHash(name);
+}
 
 }  // namespace learning
 }  // namespace media

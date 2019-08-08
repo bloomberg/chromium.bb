@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_source.h"
@@ -17,6 +18,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "url/origin.h"
 
 namespace download {
 
@@ -60,7 +62,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -94,7 +96,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   DownloadSource download_source_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
-  GURL origin_;
+  base::Optional<url::Origin> request_initiator_;
   bool is_partial_request_;
   bool completed_;
 

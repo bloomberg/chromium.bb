@@ -42,7 +42,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           This sample demonstrates extremely simple use of WebXR with no library
           dependencies. It doesn't render anything exciting, just clears your
           headset's display to a slowly changing color to prove it's working.
-          <a class="back" href="./">Back</a>
+          <a class="back" href="./index.html">Back</a>
         </p>
         <button id="xr-button" disabled>XR not found</button>
       </details>
@@ -61,9 +61,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function checkSupportedState() {
           // If the device allows creation of exclusive sessions enable the
-          // button.  If the supportsSessionMode request is rejected, then
+          // button.  If the supportsSession request is rejected, then
           // disable the button because it means that XR is not supported.
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
+          navigator.xr.supportsSession('immersive-vr').then(() => {
             // Updates the button to start an XR session when clicked.
             xrButton.innerHTML = 'Enter XR';
             xrButton.disabled = false;
@@ -106,6 +106,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Called when we've successfully acquired a XRSession. In response we
       // will set up the necessary session state and kick off the frame loop.
       function onSessionStarted(session) {
+        session.mode = 'immersive-vr';
         xrSession = session;
         xrButton.innerHTML = 'Exit XR';
 
@@ -128,7 +129,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Get a frame of reference, which is required for querying poses. In
         // this case an 'eye-level' frame of reference means that all poses will
         // be relative to the location where the XRDevice was first detected.
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+        session.requestReferenceSpace('local').then((refSpace) => {
           xrRefSpace = refSpace;
 
           // Inform the session that we're ready to begin drawing.

@@ -105,9 +105,10 @@ size_t CheckSpecialKeys(const base::ScopedFD& fd,
   has_special_key->resize(kSpecialKeysLen, false);
   for (size_t special_index = 0; special_index < kSpecialKeysLen;
        ++special_index) {
-    (*has_special_key)[special_index] =
-        test_bit(kSpecialKeys[special_index], keybit);
-    ++found_special_keys;
+    if (test_bit(kSpecialKeys[special_index], keybit)) {
+      (*has_special_key)[special_index] = true;
+      ++found_special_keys;
+    }
   }
 
   return found_special_keys;
@@ -206,6 +207,11 @@ bool GamepadDeviceLinux::IsEmpty() const {
 bool GamepadDeviceLinux::SupportsVibration() const {
   if (dualshock4_ || hid_haptics_)
     return true;
+
+  // The Xbox Adaptive Controller reports force feedback capability, but the
+  // device itself does not have any vibration actuators.
+  if (gamepad_id_ == GamepadId::kMicrosoftProduct0b0a)
+    return false;
 
   return supports_force_feedback_ && evdev_fd_.is_valid();
 }
@@ -420,6 +426,7 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
   product_id_ = product_id_int;
   version_number_ = version_number_int;
   name_ = name_string;
+  gamepad_id_ = GamepadIdList::Get().GetGamepadId(vendor_id_, product_id_);
 
   return true;
 }
@@ -432,6 +439,7 @@ void GamepadDeviceLinux::CloseJoydevNode() {
   product_id_ = 0;
   version_number_ = 0;
   name_.clear();
+  gamepad_id_ = GamepadId::kUnknownGamepad;
 
   // Button indices must be recomputed once the joydev node is closed.
   button_indices_used_.clear();

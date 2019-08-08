@@ -75,7 +75,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -210,9 +209,6 @@ static const char* const kSwitchNames[] = {
     switches::kDisableShaderNameHashing,
     switches::kDisableSkiaRuntimeOpts,
     switches::kDisableWebRtcHWEncoding,
-#if defined(OS_WIN)
-    switches::kEnableAcceleratedVpxDecode,
-#endif
     switches::kEnableGpuRasterization,
     switches::kEnableLogging,
     switches::kEnableVizDevTools,
@@ -253,10 +249,7 @@ static const char* const kSwitchNames[] = {
     switches::kForceVideoOverlays,
 #if defined(OS_ANDROID)
     switches::kEnableReachedCodeProfiler,
-    switches::kOrderfileMemoryOptimization,
 #endif
-    switches::kWebglAntialiasingMode,
-    switches::kWebglMSAASampleCount,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -272,9 +265,9 @@ enum GPUProcessLifetimeEvent {
 
 // Indexed by GpuProcessKind. There is one of each kind maximum. This array may
 // only be accessed from the IO thread.
-GpuProcessHost* g_gpu_process_hosts[GpuProcessHost::GPU_PROCESS_KIND_COUNT];
+GpuProcessHost* g_gpu_process_hosts[GPU_PROCESS_KIND_COUNT];
 
-void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
+void RunCallbackOnIO(GpuProcessKind kind,
                      bool force_create,
                      base::OnceCallback<void(GpuProcessHost*)> callback) {
   GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
@@ -419,13 +412,7 @@ class GpuSandboxedProcessLauncherDelegate
     if (UseOpenGLRenderer())
       return true;
 
-    HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
-    if (!thread_desktop)
-      return false;
-
-    base::string16 desktop_name = sandbox::GetWindowObjectName(thread_desktop);
-    ::CloseDesktop(thread_desktop);
-    return !lstrcmpi(desktop_name.c_str(), L"winlogon");
+    return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
   }
 
   base::CommandLine cmd_line_;
@@ -463,14 +450,6 @@ void BindDiscardableMemoryRequestOnIO(
 void BindDiscardableMemoryRequestOnUI(
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        ws::mojom::kServiceName, std::move(request));
-    return;
-  }
-#endif
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
@@ -603,7 +582,7 @@ void GpuProcessHost::CallOnIO(
     bool force_create,
     base::OnceCallback<void(GpuProcessHost*)> callback) {
 #if !defined(OS_WIN)
-  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
+  DCHECK_NE(kind, GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
 #endif
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                            base::BindOnce(&RunCallbackOnIO, kind, force_create,
@@ -834,7 +813,8 @@ bool GpuProcessHost::Init() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(GetGpuMainThreadFactory());
     gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
-    GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(&gpu_preferences);
+    GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(
+        &gpu_preferences, GPU_PROCESS_KIND_SANDBOXED);
     in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
         InProcessChildThreadParams(
             base::ThreadTaskRunnerHandle::Get(),
@@ -1055,7 +1035,7 @@ void GpuProcessHost::BindDiscardableMemoryRequest(
       base::BindOnce(&BindDiscardableMemoryRequestOnUI, std::move(request)));
 }
 
-GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
+GpuProcessKind GpuProcessHost::kind() {
   return kind_;
 }
 
@@ -1085,6 +1065,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #if defined(OS_LINUX)
   int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
                                          : ChildProcessHost::CHILD_NORMAL;
+#elif defined(OS_MACOSX)
+  int child_flags = ChildProcessHost::CHILD_GPU;
 #else
   int child_flags = ChildProcessHost::CHILD_NORMAL;
 #endif
@@ -1138,7 +1120,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
   // TODO(kylechar): The command line flags added here should be based on
   // |mode_|.
-  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get());
+  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get(),
+                                                          kind_);
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())

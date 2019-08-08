@@ -107,8 +107,8 @@ InterpolationValue CSSVarCycleInterpolationType::MaybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
   const ComputedStyle& style =
       ToCSSInterpolationEnvironment(environment).Style();
-  DCHECK(!style.GetVariable(GetProperty().CustomPropertyName()) ||
-         !style.GetVariable(GetProperty().CustomPropertyName())
+  DCHECK(!style.GetVariableData(GetProperty().CustomPropertyName()) ||
+         !style.GetVariableData(GetProperty().CustomPropertyName())
               ->NeedsVariableResolution());
   return nullptr;
 }

@@ -174,7 +174,7 @@ TEST_F(ScriptedAnimationControllerTest, RegisterCallbackAndEnqueueTask) {
   Event* event = Event::Create("test");
   event->SetTarget(&GetDocument());
 
-  Controller().RegisterCallback(
+  Controller().RegisterFrameCallback(
       MakeGarbageCollected<RunTaskCallback>(observer.CreateTask(1)));
   Controller().EnqueueTask(observer.CreateTask(2));
   EXPECT_EQ(0u, observer.Order().size());
@@ -188,26 +188,26 @@ TEST_F(ScriptedAnimationControllerTest, RegisterCallbackAndEnqueueTask) {
 TEST_F(ScriptedAnimationControllerTest, TestHasCallback) {
   TaskOrderObserver observer;
 
-  Controller().RegisterCallback(
+  Controller().RegisterFrameCallback(
       MakeGarbageCollected<RunTaskCallback>(observer.CreateTask(1)));
-  EXPECT_TRUE(Controller().HasCallback());
+  EXPECT_TRUE(Controller().HasFrameCallback());
 
-  Controller().CancelCallback(1);
-  EXPECT_FALSE(Controller().HasCallback());
+  Controller().CancelFrameCallback(1);
+  EXPECT_FALSE(Controller().HasFrameCallback());
 
-  Controller().RegisterCallback(
+  Controller().RegisterFrameCallback(
       MakeGarbageCollected<RunTaskCallback>(observer.CreateTask(1)));
-  Controller().RegisterCallback(
+  Controller().RegisterFrameCallback(
       MakeGarbageCollected<RunTaskCallback>(observer.CreateTask(2)));
-  EXPECT_TRUE(Controller().HasCallback());
+  EXPECT_TRUE(Controller().HasFrameCallback());
 
-  Controller().CancelCallback(1);
-  EXPECT_TRUE(Controller().HasCallback());
+  Controller().CancelFrameCallback(1);
+  EXPECT_TRUE(Controller().HasFrameCallback());
 
   // Servicing the scripted animations should call the remaining callback and
   // clear it.
   Controller().ServiceScriptedAnimations(base::TimeTicks());
-  EXPECT_FALSE(Controller().HasCallback());
+  EXPECT_FALSE(Controller().HasFrameCallback());
 }
 
 }  // namespace blink

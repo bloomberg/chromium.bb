@@ -16,7 +16,8 @@ namespace chromeos {
 class InSessionPasswordChangeHandler : public content::WebUIMessageHandler,
                                        AuthStatusConsumer {
  public:
-  InSessionPasswordChangeHandler();
+  explicit InSessionPasswordChangeHandler(
+      const std::string& password_change_url);
   ~InSessionPasswordChangeHandler() override;
 
   // content::WebUIMessageHandler:
@@ -30,6 +31,7 @@ class InSessionPasswordChangeHandler : public content::WebUIMessageHandler,
   void OnAuthSuccess(const UserContext& user_context) override;
 
  private:
+  const std::string password_change_url_;
   scoped_refptr<CryptohomeAuthenticator> authenticator_;
   base::WeakPtrFactory<InSessionPasswordChangeHandler> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(InSessionPasswordChangeHandler);

@@ -62,6 +62,8 @@ void GetExampleThreadTypeDataset(std::string* ps_output,
   10000 12107 Chrome_ChildIOT   /opt/google/chrome/chrome --type=gpu-process
   11000 12207 VizCompositorTh   /opt/google/chrome/chrome --type=gpu-process
   12103 12112 Compositor        /opt/google/chrome/chrome --type=gpu-process
+  15000 15112 TaskSchedulerFo   /opt/google/chrome/chrome --type=renderer
+  16000 16112 CompositorTileW   /opt/google/chrome/chrome --type=renderer
   12345 12456 OtherThread       /opt/google/chrome/chrome --ppapi-flash-path=...
   13456 13566 Compositor        non_chrome_exec --some-flag=foo)text";
   thread_types->insert(
@@ -74,6 +76,10 @@ void GetExampleThreadTypeDataset(std::string* ps_output,
       12207, Thread::COMPOSITOR_THREAD));
   thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
       12112, Thread::COMPOSITOR_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      15112, Thread::SCHEDULER_WORKER_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      16112, Thread::COMPOSITOR_TILE_WORKER_THREAD));
   thread_types->insert(
       google::protobuf::MapPair<uint32_t, Thread>(12456, Thread::OTHER_THREAD));
 }

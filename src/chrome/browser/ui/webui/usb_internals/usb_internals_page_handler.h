@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/public/mojom/device_manager_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager_test.mojom.h"
 
 class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler {
  public:

@@ -8,11 +8,11 @@
 #ifndef GrCCDrawPathsOp_DEFINED
 #define GrCCDrawPathsOp_DEFINED
 
-#include "GrShape.h"
-#include "SkTInternalLList.h"
-#include "ccpr/GrCCSTLList.h"
-#include "ccpr/GrCCPathCache.h"
-#include "ops/GrDrawOp.h"
+#include "src/core/SkTInternalLList.h"
+#include "src/gpu/GrShape.h"
+#include "src/gpu/ccpr/GrCCPathCache.h"
+#include "src/gpu/ccpr/GrCCSTLList.h"
+#include "src/gpu/ops/GrDrawOp.h"
 
 class GrCCAtlas;
 class GrCCPerFlushResources;
@@ -38,7 +38,10 @@ public:
     GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrFSAAType,
                                       GrClampType) override;
     CombineResult onCombineIfPossible(GrOp*, const GrCaps&) override;
-    void visitProxies(const VisitProxyFunc& fn, VisitorType) const override {
+    void visitProxies(const VisitProxyFunc& fn) const override {
+        for (const auto& range : fInstanceRanges) {
+            fn(range.fAtlasProxy, GrMipMapped::kNo);
+        }
         fProcessors.visitProxies(fn);
     }
     void onPrepare(GrOpFlushState*) override {}

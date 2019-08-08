@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -22,6 +24,12 @@ static int ComputeNumberOfTracks(const CSSValueList* value_list) {
   for (auto& value : *value_list) {
     if (value->IsGridLineNamesValue())
       continue;
+    if (auto* repeat_value =
+            DynamicTo<cssvalue::CSSGridIntegerRepeatValue>(*value)) {
+      number_of_tracks +=
+          repeat_value->Repetitions() * ComputeNumberOfTracks(repeat_value);
+      continue;
+    }
     ++number_of_tracks;
   }
   return number_of_tracks;
@@ -302,32 +310,21 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
   auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Document* doc = &dummy_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kSecureContext,
       CSSParserContext::kLiveProfile, doc);
 
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath,
                               "ellipse(1px 2px at invalid)", context);
 
-  EXPECT_FALSE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseTwoRadius));
+  EXPECT_FALSE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseTwoRadius));
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse(1px 2px)",
                               context);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseTwoRadius));
+  EXPECT_TRUE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseTwoRadius));
 
-  EXPECT_FALSE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseOneRadius));
-  CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse(1px)",
-                              context);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseOneRadius));
-
-  EXPECT_FALSE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseNoRadius));
+  EXPECT_FALSE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseNoRadius));
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse()", context);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseNoRadius));
+  EXPECT_TRUE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseNoRadius));
 }
 
 TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
@@ -380,10 +377,10 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>* { background-image: linear-gradient(red, blue); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 TEST(CSSPropertyParserTest, PaintUseCount) {
@@ -392,10 +389,10 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   document.SetSecureContextStateForTesting(SecureContextState::kSecure);
   WebFeature feature = WebFeature::kCSSPaintFunction;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>span { background-image: paint(geometry); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 TEST(CSSPropertyParserTest, CrossFadeUseCount) {
@@ -403,11 +400,11 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>div { background-image: -webkit-cross-fade(url('from.png'), "
       "url('to.png'), 0.2); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 TEST(CSSPropertyParserTest, DropViewportDescriptor) {
@@ -439,19 +436,19 @@ class CSSPropertyUseCounterTest : public ::testing::Test {
   void TearDown() override { dummy_page_holder_ = nullptr; }
 
   void ParseProperty(CSSPropertyID property, const char* value_string) {
-    const CSSValue* value =
-        CSSParser::ParseSingleValue(property, String(value_string),
-                                    CSSParserContext::Create(GetDocument()));
+    const CSSValue* value = CSSParser::ParseSingleValue(
+        property, String(value_string),
+        MakeGarbageCollected<CSSParserContext>(GetDocument()));
     DCHECK(value);
   }
 
   bool IsCounted(WebFeature feature) {
-    return UseCounter::IsCounted(GetDocument(), feature);
+    return GetDocument().IsUseCounted(feature);
   }
 
- private:
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
+ private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
@@ -525,13 +522,54 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyCyUnitlessUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
-TEST_F(CSSPropertyUseCounterTest, CSSPropertyAnimationNameCustomIdentUseCount) {
+TEST_F(CSSPropertyUseCounterTest, UnitlessPresentationAttributesNotCounted) {
+  WebFeature feature = WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue;
+  EXPECT_FALSE(IsCounted(feature));
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <svg>
+      <rect x="42" y="42" rx="42" ry="42"/>
+      <circle cx="42" cy="42" r="42"/>
+    </svg>
+  )HTML");
+  EXPECT_FALSE(IsCounted(feature));
+}
+
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyDefaultAnimationNameUseCount) {
   WebFeature feature = WebFeature::kDefaultInCustomIdent;
   EXPECT_FALSE(IsCounted(feature));
+
   ParseProperty(CSSPropertyID::kAnimationName, "initial");
-  // css-wide keywords in custom ident other than default should not register.
   EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "test");
+  EXPECT_FALSE(IsCounted(feature));
+
   ParseProperty(CSSPropertyID::kAnimationName, "default");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyRevertAnimationNameUseCount) {
+  WebFeature feature = WebFeature::kRevertInCustomIdent;
+  EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "initial");
+  EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "test");
+  EXPECT_FALSE(IsCounted(feature));
+
+  ParseProperty(CSSPropertyID::kAnimationName, "revert");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyContainStyleUseCount) {
+  WebFeature feature = WebFeature::kCSSValueContainStyle;
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kContain, "strict");
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kContain, "content");
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kContain, "style paint");
   EXPECT_TRUE(IsCounted(feature));
 }
 

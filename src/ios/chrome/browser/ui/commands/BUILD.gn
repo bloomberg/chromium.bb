@@ -22,6 +22,8 @@ source_set("commands") {
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
+    "send_tab_to_self_command.h",
+    "send_tab_to_self_command.mm",
     "settings_main_page_commands.h",
     "show_signin_command.h",
     "show_signin_command.mm",

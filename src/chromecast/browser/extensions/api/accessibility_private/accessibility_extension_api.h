@@ -24,11 +24,11 @@ class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
 };
 
 // API function that sets the location of the accessibility focus ring.
-class AccessibilityPrivateSetFocusRingFunction
+class AccessibilityPrivateSetFocusRingsFunction
     : public UIThreadExtensionFunction {
-  ~AccessibilityPrivateSetFocusRingFunction() override {}
+  ~AccessibilityPrivateSetFocusRingsFunction() override {}
   ResponseAction Run() override;
-  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setFocusRing",
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setFocusRings",
                              ACCESSIBILITY_PRIVATE_SETFOCUSRING)
 };
 

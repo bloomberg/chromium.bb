@@ -112,6 +112,9 @@ TEST_F(SafeModeViewControllerTest, HasSuggestions) {
 
   // Test when crash reporter and crash report uploading are enabled.
   [[mock_breakpad_controller_ expect] setUploadingEnabled:YES];
+  [[mock_breakpad_controller_ expect]
+      setUploadCallback:reinterpret_cast<BreakpadUploadCompletionCallback>(
+                            [OCMArg anyPointer])];
   breakpad_helper::SetUploadingEnabled(true);
   EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
 

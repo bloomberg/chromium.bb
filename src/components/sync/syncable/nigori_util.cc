@@ -14,8 +14,8 @@
 #include "base/containers/queue.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -73,7 +73,7 @@ bool EntryNeedsEncryption(ModelTypeSet encrypted_types, const Entry& entry) {
   if (!entry.GetUniqueServerTag().empty())
     return false;  // We don't encrypt unique server nodes.
   ModelType type = entry.GetModelType();
-  if (type == PASSWORDS || IsControlType(type))
+  if (type == PASSWORDS || type == WIFI_CONFIGURATIONS || IsControlType(type))
     return false;
   // Checking NON_UNIQUE_NAME is not necessary for the correctness of encrypting
   // the data, nor for determining if data is encrypted. We simply ensure it has
@@ -86,7 +86,7 @@ bool EntryNeedsEncryption(ModelTypeSet encrypted_types, const Entry& entry) {
 bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
                               const sync_pb::EntitySpecifics& specifics) {
   const ModelType type = GetModelTypeFromSpecifics(specifics);
-  if (type == PASSWORDS || IsControlType(type))
+  if (type == PASSWORDS || type == WIFI_CONFIGURATIONS || IsControlType(type))
     return false;  // These types have their own encryption schemes.
   if (!encrypted_types.Has(type))
     return false;  // This type does not require encryption
@@ -98,7 +98,7 @@ bool VerifyDataTypeEncryptionForTest(BaseTransaction* const trans,
                                      ModelType type,
                                      bool is_encrypted) {
   Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
-  if (type == PASSWORDS || IsControlType(type)) {
+  if (type == PASSWORDS || type == WIFI_CONFIGURATIONS || IsControlType(type)) {
     NOTREACHED();
     return true;
   }
@@ -250,7 +250,7 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
                                     bool encrypt_everything,
                                     sync_pb::NigoriSpecifics* nigori) {
   nigori->set_encrypt_everything(encrypt_everything);
-  static_assert(44 == ModelType::NUM_ENTRIES,
+  static_assert(45 == ModelType::NUM_ENTRIES,
                 "If adding an encryptable type, update handling below.");
   nigori->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   nigori->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
@@ -287,7 +287,7 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     return ModelTypeSet::All();
 
   ModelTypeSet encrypted_types;
-  static_assert(44 == ModelType::NUM_ENTRIES,
+  static_assert(45 == ModelType::NUM_ENTRIES,
                 "If adding an encryptable type, update handling below.");
   if (nigori.encrypt_bookmarks())
     encrypted_types.Put(BOOKMARKS);

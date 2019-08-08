@@ -24,7 +24,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
       service_manager::mojom::ServiceRequest request) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
-  void RegisterAudioBinders(service_manager::BinderRegistry* registry) override;
+  void RegisterAudioBinders(service_manager::BinderMap* binders) override;
 
  private:
   std::unique_ptr<NetworkServiceTestHelper> network_service_test_helper_;

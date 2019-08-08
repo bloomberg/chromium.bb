@@ -79,6 +79,7 @@ target(link_target_type, "service_sources") {
   ]
 
   public_deps = [
+    "//base/util/type_safety",
     "//gpu/command_buffer/common:common_sources",
     "//url:url",
   ]
@@ -282,6 +283,7 @@ target(link_target_type, "gles2_sources") {
   include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
+    "//base/util/type_safety",
     "//cc/paint",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
@@ -345,6 +347,7 @@ target(link_target_type, "gles2_sources") {
   }
 
   if (is_mac) {
+    deps += [ "//components/viz/common:metal_context_provider" ]
     sources += [
       "shared_image_backing_factory_iosurface.h",
       "shared_image_backing_factory_iosurface.mm",
@@ -354,6 +357,7 @@ target(link_target_type, "gles2_sources") {
     libs = [
       "Cocoa.framework",
       "IOSurface.framework",
+      "Metal.framework",
       "OpenGL.framework",
     ]
   }
@@ -383,6 +387,13 @@ target(link_target_type, "gles2_sources") {
         "//gpu/vulkan:vulkan",
       ]
     }
+  }
+
+  if (is_win) {
+    sources += [
+      "swap_chain_factory_dxgi.cc",
+      "swap_chain_factory_dxgi.h",
+    ]
   }
 }
 

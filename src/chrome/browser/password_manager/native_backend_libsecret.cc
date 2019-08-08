@@ -407,7 +407,7 @@ bool NativeBackendLibsecret::GetLoginsList(
       !password_manager::ShouldPSLDomainMatchingApply(
           password_manager::GetRegistryControlledDomain(
               GURL(lookup_form->signon_realm))) &&
-      lookup_form->scheme != PasswordForm::SCHEME_HTML)
+      lookup_form->scheme != PasswordForm::Scheme::kHtml)
     attrs.Append("signon_realm", lookup_form->signon_realm);
 
   LibsecretLoader::SearchHelper helper;

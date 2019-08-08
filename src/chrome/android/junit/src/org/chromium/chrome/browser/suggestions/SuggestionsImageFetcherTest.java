@@ -78,7 +78,7 @@ public class SuggestionsImageFetcherTest {
 
         Callback mockCallback = mock(Callback.class);
         @KnownCategories
-        int[] categoriesWithIcon = new int[] {KnownCategories.ARTICLES, KnownCategories.CONTEXTUAL};
+        int[] categoriesWithIcon = new int[] {KnownCategories.ARTICLES};
         for (@KnownCategories int category : categoriesWithIcon) {
             SnippetArticle suggestion = createDummySuggestion(category);
             imageFetcher.makeFaviconRequest(suggestion, mockCallback);

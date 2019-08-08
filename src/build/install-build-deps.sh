@@ -34,13 +34,14 @@ build_apt_package_list() {
   echo "Building apt package list." >&2
   apt-cache dumpavail | \
     python -c '\
+      from __future__ import print_function; \
       import re,sys; \
       o = sys.stdin.read(); \
       p = {"i386": ":i386"}; \
       f = re.M | re.S; \
       r = re.compile(r"^Package: (.+?)$.+?^Architecture: (.+?)$", f); \
       m = ["%s%s" % (x, p.get(y, "")) for x, y in re.findall(r, o)]; \
-      print "\n".join(m)'
+      print("\n".join(m))'
 }
 
 # Checks whether a particular package is available in the repos.
@@ -101,16 +102,16 @@ fi
 
 distro_codename=$(lsb_release --codename --short)
 distro_id=$(lsb_release --id --short)
-supported_codenames="(trusty|xenial|artful|bionic)"
+supported_codenames="(trusty|xenial|bionic|disco)"
 supported_ids="(Debian)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $distro_codename =~ $supported_codenames &&
         ! $distro_id =~ $supported_ids ]]; then
     echo -e "ERROR: The only supported distros are\n" \
-      "\tUbuntu 14.04 LTS (trusty)\n" \
-      "\tUbuntu 16.04 LTS (xenial)\n" \
-      "\tUbuntu 17.10 (artful)\n" \
-      "\tUbuntu 18.04 LTS (bionic)\n" \
+      "\tUbuntu 14.04 LTS (trusty with EoL April 2022)\n" \
+      "\tUbuntu 16.04 LTS (xenial with EoL April 2024)\n" \
+      "\tUbuntu 18.04 LTS (bionic with EoL April 2028)\n" \
+      "\tUbuntu 19.04 (disco)\n" \
       "\tDebian 8 (jessie) or later" >&2
     exit 1
   fi
@@ -396,9 +397,14 @@ case $distro_codename in
     arm_list+=" g++-4.8-multilib-arm-linux-gnueabihf
                 gcc-4.8-multilib-arm-linux-gnueabihf"
     ;;
-  xenial|artful|bionic)
+  xenial|bionic)
     arm_list+=" g++-5-multilib-arm-linux-gnueabihf
                 gcc-5-multilib-arm-linux-gnueabihf
+                gcc-arm-linux-gnueabihf"
+    ;;
+  disco)
+    arm_list+=" g++-9-multilib-arm-linux-gnueabihf
+                gcc-9-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
     ;;
 esac

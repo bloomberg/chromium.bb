@@ -648,7 +648,12 @@ TYPED_TEST(ProtoDatabaseImplTest, Migration_EmptyDBs_UniqueToShared) {
                           Enums::InitStatus::kOK);
   // Kill the DB impl so it doesn't have a lock on the DB anymore.
   unique_db_impl.reset();
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  // DB impl posts a task to destroy its database, so we wait for that task to
+  // complete.
+  base::RunLoop destroy_loop;
+  this->GetTestThreadTaskRunner()->PostTask(FROM_HERE,
+                                            destroy_loop.QuitClosure());
+  destroy_loop.Run();
 
   auto db_provider_withshared = this->CreateProviderWithSharedDB();
   auto shared_db_impl = this->CreateDBImpl(
@@ -704,6 +709,12 @@ TYPED_TEST(ProtoDatabaseImplTest, Migration_UniqueToShared) {
   this->AddDataToDBImpl(unique_db_impl.get(), data_set.get());
   // Kill the DB impl so it doesn't have a lock on the DB anymore.
   unique_db_impl.reset();
+  // DB impl posts a task to destroy its database, so we wait for that task to
+  // complete.
+  base::RunLoop destroy_loop;
+  this->GetTestThreadTaskRunner()->PostTask(FROM_HERE,
+                                            destroy_loop.QuitClosure());
+  destroy_loop.Run();
 
   auto db_provider_withshared = this->CreateProviderWithSharedDB();
   auto shared_db_impl = this->CreateDBImpl(

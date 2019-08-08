@@ -47,6 +47,11 @@ class SharedImageBackingFactory {
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage) = 0;
+
+  // Returns true if the specified GpuMemoryBufferType can be imported using
+  // this factory.
+  virtual bool CanImportGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType memory_buffer_type) = 0;
 };
 
 }  // namespace gpu

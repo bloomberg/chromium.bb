@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class Token;
@@ -133,14 +134,18 @@ class RulesetSource {
 
   // Creates a temporary source i.e. a source corresponding to temporary files.
   // Returns null on failure.
-  static std::unique_ptr<RulesetSource>
-  CreateTemporarySource(size_t id, size_t priority, size_t rule_count_limit);
+  static std::unique_ptr<RulesetSource> CreateTemporarySource(
+      size_t id,
+      size_t priority,
+      size_t rule_count_limit,
+      ExtensionId extension_id);
 
   RulesetSource(base::FilePath json_path,
                 base::FilePath indexed_path,
                 size_t id,
                 size_t priority,
-                size_t rule_count_limit);
+                size_t rule_count_limit,
+                ExtensionId extension_id);
   ~RulesetSource();
   RulesetSource(RulesetSource&&);
   RulesetSource& operator=(RulesetSource&&);
@@ -159,6 +164,9 @@ class RulesetSource {
 
   // The maximum number of rules that will be indexed from this source.
   size_t rule_count_limit() const { return rule_count_limit_; }
+
+  // The ID of the extension from which the ruleset originates from.
+  const ExtensionId& extension_id() const { return extension_id_; }
 
   // Indexes and persists the JSON ruleset. This is potentially unsafe since the
   // JSON rules file is parsed in-process. Note: This must be called on a
@@ -200,6 +208,7 @@ class RulesetSource {
   size_t id_;
   size_t priority_;
   size_t rule_count_limit_;
+  ExtensionId extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetSource);
 };

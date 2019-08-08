@@ -115,8 +115,7 @@ bool CanBookmarkAppReparentTab(Profile* profile,
 void BookmarkAppReparentTab(content::WebContents* contents,
                             const Extension* extension) {
   // Reparent the tab into an app window immediately when opening as a window.
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
-    ReparentWebContentsIntoAppBrowser(contents, extension);
+  ReparentWebContentsIntoAppBrowser(contents, extension);
 }
 
 bool CanBookmarkAppRevealAppShim() {

@@ -62,16 +62,16 @@ V4L2JpegEncodeAccelerator::JpegBufferRecord::~JpegBufferRecord() {}
 V4L2JpegEncodeAccelerator::JobRecord::JobRecord(
     scoped_refptr<VideoFrame> input_frame,
     int quality,
-    const BitstreamBuffer* exif_buffer,
-    const BitstreamBuffer& output_buffer)
+    BitstreamBuffer* exif_buffer,
+    BitstreamBuffer output_buffer)
     : input_frame_(input_frame),
       quality(quality),
       buffer_id_(output_buffer.id()),
-      output_shm(output_buffer.handle(), output_buffer.size(), false),
+      output_shm(output_buffer.TakeRegion(), output_buffer.size(), false),
       output_offset(output_buffer.offset()),
       exif_shm(nullptr) {
   if (exif_buffer) {
-    exif_shm.reset(new UnalignedSharedMemory(exif_buffer->handle(),
+    exif_shm.reset(new UnalignedSharedMemory(exif_buffer->TakeRegion(),
                                              exif_buffer->size(), true));
     exif_offset = exif_buffer->offset();
   }
@@ -965,8 +965,9 @@ void V4L2JpegEncodeAccelerator::NotifyError(int32_t buffer_id, Status status) {
   client_->NotifyError(buffer_id, status);
 }
 
-JpegEncodeAccelerator::Status V4L2JpegEncodeAccelerator::Initialize(
-    Client* client) {
+chromeos_camera::JpegEncodeAccelerator::Status
+V4L2JpegEncodeAccelerator::Initialize(
+    chromeos_camera::JpegEncodeAccelerator::Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<EncodedInstance> encoded_device(new EncodedInstance(this));
@@ -998,8 +999,8 @@ size_t V4L2JpegEncodeAccelerator::GetMaxCodedBufferSize(
 void V4L2JpegEncodeAccelerator::Encode(
     scoped_refptr<media::VideoFrame> video_frame,
     int quality,
-    const BitstreamBuffer* exif_buffer,
-    const BitstreamBuffer& output_buffer) {
+    BitstreamBuffer* exif_buffer,
+    BitstreamBuffer output_buffer) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   DVLOGF(4) << "buffer_id=" << output_buffer.id()
@@ -1025,13 +1026,22 @@ void V4L2JpegEncodeAccelerator::Encode(
     }
   }
 
-  std::unique_ptr<JobRecord> job_record(
-      new JobRecord(video_frame, quality, exif_buffer, output_buffer));
+  std::unique_ptr<JobRecord> job_record(new JobRecord(
+      video_frame, quality, exif_buffer, std::move(output_buffer)));
 
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2JpegEncodeAccelerator::EncodeTask,
                      base::Unretained(this), base::Passed(&job_record)));
+}
+
+void V4L2JpegEncodeAccelerator::EncodeWithDmaBuf(
+    scoped_refptr<VideoFrame> input_frame,
+    scoped_refptr<VideoFrame> output_frame,
+    int quality,
+    int32_t task_id,
+    BitstreamBuffer* exif_buffer) {
+  NOTIMPLEMENTED();
 }
 
 void V4L2JpegEncodeAccelerator::EncodeTask(

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -16,11 +17,14 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/state_store.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
@@ -59,11 +63,6 @@ class TestStateStoreObserver : public StateStore::TestObserver {
   DISALLOW_COPY_AND_ASSIGN(TestStateStoreObserver);
 };
 
-enum class TestActionType {
-  kBrowser,
-  kPage,
-};
-
 }  // namespace
 
 class ExtensionActionAPITest : public ExtensionApiTest {
@@ -71,11 +70,13 @@ class ExtensionActionAPITest : public ExtensionApiTest {
   ExtensionActionAPITest() {}
   ~ExtensionActionAPITest() override {}
 
-  const char* GetManifestKey(TestActionType action_type) {
+  const char* GetManifestKey(ActionInfo::Type action_type) {
     switch (action_type) {
-      case TestActionType::kBrowser:
+      case ActionInfo::TYPE_ACTION:
+        return manifest_keys::kAction;
+      case ActionInfo::TYPE_BROWSER:
         return manifest_keys::kBrowserAction;
-      case TestActionType::kPage:
+      case ActionInfo::TYPE_PAGE:
         return manifest_keys::kPageAction;
     }
     NOTREACHED();
@@ -90,9 +91,19 @@ class ExtensionActionAPITest : public ExtensionApiTest {
 using BrowserActionAPITest = ExtensionActionAPITest;
 using PageActionAPITest = ExtensionActionAPITest;
 
-// A class that runs tests exercising both page and browser action behavior.
-class MultiActionAPITest : public ExtensionActionAPITest,
-                           public testing::WithParamInterface<TestActionType> {
+// A class that runs tests exercising each type of possible toolbar action.
+class MultiActionAPITest
+    : public ExtensionActionAPITest,
+      public testing::WithParamInterface<ActionInfo::Type> {
+ public:
+  MultiActionAPITest()
+      : current_channel_(
+            extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
+
+ private:
+  std::unique_ptr<ScopedCurrentChannel> current_channel_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiActionAPITest);
 };
 
 // Check that updating the browser action badge for a specific tab id does not
@@ -260,7 +271,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, TitleLocalization) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          MultiActionAPITest,
-                         testing::Values(TestActionType::kBrowser,
-                                         TestActionType::kPage));
+                         testing::Values(ActionInfo::TYPE_ACTION,
+                                         ActionInfo::TYPE_PAGE,
+                                         ActionInfo::TYPE_BROWSER));
 
 }  // namespace extensions

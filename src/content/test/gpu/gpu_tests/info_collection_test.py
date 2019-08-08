@@ -3,14 +3,8 @@
 # found in the LICENSE file.
 
 from gpu_tests import gpu_integration_test
-from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 import sys
-
-# There are no expectations for info_collection
-class InfoCollectionExpectations(GpuTestExpectations):
-  def SetExpectations(self):
-    pass
 
 class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
@@ -102,10 +96,6 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     if type(value) is bool:
       return 'supported' if value else 'unsupported'
     assert False
-
-  @classmethod
-  def _CreateExpectations(cls):
-    return InfoCollectionExpectations()
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
@@ -32,7 +33,6 @@
 #error "Instant is only used on desktop";
 #endif
 
-class DarkModeObserver;
 class InstantIOContext;
 class InstantServiceObserver;
 class NtpBackgroundService;
@@ -43,6 +43,12 @@ struct ThemeBackgroundInfo;
 namespace content {
 class RenderProcessHost;
 }  // namespace content
+
+namespace ui {
+class DarkModeObserver;
+}  // namespace ui
+
+extern const char kNtpCustomBackgroundMainColor[];
 
 // Tracks render process host IDs that are associated with Instant, i.e.
 // processes that are used to render an NTP. Also responsible for keeping
@@ -151,11 +157,22 @@ class InstantService : public KeyedService,
   // tests.
   virtual void ResetToDefault();
 
+  // Calculates the most frequent color of the image and stores it in prefs.
+  void UpdateCustomBackgroundColorAsync(
+      const GURL& image_url,
+      const gfx::Image& fetched_image,
+      const image_fetcher::RequestMetadata& metadata);
+
+  // Fetches the image for the given |fetch_url|.
+  void FetchCustomBackground(const GURL& image_url, const GURL& fetch_url);
+
  private:
   class SearchProviderObserver;
 
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
+  friend class LocalNTPBackgroundsAndDarkModeTest;
+  friend class TestInstantService;
 
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
@@ -226,6 +243,12 @@ class InstantService : public KeyedService,
 
   void CreateDarkModeObserver(ui::NativeTheme* theme);
 
+  // Updates custom background prefs with color for the given |image_url|.
+  void UpdateCustomBackgroundPrefsWithColor(const GURL& image_url,
+                                            SkColor color);
+
+  void SetImageFetcherForTesting(image_fetcher::ImageFetcher* image_fetcher);
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -254,9 +277,11 @@ class InstantService : public KeyedService,
   PrefService* pref_service_;
 
   // Keeps track of any changes to system dark mode.
-  std::unique_ptr<DarkModeObserver> dark_mode_observer_;
+  std::unique_ptr<ui::DarkModeObserver> dark_mode_observer_;
 
   NtpBackgroundService* background_service_;
+
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 

@@ -61,29 +61,28 @@ std::unique_ptr<AppInfoFooterPanel> AppInfoFooterPanel::CreateFooterPanel(
 
 void AppInfoFooterPanel::CreateButtons() {
   if (CanCreateShortcuts(app_)) {
-    create_shortcuts_button_ = AddChildView(base::WrapUnique<views::View>(
-        views::MdTextButton::CreateSecondaryUiButton(
+    create_shortcuts_button_ =
+        AddChildView(views::MdTextButton::CreateSecondaryUiButton(
             this, l10n_util::GetStringUTF16(
-                      IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT))));
+                      IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT)));
   }
 
 #if defined(OS_CHROMEOS)
   if (CanSetPinnedToShelf(profile_, app_)) {
-    pin_to_shelf_button_ = AddChildView(base::WrapUnique<views::View>(
-        views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_PIN))));
-    unpin_from_shelf_button_ = AddChildView(base::WrapUnique<views::View>(
-        views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN))));
+    pin_to_shelf_button_ =
+        AddChildView(views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_PIN)));
+    unpin_from_shelf_button_ =
+        AddChildView(views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN)));
     UpdatePinButtons(false);
   }
 #endif
 
   if (CanUninstallApp(profile_, app_)) {
-    remove_button_ = AddChildView(base::WrapUnique<views::View>(
-        views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(
-                      IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT))));
+    remove_button_ = AddChildView(views::MdTextButton::CreateSecondaryUiButton(
+        this,
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT)));
   }
 }
 

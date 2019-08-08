@@ -5,9 +5,9 @@
 #include "ash/system/power/power_button_menu_view.h"
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/new_window_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_button_menu_item_view.h"
@@ -137,6 +137,10 @@ PowerButtonMenuView::GetTransformDisplacement() const {
   return transform_displacement;
 }
 
+const char* PowerButtonMenuView::GetClassName() const {
+  return "PowerButtonMenuView";
+}
+
 void PowerButtonMenuView::CreateItems() {
   power_off_item_ = new PowerButtonMenuItemView(
       this, kSystemPowerButtonMenuPowerOffIcon,
@@ -151,7 +155,7 @@ void PowerButtonMenuView::CreateItems() {
         user::GetLocalizedSignOutStringForStatus(login_status, false));
     AddChildView(sign_out_item_);
 
-    const SessionController* const session_controller =
+    const SessionControllerImpl* const session_controller =
         Shell::Get()->session_controller();
     if (session_controller->CanLockScreen() &&
         !session_controller->IsScreenLocked()) {
@@ -262,7 +266,7 @@ void PowerButtonMenuView::ButtonPressed(views::Button* sender,
     shell->session_controller()->LockScreen();
   } else if (sender == feedback_item_) {
     RecordMenuActionHistogram(PowerButtonMenuActionType::kFeedback);
-    shell->new_window_controller()->OpenFeedbackPage();
+    NewWindowDelegate::GetInstance()->OpenFeedbackPage();
   } else {
     NOTREACHED() << "Invalid sender";
   }

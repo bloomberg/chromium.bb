@@ -8,6 +8,9 @@
 #include <stdint.h>
 #include <wrl/client.h>
 
+#include <algorithm>
+
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,11 +36,12 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override { return true; }
 
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
 
   bool StopSpeaking() override;
 
@@ -62,6 +66,13 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
 
   void SetVoiceFromName(const std::string& name);
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& lang,
+                     const VoiceData& voice,
+                     const UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished,
+                     const std::string& parsed_utterance);
+
   Microsoft::WRL::ComPtr<ISpVoice> speech_synthesizer_;
 
   // These apply to the current utterance only.
@@ -76,6 +87,8 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplWin>;
 
+  base::WeakPtrFactory<TtsPlatformImplWin> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplWin);
 };
 
@@ -84,16 +97,34 @@ TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
   return TtsPlatformImplWin::GetInstance();
 }
 
-bool TtsPlatformImplWin::Speak(int utterance_id,
-                               const std::string& src_utterance,
-                               const std::string& lang,
-                               const VoiceData& voice,
-                               const UtteranceContinuousParameters& params) {
+void TtsPlatformImplWin::Speak(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
+  // Parse SSML and process speech.
+  TtsController::GetInstance()->StripSSML(
+      utterance, base::BindOnce(&TtsPlatformImplWin::ProcessSpeech,
+                                weak_factory_.GetWeakPtr(), utterance_id, lang,
+                                voice, params, std::move(on_speak_finished)));
+}
+
+void TtsPlatformImplWin::ProcessSpeech(
+    int utterance_id,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished,
+    const std::string& parsed_utterance) {
   std::wstring prefix;
   std::wstring suffix;
 
-  if (!speech_synthesizer_.Get())
-    return false;
+  if (!speech_synthesizer_.Get()) {
+    std::move(on_speak_finished).Run(false);
+    return;
+  }
 
   SetVoiceFromName(voice.name);
 
@@ -107,11 +138,16 @@ bool TtsPlatformImplWin::Speak(int utterance_id,
   }
 
   if (params.pitch >= 0.0) {
-    // The TTS api allows a range of -10 to 10 for speech pitch.
-    // TODO(dtseng): cleanup if we ever use any other properties that
-    // require xml.
-    std::wstring pitch_value = base::NumberToString16(params.pitch * 10 - 10);
-    prefix = L"<pitch absmiddle=\"" + pitch_value + L"\">";
+    // The TTS api allows a range of -10 to 10 for speech pitch:
+    // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms720500(v%3Dvs.85)
+    // Note that the API requires an integer value, so be sure to cast the pitch
+    // value to an int before calling NumberToString16. TODO(dtseng): cleanup if
+    // we ever use any other properties that require xml.
+    double adjusted_pitch =
+        std::max<double>(-10, std::min<double>(params.pitch * 10 - 10, 10));
+    std::wstring adjusted_pitch_string =
+        base::NumberToString16(static_cast<int>(adjusted_pitch));
+    prefix = L"<pitch absmiddle=\"" + adjusted_pitch_string + L"\">";
     suffix = L"</pitch>";
   }
 
@@ -122,7 +158,7 @@ bool TtsPlatformImplWin::Speak(int utterance_id,
 
   // TODO(dmazzoni): convert SSML to SAPI xml. http://crbug.com/88072
 
-  utterance_ = base::UTF8ToWide(src_utterance);
+  utterance_ = base::UTF8ToWide(parsed_utterance);
   utterance_id_ = utterance_id;
   char_position_ = 0;
   char_length_ = 0;
@@ -131,7 +167,7 @@ bool TtsPlatformImplWin::Speak(int utterance_id,
 
   HRESULT result = speech_synthesizer_->Speak(merged_utterance.c_str(),
                                               SPF_ASYNC, &stream_number_);
-  return (result == S_OK);
+  std::move(on_speak_finished).Run((result == S_OK));
 }
 
 bool TtsPlatformImplWin::StopSpeaking() {
@@ -304,7 +340,8 @@ TtsPlatformImplWin::TtsPlatformImplWin()
       prefix_len_(0),
       stream_number_(0),
       char_position_(0),
-      paused_(false) {
+      paused_(false),
+      weak_factory_(this) {
   ::CoCreateInstance(CLSID_SpVoice, nullptr, CLSCTX_ALL,
                      IID_PPV_ARGS(&speech_synthesizer_));
   if (speech_synthesizer_.Get()) {

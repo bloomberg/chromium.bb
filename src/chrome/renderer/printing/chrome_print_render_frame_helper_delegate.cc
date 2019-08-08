@@ -22,7 +22,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
-#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
+#include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 ChromePrintRenderFrameHelperDelegate::ChromePrintRenderFrameHelperDelegate() =
@@ -72,20 +72,16 @@ bool ChromePrintRenderFrameHelperDelegate::IsPrintPreviewEnabled() {
 bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
     blink::WebLocalFrame* frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!frame->GetDocument().IsPluginDocument())
-    return false;
-
-  std::vector<extensions::MimeHandlerViewContainerBase*> mime_handlers =
-      extensions::MimeHandlerViewContainerBase::FromRenderFrame(
-          content::RenderFrame::FromWebFrame(frame));
-  if (!mime_handlers.empty()) {
+  auto* post_message_support =
+      extensions::PostMessageSupport::FromWebLocalFrame(frame);
+  if (post_message_support) {
     // This message is handled in chrome/browser/resources/pdf/pdf_viewer.js and
     // instructs the PDF plugin to print. This is to make window.print() on a
     // PDF plugin document correctly print the PDF. See
     // https://crbug.com/448720.
     base::DictionaryValue message;
     message.SetString("type", "print");
-    mime_handlers.front()->PostMessageFromValue(message);
+    post_message_support->PostMessageFromValue(message);
     return true;
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

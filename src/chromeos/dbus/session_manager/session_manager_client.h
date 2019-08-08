@@ -73,13 +73,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
     virtual void EmitLoginPromptVisibleCalled() {}
 
     // Called when the ARC instance is stopped after it had already started.
-    // |clean| is true if the instance was stopped as a result of an explicit
-    // request, false if it died unexpectedly.
-    // |container_instance_id| is the identifier of the container instance.
-    // See details for StartArcInstanceCallback.
-    virtual void ArcInstanceStopped(
-        login_manager::ArcContainerStopReason reason,
-        const std::string& container_instance_id) {}
+    virtual void ArcInstanceStopped() {}
   };
 
   // Interface for performing actions on behalf of the stub implementation.
@@ -151,7 +145,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) = 0;
 
-  // Stops the current session.
+  // Stops the current session. Don't call directly unless there's no user on
+  // the device. Use SessionTerminationManager::StopSession instead.
   virtual void StopSession() = 0;
 
   // Starts the factory reset.
@@ -309,8 +304,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
                            VoidDBusMethodCallback callback) = 0;
 
   // Returns whether session manager can be used to restart Chrome in order to
-  // apply per-user session flags.
-  virtual bool SupportsRestartToApplyUserFlags() const = 0;
+  // apply per-user session flags, or start guest session.
+  // This returns true for the real session manager client implementation, and
+  // false for the fake (unless explicitly set by a test).
+  virtual bool SupportsBrowserRestart() const = 0;
 
   // Sets the flags to be applied next time by the session manager when Chrome
   // is restarted inside an already started session for a particular user.
@@ -332,26 +329,19 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void GetServerBackedStateKeys(StateKeysCallback callback) = 0;
 
   // StartArcMiniContainer starts a container with only a handful of ARC
-  // processes for Chrome OS login screen.  In case of success, callback will be
-  // called with |container_instance_id| set to a string.  The ID is passed to
-  // ArcInstanceStopped() to identify which instance is stopped. In case of
-  // error, |container_instance_id| will be nullopt.
-  using StartArcMiniContainerCallback =
-      DBusMethodCallback<std::string /* container_instance_id */>;
+  // processes for Chrome OS login screen.
   virtual void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
-      StartArcMiniContainerCallback callback) = 0;
+      VoidDBusMethodCallback callback) = 0;
 
-  // UpgradeArcContainer upgrades a mini-container to a full ARC container. In
-  // case of success, success_callback is called. In case of error,
-  // error_callback will be called with a |low_free_disk_space| signaling
-  // whether the failure was due to low free disk space.
-  using UpgradeErrorCallback =
-      base::OnceCallback<void(bool low_free_disk_space)>;
+  // UpgradeArcContainer upgrades a mini-container to a full ARC container. On
+  // upgrade failure, the container will be shutdown. The container shutdown
+  // will trigger the ArcInstanceStopped signal (as usual). There are no
+  // guarantees over whether this |callback| is invoked or the
+  // ArcInstanceStopped signal is received first.
   virtual void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      base::OnceClosure success_callback,
-      UpgradeErrorCallback error_callback) = 0;
+      VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
   // |callback| with the result; true on success, false on failure (either

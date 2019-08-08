@@ -18,7 +18,10 @@
 class LazyLoadBrowserTest : public InProcessBrowserTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kLazyImageLoading);
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kLazyImageLoading,
+        {{"restrict-lazy-load-images-to-data-saver-only", "false"},
+         {"automatic-lazy-load-images-enabled", "true"}});
     InProcessBrowserTest::SetUp();
   }
   base::test::ScopedFeatureList scoped_feature_list_;

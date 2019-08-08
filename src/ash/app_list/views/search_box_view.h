@@ -59,6 +59,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -108,15 +109,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   }
 
  private:
-  // Gets the wallpaper prominent colors.
-  void GetWallpaperProminentColors(
-      AppListViewDelegate::GetWallpaperProminentColorsCallback callback);
-
-  // Callback invoked when the wallpaper prominent colors are returned after
-  // calling |AppListViewDelegate::GetWallpaperProminentColors|.
-  void OnWallpaperProminentColorsReceived(
-      const std::vector<SkColor>& prominent_colors);
-
   // Notifies SearchBoxViewDelegate that the autocomplete text is valid.
   void AcceptAutocompleteText();
 

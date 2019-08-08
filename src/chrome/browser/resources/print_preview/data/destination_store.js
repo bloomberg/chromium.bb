@@ -281,7 +281,7 @@ cr.define('print_preview', function() {
 
       addListenerCallback('printers-added', this.onPrintersAdded_.bind(this));
       addListenerCallback(
-          'reload-printer-list', this.onDestinationsReload.bind(this));
+          'user-accounts-updated', this.onDestinationsReload.bind(this));
     }
 
     /**
@@ -297,15 +297,6 @@ cr.define('print_preview', function() {
         });
       }
       return this.destinations_.slice(0);
-    }
-
-    /**
-     * Gets the destination, if any, matching |key|.
-     * @param {string} key Key identifying the destination in the map.
-     * @return {?print_preview.Destination}
-     */
-    getDestinationByKey(key) {
-      return this.destinationMap_.get(key) || null;
     }
 
     /**
@@ -365,68 +356,54 @@ cr.define('print_preview', function() {
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
 
-      const isRecentDestinationValid = recentDestinations.length > 0 &&
-          this.isDestinationValid_(recentDestinations[0]);
+      // System default printer policy takes priority.
+      if (this.useSystemDefaultAsDefault_ &&
+          this.selectSystemDefaultDestination_()) {
+        return;
+      }
 
-      if (!isRecentDestinationValid) {
-        const destinationMatch = this.convertToDestinationMatch_(
-            serializedDefaultDestinationSelectionRulesStr);
-        if (destinationMatch) {
-          this.fetchMatchingDestination_(destinationMatch);
-          this.startAutoSelectTimeout_();
+      // Run through the destinations forward. As soon as we find a destination,
+      // select or try to fetch it and return.
+      for (const destination of recentDestinations) {
+        const candidate = this.destinationMap_.get(
+            print_preview.createRecentDestinationKey(destination));
+        if (candidate) {
+          this.selectDestination(candidate);
+          return;
+        }
+        if (this.fetchPreselectedDestination_(destination)) {
           return;
         }
       }
 
-      if (this.systemDefaultDestinationId_.length == 0 &&
-          !isRecentDestinationValid) {
-        this.selectFinalFallbackDestination_();
+      // Try the default destination rules, if they exist.
+      const destinationMatch = this.convertToDestinationMatch_(
+          serializedDefaultDestinationSelectionRulesStr);
+      if (destinationMatch) {
+        this.fetchMatchingDestination_(destinationMatch);
+        this.startAutoSelectTimeout_();
         return;
       }
 
-      let startedAutoSelect = false;
-      let selected = false;
-      let account = '';
-      // Run through the destinations forward. As soon as we find a
-      // destination, don't select any future destinations, just fetch their
-      // capabilities in case the user switches to them later.
-      for (const destination of recentDestinations) {
-        const candidate = this.destinationMap_.get(
-            print_preview.createRecentDestinationKey(destination));
-        const shouldSelectDestination =
-            !this.useSystemDefaultAsDefault_ && !selected && !startedAutoSelect;
-        if (destination.account && account && destination.account !== account) {
-          // If we have already selected a destination with a specific account,
-          // don't request destinations from a different account, as doing so
-          // will cause the cloud print interface to reset the UI to have a
-          // different active user from the user that owns the selected printer.
-          continue;
-        }
-        if (candidate != undefined) {
-          // Destination is already in the store. Select it, if we haven't
-          // started selecting a destination already.
-          if (shouldSelectDestination) {
-            this.selectDestination(candidate);
-            selected = true;
-            account = destination.account;
-          }
-        } else {
-          // Pre-fetch the destination and start auto select if needed.
-          const startedFetch = this.fetchPreselectedDestination_(
-              destination, shouldSelectDestination);
-          if (startedFetch && shouldSelectDestination) {
-            startedAutoSelect = true;
-            account = destination.account;
-          }
-        }
-      }
-
-      if ((selected || startedAutoSelect) && !this.useSystemDefaultAsDefault_) {
-        // Return early since we already selected a destination.
+      // Try the system default.
+      if (this.selectSystemDefaultDestination_()) {
         return;
       }
 
-      // Try the system default
+      // Fallback to Save as PDF, or the first printer to load (if in kiosk
+      // mode).
+      this.selectFinalFallbackDestination_();
+    }
+
+    /**
+     * @return {boolean} Whether the system default printer was either found in
+     *     the store or fetch was started successfully.
+     */
+    selectSystemDefaultDestination_() {
+      if (this.systemDefaultDestinationId_ == '') {
+        return false;
+      }
+
       const serializedSystemDefault = {
         id: this.systemDefaultDestinationId_,
         origin: this.systemDefaultDestinationId_ ==
@@ -439,19 +416,15 @@ cr.define('print_preview', function() {
         extensionId: '',
         extensionName: '',
       };
+
       const systemDefaultCandidate = this.destinationMap_.get(
           print_preview.createRecentDestinationKey(serializedSystemDefault));
-      if (systemDefaultCandidate != undefined) {
+      if (systemDefaultCandidate) {
         this.selectDestination(systemDefaultCandidate);
-        return;
+        return true;
       }
 
-      if (this.fetchPreselectedDestination_(
-              serializedSystemDefault, true /* autoSelect */)) {
-        return;
-      }
-
-      this.selectFinalFallbackDestination_();
+      return this.fetchPreselectedDestination_(serializedSystemDefault);
     }
 
     /** Removes all events being tracked from the tracker. */
@@ -463,12 +436,10 @@ cr.define('print_preview', function() {
      * Attempts to fetch capabilities of the destination identified by
      * |serializedDestination|.
      * @param {!print_preview.RecentDestination} serializedDestination
-     * @param {boolean} autoSelect Whether to automatically select the
-     *     destination if it is fetched successfully.
      * @return {boolean} Whether capabilities fetch was successfully started.
      * @private
      */
-    fetchPreselectedDestination_(serializedDestination, autoSelect) {
+    fetchPreselectedDestination_(serializedDestination) {
       const key =
           print_preview.createRecentDestinationKey(serializedDestination);
       if (this.inFlightCloudPrintRequests_.has(key)) {
@@ -479,10 +450,8 @@ cr.define('print_preview', function() {
 
       const id = serializedDestination.id;
       const origin = serializedDestination.origin;
-      if (autoSelect) {
-        this.autoSelectMatchingDestination_ =
-            this.createExactDestinationMatch_(origin, id);
-      }
+      this.autoSelectMatchingDestination_ =
+          this.createExactDestinationMatch_(origin, id);
 
       let error = false;
       const type = print_preview.originToType(origin);
@@ -498,29 +467,27 @@ cr.define('print_preview', function() {
           // privet or extension printers in this case.
           this.startLoadDestinations_(type);
 
-          if (autoSelect) {
-            // Create a fake selectedDestination_ that is not actually in the
-            // destination store. When the real destination is created, this
-            // destination will be overwritten.
-            const params =
-                (origin === print_preview.DestinationOrigin.PRIVET) ? {} : {
-                  description: '',
-                  extensionId: serializedDestination.extensionId,
-                  extensionName: serializedDestination.extensionName,
-                  provisionalType: print_preview.DestinationProvisionalType.NONE
-                };
-            this.selectedDestination_ = new print_preview.Destination(
-                id, print_preview.DestinationType.LOCAL, origin,
-                serializedDestination.displayName,
-                print_preview.DestinationConnectionStatus.ONLINE, params);
+          // Create a fake selectedDestination_ that is not actually in the
+          // destination store. When the real destination is created, this
+          // destination will be overwritten.
+          const params =
+              (origin === print_preview.DestinationOrigin.PRIVET) ? {} : {
+                description: '',
+                extensionId: serializedDestination.extensionId,
+                extensionName: serializedDestination.extensionName,
+                provisionalType: print_preview.DestinationProvisionalType.NONE
+              };
+          this.selectedDestination_ = new print_preview.Destination(
+              id, print_preview.DestinationType.LOCAL, origin,
+              serializedDestination.displayName,
+              print_preview.DestinationConnectionStatus.ONLINE, params);
 
-            if (serializedDestination.capabilities) {
-              this.selectedDestination_.capabilities =
-                  serializedDestination.capabilities;
-              this.dispatchEvent(new CustomEvent(
-                  DestinationStore.EventType
-                      .SELECTED_DESTINATION_CAPABILITIES_READY));
-            }
+          if (serializedDestination.capabilities) {
+            this.selectedDestination_.capabilities =
+                serializedDestination.capabilities;
+            this.dispatchEvent(
+                new CustomEvent(DestinationStore.EventType
+                                    .SELECTED_DESTINATION_CAPABILITIES_READY));
           }
           break;
         case print_preview.PrinterType.CLOUD_PRINTER:
@@ -538,7 +505,7 @@ cr.define('print_preview', function() {
           error = true;
       }
 
-      if (!error && autoSelect) {
+      if (!error) {
         this.startAutoSelectTimeout_();
       }
       return !error;
@@ -759,15 +726,6 @@ cr.define('print_preview', function() {
       }
     }
 
-    /**
-     * Selects the destination with key given by |key|. Destination must exist
-     * in the map.
-     * @param {string} key A unique key identifying the destination.
-     */
-    selectDestinationByKey(key) {
-      this.selectDestination(assert(this.getDestinationByKey(key)));
-    }
-
     // <if expr="chromeos">
     /**
      * Attempt to resolve the capabilities for a Chrome OS printer.
@@ -828,7 +786,7 @@ cr.define('print_preview', function() {
         const saveToPdfKey = print_preview.createDestinationKey(
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
             print_preview.DestinationOrigin.LOCAL, '');
-        this.selectDestinationByKey(saveToPdfKey);
+        this.selectDestination(assert(this.destinationMap_.get(saveToPdfKey)));
         return;
       }
 
@@ -851,25 +809,15 @@ cr.define('print_preview', function() {
      * @private
      */
     selectDefaultDestination_() {
-      if (this.systemDefaultDestinationId_.length > 0) {
-        if (this.autoSelectMatchingDestination_ &&
-            !this.autoSelectMatchingDestination_.matchIdAndOrigin(
-                this.systemDefaultDestinationId_, this.platformOrigin_)) {
-          if (this.fetchPreselectedDestination_(
-                  {
-                    id: this.systemDefaultDestinationId_,
-                    origin: this.platformOrigin_,
-                    account: '',
-                    capabilities: null,
-                    displayName: '',
-                    extensionId: '',
-                    extensionName: ''
-                  },
-                  true /* autoSelect */)) {
-            return;
-          }
-        }
+      // Try the system default, if it isn't the destination that was
+      // supposed to be autoselected and failed.
+      if (this.autoSelectMatchingDestination_ &&
+          !this.autoSelectMatchingDestination_.matchIdAndOrigin(
+              this.systemDefaultDestinationId_, this.platformOrigin_) &&
+          this.selectSystemDefaultDestination_()) {
+        return;
       }
+
       this.selectFinalFallbackDestination_();
     }
 
@@ -954,26 +902,48 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Pre-fetches a cookie based destination for the current active user.
-     * @param {string} id The ID of the destination to load.
+     * If a destination with key |key| is already in the store, selects it.
+     * Otherwise, fetches the recent destination with key matching |key|.
+     * @param {string} key
+     * @param {!Array<!print_preview.RecentDestination>} recentDestinations
+     * @return {boolean} Whether the destination was selected or fetch was
+     *     started successfully.
      */
-    startLoadCookieDestination(id) {
-      if (this.destinationMap_.get(print_preview.createDestinationKey(
-              id, print_preview.DestinationOrigin.COOKIES, this.activeUser_))) {
-        // Already loaded.
-        return;
+    selectRecentDestinationByKey(key, recentDestinations) {
+      const destination = this.destinationMap_.get(key);
+      if (destination) {
+        this.selectDestination(destination);
+        return true;
       }
-      this.fetchPreselectedDestination_(
-          {
-            id: id,
-            origin: print_preview.DestinationOrigin.COOKIES,
-            account: this.activeUser_,
-            capabilities: null,
-            displayName: '',
-            extensionId: '',
-            extensionName: ''
-          },
-          false /* autoSelect */);
+
+      const recent = recentDestinations.find(d => {
+        return print_preview.createRecentDestinationKey(d) === key;
+      });
+      if (recent) {
+        return this.fetchPreselectedDestination_(recent);
+      }
+
+      // Should be fetching the Google Drive destination.
+      return this.startLoadGoogleDrive();
+    }
+
+    /**
+     * Tries to load the Google Drive destination for the active user.
+     * @return {boolean}
+     */
+    startLoadGoogleDrive() {
+      const driveKey = print_preview.createDestinationKey(
+          print_preview.Destination.GooglePromotedId.DOCS,
+          print_preview.DestinationOrigin.COOKIES, this.activeUser_);
+      return this.fetchPreselectedDestination_({
+        id: print_preview.Destination.GooglePromotedId.DOCS,
+        origin: print_preview.DestinationOrigin.COOKIES,
+        account: this.activeUser_,
+        capabilities: null,
+        displayName: '',
+        extensionId: '',
+        extensionName: '',
+      });
     }
 
     // <if expr="chromeos">

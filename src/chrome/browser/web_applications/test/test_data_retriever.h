@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -27,10 +28,12 @@ class TestDataRetriever : public WebAppDataRetriever {
                              GetWebApplicationInfoCallback callback) override;
   void CheckInstallabilityAndRetrieveManifest(
       content::WebContents* web_contents,
+      bool bypass_service_worker_check,
       CheckInstallabilityCallback callback) override;
   void GetIcons(content::WebContents* web_contents,
                 const std::vector<GURL>& icon_urls,
-                bool skip_page_fav_icons,
+                bool skip_page_favicons,
+                WebappInstallSource install_source,
                 GetIconsCallback callback) override;
 
   // Set info to respond on |GetWebApplicationInfo|.
@@ -41,6 +44,13 @@ class TestDataRetriever : public WebAppDataRetriever {
                    bool is_installable);
   // Set icons to respond on |GetIcons|.
   void SetIcons(IconsMap icons_map);
+  using GetIconsDelegate =
+      base::RepeatingCallback<IconsMap(content::WebContents* web_contents,
+                                       const std::vector<GURL>& icon_urls,
+                                       bool skip_page_favicons)>;
+  void SetGetIconsDelegate(GetIconsDelegate get_icons_delegate);
+
+  void SetDestructionCallback(base::OnceClosure callback);
 
   WebApplicationInfo& web_app_info() { return *web_app_info_; }
 
@@ -51,6 +61,9 @@ class TestDataRetriever : public WebAppDataRetriever {
   bool is_installable_;
 
   IconsMap icons_map_;
+  GetIconsDelegate get_icons_delegate_;
+
+  base::OnceClosure destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
 };

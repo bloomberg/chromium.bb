@@ -11,10 +11,6 @@ namespace prefs {
 // explicitly enabled by the user (through setup) or disabled via Settings.
 const char kEasyUnlockEnabledStateSet[] = "easy_unlock.enabled_state_set";
 
-// How close the remote and the local device should be in order to use Easy
-// Unlock.
-const char kEasyUnlockProximityThreshold[] = "easy_unlock.proximity_threshold";
-
 // A dictionary in local state containing each user's Easy Unlock profile
 // preferences, so they can be accessed outside of the user's profile. The value
 // is a dictionary containing an entry for each user. Each user's entry mirrors

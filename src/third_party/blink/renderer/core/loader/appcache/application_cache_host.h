@@ -36,7 +36,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
-#include "third_party/blink/public/platform/web_application_cache_host_client.h"
+#include "third_party/blink/public/web/web_application_cache_host_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -48,6 +48,7 @@ class ApplicationCache;
 class DocumentLoader;
 class ResourceRequest;
 class ResourceResponse;
+class WebApplicationCacheHost;
 
 class CORE_EXPORT ApplicationCacheHost final
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
@@ -141,7 +142,7 @@ class CORE_EXPORT ApplicationCacheHost final
 
   void FillResourceList(ResourceInfoList*);
   CacheInfo ApplicationCacheInfo();
-  int GetHostID() const;
+  const base::UnguessableToken& GetHostID() const;
 
   void Trace(blink::Visitor*);
 

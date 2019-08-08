@@ -205,8 +205,10 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   void GetRegistrations(
-      blink::mojom::BackgroundSyncService::GetRegistrationsCallback callback) {
-    service_impl_->GetRegistrations(sw_registration_id_, std::move(callback));
+      blink::mojom::BackgroundSyncService::GetOneShotSyncRegistrationsCallback
+          callback) {
+    service_impl_->GetOneShotSyncRegistrations(sw_registration_id_,
+                                               std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
 

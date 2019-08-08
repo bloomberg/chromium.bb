@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
 namespace {
@@ -21,7 +21,7 @@ namespace chromeos {
 
 DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
+    : BaseScreen(DemoSetupScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {

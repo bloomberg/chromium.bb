@@ -36,13 +36,16 @@ bool BatchElementChecker::empty() const {
   return element_check_callbacks_.empty() && get_field_value_callbacks_.empty();
 }
 
-void BatchElementChecker::Run(WebController* web_controller,
-                              base::OnceCallback<void()> all_done) {
+void BatchElementChecker::AddAllDoneCallback(
+    base::OnceCallback<void()> all_done) {
+  all_done_.emplace_back(std::move(all_done));
+}
+
+void BatchElementChecker::Run(WebController* web_controller) {
   DCHECK(web_controller);
   DCHECK(!started_);
   started_ = true;
 
-  all_done_ = std::move(all_done);
   pending_checks_count_ =
       element_check_callbacks_.size() + get_field_value_callbacks_.size() + 1;
 
@@ -104,10 +107,12 @@ void BatchElementChecker::CheckDone() {
   pending_checks_count_--;
   DCHECK_GE(pending_checks_count_, 0);
   if (pending_checks_count_ <= 0) {
-    DCHECK(all_done_);
-    std::move(all_done_).Run();
-    // Don't do anything after calling all_done, since this could have been
-    // deleted.
+    std::vector<base::OnceCallback<void()>> all_done = std::move(all_done_);
+    // Callbacks in all_done_ can delete the current instance. Nothing can
+    // safely access |this| after this point.
+    for (auto& callback : all_done) {
+      std::move(callback).Run();
+    }
   }
 }
 

@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -168,7 +169,7 @@ static DocumentFragment* DocumentFragmentFromDragData(
       String title;
       String url = drag_data->AsURL(DragData::kDoNotConvertFilenames, &title);
       if (!url.IsEmpty()) {
-        HTMLAnchorElement* anchor = HTMLAnchorElement::Create(document);
+        auto* anchor = MakeGarbageCollected<HTMLAnchorElement>(document);
         anchor->SetHref(AtomicString(url));
         if (title.IsEmpty()) {
           // Try the plain text first because the url might be normalized or
@@ -800,8 +801,8 @@ bool SelectTextInsteadOfDrag(const Node& node) {
     return true;
 
   for (Node& ancestor_node : NodeTraversal::InclusiveAncestorsOf(node)) {
-    if (ancestor_node.IsHTMLElement() &&
-        ToHTMLElement(&ancestor_node)->draggable())
+    auto* html_element = DynamicTo<HTMLElement>(ancestor_node);
+    if (html_element && html_element->draggable())
       return false;
   }
 
@@ -940,8 +941,9 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
       src->GetEventHandler().HitTestResultAtLocation(location);
   // FIXME: Can this even happen? I guess it's possible, but should verify
   // with a web test.
-  if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
-          hit_test_result.InnerNode())) {
+  Node* hit_inner_node = hit_test_result.InnerNode();
+  if (!hit_inner_node ||
+      !state.drag_src_->IsShadowIncludingInclusiveAncestorOf(*hit_inner_node)) {
     // The original node being dragged isn't under the drag origin anymore...
     // maybe it was hidden or moved out from under the cursor. Regardless, we
     // don't want to start a drag on something that's not actually under the
@@ -1182,8 +1184,9 @@ bool DragController::StartDrag(LocalFrame* src,
   HitTestLocation location(drag_origin);
   HitTestResult hit_test_result =
       src->GetEventHandler().HitTestResultAtLocation(location);
-  if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
-          hit_test_result.InnerNode())) {
+  Node* hit_inner_node = hit_test_result.InnerNode();
+  if (!hit_inner_node ||
+      !state.drag_src_->IsShadowIncludingInclusiveAncestorOf(*hit_inner_node)) {
     // The original node being dragged isn't under the drag origin anymore...
     // maybe it was hidden or moved out from under the cursor. Regardless, we
     // don't want to start a drag on something that's not actually under the

@@ -34,7 +34,7 @@ public class CrashKeys {
     private static class Holder { static final CrashKeys INSTANCE = new CrashKeys(); }
 
     private CrashKeys() {
-        assert CrashKeyIndex.NUM_KEYS == KEYS.length;
+        assert CrashKeyIndex.NUM_ENTRIES == KEYS.length;
     }
 
     /**

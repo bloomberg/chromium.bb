@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -104,8 +105,8 @@ bool StyleCommands::ExecuteApplyStyle(LocalFrame& frame,
                                       CSSPropertyID property_id,
                                       const String& property_value) {
   DCHECK(frame.GetDocument());
-  MutableCSSPropertyValueSet* const style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* const style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value, /* important */ false,
                      frame.GetDocument()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, style);
@@ -116,8 +117,8 @@ bool StyleCommands::ExecuteApplyStyle(LocalFrame& frame,
                                       InputEvent::InputType input_type,
                                       CSSPropertyID property_id,
                                       CSSValueID property_value) {
-  MutableCSSPropertyValueSet* const style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* const style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value);
   return ApplyCommandToFrame(frame, source, input_type, style);
 }
@@ -170,8 +171,8 @@ bool StyleCommands::ExecuteMakeTextWritingDirectionLeftToRight(
     Event*,
     EditorCommandSource,
     const String&) {
-  MutableCSSPropertyValueSet* const style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* const style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate);
   style->SetProperty(CSSPropertyID::kDirection, CSSValueID::kLtr);
   ApplyStyle(frame, style, InputEvent::InputType::kFormatSetBlockTextDirection);
@@ -182,8 +183,8 @@ bool StyleCommands::ExecuteMakeTextWritingDirectionNatural(LocalFrame& frame,
                                                            Event*,
                                                            EditorCommandSource,
                                                            const String&) {
-  MutableCSSPropertyValueSet* const style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* const style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kNormal);
   ApplyStyle(frame, style, InputEvent::InputType::kFormatSetBlockTextDirection);
   return true;
@@ -194,8 +195,8 @@ bool StyleCommands::ExecuteMakeTextWritingDirectionRightToLeft(
     Event*,
     EditorCommandSource,
     const String&) {
-  MutableCSSPropertyValueSet* const style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* const style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate);
   style->SetProperty(CSSPropertyID::kDirection, CSSValueID::kRtl);
   ApplyStyle(frame, style, InputEvent::InputType::kFormatSetBlockTextDirection);
@@ -316,8 +317,8 @@ bool StyleCommands::ExecuteToggleStyleInList(LocalFrame& frame,
 
   // TODO(editnig-dev): We shouldn't be having to convert new style into text.
   // We should have setPropertyCSSValue.
-  MutableCSSPropertyValueSet* const new_mutable_style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* const new_mutable_style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   new_mutable_style->SetProperty(property_id, new_style, /* important */ false,
                                  frame.GetDocument()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, new_mutable_style);

@@ -48,7 +48,7 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   GpuPreference GetGpuPreference();
 
   void* context_ = nullptr;
-  GpuPreference gpu_preference_ = PreferIntegratedGpu;
+  GpuPreference gpu_preference_ = GpuPreference::kLowPower;
   std::map<gfx::ColorSpace, std::unique_ptr<YUVToRGBConverter>>
       yuv_to_rgb_converters_;
 

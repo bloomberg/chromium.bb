@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="omnibox.css">
   <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/mojo_bindings_lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js"></script>
   <script src="omnibox_element.js"></script>
@@ -111,15 +111,15 @@
           <option value="2">about:blank</option>
           <option value="3">user's home page</option>
           <option value="4" selected>arbitrary URL</option>
+          <option value="6">
+            search result page doing search term replacement
+          </option>
           <option value="9">
             search result page not doing search term replacement
           </option>
           <option value="7">new tab page omnibox</option>
           <option value="8">new tab page fakebox</option>
           <option value="1">(OBSOLETE) new tab page</option>
-          <option value="6">
-            (OBSOLETE) search result page doing search term replacement
-          </option>
         </select>
       </div>
 
@@ -181,21 +181,29 @@
             </span>
           </div>
           <div class="buttons-column">
-            <label id="import-clipboard"
-                   class="row icon-button button drag-container" accesskey="v"
-                   tabindex="0"
-                   title="Import JSON from clipboard. Accepts dragged text and files as well.">
-              <i class="icon copy-icon"></i>
-              <span>Paste [<span class="accesskey">v</span>]</span>
-            </label>
-            <label id="import-file"
-                   class="row icon-button button drag-container" accesskey="m"
-                   tabindex="0"
-                   title="Upload previously downloaded responses. Accepts dragged text and files as well.">
-              <input id="import-file-input" type="file" accept=".json">
-              <i class="icon copy-icon"></i>
-              <span>Upload [<span class="accesskey">m</span>]</span>
-            </label>
+              <label id="import-clipboard"
+                     class="row icon-button button drag-container" accesskey="v"
+                     tabindex="0"
+                     title="Import JSON from clipboard. Accepts dragged text and files as well.">
+                  <i class="icon copy-icon"></i>
+                  <span>Paste [<span class="accesskey">v</span>]</span>
+              </label>
+              <label id="import-file"
+                     class="row icon-button button drag-container" accesskey="m"
+                     tabindex="0"
+                     title="Upload previously downloaded responses to load them. Accepts dragged text and files as well.">
+                  <input id="import-file-input" type="file" accept=".json">
+                  <i class="icon copy-icon"></i>
+                  <span>Upload [<span class="accesskey">m</span>]</span>
+              </label>
+              <label id="process-batch"
+                     class="row icon-button button drag-container" accesskey="b"
+                     tabindex="0"
+                     title="Upload a query batch specifier to download a batch export. Accepts dragged text and files as well.">
+                  <input id="process-batch-input" type="file" accept=".json">
+                  <i class="icon copy-icon"></i>
+                  <span>Process <span class="accesskey">b</span>atch</span>
+              </label>
           </div>
         </div>
         <div id="imported-warning" class="row" hidden>

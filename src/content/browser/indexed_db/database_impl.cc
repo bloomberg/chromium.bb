@@ -33,6 +33,7 @@ class IndexedDBKeyRange;
 namespace content {
 namespace {
 
+const char kBadTransactionMode[] = "Bad transaction mode";
 const char kTransactionAlreadyExists[] = "Transaction already exists";
 
 }  // namespace
@@ -74,6 +75,7 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "RenameObjectStore must be called from a version change transaction.");
+    return;
   }
 
   // Note: This doesn't schedule a task on the transaction because version
@@ -90,6 +92,12 @@ void DatabaseImpl::CreateTransaction(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
+
+  if (mode != blink::mojom::IDBTransactionMode::ReadOnly &&
+      mode != blink::mojom::IDBTransactionMode::ReadWrite) {
+    mojo::ReportBadMessage(kBadTransactionMode);
+    return;
+  }
 
   if (connection_->GetTransaction(transaction_id)) {
     mojo::ReportBadMessage(kTransactionAlreadyExists);
@@ -176,30 +184,38 @@ void DatabaseImpl::Get(
                                key_only, callbacks);
 }
 
-void DatabaseImpl::GetAll(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    bool key_only,
-    int64_t max_count,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+void DatabaseImpl::GetAll(int64_t transaction_id,
+                          int64_t object_store_id,
+                          int64_t index_id,
+                          const IndexedDBKeyRange& key_range,
+                          bool key_only,
+                          int64_t max_count,
+                          blink::mojom::IDBDatabase::GetAllCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  if (!connection_->IsConnected())
+  if (!connection_->IsConnected()) {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Unknown error");
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction)
+  if (!transaction) {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Unknown error");
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
 
   connection_->database()->GetAll(
-      transaction, object_store_id, index_id,
+      dispatcher_host_->AsWeakPtr(), transaction, object_store_id, index_id,
       std::make_unique<IndexedDBKeyRange>(key_range), key_only, max_count,
-      std::move(callbacks));
+      std::move(callback));
 }
 
 void DatabaseImpl::SetIndexKeys(
@@ -219,6 +235,7 @@ void DatabaseImpl::SetIndexKeys(
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "SetIndexKeys must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->SetIndexKeys(
@@ -241,6 +258,7 @@ void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "SetIndexesReady must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->SetIndexesReady(transaction, object_store_id,
@@ -273,6 +291,7 @@ void DatabaseImpl::OpenCursor(
     mojo::ReportBadMessage(
         "OpenCursor with |Preemptive| task type must be called from a version "
         "change transaction.");
+    return;
   }
 
   connection_->database()->OpenCursor(
@@ -384,6 +403,7 @@ void DatabaseImpl::CreateIndex(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "CreateIndex must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->CreateIndex(transaction, object_store_id, index_id,
@@ -405,6 +425,7 @@ void DatabaseImpl::DeleteIndex(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "DeleteIndex must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->DeleteIndex(transaction, object_store_id, index_id);
@@ -426,6 +447,7 @@ void DatabaseImpl::RenameIndex(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "RenameIndex must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->RenameIndex(transaction, object_store_id, index_id,

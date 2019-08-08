@@ -21,7 +21,6 @@ cr.define('cr.ui.pageManager', function() {
     /**
      * Offset of page container in pixels. Uber pages that use the side menu
      * can override this with the setter.
-     * The default (23) comes from margin-inline-start in uber_shared.css.
      * @type {number}
      */
     horizontalOffset_: 23,

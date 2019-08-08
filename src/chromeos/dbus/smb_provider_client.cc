@@ -77,11 +77,13 @@ class SmbProviderClientImpl : public SmbProviderClient {
              const std::string& workgroup,
              const std::string& username,
              base::ScopedFD password_fd,
+             bool skip_connect,
              MountCallback callback) override {
     smbprovider::MountOptionsProto options;
     options.set_path(share_path.value());
     options.set_workgroup(workgroup);
     options.set_username(username);
+    options.set_skip_connect(skip_connect);
 
     std::unique_ptr<smbprovider::MountConfigProto> config =
         CreateMountConfigProto(ntlm_enabled);
@@ -92,51 +94,6 @@ class SmbProviderClientImpl : public SmbProviderClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(options);
     writer.AppendFileDescriptor(password_fd.get());
-    CallMethod(&method_call, &SmbProviderClientImpl::HandleMountCallback,
-               &callback);
-  }
-
-  void Remount(const base::FilePath& share_path,
-               int32_t mount_id,
-               bool ntlm_enabled,
-               const std::string& workgroup,
-               const std::string& username,
-               base::ScopedFD password_fd,
-               StatusCallback callback) override {
-    smbprovider::RemountOptionsProto options;
-    options.set_path(share_path.value());
-    options.set_mount_id(mount_id);
-    options.set_workgroup(workgroup);
-    options.set_username(username);
-
-    std::unique_ptr<smbprovider::MountConfigProto> config =
-        CreateMountConfigProto(ntlm_enabled);
-    options.set_allocated_mount_config(config.release());
-
-    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
-                                 smbprovider::kRemountMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(options);
-    writer.AppendFileDescriptor(password_fd.get());
-
-    CallDefaultMethod(&method_call, &callback);
-  }
-
-  void Premount(const base::FilePath& share_path,
-                bool ntlm_enabled,
-                MountCallback callback) override {
-    smbprovider::PremountOptionsProto options;
-    options.set_path(share_path.value());
-
-    std::unique_ptr<smbprovider::MountConfigProto> config =
-        CreateMountConfigProto(ntlm_enabled);
-    options.set_allocated_mount_config(config.release());
-
-    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
-                                 smbprovider::kPremountMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(options);
-
     CallMethod(&method_call, &SmbProviderClientImpl::HandleMountCallback,
                &callback);
   }
@@ -752,8 +709,8 @@ SmbProviderClient::SmbProviderClient() = default;
 SmbProviderClient::~SmbProviderClient() = default;
 
 // static
-SmbProviderClient* SmbProviderClient::Create() {
-  return new SmbProviderClientImpl();
+std::unique_ptr<SmbProviderClient> SmbProviderClient::Create() {
+  return std::make_unique<SmbProviderClientImpl>();
 }
 
 }  // namespace chromeos

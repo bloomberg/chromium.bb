@@ -7,6 +7,7 @@ import json
 import os.path
 import sys
 import optparse
+
 _script_path = os.path.realpath(__file__)
 
 sys.path.insert(0, os.path.normpath(_script_path + "/../../json_comment_eater"))
@@ -18,6 +19,14 @@ finally:
 sys.path.insert(0, os.path.normpath(_script_path + "/../../json_to_struct"))
 try:
   import json_to_struct
+finally:
+  sys.path.pop(0)
+
+sys.path.insert(
+    0,
+    os.path.normpath(_script_path + "/../../../components/variations/service"))
+try:
+  import generate_ui_string_overrider
 finally:
   sys.path.pop(0)
 
@@ -61,6 +70,16 @@ def _LoadFieldTrialConfig(filename, platforms):
   """
   return _FieldTrialConfigToDescription(_Load(filename), platforms)
 
+def _ConvertOverrideUIStrings(override_ui_strings):
+  """Converts override_ui_strings to formatted dicts."""
+  overrides = []
+  for ui_string, override in override_ui_strings.iteritems():
+    overrides.append({
+        'name_hash': generate_ui_string_overrider.HashName(ui_string),
+        'value': override
+    })
+  return overrides
+
 def _CreateExperiment(experiment_data,
                       platforms,
                       is_low_end_device,
@@ -84,6 +103,10 @@ def _CreateExperiment(experiment_data,
   disable_features_data = experiment_data.get('disable_features')
   if disable_features_data:
     experiment['disable_features'] = disable_features_data
+  override_ui_strings = experiment_data.get('override_ui_strings')
+  if override_ui_strings:
+    experiment['override_ui_string'] = _ConvertOverrideUIStrings(
+        override_ui_strings)
   return experiment
 
 def _CreateTrial(study_name, experiment_configs, platforms):

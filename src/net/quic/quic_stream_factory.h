@@ -83,8 +83,8 @@ const int kIdleConnectionTimeoutSeconds = 30;
 // Sessions can migrate if they have been idle for less than this period.
 const int kDefaultIdleSessionMigrationPeriodSeconds = 30;
 
-// The maximum time allowed to have no retransmittable packets on the wire
-// (after sending the first retransmittable packet) if
+// The default maximum time allowed to have no retransmittable packets on the
+// wire (after sending the first retransmittable packet) if
 // |migrate_session_early_v2_| is true. PING frames will be sent as needed to
 // enforce this.
 const int64_t kDefaultRetransmittableOnWireTimeoutMillisecs = 100;
@@ -275,7 +275,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool headers_include_h2_stream_dependency,
       const quic::QuicTagVector& connection_options,
       const quic::QuicTagVector& client_connection_options,
-      bool enable_socket_recv_optimization);
+      bool enable_socket_recv_optimization,
+      int initial_rtt_for_handshake_milliseconds);
   ~QuicStreamFactory() override;
 
   // Returns true if there is an existing session for |session_key| or if the
@@ -627,6 +628,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // If set to true, the stream factory will create UDP Sockets with
   // experimental optimization enabled for receiving data.
   bool enable_socket_recv_optimization_;
+
+  // The initial rtt for handshake.
+  const int initial_rtt_for_handshake_milliseconds_;
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
 

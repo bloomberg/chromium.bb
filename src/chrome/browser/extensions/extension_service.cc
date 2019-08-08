@@ -64,7 +64,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -162,7 +162,8 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
   //
   // Long term, PWAs will be completely separate from extensions, and we can
   // remove this cross-link.
-  if (web_app::ExtensionIdsMap::HasExtensionId(profile_->GetPrefs(), id)) {
+  if (web_app::ExternallyInstalledWebAppPrefs::HasAppId(profile_->GetPrefs(),
+                                                        id)) {
     return;
   }
 
@@ -1121,10 +1122,12 @@ void ExtensionService::OnAllExternalProvidersReady() {
             : base::BindOnce(
                   [](base::RepeatingClosure callback) { callback.Run(); },
                   external_updates_finished_callback_);
-    // We have to mark policy-forced extensions with foreground fetch priority,
-    // otherwise their installation may be throttled by bandwidth limits.
-    // See https://crbug.com/904600.
-    if (pending_extension_manager_.HasPendingExtensionFromPolicy()) {
+    // We have to mark high-priority extensions (such as policy-forced
+    // extensions or external component extensions) with foreground fetch
+    // priority; otherwise their installation may be throttled by bandwidth
+    // limits.
+    // See https://crbug.com/904600 and https://crbug.com/965686.
+    if (pending_extension_manager_.HasHighPriorityPendingExtension()) {
       params.fetch_priority = ManifestFetchData::FOREGROUND;
     }
     updater()->CheckNow(std::move(params));

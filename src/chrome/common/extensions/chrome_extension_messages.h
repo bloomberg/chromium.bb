@@ -15,7 +15,7 @@
 
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/automation_internal.h"
+#include "extensions/common/api/automation_internal.h"
 #include "extensions/common/stack_frame.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"

@@ -27,7 +27,7 @@
 // https://html.spec.whatwg.org/C#canvasgradient
 
 [
-    Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
+    Exposed=(Window,Worker)
 ] interface CanvasGradient {
 
     [RaisesException] void addColorStop(double offset, DOMString color);

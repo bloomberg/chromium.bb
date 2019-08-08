@@ -129,8 +129,8 @@ FloatRect LayoutSVGInlineText::FloatLinesBoundingBox() const {
   return bounding_box;
 }
 
-LayoutRect LayoutSVGInlineText::LinesBoundingBox() const {
-  return EnclosingLayoutRect(FloatLinesBoundingBox());
+PhysicalRect LayoutSVGInlineText::PhysicalLinesBoundingBox() const {
+  return PhysicalRect::EnclosingRect(FloatLinesBoundingBox());
 }
 
 bool LayoutSVGInlineText::CharacterStartsNewTextChunk(int position) const {
@@ -419,7 +419,7 @@ void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
   scaled_font.Update(document.GetStyleEngine().GetFontSelector());
 }
 
-LayoutRect LayoutSVGInlineText::VisualRectInDocument(
+PhysicalRect LayoutSVGInlineText::VisualRectInDocument(
     VisualRectFlags flags) const {
   return Parent()->VisualRectInDocument(flags);
 }

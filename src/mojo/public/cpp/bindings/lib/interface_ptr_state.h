@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   }
   MultiplexRouter* router() const { return router_.get(); }
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
   void Swap(InterfacePtrStateBase* other);
   void Bind(ScopedMessagePipeHandle handle,
@@ -87,10 +87,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   bool InitializeEndpointClient(
       bool passes_associated_kinds,
       bool has_sync_methods,
-      std::unique_ptr<MessageReceiver> payload_validator);
+      std::unique_ptr<MessageReceiver> payload_validator,
+      const char* interface_name);
 
  private:
-  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
+  void OnQueryVersion(base::OnceCallback<void(uint32_t)> callback,
                       uint32_t version);
 
   scoped_refptr<MultiplexRouter> router_;
@@ -130,9 +131,13 @@ class InterfacePtrState : public InterfacePtrStateBase {
 #endif
   }
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
+  void QueryVersionDeprecated(const base::Callback<void(uint32_t)>& callback) {
+    QueryVersion(base::BindOnce(callback));
+  }
+
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback) {
     ConfigureProxyIfNecessary();
-    InterfacePtrStateBase::QueryVersion(callback);
+    InterfacePtrStateBase::QueryVersion(std::move(callback));
   }
 
   void RequireVersion(uint32_t version) {
@@ -228,7 +233,8 @@ class InterfacePtrState : public InterfacePtrStateBase {
 
     if (InitializeEndpointClient(
             Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_,
-            std::make_unique<typename Interface::ResponseValidator_>())) {
+            std::make_unique<typename Interface::ResponseValidator_>(),
+            Interface::Name_)) {
       router()->SetMasterInterfaceName(Interface::Name_);
       proxy_ = std::make_unique<Proxy>(endpoint_client());
     }

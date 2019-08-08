@@ -126,6 +126,23 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   void SetForce60HzRefreshRate();
 
+  class TestHooks {
+   public:
+    virtual ~TestHooks() = default;
+    virtual std::vector<float> GetSupportedRates() = 0;
+    virtual void SetPreferredRate(float refresh_rate) = 0;
+  };
+  void SetTestHooks(TestHooks* hooks);
+
+  class ScopedSelectionHandles {
+   public:
+    ScopedSelectionHandles(WindowAndroid* window);
+    ~ScopedSelectionHandles();
+
+   private:
+    WindowAndroid* window_;
+  };
+
  private:
   class WindowBeginFrameSource;
   class ScopedOnBeginFrame;
@@ -154,7 +171,10 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   float mouse_wheel_scroll_factor_;
   bool vsync_paused_ = false;
 
+  TestHooks* test_hooks_ = nullptr;
   bool force_60hz_refresh_rate_ = false;
+
+  int selection_handles_active_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };

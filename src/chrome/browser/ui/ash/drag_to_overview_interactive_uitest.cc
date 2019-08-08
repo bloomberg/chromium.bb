@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/ash/ash_test_util.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -30,14 +29,6 @@
 
 namespace {
 
-bool IsOverviewSelecting() {
-  ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  bool is_selecting = false;
-  waiter.IsOverviewSelecting(&is_selecting);
-  return is_selecting;
-}
-
 int GetDetachY(TabStrip* tab_strip) {
   return std::max(TabDragController::kTouchVerticalDetachMagnetism,
                   TabDragController::kVerticalDetachMagnetism) +
@@ -48,11 +39,9 @@ int GetDetachY(TabStrip* tab_strip) {
 // constructed.
 class NextFrameWaiter {
  public:
-  NextFrameWaiter() : shell_test_api_(test::GetShellTestApi()) {
-    shell_test_api_->WaitForNextFrame(base::BindOnce(
+  NextFrameWaiter() {
+    ash::ShellTestApi().WaitForNextFrame(base::BindOnce(
         &NextFrameWaiter::OnFramePresented, base::Unretained(this)));
-    // Flush to ensure the call has gone through.
-    shell_test_api_.FlushForTesting();
   }
   ~NextFrameWaiter() { EXPECT_TRUE(frame_presented_); }
 
@@ -72,7 +61,6 @@ class NextFrameWaiter {
       run_loop_->Quit();
   }
 
-  ash::mojom::ShellTestApiPtr shell_test_api_;
   bool frame_presented_ = false;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -92,7 +80,7 @@ class DragToOverviewTest : public UIPerformanceTest {
   }
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    test::SetAndWaitForTabletMode(true);
+    ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;
@@ -121,7 +109,7 @@ class DragToOverviewTest : public UIPerformanceTest {
     for (int i = 0; i < count; ++i) {
       drag_position += delta;
 
-      test::WaitForNoPointerHoldLock(/*wait_for_changes=*/false);
+      ash::ShellTestApi().WaitForNoPointerHoldLock();
       NextFrameWaiter waiter;
       ASSERT_TRUE(
           ui_controls::SendMouseMove(drag_position.x(), drag_position.y()));
@@ -163,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragWindow) {
       browser_screen_bounds.CenterPoint().x(),
       browser_screen_bounds.y() + browser_view->GetTabStripHeight() / 2);
 
-  test::WaitForNoPointerHoldLock();
+  ash::ShellTestApi().WaitForNoPointerHoldLock();
   ASSERT_TRUE(
       ui_test_utils::SendMouseMoveSync(start_position) &&
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::DOWN));
@@ -180,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragWindow) {
   constexpr int kSteps = 20;
   gfx::Vector2d delta(0, drag_length / kSteps);
   ContinueDrag(start_position, delta, kSteps);
-  EXPECT_TRUE(IsOverviewSelecting());
+  EXPECT_TRUE(ash::ShellTestApi().IsOverviewSelecting());
 }
 
 IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragTab) {
@@ -195,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragTab) {
   gfx::Point drag_position(ui_test_utils::GetCenterInScreenCoordinates(
       browser_view->tabstrip()->tab_at(0)));
 
-  test::WaitForNoPointerHoldLock();
+  ash::ShellTestApi().WaitForNoPointerHoldLock();
   ASSERT_TRUE(
       ui_test_utils::SendMouseMoveSync(drag_position) &&
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::DOWN));
@@ -210,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragTab) {
   gfx::Vector2d delta(0, drag_length / kSteps);
 
   // Drag tab far enough to detach.
-  test::WaitForNoPointerHoldLock();
+  ash::ShellTestApi().WaitForNoPointerHoldLock();
   drag_position.Offset(0, GetDetachY(browser_view->tabstrip()));
   ui_controls::SendMouseMoveNotifyWhenDone(
       drag_position.x(), drag_position.y(),

@@ -13,6 +13,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
@@ -22,6 +23,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -35,11 +37,8 @@ import org.chromium.ui.resources.ResourceManager;
  * Controls the Contextual Search Panel.
  */
 public class ContextualSearchPanel extends OverlayPanel {
-    /** When using the Generic UX we never show the Arrow Icon */
-    private static final float ARROW_ICON_OPACITY_GENERIC_UX = 0.f;
-
-    /** When using the Generic UX we always show the Close Icon */
-    private static final float CLOSE_ICON_OPACITY_GENERIC_UX = 1.f;
+    /** The number of times to allow scrolling.  After this limit we'll close. */
+    private static final int SCROLL_COUNT_LIMIT = 3;
 
     /** Used for logging state changes. */
     private final ContextualSearchPanelMetrics mPanelMetrics;
@@ -74,6 +73,9 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private ScrimParams mScrimParams;
 
+    /** Number of times the panel has been scrolled already. */
+    private int mScrollCount;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -93,10 +95,17 @@ public class ContextualSearchPanel extends OverlayPanel {
                 ApiCompatibilityUtils
                         .getDrawable(mContext.getResources(), R.drawable.modern_toolbar_shadow)
                         .getIntrinsicHeight();
-        mEndButtonWidthDp = mPxToDp
-                * mContext.getResources().getDimensionPixelSize(
-                          R.dimen.contextual_search_end_button_width);
+        // We may have 1 or 2 buttons depending on old/new layout.
+        int endButtonsWidthDimension =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? R.dimen.contextual_search_end_buttons_width
+                : R.dimen.contextual_search_end_button_width;
+        mEndButtonWidthDp =
+                mPxToDp * mContext.getResources().getDimensionPixelSize(endButtonsWidthDimension);
     }
+
+    @Override
+    protected void initializeUiState() {}
 
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
@@ -238,6 +247,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         setProgressBarCompletion(0);
         setProgressBarVisible(false);
         getImageControl().hideCustomImage(false);
+        mScrollCount = 0;
 
         super.onClosed(reason);
 
@@ -277,7 +287,10 @@ public class ContextualSearchPanel extends OverlayPanel {
         } else if (isExpanded() || isMaximized()) {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (canPromoteToNewTab()) {
+            } else if (canPromoteToNewTab()
+                    && (!ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                            || ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                    && isCoordinateInsideOpenTabButton(x))) {
                 mManagementDelegate.promoteToTab();
             }
         }
@@ -442,6 +455,28 @@ public class ContextualSearchPanel extends OverlayPanel {
     @VisibleForTesting
     public boolean isBarBannerVisible() {
         return getBarBannerControl().isVisible();
+    }
+
+    /**
+     * Makes the panel not visible by either hiding it or closing it completely.
+     * Decides which method is most appropriate, and then makes it not visible based on that
+     * decision.
+     * @param reason The reason we want the panel to not be visible.
+     */
+    public void makePanelNotVisible(@StateChangeReason int reason) {
+        if (++mScrollCount >= SCROLL_COUNT_LIMIT) {
+            closePanel(StateChangeReason.BASE_PAGE_SCROLL, true);
+        } else if (isHideDuringScrollEnabled()) {
+            hidePanel(reason);
+        }
+    }
+
+    /** @return whether hiding during scrolling is enabled for the Longpress-Resolve feature. */
+    private boolean isHideDuringScrollEnabled() {
+        return ContextualSearchFieldTrial.LONGPRESS_RESOLVE_HIDE_ON_SCROLL.equals(
+                ChromeFeatureList.getFieldTrialParamByFeature(
+                        ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
+                        ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
     }
 
     /**
@@ -912,7 +947,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     /**
      * @return Whether the panel content can be displayed in a new tab.
      */
-    boolean canPromoteToNewTab() {
+    public boolean canPromoteToNewTab() {
         return !mActivity.isCustomTab() && canDisplayContentInPanel();
     }
 

@@ -14,6 +14,7 @@
 
 #include "dawn_native/metal/BackendMTL.h"
 
+#include "dawn_native/Instance.h"
 #include "dawn_native/MetalBackend.h"
 #include "dawn_native/metal/DeviceMTL.h"
 
@@ -142,8 +143,8 @@ namespace dawn_native { namespace metal {
         }
 
       private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl() override {
-            return {new Device(this, mDevice)};
+        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
+            return {new Device(this, mDevice, descriptor)};
         }
 
         id<MTLDevice> mDevice = nil;
@@ -152,6 +153,9 @@ namespace dawn_native { namespace metal {
     // Implementation of the Metal backend's BackendConnection
 
     Backend::Backend(InstanceBase* instance) : BackendConnection(instance, BackendType::Metal) {
+        if (GetInstance()->IsBackendValidationEnabled()) {
+            setenv("METAL_DEVICE_WRAPPER_TYPE", "1", 1);
+        }
     }
 
     std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {

@@ -30,15 +30,15 @@ class NET_EXPORT_PRIVATE URLSecurityManager {
   // "delegate whitelist" that is the whitelist of servers that are allowed to
   // have delegated Kerberos tickets.
   //
-  // On creation both whitelists are NULL.
+  // On creation both whitelists are empty.
   //
-  // If the default whitelist is NULL and the platform is Windows, it indicates
+  // If the default whitelist is empty and the platform is Windows, it indicates
   // that security zone mapping should be used to determine whether default
-  // credentials should be used. If the default whitelist is NULL and the
+  // credentials should be used. If the default whitelist is empty and the
   // platform is non-Windows, it indicates that no servers should be
   // whitelisted.
   //
-  // If the delegate whitelist is NULL no servers can have delegated Kerberos
+  // If the delegate whitelist is empty no servers can have delegated Kerberos
   // tickets.
   //
   static std::unique_ptr<URLSecurityManager> Create();

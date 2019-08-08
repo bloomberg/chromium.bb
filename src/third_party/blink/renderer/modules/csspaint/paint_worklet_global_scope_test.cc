@@ -36,7 +36,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
 
     dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
     proxy_client_ =
-        MakeGarbageCollected<PaintWorkletProxyClient>(1, dispatcher_);
+        MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, dispatcher_);
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
@@ -54,7 +54,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             callback, CrossThreadUnretained(this),
             CrossThreadUnretained(worklet.get()),
             CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),

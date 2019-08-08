@@ -5,6 +5,7 @@
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
@@ -16,9 +17,6 @@
 namespace media {
 
 namespace {
-
-// Does nothing but keeping |frame| alive.
-void KeepVideoFrameAlive(const scoped_refptr<VideoFrame>& frame) {}
 
 // File-static mojom::VideoEncodeAcceleratorClient implementation to trampoline
 // method calls to its |client_|. Note that this class is thread hostile when
@@ -117,7 +115,7 @@ bool MojoVideoEncodeAccelerator::Initialize(const Config& config,
   return result;
 }
 
-void MojoVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                         bool force_keyframe) {
   DVLOG(2) << __func__ << " tstamp=" << frame->timestamp();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -157,23 +155,22 @@ void MojoVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
   // this gets destroyed and probably recycle its shared_memory_handle(): keep
   // the former alive until the remote end is actually finished.
   DCHECK(vea_.is_bound());
-  vea_->Encode(mojo_frame, force_keyframe,
-               base::Bind(&KeepVideoFrameAlive, frame));
+  vea_->Encode(
+      std::move(mojo_frame), force_keyframe,
+      base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
+                     std::move(frame)));
 }
 
 void MojoVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
+    BitstreamBuffer buffer) {
   DVLOG(2) << __func__ << " buffer.id()= " << buffer.id()
            << " buffer.size()= " << buffer.size() << "B";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(buffer.handle().IsValid());
+  DCHECK(buffer.region().IsValid());
 
-  // TODO(https://crbug.com/793446): Only wrap read-only handles here and change
-  // the protection status to kReadOnly.
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      buffer.handle().Duplicate(), buffer.size(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+  auto buffer_handle =
+      mojo::WrapPlatformSharedMemoryRegion(buffer.TakeRegion());
 
   vea_->UseOutputBitstreamBuffer(buffer.id(), std::move(buffer_handle));
 }

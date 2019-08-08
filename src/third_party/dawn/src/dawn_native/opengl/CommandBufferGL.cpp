@@ -105,6 +105,30 @@ namespace dawn_native { namespace opengl {
             }
         }
 
+        bool VertexFormatIsInt(dawn::VertexFormat format) {
+            switch (format) {
+                case dawn::VertexFormat::UChar2:
+                case dawn::VertexFormat::UChar4:
+                case dawn::VertexFormat::Char2:
+                case dawn::VertexFormat::Char4:
+                case dawn::VertexFormat::UShort2:
+                case dawn::VertexFormat::UShort4:
+                case dawn::VertexFormat::Short2:
+                case dawn::VertexFormat::Short4:
+                case dawn::VertexFormat::UInt:
+                case dawn::VertexFormat::UInt2:
+                case dawn::VertexFormat::UInt3:
+                case dawn::VertexFormat::UInt4:
+                case dawn::VertexFormat::Int:
+                case dawn::VertexFormat::Int2:
+                case dawn::VertexFormat::Int3:
+                case dawn::VertexFormat::Int4:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         GLint GetStencilMaskFromStencilFormat(dawn::TextureFormat depthStencilFormat) {
             switch (depthStencilFormat) {
                 case dawn::TextureFormat::D32FloatS8Uint:
@@ -186,8 +210,8 @@ namespace dawn_native { namespace opengl {
         };
 
         // Vertex buffers and index buffers are implemented as part of an OpenGL VAO that
-        // corresponds to an InputState. On the contrary in Dawn they are part of the global state.
-        // This means that we have to re-apply these buffers on an InputState change.
+        // corresponds to an VertexInput. On the contrary in Dawn they are part of the global state.
+        // This means that we have to re-apply these buffers on an VertexInput change.
         class InputBufferTracker {
           public:
             void OnSetIndexBuffer(BufferBase* buffer) {
@@ -206,7 +230,7 @@ namespace dawn_native { namespace opengl {
                 }
 
                 // Use 64 bit masks and make sure there are no shift UB
-                static_assert(kMaxVertexInputs <= 8 * sizeof(unsigned long long) - 1, "");
+                static_assert(kMaxVertexBuffers <= 8 * sizeof(unsigned long long) - 1, "");
                 mDirtyVertexBuffers |= ((1ull << count) - 1ull) << startSlot;
             }
 
@@ -242,10 +266,16 @@ namespace dawn_native { namespace opengl {
 
                         GLboolean normalized = VertexFormatIsNormalized(attribute.format);
                         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-                        glVertexAttribPointer(
-                            location, components, formatType, normalized, input.stride,
-                            reinterpret_cast<void*>(
-                                static_cast<intptr_t>(offset + attribute.offset)));
+                        if (VertexFormatIsInt(attribute.format)) {
+                            glVertexAttribIPointer(location, components, formatType, input.stride,
+                                                   reinterpret_cast<void*>(static_cast<intptr_t>(
+                                                       offset + attribute.offset)));
+                        } else {
+                            glVertexAttribPointer(
+                                location, components, formatType, normalized, input.stride,
+                                reinterpret_cast<void*>(
+                                    static_cast<intptr_t>(offset + attribute.offset)));
+                        }
                     }
                 }
 
@@ -256,9 +286,9 @@ namespace dawn_native { namespace opengl {
             bool mIndexBufferDirty = false;
             Buffer* mIndexBuffer = nullptr;
 
-            std::bitset<kMaxVertexInputs> mDirtyVertexBuffers;
-            std::array<Buffer*, kMaxVertexInputs> mVertexBuffers;
-            std::array<uint64_t, kMaxVertexInputs> mVertexBufferOffsets;
+            std::bitset<kMaxVertexBuffers> mDirtyVertexBuffers;
+            std::array<Buffer*, kMaxVertexBuffers> mVertexBuffers;
+            std::array<uint64_t, kMaxVertexBuffers> mVertexBufferOffsets;
 
             RenderPipelineBase* mLastPipeline = nullptr;
         };
@@ -650,6 +680,13 @@ namespace dawn_native { namespace opengl {
             }
         }
 
+        // Set defaults for dynamic state before executing clears and commands.
+        PersistentPipelineState persistentPipelineState;
+        persistentPipelineState.SetDefaultState();
+        glBlendColor(0, 0, 0, 0);
+        glViewport(0, 0, renderPass->width, renderPass->height);
+        glScissor(0, 0, renderPass->width, renderPass->height);
+
         // Clear framebuffer attachments as needed
         {
             for (uint32_t i : IterateBitSet(renderPass->colorAttachmentsSet)) {
@@ -695,16 +732,8 @@ namespace dawn_native { namespace opengl {
         RenderPipeline* lastPipeline = nullptr;
         uint64_t indexBufferBaseOffset = 0;
 
-        PersistentPipelineState persistentPipelineState;
-
         PushConstantTracker pushConstants;
         InputBufferTracker inputBuffers;
-
-        // Set defaults for dynamic state
-        persistentPipelineState.SetDefaultState();
-        glBlendColor(0, 0, 0, 0);
-        glViewport(0, 0, renderPass->width, renderPass->height);
-        glScissor(0, 0, renderPass->width, renderPass->height);
 
         Command type;
         while (mCommands.NextCommandId(&type)) {
@@ -743,7 +772,7 @@ namespace dawn_native { namespace opengl {
                     inputBuffers.Apply();
 
                     dawn::IndexFormat indexFormat =
-                        lastPipeline->GetInputStateDescriptor()->indexFormat;
+                        lastPipeline->GetVertexInputDescriptor()->indexFormat;
                     size_t formatSize = IndexFormatSize(indexFormat);
                     GLenum formatType = IndexFormatType(indexFormat);
 

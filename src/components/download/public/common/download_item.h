@@ -26,12 +26,14 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -281,6 +283,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Referrer URL for top level frame.
   virtual const GURL& GetTabReferrerUrl() const = 0;
+
+  // Origin of the original originator of this download, before redirects, etc.
+  virtual const base::Optional<url::Origin>& GetRequestInitiator() const = 0;
 
   // For downloads initiated via <a download>, this is the suggested download
   // filename from the download attribute.

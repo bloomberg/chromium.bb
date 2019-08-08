@@ -1357,7 +1357,7 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
 }
 
 TEST_F(MainThreadEventQueueTest, PointerEventsCoalescing) {
-  queue_->HasPointerRawMoveEventHandlers(true);
+  queue_->HasPointerRawUpdateEventHandlers(true);
   WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
       WebInputEvent::kMouseMove, 10, 10, 0);
   SyntheticWebTouchEvent touch_move;
@@ -1385,7 +1385,7 @@ TEST_F(MainThreadEventQueueTest, PointerEventsCoalescing) {
   EXPECT_FALSE(needs_main_frame_);
 }
 
-TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
+TEST_F(MainThreadEventQueueTest, PointerRawUpdateEvents) {
   WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
       WebInputEvent::kMouseMove, 10, 10, 0);
 
@@ -1402,14 +1402,14 @@ TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 
-  queue_->HasPointerRawMoveEventHandlers(true);
+  queue_->HasPointerRawUpdateEventHandlers(true);
   HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   EXPECT_EQ(2u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 
-  queue_->HasPointerRawMoveEventHandlers(false);
+  queue_->HasPointerRawUpdateEventHandlers(false);
   SyntheticWebTouchEvent touch_move;
   touch_move.PressPoint(10, 10);
   touch_move.MovePoint(0, 50, 50);
@@ -1419,7 +1419,7 @@ TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 
-  queue_->HasPointerRawMoveEventHandlers(true);
+  queue_->HasPointerRawUpdateEventHandlers(true);
   HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   EXPECT_EQ(2u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();

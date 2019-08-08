@@ -43,7 +43,6 @@ ServiceWorkerRequestHandler::CreateForNavigation(
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
     const NavigationRequestInfo& request_info,
-    base::RepeatingCallback<WebContents*()> web_contents_getter,
     base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host) {
   DCHECK(navigation_handle_core);
 
@@ -65,26 +64,22 @@ ServiceWorkerRequestHandler::CreateForNavigation(
   // Initialize the SWProviderHost.
   *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
       context->AsWeakPtr(), request_info.are_ancestors_secure,
-      std::move(web_contents_getter), &provider_info);
+      request_info.frame_tree_node_id, &provider_info);
   navigation_handle_core->OnCreatedProviderHost(*out_provider_host,
                                                 std::move(provider_info));
 
   const ResourceType resource_type = request_info.is_main_frame
                                          ? ResourceType::kMainFrame
                                          : ResourceType::kSubFrame;
-  const network::mojom::RequestContextFrameType frame_type =
-      request_info.is_main_frame
-          ? network::mojom::RequestContextFrameType::kTopLevel
-          : network::mojom::RequestContextFrameType::kNested;
   return (*out_provider_host)
-      ->CreateLoaderInterceptor(
-          network::mojom::FetchRequestMode::kNavigate,
-          network::mojom::FetchCredentialsMode::kInclude,
-          network::mojom::FetchRedirectMode::kManual,
-          std::string() /* integrity */, false /* keepalive */, resource_type,
-          request_info.begin_params->request_context_type, frame_type,
-          request_info.common_params.post_data,
-          request_info.begin_params->skip_service_worker);
+      ->CreateLoaderInterceptor(network::mojom::FetchRequestMode::kNavigate,
+                                network::mojom::FetchCredentialsMode::kInclude,
+                                network::mojom::FetchRedirectMode::kManual,
+                                std::string() /* integrity */,
+                                false /* keepalive */, resource_type,
+                                request_info.begin_params->request_context_type,
+                                request_info.common_params.post_data,
+                                request_info.begin_params->skip_service_worker);
 }
 
 // static
@@ -115,8 +110,7 @@ ServiceWorkerRequestHandler::CreateForWorker(
       resource_request.resource_type == static_cast<int>(ResourceType::kWorker)
           ? blink::mojom::RequestContextType::WORKER
           : blink::mojom::RequestContextType::SHARED_WORKER,
-      resource_request.fetch_frame_type, resource_request.request_body,
-      resource_request.skip_service_worker);
+      resource_request.request_body, resource_request.skip_service_worker);
 }
 
 }  // namespace content

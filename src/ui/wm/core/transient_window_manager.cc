@@ -124,7 +124,7 @@ TransientWindowManager::TransientWindowManager(Window* window)
 
 void TransientWindowManager::RestackTransientDescendants() {
   Window* parent = window_->parent();
-  if (!parent || !parent->ShouldRestackTransientChildren())
+  if (!parent)
     return;
 
   // Stack any transient children that share the same parent to be in front of

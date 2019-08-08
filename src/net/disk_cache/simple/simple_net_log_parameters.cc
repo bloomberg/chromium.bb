@@ -18,24 +18,24 @@
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogSimpleEntryConstructionCallback(
+base::Value NetLogSimpleEntryConstructionCallback(
     const disk_cache::SimpleEntryImpl* entry,
     net::NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("entry_hash",
-                  base::StringPrintf("%#016" PRIx64, entry->entry_hash()));
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("entry_hash",
+                    base::StringPrintf("%#016" PRIx64, entry->entry_hash()));
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSimpleEntryCreationCallback(
+base::Value NetLogSimpleEntryCreationCallback(
     const disk_cache::SimpleEntryImpl* entry,
     int net_error,
     net::NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("net_error", net_error);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("net_error", net_error);
   if (net_error == net::OK)
-    dict->SetString("key", entry->key());
-  return std::move(dict);
+    dict.SetStringKey("key", entry->key());
+  return dict;
 }
 
 }  // namespace

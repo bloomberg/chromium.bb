@@ -17,6 +17,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+
+#include <limits>
+#include <type_traits>
 
 // The following are not valid for 0
 uint32_t ScanForward(uint32_t bits);
@@ -30,12 +34,22 @@ uint32_t Align(uint32_t value, size_t alignment);
 
 template <typename T>
 T* AlignPtr(T* ptr, size_t alignment) {
-    return reinterpret_cast<T*>(AlignVoidPtr(ptr, alignment));
+    return static_cast<T*>(AlignVoidPtr(ptr, alignment));
 }
 
 template <typename T>
 const T* AlignPtr(const T* ptr, size_t alignment) {
-    return reinterpret_cast<const T*>(AlignVoidPtr(const_cast<T*>(ptr), alignment));
+    return static_cast<const T*>(AlignVoidPtr(const_cast<T*>(ptr), alignment));
 }
+
+template <typename destType, typename sourceType>
+destType BitCast(const sourceType& source) {
+    static_assert(sizeof(destType) == sizeof(sourceType), "BitCast: cannot lose precision.");
+    destType output;
+    std::memcpy(&output, &source, sizeof(destType));
+    return output;
+}
+
+uint16_t Float32ToFloat16(float fp32);
 
 #endif  // COMMON_MATH_H_

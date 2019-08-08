@@ -22,11 +22,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -51,9 +51,6 @@
 
 namespace autofill {
 namespace {
-
-// The period after which autocomplete entries should expire in days.
-const int64_t kExpirationPeriodInDays = 60;
 
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.
@@ -699,14 +696,8 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
-  int64_t period = kExpirationPeriodInDays;
-  auto change_type = AutofillChange::REMOVE;
-
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
-    period = kAutocompleteRetentionPolicyPeriodInDays;
-    change_type = AutofillChange::EXPIRE;
-  }
+  const int64_t period = kAutocompleteRetentionPolicyPeriodInDays;
+  const auto change_type = AutofillChange::EXPIRE;
 
   base::Time expiration_time =
       AutofillClock::Now() - base::TimeDelta::FromDays(period);

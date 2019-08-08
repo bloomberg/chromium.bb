@@ -15,16 +15,20 @@ import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
@@ -113,8 +117,6 @@ public class ContextualSearchManager
     // How long to wait for a Tap to be converted to a Long-press gesture when the user taps on
     // an existing tap-selection.
     private static final int TAP_ON_TAP_SELECTION_DELAY_MS = 100;
-
-    private static final int NANOSECONDS_IN_A_MILLISECOND = 1000000;
 
     private final ObserverList<ContextualSearchObserver> mObservers =
             new ObserverList<ContextualSearchObserver>();
@@ -461,13 +463,14 @@ public class ContextualSearchManager
         mReceivedContextualCardsEntityData = false;
 
         String selection = mSelectionController.getSelectedText();
-        boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
-        if (isTap) {
+        boolean canResolve = mSelectionController.getSelectionType() == SelectionType.TAP
+                || mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS;
+        if (canResolve) {
             // If the user action was not a long-press, we should not delay before loading content.
             mShouldLoadDelayedSearch = false;
         }
-        if (isTap && mPolicy.shouldPreviousTapResolve()) {
-            // For a resolving Tap we'll figure out translation need after the Resolve.
+        if (canResolve && mPolicy.shouldPreviousGestureResolve()) {
+            // For a resolving gestures we'll figure out translation need after the Resolve.
         } else if (!TextUtils.isEmpty(selection)) {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult();
             mSearchRequest = new ContextualSearchRequest(selection, shouldPrefetch);
@@ -478,7 +481,7 @@ public class ContextualSearchManager
 
             // Record metrics for manual refinement of the search term from long-press.
             // TODO(donnd): remove this section once metrics have been analyzed.
-            if (!isTap && mSearchPanel.isPeeking()) {
+            if (!canResolve && mSearchPanel.isPeeking()) {
                 boolean isSingleWord =
                         !CONTAINS_WHITESPACE_PATTERN.matcher(selection.trim()).find();
                 RecordUserAction.record(isSingleWord ? "ContextualSearch.ManualRefineSingleWord"
@@ -520,9 +523,10 @@ public class ContextualSearchManager
     }
 
     @Override
-    public void startSearchTermResolutionRequest(String selection) {
+    public void startSearchTermResolutionRequest(String selection, boolean isRestrictedResolve) {
         WebContents baseWebContents = getBaseWebContents();
         if (baseWebContents != null && mContext != null && mContext.canResolve()) {
+            if (isRestrictedResolve) mContext.setRestrictedResolve();
             nativeStartSearchTermResolutionRequest(
                     mNativeContextualSearchManagerPtr, mContext, getBaseWebContents());
         } else {
@@ -682,11 +686,12 @@ public class ContextualSearchManager
             @QuickActionCategory final int quickActionCategory, final long loggedEventId,
             final String searchUrlFull, final String searchUrlPreload,
             @CardTag final int cocaCardTag) {
-        mNetworkCommunicator.handleSearchTermResolutionResponse(new ResolvedSearchTerm(
-                isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm, mid,
-                doPreventPreload, selectionStartAdjust, selectionEndAdjust, contextLanguage,
-                thumbnailUrl, caption, quickActionUri, quickActionCategory, loggedEventId,
-                searchUrlFull, searchUrlPreload, cocaCardTag));
+        ResolvedSearchTerm resolvedSearchTerm = new ResolvedSearchTerm(isNetworkUnavailable,
+                responseCode, searchTerm, displayText, alternateTerm, mid, doPreventPreload,
+                selectionStartAdjust, selectionEndAdjust, contextLanguage, thumbnailUrl, caption,
+                quickActionUri, quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload,
+                cocaCardTag);
+        mNetworkCommunicator.handleSearchTermResolutionResponse(resolvedSearchTerm);
     }
 
     @Override
@@ -783,7 +788,9 @@ public class ContextualSearchManager
         int selectionStartAdjust = resolvedSearchTerm.selectionStartAdjust();
         int selectionEndAdjust = resolvedSearchTerm.selectionEndAdjust();
         if ((selectionStartAdjust != 0 || selectionEndAdjust != 0)
-                && mSelectionController.getSelectionType() == SelectionType.TAP) {
+                && (mSelectionController.getSelectionType() == SelectionType.TAP
+                        || mSelectionController.getSelectionType()
+                                == SelectionType.RESOLVING_LONG_PRESS)) {
             String originalSelection = mContext == null ? null : mContext.getInitialSelectedWord();
             String currentSelection = mSelectionController.getSelectedText();
             if (currentSelection != null) currentSelection = currentSelection.trim();
@@ -948,7 +955,8 @@ public class ContextualSearchManager
         assert surroundingText != null;
         int startOffset = mContext.getSelectionStartOffset();
         int endOffset = mContext.getSelectionEndOffset();
-        if (!ContextualSearchFieldTrial.isPageContentNotificationDisabled()) {
+        if (!ContextualSearchFieldTrial.getSwitch(
+                    ContextualSearchSwitch.IS_PAGE_CONTENT_NOTIFICATION_DISABLED)) {
             GSAContextDisplaySelection selection = new GSAContextDisplaySelection(
                     mContext.getEncoding(), surroundingText, startOffset, endOffset);
             notifyShowContextualSearch(selection);
@@ -1018,7 +1026,8 @@ public class ContextualSearchManager
         public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
             assert mSearchPanel != null;
             if (isExternalUrl) {
-                if (!ContextualSearchFieldTrial.isAmpAsSeparateTabDisabled()
+                if (!ContextualSearchFieldTrial.getSwitch(
+                            ContextualSearchSwitch.IS_AMP_AS_SEPARATE_TAB_DISABLED)
                         && mPolicy.isAmpUrl(url) && mSearchPanel.didTouchContent()) {
                     onExternalNavigation(url);
                 }
@@ -1028,7 +1037,7 @@ public class ContextualSearchManager
 
                 // Record metrics for when the prefetched results became viewable.
                 if (mSearchRequest != null && mSearchRequest.wasPrefetch()) {
-                    boolean didResolve = mPolicy.shouldPreviousTapResolve();
+                    boolean didResolve = mPolicy.shouldPreviousGestureResolve();
                     mSearchPanel.onPanelNavigatedToPrefetchedSearch(didResolve);
                 }
             }
@@ -1176,9 +1185,7 @@ public class ContextualSearchManager
 
     @Override
     public void logCurrentState() {
-        if (ContextualSearchFieldTrial.isEnabled()) {
-            mPolicy.logCurrentState();
-        }
+        if (ContextualSearchFieldTrial.isEnabled()) mPolicy.logCurrentState();
     }
 
     /** @return Whether the given HTTP result code represents a failure or not. */
@@ -1385,10 +1392,22 @@ public class ContextualSearchManager
     }
 
     @Override
-    public void handleScroll() {
+    public void handleScrollStart() {
         if (mIsAccessibilityModeEnabled) return;
 
-        hideContextualSearch(StateChangeReason.BASE_PAGE_SCROLL);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
+                || mSelectionController.getSelectionType() == SelectionType.TAP) {
+            hideContextualSearch(StateChangeReason.BASE_PAGE_SCROLL);
+        } else if (mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
+            mSearchPanel.makePanelNotVisible(StateChangeReason.BASE_PAGE_SCROLL);
+        }
+    }
+
+    @Override
+    public void handleScrollEnd() {
+        if (mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
+            mSearchPanel.showPanel(StateChangeReason.BASE_PAGE_SCROLL);
+        }
     }
 
     @Override
@@ -1412,9 +1431,12 @@ public class ContextualSearchManager
         // If there's a wait-after-tap experiment then we may want to delay a bit longer for
         // the user to take an action like scrolling that will reset our internal state.
         long delayBeforeFinishingWorkMs = 0;
-        if (ContextualSearchFieldTrial.getWaitAfterTapDelayMs() > 0 && tapTimeNanoseconds > 0) {
-            delayBeforeFinishingWorkMs = ContextualSearchFieldTrial.getWaitAfterTapDelayMs()
-                    - (System.nanoTime() - tapTimeNanoseconds) / NANOSECONDS_IN_A_MILLISECOND;
+        if (ContextualSearchFieldTrial.getValue(ContextualSearchSetting.WAIT_AFTER_TAP_DELAY_MS) > 0
+                && tapTimeNanoseconds > 0) {
+            delayBeforeFinishingWorkMs = ContextualSearchFieldTrial.getValue(
+                                                 ContextualSearchSetting.WAIT_AFTER_TAP_DELAY_MS)
+                    - (System.nanoTime() - tapTimeNanoseconds)
+                            / TimeUtils.NANOSECONDS_PER_MILLISECOND;
         }
 
         // Finish work on the current state, either immediately or with a delay.
@@ -1457,6 +1479,13 @@ public class ContextualSearchManager
         mInternalStateController.enter(InternalState.TAP_RECOGNIZED);
     }
 
+    @Override
+    public void handleValidResolvingLongpress() {
+        if (mIsAccessibilityModeEnabled || !mPolicy.canResolveLongpress()) return;
+
+        mInternalStateController.enter(InternalState.RESOLVING_LONG_PRESS_RECOGNIZED);
+    }
+
     /**
      * Notifies this class that the selection has changed. This may be due to the user moving the
      * selection handles after a long-press, or after a Tap gesture has called selectWordAroundCaret
@@ -1479,6 +1508,8 @@ public class ContextualSearchManager
 
                 if (type == SelectionType.LONG_PRESS) {
                     mInternalStateController.enter(InternalState.LONG_PRESS_RECOGNIZED);
+                } else if (type == SelectionType.RESOLVING_LONG_PRESS) {
+                    mInternalStateController.enter(InternalState.RESOLVING_LONG_PRESS_RECOGNIZED);
                 }
             } else {
                 hideContextualSearch(StateChangeReason.INVALID_SELECTION);
@@ -1576,8 +1607,11 @@ public class ContextualSearchManager
                     }
                 };
 
-                boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
-                if (!isTap && mCouldSmartSelectionBeActive && mContext != null) {
+                boolean isResolvingGesture =
+                        mSelectionController.getSelectionType() == SelectionType.TAP
+                        || mSelectionController.getSelectionType()
+                                == SelectionType.RESOLVING_LONG_PRESS;
+                if (!isResolvingGesture && mCouldSmartSelectionBeActive && mContext != null) {
                     // If Smart Selection might be active we need to work around a race
                     // condition gathering surrounding text.  See https://crbug.com/773330.
                     // Instead we just return the selection which is good enough for the assistant.
@@ -1590,7 +1624,7 @@ public class ContextualSearchManager
                     return;
                 }
 
-                if (isTap && mPolicy.shouldPreviousTapResolve()) {
+                if (isResolvingGesture && mPolicy.shouldPreviousGestureResolve()) {
                     ContextualSearchInteractionPersister.PersistedInteraction interaction =
                             mInteractionRecorder.getInteractionPersister()
                                     .getAndClearPersistedInteraction();
@@ -1701,7 +1735,10 @@ public class ContextualSearchManager
 
                 String selection = mSelectionController.getSelectedText();
                 assert !TextUtils.isEmpty(selection);
-                mNetworkCommunicator.startSearchTermResolutionRequest(selection);
+                boolean isRestrictedResolve = mPolicy.isPrivacyAggressiveResolveEnabled()
+                        || mSelectionController.isAdjustedSelection();
+                mNetworkCommunicator.startSearchTermResolutionRequest(
+                        selection, isRestrictedResolve);
                 // If the we were unable to start the resolve, we've hidden the UI and set the
                 // context to null.
                 if (mContext == null || mSearchPanel == null) return;
@@ -1712,11 +1749,13 @@ public class ContextualSearchManager
             }
 
             @Override
-            public void showContextualSearchTapUi() {
-                mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_FULL_TAP_UI);
-                showContextualSearch(StateChangeReason.TEXT_SELECT_TAP);
-                ContextualSearchUma.logRankerFeaturesAvailable(true);
-                mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_FULL_TAP_UI);
+            public void showContextualSearchResolvingUi() {
+                mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_RESOLVING_UI);
+                boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
+                showContextualSearch(isTap ? StateChangeReason.TEXT_SELECT_TAP
+                                           : StateChangeReason.TEXT_SELECT_LONG_PRESS);
+                if (isTap) ContextualSearchUma.logRankerFeaturesAvailable(true);
+                mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_RESOLVING_UI);
             }
 
             @Override

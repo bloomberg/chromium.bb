@@ -110,15 +110,6 @@
       "chrome://settings/*"
     ]
   }],
-  "automationInternal": {
-    "internal": true,
-    "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
-  },
-  "automation": {
-    "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
-  },
   "autotestPrivate": {
     "dependencies": ["permission:autotestPrivate"],
     "contexts": ["blessed_extension"]
@@ -250,7 +241,8 @@
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://password-change/*",
-      "chrome://assistant-optin/*"
+      "chrome://assistant-optin/*",
+      "chrome://add-supervision/*"
     ]
   }],
   "cloudPrintPrivate": {
@@ -476,10 +468,6 @@
     "dependencies": ["permission:fileSystemProvider"],
     "contexts": ["blessed_extension"]
   },
-  "firstRunPrivate": {
-    "dependencies": ["permission:firstRunPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "fontSettings": {
     "dependencies": ["permission:fontSettings"],
     "contexts": ["blessed_extension"]
@@ -551,6 +539,10 @@
   }],
   "launcherSearchProvider": {
     "dependencies": ["permission:launcherSearchProvider"],
+    "contexts": ["blessed_extension"]
+  },
+  "loginScreenUi": {
+    "dependencies": ["permission:loginScreenUi"],
     "contexts": ["blessed_extension"]
   },
   "webcamPrivate": {

@@ -28,8 +28,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
@@ -41,6 +39,8 @@
 #include "printing/print_job_constants.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -316,7 +316,7 @@ std::unique_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
 }
 
 std::string RefCountedMemoryToString(
-    const scoped_refptr<base::RefCountedMemory>& memory) {
+    scoped_refptr<base::RefCountedMemory> memory) {
   return std::string(memory->front_as<char>(), memory->size());
 }
 

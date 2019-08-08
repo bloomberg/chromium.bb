@@ -40,6 +40,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   void Hide() override;
 
   // views::BubbleDialogDelegateView:
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateFootnoteView() override;
   bool Accept() override;
   bool Cancel() override;
@@ -85,9 +86,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // Called by sub-classes to initialize |footnote_view_|.
   virtual void InitFootnoteView(views::View* footnote_view);
 
-  SaveCardBubbleController* controller() {
-    return controller_;
-  }  // Weak reference.
+  SaveCardBubbleController* controller() const { return controller_; }
 
   // Attributes IDs to the DialogClientView and its buttons.
   void AssignIdsToDialogClientView();

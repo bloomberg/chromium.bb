@@ -1,7 +1,7 @@
 rootWebArea
-++genericContainer editable multiline richlyEditable value='A contenteditable with a link and an  and a .<newline><newline>Always expose editable tables as tables.<newline>Editable list item.' editableRoot=true
+++genericContainer editable multiline richlyEditable value='A contenteditable with a link and an  and a .<newline><newline>Always expose editable tables as tables.<newline>Editable list item.' editableRoot=true TreeData.textSelStartOffset=0 TreeData.textSelEndOffset=3
 ++++paragraph editable richlyEditable
-++++++staticText editable richlyEditable name='A contenteditable with a ' TreeData.textSelStartOffset=0
+++++++staticText editable richlyEditable name='A contenteditable with a '
 ++++++++inlineTextBox name='A contenteditable with a '
 ++++++link editable richlyEditable name='link'
 ++++++++staticText editable richlyEditable name='link'
@@ -22,5 +22,5 @@ rootWebArea
 ++++list editable richlyEditable
 ++++++listItem editable richlyEditable
 ++++++++listMarker editable richlyEditable name='1. '
-++++++++staticText editable richlyEditable name='Editable list item.' TreeData.textSelEndOffset=19
+++++++++staticText editable richlyEditable name='Editable list item.'
 ++++++++++inlineTextBox name='Editable list item.'

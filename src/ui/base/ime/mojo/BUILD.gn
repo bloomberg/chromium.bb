@@ -6,8 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo") {
   sources = [
-    "ime.mojom",
-    "ime_engine_factory_registry.mojom",
     "ime_types.mojom",
   ]
 

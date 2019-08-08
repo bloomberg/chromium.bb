@@ -11,6 +11,7 @@
 #include "base/base_export.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/post_task_and_reply_with_result_internal.h"
@@ -20,6 +21,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -58,9 +60,9 @@ namespace base {
 // requirements are not sufficient.
 //
 // Tasks posted with only traits defined in base/task/task_traits.h run on
-// threads owned by the registered ThreadPool (i.e. not on the main thread).
-// An embedder (e.g. Chrome) can define additional traits to make tasks run on
-// threads of their choosing. TODO(https://crbug.com/863341): Make this a
+// threads owned by the registered ThreadPoolInstance (i.e. not on the main
+// thread). An embedder (e.g. Chrome) can define additional traits to make tasks
+// run on threads of their choosing. TODO(https://crbug.com/863341): Make this a
 // reality.
 //
 // Tasks posted with the same traits will be scheduled in the order they were
@@ -69,8 +71,8 @@ namespace base {
 // for tasks posted in a given order (being scheduled first doesn't mean it will
 // run first -- could run in parallel or have its physical thread preempted).
 //
-// Prerequisite: A ThreadPool must have been registered for the current
-// process via ThreadPool::SetInstance() before the functions below are
+// Prerequisite: A ThreadPoolInstance must have been registered for the current
+// process via ThreadPoolInstance::Set() before the functions below are
 // valid. This is typically done during the initialization phase in each
 // process. If your code is not running in that phase, you most likely don't
 // have to worry about this. You will encounter DCHECKs or nullptr dereferences
@@ -94,26 +96,21 @@ BASE_EXPORT bool PostTaskAndReply(const Location& from_here,
 
 // Equivalent to calling PostTaskWithTraitsAndReplyWithResult with default
 // TaskTraits.
-template <typename TaskReturnType, typename ReplyArgType>
+//
+// Though RepeatingCallback is convertible to OnceCallback, we need a
+// CallbackType template since we can not use template deduction and object
+// conversion at once on the overload resolution.
+// TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
+// to use OnceCallback and remove the CallbackType template.
+template <template <typename> class CallbackType,
+          typename TaskReturnType,
+          typename ReplyArgType,
+          typename = EnableIfIsBaseCallback<CallbackType>>
 bool PostTaskAndReplyWithResult(const Location& from_here,
-                                OnceCallback<TaskReturnType()> task,
-                                OnceCallback<void(ReplyArgType)> reply) {
+                                CallbackType<TaskReturnType()> task,
+                                CallbackType<void(ReplyArgType)> reply) {
   return PostTaskWithTraitsAndReplyWithResult(
       from_here, TaskTraits(), std::move(task), std::move(reply));
-}
-
-// Callback version of PostTaskAndReplyWithResult above.
-// Though RepeatingCallback is convertible to OnceCallback, we need this since
-// we can not use template deduction and object conversion at once on the
-// overload resolution.
-// TODO(tzik): Update all callers of the Callback version to use OnceCallback.
-template <typename TaskReturnType, typename ReplyArgType>
-bool PostTaskAndReplyWithResult(const Location& from_here,
-                                Callback<TaskReturnType()> task,
-                                Callback<void(ReplyArgType)> reply) {
-  return PostTaskAndReplyWithResult(
-      from_here, OnceCallback<TaskReturnType()>(std::move(task)),
-      OnceCallback<void(ReplyArgType)>(std::move(reply)));
 }
 
 // Posts |task| with specific |traits|. Returns false if the task definitely
@@ -148,12 +145,21 @@ BASE_EXPORT bool PostTaskWithTraitsAndReply(const Location& from_here,
 // or thread and same TaskTraits if applicable) when |task| completes. Returns
 // false if the task definitely won't run because of current shutdown state. Can
 // only be called when SequencedTaskRunnerHandle::IsSet().
-template <typename TaskReturnType, typename ReplyArgType>
+//
+// Though RepeatingCallback is convertible to OnceCallback, we need a
+// CallbackType template since we can not use template deduction and object
+// conversion at once on the overload resolution.
+// TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
+// to use OnceCallback and remove the CallbackType template.
+template <template <typename> class CallbackType,
+          typename TaskReturnType,
+          typename ReplyArgType,
+          typename = EnableIfIsBaseCallback<CallbackType>>
 bool PostTaskWithTraitsAndReplyWithResult(
     const Location& from_here,
     const TaskTraits& traits,
-    OnceCallback<TaskReturnType()> task,
-    OnceCallback<void(ReplyArgType)> reply) {
+    CallbackType<TaskReturnType()> task,
+    CallbackType<void(ReplyArgType)> reply) {
   auto* result = new std::unique_ptr<TaskReturnType>();
   return PostTaskWithTraitsAndReply(
       from_here, traits,
@@ -161,21 +167,6 @@ bool PostTaskWithTraitsAndReplyWithResult(
                result),
       BindOnce(&internal::ReplyAdapter<TaskReturnType, ReplyArgType>,
                std::move(reply), Owned(result)));
-}
-
-// Callback version of PostTaskWithTraitsAndReplyWithResult above.
-// Though RepeatingCallback is convertible to OnceCallback, we need this since
-// we can not use template deduction and object conversion at once on the
-// overload resolution.
-// TODO(tzik): Update all callers of the Callback version to use OnceCallback.
-template <typename TaskReturnType, typename ReplyArgType>
-bool PostTaskWithTraitsAndReplyWithResult(const Location& from_here,
-                                          const TaskTraits& traits,
-                                          Callback<TaskReturnType()> task,
-                                          Callback<void(ReplyArgType)> reply) {
-  return PostTaskWithTraitsAndReplyWithResult(
-      from_here, traits, OnceCallback<TaskReturnType()>(std::move(task)),
-      OnceCallback<void(ReplyArgType)>(std::move(reply)));
 }
 
 // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
@@ -187,6 +178,20 @@ BASE_EXPORT scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
 // tasks using |traits|. Tasks run one at a time in posting order.
 BASE_EXPORT scoped_refptr<SequencedTaskRunner>
 CreateSequencedTaskRunnerWithTraits(const TaskTraits& traits);
+
+// Returns a task runner whose PostTask invocations result in scheduling tasks
+// using |traits|. The priority in |traits| can be updated at any time via
+// UpdateableSequencedTaskRunner::UpdatePriority(). An update affects all tasks
+// posted to the task runner that aren't running yet. Tasks run one at a time in
+// posting order.
+//
+// |traits| requirements:
+// - base::ThreadPool() must be specified.
+// - Extension traits (e.g. BrowserThread) cannot be specified.
+// - base::ThreadPolicy must be specified if the priority of the task runner
+//   will ever be increased from BEST_EFFORT.
+BASE_EXPORT scoped_refptr<UpdateableSequencedTaskRunner>
+CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits);
 
 // Returns a SingleThreadTaskRunner whose PostTask invocations result in
 // scheduling tasks using |traits| on a thread determined by |thread_mode|. See

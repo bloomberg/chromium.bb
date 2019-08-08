@@ -566,7 +566,7 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   event_generator->MoveMouseTo(x, y_top_edge + 1);
   EXPECT_TRUE(top_edge_hover_timer_running());
   EXPECT_EQ(y_top_edge + 1,
-            Shell::Get()->aura_env()->last_mouse_location().y());
+            aura::Env::GetInstance()->last_mouse_location().y());
 
   // The timer should continue running if the user moves the mouse to the top
   // edge even though the mouse is warped to the secondary display.
@@ -731,7 +731,7 @@ TEST_F(ImmersiveFullscreenControllerTest, WindowsInTabletMode) {
   Shell::Get()->split_view_controller()->SnapWindow(window(),
                                                     SplitViewController::LEFT);
   EXPECT_TRUE(wm::GetWindowState(window())->IsSnapped());
-  EXPECT_TRUE(Shell::Get()->split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 }
@@ -781,7 +781,7 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealViaGestureChildConsumesEvents) {
           &child_delegate, aura::client::WINDOW_TYPE_CONTROL, 1234,
           gfx::Rect()));
   content_view()->Attach(child.get());
-  child->Show();
+  content_view()->Layout();
 
   ConsumeEventHandler handler;
   child->AddPreTargetHandler(&handler);

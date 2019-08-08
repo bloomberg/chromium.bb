@@ -1071,11 +1071,22 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, FileSystemDeletion) {
   TestSiteData("FileSystem", GetParam());
 }
 
-// TODO(crbug.com/93417): Add FileSystemIncognitoDeletion test.
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
+                       FileSystemIncognitoDeletion) {
+  UseIncognitoBrowser();
+  TestSiteData("FileSystem", GetParam());
+}
 
 // Test that empty filesystems are deleted correctly.
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
                        EmptyFileSystemDeletion) {
+  TestEmptySiteData("FileSystem", GetParam());
+}
+
+// Test that empty filesystems are deleted correctly in incognito mode.
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
+                       EmptyFileSystemIncognitoDeletion) {
+  UseIncognitoBrowser();
   TestEmptySiteData("FileSystem", GetParam());
 }
 

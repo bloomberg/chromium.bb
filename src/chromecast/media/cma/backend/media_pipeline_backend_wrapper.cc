@@ -77,6 +77,7 @@ class ActiveMediaPipelineBackendWrapper : public DecoderCreatorCmaBackend {
  public:
   ActiveMediaPipelineBackendWrapper(
       const media::MediaPipelineDeviceParams& params,
+      MediaPipelineBackendWrapper* wrapping_backend,
       MediaPipelineBackendManager* backend_manager);
   ~ActiveMediaPipelineBackendWrapper() override;
 
@@ -109,6 +110,7 @@ class ActiveMediaPipelineBackendWrapper : public DecoderCreatorCmaBackend {
   AudioDecoderWrapper* audio_decoder_ptr_;
   bool video_decoder_created_;
   const std::unique_ptr<MediaPipelineBackend> backend_;
+  MediaPipelineBackendWrapper* const wrapping_backend_;
   MediaPipelineBackendManager* const backend_manager_;
   const MediaPipelineDeviceParams::AudioStreamType audio_stream_type_;
   const AudioContentType content_type_;
@@ -120,11 +122,13 @@ class ActiveMediaPipelineBackendWrapper : public DecoderCreatorCmaBackend {
 
 ActiveMediaPipelineBackendWrapper::ActiveMediaPipelineBackendWrapper(
     const media::MediaPipelineDeviceParams& params,
+    MediaPipelineBackendWrapper* wrapping_backend,
     MediaPipelineBackendManager* backend_manager)
     : audio_decoder_ptr_(nullptr),
       video_decoder_created_(false),
       backend_(base::WrapUnique(
           media::CastMediaShlib::CreateMediaPipelineBackend(params))),
+      wrapping_backend_(wrapping_backend),
       backend_manager_(backend_manager),
       audio_stream_type_(params.audio_type),
       content_type_(params.content_type),
@@ -199,9 +203,11 @@ ActiveMediaPipelineBackendWrapper::CreateAudioDecoderWrapper() {
 std::unique_ptr<VideoDecoderWrapper>
 ActiveMediaPipelineBackendWrapper::CreateVideoDecoderWrapper() {
   DCHECK(!video_decoder_created_);
+  backend_manager_->BackendUseVideoDecoder(wrapping_backend_);
 
   if (!backend_manager_->IncrementDecoderCount(DecoderType::VIDEO_DECODER))
     return nullptr;
+
   MediaPipelineBackend::VideoDecoder* real_decoder =
       backend_->CreateVideoDecoder();
   if (!real_decoder) {
@@ -276,7 +282,7 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
       backend_manager_(backend_manager),
       content_type_(params.content_type) {
   backend_ = std::make_unique<ActiveMediaPipelineBackendWrapper>(
-      params, backend_manager);
+      params, this, backend_manager);
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {

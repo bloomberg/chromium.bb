@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -107,6 +109,23 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
       new base::CommandLine(service_path_));
 
   child_command_line->AppendArguments(parent_command_line, false);
+
+  // Add enabled/disabled features from base::FeatureList. These will take
+  // precedence over existing ones (if there is any copied from the
+  // |parent_command_line| above) as they appear later in the arguments list.
+  std::string enabled_features;
+  std::string disabled_features;
+  base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                        &disabled_features);
+  if (!enabled_features.empty()) {
+    child_command_line->AppendSwitchASCII(::switches::kEnableFeatures,
+                                          enabled_features);
+  }
+  if (!disabled_features.empty()) {
+    child_command_line->AppendSwitchASCII(::switches::kDisableFeatures,
+                                          disabled_features);
+  }
+
   child_command_line->AppendSwitchASCII(switches::kServiceName, target.name());
 #ifndef NDEBUG
   child_command_line->AppendSwitchASCII("g",

@@ -5,19 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "SkAdvancedTypefaceMetrics.h"
-#include "SkEndian.h"
-#include "SkFontDescriptor.h"
-#include "SkFontMetrics.h"
-#include "SkFontMgr.h"
-#include "SkMakeUnique.h"
-#include "SkMutex.h"
-#include "SkOTTable_OS_2.h"
-#include "SkOnce.h"
-#include "SkStream.h"
-#include "SkSurfacePriv.h"
-#include "SkTypeface.h"
-#include "SkTypefaceCache.h"
+#include "include/core/SkFontMetrics.h"
+#include "include/core/SkFontMgr.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTypeface.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkOnce.h"
+#include "src/core/SkAdvancedTypefaceMetrics.h"
+#include "src/core/SkEndian.h"
+#include "src/core/SkFontDescriptor.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkSurfacePriv.h"
+#include "src/core/SkTypefaceCache.h"
+#include "src/sfnt/SkOTTable_OS_2.h"
 
 SkTypeface::SkTypeface(const SkFontStyle& style, bool isFixedPitch)
     : fUniqueID(SkTypefaceCache::NewFontID()), fStyle(style), fIsFixedPitch(isFixedPitch) { }
@@ -61,6 +61,8 @@ protected:
         sk_bzero(glyphs, count * sizeof(glyphs[0]));
     }
     int onCountGlyphs() const override { return 0; }
+    void getPostScriptGlyphNames(SkString*) const override {}
+    void getGlyphToUnicodeMap(SkUnichar*) const override {}
     int onGetUPEM() const override { return 0; }
     class EmptyLocalizedStrings : public SkTypeface::LocalizedStrings {
     public:
@@ -355,19 +357,10 @@ bool SkTypeface::onGetKerningPairAdjustments(const uint16_t glyphs[], int count,
     return false;
 }
 
-sk_sp<SkTypeface> SkTypeface::onMakeClone(const SkFontArguments& args) const {
-    return sk_ref_sp(this);
-}
-
-int SkTypeface::onGetVariationDesignParameters(
-        SkFontParameters::Variation::Axis parameters[], int parameterCount) const {
-    return -1;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "SkDescriptor.h"
-#include "SkPaint.h"
+#include "include/core/SkPaint.h"
+#include "src/core/SkDescriptor.h"
 
 SkRect SkTypeface::getBounds() const {
     fBoundsOnce([this] {

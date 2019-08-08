@@ -25,6 +25,7 @@
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
+#include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/gfx/range/range.h"
 
 // IMPORTANT!
@@ -409,7 +410,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Destroy() override;
   int GetIndexInParent() override;
   base::string16 GetValue() const override;
-  base::string16 GetText() const override;
+  base::string16 GetHypertext() const override;
 
   //
   // IAccessible methods.
@@ -540,13 +541,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // IAccessible2_3 methods.
   //
 
-  IFACEMETHODIMP get_selectionRanges(IA2Range** ranges, LONG* nRanges);
+  IFACEMETHODIMP get_selectionRanges(IA2Range** ranges, LONG* nRanges) override;
 
   //
   // IAccessible2_4 methods.
   //
 
-  IFACEMETHODIMP setSelectionRanges(LONG nRanges, IA2Range* ranges);
+  IFACEMETHODIMP setSelectionRanges(LONG nRanges, IA2Range* ranges) override;
 
   //
   // IAccessibleEx methods.
@@ -996,6 +997,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                               REFIID riid,
                               void** object) override;
 
+  //
+  // Methods used by the ATL COM map.
+  //
+
+  // Called by BEGIN_COM_MAP() / END_COM_MAP().
+  static STDMETHODIMP InternalQueryInterface(void* this_ptr,
+                                             const _ATL_INTMAP_ENTRY* entries,
+                                             REFIID riid,
+                                             void** object);
+
   // Support method for ITextRangeProvider::GetAttributeValue
   HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id, VARIANT* result);
 
@@ -1015,6 +1026,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   bool HasActiveComposition() const;
   // Returns the start/end offsets of the active composition
   gfx::Range GetActiveCompositionOffsets() const;
+
+  // Helper to recursively find live-regions and fire a change event on them
+  void FireLiveRegionChangeRecursive();
 
  protected:
   // This is hard-coded; all products based on the Chromium engine will have the
@@ -1071,9 +1085,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
   void HandleSpecialTextOffset(LONG* offset);
-
-  // Convert from a IA2TextBoundaryType to a TextBoundaryType.
-  TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
 
   // A helper to add the given string value to |attributes|.
   void AddAttributeToList(const char* name,
@@ -1151,8 +1162,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   SAFEARRAY* CreateUIAElementsArrayForReverseRelation(
       const ax::mojom::IntListAttribute& attribute);
 
-  // Return an array of automation elements given a vector
-  // of |AXNode| ids.
+  // Return an array of automation elements given a vector of |AXNode| ids.
+  // The caller should validate that all of the given ids are valid relation
+  // targets.
   SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
 
   // Return an array that contains the center x, y coordinates of the
@@ -1238,8 +1250,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // IRawElementProviderSimple support methods.
 
-  using PatternProviderFactoryMethod = HRESULT (*)(AXPlatformNodeWin*,
-                                                   IUnknown**);
+  using PatternProviderFactoryMethod = void (*)(AXPlatformNodeWin*, IUnknown**);
 
   PatternProviderFactoryMethod GetPatternProviderFactoryMethod(
       PATTERNID pattern_id);
@@ -1249,6 +1260,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       const gfx::Range& range,
       const base::string16& active_composition_text,
       bool is_composition_committed);
+
+  // Return true if the given element is valid enough to be returned as a value
+  // for a UIA relation property (e.g. ControllerFor).
+  static bool IsValidUiaRelationTarget(AXPlatformNode* ax_platform_node);
 
   // Start and end offsets of an active composition
   gfx::Range active_composition_range_;

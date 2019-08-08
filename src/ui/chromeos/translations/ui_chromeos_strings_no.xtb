@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Translitterasjon (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Lysbildevisning</translation>
 <translation id="1045157690796831147">Translitterasjon (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japansk inndata (for amerikansk tastatur)</translation>
 <translation id="1047956942837015229">Sletter <ph name="COUNT" /> elementer ...</translation>
 <translation id="1049926623896334335">Word-dokument</translation>
 <translation id="1062407476771304334">Erstatt</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1351692861129622852">Importerer <ph name="FILE_COUNT" /> filer ...</translation>
 <translation id="1352103415082130575">Thai-tastatur (Pattachote)</translation>
-<translation id="1358032944105037487">Japansk tastatur</translation>
 <translation id="1358735829858566124">Filen eller katalogen ikke er brukbar.</translation>
 <translation id="1363028406613469049">Spor</translation>
 <translation id="1378727793141957596">Velkommen til Google Disk</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> bilder ble sikkerhetskopiert til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopierer ...</translation>
 <translation id="3475447146579922140">Google-regneark</translation>
-<translation id="3494768541638400973">Google-inndatametode for japansk (for japansk tastatur)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> feil.</translation>
 <translation id="3519867315646775981">Translitterasjon (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugisisk</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3549797760399244642">Gå til drive.google.com</translation>
 <translation id="357479282490346887">Litauisk</translation>
+<translation id="3583509704582854624">Alfanumerisk inndata (for japansk tastatur)</translation>
 <translation id="3603385196401704894">Canadisk fransk</translation>
 <translation id="3606220979431771195">Tyrkisk F</translation>
 <translation id="3609785682760573515">Synkroniserer …</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">Du må ha internettilkobling for å få tilgang til denne filen.</translation>
 <translation id="4212740939091998969">Det finnes allerede en mappe som heter «<ph name="FOLDER_NAME" />». Velg et annet navn.</translation>
 <translation id="4215448920900139318">Sikkerhetskopierer <ph name="FILE_COUNT" /></translation>
+<translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="426015154560005552">Arabisk tastatur</translation>
 <translation id="4261901459838235729">Google-presentasjon</translation>
 <translation id="4290535918735525311">1 mappe er delt med Linux</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer</translation>
 <translation id="4582497162516204941">Installer med Linux (beta)</translation>
-<translation id="4584780943629874245">Del med VM for programtillegg</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Denne datamaskinen</translation>
 <translation id="4669606053856530811">Medlemmer av «<ph name="SOURCE_NAME" />» mister tilgangen, med mindre disse elementene deles med dem.</translation>
 <translation id="4690246192099372265">Svensk</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Ape</translation>
+<translation id="4697043402264950621">Fillisten er sortert etter <ph name="COLUMN_NAME" /> i stigende rekkefølge.</translation>
 <translation id="4711094779914110278">Tyrkisk</translation>
 <translation id="4713544552769165154">Denne filen er laget for en datamaskin med Macintosh-programvare. Den er ikke kompatibel med enheten din, som kjører Chrome OS. Du kan søke på <ph name="BEGIN_LINK" />Chrome Nettmarked<ph name="END_LINK" /> etter en passende erstatningsapp.<ph name="BEGIN_LINK_HELP" />Finn ut mer<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> bilder ble sikkerhetskopiert</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementer valgt</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="485316830061041779">Tysk</translation>
+<translation id="4867079195717347957">Klikk for å sortere kolonnen i synkende rekkefølge.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
 <translation id="4880214202172289027">Volumbryter</translation>
 <translation id="4880520557730313061">Autokorrigering</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">Nederlandsk tastatur</translation>
 <translation id="5170477580121653719">Ledig lagringsplass på Google Disk: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Miniatyrbildevisning</translation>
+<translation id="5194713942430106590">Klikk for å sortere kolonnen i stigende rekkefølge.</translation>
 <translation id="5218183485292899140">Sveitsisk fransk</translation>
 <translation id="5234764350956374838">Lukk</translation>
 <translation id="5241298539944515331">Vietnamesisk tastatur (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">Koreansk</translation>
 <translation id="5819442873484330149">Hangul 3-sett (endelig)</translation>
 <translation id="5833610766403489739">Denne filen har vandret av gårde. Sjekk innstillingen din for nedlastingsplassering, og prøv på nytt.</translation>
+<translation id="5838051104334203064">Play Butikk-apper har ikke tilgang til denne enheten</translation>
 <translation id="5838825566232597749">Internasjonalt Workman (USA)</translation>
 <translation id="5850516540536751549">Denne filtypen støttes ikke. Gå til <ph name="BEGIN_LINK" />Chrome Nettmarked<ph name="END_LINK" /> for å finne en app som kan åpne denne filtypen.
     <ph name="BEGIN_LINK_HELP" />Les mer<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">Fransk BÉPO-tastatur</translation>
 <translation id="5911887972742538906">Det oppsto en feil under installasjon av Linux-appen.</translation>
 <translation id="5913638992615760742">Kopieringshandlingen mislyktes på grunn av en uventet feil: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japansk inndata (for japansk tastatur)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Gi Linux-apper tillatelse til å endre filer på Google Disk. Endringer synkroniseres med de andre enhetene dine.</translation>
 <translation id="5982621672636444458">Sorteringsalternativer</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> ble funnet</translation>
 <translation id="6935521024859866267">Opp-ned</translation>
-<translation id="6937152069980083337">Google-inndatametode for japansk (for amerikansk tastatur)</translation>
 <translation id="6939777852457331078">Workman-tastatur (USA)</translation>
 <translation id="696203921837389374">Aktivér synkronisering via mobildata</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7348749398828259943">Internasjonalt Workman-tastatur (USA)</translation>
 <translation id="7359359531237882347">Kopierer <ph name="NUMBER_OF_ITEMS" /> elementer …</translation>
-<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> mapper delt med VM for programtillegg</translation>
+<translation id="7375951387215729722">Fillisten er sortert etter <ph name="COLUMN_NAME" /> i synkende rekkefølge.</translation>
 <translation id="7389722738210761877">Thai-tastatur (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi-tastatur (fonetisk)</translation>
 <translation id="7417453074306512035">Etiopisk tastatur</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">Slovensk</translation>
 <translation id="7982283708762922719">Høyde</translation>
 <translation id="7987485481246785146">Arabisk-basert tastatur for kurdisk (sorani)</translation>
-<translation id="7990715602172183602">1 mappe delt med VM for programtillegg</translation>
 <translation id="799547531016638432">Fjern snarveien</translation>
 <translation id="799923393800005025">Kan se</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">Det finnes allerede en fil eller en katalog med det samme navnet.</translation>
 <translation id="8391950649760071442">Translitterasjon (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensjoner</translation>
-<translation id="8400874747056634633">Administrer deling med VM for programtillegg</translation>
 <translation id="8412586565681117057">Rask inndatametode</translation>
 <translation id="8418113698656761985">Rumensk tastatur</translation>
 <translation id="8432745813735585631">Amerikansk tastatur (Colemak)</translation>

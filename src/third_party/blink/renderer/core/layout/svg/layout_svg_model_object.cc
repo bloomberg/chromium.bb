@@ -54,7 +54,7 @@ void LayoutSVGModelObject::MapLocalToAncestor(
   SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
 
-LayoutRect LayoutSVGModelObject::VisualRectInDocument(
+PhysicalRect LayoutSVGModelObject::VisualRectInDocument(
     VisualRectFlags flags) const {
   return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View(), flags);
 }
@@ -73,14 +73,6 @@ const LayoutObject* LayoutSVGModelObject::PushMappingToContainer(
                                                   geometry_map);
 }
 
-void LayoutSVGModelObject::AbsoluteRects(
-    Vector<IntRect>& rects,
-    const LayoutPoint& accumulated_offset) const {
-  IntRect rect = EnclosingIntRect(StrokeBoundingBox());
-  rect.MoveBy(RoundedIntPoint(accumulated_offset));
-  rects.push_back(rect);
-}
-
 void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
                                          MapCoordinatesFlags mode) const {
   quads.push_back(LocalToAbsoluteQuad(StrokeBoundingBox(), mode));
@@ -88,10 +80,11 @@ void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
 
 // This method is called from inside PaintOutline(), and since we call
 // PaintOutline() while transformed to our coord system, return local coords.
-void LayoutSVGModelObject::AddOutlineRects(Vector<LayoutRect>& rects,
-                                           const LayoutPoint&,
+void LayoutSVGModelObject::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                           const PhysicalOffset&,
                                            NGOutlineType) const {
-  rects.push_back(LayoutRect(VisualRectInLocalSVGCoordinates()));
+  rects.push_back(
+      PhysicalRect::EnclosingRect(VisualRectInLocalSVGCoordinates()));
 }
 
 FloatRect LayoutSVGModelObject::LocalBoundingBoxRectForAccessibility() const {

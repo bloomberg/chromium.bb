@@ -14,6 +14,7 @@ source_set("presentation") {
     "infobar_banner_transition_driver.mm",
     "infobar_expand_banner_animator.h",
     "infobar_expand_banner_animator.mm",
+    "infobar_modal_positioner.h",
     "infobar_modal_presentation_controller.h",
     "infobar_modal_presentation_controller.mm",
     "infobar_modal_transition_driver.h",
@@ -21,6 +22,7 @@ source_set("presentation") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/util",
   ]
 }

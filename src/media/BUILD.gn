@@ -149,6 +149,7 @@ test("media_unittests") {
     "//media/learning:unit_tests",
     "//media/mojo:unit_tests",
     "//media/muxers:unit_tests",
+    "//media/parsers:unit_tests",
     "//media/renderers:unit_tests",
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
@@ -312,30 +313,6 @@ if (proprietary_codecs) {
       ":media",
     ]
   }
-}
-
-fuzzer_test("media_jpeg_parser_picture_fuzzer") {
-  sources = [
-    "filters/jpeg_parser_picture_fuzzertest.cc",
-  ]
-  deps = [
-    ":test_support",
-    "//base",
-  ]
-  seed_corpus = "test/data"
-  dict = "test/jpeg.dict"
-}
-
-fuzzer_test("media_vp8_parser_fuzzer") {
-  sources = [
-    "filters/vp8_parser_fuzzertest.cc",
-  ]
-  deps = [
-    ":test_support",
-    "//base",
-  ]
-  libfuzzer_options = [ "max_len = 400000" ]
-  dict = "test/vp8.dict"
 }
 
 fuzzer_test("media_vp9_parser_fuzzer") {

@@ -14,36 +14,67 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
 class FrameNodeImpl;
+class ProcessNodeImpl;
 
-// A process coordination unit follows the lifetime of a RenderProcessHost.
+// Observer interface for ProcessNodeImpl objects. This must be declared first
+// as the type is referenced by members of ProcessNodeImpl.
+class ProcessNodeImplObserver {
+ public:
+  ProcessNodeImplObserver();
+  virtual ~ProcessNodeImplObserver();
+
+  // Notifications of property changes.
+
+  // Invoked when a new |expected_task_queueing_duration| sample is available.
+  virtual void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) = 0;
+
+  // Invoked when the |main_thread_task_load_is_low| property changes.
+  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) = 0;
+
+  // Events with no property changes.
+
+  // Fired when all frames in a process have transitioned to being frozen.
+  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProcessNodeImplObserver);
+};
+
+// A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
 // may reference more than one process. This can happen if the associated
 // renderer crashes, and an associated frame is then reloaded or re-navigated.
-// The state of the process CU goes through:
+// The state of the process node goes through:
 // 1. Created, no PID.
 // 2. Process started, have PID - in the case where the associated render
 //    process fails to start, this state may not occur.
 // 3. Process died or falied to start, have exit status.
 // 4. Back to 2.
 class ProcessNodeImpl
-    : public CoordinationUnitInterface<
-          ProcessNodeImpl,
-          resource_coordinator::mojom::ProcessCoordinationUnit,
-          resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
+    : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
+      public TypedNodeBase<ProcessNodeImpl, ProcessNodeImplObserver>,
+      public resource_coordinator::mojom::ProcessCoordinationUnit {
  public:
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kProcess;
-  }
+  // A do-nothing implementation of the observer. Derive from this if you want
+  // to selectively override a few methods and not have to worry about
+  // continuously updating your implementation as new methods are added.
+  class ObserverDefaultImpl;
 
-  explicit ProcessNodeImpl(Graph* graph);
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
+
+  explicit ProcessNodeImpl(GraphImpl* graph);
   ~ProcessNodeImpl() override;
 
-  // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
+  void Bind(
+      resource_coordinator::mojom::ProcessCoordinationUnitRequest request);
+
+  // resource_coordinator::mojom::ProcessCoordinationUnit implementation:
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
 
@@ -105,6 +136,8 @@ class ProcessNodeImpl
 
   void LeaveGraph() override;
 
+  mojo::Binding<resource_coordinator::mojom::ProcessCoordinationUnit> binding_;
+
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
 
@@ -115,11 +148,11 @@ class ProcessNodeImpl
 
   ObservedProperty::NotifiesAlways<
       base::TimeDelta,
-      &GraphObserver::OnExpectedTaskQueueingDurationSample>
+      &Observer::OnExpectedTaskQueueingDurationSample>
       expected_task_queueing_duration_;
-  ObservedProperty::
-      NotifiesOnlyOnChanges<bool, &GraphObserver::OnMainThreadTaskLoadIsLow>
-          main_thread_task_load_is_low_{false};
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &Observer::OnMainThreadTaskLoadIsLow>
+      main_thread_task_load_is_low_{false};
   double cpu_usage_ = 0;
 
   base::flat_set<FrameNodeImpl*> frame_nodes_;
@@ -128,6 +161,22 @@ class ProcessNodeImpl
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessNodeImpl);
+};
+
+// A do-nothing default implementation of a ProcessNodeImpl::Observer.
+class ProcessNodeImpl::ObserverDefaultImpl : public ProcessNodeImpl::Observer {
+ public:
+  ObserverDefaultImpl();
+  ~ObserverDefaultImpl() override;
+
+  // ProcessNodeImpl::Observer implementation:
+  void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) override {}
+  void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override {}
+  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

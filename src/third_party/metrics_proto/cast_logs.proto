@@ -9,8 +9,7 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "CastLogsProtos";
 option java_package = "org.chromium.components.metrics";
 
-package metrics;  // Cast-enabled device specific log data included in
-                  // ChromeUserMetricsExtension.
+package metrics;  // Cast-enabled device specific log data included in ChromeUserMetricsExtension.
 
 // Next tag: 7
 message CastLogsProto {

@@ -29,13 +29,12 @@ Tests that the provided WebXR device has the expected capabilities
         let expected = expectations[device];
         var supportsNonImmersive;
         var supportsImmersive;
-        var ctx = webglCanvas.getContext("xrpresent");
-        navigator.xr.supportsSessionMode('inline').then( () => {
+        navigator.xr.supportsSession('inline').then( () => {
           supportsNonImmersive = true;
         }, () => {
           supportsNonImmersive = false;
         }).then( () => {
-          navigator.xr.supportsSessionMode('immersive-vr').then( () => {
+          navigator.xr.supportsSession('immersive-vr').then( () => {
             supportsImmersive = true;
           }, () => {
             supportsImmersive = false;

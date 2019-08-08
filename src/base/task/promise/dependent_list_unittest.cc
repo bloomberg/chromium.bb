@@ -13,8 +13,9 @@ TEST(DependentList, ConstructUnresolved) {
   DependentList::Node node;
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node));
   EXPECT_FALSE(list.IsRejected());
-  EXPECT_FALSE(list.IsCancelled());
+  EXPECT_FALSE(list.IsCanceled());
   EXPECT_FALSE(list.IsResolved());
+  EXPECT_FALSE(list.IsSettled());
 }
 
 TEST(DependentList, ConstructResolved) {
@@ -24,7 +25,8 @@ TEST(DependentList, ConstructResolved) {
             list.Insert(&node));
   EXPECT_TRUE(list.IsResolved());
   EXPECT_FALSE(list.IsRejected());
-  EXPECT_FALSE(list.IsCancelled());
+  EXPECT_FALSE(list.IsCanceled());
+  EXPECT_TRUE(list.IsSettled());
 }
 
 TEST(DependentList, ConstructRejected) {
@@ -33,8 +35,9 @@ TEST(DependentList, ConstructRejected) {
   EXPECT_EQ(DependentList::InsertResult::FAIL_PROMISE_REJECTED,
             list.Insert(&node));
   EXPECT_TRUE(list.IsRejected());
-  EXPECT_FALSE(list.IsCancelled());
+  EXPECT_FALSE(list.IsCanceled());
   EXPECT_FALSE(list.IsResolved());
+  EXPECT_TRUE(list.IsSettled());
 }
 
 TEST(DependentList, ConsumeOnceForResolve) {
@@ -47,10 +50,12 @@ TEST(DependentList, ConsumeOnceForResolve) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
   EXPECT_FALSE(list.IsResolved());
+  EXPECT_FALSE(list.IsSettled());
   DependentList::Node* result = list.ConsumeOnceForResolve();
   EXPECT_TRUE(list.IsResolved());
   EXPECT_FALSE(list.IsRejected());
-  EXPECT_FALSE(list.IsCancelled());
+  EXPECT_FALSE(list.IsCanceled());
+  EXPECT_TRUE(list.IsSettled());
 
   EXPECT_EQ(&node3, result);
   EXPECT_EQ(&node2, result->next.load());
@@ -73,10 +78,12 @@ TEST(DependentList, ConsumeOnceForReject) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
   EXPECT_FALSE(list.IsRejected());
+  EXPECT_FALSE(list.IsSettled());
   DependentList::Node* result = list.ConsumeOnceForReject();
   EXPECT_TRUE(list.IsRejected());
   EXPECT_FALSE(list.IsResolved());
-  EXPECT_FALSE(list.IsCancelled());
+  EXPECT_FALSE(list.IsCanceled());
+  EXPECT_TRUE(list.IsSettled());
 
   EXPECT_EQ(&node3, result);
   EXPECT_EQ(&node2, result->next.load());
@@ -98,11 +105,13 @@ TEST(DependentList, ConsumeOnceForCancel) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node2));
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
-  EXPECT_FALSE(list.IsCancelled());
+  EXPECT_FALSE(list.IsCanceled());
+  EXPECT_FALSE(list.IsSettled());
   DependentList::Node* result = list.ConsumeOnceForCancel();
-  EXPECT_TRUE(list.IsCancelled());
+  EXPECT_TRUE(list.IsCanceled());
   EXPECT_FALSE(list.IsResolved());
   EXPECT_FALSE(list.IsRejected());
+  EXPECT_TRUE(list.IsSettled());
 
   EXPECT_EQ(&node3, result);
   EXPECT_EQ(&node2, result->next.load());

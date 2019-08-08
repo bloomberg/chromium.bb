@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
@@ -32,8 +33,9 @@ WebTestRenderFrameObserver::WebTestRenderFrameObserver(
       test_runner->GetWebContentSettings());
   render_frame->GetWebFrame()->SetTextCheckClient(
       test_runner->GetWebTextCheckClient());
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
-      &WebTestRenderFrameObserver::BindRequest, base::Unretained(this)));
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&WebTestRenderFrameObserver::BindRequest,
+                          base::Unretained(this)));
 }
 
 WebTestRenderFrameObserver::~WebTestRenderFrameObserver() = default;
@@ -42,6 +44,34 @@ void WebTestRenderFrameObserver::BindRequest(
     mojom::WebTestControlAssociatedRequest request) {
   binding_.Bind(std::move(request),
                 blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+}
+
+void WebTestRenderFrameObserver::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
+  if (!render_frame()->IsMainFrame())
+    return;
+  focus_on_next_commit_ = true;
+}
+
+void WebTestRenderFrameObserver::DidCommitProvisionalLoad(
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
+  if (!render_frame()->IsMainFrame())
+    return;
+  if (focus_on_next_commit_) {
+    focus_on_next_commit_ = false;
+    render_frame()->GetRenderView()->GetWebView()->SetFocusedFrame(
+        render_frame()->GetWebFrame());
+  }
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
+      ->DidCommitNavigationInMainFrame();
+}
+
+void WebTestRenderFrameObserver::DidFailProvisionalLoad(
+    const blink::WebURLError& error) {
+  if (!render_frame()->IsMainFrame())
+    return;
+  focus_on_next_commit_ = false;
 }
 
 void WebTestRenderFrameObserver::OnDestruct() {

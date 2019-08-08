@@ -71,8 +71,8 @@ void NativeInit() {
   base::FeatureList::InitializeInstance(std::string(), std::string());
 #endif
 
-  if (!base::ThreadPool::GetInstance())
-    base::ThreadPool::CreateAndStartWithDefaultParams("Cronet");
+  if (!base::ThreadPoolInstance::Get())
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Cronet");
   url::Initialize();
 }
 
@@ -80,7 +80,7 @@ void NativeInit() {
 
 bool OnInitThread() {
   DCHECK(g_init_message_loop);
-  return g_init_message_loop->IsBoundToCurrentThread();
+  return g_init_message_loop->task_runner()->RunsTasksInCurrentSequence();
 }
 
 // In integrated mode, Cronet native library is built and loaded together with
@@ -100,8 +100,8 @@ jint CronetOnLoad(JavaVM* vm, void* reserved) {
 }
 
 void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
-  if (base::ThreadPool::GetInstance())
-    base::ThreadPool::GetInstance()->Shutdown();
+  if (base::ThreadPoolInstance::Get())
+    base::ThreadPoolInstance::Get()->Shutdown();
 
   base::android::LibraryLoaderExitHook();
 }
@@ -111,8 +111,7 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(JNIEnv* env) {
   // Initialize message loop for init thread.
   DCHECK(!base::MessageLoopCurrent::IsSet());
   DCHECK(!g_init_message_loop);
-  g_init_message_loop =
-      new base::MessageLoop(base::MessageLoop::Type::TYPE_JAVA);
+  g_init_message_loop = new base::MessageLoop(base::MessageLoop::Type::JAVA);
 
 // In integrated mode, NetworkChangeNotifier has been initialized by the host.
 #if BUILDFLAG(INTEGRATED_MODE)

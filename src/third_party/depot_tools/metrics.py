@@ -198,6 +198,7 @@ class MetricsCollector(object):
         return func(*args, **kwargs)
 
     self._collecting_metrics = True
+    self.add('metrics_version', metrics_utils.CURRENT_VERSION)
     self.add('command', command_name)
     try:
       start = time.time()
@@ -213,14 +214,14 @@ class MetricsCollector(object):
     self.add('exit_code', exit_code)
 
     # Add metrics regarding environment information.
-    self.add('timestamp', metrics_utils.seconds_to_weeks(time.time()))
+    self.add('timestamp', int(time.time()))
     self.add('python_version', metrics_utils.get_python_version())
     self.add('host_os', gclient_utils.GetMacWinOrLinux())
     self.add('host_arch', detect_host_arch.HostArch())
 
     depot_tools_age = metrics_utils.get_repo_timestamp(DEPOT_TOOLS)
     if depot_tools_age is not None:
-      self.add('depot_tools_age', depot_tools_age)
+      self.add('depot_tools_age', int(depot_tools_age))
 
     git_version = metrics_utils.get_git_version()
     if git_version:

@@ -7,6 +7,7 @@
 
 #include <dwrite.h>
 #include <dwrite_2.h>
+#include <dwrite_3.h>
 #include <wrl.h>
 #include <memory>
 #include <string>
@@ -22,6 +23,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
+#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
 namespace base {
 template <typename T>
@@ -47,25 +49,34 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // EnsureFontUniqueNameTable() must be checked before.
   base::ReadOnlySharedMemoryRegion DuplicateMemoryRegion();
 
-  // Wait for the internal WaitableEvent to be signaled if needed and return
-  // true if the font unique name lookup table was successfully
-  // constructed. Call only after ScheduleBuildFontUniqueNameTable().
-  bool EnsureFontUniqueNameTable();
+  // Enqueue a request to get notified about the availability of the shared
+  // memory region holding the unique font lookup table.
+  // https://crbug.com/967316 shows that we do have a higher number of
+  // DWriteFontProxyImpl instances, potentially running on different
+  // TaskRunners. Capture each relevant task runner with a call to this method.
+  void QueueShareMemoryRegionWhenReady(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback callback);
 
   // Returns whether the indexing has completed and the shared memory region is
   // immediately ready without any sync operations.
   bool FontUniqueNameTableReady();
 
-  // Posts a task to load from cache or build (if cache not available) the
-  // unique name table index, should only be called once at browser startup,
-  // after that, use EnsureFontUniqueNameTable() and
-  // DuplicatedMemoryRegion() to retrieve the lookup structure buffer.
-  void SchedulePrepareFontUniqueNameTable();
+  // If needed, i.e. if we're on pre-Windows 10, posts a task to load from cache
+  // or build (if cache not available) the unique name table index, should only
+  // be called once at browser startup, after that,
+  // QueueShareMemoryRegionWhenReady() to trigger the mojo callbacks when the
+  // table is ready.
+  void SchedulePrepareFontUniqueNameTableIfNeeded();
 
   enum class SlowDownMode { kDelayEachTask, kHangOneTask, kNoSlowdown };
 
-  // Slow down each family indexing step for testing the internal timeout.
-  void SetSlowDownIndexingForTesting(SlowDownMode slowdown_mode);
+  // Slow down each family indexing step for testing the internal timeout,
+  // either with a single hung task or by delaying each indexing step. At the
+  // same time, configure a new timeout value for testing, overriding the
+  // default timeout.
+  void SetSlowDownIndexingForTestingWithTimeout(SlowDownMode slowdown_mode,
+                                                base::TimeDelta new_timeout);
 
   // Needed to trigger rebuilding the lookup table, when testing using
   // slowed-down indexing. Otherwise, the test methods would use the already
@@ -90,6 +101,12 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // Configures whether the cache should be used. Needed for testing to test
   // repeated rebuilding of the font table lookup structure.
   void SetCachingEnabledForTesting(bool caching_enabled);
+
+  // Disables DCHECKs that ensure DWriteFontLookupTableBuilder is only run pre
+  // Windows 10, used for testing only to allow running the tests on Windows 10.
+  void OverrideDWriteVersionChecksForTesting();
+
+  bool EnsureFontUniqueNameTableForTesting();
 
  private:
   friend class base::NoDestructor<DWriteFontLookupTableBuilder>;
@@ -130,7 +147,8 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
       uint32_t family_index,
       base::TimeTicks start_time,
       SlowDownMode slow_down_mode,
-      base::WaitableEvent* hang_event_for_testing);
+      base::WaitableEvent* hang_event_for_testing,
+      base::TimeDelta indexing_timeout);
 
   // Callback from scheduled tasks to add the retrieved font names to the
   // protobuf.
@@ -149,6 +167,15 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
 
   base::FilePath TableCacheFilePath();
 
+  // Returns true if IDWriteFactory3 is available, which means that we can
+  // access IDWriteFontSet API which provides direct lookup by PostScript name
+  // and full font name, in which case we do not need to build this table.
+  bool HasDWriteUniqueFontLookups();
+
+  base::TimeDelta IndexingTimeout();
+
+  void PostCallbacks();
+
   DWriteFontLookupTableBuilder();
   ~DWriteFontLookupTableBuilder();
 
@@ -159,8 +186,10 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   base::WaitableEvent font_table_built_;
 
   bool direct_write_initialized_ = false;
+  base::TimeDelta font_indexing_timeout_;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
+  Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;
   SlowDownMode slow_down_mode_for_testing_ = SlowDownMode::kNoSlowdown;
   uint32_t outstanding_family_results_ = 0;
   base::TimeTicks start_time_table_ready_;
@@ -171,6 +200,19 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   bool caching_enabled_ = true;
   base::Optional<base::WaitableEvent> hang_event_for_testing_;
   base::CancelableOnceCallback<void()> timeout_callback_;
+
+  struct CallbackOnTaskRunner {
+    CallbackOnTaskRunner(
+        scoped_refptr<base::SequencedTaskRunner>,
+        blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback);
+    CallbackOnTaskRunner(CallbackOnTaskRunner&&);
+    ~CallbackOnTaskRunner();
+    scoped_refptr<base::SequencedTaskRunner> task_runner;
+    blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback
+        mojo_callback;
+  };
+
+  std::vector<CallbackOnTaskRunner> pending_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontLookupTableBuilder);
 };

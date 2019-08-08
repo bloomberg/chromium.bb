@@ -38,7 +38,7 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
     plugin->description = "pdf";
     plugin->filename = base::FilePath(FILE_PATH_LITERAL("pdf-files"));
     plugin->background_color = SkColorSetRGB(38, 38, 38);
-    plugin->may_use_mime_handler_view = true;
+    plugin->may_use_external_handler = true;
     plugin->mime_types.push_back(std::move(mime));
 
     Vector<mojom::blink::PluginInfoPtr> plugins;

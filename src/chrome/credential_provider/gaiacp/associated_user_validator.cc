@@ -518,10 +518,20 @@ bool AssociatedUserValidator::IsDenyAccessUpdateBlocked() const {
   return block_deny_access_update_ > 0;
 }
 
-bool AssociatedUserValidator::IsUserAccessBlocked(
+bool AssociatedUserValidator::IsUserAccessBlockedForTesting(
     const base::string16& sid) const {
   base::AutoLock locker(validator_lock_);
   return locked_user_sids_.find(sid) != locked_user_sids_.end();
+}
+
+void AssociatedUserValidator::ForceRefreshTokenHandlesForTesting() {
+  base::AutoLock locker(validator_lock_);
+  for (const auto& user_info : user_to_token_handle_info_) {
+    // Make the last update time outside the validity lifetime of the token
+    // handle.
+    user_info.second->last_update =
+        base::Time::Now() - kTokenHandleValidityLifetime;
+  }
 }
 
 }  // namespace credential_provider

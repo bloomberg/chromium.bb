@@ -34,11 +34,7 @@ base::string16 GetRelyingPartyIdString(
   const auto& rp_id = dialog_model->relying_party_id();
   DCHECK(!rp_id.empty());
   GURL rp_id_url(kRpIdUrlPrefix + rp_id);
-  auto max_static_string_length = gfx::GetStringWidthF(
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_GENERIC_TITLE), gfx::FontList(),
-      gfx::Typesetter::DEFAULT);
-  return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
-                                  kDialogWidth - max_static_string_length);
+  return url_formatter::ElideHost(rp_id_url, gfx::FontList(), kDialogWidth);
 }
 
 // Possibly returns a resident key warning if the model indicates that it's
@@ -46,8 +42,7 @@ base::string16 GetRelyingPartyIdString(
 base::Optional<base::string16> PossibleResidentKeyWarning(
     AuthenticatorRequestDialogModel* dialog_model) {
   if (dialog_model->might_create_resident_credential()) {
-    return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY,
-                                      GetRelyingPartyIdString(dialog_model));
+    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY);
   }
   return base::nullopt;
 }
@@ -941,23 +936,23 @@ AuthenticatorGenericErrorSheetModel::ForClientPinErrorAuthenticatorRemoved(
 
 // static
 std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
+AuthenticatorGenericErrorSheetModel::ForMissingCapability(
     AuthenticatorRequestDialogModel* dialog_model) {
   return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
       dialog_model,
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC)));
+      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_DESC,
+                                 GetRelyingPartyIdString(dialog_model))));
 }
 
 // static
 std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForMissingUserVerificationSupport(
+AuthenticatorGenericErrorSheetModel::ForStorageFull(
     AuthenticatorRequestDialogModel* dialog_model) {
   return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
       dialog_model,
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC,
-                                 GetRelyingPartyIdString(dialog_model))));
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_STORAGE_FULL_DESC)));
 }
 
 AuthenticatorGenericErrorSheetModel::AuthenticatorGenericErrorSheetModel(
@@ -989,6 +984,60 @@ base::string16 AuthenticatorGenericErrorSheetModel::GetStepTitle() const {
 
 base::string16 AuthenticatorGenericErrorSheetModel::GetStepDescription() const {
   return description_;
+}
+
+// AuthenticatorResidentCredentialConfirmationSheetView -----------------------
+
+AuthenticatorResidentCredentialConfirmationSheetView::
+    AuthenticatorResidentCredentialConfirmationSheetView(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorResidentCredentialConfirmationSheetView::
+    ~AuthenticatorResidentCredentialConfirmationSheetView() = default;
+
+const gfx::VectorIcon&
+AuthenticatorResidentCredentialConfirmationSheetView::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPermissionDarkIcon
+                                                 : kWebauthnPermissionIcon;
+}
+
+bool AuthenticatorResidentCredentialConfirmationSheetView::IsBackButtonVisible()
+    const {
+  return false;
+}
+
+bool AuthenticatorResidentCredentialConfirmationSheetView::
+    IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorResidentCredentialConfirmationSheetView::
+    IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16
+AuthenticatorResidentCredentialConfirmationSheetView::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
+}
+
+base::string16
+AuthenticatorResidentCredentialConfirmationSheetView::GetStepTitle() const {
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
+                                    GetRelyingPartyIdString(dialog_model()));
+}
+
+base::string16
+AuthenticatorResidentCredentialConfirmationSheetView::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY);
+}
+
+void AuthenticatorResidentCredentialConfirmationSheetView::OnAccept() {
+  dialog_model()->OnResidentCredentialConfirmed();
 }
 
 // AuthenticatorSelectAccountSheetModel ---------------------------------------
@@ -1024,39 +1073,21 @@ base::string16 AuthenticatorSelectAccountSheetModel::GetStepTitle() const {
 
 base::string16 AuthenticatorSelectAccountSheetModel::GetStepDescription()
     const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT_DESC);
+  return base::string16();
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonVisible() const {
-  return true;
+  return false;
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonEnabled() const {
-  return true;
+  return false;
 }
 
 base::string16 AuthenticatorSelectAccountSheetModel::GetAcceptButtonLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
 }
-
-int AuthenticatorSelectAccountSheetModel::RowCount() {
-  return dialog_model()->responses().size();
-}
-
-base::string16 AuthenticatorSelectAccountSheetModel::GetText(int row,
-                                                             int column_id) {
-  const auto user = dialog_model()->responses()[row].user_entity();
-
-  if (column_id == IDS_WEBAUTHN_ACCOUNT_COLUMN) {
-    return base::UTF8ToUTF16(user->name.value_or(""));
-  } else {
-    return base::UTF8ToUTF16(user->display_name.value_or(""));
-  }
-}
-
-void AuthenticatorSelectAccountSheetModel::SetObserver(
-    ui::TableModelObserver* observer) {}
 
 // AttestationPermissionRequestSheetModel -------------------------------------
 

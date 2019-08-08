@@ -58,14 +58,17 @@ class ChromiumDepGraph {
     ]
 
     Project project
+    boolean skipLicenses
 
     void collectDependencies() {
         def compileConfig = project.configurations.getByName('compile').resolvedConfiguration
+        def buildCompileConfig = project.configurations.getByName('buildCompile').resolvedConfiguration
         def annotationProcessorConfig = project.configurations.getByName('annotationProcessor').resolvedConfiguration
         def testCompileConfig = project.configurations.getByName('testCompile').resolvedConfiguration
         List<String> topLevelIds = []
         Set<ResolvedConfiguration> deps = []
         deps += compileConfig.firstLevelModuleDependencies
+        deps += buildCompileConfig.firstLevelModuleDependencies
         deps += annotationProcessorConfig.firstLevelModuleDependencies
         deps += testCompileConfig.firstLevelModuleDependencies
 
@@ -81,13 +84,25 @@ class ChromiumDepGraph {
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
             dep.supportsAndroid = true
             dep.testOnly = true
+            dep.isShipped = false
         }
 
-        compileConfig.resolvedArtifacts.each { artifact ->
-            def dep = dependencies.get(makeModuleId(artifact))
+        buildCompileConfig.resolvedArtifacts.each { artifact ->
+            def id = makeModuleId(artifact)
+            def dep = dependencies.get(id)
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
             dep.supportsAndroid = true
             dep.testOnly = false
+            dep.isShipped = false
+        }
+
+        compileConfig.resolvedArtifacts.each { artifact ->
+            def id = makeModuleId(artifact)
+            def dep = dependencies.get(id)
+            assert dep != null : "No dependency collected for artifact ${artifact.name}"
+            dep.supportsAndroid = true
+            dep.testOnly = false
+            dep.isShipped = true
         }
     }
 
@@ -149,9 +164,11 @@ class ChromiumDepGraph {
                                 List<String> childModules) {
         def pom = getPomFromArtifact(artifact.id.componentIdentifier).file
         def pomContent = new XmlSlurper(false, false).parse(pom)
-        String licenseName
-        String licenseUrl
-        (licenseName, licenseUrl) = resolveLicenseInformation(id, pomContent)
+        String licenseName = ''
+        String licenseUrl = ''
+        if (!skipLicenses) {
+            (licenseName, licenseUrl) = resolveLicenseInformation(id, pomContent)
+        }
 
         // Get rid of irrelevant indent that might be present in the XML file.
         def description = pomContent.description?.text()?.trim()?.replaceAll(/\s+/, " ")
@@ -208,6 +225,15 @@ class ChromiumDepGraph {
             }
         }
 
+        if (skipLicenses) {
+            dep.licenseName = ''
+            dep.licensePath = ''
+            dep.licenseUrl = ''
+            if (dep.id?.endsWith('license')) {
+                dep.exclude = true
+            }
+        }
+
         return dep
     }
 
@@ -235,7 +261,7 @@ class ChromiumDepGraph {
         String group, name, version, extension, displayName, description, url
         String licenseName, licenseUrl, licensePath
         String fileName
-        boolean supportsAndroid, visible, exclude, testOnly
+        boolean supportsAndroid, visible, exclude, testOnly, isShipped
         boolean licenseAndroidCompatible
         ComponentIdentifier componentId
         List<String> children

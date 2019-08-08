@@ -36,7 +36,7 @@ class AuthService : public AuthServiceInterface,
   //
   // |scopes| specifies OAuth2 scopes.
   AuthService(identity::IdentityManager* identity_manager,
-              const std::string& account_id,
+              const CoreAccountId& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const std::vector<std::string>& scopes);
   ~AuthService() override;
@@ -54,7 +54,8 @@ class AuthService : public AuthServiceInterface,
   // Overridden from IdentityManager::Observer
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override;
 
  private:
   // Called when the state of the refresh token changes.
@@ -67,7 +68,7 @@ class AuthService : public AuthServiceInterface,
                        const std::string& access_token);
 
   identity::IdentityManager* identity_manager_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool has_refresh_token_;
   std::string access_token_;

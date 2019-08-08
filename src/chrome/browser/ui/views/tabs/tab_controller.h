@@ -12,6 +12,8 @@
 
 class SkPath;
 class Tab;
+class TabGroupData;
+class TabGroupId;
 
 namespace gfx {
 class Point;
@@ -74,6 +76,9 @@ class TabController {
   virtual bool IsFirstVisibleTab(const Tab* tab) const = 0;
   virtual bool IsLastVisibleTab(const Tab* tab) const = 0;
 
+  // Returns true if any tab or one of its children has focus.
+  virtual bool IsFocusInTabs() const = 0;
+
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       Tab* tab,
@@ -102,6 +107,9 @@ class TabController {
   // Updates hover-card content, anchoring and visibility based on what tab is
   // hovered and whether the card should be shown.
   virtual void UpdateHoverCard(Tab* tab, bool should_show) = 0;
+
+  // Returns true if the hover card is showing for the given tab.
+  virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;
 
   // Returns whether |tab| needs to be painted. When this returns true, |clip|
   // is set to the path which should be clipped out of the current tab's region
@@ -168,6 +176,9 @@ class TabController {
 
   // Returns opacity for use on tab hover radial highlight.
   virtual float GetHoverOpacityForRadialHighlight() const = 0;
+
+  // Returns the TabGroupData instance for the given |group|.
+  virtual const TabGroupData* GetDataForGroup(TabGroupId group) const = 0;
 
  protected:
   virtual ~TabController() {}

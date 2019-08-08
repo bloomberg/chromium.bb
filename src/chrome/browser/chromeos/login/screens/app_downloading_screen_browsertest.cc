@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -45,7 +46,7 @@ class AppDownloadingScreenTest : public InProcessBrowserTest {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
     app_downloading_screen_ = std::make_unique<AppDownloadingScreen>(
-        GetOobeUI()->GetAppDownloadingScreenView(),
+        GetOobeUI()->GetView<AppDownloadingScreenHandler>(),
         base::BindRepeating(&AppDownloadingScreenTest::HandleScreenExit,
                             base::Unretained(this)));
 
@@ -82,7 +83,7 @@ class AppDownloadingScreenTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, NoAppsSelected) {
   app_downloading_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_APP_DOWNLOADING);
+  OobeScreenWaiter screen_waiter(AppDownloadingScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -114,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, SingleAppSelected) {
 
   app_downloading_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_APP_DOWNLOADING);
+  OobeScreenWaiter screen_waiter(AppDownloadingScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -148,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, MultipleAppsSelected) {
 
   app_downloading_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_APP_DOWNLOADING);
+  OobeScreenWaiter screen_waiter(AppDownloadingScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 

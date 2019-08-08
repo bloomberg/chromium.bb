@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">curseur</translation>
 <translation id="1211441953136645838">note de fin</translation>
 <translation id="1281252709823657822">boîte de dialogue</translation>
-<translation id="1289247557029249093">Quitter le mode PIP</translation>
 <translation id="1335095011850992622">crédits</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bannière</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2158401438286456825">liste des pages</translation>
 <translation id="2226276347425096477">Veuillez réduire ce texte à <ph name="MAX_CHARACTERS" /> caractères maximum (il compte actuellement <ph name="CURRENT_LENGTH" /> caractères).</translation>
+<translation id="2246498165605549352">Fichier local</translation>
 <translation id="2247351761944213033">Semaine <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Piste <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">case à cocher</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Image sans libellé</translation>
 <translation id="3706100364254443312">interrupteur</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Quitter le mode PIP (Picture-in-picture)</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> Go</translation>
 <translation id="3808586225841795776">terme</translation>
 <translation id="3822383571486410024">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement <ph name="CURRENT_LENGTH" />.</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">La partie précédée du symbole "<ph name="ATSIGN" />" ne doit pas contenir le caractère "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">annexe</translation>
+<translation id="4718048029184481307">Lecture en mode Picture-in-picture</translation>
 <translation id="4742539557769756338">couverture</translation>
 <translation id="4748357248530471599">activer/désactiver plein écran en encoche</translation>
 <translation id="4757246831282535685">panneau des onglets</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">postface</translation>
 <translation id="6209276755895393898">L'image représente probablement : <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossaire</translation>
-<translation id="628938136236500310">Lecture en mode Picture-in-picture</translation>
+<translation id="6310801910862476708">Quitter le mode PIP (Picture-in-picture)</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
 <translation id="6404546809543547843">curseur durée audio</translation>
 <translation id="6443871981718447451">afficher le menu des sous-titres</translation>

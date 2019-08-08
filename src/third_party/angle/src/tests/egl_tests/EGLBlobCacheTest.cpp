@@ -84,17 +84,15 @@ class EGLBlobCacheTest : public ANGLETest
         forceNewDisplay();
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         EGLDisplay display = getEGLWindow()->getDisplay();
-        mHasBlobCache      = eglDisplayExtensionEnabled(display, kEGLExtName);
+        mHasBlobCache      = IsEGLDisplayExtensionEnabled(display, kEGLExtName);
     }
 
     bool programBinaryAvailable()
     {
-        return (getClientMajorVersion() >= 3 || extensionEnabled("GL_OES_get_program_binary"));
+        return (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_OES_get_program_binary"));
     }
 
     bool mHasBlobCache;

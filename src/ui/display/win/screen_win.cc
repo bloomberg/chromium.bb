@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
@@ -152,6 +153,34 @@ float GetMonitorSDRWhiteLevel(HMONITOR monitor) {
   return ret;
 }
 
+void GetDisplaySettingsForDevice(const wchar_t* device_name,
+                                 Display::Rotation* rotation,
+                                 int* frequency) {
+  *rotation = Display::ROTATE_0;
+  *frequency = 0;
+  DEVMODE mode = {};
+  mode.dmSize = sizeof(mode);
+  if (::EnumDisplaySettings(device_name, ENUM_CURRENT_SETTINGS, &mode)) {
+    switch (mode.dmDisplayOrientation) {
+      case DMDO_DEFAULT:
+        *rotation = Display::ROTATE_0;
+        break;
+      case DMDO_90:
+        *rotation = Display::ROTATE_90;
+        break;
+      case DMDO_180:
+        *rotation = Display::ROTATE_180;
+        break;
+      case DMDO_270:
+        *rotation = Display::ROTATE_270;
+        break;
+      default:
+        NOTREACHED();
+    }
+    *frequency = mode.dmDisplayFrequency;
+  }
+}
+
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
     const DisplayInfo& ref_display_info,
     std::vector<DisplayInfo>* display_infos) {
@@ -179,11 +208,17 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
+  display.set_display_frequency(display_info.display_frequency());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
-      display.SetColorSpaceAndDepth(
-          gfx::ColorSpace::CreateSCRGBLinear().GetScaledColorSpace(
-              80.0 / display_info.sdr_white_level()));
+      // Using RGBA F16 backbuffers required by SCRGB linear causes stuttering
+      // on Windows RS3, but RGB10A2 with HDR10 color space works fine.
+      gfx::ColorSpace hdr_color_space =
+          base::win::GetVersion() > base::win::Version::WIN10_RS3
+              ? gfx::ColorSpace::CreateSCRGBLinear()
+              : gfx::ColorSpace::CreateHDR10();
+      display.SetColorSpaceAndDepth(hdr_color_space,
+                                    display_info.sdr_white_level());
     } else {
       display.SetColorSpaceAndDepth(
           color_profile_reader->GetDisplayColorSpace(display_info.id()));
@@ -265,8 +300,7 @@ std::vector<Display> ScreenWinDisplaysToDisplays(
 }
 
 MONITORINFOEX MonitorInfoFromHMONITOR(HMONITOR monitor) {
-  MONITORINFOEX monitor_info;
-  ::ZeroMemory(&monitor_info, sizeof(monitor_info));
+  MONITORINFOEX monitor_info = {};
   monitor_info.cbSize = sizeof(monitor_info);
   ::GetMonitorInfo(monitor, &monitor_info);
   return monitor_info;
@@ -279,9 +313,15 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
   std::vector<DisplayInfo>* display_infos =
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
-  display_infos->push_back(DisplayInfo(MonitorInfoFromHMONITOR(monitor),
-                                       GetMonitorScaleFactor(monitor),
-                                       GetMonitorSDRWhiteLevel(monitor)));
+
+  Display::Rotation rotation;
+  int display_frequency;
+  MONITORINFOEX monitor_info = MonitorInfoFromHMONITOR(monitor);
+  GetDisplaySettingsForDevice(monitor_info.szDevice, &rotation,
+                              &display_frequency);
+  display_infos->push_back(DisplayInfo(
+      monitor_info, GetMonitorScaleFactor(monitor),
+      GetMonitorSDRWhiteLevel(monitor), rotation, display_frequency));
   return TRUE;
 }
 
@@ -329,16 +369,10 @@ ScreenWin::~ScreenWin() {
 // static
 int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor, int metric) {
   if (base::win::IsProcessPerMonitorDpiAware()) {
-    static auto get_metric_for_dpi_func = []() {
-      using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
-      HMODULE user32_dll = ::LoadLibrary(L"user32.dll");
-      if (user32_dll) {
-        return reinterpret_cast<GetSystemMetricsForDpiPtr>(
-            ::GetProcAddress(user32_dll, "GetSystemMetricsForDpi"));
-      }
-      return static_cast<GetSystemMetricsForDpiPtr>(nullptr);
-    }();
-
+    using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
+    static const auto get_metric_for_dpi_func =
+        reinterpret_cast<GetSystemMetricsForDpiPtr>(
+            base::win::GetUser32FunctionPointer("GetSystemMetricsForDpi"));
     if (get_metric_for_dpi_func) {
       return get_metric_for_dpi_func(metric,
                                      GetDPIFromScalingFactor(scale_factor));

@@ -11,14 +11,15 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "url/origin.h"
 
+class GURL;
+
 namespace net {
-class URLRequest;
 class HttpResponseHeaders;
 }  // namespace net
 
 namespace network {
 
-struct ResourceResponse;
+struct ResourceResponseInfo;
 
 // Implementation of Cross-Origin-Resource-Policy - see:
 // - https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header
@@ -36,8 +37,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginResourcePolicy {
     kAllow,
   };
   static VerificationResult Verify(
-      const net::URLRequest& request,
-      const ResourceResponse& response,
+      const GURL& request_url,
+      const base::Optional<url::Origin>& request_initiator,
+      const ResourceResponseInfo& response,
       mojom::FetchRequestMode fetch_mode,
       base::Optional<url::Origin> request_initiator_site_lock);
 

@@ -35,7 +35,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   void SetBackgroundBlurEnabled(bool enabled);
 
   void OnResultChanged() override;
-  void SetIndexInSuggestionChipContainer(size_t index);
 
   // SearchResultObserver:
   void OnMetadataChanged() override;
@@ -84,9 +83,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
-  // The index of this view in the suggestion_chip_container, only used for uma
-  // logging.
-  int index_in_suggestion_chip_container_ = -1;
   base::WeakPtrFactory<SearchResultSuggestionChipView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultSuggestionChipView);

@@ -7,17 +7,38 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 class DemoPreferencesScreen;
 
+// Interface of the demo mode preferences screen view.
+class DemoPreferencesScreenView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"demo-preferences"};
+
+  virtual ~DemoPreferencesScreenView();
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Sets view and screen.
+  virtual void Bind(DemoPreferencesScreen* screen) = 0;
+
+  // Called to set the input method id on JS side.
+  virtual void SetInputMethodId(const std::string& input_method) = 0;
+};
+
 // WebUI implementation of DemoPreferencesScreenView.
 class DemoPreferencesScreenHandler : public BaseScreenHandler,
                                      public DemoPreferencesScreenView {
  public:
+  using TView = DemoPreferencesScreenView;
+
   explicit DemoPreferencesScreenHandler(JSCallsContainer* js_calls_container);
   ~DemoPreferencesScreenHandler() override;
 

@@ -8,6 +8,9 @@
 namespace password_manager {
 namespace prefs {
 
+const char kBlacklistedCredentialsNormalized[] =
+    "profile.blacklisted_credentials_normalized";
+
 const char kCredentialsEnableAutosignin[] = "credentials_enable_autosignin";
 const char kCredentialsEnableService[] = "credentials_enable_service";
 

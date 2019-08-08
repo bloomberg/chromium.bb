@@ -36,6 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--The polyfill is not needed for browser that have native API support,
         but is linked by these samples for wider compatibility.-->
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
+    <script src='../js/xrray-polyfill.js' type='module'></script>
     <script src='../js/webxr-polyfill.js'></script>
 
     <script src='../js/webxr-button.js'></script>
@@ -46,7 +47,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <summary>AR Hit Test</summary>
         <p>
           This sample demonstrates use of hit testing to place AR objects on real-world surfaces.
-          <a class="back" href="./">Back</a>
+          <a class="back" href="./index.html">Back</a>
           <br/>
           <hr/>
           <input id="useReticle" type="checkbox" checked>
@@ -107,35 +108,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           textEnterXRTitle: "START AR",
           textXRNotFoundTitle: "AR NOT FOUND",
           textExitXRTitle: "EXIT  AR",
-          supportedSessionTypes: ['immersive-ar', 'legacy-inline-ar']
+          supportedSessionTypes: ['immersive-ar']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
       }
 
-      function makeCanvas() {
-          // Create a fullscreen canvas element for use with legacy AR mode.
-          let canvas = document.createElement('canvas');
-          canvas.style.width = '100%';
-          canvas.style.height = '100%';
-          canvas.style.left = 0;
-          canvas.style.top = 0;
-          canvas.style.right = 0;
-          canvas.style.bottom = 0;
-          canvas.style.margin = 0;
-          canvas.id = 'legacy-canvas';
-          return canvas;
-      }
-
       function onRequestSession() {
         navigator.xr.requestSession('immersive-ar').then((session) => {
+              session.mode = 'immersive-ar';
               xrButton.setSession(session);
               onSessionStarted(session);
-        }).catch(() => {
-            navigator.xr.requestSession('legacy-inline-ar')
-              .then((session) => {
-                xrButton.setSession(session);
-                onSessionStarted(session);
-            });
         });
       }
 
@@ -153,15 +135,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.setRenderer(renderer);
         }
 
-        let outputCanvas = makeCanvas();
-        document.body.appendChild(outputCanvas);
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-        session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
-        });
-
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+        session.requestReferenceSpace('local').then((refSpace) => {
           xrRefSpace = refSpace;
           session.requestAnimationFrame(onXRFrame);
         });
@@ -173,9 +149,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onSessionEnded(event) {
         xrButton.setSession(null);
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
-        }
       }
 
       // Adds a new object to the scene at the

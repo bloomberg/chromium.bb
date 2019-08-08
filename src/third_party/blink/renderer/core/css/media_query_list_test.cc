@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -22,7 +23,7 @@ class TestListener : public MediaQueryListListener {
 }  // anonymous namespace
 
 TEST(MediaQueryListTest, CrashInStop) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   auto* list = MakeGarbageCollected<MediaQueryList>(
       document, MakeGarbageCollected<MediaQueryMatcher>(*document),
       MediaQuerySet::Create());

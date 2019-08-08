@@ -23,13 +23,9 @@ namespace content {
 FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest, ResponseBlocking);
 }  // namespace content
 
-namespace net {
-class URLRequest;
-}
-
 namespace network {
 
-struct ResourceResponse;
+struct ResourceResponseInfo;
 
 // CrossOriginReadBlocking (CORB) implements response blocking
 // policy for Site Isolation.  CORB will monitor network responses to a
@@ -39,37 +35,48 @@ struct ResourceResponse;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
  public:
+  // This enum describes how CORB should decide whether to block a given
+  // no-cors, cross-origin response.
+  //
+  // Note that these values are used in histograms, and must not change.
   enum class MimeType {
-    // Note that these values are used in histograms, and must not change.
+    // Blocked if served with `X-Content-Type-Options: nosniff` or if this is a
+    // 206 range response or if sniffing confirms that the body matches
+    // `Content-Type`.
     kHtml = 0,
     kXml = 1,
     kJson = 2,
+
+    // Blocked if served with `X-Content-Type-Options: nosniff` or
+    // sniffing detects that this is HTML, JSON or XML.  For example, this
+    // behavior is used for `Content-Type: text/plain`.
     kPlain = 3,
+
+    // Blocked if sniffing finds a JSON security prefix.  Used for an otherwise
+    // unrecognized type (i.e. type that isn't explicitly recognized as
+    // belonging to one of the other categories).
     kOthers = 4,
 
-    kMax,
-    kInvalidMimeType = kMax,
-  };
+    // Always blocked.  Used for content types that are unlikely to be
+    // incorrectly applied to images, scripts and other legacy no-cors
+    // resources.  For example, `Content-Type: application/zip` is blocked
+    // without any confirmation sniffing.
+    kNeverSniffed = 5,
 
-  enum class CorbResultVsInitiatorLockCompatibility {
-    // Note that these values are used in histograms, and must not change.
-    kNoBlocking = 0,
-    kBenignBlocking = 1,
-    kBlockingWhenIncorrectLock = 2,
-    kBlockingWhenCompatibleLock = 3,
-    kBlockingWhenOtherLock = 4,
-
-    kMaxValue = kBlockingWhenOtherLock
+    kInvalidMimeType,              // For DCHECKs.
+    kMaxValue = kInvalidMimeType,  // For UMA histograms.
   };
 
   // An instance for tracking the state of analyzing a single response
   // and deciding whether CORB should block the response.
   class COMPONENT_EXPORT(NETWORK_SERVICE) ResponseAnalyzer {
    public:
-    // Creates a ResponseAnalyzer for the |request|, |response| pair.  The
-    // ResponseAnalyzer will decide whether |response| needs to be blocked.
-    ResponseAnalyzer(const net::URLRequest& request,
-                     const ResourceResponse& response,
+    // Creates a ResponseAnalyzer for the request (|request_url| and
+    // |request_initiator|), |response| pair.  The ResponseAnalyzer will decide
+    // whether |response| needs to be blocked.
+    ResponseAnalyzer(const GURL& request_url,
+                     const base::Optional<url::Origin>& request_initiator,
+                     const ResourceResponseInfo& response,
                      base::Optional<url::Origin> request_initiator_site_lock,
                      mojom::FetchRequestMode fetch_request_mode);
 
@@ -135,8 +142,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     };
     BlockingDecision ShouldBlockBasedOnHeaders(
         mojom::FetchRequestMode fetch_request_mode,
-        const net::URLRequest& request,
-        const ResourceResponse& response);
+        const GURL& request_url,
+        const base::Optional<url::Origin>& request_initiator,
+        const ResourceResponseInfo& response);
 
     // Populates |sniffers_| container based on |canonical_mime_type_|.  Called
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
@@ -160,12 +168,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // resource request.
     int http_response_code_ = 0;
 
-    // Whether |request_initiator| was compatible with
-    // |request_initiator_site_lock|.  For safety initialized to kIncorrectLock,
-    // but in practice it will always be explicitly set by the constructor.
-    InitiatorLockCompatibility initiator_compatibility_ =
-        InitiatorLockCompatibility::kIncorrectLock;
-
     // Propagated from URLLoaderFactoryParams::request_initiator_site_lock;
     base::Optional<url::Origin> request_initiator_site_lock_;
 
@@ -181,8 +183,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   };
 
   // Used to strip response headers if a decision to block has been made.
-  static void SanitizeBlockedResponse(
-      const scoped_refptr<network::ResourceResponse>& response);
+  static void SanitizeBlockedResponse(ResourceResponseInfo* response);
 
   // This enum backs a histogram, so do not change the order of entries or
   // remove entries. When adding new entries update |kMaxValue| and enums.xml
@@ -236,6 +237,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
 
   // Reverts AddExceptionForPlugin.
   static void RemoveExceptionForPlugin(int process_id);
+
+  // Registers additional MIME types that can be protected by CORB (without any
+  // confirmation sniffing).
+  //
+  // TODO(lukasza): https://crbug.com/944162: Remove the method below once
+  // kMimeHandlerViewInCrossProcessFrame feature ships.
+  static void AddExtraMimeTypesForCorb(
+      const std::vector<std::string>& mime_types);
 
  private:
   CrossOriginReadBlocking();  // Not instantiable.

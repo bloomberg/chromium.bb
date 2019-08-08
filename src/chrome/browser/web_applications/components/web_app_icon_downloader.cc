@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +37,10 @@ void WebAppIconDownloader::SkipPageFavicons() {
 }
 
 void WebAppIconDownloader::Start() {
+  // Favicons are not supported in extension WebContents.
+  if (IsValidExtensionUrl(web_contents()->GetLastCommittedURL()))
+    SkipPageFavicons();
+
   // If the candidates aren't loaded, icons will be fetched when
   // DidUpdateFaviconURL() is called.
   FetchIcons(extra_favicon_urls_);

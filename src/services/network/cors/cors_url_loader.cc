@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "url/url_util.h"
@@ -83,6 +84,7 @@ CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
+    const base::Optional<url::Origin>& factory_bound_origin,
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
@@ -96,6 +98,7 @@ CorsURLLoader::CorsURLLoader(
       request_(resource_request),
       forwarding_client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
+      factory_bound_origin_(factory_bound_origin),
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller),
@@ -153,9 +156,16 @@ void CorsURLLoader::FollowRedirect(
     return;
   }
 
-  for (const auto& name : removed_headers)
+  for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);
+    request_.cors_exempt_headers.RemoveHeader(name);
+  }
   request_.headers.MergeFrom(modified_headers);
+
+  if (!AreRequestHeadersSafe(request_.headers)) {
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    return;
+  }
 
   const std::string original_method = std::move(request_.method);
   request_.url = redirect_info_.new_url;
@@ -352,11 +362,11 @@ void CorsURLLoader::OnUploadProgress(int64_t current_position,
                                        std::move(ack_callback));
 }
 
-void CorsURLLoader::OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
+void CorsURLLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
-  forwarding_client_->OnReceiveCachedMetadata(data);
+  forwarding_client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void CorsURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
@@ -437,9 +447,7 @@ void CorsURLLoader::StartRequest() {
 
   if (!CalculateCredentialsFlag(request_.fetch_credentials_mode,
                                 response_tainting_)) {
-    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    request_.allow_credentials = false;
   }
 
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
@@ -499,17 +507,22 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   if (fetch_cors_flag_)
     return;
 
-  if (request_.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
-      request_.fetch_request_mode == mojom::FetchRequestMode::kNoCors) {
+  if (!network::cors::ShouldCheckCors(request_.url, request_.request_initiator,
+                                      request_.fetch_request_mode)) {
     return;
   }
 
-  if (request_.url.SchemeIs(url::kDataScheme))
+  // In some cases we want to use the origin attached to the URLLoaderFactory
+  // to check same-originness.
+  // TODO(lukasza): https://crbug.com/940068: Revert https://crrev.com/c/1642752
+  // once request_initiator is always set to the webpage (and never to the
+  // isolated world).
+  if (request_.should_also_use_factory_bound_origin_for_cors &&
+      factory_bound_origin_ &&
+      factory_bound_origin_->IsSameOriginWith(
+          url::Origin::Create(request_.url))) {
     return;
-
-  // CORS needs a proper origin (including a unique opaque origin). If the
-  // request doesn't have one, CORS should not work.
-  DCHECK(request_.request_initiator);
+  }
 
   // The source origin and destination URL pair may be in the allow list.
   switch (origin_access_list_->CheckAccessState(*request_.request_initiator,
@@ -540,11 +553,6 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   // TODO(yhirano): Remove this logic at the time.
   if (request_.url.SchemeIsBlob() && request_.request_initiator->opaque() &&
       url::Origin::Create(request_.url).opaque()) {
-    return;
-  }
-
-  if (request_.request_initiator->IsSameOriginWith(
-          url::Origin::Create(request_.url))) {
     return;
   }
 

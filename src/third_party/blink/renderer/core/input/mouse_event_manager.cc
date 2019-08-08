@@ -474,7 +474,8 @@ void MouseEventManager::SetElementUnderMouse(
 void MouseEventManager::NodeChildrenWillBeRemoved(ContainerNode& container) {
   if (container == click_element_)
     return;
-  if (!container.IsShadowIncludingInclusiveAncestorOf(click_element_.Get()))
+  if (!click_element_ ||
+      !container.IsShadowIncludingInclusiveAncestorOf(*click_element_))
     return;
   click_element_ = nullptr;
 
@@ -483,8 +484,8 @@ void MouseEventManager::NodeChildrenWillBeRemoved(ContainerNode& container) {
 }
 
 void MouseEventManager::NodeWillBeRemoved(Node& node_to_be_removed) {
-  if (node_to_be_removed.IsShadowIncludingInclusiveAncestorOf(
-          click_element_.Get())) {
+  if (click_element_ && node_to_be_removed.IsShadowIncludingInclusiveAncestorOf(
+                            *click_element_)) {
     // We don't dispatch click events if the mousedown node is removed
     // before a mouseup event. It is compatible with IE and Firefox.
     click_element_ = nullptr;
@@ -571,7 +572,9 @@ bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
   if (element.AuthorShadowRoot() &&
       element.AuthorShadowRoot()->delegatesFocus()) {
     Document* doc = frame_->GetDocument();
-    if (element.IsShadowIncludingInclusiveAncestorOf(doc->FocusedElement())) {
+    Element* focused_element = doc->FocusedElement();
+    if (focused_element &&
+        element.IsShadowIncludingInclusiveAncestorOf(*focused_element)) {
       // If the inner element is already focused, do nothing.
       return true;
     }
@@ -582,7 +585,7 @@ bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
     DCHECK(page);
     Element* found =
         page->GetFocusController().FindFocusableElementInShadowHost(element);
-    if (found && element.IsShadowIncludingInclusiveAncestorOf(found)) {
+    if (found && element.IsShadowIncludingInclusiveAncestorOf(*found)) {
       // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the
       // focus has slided.
       found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,

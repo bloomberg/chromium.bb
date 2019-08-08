@@ -253,30 +253,30 @@ void WebContentsDelegateAndroid::SetContentsBounds(WebContents* source,
 
 bool WebContentsDelegateAndroid::DidAddMessageToConsole(
     WebContents* source,
-    int32_t level,
+    blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
-    return WebContentsDelegate::DidAddMessageToConsole(source, level, message,
-                                                       line_no, source_id);
+    return WebContentsDelegate::DidAddMessageToConsole(
+        source, log_level, message, line_no, source_id);
   ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(env, message));
   ScopedJavaLocalRef<jstring> jsource_id(
       ConvertUTF16ToJavaString(env, source_id));
   int jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_DEBUG;
-  switch (level) {
-    case logging::LOG_VERBOSE:
+  switch (log_level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
       jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_DEBUG;
       break;
-    case logging::LOG_INFO:
+    case blink::mojom::ConsoleMessageLevel::kInfo:
       jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_LOG;
       break;
-    case logging::LOG_WARNING:
+    case blink::mojom::ConsoleMessageLevel::kWarning:
       jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_WARNING;
       break;
-    case logging::LOG_ERROR:
+    case blink::mojom::ConsoleMessageLevel::kError:
       jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_ERROR;
       break;
     default:

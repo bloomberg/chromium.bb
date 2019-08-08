@@ -207,7 +207,7 @@ void IconLoader::ReadIcon() {
   gfx::ImageSkia image_skia(ResizeImage(*(rb.GetImageNamed(idr)).ToImageSkia(),
                                         IconSizeToDIPSize(icon_size_)));
   image_skia.MakeThreadSafe();
-  std::unique_ptr<gfx::Image> image = std::make_unique<gfx::Image>(image_skia);
+  gfx::Image image(image_skia);
   target_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback_), std::move(image), group_));

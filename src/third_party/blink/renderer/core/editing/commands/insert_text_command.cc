@@ -119,11 +119,8 @@ bool InsertTextCommand::PerformTrivialReplace(const String& text) {
 
 bool InsertTextCommand::PerformOverwrite(const String& text) {
   Position start = EndingVisibleSelection().Start();
-  if (start.IsNull() || !start.IsOffsetInAnchor() ||
-      !start.ComputeContainerNode()->IsTextNode())
-    return false;
-  Text* text_node = ToText(start.ComputeContainerNode());
-  if (!text_node)
+  auto* text_node = DynamicTo<Text>(start.ComputeContainerNode());
+  if (start.IsNull() || !start.IsOffsetInAnchor() || !text_node)
     return false;
 
   unsigned count = std::min(
@@ -258,7 +255,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
         << start_position;
     if (placeholder.IsNotNull())
       RemovePlaceholderAt(placeholder);
-    Text* text_node = ToText(start_position.ComputeContainerNode());
+    auto* text_node = To<Text>(start_position.ComputeContainerNode());
     const unsigned offset = start_position.OffsetInContainerNode();
 
     InsertTextIntoNode(text_node, offset, text_);
@@ -312,11 +309,11 @@ Position InsertTextCommand::InsertTab(const Position& pos,
     return pos;
 
   Node* node = insert_pos.ComputeContainerNode();
-  unsigned offset = node->IsTextNode() ? insert_pos.OffsetInContainerNode() : 0;
+  auto* text_node = DynamicTo<Text>(node);
+  unsigned offset = text_node ? insert_pos.OffsetInContainerNode() : 0;
 
   // keep tabs coalesced in tab span
   if (IsTabHTMLSpanElementTextNode(node)) {
-    Text* text_node = ToText(node);
     InsertTextIntoNode(text_node, offset, "\t");
     return Position(text_node, offset + 1);
   }
@@ -325,10 +322,9 @@ Position InsertTextCommand::InsertTab(const Position& pos,
   HTMLSpanElement* span_element = CreateTabSpanElement(GetDocument());
 
   // place it
-  if (!node->IsTextNode()) {
+  if (!text_node) {
     InsertNodeAt(span_element, insert_pos, editing_state);
   } else {
-    Text* text_node = ToText(node);
     if (offset >= text_node->length()) {
       InsertNodeAfter(span_element, text_node, editing_state);
     } else {

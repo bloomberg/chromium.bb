@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -45,7 +46,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
@@ -53,8 +54,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
+#include "components/arc/arc_prefs.h"
+#include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
@@ -230,6 +234,9 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   result.timezone =
       base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                             ->GetCurrentTimezoneID());
+  result.arc_enabled = service->GetBoolean(arc::prefs::kArcEnabled);
+  result.arc_removable_media_access_enabled =
+      service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
 
   return RespondNow(OneArgument(result.ToValue()));
 }
@@ -243,11 +250,33 @@ FileManagerPrivateSetPreferencesFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   PrefService* const service = profile->GetPrefs();
 
-  if (params->change_info.cellular_disabled)
+  if (params->change_info.cellular_disabled) {
     service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
                         *params->change_info.cellular_disabled);
+  }
+  if (params->change_info.arc_enabled) {
+    service->SetBoolean(arc::prefs::kArcEnabled,
+                        *params->change_info.arc_enabled);
+  }
+  if (params->change_info.arc_removable_media_access_enabled) {
+    service->SetBoolean(
+        arc::prefs::kArcHasAccessToRemovableMedia,
+        *params->change_info.arc_removable_media_access_enabled);
+  }
 
   return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateSetArcStorageToastShownFlagFunction::Run() {
+  const ChromeExtensionFunctionDetails chrome_details(this);
+  auto* volume_mounter = arc::ArcVolumeMounterBridge::GetForBrowserContext(
+      chrome_details.GetProfile());
+  DCHECK(volume_mounter);
+
+  const bool result = volume_mounter->files_app_toast_shown();
+  volume_mounter->set_files_app_toast_shown(true);
+  return RespondNow(OneArgument(std::make_unique<base::Value>(result)));
 }
 
 FileManagerPrivateInternalZipSelectionFunction::
@@ -411,15 +440,14 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
-  MultiUserWindowManagerClient* const window_manager_client =
-      MultiUserWindowManagerClient::GetInstance();
+  ash::MultiUserWindowManager* const window_manager =
+      MultiUserWindowManagerHelper::GetWindowManager();
   const AccountId current_profile_id = multi_user_util::GetAccountIdFromProfile(
       Profile::FromBrowserContext(browser_context()));
   const AccountId display_profile_id =
-      window_manager_client && app_window
-          ? window_manager_client->GetUserPresentingWindow(
-                app_window->GetNativeWindow())
-          : EmptyAccountId();
+      window_manager && app_window ? window_manager->GetUserPresentingWindow(
+                                         app_window->GetNativeWindow())
+                                   : EmptyAccountId();
 
   return RespondNow(
       ArgumentList(api::file_manager_private::GetProfiles::Results::Create(
@@ -516,7 +544,10 @@ void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
 #if defined(OFFICIAL_BUILD)
-  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+  bool piex_nacl_enabled = !base::FeatureList::IsEnabled(
+      chromeos::features::kEnableFileManagerPiexWasm);
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(piex_nacl_enabled)));
 #else
   return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
 #endif

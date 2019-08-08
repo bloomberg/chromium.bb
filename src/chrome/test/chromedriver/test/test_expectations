@@ -18,9 +18,6 @@ _NEGATIVE_FILTER = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2653
     'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
-    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
     'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
 
@@ -51,27 +48,14 @@ _READY_TO_RUN_FILTER = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2855
-    'WindowTest.canFullscreenTheWindow',
-    'WindowTest.canFullscreenTheWindowFromIframe',
-    'WindowTest.testCanMaximizeTheWindowFromIframe',
-    'WindowTest.testCanMaximizeTheWindow',
-    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2663
-    'WindowTest.canFullscreenTheWindow',
+    # Test 'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe' passes while it is run
+    # standalone and fails in a test suit run
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
-    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromFrame',
-    'WindowTest.canFullscreenTheWindowFromFrame',
-    'WindowTest.canFullscreenTheWindowFromIframe',
-    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
-    'WindowTest.testCanMaximizeTheWindowFromFrame',
-    'WindowTest.testCanMaximizeTheWindowFromIframe',
-    'WindowTest.testCanMaximizeTheWindow',
-    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2856
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
@@ -168,9 +152,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1176
     'ChromeDriverTests.clientLogShouldBeEnabledByDefault',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1119
-    'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
-    'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1005
     'WindowTest.*',
 
@@ -231,23 +212,29 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
 )
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2580
-    'LocalStorageTest.*',
-    'LocationContextTest.*',
-    'SessionStorageTest.*',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2330
-        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
-         # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
+        # Not applicable. ChromeDriverWebViewShell doesn't support tabs.
         'WindowSwitchingTest.*',
+        'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
+
+        # Not applicable. ChromeDriverWebViewShell doesn't support local storage
+        'LocalStorageTest.*',
+
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2330
+        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
+
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2595
         'TakesScreenshotTest.*',
 
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
         'ImplicitWaitTest.testShouldRetainImplicitlyWaitFromTheReturnedWebDriverOfFrameSwitchTo',
+
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2899
+        'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
+        'ClickTest.testCanClickOnALinkThatOverflowsAndFollowIt',
     ]
 )
 

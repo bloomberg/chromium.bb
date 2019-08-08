@@ -38,8 +38,4 @@ bool FakeProxy::MainFrameWillHappenForTesting() {
   return false;
 }
 
-uint32_t FakeProxy::GenerateChildSurfaceSequenceNumberSync() {
-  return 0u;
-}
-
 }  // namespace cc

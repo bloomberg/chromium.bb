@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ला पाठवत आहे…</translation>
 <translation id="111910763555783249">सूचना सेटिंग्ज</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिवसापूर्वी}other{# दिवसांपूर्वी}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="1409544243779336081">ॲप शिफारस</translation>
-<translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> वरील सूचना अक्षम करा</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनिट आणि }other{# मिनिटे आणि }}</translation>
 <translation id="1643823602425662293">सूचना</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">आता</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 मिनिट}other{# मिनिटे}}</translation>
-<translation id="1756116796893109054">टॅब पाठवत आहे...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">पूर्णविराम</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 महिना}other{# महिने}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तार करा</translation>
+<translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
 <translation id="6351032674660237738">ॲप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{एकापेक्षा जास्त न वाचलेली सूचना}other{# पेक्षा जास्त न वाचलेल्या सूचना}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{१मि मध्ये}other{#मि मध्ये}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google असिस्टंट व्हॉइस क्वेरी सुरू करा</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 तासापूर्वी}other{# तासांपूर्वी}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 सेकंद शिल्लक}other{# सेकंद शिल्लक}}</translation>
+<translation id="8144660977431427332">तुमचे शोध Google असिस्टंट द्वारे प्रायोजित आहेत. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ऑटोकंप्लीट</translation>
 <translation id="815598010540052116">खाली स्क्रोल करा</translation>
 <translation id="8170087467028567933">ही सूचना काढल्याने ती तुमच्या सर्व डिव्हाइसवर तुमच्या खात्यावरून लपवली जाईल.</translation>

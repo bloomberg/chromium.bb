@@ -35,6 +35,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -87,11 +89,12 @@ class TestPermissionContext : public PermissionContextBase {
                          const PermissionRequestID& id,
                          const GURL& requesting_frame,
                          bool user_gesture,
-                         const BrowserPermissionCallback& callback) override {
+                         BrowserPermissionCallback callback) override {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     PermissionContextBase::RequestPermission(web_contents, id, requesting_frame,
-                                             true /* user_gesture */, callback);
+                                             true /* user_gesture */,
+                                             std::move(callback));
     run_loop.Run();
   }
 
@@ -100,10 +103,10 @@ class TestPermissionContext : public PermissionContextBase {
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,
-                        const BrowserPermissionCallback& callback) override {
+                        BrowserPermissionCallback callback) override {
     PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
                                             embedding_origin, user_gesture,
-                                            callback);
+                                            std::move(callback));
     if (respond_permission_) {
       respond_permission_.Run();
       respond_permission_.Reset();
@@ -189,6 +192,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
   void TestAskAndDecide_TestContent(ContentSettingsType content_settings_type,
                                     ContentSetting decision) {
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
     TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url("https://www.google.com");
     SetUpUrl(url);
@@ -209,12 +214,17 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     std::string decision_string;
-    if (decision == CONTENT_SETTING_ALLOW)
+    base::Optional<PermissionAction> action;
+    if (decision == CONTENT_SETTING_ALLOW) {
       decision_string = "Accepted";
-    else if (decision == CONTENT_SETTING_BLOCK)
+      action = PermissionAction::GRANTED;
+    } else if (decision == CONTENT_SETTING_BLOCK) {
       decision_string = "Denied";
-    else if (decision == CONTENT_SETTING_ASK)
+      action = PermissionAction::DENIED;
+    } else if (decision == CONTENT_SETTING_ASK) {
       decision_string = "Dismissed";
+      action = PermissionAction::DISMISSED;
+    }
 
     if (!decision_string.empty()) {
       histograms.ExpectUniqueSample(
@@ -235,6 +245,20 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     histograms.ExpectUniqueSample(
         "Permissions.AutoBlocker.EmbargoStatus",
         static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), 1);
+
+    if (action.has_value()) {
+      auto entries = ukm_recorder.GetEntriesByName("Permission");
+      EXPECT_EQ(1u, entries.size());
+      auto* entry = entries.front();
+      ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+
+      EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
+                static_cast<int64_t>(PermissionSourceUI::PROMPT));
+      EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
+                static_cast<int64_t>(content_settings_type));
+      EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
+                static_cast<int64_t>(action.value()));
+    }
   }
 
   void DismissMultipleTimesAndExpectBlock(

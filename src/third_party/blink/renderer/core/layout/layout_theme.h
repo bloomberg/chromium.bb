@@ -142,6 +142,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color InactiveSelectionBackgroundColor() const;
   Color ActiveSelectionForegroundColor() const;
   Color InactiveSelectionForegroundColor() const;
+  virtual void SetSelectionColors(unsigned active_background_color,
+                                  unsigned active_foreground_color,
+                                  unsigned inactive_background_color,
+                                  unsigned inactive_foreground_color) {}
 
   // List box selection colors
   Color ActiveListBoxSelectionBackgroundColor() const;
@@ -272,7 +276,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Returns the minimum size for a control in zoomed coordinates.
   virtual LengthSize MinimumControlSize(ControlPart,
                                         const FontDescription&,
-                                        float /*zoomFactor*/) const {
+                                        float /*zoomFactor*/,
+                                        const ComputedStyle& style) const {
     return LengthSize(Length::Fixed(0), Length::Fixed(0));
   }
 

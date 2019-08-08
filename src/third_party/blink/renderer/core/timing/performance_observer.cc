@@ -59,12 +59,11 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   if (execution_context->IsDocument()) {
     if (RuntimeEnabledFeatures::ElementTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kElement);
-    if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context)) {
+    if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
-      supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
-    }
-    if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(execution_context))
-      supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
+    supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
+    if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(execution_context))
+      supportedEntryTypes.push_back(performance_entry_names::kLayoutShift);
     supportedEntryTypes.push_back(performance_entry_names::kLongtask);
   }
   supportedEntryTypes.push_back(performance_entry_names::kMark);

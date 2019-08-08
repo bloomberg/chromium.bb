@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/drop_target_view.h"
 
+#include <algorithm>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -37,8 +39,8 @@ class DropTargetView::PlusIconView : public views::ImageView {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     set_can_process_events_within_subtree(false);
-    SetVerticalAlignment(views::ImageView::CENTER);
-    SetHorizontalAlignment(views::ImageView::CENTER);
+    SetVerticalAlignment(views::ImageView::Alignment::kCenter);
+    SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
   }
   ~PlusIconView() override = default;
 
@@ -52,9 +54,7 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
   background_view_->layer()->SetColor(kDropTargetBackgroundColor);
   background_view_->layer()->SetOpacity(kDropTargetBackgroundOpacity);
   if (ash::features::ShouldUseShaderRoundedCorner()) {
-    const std::array<uint32_t, 4> kRadii = {
-        kOverviewWindowRoundingDp, kOverviewWindowRoundingDp,
-        kOverviewWindowRoundingDp, kOverviewWindowRoundingDp};
+    constexpr gfx::RoundedCornersF kRadii(kOverviewWindowRoundingDp);
     background_view_->layer()->SetRoundedCornerRadius(kRadii);
     background_view_->layer()->SetIsFastRoundedCorner(true);
   }
@@ -71,7 +71,7 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
 }
 
 void DropTargetView::UpdateBackgroundVisibility(bool visible) {
-  if (background_view_->visible() == visible)
+  if (background_view_->GetVisible() == visible)
     return;
   background_view_->SetVisible(visible);
 }

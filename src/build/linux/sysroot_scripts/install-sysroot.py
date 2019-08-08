@@ -18,6 +18,8 @@
 # time chrome's build dependencies are changed but should also be updated
 # periodically to include upstream security fixes from Debian.
 
+from __future__ import print_function
+
 import hashlib
 import json
 import platform
@@ -76,8 +78,8 @@ def main(args):
 
   if options.print_hash:
     arch = options.print_hash
-    print GetSysrootDict(DEFAULT_TARGET_PLATFORM,
-                         ARCH_TRANSLATIONS.get(arch, arch))['Sha1Sum']
+    print(GetSysrootDict(DEFAULT_TARGET_PLATFORM,
+                         ARCH_TRANSLATIONS.get(arch, arch))['Sha1Sum'])
     return 0
   if options.arch:
     InstallSysroot(DEFAULT_TARGET_PLATFORM,
@@ -86,7 +88,7 @@ def main(args):
     for arch in VALID_ARCHS:
       InstallSysroot(DEFAULT_TARGET_PLATFORM, arch)
   else:
-    print 'You much specify one of the options.'
+    print('You much specify one of the options.')
     return 1
 
   return 0
@@ -122,13 +124,13 @@ def InstallSysroot(target_platform, target_arch):
       if s.read() == url:
         return
 
-  print 'Installing Debian %s %s root image: %s' % \
-      (target_platform, target_arch, sysroot)
+  print('Installing Debian %s %s root image: %s' % \
+      (target_platform, target_arch, sysroot))
   if os.path.isdir(sysroot):
     shutil.rmtree(sysroot)
   os.mkdir(sysroot)
   tarball = os.path.join(sysroot, tarball_filename)
-  print 'Downloading %s' % url
+  print('Downloading %s' % url)
   sys.stdout.flush()
   sys.stderr.flush()
   for _ in range(3):

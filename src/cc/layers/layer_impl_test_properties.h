@@ -49,7 +49,7 @@ struct CC_EXPORT LayerImplTestProperties {
   float opacity;
   FilterOperations filters;
   FilterOperations backdrop_filters;
-  gfx::RRectF backdrop_filter_bounds;
+  base::Optional<gfx::RRectF> backdrop_filter_bounds;
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
   SkBlendMode blend_mode;
@@ -70,6 +70,7 @@ struct CC_EXPORT LayerImplTestProperties {
   bool user_scrollable_vertical = true;
   OverscrollBehavior overscroll_behavior;
   base::Optional<SnapContainerData> snap_container_data;
+  gfx::RRectF rounded_corner_bounds;
 };
 
 }  // namespace cc

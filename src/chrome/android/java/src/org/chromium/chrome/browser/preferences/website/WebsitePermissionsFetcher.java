@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences.website;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentSettingsType;
 
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ import java.util.Map;
  * that the user has set for them.
  */
 public class WebsitePermissionsFetcher {
+    private WebsitePreferenceBridge mWebsitePreferenceBridge;
+
     /**
      * A callback to pass to WebsitePermissionsFetcher. This is run when the
      * website permissions have been fetched.
@@ -44,22 +47,6 @@ public class WebsitePermissionsFetcher {
             return new OriginAndEmbedder(origin, embedder);
         }
 
-        private static boolean isEqual(Object o1, Object o2) {
-            // Returns true iff o1 == o2, handling nulls.
-            return (o1 == o2) || (o1 != null && o1.equals(o2));
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            // Prior to KitKat, android.util.Pair would crash with a NullPointerException in this
-            // method. This override specialises the post-Kitkat implementation to this class, and
-            // correctly handles nulls.
-            if (!(o instanceof OriginAndEmbedder)) return false;
-
-            OriginAndEmbedder p = (OriginAndEmbedder) o;
-            return isEqual(p.first, first) && isEqual(p.second, second);
-        }
-
         @Override
         public int hashCode() {
             // This is the calculation used by Arrays#hashCode().
@@ -82,6 +69,7 @@ public class WebsitePermissionsFetcher {
      */
     public WebsitePermissionsFetcher(boolean fetchSiteImportantInfo) {
         mFetchSiteImportantInfo = fetchSiteImportantInfo;
+        mWebsitePreferenceBridge = new WebsitePreferenceBridge();
     }
 
     /**
@@ -259,7 +247,7 @@ public class WebsitePermissionsFetcher {
                         + contentSettingsType;
 
         for (ContentSettingException exception :
-                WebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
+                mWebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
             // The pattern "*" represents the default setting, not a specific website.
             if (exception.getPattern().equals("*")) continue;
             String address = exception.getPattern();
@@ -306,7 +294,7 @@ public class WebsitePermissionsFetcher {
 
         @Override
         public void run() {
-            for (PermissionInfo info : WebsitePreferenceBridge.getPermissionInfo(mType)) {
+            for (PermissionInfo info : mWebsitePreferenceBridge.getPermissionInfo(mType)) {
                 String origin = info.getOrigin();
                 if (origin == null) continue;
                 String embedder = mType == PermissionInfo.Type.SENSORS ? null : info.getEmbedder();
@@ -327,7 +315,7 @@ public class WebsitePermissionsFetcher {
             if (mChooserDataType == -1) return;
 
             for (ChosenObjectInfo info :
-                    WebsitePreferenceBridge.getChosenObjectInfo(mChooserDataType)) {
+                    mWebsitePreferenceBridge.getChosenObjectInfo(mChooserDataType)) {
                 String origin = info.getOrigin();
                 if (origin == null) continue;
                 findOrCreateSite(origin, info.getEmbedder()).addChosenObjectInfo(info);
@@ -351,7 +339,7 @@ public class WebsitePermissionsFetcher {
     private class LocalStorageInfoFetcher extends Task {
         @Override
         public void runAsync(final TaskQueue queue) {
-            WebsitePreferenceBridge.fetchLocalStorageInfo(new Callback<HashMap>() {
+            mWebsitePreferenceBridge.fetchLocalStorageInfo(new Callback<HashMap>() {
                 @Override
                 public void onResult(HashMap result) {
                     for (Object o : result.entrySet()) {
@@ -371,7 +359,7 @@ public class WebsitePermissionsFetcher {
     private class WebStorageInfoFetcher extends Task {
         @Override
         public void runAsync(final TaskQueue queue) {
-            WebsitePreferenceBridge.fetchStorageInfo(new Callback<ArrayList>() {
+            mWebsitePreferenceBridge.fetchStorageInfo(new Callback<ArrayList>() {
                 @Override
                 public void onResult(ArrayList result) {
                     @SuppressWarnings("unchecked")
@@ -399,5 +387,11 @@ public class WebsitePermissionsFetcher {
         public void run() {
             mCallback.onWebsitePermissionsAvailable(mSites.values());
         }
+    }
+
+    @VisibleForTesting
+    public void setWebsitePreferenceBridgeForTesting(
+            WebsitePreferenceBridge websitePreferenceBridge) {
+        mWebsitePreferenceBridge = websitePreferenceBridge;
     }
 }

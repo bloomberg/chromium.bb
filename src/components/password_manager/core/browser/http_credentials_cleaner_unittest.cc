@@ -53,49 +53,49 @@ struct TestCase {
 
 constexpr static TestCase kCases[] = {
 
-    {true, autofill::PasswordForm::Scheme::SCHEME_HTML, false, true, true, true,
+    {true, autofill::PasswordForm::Scheme::kHtml, false, true, true, true,
      HttpCredentialType::kNoMatching},
-    {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, false, true, true,
+    {true, autofill::PasswordForm::Scheme::kHtml, true, false, true, true,
      HttpCredentialType::kNoMatching},
-    {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, false, true,
+    {true, autofill::PasswordForm::Scheme::kHtml, true, true, false, true,
      HttpCredentialType::kNoMatching},
-    {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true, false,
+    {true, autofill::PasswordForm::Scheme::kHtml, true, true, true, false,
      HttpCredentialType::kConflicting},
-    {true, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true, true,
+    {true, autofill::PasswordForm::Scheme::kHtml, true, true, true, true,
      HttpCredentialType::kEquivalent},
 
-    {false, autofill::PasswordForm::Scheme::SCHEME_HTML, false, true, true,
-     true, HttpCredentialType::kNoMatching},
-    {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, false, true,
-     true, HttpCredentialType::kNoMatching},
-    {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, false,
-     true, HttpCredentialType::kNoMatching},
-    {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true,
-     false, HttpCredentialType::kConflicting},
-    {false, autofill::PasswordForm::Scheme::SCHEME_HTML, true, true, true, true,
+    {false, autofill::PasswordForm::Scheme::kHtml, false, true, true, true,
+     HttpCredentialType::kNoMatching},
+    {false, autofill::PasswordForm::Scheme::kHtml, true, false, true, true,
+     HttpCredentialType::kNoMatching},
+    {false, autofill::PasswordForm::Scheme::kHtml, true, true, false, true,
+     HttpCredentialType::kNoMatching},
+    {false, autofill::PasswordForm::Scheme::kHtml, true, true, true, false,
+     HttpCredentialType::kConflicting},
+    {false, autofill::PasswordForm::Scheme::kHtml, true, true, true, true,
      HttpCredentialType::kEquivalent},
 
-    {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, false, true, true,
-     true, HttpCredentialType::kNoMatching},
-    {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, false, true,
-     true, HttpCredentialType::kNoMatching},
-    {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, false,
-     true, HttpCredentialType::kNoMatching},
-    {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
-     false, HttpCredentialType::kConflicting},
-    {true, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true, true,
+    {true, autofill::PasswordForm::Scheme::kBasic, false, true, true, true,
+     HttpCredentialType::kNoMatching},
+    {true, autofill::PasswordForm::Scheme::kBasic, true, false, true, true,
+     HttpCredentialType::kNoMatching},
+    {true, autofill::PasswordForm::Scheme::kBasic, true, true, false, true,
+     HttpCredentialType::kNoMatching},
+    {true, autofill::PasswordForm::Scheme::kBasic, true, true, true, false,
+     HttpCredentialType::kConflicting},
+    {true, autofill::PasswordForm::Scheme::kBasic, true, true, true, true,
      HttpCredentialType::kEquivalent},
 
-    {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, false, true, true,
-     true, HttpCredentialType::kNoMatching},
-    {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, false, true,
-     true, HttpCredentialType::kNoMatching},
-    {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, false,
-     true, HttpCredentialType::kNoMatching},
-    {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
-     false, HttpCredentialType::kConflicting},
-    {false, autofill::PasswordForm::Scheme::SCHEME_BASIC, true, true, true,
-     true, HttpCredentialType::kEquivalent}};
+    {false, autofill::PasswordForm::Scheme::kBasic, false, true, true, true,
+     HttpCredentialType::kNoMatching},
+    {false, autofill::PasswordForm::Scheme::kBasic, true, false, true, true,
+     HttpCredentialType::kNoMatching},
+    {false, autofill::PasswordForm::Scheme::kBasic, true, true, false, true,
+     HttpCredentialType::kNoMatching},
+    {false, autofill::PasswordForm::Scheme::kBasic, true, true, true, false,
+     HttpCredentialType::kConflicting},
+    {false, autofill::PasswordForm::Scheme::kBasic, true, true, true, true,
+     HttpCredentialType::kEquivalent}};
 
 }  // namespace
 
@@ -166,9 +166,9 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   https_form.scheme = test.http_form_scheme;
   if (!test.same_scheme) {
     https_form.scheme =
-        (http_form.scheme == autofill::PasswordForm::Scheme::SCHEME_BASIC
-             ? autofill::PasswordForm::Scheme::SCHEME_HTML
-             : autofill::PasswordForm::Scheme::SCHEME_BASIC);
+        (http_form.scheme == autofill::PasswordForm::Scheme::kBasic
+             ? autofill::PasswordForm::Scheme::kHtml
+             : autofill::PasswordForm::Scheme::kBasic);
   }
   store_->AddLogin(https_form);
 

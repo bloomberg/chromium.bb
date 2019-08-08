@@ -16,15 +16,22 @@ source_set("coordinators") {
   deps = [
     "//base",
     "//components/infobars/core",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/passwords:infobar_delegates",
     "//ios/chrome/browser/passwords:public",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/infobars:public",
     "//ios/chrome/browser/ui/infobars/banners",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/infobars/modals",
     "//ios/chrome/browser/ui/infobars/presentation",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
+    "//ui/base",
   ]
 }

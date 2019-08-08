@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -23,6 +22,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -109,73 +109,6 @@ void PrintUsage() {
           "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n");
   fflush(stdout);
 }
-
-class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
- public:
-  DefaultUnitTestPlatformDelegate() = default;
-
- private:
-  // UnitTestPlatformDelegate:
-  bool GetTests(std::vector<TestIdentifier>* output) override {
-    *output = GetCompiledInTests();
-    return true;
-  }
-
-  bool CreateResultsFile(base::FilePath* path) override {
-    if (!CreateNewTempDirectory(FilePath::StringType(), path))
-      return false;
-    *path = path->AppendASCII("test_results.xml");
-    return true;
-  }
-
-  bool CreateTemporaryFile(base::FilePath* path) override {
-    if (!temp_dir_.IsValid() && !temp_dir_.CreateUniqueTempDir())
-      return false;
-    return CreateTemporaryFileInDir(temp_dir_.GetPath(), path);
-  }
-
-  CommandLine GetCommandLineForChildGTestProcess(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const base::FilePath& flag_file) override {
-    CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
-
-    CHECK(base::PathExists(flag_file));
-
-    std::string long_flags(
-        std::string("--") + kGTestFilterFlag + "=" +
-        JoinString(test_names, ":"));
-    CHECK_EQ(static_cast<int>(long_flags.size()),
-             WriteFile(flag_file, long_flags.data(),
-                       static_cast<int>(long_flags.size())));
-
-    new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
-    new_cmd_line.AppendSwitchPath(kGTestFlagfileFlag, flag_file);
-    new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
-
-    return new_cmd_line;
-  }
-
-  std::string GetWrapperForChildGTestProcess() override {
-    return std::string();
-  }
-
-  void RelaunchTests(TestLauncher* test_launcher,
-                     const std::vector<std::string>& test_names,
-                     int launch_flags) override {
-    // Relaunch requested tests in parallel, but only use single
-    // test per batch for more precise results (crashes, etc).
-    for (const std::string& test_name : test_names) {
-      std::vector<std::string> batch;
-      batch.push_back(test_name);
-      RunUnitTestsBatch(test_launcher, this, batch, launch_flags);
-    }
-  }
-
-  ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
-};
 
 bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
@@ -684,6 +617,66 @@ void RunUnitTestsBatch(
   test_launcher->LaunchChildGTestProcess(
       cmd_line, platform_delegate->GetWrapperForChildGTestProcess(), timeout,
       options, std::move(observer));
+}
+
+DefaultUnitTestPlatformDelegate::DefaultUnitTestPlatformDelegate() = default;
+
+bool DefaultUnitTestPlatformDelegate::GetTests(
+    std::vector<TestIdentifier>* output) {
+  *output = GetCompiledInTests();
+  return true;
+}
+
+bool DefaultUnitTestPlatformDelegate::CreateResultsFile(base::FilePath* path) {
+  if (!CreateNewTempDirectory(FilePath::StringType(), path))
+    return false;
+  *path = path->AppendASCII("test_results.xml");
+  return true;
+}
+
+bool DefaultUnitTestPlatformDelegate::CreateTemporaryFile(
+    base::FilePath* path) {
+  if (!temp_dir_.IsValid() && !temp_dir_.CreateUniqueTempDir())
+    return false;
+  return CreateTemporaryFileInDir(temp_dir_.GetPath(), path);
+}
+
+CommandLine DefaultUnitTestPlatformDelegate::GetCommandLineForChildGTestProcess(
+    const std::vector<std::string>& test_names,
+    const base::FilePath& output_file,
+    const base::FilePath& flag_file) {
+  CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
+
+  CHECK(base::PathExists(flag_file));
+
+  std::string long_flags(
+      StrCat({"--", kGTestFilterFlag, "=", JoinString(test_names, ":")}));
+  CHECK_EQ(static_cast<int>(long_flags.size()),
+           WriteFile(flag_file, long_flags.data(),
+                     static_cast<int>(long_flags.size())));
+
+  new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
+  new_cmd_line.AppendSwitchPath(kGTestFlagfileFlag, flag_file);
+  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+
+  return new_cmd_line;
+}
+
+std::string DefaultUnitTestPlatformDelegate::GetWrapperForChildGTestProcess() {
+  return std::string();
+}
+
+void DefaultUnitTestPlatformDelegate::RelaunchTests(
+    TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names,
+    int launch_flags) {
+  // Relaunch requested tests in parallel, but only use single
+  // test per batch for more precise results (crashes, etc).
+  for (const std::string& test_name : test_names) {
+    std::vector<std::string> batch;
+    batch.push_back(test_name);
+    RunUnitTestsBatch(test_launcher, this, batch, launch_flags);
+  }
 }
 
 UnitTestLauncherDelegate::UnitTestLauncherDelegate(

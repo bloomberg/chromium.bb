@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -225,17 +224,11 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
-  // Initialize ThreadPool. ThreadPool::StartWithDefaultParams() doesn't
+  // Initialize ThreadPool. ThreadPoolInstance::StartWithDefaultParams() doesn't
   // work on NACL.
-  base::ThreadPool::Create("RemotingChromeApp");
-  // TODO(etiennep): Change this to 2 in future CL.
-  constexpr int kBackgroundMaxThreads = 3;
+  base::ThreadPoolInstance::Create("RemotingChromeApp");
   constexpr int kForegroundMaxThreads = 3;
-  constexpr base::TimeDelta kSuggestedReclaimTime =
-      base::TimeDelta::FromSeconds(30);
-  base::ThreadPool::GetInstance()->Start(
-      {{kBackgroundMaxThreads, kSuggestedReclaimTime},
-       {kForegroundMaxThreads, kSuggestedReclaimTime}});
+  base::ThreadPoolInstance::Get()->Start({kForegroundMaxThreads});
 
   return true;
 }
@@ -251,8 +244,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   base::DictionaryValue* message_dict = nullptr;
   std::string method;
   base::DictionaryValue* data = nullptr;
-  if (!json.get() ||
-      !json->GetAsDictionary(&message_dict) ||
+  if (!json.get() || !json->GetAsDictionary(&message_dict) ||
       !message_dict->GetString("method", &method) ||
       !message_dict->GetDictionary("data", &data)) {
     LOG(ERROR) << "Received invalid message:" << message.AsString();
@@ -634,8 +626,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
         experiments, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
 
-  VLOG(0) << "Connecting to " << host_jid
-          << ". Local jid: " << local_jid << ".";
+  VLOG(0) << "Connecting to " << host_jid << ". Local jid: " << local_jid
+          << ".";
 
   std::string key_filter;
   if (!data.GetString("keyFilter", &key_filter)) {
@@ -771,7 +763,7 @@ void ChromotingInstance::HandleReleaseAllKeys(
 }
 
 void ChromotingInstance::HandleInjectKeyEvent(
-      const base::DictionaryValue& data) {
+    const base::DictionaryValue& data) {
   int usb_keycode = 0;
   bool is_pressed = false;
   if (!data.GetInteger("usbKeycode", &usb_keycode) ||
@@ -839,10 +831,8 @@ void ChromotingInstance::HandleNotifyClientResolution(
   int y_dpi = kDefaultDPI;
   if (!data.GetInteger("width", &width) ||
       !data.GetInteger("height", &height) ||
-      !data.GetInteger("x_dpi", &x_dpi) ||
-      !data.GetInteger("y_dpi", &y_dpi) ||
-      width <= 0 || height <= 0 ||
-      x_dpi <= 0 || y_dpi <= 0) {
+      !data.GetInteger("x_dpi", &x_dpi) || !data.GetInteger("y_dpi", &y_dpi) ||
+      width <= 0 || height <= 0 || x_dpi <= 0 || y_dpi <= 0) {
     LOG(ERROR) << "Invalid notifyClientResolution.";
     return;
   }
@@ -906,7 +896,7 @@ void ChromotingInstance::HandleOnPinFetched(const base::DictionaryValue& data) {
     return;
   }
   if (!secret_fetched_callback_.is_null()) {
-    base::ResetAndReturn(&secret_fetched_callback_).Run(pin);
+    std::move(secret_fetched_callback_).Run(pin);
   } else {
     LOG(WARNING) << "Ignored OnPinFetched received without a pending fetch.";
   }
@@ -922,8 +912,7 @@ void ChromotingInstance::HandleOnThirdPartyTokenFetched(
     return;
   }
   if (!third_party_token_fetched_callback_.is_null()) {
-    base::ResetAndReturn(&third_party_token_fetched_callback_)
-        .Run(token, shared_secret);
+    std::move(third_party_token_fetched_callback_).Run(token, shared_secret);
   } else {
     LOG(WARNING) << "Ignored OnThirdPartyTokenFetched without a pending fetch.";
   }
@@ -965,8 +954,9 @@ void ChromotingInstance::HandleExtensionMessage(
 void ChromotingInstance::HandleAllowMouseLockMessage() {
   // Create the mouse lock handler and route cursor shape messages through it.
   mouse_locker_.reset(new PepperMouseLocker(
-      this, base::Bind(&PepperInputHandler::set_send_mouse_move_deltas,
-                       base::Unretained(&input_handler_)),
+      this,
+      base::Bind(&PepperInputHandler::set_send_mouse_move_deltas,
+                 base::Unretained(&input_handler_)),
       &cursor_setter_));
   empty_cursor_filter_.set_cursor_stub(mouse_locker_.get());
 }
@@ -1122,7 +1112,9 @@ void ChromotingInstance::UnregisterLoggingInstance() {
 }
 
 // static
-bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
+bool ChromotingInstance::LogToUI(int severity,
+                                 const char* file,
+                                 int line,
                                  size_t message_start,
                                  const std::string& str) {
   PP_LogLevel log_level = PP_LOGLEVEL_ERROR;

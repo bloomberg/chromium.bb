@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1028699632127661925">Unatuma kwenye <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Mipangilio ya arifa</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Siku 1 iliyopita}other{Siku # zilizopita}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1398853756734560583">Tanua</translation>
 <translation id="1409544243779336081">Pendekezo la programu</translation>
-<translation id="1413622004203049571">Zima arifa kutoka <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Dakika 1 na }other{Dakika # na }}</translation>
 <translation id="1643823602425662293">Arifa</translation>
 <translation id="169515659049020177">Hama</translation>
 <translation id="1710340000377843106">sasa</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{Dakika 1}other{Dakika #}}</translation>
-<translation id="1756116796893109054">Inatuma kichupo...</translation>
 <translation id="1761785978543082658">B <ph name="QUANTITY" /></translation>
 <translation id="1801827354178857021">Muda</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{Mwezi 1}other{Miezi #}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Futa</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Ziangalie programu zote</translation>
+<translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6264365405983206840">Chagua &amp;Zote</translation>
 <translation id="6351032674660237738">MAPENDEKEZO YA PROGRAMU</translation>
 <translation id="6364916375976753737">Sogeza Kushoto</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Hujasoma zaidi ya arifa 1}other{Hujasoma zaidi ya arifa #}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dak 1}other{dak #}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Anza kutamka hoja ya utafutaji kwenye programu ya Mratibu wa Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Saa 1 iliyopita}other{Saa # zilizopita}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Imesalia sekunde 1}other{Zimesalia sekunde #}}</translation>
+<translation id="8144660977431427332">Utafutaji wako unatekelezwa na programu ya Mratibu wa Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Jaza kiotomatiki</translation>
 <translation id="815598010540052116">Sogeza Chini</translation>
 <translation id="8170087467028567933">Kuondoa pendekezo hili kutalifanya lisionekane katika akaunti yako kwenye vifaa vyote.</translation>

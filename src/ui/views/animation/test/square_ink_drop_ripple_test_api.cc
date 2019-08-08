@@ -43,8 +43,8 @@ SquareInkDropRippleTestApi::GetLayerAnimators() {
   std::vector<ui::LayerAnimator*> animators =
       InkDropRippleTestApi::GetLayerAnimators();
   animators.push_back(ink_drop_ripple()->GetRootLayer()->GetAnimator());
-  for (int i = 0; i < SquareInkDropRipple::PAINTED_SHAPE_COUNT; ++i)
-    animators.push_back(ink_drop_ripple()->painted_layers_[i]->GetAnimator());
+  for (auto& painted_layer : ink_drop_ripple()->painted_layers_)
+    animators.push_back(painted_layer->GetAnimator());
   return animators;
 }
 

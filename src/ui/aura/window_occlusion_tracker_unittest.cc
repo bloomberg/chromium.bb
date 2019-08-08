@@ -98,7 +98,7 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   }
 
   WindowOcclusionTracker& GetOcclusionTracker() {
-    return *root_window()->env()->GetWindowOcclusionTracker();
+    return *Env::GetInstance()->GetWindowOcclusionTracker();
   }
 
  private:
@@ -975,7 +975,8 @@ TEST_F(WindowOcclusionTrackerTest, CustomizedWindowHasContent) {
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
   // Use customized WindowHasContent callback to mark b as opaque.
-  window_b->env()->GetWindowOcclusionTracker()->set_window_has_content_callback(
+  Env* env = Env::GetInstance();
+  env->GetWindowOcclusionTracker()->set_window_has_content_callback(
       base::BindLambdaForTesting([window_b](const Window* window) -> bool {
         return window == window_b;
       }));
@@ -987,7 +988,7 @@ TEST_F(WindowOcclusionTrackerTest, CustomizedWindowHasContent) {
   EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
-  window_b->env()->GetWindowOcclusionTracker()->set_window_has_content_callback(
+  env->GetWindowOcclusionTracker()->set_window_has_content_callback(
       base::NullCallback());
 }
 
@@ -1109,8 +1110,7 @@ TEST_F(WindowOcclusionTrackerTest, ScopedPause) {
   // Change bounds multiple times. At the end of the scope, expect window a to
   // be occluded.
   {
-    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(
-        root_window()->env());
+    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking;
     window_b->SetBounds(window_a->bounds());
     window_a->SetBounds(gfx::Rect(0, 10, 5, 5));
     window_b->SetBounds(window_a->bounds());
@@ -1140,22 +1140,18 @@ TEST_F(WindowOcclusionTrackerTest, NestedScopedPause) {
   // Change bounds multiple times. At the end of the scope, expect window a to
   // be occluded.
   {
-    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_a(
-        root_window()->env());
+    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_a;
 
     {
-      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_b(
-          root_window()->env());
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_b;
       window_b->SetBounds(window_a->bounds());
     }
     {
-      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_c(
-          root_window()->env());
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_c;
       window_a->SetBounds(gfx::Rect(0, 10, 5, 5));
     }
     {
-      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_d(
-          root_window()->env());
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_d;
       window_b->SetBounds(window_a->bounds());
     }
 
@@ -1652,7 +1648,7 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
 // its occlusion state changed, a DCHECK occurs.
 TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
   test::WindowOcclusionTrackerTestApi test_api(
-      root_window()->env()->GetWindowOcclusionTracker());
+      Env::GetInstance()->GetWindowOcclusionTracker());
 
   // Create 2 superposed tracked windows.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
@@ -1881,7 +1877,7 @@ class WindowDelegateAddingAndHidingChild : public MockWindowDelegate {
 TEST_F(WindowOcclusionTrackerTest,
        HideWindowWithHiddenParentOnOcclusionChange) {
   test::WindowOcclusionTrackerTestApi test_api(
-      root_window()->env()->GetWindowOcclusionTracker());
+      Env::GetInstance()->GetWindowOcclusionTracker());
 
   auto* delegate_a = new WindowDelegateAddingAndHidingChild(this);
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
@@ -2224,8 +2220,7 @@ TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleWithOccludedSibling) {
   // the same bounds.
   std::unique_ptr<WindowOcclusionTracker::ScopedPause>
       pause_occlusion_tracking =
-          std::make_unique<WindowOcclusionTracker::ScopedPause>(
-              root_window()->env());
+          std::make_unique<WindowOcclusionTracker::ScopedPause>();
   MockWindowDelegate* parent_delegate = new MockWindowDelegate();
   Window* parent_window =
       CreateTrackedWindow(parent_delegate, gfx::Rect(0, 0, 10, 10));
@@ -2592,6 +2587,62 @@ TEST_F(WindowOcclusionTrackerTest, ComputeTargetOcclusionForAnimatedWindow) {
   test_controller.Step(kTransitionDuration / 3);
   window_b->layer()->SetAnimator(nullptr);
   EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+TEST_F(WindowOcclusionTrackerTest,
+       SetOpaqueRegionsForOcclusionAffectsOcclusionOfOtherWindows) {
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Make |window_b| transparent, which should make it no longer affect
+  // |window_a|'s occlusion.
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  window_b->SetTransparent(true);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Set the opaque regions for occlusion to fully cover |window_a|. Opaque
+  // regions for occlusion are relative to the window.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  window_b->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 10, 10)});
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Setting the opaque regions for occlusion to an empty list should restore to
+  // normal behavior:
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  window_b->SetOpaqueRegionsForOcclusion({});
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+TEST_F(
+    WindowOcclusionTrackerTest,
+    SetOpaqueRegionsForOcclusionOfAWindowDoesNotAffectOcclusionOfThatWindowItself) {
+  // The opaque regions for occlusion of a window affect how that window
+  // occludes other windows, but should not affect occlusion for that window
+  // itself. This is because occluding only the opaque regions of occlusion for
+  // a window may still leave translucent parts of that window visible.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                              SkRegion(SkIRect::MakeXYWH(5, 5, 5, 5)));
+  CreateUntrackedWindow(gfx::Rect(5, 5, 5, 5));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  window_a->SetTransparent(true);
+  // Changing the opaque regions for occlusion should not affect how much
+  // |window_a| is occluded by |window_b|.
+  window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 0, 0)});
+  window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 1, 1)});
+  window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 5, 5)});
+  window_a->SetOpaqueRegionsForOcclusion({});
 }
 
 }  // namespace aura

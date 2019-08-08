@@ -42,8 +42,8 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
         for node2 in node1.childNodes:
           example_text.append(node2.toxml())
       else:
-         raise Exception('Unexpected element inside a placeholder: ' +
-                         node2.toxml())
+        raise Exception('Unexpected element inside a placeholder: ' +
+                        node2.toxml())
     if example_text == []:
       # In such cases the original text is okay for an example.
       example_text = text
@@ -154,6 +154,33 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     else:
       raise Exception('Unexpected type %s' % item_type)
 
+  def _AddSchemaKeys(self, obj, depth):
+    obj_type = type(obj)
+    if obj_type == dict:
+      self._AddNontranslateableChunk('{\n')
+      for key in sorted(obj.keys()):
+        self._AddIndentedNontranslateableChunk(depth + 1, "'%s': " % key)
+        if key == 'description' and type(obj[key]) == str:
+          self._AddNontranslateableChunk("'''")
+          self._ParseMessage(obj[key], 'Description of schema property')
+          self._AddNontranslateableChunk("''',\n")
+        elif type(obj[key]) in (bool, int, str):
+          self._AddSchemaKeys(obj[key], 0)
+        else:
+          self._AddSchemaKeys(obj[key], depth + 1)
+      self._AddIndentedNontranslateableChunk(depth, '},\n')
+    elif obj_type == list:
+      self._AddNontranslateableChunk('[\n')
+      for item in obj:
+        self._AddSchemaKeys(item, depth + 1)
+      self._AddIndentedNontranslateableChunk(depth, '],\n')
+    elif obj_type == str:
+      self._AddIndentedNontranslateableChunk(depth, "'%s',\n" % obj)
+    elif obj_type in (bool, int):
+      self._AddIndentedNontranslateableChunk(depth, "%s,\n" % obj)
+    else:
+      raise Exception('Invalid schema object: %s' % obj)
+
   def _AddPolicyKey(self, item, item_type, parent_item, key, depth):
     '''Given a policy/enumeration item and a key, adds that key and its value
     into the output.
@@ -176,6 +203,8 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
           item[key],
           self._GetDescription(item, item_type, parent_item, key))
       self._AddNontranslateableChunk("''',\n")
+    elif key in ('schema', 'validation_schema', 'description_schema'):
+      self._AddSchemaKeys(item[key], depth)
     else:
       str_val = item[key]
       if type(str_val) == types.StringType:

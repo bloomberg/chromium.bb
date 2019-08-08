@@ -13,7 +13,7 @@
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
-#include "ash/public/interfaces/tablet_mode.mojom.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
@@ -24,9 +24,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -40,6 +40,10 @@ class TickClock;
 
 namespace gfx {
 class Vector3dF;
+}
+
+namespace ui {
+class LayerAnimationSequence;
 }
 
 namespace views {
@@ -59,12 +63,14 @@ class TabletModeWindowManager;
 class ASH_EXPORT TabletModeController
     : public AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public mojom::TabletModeController,
+      public TabletMode,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver,
       public ui::InputDeviceEventObserver,
-      public KioskNextShellObserver {
+      public KioskNextShellObserver,
+      public ui::LayerAnimationObserver,
+      public aura::WindowObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -95,12 +101,9 @@ class ASH_EXPORT TabletModeController
 
   // Add a special window to the TabletModeWindowManager for tracking. This is
   // only required for special windows which are handled by other window
-  // managers like the |MultiUserWindowManager|.
+  // managers like the |MultiUserWindowManagerImpl|.
   // If the tablet mode is not enabled no action will be performed.
   void AddWindow(aura::Window* window);
-
-  // Binds the mojom::TabletModeController interface request to this object.
-  void BindRequest(mojom::TabletModeControllerRequest request);
 
   void AddObserver(TabletModeObserver* observer);
   void RemoveObserver(TabletModeObserver* observer);
@@ -111,12 +114,21 @@ class ASH_EXPORT TabletModeController
   // Whether the events from the internal mouse/keyboard are blocked.
   bool AreInternalInputDeviceEventsBlocked() const;
 
-  // Flushes the mojo message pipe to chrome.
-  void FlushForTesting();
-
   // If |record_lid_angle_timer_| is running, invokes its task and returns true.
   // Otherwise, returns false.
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
+
+  // Starts observing |window| for animation changes.
+  void MaybeObserveBoundsAnimation(aura::Window* window);
+
+  // TabletMode:
+  void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
+  bool IsEnabled() const override;
+  void SetEnabledForTest(bool enabled) override;
+
+  // Stops observing the window which is being animated from tablet <->
+  // clamshell.
+  void StopObservingAnimation(bool record_stats);
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -146,6 +158,15 @@ class ASH_EXPORT TabletModeController
   // KioskNextShellObserver:
   void OnKioskNextEnabled() override;
 
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
     ++app_window_drag_in_splitview_count_;
@@ -156,6 +177,7 @@ class ASH_EXPORT TabletModeController
   }
 
  private:
+  class TabletModeTransitionFpsCounter;
   friend class TabletModeControllerTestApi;
 
   // Used for recording metrics for intervals of time spent in
@@ -163,6 +185,15 @@ class ASH_EXPORT TabletModeController
   enum TabletModeIntervalType {
     TABLET_MODE_INTERVAL_INACTIVE,
     TABLET_MODE_INTERVAL_ACTIVE
+  };
+
+  // Tracks whether we are in the process of entering or exiting tablet mode.
+  // Used for logging histogram metrics.
+  enum class State {
+    kInClamshellMode,
+    kEnteringTabletMode,
+    kInTabletMode,
+    kExitingTabletMode,
   };
 
   // If EC cannot handle lid angle calc, browser detects hinge rotation from
@@ -207,12 +238,6 @@ class ASH_EXPORT TabletModeController
   // Returns TABLET_MODE_INTERVAL_ACTIVE if TabletMode is currently active,
   // otherwise returns TABLET_MODE_INTERNAL_INACTIVE.
   TabletModeIntervalType CurrentTabletModeIntervalType();
-
-  // mojom::TabletModeController:
-  void SetClient(mojom::TabletModeClientPtr client) override;
-  void SetTabletModeEnabledForTesting(
-      bool enabled,
-      SetTabletModeEnabledForTestingCallback callback) override;
 
   // Checks whether we want to allow change the current ui mode to tablet mode
   // or clamshell mode. This returns false if the user set a flag for the
@@ -317,19 +342,19 @@ class ASH_EXPORT TabletModeController
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
 
-  // Binding for the TabletModeController interface.
-  mojo::Binding<mojom::TabletModeController> binding_;
-
-  // Client interface (e.g. in chrome).
-  mojom::TabletModeClientPtr client_;
+  // A simplified observer that only gets notified of entering or exiting tablet
+  // mode.
+  TabletModeToggleObserver* toggle_observer_ = nullptr;
 
   // Tracks whether a flag is used to force ui mode.
   UiMode force_ui_mode_ = UiMode::kNone;
 
+  State state_ = State::kInClamshellMode;
+
   // Calls RecordLidAngle() periodically.
   base::RepeatingTimer record_lid_angle_timer_;
 
-  ScopedSessionObserver scoped_session_observer_;
+  ScopedSessionObserver scoped_session_observer_{this};
 
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
       occlusion_tracker_pauser_;
@@ -341,9 +366,16 @@ class ASH_EXPORT TabletModeController
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
 
+  // The window and layer we are observing when animating from clamshell to
+  // tablet mode or vice versa.
+  aura::Window* observed_window_ = nullptr;
+  ui::Layer* observed_layer_ = nullptr;
+
+  std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
+
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
 
-  base::WeakPtrFactory<TabletModeController> weak_factory_;
+  base::WeakPtrFactory<TabletModeController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeController);
 };

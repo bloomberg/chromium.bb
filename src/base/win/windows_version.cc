@@ -23,9 +23,9 @@
 #error VS 2017 Update 3.2 or higher is required
 #endif
 
-#if !defined(NTDDI_WIN10_RS2)
-// Windows 10 April 2018 SDK is required to build Chrome.
-#error April 2018 SDK (10.0.17134.0) or higher required.
+#if !defined(NTDDI_WIN10_RS5)
+// Windows 10 October 2018 SDK is required to build Chrome.
+#error October 2018 SDK (10.0.17763.0) or higher required.
 #endif
 
 namespace {
@@ -119,7 +119,7 @@ OSInfo::WindowsArchitecture OSInfo::GetArchitecture() {
 OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
                const _SYSTEM_INFO& system_info,
                int os_type)
-    : version_(VERSION_PRE_XP),
+    : version_(Version::PRE_XP),
       wow64_status_(GetWOW64StatusForProcess(GetCurrentProcess())) {
   version_number_.major = version_info.dwMajorVersion;
   version_number_.minor = version_info.dwMinorVersion;
@@ -269,48 +269,50 @@ OSInfo::WOW64Status OSInfo::GetWOW64StatusForProcess(HANDLE process_handle) {
 // static
 Version OSInfo::MajorMinorBuildToVersion(int major, int minor, int build) {
   if (major == 10) {
+    if (build >= 18362)
+      return Version::WIN10_19H1;
     if (build >= 17763)
-      return VERSION_WIN10_RS5;
+      return Version::WIN10_RS5;
     if (build >= 17134)
-      return VERSION_WIN10_RS4;
+      return Version::WIN10_RS4;
     if (build >= 16299)
-      return VERSION_WIN10_RS3;
+      return Version::WIN10_RS3;
     if (build >= 15063)
-      return VERSION_WIN10_RS2;
+      return Version::WIN10_RS2;
     if (build >= 14393)
-      return VERSION_WIN10_RS1;
+      return Version::WIN10_RS1;
     if (build >= 10586)
-      return VERSION_WIN10_TH2;
-    return VERSION_WIN10;
+      return Version::WIN10_TH2;
+    return Version::WIN10;
   }
 
   if (major > 6) {
     // Hitting this likely means that it's time for a >10 block above.
     NOTREACHED() << major << "." << minor << "." << build;
-    return VERSION_WIN_LAST;
+    return Version::WIN_LAST;
   }
 
   if (major == 6) {
     switch (minor) {
       case 0:
-        return VERSION_VISTA;
+        return Version::VISTA;
       case 1:
-        return VERSION_WIN7;
+        return Version::WIN7;
       case 2:
-        return VERSION_WIN8;
+        return Version::WIN8;
       default:
         DCHECK_EQ(minor, 3);
-        return VERSION_WIN8_1;
+        return Version::WIN8_1;
     }
   }
 
   if (major == 5 && minor != 0) {
     // Treat XP Pro x64, Home Server, and Server 2003 R2 as Server 2003.
-    return minor == 1 ? VERSION_XP : VERSION_SERVER_2003;
+    return minor == 1 ? Version::XP : Version::SERVER_2003;
   }
 
   // Win 2000 or older.
-  return VERSION_PRE_XP;
+  return Version::PRE_XP;
 }
 
 Version GetVersion() {

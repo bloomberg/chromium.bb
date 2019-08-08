@@ -25,6 +25,7 @@ class MockSystemMediaControlsService : public SystemMediaControlsService {
   MOCK_METHOD1(AddObserver, void(SystemMediaControlsServiceObserver* observer));
   MOCK_METHOD1(RemoveObserver,
                void(SystemMediaControlsServiceObserver* observer));
+  MOCK_METHOD1(SetEnabled, void(bool enabled));
   MOCK_METHOD1(SetIsNextEnabled, void(bool value));
   MOCK_METHOD1(SetIsPreviousEnabled, void(bool value));
   MOCK_METHOD1(SetIsPlayEnabled, void(bool value));
@@ -32,6 +33,12 @@ class MockSystemMediaControlsService : public SystemMediaControlsService {
   MOCK_METHOD1(SetIsStopEnabled, void(bool value));
   MOCK_METHOD1(SetPlaybackStatus,
                void(ABI::Windows::Media::MediaPlaybackStatus status));
+  MOCK_METHOD1(SetTitle, void(const base::string16& title));
+  MOCK_METHOD1(SetArtist, void(const base::string16& artist));
+  MOCK_METHOD1(SetThumbnail, void(const SkBitmap& bitmap));
+  MOCK_METHOD0(ClearThumbnail, void());
+  MOCK_METHOD0(ClearMetadata, void());
+  MOCK_METHOD0(UpdateDisplay, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSystemMediaControlsService);

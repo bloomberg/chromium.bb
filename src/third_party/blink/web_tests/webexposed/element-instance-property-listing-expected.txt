@@ -106,6 +106,7 @@ namespace http://www.w3.org/1999/xhtml
     property dir
     property dispatchEvent
     property draggable
+    property enterKeyHint
     property firstChild
     property firstElementChild
     property focus
@@ -227,7 +228,7 @@ namespace http://www.w3.org/1999/xhtml
     property onpointermove
     property onpointerout
     property onpointerover
-    property onpointerrawmove
+    property onpointerrawupdate
     property onpointerup
     property onprogress
     property onratechange
@@ -566,6 +567,7 @@ html element form
     property name
     property noValidate
     property reportValidity
+    property requestSubmit
     property reset
     property submit
     property target
@@ -879,6 +881,8 @@ html element picture
 html element plaintext
 html element portal
     property activate
+    property onmessage
+    property onmessageerror
     property postMessage
     property src
 html element pre
@@ -1394,7 +1398,7 @@ namespace http://www.w3.org/2000/svg
     property onpointermove
     property onpointerout
     property onpointerover
-    property onpointerrawmove
+    property onpointerrawupdate
     property onpointerup
     property onprogress
     property onratechange

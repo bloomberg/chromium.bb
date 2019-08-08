@@ -134,12 +134,12 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // existing connections from others.
   // This function must be called after acquiring a connection reference.
   void MakeConnection();
-  // This object will be disconnected from another object. This might have
-  // remaining connections from others.
-  // This function must be called before releasing a connection reference.
-  void BreakConnection();
 
-  // Can be called from main thread or context's audio thread.  It must be
+  // This object will be disconnected from another object. This might have
+  // remaining connections from others.  This function must be called before
+  // releasing a connection reference.
+  //
+  // This can be called from main thread or context's audio thread.  It must be
   // called while the context's graph lock is held.
   void BreakConnectionWithLock();
 

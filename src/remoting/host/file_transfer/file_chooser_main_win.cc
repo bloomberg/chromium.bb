@@ -133,7 +133,7 @@ FileChooser::Result ShowFileChooser() {
 }  // namespace
 
 int FileChooserMain() {
-  base::ThreadPool::CreateAndStartWithDefaultParams("FileChooser");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("FileChooser");
 
   base::win::ScopedCOMInitializer com;
 

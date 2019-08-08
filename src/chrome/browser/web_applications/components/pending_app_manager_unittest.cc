@@ -59,6 +59,61 @@ class PendingAppManagerTest : public testing::Test {
   TestPendingAppManager pending_app_manager_;
 };
 
+// Test that destroying PendingAppManager during a synchronize call that
+// installs an app doesn't crash.
+// Regression test for https://crbug.com/962808
+TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
+  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+
+  std::vector<InstallOptions> install_options_list;
+  install_options_list.emplace_back(GURL("https://foo.example"),
+                                    LaunchContainer::kWindow,
+                                    InstallSource::kInternal);
+  install_options_list.emplace_back(GURL("https://bar.example"),
+                                    LaunchContainer::kWindow,
+                                    InstallSource::kInternal);
+
+  pending_app_manager->SynchronizeInstalledApps(
+      std::move(install_options_list), InstallSource::kInternal,
+      // PendingAppManager gives no guarantees about whether its pending
+      // callbacks will be run or not when it gets destroyed.
+      base::DoNothing());
+  pending_app_manager.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test that destroying PendingAppManager during a synchronize call that
+// uninstalls an app doesn't crash.
+// Regression test for https://crbug.com/962808
+TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
+  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+
+  // Install an app that will be uninstalled next.
+  {
+    std::vector<InstallOptions> install_options_list;
+    install_options_list.emplace_back(GURL("https://foo.example"),
+                                      LaunchContainer::kWindow,
+                                      InstallSource::kInternal);
+    base::RunLoop run_loop;
+    pending_app_manager->SynchronizeInstalledApps(
+        std::move(install_options_list), InstallSource::kInternal,
+        base::BindLambdaForTesting(
+            [&](PendingAppManager::SynchronizeResult result) {
+              ASSERT_EQ(PendingAppManager::SynchronizeResult::kSuccess, result);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+
+  pending_app_manager->SynchronizeInstalledApps(
+      std::vector<InstallOptions>(), InstallSource::kInternal,
+      // PendingAppManager gives no guarantees about whether its pending
+      // callbacks will be run or not when it gets destroyed.
+      base::DoNothing());
+  pending_app_manager.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(PendingAppManagerTest, SynchronizeInstalledApps) {
   GURL a("https://a.example.com/");
   GURL b("https://b.example.com/");

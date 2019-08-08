@@ -21,8 +21,8 @@
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace base {
 template <typename T>

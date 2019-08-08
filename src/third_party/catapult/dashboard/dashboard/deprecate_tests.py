@@ -5,6 +5,9 @@
 """Task queue which deprecates TestMetadata and kicks off jobs to delete old
 row data when tests stop sending data for an extended period of time.
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 import datetime
 import logging
@@ -92,8 +95,7 @@ def _CheckAndDeleteMastersTask():
     raise ndb.Return(result)
 
   masters_tests = yield [_GetFirstBot(m) for m in masters]
-  masters_to_delete = [
-      masters[i] for i in xrange(len(masters)) if not masters_tests[i]]
+  masters_to_delete = [m for i, m in enumerate(masters) if not masters_tests[i]]
 
   for m in masters_to_delete:
     logging.info('Deleting master: %s', str(m))
@@ -114,8 +116,7 @@ def _CheckAndDeleteBotsTask():
     raise ndb.Return(result)
 
   bots_tests = yield [_GetFirstTest(b) for b in bots]
-  bots_to_delete = [
-      bots[i] for i in xrange(len(bots)) if not bots_tests[i]]
+  bots_to_delete = [b for i, b in enumerate(bots) if not bots_tests[i]]
 
   for b in bots_to_delete:
     logging.info('Deleting bot: %s', str(b))

@@ -20,11 +20,18 @@
 
 namespace viz {
 
+class TextureDeleter;
+
 class FakeSkiaOutputSurface : public SkiaOutputSurface {
  public:
   static std::unique_ptr<FakeSkiaOutputSurface> Create3d() {
     auto provider = TestContextProvider::Create();
     provider->BindToCurrentThread();
+    return base::WrapUnique(new FakeSkiaOutputSurface(std::move(provider)));
+  }
+
+  static std::unique_ptr<FakeSkiaOutputSurface> Create3d(
+      scoped_refptr<ContextProvider> provider) {
     return base::WrapUnique(new FakeSkiaOutputSurface(std::move(provider)));
   }
 
@@ -43,7 +50,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -52,6 +60,10 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
+  void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -66,7 +78,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                                  ResourceFormat format,
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
-  gpu::SyncToken SubmitPaint() override;
+  gpu::SyncToken SubmitPaint(base::OnceClosure on_finished) override;
   sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,
@@ -74,7 +86,6 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
@@ -83,6 +94,13 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                   std::unique_ptr<CopyOutputRequest> request) override;
   void AddContextLostObserver(ContextLostObserver* observer) override;
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
+
+  // ExternalUseClient implementation:
+  void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
+
+  // If set true, callbacks triggering will be in a reverse order as SignalQuery
+  // calls.
+  void SetOutOfOrderCallbacks(bool out_of_order_callbacks);
 
  private:
   explicit FakeSkiaOutputSurface(
@@ -97,6 +115,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   scoped_refptr<ContextProvider> context_provider_;
   OutputSurfaceClient* client_ = nullptr;
+
+  std::unique_ptr<TextureDeleter> texture_deleter_;
 
   // The current render pass id set by BeginPaintRenderPass.
   RenderPassId current_render_pass_id_ = 0;

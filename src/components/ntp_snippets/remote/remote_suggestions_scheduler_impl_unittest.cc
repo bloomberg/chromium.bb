@@ -21,7 +21,6 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/features.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
@@ -204,7 +203,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
 
     scheduler_ = std::make_unique<RemoteSuggestionsSchedulerImpl>(
         &persistent_scheduler_, &user_classifier_, utils_.pref_service(),
-        &local_state_, &test_clock_, &debug_logger_);
+        &local_state_, &test_clock_);
     scheduler_->SetProvider(provider_.get());
   }
 
@@ -287,7 +286,6 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
   base::SimpleTestClock test_clock_;
   std::unique_ptr<MockRemoteSuggestionsProvider> provider_;
   std::unique_ptr<RemoteSuggestionsSchedulerImpl> scheduler_;
-  Logger debug_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsSchedulerImplTest);
 };

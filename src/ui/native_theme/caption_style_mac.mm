@@ -11,6 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/caption_style.h"
 
@@ -36,12 +38,14 @@ constexpr auto kUserDomain = kMACaptionAppearanceDomainUser;
 //   4) The only useful domain to retrieve attributes from is kUserDomain; the
 //      system domain's values never change.
 
-std::string GetMAForegroundColorAsCSSColor() {
+std::string GetMAForegroundColorAndOpacityAsCSSColor() {
   base::ScopedCFTypeRef<CGColorRef> cg_color(
       MACaptionAppearanceCopyForegroundColor(kUserDomain, nullptr));
+  float opacity = MACaptionAppearanceGetForegroundOpacity(kUserDomain, nullptr);
 
-  return color_utils::SkColorToRgbaString(
-      skia::CGColorRefToSkColor(cg_color.get()));
+  SkColor rgba_color =
+      SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
+  return color_utils::SkColorToRgbaString(rgba_color);
 }
 
 std::string GetMABackgroundColorAsCSSColor() {
@@ -121,7 +125,10 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
 CaptionStyle CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
 
-  style.text_color = GetMAForegroundColorAsCSSColor();
+  if (!base::FeatureList::IsEnabled(features::kSystemCaptionStyle))
+    return style;
+
+  style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
   style.background_color = GetMABackgroundColorAsCSSColor();
   style.text_size = GetMATextScaleAsCSSPercent();
   style.text_shadow = GetMATextEdgeStyleAsCSSShadow();

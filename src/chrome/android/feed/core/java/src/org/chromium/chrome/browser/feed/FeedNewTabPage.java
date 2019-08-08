@@ -17,19 +17,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
-import com.google.android.libraries.feed.api.scope.FeedProcessScope;
-import com.google.android.libraries.feed.api.scope.FeedStreamScope;
-import com.google.android.libraries.feed.api.stream.Header;
-import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
-import com.google.android.libraries.feed.api.stream.Stream;
-import com.google.android.libraries.feed.host.action.ActionApi;
-import com.google.android.libraries.feed.host.stream.CardConfiguration;
-import com.google.android.libraries.feed.host.stream.SnackbarApi;
-import com.google.android.libraries.feed.host.stream.SnackbarCallbackApi;
-import com.google.android.libraries.feed.host.stream.StreamConfiguration;
-import com.google.android.libraries.feed.host.stream.TooltipApi;
-import com.google.android.libraries.feed.host.stream.TooltipCallbackApi;
-import com.google.android.libraries.feed.host.stream.TooltipInfo;
+import com.google.android.libraries.feed.api.client.scope.StreamScope;
+import com.google.android.libraries.feed.api.client.stream.Header;
+import com.google.android.libraries.feed.api.client.stream.NonDismissibleHeader;
+import com.google.android.libraries.feed.api.client.stream.Stream;
+import com.google.android.libraries.feed.api.host.action.ActionApi;
+import com.google.android.libraries.feed.api.host.stream.CardConfiguration;
+import com.google.android.libraries.feed.api.host.stream.SnackbarApi;
+import com.google.android.libraries.feed.api.host.stream.SnackbarCallbackApi;
+import com.google.android.libraries.feed.api.host.stream.StreamConfiguration;
+import com.google.android.libraries.feed.api.host.stream.TooltipApi;
+import com.google.android.libraries.feed.api.host.stream.TooltipCallbackApi;
+import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
+import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -284,12 +284,12 @@ public class FeedNewTabPage extends NewTabPage {
     }
 
     @Override
-    protected void initializeMainView(Context context) {
+    protected void initializeMainView(Context context, NativePageHost host) {
         int topPadding = context.getResources().getDimensionPixelOffset(R.dimen.tab_strip_height);
 
         mRootView = new RootView(context, mConstructedTimeNs);
         mRootView.setPadding(0, topPadding, 0, 0);
-        mRootView.setTab(mTab);
+        mRootView.setNavigationDelegate(host.createHistoryNavigationDelegate());
         mUiConfig = new UiConfig(mRootView);
     }
 
@@ -372,9 +372,9 @@ public class FeedNewTabPage extends NewTabPage {
 
         TooltipApi tooltipApi = new BasicTooltipApi();
 
-        FeedStreamScope streamScope =
+        StreamScope streamScope =
                 feedProcessScope
-                        .createFeedStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
+                        .createStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(
                                         chromeActivity.getResources(), mUiConfig),

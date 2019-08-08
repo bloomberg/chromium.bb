@@ -25,7 +25,8 @@ USE_FAKE_CAMERA_DEVICE = Tag(
 BACKDROP_FILTER = Tag(
     'backdrop_filter', 'Backdrop filter stories')
 IMAGE_DECODING = Tag(
-    'image_decoding', 'Stories with accelerated jpeg decoding')
+    'image_decoding', ('Stories decoding JPEG and WebP (and using GPU '
+                       'rasterization) to compare YUV and RGB'))
 KEY_DESKTOP_MOVE = Tag(
     'key_desktop_move', 'Key desktop move stories')
 KEY_HIT_TEST = Tag(
@@ -46,8 +47,12 @@ POLYMER = Tag(
     'polymer', 'Polymer stories')
 REPAINT_DESKTOP = Tag(
     'repaint_desktop', 'Repaint desktop stories')
+# Representative story_tags are the cluster representatives of benchamrks
+# Documentation: https://goto.google.com/chrome-benchmark-clustering
 REPRESENTATIVE_MAC_DESKTOP = Tag(
     'representative_mac_desktop', 'Rendering desktop representatives for mac')
+REPRESENTATIVE_MOBILE = Tag(
+    'representative_mobile', 'Rendering mobile representatives')
 REPRESENTATIVE_WIN_DESKTOP = Tag(
     'representative_win_desktop',
     'Rendering desktop representatives for windows')

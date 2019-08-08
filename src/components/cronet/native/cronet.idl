@@ -109,8 +109,8 @@ struct Error {
 
     /**
      * Error code indicating an error related to the <a href="https://www.chromium.org/quic">
-     * QUIC</a> protocol. When {@link #getErrorCode} returns this code, this exception can be cast
-     * to {@link QuicException} for more information.
+     * QUIC</a> protocol. When {@link #error_code} is this code, see
+     * {@link quic_detailed_error_code} for more information.
      */
     ERROR_QUIC_PROTOCOL_FAILED = 10,
 
@@ -153,7 +153,7 @@ struct Error {
 
   /**
    * Contains detailed <a href="https://www.chromium.org/quic">QUIC</a> error code from
-   * <a href=https://cs.chromium.org/chromium/src/net/quic/quic_protocol.h?type=cs&q=%22enum+QuicErrorCode+%7B%22+file:src/net/quic/quic_protocol.h>
+   * <a href="https://cs.chromium.org/search/?q=symbol:%5CbQuicErrorCode%5Cb">
    * QuicErrorCode</a> when the |error_code| code is |ERROR_QUIC_PROTOCOL_FAILED|.
    */
   int32 quic_detailed_error_code = 0;
@@ -884,10 +884,11 @@ interface UrlRequestCallback {
    * UrlRequestCallback methods will be invoked.
    *
    * Implementations of {@link #OnSucceeded} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
+   * Cronet_UrlRequest_Destroy(request)}, but note that destroying {@code
+   * request} destroys {@code info}.
    *
    * @param request Request that succeeded.
-   * @param info Response information.
+   * @param info Response information. NOTE: this is owned by {@code request}.
    */
   OnSucceeded(UrlRequest request, UrlResponseInfo info);
 
@@ -897,12 +898,14 @@ interface UrlRequestCallback {
    * |error| provides information about the failure.
    *
    * Implementations of {@link #OnFailed} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
+   * Cronet_UrlRequest_Destroy(request)}, but note that destroying {@code
+   * request} destroys {@code info} and {@code error}.
    *
    * @param request Request that failed.
    * @param info Response information. May be null if no response was
-   *         received.
-   * @param error information about error.
+   *         received. NOTE: this is owned by {@code request}.
+   * @param error information about error. NOTE: this is owned by {@code
+   *         request}.
    */
   OnFailed(UrlRequest request, UrlResponseInfo info, Error error);
 
@@ -911,11 +914,12 @@ interface UrlRequestCallback {
    * invoked, no other UrlRequestCallback methods will be invoked.
    *
    * Implementations of {@link #OnCanceled} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
+   * Cronet_UrlRequest_Destroy(request)}, but note that destroying {@code
+   * request} destroys {@code info}.
    *
    * @param request Request that was canceled.
    * @param info Response information. May be null if no response was
-   *         received.
+   *         received. NOTE: this is owned by {@code request}.
    */
   OnCanceled(UrlRequest request, UrlResponseInfo info);
 };
@@ -1335,14 +1339,20 @@ struct Metrics {
 
   /**
    * Time when sending HTTP request headers started.
+   *
+   * Will equal null if the request failed or was canceled before sending
+   * started.
    */
-  DateTime sending_start;
+  DateTime? sending_start;
 
   /**
    * Time when sending HTTP request body finished. (Sending request body
    * happens after sending request headers.)
+   *
+   * Will equal null if the request failed or was canceled before sending
+   * ended.
    */
-  DateTime sending_end;
+  DateTime? sending_end;
 
   /**
    * Time when first byte of HTTP/2 server push was received.  Will equal
@@ -1358,8 +1368,11 @@ struct Metrics {
 
   /**
    * Time when the end of the response headers was received.
+   *
+   * Will equal null if the request failed or was canceled before the response
+   * started.
    */
-  DateTime response_start;
+  DateTime? response_start;
 
   /**
    * Time when the request finished.
@@ -1427,17 +1440,6 @@ struct RequestFinishedInfo {
    * Returns the reason why the request finished.
    */
   FINISHED_REASON finished_reason = SUCCEEDED;
-
-  /**
-   * {@link UrlResponseInfo} for the request, if its response had started.
-   */
-  UrlResponseInfo? response_info;
-
-  /**
-   * If the request failed, will be equal to the same {@link Error} provided to
-   * {@link UrlRequestCallback.OnFailed}.
-   */
-  Error? error;
 };
 
 /**
@@ -1456,8 +1458,29 @@ interface RequestFinishedInfoListener {
    * happen after a {@code UrlRequestCallback} method is called.
    *
    * @param request_info {@link RequestFinishedInfo} for finished request.
-   *     Ownership is *not* transferred by this call.  Cronet implementation
-   *     will destroy after this call.
+   *     Ownership is *not* transferred by this call, do not destroy
+   *     {@code request_info}.
+   *
+   *     {@code request_info} will be valid as long as the {@code UrlRequest}
+   *     that created it hasn't been destroyed -- **additionally**, it will
+   *     also always be valid for the duration of {@code OnRequestFinished()},
+   *     even if the {@code UrlRequest} has been destroyed.
+   *
+   *     This is accomplished by ownership being shared between the {@code
+   *     UrlRequest} and the code that calls this listener.
+   *
+   * @param response_info A pointer to the same UrlResponseInfo passed to
+   *     {@link UrlRequestCallback.OnCanceled()}, {@link
+   *     UrlRequestCallback.OnFailed()} or {@link
+   *     UrlRequestCallback.OnSucceeded()}. The lifetime and ownership of
+   *     {@code response_info} works the same as for {@code request_info}.
+   *
+   * @param error A pointer to the same Error passed to
+   *     {@code UrlRequestCallback.OnFailed()}, or null if there was no error.
+   *     The lifetime and ownership of {@code error} works the same as for
+   *     {@code request_info}.
    */
-  OnRequestFinished(RequestFinishedInfo request_info);
+  OnRequestFinished(RequestFinishedInfo request_info,
+                    UrlResponseInfo response_info,
+                    Error error);
 };

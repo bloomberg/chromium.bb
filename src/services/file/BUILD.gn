@@ -20,7 +20,7 @@ source_set("lib") {
     "//components/services/filesystem/public/interfaces",
     "//components/services/leveldb:lib",
     "//components/services/leveldb/public/interfaces",
-    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/bindings",
     "//services/file/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

@@ -82,8 +82,8 @@ void PixelTestOutputSurface::SwapBuffersCallback() {
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(), 0));
 }
 
-viz::OverlayCandidateValidator*
-PixelTestOutputSurface::GetOverlayCandidateValidator() const {
+std::unique_ptr<viz::OverlayCandidateValidator>
+PixelTestOutputSurface::TakeOverlayCandidateValidator() {
   return nullptr;
 }
 
@@ -108,6 +108,13 @@ uint32_t PixelTestOutputSurface::GetFramebufferCopyTextureFormat() {
 
 unsigned PixelTestOutputSurface::UpdateGpuFence() {
   return 0;
+}
+
+void PixelTestOutputSurface::SetUpdateVSyncParametersCallback(
+    viz::UpdateVSyncParametersCallback callback) {}
+
+gfx::OverlayTransform PixelTestOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 }  // namespace cc

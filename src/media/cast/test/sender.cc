@@ -267,8 +267,8 @@ int main(int argc, char** argv) {
           cast_environment->Clock(), base::TimeDelta::FromSeconds(1),
           std::make_unique<TransportClient>(cast_environment->logger()),
           std::make_unique<media::cast::UdpTransportImpl>(
-              nullptr, io_message_loop.task_runner(), net::IPEndPoint(),
-              remote_endpoint, base::Bind(&UpdateCastTransportStatus)),
+              io_message_loop.task_runner(), net::IPEndPoint(), remote_endpoint,
+              base::Bind(&UpdateCastTransportStatus)),
           io_message_loop.task_runner());
 
   // Set up event subscribers.

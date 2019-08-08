@@ -112,14 +112,23 @@ Polymer({
   },
 
   /**
-   * Updates the dialog after a connect attempt.
-   * @param {!chrome.bluetooth.Device} device The device connected to
-   * @param {!{message: string}} lastError chrome.runtime.lastError
+   * Updates the dialog after a connection attempt.
+   * @param {!chrome.bluetooth.Device} device The device connected to.
+   * @param {!boolean} wasPairing True if the device required pairing before
+   *     connecting.
+   * @param {!{message: string}} lastError chrome.runtime.lastError.
    * @param {chrome.bluetoothPrivate.ConnectResultType} result The connect
-   *     result
-   * @return {boolean}
+   *     result.
+   * @return {boolean} True if the dialog considers this a fatal error and
+   *     is displaying an error message.
    */
-  handleError: function(device, lastError, result) {
+  endConnectionAttempt: function(device, wasPairing, lastError, result) {
+    if (wasPairing) {
+      const transport = device.transport ? device.transport :
+                                           chrome.bluetooth.Transport.INVALID;
+      this.recordPairingMetrics_(transport, lastError, result);
+    }
+
     let error;
     if (lastError) {
       error = lastError.message;
@@ -136,14 +145,19 @@ Polymer({
       }
     }
 
+    // Attempting to connect and pair has failed. Remove listeners.
+    this.endPairing();
+
     const name = device.name || device.address;
-    const id = 'bluetooth_connect_' + error;
-    if (this.i18nExists(id)) {
-      this.errorMessage_ = this.i18n(id, name);
-    } else {
-      this.errorMessage_ = error;
-      console.error('Unexpected error connecting to: ' + name + ': ' + error);
+    let id = 'bluetooth_connect_' + error;
+    if (!this.i18nExists(id)) {
+      console.error(
+          'Unexpected error connecting to:', name, 'error:', error,
+          'result:', result);
+      id = 'bluetooth_connect_failed';
     }
+    this.errorMessage_ = this.i18n(id, name);
+
     return true;
   },
 
@@ -269,7 +283,13 @@ Polymer({
     } else {
       message = this.getEventDesc_(this.pairingEvent_.pairing);
     }
-    return this.i18n(message, this.pairingDevice.name || '');
+
+    let pairingDeviceName = '';
+    if (this.pairingDevice && this.pairingDevice.name) {
+      pairingDeviceName = this.pairingDevice.name;
+    }
+
+    return this.i18n(message, pairingDeviceName);
   },
 
   /**
@@ -351,7 +371,7 @@ Polymer({
    * @private
    */
   showDismiss_: function() {
-    return this.pairingDevice.paired ||
+    return (!!this.pairingDevice && this.pairingDevice.paired) ||
         (!!this.pairingEvent_ &&
          this.pairingEvent_.pairing == PairingEventType.COMPLETE);
   },
@@ -477,5 +497,43 @@ Polymer({
       }
     }
     return cssClass;
+  },
+
+  /**
+   * Record metrics for pairing attempt results.
+   * @param {!chrome.bluetooth.Transport} transport The transport type of the
+   *     device.
+   * @param {!{message: string}} lastError chrome.runtime.lastError.
+   * @param {!chrome.bluetoothPrivate.ConnectResultType} result The connection
+   *     result.
+   * @private
+   */
+  recordPairingMetrics_: function(transport, lastError, result) {
+    // TODO(crbug.com/953149): Also create metrics which break down the simple
+    // boolean success/failure metric with error reasons, including |lastError|.
+
+    let success;
+    if (lastError) {
+      success = false;
+    } else {
+      switch (result) {
+        case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
+          success = true;
+          break;
+        case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
+        case chrome.bluetoothPrivate.ConnectResultType.ALREADY_CONNECTED:
+        case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
+        case chrome.bluetoothPrivate.ConnectResultType.AUTH_REJECTED:
+          // Cases like this do not reflect success or failure to pair,
+          // particularly AUTH_CANCELED or AUTH_REJECTED. Do not emit to
+          // metrics.
+          return;
+        default:
+          success = false;
+          break;
+      }
+    }
+
+    chrome.bluetoothPrivate.recordPairing(success, transport);
   },
 });

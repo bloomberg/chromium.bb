@@ -29,16 +29,6 @@ class ASH_EXPORT PipPositioner {
   PipPositioner() = delete;
   ~PipPositioner() = delete;
 
-  // Returns the area that the PIP window can be positioned inside for a given
-  // display |display|.
-  static gfx::Rect GetMovementArea(const display::Display& display);
-
-  // Returns the position the PIP window should come to rest at. For example,
-  // this will be at a screen edge, not in the middle of the screen.
-  // TODO(edcourtney): This should consider drag velocity for fling as well.
-  static gfx::Rect GetRestingPosition(const display::Display& display,
-                                      const gfx::Rect& bounds_in_screen);
-
   // Adjusts bounds during a drag of a PIP window. For example, this will
   // ensure that the PIP window cannot leave the PIP movement area.
   static gfx::Rect GetBoundsForDrag(const display::Display& display,
@@ -57,26 +47,8 @@ class ASH_EXPORT PipPositioner {
   static gfx::Rect GetPositionAfterMovementAreaChange(
       wm::WindowState* window_state);
 
-  // Mark a window as ignored for PIP collision detection.
-  static void MarkWindowAsIgnoredForCollisionDetection(aura::Window* window);
-
  private:
   friend class PipPositionerDisplayTest;
-  friend class PipPositionerLogicTest;
-
-  // Moves |bounds| such that it does not intersect with system ui areas, such
-  // as the unified system tray or the floating keyboard.
-  static gfx::Rect AvoidObstacles(const display::Display& display,
-                                  const gfx::Rect& bounds_in_screen);
-
-  // Internal method for collision resolution. Returns a gfx::Rect with the
-  // same size as |bounds|. That rectangle will not intersect any of the
-  // rectangles in |rects| and will be completely inside |work_area|. If such a
-  // rectangle does not exist, returns |bounds|. Otherwise, it will be the
-  // closest such rectangle to |bounds|.
-  static gfx::Rect AvoidObstaclesInternal(const gfx::Rect& work_area,
-                                          const std::vector<gfx::Rect>& rects,
-                                          const gfx::Rect& bounds_in_screen);
 
   DISALLOW_COPY_AND_ASSIGN(PipPositioner);
 };

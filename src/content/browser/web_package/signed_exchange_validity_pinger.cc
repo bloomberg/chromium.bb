@@ -131,7 +131,7 @@ void SignedExchangeValidityPinger::OnUploadProgress(
 }
 
 void SignedExchangeValidityPinger::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+    mojo_base::BigBuffer data) {
   NOTREACHED();
 }
 

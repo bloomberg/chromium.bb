@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/single_thread_task_executor.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
@@ -36,7 +36,7 @@ class ZipArchiverSandboxTargetHooks : public MojoSandboxTargetHooks {
   void CreateZipArchiverImpl(mojom::ZipArchiverRequest request);
 
   MojoTaskRunner* mojo_task_runner_;
-  base::MessageLoop message_loop_;
+  base::SingleThreadTaskExecutor main_thread_task_executor_;
   std::unique_ptr<ZipArchiverImpl, base::OnTaskRunnerDeleter>
       zip_archiver_impl_;
 };

@@ -7,7 +7,7 @@
 #include "base/observer_list.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "components/sync/engine/connection_status.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
@@ -24,33 +24,43 @@ namespace {
 
 class MockSyncService : public syncer::TestSyncService {
  public:
-  MockSyncService() { SetTransportState(TransportState::INITIALIZING); }
+  MockSyncService() {
+    SetTransportState(TransportState::INITIALIZING);
+    SetLastCycleSnapshot(syncer::SyncCycleSnapshot());
+  }
   ~MockSyncService() override { Shutdown(); }
 
-  void SetStatus(bool has_passphrase, bool history_enabled) {
-    SetTransportState(TransportState::ACTIVE);
+  void SetStatus(bool has_passphrase, bool history_enabled, bool active) {
+    SetTransportState(active ? TransportState::ACTIVE
+                             : TransportState::INITIALIZING);
     SetIsUsingSecondaryPassphrase(has_passphrase);
     SetPreferredDataTypes(
         history_enabled
             ? syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)
             : syncer::ModelTypeSet());
+
+    // It doesn't matter what exactly we set here, it's only relevant that the
+    // SyncCycleSnapshot is initialized at all.
+    SetLastCycleSnapshot(syncer::SyncCycleSnapshot(
+        /*birthday=*/std::string(), /*bag_of_chips=*/std::string(),
+        syncer::ModelNeutralState(), syncer::ProgressMarkerMap(), false, 0, 0,
+        0, true, 0, base::Time::Now(), base::Time::Now(),
+        std::vector<int>(syncer::ModelType::NUM_ENTRIES, 0),
+        std::vector<int>(syncer::ModelType::NUM_ENTRIES, 0),
+        sync_pb::SyncEnums::UNKNOWN_ORIGIN, base::TimeDelta::FromMinutes(1),
+        false));
+
     NotifyObserversOfStateChanged();
   }
 
-  void SetConnectionStatus(syncer::ConnectionStatus status) {
-    connection_status_ = status;
+  void SetAuthError(GoogleServiceAuthError::State error_state) {
+    syncer::TestSyncService::SetAuthError(GoogleServiceAuthError(error_state));
     NotifyObserversOfStateChanged();
   }
 
   void Shutdown() override {
     for (auto& observer : observers_) {
       observer.OnSyncShutdown(this);
-    }
-  }
-
-  void NotifyObserversOfStateChanged() {
-    for (auto& observer : observers_) {
-      observer.OnStateChanged(this);
     }
   }
 
@@ -62,13 +72,12 @@ class MockSyncService : public syncer::TestSyncService {
   void RemoveObserver(syncer::SyncServiceObserver* observer) override {
     observers_.RemoveObserver(observer);
   }
-  syncer::SyncTokenStatus GetSyncTokenStatus() const override {
-    syncer::SyncTokenStatus status;
-    status.connection_status = connection_status_;
-    return status;
-  }
 
-  syncer::ConnectionStatus connection_status_ = syncer::CONNECTION_OK;
+  void NotifyObserversOfStateChanged() {
+    for (auto& observer : observers_) {
+      observer.OnStateChanged(this);
+    }
+  }
 
   // The list of observers of the SyncService state.
   base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
@@ -133,12 +142,24 @@ TEST_F(SyncDisableObserverTest, NoProfiles) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
+TEST_F(SyncDisableObserverTest, NotActive) {
+  MockSyncService sync;
+  sync.SetStatus(false, true, false);
+  sync_preferences::TestingPrefServiceSyncable prefs;
+  RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
+  TestSyncDisableObserver observer;
+  observer.ObserveServiceForSyncDisables(&sync, &prefs);
+  EXPECT_FALSE(observer.SyncStateAllowsUkm());
+  EXPECT_FALSE(observer.ResetNotified());
+  EXPECT_FALSE(observer.ResetPurged());
+}
+
 TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentDisabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync;
-  sync.SetStatus(false, true);
+  sync.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync, nullptr);
   EXPECT_TRUE(observer.SyncStateAllowsUkm());
   EXPECT_TRUE(observer.ResetNotified());
@@ -155,7 +176,7 @@ TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentEnabled) {
   for (bool has_passphrase : {true, false}) {
     for (bool history_enabled : {true, false}) {
       TestSyncDisableObserver observer;
-      sync.SetStatus(has_passphrase, history_enabled);
+      sync.SetStatus(has_passphrase, history_enabled, /*active=*/true);
       observer.ObserveServiceForSyncDisables(&sync, &prefs);
       EXPECT_TRUE(observer.SyncStateAllowsUkm());
       EXPECT_TRUE(observer.ResetNotified());
@@ -168,7 +189,7 @@ TEST_F(SyncDisableObserverTest, Passphrased_UnifiedConsentDisabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kDisabled);
   MockSyncService sync;
-  sync.SetStatus(true, true);
+  sync.SetStatus(true, true, true);
   TestSyncDisableObserver observer;
   observer.ObserveServiceForSyncDisables(&sync, nullptr);
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
@@ -181,7 +202,7 @@ TEST_F(SyncDisableObserverTest, HistoryDisabled_UnifiedConsentDisabled) {
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync;
-  sync.SetStatus(false, false);
+  sync.SetStatus(false, false, true);
   observer.ObserveServiceForSyncDisables(&sync, nullptr);
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
   EXPECT_FALSE(observer.ResetNotified());
@@ -193,12 +214,12 @@ TEST_F(SyncDisableObserverTest, AuthError_UnifiedConsentDisabled) {
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync;
-  sync.SetStatus(false, true);
+  sync.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync, nullptr);
   EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  sync.SetConnectionStatus(syncer::CONNECTION_AUTH_ERROR);
+  sync.SetAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  sync.SetConnectionStatus(syncer::CONNECTION_OK);
+  sync.SetAuthError(GoogleServiceAuthError::NONE);
   EXPECT_TRUE(observer.SyncStateAllowsUkm());
 }
 
@@ -207,10 +228,10 @@ TEST_F(SyncDisableObserverTest, MixedProfiles1_UnifiedConsentDisabled) {
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync1;
-  sync1.SetStatus(false, false);
+  sync1.SetStatus(false, false, true);
   observer.ObserveServiceForSyncDisables(&sync1, nullptr);
   MockSyncService sync2;
-  sync2.SetStatus(false, true);
+  sync2.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync2, nullptr);
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
   EXPECT_FALSE(observer.ResetNotified());
@@ -222,12 +243,12 @@ TEST_F(SyncDisableObserverTest, MixedProfiles2_UnifiedConsentDisabled) {
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync1;
-  sync1.SetStatus(false, true);
+  sync1.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync1, nullptr);
   EXPECT_TRUE(observer.ResetNotified());
 
   MockSyncService sync2;
-  sync2.SetStatus(false, false);
+  sync2.SetStatus(false, false, true);
   observer.ObserveServiceForSyncDisables(&sync2, nullptr);
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
   EXPECT_TRUE(observer.ResetNotified());
@@ -263,11 +284,11 @@ TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentDisabled) {
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync1;
-  sync1.SetStatus(false, true);
+  sync1.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync1, nullptr);
   EXPECT_TRUE(observer.ResetNotified());
   MockSyncService sync2;
-  sync2.SetStatus(false, true);
+  sync2.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync2, nullptr);
   EXPECT_TRUE(observer.SyncStateAllowsUkm());
   EXPECT_FALSE(observer.ResetNotified());
@@ -304,7 +325,7 @@ TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentDisabled) {
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
   EXPECT_FALSE(observer.ResetNotified());
   EXPECT_FALSE(observer.ResetPurged());
-  sync.SetStatus(false, true);
+  sync.SetStatus(false, true, true);
   EXPECT_TRUE(observer.SyncStateAllowsUkm());
   EXPECT_TRUE(observer.ResetNotified());
   EXPECT_FALSE(observer.ResetPurged());
@@ -340,12 +361,12 @@ TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentDisabled) {
       UnifiedConsentFeatureState::kDisabled);
   TestSyncDisableObserver observer;
   MockSyncService sync;
-  sync.SetStatus(false, true);
+  sync.SetStatus(false, true, true);
   observer.ObserveServiceForSyncDisables(&sync, nullptr);
   EXPECT_TRUE(observer.SyncStateAllowsUkm());
   EXPECT_TRUE(observer.ResetNotified());
   EXPECT_FALSE(observer.ResetPurged());
-  sync.SetStatus(false, false);
+  sync.SetStatus(false, false, true);
   EXPECT_FALSE(observer.SyncStateAllowsUkm());
   EXPECT_TRUE(observer.ResetNotified());
   EXPECT_TRUE(observer.ResetPurged());

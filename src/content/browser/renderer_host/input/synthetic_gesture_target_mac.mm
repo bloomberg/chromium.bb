@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 // Unlike some event APIs, Apple does not provide a way to programmatically

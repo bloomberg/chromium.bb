@@ -26,12 +26,10 @@
 
 namespace blink {
 
-inline SVGSwitchElement::SVGSwitchElement(Document& document)
+SVGSwitchElement::SVGSwitchElement(Document& document)
     : SVGGraphicsElement(svg_names::kSwitchTag, document) {
   UseCounter::Count(document, WebFeature::kSVGSwitchElement);
 }
-
-DEFINE_NODE_FACTORY(SVGSwitchElement)
 
 LayoutObject* SVGSwitchElement::CreateLayoutObject(const ComputedStyle&,
                                                    LegacyLayout) {

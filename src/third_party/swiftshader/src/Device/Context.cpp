@@ -24,11 +24,8 @@
 
 namespace sw
 {
-	extern bool perspectiveCorrection;
-
 	bool booleanFaceRegister = false;
 	bool fullPixelPositionRegister = false;
-	bool colorsDefaultToZero = false;
 
 	bool forceWindowed = false;
 	bool quadLayoutEnabled = false;
@@ -142,14 +139,12 @@ namespace sw
 		destBlendFactorState = VK_BLEND_FACTOR_ZERO;
 		blendOperationState = VK_BLEND_OP_ADD;
 
-		separateAlphaBlendEnable = false;
 		sourceBlendFactorStateAlpha = VK_BLEND_FACTOR_ONE;
 		destBlendFactorStateAlpha = VK_BLEND_FACTOR_ZERO;
 		blendOperationStateAlpha = VK_BLEND_OP_ADD;
 
 		cullMode = CULL_CLOCKWISE;
 		frontFacingCCW = true;
-		alphaReference = 0.0f;
 
 		depthBias = 0.0f;
 		slopeDepthBias = 0.0f;
@@ -170,8 +165,8 @@ namespace sw
 
 		lineWidth = 1.0f;
 
-		writeSRGB = false;
 		sampleMask = 0xFFFFFFFF;
+		alphaToCoverage = false;
 	}
 
 	bool Context::setDepthBufferEnable(bool depthBufferEnable)
@@ -188,55 +183,6 @@ namespace sw
 		return modified;
 	}
 
-	bool Context::setSourceBlendFactor(VkBlendFactor sourceBlendFactor)
-	{
-		bool modified = (Context::sourceBlendFactorState != sourceBlendFactor);
-		Context::sourceBlendFactorState = sourceBlendFactor;
-		return modified;
-	}
-
-	bool Context::setDestBlendFactor(VkBlendFactor destBlendFactor)
-	{
-		bool modified = (Context::destBlendFactorState != destBlendFactor);
-		Context::destBlendFactorState = destBlendFactor;
-		return modified;
-	}
-
-	bool Context::setBlendOperation(VkBlendOp blendOperation)
-	{
-		bool modified = (Context::blendOperationState != blendOperation);
-		Context::blendOperationState = blendOperation;
-		return modified;
-	}
-
-	bool Context::setSeparateAlphaBlendEnable(bool separateAlphaBlendEnable)
-	{
-		bool modified = (Context::separateAlphaBlendEnable != separateAlphaBlendEnable);
-		Context::separateAlphaBlendEnable = separateAlphaBlendEnable;
-		return modified;
-	}
-
-	bool Context::setSourceBlendFactorAlpha(VkBlendFactor sourceBlendFactorAlpha)
-	{
-		bool modified = (Context::sourceBlendFactorStateAlpha != sourceBlendFactorAlpha);
-		Context::sourceBlendFactorStateAlpha = sourceBlendFactorAlpha;
-		return modified;
-	}
-
-	bool Context::setDestBlendFactorAlpha(VkBlendFactor destBlendFactorAlpha)
-	{
-		bool modified = (Context::destBlendFactorStateAlpha != destBlendFactorAlpha);
-		Context::destBlendFactorStateAlpha = destBlendFactorAlpha;
-		return modified;
-	}
-
-	bool Context::setBlendOperationAlpha(VkBlendOp blendOperationAlpha)
-	{
-		bool modified = (Context::blendOperationStateAlpha != blendOperationAlpha);
-		Context::blendOperationStateAlpha = blendOperationAlpha;
-		return modified;
-	}
-
 	bool Context::setColorWriteMask(int index, int colorWriteMask)
 	{
 		bool modified = (Context::colorWriteMask[index] != colorWriteMask);
@@ -244,36 +190,29 @@ namespace sw
 		return modified;
 	}
 
-	bool Context::setWriteSRGB(bool sRGB)
-	{
-		bool modified = (Context::writeSRGB != sRGB);
-		Context::writeSRGB = sRGB;
-		return modified;
-	}
-
-	bool Context::depthWriteActive()
+	bool Context::depthWriteActive() const
 	{
 		if(!depthBufferActive()) return false;
 
 		return depthWriteEnable;
 	}
 
-	bool Context::alphaTestActive()
+	bool Context::alphaTestActive() const
 	{
 		return transparencyAntialiasing != TRANSPARENCY_NONE;
 	}
 
-	bool Context::depthBufferActive()
+	bool Context::depthBufferActive() const
 	{
 		return depthBuffer && depthBufferEnable;
 	}
 
-	bool Context::stencilActive()
+	bool Context::stencilActive() const
 	{
 		return stencilBuffer && stencilEnable;
 	}
 
-	bool Context::alphaBlendActive()
+	bool Context::alphaBlendActive() const
 	{
 		if(!alphaBlendEnable)
 		{
@@ -286,12 +225,12 @@ namespace sw
 		}
 
 		bool colorBlend = !(blendOperation() == VK_BLEND_OP_SRC_EXT && sourceBlendFactor() == VK_BLEND_FACTOR_ONE);
-		bool alphaBlend = separateAlphaBlendEnable ? !(blendOperationAlpha() == VK_BLEND_OP_SRC_EXT && sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE) : colorBlend;
+		bool alphaBlend = !(blendOperationAlpha() == VK_BLEND_OP_SRC_EXT && sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE);
 
 		return colorBlend || alphaBlend;
 	}
 
-	VkBlendFactor Context::sourceBlendFactor()
+	VkBlendFactor Context::sourceBlendFactor() const
 	{
 		if(!alphaBlendEnable) return VK_BLEND_FACTOR_ONE;
 
@@ -312,7 +251,7 @@ namespace sw
 		return sourceBlendFactorState;
 	}
 
-	VkBlendFactor Context::destBlendFactor()
+	VkBlendFactor Context::destBlendFactor() const
 	{
 		if(!alphaBlendEnable) return VK_BLEND_FACTOR_ONE;
 
@@ -333,7 +272,21 @@ namespace sw
 		return destBlendFactorState;
 	}
 
-	VkBlendOp Context::blendOperation()
+	bool Context::allTargetsColorClamp() const
+	{
+		// TODO: remove all of this and support VkPhysicalDeviceFeatures::independentBlend instead
+		for (int i = 0; i < RENDERTARGETS; i++)
+		{
+			if (renderTarget[i] && renderTarget[i]->getFormat().isFloatFormat())
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	VkBlendOp Context::blendOperation() const
 	{
 		if(!alphaBlendEnable) return VK_BLEND_OP_SRC_EXT;
 
@@ -374,7 +327,7 @@ namespace sw
 				}
 			}
 		case VK_BLEND_OP_SUBTRACT:
-			if(sourceBlendFactor() == VK_BLEND_FACTOR_ZERO)
+			if(sourceBlendFactor() == VK_BLEND_FACTOR_ZERO && allTargetsColorClamp())
 			{
 				return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
 			}
@@ -414,7 +367,7 @@ namespace sw
 			}
 			else if(sourceBlendFactor() == VK_BLEND_FACTOR_ONE)
 			{
-				if(destBlendFactor() == VK_BLEND_FACTOR_ZERO)
+				if(destBlendFactor() == VK_BLEND_FACTOR_ZERO && allTargetsColorClamp())
 				{
 					return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
 				}
@@ -425,7 +378,7 @@ namespace sw
 			}
 			else
 			{
-				if(destBlendFactor() == VK_BLEND_FACTOR_ZERO)
+				if(destBlendFactor() == VK_BLEND_FACTOR_ZERO && allTargetsColorClamp())
 				{
 					return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
 				}
@@ -445,196 +398,155 @@ namespace sw
 		return blendOperationState;
 	}
 
-	VkBlendFactor Context::sourceBlendFactorAlpha()
+	VkBlendFactor Context::sourceBlendFactorAlpha() const
 	{
-		if(!separateAlphaBlendEnable)
+		switch (blendOperationStateAlpha)
 		{
-			return sourceBlendFactor();
-		}
-		else
-		{
-			switch(blendOperationStateAlpha)
-			{
-			case VK_BLEND_OP_ADD:
-			case VK_BLEND_OP_SUBTRACT:
-			case VK_BLEND_OP_REVERSE_SUBTRACT:
-				return sourceBlendFactorStateAlpha;
-			case VK_BLEND_OP_MIN:
-				return VK_BLEND_FACTOR_ONE;
-			case VK_BLEND_OP_MAX:
-				return VK_BLEND_FACTOR_ONE;
-			default:
-				ASSERT(false);
-			}
-
+		case VK_BLEND_OP_ADD:
+		case VK_BLEND_OP_SUBTRACT:
+		case VK_BLEND_OP_REVERSE_SUBTRACT:
 			return sourceBlendFactorStateAlpha;
+		case VK_BLEND_OP_MIN:
+			return VK_BLEND_FACTOR_ONE;
+		case VK_BLEND_OP_MAX:
+			return VK_BLEND_FACTOR_ONE;
+		default:
+			ASSERT(false);
 		}
+
+		return sourceBlendFactorStateAlpha;
 	}
 
-	VkBlendFactor Context::destBlendFactorAlpha()
+	VkBlendFactor Context::destBlendFactorAlpha() const
 	{
-		if(!separateAlphaBlendEnable)
+		switch (blendOperationStateAlpha)
 		{
-			return destBlendFactor();
-		}
-		else
-		{
-			switch(blendOperationStateAlpha)
-			{
-			case VK_BLEND_OP_ADD:
-			case VK_BLEND_OP_SUBTRACT:
-			case VK_BLEND_OP_REVERSE_SUBTRACT:
-				return destBlendFactorStateAlpha;
-			case VK_BLEND_OP_MIN:
-				return VK_BLEND_FACTOR_ONE;
-			case VK_BLEND_OP_MAX:
-				return VK_BLEND_FACTOR_ONE;
-			default:
-				ASSERT(false);
-			}
-
+		case VK_BLEND_OP_ADD:
+		case VK_BLEND_OP_SUBTRACT:
+		case VK_BLEND_OP_REVERSE_SUBTRACT:
 			return destBlendFactorStateAlpha;
+		case VK_BLEND_OP_MIN:
+			return VK_BLEND_FACTOR_ONE;
+		case VK_BLEND_OP_MAX:
+			return VK_BLEND_FACTOR_ONE;
+		default:
+			ASSERT(false);
 		}
+
+		return destBlendFactorStateAlpha;
 	}
 
-	VkBlendOp Context::blendOperationAlpha()
+	VkBlendOp Context::blendOperationAlpha() const
 	{
-		if(!separateAlphaBlendEnable)
+		switch (blendOperationStateAlpha)
 		{
-			return blendOperation();
-		}
-		else
-		{
-			switch(blendOperationStateAlpha)
+		case VK_BLEND_OP_ADD:
+			if (sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
 			{
-			case VK_BLEND_OP_ADD:
-				if(sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
 				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_ZERO_EXT;
-					}
-					else
-					{
-						return VK_BLEND_OP_DST_EXT;
-					}
-				}
-				else if(sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)
-				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_SRC_EXT;
-					}
-					else
-					{
-						return VK_BLEND_OP_ADD;
-					}
+					return VK_BLEND_OP_ZERO_EXT;
 				}
 				else
 				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_SRC_EXT;
-					}
-					else
-					{
-						return VK_BLEND_OP_ADD;
-					}
+					return VK_BLEND_OP_DST_EXT;
 				}
-			case VK_BLEND_OP_SUBTRACT:
-				if(sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+			}
+			else if (sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+				{
+					return VK_BLEND_OP_SRC_EXT;
+				}
+				else
+				{
+					return VK_BLEND_OP_ADD;
+				}
+			}
+			else
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+				{
+					return VK_BLEND_OP_SRC_EXT;
+				}
+				else
+				{
+					return VK_BLEND_OP_ADD;
+				}
+			}
+		case VK_BLEND_OP_SUBTRACT:
+			if (sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO && allTargetsColorClamp())
+			{
+				return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
+			}
+			else if (sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+				{
+					return VK_BLEND_OP_SRC_EXT;
+				}
+				else
+				{
+					return VK_BLEND_OP_SUBTRACT;
+				}
+			}
+			else
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+				{
+					return VK_BLEND_OP_SRC_EXT;
+				}
+				else
+				{
+					return VK_BLEND_OP_SUBTRACT;
+				}
+			}
+		case VK_BLEND_OP_REVERSE_SUBTRACT:
+			if (sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
+				{
+					return VK_BLEND_OP_ZERO_EXT;
+				}
+				else
+				{
+					return VK_BLEND_OP_DST_EXT;
+				}
+			}
+			else if (sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO && allTargetsColorClamp())
 				{
 					return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
 				}
-				else if(sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)
-				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_SRC_EXT;
-					}
-					else
-					{
-						return VK_BLEND_OP_SUBTRACT;
-					}
-				}
 				else
 				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_SRC_EXT;
-					}
-					else
-					{
-						return VK_BLEND_OP_SUBTRACT;
-					}
+					return VK_BLEND_OP_REVERSE_SUBTRACT;
 				}
-			case VK_BLEND_OP_REVERSE_SUBTRACT:
-				if(sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_ZERO_EXT;
-					}
-					else
-					{
-						return VK_BLEND_OP_DST_EXT;
-					}
-				}
-				else if(sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)
-				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
-					}
-					else
-					{
-						return VK_BLEND_OP_REVERSE_SUBTRACT;
-					}
-				}
-				else
-				{
-					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
-					{
-						return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
-					}
-					else
-					{
-						return VK_BLEND_OP_ZERO_EXT;
-					}
-				}
-			case VK_BLEND_OP_MIN:
-				return VK_BLEND_OP_MIN;
-			case VK_BLEND_OP_MAX:
-				return VK_BLEND_OP_MAX;
-			default:
-				ASSERT(false);
 			}
-
-			return blendOperationStateAlpha;
+			else
+			{
+				if (destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO && allTargetsColorClamp())
+				{
+					return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
+				}
+				else
+				{
+					return VK_BLEND_OP_REVERSE_SUBTRACT;
+				}
+			}
+		case VK_BLEND_OP_MIN:
+			return VK_BLEND_OP_MIN;
+		case VK_BLEND_OP_MAX:
+			return VK_BLEND_OP_MAX;
+		default:
+			ASSERT(false);
 		}
+
+		return blendOperationStateAlpha;
 	}
 
-	bool Context::perspectiveActive()
-	{
-		if(!colorUsed())
-		{
-			return false;
-		}
-
-		if(!perspectiveCorrection)
-		{
-			return false;
-		}
-
-		if(isDrawPoint())
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	VkFormat Context::renderTargetInternalFormat(int index)
+	VkFormat Context::renderTargetInternalFormat(int index) const
 	{
 		if(renderTarget[index])
 		{
@@ -646,7 +558,7 @@ namespace sw
 		}
 	}
 
-	bool Context::colorWriteActive()
+	bool Context::colorWriteActive() const
 	{
 		for (int i = 0; i < RENDERTARGETS; i++)
 		{
@@ -659,7 +571,7 @@ namespace sw
 		return false;
 	}
 
-	int Context::colorWriteActive(int index)
+	int Context::colorWriteActive(int index) const
 	{
 		if(!renderTarget[index] || renderTarget[index]->getFormat() == VK_FORMAT_UNDEFINED)
 		{
@@ -667,7 +579,7 @@ namespace sw
 		}
 
 		if(blendOperation() == VK_BLEND_OP_DST_EXT && destBlendFactor() == VK_BLEND_FACTOR_ONE &&
-		   (!separateAlphaBlendEnable || (blendOperationAlpha() == VK_BLEND_OP_DST_EXT && destBlendFactorAlpha() == VK_BLEND_FACTOR_ONE)))
+		   (blendOperationAlpha() == VK_BLEND_OP_DST_EXT && destBlendFactorAlpha() == VK_BLEND_FACTOR_ONE))
 		{
 			return 0;
 		}
@@ -675,7 +587,7 @@ namespace sw
 		return colorWriteMask[index];
 	}
 
-	bool Context::colorUsed()
+	bool Context::colorUsed() const
 	{
 		return colorWriteActive() || alphaTestActive() || (pixelShader && pixelShader->getModes().ContainsKill);
 	}

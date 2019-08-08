@@ -193,8 +193,16 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
 
     // CreateNewState(nullptr) returns state with non-empty
     // current_input_method. So SetState() triggers ChangeInputMethod().
-    manager_->SetState(
-        manager_->CreateNewState(ProfileManager::GetActiveUserProfile()));
+    InputMethodDescriptors descriptors;
+    auto state =
+        manager_->CreateNewState(ProfileManager::GetActiveUserProfile());
+    state->AddInputMethodExtension(extension_ime_util::kXkbExtensionId,
+                                   descriptors, mock_engine_handler_.get());
+    state->AddInputMethodExtension(extension_ime_util::kMozcExtensionId,
+                                   descriptors, mock_engine_handler_.get());
+    state->AddInputMethodExtension(extension_ime_util::kT13nExtensionId,
+                                   descriptors, mock_engine_handler_.get());
+    manager_->SetState(state);
 
     std::vector<std::string> layouts;
     layouts.push_back("us");
@@ -204,15 +212,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     // Note, for production, these SetEngineHandler are called when
     // IMEEngineHandlerInterface is initialized via
     // InitializeComponentextension.
-    InputMethodDescriptors descriptors;
-    manager_->GetActiveIMEState()->AddInputMethodExtension(
-        ImeIdFromEngineId(kNaclMozcUsId),
-        descriptors,
-        mock_engine_handler_.get());
-    manager_->GetActiveIMEState()->AddInputMethodExtension(
-        ImeIdFromEngineId(kExt2Engine1Id),
-        descriptors,
-        mock_engine_handler_.get());
     manager_->InitializeComponentExtensionForTesting(std::move(delegate));
   }
 

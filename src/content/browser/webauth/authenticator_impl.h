@@ -24,7 +24,7 @@ class OneShotTimer;
 namespace device {
 
 struct PlatformAuthenticatorInfo;
-class CtapGetAssertionRequest;
+struct CtapGetAssertionRequest;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
@@ -79,6 +79,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
                     GetAssertionCallback callback) override;
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
+  void Cancel() override;
 
   // WebContentsObserver:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;

@@ -11,8 +11,8 @@ static_library("ukm") {
   sources = [
     "app_source_url_recorder.cc",
     "app_source_url_recorder.h",
-    "persisted_logs_metrics_impl.cc",
-    "persisted_logs_metrics_impl.h",
+    "unsent_log_store_metrics_impl.cc",
+    "unsent_log_store_metrics_impl.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
     "ukm_recorder_impl.cc",
@@ -35,7 +35,6 @@ static_library("ukm") {
   deps = [
     "//base",
     "//components/crx_file",
-    "//components/data_use_measurement/core",
     "//components/metrics",
     "//components/prefs",
     "//components/variations",
@@ -56,6 +55,7 @@ static_library("observers") {
     "//base",
     "//components/history/core/browser",
     "//components/sync",
+    "//google_apis",
   ]
 
   public_deps = [
@@ -100,8 +100,7 @@ source_set("unit_tests") {
     "//components/metrics",
     "//components/metrics:test_support",
     "//components/prefs:test_support",
-    "//components/sync",
-    "//components/sync:test_support_driver",
+    "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//components/unified_consent:test_support",
     "//components/variations",

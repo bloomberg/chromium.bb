@@ -8,9 +8,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -78,11 +78,6 @@ void AutofillWebDataBackendImpl::CommitChanges() {
   web_database_backend_->ExecuteWriteTask(Bind(&DoNothingAndCommit));
 }
 
-void AutofillWebDataBackendImpl::RemoveExpiredFormElements() {
-  web_database_backend_->ExecuteWriteTask(
-      Bind(&AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl, this));
-}
-
 std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::RemoveExpiredAutocompleteEntries(WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
@@ -101,7 +96,6 @@ AutofillWebDataBackendImpl::RemoveExpiredAutocompleteEntries(WebDatabase* db) {
   return std::make_unique<WDResult<size_t>>(AUTOFILL_CLEANUP_RESULT,
                                             changes.size());
 }
-
 void AutofillWebDataBackendImpl::NotifyOfAutofillProfileChanged(
     const AutofillProfileChange& change) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
@@ -604,24 +598,6 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
   // Note: It is the caller's responsibility to post notifications for any
   // changes, e.g. by calling the Refresh() method of PersonalDataManager.
   return WebDatabase::COMMIT_NEEDED;
-}
-
-WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl(
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  AutofillChangeList changes;
-
-  if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(&changes)) {
-    if (!changes.empty()) {
-      // Post the notifications including the list of affected keys.
-      // This is sent here so that work resulting from this notification
-      // will be done on the DB sequence, and not the UI sequence.
-      for (auto& db_observer : db_observer_list_)
-        db_observer.AutofillEntriesChanged(changes);
-    }
-    return WebDatabase::COMMIT_NEEDED;
-  }
-  return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveOrphanAutofillTableRows(

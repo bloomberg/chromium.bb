@@ -33,9 +33,8 @@ class CAPTURE_EXPORT RendererFacingCrosImageCapture
                                  DeviceIdMappingCallback mapping_callback);
   ~RendererFacingCrosImageCapture() override;
 
-  void GetSupportedEffectsWithRealId(
-      GetSupportedEffectsCallback callback,
-      const base::Optional<std::string>& device_id);
+  void GetCameraInfoWithRealId(GetCameraInfoCallback callback,
+                               const base::Optional<std::string>& device_id);
 
   void SetReprocessOptionWithRealId(
       cros::mojom::Effect effect,
@@ -43,8 +42,8 @@ class CAPTURE_EXPORT RendererFacingCrosImageCapture
       const base::Optional<std::string>& device_id);
 
   // cros::mojom::CrosImageCapture implementations.
-  void GetSupportedEffects(const std::string& source_id,
-                           GetSupportedEffectsCallback callback) override;
+  void GetCameraInfo(const std::string& source_id,
+                     GetCameraInfoCallback callback) override;
   void SetReprocessOption(const std::string& source_id,
                           cros::mojom::Effect effect,
                           SetReprocessOptionCallback callback) override;

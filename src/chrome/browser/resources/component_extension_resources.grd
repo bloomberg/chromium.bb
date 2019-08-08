@@ -6,8 +6,8 @@
     <output filename="grit/component_extension_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="grit/component_extension_resources_map.cc" type="gzipped_resource_file_map_source" />
-    <output filename="grit/component_extension_resources_map.h" type="gzipped_resource_map_header" />
+    <output filename="grit/component_extension_resources_map.cc" type="resource_file_map_source" />
+    <output filename="grit/component_extension_resources_map.h" type="resource_map_header" />
     <output filename="component_extension_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
@@ -32,8 +32,6 @@
 
       <!-- Bookmarks -->
       <include name="IDR_COMPONENT_BOOKMARKS_BOOKMARKS_HTML" file="bookmarks/bookmarks.html" type="BINDATA" />
-      <!-- Gaia auth extension -->
-      <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
       <!-- Hangout Services extension, included in Google Chrome builds only. -->
       <if expr="_google_chrome or enable_hangout_services_extension">
         <include name="IDR_HANGOUT_SERVICES_BACKGROUND_HTML" file="hangout_services/background.html" type="BINDATA" />
@@ -93,9 +91,8 @@
         <include name="IDR_ARC_SUPPORT_ICON_HEADER" file="chromeos/arc_support/images/header.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS" file="chromeos/arc_support/recommend_app_list_view.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML" file="chromeos/arc_support/recommend_app_list_view.html" type="chrome_html" flattenhtml="true" />
-        <if expr="_google_chrome">
+        <if expr="_kiosk_next">
           <part file="chromeos/kiosk_next_home/kiosk_next_resources.grdp" />
-          <part file="chromeos/kiosk_next_home/kiosk_next_resources_internal.grdp" />
         </if>
       </if>
       <if expr="enable_plugins">
@@ -154,40 +151,24 @@
       </if>
       <include name="IDR_CRYPTOTOKEN_UTIL_JS" file="cryptotoken/util.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_B64_JS" file="cryptotoken/b64.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_CLOSEABLE_JS" file="cryptotoken/closeable.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_COUNTDOWN_JS" file="cryptotoken/countdown.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_COUNTDOWNTIMER_JS" file="cryptotoken/countdowntimer.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_SHA256_JS" file="cryptotoken/sha256.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_TIMER_JS" file="cryptotoken/timer.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_HIDGNUBBYDEVICE_JS" file="cryptotoken/hidgnubbydevice.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBGNUBBYDEVICE_JS" file="cryptotoken/usbgnubbydevice.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_GNUBBIES_JS" file="cryptotoken/gnubbies.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_GNUBBY_JS" file="cryptotoken/gnubby.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_GNUBBY_U2F_JS" file="cryptotoken/gnubby-u2f.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_GNUBBYFACTORY_JS" file="cryptotoken/gnubbyfactory.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBGNUBBYFACTORY_JS" file="cryptotoken/usbgnubbyfactory.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_DEVICESTATUSCODES_JS" file="cryptotoken/devicestatuscodes.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ASN1_JS" file="cryptotoken/asn1.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_CBOR_JS" file="cryptotoken/cbor.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ENROLLER_JS" file="cryptotoken/enroller.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBENROLLHANDLER_JS" file="cryptotoken/usbenrollhandler.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_REQUESTQUEUE_JS" file="cryptotoken/requestqueue.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_SIGNER_JS" file="cryptotoken/signer.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_SINGLESIGNER_JS" file="cryptotoken/singlesigner.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_MULTIPLESIGNER_JS" file="cryptotoken/multiplesigner.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBSIGNHANDLER_JS" file="cryptotoken/usbsignhandler.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_WEBREQUEST_JS" file="cryptotoken/webrequest.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_APPID_JS" file="cryptotoken/appid.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBHELPER_JS" file="cryptotoken/usbhelper.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_TEXTFETCHER_JS" file="cryptotoken/textfetcher.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_REQUESTHELPER_JS" file="cryptotoken/requesthelper.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_MESSAGETYPES_JS" file="cryptotoken/messagetypes.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_INHERITS_JS" file="cryptotoken/inherits.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_GNUBBYDEVICE_JS" file="cryptotoken/gnubbydevice.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_GENERICHELPER_JS" file="cryptotoken/generichelper.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_FACTORYREGISTRY_JS" file="cryptotoken/factoryregistry.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ERRORCODES_JS" file="cryptotoken/errorcodes.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_DEVICEFACTORYREGISTRY_JS" file="cryptotoken/devicefactoryregistry.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ORIGINCHECK_JS" file="cryptotoken/origincheck.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_INDIVIDUALATTEST_JS" file="cryptotoken/individualattest.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_GOOGLECORPINDIVIDUALATTEST_JS" file="cryptotoken/googlecorpindividualattest.js" type="BINDATA" />

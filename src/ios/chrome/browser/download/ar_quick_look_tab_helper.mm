@@ -35,7 +35,8 @@ namespace {
 // Returns a suffix for Download.IOSDownloadARModelState histogram for the
 // |download_task|.
 std::string GetMimeTypeSuffix(web::DownloadTask* download_task) {
-  DCHECK(IsUsdzFileFormat(download_task->GetOriginalMimeType()));
+  DCHECK(IsUsdzFileFormat(download_task->GetOriginalMimeType(),
+                          download_task->GetSuggestedFilename()));
   return kUsdzMimeTypeHistogramSuffix;
 }
 
@@ -50,7 +51,8 @@ IOSDownloadARModelState GetHistogramEnum(web::DownloadTask* download_task) {
     return IOSDownloadARModelState::kStarted;
   }
   DCHECK(download_task->IsDone());
-  if (!IsUsdzFileFormat(download_task->GetMimeType())) {
+  if (!IsUsdzFileFormat(download_task->GetMimeType(),
+                        download_task->GetSuggestedFilename())) {
     return IOSDownloadARModelState::kWrongMimeTypeFailure;
   }
   if (download_task->GetHttpCode() == 401 ||
@@ -120,7 +122,8 @@ void ARQuickLookTabHelper::DidFinishDownload() {
   // Inform the delegate only if the download has been successful.
   if (download_task_->GetHttpCode() == 401 ||
       download_task_->GetHttpCode() == 403 || download_task_->GetErrorCode() ||
-      !IsUsdzFileFormat(download_task_->GetMimeType())) {
+      !IsUsdzFileFormat(download_task_->GetMimeType(),
+                        download_task_->GetSuggestedFilename())) {
     return;
   }
 

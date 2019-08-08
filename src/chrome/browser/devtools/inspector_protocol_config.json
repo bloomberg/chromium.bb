@@ -35,5 +35,10 @@
         "package": "chrome/browser/devtools/protocol",
         "output": "protocol",
         "string_header": "chrome/browser/devtools/protocol/base_string_adapter.h"
+    },
+
+    "encoding_lib": {
+        "header": "third_party/inspector_protocol/encoding/encoding.h",
+        "namespace": ["inspector_protocol_encoding"]
     }
 }

@@ -83,10 +83,11 @@ DSP_SRCS-$(HAVE_DSPR2)  += mips/intrapred16_dspr2.c
 DSP_SRCS-$(HAVE_DSPR2)  += mips/common_dspr2.h
 DSP_SRCS-$(HAVE_DSPR2)  += mips/common_dspr2.c
 
+DSP_SRCS-yes += vpx_filter.h
+ifeq ($(CONFIG_VP9),yes)
 # interpolation filters
 DSP_SRCS-yes += vpx_convolve.c
 DSP_SRCS-yes += vpx_convolve.h
-DSP_SRCS-yes += vpx_filter.h
 
 DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64) += x86/convolve.h
 
@@ -112,7 +113,6 @@ endif
 
 DSP_SRCS-$(HAVE_SSE2)  += x86/vpx_convolve_copy_sse2.asm
 DSP_SRCS-$(HAVE_NEON)  += arm/vpx_scaled_convolve8_neon.c
-
 
 ifeq ($(HAVE_NEON_ASM),yes)
 DSP_SRCS-yes += arm/vpx_convolve_copy_neon_asm$(ASM)
@@ -194,6 +194,7 @@ ifeq ($(CONFIG_VP9_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_NEON)   += arm/highbd_loopfilter_neon.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_loopfilter_sse2.c
 endif  # CONFIG_VP9_HIGHBITDEPTH
+endif # CONFIG_VP9
 
 DSP_SRCS-yes            += txfm_common.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/txfm_common_sse2.h

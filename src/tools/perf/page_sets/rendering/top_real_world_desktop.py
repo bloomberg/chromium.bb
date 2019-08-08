@@ -335,7 +335,8 @@ class Gmail2018SmoothPage(TopRealWorldDesktopPage):
     super(Gmail2018SmoothPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
-        'document.getElementById("gb") !== null')
+        'document.getElementById("gb") !== null &&'
+        'document.readyState == "complete"')
 
   def RunPageInteractions(self, action_runner):
     action_runner.WaitForElement(selector='.Tm.aeJ')
@@ -427,6 +428,7 @@ class YahooNews2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'yahoo_news'
   YEAR = '2018'
   URL = 'http://news.yahoo.com'
+  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CNNNews2018Page(TopRealWorldDesktopPage):

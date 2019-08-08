@@ -6,18 +6,18 @@
  */
 
 
-#include "GrBackendSurface.h"
+#include "include/gpu/GrBackendSurface.h"
 
-#include "gl/GrGLUtil.h"
+#include "src/gpu/gl/GrGLUtil.h"
 
 #ifdef SK_VULKAN
-#include "vk/GrVkImageLayout.h"
-#include "vk/GrVkTypes.h"
-#include "vk/GrVkUtil.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "src/gpu/vk/GrVkImageLayout.h"
+#include "src/gpu/vk/GrVkUtil.h"
 #endif
 #ifdef SK_METAL
-#include "mtl/GrMtlTypes.h"
-#include "mtl/GrMtlCppUtil.h"
+#include "include/gpu/mtl/GrMtlTypes.h"
+#include "src/gpu/mtl/GrMtlCppUtil.h"
 #endif
 
 GrBackendFormat::GrBackendFormat(GrGLenum format, GrGLenum target)
@@ -358,6 +358,31 @@ bool GrBackendTexture::getMockTextureInfo(GrMockTextureInfo* outInfo) const {
         return true;
     }
     return false;
+}
+
+bool GrBackendTexture::isSameTexture(const GrBackendTexture& that) {
+    if (!this->isValid() || !that.isValid()) {
+        return false;
+    }
+    if (fBackend != that.fBackend) {
+        return false;
+    }
+    switch (fBackend) {
+        case GrBackendApi::kOpenGL:
+            return fGLInfo.fID == that.fGLInfo.fID;
+#ifdef SK_VULKAN
+        case GrBackendApi::kVulkan:
+            return fVkInfo.snapImageInfo().fImage == that.fVkInfo.snapImageInfo().fImage;
+#endif
+#ifdef SK_METAL
+        case GrBackendApi::kMetal:
+            return this->fMtlInfo.fTexture == that.fMtlInfo.fTexture;
+#endif
+        case GrBackendApi::kMock:
+            return fMockInfo.fID == that.fMockInfo.fID;
+        default:
+            return false;
+    }
 }
 
 GrBackendFormat GrBackendTexture::getBackendFormat() const {

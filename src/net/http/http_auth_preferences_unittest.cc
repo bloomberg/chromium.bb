@@ -50,6 +50,15 @@ TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoad) {
+  HttpAuthPreferences http_auth_preferences;
+  EXPECT_TRUE(http_auth_preferences.AllowGssapiLibraryLoad());
+  http_auth_preferences.set_allow_gssapi_library_load(false);
+  EXPECT_FALSE(http_auth_preferences.AllowGssapiLibraryLoad());
+}
+#endif
+
 TEST(HttpAuthPreferencesTest, AuthServerWhitelist) {
   HttpAuthPreferences http_auth_preferences;
   // Check initial value

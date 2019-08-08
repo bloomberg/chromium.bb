@@ -107,7 +107,8 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
 
   void InstallTestBookmarkApp();
   void InstallOtherTestBookmarkApp();
-  const Extension* InstallTestBookmarkApp(const std::string& app_host);
+  const Extension* InstallTestBookmarkApp(const std::string& app_host,
+                                          const std::string& app_scope);
 
   // Installs a Bookmark App that immediately redirects to a URL with
   // |target_host| and |target_path|.

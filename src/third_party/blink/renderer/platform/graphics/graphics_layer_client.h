@@ -96,7 +96,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 
   virtual void SetOverlayScrollbarsHidden(bool) {}
 
-  virtual void SetPaintArtifactCompositorNeedsUpdate() const {}
+  virtual void GraphicsLayersDidChange() {}
 
   virtual String DebugName(const GraphicsLayer*) const = 0;
 
@@ -104,6 +104,8 @@ class PLATFORM_EXPORT GraphicsLayerClient {
       const GraphicsLayer*) const {
     return nullptr;
   }
+
+  virtual bool PaintBlockedByDisplayLock() const { return false; }
 
 #if DCHECK_IS_ON()
   // CompositedLayerMapping overrides this to verify that it is not

@@ -12,10 +12,10 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -126,8 +126,7 @@ bool AutofillPaymentInstrument::IsValidForModifier(
     const std::set<std::string>& supported_networks,
     bool supported_types_specified,
     const std::set<autofill::CreditCard::CardType>& supported_types) const {
-  // This instrument only matches basic-card.
-  if (method != "basic-card")
+  if (!IsValidForPaymentMethodIdentifier(method))
     return false;
 
   // If supported_types is not specified and this instrument matches the method,
@@ -156,6 +155,12 @@ bool AutofillPaymentInstrument::IsValidForModifier(
   }
 
   return true;
+}
+
+bool AutofillPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier) const {
+  // This instrument only matches basic-card.
+  return payment_method_identifier == "basic-card";
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(

@@ -26,12 +26,14 @@ namespace quic {
 
 typedef std::string ServerConfigID;
 
+// The following tags have been deprecated and should not be reused:
+// "BBQ4", "RCID", "SREJ"
+
 // clang-format off
 const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');   // Client hello
 const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');   // Server hello
 const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');   // Server config
 const QuicTag kREJ  = TAG('R', 'E', 'J', '\0');  // Reject
-const QuicTag kSREJ = TAG('S', 'R', 'E', 'J');   // Stateless reject
 const QuicTag kCETV = TAG('C', 'E', 'T', 'V');   // Client encrypted tag-value
                                                  // pairs
 const QuicTag kPRST = TAG('P', 'R', 'S', 'T');   // Public reset
@@ -112,7 +114,6 @@ const QuicTag kBBQ2 = TAG('B', 'B', 'Q', '2');   // BBR with lower 2.0 STARTUP
                                                  // CWND gain.
 const QuicTag kBBQ3 = TAG('B', 'B', 'Q', '3');   // BBR with ack aggregation
                                                  // compensation in STARTUP.
-const QuicTag kBBQ4 = TAG('B', 'B', 'Q', '4');   // Drain gain of 0.75.
 const QuicTag kBBQ5 = TAG('B', 'B', 'Q', '5');   // Expire ack aggregation upon
                                                  // bandwidth increase in
                                                  // STARTUP.
@@ -188,6 +189,9 @@ const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
 const QuicTag kBWMX = TAG('B', 'W', 'M', 'X');  // Max bandwidth resumption.
 const QuicTag kBWRS = TAG('B', 'W', 'R', 'S');  // Server bandwidth resumption.
 const QuicTag kBWS2 = TAG('B', 'W', 'S', '2');  // Server bw resumption v2.
+const QuicTag kBWS3 = TAG('B', 'W', 'S', '3');  // QUIC Initial CWND - Control.
+const QuicTag kBWS4 = TAG('B', 'W', 'S', '4');  // QUIC Initial CWND - Enabled.
+const QuicTag kBWS5 = TAG('B', 'W', 'S', '5');  // QUIC Initial CWND up and down
 
 // Enable path MTU discovery experiment.
 const QuicTag kMTUH = TAG('M', 'T', 'U', 'H');  // High-target MTU discovery.
@@ -213,7 +217,8 @@ const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');   // Connection options
 const QuicTag kCLOP = TAG('C', 'L', 'O', 'P');   // Client connection options
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');   // Idle network timeout
 const QuicTag kSCLS = TAG('S', 'C', 'L', 'S');   // Silently close on timeout
-const QuicTag kMIDS = TAG('M', 'I', 'D', 'S');   // Max incoming dynamic streams
+const QuicTag kMIBS = TAG('M', 'I', 'D', 'S');   // Max incoming bidi streams
+const QuicTag kMIUS = TAG('M', 'I', 'U', 'S');   // Max incoming unidi streams
 const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');   // Estimated initial RTT in us.
 const QuicTag kSNI  = TAG('S', 'N', 'I', '\0');  // Server name
                                                  // indication
@@ -239,9 +244,7 @@ const QuicTag kTB10 = TAG('T', 'B', '1', '0');   // TB draft 10 with P256.
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending
-// Stateless Reject tags
-const QuicTag kRCID = TAG('R', 'C', 'I', 'D');   // Server-designated
-                                                 // connection ID
+
 // Server hello tags
 const QuicTag kCADR = TAG('C', 'A', 'D', 'R');   // Client IP address and port
 const QuicTag kASAD = TAG('A', 'S', 'A', 'D');   // Alternate Server IP address

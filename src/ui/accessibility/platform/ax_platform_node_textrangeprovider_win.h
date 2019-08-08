@@ -15,7 +15,7 @@
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
-class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
+class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
     AXPlatformNodeTextRangeProviderWin
     : public CComObjectRootEx<CComMultiThreadModel>,
       public ITextRangeProvider {
@@ -29,12 +29,10 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   ~AXPlatformNodeTextRangeProviderWin();
 
   // Creates an instance of the class.
-  // Returns a successful HRESULT on success
-  static HRESULT CreateTextRangeProvider(
+  static ITextRangeProvider* CreateTextRangeProvider(
       ui::AXPlatformNodeWin* owner,
       AXNodePosition::AXPositionInstance start,
-      AXNodePosition::AXPositionInstance end,
-      ITextRangeProvider** provider);
+      AXNodePosition::AXPositionInstance end);
 
   //
   // ITextRangeProvider methods.
@@ -110,6 +108,9 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                                         bool endpoint_is_start,
                                         const int count,
                                         int* units_moved);
+  AXPositionInstance MoveEndpointByFormat(const AXPositionInstance& endpoint,
+                                          const int count,
+                                          int* units_moved);
   AXPositionInstance MoveEndpointByDocument(const AXPositionInstance& endpoint,
                                             const int count,
                                             int* units_moved);
@@ -119,6 +120,9 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       CreateNextPositionFunction create_next_position,
       const int count,
       int* units_moved);
+
+  AXPlatformNodeDelegate* GetDelegate(
+      const ui::AXPosition<ui::AXNodePosition, ui::AXNode>* position) const;
 
   CComPtr<ui::AXPlatformNodeWin> owner_;
   AXPositionInstance start_;

@@ -24,7 +24,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
  public:
   static base::Optional<PublicKeyCredentialUserEntity> CreateFromCBORValue(
       const cbor::Value& cbor);
-  static cbor::Value ConvertToCBOR(const PublicKeyCredentialUserEntity& user);
 
   explicit PublicKeyCredentialUserEntity(std::vector<uint8_t> id);
   PublicKeyCredentialUserEntity(const PublicKeyCredentialUserEntity& other);
@@ -40,6 +39,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
   base::Optional<std::string> display_name;
   base::Optional<GURL> icon_url;
 };
+
+cbor::Value AsCBOR(const PublicKeyCredentialUserEntity&);
 
 }  // namespace device
 

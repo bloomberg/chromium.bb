@@ -10,8 +10,9 @@
 #include <memory>
 #include <utility>
 
-#include "core/fxcodec/fx_codec.h"
+#include "build/build_config.h"
 #include "core/fxge/cfx_cliprgn.h"
+#include "core/fxge/dib/cfx_cmyk_to_srgb.h"
 #include "core/fxge/dib/cfx_scanlinecompositor.h"
 
 namespace {
@@ -315,12 +316,14 @@ bool CFX_DIBitmap::LoadChannelFromAlpha(
       if (HasAlpha()) {
         if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyka : FXDIB_Argb))
           return false;
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-      } else if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyk : FXDIB_Rgb32)) {
+      } else {
+#if defined(OS_MACOSX)
+        constexpr FXDIB_Format kPlatformFormat = FXDIB_Rgb32;
 #else
-      } else if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyk : FXDIB_Rgb)) {
+        constexpr FXDIB_Format kPlatformFormat = FXDIB_Rgb;
 #endif
-        return false;
+        if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyk : kPlatformFormat))
+          return false;
       }
     }
     destOffset = kChannelOffset[destChannel];
@@ -395,12 +398,14 @@ bool CFX_DIBitmap::LoadChannel(FXDIB_Channel destChannel, int value) {
         if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyka : FXDIB_Argb)) {
           return false;
         }
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-      } else if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyk : FXDIB_Rgb)) {
+      } else {
+#if defined(OS_MACOSX)
+        constexpr FXDIB_Format kPlatformFormat = FXDIB_Rgb;
 #else
-      } else if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyk : FXDIB_Rgb32)) {
+        constexpr FXDIB_Format kPlatformFormat = FXDIB_Rgb32;
 #endif
-        return false;
+        if (!ConvertFormat(IsCmykImage() ? FXDIB_Cmyk : kPlatformFormat))
+          return false;
       }
     }
     destOffset = kChannelOffset[destChannel];

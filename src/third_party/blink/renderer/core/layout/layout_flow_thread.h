@@ -120,8 +120,8 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
                                   Vector<FloatQuad>&,
                                   MapCoordinatesFlags mode = 0);
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
   bool NodeAtPoint(HitTestResult&,

@@ -4,9 +4,16 @@
 
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/system/statistics_provider.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/user_manager/user_manager.h"
 
 namespace policy {
@@ -41,6 +48,10 @@ std::unique_ptr<DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
 
 }  // namespace
 
+// -----------------------------------------------------------------------------
+// StatusCollectorParams.
+// -----------------------------------------------------------------------------
+
 StatusCollectorParams::StatusCollectorParams() {
   device_status = std::make_unique<ent_mgmt::DeviceStatusReportRequest>();
   session_status = std::make_unique<ent_mgmt::SessionStatusReportRequest>();
@@ -52,6 +63,52 @@ StatusCollectorParams::~StatusCollectorParams() = default;
 StatusCollectorParams::StatusCollectorParams(StatusCollectorParams&&) = default;
 StatusCollectorParams& StatusCollectorParams::operator=(
     StatusCollectorParams&&) = default;
+
+// -----------------------------------------------------------------------------
+// StatusCollector.
+// -----------------------------------------------------------------------------
+// static
+void StatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
+
+  // TODO(crbug.com/827386): move to ChildStatusCollector after migration.
+  registry->RegisterDictionaryPref(prefs::kUserActivityTimes);
+  registry->RegisterTimePref(prefs::kLastChildScreenTimeReset, base::Time());
+  registry->RegisterTimePref(prefs::kLastChildScreenTimeSaved, base::Time());
+  registry->RegisterIntegerPref(prefs::kChildScreenTimeMilliseconds, 0);
+}
+
+// static
+base::Optional<std::string> StatusCollector::GetBootMode(
+    chromeos::system::StatisticsProvider* statistics_provider) {
+  std::string dev_switch_mode;
+  if (!statistics_provider->GetMachineStatistic(
+          chromeos::system::kDevSwitchBootKey, &dev_switch_mode)) {
+    return base::nullopt;
+  }
+
+  if (dev_switch_mode == chromeos::system::kDevSwitchBootValueDev) {
+    return std::string("Dev");
+  }
+
+  if (dev_switch_mode == chromeos::system::kDevSwitchBootValueVerified) {
+    return std::string("Verified");
+  }
+
+  return base::nullopt;
+}
+
+StatusCollector::StatusCollector(
+    chromeos::system::StatisticsProvider* provider,
+    chromeos::CrosSettings* cros_settings,
+    chromeos::PowerManagerClient* power_manager,
+    session_manager::SessionManager* session_manager)
+    : statistics_provider_(provider),
+      cros_settings_(cros_settings),
+      power_manager_(power_manager),
+      session_manager_(session_manager) {}
+
+StatusCollector::~StatusCollector() = default;
 
 std::unique_ptr<DeviceLocalAccount>
 StatusCollector::GetAutoLaunchedKioskSessionInfo() {
@@ -75,6 +132,17 @@ StatusCollector::GetAutoLaunchedKioskSessionInfo() {
                  arc_app_auto_launched_with_zero_delay
              ? std::move(account)
              : nullptr;
+}
+
+std::string StatusCollector::GetDMTokenForProfile(Profile* profile) const {
+  CloudPolicyManager* user_cloud_policy_manager =
+      profile->GetUserCloudPolicyManagerChromeOS();
+  DCHECK(user_cloud_policy_manager != nullptr);
+  return user_cloud_policy_manager->core()->client()->dm_token();
+}
+
+base::Time StatusCollector::GetCurrentTime() {
+  return base::Time::Now();
 }
 
 }  // namespace policy

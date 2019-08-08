@@ -41,8 +41,6 @@ class CORE_EXPORT SVGImageElement final
   USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 
  public:
-  DECLARE_NODE_FACTORY(SVGImageElement);
-
   explicit SVGImageElement(Document&);
 
   void Trace(blink::Visitor*) override;

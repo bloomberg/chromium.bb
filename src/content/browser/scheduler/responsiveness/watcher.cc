@@ -14,10 +14,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/base/ui_base_features.h"
-#endif
-
 namespace content {
 namespace responsiveness {
 
@@ -192,15 +188,11 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   if (UNLIKELY(currently_running_metadata->empty() ||
                (task != currently_running_metadata->back().identifier))) {
     *mismatched_task_identifiers += 1;
-    // Mismatches can happen (e.g: on ChromeOS, with window service when
-    // tab-dragging is involved; on ozone/wayland when Paste button is pressed
+    // Mismatches can happen (e.g: on ozone/wayland when Paste button is pressed
     // in context menus, among others). Simply ignore the mismatches for now.
     // See https://crbug.com/929813 for the details of why the mismatch
-    // happens.  TODO(mukai): fix the event order issue.
-#if defined(OS_CHROMEOS)
-    if (features::IsUsingWindowService())
-      return currently_running_metadata_ui_.clear();
-#elif defined(OS_LINUX) && defined(USE_OZONE)
+    // happens.
+#if !defined(OS_CHROMEOS) && defined(OS_LINUX) && defined(USE_OZONE)
     return currently_running_metadata_ui_.clear();
 #endif
     DCHECK_LE(*mismatched_task_identifiers, 1);
@@ -258,15 +250,9 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
                (opaque_identifier !=
                 currently_running_metadata_ui_.back().identifier))) {
     mismatched_event_identifiers_ui_ += 1;
-    // Mismatches can happen (e.g: on ChromeOS, with window service when
-    // tab-dragging is involved; on ozone/wayland when Paste button is pressed
-    // in context menus, among others). Simply ignore the mismatches for now.
-    // See https://crbug.com/929813 for the details of why the mismatch
-    // happens.  TODO(mukai): fix the event order issue.
-#if defined(OS_CHROMEOS)
-    if (features::IsUsingWindowService())
-      return currently_running_metadata_ui_.clear();
-#elif defined(OS_LINUX) && defined(USE_OZONE)
+    // See comment in DidRunTask() for why |currently_running_metadata_ui_| may
+    // be reset.
+#if !defined(OS_CHROMEOS) && defined(OS_LINUX) && defined(USE_OZONE)
     return currently_running_metadata_ui_.clear();
 #endif
     DCHECK_LE(mismatched_event_identifiers_ui_, 1);

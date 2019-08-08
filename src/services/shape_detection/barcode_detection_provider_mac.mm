@@ -46,11 +46,8 @@ void BarcodeDetectionProviderMac::CreateBarcodeDetection(
     }
   }
 
-  // CIDetector barcode detection needs at least MAC OS X 10.10.
-  if (@available(macOS 10.10, *)) {
-    mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionImplMac>(),
-                            std::move(request));
-  }
+  mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionImplMac>(),
+                          std::move(request));
 }
 
 void BarcodeDetectionProviderMac::EnumerateSupportedFormats(
@@ -77,17 +74,9 @@ void BarcodeDetectionProviderMac::EnumerateSupportedFormats(
     return;
   }
 
-  // Barcode detection needs at least MAC OS X 10.10.
-  if (@available(macOS 10.10, *)) {
-    supported_formats_ = std::vector<mojom::BarcodeFormat>(
-        BarcodeDetectionImplMac::GetSupportedSymbologies());
-    std::move(callback).Run(supported_formats_.value());
-    return;
-  }
-
-  DLOG(ERROR) << "Platform does not support Barcode Detection.";
-  supported_formats_.emplace();
-  std::move(callback).Run({});
+  supported_formats_ = std::vector<mojom::BarcodeFormat>(
+      BarcodeDetectionImplMac::GetSupportedSymbologies());
+  std::move(callback).Run(supported_formats_.value());
 }
 
 }  // namespace shape_detection

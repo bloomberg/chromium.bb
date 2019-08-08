@@ -78,6 +78,7 @@ class MockAudioOutputDelegate : public media::AudioOutputDelegate {
   MOCK_METHOD0(GetStreamId, int());
   MOCK_METHOD0(OnPlayStream, void());
   MOCK_METHOD0(OnPauseStream, void());
+  MOCK_METHOD0(OnFlushStream, void());
   MOCK_METHOD1(OnSetVolume, void(double));
 
  private:

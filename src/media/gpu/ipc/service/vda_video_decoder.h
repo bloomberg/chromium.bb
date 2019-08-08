@@ -101,12 +101,11 @@ class VdaVideoDecoder : public VideoDecoder,
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
-  void Reset(const base::RepeatingClosure& reset_cb) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
+  void Reset(base::OnceClosure reset_cb) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
@@ -179,7 +178,7 @@ class VdaVideoDecoder : public VideoDecoder,
   InitCB init_cb_;
   OutputCB output_cb_;
   DecodeCB flush_cb_;
-  base::RepeatingClosure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   int32_t bitstream_buffer_id_ = 0;
   std::map<int32_t, DecodeCB> decode_cbs_;

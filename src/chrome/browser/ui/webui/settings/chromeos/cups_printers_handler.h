@@ -100,7 +100,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void OnPpdResolved(const std::string& callback_id,
                      base::Value info,
                      PpdProvider::CallbackResultCode res,
-                     const Printer::PpdReference& ppd_ref);
+                     const Printer::PpdReference& ppd_ref,
+                     const std::string& usb_manufacturer);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
 
@@ -172,8 +173,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                                     bool is_automatic);
 
   // CupsPrintersManager::Observer override:
-  void OnPrintersChanged(CupsPrintersManager::PrinterClass printer_class,
+  void OnPrintersChanged(PrinterClass printer_class,
                          const std::vector<Printer>& printers) override;
+
+  // Handles getting the EULA URL if available.
+  void HandleGetEulaUrl(const base::ListValue* args);
 
   // ui::SelectFileDialog::Listener override:
   void FileSelected(const base::FilePath& path,

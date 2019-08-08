@@ -82,14 +82,15 @@ LayoutRect RectInDocument(const LayoutObject* layout_object) {
 
 LayoutRect TextFragmentRectInDocument(const LayoutObject* layout_object,
                                       const LayoutText::TextBoxInfo& text_box) {
-  FloatRect local_coords_text_box_rect(text_box.local_rect);
-  LayoutRect absolute_coords_text_box_rect(
-      layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
-          .BoundingBox());
+  PhysicalRect local_coords_text_box_rect =
+      layout_object->FlipForWritingMode(text_box.local_rect);
+  PhysicalRect absolute_coords_text_box_rect =
+      layout_object->LocalToAbsoluteRect(local_coords_text_box_rect);
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  return local_frame_view
-             ? local_frame_view->FrameToDocument(absolute_coords_text_box_rect)
-             : absolute_coords_text_box_rect;
+  return (local_frame_view
+              ? local_frame_view->FrameToDocument(absolute_coords_text_box_rect)
+              : absolute_coords_text_box_rect)
+      .ToLayoutRect();
 }
 
 Document* GetEmbeddedDocument(PaintLayer* layer) {
@@ -463,8 +464,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
       value->setScrollOffsetX(offset.Width());
       value->setScrollOffsetY(offset.Height());
     }
-  } else if (node->IsDocumentTypeNode()) {
-    DocumentType* doc_type = ToDocumentType(node);
+  } else if (auto* doc_type = DynamicTo<DocumentType>(node)) {
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
   }

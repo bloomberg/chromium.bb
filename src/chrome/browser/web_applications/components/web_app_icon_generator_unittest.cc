@@ -13,9 +13,9 @@ namespace web_app {
 
 namespace {
 
-const char kAppIconURL1[] = "http://foo.com/1.png";
-const char kAppIconURL2[] = "http://foo.com/2.png";
-const char kAppIconURL3[] = "http://foo.com/3.png";
+const GURL kAppIconURL1("http://foo.com/1.png");
+const GURL kAppIconURL2("http://foo.com/2.png");
+const GURL kAppIconURL3("http://foo.com/3.png");
 
 const int kIconSizeSmallBetweenMediumAndLarge = 63;
 const int kIconSizeLargeBetweenMediumAndLarge = 96;
@@ -157,8 +157,7 @@ void TestIconGeneration(int icon_size,
   std::vector<BitmapAndSource> downloaded;
 
   // Add an icon with a URL and bitmap. 'Download' it.
-  downloaded.push_back(
-      CreateSquareIcon(GURL(kAppIconURL1), icon_size, SK_ColorRED));
+  downloaded.push_back(CreateSquareIcon(kAppIconURL1, icon_size, SK_ColorRED));
 
   // Now run the resizing/generation and validation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
@@ -221,7 +220,7 @@ TEST(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
 TEST(WebAppIconGeneratorTest, LinkedAppIconsAreNotChanged) {
   std::vector<BitmapAndSource> icons;
 
-  const GURL url = GURL(kAppIconURL3);
+  const GURL url = kAppIconURL3;
   const SkColor color = SK_ColorBLACK;
 
   icons.push_back(CreateSquareIcon(url, icon_size::k48, color));
@@ -250,12 +249,11 @@ TEST(WebAppIconGeneratorTest, IconsResizedFromOddSizes) {
   const SkColor color = SK_ColorRED;
 
   // Add three icons with a URL and bitmap. 'Download' each of them.
-  downloaded.push_back(
-      CreateSquareIcon(GURL(kAppIconURL1), icon_size::k32, color));
+  downloaded.push_back(CreateSquareIcon(kAppIconURL1, icon_size::k32, color));
   downloaded.push_back(CreateSquareIcon(
-      GURL(kAppIconURL2), kIconSizeSmallBetweenMediumAndLarge, color));
+      kAppIconURL2, kIconSizeSmallBetweenMediumAndLarge, color));
   downloaded.push_back(CreateSquareIcon(
-      GURL(kAppIconURL3), kIconSizeLargeBetweenMediumAndLarge, color));
+      kAppIconURL3, kIconSizeLargeBetweenMediumAndLarge, color));
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
@@ -273,9 +271,9 @@ TEST(WebAppIconGeneratorTest, IconsResizedFromLarger) {
   // Add three icons with a URL and bitmap. 'Download' two of them and pretend
   // the third failed to download.
   downloaded.push_back(
-      CreateSquareIcon(GURL(kAppIconURL1), icon_size::k32, SK_ColorRED));
+      CreateSquareIcon(kAppIconURL1, icon_size::k32, SK_ColorRED));
   downloaded.push_back(
-      CreateSquareIcon(GURL(kAppIconURL3), icon_size::k512, SK_ColorBLACK));
+      CreateSquareIcon(kAppIconURL3, icon_size::k512, SK_ColorBLACK));
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
@@ -307,9 +305,9 @@ TEST(WebAppIconGeneratorTest, IconResizedFromLargerAndSmaller) {
 
   // Pretend the huge icon wasn't downloaded but two smaller ones were.
   downloaded.push_back(
-      CreateSquareIcon(GURL(kAppIconURL1), icon_size::k16, SK_ColorRED));
+      CreateSquareIcon(kAppIconURL1, icon_size::k16, SK_ColorRED));
   downloaded.push_back(
-      CreateSquareIcon(GURL(kAppIconURL2), icon_size::k48, SK_ColorBLUE));
+      CreateSquareIcon(kAppIconURL2, icon_size::k48, SK_ColorBLUE));
 
   // Now run the resizing and generation.
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
@@ -324,7 +322,7 @@ TEST(WebAppIconGeneratorTest, IconResizedFromLargerAndSmaller) {
   // Verify specifically that the LARGE icons was resized from the medium icon.
   const auto it = size_map.find(icon_size::k128);
   EXPECT_NE(size_map.end(), it);
-  EXPECT_EQ(GURL(kAppIconURL2), it->second.source_url);
+  EXPECT_EQ(kAppIconURL2, it->second.source_url);
 }
 
 TEST(WebAppIconGeneratorTest, IconsResizedWhenOnlyATinyOneIsProvided) {

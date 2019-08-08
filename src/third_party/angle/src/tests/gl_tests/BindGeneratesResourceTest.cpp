@@ -21,7 +21,7 @@ class BindGeneratesResourceTest : public ANGLETest
 // available so the GL extension should always be present
 TEST_P(BindGeneratesResourceTest, ExtensionStringExposed)
 {
-    EXPECT_TRUE(extensionEnabled("GL_CHROMIUM_bind_generates_resource"));
+    EXPECT_TRUE(IsGLExtensionEnabled("GL_CHROMIUM_bind_generates_resource"));
 }
 
 // Verify that GL_BIND_GENERATES_RESOURCE_CHROMIUM can be queried but not changed
@@ -114,7 +114,6 @@ ANGLE_INSTANTIATE_TEST(BindGeneratesResourceTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
                        ES3_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),

@@ -23,11 +23,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 250],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
           "rect": [0, 125, 6, 30],
           "reason": "geometry"
@@ -95,8 +90,8 @@
         },
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 600],
-          "reason": "geometry"
+          "rect": [0, 250, 6, 350],
+          "reason": "incremental"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",

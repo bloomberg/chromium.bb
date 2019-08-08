@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window, Worker),
-    RuntimeEnabled=TrustedDOMTypes
+    OriginTrialEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
     [RaisesException, Unforgeable] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
     [Unforgeable] TrustedTypePolicy getExposedPolicy(DOMString policyName);
@@ -16,4 +16,5 @@
     [CallWith=ScriptState, Unforgeable] boolean isScript(any checkedObject);
     [CallWith=ScriptState, Unforgeable] boolean isScriptURL(any checkedObject);
     [CallWith=ScriptState, Unforgeable] boolean isURL(any checkedObject);
+    [Unforgeable] readonly attribute TrustedHTML emptyHTML;
 };

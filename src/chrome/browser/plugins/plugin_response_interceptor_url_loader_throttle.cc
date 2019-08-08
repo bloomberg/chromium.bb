@@ -28,7 +28,8 @@ PluginResponseInterceptorURLLoaderThrottle::
         int frame_tree_node_id)
     : resource_context_(resource_context),
       resource_type_(resource_type),
-      frame_tree_node_id_(frame_tree_node_id) {}
+      frame_tree_node_id_(frame_tree_node_id),
+      weak_factory_(this) {}
 
 PluginResponseInterceptorURLLoaderThrottle::
     ~PluginResponseInterceptorURLLoaderThrottle() = default;
@@ -72,9 +73,13 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   uint32_t data_pipe_size = 64U;
   // Provide the MimeHandlerView code a chance to override the payload. This is
   // the case where the resource is handled by frame-based MimeHandlerView.
-  extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
-      frame_tree_node_id_, response_url, response_head->mime_type, view_id,
-      &payload, &data_pipe_size);
+  *defer = extensions::MimeHandlerViewAttachHelper::
+      OverrideBodyForInterceptedResponse(
+          frame_tree_node_id_, response_url, response_head->mime_type, view_id,
+          &payload, &data_pipe_size,
+          base::BindOnce(
+              &PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
+              weak_factory_.GetWeakPtr()));
 
   mojo::DataPipe data_pipe(data_pipe_size);
   uint32_t len = static_cast<uint32_t>(payload.size());
@@ -117,4 +122,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
           extension_id, view_id, embedded, frame_tree_node_id_,
           -1 /* render_process_id */, -1 /* render_frame_id */,
           nullptr /* stream */, std::move(transferrable_loader), response_url));
+}
+
+void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad() {
+  delegate_->Resume();
 }

@@ -4,6 +4,7 @@
 
 #include "components/translate/content/browser/content_translate_driver.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,6 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/supports_user_data.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -40,6 +43,15 @@ namespace {
 // The maximum number of attempts we'll do to see if the page has finshed
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
+
+// The key used to store page language in the NavigationEntry;
+const char kPageLanguageKey[] = "page_language";
+
+struct LanguageDectionData : public base::SupportsUserData::Data {
+  // The adopted language. An ISO 639 language code (two letters, except for
+  // Chinese where a localization is necessary).
+  std::string adopted_language;
+};
 
 }  // namespace
 
@@ -294,8 +306,17 @@ void ContentTranslateDriver::RegisterPage(
   translate_manager_->GetLanguageState().LanguageDetermined(
       details.adopted_language, page_needs_translation);
 
-  if (web_contents())
+  if (web_contents()) {
     translate_manager_->InitiateTranslation(details.adopted_language);
+
+    // Save the page language on the navigation entry so it can be synced.
+    auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
+    if (entry != nullptr) {
+      auto data = std::make_unique<LanguageDectionData>();
+      data->adopted_language = details.adopted_language;
+      entry->SetUserData(kPageLanguageKey, std::move(data));
+    }
+  }
 
   for (auto& observer : observer_list_)
     observer.OnLanguageDetermined(details);

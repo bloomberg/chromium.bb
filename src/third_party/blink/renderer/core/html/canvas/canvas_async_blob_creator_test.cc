@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -286,8 +287,8 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
           options->setPixelFormat(blob_pixel_format);
 
           // Encode the image using CanvasAsyncBlobCreator
-          CanvasAsyncBlobCreator* async_blob_creator =
-              CanvasAsyncBlobCreator::Create(
+          auto* async_blob_creator =
+              MakeGarbageCollected<CanvasAsyncBlobCreator>(
                   source_bitmap_image, options,
                   CanvasAsyncBlobCreator::ToBlobFunctionType::
                       kHTMLCanvasConvertToBlobPromise,

@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import json
 import logging
 import os
@@ -18,6 +19,7 @@ import tempfile
 # The following non-std imports are fetched via vpython. See the list at
 # //.vpython
 import dateutil.parser  # pylint: disable=import-error
+import jsonlines  # pylint: disable=import-error
 import psutil  # pylint: disable=import-error
 
 CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
@@ -221,9 +223,8 @@ class TastTest(RemoteTest):
     self._suite_name = args.suite_name
     self._tests = args.tests
     self._conditional = args.conditional
-    self._use_host_tast = args.use_host_tast_bin
 
-    if self._use_host_tast and not self._logs_dir:
+    if not self._llvm_profile_var and not self._logs_dir:
       # The host-side Tast bin returns 0 when tests fail, so we need to capture
       # and parse its json results to reliably determine if tests fail.
       raise TestFormatError(
@@ -267,16 +268,14 @@ class TastTest(RemoteTest):
     # Coverage tests require some special pre-test setup, so use an
     # on_device_script in that case. For all other tests, use cros_run_test's
     # built-in '--tast' option. This gives us much better results reporting.
-    # TODO(bpastene): s/True/self._llvm_profile_var/ once we parse Tast results.
-    if not self._use_host_tast:
+    if self._llvm_profile_var:
       # Build the shell script that will be used on the device to invoke the
       # test.
       device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
-      if self._llvm_profile_var:
-        device_test_script_contents += [
-            'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
-                self._llvm_profile_var)
-        ]
+      device_test_script_contents += [
+          'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
+              self._llvm_profile_var)
+      ]
 
       local_test_runner_cmd = ['local_test_runner', '-waituntilready']
       if self._use_vm:
@@ -322,12 +321,10 @@ class TastTest(RemoteTest):
   def post_run(self, return_code):
     # If we don't need to parse the host-side Tast tool's results, fall back to
     # the parent method's default behavior.
-    if not self._use_host_tast:
+    if self._llvm_profile_var:
       return super(TastTest, self).post_run(return_code)
 
-    # TODO(crbug.com/952085): Switch to streamed_results.jsonl after jsonlines
-    # becomes available as a wheel.
-    tast_results_path = os.path.join(self._logs_dir, 'results.json')
+    tast_results_path = os.path.join(self._logs_dir, 'streamed_results.jsonl')
     if not os.path.exists(tast_results_path):
       logging.error(
          'Tast results not found at %s. Falling back to generic result '
@@ -336,8 +333,8 @@ class TastTest(RemoteTest):
 
     # See the link below for the format of the results:
     # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/cmd/tast/run#TestResult
-    with open(tast_results_path) as f:
-      tast_results = json.load(f)
+    with jsonlines.open(tast_results_path) as reader:
+      tast_results = collections.deque(reader)
 
     suite_results = base_test_result.TestRunResults()
     for test in tast_results:
@@ -790,14 +787,10 @@ def main():
   tast_test_parser.add_argument(
       '--conditional', '--attr-expr', type=str, dest='conditional',
       help='A boolean expression whose matching tests will run '
-           '(eg: ("dep:chrome" || "dep:chrome_login")).')
+           '(eg: ("dep:chrome")).')
   tast_test_parser.add_argument(
       '--test', '-t', action='append', dest='tests',
       help='A Tast test to run in the device (eg: "ui.ChromeLogin").')
-  tast_test_parser.add_argument(
-      '--use-host-tast-bin', action='store_true',
-      help='Use the host-side Tast bin to run the tests instead of the '
-           'DUT-side local_test_runner. TODO(bpastene): Make this default.')
 
   add_common_args(gtest_parser, tast_test_parser, host_cmd_parser)
   args, unknown_args = parser.parse_known_args()

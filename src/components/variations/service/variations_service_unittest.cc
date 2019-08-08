@@ -557,8 +557,8 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
 
     std::string headers("HTTP/1.1 200 OK\n\n");
     network::ResourceResponseHead head;
-    head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     if (!cases[i].im.empty())
       head.headers->AddHeader(cases[i].im);
     network::URLLoaderCompletionStatus status;
@@ -587,8 +587,8 @@ TEST_F(VariationsServiceTest, CountryHeader) {
 
   std::string headers("HTTP/1.1 200 OK\n\n");
   network::ResourceResponseHead head;
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.headers->AddHeader("X-Country: test");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = serialized_seed.size();
@@ -849,8 +849,8 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
 
   std::string headers("HTTP/1.1 200 OK\n\n");
   network::ResourceResponseHead head;
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.headers->AddHeader(seed_signature_header);
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = response.size();
@@ -879,8 +879,8 @@ TEST_F(VariationsServiceTest, SafeMode_NotModifiedFetchClearsFailureStreaks) {
 
   std::string headers("HTTP/1.1 304 Not Modified\n\n");
   network::ResourceResponseHead head;
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   network::URLLoaderCompletionStatus status;
   service.test_url_loader_factory()->AddResponse(service.interception_url(),
                                                  head, "", status);
@@ -1019,8 +1019,8 @@ TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
 
   std::string headers("HTTP/1.1 200 OK\n\n");
   network::ResourceResponseHead head;
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   EXPECT_EQ(net::HTTP_OK, head.headers->response_code());
   head.headers->AddHeader(seed_signature_header);
   // Set ERR_FAILED status code despite the 200 response code.

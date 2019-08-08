@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/persistent_reporting_and_nel_store.h"
+#include "net/reporting/reporting_cache.h"
 
 namespace base {
 class FilePath;
@@ -21,24 +22,41 @@ class SequencedTaskRunner;
 
 namespace net {
 
-class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
-    : public PersistentReportingAndNELStore {
+class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNelStore
+    : public PersistentReportingAndNelStore {
  public:
-  SQLitePersistentReportingAndNELStore(
+  SQLitePersistentReportingAndNelStore(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
 
-  ~SQLitePersistentReportingAndNELStore() override;
+  ~SQLitePersistentReportingAndNelStore() override;
 
-  // NetworkErrorLoggingService::PersistentNELStore implementation
-  void LoadNELPolicies(NELPoliciesLoadedCallback loaded_callback) override;
-  void AddNELPolicy(
-      const NetworkErrorLoggingService::NELPolicy& policy) override;
-  void UpdateNELPolicyAccessTime(
-      const NetworkErrorLoggingService::NELPolicy& policy) override;
-  void DeleteNELPolicy(
-      const NetworkErrorLoggingService::NELPolicy& policy) override;
+  // NetworkErrorLoggingService::PersistentNelStore implementation
+  void LoadNelPolicies(NelPoliciesLoadedCallback loaded_callback) override;
+  void AddNelPolicy(
+      const NetworkErrorLoggingService::NelPolicy& policy) override;
+  void UpdateNelPolicyAccessTime(
+      const NetworkErrorLoggingService::NelPolicy& policy) override;
+  void DeleteNelPolicy(
+      const NetworkErrorLoggingService::NelPolicy& policy) override;
+
+  // ReportingCache::PersistentReportingStore implementation
+  void LoadReportingClients(
+      ReportingClientsLoadedCallback loaded_callback) override;
+  void AddReportingEndpoint(const ReportingEndpoint& endpoint) override;
+  void AddReportingEndpointGroup(
+      const CachedReportingEndpointGroup& group) override;
+  void UpdateReportingEndpointGroupAccessTime(
+      const CachedReportingEndpointGroup& group) override;
+  void UpdateReportingEndpointDetails(
+      const ReportingEndpoint& endpoint) override;
+  void UpdateReportingEndpointGroupDetails(
+      const CachedReportingEndpointGroup& group) override;
+  void DeleteReportingEndpoint(const ReportingEndpoint& endpoint) override;
+  void DeleteReportingEndpointGroup(
+      const CachedReportingEndpointGroup& group) override;
+
   void Flush() override;
 
   size_t GetQueueLengthForTesting() const;
@@ -47,15 +65,21 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
   class Backend;
 
   // Calls |callback| with the loaded |policies|.
-  void CompleteLoadNELPolicies(
-      NELPoliciesLoadedCallback callback,
-      std::vector<NetworkErrorLoggingService::NELPolicy> policies);
+  void CompleteLoadNelPolicies(
+      NelPoliciesLoadedCallback callback,
+      std::vector<NetworkErrorLoggingService::NelPolicy> policies);
+
+  // Calls |callback| with the loaded |endpoints| and |endpoint_groups|.
+  void CompleteLoadReportingClients(
+      ReportingClientsLoadedCallback callback,
+      std::vector<ReportingEndpoint> endpoints,
+      std::vector<CachedReportingEndpointGroup> endpoint_groups);
 
   const scoped_refptr<Backend> backend_;
 
-  base::WeakPtrFactory<SQLitePersistentReportingAndNELStore> weak_factory_;
+  base::WeakPtrFactory<SQLitePersistentReportingAndNelStore> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SQLitePersistentReportingAndNELStore);
+  DISALLOW_COPY_AND_ASSIGN(SQLitePersistentReportingAndNelStore);
 };
 
 }  // namespace net

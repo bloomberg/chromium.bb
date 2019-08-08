@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -307,19 +309,27 @@ void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
   request.mutable_shared_path()->set_path(relative_path.value());
   request.mutable_shared_path()->set_writable(true);
 
-  // Restart VM if not currently running.
-  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
-  base::Optional<crostini::VmInfo> vm_info =
-      crostini_manager->GetVmInfo(vm_name);
-  if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
-    crostini_manager->RestartCrostini(
-        vm_name, crostini::kCrostiniDefaultContainerName,
-        base::BindOnce(&OnVmRestartedForSeneschal, profile_, vm_name,
-                       std::move(callback), std::move(request)));
-    return;
+  // Handle PluginVm.  TODO(joelhockey): If we ever require to (re)start
+  // PluginVm before sharing, we can detect that the VM is not started
+  // if handle == 0.
+  if (vm_name == plugin_vm::kPluginVmName) {
+    request.set_handle(plugin_vm::PluginVmManager::GetForProfile(profile_)
+                           ->seneschal_server_handle());
+  } else {
+    // Restart VM if not currently running.
+    auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+    base::Optional<crostini::VmInfo> vm_info =
+        crostini_manager->GetVmInfo(vm_name);
+    if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
+      crostini_manager->RestartCrostini(
+          vm_name, crostini::kCrostiniDefaultContainerName,
+          base::BindOnce(&OnVmRestartedForSeneschal, profile_, vm_name,
+                         std::move(callback), std::move(request)));
+      return;
+    }
+    request.set_handle(vm_info->info.seneschal_server_handle());
   }
 
-  request.set_handle(vm_info->info.seneschal_server_handle());
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request,
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
@@ -602,14 +612,12 @@ void CrostiniSharePath::OnFileChanged(const base::FilePath& path, bool error) {
     return;
   }
   base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&CrostiniSharePath::CheckIfPathDeletedOnIOThread,
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&CrostiniSharePath::CheckIfPathDeleted,
                      base::Unretained(this), path));
 }
 
-void CrostiniSharePath::CheckIfPathDeletedOnIOThread(
-    const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+void CrostiniSharePath::CheckIfPathDeleted(const base::FilePath& path) {
   if (base::PathExists(path)) {
     return;
   }

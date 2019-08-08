@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> சாதனத்திற்கு அனுப்புகிறது...</translation>
 <translation id="111910763555783249">அறிவிப்பு அமைப்புகள்</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 நாள் முன்பு}other{# நாட்கள் உள்ளன}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 நிமிடத்திற்கு முன்பு}other{# நிமிடங்களுக்கு முன்பு}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="1409544243779336081">ஆப்ஸ் பரிந்துரை</translation>
-<translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> இடமிருந்து வரும் அறிவிப்புகளை முடக்கு</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 நிமிடம், }other{# நிமிடங்கள், }}</translation>
 <translation id="1643823602425662293">அறிவிப்பு</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">இப்போது</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 நிமிடம்}other{# நிமிடங்கள்}}</translation>
-<translation id="1756116796893109054">தாவலை அனுப்புகிறது...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> பை</translation>
 <translation id="1801827354178857021">காலம்</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 மாதம்}other{# மாதங்கள்}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> பை/வி</translation>
 <translation id="6156262341071374681">எல்லாப் பயன்பாடுகளையும் காட்டும் பட்டன்</translation>
+<translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6264365405983206840">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="6351032674660237738">பயன்பாட்டுப் பரிந்துரைகள்</translation>
 <translation id="6364916375976753737">இடப்புறம் உருட்டு</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1க்கு மேற்பட்ட அறிவிப்புகள் படிக்கப்படாமல் உள்ளன}other{#க்கு மேற்பட்ட அறிவிப்புகள் படிக்கப்படாமல் உள்ளன}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{இன்னும் 1நி}other{இன்னும் #நி}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google அசிஸ்டண்ட்டின் குரல் வினவலைத் தொடங்கும்</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 நொடி உள்ளது}other{# நொடிகள் உள்ளன}}</translation>
+<translation id="8144660977431427332">உங்கள் தேடல்கள் Google அசிஸ்டண்ட்டைப் பயன்படுத்தி தேடப்படுகின்றன. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, தானே நிரப்பியது</translation>
 <translation id="815598010540052116">கீழே உருட்டு</translation>
 <translation id="8170087467028567933">இந்தப் பரிந்துரையை அகற்றினால், உங்கள் எல்லாச் சாதனங்களிலும் உள்ள உங்கள் கணக்கிலிருந்து இது மறைக்கப்படும்.</translation>

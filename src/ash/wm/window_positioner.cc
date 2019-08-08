@@ -155,7 +155,8 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
 
   // Get a list of all windows.
   const aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+          kActiveDesk);
 
   if (windows.empty())
     return nullptr;

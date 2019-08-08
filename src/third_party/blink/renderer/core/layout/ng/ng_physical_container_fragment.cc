@@ -17,6 +17,9 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
+  void* break_token;
+  std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
+      oof_positioned_descendants_;
   void* pointer;
   wtf_size_t size;
 };
@@ -30,34 +33,47 @@ static_assert(sizeof(NGPhysicalContainerFragment) ==
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGContainerFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode,
-    NGLinkStorage* buffer,
+    NGLink* buffer,
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
+      break_token_(std::move(builder->break_token_)),
+      oof_positioned_descendants_(
+          builder->oof_positioned_descendants_.IsEmpty()
+              ? nullptr
+              : new Vector<NGOutOfFlowPositionedDescendant>(
+                    std::move(builder->oof_positioned_descendants_))),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
-  has_floating_descendants_ = builder->HasFloatingDescendants();
+  has_floating_descendants_ = builder->has_floating_descendants_;
+  has_orthogonal_flow_roots_ = builder->has_orthogonal_flow_roots_;
+  may_have_descendant_above_block_start_ =
+      builder->may_have_descendant_above_block_start_;
+  depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
 
-  DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
   // Because flexible arrays need to be the last member in a class, we need to
   // have the buffer passed as a constructor argument and have the actual
   // storage be part of the subclass.
   wtf_size_t i = 0;
   for (auto& child : builder->children_) {
-    buffer[i].fragment = child.get();
+    buffer[i].fragment = child.fragment.get();
     buffer[i].fragment->AddRef();
-    buffer[i].offset = builder->offsets_[i].ConvertToPhysical(
+    buffer[i].offset = child.offset.ConvertToPhysical(
         block_or_line_writing_mode, builder->Direction(), Size(),
-        child->Size());
+        child.fragment->Size());
     ++i;
   }
 }
 
+NGPhysicalContainerFragment::~NGPhysicalContainerFragment() = default;
+
+// additional_offset must be offset from the containing_block.
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
-    Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset,
-    NGOutlineType outline_type) const {
-  for (const auto& child : Children()) {
+    Vector<PhysicalRect>* outline_rects,
+    const PhysicalOffset& additional_offset,
+    NGOutlineType outline_type,
+    const LayoutBoxModelObject* containing_block) const {
+  for (const auto& child : PostLayoutChildren()) {
     // Outlines of out-of-flow positioned descendants are handled in
     // NGPhysicalBoxFragment::AddSelfOutlineRects().
     if (child->IsOutOfFlowPositioned())
@@ -66,54 +82,61 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     // Outline of an element continuation or anonymous block continuation is
     // added when we iterate the continuation chain.
     // See NGPhysicalBoxFragment::AddSelfOutlineRects().
-    if (LayoutObject* child_layout_object = child->GetLayoutObject()) {
-      auto* child_layout_block_flow =
-          DynamicTo<LayoutBlockFlow>(child_layout_object);
-      if (child_layout_object->IsElementContinuation() ||
-          (child_layout_block_flow &&
-           child_layout_block_flow->IsAnonymousBlockContinuation()))
-        continue;
+    if (!child->IsLineBox()) {
+      const LayoutObject* child_layout_object = child->GetLayoutObject();
+      if (auto* child_layout_block_flow =
+              DynamicTo<LayoutBlockFlow>(child_layout_object)) {
+        if (child_layout_object->IsElementContinuation() ||
+            child_layout_block_flow->IsAnonymousBlockContinuation())
+          continue;
+      }
     }
-
     AddOutlineRectsForDescendant(child, outline_rects, additional_offset,
-                                 outline_type);
+                                 outline_type, containing_block);
   }
 }
 
+// additional_offset must be offset from the containing_block because
+// LocalToAncestorRect returns rects wrt containing_block.
 void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     const NGLink& descendant,
-    Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset,
-    NGOutlineType outline_type) const {
+    Vector<PhysicalRect>* outline_rects,
+    const PhysicalOffset& additional_offset,
+    NGOutlineType outline_type,
+    const LayoutBoxModelObject* containing_block) const {
   if (descendant->IsText() || descendant->IsListMarker())
     return;
 
   if (const auto* descendant_box =
           DynamicTo<NGPhysicalBoxFragment>(descendant.get())) {
-    LayoutObject* descendant_layout_object = descendant_box->GetLayoutObject();
+    const LayoutObject* descendant_layout_object =
+        descendant_box->GetLayoutObject();
     DCHECK(descendant_layout_object);
 
+    // TODO(layoutng): Explain this check. I assume we need it because layers
+    // may have transforms and so we have to go through LocalToAncestorRects?
     if (descendant_box->HasLayer()) {
-      Vector<LayoutRect> layer_outline_rects;
-      descendant_box->AddSelfOutlineRects(&layer_outline_rects, LayoutPoint(),
-                                          outline_type);
+      Vector<PhysicalRect> layer_outline_rects;
+      descendant_box->AddSelfOutlineRects(&layer_outline_rects,
+                                          PhysicalOffset(), outline_type);
+
+      // Don't pass additional_offset because LocalToAncestorRects will itself
+      // apply it.
       descendant_layout_object->LocalToAncestorRects(
-          layer_outline_rects, ToLayoutBoxModelObject(GetLayoutObject()),
-          LayoutPoint(), additional_offset);
+          layer_outline_rects, containing_block, PhysicalOffset(),
+          PhysicalOffset());
       outline_rects->AppendVector(layer_outline_rects);
       return;
     }
 
     if (descendant_layout_object->IsBox()) {
       descendant_box->AddSelfOutlineRects(
-          outline_rects,
-          additional_offset + descendant.Offset().ToLayoutPoint(),
-          outline_type);
+          outline_rects, additional_offset + descendant.Offset(), outline_type);
       return;
     }
 
     DCHECK(descendant_layout_object->IsLayoutInline());
-    LayoutInline* descendant_layout_inline =
+    const LayoutInline* descendant_layout_inline =
         ToLayoutInline(descendant_layout_object);
     // As an optimization, an ancestor has added rects for its line boxes
     // covering descendants' line boxes, so descendants don't need to add line
@@ -131,8 +154,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
   if (const auto* descendant_line_box =
           DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
     descendant_line_box->AddOutlineRectsForNormalChildren(
-        outline_rects, additional_offset + descendant.Offset().ToLayoutPoint(),
-        outline_type);
+        outline_rects, additional_offset + descendant.Offset(), outline_type,
+        containing_block);
 
     if (!descendant_line_box->Size().IsEmpty()) {
       outline_rects->emplace_back(additional_offset,
@@ -153,6 +176,44 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
       }
     }
   }
+}
+
+bool NGPhysicalContainerFragment::DependsOnPercentageBlockSize(
+    const NGContainerFragmentBuilder& builder) {
+  NGLayoutInputNode node = builder.node_;
+
+  if (!node || node.IsInline())
+    return builder.has_descendant_that_depends_on_percentage_block_size_;
+
+  // NOTE: If an element is OOF positioned, and has top/bottom constraints
+  // which are percentage based, this function will return false.
+  //
+  // This is fine as the top/bottom constraints are computed *before* layout,
+  // and the result is set as a fixed-block-size constraint. (And the caching
+  // logic will never check the result of this function).
+  //
+  // The result of this function still may be used for an OOF positioned
+  // element if it has a percentage block-size however, but this will return
+  // the correct result from below.
+
+  if ((builder.has_descendant_that_depends_on_percentage_block_size_ ||
+       builder.is_legacy_layout_root_) &&
+      node.UseParentPercentageResolutionBlockSizeForChildren()) {
+    // Quirks mode has different %-block-size behaviour, than standards mode.
+    // An arbitrary descendant may depend on the percentage resolution
+    // block-size given.
+    // If this is also an anonymous block we need to mark ourselves dependent
+    // if we have a dependent child.
+    return true;
+  }
+
+  const ComputedStyle& style = builder.Style();
+  if (style.LogicalHeight().IsPercentOrCalc() ||
+      style.LogicalMinHeight().IsPercentOrCalc() ||
+      style.LogicalMaxHeight().IsPercentOrCalc())
+    return true;
+
+  return false;
 }
 
 }  // namespace blink

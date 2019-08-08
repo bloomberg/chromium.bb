@@ -102,7 +102,7 @@ class DownloadProtectionService {
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information
   // about a download that was marked as malicious.
-  void ShowDetailsForDownload(const download::DownloadItem& item,
+  void ShowDetailsForDownload(const download::DownloadItem* item,
                               content::PageNavigator* navigator);
 
   // Enables or disables the service.  This is usually called by the

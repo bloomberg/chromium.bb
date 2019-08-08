@@ -4,12 +4,11 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import json
 import logging
 import multiprocessing
 import os
-from os import listdir
-from os.path import isfile, join, basename
 import shutil
 import sys
 import tempfile
@@ -189,7 +188,7 @@ def _handle_perf_json_test_results(
       is_ref = '.reference' in benchmark_name
       enabled = True
       try:
-        with open(join(directory, 'test_results.json')) as json_data:
+        with open(os.path.join(directory, 'test_results.json')) as json_data:
           json_results = json.load(json_data)
           if not json_results:
             # Output is null meaning the test didn't produce any results.
@@ -230,18 +229,17 @@ def _generate_unique_logdog_filename(name_prefix):
 def _handle_perf_logs(benchmark_directory_map, extra_links):
   """ Upload benchmark logs to logdog and add a page entry for them. """
   begin_time = time.time()
-  benchmark_logs_links = {}
+  benchmark_logs_links = collections.defaultdict(list)
 
   for benchmark_name, directories in benchmark_directory_map.iteritems():
     for directory in directories:
-      with open(join(directory, 'benchmark_log.txt')) as f:
-        uploaded_link = logdog_helper.text(
-            name=_generate_unique_logdog_filename(benchmark_name),
-            data=f.read())
-        if benchmark_name in benchmark_logs_links.keys():
+      benchmark_log_file = os.path.join(directory, 'benchmark_log.txt')
+      if os.path.exists(benchmark_log_file):
+        with open(benchmark_log_file) as f:
+          uploaded_link = logdog_helper.text(
+              name=_generate_unique_logdog_filename(benchmark_name),
+              data=f.read())
           benchmark_logs_links[benchmark_name].append(uploaded_link)
-        else:
-          benchmark_logs_links[benchmark_name] = [uploaded_link]
 
   logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Logs')
   logdog_stream = logdog_helper.text(
@@ -268,7 +266,7 @@ def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
 
 
 def _get_benchmark_name(directory):
-  return basename(directory).replace(" benchmark", "")
+  return os.path.basename(directory).replace(" benchmark", "")
 
 
 def process_perf_results(output_json, configuration_name,
@@ -297,15 +295,15 @@ def process_perf_results(output_json, configuration_name,
   return_code = 0
   benchmark_upload_result_map = {}
   directory_list = [
-      f for f in listdir(task_output_dir)
-      if not isfile(join(task_output_dir, f))
+      f for f in os.listdir(task_output_dir)
+      if not os.path.isfile(os.path.join(task_output_dir, f))
   ]
 
   benchmark_directory_list = []
   benchmarks_shard_map_file = None
   for directory in directory_list:
-    for f in listdir(join(task_output_dir, directory)):
-      path = join(task_output_dir, directory, f)
+    for f in os.listdir(os.path.join(task_output_dir, directory)):
+      path = os.path.join(task_output_dir, directory, f)
       if os.path.isdir(path):
         benchmark_directory_list.append(path)
       elif path.endswith('benchmarks_shard_map.json'):
@@ -381,7 +379,7 @@ def _merge_perf_results(benchmark_name, results_filename, directories):
   begin_time = time.time()
   collected_results = []
   for directory in directories:
-    filename = join(directory, 'perf_results.json')
+    filename = os.path.join(directory, 'perf_results.json')
     try:
       with open(filename) as pf:
         collected_results.append(json.load(pf))
@@ -430,7 +428,7 @@ def _upload_individual(
       _merge_perf_results(benchmark_name, results_filename, directories)
     else:
       # It was only written to one shard, use that shards data
-      results_filename = join(directories[0], 'perf_results.json')
+      results_filename = os.path.join(directories[0], 'perf_results.json')
 
     results_size_in_mib = os.path.getsize(results_filename) / (2 ** 20)
     print 'Uploading perf results from %s benchmark (size %s Mib)' % (

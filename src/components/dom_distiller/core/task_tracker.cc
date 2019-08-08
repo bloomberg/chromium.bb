@@ -97,7 +97,9 @@ std::unique_ptr<ViewerHandle> TaskTracker::AddViewer(
       &TaskTracker::RemoveViewer, weak_ptr_factory_.GetWeakPtr(), delegate)));
 }
 
-const std::string& TaskTracker::GetEntryId() const { return entry_.entry_id(); }
+const std::string& TaskTracker::GetEntryId() const {
+  return entry_.entry_id();
+}
 
 bool TaskTracker::HasEntryId(const std::string& entry_id) const {
   return entry_.entry_id() == entry_id;
@@ -132,7 +134,9 @@ void TaskTracker::MaybeCancel() {
   cancel_callback_.Run(this);
 }
 
-void TaskTracker::CancelSaveCallbacks() { ScheduleSaveCallbacks(false); }
+void TaskTracker::CancelSaveCallbacks() {
+  ScheduleSaveCallbacks(false);
+}
 
 void TaskTracker::ScheduleSaveCallbacks(bool distillation_succeeded) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -232,8 +236,7 @@ void TaskTracker::DoSaveCallbacks(bool success) {
   if (!save_callbacks_.empty()) {
     for (size_t i = 0; i < save_callbacks_.size(); ++i) {
       DCHECK(!save_callbacks_[i].is_null());
-      save_callbacks_[i].Run(
-          entry_, distilled_article_.get(), success);
+      save_callbacks_[i].Run(entry_, distilled_article_.get(), success);
     }
 
     save_callbacks_.clear();
@@ -251,10 +254,9 @@ void TaskTracker::OnArticleDistillationUpdated(
 void TaskTracker::AddDistilledContentToStore(
     const DistilledArticleProto& content) {
   if (content_store_) {
-    content_store_->SaveContent(
-        entry_, content, DistilledContentStore::SaveCallback());
+    content_store_->SaveContent(entry_, content,
+                                DistilledContentStore::SaveCallback());
   }
 }
-
 
 }  // namespace dom_distiller

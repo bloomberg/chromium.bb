@@ -287,7 +287,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 - (void)clearData:(ios::ChromeBrowserState*)browserState
        dispatcher:(id<BrowsingDataCommands>)dispatcher {
   DCHECK(!AuthenticationServiceFactory::GetForBrowserState(browserState)
-              ->GetAuthenticatedUserEmail());
+              ->IsAuthenticated());
 
   [dispatcher
       removeBrowsingDataForBrowserState:browserState

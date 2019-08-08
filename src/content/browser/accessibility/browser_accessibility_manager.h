@@ -91,7 +91,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
 
   // Returns true if this delegate represents the main (topmost) frame in a
   // tree of frames.
-  virtual bool AccessibilityIsMainFrame() = 0;
+  virtual bool AccessibilityIsMainFrame() const = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -164,10 +164,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void OnFocusLost(BrowserAccessibility* node) {}
 
   // Return whether or not we are currently able to fire events.
-  virtual bool CanFireEvents();
+  virtual bool CanFireEvents() const;
 
-  // Return a pointer to the root of the tree, does not make a new reference.
-  BrowserAccessibility* GetRoot();
+  // Return a pointer to the root of the tree.
+  BrowserAccessibility* GetRoot() const;
 
   // Returns a pointer to the BrowserAccessibility object for a given AXNode.
   BrowserAccessibility* GetFromAXNode(const ui::AXNode* node) const;
@@ -177,10 +177,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibility* GetFromID(int32_t id) const;
 
   // If this tree has a parent tree, return the parent node in that tree.
-  BrowserAccessibility* GetParentNodeFromParentTree();
+  BrowserAccessibility* GetParentNodeFromParentTree() const;
 
   // Get the AXTreeData for this frame.
-  const ui::AXTreeData& GetTreeData();
+  const ui::AXTreeData& GetTreeData() const;
 
   // Called to notify the accessibility manager that its associated native
   // view got focused.
@@ -244,6 +244,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void ScrollToPoint(const BrowserAccessibility& node, gfx::Point point);
   void SetAccessibilityFocus(const BrowserAccessibility& node);
   void SetFocus(const BrowserAccessibility& node);
+  void SetSequentialFocusNavigationStartingPoint(
+      const BrowserAccessibility& node);
   void SetScrollOffset(const BrowserAccessibility& node, gfx::Point offset);
   void SetValue(const BrowserAccessibility& node, const std::string& value);
   void SetSelection(const ui::AXActionData& action_data);
@@ -258,8 +260,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // given find in page result.
   void ActivateFindInPageResult(int request_id, int match_index);
 
-  // Called when the renderer process has notified us of about tree changes.
-  virtual void OnAccessibilityEvents(const AXEventNotificationDetails& details);
+  // Called when the renderer process has notified us of tree changes. Returns
+  // false in fatal-error conditions, in which case the caller should destroy
+  // the manager.
+  virtual bool OnAccessibilityEvents(const AXEventNotificationDetails& details)
+      WARN_UNUSED_RESULT;
+
+  // Allows derived classes to do event post-processing.
+  virtual void FinalizeAccessibilityEvents();
 
   // Called when the renderer process updates the location of accessibility
   // objects. Calls SendLocationChangeEvents(), which can be overridden.
@@ -300,19 +308,20 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibilityManagerMac* ToBrowserAccessibilityManagerMac();
 #endif
 
-  // Return the object that has focus, starting at the top of the frame tree.
-  virtual BrowserAccessibility* GetFocus();
+  // Returns the object that has focus, starting at the top of the frame tree,
+  // or returns nullptr if this manager doesn't have access to the top document.
+  virtual BrowserAccessibility* GetFocus() const;
 
   // Return the object that has focus, only considering this frame and
   // descendants.
-  BrowserAccessibility* GetFocusFromThisOrDescendantFrame();
+  BrowserAccessibility* GetFocusFromThisOrDescendantFrame() const;
 
   // Given a focused node |focus|, returns a descendant of that node if it
   // has an active descendant, otherwise returns |focus|.
-  BrowserAccessibility* GetActiveDescendant(BrowserAccessibility* focus);
+  BrowserAccessibility* GetActiveDescendant(BrowserAccessibility* focus) const;
 
   // Returns true if native focus is anywhere in this WebContents or not.
-  bool NativeViewHasFocus();
+  bool NativeViewHasFocus() const;
 
   // True by default, but some platforms want to treat the root
   // scroll offsets separately.
@@ -361,7 +370,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       const BrowserAccessibility& end_object,
       int end_offset);
 
-  static gfx::Rect GetRootFrameRangeBoundsRect(
+  // DEPRECATED: Prefer using AXPlatformNodeDelegate bounds interfaces when
+  // writing new code.
+  static gfx::Rect GetRootFrameInnerTextRangeBoundsRect(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,
@@ -384,22 +395,32 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
   // AXTreeManager implementation.
-  ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id, int32_t node_id) override;
-  ui::AXPlatformNodeDelegate* GetDelegate(ui::AXTreeID tree_id,
-                                          int32_t node_id) override;
+  ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id,
+                              int32_t node_id) const override;
+  ui::AXPlatformNodeDelegate* GetDelegate(const ui::AXTreeID tree_id,
+                                          const int32_t node_id) const override;
+  ui::AXPlatformNodeDelegate* GetRootDelegate(
+      const ui::AXTreeID tree_id) const override;
+  AXTreeID GetTreeID() const override;
+  AXTreeID GetParentTreeID() const override;
+  ui::AXNode* GetRootAsAXNode() const override;
+  ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
   // If this BrowserAccessibilityManager is a child frame or guest frame,
-  // return the BrowserAccessibilityManager from the highest ancestor frame
-  // in the frame tree.
-  BrowserAccessibilityManager* GetRootManager();
+  // returns the BrowserAccessibilityManager from the top document in the frame
+  // tree. If the current frame is not connected to its parent frame yet, or if
+  // it got disconnected after being reparented, return nullptr to indicate that
+  // we don't have access to the root manager yet.
+  BrowserAccessibilityManager* GetRootManager() const;
 
-  // Returns the BrowserAccessibilityDelegate from |GetRootManager|, above.
-  BrowserAccessibilityDelegate* GetDelegateFromRootManager();
+  // Returns the BrowserAccessibilityDelegate from |GetRootManager| above, or
+  // returns nullptr in case we don't have access to the root manager yet.
+  BrowserAccessibilityDelegate* GetDelegateFromRootManager() const;
 
   // Returns whether this is the top document.
-  bool IsRootTree();
+  bool IsRootTree() const;
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
@@ -434,7 +455,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   static void SetLastFocusedNode(BrowserAccessibility* node);
   static BrowserAccessibility* GetLastFocusedNode();
 
- protected:
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
 
@@ -445,7 +465,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   std::unique_ptr<ui::AXSerializableTree> tree_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
-  std::unordered_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
+  std::map<int32_t, BrowserAccessibility*> id_wrapper_map_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;

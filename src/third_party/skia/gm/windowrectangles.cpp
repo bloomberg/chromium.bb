@@ -5,21 +5,46 @@
  * found in the LICENSE file.
  */
 
-#include "SkClipStack.h"
-#include "SkRRect.h"
-#include "SkTextUtils.h"
-#include "ToolUtils.h"
-#include "gm.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkClipOp.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkRegion.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/GrTextureProxy.h"
+#include "include/private/GrTypesPriv.h"
+#include "include/private/SkColorData.h"
+#include "src/core/SkClipOpPriv.h"
+#include "src/core/SkClipStack.h"
+#include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrFixedClip.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrPaint.h"
+#include "src/gpu/GrReducedClip.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrStencilClip.h"
+#include "src/gpu/GrUserStencilSettings.h"
+#include "src/gpu/effects/GrTextureDomain.h"
+#include "tools/ToolUtils.h"
 
-#include "GrAppliedClip.h"
-#include "GrCaps.h"
-#include "GrContextPriv.h"
-#include "GrReducedClip.h"
-#include "GrRenderTargetContext.h"
-#include "GrRenderTargetContextPriv.h"
-#include "GrResourceProvider.h"
-#include "GrStencilClip.h"
-#include "effects/GrTextureDomain.h"
+#include <utility>
+
+class GrRecordingContext;
 
 constexpr static SkIRect kDeviceRect = {0, 0, 600, 600};
 constexpr static SkIRect kCoverRect = {50, 50, 550, 550};
@@ -219,9 +244,11 @@ void WindowRectanglesMaskGM::visualizeAlphaMask(GrContext* ctx, GrRenderTargetCo
     // the clip mask generation.
     this->stencilCheckerboard(maskRTC.get(), true);
     maskRTC->clear(nullptr, SK_PMColor4fWHITE, GrRenderTargetContext::CanClearFullscreen::kYes);
-    maskRTC->priv().drawAndStencilRect(make_stencil_only_clip(), &GrUserStencilSettings::kUnused,
-                                       SkRegion::kDifference_Op, false, GrAA::kNo, SkMatrix::I(),
-                                       SkRect::MakeIWH(maskRTC->width(), maskRTC->height()));
+    GrPaint stencilPaint;
+    stencilPaint.setCoverageSetOpXPFactory(SkRegion::kDifference_Op, false);
+    maskRTC->priv().stencilRect(make_stencil_only_clip(), &GrUserStencilSettings::kUnused,
+                                std::move(stencilPaint), GrAA::kNo, SkMatrix::I(),
+                                SkRect::MakeIWH(maskRTC->width(), maskRTC->height()));
     reducedClip.drawAlphaClipMask(maskRTC.get());
 
     int x = kCoverRect.x() - kDeviceRect.x(),
@@ -266,8 +293,10 @@ void WindowRectanglesMaskGM::stencilCheckerboard(GrRenderTargetContext* rtc, boo
         for (int x = (y & 1) == flip ? 0 : kMaskCheckerSize;
              x < kDeviceRect.width(); x += 2 * kMaskCheckerSize) {
             SkIRect checker = SkIRect::MakeXYWH(x, y, kMaskCheckerSize, kMaskCheckerSize);
-            rtc->priv().stencilRect(
-                    GrNoClip(), &kSetClip, GrAA::kNo, SkMatrix::I(), SkRect::Make(checker));
+            GrPaint paint;
+            paint.setXPFactory(GrDisableColorXPFactory::Get());
+            rtc->priv().stencilRect(GrNoClip(), &kSetClip, std::move(paint), GrAA::kNo,
+                                    SkMatrix::I(), SkRect::Make(checker));
         }
     }
 }

@@ -17,7 +17,9 @@
 #include "third_party/webrtc/api/audio_codecs/g722/audio_encoder_g722.h"
 #include "third_party/webrtc/api/audio_codecs/isac/audio_decoder_isac.h"
 #include "third_party/webrtc/api/audio_codecs/isac/audio_encoder_isac.h"
+#include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_multi_channel_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
+#include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_multi_channel_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
 
 namespace content {
@@ -73,7 +75,8 @@ CreateWebrtcAudioEncoderFactory() {
   return webrtc::CreateAudioEncoderFactory<
       webrtc::AudioEncoderOpus, webrtc::AudioEncoderIsac,
       webrtc::AudioEncoderG722, webrtc::AudioEncoderG711,
-      NotAdvertisedEncoder<webrtc::AudioEncoderL16>>();
+      NotAdvertisedEncoder<webrtc::AudioEncoderL16>,
+      NotAdvertisedEncoder<webrtc::AudioEncoderMultiChannelOpus>>();
 }
 
 rtc::scoped_refptr<webrtc::AudioDecoderFactory>
@@ -81,7 +84,8 @@ CreateWebrtcAudioDecoderFactory() {
   return webrtc::CreateAudioDecoderFactory<
       webrtc::AudioDecoderOpus, webrtc::AudioDecoderIsac,
       webrtc::AudioDecoderG722, webrtc::AudioDecoderG711,
-      NotAdvertisedDecoder<webrtc::AudioDecoderL16>>();
+      NotAdvertisedDecoder<webrtc::AudioDecoderL16>,
+      NotAdvertisedDecoder<webrtc::AudioDecoderMultiChannelOpus>>();
 }
 
 }  // namespace content

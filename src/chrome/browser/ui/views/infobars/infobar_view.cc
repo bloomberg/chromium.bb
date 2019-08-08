@@ -61,9 +61,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone)
 constexpr int kInfoBarLabelBackgroundColor = ThemeProperties::COLOR_INFOBAR;
 constexpr int kInfoBarLabelTextColor = ThemeProperties::COLOR_BOOKMARK_TEXT;
 
-bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
-  return label_1->GetPreferredSize().width() >
-      label_2->GetPreferredSize().width();
+bool SortViewsByDecreasingWidth(views::View* view_1, views::View* view_2) {
+  return view_1->GetPreferredSize().width() >
+         view_2->GetPreferredSize().width();
 }
 
 int GetElementSpacing() {
@@ -109,19 +109,22 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     AddChildView(icon_);
   }
 
-  close_button_ = views::CreateVectorImageButton(this);
-  // This is the wrong color, but allows the button's size to be computed
-  // correctly.  We'll reset this with the correct color in OnThemeChanged().
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
-                                gfx::kPlaceholderColor);
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  close_button_->SetFocusForPlatform();
-  gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-  close_button_->SetProperty(views::kMarginsKey,
-                             new gfx::Insets(close_button_spacing.top(), 0,
-                                             close_button_spacing.bottom(), 0));
-  AddChildView(close_button_);
+  if (this->delegate()->IsCloseable()) {
+    auto close_button = views::CreateVectorImageButton(this);
+    // This is the wrong color, but allows the button's size to be computed
+    // correctly.  We'll reset this with the correct color in OnThemeChanged().
+    views::SetImageFromVectorIcon(close_button.get(),
+                                  vector_icons::kCloseRoundedIcon,
+                                  gfx::kPlaceholderColor);
+    close_button->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+    close_button->SetFocusForPlatform();
+    gfx::Insets close_button_spacing = GetCloseButtonSpacing();
+    close_button->SetProperty(
+        views::kMarginsKey, new gfx::Insets(close_button_spacing.top(), 0,
+                                            close_button_spacing.bottom(), 0));
+    close_button_ = AddChildView(std::move(close_button));
+  }
 }
 
 InfoBarView::~InfoBarView() {
@@ -154,15 +157,18 @@ void InfoBarView::Layout() {
   if (content_minimum_width > 0)
     start_x += spacing + content_minimum_width;
 
-  const gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-  close_button_->SizeToPreferredSize();
-  close_button_->SetPosition(gfx::Point(
-      std::max(start_x + close_button_spacing.left(),
-               width() - close_button_spacing.right() - close_button_->width()),
-      OffsetY(close_button_)));
+  if (close_button_) {
+    const gfx::Insets close_button_spacing = GetCloseButtonSpacing();
+    close_button_->SizeToPreferredSize();
+    close_button_->SetPosition(gfx::Point(
+        std::max(
+            start_x + close_button_spacing.left(),
+            width() - close_button_spacing.right() - close_button_->width()),
+        OffsetY(close_button_)));
 
-  // For accessibility reasons, the close button should come last.
-  DCHECK_EQ(close_button_, close_button_->parent()->children().back());
+    // For accessibility reasons, the close button should come last.
+    DCHECK_EQ(close_button_, close_button_->parent()->children().back());
+  }
 }
 
 void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -183,9 +189,10 @@ gfx::Size InfoBarView::CalculatePreferredSize() const {
   if (content_width)
     width += spacing + content_width;
 
-  return gfx::Size(
-      width + GetCloseButtonSpacing().width() + close_button_->width(),
-      computed_height());
+  const int trailing_space =
+      close_button_ ? GetCloseButtonSpacing().width() + close_button_->width()
+                    : GetElementSpacing();
+  return gfx::Size(width + trailing_space, computed_height());
 }
 
 void InfoBarView::ViewHierarchyChanged(
@@ -194,7 +201,8 @@ void InfoBarView::ViewHierarchyChanged(
 
   // Anything that needs to happen once after all subclasses add their children.
   if (details.is_add && (details.child == this)) {
-    ReorderChildView(close_button_, -1);
+    if (close_button_)
+      ReorderChildView(close_button_, -1);
     RecalculateHeight();
   }
 }
@@ -214,8 +222,10 @@ void InfoBarView::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(background_color));
 
   const SkColor text_color = GetColor(kInfoBarLabelTextColor);
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
-                                text_color);
+  if (close_button_) {
+    views::SetImageFromVectorIcon(close_button_,
+                                  vector_icons::kCloseRoundedIcon, text_color);
+  }
 
   for (views::View* child : children()) {
     LabelType label_type = child->GetProperty(kLabelType);
@@ -226,13 +236,6 @@ void InfoBarView::OnThemeChanged() {
         label->SetEnabledColor(text_color);
     }
   }
-}
-
-void InfoBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  // The constructor could not set initial colors correctly, since the
-  // ThemeProvider wasn't available yet.  When this function is called, the view
-  // has been added to a Widget, so that ThemeProvider is now present.
-  OnThemeChanged();
 
   // Native theme changes can affect font sizes.
   RecalculateHeight();
@@ -277,9 +280,9 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
 }
 
 // static
-void InfoBarView::AssignWidths(Labels* labels, int available_width) {
-  std::sort(labels->begin(), labels->end(), SortLabelsByDecreasingWidth);
-  AssignWidthsSorted(labels, available_width);
+void InfoBarView::AssignWidths(Views* views, int available_width) {
+  std::sort(views->begin(), views->end(), SortViewsByDecreasingWidth);
+  AssignWidthsSorted(views, available_width);
 }
 
 int InfoBarView::ContentMinimumWidth() const {
@@ -295,7 +298,8 @@ int InfoBarView::StartX() const {
 }
 
 int InfoBarView::EndX() const {
-  return close_button_->x() - GetCloseButtonSpacing().left();
+  return close_button_ ? close_button_->x() - GetCloseButtonSpacing().left()
+                       : width() - GetElementSpacing();
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
@@ -341,23 +345,23 @@ void InfoBarView::PlatformSpecificOnHeightRecalculated() {
 }
 
 // static
-void InfoBarView::AssignWidthsSorted(Labels* labels, int available_width) {
-  if (labels->empty())
+void InfoBarView::AssignWidthsSorted(Views* views, int available_width) {
+  if (views->empty())
     return;
-  gfx::Size back_label_size(labels->back()->GetPreferredSize());
-  back_label_size.set_width(
-      std::min(back_label_size.width(),
-               available_width / static_cast<int>(labels->size())));
-  labels->back()->SetSize(back_label_size);
-  labels->pop_back();
-  AssignWidthsSorted(labels, available_width - back_label_size.width());
+  gfx::Size back_view_size(views->back()->GetPreferredSize());
+  back_view_size.set_width(
+      std::min(back_view_size.width(),
+               available_width / static_cast<int>(views->size())));
+  views->back()->SetSize(back_view_size);
+  views->pop_back();
+  AssignWidthsSorted(views, available_width - back_view_size.width());
 }
 
 bool InfoBarView::ShouldDrawSeparator() const {
   // There will be no parent when this infobar is not in a container, e.g. if
   // it's in a background tab.  It's still possible to reach here in that case,
   // e.g. if ElevationIconSetter triggers a Layout().
-  return parent() && parent()->child_at(0) != this;
+  return parent() && parent()->children().front() != this;
 }
 
 int InfoBarView::GetSeparatorHeightDip() const {
@@ -383,7 +387,7 @@ int InfoBarView::GetSeparatorHeightDip() const {
 SkColor InfoBarView::GetColor(int id) const {
   const auto* theme_provider = GetThemeProvider();
   // When there's no theme provider, this color will never be used; it will be
-  // reset due to the OnNativeThemeChanged() override.
+  // reset due to the OnThemeChanged() override.
   return theme_provider ? theme_provider->GetColor(id) : gfx::kPlaceholderColor;
 }
 

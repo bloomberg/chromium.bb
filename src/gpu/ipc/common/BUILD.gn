@@ -81,6 +81,8 @@ source_set("ipc_common_sources") {
     "gpu_param_traits_macros.h",
     "memory_stats.cc",
     "memory_stats.h",
+    "vulkan_ycbcr_info.cc",
+    "vulkan_ycbcr_info.h",
   ]
 
   if (is_mac) {
@@ -198,12 +200,14 @@ mojom("interfaces") {
     "memory_stats.mojom",
     "surface_handle.mojom",
     "sync_token.mojom",
+    "vulkan_ycbcr_info.mojom",
   ]
 
   public_deps = [
     ":gpu_preferences_interface",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo",
   ]
 }
 
@@ -246,4 +250,7 @@ source_set("struct_traits") {
     "//gpu/ipc/common",
     "//mojo/public/cpp/bindings:bindings",
   ]
+  if (is_android) {
+    sources += [ "vulkan_ycbcr_info_mojom_traits.h" ]
+  }
 }

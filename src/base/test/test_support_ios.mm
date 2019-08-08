@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/test/test_suite.h"
 #include "testing/coverage_util_ios.h"
@@ -188,7 +188,7 @@ std::unique_ptr<base::MessagePump> CreateMessagePumpForUIForTests() {
 namespace base {
 
 void InitIOSTestMessageLoop() {
-  MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIForTests);
+  MessagePump::OverrideMessagePumpForUIFactory(&CreateMessagePumpForUIForTests);
 }
 
 void InitIOSRunHook(TestSuite* suite, int argc, char* argv[]) {

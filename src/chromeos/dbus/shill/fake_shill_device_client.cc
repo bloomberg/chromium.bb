@@ -52,12 +52,6 @@ void PostNotFoundError(const ShillDeviceClient::ErrorCallback& error_callback) {
   PostError(shill::kErrorResultNotFound, error_callback);
 }
 
-bool IsReadOnlyProperty(const std::string& name) {
-  if (name == shill::kCarrierProperty)
-    return true;
-  return false;
-}
-
 }  // namespace
 
 const char FakeShillDeviceClient::kDefaultSimPin[] = "1111";
@@ -98,8 +92,6 @@ void FakeShillDeviceClient::SetProperty(const dbus::ObjectPath& device_path,
                                         const base::Value& value,
                                         const base::Closure& callback,
                                         const ErrorCallback& error_callback) {
-  if (IsReadOnlyProperty(name))
-    PostError(shill::kErrorResultInvalidArguments, error_callback);
   SetPropertyInternal(device_path, name, value, callback, error_callback,
                       /*notify_changed=*/true);
 }
@@ -259,15 +251,6 @@ void FakeShillDeviceClient::Register(const dbus::ObjectPath& device_path,
     network.SetKey(shill::kStatusProperty, base::Value(status));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-}
-
-void FakeShillDeviceClient::SetCarrier(const dbus::ObjectPath& device_path,
-                                       const std::string& carrier,
-                                       const base::Closure& callback,
-                                       const ErrorCallback& error_callback) {
-  SetPropertyInternal(device_path, shill::kCarrierProperty,
-                      base::Value(carrier), callback, error_callback,
-                      /*notify_changed=*/true);
 }
 
 void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,

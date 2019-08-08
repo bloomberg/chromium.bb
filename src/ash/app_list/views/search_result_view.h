@@ -15,7 +15,6 @@
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_base_view.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -28,7 +27,6 @@ class RenderText;
 
 namespace views {
 class ImageView;
-class ProgressBar;
 }  // namespace views
 
 namespace app_list {
@@ -45,8 +43,7 @@ class SearchResultActionsView;
 class APP_LIST_EXPORT SearchResultView
     : public SearchResultBaseView,
       public views::ContextMenuController,
-      public SearchResultActionsViewDelegate,
-      public AppListMenuModelAdapter::Delegate {
+      public SearchResultActionsViewDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -58,27 +55,6 @@ class APP_LIST_EXPORT SearchResultView
   // Sets/gets SearchResult displayed by this view.
   void OnResultChanged() override;
 
-  // Clears the selected action.
-  void ClearSelectedAction();
-
-  // Computes the button's spoken feedback name.
-  base::string16 ComputeAccessibleName() const;
-
-  // Gets the index of this result in the |SearchResultListView|.
-  int get_index_in_search_result_list_view() const {
-    return index_in_search_result_list_view_;
-  }
-
-  // Stores the index of this result in the |SearchResultListView|.
-  void set_index_in_search_result_list_view(size_t index) {
-    index_in_search_result_list_view_ = index;
-  }
-
-  void set_is_last_result(bool is_last) { is_last_result_ = is_last; }
-
-  // AppListMenuModelAdapter::Delegate overrides:
-  void ExecuteCommand(int command_id, int event_flags) override;
-
   bool selected() const { return selected_; }
 
   void SetDisplayIcon(const gfx::ImageSkia& source);
@@ -88,7 +64,6 @@ class APP_LIST_EXPORT SearchResultView
 
   void UpdateTitleText();
   void UpdateDetailsText();
-  void UpdateAccessibleName();
 
   // Creates title/details render text.
   void CreateTitleRenderText();
@@ -125,13 +100,10 @@ class APP_LIST_EXPORT SearchResultView
   void OnGetContextMenu(views::View* source,
                         const gfx::Point& point,
                         ui::MenuSourceType source_type,
-                        std::vector<ash::mojom::MenuItemPtr> menu);
+                        std::unique_ptr<ui::SimpleMenuModel> menu_model);
 
   // SearchResultObserver overrides:
   void OnMetadataChanged() override;
-  void OnIsInstallingChanged() override;
-  void OnPercentDownloadedChanged() override;
-  void OnItemInstalled() override;
 
   void SetIconImage(const gfx::ImageSkia& source,
                     views::ImageView* const icon,
@@ -141,7 +113,8 @@ class APP_LIST_EXPORT SearchResultView
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
   bool IsSearchResultHoveredOrSelected() override;
 
-  bool is_last_result_ = false;
+  // Invoked when the context menu closes.
+  void OnMenuClosed();
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;
@@ -155,7 +128,6 @@ class APP_LIST_EXPORT SearchResultView
   std::unique_ptr<gfx::RenderText> title_text_;
   std::unique_ptr<gfx::RenderText> details_text_;
   SearchResultActionsView* actions_view_;  // Owned by the views hierarchy.
-  views::ProgressBar* progress_bar_;       // Owned by views hierarchy.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
@@ -163,10 +135,6 @@ class APP_LIST_EXPORT SearchResultView
   bool selected_ = false;
   // Whether the removal confirmation dialog is invoked by long press touch.
   bool confirm_remove_by_long_press_ = false;
-
-  // The index of this item in the search_result_tile_item_list_view, only
-  // used for logging.
-  int index_in_search_result_list_view_ = -1;
 
   base::WeakPtrFactory<SearchResultView> weak_ptr_factory_;
 

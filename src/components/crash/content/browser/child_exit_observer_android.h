@@ -70,6 +70,7 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     int remaining_process_with_strong_binding = 0;
     int remaining_process_with_moderate_binding = 0;
     int remaining_process_with_waived_binding = 0;
+    int best_effort_reverse_rank = -1;
 
     // Note this is slightly different |has_oom_protection_bindings|.
     // This is equivalent to status == TERMINATION_STATUS_NORMAL_TERMINATION,

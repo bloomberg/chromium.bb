@@ -75,7 +75,7 @@ class MockPrintingContextWin : public PrintingContextSystemDialogWin {
 
     base::string16 printer_name = PrintingContextTest::GetDefaultPrinter();
     ScopedPrinterHandle printer;
-    if (!printer.OpenPrinter(printer_name.c_str()))
+    if (!printer.OpenPrinterWithName(printer_name.c_str()))
       return E_FAIL;
 
     const DEVMODE* dev_mode = nullptr;
@@ -183,7 +183,7 @@ TEST_F(PrintingContextTest, Base) {
 
   // The print may lie to use and may not support world transformation.
   // Verify right now.
-  XFORM random_matrix = { 1, 0.1f, 0, 1.5f, 0, 1 };
+  XFORM random_matrix = {1, 0.1f, 0, 1.5f, 0, 1};
   EXPECT_TRUE(SetWorldTransform(context.context(), &random_matrix));
   EXPECT_TRUE(ModifyWorldTransform(context.context(), nullptr, MWT_IDENTITY));
 }

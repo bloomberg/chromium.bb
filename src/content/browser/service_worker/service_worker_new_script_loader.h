@@ -149,7 +149,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -157,7 +157,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
 
   // Implements ServiceWorkerCacheWriter::WriteObserver.
   // These two methods are only used for resume loaders.
-  void WillWriteInfo(
+  int WillWriteInfo(
       scoped_refptr<HttpResponseInfoIOBuffer> response_info) override;
   int WillWriteData(scoped_refptr<net::IOBuffer> data,
                     int length,

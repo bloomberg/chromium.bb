@@ -129,11 +129,11 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   static media::AudioManager* GetAudioManager();
 
-  // The ThreadPool instance must exist but not to be started when building
+  // The ThreadPoolInstance must exist but not to be started when building
   // BrowserMainLoop.
   explicit BrowserMainLoop(
       const MainFunctionParams& parameters,
-      std::unique_ptr<base::ThreadPool::ScopedExecutionFence> fence);
+      std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence> fence);
   virtual ~BrowserMainLoop();
 
   void Init();
@@ -175,14 +175,16 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
-  net::NetworkChangeNotifier* network_change_notifier() const {
-    return network_change_notifier_.get();
-  }
   MediaKeysListenerManagerImpl* media_keys_listener_manager() const {
     return media_keys_listener_manager_.get();
   }
 
 #if defined(OS_CHROMEOS)
+  // Only expose this on ChromeOS since it's only needed there. On Android this
+  // be null if this process started in reduced mode.
+  net::NetworkChangeNotifier* network_change_notifier() const {
+    return network_change_notifier_.get();
+  }
   KeyboardMicRegistration* keyboard_mic_registration() {
     return &keyboard_mic_registration_;
   }
@@ -241,6 +243,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserMainLoopTest, CreateThreadsInSingleProcess);
+  FRIEND_TEST_ALL_PREFIXES(
+      BrowserMainLoopTest,
+      PostTaskToIOThreadBeforeThreadCreationDoesNotRunTask);
 
   void InitializeMainThread();
 
@@ -295,9 +300,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   // initialize-once happens-before relationship with all eventual content tasks
   // running on other threads. This ScopedExecutionFence ensures that no tasks
   // posted to ThreadPool gets to run before CreateThreads(); satisfying this
-  // requirement even though the ThreadPool is created and started before
-  // content is entered.
-  std::unique_ptr<base::ThreadPool::ScopedExecutionFence>
+  // requirement even though the ThreadPoolInstance is created and started
+  // before content is entered.
+  std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
       scoped_execution_fence_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------

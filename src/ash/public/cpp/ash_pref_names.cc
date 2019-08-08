@@ -88,6 +88,10 @@ const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
+// A boolean pref that stores whether the user is eligible to start the Kiosk
+// Next shell.
+const char kKioskNextShellEligible[] = "ash.kiosk_next_shell.eligible";
+
 // A boolean pref that stores whether the Kiosk Next Shell is enabled. When it
 // is, we start it after sign in.
 const char kKioskNextShellEnabled[] = "ash.kiosk_next_shell.enabled";
@@ -297,6 +301,9 @@ const char kPowerFastSuspendWhenBacklightsForcedOff[] =
 // Boolean controlling whether smart dim model is enabled.
 const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 
+// Boolean controlling whether ALS logging is enabled.
+const char kPowerAlsLoggingEnabled[] = "power.als_logging_enabled";
+
 // |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
 // local variant is not synced and is used if set. If the local variant is not
 // set its value is set from the synced value (once prefs have been
@@ -416,6 +423,22 @@ const char kBatteryChargeCustomStopCharging[] =
 // For details see "DeviceUsbPowerShareEnabled" in policy_templates.json.
 // Ignored unless powerd is configured to honor charging-related prefs.
 const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
+
+// An integer pref that specifies how many times the Assistant privacy info has
+// been shown in Launcher. This value will increment by one every time when
+// Launcher changes state from Peeking to Half or FullscreenSearch up to a
+// predefined threshold, e.g. six times. If the info has been shown for more
+// than the threshold, do not show the privacy info any more.
+const char kAssistantPrivacyInfoShownInLauncher[] =
+    "ash.launcher.assistant_privacy_info_shown";
+
+// A boolean pref that indicates whether the Assistant privacy info may be
+// displayed to user. A false value indicates that the info can be displayed if
+// the value of |kAssistantPrivacyInfoShownInLauncher| is smaller than the
+// predefined threshold. A true value implies that the user has dismissed the
+// info view, and do not show the privacy info any more.
+const char kAssistantPrivacyInfoDismissedInLauncher[] =
+    "ash.launcher.assistant_privacy_info_dismissed";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

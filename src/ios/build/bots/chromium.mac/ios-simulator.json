@@ -1,7 +1,7 @@
 {
   "comments": [
-    "Runs tests on 64-bit iOS 10.3 and 11.4 and 12.1 tests",
-    "on iPad, iPhone, @3x, and @2x on main and CQ ios-simulator.",
+    "Runs tests on 64-bit iOS 11.4 and 12.1 on iPad, iPhone, @3x, and @2x on",
+    "main and CQ ios-simulator.",
     "Note: Xcode 10 requires Mac OS 10.13.4 or higher, hence 'host os'."
   ],
   "xcode build version": "10b61",
@@ -24,7 +24,15 @@
       "device type": "iPhone 6s Plus",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -32,7 +40,15 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -40,7 +56,15 @@
       "device type": "iPhone 6s",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -48,7 +72,15 @@
       "device type": "iPad Air 2",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -56,7 +88,15 @@
       "device type": "iPhone 6s Plus",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -64,7 +104,15 @@
       "device type": "iPhone 6s",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -72,7 +120,15 @@
       "device type": "iPhone 6s",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -80,7 +136,15 @@
       "device type": "iPad Air 2",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     },
     {
@@ -88,7 +152,15 @@
       "device type": "iPhone 6s",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 30
     }
   ]

@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -32,6 +33,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -50,6 +52,17 @@ void HandleDeviceAccountReauthNotificationClick(
   chrome::AttemptUserExit();
 }
 
+bool AreAllAccountsMigrated(
+    const chromeos::AccountManager* const account_manager,
+    const std::vector<chromeos::AccountManager::Account>& accounts) {
+  for (const auto& account : accounts) {
+    if (account_manager->HasDummyGaiaToken(account.key)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
@@ -57,7 +70,11 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
     : error_controller_(controller),
       profile_(profile),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)),
+      account_manager_(g_browser_process->platform_part()
+                           ->GetAccountManagerFactory()
+                           ->GetAccountManager(profile_->GetPath().value())),
       weak_factory_(this) {
+  DCHECK(account_manager_);
   // Create a unique notification ID for this profile.
   device_account_notification_id_ =
       kProfileSigninNotificationId + profile->GetProfileUserName();
@@ -152,6 +169,12 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
 
 void SigninErrorNotifier::HandleSecondaryAccountError(
     const std::string& account_id) {
+  account_manager_->GetAccounts(base::BindOnce(
+      &SigninErrorNotifier::OnGetAccounts, weak_factory_.GetWeakPtr()));
+}
+
+void SigninErrorNotifier::OnGetAccounts(
+    const std::vector<chromeos::AccountManager::Account>& accounts) {
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
@@ -161,13 +184,24 @@ void SigninErrorNotifier::HandleSecondaryAccountError(
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
+  const bool are_all_accounts_migrated =
+      AreAllAccountsMigrated(account_manager_, accounts);
+  const base::string16 message_title =
+      are_all_accounts_migrated
+          ? l10n_util::GetStringUTF16(
+                IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_TITLE)
+          : l10n_util::GetStringUTF16(
+                IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_MIGRATION_BUBBLE_VIEW_TITLE);
+  const base::string16 message_body =
+      are_all_accounts_migrated
+          ? GetMessageBody(true /* is_secondary_account_error */)
+          : l10n_util::GetStringUTF16(
+                IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_MIGRATION_BUBBLE_VIEW_MESSAGE);
+
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
-          secondary_account_notification_id_,
-          l10n_util::GetStringUTF16(
-              IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_TITLE),
-          GetMessageBody(true /* is_secondary_account_error */),
+          secondary_account_notification_id_, message_title, message_body,
           l10n_util::GetStringUTF16(
               IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_DISPLAY_SOURCE),
           GURL(secondary_account_notification_id_), notifier_id,
@@ -194,8 +228,9 @@ void SigninErrorNotifier::HandleSecondaryAccountReauthNotificationClick(
     // times already). Take users to Account Manager UI directly.
     // Note: If the welcome dialog was shown, we don't need to do anything.
     // Closing that dialog takes users to Account Manager UI.
-    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        profile_, GURL("chrome://settings/accountManager"));
+
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile_, chrome::kAccountManagerSubPage);
   }
 }
 

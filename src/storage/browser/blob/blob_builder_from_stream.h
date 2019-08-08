@@ -55,11 +55,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
       base::WeakPtr<BlobStorageContext> context,
       std::string content_type,
       std::string content_disposition,
-      uint64_t length_hint,
-      mojo::ScopedDataPipeConsumerHandle data,
-      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       ResultCallback callback);
   ~BlobBuilderFromStream();
+
+  // This may call |callback| synchronously when |length_hint| is larger than
+  // the disk space.
+  void Start(uint64_t length_hint,
+             mojo::ScopedDataPipeConsumerHandle data,
+             blink::mojom::ProgressClientAssociatedPtrInfo progress_client);
 
   void Abort();
 
@@ -148,6 +151,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
 
   std::string content_type_;
   std::string content_disposition_;
+
   std::vector<scoped_refptr<ShareableBlobDataItem>> items_;
   uint64_t current_total_size_ = 0;
   base::WeakPtr<BlobMemoryController::QuotaAllocationTask> pending_quota_task_;

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_context.h"
@@ -368,11 +369,8 @@ void OnIntentPickerClosed(int render_process_host_id,
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
 
-  Browser* browser =
-      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
-
-  if (browser)
-    browser->window()->SetIntentPickerViewVisibility(/*visible=*/false);
+  if (web_contents)
+    IntentPickerTabHelper::SetShouldShowIcon(web_contents, false);
 
   // If the user selected an app to continue the navigation, confirm that the
   // |package_name| matches a valid option and return the index.
@@ -470,15 +468,15 @@ void OnAppIconsReceived(
   Browser* browser =
       web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
 
-  if (!browser)
+  if (!web_contents || !browser)
     return;
 
-  browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
+  const bool stay_in_chrome = IsChromeAnAppCandidate(handlers);
+  IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
   browser->window()->ShowIntentPickerBubble(
-      std::move(app_info), IsChromeAnAppCandidate(handlers),
-      /*show_remember_selection=*/true,
-      base::Bind(OnIntentPickerClosed, render_process_host_id, routing_id, url,
-                 safe_to_bypass_ui, base::Passed(&handlers)));
+      std::move(app_info), stay_in_chrome, /*show_remember_selection=*/true,
+      base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
+                     url, safe_to_bypass_ui, std::move(handlers)));
 }
 
 // Called when ARC returned a handler list for the |url|.

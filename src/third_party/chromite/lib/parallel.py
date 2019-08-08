@@ -387,7 +387,10 @@ class _BackgroundTask(multiprocessing.Process):
 
     sys.stdout.flush()
     sys.stderr.flush()
+    tmp_dir = '/tmp/chromite.parallel'
+    osutils.SafeMakedirs(tmp_dir)
     self._output = tempfile.NamedTemporaryFile(delete=False, bufsize=0,
+                                               dir=tmp_dir,
                                                prefix='chromite-parallel-')
     self._parent_pid = os.getpid()
     return multiprocessing.Process.start(self)

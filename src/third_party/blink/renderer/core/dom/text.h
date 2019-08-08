@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -85,7 +86,10 @@ class CORE_EXPORT Text : public CharacterData {
   virtual Text* CloneWithData(Document&, const String&) const;
 };
 
-DEFINE_NODE_TYPE_CASTS(Text, IsTextNode());
+template <>
+struct DowncastTraits<Text> {
+  static bool AllowFrom(const Node& node) { return node.IsTextNode(); }
+};
 
 }  // namespace blink
 

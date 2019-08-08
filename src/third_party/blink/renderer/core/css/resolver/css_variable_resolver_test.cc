@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -21,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -72,7 +76,35 @@ class CSSVariableResolverTest : public PageTestBase {
       const String& value) {
     const auto tokens = CSSTokenizer(value).TokenizeToEOF();
     return CSSVariableParser::ParseDeclarationValue(
-        name, tokens, false, *CSSParserContext::Create(GetDocument()));
+        name, tokens, false,
+        *MakeGarbageCollected<CSSParserContext>(GetDocument()));
+  }
+
+  const CSSVariableReferenceValue* CreateVariableReference(
+      const String& value) {
+    const auto tokens = CSSTokenizer(value).TokenizeToEOF();
+
+    const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
+    const bool is_animation_tainted = false;
+    const bool needs_variable_resolution = true;
+
+    return MakeGarbageCollected<CSSVariableReferenceValue>(
+        CSSVariableData::Create(tokens, is_animation_tainted,
+                                needs_variable_resolution, context->BaseURL(),
+                                context->Charset()),
+        *context);
+  }
+
+  const CSSValue* ResolveVar(StyleResolverState& state,
+                             CSSPropertyID property_id,
+                             const String& value) {
+    const CSSVariableReferenceValue* var = CreateVariableReference(value);
+
+    CSSVariableResolver resolver(state);
+    const bool disallow_animation_tainted = false;
+
+    return resolver.ResolveVariableReferences(property_id, *var,
+                                              disallow_animation_tainted);
   }
 
   const CSSValue* CreatePxValue(double px) {
@@ -176,8 +208,8 @@ TEST_F(CSSVariableResolverTest, NoResolutionWithoutVar) {
 
   const auto* prop = CreateCustomProperty("#fefefe");
 
-  inherited_variables->SetVariable("--prop", prop->Value());
-  non_inherited_variables->SetVariable("--prop", prop->Value());
+  inherited_variables->SetData("--prop", prop->Value());
+  non_inherited_variables->SetData("--prop", prop->Value());
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -194,16 +226,16 @@ TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
   const auto* prop1 = CreateCustomProperty("var(--prop2)");
   const auto* prop2 = CreateCustomProperty("#fefefe");
 
-  inherited_variables->SetVariable("--prop1", prop1->Value());
-  non_inherited_variables->SetVariable("--prop1", prop1->Value());
+  inherited_variables->SetData("--prop1", prop1->Value());
+  non_inherited_variables->SetData("--prop1", prop1->Value());
 
   EXPECT_TRUE(inherited_variables->NeedsResolution());
   EXPECT_TRUE(non_inherited_variables->NeedsResolution());
 
   // While NeedsResolution() == true, add some properties without
   // var()-references.
-  inherited_variables->SetVariable("--prop2", prop2->Value());
-  non_inherited_variables->SetVariable("--prop2", prop2->Value());
+  inherited_variables->SetData("--prop2", prop2->Value());
+  non_inherited_variables->SetData("--prop2", prop2->Value());
 
   // We should still need resolution even after adding properties that don't
   // have var-references.
@@ -224,8 +256,8 @@ TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
 
   const auto* prop = CreateCustomProperty("var(--x)");
 
-  inherited_variables->SetVariable("--prop", prop->Value());
-  non_inherited_variables->SetVariable("--prop", prop->Value());
+  inherited_variables->SetData("--prop", prop->Value());
+  non_inherited_variables->SetData("--prop", prop->Value());
 
   EXPECT_TRUE(inherited_variables->NeedsResolution());
   EXPECT_TRUE(non_inherited_variables->NeedsResolution());
@@ -243,7 +275,8 @@ TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
 
 TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
-  StyleResolverState state(GetDocument(), nullptr, initial, initial);
+  StyleResolverState state(GetDocument(), nullptr /* element */,
+                           nullptr /* pseudo_element */, initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);
@@ -259,7 +292,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   ASSERT_TRUE(token_syntax);
   String initial_value_str("foo");
   const auto tokens = CSSTokenizer(initial_value_str).TokenizeToEOF();
-  const CSSParserContext* context = CSSParserContext::Create(GetDocument());
+  const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
   const CSSValue* initial_value =
       token_syntax->Parse(CSSParserTokenRange(tokens), context, false);
   ASSERT_TRUE(initial_value);
@@ -285,99 +318,19 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   EXPECT_FALSE(state.Style()->NonInheritedVariables()->NeedsResolution());
 }
 
-TEST_F(CSSVariableResolverTest, RemoveInheritedVariableAtRoot) {
-  scoped_refptr<StyleInheritedVariables> inherited_variables_root =
-      StyleInheritedVariables::Create();
-
-  AtomicString name("--prop");
-  const auto* prop = CreateCustomProperty("test");
-  const CSSValue* value = CreatePxValue(10.0);
-  inherited_variables_root->SetVariable(name, prop->Value());
-  inherited_variables_root->SetRegisteredVariable(name, value);
-
-  EXPECT_TRUE(inherited_variables_root->GetVariable(name));
-  EXPECT_TRUE(inherited_variables_root->RegisteredVariable(name));
-
-  inherited_variables_root->RemoveVariable(name);
-
-  EXPECT_FALSE(inherited_variables_root->GetVariable(name));
-  EXPECT_FALSE(inherited_variables_root->RegisteredVariable(name));
-}
-
-TEST_F(CSSVariableResolverTest, RemoveInheritedVariableAtNonRoot) {
-  scoped_refptr<StyleInheritedVariables> inherited_variables_root =
-      StyleInheritedVariables::Create();
-  scoped_refptr<StyleInheritedVariables> inherited_variables =
-      inherited_variables_root->Copy();
-
-  AtomicString name("--prop");
-  const auto* prop = CreateCustomProperty("test");
-  const CSSValue* value = CreatePxValue(10.0);
-  inherited_variables->SetVariable(name, prop->Value());
-  inherited_variables->SetRegisteredVariable(name, value);
-
-  EXPECT_TRUE(inherited_variables->GetVariable(name));
-  EXPECT_TRUE(inherited_variables->RegisteredVariable(name));
-
-  inherited_variables->RemoveVariable(name);
-
-  EXPECT_FALSE(inherited_variables->GetVariable(name));
-  EXPECT_FALSE(inherited_variables->RegisteredVariable(name));
-}
-
-TEST_F(CSSVariableResolverTest, RemoveVariableInheritedViaRoot) {
-  scoped_refptr<StyleInheritedVariables> inherited_variables_root =
-      StyleInheritedVariables::Create();
-
-  AtomicString name("--prop");
-  const auto* prop = CreateCustomProperty("test");
-  const CSSValue* value = CreatePxValue(10.0);
-  inherited_variables_root->SetVariable(name, prop->Value());
-  inherited_variables_root->SetRegisteredVariable(name, value);
-
-  scoped_refptr<StyleInheritedVariables> inherited_variables =
-      inherited_variables_root->Copy();
-
-  EXPECT_TRUE(inherited_variables->GetVariable(name));
-  EXPECT_TRUE(inherited_variables->RegisteredVariable(name));
-
-  inherited_variables->RemoveVariable(name);
-
-  EXPECT_FALSE(inherited_variables->GetVariable(name));
-  EXPECT_FALSE(inherited_variables->RegisteredVariable(name));
-}
-
-TEST_F(CSSVariableResolverTest, RemoveNonInheritedVariable) {
-  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
-
-  AtomicString name("--prop");
-  const auto* prop = CreateCustomProperty("test");
-  const CSSValue* value = CreatePxValue(10.0);
-  non_inherited_variables->SetVariable(name, prop->Value());
-  non_inherited_variables->SetRegisteredVariable(name, value);
-
-  EXPECT_TRUE(non_inherited_variables->GetVariable(name));
-  EXPECT_TRUE(non_inherited_variables->RegisteredVariable(name));
-
-  non_inherited_variables->RemoveVariable(name);
-
-  EXPECT_FALSE(non_inherited_variables->GetVariable(name));
-  EXPECT_FALSE(non_inherited_variables->RegisteredVariable(name));
-}
-
 TEST_F(CSSVariableResolverTest, DontCrashWhenSettingInheritedNullVariable) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
   AtomicString name("--test");
-  inherited_variables->SetVariable(name, nullptr);
-  inherited_variables->SetRegisteredVariable(name, nullptr);
+  inherited_variables->SetData(name, nullptr);
+  inherited_variables->SetValue(name, nullptr);
 }
 
 TEST_F(CSSVariableResolverTest, DontCrashWhenSettingNonInheritedNullVariable) {
   auto inherited_variables = std::make_unique<StyleNonInheritedVariables>();
   AtomicString name("--test");
-  inherited_variables->SetVariable(name, nullptr);
-  inherited_variables->SetRegisteredVariable(name, nullptr);
+  inherited_variables->SetData(name, nullptr);
+  inherited_variables->SetValue(name, nullptr);
 }
 
 TEST_F(CSSVariableResolverTest, TokenCountAboveLimitIsInValidForSubstitution) {
@@ -393,12 +346,12 @@ TEST_F(CSSVariableResolverTest, TokenCountAboveLimitIsInValidForSubstitution) {
 
   // A custom property with more than MaxSubstitutionTokens() is valid ...
   const CSSVariableData* referenced =
-      target->ComputedStyleRef().GetVariable("--referenced");
+      target->ComputedStyleRef().GetVariableData("--referenced");
   ASSERT_TRUE(referenced);
   EXPECT_EQ(MaxSubstitutionTokens() + 1, referenced->Tokens().size());
 
   // ... it is not valid for substitution, however.
-  EXPECT_FALSE(target->ComputedStyleRef().GetVariable("--x"));
+  EXPECT_FALSE(target->ComputedStyleRef().GetVariableData("--x"));
 }
 
 TEST_F(CSSVariableResolverTest, TokenCountAtLimitIsValidForSubstitution) {
@@ -412,11 +365,11 @@ TEST_F(CSSVariableResolverTest, TokenCountAtLimitIsValidForSubstitution) {
   ASSERT_TRUE(target);
 
   const CSSVariableData* referenced =
-      target->ComputedStyleRef().GetVariable("--referenced");
+      target->ComputedStyleRef().GetVariableData("--referenced");
   ASSERT_TRUE(referenced);
   EXPECT_EQ(MaxSubstitutionTokens(), referenced->Tokens().size());
 
-  const CSSVariableData* x = target->ComputedStyleRef().GetVariable("--x");
+  const CSSVariableData* x = target->ComputedStyleRef().GetVariableData("--x");
   ASSERT_TRUE(x);
   EXPECT_EQ(MaxSubstitutionTokens(), x->Tokens().size());
 
@@ -475,13 +428,13 @@ TEST_F(CSSVariableResolverTest, BillionLaughs) {
   // The last --x2^N variable is over the limit. Any reference to that
   // should be invalid.
   const CSSVariableData* ref_last =
-      target->ComputedStyleRef().GetVariable("--ref-last");
+      target->ComputedStyleRef().GetVariableData("--ref-last");
   EXPECT_FALSE(ref_last);
 
   // The next-to-last (--x2^(N-1)) variable is not over the limit. A reference
   // to that is still valid.
   const CSSVariableData* ref_next_to_last =
-      target->ComputedStyleRef().GetVariable("--ref-next-to-last");
+      target->ComputedStyleRef().GetVariableData("--ref-next-to-last");
   ASSERT_TRUE(ref_next_to_last);
   EXPECT_EQ(tokens / 2, ref_next_to_last->Tokens().size());
 
@@ -504,6 +457,53 @@ TEST_F(CSSVariableResolverTest, BillionLaughs) {
   expected_unique_strings += 1;
 
   EXPECT_EQ(expected_unique_strings, impls.size());
+}
+
+TEST_F(CSSVariableResolverTest, CSSWideKeywords) {
+  using CSSUnsetValue = cssvalue::CSSUnsetValue;
+
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+  StyleResolverState state(GetDocument(), nullptr /* element */,
+                           nullptr /* pseudo_element */, initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->InheritFrom(*initial);
+  state.SetStyle(std::move(style));
+
+  const CSSValue* whitespace = CreateCustomProperty("--w", " ");
+  StyleBuilder::ApplyProperty(CSSPropertyName("--w"), state, *whitespace);
+
+  // Test initial/inherit/unset for an inherited property:
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--w) initial"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--w) inherit"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--w) unset"));
+
+  // Test initial/inherit/unset for a non-inherited property:
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--w) initial"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--w) inherit"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--w) unset"));
+
+  // Test initial/inherit/unset in fallbacks:
+
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--u,initial)"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--u,inherit)"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--u,unset)"));
+
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--u,initial)"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--u,inherit)"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--u,unset)"));
 }
 
 }  // namespace blink

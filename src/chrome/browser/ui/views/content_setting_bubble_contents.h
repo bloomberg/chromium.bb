@@ -72,14 +72,14 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   bool Close() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
  private:
   class Favicon;
   class ListItemContainer;
 
-  // Applies the colors appropriate for |theme| to the learn more button.
-  void StyleLearnMoreButton(const ui::NativeTheme* theme);
+  // Applies coloring to the learn more button.
+  void StyleLearnMoreButton();
 
   // content::WebContentsObserver:
   void DidFinishNavigation(

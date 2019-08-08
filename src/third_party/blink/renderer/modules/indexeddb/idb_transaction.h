@@ -232,7 +232,7 @@ class MODULES_EXPORT IDBTransaction final
   int64_t num_errors_handled_ = 0;
   Member<DOMException> error_;
 
-  HeapListHashSet<Member<IDBRequest>> request_list_;
+  HeapLinkedHashSet<Member<IDBRequest>> request_list_;
 
   // The IDBRequest results whose events have not been enqueued yet.
   //

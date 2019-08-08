@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/u2f_notification.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -209,8 +210,7 @@ class UserSessionManager
   // Starts loading CRL set.
   void InitializeCRLSetFetcher(const user_manager::User* user);
 
-  // Starts loading CT-related components, which are the EV Certificates
-  // whitelist and the STHSet.
+  // Initializes Certificate Transparency-related components.
   void InitializeCertificateTransparencyComponents(
       const user_manager::User* user);
 
@@ -313,6 +313,9 @@ class UserSessionManager
   // password from the UserContext regardless of the value of |send_password|.
   void OnUserNetworkPolicyParsed(bool send_password);
 
+  // Shows U2F notification if necessary.
+  void MaybeShowU2FNotification();
+
  private:
   friend class test::UserSessionManagerTestApi;
   friend struct base::DefaultSingletonTraits<UserSessionManager>;
@@ -407,7 +410,7 @@ class UserSessionManager
   void InitializeChildUserServices(Profile* profile);
 
   // Starts out-of-box flow with the specified screen.
-  void ActivateWizard(OobeScreen screen);
+  void ActivateWizard(OobeScreenId screen);
 
   // Adds first-time login URLs.
   void InitializeStartUrls() const;
@@ -611,6 +614,8 @@ class UserSessionManager
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 
   std::unique_ptr<ChildPolicyObserver> child_policy_observer_;
+
+  std::unique_ptr<U2FNotification> u2f_notification_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

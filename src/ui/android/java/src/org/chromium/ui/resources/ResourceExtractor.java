@@ -40,7 +40,6 @@ public class ResourceExtractor {
     private static final String FALLBACK_LOCALE = "en-US";
     private static final String COMPRESSED_LOCALES_DIR = "locales";
     private static final String COMPRESSED_LOCALES_FALLBACK_DIR = "fallback-locales";
-    private static final int BUFFER_SIZE = 16 * 1024;
 
     private class ExtractTask implements Runnable {
         private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
@@ -105,19 +104,13 @@ public class ResourceExtractor {
                 throw new RuntimeException();
             }
 
-            AssetManager assetManager = ContextUtils.getApplicationAssets();
-            byte[] buffer = new byte[BUFFER_SIZE];
             for (int n = 0; n < assetPaths.length; ++n) {
                 String assetPath = assetPaths[n];
                 File output = new File(outputDir, outputNames[n]);
-                TraceEvent.begin("ExtractResource");
-                try (InputStream inputStream = assetManager.open(assetPath)) {
-                    FileUtils.copyFileStreamAtomicWithBuffer(inputStream, output, buffer);
-                } catch (IOException e) {
+                if (!FileUtils.extractAsset(
+                            ContextUtils.getApplicationContext(), assetPath, output)) {
                     // The app would just crash later if files are missing.
-                    throw new RuntimeException(e);
-                } finally {
-                    TraceEvent.end("ExtractResource");
+                    throw new RuntimeException();
                 }
             }
         }
@@ -345,21 +338,15 @@ public class ResourceExtractor {
         return new File(getAppDataDir(), "paks");
     }
 
-    private static void deleteFile(File file) {
-        if (file.exists() && !file.delete()) {
-            Log.w(TAG, "Unable to remove %s", file.getName());
-        }
-    }
-
     private void deleteFiles(String[] existingFileNames) {
         // These used to be extracted, but no longer are, so just clean them up.
-        deleteFile(new File(getAppDataDir(), ICU_DATA_FILENAME));
-        deleteFile(new File(getAppDataDir(), V8_NATIVES_DATA_FILENAME));
-        deleteFile(new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME));
+        FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), ICU_DATA_FILENAME));
+        FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), V8_NATIVES_DATA_FILENAME));
+        FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME));
 
         if (existingFileNames != null) {
             for (String fileName : existingFileNames) {
-                deleteFile(new File(getOutputDir(), fileName));
+                FileUtils.recursivelyDeleteFile(new File(getOutputDir(), fileName));
             }
         }
     }

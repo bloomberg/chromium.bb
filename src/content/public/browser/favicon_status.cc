@@ -10,7 +10,7 @@
 namespace content {
 
 FaviconStatus::FaviconStatus() : valid(false) {
-  image = gfx::Image(*GetContentClient()->browser()->GetDefaultFavicon());
+  image = gfx::Image(GetContentClient()->browser()->GetDefaultFavicon());
 }
 
 }  // namespace content

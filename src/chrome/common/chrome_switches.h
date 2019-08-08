@@ -41,7 +41,6 @@ extern const char kAppModeOAuth2Token[];
 extern const char kAppsGalleryDownloadURL[];
 extern const char kAppsGalleryUpdateURL[];
 extern const char kAppsGalleryURL[];
-extern const char kAuthExtensionPath[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutoOpenDevToolsForTabs[];
 extern const char kAutoSelectDesktopCaptureSource[];
@@ -64,6 +63,7 @@ extern const char kDevToolsFlags[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];
+extern const char kDisableAutoReload[];
 extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBundledPpapiFlash[];
 extern const char kDisableClientSidePhishingDetection[];
@@ -75,8 +75,6 @@ extern const char kDisableDomainReliability[];
 extern const char kDisableExtensions[];
 extern const char kDisableExtensionsExcept[];
 extern const char kDisableExtensionsFileAccessCheck[];
-extern const char kDisableOfflineAutoReload[];
-extern const char kDisableOfflineAutoReloadVisibleOnly[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePrintPreview[];
 extern const char kDisablePromptOnRepost[];
@@ -88,6 +86,7 @@ extern const char kDnsLogDetails[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];
+extern const char kEnableAutoReload[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableDeviceDiscoveryNotifications[];
@@ -98,8 +97,6 @@ extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNavigationTracing[];
 extern const char kEnableNetBenchmarking[];
-extern const char kEnableOfflineAutoReload[];
-extern const char kEnableOfflineAutoReloadVisibleOnly[];
 extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kExtensionContentVerification[];
 extern const char kExtensionContentVerificationBootstrap[];
@@ -111,7 +108,6 @@ extern const char kFastStart[];
 extern const char kForceAndroidAppMode[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
-extern const char kForceLocalNtp[];
 extern const char kForceStackedTabStripLayout[];
 extern const char kHomePage[];
 extern const char kIncognito[];
@@ -128,7 +124,6 @@ extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
 extern const char kMediaCacheSize[];
 extern const char kMonitoringDestinationID[];
-extern const char kNetLogCaptureMode[];
 extern const char kNewNetErrorPageUI[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoExperiments[];
@@ -204,6 +199,7 @@ extern const char kLocalNtpReload[];
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableHungRendererInfoBar[];
+extern const char kForceEnableNightMode[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kForceUpdateMenuType[];
@@ -217,7 +213,6 @@ extern const char kWebApkServerUrl[];
 extern const char kCroshCommand[];
 extern const char kDisableLoggingRedirect[];
 extern const char kDisableLoginScreenApps[];
-extern const char kPinShelfLayout[];
 extern const char kMashServiceName[];
 extern const char kShortMergeSessionTimeoutForTest[];
 extern const char kSchedulerConfiguration[];
@@ -246,6 +241,7 @@ extern const char kMakeChromeDefault[];
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+extern const char kDisableWindows10CustomTitlebar[];
 extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kHideIcons[];
@@ -267,11 +263,6 @@ extern const char kDebugPrint[];
 extern const char kAllowNaClCrxFsAPI[];
 extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
-#endif
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-extern const char kDisableInputImeAPI[];
-extern const char kEnableInputImeAPI[];
 #endif
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)

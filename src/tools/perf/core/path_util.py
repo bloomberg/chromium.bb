@@ -21,6 +21,11 @@ def GetTracingDir():
       GetChromiumSrcDir(), 'third_party', 'catapult', 'tracing')
 
 
+def GetPyUtilsDir():
+  return os.path.join(
+      GetChromiumSrcDir(), 'third_party', 'catapult', 'common', 'py_utils')
+
+
 def GetPerfDir():
   return os.path.join(GetChromiumSrcDir(), 'tools', 'perf')
 
@@ -29,11 +34,11 @@ def GetPerfStorySetsDir():
   return os.path.join(GetPerfDir(), 'page_sets')
 
 
-def GetPerfBenchmarksDir():
+def GetOfficialBenchmarksDir():
   return os.path.join(GetPerfDir(), 'benchmarks')
 
 
-def GetPerfContribDir():
+def GetContribDir():
   return os.path.join(GetPerfDir(), 'contrib')
 
 
@@ -54,8 +59,7 @@ def AddTracingToPath():
 
 
 def AddPyUtilsToPath():
-  py_utils_dir = os.path.join(
-      GetChromiumSrcDir(), 'third_party', 'catapult', 'common', 'py_utils')
+  py_utils_dir = GetPyUtilsDir()
   if py_utils_dir not in sys.path:
     sys.path.insert(1, py_utils_dir)
 

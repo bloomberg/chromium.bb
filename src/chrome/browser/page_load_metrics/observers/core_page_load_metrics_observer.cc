@@ -820,7 +820,7 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
         largest_content_type);
   }
 
-  const page_load_metrics::TimingInfo& paint =
+  const page_load_metrics::ContentfulPaintTimingInfo& paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {

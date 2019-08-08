@@ -22,15 +22,20 @@ import sys
 import tempfile
 import threading
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
+sys.path.insert(0, CLIENT_DIR)
 
-# Must be first import.
+from utils import tools
+tools.force_local_third_party()
+
+# third_party/
+import colorama
+from chromium import natsort
+from depot_tools import fix_encoding
+
+# pylint: disable=ungrouped-imports
 import parallel_execution
-
-from third_party import colorama
-from third_party.chromium import natsort
-from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import tools
 
@@ -48,7 +53,7 @@ def get_bot_list(swarming_server, dimensions):
   healthy = []
   quarantined = []
   dead = []
-  results = json.loads(subprocess.check_output(cmd, cwd=ROOT_DIR))
+  results = json.loads(subprocess.check_output(cmd, cwd=CLIENT_DIR))
   if not results.get('items'):
     return (), (), ()
   for b in results['items']:
@@ -83,14 +88,14 @@ def archive(isolate_server, script):
       '-i', isolate_file,
       '-s', isolated_file,
     ]
-    return subprocess.check_output(cmd, cwd=ROOT_DIR).split()[0]
+    return subprocess.check_output(cmd, cwd=CLIENT_DIR).split()[0]
   finally:
     file_path.rmtree(tempdir)
 
 
 def batched_subprocess(cmd, sem):
     def run(cmd, sem):
-      subprocess.call(cmd, cwd=ROOT_DIR)
+      subprocess.call(cmd, cwd=CLIENT_DIR)
       sem.release()
     sem.acquire()
     thread = threading.Thread(target=run, args=(cmd, sem))
@@ -170,7 +175,7 @@ def run_serial(
       if args:
         cmd.append('--')
         cmd.extend(args)
-      r = subprocess.call(cmd, cwd=ROOT_DIR)
+      r = subprocess.call(cmd, cwd=CLIENT_DIR)
       result = max(r, result)
   return result
 

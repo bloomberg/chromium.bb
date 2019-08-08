@@ -322,7 +322,7 @@ ExtensionPrefs* ExtensionPrefs::Create(
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled,
-    const std::vector<ExtensionPrefsObserver*>& early_observers) {
+    const std::vector<EarlyExtensionPrefsObserver*>& early_observers) {
   return ExtensionPrefs::Create(
       browser_context, prefs, root_dir, extension_pref_value_map,
       extensions_disabled, early_observers, base::DefaultClock::GetInstance());
@@ -335,7 +335,7 @@ ExtensionPrefs* ExtensionPrefs::Create(
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled,
-    const std::vector<ExtensionPrefsObserver*>& early_observers,
+    const std::vector<EarlyExtensionPrefsObserver*>& early_observers,
     base::Clock* clock) {
   return new ExtensionPrefs(browser_context, pref_service, root_dir,
                             extension_pref_value_map, clock,
@@ -343,6 +343,9 @@ ExtensionPrefs* ExtensionPrefs::Create(
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
+  for (auto& observer : observer_list_)
+    observer.OnExtensionPrefsWillBeDestroyed(this);
+  DCHECK(observer_list_.begin() == observer_list_.end());
 }
 
 // static
@@ -1590,8 +1593,12 @@ base::Time ExtensionPrefs::GetLastLaunchTime(
 void ExtensionPrefs::SetLastLaunchTime(const std::string& extension_id,
                                        const base::Time& time) {
   DCHECK(crx_file::id_util::IdIsValid(extension_id));
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  SaveTime(update.Get().get(), kPrefLastLaunchTime, time);
+  {
+    ScopedExtensionPrefUpdate update(prefs_, extension_id);
+    SaveTime(update.Get().get(), kPrefLastLaunchTime, time);
+  }
+  for (auto& observer : observer_list_)
+    observer.OnExtensionLastLaunchTimeChanged(extension_id, time);
 }
 
 void ExtensionPrefs::ClearLastLaunchTimes() {
@@ -1815,7 +1822,7 @@ ExtensionPrefs::ExtensionPrefs(
     ExtensionPrefValueMap* extension_pref_value_map,
     base::Clock* clock,
     bool extensions_disabled,
-    const std::vector<ExtensionPrefsObserver*>& early_observers)
+    const std::vector<EarlyExtensionPrefsObserver*>& early_observers)
     : browser_context_(browser_context),
       prefs_(prefs),
       install_directory_(root_dir),
@@ -1827,7 +1834,7 @@ ExtensionPrefs::ExtensionPrefs(
   // Ensure that any early observers are watching before prefs are initialized.
   for (auto iter = early_observers.cbegin(); iter != early_observers.cend();
        ++iter) {
-    AddObserver(*iter);
+    (*iter)->OnExtensionPrefsAvailable(this);
   }
 
   InitPrefStore();

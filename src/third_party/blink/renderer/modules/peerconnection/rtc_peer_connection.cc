@@ -134,11 +134,6 @@ const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
 const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
-const char kOnlySupportedInUnifiedPlanMessage[] =
-    "This operation is only supported in 'unified-plan'. 'unified-plan' will "
-    "become the default behavior in the future, but it is currently "
-    "experimental. To try it out, construct the RTCPeerConnection with "
-    "sdpSemantics:'unified-plan' present in the RTCConfiguration argument.";
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const int64_t kMaxPeerConnections = 500;
@@ -170,10 +165,10 @@ bool CallErrorCallbackIfSignalingStateClosed(
     V8RTCPeerConnectionErrorCallback* error_callback) {
   if (state == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     if (error_callback) {
-      AsyncCallErrorCallback(
-          error_callback,
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               kSignalingStateClosedMessage));
+      AsyncCallErrorCallback(error_callback,
+                             MakeGarbageCollected<DOMException>(
+                                 DOMExceptionCode::kInvalidStateError,
+                                 kSignalingStateClosedMessage));
     }
     return true;
   }
@@ -589,6 +584,9 @@ RTCSetSessionDescriptionOperation GetRTCVoidRequestOperationType(
 
 }  // namespace
 
+const char kOnlySupportedInUnifiedPlanMessage[] =
+    "This operation is only supported in 'unified-plan'.";
+
 SdpUsageCategory DeduceSdpUsageCategory(const String& sdp_type,
                                         const String& sdp,
                                         bool sdp_semantics_specified,
@@ -814,7 +812,8 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
   }
   call_setup_state_tracker_.NoteOffererStateEvent(
@@ -886,9 +885,9 @@ ScriptPromise RTCPeerConnection::createOffer(
     // WebIDL.
     if (media_error_state.CanGenerateException()) {
       String error_msg = media_error_state.GetErrorMessage();
-      AsyncCallErrorCallback(
-          error_callback,
-          DOMException::Create(DOMExceptionCode::kOperationError, error_msg));
+      AsyncCallErrorCallback(error_callback,
+                             MakeGarbageCollected<DOMException>(
+                                 DOMExceptionCode::kOperationError, error_msg));
       return ScriptPromise::CastUndefined(script_state);
     }
 
@@ -913,7 +912,8 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
   }
 
@@ -958,9 +958,9 @@ ScriptPromise RTCPeerConnection::createAnswer(
   // WebIDL.
   if (media_error_state.CanGenerateException()) {
     String error_msg = media_error_state.GetErrorMessage();
-    AsyncCallErrorCallback(
-        error_callback,
-        DOMException::Create(DOMExceptionCode::kOperationError, error_msg));
+    AsyncCallErrorCallback(error_callback,
+                           MakeGarbageCollected<DOMException>(
+                               DOMExceptionCode::kOperationError, error_msg));
     return ScriptPromise::CastUndefined(script_state);
   }
 
@@ -981,8 +981,8 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
     String* sdp) {
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
-    return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                kSignalingStateClosedMessage);
+    return MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kSignalingStateClosedMessage);
   }
 
   *sdp = session_description_init->sdp();
@@ -991,8 +991,8 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
       *sdp = last_offer_;
     } else if (session_description_init->sdp() != last_offer_) {
       if (FingerprintMismatch(last_offer_, *sdp)) {
-        return DOMException::Create(DOMExceptionCode::kInvalidModificationError,
-                                    kModifiedSdpMessage);
+        return MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kInvalidModificationError, kModifiedSdpMessage);
       } else {
         UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
         return nullptr;
@@ -1005,8 +1005,8 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
       *sdp = last_answer_;
     } else if (session_description_init->sdp() != last_answer_) {
       if (FingerprintMismatch(last_answer_, *sdp)) {
-        return DOMException::Create(DOMExceptionCode::kInvalidModificationError,
-                                    kModifiedSdpMessage);
+        return MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kInvalidModificationError, kModifiedSdpMessage);
       } else {
         UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
         return nullptr;
@@ -1194,7 +1194,13 @@ bool RTCPeerConnection::HasDocumentMedia() const {
 
 void RTCPeerConnection::UpdateIceConnectionState() {
   DCHECK_EQ(webrtc::SdpSemantics::kUnifiedPlan, sdp_semantics_);
-  ChangeIceConnectionState(ComputeIceConnectionState());
+  auto new_state = ComputeIceConnectionState();
+  if (ice_connection_state_ != new_state) {
+    peer_handler_->TrackIceConnectionStateChange(
+        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
+        new_state);
+  }
+  ChangeIceConnectionState(new_state);
 }
 
 void RTCPeerConnection::ReportSetSdpUsage(
@@ -1338,7 +1344,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
   }
 
@@ -1628,9 +1635,9 @@ ScriptPromise RTCPeerConnection::generateCertificate(
             WebRTCKeyParams::CreateRSA(modulus_length, public_exponent);
       } else {
         return ScriptPromise::RejectWithDOMException(
-            script_state,
-            DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                 unsupported_params_string));
+            script_state, MakeGarbageCollected<DOMException>(
+                              DOMExceptionCode::kNotSupportedError,
+                              unsupported_params_string));
       }
       break;
     case kWebCryptoAlgorithmIdEcdsa:
@@ -1641,18 +1648,18 @@ ScriptPromise RTCPeerConnection::generateCertificate(
         key_params = WebRTCKeyParams::CreateECDSA(kWebRTCECCurveNistP256);
       } else {
         return ScriptPromise::RejectWithDOMException(
-            script_state,
-            DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                 unsupported_params_string));
+            script_state, MakeGarbageCollected<DOMException>(
+                              DOMExceptionCode::kNotSupportedError,
+                              unsupported_params_string));
       }
       break;
     default:
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "The 1st argument provided is an "
-                               "AlgorithmIdentifier, but the "
-                               "algorithm is not supported."));
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kNotSupportedError,
+                            "The 1st argument provided is an "
+                            "AlgorithmIdentifier, but the "
+                            "algorithm is not supported."));
       break;
   }
   DCHECK(key_params.has_value());
@@ -1664,7 +1671,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // generator support these parameters?
   if (!certificate_generator->IsSupportedKeyParams(key_params.value())) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                            unsupported_params_string));
   }
 
@@ -1701,7 +1709,8 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
   }
 
@@ -1720,9 +1729,9 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   bool implemented =
       peer_handler_->AddICECandidate(request, std::move(web_candidate));
   if (!implemented) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kOperationError,
-                             "This operation could not be completed."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError,
+        "This operation could not be completed."));
   }
 
   return promise;
@@ -1753,11 +1762,12 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
       ExecutionContext::From(script_state), candidate);
   bool implemented =
       peer_handler_->AddICECandidate(request, std::move(web_candidate));
-  if (!implemented)
-    AsyncCallErrorCallback(
-        error_callback,
-        DOMException::Create(DOMExceptionCode::kOperationError,
-                             "This operation could not be completed."));
+  if (!implemented) {
+    AsyncCallErrorCallback(error_callback,
+                           MakeGarbageCollected<DOMException>(
+                               DOMExceptionCode::kOperationError,
+                               "This operation could not be completed."));
+  }
 
   return ScriptPromise::CastUndefined(script_state);
 }
@@ -2032,9 +2042,9 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     if (!peer_handler_) {
       LOG(ERROR) << "Internal error: peer_handler_ has been discarded";
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kOperationError,
-                               "Internal error: release in progress"));
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kOperationError,
+                            "Internal error: release in progress"));
     }
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
@@ -2063,14 +2073,14 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
   }
   if (track_uses == 0u) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidAccessError,
-                             "There is no sender or receiver for the track."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidAccessError,
+                          "There is no sender or receiver for the track."));
   }
   if (track_uses > 1u) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidAccessError,
             "There are more than one sender or receiver for the track."));
   }
@@ -2654,8 +2664,15 @@ void RTCPeerConnection::DidChangeIceConnectionState(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  // Unified plan relies on UpdateIceConnectionState instead.
-  if (sdp_semantics_ != webrtc::SdpSemantics::kUnifiedPlan) {
+  if (sdp_semantics_ == webrtc::SdpSemantics::kUnifiedPlan) {
+    // Unified plan relies on UpdateIceConnectionState() instead.
+    peer_handler_->TrackIceConnectionStateChange(
+        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kLegacy,
+        new_state);
+  } else {
+    peer_handler_->TrackIceConnectionStateChange(
+        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
+        new_state);
     ChangeIceConnectionState(new_state);
   }
 }
@@ -2769,7 +2786,6 @@ void RTCPeerConnection::DidModifySctpTransport(
       sctp_transport_->native_transport() != snapshot.transport) {
     sctp_transport_ = MakeGarbageCollected<RTCSctpTransport>(
         GetExecutionContext(), snapshot.transport);
-    sctp_transport_->ChangeState(snapshot.sctp_transport_state);
   }
   if (!sctp_transport_->transport() ||
       sctp_transport_->transport()->native_transport() !=
@@ -2778,6 +2794,7 @@ void RTCPeerConnection::DidModifySctpTransport(
         snapshot.sctp_transport_state.dtls_transport(),
         snapshot.dtls_transport_state));
   }
+  sctp_transport_->ChangeState(snapshot.sctp_transport_state);
 }
 
 void RTCPeerConnection::DidModifyTransceivers(

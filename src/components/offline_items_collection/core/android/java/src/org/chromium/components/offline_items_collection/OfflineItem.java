@@ -109,7 +109,7 @@ public class OfflineItem implements Cloneable {
 
     public OfflineItem() {
         id = new ContentId();
-        filter = OfflineItemFilter.FILTER_OTHER;
+        filter = OfflineItemFilter.OTHER;
         state = OfflineItemState.COMPLETE;
     }
 

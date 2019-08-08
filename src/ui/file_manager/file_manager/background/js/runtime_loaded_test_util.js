@@ -886,3 +886,12 @@ test.util.async.getVolumesCount = callback => {
     callback(volumeManager.volumeInfoList.length);
   });
 };
+
+/**
+ * Updates the preferences.
+ * @param {chrome.fileManagerPrivate.PreferencesChange} preferences Preferences
+ *     to set.
+ */
+test.util.sync.setPreferences = preferences => {
+  chrome.fileManagerPrivate.setPreferences(preferences);
+};

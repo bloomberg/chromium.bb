@@ -418,6 +418,12 @@ class PLATFORM_EXPORT ResourceResponse final {
     is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
   }
 
+  bool WasInPrefetchCache() const { return was_in_prefetch_cache_; }
+
+  void SetWasInPrefetchCache(bool was_in_prefetch_cache) {
+    was_in_prefetch_cache_ = was_in_prefetch_cache;
+  }
+
  private:
   void UpdateHeaderParsedState(const AtomicString& name);
 
@@ -481,6 +487,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if this resource is from an inner response of a signed exchange.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
   bool is_signed_exchange_inner_response_ = false;
+
+  // True if this resource is served from the prefetch cache.
+  bool was_in_prefetch_cache_ = false;
 
   // True if this resource was loaded from the network.
   bool network_accessed_ = false;

@@ -526,6 +526,22 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (svg_style_.Get() != other.svg_style_.Get())
     diff = svg_style_->Diff(*other.svg_style_);
 
+  if ((!diff.NeedsReshape() || !diff.NeedsFullLayout() ||
+       !diff.NeedsFullPaintInvalidation()) &&
+      DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
+    diff.SetNeedsReshape();
+    diff.SetNeedsFullLayout();
+    diff.SetNeedsPaintInvalidationObject();
+  }
+
+  if ((!diff.NeedsCollectInlines() || !diff.NeedsFullLayout() ||
+       !diff.NeedsFullPaintInvalidation()) &&
+      DiffNeedsCollectInlinesAndFullLayoutAndPaintInvalidation(*this, other)) {
+    diff.SetNeedsCollectInlines();
+    diff.SetNeedsFullLayout();
+    diff.SetNeedsPaintInvalidationObject();
+  }
+
   if ((!diff.NeedsFullLayout() || !diff.NeedsFullPaintInvalidation()) &&
       DiffNeedsFullLayoutAndPaintInvalidation(other)) {
     diff.SetNeedsFullLayout();
@@ -810,12 +826,12 @@ bool ComputedStyle::CustomPropertiesEqual(
     return true;
 
   for (const AtomicString& property_name : properties) {
-    if (!DataEquivalent(GetVariable(property_name),
-                        other.GetVariable(property_name))) {
+    if (!DataEquivalent(GetVariableData(property_name),
+                        other.GetVariableData(property_name))) {
       return false;
     }
-    if (!DataEquivalent(GetRegisteredVariable(property_name),
-                        other.GetRegisteredVariable(property_name))) {
+    if (!DataEquivalent(GetVariableValue(property_name),
+                        other.GetVariableValue(property_name))) {
       return false;
     }
   }
@@ -1241,6 +1257,7 @@ Color ComputedStyle::GetColor() const {
   return ColorInternal();
 }
 void ComputedStyle::SetColor(const Color& v) {
+  SetIsColorInternalText(false);
   SetColorInternal(v);
 }
 
@@ -1379,6 +1396,7 @@ AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
   switch (GetLineBreak()) {
     case LineBreak::kAuto:
     case LineBreak::kAfterWhiteSpace:
+    case LineBreak::kAnywhere:
       return Locale();
     case LineBreak::kNormal:
       mode = LineBreakIteratorMode::kNormal;
@@ -1667,7 +1685,7 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
     return empty;
   }
 
-  return AppliedTextDecorationsInternal()->GetVector();
+  return AppliedTextDecorationsInternal()->data;
 }
 
 static bool HasInitialVariables(const StyleInitialData* initial_data) {
@@ -1709,90 +1727,98 @@ void ComputedStyle::SetInitialData(scoped_refptr<StyleInitialData> data) {
   MutableInitialDataInternal() = std::move(data);
 }
 
-void ComputedStyle::SetVariable(const AtomicString& name,
-                                scoped_refptr<CSSVariableData> value,
-                                bool is_inherited_property) {
+void ComputedStyle::SetVariableData(const AtomicString& name,
+                                    scoped_refptr<CSSVariableData> value,
+                                    bool is_inherited_property) {
   if (is_inherited_property)
-    MutableInheritedVariables().SetVariable(name, std::move(value));
+    MutableInheritedVariables().SetData(name, std::move(value));
   else
-    MutableNonInheritedVariables().SetVariable(name, std::move(value));
+    MutableNonInheritedVariables().SetData(name, std::move(value));
 }
 
-void ComputedStyle::SetRegisteredVariable(const AtomicString& name,
-                                          const CSSValue* value,
-                                          bool is_inherited_property) {
+void ComputedStyle::SetVariableValue(const AtomicString& name,
+                                     const CSSValue* value,
+                                     bool is_inherited_property) {
   if (is_inherited_property)
-    MutableInheritedVariables().SetRegisteredVariable(name, value);
+    MutableInheritedVariables().SetValue(name, value);
   else
-    MutableNonInheritedVariables().SetRegisteredVariable(name, value);
+    MutableNonInheritedVariables().SetValue(name, value);
 }
 
-void ComputedStyle::RemoveVariable(const AtomicString& name,
-                                   bool is_inherited_property) {
-  if (is_inherited_property) {
-    MutableInheritedVariables().RemoveVariable(name);
-  } else {
-    MutableNonInheritedVariables().RemoveVariable(name);
-  }
-}
-
-CSSVariableData* ComputedStyle::GetVariable(const AtomicString& name) const {
-  CSSVariableData* variable = GetVariable(name, true);
-  if (variable) {
-    return variable;
-  }
-  return GetVariable(name, false);
-}
-
-CSSVariableData* ComputedStyle::GetVariable(const AtomicString& name,
-                                            bool is_inherited_property) const {
-  if (is_inherited_property) {
-    return InheritedVariables() ? InheritedVariables()->GetVariable(name)
-                                : nullptr;
-  }
-  return NonInheritedVariables() ? NonInheritedVariables()->GetVariable(name)
-                                 : nullptr;
-}
-
-static const CSSValue* GetInitialRegisteredVariable(
+static CSSVariableData* GetInitialVariableData(
     const AtomicString& name,
     const StyleInitialData* initial_data) {
   if (!initial_data)
     return nullptr;
-  return initial_data->GetInitialVariable(name);
+  return initial_data->GetVariableData(name);
 }
 
-const CSSValue* ComputedStyle::GetRegisteredVariable(
-    const AtomicString& name,
-    bool is_inherited_property) const {
-  const CSSValue* result =
-      GetNonInitialRegisteredVariable(name, is_inherited_property);
-  if (result)
-    return result;
-  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
-}
-
-const CSSValue* ComputedStyle::GetRegisteredVariable(
+CSSVariableData* ComputedStyle::GetVariableData(
     const AtomicString& name) const {
-  const CSSValue* result = GetNonInitialRegisteredVariable(name, false);
-  if (result)
-    return result;
-  result = GetNonInitialRegisteredVariable(name, true);
-  if (result)
-    return result;
-  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
+  if (InheritedVariables()) {
+    if (auto data = InheritedVariables()->GetData(name))
+      return *data;
+  }
+  if (NonInheritedVariables()) {
+    if (auto data = NonInheritedVariables()->GetData(name))
+      return *data;
+  }
+  return GetInitialVariableData(name, InitialDataInternal().get());
 }
 
-const CSSValue* ComputedStyle::GetNonInitialRegisteredVariable(
+CSSVariableData* ComputedStyle::GetVariableData(
     const AtomicString& name,
     bool is_inherited_property) const {
   if (is_inherited_property) {
-    return InheritedVariables() ? InheritedVariables()->RegisteredVariable(name)
-                                : nullptr;
+    if (InheritedVariables()) {
+      if (auto data = InheritedVariables()->GetData(name))
+        return *data;
+    }
+  } else {
+    if (NonInheritedVariables()) {
+      if (auto data = NonInheritedVariables()->GetData(name))
+        return *data;
+    }
   }
-  return NonInheritedVariables()
-             ? NonInheritedVariables()->RegisteredVariable(name)
-             : nullptr;
+  return GetInitialVariableData(name, InitialDataInternal().get());
+}
+
+static const CSSValue* GetInitialVariableValue(
+    const AtomicString& name,
+    const StyleInitialData* initial_data) {
+  if (!initial_data)
+    return nullptr;
+  return initial_data->GetVariableValue(name);
+}
+
+const CSSValue* ComputedStyle::GetVariableValue(
+    const AtomicString& name) const {
+  if (InheritedVariables()) {
+    if (auto value = InheritedVariables()->GetValue(name))
+      return *value;
+  }
+  if (NonInheritedVariables()) {
+    if (auto value = NonInheritedVariables()->GetValue(name))
+      return *value;
+  }
+  return GetInitialVariableValue(name, InitialDataInternal().get());
+}
+
+const CSSValue* ComputedStyle::GetVariableValue(
+    const AtomicString& name,
+    bool is_inherited_property) const {
+  if (is_inherited_property) {
+    if (InheritedVariables()) {
+      if (auto value = InheritedVariables()->GetValue(name))
+        return *value;
+    }
+  } else {
+    if (NonInheritedVariables()) {
+      if (auto value = NonInheritedVariables()->GetValue(name))
+        return *value;
+    }
+  }
+  return GetInitialVariableValue(name, InitialDataInternal().get());
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
@@ -1904,11 +1930,11 @@ void ComputedStyle::AddAppliedTextDecoration(
       MutableAppliedTextDecorationsInternal();
 
   if (!list)
-    list = AppliedTextDecorationList::Create();
+    list = base::MakeRefCounted<AppliedTextDecorationList>();
   else if (!list->HasOneRef())
-    list = list->Copy();
+    list = base::MakeRefCounted<AppliedTextDecorationList>(list->data);
 
-  list->push_back(decoration);
+  list->data.push_back(decoration);
 }
 
 void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
@@ -1916,9 +1942,9 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
       MutableAppliedTextDecorationsInternal();
   DCHECK(list);
   if (!list->HasOneRef())
-    list = list->Copy();
+    list = base::MakeRefCounted<AppliedTextDecorationList>(list->data);
 
-  for (AppliedTextDecoration& decoration : *list)
+  for (AppliedTextDecoration& decoration : list->data)
     decoration.SetColor(override_color);
 }
 

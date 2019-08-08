@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -30,8 +31,8 @@ class CORE_EXPORT FragmentData {
   // "paint offset root" which is the containing root PaintLayer of the root
   // LocalFrameView, or PaintLayer with a transform, whichever is nearer along
   // the containing block chain.
-  LayoutPoint PaintOffset() const { return paint_offset_; }
-  void SetPaintOffset(const LayoutPoint& paint_offset) {
+  PhysicalOffset PaintOffset() const { return paint_offset_; }
+  void SetPaintOffset(const PhysicalOffset& paint_offset) {
     paint_offset_ = paint_offset;
   }
 
@@ -69,13 +70,13 @@ class CORE_EXPORT FragmentData {
   // object's local coordinate space.  During PrePaint, the rect mapped into
   // visual rect space will be added into PartialInvalidationVisualRect(), and
   // cleared.
-  LayoutRect PartialInvalidationLocalRect() const {
+  PhysicalRect PartialInvalidationLocalRect() const {
     return rare_data_ ? rare_data_->partial_invalidation_local_rect
-                      : LayoutRect();
+                      : PhysicalRect();
   }
   // LayoutObject::InvalidatePaintRectangle() calls this method to accumulate
   // the sub-rectangles needing re-rasterization.
-  void SetPartialInvalidationLocalRect(const LayoutRect& r) {
+  void SetPartialInvalidationLocalRect(const PhysicalRect& r) {
     if (rare_data_ || !r.IsEmpty())
       EnsureRareData().partial_invalidation_local_rect = r;
   }
@@ -103,11 +104,11 @@ class CORE_EXPORT FragmentData {
   // The pagination offset is the additional factor to add in to map
   // from flow thread coordinates relative to the enclosing pagination
   // layer, to visual coordiantes relative to that pagination layer.
-  LayoutPoint PaginationOffset() const {
-    return rare_data_ ? rare_data_->pagination_offset : LayoutPoint();
+  PhysicalOffset PaginationOffset() const {
+    return rare_data_ ? rare_data_->pagination_offset : PhysicalOffset();
   }
-  void SetPaginationOffset(const LayoutPoint& pagination_offset) {
-    if (rare_data_ || pagination_offset != LayoutPoint())
+  void SetPaginationOffset(const PhysicalOffset& pagination_offset) {
+    if (rare_data_ || pagination_offset != PhysicalOffset())
       EnsureRareData().pagination_offset = pagination_offset;
   }
 
@@ -224,7 +225,6 @@ class CORE_EXPORT FragmentData {
   // Map a rect from |this|'s local border box space to |fragment|'s local
   // border box space. Both fragments must have local border box properties.
   void MapRectToFragment(const FragmentData& fragment, IntRect&) const;
-  void MapRectToFragment(const FragmentData& fragment, LayoutRect&) const;
 
   ~FragmentData() {
     if (next_fragment_)
@@ -249,11 +249,11 @@ class CORE_EXPORT FragmentData {
     std::unique_ptr<PaintLayer> layer;
     UniqueObjectId unique_id;
     IntRect selection_visual_rect;
-    LayoutRect partial_invalidation_local_rect;
+    PhysicalRect partial_invalidation_local_rect;
     IntRect partial_invalidation_visual_rect;
 
     // Fragment specific data.
-    LayoutPoint pagination_offset;
+    PhysicalOffset pagination_offset;
     LayoutUnit logical_top_in_flow_thread;
     std::unique_ptr<ObjectPaintProperties> paint_properties;
     std::unique_ptr<RefCountedPropertyTreeState> local_border_box_properties;
@@ -267,7 +267,7 @@ class CORE_EXPORT FragmentData {
   RareData& EnsureRareData();
 
   IntRect visual_rect_;
-  LayoutPoint paint_offset_;
+  PhysicalOffset paint_offset_;
 
   std::unique_ptr<RareData> rare_data_;
   std::unique_ptr<FragmentData> next_fragment_;

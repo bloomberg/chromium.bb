@@ -12,6 +12,8 @@
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/vr_base_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "device/vr/public/cpp/session_mode.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
@@ -30,8 +32,8 @@ enum class VrStartAction : int {
   // The user triggered a presentation request on a page, probably by clicking
   // an enter VR button.
   kPresentationRequest = 2,
-  // The user launched a deep linked app, probably from Daydream home.
-  kDeepLinkedApp = 3,
+  // OBSOLETE: The user launched a deep linked app, probably from Daydream Home.
+  // kDeepLinkedApp = 3,
   // Chrome VR was started by an intent from another app. Most likely the user
   // clicked the icon in Daydream home.
   kIntentLaunch = 4,
@@ -55,9 +57,9 @@ enum PresentationStartAction {
   // The user activated a headset on a page that listens for headset activations
   // and requests presentation.
   kHeadsetActivation = 3,
-  // The user opened a deep linked app, probably from the Daydream homescreen.
-  kDeepLinkedApp = 4,
-  kMaxValue = kDeepLinkedApp,
+  // OBSOLETE: The user launched a deep linked app, probably from Daydream Home.
+  // kDeepLinkedApp = 4,
+  kMaxValue = 4,
 };
 
 // SessionTimer will monitor the time between calls to StartSession and
@@ -164,14 +166,31 @@ class VR_BASE_EXPORT SessionMetricsHelper
   void RecordVoiceSearchStarted();
   void RecordUrlRequested(GURL url, NavigationMethod method);
 
+  // TODO(https://crbug.com/967764): Add documentation to the public functions.
+  // TODO(https://crbug.com/965744): Rename below methods.
+  // TODO(https://crbug.com/965729): Ensure that AR is handled correctly.
   void RecordVrStartAction(VrStartAction action);
-  void RecordPresentationStartAction(PresentationStartAction action);
-  void ReportRequestPresent();
+  void RecordPresentationStartAction(
+      PresentationStartAction action,
+      const device::mojom::XRRuntimeSessionOptions& options);
+  void ReportRequestPresent(
+      const device::mojom::XRRuntimeSessionOptions& options);
+
+  // Records that inline session was started.
+  void RecordInlineSessionStart(size_t session_id);
+  // Records that inline session was stopped. Will record an UKM entry.
+  void RecordInlineSessionStop(size_t session_id);
 
  private:
   SessionMetricsHelper(content::WebContents* contents, Mode initial_mode);
 
-  // WebContentObserver
+  struct PendingImmersiveSessionStartInfo {
+    PresentationStartAction action = PresentationStartAction::kOther;
+    bool is_legacy_webvr = false;
+    device::SessionMode mode = device::SessionMode::kUnknown;
+  };
+
+  // WebContentsObserver
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const content::MediaPlayerId&) override;
   void MediaStoppedPlaying(
@@ -187,7 +206,9 @@ class VR_BASE_EXPORT SessionMetricsHelper
   void UpdateMode();
 
   void LogVrStartAction(VrStartAction action);
-  void LogPresentationStartAction(PresentationStartAction action);
+  void LogPresentationStartAction(PresentationStartAction action,
+                                  bool is_web_vr,
+                                  device::SessionMode xr_session_mode);
 
   void OnEnterAnyVr();
   void OnExitAllVr();
@@ -203,12 +224,22 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   std::unique_ptr<SessionTracker<ukm::builders::XR_PageSession>>
       page_session_tracker_;
-  std::unique_ptr<SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>
-      presentation_session_tracker_;
+  std::unique_ptr<SessionTracker<ukm::builders::XR_WebXR_Session>>
+      webxr_immersive_session_tracker_;
+
+  // Map containing inline session trackers. The contents of the map are
+  // affected by calls to |RecordInlineSessionStart| & |RecordInlineSessionStop|
+  // public methods.
+  std::unordered_map<
+      size_t,
+      std::unique_ptr<SessionTracker<ukm::builders::XR_WebXR_Session>>>
+      webxr_inline_session_trackers_;
 
   Mode mode_ = Mode::kNoVr;
 
   // State that gets translated into the VR mode.
+  // TODO(https://crbug.com/967764): Add description for below fields and rename
+  // if it turns out their purpose does not match the names.
   bool is_fullscreen_ = false;
   bool is_webvr_ = false;
   bool is_vr_enabled_ = false;
@@ -217,7 +248,8 @@ class VR_BASE_EXPORT SessionMetricsHelper
   NavigationMethod last_url_request_method_;
 
   base::Optional<VrStartAction> pending_page_session_start_action_;
-  base::Optional<PresentationStartAction> pending_presentation_start_action_;
+  base::Optional<PendingImmersiveSessionStartInfo>
+      pending_immersive_session_start_info_;
 
   int num_videos_playing_ = 0;
   int num_session_navigation_ = 0;

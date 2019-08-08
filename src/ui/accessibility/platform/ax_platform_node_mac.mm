@@ -162,7 +162,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kMenuItemCheckBox, NSAccessibilityMenuItemRole},
       {ax::mojom::Role::kMenuItemRadio, NSAccessibilityMenuItemRole},
       {ax::mojom::Role::kMenuListOption, NSAccessibilityMenuItemRole},
-      {ax::mojom::Role::kMenuListPopup, NSAccessibilityUnknownRole},
+      {ax::mojom::Role::kMenuListPopup, NSAccessibilityMenuRole},
       {ax::mojom::Role::kMeter, NSAccessibilityLevelIndicatorRole},
       {ax::mojom::Role::kNavigation, NSAccessibilityGroupRole},
       {ax::mojom::Role::kNone, NSAccessibilityGroupRole},
@@ -398,12 +398,12 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     NSString* name =
         [self getStringAttribute:ax::mojom::StringAttribute::kName];
     return [name length] > 0 ? name
-                             : base::SysUTF16ToNSString(node_->GetText());
+                             : base::SysUTF16ToNSString(node_->GetInnerText());
   } else if (eventType == ax::mojom::Event::kLiveRegionChanged &&
              node_->GetData().HasStringAttribute(
                  ax::mojom::StringAttribute::kContainerLiveStatus)) {
     // Live regions announce their inner text.
-    return base::SysUTF16ToNSString(node_->GetText());
+    return base::SysUTF16ToNSString(node_->GetInnerText());
   }
   // Only alerts and live regions have something to announce.
   return nil;

@@ -38,13 +38,6 @@ source_set("gpu_host") {
     "//services/ws/public/mojom",
   ]
 
-  if (is_chromeos) {
-    sources += [
-      "arc_gpu_client.cc",
-      "arc_gpu_client.h",
-    ]
-  }
-
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi" ]
   }
@@ -100,7 +93,6 @@ source_set("tests") {
     "//services/service_manager/public/mojom",
     "//services/ws/common",
     "//services/ws/common:task_runner_test_base",
-    "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//testing/gtest",
     "//third_party/mesa_headers",

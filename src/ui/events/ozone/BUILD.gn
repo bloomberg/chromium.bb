@@ -157,6 +157,8 @@ if (use_ozone) {
 
       if (use_evdev_gestures) {
         sources += [
+          "chromeos/gesture_properties_service.cc",
+          "chromeos/gesture_properties_service.h",
           "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
           "evdev/libgestures_glue/event_reader_libevdev_cros.h",
           "evdev/libgestures_glue/gesture_feedback.cc",
@@ -174,6 +176,7 @@ if (use_ozone) {
         deps += [
           "//third_party/gestures",
           "//third_party/libevdev",
+          "//ui/ozone/public/interfaces:gesture_properties_service",
         ]
 
         public_configs += [ ":evdev_gestures" ]

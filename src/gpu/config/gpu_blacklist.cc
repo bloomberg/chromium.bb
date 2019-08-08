@@ -47,7 +47,7 @@ std::unique_ptr<GpuBlacklist> GpuBlacklist::Create(
                             GPU_FEATURE_TYPE_OOP_RASTERIZATION);
   list->AddSupportedFeature("android_surface_control",
                             GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL);
-
+  list->AddSupportedFeature("metal", GPU_FEATURE_TYPE_METAL);
   return list;
 }
 

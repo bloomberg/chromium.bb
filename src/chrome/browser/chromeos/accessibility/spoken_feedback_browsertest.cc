@@ -6,8 +6,13 @@
 
 #include <queue>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/events/event_rewriter_controller.h"
+#include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -26,8 +31,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -51,7 +55,6 @@
 #include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -93,6 +96,11 @@ void LoggedInSpokenFeedbackTest::SendKeyPressWithSearch(ui::KeyboardCode key) {
       nullptr, key, false, false, false, true)));
 }
 
+void LoggedInSpokenFeedbackTest::SendMouseMoveTo(const gfx::Point& location) {
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_controls::SendMouseMove(location.x(), location.y())));
+}
+
 void LoggedInSpokenFeedbackTest::RunJavaScriptInChromeVoxBackgroundPage(
     const std::string& script) {
   extensions::ExtensionHost* host =
@@ -112,9 +120,7 @@ void LoggedInSpokenFeedbackTest::SimulateTouchScreenInChromeVox() {
 
 bool LoggedInSpokenFeedbackTest::PerformAcceleratorAction(
     ash::AcceleratorAction action) {
-  ash::AcceleratorController* controller =
-      ash::Shell::Get()->accelerator_controller();
-  return controller->PerformActionIfEnabled(action);
+  return ash::AcceleratorController::Get()->PerformActionIfEnabled(action, {});
 }
 
 void LoggedInSpokenFeedbackTest::DisableEarcons() {
@@ -235,44 +241,6 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
   EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
 }
 
-// Tests the keyboard shortcut viewer, which is an out-of-process mojo app.
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
-  EnableChromeVox();
-  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
-
-  // Focus should move to the search field and ChromeVox should speak it.
-  while ("Search for keyboard shortcuts" !=
-         speech_monitor_.GetNextUtterance()) {
-  }
-
-  // Capture the destroyed AX tree id when the remote host disconnects.
-  base::RunLoop run_loop;
-  ui::AXTreeID destroyed_tree_id = ui::AXTreeIDUnknown();
-  extensions::AutomationEventRouter::GetInstance()
-      ->SetTreeDestroyedCallbackForTest(base::BindRepeating(
-          [](base::RunLoop* run_loop, ui::AXTreeID* destroyed_tree_id,
-             ui::AXTreeID tree_id) {
-            *destroyed_tree_id = tree_id;
-            run_loop->Quit();
-          },
-          &run_loop, &destroyed_tree_id));
-
-  // Close the remote shortcut viewer app.
-  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
-
-  // Wait for the AX tree to be destroyed.
-  run_loop.Run();
-
-  // Verify an AX tree was destroyed. It's awkward to get the remote app's
-  // actual tree ID, so just ensure it's a valid ID and not the desktop.
-  EXPECT_NE(ui::AXTreeIDUnknown(), destroyed_tree_id);
-  EXPECT_NE(AutomationManagerAura::GetInstance()->ax_tree_id(),
-            destroyed_tree_id);
-
-  extensions::AutomationEventRouter::GetInstance()
-      ->SetTreeDestroyedCallbackForTest(base::DoNothing());
-}
-
 //
 // Spoken feedback tests in both a logged in browser window and guest mode.
 //
@@ -356,6 +324,125 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 }
 
+// Verifies that pressing right arrow button with search button should move
+// focus to the next ShelfItem instead of the last one
+// (see https://crbug.com/947683).
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
+  const std::string title("MockApp");
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+
+  // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
+  // when an extension is enabled, the ShelfItems which are not recorded as
+  // pinned apps in user preference will be removed.
+  EnableChromeVox();
+  controller->CreateAppShortcutLauncherItem(
+      ash::ShelfID("FakeApp"), controller->shelf_model()->item_count(),
+      base::ASCIIToUTF16(title));
+
+  // Wait for the change on ShelfModel to reach ash.
+  base::RunLoop().RunUntilIdle();
+
+  // Focus on the shelf.
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "Launcher"))
+      break;
+  }
+
+  ASSERT_EQ("Button", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Shelf", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ(", window", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Press Search plus Space to activate.",
+            speech_monitor_.GetNextUtterance());
+
+  // Verifies that pressing right key with search key should move the focus of
+  // ShelfItem correctly.
+  SendKeyPressWithSearch(ui::VKEY_RIGHT);
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  SendKeyPressWithSearch(ui::VKEY_RIGHT);
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), title));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+}
+
+// Verifies that speaking text under mouse works for Shelf button and voice
+// announcements should not be stacked when mouse goes over many Shelf buttons
+// (see https://crbug.com/958120 and https://crbug.com/921182).
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
+  // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
+  // when an extension is enabled, the ShelfItems which are not recorded as
+  // pinned apps in user preference will be removed.
+  EnableChromeVox();
+
+  // Add three Shelf buttons. Wait for the change on ShelfModel to reach ash.
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  const int base_index = controller->shelf_model()->item_count();
+  const std::string title("MockApp");
+  const std::string id("FakeApp");
+  const int insert_app_num = 3;
+  for (int i = 0; i < insert_app_num; i++) {
+    std::string app_title = title + base::NumberToString(i);
+    std::string app_id = id + base::NumberToString(i);
+    controller->CreateAppShortcutLauncherItem(
+        ash::ShelfID(app_id), base_index + i, base::ASCIIToUTF16(app_title));
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // Enable the function of speaking text under mouse.
+  ash::Shell::Get()->event_rewriter_controller()->SetSendMouseEventsToDelegate(
+      true);
+
+  // Focus on the Shelf because voice text for focusing on Shelf is fixed. Wait
+  // until voice announcements are finished.
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "Launcher"))
+      break;
+  }
+  ASSERT_EQ("Button", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Shelf", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ(", window", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Press Search plus Space to activate.",
+            speech_monitor_.GetNextUtterance());
+
+  // Hover mouse on the Shelf button. Verifies that text under mouse is spoken.
+  ash::ShelfView* shelf_view =
+      ash::Shelf::ForWindow(ash::Shell::Get()->GetPrimaryRootWindow())
+          ->shelf_widget()
+          ->shelf_view_for_testing();
+  const int first_app_index =
+      shelf_view->model()->GetItemIndexForType(ash::TYPE_PINNED_APP);
+  SendMouseMoveTo(shelf_view->view_model()
+                      ->view_at(first_app_index)
+                      ->GetBoundsInScreen()
+                      .CenterPoint());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "MockApp0"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+
+  // Move mouse to the third Shelf button through the second one. Verifies that
+  // only the last Shelf button is announced by ChromeVox.
+  const int second_app_index = first_app_index + 1;
+  SendMouseMoveTo(shelf_view->view_model()
+                      ->view_at(second_app_index)
+                      ->GetBoundsInScreen()
+                      .CenterPoint());
+  const int third_app_index = first_app_index + 2;
+  SendMouseMoveTo(shelf_view->view_model()
+                      ->view_at(third_app_index)
+                      ->GetBoundsInScreen()
+                      .CenterPoint());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "MockApp2"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   EnableChromeVox();
 
@@ -367,7 +454,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   }
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Battery is*full."));
+                                 "Battery at * percent."));
   EXPECT_EQ("Dialog", speech_monitor_.GetNextUtterance());
   EXPECT_TRUE(
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "*window"));

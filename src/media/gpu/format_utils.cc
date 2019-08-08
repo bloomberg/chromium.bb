@@ -52,6 +52,12 @@ gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
     case PIXEL_FORMAT_NV12:
       return gfx::BufferFormat::YUV_420_BIPLANAR;
 
+    case PIXEL_FORMAT_ABGR:
+      return gfx::BufferFormat::RGBA_8888;
+
+    case PIXEL_FORMAT_XBGR:
+      return gfx::BufferFormat::RGBX_8888;
+
     default:
       LOG(FATAL) << "Unsupported VideoPixelFormat: " << pixel_format;
       return gfx::BufferFormat::BGRX_8888;

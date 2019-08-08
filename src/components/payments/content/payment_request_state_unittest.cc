@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/test_content_payment_request_delegate.h"
@@ -106,7 +106,8 @@ class PaymentRequestStateTest : public testing::Test,
   std::vector<mojom::PaymentMethodDataPtr> GetMethodDataForVisa() {
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
-    entry->supported_method = "visa";
+    entry->supported_method = "basic-card";
+    entry->supported_networks.push_back(mojom::BasicCardNetwork::VISA);
     method_data.push_back(std::move(entry));
     return method_data;
   }
@@ -168,7 +169,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_NoEnrolledInstrument) {
   // The method data requires MasterCard.
   std::vector<mojom::PaymentMethodDataPtr> method_data;
   mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
-  entry->supported_method = "mastercard";
+  entry->supported_method = "basic-card";
+  entry->supported_networks.push_back(mojom::BasicCardNetwork::MASTERCARD);
   method_data.push_back(std::move(entry));
   RecreateStateWithOptionsAndDetails(mojom::PaymentOptions::New(),
                                      mojom::PaymentDetails::New(),
@@ -351,7 +353,8 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   // Therefore we are not ready to pay.
   EXPECT_FALSE(state()->is_ready_to_pay());
 
-  state()->SetSelectedShippingProfile(test_address());
+  state()->SetSelectedShippingProfile(
+      test_address(), PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(0, num_on_selected_information_changed_called());
 
   // Simulate that the merchant has validated the shipping address change.
@@ -396,12 +399,14 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_ContactInfo) {
   EXPECT_TRUE(state()->is_ready_to_pay());
 
   // Unselecting contact profile.
-  state()->SetSelectedContactProfile(nullptr);
+  state()->SetSelectedContactProfile(
+      nullptr, PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(1, num_on_selected_information_changed_called());
 
   EXPECT_FALSE(state()->is_ready_to_pay());
 
-  state()->SetSelectedContactProfile(test_address());
+  state()->SetSelectedContactProfile(
+      test_address(), PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(2, num_on_selected_information_changed_called());
 
   // Ready to pay!
@@ -422,7 +427,8 @@ TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
 
   // Select an address, nothing should happen until the normalization is
   // completed and the merchant has validated the address.
-  state()->SetSelectedShippingProfile(test_address());
+  state()->SetSelectedShippingProfile(
+      test_address(), PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(0, num_on_selected_information_changed_called());
   EXPECT_FALSE(state()->is_ready_to_pay());
 
@@ -474,7 +480,8 @@ TEST_F(PaymentRequestStateTest, JaLatnShippingAddress) {
                                  "Roppongi", "6 Chrome-10-1", "Tokyo", "",
                                  "106-6126", "JP", "+81363849000");
 
-  state()->SetSelectedShippingProfile(&profile);
+  state()->SetSelectedShippingProfile(
+      &profile, PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(0, num_on_selected_information_changed_called());
   EXPECT_FALSE(state()->is_ready_to_pay());
 
@@ -514,7 +521,8 @@ TEST_F(PaymentRequestStateTest, RetryWithShippingAddressErrors) {
   // Therefore we are not ready to pay.
   EXPECT_FALSE(state()->is_ready_to_pay());
 
-  state()->SetSelectedShippingProfile(test_address());
+  state()->SetSelectedShippingProfile(
+      test_address(), PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(0, num_on_selected_information_changed_called());
 
   // Simulate that the merchant has validated the shipping address change.
@@ -557,7 +565,8 @@ TEST_F(PaymentRequestStateTest, RetryWithPayerErrors) {
   options->request_payer_email = true;
   RecreateStateWithOptions(std::move(options));
 
-  state()->SetSelectedContactProfile(test_address());
+  state()->SetSelectedContactProfile(
+      test_address(), PaymentRequestState::SectionSelectionStatus::kSelected);
   EXPECT_EQ(1, num_on_selected_information_changed_called());
   EXPECT_TRUE(state()->is_ready_to_pay());
 

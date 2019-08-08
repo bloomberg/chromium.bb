@@ -678,7 +678,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("cachetool");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("cachetool");
 
   base::FilePath cache_path(args[0]);
   std::string cache_backend_type(args[1]);

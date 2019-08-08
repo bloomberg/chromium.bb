@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
@@ -83,10 +84,41 @@ TEST_F(WindowTreeHostTest, NoRewritesPostIME) {
 TEST_F(WindowTreeHostTest, ColorSpace) {
   EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
             host()->compositor()->output_color_space());
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateSCRGBLinear());
-  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
+
+  test_screen()->SetColorSpace(gfx::ColorSpace::CreateDisplayP3D65());
+  EXPECT_EQ(gfx::ColorSpace::CreateDisplayP3D65(),
             host()->compositor()->output_color_space());
 }
+
+#if defined(OS_WIN)
+TEST_F(WindowTreeHostTest, ColorSpaceHDR) {
+  EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
+            host()->compositor()->output_color_space());
+
+  // UI compositor overrides HDR color space based on whether alpha blending is
+  // needed or not.
+  test_screen()->SetColorSpace(gfx::ColorSpace::CreateHDR10());
+  host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
+  EXPECT_EQ(gfx::ColorSpace::CreateHDR10(),
+            host()->compositor()->output_color_space());
+
+  test_screen()->SetColorSpace(gfx::ColorSpace::CreateHDR10());
+  host()->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
+            host()->compositor()->output_color_space());
+
+  // Setting SDR white level scales HDR color spaces but not SDR color spaces.
+  host()->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  test_screen()->SetColorSpace(gfx::ColorSpace::CreateSCRGBLinear(), 200.f);
+  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear().GetScaledColorSpace(
+                gfx::ColorSpace::kDefaultSDRWhiteLevel / 200.f),
+            host()->compositor()->output_color_space());
+
+  test_screen()->SetColorSpace(gfx::ColorSpace::CreateSRGB(), 200.f);
+  EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
+            host()->compositor()->output_color_space());
+}
+#endif  // OS_WIN
 
 class TestWindow : public ui::StubWindow {
  public:

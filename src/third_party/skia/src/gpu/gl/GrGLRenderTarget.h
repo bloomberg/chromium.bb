@@ -9,10 +9,10 @@
 #ifndef GrGLRenderTarget_DEFINED
 #define GrGLRenderTarget_DEFINED
 
-#include "GrBackendSurface.h"
-#include "GrGLIRect.h"
-#include "GrRenderTarget.h"
-#include "SkScalar.h"
+#include "include/core/SkScalar.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrRenderTarget.h"
+#include "src/gpu/gl/GrGLIRect.h"
 
 class GrGLCaps;
 class GrGLGpu;
@@ -39,9 +39,6 @@ public:
                                                GrGLenum format,
                                                const IDDesc&,
                                                int stencilBits);
-
-    void setViewport(const GrGLIRect& rect) { fViewport = rect; }
-    const GrGLIRect& getViewport() const { return fViewport; }
 
     // The following two functions return the same ID when a texture/render target is not
     // multisampled, and different IDs when it is multisampled.
@@ -105,11 +102,6 @@ private:
     GrGLenum    fRTFormat;
 
     GrBackendObjectOwnership fRTFBOOwnership;
-
-    // when we switch to this render target we want to set the viewport to
-    // only render to content area (as opposed to the whole allocation) and
-    // we want the rendering to be at top left (GL has origin in bottom left)
-    GrGLIRect   fViewport;
 
     // The RenderTarget needs to be able to report its VRAM footprint even after abandon and
     // release have potentially zeroed out the IDs (e.g., so the cache can reset itself). Since

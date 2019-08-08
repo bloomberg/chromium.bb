@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_system.h"
 
-#if _FX_OS_ == _FX_OS_LINUX_ || defined(OS_ANDROID) || \
-    _FX_OS_ == _FX_OS_MACOSX_ || _FX_OS_ == _FX_OS_WASM_
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_ASMJS) || defined(__wasm__)
 #include <sys/time.h>
 #include <time.h>
 #endif
@@ -99,9 +99,9 @@ bool FX_IsLeapYear(int32_t iYear) {
 // static
 CFX_DateTime CFX_DateTime::Now() {
   FXUT_SYSTEMTIME utLocal;
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
   ::GetLocalTime((LPSYSTEMTIME)&utLocal);
-#else   // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#else
   timeval curTime;
   gettimeofday(&curTime, nullptr);
 
@@ -115,7 +115,7 @@ CFX_DateTime CFX_DateTime::Now() {
   utLocal.wMinute = st.tm_min;
   utLocal.wSecond = st.tm_sec;
   utLocal.wMillisecond = curTime.tv_usec / 1000;
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#endif  // defined(OS_WIN)
 
   return CFX_DateTime(utLocal.wYear, static_cast<uint8_t>(utLocal.wMonth),
                       static_cast<uint8_t>(utLocal.wDay),

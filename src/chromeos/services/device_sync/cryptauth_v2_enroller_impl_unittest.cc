@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -18,7 +20,6 @@
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
-#include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
 #include "chromeos/services/device_sync/fake_cryptauth_key_creator.h"
 #include "chromeos/services/device_sync/fake_cryptauth_key_proof_computer.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
@@ -249,7 +250,7 @@ const std::vector<CryptAuthKeyBundle::Name>& GetKeyBundleOrder() {
       [] {
         std::vector<CryptAuthKeyBundle::Name> order;
         for (const CryptAuthKeyBundle::Name& bundle_name :
-             CryptAuthKeyBundle::AllNames())
+             CryptAuthKeyBundle::AllEnrollableNames())
           order.push_back(bundle_name);
         return order;
       }());
@@ -553,17 +554,17 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
 
 TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, SuccessfulEnrollment) {
   // Seed key registry.
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
-                                 kOldActiveAsymmetricKey);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kUserKeyPair,
+                         kOldActiveAsymmetricKey);
   key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kUserKeyPair,
                                   GetOldKeyDirectiveForTest());
   CryptAuthKeyBundle expected_key_bundle_user_key_pair(
       *key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair));
 
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
-                                 kOldActiveSymmetricKey);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
-                                 kOldInactiveSymmetricKey);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                         kOldActiveSymmetricKey);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                         kOldInactiveSymmetricKey);
   key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kLegacyMasterKey,
                                   GetOldKeyDirectiveForTest());
   CryptAuthKeyBundle expected_key_bundle_legacy_master_key(
@@ -744,10 +745,10 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
 
 TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        SuccessfulEnrollment_NoKeysCreated) {
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
-                                 kOldActiveSymmetricKey);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
-                                 kOldInactiveSymmetricKey);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                         kOldActiveSymmetricKey);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                         kOldInactiveSymmetricKey);
   key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kLegacyMasterKey,
                                   GetOldKeyDirectiveForTest());
   CryptAuthKeyBundle expected_key_bundle(*key_registry()->GetKeyBundle(
@@ -871,8 +872,8 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_InvalidKeyActions_Size) {
 
 TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        Failure_InvalidKeyActions_NoActiveKey) {
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
-                                 kOldActiveAsymmetricKey);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                         kOldActiveAsymmetricKey);
 
   CallEnroll(GetClientMetadataForTest(),
              cryptauthv2::GetClientAppMetadataForTest(),

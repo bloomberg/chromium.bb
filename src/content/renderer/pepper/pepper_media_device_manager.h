@@ -37,7 +37,7 @@ class PepperMediaDeviceManager
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation:
   void EnumerateDevices(PP_DeviceType_Dev type,
-                        const DevicesCallback& callback) override;
+                        DevicesOnceCallback callback) override;
   size_t StartMonitoringDevices(PP_DeviceType_Dev type,
                                 const DevicesCallback& callback) override;
   void StopMonitoringDevices(PP_DeviceType_Dev type,
@@ -48,10 +48,10 @@ class PepperMediaDeviceManager
       blink::MediaDeviceType type,
       const blink::WebMediaDeviceInfoArray& device_infos) override;
 
-  typedef base::Callback<void(int /* request_id */,
+  using OpenDeviceCallback =
+      base::OnceCallback<void(int /* request_id */,
                               bool /* succeeded */,
-                              const std::string& /* label */)>
-      OpenDeviceCallback;
+                              const std::string& /* label */)>;
 
   // Opens the specified device. The request ID passed into the callback will be
   // the same as the return value. If successful, the label passed into the
@@ -60,7 +60,7 @@ class PepperMediaDeviceManager
   int OpenDevice(PP_DeviceType_Dev type,
                  const std::string& device_id,
                  PP_Instance pp_instance,
-                 const OpenDeviceCallback& callback);
+                 OpenDeviceCallback callback);
   // Cancels an request to open device, using the request ID returned by
   // OpenDevice(). It is guaranteed that the callback passed into OpenDevice()
   // won't be called afterwards.
@@ -88,7 +88,7 @@ class PepperMediaDeviceManager
                       const blink::MediaStreamDevice& device);
 
   void DevicesEnumerated(
-      const DevicesCallback& callback,
+      DevicesOnceCallback callback,
       blink::MediaDeviceType type,
       const std::vector<blink::WebMediaDeviceInfoArray>& enumeration,
       std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>

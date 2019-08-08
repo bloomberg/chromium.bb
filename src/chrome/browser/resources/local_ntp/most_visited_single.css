@@ -25,7 +25,8 @@ html {
   --md-title-max-height: 28px;
 
   /* May be overridden by themes (on the body element). */
-  --tile-title-color: #323232;
+  --icon-background-color: rgb(var(--GG100-rgb));
+  --tile-title-color: rgb(var(--GG800-rgb));
 }
 
 body {
@@ -50,10 +51,9 @@ a:visited {
 }
 
 #most-visited {
-  margin: 10px 0;
   text-align: -webkit-center;
   user-select: none;
-  width: 100%
+  width: 100%;
 }
 
 #mv-tiles,
@@ -62,15 +62,29 @@ a:visited {
   flex-wrap: wrap;
   font-size: 0;
   justify-content: center;
-  /* 5 88px tiles per row. If you change this, also change the corresponding
+  /* 5 112px tiles per row. If you change this, also change the corresponding
    * values in local_ntp.css. */
   max-width: calc(var(--md-tile-width) * var(--md-max-tiles-row));
   opacity: 0;
+  padding: 10px 6px 0;
   position: static;
   /* This align correctly for both LTR and RTL */
   text-align: -webkit-auto;
-  transition: opacity 300ms;
   user-select: none;
+}
+
+body.grid-layout #mv-tiles,
+body.grid-layout .mv-tiles-old {
+  display: block;
+  flex-wrap: unset;
+  justify-content: unset;
+  max-width: unset;
+  position: relative;
+  text-align: unset;
+}
+
+html:not(.no-initial-fade) :-webkit-any(#mv-tiles, .mv-tiles-old) {
+  transition: opacity 300ms;
 }
 
 .mv-tiles-old {
@@ -82,6 +96,30 @@ a:visited {
 
 .mouse-navigation {
   outline: none;
+}
+
+.grid-tile-container {
+  position: absolute;
+  transition: transform 300ms ease-in-out;
+}
+
+.grid-tile {
+  transition: transform 300ms ease-in-out;
+}
+
+/* Prevent navigation while we're reordering the tiles. */
+body.reordering .grid-tile {
+  pointer-events: none;
+}
+
+/* Prevent transitions on the held tile in order for it to smoothly follow the
+ * mouse. */
+.grid-reorder .grid-tile {
+  transition-duration: 0s;
+}
+
+.grid-tile-container.grid-reorder {
+  z-index: 10;  /* Ensure the held tile is visible. */
 }
 
 .md-tile-container {
@@ -124,15 +162,18 @@ html[darkmode=true] .md-tile-container.reorder .md-tile {
   display: none;
 }
 
-body:not(.reordering) .md-tile-container:hover {
+body:not(.reordering) .md-tile-container:hover,
+.grid-tile-container.grid-reorder .md-tile-container {
   background-color: rgba(var(--GG900-rgb), 0.06);
 }
 
-html[darkmode=true] body:not(.reordering) .md-tile-container:hover {
+html[darkmode=true] body:not(.reordering) .md-tile-container:hover,
+html[darkmode=true] .grid-tile-container.grid-reorder .md-tile-container {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-body.dark-theme:not(.reordering) .md-tile-container:hover {
+body.dark-theme:not(.reordering) .md-tile-container:hover,
+body.dark-theme .grid-tile-container.grid-reorder .md-tile-container {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -178,16 +219,12 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 
 .md-icon-background {
   align-items: center;
-  background-color: rgb(var(--GG100-rgb));
+  background-color: var(--icon-background-color);
   border-radius: 50%;
   display: flex;
   height: var(--md-icon-size);
   justify-content: center;
   width: var(--md-icon-size);
-}
-
-html[darkmode=true] .md-icon-background {
-  background-color: rgb(var(--GG900-rgb));
 }
 
 .md-add-icon {
@@ -196,7 +233,7 @@ html[darkmode=true] .md-icon-background {
   width: var(--md-add-size);
 }
 
-html[darkmode=true] .md-add-icon {
+.use-white-add-icon .md-add-icon {
   background: url(chrome-search://most-visited/add_link_white.svg) no-repeat center;
 }
 
@@ -216,7 +253,7 @@ html[darkmode=true] .md-add-icon {
 }
 
 .md-title {
-  color: rgb(var(--GG800-rgb));
+  color: rgb(var(--tile-title-color));
   font-size: var(--md-title-font-size);
   font-weight: 500;
   max-height: var(--md-title-max-height);
@@ -225,6 +262,18 @@ html[darkmode=true] .md-add-icon {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 88px;
+}
+
+/* During reorder background is white. Therefore use dark grey for
+ * title. */
+.reorder .md-title {
+  color: rgb(var(--GG800-rgb));
+}
+
+/* During reorder in dark mode background is dark. Therefore use light
+ * grey for title. */
+html[darkmode=true] .reorder .md-title {
+  color: rgb(var(--GG100-rgb));
 }
 
 .md-title span {
@@ -237,40 +286,22 @@ body.mac-chromeos .md-title {
   font-weight: 400;
 }
 
-/* Apply when Chrome is in dark mode. */
-html[darkmode=true] .md-title {
-  color: rgb(var(--GG200-rgb));
-}
-
 /* Apply when a custom background is set. */
-body.dark-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(var(--GG050-rgb));
+body.custom-background .md-tile-container:not(.reorder) .md-title {
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 
-/* Apply only when a theme is installed. */
-body.using-theme .md-title-container {
+/* Apply only when a theme with image is installed. */
+body.use-title-container .md-title-container {
   background-color: white;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
   padding: 0 8px;
 }
 
-html[darkmode=true] body.using-theme .md-title-container {
-  background-color: rgb(var(--GG900-rgb));
-}
-
-html[darkmode=true] body.using-theme .md-tile-container.reorder .md-title-container {
-  background-color: rgb(var(--dark-mode-bg-rgb));
-}
-
-body.using-theme .md-tile-container:not(.reorder) .md-title {
+body.use-title-container .md-tile-container:not(.reorder) .md-title {
   color: rgb(var(--GG800-rgb));
   filter: unset;
-}
-
-html[darkmode=true] body.using-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(var(--GG200-rgb));
 }
 
 .md-menu {

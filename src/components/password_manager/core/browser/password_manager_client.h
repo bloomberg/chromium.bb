@@ -6,13 +6,17 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/hsts_query.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -42,7 +46,9 @@ namespace password_manager {
 class LogManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
+class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
+class HttpAuthManager;
 class PasswordRequirementsService;
 class PasswordStore;
 
@@ -126,9 +132,9 @@ class PasswordManagerClient {
 
   // Informs the embedder that the focus changed to a different input in the
   // same frame (e.g. tabbed from email to password field).
-  virtual void FocusedInputChanged(const url::Origin& last_committed_origin,
-                                   bool is_fillable,
-                                   bool is_password_field) = 0;
+  virtual void FocusedInputChanged(
+      password_manager::PasswordManagerDriver* driver,
+      autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not
@@ -187,9 +193,8 @@ class PasswordManagerClient {
   // Sends username/password from |preferred_match| for filling in the http auth
   // prompt.
   virtual void AutofillHttpAuth(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const autofill::PasswordForm& preferred_match) const;
+      const autofill::PasswordForm& preferred_match,
+      const PasswordFormManagerForUI* form_manager) const;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
@@ -214,6 +219,9 @@ class PasswordManagerClient {
   // version calls the const one.
   PasswordManager* GetPasswordManager();
   virtual const PasswordManager* GetPasswordManager() const;
+
+  // Returns the HttpAuthManager associated with this client.
+  virtual HttpAuthManager* GetHttpAuthManager();
 
   // Returns the AutofillDownloadManager for votes uploading.
   virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();
@@ -253,8 +261,12 @@ class PasswordManagerClient {
   // happens. This is called by the PasswordReuseDetectionManager when a
   // protected password is typed on the wrong domain. This may trigger a
   // warning dialog if it looks like the page is phishy.
+  // The |username| is the user name of the reused password. The user name
+  // can be an email or a username for a non-GAIA or saved-password reuse. No
+  // validation has been done on it.
   virtual void CheckProtectedPasswordEntry(
       metrics_util::PasswordType reused_password_type,
+      const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) = 0;
 
@@ -296,6 +308,9 @@ class PasswordManagerClient {
   }
 
   virtual bool IsIsolationForPasswordSitesEnabled() const = 0;
+
+  // Returns true if the current page is to the new tab page.
+  virtual bool IsNewTabPage() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

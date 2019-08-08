@@ -13,17 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 
 namespace arc {
 
 namespace {
-
-// TODO(yusukes): Move ArcContainerStopReason to arc:: and stop including
-// chromeos/dbus/session_manager/session_manager_client.h.
-constexpr login_manager::ArcContainerStopReason kDummyReason =
-    login_manager::ArcContainerStopReason::SESSION_MANAGER_SHUTDOWN;
 
 // The conversion of upstart job names to dbus object paths is undocumented. See
 // arc_data_remover.cc for more information.
@@ -38,18 +33,14 @@ class ArcVmClientAdapter : public ArcClientAdapter {
 
   // ArcClientAdapter overrides:
   void StartMiniArc(const StartArcMiniContainerRequest& request,
-                    StartMiniArcCallback callback) override {
+                    chromeos::VoidDBusMethodCallback callback) override {
     // TODO(yusukes): Support mini ARC.
     VLOG(2) << "Mini ARC instance is not supported yet.";
-    base::PostTask(
-        FROM_HERE,
-        base::BindOnce(&ArcVmClientAdapter::OnArcMiniInstanceStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), true));
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
-                  base::OnceClosure success_callback,
-                  UpgradeErrorCallback error_callback) override {
+                  chromeos::VoidDBusMethodCallback callback) override {
     // TODO(yusukes): Consider doing the same as crostini rather than taking to
     // Upstart.
     VLOG(1) << "Starting arcvm";
@@ -60,10 +51,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
         // arc_session_impl.cc fills the |account_id| field, and it is always
         // guaranteed that the ID is not for Incognito mode and is a valid one.
         // TODO(yusukes): Pass other fields of the |request| to the job.
-        {"CHROMEOS_USER=" + request.account_id()},
-        base::BindOnce(&ArcVmClientAdapter::OnArcInstanceUpgraded,
-                       weak_factory_.GetWeakPtr(), std::move(success_callback),
-                       std::move(error_callback)));
+        {"CHROMEOS_USER=" + request.account_id()}, std::move(callback));
   }
 
   void StopArcInstance() override {
@@ -79,33 +67,13 @@ class ArcVmClientAdapter : public ArcClientAdapter {
   }
 
  private:
-  void OnArcMiniInstanceStarted(StartMiniArcCallback callback) {
-    current_instance_id_ = base::GenerateGUID();
-    std::move(callback).Run(current_instance_id_);
-  }
-
-  void OnArcInstanceUpgraded(base::OnceClosure success_callback,
-                             UpgradeErrorCallback error_callback,
-                             bool result) {
-    VLOG(1) << "OnArcInstanceUpgraded result=" << result;
-    if (result)
-      std::move(success_callback).Run();
-    else
-      std::move(error_callback).Run(/*low_free_disk_space=*/false);
-  }
-
   void OnArcInstanceStopped(bool result) {
     VLOG(1) << "OnArcInstanceStopped result=" << result;
     if (!result)
       LOG(WARNING) << "Failed to stop arcvm. Instance not running?";
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped(kDummyReason, current_instance_id_);
-    if (result)
-      current_instance_id_.clear();
+      observer.ArcInstanceStopped();
   }
-
-  // A unique ID associated with the current Upstart job.
-  std::string current_instance_id_;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_;

@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -119,9 +120,16 @@ bool ShouldSaveWindowPlacement(const Browser* browser) {
 }
 
 bool SavedBoundsAreContentBounds(const Browser* browser) {
-  // Pop ups such as devtools or bookmark app windows should behave as per other
-  // windows with persisted sizes - treating the saved bounds as window bounds.
-  return browser->is_type_popup() && !browser->is_app() &&
+  // Applications other than web apps (such as devtools) save their window size.
+  // Web apps, on the other hand, have the same behavior as popups, and save
+  // their content bounds.
+  bool is_app_with_window_bounds =
+      browser->is_app() &&
+      !web_app::AppBrowserController::IsForWebAppBrowser(browser);
+
+  // Pop ups such as devtools should behave as per other windows with persisted
+  // sizes - treating the saved bounds as window bounds.
+  return browser->is_type_popup() && !is_app_with_window_bounds &&
          !browser->is_trusted_source();
 }
 

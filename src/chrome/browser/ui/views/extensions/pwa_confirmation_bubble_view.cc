@@ -22,10 +22,10 @@ PWAConfirmationBubbleView* g_bubble_ = nullptr;
 PWAConfirmationBubbleView::PWAConfirmationBubbleView(
     views::View* anchor_view,
     views::Button* highlight_button,
-    const WebApplicationInfo& web_app_info,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
     : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), nullptr),
-      pwa_confirmation_(this, web_app_info, std::move(callback)) {
+      pwa_confirmation_(this, std::move(web_app_info), std::move(callback)) {
   SetHighlightedButton(highlight_button);
 }
 
@@ -42,6 +42,10 @@ base::string16 PWAConfirmationBubbleView::GetDialogButtonLabel(
   return PWAConfirmation::GetDialogButtonLabel(button);
 }
 
+views::View* PWAConfirmationBubbleView::GetInitiallyFocusedView() {
+  return PWAConfirmation::GetInitiallyFocusedView(this);
+}
+
 void PWAConfirmationBubbleView::WindowClosing() {
   DCHECK_EQ(g_bubble_, this);
   g_bubble_ = nullptr;
@@ -56,7 +60,7 @@ bool PWAConfirmationBubbleView::Accept() {
 namespace chrome {
 
 void ShowPWAInstallBubble(content::WebContents* web_contents,
-                          const WebApplicationInfo& web_app_info,
+                          std::unique_ptr<WebApplicationInfo> web_app_info,
                           AppInstallationAcceptanceCallback callback) {
   if (g_bubble_)
     return;
@@ -74,7 +78,8 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
           ->GetPageActionIconView(PageActionIconType::kPwaInstall);
 
   g_bubble_ = new PWAConfirmationBubbleView(anchor_view, highlight_button,
-                                            web_app_info, std::move(callback));
+                                            std::move(web_app_info),
+                                            std::move(callback));
 
   views::BubbleDialogDelegateView::CreateBubble(g_bubble_)->Show();
 }

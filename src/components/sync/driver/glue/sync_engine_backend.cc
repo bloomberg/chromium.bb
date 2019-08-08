@@ -13,7 +13,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
@@ -49,11 +48,6 @@ namespace syncer {
 class EngineComponentsFactory;
 
 namespace {
-
-void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::SYNC);
-}
 
 void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", model_type,
@@ -121,14 +115,6 @@ void SyncEngineBackend::OnInitializationComplete(
     return;
   }
 
-  // Register for encryption related changes now. We have to do this before
-  // the initializing downloading control types or initializing the encryption
-  // handler in order to receive notifications triggered during encryption
-  // startup.
-  DCHECK(encryption_observer_proxy_);
-  sync_manager_->GetEncryptionHandler()->AddObserver(
-      encryption_observer_proxy_.get());
-
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -154,15 +140,6 @@ void SyncEngineBackend::OnInitializationComplete(
 
   ModelTypeSet new_control_types =
       registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
-
-  // Control types don't have DataTypeControllers, but they need to have
-  // update handlers registered in ModelTypeRegistry. Register them here.
-  ModelTypeConnector* model_type_connector =
-      sync_manager_->GetModelTypeConnector();
-  ModelTypeSet control_types = ControlTypes();
-  for (ModelType type : control_types) {
-    model_type_connector->RegisterDirectoryType(type, GROUP_PASSIVE);
-  }
 
   ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
@@ -332,10 +309,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
-  DCHECK(!encryption_observer_proxy_);
-  DCHECK(params.encryption_observer_proxy);
-  encryption_observer_proxy_ = std::move(params.encryption_observer_proxy);
-
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
 
@@ -349,9 +322,9 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
                           .Run(&release_request_context_signal_);
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
-  args.post_factory->Init(params.sync_user_agent,
-                          base::Bind(&BindFetcherToDataTracker));
+  args.post_factory->Init(params.sync_user_agent);
   registrar_->GetWorkers(&args.workers);
+  args.encryption_observer_proxy = std::move(params.encryption_observer_proxy);
   args.extensions_activity = params.extensions_activity.get();
   args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
   args.authenticated_account_id = params.authenticated_account_id;
@@ -365,7 +338,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
-  args.saved_nigori_state = std::move(params.saved_nigori_state);
   args.poll_interval = params.poll_interval;
   args.cache_guid = params.cache_guid;
   args.birthday = params.birthday;
@@ -441,8 +413,8 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
       FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
       registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,
       base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-      sync_manager_->cache_guid(), user_share->directory->store_birthday(),
-      user_share->directory->bag_of_chips());
+      sync_manager_->cache_guid(), sync_manager_->birthday(),
+      sync_manager_->bag_of_chips());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();
@@ -632,14 +604,6 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
     return;
   }
   sync_manager_->UpdateInvalidationClientId(client_id);
-}
-
-base::WeakPtr<ModelTypeControllerDelegate>
-SyncEngineBackend::GetNigoriControllerDelegate() {
-  // TODO(crbug.com/922900): return actual ModelTypeControllerDelegate.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 bool SyncEngineBackend::HasUnsyncedItemsForTest() const {

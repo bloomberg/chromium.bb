@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -42,6 +43,9 @@ class ArCore {
   // The returned pose is nullptr if tracking was lost, this can happen even
   // when the camera image was updated successfully.
   virtual mojom::VRPosePtr Update(bool* camera_updated) = 0;
+
+  // Returns all planes detected in the current frame.
+  virtual std::vector<mojom::XRPlaneDataPtr> GetDetectedPlanes() = 0;
 
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,

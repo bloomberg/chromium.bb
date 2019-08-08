@@ -299,9 +299,6 @@ void WebContentsObserverSanityChecker::MediaStoppedPlaying(
 bool WebContentsObserverSanityChecker::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
-  // FrameHostMsg_RenderProcessGone is special internal IPC message that
-  // should not be leaking outside of RenderFrameHost.
-  CHECK(message.type() != FrameHostMsg_RenderProcessGone::ID);
   CHECK(render_frame_host->IsRenderFrameLive());
 
   AssertRenderFrameExists(render_frame_host);

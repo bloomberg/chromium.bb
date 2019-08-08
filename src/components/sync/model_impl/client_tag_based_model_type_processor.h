@@ -119,9 +119,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // tracking maps such as |entities_| and |storage_key_to_tag_hash_|.
   void ClearMetadataAndResetState();
 
-  // Returns true if the model is ready or encountered an error.
-  bool IsModelReadyOrError() const;
-
   // Whether the processor is allowing changes to its model type. If this is
   // false, the bridge should not allow any changes to its data.
   bool IsAllowingChanges() const;
@@ -140,10 +137,10 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                  std::string* storage_key_to_clear);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution::Type ResolveConflict(const UpdateResponseData& update,
-                                           ProcessorEntity* entity,
-                                           EntityChangeList* changes,
-                                           std::string* storage_key_to_clear);
+  ConflictResolution ResolveConflict(std::unique_ptr<UpdateResponseData> update,
+                                     ProcessorEntity* entity,
+                                     EntityChangeList* changes,
+                                     std::string* storage_key_to_clear);
 
   // Recommit all entities for encryption except those in |already_updated|.
   void RecommitAllForEncryption(
@@ -238,14 +235,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // tell the bridge to delete the actual data.
   void ExpireEntriesByAge(int32_t age_watermark_in_days,
                           MetadataChangeList* metadata_changes);
-
-  // If the number of |entities_| exceeds |max_number_of_items|, the
-  // processor removes metadata for the extra sync entities based on the LRU
-  // rule.
-  // This is used to limit the amount of data stored in sync, and this does not
-  // tell the bridge to delete the actual data.
-  void ExpireEntriesByItemLimit(int32_t max_number_of_items,
-                                MetadataChangeList* metadata_changes);
 
   // Removes |entity| and clears metadata for |entity| from
   // |metadata_change_list|.

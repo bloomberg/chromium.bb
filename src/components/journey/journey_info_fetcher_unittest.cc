@@ -110,7 +110,7 @@ class JourneyInfoFetcherTest : public testing::Test {
         "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
         static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
     head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+        net::HttpUtil::AssembleRawHeaders(headers));
     head.mime_type = "application/json";
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response_data.size();
@@ -156,7 +156,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfo) {
   SetFakeResponse(GURL(kJourneyServer), json_response_string, net::HTTP_OK,
                   net::OK);
   EXPECT_CALL(journey_info_available_callback(),
-              Run(testing::NotNull(), kEmptyErrorString));
+              Run(testing::Ne(base::nullopt), kEmptyErrorString));
 
   SendAndAwaitResponse(kTimestamps);
 
@@ -168,7 +168,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfoOAuthError) {
   identity_test_env().SetAutomaticIssueOfAccessTokens(false);
 
   EXPECT_CALL(journey_info_available_callback(),
-              Run(_, testing::Ne(kEmptyErrorString)));
+              Run(testing::Eq(base::nullopt), testing::Ne(kEmptyErrorString)));
 
   journey_info_fetcher()->FetchJourneyInfo(
       kTimestamps, journey_info_available_callback().Get());
@@ -184,7 +184,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfoUserNotSignedIn) {
   SignOut();
 
   EXPECT_CALL(journey_info_available_callback(),
-              Run(_, testing::Ne(kEmptyErrorString)));
+              Run(testing::Eq(base::nullopt), testing::Ne(kEmptyErrorString)));
 
   SendAndAwaitResponse(kTimestamps);
 
@@ -197,7 +197,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfoWithNonParsableResponse) {
   SetFakeResponse(GURL(kJourneyServer), json_response_string, net::HTTP_OK,
                   net::OK);
   EXPECT_CALL(journey_info_available_callback(),
-              Run(_, testing::Ne(kEmptyErrorString)));
+              Run(testing::Eq(base::nullopt), testing::Ne(kEmptyErrorString)));
 
   SendAndAwaitResponse(kTimestamps);
 
@@ -210,7 +210,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfoWithBadJSONResponse) {
   SetFakeResponse(GURL(kJourneyServer), json_response_string, net::HTTP_OK,
                   net::OK);
   EXPECT_CALL(journey_info_available_callback(),
-              Run(testing::NotNull(), kEmptyErrorString));
+              Run(testing::Ne(base::nullopt), kEmptyErrorString));
 
   SendAndAwaitResponse(kTimestamps);
 
@@ -223,7 +223,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfoNetworkError) {
   SetFakeResponse(GURL(kJourneyServer), json_response_string, net::HTTP_OK,
                   net::ERR_FAILED);
   EXPECT_CALL(journey_info_available_callback(),
-              Run(_, testing::Ne(kEmptyErrorString)));
+              Run(testing::Eq(base::nullopt), testing::Ne(kEmptyErrorString)));
 
   SendAndAwaitResponse(kTimestamps);
 
@@ -235,7 +235,7 @@ TEST_F(JourneyInfoFetcherTest, FetchJourneyInfoHttpError) {
   SetFakeResponse(GURL(kJourneyServer), json_response_string,
                   net::HTTP_BAD_REQUEST, net::OK);
   EXPECT_CALL(journey_info_available_callback(),
-              Run(_, testing::Ne(kEmptyErrorString)));
+              Run(testing::Eq(base::nullopt), testing::Ne(kEmptyErrorString)));
 
   SendAndAwaitResponse(kTimestamps);
 

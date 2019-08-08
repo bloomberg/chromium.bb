@@ -9,10 +9,11 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -20,10 +21,14 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -215,7 +220,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   wm::ActivateWindow(window0.get());
 
   // When the screen is locked, cycling window does not take effect.
-  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(controller->IsCycling());
@@ -668,6 +673,59 @@ TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
       EXPECT_EQ(expected_bounds, display_relative_bounds);
     controller->CompleteCycling();
   }
+}
+
+class DesksWindowCyclingTest : public WindowCycleControllerTest {
+ public:
+  DesksWindowCyclingTest() = default;
+  ~DesksWindowCyclingTest() override = default;
+
+  // WindowCycleControllerTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
+    WindowCycleControllerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesksWindowCyclingTest);
+};
+
+TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
+  // Create two desks with two windows in each.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk_2 = desks_controller->desks()[1].get();
+  ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, desks_controller->active_desk());
+  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
+  auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+
+  WindowCycleController* cycle_controller =
+      Shell::Get()->window_cycle_controller();
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  // All desks' windows are included in the cycle list.
+  auto cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(4u, cycle_windows.size());
+  EXPECT_TRUE(base::ContainsValue(cycle_windows, win0.get()));
+  EXPECT_TRUE(base::ContainsValue(cycle_windows, win1.get()));
+  EXPECT_TRUE(base::ContainsValue(cycle_windows, win2.get()));
+  EXPECT_TRUE(base::ContainsValue(cycle_windows, win3.get()));
+
+  // The MRU order is {win3, win2, win1, win0}. We're now at win2. Cycling one
+  // more time and completing the cycle, will activate win1 which exists on a
+  // desk_1. This should activate desk_1.
+  DeskSwitchAnimationWaiter waiter;
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  cycle_controller->CompleteCycling();
+  waiter.Wait();
+  Desk* desk_1 = desks_controller->desks()[0].get();
+  EXPECT_EQ(desk_1, desks_controller->active_desk());
+  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
 }
 
 }  // namespace ash

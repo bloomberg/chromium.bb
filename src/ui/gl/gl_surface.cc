@@ -25,7 +25,7 @@ base::LazyInstance<base::ThreadLocalPointer<GLSurface>>::Leaky
     current_surface_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-GLSurface::GLSurface() {}
+GLSurface::GLSurface() = default;
 
 bool GLSurface::Initialize() {
   return Initialize(GLSurfaceFormat());
@@ -51,10 +51,6 @@ bool GLSurface::Recreate() {
 }
 
 bool GLSurface::DeferDraws() {
-  return false;
-}
-
-bool GLSurface::SupportsPresentationCallback() {
   return false;
 }
 
@@ -242,6 +238,12 @@ EGLTimestampClient* GLSurface::GetEGLTimestampClient() {
   return nullptr;
 }
 
+bool GLSurface::SupportsGpuVSync() const {
+  return false;
+}
+
+void GLSurface::SetGpuVSyncEnabled(bool enabled) {}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -269,6 +271,10 @@ bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {
 }
 
 GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {}
+
+void GLSurfaceAdapter::PrepareToDestroy(bool have_context) {
+  surface_->PrepareToDestroy(have_context);
+}
 
 bool GLSurfaceAdapter::Initialize(GLSurfaceFormat format) {
   return surface_->Initialize(format);
@@ -344,10 +350,6 @@ void GLSurfaceAdapter::CommitOverlayPlanesAsync(
     PresentationCallback presentation_callback) {
   surface_->CommitOverlayPlanesAsync(std::move(completion_callback),
                                      std::move(presentation_callback));
-}
-
-bool GLSurfaceAdapter::SupportsPresentationCallback() {
-  return surface_->SupportsPresentationCallback();
 }
 
 bool GLSurfaceAdapter::SupportsSwapBuffersWithBounds() {
@@ -490,6 +492,18 @@ int GLSurfaceAdapter::GetBufferCount() const {
 
 bool GLSurfaceAdapter::SupportsPlaneGpuFences() const {
   return surface_->SupportsPlaneGpuFences();
+}
+
+bool GLSurfaceAdapter::SupportsGpuVSync() const {
+  return surface_->SupportsGpuVSync();
+}
+
+void GLSurfaceAdapter::SetGpuVSyncEnabled(bool enabled) {
+  surface_->SetGpuVSyncEnabled(enabled);
+}
+
+void GLSurfaceAdapter::SetDisplayTransform(gfx::OverlayTransform transform) {
+  return surface_->SetDisplayTransform(transform);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

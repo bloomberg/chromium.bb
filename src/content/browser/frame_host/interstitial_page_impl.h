@@ -71,8 +71,8 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   void Hide() override;
   void DontProceed() override;
   void Proceed() override;
-  WebContents* GetWebContents() const override;
-  RenderFrameHost* GetMainFrame() const override;
+  WebContents* GetWebContents() override;
+  RenderFrameHost* GetMainFrame() override;
   InterstitialPageDelegate* GetDelegateForTesting() override;
   void DontCreateViewForTesting() override;
   void SetSize(const gfx::Size& size) override;

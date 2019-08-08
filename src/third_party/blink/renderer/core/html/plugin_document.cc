@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
@@ -53,12 +54,6 @@ using namespace html_names;
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
  public:
-  static PluginDocumentParser* Create(PluginDocument* document,
-                                      Color background_color) {
-    return MakeGarbageCollected<PluginDocumentParser>(document,
-                                                      background_color);
-  }
-
   PluginDocumentParser(Document* document, Color background_color)
       : RawDataDocumentParser(document),
         embed_element_(nullptr),
@@ -105,13 +100,13 @@ void PluginDocumentParser::CreateDocumentStructure() {
       !frame->Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
     return;
 
-  HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*GetDocument());
+  auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*GetDocument());
   GetDocument()->AppendChild(root_element);
   root_element->InsertedByParser();
   if (IsStopped())
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
-  HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
+  auto* body = MakeGarbageCollected<HTMLBodyElement>(*GetDocument());
   body->setAttribute(kStyleAttr,
                      "height: 100%; width: 100%; overflow: hidden; margin: 0");
   body->SetInlineStyleProperty(
@@ -124,7 +119,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
     return;
   }
 
-  embed_element_ = HTMLEmbedElement::Create(*GetDocument());
+  embed_element_ = MakeGarbageCollected<HTMLEmbedElement>(*GetDocument());
   embed_element_->setAttribute(kWidthAttr, "100%");
   embed_element_->setAttribute(kHeightAttr, "100%");
   embed_element_->setAttribute(kNameAttr, "plugin");
@@ -200,7 +195,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer,
 }
 
 DocumentParser* PluginDocument::CreateParser() {
-  return PluginDocumentParser::Create(this, background_color_);
+  return MakeGarbageCollected<PluginDocumentParser>(this, background_color_);
 }
 
 WebPluginContainerImpl* PluginDocument::GetPluginView() {

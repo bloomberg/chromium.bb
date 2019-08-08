@@ -143,7 +143,7 @@ class OpaqueBrowserFrameViewLayoutTest
     gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
     button->SetImage(views::Button::STATE_NORMAL, &image);
-    button->set_id(view_id);
+    button->SetID(view_id);
     root_view_->AddChildView(button);
     return button;
   }
@@ -151,7 +151,7 @@ class OpaqueBrowserFrameViewLayoutTest
   void AddWindowTitleIcons() {
     tab_icon_view_ = new TabIconView(nullptr, nullptr);
     tab_icon_view_->set_is_light(true);
-    tab_icon_view_->set_id(VIEW_ID_WINDOW_ICON);
+    tab_icon_view_->SetID(VIEW_ID_WINDOW_ICON);
     root_view_->AddChildView(tab_icon_view_);
 
     window_title_ = new views::Label(delegate_->GetWindowTitle());
@@ -159,7 +159,7 @@ class OpaqueBrowserFrameViewLayoutTest
     window_title_->SetEnabledColor(SK_ColorWHITE);
     window_title_->SetSubpixelRenderingEnabled(false);
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    window_title_->set_id(VIEW_ID_WINDOW_TITLE);
+    window_title_->SetID(VIEW_ID_WINDOW_TITLE);
     root_view_->AddChildView(window_title_);
   }
 
@@ -190,10 +190,10 @@ class OpaqueBrowserFrameViewLayoutTest
 
   void ExpectCaptionButtons(bool caption_buttons_on_left, int extra_height) {
     if (!delegate_->ShouldShowCaptionButtons()) {
-      EXPECT_FALSE(maximize_button_->visible());
-      EXPECT_FALSE(minimize_button_->visible());
-      EXPECT_FALSE(restore_button_->visible());
-      EXPECT_FALSE(close_button_->visible());
+      EXPECT_FALSE(maximize_button_->GetVisible());
+      EXPECT_FALSE(minimize_button_->GetVisible());
+      EXPECT_FALSE(restore_button_->GetVisible());
+      EXPECT_FALSE(close_button_->GetVisible());
       return;
     }
 
@@ -208,7 +208,7 @@ class OpaqueBrowserFrameViewLayoutTest
     EXPECT_EQ(CaptionY(), close_button_->y());
     EXPECT_EQ(close_width, close_button_->width());
     EXPECT_EQ(kCaptionButtonHeight + extra_height, close_button_->height());
-    EXPECT_TRUE(close_button_->visible());
+    EXPECT_TRUE(close_button_->GetVisible());
     views::ImageButton* visible_button = maximize_button_;
     views::ImageButton* hidden_button = restore_button_;
     if (maximized)
@@ -220,7 +220,7 @@ class OpaqueBrowserFrameViewLayoutTest
     EXPECT_EQ(close_button_->y(), visible_button->y());
     EXPECT_EQ(kMaximizeButtonWidth, visible_button->width());
     EXPECT_EQ(close_button_->height(), visible_button->height());
-    EXPECT_TRUE(visible_button->visible());
+    EXPECT_TRUE(visible_button->GetVisible());
     if (caption_buttons_on_left)
       EXPECT_EQ(close_button_->bounds().right(), minimize_button_->x());
     else
@@ -228,8 +228,8 @@ class OpaqueBrowserFrameViewLayoutTest
     EXPECT_EQ(visible_button->y(), minimize_button_->y());
     EXPECT_EQ(kMinimizeButtonWidth, minimize_button_->width());
     EXPECT_EQ(visible_button->height(), minimize_button_->height());
-    EXPECT_TRUE(minimize_button_->visible());
-    EXPECT_FALSE(hidden_button->visible());
+    EXPECT_TRUE(minimize_button_->GetVisible());
+    EXPECT_FALSE(hidden_button->GetVisible());
   }
 
   void ExpectTabStripAndMinimumSize(bool caption_buttons_on_left) {
@@ -367,9 +367,9 @@ TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
   // Tests the layout of a chrome window with caption buttons on the left.
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
-  leading_buttons.push_back(views::FRAME_BUTTON_CLOSE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MINIMIZE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  leading_buttons.push_back(views::FrameButton::kClose);
+  leading_buttons.push_back(views::FrameButton::kMinimize);
+  leading_buttons.push_back(views::FrameButton::kMaximize);
   layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
 
   root_view_->Layout();

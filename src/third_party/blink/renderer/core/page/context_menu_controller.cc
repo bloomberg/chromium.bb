@@ -160,6 +160,36 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
   return edit_flags;
 }
 
+static WebContextMenuData::InputFieldType ComputeInputFieldType(
+    HitTestResult& result) {
+  if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
+    if (input->type() == input_type_names::kPassword)
+      return WebContextMenuData::kInputFieldTypePassword;
+    if (input->type() == input_type_names::kNumber)
+      return WebContextMenuData::kInputFieldTypeNumber;
+    if (input->type() == input_type_names::kTel)
+      return WebContextMenuData::kInputFieldTypeTelephone;
+    if (input->IsTextField())
+      return WebContextMenuData::kInputFieldTypePlainText;
+    return WebContextMenuData::kInputFieldTypeOther;
+  }
+  return WebContextMenuData::kInputFieldTypeNone;
+}
+
+static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {
+  IntRect anchor;
+  IntRect focus;
+  selected_frame->Selection().ComputeAbsoluteBounds(anchor, focus);
+  anchor = selected_frame->View()->FrameToViewport(anchor);
+  focus = selected_frame->View()->FrameToViewport(focus);
+  int left = std::min(focus.X(), anchor.X());
+  int top = std::min(focus.Y(), anchor.Y());
+  int right = std::max(focus.X() + focus.Width(), anchor.X() + anchor.Width());
+  int bottom =
+      std::max(focus.Y() + focus.Height(), anchor.Y() + anchor.Height());
+  return WebRect(left, top, right - left, bottom - top);
+}
+
 bool ContextMenuController::ShouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
   return page_->GetSettings().GetAlwaysShowContextMenuOnTouch() ||
@@ -207,8 +237,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   // all else.
   data.link_url = result.AbsoluteLinkURL();
 
-  if (result.InnerNode()->IsHTMLElement()) {
-    HTMLElement* html_element = ToHTMLElement(result.InnerNode());
+  auto* html_element = DynamicTo<HTMLElement>(result.InnerNode());
+  if (html_element) {
     if (!html_element->title().IsEmpty()) {
       data.title_text = html_element->title();
     } else {
@@ -449,34 +479,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.link_text = anchor->innerText();
   }
 
-  // Find the input field type.
-  if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
-    if (input->type() == input_type_names::kPassword)
-      data.input_field_type = WebContextMenuData::kInputFieldTypePassword;
-    else if (input->type() == input_type_names::kNumber)
-      data.input_field_type = WebContextMenuData::kInputFieldTypeNumber;
-    else if (input->type() == input_type_names::kTel)
-      data.input_field_type = WebContextMenuData::kInputFieldTypeTelephone;
-    else if (input->IsTextField())
-      data.input_field_type = WebContextMenuData::kInputFieldTypePlainText;
-    else
-      data.input_field_type = WebContextMenuData::kInputFieldTypeOther;
-  } else {
-    data.input_field_type = WebContextMenuData::kInputFieldTypeNone;
-  }
-
-  IntRect anchor;
-  IntRect focus;
-  selected_frame->Selection().ComputeAbsoluteBounds(anchor, focus);
-  anchor = selected_frame->View()->FrameToViewport(anchor);
-  focus = selected_frame->View()->FrameToViewport(focus);
-  int left = std::min(focus.X(), anchor.X());
-  int top = std::min(focus.Y(), anchor.Y());
-  int right = std::max(focus.X() + focus.Width(), anchor.X() + anchor.Width());
-  int bottom =
-      std::max(focus.Y() + focus.Height(), anchor.Y() + anchor.Height());
-  data.selection_rect = WebRect(left, top, right - left, bottom - top);
-
+  data.input_field_type = ComputeInputFieldType(result);
+  data.selection_rect = ComputeSelectionRect(selected_frame);
   data.source_type = source_type;
 
   const bool from_touch = source_type == kMenuSourceTouch ||

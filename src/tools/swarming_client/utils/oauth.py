@@ -22,27 +22,18 @@ import urllib
 import urlparse
 import webbrowser
 
-# All libraries here expect to find themselves in sys.path.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pyasn1'))
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'rsa'))
-
+# third_party/
 import httplib2
 import rsa
-
 from pyasn1.codec.der import decoder
 from pyasn1.type import univ
-
 from oauth2client import client
 from oauth2client import locked_file
 from oauth2client import multistore_file
-
-from third_party import requests
-from utils import tools
+import requests
 
 from libs import luci_context
+from utils import tools
 
 
 # Path to a file with cached OAuth2 credentials used by default. Can be

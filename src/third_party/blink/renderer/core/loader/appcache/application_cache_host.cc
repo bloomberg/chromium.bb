@@ -30,15 +30,14 @@
 
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -82,8 +81,8 @@ ApplicationCacheHost::~ApplicationCacheHost() {
 void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
   if (!IsApplicationCacheEnabled() || !host_)
     return;
-  int host_id = host_->GetHostID();
-  if (host_id != mojom::blink::kAppCacheNoHostId)
+  const base::UnguessableToken& host_id = host_->GetHostID();
+  if (!host_id.is_empty())
     request.SetAppCacheHostID(host_id);
 }
 
@@ -143,8 +142,6 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
   if (document->IsSecureContext()) {
     UseCounter::Count(document,
                       WebFeature::kApplicationCacheManifestSelectSecureOrigin);
-    UseCounter::CountCrossOriginIframe(
-        *document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
   } else {
     Deprecation::CountDeprecation(
         document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
@@ -221,9 +218,9 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
                    web_info.padding_sizes);
 }
 
-int ApplicationCacheHost::GetHostID() const {
+const base::UnguessableToken& ApplicationCacheHost::GetHostID() const {
   if (!host_)
-    return mojom::blink::kAppCacheNoHostId;
+    return base::UnguessableToken::Null();
   return host_->GetHostID();
 }
 

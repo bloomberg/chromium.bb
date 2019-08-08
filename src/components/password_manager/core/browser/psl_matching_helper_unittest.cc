@@ -68,7 +68,7 @@ TEST(PSLMatchingUtilsTest, GetMatchResultNormalCredentials) {
     form.origin = GURL(data.form_origin);
     form.signon_realm = form.origin.GetOrigin().spec();
     PasswordStore::FormDigest digest(
-        autofill::PasswordForm::SCHEME_HTML,
+        autofill::PasswordForm::Scheme::kHtml,
         GURL(data.digest_origin).GetOrigin().spec(), GURL(data.digest_origin));
 
     EXPECT_EQ(data.match_result, GetMatchResult(form, digest))
@@ -119,7 +119,7 @@ TEST(PSLMatchingUtilsTest, GetMatchResultPSL) {
     form.origin = GURL(data.form_origin);
     form.signon_realm = form.origin.GetOrigin().spec();
     PasswordStore::FormDigest digest(
-        autofill::PasswordForm::SCHEME_HTML,
+        autofill::PasswordForm::Scheme::kHtml,
         GURL(data.digest_origin).GetOrigin().spec(), GURL(data.digest_origin));
 
     EXPECT_EQ(data.match_result, GetMatchResult(form, digest))
@@ -183,7 +183,7 @@ TEST(PSLMatchingUtilsTest, GetMatchResultFederated) {
                         form.federation_origin.host();
 
     PasswordStore::FormDigest digest(
-        autofill::PasswordForm::SCHEME_HTML,
+        autofill::PasswordForm::Scheme::kHtml,
         GURL(data.digest_origin).GetOrigin().spec(), GURL(data.digest_origin));
 
     EXPECT_EQ(data.match_result, GetMatchResult(form, digest))
@@ -254,7 +254,7 @@ TEST(PSLMatchingUtilsTest, GetMatchResultFederatedPSL) {
                         form.federation_origin.host();
 
     PasswordStore::FormDigest digest(
-        autofill::PasswordForm::SCHEME_HTML,
+        autofill::PasswordForm::Scheme::kHtml,
         GURL(data.digest_origin).GetOrigin().spec(), GURL(data.digest_origin));
 
     EXPECT_EQ(data.match_result, GetMatchResult(form, digest))

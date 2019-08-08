@@ -5,11 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "GrMtlTexture.h"
+#include "src/gpu/mtl/GrMtlTexture.h"
 
-#include "GrMtlGpu.h"
-#include "GrMtlUtil.h"
-#include "GrTexturePriv.h"
+#include "src/gpu/GrTexturePriv.h"
+#include "src/gpu/mtl/GrMtlGpu.h"
+#include "src/gpu/mtl/GrMtlUtil.h"
+
+#if !__has_feature(objc_arc)
+#error This file must be compiled with Arc. Use -fobjc-arc flag
+#endif
 
 GrMtlTexture::GrMtlTexture(GrMtlGpu* gpu,
                            SkBudgeted budgeted,

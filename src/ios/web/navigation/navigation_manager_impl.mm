@@ -240,6 +240,15 @@ void NavigationManagerImpl::GoToIndex(int index,
 }
 
 void NavigationManagerImpl::GoToIndex(int index) {
+  // Silently return if still on a restore URL.  This state should only last a
+  // few moments, but may be triggered when a user mashes the back or forward
+  // button quickly.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    NavigationItemImpl* item = GetLastCommittedItemInCurrentOrRestoredSession();
+    if (item && wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+      return;
+    }
+  }
   GoToIndex(index, NavigationInitiationType::BROWSER_INITIATED,
             /*has_user_gesture=*/true);
 }

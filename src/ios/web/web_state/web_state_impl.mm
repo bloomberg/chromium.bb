@@ -15,31 +15,34 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/common/crw_content_view.h"
 #include "ios/web/common/url_util.h"
-#import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
+#import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/browser_state.h"
-#import "ios/web/public/crw_navigation_item_storage.h"
-#import "ios/web/public/crw_session_storage.h"
+#import "ios/web/public/deprecated/crw_native_content.h"
+#import "ios/web/public/deprecated/crw_native_content_holder.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation_item.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
+#import "ios/web/security/web_interstitial_impl.h"
+#import "ios/web/session/session_certificate_policy_cache_impl.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
-#import "ios/web/web_state/navigation_context_impl.h"
-#import "ios/web/web_state/session_certificate_policy_cache_impl.h"
+#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -312,12 +315,6 @@ void WebStateImpl::ProcessWebUIMessage(const GURL& source_url,
                                        const base::ListValue& args) {
   if (web_ui_)
     web_ui_->ProcessWebUIIOSMessage(source_url, message, args);
-}
-
-void WebStateImpl::LoadWebUIHtml(const base::string16& html, const GURL& url) {
-  CHECK(web::GetWebClient()->IsAppSpecificURL(url));
-  [web_controller_ loadHTML:base::SysUTF16ToNSString(html)
-          forAppSpecificURL:url];
 }
 
 const base::string16& WebStateImpl::GetTitle() const {
@@ -631,8 +628,16 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() {
   [web_controller_ recordStateInHistory];
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      restored_session_storage_)
+      restored_session_storage_) {
+    // UserData can be updated in an uncommitted WebState. Even
+    // if a WebState hasn't been restored, its opener value may have changed.
+    std::unique_ptr<web::SerializableUserData> serializable_user_data =
+        web::SerializableUserDataManager::FromWebState(this)
+            ->CreateSerializableUserData();
+    [restored_session_storage_
+        setSerializableUserData:std::move(serializable_user_data)];
     return restored_session_storage_;
+  }
   SessionStorageBuilder session_storage_builder;
   return session_storage_builder.BuildStorage(this);
 }
@@ -644,32 +649,33 @@ void WebStateImpl::LoadData(NSData* data,
 }
 
 CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
-  return [web_controller_ jsInjectionReceiver];
+  return [web_controller_.jsInjector JSInjectionReceiver];
 }
 
 void WebStateImpl::ExecuteJavaScript(const base::string16& javascript) {
-  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
-                   completionHandler:nil];
+  [web_controller_.jsInjector
+      executeJavaScript:base::SysUTF16ToNSString(javascript)
+      completionHandler:nil];
 }
 
 void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
                                      JavaScriptResultCallback callback) {
   __block JavaScriptResultCallback stack_callback = std::move(callback);
-  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
-                   completionHandler:^(id value, NSError* error) {
-                     if (error) {
-                       DLOG(WARNING)
-                           << "Script execution has failed: "
-                           << base::SysNSStringToUTF16(
-                                  error.userInfo[NSLocalizedDescriptionKey]);
-                     }
-                     std::move(stack_callback)
-                         .Run(ValueResultFromWKResult(value).get());
-                   }];
+  [web_controller_.jsInjector
+      executeJavaScript:base::SysUTF16ToNSString(javascript)
+      completionHandler:^(id value, NSError* error) {
+        if (error) {
+          DLOG(WARNING) << "Script execution has failed: "
+                        << base::SysNSStringToUTF16(
+                               error.userInfo[NSLocalizedDescriptionKey]);
+        }
+        std::move(stack_callback).Run(ValueResultFromWKResult(value).get());
+      }];
 }
 
 void WebStateImpl::ExecuteUserJavaScript(NSString* javaScript) {
-  [web_controller_ executeUserJavaScript:javaScript completionHandler:nil];
+  [web_controller_.jsInjector executeUserJavaScript:javaScript
+                                  completionHandler:nil];
 }
 
 const std::string& WebStateImpl::GetContentsMimeType() const {
@@ -691,13 +697,17 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 }
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && !trust_level) {
+    auto ignore_trust = URLVerificationTrustLevel::kNone;
+    return [web_controller_ currentURLWithTrustLevel:&ignore_trust];
+  }
   GURL result = [web_controller_ currentURLWithTrustLevel:trust_level];
 
   web::NavigationItemImpl* item =
       navigation_manager_->GetLastCommittedItemImpl();
   GURL lastCommittedURL;
   if (item) {
-    if ([web_controller_.nativeController
+    if ([[web_controller_ nativeContentHolder].nativeController
             respondsToSelector:@selector(virtualURL)] ||
         item->error_retry_state_machine().state() ==
             ErrorRetryState::kReadyToDisplayErrorForFailedNavigation) {
@@ -724,6 +734,10 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
                        << " Last committed: " << lastCommittedURL.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      (!equalOrigins || (item && item->IsUntrusted()))) {
+    *trust_level = web::URLVerificationTrustLevel::kMixed;
+  }
   return result;
 }
 

@@ -51,6 +51,7 @@ class FakeDelegate : public AudioOutputDelegate {
   int GetStreamId() override { return 0; }
   void OnPlayStream() override {}
   void OnPauseStream() override {}
+  void OnFlushStream() override {}
   void OnSetVolume(double) override {}
 
  private:

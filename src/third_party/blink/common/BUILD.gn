@@ -40,6 +40,7 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_metadata.cc",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
+    "logging/logging_utils.cc",
     "manifest/manifest.cc",
     "manifest/manifest_icon_selector.cc",
     "manifest/manifest_util.cc",

@@ -64,13 +64,13 @@ FPDFDoc_DeleteAttachment(FPDF_DOCUMENT document, int index);
 // and the returned length is 0.
 //
 //   attachment - handle to an attachment.
-//   buffer     - buffer for holding the file name, encoded in UTF16-LE.
-//   buflen     - length of the buffer.
+//   buffer     - buffer for holding the file name, encoded in UTF-16LE.
+//   buflen     - length of the buffer in bytes.
 //
-// Returns the length of the file name.
+// Returns the length of the file name in bytes.
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAttachment_GetName(FPDF_ATTACHMENT attachment,
-                       void* buffer,
+                       FPDF_WCHAR* buffer,
                        unsigned long buflen);
 
 // Experimental API.
@@ -101,7 +101,7 @@ FPDFAttachment_GetValueType(FPDF_ATTACHMENT attachment, FPDF_BYTESTRING key);
 //
 //   attachment - handle to an attachment.
 //   key        - the key to the dictionary entry, encoded in UTF-8.
-//   value      - the string value to be set, encoded in UTF16-LE.
+//   value      - the string value to be set, encoded in UTF-16LE.
 //
 // Returns true if successful.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
@@ -121,14 +121,14 @@ FPDFAttachment_SetStringValue(FPDF_ATTACHMENT attachment,
 //
 //   attachment - handle to an attachment.
 //   key        - the key to the requested string value, encoded in UTF-8.
-//   buffer     - buffer for holding the string value encoded in UTF16-LE.
-//   buflen     - length of the buffer.
+//   buffer     - buffer for holding the string value encoded in UTF-16LE.
+//   buflen     - length of the buffer in bytes.
 //
-// Returns the length of the dictionary value string.
+// Returns the length of the dictionary value string in bytes.
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAttachment_GetStringValue(FPDF_ATTACHMENT attachment,
                               FPDF_BYTESTRING key,
-                              void* buffer,
+                              FPDF_WCHAR* buffer,
                               unsigned long buflen);
 
 // Experimental API.

@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -267,7 +266,7 @@ void V4GetHashProtocolManager::ClearCache() {
 }
 
 void V4GetHashProtocolManager::GetFullHashes(
-    const FullHashToStoreAndHashPrefixesMap&
+    const FullHashToStoreAndHashPrefixesMap
         full_hash_to_store_and_hash_prefixes,
     const std::vector<std::string>& list_client_states,
     FullHashCallback callback) {

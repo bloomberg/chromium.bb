@@ -89,23 +89,25 @@ AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile)
   connector->BindInterface(apps::mojom::kServiceName,
                            mojo::MakeRequest(&app_service_));
 
-  // The AppServiceProxyImpl is a subscriber: something that wants to be able
-  // to list all known apps.
-  apps::mojom::SubscriberPtr subscriber;
-  bindings_.AddBinding(this, mojo::MakeRequest(&subscriber));
-  app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
+  if (app_service_.is_bound()) {
+    // The AppServiceProxyImpl is a subscriber: something that wants to be able
+    // to list all known apps.
+    apps::mojom::SubscriberPtr subscriber;
+    bindings_.AddBinding(this, mojo::MakeRequest(&subscriber));
+    app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
 
 #if defined(OS_CHROMEOS)
-  // The AppServiceProxyImpl is also a publisher, of a variety of app types.
-  // That responsibility isn't intrinsically part of the AppServiceProxyImpl,
-  // but doing that here, for each such app type, is as good a place as any.
-  built_in_chrome_os_apps_.Initialize(app_service_, profile);
-  crostini_apps_.Initialize(app_service_, profile);
-  extension_apps_.Initialize(app_service_, profile,
-                             apps::mojom::AppType::kExtension);
-  extension_web_apps_.Initialize(app_service_, profile,
-                                 apps::mojom::AppType::kWeb);
+    // The AppServiceProxyImpl is also a publisher, of a variety of app types.
+    // That responsibility isn't intrinsically part of the AppServiceProxyImpl,
+    // but doing that here, for each such app type, is as good a place as any.
+    built_in_chrome_os_apps_.Initialize(app_service_, profile);
+    crostini_apps_.Initialize(app_service_, profile);
+    extension_apps_.Initialize(app_service_, profile,
+                               apps::mojom::AppType::kExtension);
+    extension_web_apps_.Initialize(app_service_, profile,
+                                   apps::mojom::AppType::kWeb);
 #endif  // OS_CHROMEOS
+  }
 }
 
 AppServiceProxyImpl::~AppServiceProxyImpl() = default;
@@ -175,6 +177,14 @@ apps::IconLoader* AppServiceProxyImpl::OverrideInnerIconLoaderForTesting(
       inner_icon_loader_.overriding_icon_loader_for_testing_;
   inner_icon_loader_.overriding_icon_loader_for_testing_ = icon_loader;
   return old;
+}
+
+void AppServiceProxyImpl::ReInitializeCrostiniForTesting(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  if (app_service_.is_bound()) {
+    crostini_apps_.ReInitializeForTesting(app_service_, profile);
+  }
+#endif
 }
 
 void AppServiceProxyImpl::Shutdown() {

@@ -37,8 +37,6 @@ void TestAppBannerManagerDesktop::WaitForInstallableCheckTearDown() {
 }
 
 bool TestAppBannerManagerDesktop::WaitForInstallableCheck() {
-  DCHECK(IsExperimentalAppBannersEnabled());
-
   if (!installable_.has_value()) {
     base::RunLoop run_loop;
     installable_quit_closure_ = run_loop.QuitClosure();
@@ -59,9 +57,9 @@ void TestAppBannerManagerDesktop::OnDidGetManifest(
   if (!result.errors.empty())
     SetInstallable(false);
 }
-void TestAppBannerManagerDesktop::OnDidPerformInstallableCheck(
+void TestAppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(
     const InstallableData& result) {
-  AppBannerManagerDesktop::OnDidPerformInstallableCheck(result);
+  AppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(result);
   SetInstallable(result.errors.empty());
 }
 

@@ -103,11 +103,13 @@ class RTPSender {
   bool IsRtpHeaderExtensionRegistered(RTPExtensionType type) const;
   int32_t DeregisterRtpHeaderExtension(RTPExtensionType type);
 
-  bool TimeToSendPacket(uint32_t ssrc,
-                        uint16_t sequence_number,
-                        int64_t capture_time_ms,
-                        bool retransmission,
-                        const PacedPacketInfo& pacing_info);
+  // Returns an RtpPacketSendResult indicating success, network unavailable,
+  // or packet not found.
+  RtpPacketSendResult TimeToSendPacket(uint32_t ssrc,
+                                       uint16_t sequence_number,
+                                       int64_t capture_time_ms,
+                                       bool retransmission,
+                                       const PacedPacketInfo& pacing_info);
   size_t TimeToSendPadding(size_t bytes, const PacedPacketInfo& pacing_info);
 
   // NACK.
@@ -173,6 +175,8 @@ class RTPSender {
 
   void SetRtt(int64_t rtt_ms);
 
+  void OnPacketsAcknowledged(rtc::ArrayView<const uint16_t> sequence_numbers);
+
  private:
   // Maps capture time in milliseconds to send-side delay in milliseconds.
   // Send-side delay is the difference between transmission time and capture
@@ -220,7 +224,6 @@ class RTPSender {
   void UpdateRtpOverhead(const RtpPacketToSend& packet);
 
   Clock* const clock_;
-  const int64_t clock_delta_ms_;
   Random random_ RTC_GUARDED_BY(send_critsect_);
 
   const bool audio_configured_;
@@ -251,7 +254,10 @@ class RTPSender {
   rtc::CriticalSection statistics_crit_;
   SendDelayMap send_delays_ RTC_GUARDED_BY(statistics_crit_);
   SendDelayMap::const_iterator max_delay_it_ RTC_GUARDED_BY(statistics_crit_);
+  // The sum of delays over a kSendSideDelayWindowMs sliding window.
   int64_t sum_delays_ms_ RTC_GUARDED_BY(statistics_crit_);
+  // The sum of delays of all packets sent.
+  uint64_t total_packet_send_delay_ms_ RTC_GUARDED_BY(statistics_crit_);
   StreamDataCounters rtp_stats_ RTC_GUARDED_BY(statistics_crit_);
   StreamDataCounters rtx_rtp_stats_ RTC_GUARDED_BY(statistics_crit_);
   StreamDataCountersCallback* rtp_stats_callback_
@@ -292,6 +298,13 @@ class RTPSender {
   const bool populate_network2_timestamp_;
 
   const bool send_side_bwe_with_overhead_;
+  const bool legacy_packet_history_storage_mode_;
+
+  // Set by field trial "WebRTC-PayloadPadding-UseMostUsefulPacket". If set
+  // to "Enabled" this field will be true and
+  // packet_history_.GetPayloadPaddingPacket() will be called instead of
+  // packet_history_.GetBestFittingPacket() in TrySendRedundantPayloads().
+  const bool payload_padding_prefer_useful_packets_;
 
   RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(RTPSender);
 };

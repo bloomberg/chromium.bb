@@ -37,7 +37,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -349,8 +348,19 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 
   if (status == INSTALLED)
     embedded_worker_->OnWorkerVersionInstalled();
-  else if (status == REDUNDANT)
+  else if (status == REDUNDANT) {
     embedded_worker_->OnWorkerVersionDoomed();
+
+    // TODO(crbug.com/951571): Remove this once we figured out the cause of
+    // invalid controller status.
+    redundant_state_callstack_ = base::debug::StackTrace();
+
+    // Tell the storage system that this worker's script resources can now be
+    // deleted.
+    std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+    script_cache_map_.GetResources(&resources);
+    context_->storage()->PurgeResources(resources);
+  }
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
@@ -702,6 +712,9 @@ void ServiceWorkerVersion::AddControllee(
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
   DCHECK(!base::ContainsKey(controllee_map_, uuid));
+  // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
+  // invalid controller status.
+  CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
 
   controllee_map_[uuid] = provider_host;
   embedded_worker_->UpdateForegroundPriority();
@@ -787,16 +800,23 @@ void ServiceWorkerVersion::Doom() {
   SetStatus(REDUNDANT);
   if (running_status() == EmbeddedWorkerStatus::STARTING ||
       running_status() == EmbeddedWorkerStatus::RUNNING) {
-    if (embedded_worker()->devtools_attached())
-      stop_when_devtools_detached_ = true;
-    else
+    // |start_worker_status_| == kErrorExists means that this version was
+    // created for update but the script was identical to the incumbent version.
+    // In this case we should stop the worker immediately even when DevTools is
+    // attached. Otherwise the redundant worker stays as a selectable context
+    // in DevTools' console.
+    // TODO(bashi): Remove this workaround when byte-for-byte update check is
+    // shipped.
+    bool stop_immediately =
+        base::FeatureList::IsEnabled(
+            blink::features::kOffMainThreadServiceWorkerScriptFetch) &&
+        start_worker_status_ == blink::ServiceWorkerStatusCode::kErrorExists;
+    if (stop_immediately || !embedded_worker()->devtools_attached()) {
       embedded_worker_->Stop();
+    } else {
+      stop_when_devtools_detached_ = true;
+    }
   }
-  if (!context_)
-    return;
-  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
-  script_cache_map_.GetResources(&resources);
-  context_->storage()->PurgeResources(resources);
 }
 
 void ServiceWorkerVersion::SetToPauseAfterDownload(base::OnceClosure callback) {
@@ -1508,7 +1528,7 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     // registration. To handle the case, check the live registrations here.
     protect = context_->GetLiveRegistration(registration_id_);
     if (protect) {
-      DCHECK(protect->is_deleted());
+      DCHECK(protect->is_uninstalling());
       status = blink::ServiceWorkerStatusCode::kOk;
     }
   }
@@ -2105,8 +2125,6 @@ ServiceWorkerVersion::TakePausedStateOfChangedScript(const GURL& script_url) {
 bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
     int worker_process_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority))
-    return false;
 
   // Currently FetchEvents are the only type of event we need to really process
   // at foreground priority.  If the service worker does not have a FetchEvent

@@ -1904,7 +1904,8 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   gsb.SetFrameScale(1);
   gsb.data.scroll_begin.delta_x_hint = -50;
   gsb.data.scroll_begin.delta_x_hint = -60;
-  gsb.data.scroll_begin.delta_hint_units = WebGestureEvent::kPrecisePixels;
+  gsb.data.scroll_begin.delta_hint_units =
+      ScrollGranularity::kScrollByPrecisePixel;
   GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
 
   WebGestureEvent gsu(
@@ -1913,7 +1914,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   gsu.SetFrameScale(1);
   gsu.data.scroll_update.delta_x = -50;
   gsu.data.scroll_update.delta_y = -60;
-  gsu.data.scroll_update.delta_units = WebGestureEvent::kPrecisePixels;
+  gsu.data.scroll_update.delta_units = ScrollGranularity::kScrollByPrecisePixel;
   gsu.data.scroll_update.velocity_x = 1;
   gsu.data.scroll_update.velocity_y = 1;
 

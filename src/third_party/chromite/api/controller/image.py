@@ -12,15 +12,20 @@ from __future__ import print_function
 
 import os
 
-from chromite.api.gen.chromite.api import image_pb2
+from chromite.api import controller
+from chromite.api.gen.chromiumos import common_pb2
+from chromite.api.controller import controller_util
+from chromite.lib import cros_build_lib
 from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
 
 # The image.proto ImageType enum ids.
-_BASE_ID = image_pb2.Image.BASE
-_DEV_ID = image_pb2.Image.DEV
-_TEST_ID = image_pb2.Image.TEST
+_BASE_ID = common_pb2.BASE
+_DEV_ID = common_pb2.DEV
+_TEST_ID = common_pb2.TEST
+_BASE_VM_ID = common_pb2.BASE_VM
+_TEST_VM_ID = common_pb2.TEST_VM
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
@@ -32,17 +37,10 @@ _IMAGE_MAPPING = {
     constants.IMAGE_TYPE_TEST: _TEST_ID,
 }
 
-
-class Error(Exception):
-  """The module's base error class."""
-
-
-class InvalidImageTypeError(Error):
-  """Invalid image type given."""
-
-
-class InvalidArgumentError(Error):
-  """Invalid argument to an image service function."""
+_VM_IMAGE_MAPPING = {
+    _BASE_VM_ID: _IMAGE_MAPPING[_BASE_ID],
+    _TEST_VM_ID: _IMAGE_MAPPING[_TEST_ID],
+}
 
 
 def Create(input_proto, output_proto):
@@ -54,28 +52,13 @@ def Create(input_proto, output_proto):
   """
   board = input_proto.build_target.name
   if not board:
-    raise InvalidArgumentError('build_target.name is required.')
+    cros_build_lib.Die('build_target.name is required.')
 
-  image_types = set()
   # Build the base image if no images provided.
   to_build = input_proto.image_types or [_BASE_ID]
-  for current in to_build:
-    if current not in _IMAGE_MAPPING:
-      # Not expected, but at least it will be obvious if this comes up.
-      raise InvalidImageTypeError(
-          "The service's known image types do not match those in image.proto. "
-          'Unknown Enum ID: %s' % current)
 
-    image_types.add(_IMAGE_MAPPING[current])
-
-  enable_rootfs_verification = not input_proto.disable_rootfs_verification
-  version = input_proto.version or None
-  disk_layout = input_proto.disk_layout or None
-  builder_path = input_proto.builder_path or None
-  build_config = image.BuildConfig(
-      enable_rootfs_verification=enable_rootfs_verification, replace=True,
-      version=version, disk_layout=disk_layout, builder_path=builder_path,
-  )
+  image_types, vm_types = _ParseImagesToCreate(to_build)
+  build_config = _ParseCreateBuildConfig(input_proto)
 
   # Sorted isn't really necessary here, but it's much easier to test.
   result = image.Build(board=board, images=sorted(list(image_types)),
@@ -94,7 +77,68 @@ def Create(input_proto, output_proto):
       if package.version:
         current.version = package.version
 
-    return 1
+    return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+
+  if not vm_types:
+    # No VMs to build, we can exit now.
+    return 0
+
+  # There can be only one.
+  vm_type = vm_types.pop()
+  is_test = vm_type == _TEST_VM_ID
+  try:
+    vm_path = image.CreateVm(board, is_test=is_test)
+  except image.ImageToVmError as e:
+    cros_build_lib.Die(e.message)
+
+  new_image = output_proto.images.add()
+  new_image.path = vm_path
+  new_image.type = vm_type
+  new_image.build_target.name = board
+
+
+def _ParseImagesToCreate(to_build):
+  """Helper function to parse the image types to build.
+
+  This function exists just to clean up the Create function.
+
+  Args:
+    to_build (list[int]): The image type list.
+
+  Returns:
+    (set, set): The image and vm types, respectively, that need to be built.
+  """
+  image_types = set()
+  vm_types = set()
+  for current in to_build:
+    if current in _IMAGE_MAPPING:
+      image_types.add(_IMAGE_MAPPING[current])
+    elif current in _VM_IMAGE_MAPPING:
+      vm_types.add(current)
+      # Make sure we build the image required to build the VM.
+      image_types.add(_VM_IMAGE_MAPPING[current])
+    else:
+      # Not expected, but at least it will be obvious if this comes up.
+      cros_build_lib.Die(
+          "The service's known image types do not match those in image.proto. "
+          'Unknown Enum ID: %s' % current)
+
+  if len(vm_types) > 1:
+    cros_build_lib.Die('Cannot create more than one VM.')
+
+  return image_types, vm_types
+
+
+def _ParseCreateBuildConfig(input_proto):
+  """Helper to parse the image build config for Create."""
+  enable_rootfs_verification = not input_proto.disable_rootfs_verification
+  version = input_proto.version or None
+  disk_layout = input_proto.disk_layout or None
+  builder_path = input_proto.builder_path or None
+  return image.BuildConfig(
+      enable_rootfs_verification=enable_rootfs_verification, replace=True,
+      version=version, disk_layout=disk_layout, builder_path=builder_path,
+  )
 
 
 def _PopulateBuiltImages(board, image_types, output_proto):
@@ -103,14 +147,7 @@ def _PopulateBuiltImages(board, image_types, output_proto):
   # We're using the default path, so just fetch that, but read the symlink so
   # the path we're returning is somewhat more permanent.
   latest_link = image_lib.GetLatestImageLink(board)
-  read_link = os.readlink(latest_link)
-  if os.path.isabs(read_link):
-    # Absolute path, use the linked location.
-    base_path = os.path.normpath(read_link)
-  else:
-    # Relative path, convert to absolute using the symlink's containing folder.
-    base_path = os.path.join(os.path.dirname(latest_link), read_link)
-    base_path = os.path.normpath(base_path)
+  base_path = os.path.realpath(latest_link)
 
   for current in image_types:
     type_id = _IMAGE_MAPPING[current]
@@ -119,6 +156,36 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image = output_proto.images.add()
     new_image.path = path
     new_image.type = type_id
+    new_image.build_target.name = board
+
+
+def CreateVm(input_proto, output_proto):
+  """Create a VM from an Image.
+
+  Args:
+    input_proto (image_pb2.CreateVmRequest): The input message.
+    output_proto (image_pb2.CreateVmResponse): The output message.
+  """
+  # TODO(saklein) This currently relies on the build target, but using the image
+  #   path directly would be better. Change this to do that when create image
+  #   returns an absolute image path rather than chroot relative path.
+  build_target_name = input_proto.image.build_target.name
+  proto_image_type = input_proto.image.type
+
+  if not build_target_name:
+    cros_build_lib.Die('image.build_target.name is required.')
+  if proto_image_type not in _IMAGE_MAPPING:
+    cros_build_lib.Die('Unknown image.type value: %s', proto_image_type)
+
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  is_test_image = proto_image_type == _TEST_ID
+
+  try:
+    output_proto.vm_image.path = image.CreateVm(build_target_name,
+                                                chroot=chroot,
+                                                is_test=is_test_image)
+  except image.Error as e:
+    cros_build_lib.Die(e.message)
 
 
 def Test(input_proto, output_proto):
@@ -133,15 +200,20 @@ def Test(input_proto, output_proto):
   result_directory = input_proto.result.directory
 
   if not board:
-    raise InvalidArgumentError('The build_target.name is required.')
+    cros_build_lib.Die('The build_target.name is required.')
   if not result_directory:
-    raise InvalidArgumentError('The result.directory is required.')
+    cros_build_lib.Die('The result.directory is required.')
   if not image_path:
-    raise InvalidArgumentError('The image.path is required.')
+    cros_build_lib.Die('The image.path is required.')
 
   if not os.path.isfile(image_path) or not image_path.endswith('.bin'):
-    raise InvalidArgumentError(
+    cros_build_lib.Die(
         'The image.path must be an existing image file with a .bin extension.')
 
-  output_proto.success = image.Test(board, result_directory,
-                                    image_dir=image_path)
+  success = image.Test(board, result_directory, image_dir=image_path)
+  output_proto.success = success
+
+  if success:
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY

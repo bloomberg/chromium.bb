@@ -245,6 +245,7 @@ if (is_android) {
   }
 
   rtc_android_library("video_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/EglBase.java",
       "api/org/webrtc/EglBase10.java",
@@ -286,6 +287,7 @@ if (is_android) {
   }
 
   rtc_android_library("peerconnection_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/AudioProcessingFactory.java",
       "api/org/webrtc/AudioSource.java",
@@ -295,6 +297,7 @@ if (is_android) {
       "api/org/webrtc/DataChannel.java",
       "api/org/webrtc/DtmfSender.java",
       "api/org/webrtc/FecControllerFactoryFactoryInterface.java",
+      "api/org/webrtc/NetworkControllerFactoryFactory.java",
       "api/org/webrtc/NetworkStatePredictorFactoryFactory.java",
       "api/org/webrtc/MediaTransportFactoryFactory.java",
       "api/org/webrtc/FrameDecryptor.java",
@@ -356,6 +359,7 @@ if (is_android) {
   # Modules, in alphabetical order.
 
   rtc_android_library("camera_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/Camera1Capturer.java",
       "api/org/webrtc/Camera1Enumerator.java",
@@ -380,6 +384,7 @@ if (is_android) {
   }
 
   rtc_android_library("default_video_codec_factory_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/DefaultVideoDecoderFactory.java",
       "api/org/webrtc/DefaultVideoEncoderFactory.java",
@@ -395,6 +400,7 @@ if (is_android) {
   }
 
   rtc_android_library("filevideo_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/VideoFileRenderer.java",
       "api/org/webrtc/FileVideoCapturer.java",
@@ -409,6 +415,7 @@ if (is_android) {
   }
 
   rtc_android_library("hwcodecs_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/HardwareVideoDecoderFactory.java",
       "api/org/webrtc/HardwareVideoEncoderFactory.java",
@@ -438,6 +445,7 @@ if (is_android) {
   }
 
   rtc_android_library("java_audio_device_module_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/audio/JavaAudioDeviceModule.java",
       "src/java/org/webrtc/audio/VolumeLogger.java",
@@ -457,6 +465,7 @@ if (is_android) {
   }
 
   rtc_android_library("builtin_audio_codecs_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/BuiltinAudioDecoderFactoryFactory.java",
       "api/org/webrtc/BuiltinAudioEncoderFactoryFactory.java",
@@ -468,6 +477,7 @@ if (is_android) {
   }
 
   rtc_android_library("screencapturer_java") {
+    visibility = [ "*" ]
     java_files = [ "api/org/webrtc/ScreenCapturerAndroid.java" ]
 
     deps = [
@@ -479,6 +489,7 @@ if (is_android) {
   }
 
   rtc_android_library("surfaceviewrenderer_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/SurfaceEglRenderer.java",
       "api/org/webrtc/SurfaceViewRenderer.java",
@@ -520,6 +531,7 @@ if (is_android) {
   }
 
   rtc_android_library("swcodecs_java") {
+    visibility = [ "*" ]
     java_files = [
       "api/org/webrtc/SoftwareVideoDecoderFactory.java",
       "api/org/webrtc/SoftwareVideoEncoderFactory.java",
@@ -1538,16 +1550,15 @@ if (is_android) {
       ":opensles_audio_device_module",
       ":video_jni",
       "../../api:scoped_refptr",
-      "../../api/audio_codecs:builtin_audio_decoder_factory",
-      "../../api/audio_codecs:builtin_audio_encoder_factory",
+      "../../api/task_queue:default_task_queue_factory",
       "../../api/video:video_frame",
       "../../logging:rtc_event_log_impl_base",
       "../../media:rtc_audio_video",
       "../../media:rtc_internal_video_codecs",
       "../../media:rtc_media_base",
+      "../../media:rtc_media_engine_defaults",
       "../../modules/audio_device",
       "../../modules/audio_device:mock_audio_device",
-      "../../modules/audio_processing",
       "../../modules/audio_processing:api",
       "../../modules/utility",
       "../../pc:libjingle_peerconnection",

@@ -12,6 +12,7 @@ import os
 import re
 
 from chromite.cli.cros import cros_chrome_sdk
+from chromite.lib import chrome_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -61,6 +62,14 @@ class CrOSTest(object):
     self.output = opts.output
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
+
+    self.chrome_test = opts.chrome_test
+    if self.chrome_test:
+      self.chrome_test_target = os.path.basename(opts.args[1])
+      self.chrome_test_deploy_target_dir = '/usr/local/chrome_test'
+    else:
+      self.chrome_test_target = None
+      self.chrome_test_deploy_target_dir = None
 
     self._device = device.Device.Create(opts)
 
@@ -113,14 +122,22 @@ class CrOSTest(object):
     if not self.build:
       return
 
+    build_target = self.chrome_test_target or 'chromiumos_preflight'
     self._device.RunCommand(['autoninja', '-C', self.build_dir,
-                             'chromiumos_preflight'])
+                             build_target])
 
   def _Deploy(self):
-    """Deploy chrome."""
+    """Deploy binary files to device."""
     if not self.build and not self.deploy:
       return
 
+    if self.chrome_test:
+      self._DeployChromeTest()
+    else:
+      self._DeployChrome()
+
+  def _DeployChrome(self):
+    """Deploy chrome."""
     deploy_cmd = [
         'deploy_chrome', '--force',
         '--build-dir', self.build_dir,
@@ -139,6 +156,41 @@ class CrOSTest(object):
       deploy_cmd += ['--mount']
     self._device.RunCommand(deploy_cmd)
     self._device.WaitForBoot()
+
+  def _DeployChromeTest(self):
+    """Deploy chrome test binary and its runtime files to device."""
+    src_dir = os.path.dirname(os.path.dirname(self.build_dir))
+    self._DeployCopyPaths(src_dir, self.chrome_test_deploy_target_dir,
+                          chrome_util.GetChromeTestCopyPaths(
+                              self.build_dir, self.chrome_test_target))
+
+  def _DeployCopyPaths(self, host_src_dir, remote_target_dir, copy_paths):
+    """Deploy files in copy_paths to device.
+
+    Args:
+      host_src_dir: Source dir on the host that files in |copy_paths| are
+                    relative to.
+      remote_target_dir: Target dir on the remote device that the files in
+                         |copy_paths| are copied to.
+      copy_paths: A list of chrome_utils.Path of files to be copied.
+    """
+    with osutils.TempDir(set_global=True) as tempdir:
+      staging_dir = tempdir
+      strip_bin = None
+      chrome_util.StageChromeFromBuildDir(
+          staging_dir, host_src_dir, strip_bin, copy_paths=copy_paths)
+
+      if self._device.remote.HasRsync():
+        self._device.remote.CopyToDevice('%s/' % os.path.abspath(staging_dir),
+                                         remote_target_dir,
+                                         mode='rsync', inplace=True,
+                                         compress=True,
+                                         debug_level=logging.INFO)
+      else:
+        self._device.remote.CopyToDevice('%s/' % os.path.abspath(staging_dir),
+                                         remote_target_dir,
+                                         mode='scp',
+                                         debug_level=logging.INFO)
 
   def _RunCatapultTests(self):
     """Run catapult tests matching a pattern using run_tests.
@@ -221,6 +273,9 @@ class CrOSTest(object):
           '-remoterunner=%s' % remote_runner_path,
           '-remotebundledir=%s' % remote_bundle_dir,
           '-remotedatadir=%s' % remote_data_dir,
+          # The dev server has trouble downloading assets from Google Storage
+          # from outside the chroot.
+          '-ephemeraldevserver=false',
       ]
       if self._device.private_key:
         cmd += ['-keyfile', self._device.private_key]
@@ -261,6 +316,8 @@ class CrOSTest(object):
       result = self._RunAutotest()
     elif self.tast:
       result = self._RunTastTests()
+    elif self.chrome_test:
+      result = self._RunChromeTest()
     else:
       result = self._device.RemoteCommand(
           ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
@@ -313,13 +370,22 @@ class CrOSTest(object):
     DEST_BASE = '/usr/local/cros_test'
     files = FileList(self.files, self.files_from)
     # Copy files, preserving the directory structure.
+    copy_paths = []
     for f in files:
-      # Trailing / messes up dirname.
-      f = f.rstrip('/')
-      dirname = os.path.join(DEST_BASE, os.path.dirname(f))
-      self._device.RemoteCommand(['mkdir', '-p', dirname])
-      self._device.remote.CopyToDevice(src=f, dest=dirname, mode='scp',
-                                       debug_level=logging.INFO)
+      is_exe = os.path.isfile(f) and os.access(f, os.X_OK)
+      has_exe = False
+      if os.path.isdir(f):
+        if not f.endswith('/'):
+          f += '/'
+        for sub_dir, _, sub_files in os.walk(f):
+          for sub_file in sub_files:
+            if os.access(os.path.join(sub_dir, sub_file), os.X_OK):
+              has_exe = True
+              break
+          if has_exe:
+            break
+      copy_paths.append(chrome_util.Path(f, exe=is_exe or has_exe))
+    self._DeployCopyPaths(os.getcwd(), DEST_BASE, copy_paths)
 
     # Make cwd an absolute path (if it isn't one) rooted in DEST_BASE.
     cwd = self.cwd
@@ -352,6 +418,28 @@ class CrOSTest(object):
 
     return result
 
+  def _RunChromeTest(self):
+    # Stop UI in case the test needs to grab GPU.
+    self._device.RemoteCommand('stop ui')
+
+    # Send a user activity ping to powerd to light up the display.
+    self._device.RemoteCommand(['dbus-send', '--system', '--type=method_call',
+                                '--dest=org.chromium.PowerManager',
+                                '/org/chromium/PowerManager',
+                                'org.chromium.PowerManager.HandleUserActivity',
+                                'int32:0'])
+
+    # Run test.
+    chrome_src_dir = os.path.dirname(os.path.dirname(self.build_dir))
+    test_binary = os.path.relpath(
+        os.path.join(self.build_dir, self.chrome_test_target), chrome_src_dir)
+    test_args = self.args[1:]
+    command = 'cd %s && su chronos -c -- "%s %s"' % \
+        (self.chrome_test_deploy_target_dir, test_binary, ' '.join(test_args))
+    result = self._device.RemoteCommand(command, stream_output=True)
+    return result
+
+
 def ParseCommandLine(argv):
   """Parse the command line.
 
@@ -375,6 +463,11 @@ def ParseCommandLine(argv):
   parser.add_argument('--tast', nargs='+',
                       help='Tast test pattern to run, passed to tast. '
                       'See go/tast-running for patterns.')
+  parser.add_argument('--chrome-test', action='store_true', default=False,
+                      help='Run chrome test on device. The first arg in the '
+                      'remote command should be the test binary name, such as '
+                      'interactive_ui_tests. It is used for building and '
+                      'collecting runtime deps files.')
   parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
@@ -422,6 +515,19 @@ def ParseCommandLine(argv):
 
   opts = parser.parse_args(argv)
 
+  # Remove the logging handling after https://crbug.com/955575
+  log_level = parser.default_log_level
+  if hasattr(opts, 'log_level'):
+    log_level = opts.log_level
+  logging.getLogger().setLevel(getattr(logging, log_level.upper()))
+
+  if opts.chrome_test:
+    if not opts.args:
+      parser.error('Must specify a test command with --chrome-test')
+
+    if not opts.build_dir:
+      opts.build_dir = os.path.dirname(opts.args[1])
+
   if opts.build or opts.deploy:
     if not opts.build_dir:
       parser.error('Must specify --build-dir with --build or --deploy.')
@@ -443,7 +549,7 @@ def ParseCommandLine(argv):
 
   # Ensure command is provided. For e.g. to copy out to the device and run
   # out/unittest:
-  # cros_run_vm_test --files out --cwd out --cmd -- ./unittest
+  # cros_run_test --files out --cwd out --cmd -- ./unittest
   # Treat --cmd as --remote-cmd.
   opts.remote_cmd = opts.remote_cmd or opts.cmd
   if (opts.remote_cmd or opts.host_cmd) and len(opts.args) < 2:
@@ -452,9 +558,10 @@ def ParseCommandLine(argv):
     parser.error('as-chronos only supported when running test commands.')
   # Verify additional args.
   if opts.args:
-    if not opts.remote_cmd and not opts.host_cmd:
+    if not opts.remote_cmd and not opts.host_cmd and not opts.chrome_test:
       parser.error('Additional args may be specified with either '
-                   '--remote-cmd or --host-cmd: %s' % opts.args)
+                   '--remote-cmd or --host-cmd or --chrome-test: %s' %
+                   opts.args)
     if opts.args[0] != '--':
       parser.error('Additional args must start with \'--\': %s' % opts.args)
 

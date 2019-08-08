@@ -95,15 +95,13 @@ static void InertSubtreesChanged(Document& document) {
   document.ClearAXObjectCache();
 }
 
-inline HTMLDialogElement::HTMLDialogElement(Document& document)
+HTMLDialogElement::HTMLDialogElement(Document& document)
     : HTMLElement(kDialogTag, document),
       centering_mode_(kNotCentered),
       centered_position_(0),
       return_value_("") {
   UseCounter::Count(document, WebFeature::kDialogElement);
 }
-
-DEFINE_NODE_FACTORY(HTMLDialogElement)
 
 void HTMLDialogElement::close(const String& return_value) {
   // https://html.spec.whatwg.org/C/#close-the-dialog

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -420,7 +419,6 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
     // only aura activation changes).
     aura::Window* active_window = activation_client->GetActiveWindow();
     if (active_window) {
-      base::AutoReset<bool> scoped(&is_handling_deactivation_, true);
       activation_client->DeactivateWindow(active_window);
       GetInputMethod()->OnBlur();
     }
@@ -448,14 +446,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   if (!desktop_window_tree_host_) {
     if (params.desktop_window_tree_host) {
       desktop_window_tree_host_ = params.desktop_window_tree_host;
-    } else if (!ViewsDelegate::GetInstance()
-                    ->desktop_window_tree_host_factory()
-                    .is_null()) {
-      desktop_window_tree_host_ =
-          ViewsDelegate::GetInstance()
-              ->desktop_window_tree_host_factory()
-              .Run(params, native_widget_delegate_, this)
-              .release();
     } else {
       desktop_window_tree_host_ =
           DesktopWindowTreeHost::Create(native_widget_delegate_, this);
@@ -626,8 +616,7 @@ void DesktopNativeWidgetAura::ReorderNativeViews() {
   // Instantiate a ScopedPause to recompute occlusion once at the end of this
   // scope rather than after each individual change.
   // https://crbug.com/829918
-  aura::WindowOcclusionTracker::ScopedPause pause_occlusion(
-      content_window_->env());
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
   window_reorderer_->ReorderChildWindows();
 }
 
@@ -938,8 +927,7 @@ bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
 }
 
 bool DesktopNativeWidgetAura::IsMouseButtonDown() const {
-  return content_window_ ? content_window_->env()->IsMouseButtonDown()
-                         : aura::Env::GetInstance()->IsMouseButtonDown();
+  return aura::Env::GetInstance()->IsMouseButtonDown();
 }
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {
@@ -1008,14 +996,12 @@ bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 }
 
 ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {
-  return content_window_->env()->gesture_recognizer();
+  return aura::Env::GetInstance()->gesture_recognizer();
 }
 
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
-  if (GetWidget()->widget_delegate())
-    behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
-  content_window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
+  NativeWidgetAura::SetResizeBehaviorFromDelegate(
+      GetWidget()->widget_delegate(), content_window_);
   desktop_window_tree_host_->SizeConstraintsChanged();
 }
 
@@ -1160,11 +1146,10 @@ void DesktopNativeWidgetAura::OnWindowActivated(
   DCHECK(content_window_ == gained_active || content_window_ == lost_active);
   if (gained_active == content_window_ && restore_focus_on_activate_) {
     restore_focus_on_activate_ = false;
-    // For OS_LINUX, desktop native widget may be activated during deactivation
-    // when the active aura::Window is not |content_window_|. In such case,
-    // skip RestoreFocusedView so that we don't activate the widget immediately
-    // after its deactivation.
-    if (!is_handling_deactivation_)
+    // For OS_LINUX, desktop native widget may not be activated when child
+    // widgets gets aura activation changes. Only when desktop native widget is
+    // active, we can rely on aura activation to restore focused view.
+    if (GetWidget()->IsActive())
       GetWidget()->GetFocusManager()->RestoreFocusedView();
   } else if (lost_active == content_window_ && GetWidget()->HasFocusManager()) {
     DCHECK(!restore_focus_on_activate_);

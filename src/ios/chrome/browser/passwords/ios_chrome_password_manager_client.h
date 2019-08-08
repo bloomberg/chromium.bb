@@ -20,6 +20,7 @@ class LogManager;
 
 namespace password_manager {
 class PasswordFormManagerForUI;
+class PasswordManagerDriver;
 }
 
 namespace web {
@@ -73,9 +74,9 @@ class IOSChromePasswordManagerClient
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(const url::Origin& last_committed_origin,
-                           bool is_fillable,
-                           bool is_password_field) override;
+  void FocusedInputChanged(
+      password_manager::PasswordManagerDriver* driver,
+      autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
@@ -109,6 +110,7 @@ class IOSChromePasswordManagerClient
   password_manager::PasswordRequirementsService*
   GetPasswordRequirementsService() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
+  bool IsNewTabPage() const override;
 
  private:
   // password_manager::PasswordManagerClientHelperDelegate implementation.

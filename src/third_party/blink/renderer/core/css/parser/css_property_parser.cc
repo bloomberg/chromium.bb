@@ -27,6 +27,31 @@ using namespace css_property_parser_helpers;
 
 class CSSIdentifierValue;
 
+namespace {
+
+const CSSValue* MaybeConsumeCSSWideKeyword(CSSParserTokenRange& range) {
+  CSSParserTokenRange local_range = range;
+
+  CSSValueID id = local_range.ConsumeIncludingWhitespace().Id();
+  if (!local_range.AtEnd())
+    return nullptr;
+
+  const CSSValue* value = nullptr;
+  if (id == CSSValueID::kInitial)
+    value = CSSInitialValue::Create();
+  if (id == CSSValueID::kInherit)
+    value = CSSInheritedValue::Create();
+  if (id == CSSValueID::kUnset)
+    value = cssvalue::CSSUnsetValue::Create();
+
+  if (value)
+    range = local_range;
+
+  return value;
+}
+
+}  // namespace
+
 CSSPropertyParser::CSSPropertyParser(
     const CSSParserTokenRange& range,
     const CSSParserContext* context,
@@ -74,6 +99,10 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     const CSSParserContext* context) {
   DCHECK(context);
   CSSPropertyParser parser(range, context, nullptr);
+
+  if (const CSSValue* value = MaybeConsumeCSSWideKeyword(parser.range_))
+    return value;
+
   const CSSValue* value = ParseLonghand(property, CSSPropertyID::kInvalid,
                                         *parser.context_, parser.range_);
   if (!value || !parser.range_.AtEnd())
@@ -215,18 +244,9 @@ CSSValueID CssValueKeywordID(StringView string) {
 bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
                                               bool important) {
   CSSParserTokenRange range_copy = range_;
-  CSSValueID id = range_copy.ConsumeIncludingWhitespace().Id();
-  if (!range_copy.AtEnd())
-    return false;
 
-  CSSValue* value = nullptr;
-  if (id == CSSValueID::kInitial)
-    value = CSSInitialValue::Create();
-  else if (id == CSSValueID::kInherit)
-    value = CSSInheritedValue::Create();
-  else if (id == CSSValueID::kUnset)
-    value = cssvalue::CSSUnsetValue::Create();
-  else
+  const CSSValue* value = MaybeConsumeCSSWideKeyword(range_copy);
+  if (!value)
     return false;
 
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);

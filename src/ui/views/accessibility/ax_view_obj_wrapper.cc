@@ -57,15 +57,12 @@ void AXViewObjWrapper::GetChildren(
 
   // TODO(dtseng): Need to handle |Widget| child of |View|.
   for (View* child : view_->children()) {
-    if (child->visible())
+    if (child->GetVisible())
       out_children->push_back(aura_obj_cache_->GetOrCreate(child));
   }
 
-  for (int i = 0; i < view_accessibility.virtual_child_count(); ++i) {
-    AXVirtualView* child =
-        const_cast<AXVirtualView*>(view_accessibility.virtual_child_at(i));
+  for (const auto& child : view_accessibility.virtual_children())
     out_children->push_back(child->GetOrCreateWrapper(aura_obj_cache_));
-  }
 }
 
 void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {

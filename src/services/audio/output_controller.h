@@ -137,6 +137,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Pause this audio output stream.
   void Pause();
 
+  // Flushes the audio output stream.
+  // This should only be called if the audio output stream is not playing.
+  void Flush();
+
   // Closes the audio output stream synchronously. Stops the stream first, if
   // necessary. After this method returns, this OutputController can be
   // destroyed by its owner.

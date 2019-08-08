@@ -109,7 +109,7 @@ void AXEventGenerator::AddEvent(ui::AXNode* node,
     return;
   }
 
-  tree_events_[node].insert(EventParams(event, event_from_));
+  tree_events_[node].insert(EventParams(event, ax::mojom::EventFrom::kNone));
 }
 
 void AXEventGenerator::OnNodeDataWillChange(AXTree* tree,
@@ -165,6 +165,9 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
         AddEvent(unignored_parent, Event::CHILDREN_CHANGED);
       break;
     }
+    case ax::mojom::State::kMultiline:
+      AddEvent(node, Event::MULTILINE_STATE_CHANGED);
+      break;
     case ax::mojom::State::kMultiselectable:
       AddEvent(node, Event::MULTISELECTABLE_STATE_CHANGED);
       break;
@@ -205,13 +208,22 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
     case ax::mojom::StringAttribute::kLanguage:
       AddEvent(node, Event::LANGUAGE_CHANGED);
       break;
+    case ax::mojom::StringAttribute::kLiveRelevant:
+      AddEvent(node, Event::LIVE_RELEVANT_CHANGED);
+      break;
     case ax::mojom::StringAttribute::kLiveStatus:
+      AddEvent(node, Event::LIVE_STATUS_CHANGED);
+
+      // Fire a LIVE_REGION_CREATED if the previous value was off, and the new
+      // value is not-off.
       // TODO(accessibility): tree in the midst of updates. Disallow access to
       // |node|.
-      if (node->data().GetStringAttribute(
-              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
-          node->data().role != ax::mojom::Role::kAlert)
-        AddEvent(node, Event::LIVE_REGION_CREATED);
+      if (node->data().role != ax::mojom::Role::kAlert) {
+        bool old_state = !old_value.empty() && old_value != "off";
+        bool new_state = !new_value.empty() && new_value != "off";
+        if (!old_state && new_state)
+          AddEvent(node, Event::LIVE_REGION_CREATED);
+      }
       break;
     case ax::mojom::StringAttribute::kName:
       // If the name of the root node changes, we expect OnTreeDataChanged to
@@ -261,6 +273,12 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kDropeffect:
+      AddEvent(node, Event::DROPEFFECT_CHANGED);
+      break;
+    case ax::mojom::IntAttribute::kHasPopup:
+      AddEvent(node, Event::HASPOPUP_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kHierarchicalLevel:
       AddEvent(node, Event::HIERARCHICAL_LEVEL_CHANGED);
       break;
@@ -291,6 +309,12 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::IntAttribute::kScrollY:
       AddEvent(node, Event::SCROLL_VERTICAL_POSITION_CHANGED);
+      break;
+    case ax::mojom::IntAttribute::kSortDirection:
+      // Ignore sort direction changes on roles other than table headers and
+      // grid headers.
+      if (ui::IsTableHeader(node->data().role))
+        AddEvent(node, Event::SORT_CHANGED);
       break;
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       // The image annotation is reported as part of the accessible name.
@@ -339,10 +363,16 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
 
   switch (attr) {
     case ax::mojom::BoolAttribute::kBusy:
+      AddEvent(node, Event::BUSY_CHANGED);
       // Fire an 'invalidated' event when aria-busy becomes false
       if (!new_value)
         AddEvent(node, Event::LAYOUT_INVALIDATED);
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+    case ax::mojom::BoolAttribute::kGrabbed:
+      AddEvent(node, Event::GRABBED_CHANGED);
+      break;
+    case ax::mojom::BoolAttribute::kLiveAtomic:
+      AddEvent(node, Event::ATOMIC_CHANGED);
       break;
     case ax::mojom::BoolAttribute::kSelected: {
       AddEvent(node, Event::SELECTED_CHANGED);

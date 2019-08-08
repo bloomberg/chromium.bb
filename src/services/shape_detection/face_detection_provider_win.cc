@@ -50,7 +50,7 @@ void FaceDetectionProviderWin::CreateFaceDetection(
     shape_detection::mojom::FaceDetectionRequest request,
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
   // FaceDetector class is only available in Win 10 onwards (v10.0.10240.0).
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
     DVLOG(1) << "FaceDetector not supported before Windows 10";
     return;
   }

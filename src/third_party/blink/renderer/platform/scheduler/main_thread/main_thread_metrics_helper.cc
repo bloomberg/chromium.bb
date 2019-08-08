@@ -29,9 +29,18 @@ namespace scheduler {
   "RendererScheduler.TaskDurationPerTaskType2"
 #define COUNT_PER_FRAME_METRIC_NAME "RendererScheduler.TaskCountPerFrameType"
 #define COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT \
-  "RendererScheduler.TaskCountPerFrameType.HasSafepoint"
+  "RendererScheduler.TaskCountPerFrameType.HasSafePoint"
 #define DURATION_PER_TASK_USE_CASE_NAME \
   "RendererScheduler.TaskDurationPerUseCase2"
+#define QUEUEING_TIME_PER_QUEUE_TYPE_METRIC_NAME \
+  "RendererScheduler.QueueingDurationPerQueueType"
+
+// Same as UMA_HISTOGRAM_TIMES but for a broader view of this metric we end
+// at 1 minute instead of 10 seconds.
+#define QUEUEING_TIME_HISTOGRAM(name, sample)                               \
+  UMA_HISTOGRAM_CUSTOM_TIMES(QUEUEING_TIME_PER_QUEUE_TYPE_METRIC_NAME name, \
+                             sample, base::TimeDelta::FromMilliseconds(1),  \
+                             base::TimeDelta::FromMinutes(1), 50)
 
 enum class MainThreadTaskLoadState { kLow, kHigh, kUnknown };
 
@@ -400,6 +409,31 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
                      task_timing.end_time())));
 
     foreground_per_task_type_duration_reporter_.RecordTask(task_type, duration);
+
+    if (!task.queue_time.is_null()) {
+      switch (queue_type) {
+        case MainThreadTaskQueue::QueueType::kCompositor: {
+          QUEUEING_TIME_HISTOGRAM(".Compositor",
+                                  task_timing.start_time() - task.queue_time);
+          break;
+        }
+        case MainThreadTaskQueue::QueueType::kInput: {
+          QUEUEING_TIME_HISTOGRAM(".Input",
+                                  task_timing.start_time() - task.queue_time);
+          break;
+        }
+        case MainThreadTaskQueue::QueueType::kFrameLoading:
+        case MainThreadTaskQueue::QueueType::kFrameLoadingControl: {
+          QUEUEING_TIME_HISTOGRAM(".Loading",
+                                  task_timing.start_time() - task.queue_time);
+          break;
+        }
+        default: {
+          QUEUEING_TIME_HISTOGRAM(".Other",
+                                  task_timing.start_time() - task.queue_time);
+        }
+      }
+    }
   }
 
   if (main_thread_scheduler_->main_thread_only().renderer_hidden) {

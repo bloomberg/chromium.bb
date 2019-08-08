@@ -57,7 +57,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -103,11 +103,42 @@ namespace {
 
 static const char* kBrowser = "Browser";
 
+// NOINLINE to make sure crashes use this for magic signature.
+NOINLINE void FatalSurfaceFailure() {
+  LOG(FATAL) << "Fatal surface initialization failure";
+}
+
+gfx::OverlayTransform RotationToDisplayTransform(
+    display::Display::Rotation rotation) {
+  // Note that the angle provided by |rotation| here is the opposite direction
+  // of the physical rotation of the device, which is the space in which the UI
+  // prepares the scene (see
+  // https://developer.android.com/reference/android/view/Display#getRotation()
+  // for details).
+  //
+  // The rotation which needs to be applied by the display compositor to allow
+  // the buffers produced by it to be used directly by the system compositor
+  // needs to be the inverse of this rotation. Since display::Rotation is in
+  // clockwise direction while gfx::OverlayTransform is anti-clockwise, directly
+  // mapping them below performs this inversion.
+  switch (rotation) {
+    case display::Display::ROTATE_0:
+      return gfx::OVERLAY_TRANSFORM_NONE;
+    case display::Display::ROTATE_90:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+    case display::Display::ROTATE_180:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+    case display::Display::ROTATE_270:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+  }
+  NOTREACHED();
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 // These functions are called based on application visibility status.
 void SendOnBackgroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindRepeating([](content::GpuProcessHost* host) {
         if (host) {
           host->gpu_service()->OnBackgrounded();
@@ -117,8 +148,7 @@ void SendOnBackgroundedToGpuService() {
 
 void SendOnForegroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindRepeating([](content::GpuProcessHost* host) {
         if (host) {
           host->gpu_service()->OnForegrounded();
@@ -267,8 +297,7 @@ class CompositorDependencies {
     // Next, notify the GPU process to do background processing, which will
     // lose all renderer contexts.
     content::GpuProcessHost::CallOnIO(
-        content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-        false /* force_create */,
+        content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
         base::BindRepeating([](content::GpuProcessHost* host) {
           if (host) {
             host->gpu_service()->OnBackgroundCleanup();
@@ -404,7 +433,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
-            new viz::CompositorOverlayCandidateValidatorAndroid()),
+            new viz::OverlayCandidateValidatorAndroid()),
         weak_ptr_factory_(this) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
@@ -458,9 +487,9 @@ class AndroidOutputSurface : public viz::OutputSurface {
         gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
   }
 
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
-      const override {
-    return overlay_candidate_validator_.get();
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override {
+    return std::move(overlay_candidate_validator_);
   }
 
   bool IsDisplayedAsOverlayPlane() const override { return false; }
@@ -478,6 +507,14 @@ class AndroidOutputSurface : public viz::OutputSurface {
   }
 
   unsigned UpdateGpuFence() override { return 0; }
+
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override {}
+
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override {
+    return gfx::OVERLAY_TRANSFORM_NONE;
+  }
 
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
@@ -526,9 +563,8 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
     compositor_->DidSwapBuffers(pixel_size);
   }
-  void OnFatalOrSurfaceContextCreationFailure(
-      gpu::ContextResult context_result) override {
-    compositor_->OnFatalOrSurfaceContextCreationFailure(context_result);
+  void OnContextCreationResult(gpu::ContextResult context_result) override {
+    compositor_->OnContextCreationResult(context_result);
   }
   void SetPreferredRefreshRate(float refresh_rate) override {
     if (compositor_->root_window_)
@@ -537,6 +573,20 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
 
  private:
   CompositorImpl* compositor_;
+};
+
+class CompositorImpl::ScopedCachedBackBuffer {
+ public:
+  ScopedCachedBackBuffer(const viz::FrameSinkId& root_sink_id) {
+    cache_id_ =
+        GetHostFrameSinkManager()->CacheBackBufferForRootSink(root_sink_id);
+  }
+  ~ScopedCachedBackBuffer() {
+    GetHostFrameSinkManager()->EvictCachedBackBuffer(cache_id_);
+  }
+
+ private:
+  uint32_t cache_id_;
 };
 
 // static
@@ -680,7 +730,7 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
 }
 
 void CompositorImpl::SetSurface(jobject surface,
-                                bool backed_by_surface_texture) {
+                                bool can_be_used_with_surface_control) {
   JNIEnv* env = base::android::AttachCurrentThread();
   gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
 
@@ -691,7 +741,6 @@ void CompositorImpl::SetSurface(jobject surface,
     ANativeWindow_release(window_);
     window_ = NULL;
     surface_handle_ = gpu::kNullSurfaceHandle;
-    backed_by_surface_texture_ = false;
   }
 
   ANativeWindow* window = NULL;
@@ -705,11 +754,11 @@ void CompositorImpl::SetSurface(jobject surface,
 
   if (window) {
     window_ = window;
-    backed_by_surface_texture_ = backed_by_surface_texture;
     ANativeWindow_acquire(window);
     // Register first, SetVisible() might create a LayerTreeFrameSink.
     surface_handle_ = tracker->AddSurfaceForNativeWidget(
-        gpu::GpuSurfaceTracker::SurfaceRecord(window, surface));
+        gpu::GpuSurfaceTracker::SurfaceRecord(
+            window, surface, can_be_used_with_surface_control));
     SetVisible(true);
     ANativeWindow_release(window);
   }
@@ -973,9 +1022,17 @@ void CompositorImpl::OnGpuChannelEstablished(
                                          requires_alpha_channel_),
           ws::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
+
+  if (surface_handle != gpu::kNullSurfaceHandle) {
+    // Only use OnContextCreationResult for onscreen contexts, where recovering
+    // from a surface initialization failure is possible by re-creating the
+    // native window.
+    OnContextCreationResult(result);
+  } else if (result == gpu::ContextResult::kFatalFailure) {
+    LOG(FATAL) << "Fatal failure in creating offscreen context";
+  }
+
   if (result != gpu::ContextResult::kSuccess) {
-    if (gpu::IsFatalOrSurfaceFailure(result))
-      OnFatalOrSurfaceContextCreationFailure(result);
     HandlePendingLayerTreeFrameSinkRequest();
     return;
   }
@@ -1134,15 +1191,25 @@ void CompositorImpl::RemoveChildFrameSink(
 
 void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t changed_metrics) {
-  if (changed_metrics & display::DisplayObserver::DisplayMetric::
-                            DISPLAY_METRIC_DEVICE_SCALE_FACTOR &&
-      display.id() == display::Screen::GetScreen()
+  if (display.id() != display::Screen::GetScreen()
                           ->GetDisplayNearestWindow(root_window_)
                           .id()) {
+    return;
+  }
+
+  if (changed_metrics & display::DisplayObserver::DisplayMetric::
+                            DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
     // TODO(ccameron): This is transiently incorrect -- |size_| must be
     // recalculated here as well. Is the call in SetWindowBounds sufficient?
     host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
                                    GenerateLocalSurfaceId());
+  }
+
+  if ((changed_metrics &
+       display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) &&
+      display_private_) {
+    display_private_->SetDisplayTransformHint(
+        RotationToDisplayTransform(display.rotation()));
   }
 }
 
@@ -1213,18 +1280,17 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   root_params->display_client =
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
+  const auto& display_props =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
+
   viz::RendererSettings renderer_settings;
   renderer_settings.partial_swap_enabled = true;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
-  renderer_settings.initial_screen_size =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(root_window_)
-          .GetSizeInPixel();
+  renderer_settings.initial_screen_size = display_props.GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
   renderer_settings.color_space = display_color_space_;
-  renderer_settings.backed_by_surface_texture = backed_by_surface_texture_;
 
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
@@ -1260,6 +1326,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
   display_private_->SetSupportedRefreshRates(
       root_window_->GetSupportedRefreshRates());
+  display_private_->SetDisplayTransformHint(
+      RotationToDisplayTransform(display_props.rotation()));
 }
 
 viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
@@ -1271,11 +1339,25 @@ viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
   return viz::LocalSurfaceIdAllocation();
 }
 
+void CompositorImpl::OnContextCreationResult(
+    gpu::ContextResult context_result) {
+  if (!gpu::IsFatalOrSurfaceFailure(context_result)) {
+    num_of_consecutive_surface_failures_ = 0u;
+    return;
+  }
+
+  OnFatalOrSurfaceContextCreationFailure(context_result);
+}
+
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
     gpu::ContextResult context_result) {
   DCHECK(gpu::IsFatalOrSurfaceFailure(context_result));
   LOG_IF(FATAL, context_result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
+
+  constexpr size_t kMaxConsecutiveSurfaceFailures = 10u;
+  if (++num_of_consecutive_surface_failures_ > kMaxConsecutiveSurfaceFailures)
+    FatalSurfaceFailure();
 
   if (context_result == gpu::ContextResult::kSurfaceFailure) {
     SetSurface(nullptr, false);
@@ -1285,6 +1367,17 @@ void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
 
 void CompositorImpl::OnFirstSurfaceActivation(const viz::SurfaceInfo& info) {
   NOTREACHED();
+}
+
+void CompositorImpl::CacheBackBufferForCurrentSurface() {
+  if (window_ && display_private_) {
+    cached_back_buffer_ =
+        std::make_unique<ScopedCachedBackBuffer>(frame_sink_id_);
+  }
+}
+
+void CompositorImpl::EvictCachedBackBuffer() {
+  cached_back_buffer_.reset();
 }
 
 }  // namespace content

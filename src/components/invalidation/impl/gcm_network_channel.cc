@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
@@ -264,8 +263,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = BuildUrl(registration_id_);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                       "Bearer " + access_token_);
@@ -276,9 +274,6 @@ void GCMNetworkChannel::OnGetTokenComplete(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(cached_message_,
                                             "application/x-protobuffer");
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::INVALIDATION
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&GCMNetworkChannel::OnSimpleLoaderComplete,

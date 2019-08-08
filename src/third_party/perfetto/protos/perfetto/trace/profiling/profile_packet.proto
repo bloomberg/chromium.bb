@@ -20,7 +20,6 @@ option optimize_for = LITE_RUNTIME;
 package perfetto.protos;
 
 message ProfilePacket {
-  // either a function or library name.
   repeated InternedString strings = 1;
   message InternedString {
     optional uint64 id = 1;
@@ -57,12 +56,20 @@ message ProfilePacket {
 
   message HeapSample {
     optional uint64 callstack_id = 1;
-    // bytes allocated at this frame.
+    // bytes allocated at this callstack.
     optional uint64 self_allocated = 2;
-    // bytes allocated at this frame that have been freed.
+    // bytes allocated at this callstack that have been freed.
     optional uint64 self_freed = 3;
+    // bytes allocated at this callstack but not used since the last
+    // clear_refs.
+    // See documentation of idle_allocations in HeapprofdConfig for more
+    // details.
+    optional uint64 self_idle = 7;
     optional uint64 timestamp = 4;  // timestamp [opt]
+    // Number of allocations that were sampled at this callstack.
     optional uint64 alloc_count = 5;
+    // Number of allocations that were sampled at this callstack that have been
+    // freed.
     optional uint64 free_count = 6;
   }
 
@@ -114,6 +121,18 @@ message ProfilePacket {
     // buffer being corrupted. THIS IS ALWAYS A BUG IN HEAPPROFD OR CLIENT
     // MEMORY CORRUPTION.
     optional bool buffer_corrupted = 8;
+
+    // Timestamp of the state of the target process that this dump represents.
+    // This can be different to the timestamp of the TracePackets for various
+    // reasons:
+    // * If disconnected is set above, this is the timestamp of last state
+    //   heapprofd had of the process before it disconnected.
+    // * Otherwise, if the rate of events produced by the process is high,
+    //   heapprofd might be behind.
+    //
+    // TODO(fmayer): This is MONOTONIC_COARSE. Refactor ClockSnapshot::Clock
+    //               to have a type enum that we can reuse here.
+    optional uint64 timestamp = 9;
 
     optional ProcessStats stats = 5;
 

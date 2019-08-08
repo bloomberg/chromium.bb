@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/main_thread_document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -22,29 +23,32 @@ const char PaintWorkletProxyClient::kSupplementName[] =
     "PaintWorkletProxyClient";
 
 // static
+PaintWorkletProxyClient* PaintWorkletProxyClient::From(WorkerClients* clients) {
+  return Supplement<WorkerClients>::From<PaintWorkletProxyClient>(clients);
+}
+
+// static
 PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document,
                                                          int worklet_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
-
-  scoped_refptr<PaintWorkletPaintDispatcher> compositor_painter_dispatcher =
+  PaintWorklet* paint_worklet = PaintWorklet::From(*document->domWindow());
+  scoped_refptr<PaintWorkletPaintDispatcher> compositor_paint_dispatcher =
       local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher();
   return MakeGarbageCollected<PaintWorkletProxyClient>(
-      worklet_id, std::move(compositor_painter_dispatcher));
+      worklet_id, paint_worklet, std::move(compositor_paint_dispatcher));
 }
 
 PaintWorkletProxyClient::PaintWorkletProxyClient(
     int worklet_id,
-    scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee)
-    : compositor_paintee_(std::move(compositor_paintee)),
+    PaintWorklet* paint_worklet,
+    scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher)
+    : paint_dispatcher_(std::move(paint_dispatcher)),
       worklet_id_(worklet_id),
-      state_(RunState::kUninitialized) {
+      state_(RunState::kUninitialized),
+      main_thread_runner_(Thread::MainThread()->GetTaskRunner()),
+      paint_worklet_(paint_worklet) {
   DCHECK(IsMainThread());
-}
-
-void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
-  Supplement<WorkerClients>::Trace(visitor);
-  PaintWorkletPainter::Trace(visitor);
 }
 
 void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
@@ -61,27 +65,77 @@ void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
     return;
   }
 
-  // All the global scopes that share a single PaintWorkletProxyClient are
-  // running on the same thread, and so we can just grab the task runner from
-  // the last one to call this function and use that.
+  // All the global scopes that share a single PaintWorkletProxyClient run on
+  // the same thread with the same scheduler. As such we can just grab a task
+  // runner from the last one to register.
   scoped_refptr<base::SingleThreadTaskRunner> global_scope_runner =
       global_scope->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
 
-  compositor_paintee_->RegisterPaintWorkletPainter(this, global_scope_runner);
+  paint_dispatcher_->RegisterPaintWorkletPainter(this, global_scope_runner);
+}
+
+void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
+    const String& name,
+    CSSPaintDefinition* definition,
+    ExceptionState& exception_state) {
+  DocumentPaintDefinition* document_definition;
+  if (document_definition_map_.Contains(name)) {
+    document_definition = document_definition_map_.at(name);
+    if (document_definition == kInvalidDocumentPaintDefinition)
+      return;
+    if (!document_definition->RegisterAdditionalPaintDefinition(*definition)) {
+      document_definition_map_.Set(name, kInvalidDocumentPaintDefinition);
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "A class with name:'" + name +
+              "' was registered with a different definition.");
+      return;
+    }
+  } else {
+    document_definition =
+        MakeGarbageCollected<DocumentPaintDefinition>(definition);
+    document_definition_map_.Set(name, document_definition);
+  }
+
+  // Notify the main thread only once all global scopes have registered the same
+  // named paint definition (with the same definition as well).
+  if (document_definition->GetRegisteredDefinitionCount() ==
+      PaintWorklet::kNumGlobalScopes) {
+    const Vector<AtomicString>& custom_properties =
+        definition->CustomInvalidationProperties();
+    // AtomicString cannot be passed cross thread, which is why we need to make
+    // a String copy of it.
+    Vector<String> passed_custom_properties;
+    for (const auto& property : custom_properties)
+      passed_custom_properties.push_back(property.GetString());
+    PostCrossThreadTask(
+        *main_thread_runner_, FROM_HERE,
+        CrossThreadBindOnce(
+            &PaintWorklet::RegisterMainThreadDocumentPaintDefinition,
+            paint_worklet_, name, definition->NativeInvalidationProperties(),
+            WTF::Passed(std::move(passed_custom_properties)),
+            definition->GetPaintRenderingContext2DSettings()->alpha()));
+  }
 }
 
 void PaintWorkletProxyClient::Dispose() {
   if (state_ == RunState::kWorking) {
-    compositor_paintee_->UnregisterPaintWorkletPainter(this);
+    paint_dispatcher_->UnregisterPaintWorkletPainter(worklet_id_);
   }
-  compositor_paintee_ = nullptr;
+  paint_dispatcher_ = nullptr;
 
   state_ = RunState::kDisposed;
 
   // At worklet scope termination break the reference cycle between
   // PaintWorkletGlobalScope and PaintWorkletProxyClient.
   global_scopes_.clear();
+}
+
+void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_definition_map_);
+  Supplement<WorkerClients>::Trace(visitor);
+  PaintWorkletPainter::Trace(visitor);
 }
 
 sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
@@ -106,14 +160,20 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   PaintWorkletInput* input = static_cast<PaintWorkletInput*>(compositor_input);
   CSSPaintDefinition* definition =
       global_scope->FindDefinition(input->NameCopy());
+  PaintWorkletStylePropertyMap* style_map =
+      MakeGarbageCollected<PaintWorkletStylePropertyMap>(input->StyleMapData());
 
-  return definition->Paint(FloatSize(input->GetSize()), input->EffectiveZoom(),
-                           nullptr, nullptr);
-}
+  sk_sp<PaintRecord> result = definition->Paint(
+      FloatSize(input->GetSize()), input->EffectiveZoom(), style_map, nullptr);
 
-// static
-PaintWorkletProxyClient* PaintWorkletProxyClient::From(WorkerClients* clients) {
-  return Supplement<WorkerClients>::From<PaintWorkletProxyClient>(clients);
+  // CSSPaintDefinition::Paint returns nullptr if it fails, but for
+  // OffThread-PaintWorklet we prefer to insert empty PaintRecords into the
+  // cache. Do the conversion here.
+  // TODO(smcgruer): Once OffThread-PaintWorklet launches, we can make
+  // CSSPaintDefinition::Paint return empty PaintRecords.
+  if (!result)
+    result = sk_make_sp<PaintRecord>();
+  return result;
 }
 
 void ProvidePaintWorkletProxyClientTo(WorkerClients* clients,

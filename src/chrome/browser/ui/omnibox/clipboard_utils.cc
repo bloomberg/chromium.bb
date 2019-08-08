@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -30,7 +32,7 @@ base::string16 GetClipboardText() {
   if (clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetUrlWType(),
                                    ui::CLIPBOARD_TYPE_COPY_PASTE)) {
     std::string url_str;
-    clipboard->ReadBookmark(NULL, &url_str);
+    clipboard->ReadBookmark(nullptr, &url_str);
     // pass resulting url string through GURL to normalize
     GURL url(url_str);
     if (url.is_valid())

@@ -36,13 +36,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // an appropriate gray.
   static SkColor ApplySystemControlTint(SkColor color);
 
-  // If the system is not running Mojave, or not forcing dark/light mode, do
-  // nothing. Otherwise, set the correct appearance on NSApp, adjusting for High
-  // Contrast if necessary.
-  // TODO(lgrey): Remove this when we're no longer suppressing dark mode by
-  // default.
-  static void MaybeUpdateBrowserAppearance();
-
   // Overridden from NativeTheme:
   SkColor GetSystemColor(ColorId color_id) const override;
 
@@ -56,8 +49,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
-  bool UsesHighContrastColors() const override;
-  bool SystemDarkModeEnabled() const override;
 
   // Paints the styled button shape used for default controls on Mac. The basic
   // style is used for dialog buttons, comboboxes, and tabbed pane tabs.
@@ -69,9 +60,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                         bool round_left,
                                         bool round_right,
                                         bool focus);
-
-  // Updates cached dark mode status and notifies observers if it has changed.
-  void UpdateDarkModeStatus();
 
  protected:
   friend class NativeTheme;
@@ -87,11 +75,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   void PaintSelectedMenuItem(cc::PaintCanvas* canvas,
                              const gfx::Rect& rect) const;
 
+  void InitializeDarkModeStateAndObserver();
+
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;
   id high_contrast_notification_token_;
-
-  bool is_dark_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };

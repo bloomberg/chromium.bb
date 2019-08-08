@@ -21,9 +21,6 @@ declare_args() {
   # Experimental only. Causes .dex files to be store in the APK uncompressed.
   # Only affects monochrome_public_apk and trichrome_chrome_apk.
   use_uncompressed_dex = false
-
-  # Enable language splits in the Chrome bundles.
-  enable_chrome_language_splits = android_channel == "default"
 }
 
 default_chrome_public_jinja_variables = [
@@ -143,7 +140,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
       support_zh_hk = true
     }
 
-    optimize_resources = true
+    strip_resource_names = true
+
+    # TODO(753402): enable once aapt2>=3.6.0 and bundletool>0.9.0 are rolled in.
+    short_resource_paths = false
 
     if (defined(shared_libraries) && shared_libraries != []) {
       _native_lib_file =
@@ -245,7 +245,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
     } else {
       deps += [ "//chrome/android:bundle_canary_java" ]
     }
-    product_version_resources_dep = "//chrome/android:product_version_resources"
+    if (!_is_trichrome) {
+      product_version_resources_dep =
+          "//chrome/android:product_version_resources"
+    }
 
     if (defined(invoker.add_unwind_tables_in_apk) &&
         invoker.add_unwind_tables_in_apk) {
@@ -289,7 +292,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "version_code",
-                             "verify_android_configuration",
+                             "verify_manifest",
                            ])
     is_trichrome =
         defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
@@ -333,7 +336,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
 
       _deps += [
         "//android_webview:monochrome_webview_assets",
-        "//android_webview/apk:webview_license_activity_java",
+        "//android_webview/apk:apk_java",
         "//android_webview/glue",
         "//chrome/android:monochrome_java",
         "//chrome/android/monochrome:monochrome_license_provider_java",
@@ -430,6 +433,24 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
       }
       png_to_webp = true
+    }
+
+    # Adding ArCore to make AR integration tests work.
+    # TODO(crbug.com/951065): Remove once AR tests migrated to single integration test APK.
+    if (invoker.target_type == "android_apk" && enable_arcore) {
+      _deps += [
+        "//chrome/browser/android/vr:ar_java",
+        "//third_party/android_deps:com_google_ar_core_java",
+      ]
+
+      # We store this as a separate .so in the APK and only load as needed.
+      if (android_64bit_target_cpu && build_apk_secondary_abi) {
+        secondary_abi_loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
+        loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      } else {
+        loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      }
     }
 
     if (!defined(deps)) {

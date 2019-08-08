@@ -14,14 +14,16 @@ static_library("core") {
     "favicon_driver_observer.h",
     "favicon_handler.cc",
     "favicon_handler.h",
+    "favicon_request_handler.cc",
+    "favicon_request_handler.h",
     "favicon_server_fetcher_params.cc",
     "favicon_server_fetcher_params.h",
-    "favicon_service.cc",
     "favicon_service.h",
     "favicon_service_impl.cc",
     "favicon_service_impl.h",
     "favicon_url.cc",
     "favicon_url.h",
+    "favicon_url_mapper.h",
     "favicon_util.cc",
     "favicon_util.h",
     "features.cc",
@@ -34,7 +36,6 @@ static_library("core") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/data_use_measurement/core",
     "//components/favicon_base",
     "//components/history/core/browser",
     "//components/image_fetcher/core",
@@ -52,6 +53,7 @@ source_set("unit_tests") {
   sources = [
     "fallback_url_util_unittest.cc",
     "favicon_handler_unittest.cc",
+    "favicon_request_handler_unittest.cc",
     "favicon_service_impl_unittest.cc",
     "large_icon_service_impl_unittest.cc",
   ]

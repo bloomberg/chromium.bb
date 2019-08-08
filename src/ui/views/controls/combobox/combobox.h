@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/style/typography.h"
@@ -35,8 +36,11 @@ class PrefixSelector;
 // Combobox has two distinct parts, the drop down arrow and the text.
 class VIEWS_EXPORT Combobox : public View,
                               public PrefixDelegate,
-                              public ButtonListener {
+                              public ButtonListener,
+                              public ui::ComboboxModelObserver {
  public:
+  METADATA_HEADER(Combobox);
+
   // The combobox's class name.
   static const char kViewClassName[];
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
@@ -57,11 +61,8 @@ class VIEWS_EXPORT Combobox : public View,
   // Sets the listener which will be called when a selection has been made.
   void set_listener(ComboboxListener* listener) { listener_ = listener; }
 
-  // Informs the combobox that its model changed.
-  void ModelChanged();
-
   // Gets/Sets the selected index.
-  int selected_index() const { return selected_index_; }
+  int GetSelectedIndex() const { return selected_index_; }
   void SetSelectedIndex(int index);
 
   // Looks for the first occurrence of |value| in |model()|. If found, selects
@@ -75,12 +76,13 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Set the accessible name of the combobox.
   void SetAccessibleName(const base::string16& name);
+  base::string16 GetAccessibleName() const;
 
   // Visually marks the combobox as having an invalid value selected.
   // When invalid, it paints with white text on a red background.
   // Callers are responsible for restoring validity with selection changes.
   void SetInvalid(bool invalid);
-  bool invalid() const { return invalid_; }
+  bool GetInvalid() const { return invalid_; }
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
@@ -93,7 +95,7 @@ class VIEWS_EXPORT Combobox : public View,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void Layout() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // Overridden from PrefixDelegate:
   int GetRowCount() override;
@@ -108,6 +110,9 @@ class VIEWS_EXPORT Combobox : public View,
   void set_size_to_largest_label(bool size_to_largest_label) {
     size_to_largest_label_ = size_to_largest_label;
   }
+
+  // Overridden from ComboboxModelObserver:
+  void OnComboboxModelChanged(ui::ComboboxModel* model) override;
 
  private:
   friend class test::ComboboxTestApi;

@@ -31,12 +31,6 @@ class WallpaperPrivateGetStringsFunction : public UIThreadExtensionFunction {
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
- private:
-  // Responds with the dictionary after getting the wallpaper info.
-  void OnWallpaperInfoReturned(std::unique_ptr<base::DictionaryValue> dict,
-                               const std::string& location,
-                               ash::WallpaperLayout layout);
 };
 
 // Check if sync themes setting is enabled.
@@ -417,10 +411,6 @@ class WallpaperPrivateGetCurrentWallpaperThumbnailFunction
   ResponseAction Run() override;
 
  private:
-  // Responds with the thumbnail data.
-  void OnWallpaperImageReturned(const gfx::Size& thumbnail_size,
-                                const gfx::ImageSkia& image);
-
   // WallpaperFunctionBase:
   void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) override;
 

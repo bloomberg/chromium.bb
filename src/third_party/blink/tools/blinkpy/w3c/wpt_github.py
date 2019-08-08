@@ -210,10 +210,14 @@ class WPTGitHub(object):
 
     @memoized
     def all_pull_requests(self):
-        """Fetches all (open and closed) PRs with the export label.
+        """Fetches the most recent (open and closed) PRs with the export label.
 
         The maximum number of PRs is pr_history_window. Search endpoint is used
-        instead of listing PRs, because we need to filter by labels.
+        instead of listing PRs, because we need to filter by labels. Note that
+        there are already more than MAX_PR_HISTORY_WINDOW export PRs, so we
+        can't really find *all* of them; we fetch the most recently updated ones
+        because we only check whether recent commits have been exported.
+
         API doc: https://developer.github.com/v3/search/#search-issues
 
         Returns:
@@ -222,6 +226,7 @@ class WPTGitHub(object):
         path = (
             '/search/issues'
             '?q=repo:{}/{}%20type:pr%20label:{}'
+            '&sort=updated'
             '&page=1'
             '&per_page={}'
         ).format(

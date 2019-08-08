@@ -6,6 +6,7 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
@@ -20,6 +21,10 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
 class TestSigninClient;
+
+#if defined(OS_IOS)
+class ProfileOAuth2TokenServiceIOSProvider;
+#endif
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -61,8 +66,14 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // dependencies directly (namely AccountTrackerService, PO2TS), but still be
   // able to tweak preferences on demand.
   //
-  // Last, this constructor can take an optional parameter |account_consistency|
-  // as parameter, to specify the account consistency policy that will be used.
+  // |account_consistency| specifies the account consistency policy that will be
+  // used.
+  //
+  // A specific TestSigninClient instance can be passed optionally. If it is
+  // null, the test environment will automatically build one internally.
+  //
+  // Note: at least one of |test_url_loader_factory| and |test_signin_client|
+  // must be nulltpr. They cannot both be specified at the same time.
   IdentityTestEnvironment(
       network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
       sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr,
@@ -329,17 +340,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Owner of all dependencies that don't belong to IdentityManager.
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
 
-  // Used to set fake responses for cookie-related requests.
-  // This can be null if no TestURLLoaderFactory was passed via the constructor.
-  network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
-
   // This will be null if a TestSigninClient was provided to
   // IdentityTestEnvironment's constructor.
   std::unique_ptr<TestSigninClient> owned_signin_client_;
-
-  // This will be null if a AccountTrackerService was provided to
-  // IdentityTestEnvironment's constructor.
-  std::unique_ptr<AccountTrackerService> owned_account_tracker_service_;
 
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager
@@ -352,15 +355,31 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
 
+  // Allow passing platform specific parameters to
+  // BuildIdentityManagerForTests. Need to be default
+  // constructible and moveable.
+  struct ExtraParams {
+    ExtraParams();
+    ~ExtraParams();
+    ExtraParams(ExtraParams&& other);
+    ExtraParams& operator=(ExtraParams&& other);
+
+#if defined(OS_IOS)
+    // If non-null, an iOS delegate instance will be constructed for the
+    // token service as opposed to the default fake delegate.
+    std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>
+        token_service_provider;
+#endif
+  };
+
   // Create an IdentityManager instance for tests.
   static std::unique_ptr<IdentityManagerWrapper> BuildIdentityManagerForTests(
       SigninClient* signin_client,
       PrefService* pref_service,
-      std::unique_ptr<FakeProfileOAuth2TokenService> token_service,
-      AccountTrackerService* account_tracker_service,
+      base::FilePath user_data_dir,
       signin::AccountConsistencyMethod account_consistency =
           signin::AccountConsistencyMethod::kDisabled,
-      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+      ExtraParams extra_params = {});
 
   // Shared constructor initialization logic.
   void Initialize();

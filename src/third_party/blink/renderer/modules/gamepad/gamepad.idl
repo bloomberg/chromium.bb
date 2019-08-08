@@ -31,13 +31,22 @@
   "right"
 };
 
+// https://www.w3.org/TR/gamepad/#gamepadmappingtype-enum
+enum GamepadMappingType {
+  "",
+  "standard",
+  // https://immersive-web.github.io/webxr/#xr-standard-gamepad-mapping
+  // Extended attributes are not supported for enum values.
+  /* [RuntimeEnabled=WebXR] */ "xr-standard",
+};
+
 // https://w3c.github.io/gamepad/#gamepad-interface
 interface Gamepad {
     readonly attribute DOMString id;
     readonly attribute unsigned long index;
     readonly attribute boolean connected;
     readonly attribute DOMHighResTimeStamp timestamp;
-    readonly attribute DOMString mapping;
+    readonly attribute GamepadMappingType mapping;
     [CachedAttribute=isAxisDataDirty, MeasureAs=GamepadAxes] readonly attribute FrozenArray<double> axes;
     [CachedAttribute=isButtonDataDirty, MeasureAs=GamepadButtons] readonly attribute FrozenArray<GamepadButton> buttons;
 

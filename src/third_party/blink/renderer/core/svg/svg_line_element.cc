@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGLineElement::SVGLineElement(Document& document)
+SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(svg_names::kLineTag, document),
       x1_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
@@ -61,8 +61,6 @@ void SVGLineElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(y2_);
   SVGGeometryElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGLineElement)
 
 Path SVGLineElement::AsPath() const {
   Path path;

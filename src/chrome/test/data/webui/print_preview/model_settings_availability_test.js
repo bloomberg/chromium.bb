@@ -453,8 +453,7 @@ cr.define('model_settings_availability_test', function() {
               .capabilities;
       delete capabilities.printer.duplex;
       capabilities.printer.duplex = {
-        option:
-            [{type: print_preview_new.DuplexType.NO_DUPLEX, is_default: true}]
+        option: [{type: print_preview.DuplexType.NO_DUPLEX, is_default: true}]
       };
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.duplex.available);
@@ -467,8 +466,8 @@ cr.define('model_settings_availability_test', function() {
       delete capabilities.printer.duplex;
       capabilities.printer.duplex = {
         option: [
-          {type: print_preview_new.DuplexType.NO_DUPLEX},
-          {type: print_preview_new.DuplexType.LONG_EDGE, is_default: true}
+          {type: print_preview.DuplexType.NO_DUPLEX},
+          {type: print_preview.DuplexType.LONG_EDGE, is_default: true}
         ]
       };
       model.set('destination.capabilities', capabilities);

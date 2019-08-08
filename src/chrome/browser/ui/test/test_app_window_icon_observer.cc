@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 
+#include <utility>
+
 #include "base/hash/md5.h"
 #include "base/run_loop.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -91,6 +93,6 @@ void TestAppWindowIconObserver::OnWindowPropertyChanged(aura::Window* window,
   ++icon_updates_;
   if (icon_updates_ == expected_icon_updates_ &&
       !icon_updated_callback_.is_null()) {
-    base::ResetAndReturn(&icon_updated_callback_).Run();
+    std::move(icon_updated_callback_).Run();
   }
 }

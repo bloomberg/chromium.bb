@@ -50,10 +50,83 @@ static constexpr base::TimeDelta kPollCapturingStateInterval =
 const CapturingStateModel g_default_capturing_state;
 }  // namespace
 
+VRUiHostImpl::CapturingStateModelTransience::CapturingStateModelTransience(
+    CapturingStateModel* capturing_model)
+    : active_capture_state_model_(capturing_model) {}
+
+void VRUiHostImpl::CapturingStateModelTransience::ResetStartTimes() {
+  auto now = base::Time::Now();
+  midi_indicator_start_ = now;
+  usb_indicator_start_ = now;
+  bluetooth_indicator_start_ = now;
+  location_indicator_start_ = now;
+  screen_capture_indicator_start_ = now;
+  video_indicator_start_ = now;
+  audio_indicator_start_ = now;
+}
+
+void VRUiHostImpl::CapturingStateModelTransience::
+    TurnFlagsOnBasedOnTriggeredState(
+        const CapturingStateModel& model_with_triggered_states) {
+  auto now = base::Time::Now();
+  if (model_with_triggered_states.audio_capture_enabled) {
+    audio_indicator_start_ = now;
+    active_capture_state_model_->audio_capture_enabled = true;
+  }
+  if (model_with_triggered_states.video_capture_enabled) {
+    video_indicator_start_ = now;
+    active_capture_state_model_->video_capture_enabled = true;
+  }
+  if (model_with_triggered_states.screen_capture_enabled) {
+    screen_capture_indicator_start_ = now;
+    active_capture_state_model_->screen_capture_enabled = true;
+  }
+  if (model_with_triggered_states.location_access_enabled) {
+    location_indicator_start_ = now;
+    active_capture_state_model_->location_access_enabled = true;
+  }
+  if (model_with_triggered_states.bluetooth_connected) {
+    bluetooth_indicator_start_ = now;
+    active_capture_state_model_->bluetooth_connected = true;
+  }
+  if (model_with_triggered_states.usb_connected) {
+    usb_indicator_start_ = now;
+    active_capture_state_model_->usb_connected = true;
+  }
+  if (model_with_triggered_states.midi_connected) {
+    midi_indicator_start_ = now;
+    active_capture_state_model_->midi_connected = true;
+  }
+}
+
+void VRUiHostImpl::CapturingStateModelTransience::
+    TurnOffAllFlagsTogetherWhenAllTransiencesExpire(
+        const base::TimeDelta& transience_period) {
+  if (!active_capture_state_model_->IsAtleastOnePermissionGrantedOrInUse())
+    return;
+  auto now = base::Time::Now();
+  if ((!active_capture_state_model_->audio_capture_enabled ||
+       now > audio_indicator_start_ + transience_period) &&
+      (!active_capture_state_model_->video_capture_enabled ||
+       now > video_indicator_start_ + transience_period) &&
+      (!active_capture_state_model_->screen_capture_enabled ||
+       now > screen_capture_indicator_start_ + transience_period) &&
+      (!active_capture_state_model_->location_access_enabled ||
+       now > location_indicator_start_ + transience_period) &&
+      (!active_capture_state_model_->bluetooth_connected ||
+       now > bluetooth_indicator_start_ + transience_period) &&
+      (!active_capture_state_model_->usb_connected ||
+       now > usb_indicator_start_ + transience_period) &&
+      (!active_capture_state_model_->midi_connected ||
+       now > midi_indicator_start_ + transience_period))
+    *active_capture_state_model_ = CapturingStateModel();
+}
+
 VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
                            device::mojom::XRCompositorHostPtr compositor)
     : compositor_(std::move(compositor)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      triggered_capturing_transience_(&triggered_capturing_state_model_),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
@@ -334,6 +407,7 @@ void VRUiHostImpl::InitCapturingStates() {
   indicators_shown_start_time_ = base::Time::Now();
   indicators_visible_ = false;
   indicators_showing_first_time_ = true;
+  triggered_capturing_transience_.ResetStartTimes();
 }
 
 void VRUiHostImpl::PollCapturingState() {
@@ -391,13 +465,21 @@ void VRUiHostImpl::PollCapturingState() {
   DCHECK(usb_tab_helper != nullptr);
   active_capturing.usb_connected = usb_tab_helper->IsDeviceConnected();
 
-  if (active_capturing_ != active_capturing) {
+  auto capturing_switched_on =
+      active_capturing.NewlyUpdatedPermissions(active_capturing_);
+  if (capturing_switched_on.IsAtleastOnePermissionGrantedOrInUse()) {
     indicators_shown_start_time_ = base::Time::Now();
+    triggered_capturing_transience_.TurnFlagsOnBasedOnTriggeredState(
+        capturing_switched_on);
+    active_capturing_ = active_capturing;
   }
+  triggered_capturing_transience_
+      .TurnOffAllFlagsTogetherWhenAllTransiencesExpire(
+          GetPermissionPromptTimeout(indicators_showing_first_time_));
 
-  active_capturing_ = active_capturing;
-  ui_rendering_thread_->SetCapturingState(
-      active_capturing_, g_default_capturing_state, potential_capturing_);
+  ui_rendering_thread_->SetCapturingState(triggered_capturing_state_model_,
+                                          g_default_capturing_state,
+                                          potential_capturing_);
 
   if (indicators_shown_start_time_ +
           GetPermissionPromptTimeout(indicators_showing_first_time_) >
@@ -408,6 +490,7 @@ void VRUiHostImpl::PollCapturingState() {
     }
   } else {
     indicators_showing_first_time_ = false;
+    potential_capturing_ = CapturingStateModel();
     if (indicators_visible_) {
       indicators_visible_ = false;
       ui_rendering_thread_->SetIndicatorsVisible(false);

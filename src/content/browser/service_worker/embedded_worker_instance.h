@@ -24,7 +24,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -310,8 +310,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void NotifyForegroundServiceWorkerAdded();
   void NotifyForegroundServiceWorkerRemoved();
 
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo
-  MakeScriptLoaderFactoryAssociatedPtrInfo(
+  network::mojom::URLLoaderFactoryPtrInfo MakeScriptLoaderFactoryPtrInfo(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
@@ -359,8 +358,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   std::unique_ptr<ServiceWorkerContentSettingsProxyImpl> content_settings_;
 
-  mojo::StrongAssociatedBindingPtr<network::mojom::URLLoaderFactory>
+  mojo::StrongBindingPtr<network::mojom::URLLoaderFactory>
       script_loader_factory_;
+
+  const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
 

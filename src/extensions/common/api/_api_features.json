@@ -77,6 +77,15 @@
     "dependencies": ["permission:audio"],
     "contexts": ["blessed_extension"]
   },
+  "automationInternal": {
+    "internal": true,
+    "dependencies": ["manifest:automation"],
+    "contexts": ["blessed_extension"]
+  },
+  "automation": {
+    "dependencies": ["manifest:automation"],
+    "contexts": ["blessed_extension"]
+  },
   "bluetooth": [{
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
@@ -220,6 +229,8 @@
       "channel": "stable",
       "contexts": ["webui"],
       "matches": [
+        "chrome://add-supervision/*",
+        "chrome://assistant-optin/*",
         "chrome://cast/*",
         "chrome://discards/*",
         "chrome://extensions-frame/*",
@@ -230,8 +241,7 @@
         "chrome://media-router/*",
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
-        "chrome://password-change/*",
-        "chrome://assistant-optin/*"
+        "chrome://password-change/*"
       ]
     }
   ],
@@ -337,11 +347,6 @@
       "12E618C3C6E97495AAECF2AC12DEB082353241C6",  // QO component extension
       "3727DD3E564B6055387425027AD74C58784ACC15",  // Editor
       "C41AD9DCD670210295614257EF8C9945AD68D86E",  // Google Now
-      // TODO(michaelpg): Determine whether these three extensions (D5736E4,
-      // D57DE39, 3F65507) require this feature: crbug.com/652433.
-      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900.
-      "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444.
-      "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9",  // http://crbug.com/371562.
       "D7986543275120831B39EF28D1327552FC343960",  // http://crbug.com/378067
       "A291B26E088FA6BA53FFD72F0916F06EBA7C585A",  // http://crbug.com/378067
       "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/456214
@@ -427,8 +432,17 @@
   },
   "runtime": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "contexts": ["blessed_extension", "lock_screen_extension", "extension_service_worker"]
+    "extension_types": [
+      "extension",
+      "legacy_packaged_app",
+      "platform_app",
+      "login_screen_extension"
+    ],
+    "contexts": [
+      "blessed_extension",
+      "lock_screen_extension",
+      "extension_service_worker"
+    ]
   },
   "runtime.getManifest": {
     "contexts": [
@@ -460,7 +474,8 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script"
+      "content_script",
+      "extension_service_worker"
     ]
   },
   "runtime.id": {
@@ -468,7 +483,8 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script"
+      "content_script",
+      "extension_service_worker"
     ]
   },
   "runtime.lastError": {
@@ -487,7 +503,6 @@
   },
   "runtime.onConnectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "channel": "trunk",
     "contexts": ["blessed_extension"]
   },
   "runtime.onMessage": {
@@ -631,6 +646,8 @@
     "internal": true,
     "contexts": ["webui"],
     "matches": [
+      "chrome://add-supervision/*",
+      "chrome://assistant-optin/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",
@@ -638,8 +655,7 @@
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
-      "chrome://password-change/*",
-      "chrome://assistant-optin/*"
+      "chrome://password-change/*"
     ]
   }],
   "webViewInternal": [{
@@ -651,6 +667,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://add-supervision/*",
+      "chrome://assistant-optin/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",
@@ -658,8 +676,7 @@
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
-      "chrome://password-change/*",
-      "chrome://assistant-optin/*"
+      "chrome://password-change/*"
     ]
   }],
   "webViewRequest": [{
@@ -669,14 +686,15 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://add-supervision/*",
+      "chrome://assistant-optin/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
-      "chrome://oobe/*",
-      "chrome://assistant-optin/*"
+      "chrome://oobe/*"
     ]
   }]
 }

@@ -58,9 +58,9 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
   void ForgeDiscoveries() {
-    discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
-    ble_discovery_ = scoped_fake_discovery_factory_.ForgeNextBleDiscovery();
-    nfc_discovery_ = scoped_fake_discovery_factory_.ForgeNextNfcDiscovery();
+    discovery_ = fake_discovery_factory_->ForgeNextHidDiscovery();
+    ble_discovery_ = fake_discovery_factory_->ForgeNextBleDiscovery();
+    nfc_discovery_ = fake_discovery_factory_->ForgeNextNfcDiscovery();
   }
 
   std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
@@ -83,7 +83,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         std::move(credential_params));
 
     auto handler = std::make_unique<MakeCredentialRequestHandler>(
-        nullptr, supported_transports_, std::move(request_parameter),
+        nullptr, fake_discovery_factory_.get(), supported_transports_,
+        std::move(request_parameter),
         std::move(authenticator_selection_criteria), cb_.callback());
     handler->SetPlatformAuthenticatorOrMarkUnavailable(
         CreatePlatformAuthenticator());
@@ -142,7 +143,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
-  test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
+  std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
+      std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
@@ -240,8 +242,8 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponseWithoutUvSupport);
   device->ExpectRequestAndRespondWith(
-      MockFidoDevice::EncodeCBORRequest(
-          MakeCredentialTask::GetTouchRequest(device.get()).EncodeAsCBOR()),
+      MockFidoDevice::EncodeCBORRequest(AsCTAPRequestValuePair(
+          MakeCredentialTask::GetTouchRequest(device.get()))),
       test_data::kTestMakeCredentialResponse);
   discovery()->AddDevice(std::move(device));
 
@@ -327,8 +329,8 @@ TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyRequirementNotMet) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponseWithoutResidentKeySupport);
   device->ExpectRequestAndRespondWith(
-      MockFidoDevice::EncodeCBORRequest(
-          MakeCredentialTask::GetTouchRequest(device.get()).EncodeAsCBOR()),
+      MockFidoDevice::EncodeCBORRequest(AsCTAPRequestValuePair(
+          MakeCredentialTask::GetTouchRequest(device.get()))),
       test_data::kTestMakeCredentialResponse);
 
   discovery()->AddDevice(std::move(device));

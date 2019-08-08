@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,13 +34,12 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogQuicPushStreamCallback(
-    quic::QuicStreamId stream_id,
-    const GURL* url,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("stream_id", stream_id);
-  dict->SetString("url", url->spec());
+base::Value NetLogQuicPushStreamCallback(quic::QuicStreamId stream_id,
+                                         const GURL* url,
+                                         NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetInteger("stream_id", stream_id);
+  dict.SetString("url", url->spec());
   return std::move(dict);
 }
 
@@ -94,6 +92,8 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_47;
     case quic::QUIC_VERSION_99:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_99;
+    case quic::QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_999;
   }
   NOTREACHED();
   return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
@@ -456,7 +456,7 @@ void QuicHttpStream::DoCallback(int rv) {
 
   // The client callback can do anything, including destroying this class,
   // so any pending callback must be issued after everything else is done.
-  base::ResetAndReturn(&callback_).Run(MapStreamError(rv));
+  std::move(callback_).Run(MapStreamError(rv));
 }
 
 int QuicHttpStream::DoLoop(int rv) {

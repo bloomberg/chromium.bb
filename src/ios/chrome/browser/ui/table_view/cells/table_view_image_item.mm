@@ -97,7 +97,7 @@
                                             UILayoutConstraintAxisHorizontal];
     _detailTextLabel = [[UILabel alloc] init];
     _detailTextLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.numberOfLines = 0;
 

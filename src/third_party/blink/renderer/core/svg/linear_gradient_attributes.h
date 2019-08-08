@@ -95,10 +95,6 @@ struct LinearGradientAttributes : GradientAttributes {
 class LinearGradientAttributesWrapper
     : public GarbageCollectedFinalized<LinearGradientAttributesWrapper> {
  public:
-  static LinearGradientAttributesWrapper* Create() {
-    return MakeGarbageCollected<LinearGradientAttributesWrapper>();
-  }
-
   LinearGradientAttributesWrapper() = default;
 
   LinearGradientAttributes& Attributes() { return attributes_; }

@@ -316,8 +316,8 @@ class CancelableTaskTrackerDeathTest : public CancelableTaskTrackerTest {
 // Runs |fn| with |task_tracker|, expecting it to crash in debug mode.
 void MaybeRunDeadlyTaskTrackerMemberFunction(
     CancelableTaskTracker* task_tracker,
-    const Callback<void(CancelableTaskTracker*)>& fn) {
-  EXPECT_DCHECK_DEATH(fn.Run(task_tracker));
+    OnceCallback<void(CancelableTaskTracker*)> fn) {
+  EXPECT_DCHECK_DEATH(std::move(fn).Run(task_tracker));
 }
 
 void PostDoNothingTask(CancelableTaskTracker* task_tracker) {
@@ -333,7 +333,7 @@ TEST_F(CancelableTaskTrackerDeathTest, PostFromDifferentThread) {
   bad_thread.task_runner()->PostTask(
       FROM_HERE,
       BindOnce(&MaybeRunDeadlyTaskTrackerMemberFunction,
-               Unretained(&task_tracker_), Bind(&PostDoNothingTask)));
+               Unretained(&task_tracker_), BindOnce(&PostDoNothingTask)));
 }
 
 void TryCancel(CancelableTaskTracker::TaskId task_id,
@@ -355,7 +355,7 @@ TEST_F(CancelableTaskTrackerDeathTest, CancelOnDifferentThread) {
   bad_thread.task_runner()->PostTask(
       FROM_HERE,
       BindOnce(&MaybeRunDeadlyTaskTrackerMemberFunction,
-               Unretained(&task_tracker_), Bind(&TryCancel, task_id)));
+               Unretained(&task_tracker_), BindOnce(&TryCancel, task_id)));
 
   test_task_runner->RunUntilIdle();
 }
@@ -374,7 +374,7 @@ TEST_F(CancelableTaskTrackerDeathTest, CancelAllOnDifferentThread) {
   bad_thread.task_runner()->PostTask(
       FROM_HERE, BindOnce(&MaybeRunDeadlyTaskTrackerMemberFunction,
                           Unretained(&task_tracker_),
-                          Bind(&CancelableTaskTracker::TryCancelAll)));
+                          BindOnce(&CancelableTaskTracker::TryCancelAll)));
 
   test_task_runner->RunUntilIdle();
 }

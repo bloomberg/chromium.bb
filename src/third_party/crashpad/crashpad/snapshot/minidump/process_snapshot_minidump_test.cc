@@ -18,6 +18,7 @@
 #include <dbghelp.h>
 #include <string.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/numerics/safe_math.h"
@@ -307,10 +308,10 @@ TEST(ProcessSnapshotMinidump, Modules) {
   constexpr uint32_t minidump_module_count = 4;
   RVA name_rvas[minidump_module_count];
   std::string names[minidump_module_count] = {
-    "libtacotruck",
-    "libevidencebased",
-    "libgeorgism",
-    "librealistutopia",
+      "libtacotruck",
+      "libevidencebased",
+      "libgeorgism",
+      "librealistutopia",
   };
 
   minidump_module.BaseOfImage = 0xbadf00d;
@@ -331,16 +332,28 @@ TEST(ProcessSnapshotMinidump, Modules) {
     EXPECT_TRUE(string_file.Write(&name16[0], size));
   }
 
-  CodeViewRecordPDB70 cv;
-  cv.signature = CodeViewRecordPDB70::kSignature;
-  cv.age = 7;
-  cv.uuid.InitializeFromString("00112233-4455-6677-8899-aabbccddeeff");
-  cv.pdb_name[0] = '\0';
+  CodeViewRecordPDB70 pdb70_cv;
+  pdb70_cv.signature = CodeViewRecordPDB70::kSignature;
+  pdb70_cv.age = 7;
+  pdb70_cv.uuid.InitializeFromString("00112233-4455-6677-8899-aabbccddeeff");
+  pdb70_cv.pdb_name[0] = '\0';
 
-  minidump_module.CvRecord.Rva = static_cast<RVA>(string_file.SeekGet());
-  minidump_module.CvRecord.DataSize = sizeof(cv);
+  auto pdb70_loc = static_cast<RVA>(string_file.SeekGet());
+  auto pdb70_size = sizeof(pdb70_cv);
 
-  EXPECT_TRUE(string_file.Write(&cv, sizeof(cv)));
+  EXPECT_TRUE(string_file.Write(&pdb70_cv, sizeof(pdb70_cv)));
+
+  CodeViewRecordBuildID build_id_cv;
+  build_id_cv.signature = CodeViewRecordBuildID::kSignature;
+
+  auto build_id_cv_loc = static_cast<RVA>(string_file.SeekGet());
+
+  EXPECT_TRUE(string_file.Write(&build_id_cv,
+                                offsetof(CodeViewRecordBuildID, build_id)));
+  EXPECT_TRUE(string_file.Write("atestbuildidbecausewhynot", 25));
+
+  auto build_id_cv_size =
+      static_cast<size_t>(string_file.SeekGet() - build_id_cv_loc);
 
   MINIDUMP_DIRECTORY minidump_module_list_directory = {};
   minidump_module_list_directory.StreamType = kMinidumpStreamTypeModuleList;
@@ -355,6 +368,15 @@ TEST(ProcessSnapshotMinidump, Modules) {
   for (uint32_t minidump_module_index = 0;
        minidump_module_index < minidump_module_count;
        ++minidump_module_index) {
+    if (minidump_module_index % 2) {
+      minidump_module.CvRecord.Rva = pdb70_loc;
+      minidump_module.CvRecord.DataSize = static_cast<uint32_t>(pdb70_size);
+    } else {
+      minidump_module.CvRecord.Rva = build_id_cv_loc;
+      minidump_module.CvRecord.DataSize =
+          static_cast<uint32_t>(build_id_cv_size);
+    }
+
     minidump_module.ModuleNameRva = name_rvas[minidump_module_index];
     EXPECT_TRUE(string_file.Write(&minidump_module, sizeof(minidump_module)));
     minidump_module.TimeDateStamp++;
@@ -479,12 +501,19 @@ TEST(ProcessSnapshotMinidump, Modules) {
     EXPECT_EQ(modules[i]->GetModuleType(),
               ModuleSnapshot::kModuleTypeExecutable);
 
-    uint32_t age;
-    UUID uuid;
-    modules[i]->UUIDAndAge(&uuid, &age);
+    if (i % 2) {
+      uint32_t age;
+      UUID uuid;
+      modules[i]->UUIDAndAge(&uuid, &age);
 
-    EXPECT_EQ(uuid.ToString(), "00112233-4455-6677-8899-aabbccddeeff");
-    EXPECT_EQ(age, 7U);
+      EXPECT_EQ(uuid.ToString(), "00112233-4455-6677-8899-aabbccddeeff");
+      EXPECT_EQ(age, 7U);
+    } else {
+      auto build_id = modules[i]->BuildID();
+      std::string build_id_text(build_id.data(),
+                                build_id.data() + build_id.size());
+      EXPECT_EQ(build_id_text, "atestbuildidbecausewhynot");
+    }
   }
 
   auto annotations_simple_map = modules[0]->AnnotationsSimpleMap();
@@ -515,7 +544,7 @@ TEST(ProcessSnapshotMinidump, ProcessID) {
   MINIDUMP_HEADER header = {};
   ASSERT_TRUE(string_file.Write(&header, sizeof(header)));
 
-  static const pid_t kTestProcessId = 42;
+  static const crashpad::ProcessID kTestProcessId = 42;
   MINIDUMP_MISC_INFO misc_info = {};
   misc_info.SizeOfInfo = sizeof(misc_info);
   misc_info.Flags1 = MINIDUMP_MISC1_PROCESS_ID;
@@ -619,6 +648,13 @@ TEST(ProcessSnapshotMinidump, System) {
   minidump_system_info.Cpu.X86CpuInfo.VendorId[1] = cpu_info_bytes[1];
   minidump_system_info.Cpu.X86CpuInfo.VendorId[2] = cpu_info_bytes[2];
 
+  MINIDUMP_MISC_INFO_5 minidump_misc_info = {};
+  base::string16 build_string;
+  ASSERT_TRUE(base::UTF8ToUTF16(
+      "MyOSVersion; MyMachineDescription", 33, &build_string));
+  std::copy(build_string.begin(), build_string.end(),
+            minidump_misc_info.BuildString);
+
   MINIDUMP_DIRECTORY minidump_system_info_directory = {};
   minidump_system_info_directory.StreamType = kMinidumpStreamTypeSystemInfo;
   minidump_system_info_directory.Location.DataSize =
@@ -626,16 +662,27 @@ TEST(ProcessSnapshotMinidump, System) {
   minidump_system_info_directory.Location.Rva =
       static_cast<RVA>(string_file.SeekGet());
 
-  ASSERT_TRUE(string_file.Write(&minidump_system_info,
-                                sizeof(minidump_system_info)));
+  ASSERT_TRUE(
+      string_file.Write(&minidump_system_info, sizeof(minidump_system_info)));
+
+  MINIDUMP_DIRECTORY minidump_misc_info_directory = {};
+  minidump_misc_info_directory.StreamType = kMinidumpStreamTypeMiscInfo;
+  minidump_misc_info_directory.Location.DataSize = sizeof(MINIDUMP_MISC_INFO_5);
+  minidump_misc_info_directory.Location.Rva =
+      static_cast<RVA>(string_file.SeekGet());
+
+  ASSERT_TRUE(
+      string_file.Write(&minidump_misc_info, sizeof(minidump_misc_info)));
 
   header.StreamDirectoryRva = static_cast<RVA>(string_file.SeekGet());
   ASSERT_TRUE(string_file.Write(&minidump_system_info_directory,
                                 sizeof(minidump_system_info_directory)));
+  ASSERT_TRUE(string_file.Write(&minidump_misc_info_directory,
+                                sizeof(minidump_misc_info_directory)));
 
   header.Signature = MINIDUMP_SIGNATURE;
   header.Version = MINIDUMP_VERSION;
-  header.NumberOfStreams = 1;
+  header.NumberOfStreams = 2;
   EXPECT_TRUE(string_file.SeekSet(0));
   EXPECT_TRUE(string_file.Write(&header, sizeof(header)));
 
@@ -649,6 +696,7 @@ TEST(ProcessSnapshotMinidump, System) {
   EXPECT_EQ(s->CPUVendor(), "GenuineIntel");
   EXPECT_EQ(s->GetOperatingSystem(),
             SystemSnapshot::OperatingSystem::kOperatingSystemFuchsia);
+  EXPECT_EQ(s->OSVersionFull(), "MyOSVersion");
 
   int major, minor, bugfix;
   std::string build;
@@ -680,8 +728,8 @@ TEST(ProcessSnapshotMinidump, ThreadContextARM64) {
   minidump_system_info_directory.Location.Rva =
       static_cast<RVA>(string_file.SeekGet());
 
-  ASSERT_TRUE(string_file.Write(&minidump_system_info,
-                                sizeof(minidump_system_info)));
+  ASSERT_TRUE(
+      string_file.Write(&minidump_system_info, sizeof(minidump_system_info)));
 
   MINIDUMP_THREAD minidump_thread = {};
   uint32_t minidump_thread_count = 1;
@@ -801,8 +849,8 @@ TEST(ProcessSnapshotMinidump, ThreadContextX86_64) {
   minidump_system_info_directory.Location.Rva =
       static_cast<RVA>(string_file.SeekGet());
 
-  ASSERT_TRUE(string_file.Write(&minidump_system_info,
-                                sizeof(minidump_system_info)));
+  ASSERT_TRUE(
+      string_file.Write(&minidump_system_info, sizeof(minidump_system_info)));
 
   MINIDUMP_THREAD minidump_thread = {};
   uint32_t minidump_thread_count = 1;
@@ -1015,7 +1063,7 @@ TEST(ProcessSnapshotMinidump, MemoryMap) {
 
   MINIDUMP_DIRECTORY minidump_memory_info_list_directory = {};
   minidump_memory_info_list_directory.StreamType =
-    kMinidumpStreamTypeMemoryInfoList;
+      kMinidumpStreamTypeMemoryInfoList;
   minidump_memory_info_list_directory.Location.DataSize =
       sizeof(minidump_memory_info_list) +
       minidump_memory_info_count * sizeof(MINIDUMP_MEMORY_INFO);
@@ -1043,12 +1091,16 @@ TEST(ProcessSnapshotMinidump, MemoryMap) {
   EXPECT_TRUE(process_snapshot.Initialize(&string_file));
 
   std::vector<const MemoryMapRegionSnapshot*> map =
-    process_snapshot.MemoryMap();
+      process_snapshot.MemoryMap();
   ASSERT_EQ(map.size(), minidump_memory_info_count);
-  EXPECT_EQ(memcmp(&map[0]->AsMinidumpMemoryInfo(), &minidump_memory_info_1,
-                   sizeof(minidump_memory_info_1)), 0);
-  EXPECT_EQ(memcmp(&map[1]->AsMinidumpMemoryInfo(), &minidump_memory_info_2,
-                   sizeof(minidump_memory_info_2)), 0);
+  EXPECT_EQ(memcmp(&map[0]->AsMinidumpMemoryInfo(),
+                   &minidump_memory_info_1,
+                   sizeof(minidump_memory_info_1)),
+            0);
+  EXPECT_EQ(memcmp(&map[1]->AsMinidumpMemoryInfo(),
+                   &minidump_memory_info_2,
+                   sizeof(minidump_memory_info_2)),
+            0);
 }
 
 TEST(ProcessSnapshotMinidump, Stacks) {
@@ -1063,9 +1115,21 @@ TEST(ProcessSnapshotMinidump, Stacks) {
   minidump_thread.ThreadId = 42;
   minidump_thread.Stack.StartOfMemoryRange = 0xbeefd00d;
 
-  std::vector<uint8_t> minidump_stack = {
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-  };
+  std::vector<uint8_t> minidump_stack = {'1',
+                                         '2',
+                                         '3',
+                                         '4',
+                                         '5',
+                                         '6',
+                                         '7',
+                                         '8',
+                                         '9',
+                                         'a',
+                                         'b',
+                                         'c',
+                                         'd',
+                                         'e',
+                                         'f'};
 
   minidump_thread.Stack.Memory.DataSize =
       base::checked_cast<uint32_t>(minidump_stack.size());

@@ -347,35 +347,30 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
 
   base::Time before = base::Time::Now();
   // Invalid response body from the server.
-  SetClientReportMalwareResponse("invalid proto response",
-                                 net::URLRequestStatus::SUCCESS);
+  SetClientReportMalwareResponse("invalid proto response", net::OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Missing bad_url.
   ClientMalwareResponse response;
   response.set_blacklist(true);
-  SetClientReportMalwareResponse(response.SerializeAsString(),
-                                 net::URLRequestStatus::SUCCESS);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Normal behavior.
   response.set_blacklist(true);
   response.set_bad_url("http://response-bad.com/");
-  SetClientReportMalwareResponse(response.SerializeAsString(),
-                                 net::URLRequestStatus::SUCCESS);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::OK);
   EXPECT_TRUE(SendClientReportMalwareRequest(url));
   CheckConfirmedMalwareUrl(GURL("http://response-bad.com/"));
 
   // This request will fail
   response.set_blacklist(false);
-  SetClientReportMalwareResponse(response.SerializeAsString(),
-                                 net::URLRequestStatus::FAILED);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::ERR_FAILED);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Server blacklist decision is false, and response is successful
   response.set_blacklist(false);
-  SetClientReportMalwareResponse(response.SerializeAsString(),
-                                 net::URLRequestStatus::SUCCESS);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Check that we have recorded all 5 requests within the correct time range.

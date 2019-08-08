@@ -88,6 +88,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // Check object state.
   bool IsFocused() const override;
+  // aria-grabbed is deprecated in WAI-ARIA 1.1.
+  AccessibilityGrabbedState IsGrabbed() const override;
   AccessibilitySelectedState IsSelected() const override;
   bool IsSelectedFromFocus() const override;
 
@@ -130,7 +132,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   ax::mojom::HasPopup HasPopup() const override;
   bool SupportsARIADragging() const override;
-  bool SupportsARIADropping() const override;
+  void Dropeffects(Vector<ax::mojom::Dropeffect>& dropeffects) const override;
   bool SupportsARIAFlowTo() const override;
   bool SupportsARIAOwns() const override;
 
@@ -147,12 +149,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
                          NameSources*) const override;
 
   // Modify or take an action on an object.
-  bool OnNativeSetSelectionAction(const AXSelection&) override;
   bool OnNativeSetValueAction(const String&) override;
-
-  // Methods that retrieve or manipulate the current selection.
-  AXSelection Selection() const override;
-  AXSelection SelectionUnderObject() const override;
 
   // Hit testing.
   AXObject* AccessibilityHitTest(const IntPoint&) const override;
@@ -172,6 +169,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddInlineTextBoxChildren(bool force) override;
   void AddImageMapChildren() override;
   void AddHiddenChildren() override;
+  void AddPopupChildren() override;
   bool CanHaveChildren() const override;
 
   // Properties of the object's owning document or page.
@@ -190,10 +188,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Called when autofill becomes available/unavailable on a form control.
   void HandleAutofillStateChanged(bool) override;
   void TextChanged() override;
-
-  // Text metrics. Most of these should be deprecated, needs major cleanup.
-  int Index(const VisiblePosition&) const override;
-  VisiblePosition VisiblePositionForIndex(int) const override;
 
   // For a table.
   bool IsDataTable() const override;
@@ -219,7 +213,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
  private:
   bool IsTabItemSelected() const;
-  bool IsValidSelectionBound(const AXObject*) const;
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,
                                          const IntPoint&) const;
   bool IsSVGImage() const;
@@ -227,7 +220,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXSVGRoot* RemoteSVGRootElement() const;
   AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
-  void AddPopupChildren();
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddValidationMessageChild();
@@ -236,14 +228,11 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
-  AXSelection TextControlSelection() const;
-  int IndexForVisiblePosition(const VisiblePosition&) const;
-  AXLayoutObject* GetUnignoredObjectFromNode(Node&) const;
-
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
   bool IsPlaceholder() const;
+  ax::mojom::Dropeffect ParseDropeffect(String& dropeffect) const;
 
   static ax::mojom::TextDecorationStyle
   TextDecorationStyleToAXTextDecorationStyle(

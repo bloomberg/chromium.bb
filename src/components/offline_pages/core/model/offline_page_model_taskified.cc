@@ -65,12 +65,6 @@ SavePageResult ArchiverResultToSavePageResult(ArchiverResult archiver_result) {
       return SavePageResult::ARCHIVE_CREATION_FAILED;
     case ArchiverResult::ERROR_CANCELED:
       return SavePageResult::CANCELLED;
-    case ArchiverResult::ERROR_SECURITY_CERTIFICATE:
-      return SavePageResult::SECURITY_CERTIFICATE_ERROR;
-    case ArchiverResult::ERROR_ERROR_PAGE:
-      return SavePageResult::ERROR_PAGE;
-    case ArchiverResult::ERROR_INTERSTITIAL_PAGE:
-      return SavePageResult::INTERSTITIAL_PAGE;
     case ArchiverResult::ERROR_SKIPPED:
       return SavePageResult::SKIPPED;
     case ArchiverResult::ERROR_DIGEST_CALCULATION_FAILED:
@@ -266,48 +260,23 @@ void OfflinePageModelTaskified::MarkPageAccessed(int64_t offline_id) {
   task_queue_.AddTask(std::move(task));
 }
 
-void OfflinePageModelTaskified::DeletePagesByOfflineId(
-    const std::vector<int64_t>& offline_ids,
+void OfflinePageModelTaskified::DeletePagesWithCriteria(
+    const PageCriteria& criteria,
     DeletePageCallback callback) {
-  auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
-      store_.get(),
+  task_queue_.AddTask(DeletePageTask::CreateTaskWithCriteria(
+      store_.get(), *policy_controller_.get(), criteria,
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      offline_ids);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::DeletePagesByClientIds(
-    const std::vector<ClientId>& client_ids,
-    DeletePageCallback callback) {
-  auto task = DeletePageTask::CreateTaskMatchingClientIds(
-      store_.get(),
-      base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      client_ids);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::DeletePagesByClientIdsAndOrigin(
-    const std::vector<ClientId>& client_ids,
-    const std::string& origin,
-    DeletePageCallback callback) {
-  auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
-      store_.get(),
-      base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      client_ids, origin);
-  task_queue_.AddTask(std::move(task));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void OfflinePageModelTaskified::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     DeletePageCallback callback) {
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
-      store_.get(),
+      store_.get(), *policy_controller_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      policy_controller_.get(), predicate);
+      predicate);
   task_queue_.AddTask(std::move(task));
 }
 
@@ -322,7 +291,7 @@ void OfflinePageModelTaskified::GetPageByOfflineId(
     int64_t offline_id,
     SingleOfflinePageItemCallback callback) {
   PageCriteria criteria;
-  criteria.offline_id = offline_id;
+  criteria.offline_ids = std::vector<int64_t>{offline_id};
   // Adapt multiple result to single result callback.
   auto wrapped_callback = base::BindOnce(
       [](SingleOfflinePageItemCallback callback,
@@ -347,7 +316,7 @@ void OfflinePageModelTaskified::GetOfflineIdsForClientId(
   // client ids, and then extract the offline IDs from the items. This is fine
   // since we're not expecting many pages with the same client ID.
   PageCriteria criteria;
-  criteria.client_ids = {client_id};
+  criteria.client_ids = std::vector<ClientId>{client_id};
   GetPagesWithCriteria(criteria, base::BindOnce(&WrapInMultipleItemsCallback,
                                                 std::move(callback)));
 }
@@ -608,20 +577,20 @@ void OfflinePageModelTaskified::OnAddPageDone(const OfflinePageItem& page,
 void OfflinePageModelTaskified::OnDeleteDone(
     DeletePageCallback callback,
     DeletePageResult result,
-    const std::vector<OfflinePageModel::DeletedPageInfo>& infos) {
+    const std::vector<OfflinePageItem>& deleted_items) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.DeletePageResult", result);
   std::vector<int64_t> system_download_ids;
 
   // Notify observers and run callback.
-  for (const auto& info : infos) {
+  for (const auto& item : deleted_items) {
     UMA_HISTOGRAM_ENUMERATION(
         "OfflinePages.DeletePageCount",
-        model_utils::ToNamespaceEnum(info.client_id.name_space));
-    offline_event_logger_.RecordPageDeleted(info.offline_id);
+        model_utils::ToNamespaceEnum(item.client_id.name_space));
+    offline_event_logger_.RecordPageDeleted(item.offline_id);
     for (Observer& observer : observers_)
-      observer.OfflinePageDeleted(info);
-    if (info.system_download_id != 0)
-      system_download_ids.push_back(info.system_download_id);
+      observer.OfflinePageDeleted(item);
+    if (item.system_download_id != 0)
+      system_download_ids.push_back(item.system_download_id);
   }
 
   // Remove the page from the system download manager. We don't need to wait for
@@ -728,11 +697,11 @@ void OfflinePageModelTaskified::OnClearCachedPagesDone(
 void OfflinePageModelTaskified::RemovePagesMatchingUrlAndNamespace(
     const OfflinePageItem& page) {
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
-      store_.get(),
+      store_.get(), *policy_controller_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::DoNothing::Once<DeletePageResult>()),
-      policy_controller_.get(), page);
+      page);
   task_queue_.AddTask(std::move(task));
 }
 

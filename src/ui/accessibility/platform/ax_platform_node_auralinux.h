@@ -59,13 +59,16 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                                         gint y,
                                         AtkCoordType coord_type);
   bool GrabFocus();
+  bool GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset);
+  bool GrabFocusOrSetSequentialFocusNavigationStartingPoint();
   bool DoDefaultAction();
   const gchar* GetDefaultActionName();
   AtkAttributeSet* GetAtkAttributes();
 
-  void SetExtentsRelativeToAtkCoordinateType(
-      gint* x, gint* y, gint* width, gint* height,
-      AtkCoordType coord_type);
+  gfx::Vector2d GetParentOriginInScreenCoordinates() const;
+  gfx::Vector2d GetParentFrameOriginInScreenCoordinates() const;
+  gfx::Rect GetExtentsRelativeToAtkCoordinateType(
+      AtkCoordType coord_type) const;
 
   // AtkDocument helpers
   const gchar* GetDocumentAttributeValue(const gchar* attribute) const;
@@ -74,10 +77,16 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // AtkHyperlink helpers
   AtkHyperlink* GetAtkHyperlink();
 
+  void ScrollToPoint(AtkCoordType atk_coord_type, int x, int y);
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
+  base::Optional<gfx::Point> CalculateScrollToPoint(AtkScrollType scroll_type);
+#endif  // ATK_230
+
   // Misc helpers
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);
 
   // Event helpers
+  void OnActiveDescendantChanged();
   void OnCheckedStateChanged();
   void OnExpandedStateChanged(bool is_expanded);
   void OnFocused();
@@ -94,6 +103,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnDescriptionChanged();
   void OnInvalidStatusChanged();
   void OnDocumentTitleChanged();
+  void OnSubtreeCreated();
+  void OnSubtreeWillBeDeleted();
 
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
@@ -105,13 +116,13 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // AXPlatformNodeBase overrides.
   void Init(AXPlatformNodeDelegate* delegate) override;
   int GetIndexInParent() override;
-  base::string16 GetText() const override;
+  base::string16 GetHypertext() const override;
 
   void UpdateHypertext();
-  const AXHypertext& GetHypertext();
+  const AXHypertext& GetAXHypertext();
   const base::OffsetAdjuster::Adjustments& GetHypertextAdjustments();
   size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
-  size_t UnicodeToUTF16OffsetInText(size_t unicode_offset);
+  size_t UnicodeToUTF16OffsetInText(int unicode_offset);
 
   void SetEmbeddedDocument(AtkObject* new_document);
   void SetEmbeddingWindow(AtkObject* new_embedding_window);
@@ -120,7 +131,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool SetCaretOffset(int offset);
   bool SetTextSelectionForAtkText(int start_offset, int end_offset);
   bool HasSelection();
-  gchar* GetSelection(int* start_offset, int* end_offset);
+  void GetSelectionExtents(int* start_offset, int* end_offset);
+  gchar* GetSelectionWithText(int* start_offset, int* end_offset);
 
   std::string accessible_name_;
 
@@ -164,6 +176,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();
+
+  // Find the topmost document that is an ancestor of this node. Returns
+  // null if there is no ancestor which is a document.`
+  AXPlatformNodeAuraLinux* FindTopmostDocumentAncestor();
 
   // Keep information of latest AtkInterfaces mask to refresh atk object
   // interfaces accordingly if needed.

@@ -63,7 +63,8 @@ class SoftwareImageDecodeCachePerfTest : public testing::Test {
                              PaintImage::GetNextContentId())
                   .TakePaintImage(),
               subrect, quality,
-              CreateMatrix(SkSize::Make(scale.first, scale.second)), 0u);
+              CreateMatrix(SkSize::Make(scale.first, scale.second)), 0u,
+              gfx::ColorSpace());
         }
       }
     }

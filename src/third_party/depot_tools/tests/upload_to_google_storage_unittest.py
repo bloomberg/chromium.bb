@@ -159,7 +159,7 @@ class UploadTests(unittest.TestCase):
     try:
       upload_to_google_storage.get_targets([], self.parser, False)
       self.fail()
-    except SystemExit, e:
+    except SystemExit as e:
       self.assertEqual(e.code, 2)
 
   def test_get_targets_passthrough(self):

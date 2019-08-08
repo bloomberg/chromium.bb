@@ -17,8 +17,9 @@ namespace cc {
 class LayerImpl;
 class LayerTreeDebugState;
 class LayerTreeImpl;
+class HeadsUpDisplayLayerImpl;
 
-// There are currently six types of debug rects:
+// There are various types of debug rects:
 //
 // - Paint rects (update rects): regions of a layer that needed to be
 // re-uploaded to the texture resource; in most cases implying that they had to
@@ -33,6 +34,9 @@ class LayerTreeImpl;
 // paint rects, (2) property- changed rects, and (3) newly exposed areas.
 //
 // - Screen space rects: this is the region the contents occupy in screen space.
+//
+// - Layout shift rects: regions of an animation frame that were shifted while
+// the page is loading content.
 enum DebugRectType {
   PAINT_RECT_TYPE,
   PROPERTY_CHANGED_RECT_TYPE,
@@ -43,6 +47,7 @@ enum DebugRectType {
   SCROLL_EVENT_HANDLER_RECT_TYPE,
   NON_FAST_SCROLLABLE_RECT_TYPE,
   ANIMATION_BOUNDS_RECT_TYPE,
+  LAYOUT_SHIFT_RECT_TYPE,
 };
 
 struct DebugRect {
@@ -79,7 +84,7 @@ class DebugRectHistory {
   // reset.
   void SaveDebugRectsForCurrentFrame(
       LayerTreeImpl* tree_impl,
-      LayerImpl* hud_layer,
+      HeadsUpDisplayLayerImpl* hud_layer,
       const RenderSurfaceList& render_surface_list,
       const LayerTreeDebugState& debug_state);
 
@@ -88,6 +93,7 @@ class DebugRectHistory {
  private:
   DebugRectHistory();
 
+  void SaveLayoutShiftRects(HeadsUpDisplayLayerImpl* hud);
   void SavePaintRects(LayerTreeImpl* tree_impl);
   void SavePropertyChangedRects(LayerTreeImpl* tree_impl, LayerImpl* hud_layer);
   void SaveSurfaceDamageRects(const RenderSurfaceList& render_surface_list);

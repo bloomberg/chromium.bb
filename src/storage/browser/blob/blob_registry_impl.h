@@ -67,6 +67,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
     return blobs_under_construction_.size();
   }
 
+  size_t BlobsBeingStreamedForTesting() const {
+    return blobs_being_streamed_.size();
+  }
+
   using URLStoreCreationHook = base::RepeatingCallback<void(
       mojo::StrongAssociatedBindingPtr<blink::mojom::BlobURLStore>)>;
   static void SetURLStoreCreationHookForTesting(URLStoreCreationHook* hook);

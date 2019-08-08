@@ -376,6 +376,7 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kIgnoreCertificateErrorsSPKIList,
       network::switches::kIgnoreUrlFetcherCertRequests,
       network::switches::kLogNetLog,
+      network::switches::kNetLogCaptureMode,
       network::switches::kNoReferrers,
       network::switches::kExplicitlyAllowedPorts,
       service_manager::switches::kNoSandbox,
@@ -397,13 +398,13 @@ bool UtilityProcessHost::StartProcess() {
       switches::kUseFakeMjpegDecodeAccelerator,
       switches::kUseFileForFakeVideoCapture,
       switches::kUseMockCertVerifierForTesting,
+      switches::kMockCertVerifierDefaultResultForTesting,
       switches::kUtilityStartupDialog,
       switches::kUseGL,
       switches::kV,
       switches::kVModule,
 #if defined(OS_ANDROID)
       switches::kEnableReachedCodeProfiler,
-      switches::kOrderfileMemoryOptimization,
 #endif
       // These flags are used by the audio service:
       switches::kAudioBufferSize,

@@ -24,10 +24,9 @@ source_set("common") {
     "setup_lib.h",
   ]
   public_deps = [
-    "//base:base",
+    "//base",
   ]
   deps = [
-    ":version",
     "../gaiacp:common",
     "//chrome/installer/util:with_no_strings",
   ]
@@ -69,6 +68,7 @@ executable("gcp_setup") {
   deps = [
     ":common",
     ":setup_resources",
+    ":version",
     "../eventlog:gcp_eventlog_messages",
     "../gaiacp:common",
     "//chrome/common:version_header",

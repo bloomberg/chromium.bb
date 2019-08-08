@@ -8,7 +8,7 @@
 #ifndef GrMtlCopyManager_DEFINED
 #define GrMtlCopyManager_DEFINED
 
-#include "GrTypes.h"
+#include "include/gpu/GrTypes.h"
 
 #import <metal/metal.h>
 
@@ -28,6 +28,8 @@ public:
                            bool canDiscardOutsideDstRect);
 
     static bool IsCompatible(const GrMtlCopyPipelineState*, MTLPixelFormat dstPixelFormat);
+
+    void destroyResources();
 
 private:
     enum BufferIndex {

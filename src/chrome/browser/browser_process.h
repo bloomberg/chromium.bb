@@ -38,6 +38,7 @@ class StatusTray;
 class SystemNetworkContextManager;
 class WatchDogThread;
 class WebRtcLogUploader;
+class StartupData;
 
 namespace network {
 class NetworkQualityTracker;
@@ -252,6 +253,10 @@ class BrowserProcess {
   // performed on slow page loads.
   virtual optimization_guide::OptimizationGuideService*
   optimization_guide_service() = 0;
+
+  // Returns the StartupData which owns any pre-created objects in //chrome
+  // before the full browser starts.
+  virtual StartupData* startup_data() = 0;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   // This will start a timer that, if Chrome is in persistent mode, will check

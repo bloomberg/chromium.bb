@@ -21,8 +21,6 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.gpu_startup_dialog, right.gpu_startup_dialog);
   EXPECT_EQ(left.disable_gpu_watchdog, right.disable_gpu_watchdog);
   EXPECT_EQ(left.gpu_sandbox_start_early, right.gpu_sandbox_start_early);
-  EXPECT_EQ(left.enable_accelerated_vpx_decode,
-            right.enable_accelerated_vpx_decode);
   EXPECT_EQ(left.enable_low_latency_dxva, right.enable_low_latency_dxva);
   EXPECT_EQ(left.enable_zero_copy_dxgi_video,
             right.enable_zero_copy_dxgi_video);
@@ -55,7 +53,6 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.enable_threaded_texture_mailboxes);
   EXPECT_EQ(left.gl_shader_interm_output, right.gl_shader_interm_output);
   EXPECT_EQ(left.emulate_shader_precision, right.emulate_shader_precision);
-  EXPECT_EQ(left.max_active_webgl_contexts, right.max_active_webgl_contexts);
   EXPECT_EQ(left.enable_gpu_service_logging, right.enable_gpu_service_logging);
   EXPECT_EQ(left.enable_gpu_service_tracing, right.enable_gpu_service_tracing);
   EXPECT_EQ(left.use_passthrough_cmd_decoder,
@@ -113,8 +110,6 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(gpu_startup_dialog, true)
     GPU_PREFERENCES_FIELD(disable_gpu_watchdog, true)
     GPU_PREFERENCES_FIELD(gpu_sandbox_start_early, true)
-    GPU_PREFERENCES_FIELD(enable_accelerated_vpx_decode,
-                          GpuPreferences::VPX_VENDOR_AMD)
     GPU_PREFERENCES_FIELD(enable_low_latency_dxva, false)
     GPU_PREFERENCES_FIELD(enable_zero_copy_dxgi_video, true)
     GPU_PREFERENCES_FIELD(enable_nv12_dxgi_video, true)
@@ -138,7 +133,6 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_threaded_texture_mailboxes, true)
     GPU_PREFERENCES_FIELD(gl_shader_interm_output, true)
     GPU_PREFERENCES_FIELD(emulate_shader_precision, true)
-    GPU_PREFERENCES_FIELD(max_active_webgl_contexts, 1)
     GPU_PREFERENCES_FIELD(enable_gpu_service_logging, true)
     GPU_PREFERENCES_FIELD(enable_gpu_service_tracing, true)
     GPU_PREFERENCES_FIELD(use_passthrough_cmd_decoder, true)

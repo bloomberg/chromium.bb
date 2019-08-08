@@ -36,11 +36,11 @@ fidl::InterfaceHandle<::fuchsia::io::Directory>
 FilteredServiceDirectory::ConnectClient() {
   fidl::InterfaceHandle<::fuchsia::io::Directory> client;
 
-  // ServiceDirectory puts public services under ./public . Connect to that
+  // ServiceDirectory puts public services under ./svc . Connect to that
   // directory and return client handle for the connection,
-  zx_status_t status = fdio_service_connect_at(
-      outgoing_directory_client_.channel().get(), "public",
-      client.NewRequest().TakeChannel().release());
+  zx_status_t status =
+      fdio_service_connect_at(outgoing_directory_client_.channel().get(), "svc",
+                              client.NewRequest().TakeChannel().release());
   ZX_CHECK(status == ZX_OK, status) << "fdio_service_connect_at()";
 
   return client;

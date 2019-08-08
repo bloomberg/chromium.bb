@@ -70,6 +70,10 @@ Restoration::
 OPTIONS
 -------
 
+-k::
+--keep-going::
+  Keep processing past failed rebases.
+
 -n::
 --no-fetch::
   Skip the `git fetch` phase of rebase-update.
@@ -77,6 +81,9 @@ OPTIONS
 -v::
 --verbose::
   More text than your terminal can handle.
+
+--current::
+  Only rebase the current branch.
 
 
 CONFIGURATION VARIABLES

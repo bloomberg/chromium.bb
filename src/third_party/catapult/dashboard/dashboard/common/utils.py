@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 """General functions which are useful throughout this project."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
-import json
 import logging
 import os
 import re
@@ -218,6 +220,30 @@ def MostSpecificMatchingPattern(test, pattern_data_tuples):
   */*/*/Bar would match more closely than */*/*/Bar.*
   */*/*/Bar.* would match more closely than */*/*/*
   """
+
+  # To implement this properly, we'll use a matcher trie. This trie data
+  # structure will take the tuple of patterns like:
+  #
+  #   */*/*/Bar
+  #   */*/*/Bar.*
+  #   */*/*/*
+  #
+  # and create a trie of the following form:
+  #
+  #   (all, *) -> (all, *) -> (all, *) -> (specific, Bar)
+  #                               T
+  #                               + -> (partial, Bar.*)
+  #                               |
+  #                               + -> (all, *)
+  #
+  #
+  # We can then traverse this trie, where we order the matchers by exactness,
+  # and return the deepest pattern that matches.
+  #
+  # For now, we'll keep this as is.
+  #
+  # TODO(dberris): Refactor this to build a trie.
+
   matching_patterns = []
   for p, v in pattern_data_tuples:
     if not TestMatchesPattern(test, p):
@@ -253,7 +279,11 @@ def MostSpecificMatchingPattern(test, pattern_data_tuples):
         return 1
       return 0
 
-  matching_patterns.sort(cmp=CmpPatterns)
+    # In the case when we find that the patterns are the same, we should return
+    # 0 to indicate that we've found an equality.
+    return 0
+
+  matching_patterns.sort(cmp=CmpPatterns)  # pylint: disable=using-cmp-argument
 
   return matching_patterns[0][1]
 
@@ -486,19 +516,6 @@ def IsTryjobUser():
 def GetIpWhitelist():
   """Returns a list of IP address strings in the whitelist."""
   return stored_object.Get(IP_WHITELIST_KEY)
-
-
-def BisectConfigPythonString(config):
-  """Turns a bisect config dict into a properly formatted Python string.
-
-  Args:
-    config: A bisect config dict (see start_try_job.GetBisectConfig)
-
-  Returns:
-    A config string suitable to store in a TryJob entity.
-  """
-  return 'config = %s\n' % json.dumps(
-      config, sort_keys=True, indent=2, separators=(',', ': '))
 
 
 def GetRequestId():

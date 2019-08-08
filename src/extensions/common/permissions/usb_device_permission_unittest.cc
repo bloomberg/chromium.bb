@@ -6,14 +6,14 @@
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "device/usb/public/cpp/fake_usb_device_info.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
 #include "extensions/common/value_builder.h"
+#include "services/device/public/cpp/test/fake_usb_device_info.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

@@ -6,8 +6,8 @@
 #define COMPONENTS_SYNC_SYNCABLE_BASE_TRANSACTION_H_
 
 #include "base/macros.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/user_share.h"
 
 namespace syncer {

@@ -412,11 +412,6 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 }
 
-void ChromeBrowserMainPartsMac::PostEarlyInitialization() {
-  ui::NativeThemeMac::MaybeUpdateBrowserAppearance();
-  ChromeBrowserMainPartsPosix::PostEarlyInitialization();
-}
-
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::PRE_MAIN_MESSAGE_LOOP_START);

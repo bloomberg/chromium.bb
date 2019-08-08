@@ -23,27 +23,22 @@ namespace {
 // Returns parameters for logging data transferred events. At a minimum includes
 // the number of bytes transferred. If the capture mode allows logging byte
 // contents and |byte_count| > 0, then will include the actual bytes.
-std::unique_ptr<base::Value> BytesTransferredCallback(
-    int byte_count,
-    const char* bytes,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("byte_count", byte_count);
+base::Value BytesTransferredCallback(int byte_count,
+                                     const char* bytes,
+                                     NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes() && byte_count > 0)
-    dict->SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
+    dict.SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   return std::move(dict);
 }
 
 }  // namespace
 
-NetLogWithSource::~NetLogWithSource() {
-  liveness_ = DEAD;
-}
+NetLogWithSource::~NetLogWithSource() {}
 
 void NetLogWithSource::AddEntry(NetLogEventType type,
                                 NetLogEventPhase phase) const {
-  CrashIfInvalid();
-
   if (!net_log_)
     return;
   net_log_->AddEntry(type, source_, phase, nullptr);
@@ -53,8 +48,6 @@ void NetLogWithSource::AddEntry(
     NetLogEventType type,
     NetLogEventPhase phase,
     const NetLogParametersCallback& get_parameters) const {
-  CrashIfInvalid();
-
   if (!net_log_)
     return;
   net_log_->AddEntry(type, source_, phase, &get_parameters);
@@ -117,7 +110,6 @@ void NetLogWithSource::AddByteTransferEvent(NetLogEventType event_type,
 }
 
 bool NetLogWithSource::IsCapturing() const {
-  CrashIfInvalid();
   return net_log_ && net_log_->IsCapturing();
 }
 
@@ -129,16 +121,6 @@ NetLogWithSource NetLogWithSource::Make(NetLog* net_log,
 
   NetLogSource source(source_type, net_log->NextID());
   return NetLogWithSource(source, net_log);
-}
-
-void NetLogWithSource::CrashIfInvalid() const {
-  Liveness liveness = liveness_;
-
-  if (liveness == ALIVE)
-    return;
-
-  base::debug::Alias(&liveness);
-  CHECK_EQ(ALIVE, liveness);
 }
 
 }  // namespace net

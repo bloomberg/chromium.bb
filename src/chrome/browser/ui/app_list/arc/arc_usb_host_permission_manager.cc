@@ -81,7 +81,7 @@ ArcUsbHostPermissionManager::UsbPermissionRequest::~UsbPermissionRequest() =
 void ArcUsbHostPermissionManager::UsbPermissionRequest::Resolve(bool allowed) {
   if (!callback_)
     return;
-  base::ResetAndReturn(&*callback_).Run(allowed);
+  std::move(*callback_).Run(allowed);
 }
 
 // UsbDeviceEntry

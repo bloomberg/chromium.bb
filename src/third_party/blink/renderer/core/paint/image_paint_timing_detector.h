@@ -22,19 +22,24 @@ class LocalFrameView;
 class PropertyTreeState;
 class TracedValue;
 class Image;
+class ImageResourceContent;
 
+// TODO(crbug/960502): we should limit the access of these properties.
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
+  unsigned record_id;
   DOMNodeId node_id = kInvalidDOMNodeId;
+  // Mind that |first_size| has to be assigned before pusing to
+  // |size_ordered_set_| since it's the sorting key.
   uint64_t first_size = 0;
   unsigned frame_index = 0;
-  // The time of the first paint after fully loaded.
+  // The time of the first paint after fully loaded. 0 means not painted yet.
   base::TimeTicks paint_time = base::TimeTicks();
+  WeakPersistent<const ImageResourceContent> cached_image;
   bool loaded = false;
-#ifndef NDEBUG
-  String image_url = "";
-#endif
 };
+
+typedef std::pair<DOMNodeId, const ImageResourceContent*> BackgroundImageId;
 
 // |ImageRecordsManager| is the manager of all of the images that Largest Image
 // Paint cares about. Note that an image does not necessarily correspond to a
@@ -51,20 +56,24 @@ class CORE_EXPORT ImageRecordsManager {
 
  public:
   ImageRecordsManager();
-  ImageRecord* FindLargestPaintCandidate();
+  ImageRecord* FindLargestPaintCandidate() const;
 
   bool AreAllVisibleNodesDetached() const;
   void SetNodeDetached(const DOMNodeId& visible_node_id);
   void SetNodeReattachedIfNeeded(const DOMNodeId& visible_node_id);
 
   void RecordInvisibleNode(const DOMNodeId&);
-  void RecordVisibleNode(const DOMNodeId&,
-                         const uint64_t& visual_size,
-                         const LayoutObject&);
+  void RecordVisibleNode(const DOMNodeId&, const uint64_t& visual_size);
+  void RecordVisibleNode(const BackgroundImageId& background_image_id,
+                         const uint64_t& visual_size);
   size_t CountVisibleNodes() const { return visible_node_map_.size(); }
   size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
   bool IsRecordedVisibleNode(const DOMNodeId& node_id) const {
     return visible_node_map_.Contains(node_id);
+  }
+  bool IsRecordedVisibleNode(
+      const BackgroundImageId& background_image_id) const {
+    return visible_background_image_map_.Contains(background_image_id);
   }
   bool IsRecordedInvisibleNode(const DOMNodeId& node_id) const {
     return invisible_node_ids_.Contains(node_id);
@@ -73,7 +82,11 @@ class CORE_EXPORT ImageRecordsManager {
   bool RecordedTooManyNodes() const;
 
   bool WasVisibleNodeLoaded(const DOMNodeId&) const;
+  bool WasVisibleNodeLoaded(const BackgroundImageId& background_image_id) const;
   void OnImageLoaded(const DOMNodeId&, unsigned current_frame_index);
+  void OnImageLoaded(const BackgroundImageId&, unsigned current_frame_index);
+  void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
+                             unsigned current_frame_index);
 
   bool NeedMeausuringPaintTime() const {
     return !images_queued_for_paint_time_.empty();
@@ -91,12 +104,22 @@ class CORE_EXPORT ImageRecordsManager {
  private:
   // Find the image record of an visible image.
   base::WeakPtr<ImageRecord> FindVisibleRecord(const DOMNodeId&) const;
+  base::WeakPtr<ImageRecord> FindVisibleRecord(
+      const BackgroundImageId& background_image_id) const;
+  std::unique_ptr<ImageRecord> CreateImageRecord(
+      const DOMNodeId&,
+      const ImageResourceContent* cached_image,
+      const uint64_t& visual_size);
   void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>&,
                                unsigned current_frame_index);
   void SetLoaded(base::WeakPtr<ImageRecord>&);
+
+  unsigned max_record_id_ = 0;
   // We will never destroy the pointers within |visible_node_map_|. Once created
   // they will exist for the whole life cycle of |visible_node_map_|.
   HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> visible_node_map_;
+  HashMap<BackgroundImageId, std::unique_ptr<ImageRecord>>
+      visible_background_image_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
   // Use |DOMNodeId| instead of |ImageRecord|* for the efficiency of inserting
   // and erasing.
@@ -136,22 +159,18 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
  public:
   ImagePaintTimingDetector(LocalFrameView*);
-  ImageRecord* FindLargestPaintCandidate();
   void RecordImage(const LayoutObject&,
                    const IntSize& intrinsic_size,
-                   bool is_loaded,
+                   const ImageResourceContent&,
                    const PropertyTreeState& current_paint_chunk_properties);
-  static bool IsBackgroundImageContentful(const LayoutObject&, const Image&);
-  static bool HasBackgroundImage(const LayoutObject& object);
+  void RecordBackgroundImage(
+      const LayoutObject&,
+      const IntSize& intrinsic_size,
+      const ImageResourceContent& cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
-  base::TimeTicks LargestImagePaint() const {
-    return !largest_image_paint_ ? base::TimeTicks()
-                                 : largest_image_paint_->paint_time;
-  }
-  uint64_t LargestImagePaintSize() const {
-    return !largest_image_paint_ ? 0 : largest_image_paint_->first_size;
-  }
+  void NotifyBackgroundImageRemoved(DOMNodeId, const ImageResourceContent*);
   // After the method being called, the detector stops to record new entries and
   // node removal. But it still observe the loading status. In other words, if
   // an image is recorded before stopping recording, and finish loading after
@@ -159,22 +178,24 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // finished.
   void StopRecordEntries();
   bool IsRecording() const { return is_recording_; }
+  bool FinishedReportingImages() const;
   void Trace(blink::Visitor*);
 
  private:
-  void PopulateTraceValue(TracedValue&,
-                          const ImageRecord& first_image_paint,
-                          unsigned report_count) const;
+  ImageRecord* FindLargestPaintCandidate() const;
+
+  void PopulateTraceValue(TracedValue&, const ImageRecord& first_image_paint);
   // This is provided for unit test to force invoking swap promise callback.
   void ReportSwapTime(unsigned last_queued_frame_index,
                       WebWidgetClient::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
-  void OnLargestImagePaintDetected(ImageRecord*);
+  void ReportCandidateToTrace(ImageRecord&);
+  void ReportNoCandidateToTrace();
   void Deactivate();
   void HandleTooManyNodes();
 
-  void Analyze();
+  void UpdateCandidate();
 
   base::RepeatingCallback<void(WebWidgetClient::ReportTimeCallback)>
       notify_swap_time_override_for_testing_;
@@ -190,7 +211,14 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // no effect on recording the loading status.
   bool is_recording_ = true;
 
-  ImageRecord* largest_image_paint_ = nullptr;
+  // Used to determine how many swap callbacks are pending. In combination with
+  // |is_recording|, helps determine whether this detector can be destroyed.
+  int num_pending_swap_callbacks_ = 0;
+
+  // This need to be set whenever changes that can affect the output of
+  // |FindLargestPaintCandidate| occur during the paint tree walk.
+  bool need_update_timing_at_frame_end_ = false;
+
   ImageRecordsManager records_manager_;
   Member<LocalFrameView> frame_view_;
 };

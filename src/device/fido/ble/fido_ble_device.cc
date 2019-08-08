@@ -222,6 +222,10 @@ FidoBleDevice::PendingFrame::PendingFrame(PendingFrame&&) = default;
 FidoBleDevice::PendingFrame::~PendingFrame() = default;
 
 void FidoBleDevice::OnConnected(bool success) {
+  if (state_ == State::kDeviceError) {
+    return;
+  }
+
   StopTimeout();
   if (!success) {
     FIDO_LOG(ERROR) << "Error while attempting to connect to BLE device.";
@@ -238,6 +242,10 @@ void FidoBleDevice::OnConnected(bool success) {
 }
 
 void FidoBleDevice::OnReadControlPointLength(base::Optional<uint16_t> length) {
+  if (state_ == State::kDeviceError) {
+    return;
+  }
+
   StopTimeout();
   if (length) {
     control_point_length_ = *length;
@@ -273,6 +281,7 @@ void FidoBleDevice::StopTimeout() {
 
 void FidoBleDevice::OnTimeout() {
   state_ = State::kDeviceError;
+  Transition();
 }
 
 void FidoBleDevice::OnBleResponseReceived(DeviceCallback callback,

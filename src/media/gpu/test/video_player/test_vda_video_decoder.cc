@@ -61,9 +61,7 @@ void TestVDAVideoDecoder::Destroy() {
   weak_this_factory_.InvalidateWeakPtrs();
 
   // Delete all video frames and related textures.
-  frame_renderer_->AcquireGLContext();
   video_frames_.clear();
-  frame_renderer_->ReleaseGLContext();
 }
 
 std::string TestVDAVideoDecoder::GetDisplayName() const {
@@ -77,7 +75,7 @@ bool TestVDAVideoDecoder::IsPlatformDecoder() const {
 void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      bool low_delay,
                                      CdmContext* cdm_context,
-                                     const InitCB& init_cb,
+                                     InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
   output_cb_ = output_cb;
@@ -101,7 +99,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_factory) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -122,26 +120,26 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                 const DecodeCB& decode_cb) {
+                                 DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // If the |buffer| is an EOS buffer the decoder must be flushed.
   if (buffer->end_of_stream()) {
-    flush_cb_ = decode_cb;
+    flush_cb_ = std::move(decode_cb);
     decoder_->Flush();
     return;
   }
 
   int32_t bitstream_buffer_id = GetNextBitstreamBufferId();
-  decode_cbs_[bitstream_buffer_id] = decode_cb;
+  decode_cbs_[bitstream_buffer_id] = std::move(decode_cb);
 
   // Record picture buffer decode start time. A cache is used because not each
   // bitstream buffer decode will result in a call to PictureReady(). Pictures
@@ -153,10 +151,10 @@ void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   decoder_->Decode(std::move(buffer), bitstream_buffer_id);
 }
 
-void TestVDAVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
+void TestVDAVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
-  reset_cb_ = reset_cb;
+  reset_cb_ = std::move(reset_cb);
   decoder_->Reset();
 }
 
@@ -243,8 +241,10 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
 }
 
 void TestVDAVideoDecoder::DismissPictureBuffer(int32_t picture_buffer_id) {
-  // TODO(dstaessens@) support dismissing picture buffers.
-  NOTIMPLEMENTED();
+  // Drop reference to the video frame associated with the picture buffer, so
+  // the video frame and related texture are automatically destroyed once the
+  // renderer and video frame processors are done using them.
+  ASSERT_EQ(video_frames_.erase(picture_buffer_id), 1u);
 }
 
 void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
@@ -271,7 +271,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
                        picture.picture_buffer_id()));
 
     scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
-        video_frame, video_frame->format(), video_frame->visible_rect(),
+        *video_frame, video_frame->format(), video_frame->visible_rect(),
         video_frame->visible_rect().size());
     wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
 
@@ -311,7 +311,7 @@ void TestVDAVideoDecoder::NotifyEndOfBitstreamBuffer(
       << "Couldn't find decode callback for picture buffer with id "
       << bitstream_buffer_id;
 
-  it->second.Run(DecodeStatus::OK);
+  std::move(it->second).Run(DecodeStatus::OK);
   decode_cbs_.erase(it);
 }
 

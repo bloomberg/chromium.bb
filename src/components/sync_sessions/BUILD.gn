@@ -51,7 +51,7 @@ static_library("sync_sessions") {
   public_deps = [
     "//components/sessions",
     "//components/sync",
-    "//components/sync:device_info",
+    "//components/sync_device_info",
   ]
 
   deps = [
@@ -61,6 +61,7 @@ static_library("sync_sessions") {
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/prefs",
+    "//components/sync_user_events",
     "//components/variations",
     "//components/version_info",
     "//google_apis",
@@ -121,10 +122,7 @@ source_set("unit_tests") {
     "//components/history/core/browser",
     "//components/prefs:test_support",
     "//components/sessions:test_support",
-    "//components/sync",
-    "//components/sync:test_support_driver",
-    "//components/sync:test_support_engine",
-    "//components/sync:test_support_model",
+    "//components/sync:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base:base",

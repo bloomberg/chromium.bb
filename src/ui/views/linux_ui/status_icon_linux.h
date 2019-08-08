@@ -58,4 +58,4 @@ class VIEWS_EXPORT StatusIconLinux {
 
 }  // namespace views
 
-#endif  // UI_LINUX_UI_STATUS_ICON_LINUX_H_
+#endif  // UI_VIEWS_LINUX_UI_STATUS_ICON_LINUX_H_

@@ -7,6 +7,16 @@
 namespace net {
 namespace features {
 
+// Toggles the `Accept-Language` HTTP request header, which
+// https://github.com/WICG/lang-client-hint proposes that we deprecate.
+const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCapRefererHeaderLength = {
+    "CapRefererHeaderLength", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kMaxRefererHeaderLength = {
+    &kCapRefererHeaderLength, "MaxRefererHeaderLength", 4096};
+
 // Uses a site isolated code cache that is keyed on the resource url and the
 // origin lock of the renderer that is requesting the resource. The requests
 // to site-isolated code cache are handled by the content/GeneratedCodeCache
@@ -22,11 +32,18 @@ const base::Feature kIsolatedCodeCache = {"IsolatedCodeCache",
 const base::Feature kEnforceTLS13Downgrade{"EnforceTLS13Downgrade",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNetworkQualityEstimator{"NetworkQualityEstimator",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSplitCacheByTopFrameOrigin{
     "SplitCacheByTopFrameOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPartitionConnectionsByNetworkIsolationKey{
+    "PartitionConnectionsByNetworkIsolationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -39,6 +56,9 @@ const base::Feature kNetUnusedIdleSocketTimeout{
 
 const base::Feature kSameSiteByDefaultCookies{
     "SameSiteByDefaultCookies", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCookiesWithoutSameSiteMustBeSecure{
+    "CookiesWithoutSameSiteMustBeSecure", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace net

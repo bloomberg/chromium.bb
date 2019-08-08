@@ -15,7 +15,9 @@ source_set("test") {
     "//base",
     "//base/test:test_support",
     "//ios/web:web",
+    "//ios/web/navigation",
     "//ios/web/navigation:wk_navigation_util",
+    "//ios/web/public/deprecated",
     "//ios/web/test:test_support",
     "//testing/gtest",
     "//ui/base",
@@ -64,10 +66,11 @@ source_set("util") {
     "//base",
     "//base/test:test_support",
     "//ios/web/public:public",
-    "//ios/web/web_state:error_translation_util",
+    "//ios/web/public/deprecated",
     "//ios/web/web_state:web_state_impl_header",
     "//ios/web/web_state/js:script_util",
     "//ios/web/web_state/ui:ui",
+    "//ios/web/web_view:util",
     "//testing/gtest",
   ]
 

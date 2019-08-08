@@ -32,7 +32,7 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
   form_on_page.preferred = false;
-  form_on_page.scheme = PasswordForm::SCHEME_HTML;
+  form_on_page.scheme = PasswordForm::Scheme::kHtml;
 
   // Create an exact match in the database.
   PasswordForm preferred_match;
@@ -45,7 +45,7 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   preferred_match.submit_element = ASCIIToUTF16("");
   preferred_match.signon_realm = "https://foo.com/";
   preferred_match.preferred = true;
-  preferred_match.scheme = PasswordForm::SCHEME_HTML;
+  preferred_match.scheme = PasswordForm::Scheme::kHtml;
 
   std::map<base::string16, const PasswordForm*> matches;
 
@@ -81,7 +81,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
   form_on_page.preferred = false;
-  form_on_page.scheme = PasswordForm::SCHEME_HTML;
+  form_on_page.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match from the database that matches using public suffix.
   PasswordForm preferred_match;
@@ -95,7 +95,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   preferred_match.signon_realm = "https://foo.com/";
   preferred_match.is_public_suffix_match = true;
   preferred_match.preferred = true;
-  preferred_match.scheme = PasswordForm::SCHEME_HTML;
+  preferred_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match that matches exactly, so |is_public_suffix_match| has a
   // default value false.
@@ -109,7 +109,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   exact_match.submit_element = ASCIIToUTF16("");
   exact_match.signon_realm = "https://foo.com/";
   exact_match.preferred = false;
-  exact_match.scheme = PasswordForm::SCHEME_HTML;
+  exact_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match that was matched using public suffix, so
   // |is_public_suffix_match| == true.
@@ -124,7 +124,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   public_suffix_match.is_public_suffix_match = true;
   public_suffix_match.signon_realm = "https://foo.com/";
   public_suffix_match.preferred = false;
-  public_suffix_match.scheme = PasswordForm::SCHEME_HTML;
+  public_suffix_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Add one exact match and one public suffix match.
   std::map<base::string16, const PasswordForm*> matches;
@@ -165,7 +165,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
   form_on_page.preferred = false;
-  form_on_page.scheme = PasswordForm::SCHEME_HTML;
+  form_on_page.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match from the database that matches using affiliation.
   PasswordForm preferred_match;
@@ -188,7 +188,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   exact_match.submit_element = ASCIIToUTF16("");
   exact_match.signon_realm = "https://foo.com/";
   exact_match.preferred = false;
-  exact_match.scheme = PasswordForm::SCHEME_HTML;
+  exact_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match that was matched using public suffix, so
   // |is_public_suffix_match| == true.
@@ -199,7 +199,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   affiliated_match.is_affiliation_based_match = true;
   affiliated_match.signon_realm = "https://foo1.com/";
   affiliated_match.preferred = false;
-  affiliated_match.scheme = PasswordForm::SCHEME_HTML;
+  affiliated_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Add one exact match and one affiliation based match.
   std::map<base::string16, const PasswordForm*> matches;

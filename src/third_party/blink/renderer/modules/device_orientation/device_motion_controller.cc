@@ -43,24 +43,22 @@ void DeviceMotionController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (frame) {
-    if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
-    } else {
-      Deprecation::CountDeprecation(GetDocument(),
-                                    WebFeature::kDeviceMotionInsecureOrigin);
-      HostsUsingFeatures::CountAnyWorld(
-          GetDocument(),
-          HostsUsingFeatures::Feature::kDeviceMotionInsecureHost);
-      if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())
-        return;
-      if (RuntimeEnabledFeatures::
-              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
-        return;
-      }
-    }
-  }
+  // The document could be detached, e.g. if it is the `contentDocument` of an
+  // <iframe> that has been removed from the DOM of its parent frame.
+  if (GetDocument().IsContextDestroyed())
+    return;
+
+  // The API is not exposed to Workers or Worklets, so if the current realm
+  // execution context is valid, it must have a responsible browsing context.
+  SECURITY_CHECK(GetDocument().GetFrame());
+
+  // The event handler property on `window` is restricted to [SecureContext],
+  // but nothing prevents a site from calling `window.addEventListener(...)`
+  // from a non-secure browsing context.
+  if (!GetDocument().IsSecureContext())
+    return;
+
+  UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
 
   if (!has_event_listener_) {
     Platform::Current()->RecordRapporURL("DeviceSensors.DeviceMotion",
@@ -74,7 +72,7 @@ void DeviceMotionController::DidAddEventListener(
     if (!CheckPolicyFeatures({mojom::FeaturePolicyFeature::kAccelerometer,
                               mojom::FeaturePolicyFeature::kGyroscope})) {
       DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
-          frame, EventTypeName());
+          GetDocument().GetFrame(), EventTypeName());
       return;
     }
   }

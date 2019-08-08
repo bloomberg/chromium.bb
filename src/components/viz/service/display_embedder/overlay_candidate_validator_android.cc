@@ -1,97 +1,72 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 
-#include "cc/base/math_util.h"
-#include "components/viz/service/display/overlay_strategy_fullscreen.h"
-#include "components/viz/service/display/overlay_strategy_single_on_top.h"
+#include <memory>
+
+#include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gl/android/android_surface_control_compat.h"
 
 namespace viz {
-namespace {
 
-gfx::RectF ClipFromOrigin(gfx::RectF input) {
-  if (input.x() < 0.f) {
-    input.set_width(input.width() + input.x());
-    input.set_x(0.f);
-  }
+OverlayCandidateValidatorAndroid::OverlayCandidateValidatorAndroid() {}
 
-  if (input.y() < 0) {
-    input.set_height(input.height() + input.y());
-    input.set_y(0.f);
-  }
+OverlayCandidateValidatorAndroid::~OverlayCandidateValidatorAndroid() {}
 
-  return input;
-}
-
-}  // namespace
-
-OverlayCandidateValidatorAndroid::OverlayCandidateValidatorAndroid() = default;
-OverlayCandidateValidatorAndroid::~OverlayCandidateValidatorAndroid() = default;
-
-void OverlayCandidateValidatorAndroid::GetStrategies(
-    OverlayProcessor::StrategyList* strategies) {
-  // Added in priority order, most to least desirable.
-  strategies->push_back(std::make_unique<OverlayStrategyFullscreen>(this));
-  strategies->push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
-  strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(
+void OverlayCandidateValidatorAndroid::InitializeStrategies() {
+  DCHECK(strategies_.empty());
+  // For Android, we do not have the ability to skip an overlay, since the
+  // texture is already in a SurfaceView.  Ideally, we would honor a 'force
+  // overlay' flag that FromDrawQuad would also check.
+  // For now, though, just skip the opacity check.  We really have no idea if
+  // the underlying overlay is opaque anyway; the candidate is referring to
+  // a dummy resource that has no relation to what the overlay contains.
+  // https://crbug.com/842931 .
+  strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 
-bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() {
-  return false;
-}
-
-bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
-  return false;
-}
-
-bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() {
-  return false;
-}
-
 void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
-    OverlayCandidateList* surfaces) {
-  DCHECK(!surfaces->empty());
+    OverlayCandidateList* candidates) {
+  // There should only be at most a single overlay candidate: the video quad.
+  // There's no check that the presented candidate is really a video frame for
+  // a fullscreen video. Instead it's assumed that if a quad is marked as
+  // overlayable, it's a fullscreen video quad.
+  DCHECK_LE(candidates->size(), 1u);
 
-  // Only update the last candidate that was added to the list. All previous
-  // overlays should have already been handled.
-  auto& candidate = surfaces->back();
-  if (!gl::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
-    DCHECK(!candidate.use_output_surface_for_resource)
-        << "The main overlay must only use color space supported by the "
-           "device";
-    candidate.overlay_handled = false;
-    return;
+  if (!candidates->empty()) {
+    OverlayCandidate& candidate = candidates->front();
+
+    // This quad either will be promoted, or would be if it were backed by a
+    // SurfaceView.  Record that it should get a promotion hint.
+    candidates->AddPromotionHint(candidate);
+
+    if (candidate.is_backed_by_surface_texture) {
+      // This quad would be promoted if it were backed by a SurfaceView.  Since
+      // it isn't, we can't promote it.
+      return;
+    }
+
+    candidate.display_rect =
+        gfx::RectF(gfx::ToEnclosingRect(candidate.display_rect));
+    candidate.overlay_handled = true;
+    candidate.plane_z_order = -1;
   }
+}
 
-  const gfx::RectF orig_display_rect =
-      gfx::RectF(gfx::ToEnclosingRect(candidate.display_rect));
+bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
+  return false;
+}
 
-  candidate.display_rect = orig_display_rect;
-  if (candidate.is_clipped)
-    candidate.display_rect.Intersect(gfx::RectF(candidate.clip_rect));
+bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
+  return false;
+}
 
-  // The framework doesn't support display rects positioned at a negative
-  // offset.
-  candidate.display_rect = ClipFromOrigin(candidate.display_rect);
-  if (candidate.display_rect.IsEmpty()) {
-    candidate.overlay_handled = false;
-    return;
-  }
-
-  candidate.uv_rect = cc::MathUtil::ScaleRectProportional(
-      candidate.uv_rect, orig_display_rect, candidate.display_rect);
-  candidate.overlay_handled = true;
-
-#if DCHECK_IS_ON()
-  for (auto& candidate : *surfaces)
-    DCHECK(candidate.overlay_handled);
-#endif
+bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() const {
+  return false;
 }
 
 }  // namespace viz

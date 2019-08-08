@@ -32,6 +32,8 @@ source_set("common") {
 
 source_set("cast_runner_core") {
   sources = [
+    "cast/api_bindings_client.cc",
+    "cast/api_bindings_client.h",
     "cast/cast_channel_bindings.cc",
     "cast/cast_channel_bindings.h",
     "cast/cast_component.cc",
@@ -43,18 +45,22 @@ source_set("cast_runner_core") {
     "cast/named_message_port_connector.h",
     "cast/queryable_data_bindings.cc",
     "cast/queryable_data_bindings.h",
+    "cast/touch_input_bindings.cc",
+    "cast/touch_input_bindings.h",
   ]
   data = [
     "cast/cast_channel_bindings.js",
-    "cast/named_message_port_connector.js",
-    "cast/queryable_data_bindings.js",
     "cast/not_implemented_api_bindings.js",
+    "cast/queryable_data_bindings.js",
+    "cast/touch_input_bindings.js",
+  ]
+  data_deps = [
+    "//chromecast/bindings:named_message_port_connector_resources",
   ]
   deps = [
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",
-    "//fuchsia/engine:legacy_message_port_bridge",
     "//third_party/fuchsia-sdk/sdk:modular",
     "//url",
   ]
@@ -101,6 +107,8 @@ source_set("cast_runner_test_core") {
     "cast/fake_application_config_manager.h",
     "cast/fake_queryable_data.cc",
     "cast/fake_queryable_data.h",
+    "cast/test_api_bindings.cc",
+    "cast/test_api_bindings.h",
   ]
   deps = [
     ":cast_runner_core",
@@ -138,6 +146,7 @@ test("cast_runner_integration_tests") {
 
 test("cast_runner_browsertests") {
   sources = [
+    "cast/api_bindings_client_browsertest.cc",
     "cast/cast_channel_bindings_browsertest.cc",
     "cast/named_message_port_connector_browsertest.cc",
     "cast/not_implemented_api_bindings_browsertest.cc",

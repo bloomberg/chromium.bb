@@ -18,6 +18,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state.h"
@@ -31,7 +32,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
@@ -65,8 +65,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
     immersive_fullscreen_controller_ =
-        std::make_unique<ImmersiveFullscreenController>(
-            Shell::Get()->immersive_context());
+        std::make_unique<ImmersiveFullscreenController>();
     custom_frame_view->InitImmersiveFullscreenControllerForView(
         immersive_fullscreen_controller_.get());
   }
@@ -108,7 +107,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override {
+                                   WindowStateType old_type) override {
     views::Widget* widget =
         views::Widget::GetWidgetForNativeWindow(window_state->window());
     if (immersive_fullscreen_controller_ &&
@@ -146,9 +145,6 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshImmersiveHelper);
 };
-
-// static
-bool NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAsh::OverlayView
@@ -208,11 +204,14 @@ void NonClientFrameViewAsh::OverlayView::Layout() {
   int onscreen_height = header_height_
                             ? *header_height_
                             : header_view_->GetPreferredOnScreenHeight();
-  if (onscreen_height == 0 || !visible()) {
+  int height =
+      header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
+  if (onscreen_height == 0 || !GetVisible()) {
     header_view_->SetVisible(false);
+    // Make sure the correct width is set even when immersive is enabled, but
+    // never revealed yet.
+    header_view_->SetBounds(0, 0, width(), height);
   } else {
-    const int height =
-        header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
     header_view_->SetBounds(0, onscreen_height - height, width(), height);
     header_view_->SetVisible(true);
   }
@@ -261,7 +260,6 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   Shell::Get()->split_view_controller()->AddObserver(this);
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
-  wm::MakeGestureDraggableInImmersiveMode(frame_window);
 }
 
 NonClientFrameViewAsh::~NonClientFrameViewAsh() {
@@ -309,23 +307,6 @@ gfx::Rect NonClientFrameViewAsh::GetClientBoundsForWindowBounds(
   return client_bounds;
 }
 
-void NonClientFrameViewAsh::SetWindowFrameMenuItems(
-    const menu_utils::MenuItemList& menu_item_list,
-    mojom::MenuDelegatePtr delegate) {
-  if (menu_item_list.empty()) {
-    menu_model_.reset();
-    menu_delegate_.reset();
-  } else {
-    menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-    menu_utils::PopulateMenuFromMojoMenuItems(menu_model_.get(), nullptr,
-                                              menu_item_list, nullptr);
-    menu_delegate_ = std::move(delegate);
-  }
-
-  header_view_->set_context_menu_controller(menu_item_list.empty() ? nullptr
-                                                                   : this);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAsh, views::NonClientFrameView overrides:
 
@@ -365,7 +346,7 @@ void NonClientFrameViewAsh::SizeConstraintsChanged() {
   header_view_->UpdateCaptionButtons();
 }
 
-void NonClientFrameViewAsh::ActivationChanged(bool active) {
+void NonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
   // The icons differ between active and inactive.
   header_view_->SchedulePaint();
   frame_->non_client_view()->Layout();
@@ -383,7 +364,7 @@ gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
 }
 
 void NonClientFrameViewAsh::Layout() {
-  if (!enabled())
+  if (!GetEnabled())
     return;
   views::NonClientFrameView::Layout();
   aura::Window* frame_window = frame_->GetNativeWindow();
@@ -396,7 +377,7 @@ const char* NonClientFrameViewAsh::GetClassName() const {
 }
 
 gfx::Size NonClientFrameViewAsh::GetMinimumSize() const {
-  if (use_empty_minimum_size_for_test_ || !enabled())
+  if (!GetEnabled())
     return gfx::Size();
 
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
@@ -460,7 +441,7 @@ SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
 void NonClientFrameViewAsh::UpdateHeaderView() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (in_overview_ && split_view_controller->IsSplitViewModeActive() &&
+  if (in_overview_ && split_view_controller->InSplitViewMode() &&
       split_view_controller->GetDefaultSnappedWindow() ==
           frame_->GetNativeWindow()) {
     // TODO(sammiequon): This works for now, but we may have to check if
@@ -486,36 +467,9 @@ void NonClientFrameViewAsh::OnOverviewModeEnded() {
 }
 
 void NonClientFrameViewAsh::OnSplitViewStateChanged(
-    SplitViewController::State /* previous_state */,
-    SplitViewController::State /* current_state */) {
+    SplitViewState /* previous_state */,
+    SplitViewState /* current_state */) {
   UpdateHeaderView();
-}
-
-void NonClientFrameViewAsh::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  DCHECK_EQ(header_view_, source);
-  DCHECK(menu_model_);
-
-  menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
-  menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                          gfx::Rect(point, gfx::Size(0, 0)),
-                          views::MenuAnchorPosition::kTopLeft, source_type);
-}
-
-bool NonClientFrameViewAsh::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool NonClientFrameViewAsh::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void NonClientFrameViewAsh::ExecuteCommand(int command_id, int event_flags) {
-  menu_delegate_->MenuItemActivated(command_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -538,7 +492,7 @@ NonClientFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
 int NonClientFrameViewAsh::NonClientTopBorderHeight() const {
   // The frame should not occupy the window area when it's in fullscreen,
   // not visible or disabled.
-  if (frame_->IsFullscreen() || !visible() || !enabled() ||
+  if (frame_->IsFullscreen() || !GetVisible() || !GetEnabled() ||
       header_view_->in_immersive_mode()) {
     return 0;
   }

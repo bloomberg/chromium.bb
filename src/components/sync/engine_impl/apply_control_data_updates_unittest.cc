@@ -15,10 +15,10 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_util.h"
 #include "components/sync/engine_impl/test_entry_factory.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -33,10 +33,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+namespace {
 
 using syncable::MutableEntry;
 using syncable::UNITTEST;
 using syncable::Id;
+
+const char kNigoriTag[] = "google_chrome_nigori";
 
 class ApplyControlDataUpdatesTest : public ::testing::Test {
  public:
@@ -878,4 +881,5 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
   EXPECT_TRUE(directory()->InitialSyncEndedForType(NIGORI));
 }
 
+}  // namespace
 }  // namespace syncer

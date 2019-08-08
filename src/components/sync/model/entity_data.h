@@ -27,8 +27,6 @@ struct EntityData {
 
   EntityData& operator=(EntityData&&);
 
-  std::unique_ptr<EntityData> Clone() const;
-
   // Typically this is a server assigned sync ID, although for a local change
   // that represents a new entity this field might be either empty or contain
   // a temporary client sync ID.
@@ -89,9 +87,6 @@ struct EntityData {
   size_t EstimateMemoryUsage() const;
 
  private:
-  // Copy constructor is private to be used only in Clone().
-  EntityData(const EntityData& src);
-
   DISALLOW_ASSIGN(EntityData);
 };
 

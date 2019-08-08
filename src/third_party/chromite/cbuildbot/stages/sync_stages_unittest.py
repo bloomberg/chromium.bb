@@ -46,8 +46,6 @@ from chromite.lib import metadata_lib
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
-from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib.buildstore import FakeBuildStore
 
 # It's normal for unittests to access protected members.
@@ -215,6 +213,7 @@ class MockPatch(mock.MagicMock):
         'CRVW': '2',
         'VRIF': '1',
         'COMR': '1',
+        'LCQ': '1',
     }
 
   def HasApproval(self, field, allowed):
@@ -381,8 +380,6 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   def PerformSync(self,
                   committed=False,
                   num_patches=1,
-                  tree_open=True,
-                  tree_throttled=False,
                   pre_cq_status=constants.CL_STATUS_PASSED,
                   runs=0,
                   changes=None,
@@ -394,9 +391,6 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
       committed: Value to be returned by mock patches' IsChangeCommitted.
                  Default: False.
       num_patches: The number of mock patches to create. Default: 1.
-      tree_open: If True, behave as if tree is open. Default: True.
-      tree_throttled: If True, behave as if tree is throttled
-                      (overriding the tree_open arg). Default: False.
       pre_cq_status: PreCQ status for mock patches. Default: passed.
       runs: The maximum number of times to allow validation_pool.AcquirePool
             to wait for additional changes. runs=0 means never wait for
@@ -416,9 +410,6 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
         'approval_timestamp',
         time.time() - sync_stages.PreCQLauncherStage.LAUNCH_DELAY * 60)
     changes = changes or [MockPatch(**kwargs)] * num_patches
-    if tree_throttled:
-      for change in changes:
-        change.flags['COMR'] = '2'
     if pre_cq_status is not None:
       config = constants.PRE_CQ_DEFAULT_CONFIGS[0]
       new_build_id = self.buildstore.InsertBuild('Pre cq group', 1, config,
@@ -443,23 +434,6 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
       self.PatchObject(
           gerrit.GerritHelper, 'Query', side_effect=Query, autospec=True)
-      if tree_throttled:
-        self.PatchObject(
-            tree_status,
-            'WaitForTreeStatus',
-            return_value=constants.TREE_THROTTLED,
-            autospec=True)
-      elif tree_open:
-        self.PatchObject(
-            tree_status,
-            'WaitForTreeStatus',
-            return_value=constants.TREE_OPEN,
-            autospec=True)
-      else:
-        self.PatchObject(
-            tree_status,
-            'WaitForTreeStatus',
-            side_effect=timeout_util.TimeoutError())
 
       exit_it = itertools.chain([False] * runs, itertools.repeat(True))
       self.PatchObject(
@@ -586,7 +560,7 @@ class MasterCQSyncTestCase(BaseCQTestCase):
     """
     self.PatchObject(
         validation_pool.ValidationPool,
-        '_FilterNonCrosProjects',
+        '_FilterNonLcqProjects',
         side_effect=lambda x, _: (x, []))
     return self.PerformSync(changes=changes, **kwargs)
 
@@ -646,13 +620,6 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
     self.ReloadPool()
     self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
-
-  def testTreeClosureBlocksCommit(self):
-    """Test that tree closures block commits."""
-    self.assertRaises(
-        failures_lib.ExitEarlyException,
-        self._testCommitNonManifestChange,
-        tree_open=False)
 
 
 class PreCQLauncherStageTest(MasterCQSyncTestCase):
@@ -979,7 +946,7 @@ pre-cq-configs: grunt-pre-cq
     self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
     submit_reason = constants.STRATEGY_PRECQ_SUBMIT
     verified_cls = {c: submit_reason for c in set([change])}
-    m.assert_called_with(verified_cls, check_tree_open=False)
+    m.assert_called_with(verified_cls)
 
   def testSubmitUnableInPreCQ(self):
     change = self._PrepareSubmittableChange()
@@ -1063,17 +1030,6 @@ pre-cq-configs: grunt-pre-cq
         count_launches(),
         3 * sync_stages.PreCQLauncherStage.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
 
-  def testNoLaunchClosedTree(self):
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=False)
-
-    # Create a change that is ready to be tested.
-    change = self._PrepareChangesWithPendingVerifications()[0]
-    change.approval_timestamp = 0
-
-    # Change should still be pending.
-    self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
-    self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_PENDING)
-
   def testDontTestSubmittedPatches(self):
     # Create a change that has been submitted.
     change = self._PrepareChangesWithPendingVerifications()[0]
@@ -1129,7 +1085,7 @@ pre-cq-configs: grunt-pre-cq
     # Mark a change as trybot ready, but not approved. It should also be tried
     # by the pre-cq.
     for change in changes[2:5]:
-      change.flags = {'TRY': '1'}
+      change.flags = {'TRY': '1', 'LCQ': '1'}
       change.IsMergeable = lambda: False
 
     self.mockLaunchTrybots(
@@ -1179,7 +1135,7 @@ pre-cq-configs: grunt-pre-cq
 
     # Failed CLs that are marked ready should be tried again, and changes that
     # aren't ready shouldn't be launched.
-    changes[4].flags = {'CRVW': '2'}
+    changes[4].flags = {'CRVW': '2', 'LCQ': '1'}
     changes[4].HasReadyFlag = lambda: False
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
@@ -1301,8 +1257,7 @@ pre-cq-configs: grunt-pre-cq
     self.assertIn('The banana-pre-cq trybot for your change crashed.',
                   send_notification.call_args[1]['details'])
     self.assertIn(
-        'https://cros-goldeneye.corp.google.com/chromeos/healthmonitoring'
-        '/buildDetails?buildbucketId=bb_id_1',
+        'https://ci.chromium.org/b/bb_id_1',
         send_notification.call_args[1]['details'])
 
   def testSpeculativePreCQ(self):
@@ -1413,10 +1368,6 @@ pre-cq-configs: grunt-pre-cq
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
     self._testDefaultSync()
-
-  def testTreeClosureIsOK(self):
-    """Test that tree closures block commits."""
-    self._testCommitNonManifestChange(tree_open=False)
 
   def _GetPreCQStatus(self, change):
     """Helper method to get pre-cq status of a CL from fake_db."""

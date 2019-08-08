@@ -56,7 +56,8 @@ TEST(TextureLayerImplTest, Occlusion) {
   auto resource = viz::TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
-                     gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456));
+                     gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
+      layer_size, false /* is_overlay_candidate */);
 
   TextureLayerImpl* texture_layer_impl =
       impl.AddChildToRoot<TextureLayerImpl>();

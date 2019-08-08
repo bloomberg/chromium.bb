@@ -24,10 +24,6 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class UnguessableToken;
-}
-
 namespace content {
 class BrowserPluginGuest;
 class RenderWidgetHost;
@@ -105,8 +101,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
 #endif
-  void RenderProcessGone(base::TerminationStatus status,
-                         int error_code) override;
+  void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void SelectionChanged(const base::string16& text,
@@ -187,10 +182,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
                                          InputEventAckState ack_result);
-
-#if defined(USE_AURA)
-  void OnGotEmbedToken(const base::UnguessableToken& token);
-#endif
 
   // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
   // to one another, therefore we access |guest_| through WeakPtr.

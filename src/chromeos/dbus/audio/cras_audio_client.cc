@@ -239,6 +239,20 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             base::DoNothing());
   }
 
+  void SetHotwordModel(uint64_t node_id,
+                       const std::string& hotword_model,
+                       VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetHotwordModel);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint64(node_id);
+    writer.AppendString(hotword_model);
+    cras_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnSetHotwordModel,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void AddActiveInputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kAddActiveInputNode);
@@ -542,6 +556,31 @@ class CrasAudioClientImpl : public CrasAudioClient {
     }
 
     std::move(callback).Run(num_active_streams);
+  }
+
+  void OnSetHotwordModel(VoidDBusMethodCallback callback,
+                         dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call SetHotwordModel.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    int32_t result;
+    if (!reader.PopInt32(&result)) {
+      LOG(ERROR) << "Failed to parse results from SetHotwordModel.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    if (result != 0) {
+      LOG(ERROR) << "Errors in SetHotwordModel.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    std::move(callback).Run(true);
   }
 
   bool GetAudioNode(dbus::Response* response,

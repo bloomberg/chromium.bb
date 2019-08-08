@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -16,7 +17,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
 class Window;
@@ -116,6 +116,7 @@ class ArcImeService : public KeyedService,
   bool GetEditableSelectionRange(gfx::Range* range) const override;
   bool GetTextFromRange(const gfx::Range& range,
                         base::string16* text) const override;
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override;
 
   // Overridden from ui::TextInputClient (with default implementation):
   // TODO(kinaba): Support each of these methods to the extent possible in
@@ -135,12 +136,14 @@ class ArcImeService : public KeyedService,
   bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override;
-  void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override {
   }
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
+  bool SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.

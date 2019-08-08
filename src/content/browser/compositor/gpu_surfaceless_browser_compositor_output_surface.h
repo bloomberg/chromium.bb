@@ -27,9 +27,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   GpuSurfacelessBrowserCompositorOutputSurface(
       scoped_refptr<ws::ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback,
-      std::unique_ptr<viz::CompositorOverlayCandidateValidator>
+      std::unique_ptr<viz::OverlayCandidateValidator>
           overlay_candidate_validator,
       gfx::BufferFormat format,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);

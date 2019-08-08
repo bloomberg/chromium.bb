@@ -40,14 +40,14 @@ class FallbackVideoDecoderUnittest : public ::testing::TestWithParam<bool> {
     StrictMock<MockVideoDecoder>* result = new StrictMock<MockVideoDecoder>(n);
 
     if (is_fallback && !preferred_should_succeed) {
-      EXPECT_CALL(*result, Initialize(_, _, _, _, _, _))
-          .WillOnce(RunCallback<3>(true));
+      EXPECT_CALL(*result, Initialize_(_, _, _, _, _, _))
+          .WillOnce(RunOnceCallback<3>(true));
     }
 
     if (!is_fallback) {
       preferred_decoder_ = result;
-      EXPECT_CALL(*result, Initialize(_, _, _, _, _, _))
-          .WillOnce(RunCallback<3>(preferred_should_succeed));
+      EXPECT_CALL(*result, Initialize_(_, _, _, _, _, _))
+          .WillOnce(RunOnceCallback<3>(preferred_should_succeed));
     } else {
       backup_decoder_ = result;
     }
@@ -96,10 +96,10 @@ INSTANTIATE_TEST_SUITE_P(DoesPreferredInitFail,
 TEST_P(FallbackVideoDecoderUnittest, MethodsRedirectedAsExpected) {
   Initialize(PreferredShouldSucceed());
 
-  EXPECT_ON_CORRECT_DECODER(Decode(_, _));
+  EXPECT_ON_CORRECT_DECODER(Decode_(_, _));
   fallback_decoder_->Decode(nullptr, base::DoNothing());
 
-  EXPECT_ON_CORRECT_DECODER(Reset(_));
+  EXPECT_ON_CORRECT_DECODER(Reset_(_));
   fallback_decoder_->Reset(base::DoNothing());
 
   EXPECT_ON_CORRECT_DECODER(NeedsBitstreamConversion());
@@ -123,11 +123,11 @@ TEST_P(FallbackVideoDecoderUnittest, ReinitializeWithPreferredFailing) {
 
   // If we succeedd the first time, it should still be alive.
   if (PreferredShouldSucceed()) {
-    EXPECT_CALL(*preferred_decoder_, Initialize(_, _, _, _, _, _))
-        .WillOnce(RunCallback<3>(false));  // fail initialization
+    EXPECT_CALL(*preferred_decoder_, Initialize_(_, _, _, _, _, _))
+        .WillOnce(RunOnceCallback<3>(false));  // fail initialization
   }
-  EXPECT_CALL(*backup_decoder_, Initialize(_, _, _, _, _, _))
-      .WillOnce(RunCallback<3>(true));
+  EXPECT_CALL(*backup_decoder_, Initialize_(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true));
 
   fallback_decoder_->Initialize(
       video_decoder_config_, false, nullptr,
@@ -146,17 +146,17 @@ TEST_P(FallbackVideoDecoderUnittest, ReinitializeWithPreferredSuccessful) {
 
   // If we succeedd the first time, it should still be alive.
   if (PreferredShouldSucceed()) {
-    EXPECT_CALL(*preferred_decoder_, Initialize(_, _, _, _, _, _))
-        .WillOnce(RunCallback<3>(true));  // pass initialization
+    EXPECT_CALL(*preferred_decoder_, Initialize_(_, _, _, _, _, _))
+        .WillOnce(RunOnceCallback<3>(true));  // pass initialization
   } else {
     // Otherwise, preferred was deleted, and we only backup still exists.
-    EXPECT_CALL(*backup_decoder_, Initialize(_, _, _, _, _, _))
-        .WillOnce(RunCallback<3>(true));
+    EXPECT_CALL(*backup_decoder_, Initialize_(_, _, _, _, _, _))
+        .WillOnce(RunOnceCallback<3>(true));
   }
 
   fallback_decoder_->Initialize(
       video_decoder_config_, false, nullptr,
-      base::BindRepeating([](bool success) { EXPECT_TRUE(success); }),
+      base::BindOnce([](bool success) { EXPECT_TRUE(success); }),
       base::DoNothing(), base::DoNothing());
 }
 

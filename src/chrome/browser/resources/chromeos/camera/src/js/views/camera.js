@@ -17,9 +17,10 @@ cca.views = cca.views || {};
 /**
  * Creates the camera-view controller.
  * @param {cca.models.Gallery} model Model object.
+ * @param {cca.ResolutionEventBroker} resolBroker
  * @constructor
  */
-cca.views.Camera = function(model) {
+cca.views.Camera = function(model, resolBroker) {
   cca.views.View.call(this, '#camera');
 
   /**
@@ -28,6 +29,20 @@ cca.views.Camera = function(model) {
    * @private
    */
   this.model_ = model;
+
+  /**
+   * @type {cca.views.camera.PhotoResolPreferrer}
+   * @private
+   */
+  this.photoResolPreferrer_ = new cca.views.camera.PhotoResolPreferrer(
+      resolBroker, this.stop_.bind(this));
+
+  /**
+   * @type {cca.views.camera.VideoResolPreferrer}
+   * @private
+   */
+  this.videoResolPreferrer_ = new cca.views.camera.VideoResolPreferrer(
+      resolBroker, this.stop_.bind(this));
 
   /**
    * Layout handler for the camera view.
@@ -48,7 +63,19 @@ cca.views.Camera = function(model) {
    * @type {cca.views.camera.Options}
    * @private
    */
-  this.options_ = new cca.views.camera.Options(this.stop_.bind(this));
+  this.options_ = new cca.views.camera.Options(
+      this.photoResolPreferrer_, this.videoResolPreferrer_,
+      this.stop_.bind(this));
+
+  /**
+   * @type {HTMLElement}
+   */
+  this.banner_ = document.querySelector('#banner');
+
+  /**
+   * @type {HTMLButtonElement}
+   */
+  this.bannerLearnMore_ = document.querySelector('#banner-learn-more');
 
   /**
    * Modes for the camera.
@@ -56,10 +83,12 @@ cca.views.Camera = function(model) {
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
+      this.photoResolPreferrer_, this.videoResolPreferrer_,
       this.stop_.bind(this), async (blob, isMotionPicture, filename) => {
         if (blob) {
           cca.metrics.log(
-              cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins);
+              cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins,
+              blob.resolution);
           try {
             await this.model_.savePicture(blob, isMotionPicture, filename);
           } catch (e) {
@@ -70,10 +99,10 @@ cca.views.Camera = function(model) {
       });
 
   /**
-   * @type {string}
+   * @type {?string}
    * @private
    */
-  this.facingMode_ = '';
+  this.facingMode_ = null;
 
   /**
    * @type {boolean}
@@ -110,6 +139,14 @@ cca.views.Camera = function(model) {
   document.querySelectorAll('#stop-takephoto, #stop-recordvideo')
       .forEach((btn) => btn.addEventListener('click', () => this.endTake_()));
 
+  document.querySelector('#banner-close').addEventListener('click', () => {
+    cca.util.animateCancel(this.banner_);
+  });
+
+  document.querySelector('#banner-learn-more').addEventListener('click', () => {
+    cca.util.openHelp();
+  });
+
   // Monitor the states to stop camera when locked/minimized.
   chrome.idle.onStateChanged.addListener((newState) => {
     this.locked_ = (newState == 'locked');
@@ -130,9 +167,21 @@ cca.views.Camera.prototype = {
  * @override
  */
 cca.views.Camera.prototype.focus = function() {
-  // Avoid focusing invisible shutters.
-  document.querySelectorAll('.shutter')
-      .forEach((btn) => btn.offsetParent && btn.focus());
+  (async () => {
+    const values = await new Promise((resolve) => {
+      chrome.storage.local.get(['isIntroShown'], resolve);
+    });
+    await this.started_;
+    if (!values.isIntroShown) {
+      chrome.storage.local.set({isIntroShown: true});
+      cca.util.animateOnce(this.banner_);
+      this.bannerLearnMore_.focus({preventScroll: true});
+    } else {
+      // Avoid focusing invisible shutters.
+      document.querySelectorAll('.shutter')
+          .forEach((btn) => btn.offsetParent && btn.focus());
+    }
+  })();
 };
 
 
@@ -214,6 +263,60 @@ cca.views.Camera.prototype.stop_ = function() {
 };
 
 /**
+ * Try start stream reconfiguration with specified device id.
+ * @async
+ * @param {?string} deviceId
+ * @return {boolean} If found suitable stream and reconfigure successfully.
+ */
+cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
+  let supportedModes = null;
+  for (const mode of this.modes_.getModeCandidates()) {
+    try {
+      if (!deviceId) {
+        // Null for requesting default camera on HALv1.
+        throw new Error;
+      }
+      const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
+      var resolCandidates =
+          this.modes_.getResolutionCandidates(mode, deviceId, previewRs);
+    } catch (e) {
+      // Assume the exception here is thrown from error of HALv1 not support
+      // resolution query, fallback to use v1 constraints-candidates.
+      resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
+    }
+    for (const [captureResolution, previewCandidates] of resolCandidates) {
+      if (supportedModes && !supportedModes.includes(mode)) {
+        break;
+      }
+      for (const constraints of previewCandidates) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (!supportedModes) {
+            supportedModes = await this.modes_.getSupportedModes(stream);
+            if (!supportedModes.includes(mode)) {
+              stream.getTracks()[0].stop();
+              break;
+            }
+          }
+          await this.preview_.start(stream);
+          this.facingMode_ =
+              await this.options_.updateValues(constraints, stream);
+          await this.modes_.updateModeSelectionUI(supportedModes);
+          await this.modes_.updateMode(
+              mode, stream, deviceId, captureResolution);
+          cca.nav.close('warning', 'no-camera');
+          return true;
+        } catch (e) {
+          this.preview_.stop();
+          console.error(e);
+        }
+      }
+    }
+  }
+  return false;
+};
+
+/**
  * Starts camera if the camera stream was stopped.
  * @private
  */
@@ -223,36 +326,8 @@ cca.views.Camera.prototype.start_ = function() {
       (async () => {
         if (!suspend) {
           for (const id of await this.options_.videoDeviceIds()) {
-            let supportedModes = null;
-            for (const mode of this.modes_.getModeCandidates()) {
-              if (supportedModes && !supportedModes.includes(mode)) {
-                continue;
-              }
-              for (const constraints of this.modes_.getConstraitsCandidates(
-                       id, mode)) {
-                try {
-                  const stream =
-                      await navigator.mediaDevices.getUserMedia(constraints);
-                  if (!supportedModes) {
-                    supportedModes =
-                        await this.modes_.getSupportedModes(stream);
-                    if (!supportedModes.includes(mode)) {
-                      stream.getTracks()[0].stop();
-                      break;
-                    }
-                  }
-                  await this.preview_.start(stream);
-                  await this.modes_.updateModeSelectionUI(supportedModes);
-                  this.facingMode_ =
-                      this.options_.updateValues(constraints, stream);
-                  await this.modes_.updateMode(mode, stream);
-                  cca.nav.close('warning', 'no-camera');
-                  return;
-                } catch (e) {
-                  this.preview_.stop();
-                  console.error(e);
-                }
-              }
+            if (await this.startWithDevice_(id)) {
+              return;
             }
           }
         }

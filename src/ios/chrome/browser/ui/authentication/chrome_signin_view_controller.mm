@@ -65,6 +65,9 @@
 
 namespace {
 
+// Controls whether the activity indicator should be added to the sign-in view.
+BOOL gChromeSigninViewControllerShowsActivityIndicator = YES;
+
 // Default animation duration.
 const CGFloat kAnimationDuration = 0.5f;
 
@@ -939,12 +942,15 @@ enum AuthenticationState {
   _secondaryButton.hidden = YES;
   [self.view addSubview:_secondaryButton];
 
-  _activityIndicator = [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
-  [_activityIndicator setDelegate:self];
-  [_activityIndicator setStrokeWidth:3];
-  [_activityIndicator
-      setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
-  [self.view addSubview:_activityIndicator];
+  if (gChromeSigninViewControllerShowsActivityIndicator) {
+    _activityIndicator =
+        [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
+    [_activityIndicator setDelegate:self];
+    [_activityIndicator setStrokeWidth:3];
+    [_activityIndicator
+        setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
+    [self.view addSubview:_activityIndicator];
+  }
 
   _gradientView = [[UIView alloc] initWithFrame:CGRectZero];
   _gradientLayer = [CAGradientLayer layer];
@@ -1237,7 +1243,8 @@ enum AuthenticationState {
 
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
-  [self updatePrimaryButtonForIdentityPickerState];
+  if (_currentState == IDENTITY_PICKER_STATE)
+    [self updatePrimaryButtonForIdentityPickerState];
 }
 
 @end
@@ -1250,6 +1257,11 @@ enum AuthenticationState {
 
 - (void)setTimerGenerator:(TimerGeneratorBlock)timerGenerator {
   _timerGenerator = [timerGenerator copy];
+}
+
++ (std::unique_ptr<base::AutoReset<BOOL>>)hideActivityIndicatorForTesting {
+  return std::make_unique<base::AutoReset<BOOL>>(
+      &gChromeSigninViewControllerShowsActivityIndicator, NO);
 }
 
 @end

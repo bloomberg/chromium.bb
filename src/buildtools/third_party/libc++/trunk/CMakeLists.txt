@@ -129,10 +129,6 @@ option(LIBCXX_USE_COMPILER_RT "Use compiler-rt instead of libgcc" OFF)
 set(LIBCXX_LIBCPPABI_VERSION "2" CACHE STRING "Version of libc++abi's ABI to re-export from libc++ when re-exporting is enabled.
                                                Note that this is not related to the version of libc++'s ABI itself!")
 
-if (NOT LIBCXX_ENABLE_SHARED AND NOT LIBCXX_ENABLE_STATIC)
-  message(FATAL_ERROR "libc++ must be built as either a shared or static library.")
-endif()
-
 # ABI Library options ---------------------------------------------------------
 set(LIBCXX_CXX_ABI "default" CACHE STRING
     "Specify C++ ABI library to use.")
@@ -142,8 +138,7 @@ set_property(CACHE LIBCXX_CXX_ABI PROPERTY STRINGS ;${CXXABIS})
 # Setup the default options if LIBCXX_CXX_ABI is not specified.
 if (LIBCXX_CXX_ABI STREQUAL "default")
   find_path(
-    LIBCXX_LIBCXXABI_INCLUDES_INTERNAL
-    cxxabi.h
+    LIBCXX_LIBCXXABI_INCLUDES_INTERNAL cxxabi.h
     PATHS ${LLVM_MAIN_SRC_DIR}/projects/libcxxabi/include
           ${LLVM_MAIN_SRC_DIR}/runtimes/libcxxabi/include
           ${LLVM_MAIN_SRC_DIR}/../libcxxabi/include
@@ -201,20 +196,10 @@ option(LIBCXX_ENABLE_ABI_LINKER_SCRIPT
       "Use and install a linker script for the given ABI library"
       ${ENABLE_LINKER_SCRIPT_DEFAULT_VALUE})
 
-set(ENABLE_NEW_DELETE_DEFAULT ON)
-if (LIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS)
-# FIXME: This option should default to off. Unfortunatly GCC 4.9 fails to link
-# programs due to undefined references to new/delete in libc++abi so to work
-# around this libc++abi currently defaults LIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS
-# to ON. Once the GCC bug has been worked around this option should be changed
-# back to OFF.
-  set(ENABLE_NEW_DELETE_DEFAULT ON)
-endif()
-
 option(LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS
     "Build libc++ with definitions for operator new/delete. This option can
-    be used to disable the definitions when libc++abi is expected to provide
-    them" ${ENABLE_NEW_DELETE_DEFAULT})
+     be used to disable the definitions when libc++abi is expected to provide
+     them" ON)
 
 # Build libc++abi with libunwind. We need this option to determine whether to
 # link with libunwind or libgcc_s while running the test cases.
@@ -774,7 +759,7 @@ endif()
 #===============================================================================
 include_directories(include)
 add_subdirectory(include)
-add_subdirectory(lib)
+add_subdirectory(src)
 
 set(LIBCXX_TEST_DEPS "")
 

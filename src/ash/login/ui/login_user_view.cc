@@ -15,7 +15,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
-#include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/public/cpp/session/user_info.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/user/rounded_image_view.h"
@@ -121,17 +121,17 @@ class LoginUserView::UserImage : public NonAccessibleView {
   }
   ~UserImage() override = default;
 
-  void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
+  void UpdateForUser(const LoginUserInfo& user) {
     // Set the initial image from |avatar| since we already have it available.
     // Then, decode the bytes via blink's PNG decoder and play any animated
     // frames if they are available.
-    if (!user->basic_user_info->avatar->image.isNull())
-      image_->SetImage(user->basic_user_info->avatar->image);
+    if (!user.basic_user_info.avatar.image.isNull())
+      image_->SetImage(user.basic_user_info.avatar.image);
 
     // Decode the avatar using blink, as blink's PNG decoder supports APNG,
     // which is the format used for the animated avators.
-    if (!user->basic_user_info->avatar->bytes.empty()) {
-      DecodeAnimation(user->basic_user_info->avatar->bytes,
+    if (!user.basic_user_info.avatar.bytes.empty()) {
+      DecodeAnimation(user.basic_user_info.avatar.bytes,
                       base::Bind(&LoginUserView::UserImage::OnImageDecoded,
                                  weak_factory_.GetWeakPtr()));
     }
@@ -204,11 +204,11 @@ class LoginUserView::UserLabel : public NonAccessibleView {
   }
   ~UserLabel() override = default;
 
-  void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
-    std::string display_name = user->basic_user_info->display_name;
+  void UpdateForUser(const LoginUserInfo& user) {
+    std::string display_name = user.basic_user_info.display_name;
     // display_name can be empty in debug builds with stub users.
     if (display_name.empty())
-      display_name = user->basic_user_info->display_email;
+      display_name = user.basic_user_info.display_email;
 
     user_name_->SetText(gfx::ElideText(base::UTF8ToUTF16(display_name),
                                        user_name_->font_list(), label_width_,
@@ -256,7 +256,7 @@ class LoginUserView::UserDomainInfoView : public NonAccessibleView {
     auto layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
 
     views::ImageView* image = new views::ImageView();
@@ -424,9 +424,8 @@ LoginUserView::LoginUserView(
 
 LoginUserView::~LoginUserView() = default;
 
-void LoginUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user,
-                                  bool animate) {
-  current_user_ = user->Clone();
+void LoginUserView::UpdateForUser(const LoginUserInfo& user, bool animate) {
+  current_user_ = user;
 
   if (menu_ && menu_->parent()) {
     menu_->parent()->RemoveChildView(menu_);
@@ -434,11 +433,11 @@ void LoginUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user,
   }
 
   menu_ = new LoginUserMenuView(
-      base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
-      base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
-      current_user_->basic_user_info->type, current_user_->is_device_owner,
+      base::UTF8ToUTF16(current_user_.basic_user_info.display_name),
+      base::UTF8ToUTF16(current_user_.basic_user_info.display_email),
+      current_user_.basic_user_info.type, current_user_.is_device_owner,
       dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
-      current_user_->can_remove /*show_remove_user*/, on_remove_warning_shown_,
+      current_user_.can_remove /*show_remove_user*/, on_remove_warning_shown_,
       on_remove_);
   menu_->SetVisible(false);
 
@@ -541,7 +540,7 @@ void LoginUserView::ButtonPressed(views::Button* sender,
     DCHECK(menu_);
 
     // If menu is showing, just close it
-    if (menu_->visible()) {
+    if (menu_->GetVisible()) {
       menu_->Hide();
       return;
     }
@@ -574,7 +573,7 @@ void LoginUserView::OnHover(bool has_hover) {
 }
 
 void LoginUserView::UpdateCurrentUserState() {
-  auto email = base::UTF8ToUTF16(current_user_->basic_user_info->display_email);
+  auto email = base::UTF8ToUTF16(current_user_.basic_user_info.display_email);
   tap_button_->SetAccessibleName(email);
   if (dropdown_) {
     dropdown_->SetAccessibleName(l10n_util::GetStringFUTF16(
@@ -582,9 +581,9 @@ void LoginUserView::UpdateCurrentUserState() {
   }
 
   if (user_domain_) {
-    DCHECK(current_user_->public_account_info);
+    DCHECK(current_user_.public_account_info);
     const base::Optional<std::string>& enterprise_domain =
-        current_user_->public_account_info->enterprise_domain;
+        current_user_.public_account_info->enterprise_domain;
     if (enterprise_domain) {
       user_domain_->SetText(l10n_util::GetStringFUTF16(
           IDS_ASH_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT,

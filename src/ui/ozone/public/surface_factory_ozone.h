@@ -116,6 +116,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // It can be called on any thread.
   virtual scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
+      VkDevice vk_device,
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage);
@@ -158,6 +159,13 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual void SetGetProtectedNativePixmapDelegate(
       const GetProtectedNativePixmapCallback&
           get_protected_native_pixmap_callback);
+
+  // Enumerates the BufferFormats that the platform can allocate (and use for
+  // texturing) via CreateNativePixmap(), or returns empty if those could not be
+  // retrieved or the platform doesn't know in advance.
+  // Enumeration should not be assumed to take a trivial amount of time.
+  virtual std::vector<gfx::BufferFormat> GetSupportedFormatsForTexturing()
+      const;
 
  protected:
   SurfaceFactoryOzone();

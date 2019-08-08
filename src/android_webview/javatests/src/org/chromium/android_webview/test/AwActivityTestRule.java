@@ -435,6 +435,23 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     }
 
     /**
+     * Adds a JavaScript interface to the AwContents. Does its work synchronously on the UI thread,
+     * and can be called from any thread. All the rules of {@link
+     * android.webkit.WebView#addJavascriptInterface} apply to this method (ex. you must call this
+     * <b>prior</b> to loading the frame you intend to load the JavaScript interface into).
+     *
+     * @param awContents the AwContents in which to insert the JavaScript interface.
+     * @param objectToInject the JavaScript interface to inject.
+     * @param javascriptIdentifier the name with which to refer to {@code objectToInject} from
+     *        JavaScript code.
+     */
+    public static void addJavascriptInterfaceOnUiThread(final AwContents awContents,
+            final Object objectToInject, final String javascriptIdentifier) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> awContents.addJavascriptInterface(objectToInject, javascriptIdentifier));
+    }
+
+    /**
      * Wrapper around CriteriaHelper.pollInstrumentationThread. This uses AwActivityTestRule-specifc
      * timeouts and treats timeouts and exceptions as test failures automatically.
      */

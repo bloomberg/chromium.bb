@@ -11,8 +11,6 @@ namespace nux {
 const base::Feature kNuxOnboardingFeature{"NuxOnboarding",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// nux-ntp-background should not be added here until we can guarantee that
-// kUseGoogleLocalNtp is enabled
 const char kDefaultNewUserModules[] =
     "nux-google-apps,nux-set-as-default,signin-view";
 const char kDefaultReturningUserModules[] = "nux-set-as-default";

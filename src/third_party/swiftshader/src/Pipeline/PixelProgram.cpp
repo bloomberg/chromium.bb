@@ -24,6 +24,9 @@ namespace sw
 
 	void PixelProgram::setBuiltins(Int &x, Int &y, Float4(&z)[4], Float4 &w)
 	{
+		routine.windowSpacePosition[0] = x + SIMD::Int(0,1,0,1);
+		routine.windowSpacePosition[1] = y + SIMD::Int(0,0,1,1);
+
 		auto it = spirvShader->inputBuiltins.find(spv::BuiltInFragCoord);
 		if (it != spirvShader->inputBuiltins.end())
 		{
@@ -38,7 +41,7 @@ namespace sw
 		if (it != spirvShader->inputBuiltins.end())
 		{
 			ASSERT(it->second.SizeInComponents == 1);
-			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(Int(SIMD::Width));
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(SIMD::Width));
 		}
 
 		it = spirvShader->inputBuiltins.find(spv::BuiltInSubgroupLocalInvocationId);
@@ -47,6 +50,14 @@ namespace sw
 			ASSERT(it->second.SizeInComponents == 1);
 			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 1, 2, 3));
 		}
+
+		it = spirvShader->inputBuiltins.find(spv::BuiltInDeviceIndex);
+		if (it != spirvShader->inputBuiltins.end())
+		{
+			ASSERT(it->second.SizeInComponents == 1);
+			// Only a single physical device is supported.
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		}
 	}
 
 	void PixelProgram::applyShader(Int cMask[4])
@@ -54,6 +65,7 @@ namespace sw
 		routine.descriptorSets = data + OFFSET(DrawData, descriptorSets);
 		routine.descriptorDynamicOffsets = data + OFFSET(DrawData, descriptorDynamicOffsets);
 		routine.pushConstants = data + OFFSET(DrawData, pushConstants);
+		routine.constants = *Pointer<Pointer<Byte>>(data + OFFSET(DrawData, constants));
 
 		auto it = spirvShader->inputBuiltins.find(spv::BuiltInFrontFacing);
 		if (it != spirvShader->inputBuiltins.end())
@@ -63,7 +75,11 @@ namespace sw
 			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<Float4>(frontFacing);
 		}
 
-		auto activeLaneMask = SIMD::Int(0xFFFFFFFF); // TODO: Control this.
+		// Note: all lanes initially active to facilitate derivatives etc. Actual coverage is
+		// handled separately, through the cMask.
+		auto activeLaneMask = SIMD::Int(0xFFFFFFFF);
+		routine.killMask = 0;
+
 		spirvShader->emit(&routine, activeLaneMask, descriptorSets);
 		spirvShader->emitEpilog(&routine);
 
@@ -85,30 +101,32 @@ namespace sw
 			}
 		}
 
+		it = spirvShader->outputBuiltins.find(spv::BuiltInSampleMask);
+		if (it != spirvShader->outputBuiltins.end())
+		{
+			auto outputSampleMask = As<SIMD::Int>(routine.getVariable(it->second.Id)[it->second.FirstComponent]);
+
+			for (auto i = 0u; i < state.multiSample; i++)
+			{
+				cMask[i] &= SignMask(CmpNEQ(outputSampleMask & SIMD::Int(1<<i), SIMD::Int(0)));
+			}
+		}
+
 		it = spirvShader->outputBuiltins.find(spv::BuiltInFragDepth);
 		if (it != spirvShader->outputBuiltins.end())
 		{
-			oDepth = routine.getVariable(it->second.Id)[it->second.FirstComponent];
-		}
-
-		if(spirvShader->getModes().DepthReplacing)
-		{
-			oDepth = Min(Max(oDepth, Float4(0.0f)), Float4(1.0f));
+			oDepth = Min(Max(routine.getVariable(it->second.Id)[it->second.FirstComponent], Float4(0.0f)), Float4(1.0f));
 		}
 	}
 
 	Bool PixelProgram::alphaTest(Int cMask[4])
 	{
-		if(!state.alphaTestActive())
+		if(!state.alphaToCoverage)
 		{
 			return true;
 		}
 
-		if(state.transparencyAntialiasing == TRANSPARENCY_ALPHA_TO_COVERAGE)
-		{
-			alphaToCoverage(cMask, c[0].w);
-		}
-		else ASSERT(false);
+		alphaToCoverage(cMask, c[0].w);
 
 		Int pass = cMask[0];
 
@@ -129,14 +147,8 @@ namespace sw
 				continue;
 			}
 
-			if(!postBlendSRGB && state.writeSRGB && !isSRGB(index))
-			{
-				c[index].x = linearToSRGB(c[index].x);
-				c[index].y = linearToSRGB(c[index].y);
-				c[index].z = linearToSRGB(c[index].z);
-			}
-
-			switch(state.targetFormat[index])
+			auto format = state.targetFormat[index];
+			switch(format)
 			{
 			case VK_FORMAT_R5G6B5_UNORM_PACK16:
 			case VK_FORMAT_B8G8R8A8_UNORM:
@@ -149,12 +161,13 @@ namespace sw
 			case VK_FORMAT_R16G16B16A16_UNORM:
 			case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
 			case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+			case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
 				for(unsigned int q = 0; q < state.multiSample; q++)
 				{
 					Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
 					Vector4s color;
 
-					if(state.targetFormat[index] == VK_FORMAT_R5G6B5_UNORM_PACK16)
+					if(format == VK_FORMAT_R5G6B5_UNORM_PACK16)
 					{
 						color.x = UShort4(c[index].x * Float4(0xFBFF), false);
 						color.y = UShort4(c[index].y * Float4(0xFDFF), false);
@@ -176,6 +189,9 @@ namespace sw
 					}
 				}
 				break;
+			case VK_FORMAT_R16_SFLOAT:
+			case VK_FORMAT_R16G16_SFLOAT:
+			case VK_FORMAT_R16G16B16A16_SFLOAT:
 			case VK_FORMAT_R32_SFLOAT:
 			case VK_FORMAT_R32G32_SFLOAT:
 			case VK_FORMAT_R32G32B32A32_SFLOAT:
@@ -199,6 +215,7 @@ namespace sw
 			case VK_FORMAT_R8G8B8A8_UINT:
 			case VK_FORMAT_A8B8G8R8_UINT_PACK32:
 			case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+			case VK_FORMAT_A2B10G10R10_UINT_PACK32:
 				for(unsigned int q = 0; q < state.multiSample; q++)
 				{
 					Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
@@ -212,7 +229,7 @@ namespace sw
 				}
 				break;
 			default:
-				UNIMPLEMENTED("VkFormat: %d", int(state.targetFormat[index]));
+				UNIMPLEMENTED("VkFormat: %d", int(format));
 			}
 		}
 	}
@@ -221,7 +238,7 @@ namespace sw
 	{
 		for(int index = 0; index < RENDERTARGETS; index++)
 		{
-			if(!state.colorWriteActive(index) && !(index == 0 && state.alphaTestActive()))
+			if(!state.colorWriteActive(index) && !(index == 0 && state.alphaToCoverage))
 			{
 				continue;
 			}
@@ -241,6 +258,7 @@ namespace sw
 			case VK_FORMAT_R16G16B16A16_UNORM:
 			case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
 			case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+			case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
 				oC[index].x = Max(oC[index].x, Float4(0.0f)); oC[index].x = Min(oC[index].x, Float4(1.0f));
 				oC[index].y = Max(oC[index].y, Float4(0.0f)); oC[index].y = Min(oC[index].y, Float4(1.0f));
 				oC[index].z = Max(oC[index].z, Float4(0.0f)); oC[index].z = Min(oC[index].z, Float4(1.0f));
@@ -255,6 +273,9 @@ namespace sw
 			case VK_FORMAT_R32_UINT:
 			case VK_FORMAT_R32G32_UINT:
 			case VK_FORMAT_R32G32B32A32_UINT:
+			case VK_FORMAT_R16_SFLOAT:
+			case VK_FORMAT_R16G16_SFLOAT:
+			case VK_FORMAT_R16G16B16A16_SFLOAT:
 			case VK_FORMAT_R16_SINT:
 			case VK_FORMAT_R16G16_SINT:
 			case VK_FORMAT_R16G16B16A16_SINT:
@@ -269,6 +290,7 @@ namespace sw
 			case VK_FORMAT_R8G8B8A8_UINT:
 			case VK_FORMAT_A8B8G8R8_UINT_PACK32:
 			case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+			case VK_FORMAT_A2B10G10R10_UINT_PACK32:
 				break;
 			default:
 				UNIMPLEMENTED("VkFormat: %d", int(state.targetFormat[index]));

@@ -11,8 +11,19 @@
 <dom-module id="app-management-expandable-app-list">
   <template>
     <style include="app-management-shared-css">
+      #app-list-header {
+        align-items: center;
+        display: flex;
+        padding: 16px 12px;
+      }
+
       #app-list-title {
-        padding: 16px 24px;
+        font-size: var(--cr-title-text_-_font-size);
+        margin-inline-start: 12px;
+      }
+
+      #back-button {
+        margin-inline-start: 0;
       }
 
       #collapse {
@@ -22,7 +33,12 @@
       }
     </style>
     <div class="card-container">
-      <div id="app-list-title" class="header-text">[[listTitle]]</div>
+      <div id="app-list-header">
+        <cr-icon-button class="icon-arrow-back" id="back-button"
+          on-click="onClickBack_" aria-label="$i18n{back}">
+        </cr-icon-button>
+        <div id="app-list-title" class="header-text">[[listTitle]]</div>
+      </div>
       <iron-collapse id="collapse">
         <slot></slot>
       </iron-collapse>

@@ -38,10 +38,10 @@ CtapMakeCredentialRequest CreateRegisterRequestWithRegisteredKeys(
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1)));
-  request.SetExcludeList(std::move(registered_keys));
+  request.exclude_list = std::move(registered_keys);
   if (is_individual_attestation)
-    request.set_attestation_preference(
-        AttestationConveyancePreference::ENTERPRISE);
+    request.attestation_preference =
+        AttestationConveyancePreference::ENTERPRISE;
 
   return request;
 }

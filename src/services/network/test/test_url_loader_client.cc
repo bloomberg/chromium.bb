@@ -41,8 +41,7 @@ void TestURLLoaderClient::OnReceiveRedirect(
     std::move(quit_closure_for_on_receive_redirect_).Run();
 }
 
-void TestURLLoaderClient::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void TestURLLoaderClient::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_TRUE(has_received_response_);
   EXPECT_FALSE(has_received_completion_);

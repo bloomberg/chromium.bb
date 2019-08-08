@@ -440,10 +440,9 @@ void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
       *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
       return;
     case BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT:
-      *bubble_view_mode =
-          profile->GetProfileType() == Profile::INCOGNITO_PROFILE
-              ? profiles::BUBBLE_VIEW_MODE_INCOGNITO
-              : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+      *bubble_view_mode = profile->IsIncognitoProfile()
+                              ? profiles::BUBBLE_VIEW_MODE_INCOGNITO
+                              : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
   }
 }
 

@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_SEND_TAB_TO_SELF_TEST_SEND_TAB_TO_SELF_MODEL_H_
 #define COMPONENTS_SEND_TAB_TO_SELF_TEST_SEND_TAB_TO_SELF_MODEL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/time/time.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/target_device_info.h"
 
 namespace send_tab_to_self {
 
@@ -31,7 +33,12 @@ class TestSendTabToSelfModel : public SendTabToSelfModel {
                                      const std::string& device_id) override;
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
+  void MarkEntryOpened(const std::string& guid) override;
+
   bool IsReady() override;
+  bool HasValidTargetDevice() override;
+  std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
+      override;
 };
 
 }  // namespace send_tab_to_self

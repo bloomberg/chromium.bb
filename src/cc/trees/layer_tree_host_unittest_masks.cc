@@ -77,10 +77,10 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+    EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
               root_pass->quad_list.back()->material);
 
-    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+    EXPECT_EQ(viz::DrawQuad::Material::kRenderPass,
               root_pass->quad_list.front()->material);
     const viz::RenderPassDrawQuad* render_pass_quad =
         viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
@@ -209,11 +209,11 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+    EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
               root_pass->quad_list.back()->material);
 
     // The surface is clipped to 10x20.
-    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+    EXPECT_EQ(viz::DrawQuad::Material::kRenderPass,
               root_pass->quad_list.front()->material);
     const viz::RenderPassDrawQuad* render_pass_quad =
         viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
@@ -355,12 +355,12 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+    EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
               root_pass->quad_list.back()->material);
 
     // The surface is clipped to 10x20, and then scaled by 2, which ends up
     // being 20x40.
-    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+    EXPECT_EQ(viz::DrawQuad::Material::kRenderPass,
               root_pass->quad_list.front()->material);
     const viz::RenderPassDrawQuad* render_pass_quad =
         viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
@@ -488,10 +488,10 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+    EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
               root_pass->quad_list.back()->material);
 
-    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+    EXPECT_EQ(viz::DrawQuad::Material::kRenderPass,
               root_pass->quad_list.front()->material);
     const viz::RenderPassDrawQuad* render_pass_quad =
         viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
@@ -619,11 +619,11 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+    EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
               root_pass->quad_list.back()->material);
 
     // The surface is 100x100
-    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+    EXPECT_EQ(viz::DrawQuad::Material::kRenderPass,
               root_pass->quad_list.front()->material);
     const viz::RenderPassDrawQuad* render_pass_quad =
         viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());

@@ -6,8 +6,8 @@
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
-
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
@@ -26,28 +26,48 @@ namespace blink {
 
 // static
 GPUDevice* GPUDevice::Create(
+    ExecutionContext* execution_context,
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
     GPUAdapter* adapter,
     const GPUDeviceDescriptor* descriptor) {
-  return MakeGarbageCollected<GPUDevice>(std::move(dawn_control_client),
-                                         adapter, descriptor);
+  return MakeGarbageCollected<GPUDevice>(
+      execution_context, std::move(dawn_control_client), adapter, descriptor);
 }
 
 // TODO(enga): Handle adapter options and device descriptor
-GPUDevice::GPUDevice(scoped_refptr<DawnControlClientHolder> dawn_control_client,
+GPUDevice::GPUDevice(ExecutionContext* execution_context,
+                     scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      const GPUDeviceDescriptor* descriptor)
     : DawnObject(dawn_control_client,
                  dawn_control_client->GetInterface()->GetDefaultDevice()),
       adapter_(adapter),
-      queue_(
-          GPUQueue::Create(this, GetProcs().deviceCreateQueue(GetHandle()))) {}
+      queue_(GPUQueue::Create(this, GetProcs().deviceCreateQueue(GetHandle()))),
+      error_callback_(
+          BindRepeatingDawnCallback(&GPUDevice::OnError,
+                                    WrapWeakPersistent(this),
+                                    WrapWeakPersistent(execution_context))) {
+  GetProcs().deviceSetErrorCallback(GetHandle(),
+                                    error_callback_->UnboundRepeatingCallback(),
+                                    error_callback_->AsUserdata());
+}
 
 GPUDevice::~GPUDevice() {
   if (IsDawnControlClientDestroyed()) {
     return;
   }
   GetProcs().deviceRelease(GetHandle());
+}
+
+void GPUDevice::OnError(ExecutionContext* execution_context,
+                        const char* message) {
+  if (execution_context) {
+    LOG(ERROR) << "GPUDevice: " << message;
+    ConsoleMessage* console_message =
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kWarning, message);
+    execution_context->AddConsoleMessage(console_message);
+  }
 }
 
 GPUAdapter* GPUDevice::adapter() const {
@@ -87,8 +107,9 @@ GPUShaderModule* GPUDevice::createShaderModule(
 }
 
 GPURenderPipeline* GPUDevice::createRenderPipeline(
+    ScriptState* script_state,
     const GPURenderPipelineDescriptor* descriptor) {
-  return GPURenderPipeline::Create(this, descriptor);
+  return GPURenderPipeline::Create(script_state, this, descriptor);
 }
 
 GPUComputePipeline* GPUDevice::createComputePipeline(

@@ -27,10 +27,10 @@
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "content/public/common/push_messaging_status.mojom.h"
-#include "content/public/common/push_subscription_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "components/gcm_driver/instance_id/instance_id_android.h"
@@ -111,8 +111,8 @@ class PushMessagingServiceTest : public ::testing::Test {
                    const std::string& registration_id,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
-                   content::mojom::PushRegistrationStatus status) {
-    EXPECT_EQ(content::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
+                   blink::mojom::PushRegistrationStatus status) {
+    EXPECT_EQ(blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
               status);
 
     *subscription_id_out = registration_id;
@@ -168,9 +168,9 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   // (2) Subscribe for Push Messaging, and verify that we've got the required
   // information in order to be able to create encrypted messages.
-  content::PushSubscriptionOptions options;
+  blink::WebPushSubscriptionOptions options;
   options.user_visible_only = true;
-  options.sender_info = kTestSenderId;
+  options.application_server_key = kTestSenderId;
   push_service->SubscribeFromWorker(
       origin, kTestServiceWorkerId, options,
       base::Bind(&PushMessagingServiceTest::DidRegister, base::Unretained(this),

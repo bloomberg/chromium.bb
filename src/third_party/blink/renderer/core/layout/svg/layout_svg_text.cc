@@ -189,6 +189,8 @@ void LayoutSVGText::UpdateLayout() {
   DCHECK(!needs_reordering_);
   LayoutAnalyzer::Scope analyzer(*this);
 
+  ClearOffsetMappingIfNeeded();
+
   // When laying out initially, build the character data map and propagate
   // resulting layout attributes to all LayoutSVGInlineText children in the
   // subtree.
@@ -413,10 +415,10 @@ FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
   return visual_rect;
 }
 
-void LayoutSVGText::AddOutlineRects(Vector<LayoutRect>& rects,
-                                    const LayoutPoint&,
+void LayoutSVGText::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                    const PhysicalOffset&,
                                     NGOutlineType) const {
-  rects.push_back(LayoutRect(ObjectBoundingBox()));
+  rects.push_back(PhysicalRect::EnclosingRect(ObjectBoundingBox()));
 }
 
 bool LayoutSVGText::IsObjectBoundingBoxValid() const {

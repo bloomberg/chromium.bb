@@ -28,7 +28,6 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -231,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, WellKnownConsumerAccount) {
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
   policy::ProfilePolicyConnector* const connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
+      profile()->GetProfilePolicyConnector();
   connector->OverrideIsManagedForTesting(true);
 
   EnableArc();

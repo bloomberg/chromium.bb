@@ -750,26 +750,16 @@ The frame sizes change between 1080p and 720p every 24 frames.
 
 ### VEA test files:
 
-#### bear_128x96_40frames.yuv
-First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 128x96 for
-video_encode_accelerator_unittest. This is the size that could be encoded
-with the lowest H264 level 1.0 in 30 fps.
-
-#### bear_320x192_40frames.yuv
+#### bear_320x192_40frames.yuv.webm
 First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
+video_encode_accelerator_unittest. Encoded with vp9 lossless:
+`ffmpeg -pix_fmt yuv420p -s:v 320x192 -r 30 -i bear_320x192_40frames.yuv -lossless 1 bear_320x192_40frames.yuv.webm`
 
-#### bear_320x192_40frames.nv12.yuv
-First 40 raw nv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
+#### bear_640x384_40frames.yuv.webm
+First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 340x384 for
+video_encode_accelerator_unittest. Encoded with vp9 lossless:
+`ffmpeg -pix_fmt yuv420p -s:v 640x384 -r 30 -i bear_640x384_40frames.yuv -lossless 1 bear_640x384_40frames.yuv.webm`
 
-#### bear_320x192_40frames.nv21.yuv
-First 40 raw nv21 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
-
-#### bear_320x192_40frames.yv12.yuv
-First 40 raw yv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
 
 ### ImageProcessor Test Files
 
@@ -826,6 +816,17 @@ ffmpeg -f lavfi -i "sine=frequency=500:sample_rate=48000" -t 10 -c:v libvpx a500
 ffmpeg -i green.webm -i a300hz.webm -map 0 -map 1 green-a300hz.webm
 ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 ```
+
+### WebP Test Files
+
+#### bouncy_ball.webp
+An animated (extended) WebP encoded image of 450x450. Created by gildekel@ using Gimp.
+
+#### red_green_gradient_lossy.webp
+A lossy WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
+
+#### yellow_pink_gradient_lossless.webp
+A lossless WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
 
 ### JPEG Test Files
 

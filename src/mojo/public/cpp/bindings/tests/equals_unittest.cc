@@ -76,47 +76,5 @@ TEST_F(EqualsTest, Array) {
   EXPECT_TRUE(n1.Equals(n2));
 }
 
-TEST_F(EqualsTest, InterfacePtr) {
-  base::MessageLoop message_loop;
-
-  SomeInterfacePtr inf1;
-  SomeInterfacePtr inf2;
-
-  EXPECT_TRUE(inf1.Equals(inf1));
-  EXPECT_TRUE(inf1.Equals(inf2));
-
-  auto inf1_request = MakeRequest(&inf1);
-  ALLOW_UNUSED_LOCAL(inf1_request);
-
-  EXPECT_TRUE(inf1.Equals(inf1));
-  EXPECT_FALSE(inf1.Equals(inf2));
-
-  auto inf2_request = MakeRequest(&inf2);
-  ALLOW_UNUSED_LOCAL(inf2_request);
-
-  EXPECT_FALSE(inf1.Equals(inf2));
-}
-
-TEST_F(EqualsTest, InterfaceRequest) {
-  base::MessageLoop message_loop;
-
-  InterfaceRequest<SomeInterface> req1;
-  InterfaceRequest<SomeInterface> req2;
-
-  EXPECT_TRUE(req1.Equals(req1));
-  EXPECT_TRUE(req1.Equals(req2));
-
-  SomeInterfacePtr inf1;
-  req1 = MakeRequest(&inf1);
-
-  EXPECT_TRUE(req1.Equals(req1));
-  EXPECT_FALSE(req1.Equals(req2));
-
-  SomeInterfacePtr inf2;
-  req2 = MakeRequest(&inf2);
-
-  EXPECT_FALSE(req1.Equals(req2));
-}
-
 }  // test
 }  // mojo

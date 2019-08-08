@@ -11,7 +11,9 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/security_state/core/security_state.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -51,6 +53,13 @@ class LocationBarModel {
   // This method can be called with nullptr |search_terms| if the caller wants
   // to check the display status only. Virtual for testing purposes.
   virtual bool GetDisplaySearchTerms(base::string16* search_terms) = 0;
+
+  // Classify the current page being viewed as, for example, the new tab
+  // page or a normal web page.  Used for logging omnibox events for
+  // UMA opted-in users.  Examines the user's profile to determine if the
+  // current page is the user's home page.
+  virtual metrics::OmniboxEventProto::PageClassification GetPageClassification(
+      OmniboxFocusSource focus_source) = 0;
 
   // Returns the id of the icon to show to the left of the address, based on the
   // current URL.  When search term replacement is active, this returns a search

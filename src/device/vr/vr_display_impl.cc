@@ -28,6 +28,7 @@ VRDisplayImpl::~VRDisplayImpl() = default;
 
 // Gets frame data for sessions.
 void VRDisplayImpl::GetFrameData(
+    mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (device_->HasExclusiveSession() || restrict_frame_data_) {
     std::move(callback).Run(nullptr);

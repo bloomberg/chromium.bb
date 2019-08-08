@@ -201,7 +201,7 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
 
 
 def load_interfaces_info_overall_pickle(info_dir):
-    with open(os.path.join(info_dir, 'modules', 'InterfacesInfoOverall.pickle')) as interface_info_file:
+    with open(os.path.join(info_dir, 'interfaces_info.pickle')) as interface_info_file:
         return pickle.load(interface_info_file)
 
 
@@ -227,16 +227,16 @@ def merge_dict_recursively(target, diff):
 
 def create_component_info_provider_core(info_dir):
     interfaces_info = load_interfaces_info_overall_pickle(info_dir)
-    with open(os.path.join(info_dir, 'core', 'ComponentInfoCore.pickle')) as component_info_file:
+    with open(os.path.join(info_dir, 'core', 'component_info_core.pickle')) as component_info_file:
         component_info = pickle.load(component_info_file)
     return ComponentInfoProviderCore(interfaces_info, component_info)
 
 
 def create_component_info_provider_modules(info_dir):
     interfaces_info = load_interfaces_info_overall_pickle(info_dir)
-    with open(os.path.join(info_dir, 'core', 'ComponentInfoCore.pickle')) as component_info_file:
+    with open(os.path.join(info_dir, 'core', 'component_info_core.pickle')) as component_info_file:
         component_info_core = pickle.load(component_info_file)
-    with open(os.path.join(info_dir, 'modules', 'ComponentInfoModules.pickle')) as component_info_file:
+    with open(os.path.join(info_dir, 'modules', 'component_info_modules.pickle')) as component_info_file:
         component_info_modules = pickle.load(component_info_file)
     return ComponentInfoProviderModules(
         interfaces_info, component_info_core, component_info_modules)
@@ -445,18 +445,18 @@ def shorten_union_name(union_type):
         'CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas': 'CanvasImageSource',
         # modules/canvas/htmlcanvas/html_canvas_element_module_support_webgl2_compute.idl
         # Due to html_canvas_element_module_support_webgl2_compute.idl and html_canvas_element_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContextOrGPUCanvasContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext': 'RenderingContext',
         # modules/canvas/htmlcanvas/html_canvas_element_module.idl
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContextOrGPUCanvasContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext': 'RenderingContext',
         # core/frame/window_or_worker_global_scope.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl
         'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',
         # modules/canvas/offscreencanvas/offscreen_canvas_module_support_webgl2_compute.idl.
         # Due to offscreen_canvas_module_support_webgl2_compute.idl and offscreen_canvas_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
-        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContext': 'OffscreenRenderingContext',
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContext': 'OffscreenRenderingContext',
         # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
-        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext': 'OffscreenRenderingContext',
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext': 'OffscreenRenderingContext',
     }
 
     idl_type = union_type

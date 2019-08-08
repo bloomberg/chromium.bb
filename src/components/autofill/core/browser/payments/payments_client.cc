@@ -5,6 +5,8 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 
 #include <memory>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -19,17 +21,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_data_model.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/account_info_getter.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_request.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -45,6 +46,9 @@ namespace autofill {
 namespace payments {
 
 namespace {
+
+const char kGetUnmaskDetailsRequestPath[] =
+    "payments/apis/chromepaymentsservice/getdetailsforgetrealpan";
 
 const char kUnmaskCardRequestPath[] =
     "payments/apis-secure/creditcardservice/getrealpan?s7e_suffix=chromewallet";
@@ -225,6 +229,93 @@ void SetActiveExperiments(const std::vector<const char*>& active_experiments,
   request_dict.SetKey("active_chrome_experiments",
                       std::move(active_chrome_experiments));
 }
+
+class GetUnmaskDetailsRequest : public PaymentsRequest {
+ public:
+  GetUnmaskDetailsRequest(GetUnmaskDetailsCallback callback,
+                          const std::string& app_locale,
+                          const bool full_sync_enabled)
+      : callback_(std::move(callback)),
+        app_locale_(app_locale),
+        full_sync_enabled_(full_sync_enabled) {}
+  ~GetUnmaskDetailsRequest() override {}
+
+  std::string GetRequestUrlPath() override {
+    return kGetUnmaskDetailsRequestPath;
+  }
+
+  std::string GetRequestContentType() override { return "application/json"; }
+
+  std::string GetRequestContent() override {
+    base::Value request_dict(base::Value::Type::DICTIONARY);
+    base::Value context(base::Value::Type::DICTIONARY);
+    context.SetKey("language_code", base::Value(app_locale_));
+    context.SetKey("billable_service",
+                   base::Value(kUnmaskCardBillableServiceNumber));
+    request_dict.SetKey("context", std::move(context));
+
+    if (ShouldUseActiveSignedInAccount()) {
+      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+      chrome_user_context.SetKey("full_sync_enabled",
+                                 base::Value(full_sync_enabled_));
+      request_dict.SetKey("chrome_user_context",
+                          std::move(chrome_user_context));
+    }
+
+    std::string request_content;
+    base::JSONWriter::Write(request_dict, &request_content);
+    VLOG(3) << "getdetailsforgetrealpan request body: " << request_content;
+    return request_content;
+  }
+
+  void ParseResponse(const base::Value& response) override {
+    const auto* method = response.FindStringKey("authentication_method");
+    auth_method_ = method ? *method : std::string();
+
+    const auto* offer_opt_in =
+        response.FindKeyOfType("offer_opt_in", base::Value::Type::BOOLEAN);
+    offer_opt_in_ = offer_opt_in && offer_opt_in->GetBool();
+
+    const auto* dictionary_value = response.FindKeyOfType(
+        "request_options", base::Value::Type::DICTIONARY);
+    if (dictionary_value)
+      request_options_ =
+          std::make_unique<base::Value>(dictionary_value->Clone());
+
+    const auto* fido_eligible_card_ids = response.FindKeyOfType(
+        "fido_eligible_credit_card_id", base::Value::Type::LIST);
+    if (fido_eligible_card_ids) {
+      for (const base::Value& result : fido_eligible_card_ids->GetList()) {
+        fido_eligible_card_ids_.insert(result.GetString());
+      }
+    }
+  }
+
+  bool IsResponseComplete() override { return !auth_method_.empty(); }
+
+  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
+    std::move(callback_).Run(result, auth_method_, offer_opt_in_,
+                             std::move(request_options_),
+                             fido_eligible_card_ids_);
+  }
+
+ private:
+  GetUnmaskDetailsCallback callback_;
+  std::string app_locale_;
+  const bool full_sync_enabled_;
+
+  // The type of authentication method suggested for card unmask.
+  std::string auth_method_;
+  // Set to true if the user should be offered opt-in for FIDO Authentication.
+  bool offer_opt_in_;
+  // Public Key Credential Request Options required for authentication.
+  // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
+  std::unique_ptr<base::Value> request_options_;
+  // Set of credit cards ids that are eligible for FIDO Authentication.
+  std::set<std::string> fido_eligible_card_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetUnmaskDetailsRequest);
+};
 
 class UnmaskCardRequest : public PaymentsRequest {
  public:
@@ -774,6 +865,14 @@ void PaymentsClient::Prepare() {
     StartTokenFetch(false);
 }
 
+void PaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
+                                      const std::string& app_locale) {
+  IssueRequest(std::make_unique<GetUnmaskDetailsRequest>(
+                   std::move(callback), app_locale,
+                   account_info_getter_->IsSyncFeatureEnabled()),
+               /*authenticate=*/true);
+}
+
 void PaymentsClient::UnmaskCard(
     const PaymentsClient::UnmaskRequestDetails& request_details,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
@@ -1043,9 +1142,6 @@ void PaymentsClient::StartRequest() {
             }
           }
         })");
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::AUTOFILL
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request_), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(request_->GetRequestContent(),

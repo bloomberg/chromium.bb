@@ -56,6 +56,7 @@ class TargetHandler : public DevToolsDomainHandler,
   void DidFinishNavigation();
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
+  void UpdatePortals();
 
   // Domain implementation.
   Response SetDiscoverTargets(bool discover) override;
@@ -93,6 +94,8 @@ class TargetHandler : public DevToolsDomainHandler,
                         Maybe<int> height,
                         Maybe<std::string> context_id,
                         Maybe<bool> enable_begin_frame_control,
+                        Maybe<bool> new_window,
+                        Maybe<bool> background,
                         std::string* out_target_id) override;
   Response GetTargets(
       std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos)

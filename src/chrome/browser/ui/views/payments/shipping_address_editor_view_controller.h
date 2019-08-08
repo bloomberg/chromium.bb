@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
-#include "components/autofill/core/browser/region_combobox_model.h"
+#include "components/autofill/core/browser/ui/region_combobox_model.h"
 
 namespace autofill {
 class AutofillProfile;

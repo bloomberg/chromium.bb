@@ -218,7 +218,7 @@ void SpinThreads() {
 
   // This prevents HistoryBackend from accessing its databases after the
   // directory that contains them has been deleted.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 }  // namespace
@@ -249,8 +249,8 @@ class ProfileBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<Profile> CreateProfile(const base::FilePath& path,
                                          Profile::Delegate* delegate,
                                          Profile::CreateMode create_mode) {
-    std::unique_ptr<Profile> profile(
-        Profile::CreateProfile(path, delegate, create_mode));
+    std::unique_ptr<Profile> profile =
+        Profile::CreateProfile(path, delegate, create_mode);
     EXPECT_TRUE(profile.get());
 
     // Store the Profile's IO task runner so we can wind it down.

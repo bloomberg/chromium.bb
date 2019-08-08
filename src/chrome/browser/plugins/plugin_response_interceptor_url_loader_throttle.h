@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/url_loader_throttle.h"
 
 namespace content {
@@ -36,10 +37,16 @@ class PluginResponseInterceptorURLLoaderThrottle
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override;
+  // Resumes loading for an intercepted response. This would give the extension
+  // layer chance to initialize its browser side state.
+  void ResumeLoad();
 
   content::ResourceContext* const resource_context_;
   const int resource_type_;
   const int frame_tree_node_id_;
+
+  base::WeakPtrFactory<PluginResponseInterceptorURLLoaderThrottle>
+      weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResponseInterceptorURLLoaderThrottle);
 };

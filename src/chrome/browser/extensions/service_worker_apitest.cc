@@ -12,11 +12,14 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
@@ -56,6 +59,7 @@
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/common/verifier_formats.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -302,6 +306,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
       << message_;
 }
 
+// Tests chrome.runtime.id and chrome.runtime.getURL().
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, RuntimeMisc) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/runtime_misc"))
+      << message_;
+}
+
 // Tests chrome.storage APIs.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageSetAndGet) {
   ASSERT_TRUE(
@@ -356,6 +367,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequestBlocking) {
       "service_worker/worker_based_background/web_request_blocking")));
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
   EXPECT_EQ(content::PAGE_TYPE_ERROR, NavigateAndGetPageType(url));
+}
+
+// Tests chrome.webNavigation APIs.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, FilteredEvents) {
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/worker_based_background/filtered_events"))
+      << message_;
 }
 
 // Listens for |message| from extension Service Worker early so that tests can
@@ -1110,43 +1128,176 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
       "service_worker/web_accessible_resources/fetch/", "page.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
+// Tests that updating a packed extension with modified scripts works
+// properly -- we expect that the new script will execute, rather than the
+// previous one.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
   // Extensions APIs from SW are only enabled on trunk.
   ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/tabs_create"), kFlagNone);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  constexpr char kManifest1[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"service_worker": "script.js"}
+         })";
+  constexpr char kNewVersionString[] = "0.2";
 
-  int starting_tab_count = browser()->tab_strip_model()->count();
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.runServiceWorker()", &result));
-  ASSERT_EQ("chrome.tabs.create callback", result);
-  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  // This script installs an event listener for updates to the extension with
+  // a callback that forces itself to reload.
+  constexpr char kScript1[] =
+      R"(
+         chrome.runtime.onUpdateAvailable.addListener(function(details) {
+           chrome.test.assertEq('%s', details.version);
+           chrome.runtime.reload();
+         });
+         chrome.test.sendMessage('ready1');
+        )";
 
-  // Check extension shutdown path.
-  UnloadExtension(extension->id());
-  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+  std::string id;
+  TestExtensionDir test_dir;
+
+  // Write the manifest and script files and load the extension.
+  test_dir.WriteManifest(kManifest1);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     base::StringPrintf(kScript1, kNewVersionString));
+
+  {
+    ExtensionTestMessageListener ready_listener("ready1", false);
+    base::FilePath path = test_dir.Pack();
+    const Extension* extension = LoadExtension(path);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    id = extension->id();
+  }
+
+  constexpr char kManifest2[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "%s",
+           "background": {"service_worker": "script.js"}
+         })";
+  constexpr char kScript2[] =
+      R"(
+         chrome.runtime.onInstalled.addListener(function(details) {
+           chrome.test.assertEq('update', details.reason);
+           chrome.test.sendMessage('onInstalled');
+         });
+         chrome.test.sendMessage('ready2');
+        )";
+  // Rewrite the manifest and script files with a version change in the manifest
+  // file. After reloading the extension, the old version of the extension
+  // should detect the update, force the reload, and the new script should
+  // execute.
+  test_dir.WriteManifest(base::StringPrintf(kManifest2, kNewVersionString));
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript2);
+  {
+    ExtensionTestMessageListener ready_listener("ready2", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
+    base::FilePath path = test_dir.Pack();
+    ExtensionService* const extension_service =
+        ExtensionSystem::Get(profile())->extension_service();
+    EXPECT_TRUE(extension_service->UpdateExtension(
+        CRXFileInfo(id, GetTestVerifierFormat(), path), true, nullptr));
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_EQ("0.2", ExtensionRegistry::Get(profile())
+                         ->enabled_extensions()
+                         .GetByID(id)
+                         ->version()
+                         .GetString());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, Events) {
+// Tests that updating an unpacked extension with modified scripts works
+// properly -- we expect that the new script will execute, rather than the
+// previous one.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
   // Extensions APIs from SW are only enabled on trunk.
   ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/events"), kFlagNone);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.runEventTest()", &result));
-  ASSERT_EQ("chrome.tabs.onUpdated callback", result);
+  constexpr char kManifest1[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"service_worker": "script.js"}
+         })";
+  constexpr char kManifest2[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.2",
+           "background": {"service_worker": "script.js"}
+         })";
+  constexpr char kScript[] =
+      R"(
+         chrome.runtime.onInstalled.addListener(function(details) {
+           chrome.test.assertEq('%s', details.reason);
+           chrome.test.sendMessage('onInstalled');
+         });
+         chrome.test.sendMessage('%s');
+        )";
+
+  std::string id;
+
+  ExtensionService* const extension_service =
+      ExtensionSystem::Get(profile())->extension_service();
+  scoped_refptr<UnpackedInstaller> installer =
+      UnpackedInstaller::Create(extension_service);
+
+  // Set a completion callback so we can get the ID of the extension.
+  installer->set_completion_callback(base::BindLambdaForTesting(
+      [&id](const Extension* extension, const base::FilePath& path,
+            const std::string& error) {
+        ASSERT_TRUE(extension);
+        ASSERT_TRUE(error.empty());
+        id = extension->id();
+      }));
+
+  TestExtensionDir test_dir;
+
+  // Write the manifest and script files and load the extension.
+  test_dir.WriteManifest(kManifest1);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     base::StringPrintf(kScript, "install", "ready1"));
+  {
+    ExtensionTestMessageListener ready_listener("ready1", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
+
+    installer->Load(test_dir.UnpackedPath());
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
+    ASSERT_FALSE(id.empty());
+  }
+
+  // Rewrite the script file without a version change in the manifest and reload
+  // the extension. The new script should execute.
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     base::StringPrintf(kScript, "update", "ready2"));
+  {
+    ExtensionTestMessageListener ready_listener("ready2", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
+
+    extension_service->ReloadExtension(id);
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
+  }
+
+  // Rewrite the manifest and script files with a version change in the manifest
+  // file. After reloading the extension, the new script should execute.
+  test_dir.WriteManifest(kManifest2);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     base::StringPrintf(kScript, "update", "ready3"));
+  {
+    ExtensionTestMessageListener ready_listener("ready3", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
+
+    extension_service->ReloadExtension(id);
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, EventsToStoppedWorker) {
@@ -1527,13 +1678,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
   EXPECT_TRUE(push_message_listener.WaitUntilSatisfied());
   run_loop.Run();  // Wait until the message is handled by push service.
 }
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, FilteredEvents) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  ASSERT_TRUE(RunExtensionTest("service_worker/filtered_events"));
-}
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MimeHandlerView) {
   ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
 }

@@ -43,6 +43,7 @@ class TestMenuItemViewShown;
 class TestMenuItemViewNotShown;
 }
 
+class ImageView;
 class MenuController;
 class MenuDelegate;
 class Separator;
@@ -162,9 +163,9 @@ class VIEWS_EXPORT MenuItemView : public View {
                               Type type,
                               ui::MenuSeparatorType separator_style);
 
-  // Remove an item from the menu at a specified index. The removed MenuItemView
-  // is deleted when ChildrenChanged() is invoked.
-  void RemoveMenuItemAt(int index);
+  // Remove the specified item from the menu. |item| will be deleted when
+  // ChildrenChanged() is invoked.
+  void RemoveMenuItem(View* item);
 
   // Removes all items from the menu.  The removed MenuItemViews are deleted
   // when ChildrenChanged() is invoked.

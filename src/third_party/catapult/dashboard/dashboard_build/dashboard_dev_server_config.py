@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import json
 import os
 
@@ -19,7 +23,7 @@ class TestListHandler(webapp2.RequestHandler):
     for test in project.FindAllTestModuleRelPaths():
       test = '/' + test.replace(os.sep, '/')
       if '/spa/' in test:
-        # Tests in spa/ are run by run_wct_tests, so don't run them here.
+        # Tests in spa/ are run by run_spa_tests, so don't run them here.
         continue
       test_relpaths.append(test)
 

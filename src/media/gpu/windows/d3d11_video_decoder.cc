@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
-#include "gpu/config/gpu_finch_features.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
@@ -26,6 +25,7 @@
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_switches.h"
 
 namespace media {
 
@@ -264,7 +264,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
 void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    bool low_delay,
                                    CdmContext* cdm_context,
-                                   const InitCB& init_cb,
+                                   InitCB init_cb,
                                    const OutputCB& output_cb,
                                    const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -274,7 +274,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   state_ = State::kInitializing;
 
   config_ = config;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
 
@@ -497,16 +497,17 @@ void D3D11VideoDecoder::OnGpuInitComplete(bool success) {
 }
 
 void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                               const DecodeCB& decode_cb) {
+                               DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state_ == State::kError) {
     // TODO(liberato): consider posting, though it likely doesn't matter.
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  input_buffer_queue_.push_back(std::make_pair(std::move(buffer), decode_cb));
+  input_buffer_queue_.push_back(
+      std::make_pair(std::move(buffer), std::move(decode_cb)));
 
   // Post, since we're not supposed to call back before this returns.  It
   // probably doesn't matter since we're in the gpu process anyway.
@@ -529,7 +530,7 @@ void D3D11VideoDecoder::DoDecode() {
       return;
     }
     current_buffer_ = std::move(input_buffer_queue_.front().first);
-    current_decode_cb_ = input_buffer_queue_.front().second;
+    current_decode_cb_ = std::move(input_buffer_queue_.front().second);
     input_buffer_queue_.pop_front();
     if (current_buffer_->end_of_stream()) {
       // Flush, then signal the decode cb once all pictures have been output.
@@ -591,7 +592,7 @@ void D3D11VideoDecoder::DoDecode() {
       base::BindOnce(&D3D11VideoDecoder::DoDecode, weak_factory_.GetWeakPtr()));
 }
 
-void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
+void D3D11VideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kInitializing);
 
@@ -600,7 +601,7 @@ void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
     std::move(current_decode_cb_).Run(DecodeStatus::ABORTED);
 
   for (auto& queue_pair : input_buffer_queue_)
-    queue_pair.second.Run(DecodeStatus::ABORTED);
+    std::move(queue_pair.second).Run(DecodeStatus::ABORTED);
   input_buffer_queue_.clear();
 
   // TODO(liberato): how do we signal an error?
@@ -621,7 +622,7 @@ void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
   if (state_ == State::kWaitingForNewKey || state_ == State::kWaitingForReset)
     state_ = State::kRunning;
 
-  closure.Run();
+  std::move(closure).Run();
 }
 
 bool D3D11VideoDecoder::NeedsBitstreamConversion() const {
@@ -670,11 +671,12 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   // Create each picture buffer.
   const int textures_per_picture = 2;  // From the VDA
   for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
-    picture_buffers_.push_back(
-        new D3D11PictureBuffer(GL_TEXTURE_EXTERNAL_OES, size, i));
-    if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_, out_texture,
+    auto processor = std::make_unique<DefaultTexture2DWrapper>(out_texture);
+    picture_buffers_.push_back(new D3D11PictureBuffer(
+        GL_TEXTURE_EXTERNAL_OES, std::move(processor), size, i));
+    if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
                                    texture_selector_->decoder_guid,
-                                   textures_per_picture)) {
+                                   textures_per_picture, media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
     }
@@ -712,7 +714,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
 
   base::TimeDelta timestamp = picture_buffer->timestamp_;
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      texture_selector_->pixel_format, picture_buffer->mailbox_holders(),
+      texture_selector_->pixel_format, picture_buffer->ProcessTexture(),
       VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 
@@ -779,7 +781,7 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
     std::move(current_decode_cb_).Run(DecodeStatus::DECODE_ERROR);
 
   for (auto& queue_pair : input_buffer_queue_)
-    queue_pair.second.Run(DecodeStatus::DECODE_ERROR);
+    std::move(queue_pair.second).Run(DecodeStatus::DECODE_ERROR);
   input_buffer_queue_.clear();
 }
 

@@ -27,13 +27,13 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
  public:
   using Store = std::unique_ptr<CollectionStore<NotificationEntry>>;
 
-  ScheduledNotificationManagerImpl(Store store, Delegate* delegate)
-      : store_(std::move(store)),
-        delegate_(delegate),
-        weak_ptr_factory_(this) {}
+  ScheduledNotificationManagerImpl(Store store)
+      : store_(std::move(store)), delegate_(nullptr), weak_ptr_factory_(this) {}
 
  private:
-  void Init(InitCallback callback) override {
+  void Init(Delegate* delegate, InitCallback callback) override {
+    DCHECK(!delegate_);
+    delegate_ = delegate;
     store_->InitAndLoad(
         base::BindOnce(&ScheduledNotificationManagerImpl::OnStoreInitialized,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -127,10 +127,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 // static
 std::unique_ptr<ScheduledNotificationManager>
 ScheduledNotificationManager::Create(
-    std::unique_ptr<CollectionStore<NotificationEntry>> store,
-    Delegate* delegate) {
-  return std::make_unique<ScheduledNotificationManagerImpl>(std::move(store),
-                                                            delegate);
+    std::unique_ptr<CollectionStore<NotificationEntry>> store) {
+  return std::make_unique<ScheduledNotificationManagerImpl>(std::move(store));
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;

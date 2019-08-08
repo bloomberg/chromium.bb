@@ -65,7 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       mojom::URLLoaderFactory* loader_factory);
 
   // Reports and gather CORS preflight cache size metric.
-  size_t ReportAndGatherCacheSizeMetric();
+  PreflightCache::Metrics ReportAndGatherCacheSizeMetric();
 
  private:
   class PreflightLoader;

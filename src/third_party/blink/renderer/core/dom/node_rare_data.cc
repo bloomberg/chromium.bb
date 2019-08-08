@@ -47,10 +47,6 @@ struct SameSizeAsNodeRareData {
   unsigned bitfields_;
 };
 
-NodeMutationObserverData* NodeMutationObserverData::Create() {
-  return MakeGarbageCollected<NodeMutationObserverData>();
-}
-
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
               "NodeRareData should stay small");
 

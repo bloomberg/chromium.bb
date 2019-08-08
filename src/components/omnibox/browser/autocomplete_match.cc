@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +26,7 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -231,7 +233,6 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_SUGGEST:
     case Type::SEARCH_SUGGEST_ENTITY:
-    case Type::SEARCH_SUGGEST_PERSONALIZED:
     case Type::SEARCH_SUGGEST_PROFILE:
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
@@ -240,7 +241,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::CLIPBOARD_IMAGE:
       return vector_icons::kSearchIcon;
 
-    case Type::SEARCH_HISTORY: {
+    case Type::SEARCH_HISTORY:
+    case Type::SEARCH_SUGGEST_PERSONALIZED: {
       if (base::FeatureList::IsEnabled(
               omnibox::kOmniboxSuggestionTransparencyOptions) ||
           base::FeatureList::IsEnabled(
@@ -291,6 +293,93 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
   }
 }
 #endif
+
+base::string16 AutocompleteMatch::GetWhyThisSuggestionText() const {
+  // TODO(tommycli): Replace these placeholder strings with final ones from UX.
+  switch (type) {
+    case Type::URL_WHAT_YOU_TYPED:
+      return base::ASCIIToUTF16(
+          "This navigation match is the exact URL you typed.");
+
+    case Type::HISTORY_URL:
+    case Type::HISTORY_TITLE:
+    case Type::HISTORY_BODY:
+    case Type::HISTORY_KEYWORD:
+      return base::ASCIIToUTF16(
+          "This navigation match is a previously visited page from Chrome "
+          "History.");
+
+    case Type::NAVSUGGEST:
+      return base::ASCIIToUTF16(
+          "This navigation match is suggested by the search engine based on "
+          "what you typed.");
+
+    case Type::SEARCH_WHAT_YOU_TYPED:
+      return base::ASCIIToUTF16("This search query is exactly what you typed.");
+
+    case Type::SEARCH_HISTORY:
+      // TODO(tommycli): We may need to distinguish between matches sourced
+      // from search history saved in the cloud vs. locally.
+      return base::ASCIIToUTF16(
+          "This search query is suggested by the search engine based on what "
+          "you typed and past search queries.");
+
+    case Type::SEARCH_SUGGEST:
+    case Type::SEARCH_SUGGEST_ENTITY:
+    case Type::SEARCH_SUGGEST_TAIL:
+      return base::ASCIIToUTF16(
+          "This search query is suggested by the search engine based on what "
+          "you typed.");
+
+    case Type::SEARCH_SUGGEST_PERSONALIZED:
+      return base::ASCIIToUTF16(
+          "This search query is suggested by the search engine based on what "
+          "you typed. It has also been personalized to you.");
+
+    case Type::SEARCH_OTHER_ENGINE:
+      return base::ASCIIToUTF16(
+          "This search query is for a non-default search engine.");
+
+    case Type::BOOKMARK_TITLE:
+      return base::ASCIIToUTF16(
+          "This navigation matches the title of a Bookmark.");
+
+    case Type::NAVSUGGEST_PERSONALIZED:
+      return base::ASCIIToUTF16(
+          "This navigation match is suggested by the search engine based on "
+          "what you typed. It has also been personalized to you.");
+
+    case Type::CALCULATOR:
+      return base::ASCIIToUTF16(
+          "This calculation is the result of evaluating your input provided by "
+          "your default search engine.");
+
+    case Type::CLIPBOARD_URL:
+    case Type::CLIPBOARD_TEXT:
+    case Type::CLIPBOARD_IMAGE:
+      return base::ASCIIToUTF16("This match is from the system clipboard.");
+
+    case Type::VOICE_SUGGEST:
+      return base::ASCIIToUTF16("This match is from voice.");
+
+    case Type::DOCUMENT_SUGGESTION:
+      return base::ASCIIToUTF16("This match is from your documents.");
+
+    case Type::PEDAL:
+      return base::ASCIIToUTF16(
+          "This is a suggested Chrome action based on what you typed.");
+
+    case Type::EXTENSION_APP_DEPRECATED:
+    case Type::SEARCH_SUGGEST_PROFILE:
+    case Type::CONTACT_DEPRECATED:
+    case Type::PHYSICAL_WEB_DEPRECATED:
+    case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
+    case Type::TAB_SEARCH_DEPRECATED:
+    case Type::NUM_TYPES:
+      NOTREACHED();
+      return base::string16();
+  }
+}
 
 // static
 bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
@@ -629,11 +718,35 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
   return format_types;
 }
 
+// static
+void AutocompleteMatch::LogSearchEngineUsed(
+    const AutocompleteMatch& match,
+    TemplateURLService* template_url_service) {
+  DCHECK(template_url_service);
+
+  TemplateURL* template_url = match.GetTemplateURL(template_url_service, false);
+  if (template_url) {
+    SearchEngineType search_engine_type =
+        match.destination_url.is_valid()
+            ? TemplateURLPrepopulateData::GetEngineType(match.destination_url)
+            : SEARCH_ENGINE_OTHER;
+    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
+                              SEARCH_ENGINE_MAX);
+  }
+}
+
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service) {
-  stripped_destination_url =
-      GURLToStrippedGURL(destination_url, input, template_url_service, keyword);
+  // Other than document suggestions, computing |stripped_destination_url| will
+  // have the same result during a match's lifecycle, so it's safe to skip
+  // re-computing it if it's already computed. Document suggestions'
+  // |stripped_url|s are pre-computed by the document provider, and overwriting
+  // them here would prevent potential deduping.
+  if (stripped_destination_url.is_empty()) {
+    stripped_destination_url = GURLToStrippedGURL(
+        destination_url, input, template_url_service, keyword);
+  }
 }
 
 void AutocompleteMatch::GetKeywordUIState(
@@ -814,10 +927,6 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(duplicate_matches);
 
   return res;
-}
-
-bool AutocompleteMatch::IsExceptedFromLineReversal() const {
-  return !!answer && answer->type() == SuggestionAnswer::ANSWER_TYPE_DICTIONARY;
 }
 
 bool AutocompleteMatch::ShouldShowTabMatch() const {

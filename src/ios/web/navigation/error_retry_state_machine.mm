@@ -80,8 +80,13 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     // Retry of a previous failure still fails.
     case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
       if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        // In this case, a back/forward item already exists. Rewriting the
+        // WebView's URL to the placeholder URL before loading the error page
+        // ensures that WebKit doesn't associate the (empty) contents of an
+        // immediately-preceding kRewriteToWebViewURL step with the actual URL
+        // in its page cache. See http://crbug.com/950489.
         state_ = ErrorRetryState::kLoadingPlaceholder;
-        return ErrorRetryCommand::kLoadPlaceholder;
+        return ErrorRetryCommand::kRewriteToPlaceholderURL;
       } else {
         return BackForwardOrReloadFailed(web_view_url, error_url);
       }
@@ -140,9 +145,9 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         DCHECK_EQ(web_view_url,
                   wk_navigation_util::CreatePlaceholderUrlForUrl(url_));
         state_ = ErrorRetryState::kRetryPlaceholderNavigation;
-        return ErrorRetryCommand::kRewriteWebViewURL;
+        return ErrorRetryCommand::kRewriteToWebViewURL;
       } else {
-        // The url was written by kRewriteWebViewURL in the if block, so on
+        // The url was written by kRewriteToWebViewURL in the if block, so on
         // this navigation load an error view.
         state_ = ErrorRetryState::kReadyToDisplayErrorForFailedNavigation;
         return ErrorRetryCommand::kLoadErrorView;
@@ -170,7 +175,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         // (4) Back/forward to or reload of placeholder URL. Rewrite WebView URL
         // to prepare for retry.
         state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
-        return ErrorRetryCommand::kRewriteWebViewURL;
+        return ErrorRetryCommand::kRewriteToWebViewURL;
       }
 
       if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {

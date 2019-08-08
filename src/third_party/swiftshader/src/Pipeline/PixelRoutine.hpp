@@ -22,7 +22,7 @@ namespace sw
 	class PixelShader;
 	class SamplerCore;
 
-	class PixelRoutine : public sw::QuadRasterizer, public ShaderCore
+	class PixelRoutine : public sw::QuadRasterizer
 	{
 	public:
 		PixelRoutine(const PixelProcessor::State &state,
@@ -89,8 +89,6 @@ namespace sw
 
 		void writeDepth32F(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask);
 		void writeDepth16(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask);
-
-		bool colorUsed();
 	};
 }
 

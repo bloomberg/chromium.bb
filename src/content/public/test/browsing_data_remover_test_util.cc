@@ -21,7 +21,7 @@ BrowsingDataRemoverCompletionObserver::
     ~BrowsingDataRemoverCompletionObserver() {}
 
 void BrowsingDataRemoverCompletionObserver::BlockUntilCompletion() {
-  base::ThreadPool::GetInstance()->FlushAsyncForTesting(base::BindOnce(
+  base::ThreadPoolInstance::Get()->FlushAsyncForTesting(base::BindOnce(
       &BrowsingDataRemoverCompletionObserver::FlushForTestingComplete,
       base::Unretained(this)));
   run_loop_.Run();
@@ -79,7 +79,7 @@ void BrowsingDataRemoverCompletionInhibitor::Reset() {
 }
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
-  base::ThreadPool::GetInstance()->FlushAsyncForTesting(base::BindOnce(
+  base::ThreadPoolInstance::Get()->FlushAsyncForTesting(base::BindOnce(
       &BrowsingDataRemoverCompletionInhibitor::FlushForTestingComplete,
       base::Unretained(this)));
   run_loop_->Run();

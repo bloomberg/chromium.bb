@@ -295,10 +295,10 @@ class ProfileManager : public content::NotificationObserver,
       const base::FilePath& user_data_dir);
 
   // Adds a pre-existing Profile object to the set managed by this
-  // ProfileManager. This ProfileManager takes ownership of the Profile.
+  // ProfileManager.
   // The Profile should not already be managed by this ProfileManager.
   // Returns true if the profile was added, false otherwise.
-  bool AddProfile(Profile* profile);
+  bool AddProfile(std::unique_ptr<Profile> profile);
 
   // Synchronously creates and returns a profile. This handles both the full
   // creation and adds it to the set managed by this ProfileManager. Returns

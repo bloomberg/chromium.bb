@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
@@ -104,9 +105,22 @@ void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (use_mojo_lite_bindings_) {
+    base::string16 file_content =
+        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_LITE_JS);
+    // The generated script assumes that mojo has already been imported by the
+    // page. This is not the case when native HTML imports are disabled. If
+    // the polyfill is in place, wait for HTMLImports.whenReady().
+    base::string16 wrapped_file_content =
+        base::UTF8ToUTF16(
+            "const promise = typeof HTMLImports === 'undefined' ? "
+            "Promise.resolve() : "
+            "new Promise(resolve => { "
+            "HTMLImports.whenReady(resolve); "
+            "}); "
+            "promise.then(() => {") +
+        file_content + base::UTF8ToUTF16("});");
     web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_LITE_JS),
-        base::NullCallback());
+        wrapped_file_content, base::NullCallback());
   } else {
     web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
         l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_JS),

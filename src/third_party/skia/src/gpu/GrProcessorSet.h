@@ -8,11 +8,11 @@
 #ifndef GrProcessorSet_DEFINED
 #define GrProcessorSet_DEFINED
 
-#include "GrFragmentProcessor.h"
-#include "GrPaint.h"
-#include "GrProcessorAnalysis.h"
-#include "SkTemplates.h"
-#include "GrXferProcessor.h"
+#include "include/private/SkTemplates.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrPaint.h"
+#include "src/gpu/GrProcessorAnalysis.h"
+#include "src/gpu/GrXferProcessor.h"
 
 struct GrUserStencilSettings;
 class GrAppliedClip;
@@ -152,11 +152,12 @@ public:
     SkString dumpProcessors() const;
 #endif
 
-    void visitProxies(const std::function<void(GrSurfaceProxy*)>& func) const {
+    void visitProxies(const GrOp::VisitProxyFunc& func) const {
         for (int i = 0; i < this->numFragmentProcessors(); ++i) {
             GrFragmentProcessor::TextureAccessIter iter(this->fragmentProcessor(i));
             while (const GrFragmentProcessor::TextureSampler* sampler = iter.next()) {
-                func(sampler->proxy());
+                bool mipped = (GrSamplerState::Filter::kMipMap == sampler->samplerState().filter());
+                func(sampler->proxy(), GrMipMapped(mipped));
             }
         }
     }

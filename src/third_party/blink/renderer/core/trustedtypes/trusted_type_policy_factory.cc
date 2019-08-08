@@ -67,7 +67,8 @@ TrustedTypePolicy* TrustedTypePolicyFactory::getExposedPolicy(
 }
 
 TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
-    : ContextClient(context) {
+    : ContextClient(context),
+      empty_html_(MakeGarbageCollected<TrustedHTML>("")) {
   UseCounter::Count(context, WebFeature::kTrustedTypesEnabled);
 }
 
@@ -123,6 +124,10 @@ bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
          wrapper_type_info->Equals(V8TrustedURL::GetWrapperTypeInfo());
 }
 
+TrustedHTML* TrustedTypePolicyFactory::emptyHTML() const {
+  return empty_html_.Get();
+}
+
 void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {
   if (!hadAssignmentError) {
     UseCounter::Count(GetExecutionContext(),
@@ -134,6 +139,7 @@ void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {
 void TrustedTypePolicyFactory::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
+  visitor->Trace(empty_html_);
   visitor->Trace(policy_map_);
 }
 

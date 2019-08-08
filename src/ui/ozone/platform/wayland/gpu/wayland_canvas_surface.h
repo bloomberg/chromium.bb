@@ -16,11 +16,11 @@
 
 namespace ui {
 
-class WaylandConnectionProxy;
+class WaylandBufferManagerGpu;
 
 class WaylandCanvasSurface : public SurfaceOzoneCanvas {
  public:
-  WaylandCanvasSurface(WaylandConnectionProxy* connection,
+  WaylandCanvasSurface(WaylandBufferManagerGpu* buffer_manager,
                        gfx::AcceleratedWidget widget);
   ~WaylandCanvasSurface() override;
 
@@ -33,11 +33,16 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
  private:
   void OnGetSizeForWidget(const gfx::Size& widget_size) { size_ = widget_size; }
 
-  WaylandConnectionProxy* const connection_;
+  WaylandBufferManagerGpu* const buffer_manager_;
   const gfx::AcceleratedWidget widget_;
 
   gfx::Size size_;
   sk_sp<SkSurface> sk_surface_;
+
+  // The id of the current existing buffer. Even though, there can only be one
+  // buffer (SkSurface) at a time, the buffer manager on the browser process
+  // side requires buffer id to be passed.
+  uint32_t buffer_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandCanvasSurface);
 };

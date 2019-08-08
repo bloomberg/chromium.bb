@@ -28,7 +28,10 @@ import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.Vo
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorImpl;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -196,6 +199,16 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
+        public boolean shouldShowLocationBarInOverviewMode() {
+            return false;
+        }
+
+        @Override
+        public boolean isInOverviewAndShowingOmnibox() {
+            return false;
+        }
+
+        @Override
         public Profile getProfile() {
             return null;
         }
@@ -252,22 +265,34 @@ public class LocationBarVoiceRecognitionHandlerTest {
     }
 
     /**
+     * TODO(crbug.com/962527): Remove this dependency on {@link AutocompleteCoordinatorImpl}.
+     */
+    private class TestAutocompleteCoordinatorImpl extends AutocompleteCoordinatorImpl {
+        public TestAutocompleteCoordinatorImpl(ViewGroup parent, AutocompleteDelegate delegate,
+                OmniboxSuggestionListEmbedder listEmbedder,
+                UrlBarEditingTextStateProvider urlBarEditingTextProvider) {
+            super(parent, delegate, listEmbedder, urlBarEditingTextProvider);
+        }
+
+        @Override
+        public void onVoiceResults(List<VoiceResult> results) {
+            mAutocompleteVoiceResults = results;
+        }
+    }
+
+    /**
      * Test implementation of {@link LocationBarVoiceRecognitionHandler.Delegate}.
      */
     private class TestDelegate implements LocationBarVoiceRecognitionHandler.Delegate {
         private boolean mUpdatedMicButtonState;
-        private AutocompleteCoordinator mCoordinator;
+        private AutocompleteCoordinator mAutocompleteCoordinator;
 
         TestDelegate() {
             ViewGroup parent =
                     (ViewGroup) mActivityTestRule.getActivity().findViewById(android.R.id.content);
             Assert.assertNotNull(parent);
-            mCoordinator = new AutocompleteCoordinator(parent, null, null, null) {
-                @Override
-                public void onVoiceResults(List<VoiceResult> results) {
-                    mAutocompleteVoiceResults = results;
-                }
-            };
+            mAutocompleteCoordinator =
+                    new TestAutocompleteCoordinatorImpl(parent, null, null, null);
         }
 
         @Override
@@ -288,7 +313,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
 
         @Override
         public AutocompleteCoordinator getAutocompleteCoordinator() {
-            return mCoordinator;
+            return mAutocompleteCoordinator;
         }
 
         @Override

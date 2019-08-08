@@ -108,10 +108,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     getattr(self, test_name)(test_path)
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def SetUpProcess(cls):
     super(ContextLostIntegrationTest, cls).SetUpProcess()
     # Most of the tests need this, so add it to the default set of

@@ -229,6 +229,7 @@ class GFX_EXPORT RenderText {
     return horizontal_alignment_;
   }
   void SetHorizontalAlignment(HorizontalAlignment alignment);
+  void SetVerticalAlignment(VerticalAlignment alignment);
 
   const FontList& font_list() const { return font_list_; }
   virtual void SetFontList(const FontList& font_list);
@@ -438,6 +439,12 @@ class GFX_EXPORT RenderText {
   // See comment in Canvas::GetStringWidthF for its usage.
   virtual SizeF GetStringSizeF();
 
+  // Returns the size of the line containing |caret|.
+  virtual Size GetLineSize(const SelectionModel& caret);
+
+  // Returns the sum of all the line widths.
+  virtual float TotalLineWidth();
+
   // Returns the width of the content (which is the wrapped width in multiline
   // mode). Reserves room for the cursor if |cursor_enabled_| is true.
   float GetContentWidthF();
@@ -526,7 +533,7 @@ class GFX_EXPORT RenderText {
   // jump when breaking by characters. If the glyphs are RTL then the returned
   // Range will have is_reversed() true.  (This does not return a Rect because a
   // Rect can't have a negative width.)
-  virtual Range GetCursorSpan(const Range& text_range) = 0;
+  virtual RangeF GetCursorSpan(const Range& text_range) = 0;
 
   const Vector2d& GetUpdatedDisplayOffset();
   void SetDisplayOffset(int horizontal_offset);
@@ -559,8 +566,25 @@ class GFX_EXPORT RenderText {
 
   void set_strike_thickness_factor(SkScalar f) { strike_thickness_factor_ = f; }
 
+  // Return the line index that contains the argument; or the index of the last
+  // line if the |caret| exceeds the text length.
+  virtual size_t GetLineContainingCaret(const SelectionModel& caret) = 0;
+
  protected:
   RenderText();
+
+  // Whether |segment| corresponds to the newline character. This uses |text_|
+  // to look up the corresponding character.
+  bool IsNewlineSegment(const internal::LineSegment& segment) const;
+
+  // Whether |segment| corresponds to the newline character inside |text|.
+  bool IsNewlineSegment(const base::string16& text,
+                        const internal::LineSegment& segment) const;
+
+  // Returns the character range of segments in |line| excluding the trailing
+  // newline segment.
+  Range GetLineRange(const base::string16& text,
+                     const internal::Line& line) const;
 
   // NOTE: The value of these accessors may be stale. Please make sure
   // that these fields are up to date before accessing them.
@@ -629,6 +653,12 @@ class GFX_EXPORT RenderText {
       const SelectionModel& selection,
       VisualCursorDirection direction) = 0;
 
+  // Get the selection model visually above/below |selection| by one line.
+  // The returned value represents a cursor/caret position without a selection.
+  virtual SelectionModel AdjacentLineSelectionModel(
+      const SelectionModel& selection,
+      VisualCursorDirection direction) = 0;
+
   // Get the selection model corresponding to visual text ends.
   // The returned value represents a cursor/caret position without a selection.
   SelectionModel EdgeSelectionModel(VisualCursorDirection direction);
@@ -677,7 +707,7 @@ class GFX_EXPORT RenderText {
 
   // Convert points from the text space to the view space. Handles the display
   // area, display offset, application LTR/RTL mode and multiline.
-  Point ToViewPoint(const Point& point);
+  Point ToViewPoint(const PointF& point, LogicalCursorDirection caret_affinity);
 
   // Get the alignment, resolving ALIGN_TO_HEAD with the current text direction.
   HorizontalAlignment GetCurrentHorizontalAlignment();
@@ -724,6 +754,17 @@ class GFX_EXPORT RenderText {
   static gfx::Rect ExpandToBeVerticallySymmetric(const gfx::Rect& rect,
                                                  const gfx::Rect& display_rect);
 
+  // Resets |cached_cursor_x_| to null. When non-null, CURSOR_UP, CURSOR_DOWN
+  // movements use this value instead of the current cursor x position to
+  // determine the next cursor x position.
+  void reset_cached_cursor_x() { cached_cursor_x_.reset(); }
+
+  void set_cached_cursor_x(int x) { cached_cursor_x_ = x; }
+  base::Optional<int> cached_cursor_x() const { return cached_cursor_x_; }
+
+  // Fixed width of glyphs. This should only be set in test environments.
+  float glyph_width_for_test_ = 0;
+
  private:
   friend class test::RenderTextTestApi;
 
@@ -769,7 +810,7 @@ class GFX_EXPORT RenderText {
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline text
   // will become really flaky.
-  virtual void SetGlyphWidthForTest(float test_width);
+  void set_glyph_width_for_test(float width) { glyph_width_for_test_ = width; }
 
   // Logical UTF-16 string data to be drawn.
   base::string16 text_;
@@ -777,6 +818,10 @@ class GFX_EXPORT RenderText {
   // Horizontal alignment of the text with respect to |display_rect_|.  The
   // default is to align left if the application UI is LTR and right if RTL.
   HorizontalAlignment horizontal_alignment_;
+
+  // Vertical alignment of the text with respect to |display_rect_|. Only
+  // applicable when |multiline_| is true. The default is to align center.
+  VerticalAlignment vertical_alignment_;
 
   // The text directionality mode, defaults to DIRECTIONALITY_FROM_TEXT.
   DirectionalityMode directionality_mode_;
@@ -917,6 +962,9 @@ class GFX_EXPORT RenderText {
 
   // Extra spacing placed between glyphs; used for obscured text styling.
   int glyph_spacing_ = 0;
+
+  // The cursor position in view space, used to traverse lines of varied widths.
+  base::Optional<int> cached_cursor_x_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

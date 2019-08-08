@@ -127,16 +127,24 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     m = self.PatchObject(run_tests, 'RunTests', return_value=True)
     run_tests.main(['--network'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=True, dryrun=False, failfast=False)
+                         network=True, config_skew=False, dryrun=False,
+                         failfast=False)
+    run_tests.main(['--config_skew'])
+    m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
+                         network=False, config_skew=True, dryrun=False,
+                         failfast=False)
     run_tests.main(['--dry-run'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, dryrun=True, failfast=False)
+                         network=False, config_skew=False, dryrun=True,
+                         failfast=False)
     run_tests.main(['--jobs', '1000'])
     m.assert_called_with(mock.ANY, jobs=1000, chroot_available=mock.ANY,
-                         network=False, dryrun=False, failfast=False)
+                         network=False, config_skew=False, dryrun=False,
+                         failfast=False)
     run_tests.main(['--failfast'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, dryrun=False, failfast=True)
+                         network=False, config_skew=False, dryrun=False,
+                         failfast=True)
 
   def testUnknownArg(self):
     """Verify we kick out unknown args"""
@@ -169,4 +177,5 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     tests = ['./some/foo_unittest', './bar_unittest']
     run_tests.main(tests)
     m.assert_called_with(tests, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=mock.ANY, dryrun=mock.ANY, failfast=mock.ANY)
+                         network=mock.ANY, config_skew=mock.ANY,
+                         dryrun=mock.ANY, failfast=mock.ANY)

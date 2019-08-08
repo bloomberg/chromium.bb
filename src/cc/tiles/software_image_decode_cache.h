@@ -34,8 +34,7 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   SoftwareImageDecodeCache(SkColorType color_type,
                            size_t locked_memory_limit_bytes,
-                           PaintImage::GeneratorClientId generator_client_id,
-                           sk_sp<SkColorSpace> target_color_space);
+                           PaintImage::GeneratorClientId generator_client_id);
   ~SoftwareImageDecodeCache() override;
 
   // ImageDecodeCache overrides.
@@ -151,16 +150,12 @@ class CC_EXPORT SoftwareImageDecodeCache
                      PaintImage::FrameKeyHash>
       frame_key_to_image_keys_;
 
-  const sk_sp<SkColorSpace> target_color_space_;
   MemoryBudget locked_images_budget_;
 
   const SkColorType color_type_;
   const PaintImage::GeneratorClientId generator_client_id_;
 
   size_t max_items_in_cache_;
-  // Records the maximum number of items in the cache over the lifetime of the
-  // cache. This is updated anytime we are requested to reduce cache usage.
-  size_t lifetime_max_items_in_cache_ = 0u;
 };
 
 }  // namespace cc

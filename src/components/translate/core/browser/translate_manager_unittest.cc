@@ -155,9 +155,9 @@ class TranslateManagerTest : public ::testing::Test {
   // Utility function to prepare translate_manager_ for testing.
   void PrepareTranslateManager() {
     TranslateManager::SetIgnoreMissingKeyForTesting(true);
-    translate_manager_.reset(new translate::TranslateManager(
+    translate_manager_ = std::make_unique<translate::TranslateManager>(
         &mock_translate_client_, &mock_translate_ranker_,
-        &mock_language_model_));
+        &mock_language_model_);
   }
 
   void SetHasLanguageChanged(bool has_language_changed) {
@@ -357,8 +357,8 @@ TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -393,8 +393,8 @@ TEST_F(TranslateManagerTest,
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -429,8 +429,8 @@ TEST_F(TranslateManagerTest,
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -472,8 +472,8 @@ TEST_F(TranslateManagerTest,
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -523,8 +523,8 @@ TEST_F(TranslateManagerTest, ShouldHonorExperimentRankerEnforcement_Enforce) {
   // honored since "enforce_ranker" is "true" in the experiment params.
   mock_translate_ranker_.set_should_offer_translation(false);
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -560,8 +560,8 @@ TEST_F(TranslateManagerTest,
   // not be honored since "enforce_ranker" is "true" in the experiment params.
   mock_translate_ranker_.set_should_offer_translation(false);
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -589,8 +589,8 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   // Accept languages shouldn't contain "hi" before translating to that language
   std::vector<std::string> languages;
@@ -630,8 +630,8 @@ TEST_F(TranslateManagerTest,
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   // Add a regional variant locale to the list of accepted languages.
   mock_translate_client_.GetTranslatePrefs()->AddToLanguageList("en-US", false);
@@ -668,8 +668,8 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
   ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
       .WillByDefault(Return(&accept_languages));
 
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   // The test measures that the "Translate was disabled" exit can only be
   // reached after the early-out tests including IsOffline() passed.
@@ -874,8 +874,8 @@ TEST_F(TranslateManagerTest,
 
 TEST_F(TranslateManagerTest, CanManuallyTranslate_PageNeedsTranslation) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
   ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
@@ -891,8 +891,8 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_PageNeedsTranslation) {
 
 TEST_F(TranslateManagerTest, CanManuallyTranslate_Offline) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
   translate_manager_->GetLanguageState().LanguageDetermined("de", true);
@@ -908,8 +908,8 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_Offline) {
 
 TEST_F(TranslateManagerTest, CanManuallyTranslate_TranslatableURL) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   translate_manager_->GetLanguageState().LanguageDetermined("de", true);
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -926,8 +926,8 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_TranslatableURL) {
 
 TEST_F(TranslateManagerTest, CanManuallyTranslate_EmptySourceLanguage) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
   network_notifier_.SimulateOnline();
@@ -941,8 +941,8 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_EmptySourceLanguage) {
 
 TEST_F(TranslateManagerTest, CanManuallyTranslate_UndefinedSourceLanguage) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
   network_notifier_.SimulateOnline();
@@ -957,8 +957,8 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_UndefinedSourceLanguage) {
 
 TEST_F(TranslateManagerTest, PredefinedTargetLanguage) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
 
   manager_->set_application_locale("en");
   ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("en"));
@@ -988,8 +988,8 @@ TEST_F(TranslateManagerTest, PredefinedTargetLanguage) {
 
 TEST_F(TranslateManagerTest, PredefinedTargetLanguage_HonourUserSettings) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
   manager_->set_application_locale("en");
 
   // Add german language to the list of accepted languages.

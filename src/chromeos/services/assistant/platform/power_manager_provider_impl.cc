@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -33,11 +34,6 @@ base::TimeDelta ClockNow(clockid_t clk_id) {
     return base::TimeDelta();
   }
   return base::TimeDelta::FromTimeSpec(ts);
-}
-
-// Returns time ticks from boot including time ticks spent during sleeping.
-base::TimeTicks GetCurrentBootTime() {
-  return base::TimeTicks() + ClockNow(CLOCK_BOOTTIME);
 }
 
 }  // namespace
@@ -95,6 +91,12 @@ void PowerManagerProviderImpl::ReleaseWakeLock() {
       FROM_HERE,
       base::BindOnce(&PowerManagerProviderImpl::ReleaseWakeLockOnMainThread,
                      weak_factory_.GetWeakPtr()));
+}
+
+base::TimeTicks PowerManagerProviderImpl::GetCurrentBootTime() {
+  if (tick_clock_)
+    return tick_clock_->NowTicks();
+  return base::TimeTicks() + ClockNow(CLOCK_BOOTTIME);
 }
 
 void PowerManagerProviderImpl::AddWakeAlarmOnMainThread(

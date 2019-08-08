@@ -37,8 +37,11 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
 
   gfx::BufferFormat buffer_format =
       VideoPixelFormatToGfxBufferFormat(pixel_format);
-  auto pixmap = factory->CreateNativePixmap(
-      gfx::kNullAcceleratedWidget, coded_size, buffer_format, buffer_usage);
+  auto pixmap =
+      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
+                                  coded_size, buffer_format, buffer_usage);
+  if (!pixmap)
+    return nullptr;
 
   const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   std::vector<VideoFrameLayout::Plane> planes(num_planes);
@@ -46,14 +49,15 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = pixmap->GetDmaBufPitch(i);
     planes[i].offset = pixmap->GetDmaBufOffset(i);
-    planes[i].modifier = pixmap->GetDmaBufModifier(i);
     buffer_sizes[i] = planes[i].offset +
                       planes[i].stride * VideoFrame::Rows(i, pixel_format,
                                                           coded_size.height());
   }
-
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size, std::move(planes), std::move(buffer_sizes));
+      pixel_format, coded_size, std::move(planes), std::move(buffer_sizes),
+      VideoFrameLayout::kBufferAddressAlignment,
+      pixmap->GetBufferFormatModifier());
+
   if (!layout)
     return nullptr;
 
@@ -111,16 +115,14 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
   const size_t num_buffers = video_frame->layout().buffer_sizes().size();
   DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
-
-  // TODO(crbug.com/946880): Handles case that num_planes mismatches num_buffers
+  handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
   for (size_t i = 0; i < num_planes; ++i) {
     const auto& plane = video_frame->layout().planes()[i];
     size_t buffer_size = 0;
     if (i < num_buffers)
       buffer_size = video_frame->layout().buffer_sizes()[i];
     handle.native_pixmap_handle.planes.emplace_back(
-        plane.stride, plane.offset, buffer_size, std::move(duped_fds[i]),
-        plane.modifier);
+        plane.stride, plane.offset, buffer_size, std::move(duped_fds[i]));
   }
 #else
   NOTREACHED();

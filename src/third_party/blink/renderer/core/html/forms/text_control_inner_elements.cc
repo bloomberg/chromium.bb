@@ -41,14 +41,8 @@ namespace blink {
 using namespace html_names;
 
 TextControlInnerContainer::TextControlInnerContainer(Document& document)
-    : HTMLDivElement(document) {}
-
-TextControlInnerContainer* TextControlInnerContainer::Create(
-    Document& document) {
-  TextControlInnerContainer* element =
-      MakeGarbageCollected<TextControlInnerContainer>(document);
-  element->setAttribute(kIdAttr, shadow_element_names::TextFieldContainer());
-  return element;
+    : HTMLDivElement(document) {
+  setAttribute(kIdAttr, shadow_element_names::TextFieldContainer());
 }
 
 LayoutObject* TextControlInnerContainer::CreateLayoutObject(
@@ -62,13 +56,7 @@ LayoutObject* TextControlInnerContainer::CreateLayoutObject(
 EditingViewPortElement::EditingViewPortElement(Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();
-}
-
-EditingViewPortElement* EditingViewPortElement::Create(Document& document) {
-  EditingViewPortElement* element =
-      MakeGarbageCollected<EditingViewPortElement>(document);
-  element->setAttribute(kIdAttr, shadow_element_names::EditingViewPort());
-  return element;
+  setAttribute(kIdAttr, shadow_element_names::EditingViewPort());
 }
 
 scoped_refptr<ComputedStyle>
@@ -95,11 +83,6 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
 TextControlInnerEditorElement::TextControlInnerEditorElement(Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();
-}
-
-TextControlInnerEditorElement* TextControlInnerEditorElement::Create(
-    Document& document) {
-  return MakeGarbageCollected<TextControlInnerEditorElement>(document);
 }
 
 void TextControlInnerEditorElement::DefaultEventHandler(Event& event) {
@@ -213,17 +196,11 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
 
 // ----------------------------
 
-inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
+SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
     Document& document)
-    : HTMLDivElement(document) {}
-
-SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::Create(
-    Document& document) {
-  SearchFieldCancelButtonElement* element =
-      MakeGarbageCollected<SearchFieldCancelButtonElement>(document);
-  element->SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
-  element->setAttribute(kIdAttr, shadow_element_names::SearchClearButton());
-  return element;
+    : HTMLDivElement(document) {
+  SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
+  setAttribute(kIdAttr, shadow_element_names::SearchClearButton());
 }
 
 void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {

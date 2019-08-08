@@ -84,9 +84,11 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
 }
 
-OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
-    const {
-  return overlay_candidate_validator_;
+std::unique_ptr<OverlayCandidateValidator>
+FakeOutputSurface::TakeOverlayCandidateValidator() {
+  // TODO(weiliangc): Validators are set on tests explicitly. Use the validator
+  // where they are created. Don't pass it in. This should be removed soon.
+  return nullptr;
 }
 
 gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {
@@ -104,5 +106,17 @@ unsigned FakeOutputSurface::GetOverlayTextureId() const {
 unsigned FakeOutputSurface::UpdateGpuFence() {
   return gpu_fence_id_;
 }
+
+void FakeOutputSurface::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {}
+
+gfx::OverlayTransform FakeOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
+#if defined(USE_X11)
+void FakeOutputSurface::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {}
+#endif
 
 }  // namespace viz

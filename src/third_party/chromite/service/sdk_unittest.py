@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import sdk
@@ -25,11 +27,6 @@ class ChrootPathsTest(cros_test_lib.TestCase):
     cache_dir = '/cache/dir'
     obj = sdk.ChrootPaths(cache_dir=cache_dir)
     self.assertListEqual(['--cache-dir', cache_dir], obj.GetArgList())
-
-    # Chrome root provided.
-    chrome_root = '/chrome/root'
-    obj = sdk.ChrootPaths(chrome_root=chrome_root)
-    self.assertListEqual(['--chrome_root', chrome_root], obj.GetArgList())
 
     # Chroot path provided.
     chroot_path = '/chroot/path'
@@ -87,14 +84,16 @@ class UpdateArgumentsTest(cros_test_lib.TestCase):
       self.assertIn(arg, result)
 
 
-class CreateTest(cros_test_lib.RunCommandTestCase):
+class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
   """Create function tests."""
 
   def testCreate(self):
     """Test the create function builds the command correctly."""
-    arguments = sdk.CreateArguments()
+    arguments = sdk.CreateArguments(replace=True)
+    arguments.paths.chroot_path = os.path.join(self.tempdir, 'chroot')
     expected_args = ['--arg', '--other', '--with-value', 'value']
     expected_version = 1
+
     self.PatchObject(arguments, 'GetArgList', return_value=expected_args)
     self.PatchObject(sdk, 'GetChrootVersion', return_value=expected_version)
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
@@ -102,6 +101,22 @@ class CreateTest(cros_test_lib.RunCommandTestCase):
     version = sdk.Create(arguments)
 
     self.assertCommandContains(expected_args)
+    self.assertEqual(expected_version, version)
+
+  def testCreateExisting(self):
+    """Test the create doesn't make the call when it already exists."""
+    arguments = sdk.CreateArguments()
+    arguments.paths.chroot_path = self.tempdir
+    expected_args = ['--arg', '--other', '--with-value', 'value']
+    expected_version = 1
+
+    self.PatchObject(arguments, 'GetArgList', return_value=expected_args)
+    self.PatchObject(sdk, 'GetChrootVersion', return_value=expected_version)
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+
+    version = sdk.Create(arguments)
+
+    self.assertCommandContains(expected_args, expected=False)
     self.assertEqual(expected_version, version)
 
   def testCreateInsideFails(self):

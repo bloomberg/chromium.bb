@@ -11,6 +11,7 @@
 #include "base/test/mock_callback.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,8 +43,8 @@ using MockDeleterCallback = StrictMock<
 class MockRendererAudioInputStreamFactoryClient
     : public mojom::RendererAudioInputStreamFactoryClient {
  public:
-  MockRendererAudioInputStreamFactoryClient() : binding_(this) {}
-  ~MockRendererAudioInputStreamFactoryClient() override {}
+  MockRendererAudioInputStreamFactoryClient() = default;
+  ~MockRendererAudioInputStreamFactoryClient() override = default;
 
   mojom::RendererAudioInputStreamFactoryClientPtr MakePtr() {
     mojom::RendererAudioInputStreamFactoryClientPtr ret;
@@ -68,7 +69,7 @@ class MockRendererAudioInputStreamFactoryClient
   void CloseBinding() { binding_.Close(); }
 
  private:
-  mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> binding_;
+  mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> binding_{this};
   media::mojom::AudioInputStreamPtr input_stream_;
   media::mojom::AudioInputStreamClientRequest client_request_;
   DISALLOW_COPY_AND_ASSIGN(MockRendererAudioInputStreamFactoryClient);
@@ -106,26 +107,26 @@ class MockStreamFactory : public audio::FakeStreamFactory {
 
  private:
   void CreateInputStream(
-      media::mojom::AudioInputStreamRequest stream_request,
-      media::mojom::AudioInputStreamClientPtr client,
-      media::mojom::AudioInputStreamObserverPtr observer,
-      media::mojom::AudioLogPtr log,
+      mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver,
+      mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
+      mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer,
+      mojo::PendingRemote<media::mojom::AudioLog> log,
       const std::string& device_id,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
       mojo::ScopedSharedBufferHandle key_press_count_buffer,
       audio::mojom::AudioProcessingConfigPtr processing_config,
-      CreateInputStreamCallback created_callback) final {
+      CreateInputStreamCallback created_callback) override {
     // No way to cleanly exit the test here in case of failure, so use CHECK.
     CHECK(stream_request_data_);
     EXPECT_EQ(stream_request_data_->device_id, device_id);
     EXPECT_TRUE(stream_request_data_->params.Equals(params));
     stream_request_data_->requested = true;
-    stream_request_data_->stream_request = std::move(stream_request);
-    stream_request_data_->client = std::move(client);
-    stream_request_data_->observer = std::move(observer);
-    stream_request_data_->log = std::move(log);
+    stream_request_data_->stream_request = std::move(stream_receiver);
+    stream_request_data_->client.Bind(std::move(client));
+    stream_request_data_->observer.Bind(std::move(observer));
+    stream_request_data_->log.Bind(std::move(log));
     stream_request_data_->shared_memory_count = shared_memory_count;
     stream_request_data_->enable_agc = enable_agc;
     stream_request_data_->key_press_count_buffer =
@@ -158,7 +159,7 @@ struct TestEnvironment {
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   std::unique_ptr<AudioInputStreamBroker> broker;
   MockStreamFactory stream_factory;
-  audio::mojom::StreamFactoryPtr factory_ptr = stream_factory.MakePtr();
+  audio::mojom::StreamFactoryPtr factory_ptr{stream_factory.MakeRemote()};
 };
 
 }  // namespace

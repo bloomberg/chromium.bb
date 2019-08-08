@@ -9,13 +9,14 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
@@ -389,6 +390,35 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 #endif
 }
 
+void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
+                         Memory_Experimental* builder,
+                         bool record_uma) {
+  // Combine several categories together to sum up Chrome-reported gpu memory.
+  static const char* gpu_categories[] = {
+      "gpu/gl",
+      "gpu/shared-images",
+      "skia/gpu_resources",
+  };
+  Metric synthetic_metric = {nullptr,
+                             "GpuMemory",
+                             kLargeMetric,
+                             kEffectiveSize,
+                             EmitTo::kSizeInUkmAndUma,
+                             &Memory_Experimental::SetGpuMemory};
+
+  uint64_t total = 0;
+  for (size_t i = 0; i < base::size(gpu_categories); ++i) {
+    total +=
+        pmd.GetMetric(gpu_categories[i], synthetic_metric.metric).value_or(0);
+  }
+
+  // Always use "Gpu" as the process name for this even for the in process
+  // command buffer case.
+  EmitProcessUkm(synthetic_metric, total, builder);
+  if (record_uma)
+    EmitProcessUma("Gpu", synthetic_metric, total);
+}
+
 void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
                               ukm::SourceId ukm_source_id,
                               ukm::UkmRecorder* ukm_recorder,
@@ -398,6 +428,7 @@ void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::BROWSER));
   EmitProcessUmaAndUkm(pmd, "Browser", uptime, record_uma, &builder);
+  EmitSummedGpuMemory(pmd, &builder, record_uma);
 
   builder.Record(ukm_recorder);
 }
@@ -439,7 +470,7 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   builder.SetProcessType(
       static_cast<int64_t>(memory_instrumentation::mojom::ProcessType::GPU));
   EmitProcessUmaAndUkm(pmd, "Gpu", uptime, record_uma, &builder);
-
+  EmitSummedGpuMemory(pmd, &builder, record_uma);
   builder.Record(ukm_recorder);
 }
 
@@ -466,6 +497,20 @@ void EmitAudioServiceMemoryMetrics(
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::UTILITY));
   EmitProcessUmaAndUkm(pmd, "AudioService", uptime, record_uma, &builder);
+
+  builder.Record(ukm_recorder);
+}
+
+void EmitNetworkServiceMemoryMetrics(
+    const GlobalMemoryDump::ProcessDump& pmd,
+    ukm::SourceId ukm_source_id,
+    ukm::UkmRecorder* ukm_recorder,
+    const base::Optional<base::TimeDelta>& uptime,
+    bool record_uma) {
+  Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(static_cast<int64_t>(
+      memory_instrumentation::mojom::ProcessType::UTILITY));
+  EmitProcessUmaAndUkm(pmd, "NetworkService", uptime, record_uma, &builder);
 
   builder.Record(ukm_recorder);
 }
@@ -702,6 +747,11 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
           EmitAudioServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
+        } else if (base::ContainsValue(pmd.service_names(),
+                                       content::mojom::kNetworkServiceName)) {
+          EmitNetworkServiceMemoryMetrics(
+              pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
+              GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         } else {
           EmitUtilityMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
@@ -780,7 +830,7 @@ bool HostsMainFrame(performance_manager::ProcessNodeImpl* process,
 
 void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     GetProcessToPageInfoMapCallback callback,
-    performance_manager::Graph* graph) {
+    performance_manager::GraphImpl* graph) {
   std::vector<ProcessInfo> process_infos;
   std::vector<performance_manager::ProcessNodeImpl*> process_nodes =
       graph->GetAllProcessNodes();
@@ -800,7 +850,8 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
 
       PageInfo page_info;
       page_info.ukm_source_id = page_node->ukm_source_id();
-      page_info.tab_id = page_node->id().id;
+      page_info.tab_id =
+          performance_manager::NodeBase::GetSerializationId(page_node);
       page_info.hosts_main_frame = HostsMainFrame(process_node, page_node);
       page_info.is_visible = page_node->is_visible();
       page_info.time_since_last_visibility_change =

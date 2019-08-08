@@ -39,6 +39,26 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   RESULTS_OUT_BASENAME = 'results.txt'
   RESULTS_OUT_DATA = 'example output'
 
+  # Canned test results for the results.json file.
+  PASSED_TEST = {
+      'name': 'example.Pass',
+      'start': '2019-05-03T16:28:31-07:00',
+      'end': '2019-05-03T16:28:36-07:00',
+      'errors': None,
+  }
+  FAILED_TEST = {
+      'name': 'example.Fail',
+      'start': '2019-05-03T16:28:31-07:00',
+      'end': '2019-05-03T16:28:36-07:00',
+      'errors': [{'reason': 'Failed!'}],
+  }
+  INCOMPLETE_TEST = {
+      'name': 'example.Fail',
+      'start': '2019-05-03T16:28:31-07:00',
+      'end': tast_test_stages.ZERO_TIME,
+      'errors': None,
+  }
+
   def setUp(self):
     # TastVMTestStage being tested.
     self._stage = None
@@ -117,7 +137,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # pylint: disable=unused-argument
     # Just check positional args and tricky flags. Checking all args is an
     # exercise in verifying that we're capable of typing the same thing twice.
-    self.assertEqual(cmd[0], './cros_run_vm_test')
+    self.assertEqual(cmd[0], './cros_run_test')
 
     # test_exprs are at the end, if they exist.
     num_test_exprs = len(self._exp_test_exprs)
@@ -177,7 +197,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     num_failed_tests = 0
     with open(archived_results_path, 'r') as f:
       for test in json.load(f):
-        if test[tast_test_stages.RESULTS_ERRORS_KEY]:
+        if test[tast_test_stages.RESULTS_ERRORS_KEY] or \
+           test[tast_test_stages.RESULTS_END_KEY] == tast_test_stages.ZERO_TIME:
           num_failed_tests += 1
           informational = (tast_test_stages.RESULTS_INFORMATIONAL_ATTR in
                            test.get(tast_test_stages.RESULTS_ATTR_KEY, []))
@@ -211,7 +232,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testSuccess(self):
     """Perform a full test suite run."""
     self._SetSuite('good_test_suite', ['(bvt && chrome)', '(bvt && arc)'])
-    self._test_results_data = [{'name': 'example.Pass', 'errors': None}]
+    self._test_results_data = [TastVMTestStageTest.PASSED_TEST]
     self.RunStage()
     self._VerifyStageResult(results_lib.Results.SUCCESS, None)
 
@@ -222,9 +243,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testNonZeroExitCode(self):
     """Tests that internal errors from the tast command are reported."""
     self._SetSuite('non_zero_exit_code_test_suite', [])
-    self._test_results_data = [
-        {'name': 'example.Fail', 'errors': [{'reason': 'Failed!'}]},
-    ]
+    self._test_results_data = [TastVMTestStageTest.FAILED_TEST]
     self._run_command_exit_code = 1
 
     self.assertRaises(failures_lib.TestFailure, self.RunStage)
@@ -239,13 +258,13 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Tests that test failures are reported."""
     self._SetSuite('failed_test_suite', [])
     self._test_results_data = [
-        {'name': 'example.Pass', 'errors': None},
-        {'name': 'example.Fail', 'errors': [{'reason': 'Failed!'}]},
+        TastVMTestStageTest.FAILED_TEST,
+        TastVMTestStageTest.PASSED_TEST,
+        TastVMTestStageTest.INCOMPLETE_TEST,
     ]
-
     self.assertRaises(failures_lib.TestFailure, self.RunStage)
     self._VerifyStageResult(failures_lib.TestFailure,
-                            tast_test_stages.FAILURE_TESTS_FAILED % 1)
+                            tast_test_stages.FAILURE_TESTS_FAILED % 2)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
     self.assertEquals(self._mock_run_command.call_count, 1)
@@ -258,6 +277,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._test_results_data = [
         {
             'name': 'example.Informational',
+            'start': '2019-05-03T16:28:31-07:00',
+            'end': '2019-05-03T16:28:36-07:00',
             'attr': [attr],
             'errors': [{'reason': 'Failed!'}],
         },
@@ -324,7 +345,7 @@ class CopyResultsDirTest(cros_test_lib.TempDirTestCase):
     tast_test_stages._CopyResultsDir(self.src, self.dest)
 
   def testCopyAll(self):
-    """Tests that files and directories are recursively copied>"""
+    """Tests that files and directories are recursively copied."""
     path1 = 'myfile.txt'
     data1 = 'foo'
     self._WriteSrcFile(path1, data1)

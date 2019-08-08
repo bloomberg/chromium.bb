@@ -94,17 +94,6 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
   core_tab_helper->set_new_tab_start_time(base::TimeTicks());
 }
 
-// Returns true if the user wants to sync history. This function returning true
-// is not a guarantee that history is being synced, but it can be used to
-// disable a feature that should not be shown to users who prefer not to sync
-// their history.
-bool IsHistorySyncEnabled(Profile* profile) {
-  syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
-  return sync && sync->IsSyncFeatureEnabled() &&
-         sync->GetUserSettings()->GetSelectedTypes().Has(
-             syncer::UserSelectableType::kHistory);
-}
-
 }  // namespace
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
@@ -387,23 +376,6 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox_view->model()->OnPaste();
   omnibox_view->SetUserText(text_to_paste);
   omnibox_view->OnAfterPossibleChange(true);
-}
-
-bool SearchTabHelper::ChromeIdentityCheck(const base::string16& identity) {
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile());
-  return identity_manager &&
-         gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
-                             identity_manager->GetPrimaryAccountInfo().email);
-}
-
-bool SearchTabHelper::HistorySyncCheck() {
-  return IsHistorySyncEnabled(profile());
-}
-
-void SearchTabHelper::OnSetCustomBackgroundURL(const GURL& url) {
-  if (instant_service_)
-    instant_service_->SetCustomBackgroundURL(url);
 }
 
 void SearchTabHelper::OnSetCustomBackgroundURLWithAttributions(

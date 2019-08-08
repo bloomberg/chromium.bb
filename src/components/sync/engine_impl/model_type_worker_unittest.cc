@@ -85,32 +85,32 @@ KeyParams GetNthKeyParams(int n) {
 // Modifies the input/output parameter |specifics| by encrypting it with
 // a Nigori intialized with the specified KeyParams.
 void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
-  Nigori nigori;
-  nigori.InitByDerivation(params.derivation_params, params.password);
+  std::unique_ptr<Nigori> nigori =
+      Nigori::CreateByDerivation(params.derivation_params, params.password);
 
   EntitySpecifics original_specifics = *specifics;
   std::string plaintext;
   original_specifics.SerializeToString(&plaintext);
 
   std::string encrypted;
-  nigori.Encrypt(plaintext, &encrypted);
+  nigori->Encrypt(plaintext, &encrypted);
 
   specifics->Clear();
   AddDefaultFieldValue(PREFERENCES, specifics);
-  specifics->mutable_encrypted()->set_key_name(GetNigoriName(nigori));
+  specifics->mutable_encrypted()->set_key_name(GetNigoriName(*nigori));
   specifics->mutable_encrypted()->set_blob(encrypted);
 }
 
 sync_pb::EntitySpecifics EncryptPasswordSpecifics(
     const KeyParams& key_params,
     const sync_pb::PasswordSpecificsData& unencrypted_password) {
-  Nigori nigori;
-  nigori.InitByDerivation(key_params.derivation_params, key_params.password);
+  std::unique_ptr<Nigori> nigori = Nigori::CreateByDerivation(
+      key_params.derivation_params, key_params.password);
   std::string encrypted_blob;
-  nigori.Encrypt(unencrypted_password.SerializeAsString(), &encrypted_blob);
+  nigori->Encrypt(unencrypted_password.SerializeAsString(), &encrypted_blob);
   sync_pb::EntitySpecifics encrypted_specifics;
   encrypted_specifics.mutable_password()->mutable_encrypted()->set_key_name(
-      GetNigoriName(nigori));
+      GetNigoriName(*nigori));
   encrypted_specifics.mutable_password()->mutable_encrypted()->set_blob(
       encrypted_blob);
   return encrypted_specifics;
@@ -260,29 +260,29 @@ class ModelTypeWorkerTest : public ::testing::Test {
     sync_pb::NigoriKeyBag bag;
 
     for (int i = 0; i <= foreign_encryption_key_index_; ++i) {
-      Nigori nigori;
       KeyParams params = GetNthKeyParams(i);
-      nigori.InitByDerivation(params.derivation_params, params.password);
+      std::unique_ptr<Nigori> nigori =
+          Nigori::CreateByDerivation(params.derivation_params, params.password);
 
       sync_pb::NigoriKey* key = bag.add_key();
 
-      key->set_name(GetNigoriName(nigori));
-      nigori.ExportKeys(key->mutable_user_key(), key->mutable_encryption_key(),
-                        key->mutable_mac_key());
+      key->set_name(GetNigoriName(*nigori));
+      nigori->ExportKeys(key->mutable_user_key(), key->mutable_encryption_key(),
+                         key->mutable_mac_key());
     }
 
     // Re-create the last nigori from that loop.
-    Nigori last_nigori;
     KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
-    last_nigori.InitByDerivation(params.derivation_params, params.password);
+    std::unique_ptr<Nigori> last_nigori =
+        Nigori::CreateByDerivation(params.derivation_params, params.password);
 
     // Serialize and encrypt the bag with the last nigori.
     std::string serialized_bag;
     bag.SerializeToString(&serialized_bag);
 
     sync_pb::EncryptedData encrypted;
-    encrypted.set_key_name(GetNigoriName(last_nigori));
-    last_nigori.Encrypt(serialized_bag, encrypted.mutable_blob());
+    encrypted.set_key_name(GetNigoriName(*last_nigori));
+    last_nigori->Encrypt(serialized_bag, encrypted.mutable_blob());
 
     // Update the cryptographer with new pending keys.
     cryptographer_->SetPendingKeys(encrypted);
@@ -1482,6 +1482,36 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
       /*sample=*/
       ExpectedSyncPositioningScheme::UNIQUE_POSITION,
       /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
+  sync_pb::SyncEntity entity;
+  // Production server sets the name to be "tombstone" for all tombstones.
+  entity.set_name("tombstone");
+  entity.set_id_string("SomeID");
+  entity.set_parent_id_string("ParentID");
+  entity.set_folder(false);
+  entity.mutable_unique_position()->CopyFrom(
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix())
+          .ToProto());
+  entity.set_version(1);
+  entity.set_server_defined_unique_tag("SERVER_TAG");
+  // Mark this as a tombstone.
+  entity.set_deleted(true);
+  // Add default value field for a Bookmark.
+  entity.mutable_specifics()->mutable_bookmark();
+
+  FakeEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+
+  UpdateResponseData response_data;
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(
+                &cryptographer, BOOKMARKS, entity, &response_data));
+
+  const EntityData& data = *response_data.entity;
+  // A tombstone should remain a tombstone after populating the response data.
+  EXPECT_TRUE(data.is_deleted());
 }
 
 TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {

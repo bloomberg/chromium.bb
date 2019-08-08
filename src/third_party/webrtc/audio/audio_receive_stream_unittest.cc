@@ -67,8 +67,9 @@ const std::pair<int, SdpAudioFormat> kReceiveCodec = {
     123,
     {"codec_name_recv", 96000, 0}};
 const NetworkStatistics kNetworkStats = {
-    123, 456, false, 789012, 3456, 123, 456, 789, 0,  {}, 789,
-    12,  345, 678,   901,    0,    -1,  -1,  -1,  -1, -1, 0};
+    123, 456, false, 789012, 3456, 123, 456, 789, 543, 432,
+    321, 123, 101,   0,      {},   789, 12,  345, 678, 901,
+    0,   -1,  -1,    -1,     -1,   -1,  0,   0,   0,   0};
 const AudioDecodingCallStats kAudioDecodeStats = MakeAudioDecodeStatsForTest();
 
 struct ConfigHelper {
@@ -219,7 +220,8 @@ TEST(AudioReceiveStreamTest, ConfigToString) {
       "{rtp: {remote_ssrc: 1234, local_ssrc: 5678, transport_cc: off, nack: "
       "{rtp_history_ms: 0}, extensions: [{uri: "
       "urn:ietf:params:rtp-hdrext:ssrc-audio-level, id: 3}]}, "
-      "rtcp_send_transport: null, media_transport: null}",
+      "rtcp_send_transport: null, media_transport_config: {media_transport: "
+      "null}}",
       config.ToString());
 }
 

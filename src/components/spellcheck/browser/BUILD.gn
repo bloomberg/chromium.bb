@@ -30,7 +30,6 @@ source_set("browser") {
     "//components/spellcheck/common",
   ]
   deps = [
-    "//components/data_use_measurement/core",
     "//components/prefs",
     "//components/user_prefs",
     "//content/public/browser",

@@ -233,9 +233,8 @@ void WorkerScriptLoader::OnUploadProgress(
                             std::move(ack_callback));
 }
 
-void WorkerScriptLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
-  client_->OnReceiveCachedMetadata(data);
+void WorkerScriptLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
+  client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void WorkerScriptLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {

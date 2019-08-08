@@ -1924,7 +1924,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorPageNetworkError) {
 // the privileged process.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        BlockedRequestAfterWebUI) {
-  GURL web_ui_url("chrome://gpu");
+  GURL web_ui_url(GetWebUIURL("gpu"));
   WebContents* web_contents = shell()->web_contents();
 
   // Navigate to the initial page.

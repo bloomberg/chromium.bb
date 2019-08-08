@@ -29,13 +29,11 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tag_name,
-                                          Document& document)
+HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tag_name,
+                                   Document& document)
     : HTMLElement(tag_name, document) {
   DCHECK(HasTagName(kQTag) || HasTagName(kBlockquoteTag));
 }
-
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement)
 
 bool HTMLQuoteElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == kCiteAttr ||

@@ -59,25 +59,19 @@ function createFakeFolderShortcutsDataModel() {
  */
 let shortcutsModel;
 
-/**
- * MockUI
- * @extends {ActionModelUI}
- * @constructor
- */
-function MockUI() {
-  this.listContainer = /** @type {!ListContainer} */ ({
-    currentView: {
-      updateListItemsMetadata: function() {},
-    }
-  });
+/** @implements ActionModelUI */
+class MockUI {
+  constructor() {
+    this.listContainer = /** @type {!ListContainer} */ ({
+      currentView: {
+        updateListItemsMetadata: function() {},
+      }
+    });
 
-  this.alertDialog = /** @type {!FilesAlertDialog} */ ({
-    showHtml: function() {},
-  });
-
-  this.errorDialog = /** @type {!ErrorDialog} */ ({
-    showHtml: function() {},
-  });
+    this.alertDialog = /** @type {!FilesAlertDialog} */ ({
+      showHtml: function() {},
+    });
+  }
 }
 
 /**

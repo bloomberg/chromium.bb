@@ -149,7 +149,7 @@ struct VertexAttribCurrentValueData
         GLfloat FloatValues[4];
         GLint IntValues[4];
         GLuint UnsignedIntValues[4];
-    };
+    } Values;
     VertexAttribType Type;
 
     VertexAttribCurrentValueData();
@@ -164,6 +164,6 @@ bool operator!=(const VertexAttribCurrentValueData &a, const VertexAttribCurrent
 
 }  // namespace gl
 
-#include "VertexAttribute.inl"
+#include "VertexAttribute.inc"
 
 #endif  // LIBANGLE_VERTEXATTRIBUTE_H_

@@ -19,9 +19,9 @@ std::set<std::string> GetSchemesBypassingSecureContextCheck() {
   return schemes;
 }
 
-void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kUnsafelyTreatInsecureOriginAsSecure,
-                               /* default_value */ "");
+void RegisterPrefs(PrefRegistrySimple* local_state) {
+  local_state->RegisterStringPref(prefs::kUnsafelyTreatInsecureOriginAsSecure,
+                                  /* default_value */ "");
 }
 
 }  // namespace secure_origin_whitelist

@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/device_response_converter.h"
@@ -27,9 +29,8 @@ U2fSignOperation::U2fSignOperation(FidoDevice* device,
 U2fSignOperation::~U2fSignOperation() = default;
 
 void U2fSignOperation::Start() {
-  const auto& allow_list = request().allow_list();
-  if (allow_list && !allow_list->empty()) {
-    if (request().alternative_application_parameter().has_value()) {
+  if (!request().allow_list.empty()) {
+    if (request().alternative_application_parameter.has_value()) {
       // Try the alternative value first. This is because the U2F Zero
       // authenticator (at least) crashes if we try the wrong AppID first.
       app_param_type_ = ApplicationParameterType::kAlternative;
@@ -79,8 +80,8 @@ void U2fSignOperation::OnSignResponseReceived(
     case apdu::ApduResponse::Status::SW_NO_ERROR: {
       auto application_parameter =
           app_param_type_ == ApplicationParameterType::kPrimary
-              ? fido_parsing_utils::CreateSHA256Hash(request().rp_id())
-              : request().alternative_application_parameter().value_or(
+              ? fido_parsing_utils::CreateSHA256Hash(request().rp_id)
+              : request().alternative_application_parameter.value_or(
                     std::array<uint8_t, kRpIdHashLength>());
       auto sign_response =
           AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
@@ -91,6 +92,11 @@ void U2fSignOperation::OnSignResponseReceived(
             .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
         return;
       }
+
+      FIDO_LOG(DEBUG)
+          << "Received successful U2F sign response from authenticator: "
+          << base::HexEncode(apdu_response->data().data(),
+                             apdu_response->data().size());
       std::move(callback())
           .Run(CtapDeviceResponseCode::kSuccess, std::move(sign_response));
       break;
@@ -103,9 +109,9 @@ void U2fSignOperation::OnSignResponseReceived(
         // the primary value to try.
         app_param_type_ = ApplicationParameterType::kPrimary;
         TrySign();
-      } else if (++current_key_handle_index_ < request().allow_list()->size()) {
+      } else if (++current_key_handle_index_ < request().allow_list.size()) {
         // Key is not for this device. Try signing with the next key.
-        if (request().alternative_application_parameter().has_value()) {
+        if (request().alternative_application_parameter.has_value()) {
           app_param_type_ = ApplicationParameterType::kAlternative;
         }
         TrySign();
@@ -179,8 +185,8 @@ void U2fSignOperation::OnEnrollmentResponseReceived(
 }
 
 const std::vector<uint8_t>& U2fSignOperation::key_handle() const {
-  DCHECK_LT(current_key_handle_index_, request().allow_list()->size());
-  return request().allow_list().value()[current_key_handle_index_].id();
+  DCHECK_LT(current_key_handle_index_, request().allow_list.size());
+  return request().allow_list.at(current_key_handle_index_).id();
 }
 
 }  // namespace device

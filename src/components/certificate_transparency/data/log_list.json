@@ -1,16 +1,6 @@
 {
  "logs": [
   {
-   "description": "Google 'Argon2018' log",
-   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0gBVBa3VR7QZu82V+ynXWD14JM3ORp37MtRxTmACJV5ZPtfUA7htQ2hofuigZQs+bnFZkje+qejxoyvk2Q1VaA==",
-   "url": "ct.googleapis.com/logs/argon2018/",
-   "maximum_merge_delay": 86400,
-   "operated_by": [
-    0
-   ],
-   "dns_api_endpoint": "argon2018.ct.googleapis.com"
-  },
-  {
    "description": "Google 'Argon2019' log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEI3MQm+HzXvaYa2mVlhB4zknbtAT8cSxakmBoJcBKGqGwYS0bhxSpuvABM1kdBTDpQhXnVdcq+LSiukXJRpGHVg==",
    "url": "ct.googleapis.com/logs/argon2019/",
@@ -137,16 +127,6 @@
    "dns_api_endpoint": "skydiver.ct.googleapis.com"
   },
   {
-   "description": "Cloudflare 'Nimbus2018' Log",
-   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAsVpWvrH3Ke0VRaMg9ZQoQjb5g/xh1z3DDa6IuxY5DyPsk6brlvrUNXZzoIg0DcvFiAn2kd6xmu4Obk5XA/nRg==",
-   "url": "ct.cloudflare.com/logs/nimbus2018/",
-   "maximum_merge_delay": 86400,
-   "operated_by": [
-    1
-   ],
-   "dns_api_endpoint": "cloudflare-nimbus2018.ct.googleapis.com"
-  },
-  {
    "description": "Cloudflare 'Nimbus2019' Log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkZHz1v5r8a9LmXSMegYZAg4UW+Ug56GtNfJTDNFZuubEJYgWf4FcC5D+ZkYwttXTDSo4OkanG9b3AI4swIQ28g==",
    "url": "ct.cloudflare.com/logs/nimbus2019/",
@@ -177,6 +157,26 @@
    "dns_api_endpoint": "cloudflare-nimbus2021.ct.googleapis.com"
   },
   {
+   "description": "Cloudflare 'Nimbus2022' Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESLJHTlAycmJKDQxIv60pZG8g33lSYxYpCi5gteI6HLevWbFVCdtZx+m9b+0LrwWWl/87mkNN6xE0M4rnrIPA/w==",
+   "url": "ct.cloudflare.com/logs/nimbus2022/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "cloudflare-nimbus2022.ct.googleapis.com"
+  },
+  {
+   "description": "Cloudflare 'Nimbus2023' Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEi/8tkhjLRp0SXrlZdTzNkTd6HqmcmXiDJz3fAdWLgOhjmv4mohvRhwXul9bgW0ODgRwC9UGAgH/vpGHPvIS1qA==",
+   "url": "ct.cloudflare.com/logs/nimbus2023/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "cloudflare-nimbus2023.ct.googleapis.com"
+  },
+  {
    "description": "DigiCert Log Server",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAkbFvhu7gkAW6MHSrBlpE1n4+HCFRkC5OLAjgqhkTH+/uzSfSl8ois8ZxAD2NgaTZe1M9akhYlrYkes4JECs6A==",
    "url": "ct1.digicert-ct.com/log/",
@@ -195,16 +195,6 @@
     2
    ],
    "dns_api_endpoint": "digicert2.ct.googleapis.com"
-  },
-  {
-   "description": "DigiCert Yeti2018 Log",
-   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESYlKFDLLFmA9JScaiaNnqlU8oWDytxIYMfswHy9Esg0aiX+WnP/yj4O0ViEHtLwbmOQeSWBGkIu9YK9CLeer+g==",
-   "url": "yeti2018.ct.digicert.com/log/",
-   "maximum_merge_delay": 86400,
-   "operated_by": [
-    2
-   ],
-   "dns_api_endpoint": "digicert-yeti2018.ct.googleapis.com"
   },
   {
    "description": "DigiCert Yeti2019 Log",
@@ -247,14 +237,14 @@
    "dns_api_endpoint": "digicert-yeti2022.ct.googleapis.com"
   },
   {
-   "description": "DigiCert Nessie2018 Log",
-   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEVqpLa2W+Rz1XDZPBIyKJO+KKFOYZTj9MpJWnZeFUqzc5aivOiWEVhs8Gy2AlH3irWPFjIZPZMs3Dv7M+0LbPyQ==",
-   "url": "nessie2018.ct.digicert.com/log/",
+   "description": "DigiCert Yeti2023 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfQ0DsdWYitzwFTvG3F4Nbj8Nv5XIVYzQpkyWsU4nuSYlmcwrAp6m092fsdXEw6w1BAeHlzaqrSgNfyvZaJ9y0Q==",
+   "url": "yeti2023.ct.digicert.com/log/",
    "maximum_merge_delay": 86400,
    "operated_by": [
     2
    ],
-   "dns_api_endpoint": "digicert-nessie2018.ct.googleapis.com"
+   "dns_api_endpoint": "digicert-yeti2023.ct.googleapis.com"
   },
   {
    "description": "DigiCert Nessie2019 Log",
@@ -295,6 +285,16 @@
     2
    ],
    "dns_api_endpoint": "digicert-nessie2022.ct.googleapis.com"
+  },
+  {
+   "description": "DigiCert Nessie2023 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEXu8iQwSCRSf2CbITGpUpBtFVt8+I0IU0d1C36Lfe1+fbwdaI0Z5FktfM2fBoI1bXBd18k2ggKGYGgdZBgLKTg==",
+   "url": "nessie2023.ct.digicert.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "digicert-nessie2023.ct.googleapis.com"
   },
   {
    "description": "Symantec log",

@@ -365,292 +365,289 @@ function startImport(clickSource) {
 /**
  * A stub that just provides interfaces from ImportTask that are required by
  * these tests.
- *
- * @constructor
- *
- * @param {!importer.ScanResult} scan
- * @param {!importer.Destination} destination
- * @param {!Promise<!DirectoryEntry>} destinationDirectory
  */
-function TestImportTask(scan, destination, destinationDirectory) {
-  /** @public {!importer.ScanResult} */
-  this.scan = scan;
+class TestImportTask {
+  /**
+   * @param {!importer.ScanResult} scan
+   * @param {!importer.Destination} destination
+   * @param {!Promise<!DirectoryEntry>} destinationDirectory
+   */
+  constructor(scan, destination, destinationDirectory) {
+    /** @public {!importer.ScanResult} */
+    this.scan = scan;
 
-  /** @type {!importer.Destination} */
-  this.destination = destination;
+    /** @type {!importer.Destination} */
+    this.destination = destination;
 
-  /** @type {!Promise<!DirectoryEntry>} */
-  this.destinationDirectory = destinationDirectory;
+    /** @type {!Promise<!DirectoryEntry>} */
+    this.destinationDirectory = destinationDirectory;
 
-  /** @private {!importer.Resolver} */
-  this.finishedResolver_ = new importer.Resolver();
+    /** @private {!importer.Resolver} */
+    this.finishedResolver_ = new importer.Resolver();
 
-  /** @private {!importer.Resolver} */
-  this.canceledResolver_ = new importer.Resolver();
+    /** @private {!importer.Resolver} */
+    this.canceledResolver_ = new importer.Resolver();
 
-  /** @public {!Promise} */
-  this.whenFinished = this.finishedResolver_.promise;
+    /** @public {!Promise} */
+    this.whenFinished = this.finishedResolver_.promise;
 
-  /** @public {!Promise} */
-  this.whenCanceled = this.canceledResolver_.promise;
+    /** @public {!Promise} */
+    this.whenCanceled = this.canceledResolver_.promise;
+  }
+
+  finish() {
+    this.finishedResolver_.resolve();
+  }
+
+  requestCancel() {
+    this.canceledResolver_.resolve();
+  }
 }
-
-TestImportTask.prototype.finish = function() {
-  this.finishedResolver_.resolve();
-};
-
-TestImportTask.prototype.requestCancel = function() {
-  this.canceledResolver_.resolve();
-};
 
 /**
  * Test import runner.
  *
- * @constructor
  * @implements {importer.ImportRunner}
  */
-function TestImportRunner() {
-  /** @public {!Array<!importer.ScanResult>} */
-  this.imported = [];
+class TestImportRunner {
+  constructor() {
+    /** @public {!Array<!importer.ScanResult>} */
+    this.imported = [];
+
+    /**
+     * Resolves when import is started.
+     * @public {!importer.Resolver.<!TestImportTask>}
+     */
+    this.importResolver = new importer.Resolver();
+
+    /** @private {!Array<!TestImportTask>} */
+    this.tasks_ = [];
+  }
+
+  /** @override */
+  importFromScanResult(scan, destination, destinationDirectory) {
+    this.imported.push(scan);
+    const task = new TestImportTask(scan, destination, destinationDirectory);
+    this.tasks_.push(task);
+    this.importResolver.resolve(task);
+    return this.toMediaImportTask_(task);
+  }
 
   /**
-   * Resolves when import is started.
-   * @public {!importer.Resolver.<!TestImportTask>}
+   * Returns |task| as importer.MediaImportHandler.ImportTask type.
+   * @param {!Object} task
+   * @return {!importer.MediaImportHandler.ImportTask}
+   * @private
    */
-  this.importResolver = new importer.Resolver();
+  toMediaImportTask_(task) {
+    return /** @type {!importer.MediaImportHandler.ImportTask} */ (task);
+  }
 
-  /** @private {!Array<!TestImportTask>} */
-  this.tasks_ = [];
+  finishImportTasks() {
+    this.tasks_.forEach((task) => task.finish());
+  }
+
+  cancelImportTasks() {
+    this.finishImportTasks();
+  }
 }
-
-/** @override */
-TestImportRunner.prototype.importFromScanResult = function(
-    scan, destination, destinationDirectory) {
-  this.imported.push(scan);
-  const task = new TestImportTask(scan, destination, destinationDirectory);
-  this.tasks_.push(task);
-  this.importResolver.resolve(task);
-  return this.toMediaImportTask_(task);
-};
-
-/**
- * Returns |task| as importer.MediaImportHandler.ImportTask type.
- * @param {!Object} task
- * @return {!importer.MediaImportHandler.ImportTask}
- * @private
- */
-TestImportRunner.prototype.toMediaImportTask_ = task => {
-  return /** @type {!importer.MediaImportHandler.ImportTask} */ (task);
-};
-
-TestImportRunner.prototype.finishImportTasks = function() {
-  this.tasks_.forEach((task) => task.finish());
-};
-
-TestImportRunner.prototype.cancelImportTasks = function() {
-  this.finishImportTasks();
-};
 
 /**
  * Interface abstracting away the concrete file manager available
  * to commands. By hiding file manager we make it easy to test
  * importer.ImportController.
  *
- * @constructor
  * @implements {importer.ControllerEnvironment}
- *
- * @param {!VolumeManager} volumeManager
- * @param {!VolumeInfo} volumeInfo
- * @param {!DirectoryEntry} directory
  */
-function TestControllerEnvironment(volumeManager, volumeInfo, directory) {
-  /** @private {!VolumeManager} */
-  this.volumeManager = volumeManager;
+class TestControllerEnvironment {
+  /**
+   * @param {!VolumeManager} volumeManager
+   * @param {!VolumeInfo} volumeInfo
+   * @param {!DirectoryEntry} directory
+   */
+  constructor(volumeManager, volumeInfo, directory) {
+    /** @private {!VolumeManager} */
+    this.volumeManager = volumeManager;
 
-  /** @private {!VolumeInfo} */
-  this.volumeInfo_ = volumeInfo;
+    /** @private {!VolumeInfo} */
+    this.volumeInfo_ = volumeInfo;
 
-  /** @private {!DirectoryEntry} */
-  this.directory_ = directory;
+    /** @private {!DirectoryEntry} */
+    this.directory_ = directory;
 
-  /** @public {function()} */
-  this.windowCloseListener;
+    /** @public {function()} */
+    this.windowCloseListener;
 
-  /** @public {function(string)} */
-  this.volumeUnmountListener;
+    /** @public {function(string)} */
+    this.volumeUnmountListener;
 
-  /** @public {function(!Event)} */
-  this.directoryChangedListener;
+    /** @public {function(!Event)} */
+    this.directoryChangedListener;
 
-  /** @public {function()} */
-  this.selectionChangedListener;
+    /** @public {function()} */
+    this.selectionChangedListener;
 
-  /** @public {!Array<!Entry>} */
-  this.selection = [];
+    /** @public {!Array<!Entry>} */
+    this.selection = [];
 
-  /** @public {boolean} */
-  this.isDriveMounted = true;
+    /** @public {boolean} */
+    this.isDriveMounted = true;
 
-  /** @public {number} */
-  this.freeStorageSpace = 123456789;  // bytes
+    /** @public {number} */
+    this.freeStorageSpace = 123456789;  // bytes
 
-  /** @public {!importer.Resolver} */
-  this.showImportRootResolver = new importer.Resolver();
+    /** @public {!importer.Resolver} */
+    this.showImportRootResolver = new importer.Resolver();
 
-  /** @public {!importer.Resolver} */
-  this.showImportDestinationResolver = new importer.Resolver();
+    /** @public {!importer.Resolver} */
+    this.showImportDestinationResolver = new importer.Resolver();
+  }
+
+  /** @override */
+  getSelection() {
+    return this.selection;
+  }
+
+  /** @override */
+  getCurrentDirectory() {
+    return this.directory_;
+  }
+
+  /** @override */
+  setCurrentDirectory(entry) {
+    this.directory_ = entry;
+  }
+
+  /** @override */
+  getVolumeInfo(entry) {
+    return this.volumeInfo_;
+  }
+
+  /** @override */
+  isGoogleDriveMounted() {
+    return this.isDriveMounted;
+  }
+
+  /** @override */
+  getFreeStorageSpace() {
+    return Promise.resolve(this.freeStorageSpace);
+  }
+
+  /** @override */
+  addWindowCloseListener(listener) {
+    this.windowCloseListener = listener;
+  }
+
+  /** @override */
+  addVolumeUnmountListener(listener) {
+    this.volumeUnmountListener = listener;
+  }
+
+  /** @override */
+  addDirectoryChangedListener(listener) {
+    this.directoryChangedListener = listener;
+  }
+
+  /** @override */
+  addSelectionChangedListener(listener) {
+    this.selectionChangedListener = listener;
+  }
+
+  /** @override */
+  getImportDestination(date) {
+    const fileSystem = new MockFileSystem('testFs');
+    const directoryEntry = new MockDirectoryEntry(fileSystem, '/abc/123');
+    return Promise.resolve(directoryEntry);
+  }
+
+  /** @override */
+  showImportDestination() {
+    this.showImportDestinationResolver.resolve();
+    return Promise.resolve(true);
+  }
+
+  /** @override */
+  showImportRoot() {
+    this.showImportRootResolver.resolve();
+    return Promise.resolve(true);
+  }
+
+  /**
+   * Simulates an unmount event.
+   */
+  simulateUnmount() {
+    this.volumeUnmountListener(this.volumeInfo_.volumeId);
+  }
 }
-
-/** @override */
-TestControllerEnvironment.prototype.getSelection = function() {
-  return this.selection;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.getCurrentDirectory = function() {
-  return this.directory_;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.setCurrentDirectory = function(entry) {
-  this.directory_ = entry;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.getVolumeInfo = function(entry) {
-  return this.volumeInfo_;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.isGoogleDriveMounted = function() {
-  return this.isDriveMounted;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.getFreeStorageSpace = function() {
-  return Promise.resolve(this.freeStorageSpace);
-};
-
-/** @override */
-TestControllerEnvironment.prototype.addWindowCloseListener = function(
-    listener) {
-  this.windowCloseListener = listener;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.addVolumeUnmountListener = function(
-    listener) {
-  this.volumeUnmountListener = listener;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.addDirectoryChangedListener = function(
-    listener) {
-  this.directoryChangedListener = listener;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.addSelectionChangedListener = function(
-    listener) {
-  this.selectionChangedListener = listener;
-};
-
-/** @override */
-TestControllerEnvironment.prototype.getImportDestination = date => {
-  const fileSystem = new MockFileSystem('testFs');
-  const directoryEntry = new MockDirectoryEntry(fileSystem, '/abc/123');
-  return Promise.resolve(directoryEntry);
-};
-
-/** @override */
-TestControllerEnvironment.prototype.showImportDestination = function() {
-  this.showImportDestinationResolver.resolve();
-  return Promise.resolve(true);
-};
-
-/** @override */
-TestControllerEnvironment.prototype.showImportRoot = function() {
-  this.showImportRootResolver.resolve();
-  return Promise.resolve(true);
-};
-
-/**
- * Simulates an unmount event.
- */
-TestControllerEnvironment.prototype.simulateUnmount = function() {
-  this.volumeUnmountListener(this.volumeInfo_.volumeId);
-};
 
 /**
  * Test implementation of importer.CommandWidget.
- *
- * @constructor
  * @implements {importer.CommandWidget}
- * @struct
  */
-importer.TestCommandWidget = function() {
-  /** @public {function(importer.ClickSource<string>)} */
-  this.clickListener;
+importer.TestCommandWidget = class {
+  constructor() {
+    /** @public {function(importer.ClickSource<string>)} */
+    this.clickListener;
 
-  /** @public {!importer.Resolver} */
-  this.updateResolver = new importer.Resolver();
+    /** @public {!importer.Resolver} */
+    this.updateResolver = new importer.Resolver();
 
-  /** @public {!importer.Resolver} */
-  this.toggleDetailsResolver = new importer.Resolver();
+    /** @public {!importer.Resolver} */
+    this.toggleDetailsResolver = new importer.Resolver();
 
-  /** @public {boolean} */
-  this.detailsVisible = false;
+    /** @public {boolean} */
+    this.detailsVisible = false;
+  }
+
+  /** Resets the widget */
+  resetPromises() {
+    this.updateResolver = new importer.Resolver();
+    this.toggleDetailsResolver = new importer.Resolver();
+  }
+
+  /** @override */
+  addClickListener(listener) {
+    this.clickListener = listener;
+  }
+
+  /**
+   * Fires faux click.
+   * @param  {!importer.ClickSource} source
+   */
+  click(source) {
+    this.clickListener(source);
+  }
+
+  /** @override */
+  update(activityState, opt_scan, opt_destinationSizeBytes) {
+    assertFalse(
+        this.updateResolver.settled,
+        'Update promise should not have been settled.');
+    this.updateResolver.resolve(activityState);
+  }
+
+  updateDetails(scan) {}
+
+  performMainButtonRippleAnimation() {}
+
+  /** @override */
+  toggleDetails() {
+    assertFalse(
+        this.toggleDetailsResolver.settled,
+        'Toggle details promise should not have been settled.');
+    this.setDetailsVisible(!this.detailsVisible);
+    this.toggleDetailsResolver.resolve();
+  }
+
+  /** @override */
+  setDetailsVisible(visible) {
+    this.detailsVisible = visible;
+  }
+
+  /** @override */
+  setDetailsBannerVisible(visible) {}
 };
 
-/** Resets the widget */
-importer.TestCommandWidget.prototype.resetPromises = function() {
-  this.updateResolver = new importer.Resolver();
-  this.toggleDetailsResolver = new importer.Resolver();
-};
-
-/** @override */
-importer.TestCommandWidget.prototype.addClickListener = function(listener) {
-  this.clickListener = listener;
-};
-
-/**
- * Fires faux click.
- * @param  {!importer.ClickSource} source
- */
-importer.TestCommandWidget.prototype.click = function(source) {
-  this.clickListener(source);
-};
-
-/** @override */
-importer.TestCommandWidget.prototype.update = function(
-    activityState, opt_scan, opt_destinationSizeBytes) {
-  assertFalse(
-      this.updateResolver.settled,
-      'Update promise should not have been settled.');
-  this.updateResolver.resolve(activityState);
-};
-
-importer.TestCommandWidget.prototype.updateDetails = scan => {};
-
-importer.TestCommandWidget.prototype.performMainButtonRippleAnimation =
-    () => {};
-
-/** @override */
-importer.TestCommandWidget.prototype.toggleDetails = function() {
-  assertFalse(
-      this.toggleDetailsResolver.settled,
-      'Toggle details promise should not have been settled.');
-  this.setDetailsVisible(!this.detailsVisible);
-  this.toggleDetailsResolver.resolve();
-};
-
-/** @override */
-importer.TestCommandWidget.prototype.setDetailsVisible = function(visible) {
-  this.detailsVisible = visible;
-};
-
-/** @override */
-importer.TestCommandWidget.prototype.setDetailsBannerVisible = visible => {};
 
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType

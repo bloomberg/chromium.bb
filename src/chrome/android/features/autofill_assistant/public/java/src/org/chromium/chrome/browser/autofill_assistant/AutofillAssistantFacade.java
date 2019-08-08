@@ -9,16 +9,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.Callback;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.modules.ModuleInstallUi;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.module_installer.ModuleInstaller;
 
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -71,8 +66,10 @@ public class AutofillAssistantFacade {
      * .../variations/generate_server_hashes.py and
      * .../website/components/variations_dash/variations_histogram_entry.js.
      */
-    private static final String SYNTHETIC_TRIAL = "AutofillAssistantTriggered";
+    private static final String TRIGGERED_SYNTHETIC_TRIAL = "AutofillAssistantTriggered";
     private static final String ENABLED_GROUP = "Enabled";
+
+    private static final String EXPERIMENTS_SYNTHETIC_TRIAL = "AutofillAssistantExperimentsTrial";
 
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
     public static boolean isConfigured(@Nullable Bundle intentExtras) {
@@ -82,7 +79,15 @@ public class AutofillAssistantFacade {
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
         // Register synthetic trial as soon as possible.
-        UmaSessionStats.registerSyntheticFieldTrial(SYNTHETIC_TRIAL, ENABLED_GROUP);
+        UmaSessionStats.registerSyntheticFieldTrial(TRIGGERED_SYNTHETIC_TRIAL, ENABLED_GROUP);
+        // Synthetic trial for experiments.
+        String experimentIds = getExperimentIds(activity.getInitialIntent().getExtras());
+        if (!experimentIds.isEmpty()) {
+            for (String experimentId : experimentIds.split(",")) {
+                UmaSessionStats.registerSyntheticFieldTrial(
+                        EXPERIMENTS_SYNTHETIC_TRIAL, experimentId);
+            }
+        }
 
         // Early exit if autofill assistant should not be triggered.
         if (!canStart(activity.getInitialIntent())
@@ -92,24 +97,23 @@ public class AutofillAssistantFacade {
 
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
-        checkAndLoadDynamicModuleIfNeeded(activity, (success) -> {
-            if (success) {
-                if (canStart(activity.getInitialIntent())) {
-                    getTab(activity, tab -> startNow(activity, tab));
-                    return;
-                }
-                if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-                    getTab(activity, tab -> {
-                        AutofillAssistantClient client =
-                                AutofillAssistantClient.fromWebContents(tab.getWebContents());
-                        client.showOnboarding(
-                                getExperimentIds(activity.getInitialIntent().getExtras()),
-                                () -> startNow(activity, tab));
-                    });
-                    return;
-                }
-            } else {
+        AutofillAssistantModuleEntryProvider.getModuleEntry(activity, (moduleEntry) -> {
+            if (moduleEntry == null) {
                 AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_CANCELLED);
+                return;
+            }
+            // Starting autofill assistant without onboarding.
+            if (canStart(activity.getInitialIntent())) {
+                AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
+                startNow(activity, moduleEntry);
+                return;
+            }
+            // Starting autofill assistant with onboarding.
+            if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
+                moduleEntry.showOnboarding(
+                        getExperimentIds(activity.getInitialIntent().getExtras()),
+                        () -> startNow(activity, moduleEntry));
+                return;
             }
         });
     }
@@ -140,78 +144,14 @@ public class AutofillAssistantFacade {
         return experiments.toString();
     }
 
-    /**
-     * Checks if classes from DFM can be loaded, if not try loading it with default UI provided
-     * by DFM.
-     * @param callback is called with 'true' when DFM is already loaded or loading DFM was
-     *        successful, it is called with 'false' if DFM cannot be loaded and aborted by user.
-     */
-    private static void checkAndLoadDynamicModuleIfNeeded(
-            ChromeActivity activity, Callback<Boolean> callback) {
-        if (AutofillAssistantModule.isInstalled()) {
-            callback.onResult(true);
-            return;
-        }
-        getTab(activity, tab -> { loadDynamicModuleWithUi(tab, callback); });
-    }
-
-    private static void loadDynamicModuleWithUi(Tab tab, Callback<Boolean> callback) {
-        ModuleInstallUi ui = new ModuleInstallUi(tab, R.string.autofill_assistant_module_title,
-                new ModuleInstallUi.FailureUiListener() {
-                    @Override
-                    public void onRetry() {
-                        loadDynamicModuleWithUi(tab, callback);
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        callback.onResult(false);
-                    }
-                });
-        // Shows toast informing user about install start.
-        ui.showInstallStartUi();
-        ModuleInstaller.install("autofill_assistant", (success) -> {
-            if (success) {
-                // Don't show success UI from DFM, transition to autobot UI directly.
-                callback.onResult(true);
-                return;
-            }
-            // Show inforbar to ask user if they want to retry or cancel.
-            ui.showInstallFailureUi();
-        });
-    }
-
-    private static void startNow(ChromeActivity activity, Tab tab) {
+    private static void startNow(ChromeActivity activity, AutofillAssistantModuleEntry entry) {
         Bundle bundleExtras = activity.getInitialIntent().getExtras();
         Map<String, String> parameters = extractParameters(bundleExtras);
         parameters.remove(PARAMETER_ENABLED);
         String initialUrl = activity.getInitialIntent().getDataString();
 
-        AutofillAssistantClient client =
-                AutofillAssistantClient.fromWebContents(tab.getWebContents());
-
-        client.start(initialUrl, parameters, getExperimentIds(bundleExtras),
+        entry.start(initialUrl, parameters, getExperimentIds(bundleExtras),
                 activity.getInitialIntent().getExtras());
-    }
-
-    private static void getTab(ChromeActivity activity, Callback<Tab> callback) {
-        if (activity.getActivityTab() != null
-                && activity.getActivityTab().getWebContents() != null) {
-            callback.onResult(activity.getActivityTab());
-            return;
-        }
-
-        // The tab is not yet available. We need to register as listener and wait for it.
-        activity.getActivityTabProvider().addObserverAndTrigger(
-                new ActivityTabProvider.HintlessActivityTabObserver() {
-                    @Override
-                    public void onActivityTabChanged(Tab tab) {
-                        if (tab == null) return;
-                        activity.getActivityTabProvider().removeObserver(this);
-                        assert tab.getWebContents() != null;
-                        callback.onResult(tab);
-                    }
-                });
     }
 
     /** Return the value if the given boolean parameter from the extras. */

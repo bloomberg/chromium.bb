@@ -147,6 +147,7 @@ class EnterpriseDeviceAttributesTest
     device_affiliation_ids.insert(kAffiliationID);
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
         &test_helper_, device_affiliation_ids));
+    test_helper_.InstallOwnerKey();
 
     std::set<std::string> user_affiliation_ids;
     if (GetParam().affiliated) {

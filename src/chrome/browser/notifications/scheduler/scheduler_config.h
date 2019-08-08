@@ -49,6 +49,9 @@ struct SchedulerConfig {
   // scheduler.
   int evening_task_hour;
 
+  // The time window to launch the background task.
+  base::TimeDelta background_task_window_duration;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerConfig);
 };

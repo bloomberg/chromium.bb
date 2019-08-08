@@ -4,6 +4,9 @@
 
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -25,34 +28,23 @@ using PersistentPageConsistencyCheckCallback =
 
 class PersistentPageConsistencyCheckTaskTest : public ModelTaskTestBase {
  public:
-  PersistentPageConsistencyCheckTaskTest();
-  ~PersistentPageConsistencyCheckTaskTest() override;
+  PersistentPageConsistencyCheckTaskTest() {}
+  ~PersistentPageConsistencyCheckTaskTest() override {}
 
-  void SetUp() override;
-  bool IsPageMissingFile(const OfflinePageItem& page);
+  void SetUp() override {
+    ModelTaskTestBase::SetUp();
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
+  }
+  bool IsPageMissingFile(const OfflinePageItem& page) {
+    auto actual_page = store_test_util()->GetPageByOfflineId(page.offline_id);
+    return (actual_page && actual_page->file_missing_time != base::Time());
+  }
 
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
-
-PersistentPageConsistencyCheckTaskTest::
-    PersistentPageConsistencyCheckTaskTest() {}
-
-PersistentPageConsistencyCheckTaskTest::
-    ~PersistentPageConsistencyCheckTaskTest() {}
-
-void PersistentPageConsistencyCheckTaskTest::SetUp() {
-  ModelTaskTestBase::SetUp();
-  histogram_tester_ = std::make_unique<base::HistogramTester>();
-}
-
-bool PersistentPageConsistencyCheckTaskTest::IsPageMissingFile(
-    const OfflinePageItem& page) {
-  auto actual_page = store_test_util()->GetPageByOfflineId(page.offline_id);
-  return (actual_page && actual_page->file_missing_time != base::Time());
-}
 
 // This test is affected by https://crbug.com/725685, which only affects windows
 // platform.

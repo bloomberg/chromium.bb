@@ -842,37 +842,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                             'board': board,
                                             'status': status})
 
-  @minimum_schema(29)
-  def InsertFailure(self, build_stage_id, exception_type, exception_message,
-                    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
-                    outer_failure_id=None,
-                    extra_info=None):
-    """Insert a failure description into database.
-
-    Args:
-      build_stage_id: primary key, in buildStageTable, of the stage where
-                      failure occured.
-      exception_type: str name of the exception class.
-      exception_message: str description of the failure.
-      exception_category: (Optional) one of
-                          constants.EXCEPTION_CATEGORY_ALL_CATEGORIES,
-                          Default: 'unknown'.
-      outer_failure_id: (Optional) primary key of outer failure which contains
-                        this failure. Used to store CompoundFailure
-                        relationship.
-      extra_info: (Optional) extra category-specific string description giving
-                  failure details. Used for programmatic triage.
-    """
-    if exception_message:
-      exception_message = exception_message[:240]
-    values = {'build_stage_id': build_stage_id,
-              'exception_type': exception_type,
-              'exception_message': exception_message,
-              'exception_category': exception_category,
-              'outer_failure_id': outer_failure_id,
-              'extra_info': extra_info}
-    return self._Insert('failureTable', values)
-
   @minimum_schema(42)
   def InsertBuildMessage(self, build_id, message_type=None,
                          message_subtype=None, message_value=None, board=None):
@@ -1163,25 +1132,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         self.BUILD_STATUS_KEYS)
 
   @minimum_schema(30)
-  def GetBuildStage(self, build_stage_id):
-    """Gets stage given the build_stage_id.
-
-    Args:
-      build_stage_id: build_stage_id to fetch the stage.
-
-    Returns:
-      If the build_stage_id exists, returns a dictionary presenting the stage
-      with keys (id, build_id, name, board, status, last_updated, start_time,
-      finish_time, final); else, returns None.
-    """
-    stage = self._SelectWhere(
-        'buildStageTable',
-        'id = %s' % build_stage_id,
-        ['id', 'build_id', 'name', 'board', 'status',
-         'last_updated', 'start_time', 'finish_time', 'final'])
-    return stage[0] if stage else None
-
-  @minimum_schema(30)
   def GetBuildsStages(self, build_ids):
     """Gets all the stages for all listed build_ids.
 
@@ -1450,11 +1400,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('date(start_time) <= date("%s")' %
                            end_date.strftime(self._DATE_FORMAT))
     if starting_build_id is not None:
-      where_clauses.append('id >= %d' % starting_build_id)
+      where_clauses.append('id >= %d' % int(starting_build_id))
     if ending_build_id is not None:
-      where_clauses.append('id <= %d' % ending_build_id)
+      where_clauses.append('id <= %d' % int(ending_build_id))
     if ignore_build_id is not None:
-      where_clauses.append('id != %d' % ignore_build_id)
+      where_clauses.append('buildbucket_id != %s' % ignore_build_id)
     if branch is not None:
       where_clauses.append('branch = "%s"' % branch)
     if milestone_version is not None:
@@ -1611,22 +1561,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(query, values).fetchall()
     return clactions.CLActionHistory(clactions.CLAction(*values)
                                      for values in results)
-
-  @minimum_schema(29)
-  def HasFailureMsgForStage(self, build_stage_id):
-    """Determine whether a build stage has failure messages in failureTable.
-
-    Args:
-      build_stage_id: The id of the build_stage to query for.
-
-    Returns:
-      True if there're failures reported to failureTable for this build stage
-      to cidb; else, False.
-    """
-    failures = self._SelectWhere('failureTable',
-                                 'build_stage_id = %d' % build_stage_id,
-                                 ['id'])
-    return bool(failures)
 
   @minimum_schema(40)
   def GetKeyVals(self):

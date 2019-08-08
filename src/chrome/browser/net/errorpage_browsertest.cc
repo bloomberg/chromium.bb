@@ -39,7 +39,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -91,7 +90,7 @@
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/policy_types.h"
 #else
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 #endif
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 
@@ -936,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Incognito) {
 class ErrorPageAutoReloadTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
+    command_line->AppendSwitch(switches::kEnableAutoReload);
   }
 
   void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
@@ -1168,8 +1167,7 @@ class ErrorPageOfflineTest : public ErrorPageTest {
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 #else
-    policy::ProfilePolicyConnectorFactory::GetInstance()
-        ->PushProviderForTesting(&policy_provider_);
+    policy::PushProfilePolicyConnectorProviderForTesting(&policy_provider_);
 #endif
 
     ErrorPageTest::SetUpInProcessBrowserTestFixture();

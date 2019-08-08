@@ -14,10 +14,10 @@ import static org.mockito.Mockito.verify;
 
 import android.support.test.filters.SmallTest;
 
+import com.google.android.libraries.feed.api.host.storage.CommitResult;
+import com.google.android.libraries.feed.api.host.storage.JournalMutation;
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.storage.CommitResult;
-import com.google.android.libraries.feed.host.storage.JournalMutation;
 
 import org.junit.Before;
 import org.junit.Test;

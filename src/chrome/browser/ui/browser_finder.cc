@@ -18,9 +18,18 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
+#if defined(OS_WIN)
+#include <shobjidl.h>
+#include <wrl/client.h>
+#include "base/win/windows_version.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#endif
+
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "components/account_id/account_id.h"
 #endif
 
@@ -36,6 +45,51 @@ const int kMatchOriginalProfile = 1 << 0;
 const int kMatchCanSupportWindowFeature = 1 << 1;
 const int kMatchTabbed = 1 << 2;
 const int kMatchDisplayId = 1 << 3;
+#if defined(OS_WIN)
+const int kMatchCurrentWorkspace = 1 << 4;
+#endif
+
+#if defined(OS_WIN)
+// Returns true if the browser window is on another virtual desktop, false if
+// we can't tell, or it's on the current virtual desktop.
+// Must not be called while application is dispatching an input synchronous
+// call like SendMessage, because IsWindowOnCurrentVirtualDesktop will return
+// an error.
+bool IsOnOtherVirtualDesktop(Browser* browser) {
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return false;
+
+  Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager;
+  if (!SUCCEEDED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
+                                    CLSCTX_ALL,
+                                    IID_PPV_ARGS(&virtual_desktop_manager)))) {
+    return false;
+  }
+  BrowserWindow* window = browser->window();
+  // In tests, |window| can be null.
+  if (!window)
+    return false;
+
+  BOOL on_current_desktop;
+  aura::Window* native_win = window->GetNativeWindow();
+  if (!native_win ||
+      FAILED(virtual_desktop_manager->IsWindowOnCurrentVirtualDesktop(
+          native_win->GetHost()->GetAcceleratedWidget(),
+          &on_current_desktop)) ||
+      on_current_desktop) {
+    return false;
+  }
+
+  // IsWindowOnCurrentVirtualDesktop() is flaky for newly opened windows,
+  // which causes test flakiness. Occasionally, it incorrectly says a window
+  // is not on the current virtual desktop when it is. In this situation,
+  // it also returns GUID_NULL for the desktop id.
+  GUID workspace_guid;
+  return SUCCEEDED(virtual_desktop_manager->GetWindowDesktopId(
+             native_win->GetHost()->GetAcceleratedWidget(), &workspace_guid)) &&
+         workspace_guid != GUID_NULL;
+}
+#endif  // OS_WIN
 
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
@@ -57,13 +111,14 @@ bool BrowserMatches(Browser* browser,
 
 #if defined(OS_CHROMEOS)
   // Get the profile on which the window is currently shown.
-  // MultiUserWindowManagerClient might be NULL under test scenario.
-  MultiUserWindowManagerClient* const client =
-      MultiUserWindowManagerClient::GetInstance();
+  // MultiUserWindowManagerHelper might be NULL under test scenario.
+  ash::MultiUserWindowManager* const multi_user_window_manager =
+      MultiUserWindowManagerHelper::GetWindowManager();
   Profile* shown_profile = nullptr;
-  if (client) {
+  if (multi_user_window_manager) {
     const AccountId& shown_account_id =
-        client->GetUserPresentingWindow(browser->window()->GetNativeWindow());
+        multi_user_window_manager->GetUserPresentingWindow(
+            browser->window()->GetNativeWindow());
     shown_profile =
         shown_account_id.is_valid()
             ? multi_user_util::GetProfileFromAccountId(shown_account_id)
@@ -92,6 +147,13 @@ bool BrowserMatches(Browser* browser,
 
   if ((match_types & kMatchTabbed) && !browser->is_type_tabbed())
     return false;
+
+#if defined(OS_WIN)
+  if ((match_types & kMatchCurrentWorkspace) &&
+      IsOnOtherVirtualDesktop(browser)) {
+    return false;
+  }
+#endif  // OS_WIN
 
   if (match_types & kMatchDisplayId) {
     return display::Screen::GetScreen()
@@ -123,6 +185,7 @@ Browser* FindBrowserWithTabbedOrAnyType(
     Profile* profile,
     bool match_tabbed,
     bool match_original_profiles,
+    bool match_current_workspace,
     int64_t display_id = display::kInvalidDisplayId) {
   BrowserList* browser_list_impl = BrowserList::GetInstance();
   if (!browser_list_impl)
@@ -134,6 +197,10 @@ Browser* FindBrowserWithTabbedOrAnyType(
     match_types |= kMatchOriginalProfile;
   if (display_id != display::kInvalidDisplayId)
     match_types |= kMatchDisplayId;
+#if defined(OS_WIN)
+  if (match_current_workspace)
+    match_types |= kMatchCurrentWorkspace;
+#endif
   Browser* browser =
       FindBrowserMatching(browser_list_impl->begin_last_active(),
                           browser_list_impl->end_last_active(), profile,
@@ -169,16 +236,18 @@ Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles,
                            int64_t display_id) {
   return FindBrowserWithTabbedOrAnyType(profile, true, match_original_profiles,
+                                        /*match_current_workspace=*/true,
                                         display_id);
 }
 
 Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
-  return FindBrowserWithTabbedOrAnyType(profile, false,
-                                        match_original_profiles);
+  return FindBrowserWithTabbedOrAnyType(profile, false, match_original_profiles,
+                                        /*match_current_workspace=*/false);
 }
 
 Browser* FindBrowserWithProfile(Profile* profile) {
-  return FindBrowserWithTabbedOrAnyType(profile, false, false);
+  return FindBrowserWithTabbedOrAnyType(profile, false, false,
+                                        /*match_current_workspace=*/false);
 }
 
 Browser* FindBrowserWithID(SessionID desired_id) {

@@ -7,6 +7,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -26,7 +27,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
@@ -148,7 +148,6 @@ class KeyboardStatusRow : public views::View {
   ~KeyboardStatusRow() override = default;
 
   views::ToggleButton* toggle() const { return toggle_; }
-  bool is_toggled() const { return toggle_->is_on(); }
 
   void Init(views::ButtonListener* listener, bool use_unified_theme) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
@@ -175,9 +174,12 @@ class KeyboardStatusRow : public views::View {
     // The on-screen keyboard toggle button.
     toggle_ = TrayPopupUtils::CreateToggleButton(
         listener, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD);
-    toggle_->SetIsOn(keyboard::IsKeyboardEnabled(), false);
+    toggle_->SetIsOn(keyboard::IsKeyboardEnabled());
     tri_view->AddView(TriView::Container::END, toggle_);
   }
+
+  // views::View:
+  const char* GetClassName() const override { return "KeyboardStatusRow"; }
 
  private:
   // ToggleButton to toggle keyboard on or off.
@@ -307,8 +309,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
     std::string ime_id = ime->second;
     last_selected_item_id_ = ime_id;
     ime_controller->SwitchImeById(ime_id, false /* show_message */);
-    UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch", ImeSwitchType::kTray,
-                              ImeSwitchType::kCount);
+    UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch", ImeSwitchType::kTray);
 
   } else {
     std::map<views::View*, std::string>::const_iterator property =
@@ -346,6 +347,10 @@ void ImeListView::VisibilityChanged(View* starting_from, bool is_visible) {
   }
 
   ScrollItemToVisible(current_ime_view_);
+}
+
+const char* ImeListView::GetClassName() const {
+  return "ImeListView";
 }
 
 void ImeListView::FocusCurrentImeIfNeeded() {

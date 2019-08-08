@@ -251,8 +251,14 @@ void CPU::Initialize() {
       has_non_stop_time_stamp_counter_ = true;
     }
   }
-#elif defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#elif defined(ARCH_CPU_ARM_FAMILY)
+#if (defined(OS_ANDROID) || defined(OS_LINUX))
   cpu_brand_ = *CpuInfoBrand();
+#elif defined(OS_WIN)
+  // Windows makes high-resolution thread timing information available in
+  // user-space.
+  has_non_stop_time_stamp_counter_ = true;
+#endif
 #endif
 }
 

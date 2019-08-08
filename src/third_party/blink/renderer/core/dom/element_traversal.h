@@ -63,7 +63,12 @@ class HasTagName {
 // a ContainerNode) for which HasTagName(html_names::kTitleTag) returned true,
 // so it would return the first child of |someNode| which is a <title> element.
 // If the caller needs to traverse a Node this way, it's necessary to first
-// check Node::IsContainerNode() and then use ToContainerNode().
+// check Node::IsContainerNode() and then use To<ContainerNode>(). Another way
+// to achieve same behaviour is to use DynamicTo<ContainerNode>() which
+// checks Node::IsContainerNode() and then returns container
+// node. If the conditional check fails then it returns nullptr.
+// DynamicTo<ContainerNode>() wraps IsContainerNode() so there is no need of
+// an explicit conditional check.
 //
 // When looking for a specific element type, it is more efficient to do this:
 //   Traversal<HTMLTitleElement>::firstChild(someNode);

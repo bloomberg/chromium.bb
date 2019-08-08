@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/screens/eula_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -30,7 +30,7 @@ bool g_usage_statistics_reporting_enabled = true;
 }  // namespace
 
 EulaScreen::EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_EULA),
+    : BaseScreen(EulaView::kScreenId),
       view_(view),
       exit_callback_(exit_callback),
       password_fetcher_(this) {

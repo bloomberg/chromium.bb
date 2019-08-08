@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 ADB_KEYS_FILE = '/data/misc/adb/adb_keys'
+ADB_HOST_KEYS_DIR = os.path.join(os.path.expanduser('~'), '.android')
 
 DEFAULT_TIMEOUT = 30
 DEFAULT_RETRIES = 2
@@ -262,7 +263,7 @@ class AdbWrapper(object):
   @classmethod
   @decorators.WithTimeoutAndConditionalRetries(_ShouldRetryAdbCmd)
   def _RunAdbCmd(cls, args, timeout=None, retries=None, device_serial=None,
-                 check_error=True, cpu_affinity=None):
+                 check_error=True, cpu_affinity=None, additional_env=None):
     if timeout:
       remaining = timeout_retry.CurrentTimeoutThreadGroup().GetRemainingTime()
       if remaining:
@@ -271,10 +272,13 @@ class AdbWrapper(object):
         timeout = 0.95 * remaining
       else:
         timeout = None
+    env = cls._ADB_ENV.copy()
+    if additional_env:
+      env.update(additional_env)
     try:
       status, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
           cls._BuildAdbCmd(args, device_serial, cpu_affinity=cpu_affinity),
-          timeout, env=cls._ADB_ENV)
+          timeout, env=env)
     except OSError as e:
       if e.errno in (errno.ENOENT, errno.ENOEXEC):
         raise device_errors.NoAdbError(msg=str(e))
@@ -306,7 +310,8 @@ class AdbWrapper(object):
       timeout: Timeout in seconds.
       retries: Number of retries.
       check_error: Check that the command doesn't return an error message. This
-        does NOT check the exit status of shell commands.
+        does check the error status of adb but DOES NOT check the exit status
+        of shell commands.
 
     Returns:
       The output of the command.
@@ -315,13 +320,17 @@ class AdbWrapper(object):
                            device_serial=self._device_serial,
                            check_error=check_error)
 
-  def _IterRunDeviceAdbCmd(self, args, iter_timeout, timeout):
+  def _IterRunDeviceAdbCmd(self, args, iter_timeout, timeout,
+                           check_error=True):
     """Runs an adb command and returns an iterator over its output lines.
 
     Args:
       args: A list of arguments to adb.
       iter_timeout: Timeout for each iteration in seconds.
       timeout: Timeout for the entire command in seconds.
+      check_error: Check that the command succeeded. This does check the
+        error status of the adb command but DOES NOT check the exit status
+        of shell commands.
 
     Yields:
       The output of the command line by line.
@@ -330,7 +339,8 @@ class AdbWrapper(object):
         self._BuildAdbCmd(args, self._device_serial),
         iter_timeout=iter_timeout,
         timeout=timeout,
-        env=self._ADB_ENV)
+        env=self._ADB_ENV,
+        check_status=check_error)
 
   def __eq__(self, other):
     """Consider instances equal if they refer to the same device.
@@ -368,10 +378,21 @@ class AdbWrapper(object):
     cls._RunAdbCmd(['kill-server'], timeout=timeout, retries=retries)
 
   @classmethod
-  def StartServer(cls, timeout=DEFAULT_TIMEOUT, retries=DEFAULT_RETRIES):
+  def StartServer(cls, keys=None, timeout=DEFAULT_TIMEOUT,
+                  retries=DEFAULT_RETRIES):
+    """Starts the ADB server.
+
+    Args:
+      keys: (optional) List of local ADB keys to use to auth with devices.
+      timeout: (optional) Timeout per try in seconds.
+      retries: (optional) Number of retries to attempt.
+    """
+    additional_env = {}
+    if keys:
+      additional_env['ADB_VENDOR_KEYS'] = ':'.join(keys)
     # CPU affinity is used to reduce adb instability http://crbug.com/268450
     cls._RunAdbCmd(['start-server'], timeout=timeout, retries=retries,
-                   cpu_affinity=0)
+                   cpu_affinity=0, additional_env=additional_env)
 
   @classmethod
   def GetDevices(cls, timeout=DEFAULT_TIMEOUT, retries=DEFAULT_RETRIES):
@@ -603,7 +624,7 @@ class AdbWrapper(object):
 
   def Logcat(self, clear=False, dump=False, filter_specs=None,
              logcat_format=None, ring_buffer=None, iter_timeout=None,
-             timeout=None, retries=DEFAULT_RETRIES):
+             check_error=True, timeout=None, retries=DEFAULT_RETRIES):
     """Get an iterable over the logcat output.
 
     Args:
@@ -619,6 +640,7 @@ class AdbWrapper(object):
       iter_timeout: If set and neither clear nor dump is set, the number of
         seconds to wait between iterations. If no line is found before the
         given number of seconds elapses, the iterable will yield None.
+      check_error: Whether to check the exit status of the logcat command.
       timeout: (optional) If set, timeout per try in seconds. If clear or dump
         is set, defaults to DEFAULT_TIMEOUT.
       retries: (optional) If clear or dump is set, the number of retries to
@@ -644,10 +666,13 @@ class AdbWrapper(object):
       cmd.extend(filter_specs)
 
     if use_iter:
-      return self._IterRunDeviceAdbCmd(cmd, iter_timeout, timeout)
+      return self._IterRunDeviceAdbCmd(
+          cmd, iter_timeout, timeout, check_error=check_error)
     else:
       timeout = timeout if timeout is not None else DEFAULT_TIMEOUT
-      return self._RunDeviceAdbCmd(cmd, timeout, retries).splitlines()
+      output = self._RunDeviceAdbCmd(
+          cmd, timeout, retries, check_error=check_error)
+      return output.splitlines()
 
   def Forward(self, local, remote, allow_rebind=False,
               timeout=DEFAULT_TIMEOUT, retries=DEFAULT_RETRIES):

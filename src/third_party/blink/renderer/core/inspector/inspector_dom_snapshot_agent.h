@@ -61,6 +61,12 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   void CharacterDataModified(CharacterData*);
   void DidInsertDOMNode(Node*);
 
+  // Helpers for traversal.
+  static Node* FirstChild(const Node& node,
+                          bool include_user_agent_shadow_tree);
+  static Node* NextSibling(const Node& node,
+                           bool include_user_agent_shadow_tree);
+
  private:
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
   // For idempotence, call enable().
@@ -82,12 +88,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   int VisitNode2(Node*, int parent_index);
 
   // Helpers for VisitContainerChildren.
-  static Node* FirstChild(const Node& node,
-                          bool include_user_agent_shadow_tree);
   static bool HasChildren(const Node& node,
                           bool include_user_agent_shadow_tree);
-  static Node* NextSibling(const Node& node,
-                           bool include_user_agent_shadow_tree);
 
   std::unique_ptr<protocol::Array<int>> VisitContainerChildren(
       Node* container,

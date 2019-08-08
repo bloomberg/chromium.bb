@@ -160,8 +160,9 @@ public class ChildProcessLauncherHelperTest {
         Assert.assertEquals(
                 1, ChildProcessLauncherTestUtils.getConnectionServiceNumber(retryConnection));
 
-        ChildConnectionAllocator connectionAllocator =
-                launcher.getChildConnectionAllocatorForTesting();
+        ChildConnectionAllocator.FixedSizeAllocatorImpl connectionAllocator =
+                (ChildConnectionAllocator.FixedSizeAllocatorImpl)
+                        launcher.getChildConnectionAllocatorForTesting();
 
         // Check that only one connection is created.
         for (int i = 0; i < connectionAllocator.getNumberOfServices(); ++i) {

@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_BASE_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_BASE_TEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 
 namespace content {
@@ -32,14 +34,9 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // MixinBasedInProcessBrowserTest::
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
-  void TearDownOnMainThread() override;
-
-  // If this returns true (default), the |ash::switches::kShowWebUiLogin|
-  // command-line switch is passed to force the Web Ui Login.
-  // If this returns false, the switch is omitted so the views-based login may
-  // be used.
-  virtual bool ShouldForceWebUiLogin();
 
   // If this returns true (default), then SetUpOnMainThread would wait for
   // Oobe UI to start up before initializing all mix-ins.
@@ -65,7 +62,9 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   std::unique_ptr<content::WindowedNotificationObserver>
       login_screen_load_observer_;
   std::string gaia_frame_parent_ = "signin-frame";
-  std::string authenticator_id_ = "$('gaia-signin').gaiaAuthHost_";
+  std::string authenticator_id_ = "$('gaia-signin').authenticator_";
+  EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
+                                                     embedded_test_server()};
 
   DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };

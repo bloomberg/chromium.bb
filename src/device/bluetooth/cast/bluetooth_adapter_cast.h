@@ -90,10 +90,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
   bool SetPoweredImpl(bool powered) override;
-  void AddDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StartScanWithFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
+  void UpdateFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -167,13 +169,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
       std::vector<chromecast::bluetooth::LeScanResult> results);
 
   struct DiscoveryParams {
-    DiscoveryParams(device::BluetoothDiscoveryFilter* filter,
+    DiscoveryParams(std::unique_ptr<device::BluetoothDiscoveryFilter> filter,
                     base::Closure success_callback,
                     DiscoverySessionErrorCallback error_callback);
     DiscoveryParams(DiscoveryParams&& params) noexcept;
     DiscoveryParams& operator=(DiscoveryParams&& params);
     ~DiscoveryParams();
-    device::BluetoothDiscoveryFilter* filter = nullptr;
+    std::unique_ptr<device::BluetoothDiscoveryFilter> filter;
     base::Closure success_callback;
     DiscoverySessionErrorCallback error_callback;
   };

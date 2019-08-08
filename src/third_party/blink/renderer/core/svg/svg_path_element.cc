@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGPathElement::SVGPathElement(Document& document)
+SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(svg_names::kPathTag, document),
       path_(MakeGarbageCollected<SVGAnimatedPath>(this,
                                                   svg_names::kDAttr,
@@ -41,8 +41,6 @@ void SVGPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(path_);
   SVGGeometryElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGPathElement)
 
 Path SVGPathElement::AttributePath() const {
   return path_->CurrentValue()->GetStylePath()->GetPath();

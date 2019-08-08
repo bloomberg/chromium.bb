@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
-#include "SkPixelRef.h"  // FIXME: qualify this skia header file.
-
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,6 +56,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -108,7 +107,7 @@ class ImageBitmapTest : public testing::Test {
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
   auto* image_element =
-      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -179,7 +178,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   auto* image =
-      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -318,7 +317,7 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
   auto* image_element =
-      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
 
   SkPaint p;
   p.setColor(SK_ColorRED);

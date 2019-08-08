@@ -10,9 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
@@ -49,7 +47,6 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_features.h"
@@ -68,6 +65,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
+#include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
@@ -537,24 +535,6 @@ class TestVolume {
   std::string name_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVolume);
-};
-
-class OfflineGetDriveConnectionState : public UIThreadExtensionFunction {
- public:
-  OfflineGetDriveConnectionState() = default;
-
-  ResponseAction Run() override {
-    extensions::api::file_manager_private::DriveConnectionState result;
-    result.type = "offline";
-    return RespondNow(
-        ArgumentList(extensions::api::file_manager_private::
-                         GetDriveConnectionState::Results::Create(result)));
-  }
-
- private:
-  ~OfflineGetDriveConnectionState() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflineGetDriveConnectionState);
 };
 
 base::Lock& GetLockForBlockingDefaultFileTaskRunner() {
@@ -1373,19 +1353,23 @@ class DocumentsProviderTestVolume : public TestVolume {
       const std::string& name,
       arc::FakeFileSystemInstance* const file_system_instance,
       const std::string& authority,
-      const std::string& root_document_id)
+      const std::string& root_document_id,
+      bool read_only)
       : TestVolume(name),
         file_system_instance_(file_system_instance),
         authority_(authority),
-        root_document_id_(root_document_id) {}
+        root_document_id_(root_document_id),
+        read_only_(read_only) {}
   DocumentsProviderTestVolume(
       arc::FakeFileSystemInstance* const file_system_instance,
       const std::string& authority,
-      const std::string& root_document_id)
+      const std::string& root_document_id,
+      bool read_only)
       : DocumentsProviderTestVolume("DocumentsProvider",
                                     file_system_instance,
                                     authority,
-                                    root_document_id) {}
+                                    root_document_id,
+                                    read_only) {}
   ~DocumentsProviderTestVolume() override = default;
 
   virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
@@ -1393,7 +1377,8 @@ class DocumentsProviderTestVolume : public TestVolume {
     arc::FakeFileSystemInstance::Document document(
         authority_, entry.name_text, root_document_id_, entry.name_text,
         GetMimeType(entry), GetFileSize(entry),
-        entry.last_modified_time.ToJavaTime());
+        entry.last_modified_time.ToJavaTime(), entry.capabilities.can_delete,
+        entry.capabilities.can_rename, entry.capabilities.can_add_children);
     file_system_instance_->AddDocument(document);
   }
 
@@ -1403,14 +1388,15 @@ class DocumentsProviderTestVolume : public TestVolume {
     // Tell VolumeManager that a new DocumentsProvider volume is added.
     VolumeManager::Get(profile)->OnDocumentsProviderRootAdded(
         authority_, root_document_id_, root_document_id_, name(), "", GURL(),
-        true, std::vector<std::string>());
+        read_only_, std::vector<std::string>());
     return true;
   }
 
  protected:
   arc::FakeFileSystemInstance* const file_system_instance_;
-  std::string authority_;
-  std::string root_document_id_;
+  const std::string authority_;
+  const std::string root_document_id_;
+  const bool read_only_;
 
   // Register a root document of this volume.
   void RegisterRoot() {
@@ -1451,7 +1437,8 @@ class MediaViewTestVolume : public DocumentsProviderTestVolume {
       : DocumentsProviderTestVolume(root_document_id,
                                     file_system_instance,
                                     authority,
-                                    root_document_id) {}
+                                    root_document_id,
+                                    true /* read_only */) {}
 
   ~MediaViewTestVolume() override = default;
 
@@ -1508,6 +1495,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     command_line->AppendSwitch(switches::kIncognito);
   }
 
+  if (IsOfflineTest()) {
+    command_line->AppendSwitchASCII(chromeos::switches::kShillStub, "clear=1");
+  }
+
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
 
@@ -1534,6 +1525,8 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (IsArcTest()) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
+  // Make sure to run the ARC storage UI toast tests.
+  enabled_features.emplace_back(arc::kUsbStorageUIFeature);
 
   if (IsDocumentsProviderTest()) {
     enabled_features.emplace_back(
@@ -1640,7 +1633,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         documents_provider_volume_ =
             std::make_unique<DocumentsProviderTestVolume>(
                 arc_file_system_instance_.get(), "com.example.documents",
-                "root");
+                "root", false /* read_only */);
         if (!DoesTestStartWithNoVolumesMounted()) {
           documents_provider_volume_->Mount(profile());
         }
@@ -1665,12 +1658,6 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
-
-  if (IsOfflineTest()) {
-    ExtensionFunctionRegistry::GetInstance().OverrideFunctionForTesting(
-        "fileManagerPrivate.getDriveConnectionState",
-        &NewExtensionFunction<OfflineGetDriveConnectionState>);
-  }
 
   content::NetworkConnectionChangeSimulator network_change_simulator;
   network_change_simulator.SetConnectionType(
@@ -1741,6 +1728,7 @@ void FileManagerBrowserTestBase::StartTest() {
   static const base::FilePath test_extension_dir =
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
   LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
+  CreateArcServices();
   RunTestMessageLoop();
 }
 
@@ -2198,7 +2186,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "enableTabletMode") {
-    ::test::SetAndWaitForTabletMode(true);
+    ash::ShellTestApi().EnableTabletModeWindowManager(true);
     *output = "tabletModeEnabled";
     return;
   }
@@ -2305,13 +2293,15 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
 
 void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
   CHECK(IsTabletModeTest());
+  ash::ShellTestApi().EnableVirtualKeyboard();
+}
 
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  waiter.EnableVirtualKeyboard();
+void FileManagerBrowserTestBase::CreateArcServices() {
+  // Instantiate testing version of the services.
+
+  // chrome.fileManagerPrivate relies on ArcVolumeMounterBridge, and our tests
+  // call the chrome.fileManagerPrivate interface.
+  arc::ArcVolumeMounterBridge::GetForBrowserContextForTesting(profile());
 }
 
 }  // namespace file_manager

@@ -15,7 +15,7 @@
 namespace {
 
 #if DCHECK_IS_ON()
-void ValidatePreviewData(const scoped_refptr<base::RefCountedMemory>& data) {
+void ValidatePreviewData(scoped_refptr<base::RefCountedMemory> data) {
   // PDFs are generally much bigger. This is just a sanity check on size.
   DCHECK(data);
   DCHECK_GE(data->size(), 50U);

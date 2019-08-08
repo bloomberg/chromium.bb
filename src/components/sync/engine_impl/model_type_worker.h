@@ -17,7 +17,6 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/sync/base/cancelation_observer.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/engine/commit_queue.h"
@@ -27,6 +26,7 @@
 #include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/nudge_handler.h"
 #include "components/sync/engine_impl/update_handler.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 

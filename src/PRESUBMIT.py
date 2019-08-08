@@ -192,6 +192,14 @@ _BANNED_OBJC_FUNCTIONS = (
       ),
       False,
     ),
+    (
+      'freeWhenDone:NO',
+      (
+        'The use of "freeWhenDone:NO" with the NoCopy creation of ',
+        'Foundation types is prohibited.',
+      ),
+      True,
+    ),
 )
 
 # Format: Sequence of tuples containing:
@@ -220,6 +228,250 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
     ),
 )
 
+# Directories that contain deprecated Bind() or Callback types.
+# Find sub-directories from a given directory by running:
+# for i in `find . -maxdepth 1 -type d`; do
+#   echo "-- $i"
+#   (cd $i; git grep -P 'base::(Bind\(|(Callback<|Closure))'|wc -l)
+# done
+#
+# TODO(crbug.com/714018): Remove (or narrow the scope of) paths from this list
+# when they have been converted to modern callback types (OnceCallback,
+# RepeatingCallback, BindOnce, BindRepeating) in order to enable presubmit
+# checks for them and prevent regressions.
+_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
+  '^android_webview/browser/',
+  '^apps/',
+  '^ash/',
+  '^base/',
+  '^base/callback.h',  # Intentional.
+  '^chrome/app/',
+  '^chrome/browser/',
+  '^chrome/chrome_elf/',
+  '^chrome/chrome_watcher/',
+  '^chrome/common/',
+  '^chrome/installer/',
+  '^chrome/notification_helper/',
+  '^chrome/renderer/',
+  '^chrome/services/',
+  '^chrome/test/',
+  '^chrome/tools/',
+  '^chrome/utility/',
+  '^chromecast/app/',
+  '^chromecast/browser/',
+  '^chromecast/crash/',
+  '^chromecast/media/',
+  '^chromecast/metrics/',
+  '^chromecast/net/',
+  '^chromeos/attestation/',
+  '^chromeos/audio/',
+  '^chromeos/components/',
+  '^chromeos/cryptohome/',
+  '^chromeos/dbus/',
+  '^chromeos/geolocation/',
+  '^chromeos/login/',
+  '^chromeos/network/',
+  '^chromeos/printing/',
+  '^chromeos/process_proxy/',
+  '^chromeos/services/',
+  '^chromeos/settings/',
+  '^chromeos/timezone/',
+  '^chromeos/tpm/',
+  '^components/arc/',
+  '^components/assist_ranker/',
+  '^components/autofill/',
+  '^components/autofill_assistant/',
+  '^components/bookmarks/',
+  '^components/browser_sync/',
+  '^components/browser_watcher/',
+  '^components/browsing_data/',
+  '^components/cast_channel/',
+  '^components/certificate_transparency/',
+  '^components/chromeos_camera/',
+  '^components/component_updater/',
+  '^components/content_settings/',
+  '^components/crash/',
+  '^components/cronet/',
+  '^components/data_reduction_proxy/',
+  '^components/discardable_memory/',
+  '^components/dom_distiller/',
+  '^components/domain_reliability/',
+  '^components/download/',
+  '^components/drive/',
+  '^components/exo/',
+  '^components/favicon/',
+  '^components/feature_engagement/',
+  '^components/feedback/',
+  '^components/flags_ui/',
+  '^components/gcm_driver/',
+  '^components/google/',
+  '^components/guest_view/',
+  '^components/heap_profiling/',
+  '^components/history/',
+  '^components/image_fetcher/',
+  '^components/invalidation/',
+  '^components/keyed_service/',
+  '^components/login/',
+  '^components/metrics/',
+  '^components/metrics_services_manager/',
+  '^components/nacl/',
+  '^components/navigation_interception/',
+  '^components/net_log/',
+  '^components/network_time/',
+  '^components/ntp_snippets/',
+  '^components/ntp_tiles/',
+  '^components/offline_items_collection/',
+  '^components/offline_pages/',
+  '^components/omnibox/',
+  '^components/ownership/',
+  '^components/pairing/',
+  '^components/password_manager/',
+  '^components/payments/',
+  '^components/plugins/',
+  '^components/policy/',
+  '^components/pref_registry/',
+  '^components/prefs/',
+  '^components/printing/',
+  '^components/proxy_config/',
+  '^components/quirks/',
+  '^components/rappor/',
+  '^components/remote_cocoa/',
+  '^components/renderer_context_menu/',
+  '^components/rlz/',
+  '^components/safe_browsing/',
+  '^components/search_engines/',
+  '^components/search_provider_logos/',
+  '^components/security_interstitials/',
+  '^components/security_state/',
+  '^components/services/',
+  '^components/sessions/',
+  '^components/signin/',
+  '^components/ssl_errors/',
+  '^components/storage_monitor/',
+  '^components/subresource_filter/',
+  '^components/suggestions/',
+  '^components/supervised_user_error_page/',
+  '^components/sync/',
+  '^components/sync_bookmarks/',
+  '^components/sync_device_info/',
+  '^components/sync_preferences/',
+  '^components/sync_sessions/',
+  '^components/test/',
+  '^components/tracing/',
+  '^components/translate/',
+  '^components/ukm/',
+  '^components/update_client/',
+  '^components/upload_list/',
+  '^components/variations/',
+  '^components/visitedlink/',
+  '^components/web_cache/',
+  '^components/web_resource/',
+  '^components/web_restrictions/',
+  '^components/webcrypto/',
+  '^components/webdata/',
+  '^components/webdata_services/',
+  '^components/wifi/',
+  '^components/zoom/',
+  '^content/app/',
+  '^content/browser/',
+  '^content/child/',
+  '^content/common/',
+  '^content/public/',
+  '^content/renderer/android/',
+  '^content/renderer/fetchers/',
+  '^content/renderer/image_downloader/',
+  '^content/renderer/input/',
+  '^content/renderer/java/',
+  '^content/renderer/media/',
+  '^content/renderer/media_capture_from_element/',
+  '^content/renderer/media_recorder/',
+  '^content/renderer/p2p/',
+  '^content/renderer/pepper/',
+  '^content/renderer/service_worker/',
+  '^content/renderer/worker/',
+  '^content/test/',
+  '^content/utility/',
+  '^dbus/',
+  '^device/base/',
+  '^device/bluetooth/',
+  '^device/fido/',
+  '^device/gamepad/',
+  '^device/udev_linux/',
+  '^device/vr/',
+  '^extensions/',
+  '^gin/',
+  '^google_apis/dive/',
+  '^google_apis/gaia/',
+  '^google_apis/gcm/',
+  '^headless/',
+  '^ios/chrome/',
+  '^ios/components/',
+  '^ios/net/',
+  '^ios/web/',
+  '^ios/web_view/',
+  '^ipc/',
+  '^media/audio/',
+  '^media/base/',
+  '^media/capture/',
+  '^media/cast/',
+  '^media/cdm/',
+  '^media/device_monitors/',
+  '^media/ffmpeg/',
+  '^media/filters/',
+  '^media/formats/',
+  '^media/gpu/',
+  '^media/mojo/',
+  '^media/muxers/',
+  '^media/remoting/',
+  '^media/renderers/',
+  '^media/test/',
+  '^mojo/core/',
+  '^mojo/public/',
+  '^net/',
+  '^ppapi/proxy/',
+  '^ppapi/shared_impl/',
+  '^ppapi/tests/',
+  '^ppapi/thunk/',
+  '^remoting/base/',
+  '^remoting/client/',
+  '^remoting/codec/',
+  '^remoting/host/',
+  '^remoting/internal/',
+  '^remoting/ios/',
+  '^remoting/protocol/',
+  '^remoting/signaling/',
+  '^remoting/test/',
+  '^sandbox/linux/',
+  '^sandbox/win/',
+  '^services/',
+  '^storage/browser/',
+  '^testing/gmock_mutant.h',
+  '^testing/libfuzzer/',
+  '^third_party/blink/',
+  '^third_party/crashpad/crashpad/test/gtest_main.cc',
+  '^third_party/leveldatabase/leveldb_chrome.cc',
+  '^third_party/boringssl/gtest_main_chromium.cc',
+  '^third_party/cacheinvalidation/overrides/' +
+     'google/cacheinvalidation/deps/callback.h',
+  '^third_party/libaddressinput/chromium/chrome_address_validator.cc',
+  '^third_party/zlib/google/',
+  '^tools/android/',
+  '^tools/clang/base_bind_rewriters/',  # Intentional.
+  '^tools/gdb/gdb_chrome.py',  # Intentional.
+  '^ui/accelerated_widget_mac/',
+  '^ui/android/',
+  '^ui/aura/',
+  '^ui/base/',
+  '^ui/compositor/',
+  '^ui/display/',
+  '^ui/events/',
+  '^ui/gfx/',
+  '^ui/message_center/',
+  '^ui/ozone/',
+  '^ui/snapshot/',
+  '^ui/views_content_client/',
+  '^ui/wm/',
+))
 
 # Format: Sequence of tuples containing:
 # * String pattern or, if starting with a slash, a regular expression.
@@ -557,29 +809,29 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'/\bbase::Bind\(',
       (
-          'Please consider using base::Bind{Once,Repeating} instead',
+          'Please use base::Bind{Once,Repeating} instead',
           'of base::Bind. (crbug.com/714018)',
       ),
       False,
-      (),
+      _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
     ),
     (
-      r'/\bbase::Callback<',
+      r'/\bbase::Callback[<:]',
       (
-          'Please consider using base::{Once,Repeating}Callback instead',
+          'Please use base::{Once,Repeating}Callback instead',
           'of base::Callback. (crbug.com/714018)',
       ),
       False,
-      (),
+      _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
     ),
     (
       r'/\bbase::Closure\b',
       (
-          'Please consider using base::{Once,Repeating}Closure instead',
+          'Please use base::{Once,Repeating}Closure instead',
           'of base::Closure. (crbug.com/714018)',
       ),
       False,
-      (),
+      _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
     ),
     (
       r'/base::SharedMemory(|Handle)',
@@ -591,7 +843,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'RunMessageLoop',
+      r'/\bRunMessageLoop\b',
       (
           'RunMessageLoop is deprecated, use RunLoop instead.',
       ),
@@ -718,6 +970,61 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      'SHFileOperation',
+      (
+        'SHFileOperation was deprecated in Windows Vista, and there are less ',
+        'complex functions to achieve the same goals. Use IFileOperation for ',
+        'any esoteric actions instead.'
+      ),
+      True,
+      (),
+    ),
+    (
+      'StringFromGUID2',
+      (
+        'StringFromGUID2 introduces an unnecessary dependency on ole32.dll.',
+        'Use base::win::String16FromGUID instead.'
+      ),
+      True,
+      (
+        r'/base/win/win_util_unittest.cc'
+      ),
+    ),
+    (
+      'StringFromCLSID',
+      (
+        'StringFromCLSID introduces an unnecessary dependency on ole32.dll.',
+        'Use base::win::String16FromGUID instead.'
+      ),
+      True,
+      (
+        r'/base/win/win_util_unittest.cc'
+      ),
+    ),
+    (
+      'kCFAllocatorNull',
+      (
+        'The use of kCFAllocatorNull with the NoCopy creation of ',
+        'CoreFoundation types is prohibited.',
+      ),
+      True,
+      (),
+    ),
+    (
+      'mojo::ConvertTo',
+      (
+        'mojo::ConvertTo and TypeConverter are deprecated. Please consider',
+        'StructTraits / UnionTraits / EnumTraits / ArrayTraits / MapTraits /',
+        'StringTraits if you would like to convert between custom types and',
+        'the wire format of mojom types.'
+      ),
+      False,
+      (
+        r'^third_party/blink/.*\.(cc|h)$',
+        r'^content/renderer/.*\.(cc|h)$',
+      ),
+    ),
 )
 
 
@@ -793,17 +1100,16 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/create_apk_operations_script.pydeps',
     'build/android/gyp/create_java_binary_script.pydeps',
     'build/android/gyp/create_size_info_files.pydeps',
-    'build/android/gyp/create_stack_script.pydeps',
     'build/android/gyp/create_tool_wrapper.pydeps',
     'build/android/gyp/desugar.pydeps',
     'build/android/gyp/dexsplitter.pydeps',
     'build/android/gyp/dex.pydeps',
     'build/android/gyp/dist_aar.pydeps',
-    'build/android/gyp/emma_instr.pydeps',
     'build/android/gyp/filter_zip.pydeps',
     'build/android/gyp/gcc_preprocess.pydeps',
     'build/android/gyp/generate_linker_version_script.pydeps',
     'build/android/gyp/ijar.pydeps',
+    'build/android/gyp/jacoco_instr.pydeps',
     'build/android/gyp/java_cpp_enum.pydeps',
     'build/android/gyp/java_cpp_strings.pydeps',
     'build/android/gyp/javac.pydeps',
@@ -822,6 +1128,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/test_runner.pydeps',
     'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/protoc_java.pydeps',
+    'chrome/android/features/create_stripped_java_factory.pydeps',
     'net/tools/testserver/testserver.pydeps',
     'third_party/android_platform/development/scripts/stack.pydeps',
 ]
@@ -830,6 +1137,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 _GENERIC_PYDEPS_FILES = [
     'chrome/test/chromedriver/test/run_py_tests.pydeps',
     'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
+    'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
 ]
 
@@ -852,6 +1160,33 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
           for s in ('chromium-internal-autoroll',))
 
+
+def _IsCPlusPlusFile(input_api, file_path):
+  """Returns True if this file contains C++-like code (and not Python,
+  Go, Java, MarkDown, ...)"""
+
+  ext = input_api.os_path.splitext(file_path)[1]
+  # This list is compatible with CppChecker.IsCppFile but we should
+  # consider adding ".c" to it. If we do that we can use this function
+  # at more places in the code.
+  return ext in (
+      '.h',
+      '.cc',
+      '.cpp',
+      '.m',
+      '.mm',
+  )
+
+def _IsCPlusPlusHeaderFile(input_api, file_path):
+  return input_api.os_path.splitext(file_path)[1] == ".h"
+
+
+def _IsJavaFile(input_api, file_path):
+  return input_api.os_path.splitext(file_path)[1] == ".java"
+
+
+def _IsProtoFile(input_api, file_path):
+  return input_api.os_path.splitext(file_path)[1] == ".proto"
 
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   """Attempts to prevent use of functions intended only for testing in
@@ -1069,16 +1404,25 @@ def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
   return errors
 
 
-def _FindHistogramNameInLine(histogram_name, line):
-  """Tries to find a histogram name or prefix in a line."""
-  if not "affected-histogram" in line:
-    return histogram_name in line
+def _FindHistogramNameInChunk(histogram_name, chunk):
+  """Tries to find a histogram name or prefix in a line.
+
+  Returns the existence of the histogram name, or None if it needs more chunk
+  to determine."""
   # A histogram_suffixes tag type has an affected-histogram name as a prefix of
   # the histogram_name.
-  if not '"' in line:
-    return False
-  histogram_prefix = line.split('\"')[1]
-  return histogram_prefix in histogram_name
+  if '<affected-histogram' in chunk:
+    # If the tag is not completed, needs more chunk to get the name.
+    if not '>' in chunk:
+      return None
+    if not 'name="' in chunk:
+      return False
+    # Retrieve the first portion of the chunk wrapped by double-quotations. We
+    # expect the only attribute is the name.
+    histogram_prefix = chunk.split('"')[1]
+    return histogram_prefix in histogram_name
+  # Typically the whole histogram name should in the line.
+  return histogram_name in chunk
 
 
 def _CheckUmaHistogramChanges(input_api, output_api):
@@ -1127,8 +1471,13 @@ def _CheckUmaHistogramChanges(input_api, output_api):
   unmatched_histograms = []
   for histogram_info in touched_histograms:
     histogram_name_found = False
+    chunk = ''
     for line_num, line in histograms_xml_modifications:
-      histogram_name_found = _FindHistogramNameInLine(histogram_info[0], line)
+      chunk += line
+      histogram_name_found = _FindHistogramNameInChunk(histogram_info[0], chunk)
+      if histogram_name_found is None:
+        continue
+      chunk = ''
       if histogram_name_found:
         break
     if not histogram_name_found:
@@ -1141,8 +1490,14 @@ def _CheckUmaHistogramChanges(input_api, output_api):
       for histogram_name, f, line_num in unmatched_histograms:
         histograms_xml.seek(0)
         histogram_name_found = False
+        chunk = ''
         for line in histograms_xml:
-          histogram_name_found = _FindHistogramNameInLine(histogram_name, line)
+          chunk += line
+          histogram_name_found = _FindHistogramNameInChunk(histogram_name,
+                                                           chunk)
+          if histogram_name_found is None:
+            continue
+          chunk = ''
           if histogram_name_found:
             break
         if not histogram_name_found:
@@ -1222,8 +1577,12 @@ def _CheckValidHostsInDEPS(input_api, output_api):
     return []
   # Outsource work to gclient verify
   try:
-    input_api.subprocess.check_output(['gclient', 'verify'],
-                                      stderr=input_api.subprocess.STDOUT)
+    gclient_path = input_api.os_path.join(
+        input_api.PresubmitLocalPath(),
+        'third_party', 'depot_tools', 'gclient.py')
+    input_api.subprocess.check_output(
+        [input_api.python_executable, gclient_path, 'verify'],
+        stderr=input_api.subprocess.STDOUT)
     return []
   except input_api.subprocess.CalledProcessError as error:
     return [output_api.PresubmitError(
@@ -1359,9 +1718,6 @@ def _CheckUnwantedDependencies(input_api, output_api):
     sys.path = sys.path + [input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
     import checkdeps
-    from cpp_checker import CppChecker
-    from java_checker import JavaChecker
-    from proto_checker import ProtoChecker
     from rules import Rule
   finally:
     # Restore sys.path to what it was before.
@@ -1371,13 +1727,13 @@ def _CheckUnwantedDependencies(input_api, output_api):
   added_imports = []
   added_java_imports = []
   for f in input_api.AffectedFiles():
-    if CppChecker.IsCppFile(f.LocalPath()):
+    if _IsCPlusPlusFile(input_api, f.LocalPath()):
       changed_lines = [line for _, line in f.ChangedContents()]
       added_includes.append([f.AbsoluteLocalPath(), changed_lines])
-    elif ProtoChecker.IsProtoFile(f.LocalPath()):
+    elif _IsProtoFile(input_api, f.LocalPath()):
       changed_lines = [line for _, line in f.ChangedContents()]
       added_imports.append([f.AbsoluteLocalPath(), changed_lines])
-    elif JavaChecker.IsJavaFile(f.LocalPath()):
+    elif _IsJavaFile(input_api, f.LocalPath()):
       changed_lines = [line for _, line in f.ChangedContents()]
       added_java_imports.append([f.AbsoluteLocalPath(), changed_lines])
 
@@ -1762,11 +2118,11 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
                      r"startup_browser_creator\.cc$",
                  r"^chrome[\\/]browser[\\/]browser_switcher[\\/]bho[\\/].*",
-                 r"^chrome[\\/]installer[\\/]setup[\\/].*",
-                 r"^chrome[\\/]chrome_cleaner[\\/].*",
-                 r"chrome[\\/]browser[\\/]diagnostics[\\/]" +
+                 r"^chrome[\\/]browser[\\/]diagnostics[\\/]" +
                      r"diagnostics_writer\.cc$",
-                 r"^chrome_elf[\\/]dll_hash[\\/]dll_hash_main\.cc$",
+                 r"^chrome[\\/]chrome_cleaner[\\/].*",
+                 r"^chrome[\\/]chrome_elf[\\/]dll_hash[\\/]dll_hash_main\.cc$",
+                 r"^chrome[\\/]installer[\\/]setup[\\/].*",
                  r"^chromecast[\\/]",
                  r"^cloud_print[\\/]",
                  r"^components[\\/]browser_watcher[\\/]"
@@ -2917,17 +3273,6 @@ def _CheckNoDeprecatedJs(input_api, output_api):
 
 
 def _CheckForRelativeIncludes(input_api, output_api):
-  # Need to set the sys.path so PRESUBMIT_test.py runs properly
-  import sys
-  original_sys_path = sys.path
-  try:
-    sys.path = sys.path + [input_api.os_path.join(
-        input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
-    from cpp_checker import CppChecker
-  finally:
-    # Restore sys.path to what it was before.
-    sys.path = original_sys_path
-
   bad_files = {}
   for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().startswith('third_party') and
@@ -2935,7 +3280,7 @@ def _CheckForRelativeIncludes(input_api, output_api):
       not f.LocalPath().startswith('third_party\\blink')):
       continue
 
-    if not CppChecker.IsCppFile(f.LocalPath()):
+    if not _IsCPlusPlusFile(input_api, f.LocalPath()):
       continue
 
     relative_includes = [line for _, line in f.ChangedContents()
@@ -2961,6 +3306,41 @@ def _CheckForRelativeIncludes(input_api, output_api):
         'from code that\'s not correctly specified as a dependency in the\n'
         'relevant BUILD.gn file(s).',
         error_descriptions))
+
+  return results
+
+
+def _CheckForCcIncludes(input_api, output_api):
+  """Check that nobody tries to include a cc file. It's a relatively
+  common error which results in duplicate symbols in object
+  files. This may not always break the build until someone later gets
+  very confusing linking errors."""
+  results = []
+  for f in input_api.AffectedFiles(include_deletes=False):
+    # We let third_party code do whatever it wants
+    if (f.LocalPath().startswith('third_party') and
+      not f.LocalPath().startswith('third_party/blink') and
+      not f.LocalPath().startswith('third_party\\blink')):
+      continue
+
+    if not _IsCPlusPlusFile(input_api, f.LocalPath()):
+      continue
+
+    for _, line in f.ChangedContents():
+      if line.startswith('#include "'):
+        included_file = line.split('"')[1]
+        if _IsCPlusPlusFile(input_api, included_file):
+          # The most common naming for external files with C++ code,
+          # apart from standard headers, is to call them foo.inc, but
+          # Chromium sometimes uses foo-inc.cc so allow that as well.
+          if not included_file.endswith(('.h', '-inc.cc')):
+            results.append(output_api.PresubmitError(
+              'Only header files or .inc files should be included in other\n'
+              'C++ files. Compiling the contents of a cc file more than once\n'
+              'will cause duplicate information in the build which may later\n'
+              'result in strange link_errors.\n' +
+              f.LocalPath() + ':\n    ' +
+              line))
 
   return results
 
@@ -3223,6 +3603,37 @@ def _CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
     return []
 
 
+def _CheckForTooLargeFiles(input_api, output_api):
+  """Avoid large files, especially binary files, in the repository since
+  git doesn't scale well for those. They will be in everyone's repo
+  clones forever, forever making Chromium slower to clone and work
+  with."""
+
+  # Uploading files to cloud storage is not trivial so we don't want
+  # to set the limit too low, but the upper limit for "normal" large
+  # files seems to be 1-2 MB, with a handful around 5-8 MB, so
+  # anything over 20 MB is exceptional.
+  TOO_LARGE_FILE_SIZE_LIMIT = 20 * 1024 * 1024  # 10 MB
+
+  too_large_files = []
+  for f in input_api.AffectedFiles():
+    # Check both added and modified files (but not deleted files).
+    if f.Action() in ('A', 'M'):
+      size = input_api.os_path.getsize(f.AbsoluteLocalPath())
+      if size > TOO_LARGE_FILE_SIZE_LIMIT:
+        too_large_files.append("%s: %d bytes" % (f.LocalPath(), size))
+
+  if too_large_files:
+    message = (
+      'Do not commit large files to git since git scales badly for those.\n' +
+      'Instead put the large files in cloud storage and use DEPS to\n' +
+      'fetch them.\n' + '\n'.join(too_large_files)
+    )
+    return [output_api.PresubmitError(
+        'Too large files found in commit', long_text=message + '\n')]
+  else:
+    return []
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups upload checks that target android code."""
   results = []
@@ -3303,12 +3714,14 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckIpcOwners(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))
+  results.extend(_CheckForCcIncludes(input_api, output_api))
   results.extend(_CheckWATCHLISTS(input_api, output_api))
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
   results.extend(_CheckTranslationScreenshots(input_api, output_api))
   results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
   results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
+  results.extend(_CheckForTooLargeFiles(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
@@ -3466,8 +3879,9 @@ def _CheckForInvalidIfDefinedMacrosInFile(input_api, f):
 def _CheckForInvalidIfDefinedMacros(input_api, output_api):
   """Check all affected files for invalid "if defined" macros."""
   bad_macros = []
+  skipped_paths = ['third_party/sqlite/', 'third_party/abseil-cpp/']
   for f in input_api.AffectedFiles():
-    if f.LocalPath().startswith('third_party/sqlite/'):
+    if any([f.LocalPath().startswith(path) for path in skipped_paths]):
       continue
     if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm')):
       bad_macros.extend(_CheckForInvalidIfDefinedMacrosInFile(input_api, f))

@@ -10,7 +10,8 @@
 #include "components/services/filesystem/file_system_impl.h"
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/filesystem/public/interfaces/file_system.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
@@ -18,7 +19,8 @@ namespace filesystem {
 
 class FileSystemApp : public service_manager::Service {
  public:
-  explicit FileSystemApp(service_manager::mojom::ServiceRequest request);
+  explicit FileSystemApp(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~FileSystemApp() override;
 
  private:
@@ -26,19 +28,13 @@ class FileSystemApp : public service_manager::Service {
   static base::FilePath GetUserDataDir();
 
   // |service_manager::Service| override:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
-
-  void Create(mojom::FileSystemRequest request,
-              const service_manager::BindSourceInfo& source_info);
+  void OnConnect(const service_manager::ConnectSourceInfo& source_info,
+                 const std::string& interface_name,
+                 mojo::ScopedMessagePipeHandle receiver_pipe) override;
 
   service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_;
-
   scoped_refptr<LockTable> lock_table_;
+  mojo::UniqueReceiverSet<mojom::FileSystem> file_systems_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemApp);
 };

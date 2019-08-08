@@ -125,6 +125,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
     is_client_audio_element_ = is_client_audio_element;
   }
 
+  bool cancel_on_defer_for_testing() const { return cancel_on_defer_; }
+
  protected:
   void OnRedirect(const scoped_refptr<UrlData>& destination);
 

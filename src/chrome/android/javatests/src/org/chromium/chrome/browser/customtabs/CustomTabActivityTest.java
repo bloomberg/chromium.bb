@@ -86,12 +86,13 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
-import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
@@ -239,12 +240,15 @@ public class CustomTabActivityTest {
         // first, otherwise the UI is manipulated on a non-UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (getActivity() == null) return;
-            AppMenuHandler handler = getActivity().getAppMenuHandler();
+            AppMenuCoordinator coordinator = getActivity()
+                                                     .getRootUiCoordinatorForTesting()
+                                                     .getAppMenuCoordinatorForTesting();
+            // CCT doesn't always have a menu (ex. in the media viewer).
+            if (coordinator == null) return;
+            AppMenuHandler handler = coordinator.getAppMenuHandler();
             if (handler != null) handler.hideAppMenu();
         });
         mWebServer.shutdown();
-
-        ModuleFactoryOverrides.clearOverrides();
     }
 
     private CustomTabActivity getActivity() {
@@ -591,10 +595,11 @@ public class CustomTabActivityTest {
         Assert.assertNotNull(menu.findItem(R.id.find_in_page_id));
         Assert.assertNotNull(menu.findItem(R.id.add_to_homescreen_id));
         Assert.assertNotNull(menu.findItem(R.id.request_desktop_site_row_menu_id));
+        Assert.assertNotNull(menu.findItem(R.id.translate_id));
     }
 
     /**
-     * Test the entries in app menu for media viewer.
+     * Test the App Menu does not show for media viewer.
      */
     @Test
     @SmallTest
@@ -606,13 +611,12 @@ public class CustomTabActivityTest {
         IntentHandler.addTrustedIntentExtras(intent);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
-        openAppMenuAndAssertMenuShown();
-        Menu menu = mCustomTabActivityTestRule.getMenu();
-        final int expectedMenuSize = 0;
-
-        Assert.assertNotNull("App menu is not initialized: ", menu);
-        assertEquals(expectedMenuSize, getActualMenuSize(menu));
-        assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            getActivity().onMenuOrKeyboardAction(R.id.show_menu, false);
+            Assert.assertNull(getActivity()
+                                      .getRootUiCoordinatorForTesting()
+                                      .getAppMenuCoordinatorForTesting());
+        });
     }
 
     /**
@@ -732,10 +736,13 @@ public class CustomTabActivityTest {
 
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            MenuItem item = getActivity().getAppMenuPropertiesDelegate().getMenuItemForTitle(
-                    TEST_MENU_TITLE);
+            MenuItem item = ((CustomTabAppMenuPropertiesDelegate) getActivity()
+                                     .getRootUiCoordinatorForTesting()
+                                     .getAppMenuCoordinatorForTesting()
+                                     .getAppMenuPropertiesDelegate())
+                                    .getMenuItemForTitle(TEST_MENU_TITLE);
             Assert.assertNotNull(item);
-            Assert.assertTrue(getActivity().onOptionsItemSelected(item));
+            AppMenuTestSupport.onOptionsItemSelected(getActivity(), item);
         });
 
         onFinished.waitForCallback("Pending Intent was not sent.");
@@ -781,8 +788,8 @@ public class CustomTabActivityTest {
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            MenuItem item = getActivity().getAppMenuHandler().getAppMenu().getMenu().findItem(
-                    R.id.open_in_browser_id);
+            MenuItem item =
+                    AppMenuTestSupport.getMenu(getActivity()).findItem(R.id.open_in_browser_id);
             Assert.assertNotNull(item);
             getActivity().onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
         });
@@ -1323,7 +1330,7 @@ public class CustomTabActivityTest {
     }
 
     /**
-     * Tests that page load metrice are sent.
+     * Tests that page load metrics are sent.
      */
     @Test
     @SmallTest
@@ -2709,7 +2716,11 @@ public class CustomTabActivityTest {
             public void extraCallback(String callbackName, Bundle args) {
                 if (callbackName.equals(CustomTabsConnection.ON_WARMUP_COMPLETED)) return;
 
-                assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
+                // Check if the callback name is either the Bottom Bar Scroll, or Page Load Metrics.
+                // See https://crbug.com/963538 for why it might be either.
+                if (!CustomTabsConnection.BOTTOM_BAR_SCROLL_STATE_CALLBACK.equals(callbackName)) {
+                    assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
+                }
                 if (-1 != args.getLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, -1)) {
                     sawNetworkQualityEstimates.set(true);
                 }

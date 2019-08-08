@@ -14,8 +14,7 @@ using syncer::SyncDataList;
 
 namespace dom_distiller {
 
-DomDistillerModel::DomDistillerModel()
-    : next_key_(1) {}
+DomDistillerModel::DomDistillerModel() : next_key_(1) {}
 
 DomDistillerModel::DomDistillerModel(
     const std::vector<ArticleEntry>& initial_data)
@@ -38,7 +37,7 @@ bool DomDistillerModel::GetEntryById(const std::string& entry_id,
 }
 
 bool DomDistillerModel::GetEntryByUrl(const GURL& url,
-                                     ArticleEntry* entry) const {
+                                      ArticleEntry* entry) const {
   KeyType key = 0;
   if (!GetKeyByUrl(url, &key)) {
     return false;
@@ -122,16 +121,15 @@ void DomDistillerModel::CalculateChangesForMerge(
        ++it) {
     if (entries_to_change.find(it->second.entry_id()) ==
         entries_to_change.end()) {
-      changes_missing->push_back(SyncChange(
-          FROM_HERE, SyncChange::ACTION_ADD, CreateLocalData(it->second)));
+      changes_missing->push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
+                                            CreateLocalData(it->second)));
     }
   }
 }
 
-void DomDistillerModel::ApplyChangesToModel(
-    const SyncChangeList& changes,
-    SyncChangeList* changes_applied,
-    SyncChangeList* changes_missing) {
+void DomDistillerModel::ApplyChangesToModel(const SyncChangeList& changes,
+                                            SyncChangeList* changes_applied,
+                                            SyncChangeList* changes_missing) {
   DCHECK(changes_applied);
   DCHECK(changes_missing);
 
@@ -164,10 +162,9 @@ void DomDistillerModel::RemoveEntry(const ArticleEntry& entry) {
   }
 }
 
-void DomDistillerModel::ApplyChangeToModel(
-    const SyncChange& change,
-    SyncChangeList* changes_applied,
-    SyncChangeList* changes_missing) {
+void DomDistillerModel::ApplyChangeToModel(const SyncChange& change,
+                                           SyncChangeList* changes_applied,
+                                           SyncChangeList* changes_missing) {
   DCHECK(change.IsValid());
   DCHECK(changes_applied);
   DCHECK(changes_missing);

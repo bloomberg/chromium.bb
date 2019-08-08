@@ -178,18 +178,18 @@ TEST_F(TestURLLoaderFactoryTest, IsPendingLoadFlags) {
   std::string url = "http://foo/";
   std::string url2 = "http://bar/";
 
-  int load_flags_out = 0;
+  const network::ResourceRequest* pending_request;
   StartRequest(url);
-  EXPECT_TRUE(factory()->IsPending(url, &load_flags_out));
-  EXPECT_EQ(0, load_flags_out);
+  EXPECT_TRUE(factory()->IsPending(url, &pending_request));
+  EXPECT_EQ(0, pending_request->load_flags);
 
   factory()->AddResponse(url, "hi");
   client()->RunUntilComplete();
 
   TestURLLoaderClient client2;
   StartRequest(url2, &client2, 42);
-  EXPECT_TRUE(factory()->IsPending(url2, &load_flags_out));
-  EXPECT_EQ(42, load_flags_out);
+  EXPECT_TRUE(factory()->IsPending(url2, &pending_request));
+  EXPECT_EQ(42, pending_request->load_flags);
   factory()->AddResponse(url2, "bye");
   client2.RunUntilComplete();
 }

@@ -147,7 +147,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
   void SetUp() override { EXPECT_CALL(*client_, OnError(_, _, _)).Times(0); }
 
   std::unique_ptr<MockVideoCaptureDeviceClient> CreateClient() {
-    auto result = std::make_unique<MockVideoCaptureDeviceClient>();
+    auto result = std::make_unique<NiceMockVideoCaptureDeviceClient>();
     ON_CALL(*result, ReserveOutputBuffer(_, _, _, _))
         .WillByDefault(
             Invoke([](const gfx::Size& dimensions, VideoPixelFormat format, int,
@@ -157,12 +157,12 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
               *buffer = CreateStubBuffer(0, frame_format.ImageAllocationSize());
               return VideoCaptureDevice::Client::ReserveResult::kSucceeded;
             }));
-    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _))
-        .WillByDefault(
-            Invoke([this](const uint8_t*, int,
-                          const media::VideoCaptureFormat& frame_format, int,
-                          base::TimeTicks, base::TimeDelta,
-                          int) { OnFrameCaptured(frame_format); }));
+    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+        .WillByDefault(Invoke(
+            [this](const uint8_t*, int,
+                   const media::VideoCaptureFormat& frame_format,
+                   const gfx::ColorSpace&, int, base::TimeTicks,
+                   base::TimeDelta, int) { OnFrameCaptured(frame_format); }));
     ON_CALL(*result, OnIncomingCapturedGfxBuffer(_, _, _, _, _, _))
         .WillByDefault(
             Invoke([this](gfx::GpuMemoryBuffer*,

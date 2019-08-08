@@ -148,10 +148,14 @@ template("chrome_ios_eg2_test") {
                              "deps",
                            ])
 
+    xctest_bundle_principal_class = "ChromeEGTestBundleMain"
+
     if (!defined(deps)) {
       deps = []
     }
     deps += [ "//ios/chrome/test/earl_grey:eg_test_support+eg2" ]
+
+    bundle_deps = [ "//ios/chrome/app/resources" ]
   }
 }
 

@@ -90,10 +90,9 @@ function localizeNumber(number) {
 }
 
 /**
- * @const
- * @type {number}
+ * @type {Intl.DateTimeFormat}
  */
-var ImperialEraLimit = 2117;
+let japaneseEraFormatter = null;
 
 /**
  * @param {!number} year
@@ -101,29 +100,33 @@ var ImperialEraLimit = 2117;
  * @return {!string}
  */
 function formatJapaneseImperialEra(year, month) {
-  // We don't show an imperial era if it is greater than 99 becase of space
-  // limitation.
-  if (year > ImperialEraLimit)
+  // Eras prior to Meiji are not helpful.
+  if (year <= 1867 || year == 1868 && month <= 9)
     return '';
-  if (year >= 2020)
-    return '(\u4ee4\u548c' + localizeNumber(year - 2018) + '\u5e74)';
-  if (year == 2019 && month >= 4)
-    return '(\u4ee4\u548c\u5143\u5e74)';
-  if (year > 1989)
-    return '(\u5e73\u6210' + localizeNumber(year - 1988) + '\u5e74)';
-  if (year == 1989)
-    return '(\u5e73\u6210\u5143\u5e74)';
-  if (year >= 1927)
-    return '(\u662d\u548c' + localizeNumber(year - 1925) + '\u5e74)';
-  if (year > 1912)
-    return '(\u5927\u6b63' + localizeNumber(year - 1911) + '\u5e74)';
-  if (year == 1912 && month >= 7)
-    return '(\u5927\u6b63\u5143\u5e74)';
-  if (year > 1868)
-    return '(\u660e\u6cbb' + localizeNumber(year - 1867) + '\u5e74)';
-  if (year == 1868)
-    return '(\u660e\u6cbb\u5143\u5e74)';
-  return '';
+  if (!japaneseEraFormatter) {
+    japaneseEraFormatter = new Intl.DateTimeFormat('ja-JP-u-ca-japanese',
+                                                   {era: 'long'});
+  }
+  // Produce the era for day 16 because it's almost the midpoint of a month.
+  // 275760-09-13 is the last valid date in ECMAScript. We apply day 7 in that
+  // case because it's the midpoint between 09-01 and 09-13.
+  let sampleDay = year == 275760 && month == 8 ? 7 : 16;
+  let sampleDayString = japaneseEraFormatter.format(new Date(year, month, sampleDay));
+  let nenIndex = sampleDayString.indexOf('\u5e74');
+  if (nenIndex == -1)
+    return '';
+  let yearPart = sampleDayString.substring(0, nenIndex + 1);
+
+  // We don't show an imperial era if it is greater than 99 because of space
+  // limitation.
+  if (yearPart.length > 5)
+    return '';
+
+  // Replace 1-nen with Gan-nen.
+  if (yearPart.length == 4 && yearPart[2] == '1')
+    yearPart = yearPart.substring(0, 2) + '\u5143\u5e74';
+
+  return '(' + yearPart + ')';
 }
 
 function createUTCDate(year, month, date) {

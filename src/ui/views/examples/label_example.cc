@@ -122,16 +122,16 @@ void LabelExample::CreateExampleView(View* container) {
 
 void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
   if (button == multiline_) {
-    custom_label_->SetMultiLine(multiline_->checked());
+    custom_label_->SetMultiLine(multiline_->GetChecked());
   } else if (button == shadows_) {
     gfx::ShadowValues shadows;
-    if (shadows_->checked()) {
+    if (shadows_->GetChecked()) {
       shadows.push_back(gfx::ShadowValue(gfx::Vector2d(), 1, SK_ColorRED));
       shadows.push_back(gfx::ShadowValue(gfx::Vector2d(2, 2), 0, SK_ColorGRAY));
     }
     custom_label_->SetShadows(shadows);
   } else if (button == selectable_) {
-    custom_label_->SetSelectable(selectable_->checked());
+    custom_label_->SetSelectable(selectable_->GetChecked());
   }
   custom_label_->parent()->parent()->InvalidateLayout();
   custom_label_->SchedulePaint();
@@ -140,10 +140,10 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
 void LabelExample::OnPerformAction(Combobox* combobox) {
   if (combobox == alignment_) {
     custom_label_->SetHorizontalAlignment(
-        static_cast<gfx::HorizontalAlignment>(combobox->selected_index()));
+        static_cast<gfx::HorizontalAlignment>(combobox->GetSelectedIndex()));
   } else if (combobox == elide_behavior_) {
     custom_label_->SetElideBehavior(
-        static_cast<gfx::ElideBehavior>(combobox->selected_index()));
+        static_cast<gfx::ElideBehavior>(combobox->GetSelectedIndex()));
   }
 }
 

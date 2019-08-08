@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/input_stream.h"
 #include "content/public/browser/download_manager.h"
@@ -39,6 +40,7 @@ class MockDownloadManager : public DownloadManager {
     GURL site_url;
     GURL tab_url;
     GURL tab_referrer_url;
+    base::Optional<url::Origin> request_initiator;
     std::string mime_type;
     std::string original_mime_type;
     base::Time start_time;
@@ -66,6 +68,7 @@ class MockDownloadManager : public DownloadManager {
         const GURL& site_url,
         const GURL& tab_url,
         const GURL& tab_refererr_url,
+        const base::Optional<url::Origin>& request_initiator,
         const std::string& mime_type,
         const std::string& original_mime_type,
         base::Time start_time,
@@ -95,7 +98,7 @@ class MockDownloadManager : public DownloadManager {
 
   // DownloadManager:
   MOCK_METHOD1(SetDelegate, void(DownloadManagerDelegate* delegate));
-  MOCK_CONST_METHOD0(GetDelegate, DownloadManagerDelegate*());
+  MOCK_METHOD0(GetDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(GetAllDownloads, void(DownloadVector* downloads));
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
@@ -115,10 +118,9 @@ class MockDownloadManager : public DownloadManager {
                    base::Time remove_begin,
                    base::Time remove_end));
   MOCK_METHOD1(DownloadUrlMock, void(download::DownloadUrlParameters*));
-  bool DownloadUrl(
+  void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> params) override {
     DownloadUrl(std::move(params), nullptr, nullptr);
-    return true;
   }
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
                    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
@@ -140,6 +142,7 @@ class MockDownloadManager : public DownloadManager {
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_refererr_url,
+      const base::Optional<url::Origin>& request_initiator,
       const std::string& mime_type,
       const std::string& original_mime_type,
       base::Time start_time,
@@ -162,14 +165,15 @@ class MockDownloadManager : public DownloadManager {
                download::DownloadItem*(CreateDownloadItemAdapter adapter));
   MOCK_METHOD1(PostInitialization,
                void(DownloadInitializationDependency dependency));
-  MOCK_CONST_METHOD0(IsManagerInitialized, bool());
-  MOCK_CONST_METHOD0(InProgressCount, int());
-  MOCK_CONST_METHOD0(NonMaliciousInProgressCount, int());
-  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
+  MOCK_METHOD0(IsManagerInitialized, bool());
+  MOCK_METHOD0(InProgressCount, int());
+  MOCK_METHOD0(NonMaliciousInProgressCount, int());
+  MOCK_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownload, download::DownloadItem*(uint32_t id));
   MOCK_METHOD1(GetDownloadByGuid, download::DownloadItem*(const std::string&));
   MOCK_METHOD1(GetNextId, void(base::OnceCallback<void(uint32_t)>));
+  MOCK_METHOD1(CanDownload, bool(download::DownloadUrlParameters*));
 
   void OnHistoryQueryComplete(
       base::OnceClosure load_history_downloads_cb) override;

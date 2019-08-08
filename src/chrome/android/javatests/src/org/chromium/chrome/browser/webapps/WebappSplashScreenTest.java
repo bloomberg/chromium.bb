@@ -32,7 +32,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.metrics.SameActivityWebappUmaCache;
+import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -175,42 +175,40 @@ public class WebappSplashScreenTest {
         // Tests UMA values.
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.DEFAULT));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.DEFAULT));
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.DEFAULT));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.DEFAULT));
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        SameActivityWebappUmaCache.SplashIconType.NONE));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
+                        WebappSplashUmaCache.SplashIconType.NONE));
 
         // Tests UMA counts.
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.NUM_ENTRIES));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
-                getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.NUM_ENTRIES));
+                getHistogramTotalCountFor(WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
-                getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        SameActivityWebappUmaCache.SplashIconType.NUM_ENTRIES));
+                getHistogramTotalCountFor(WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
+                        WebappSplashUmaCache.SplashIconType.NUM_ENTRIES));
 
         // Given that there is no icon, the ICON_SIZE UMA should not be recorded.
         Assert.assertEquals(0,
                 getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, 50));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, 50));
 
         // DURATION and HIDES UMA should not have been recorded yet.
-        Assert.assertFalse(hasHistogramEntry(
-                WebappSplashScreenController.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
+        Assert.assertFalse(
+                hasHistogramEntry(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
         Assert.assertEquals(0,
-                getHistogramTotalCountFor(WebappSplashScreenController.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        WebappSplashScreenController.SplashHidesReason.NUM_ENTRIES));
+                getHistogramTotalCountFor(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
+                        SplashController.SplashHidesReason.NUM_ENTRIES));
     }
 
     @Test
@@ -225,28 +223,26 @@ public class WebappSplashScreenTest {
         mActivityTestRule.waitUntilSplashscreenHides();
 
         // DURATION and HIDES should now have a value.
-        Assert.assertTrue(hasHistogramEntry(
-                WebappSplashScreenController.HISTOGRAM_SPLASHSCREEN_DURATION, 10000));
+        Assert.assertTrue(
+                hasHistogramEntry(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_DURATION, 10000));
         Assert.assertEquals(1,
-                getHistogramTotalCountFor(WebappSplashScreenController.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        WebappSplashScreenController.SplashHidesReason.NUM_ENTRIES));
+                getHistogramTotalCountFor(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
+                        SplashController.SplashHidesReason.NUM_ENTRIES));
 
         // The other UMA records should not have changed.
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.NUM_ENTRIES));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
-                getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.NUM_ENTRIES));
+                getHistogramTotalCountFor(WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
-                getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        SameActivityWebappUmaCache.SplashIconType.NUM_ENTRIES));
+                getHistogramTotalCountFor(WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
+                        WebappSplashUmaCache.SplashIconType.NUM_ENTRIES));
         Assert.assertEquals(0,
                 getHistogramTotalCountFor(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, 50));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, 50));
     }
 
     @Test

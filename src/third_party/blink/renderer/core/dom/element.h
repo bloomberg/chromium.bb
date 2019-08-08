@@ -959,8 +959,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // svgAttributeChanged (called when element.className.baseValue is set)
   void ClassAttributeChanged(const AtomicString& new_class_string);
 
-  void PictureInPicturePseudoStateChanged();
-
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
   scoped_refptr<ComputedStyle> OriginalStyleForLayoutObject();
@@ -1184,6 +1182,11 @@ inline bool IsElementOfType<const Element>(const Element&) {
   return true;
 }
 
+template <>
+struct DowncastTraits<Element> {
+  static bool AllowFrom(const Node& node) { return node.IsElementNode(); }
+};
+
 // Type casting.
 template <typename T>
 inline T& ToElement(Node& node) {
@@ -1404,13 +1407,6 @@ inline bool IsAtShadowBoundary(const Element* element) {
     return Is##thisType(node);                                    \
   }                                                               \
   DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
-
-#define DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
-  static T* Create(const QualifiedName&, Document&)
-#define DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(T)                     \
-  T* T::Create(const QualifiedName& tagName, Document& document) { \
-    return new T(tagName, document);                               \
-  }
 
 }  // namespace blink
 

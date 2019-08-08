@@ -99,8 +99,8 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   String addressSpaceForBindings() const;
 
   void SetRequireTrustedTypes();
-  bool RequireTrustedTypes() const;
   void SetRequireTrustedTypesForTesting();  // Skips sanity checks.
+  bool TrustedTypesRequiredByPolicy() const;
 
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-insecure-navigations-set
   void SetInsecureNavigationsSet(const std::vector<unsigned>& set) {
@@ -111,12 +111,15 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void AddInsecureNavigationUpgrade(unsigned hashed_host) {
     insecure_navigations_to_upgrade_.insert(hashed_host);
   }
-  InsecureNavigationsSet* InsecureNavigationsToUpgrade() {
-    return &insecure_navigations_to_upgrade_;
+  const InsecureNavigationsSet& InsecureNavigationsToUpgrade() const {
+    return insecure_navigations_to_upgrade_;
+  }
+  void ClearInsecureNavigationsToUpgradeForTest() {
+    insecure_navigations_to_upgrade_.clear();
   }
 
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#insecure-requests-policy
-  virtual void SetInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
+  void SetInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
     insecure_request_policy_ = policy;
   }
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const {
@@ -126,9 +129,11 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void SetMixedAutoupgradeOptOut(bool opt_out) {
     mixed_autoupgrade_opt_out_ = opt_out;
   }
-  bool GetMixedAutoUpgradeOptOut() { return mixed_autoupgrade_opt_out_; }
+  bool GetMixedAutoUpgradeOptOut() const { return mixed_autoupgrade_opt_out_; }
 
-  FeaturePolicy* GetFeaturePolicy() const { return feature_policy_.get(); }
+  const FeaturePolicy* GetFeaturePolicy() const {
+    return feature_policy_.get();
+  }
   void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
   // Constructs the enforcement FeaturePolicy struct for this security context.
   // The resulted FeaturePolicy is a combination of:

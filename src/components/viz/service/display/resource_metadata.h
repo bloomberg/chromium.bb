@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 
-#include "GrTypes.h"
+#include "base/optional.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -44,6 +46,10 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
 
   // If the SkImage should use top-left or bottom-left for (0,0) uv
   GrSurfaceOrigin origin;
+
+  // Sampler conversion information which is used in vulkan context for android
+  // video.
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 };
 
 }  // namespace viz

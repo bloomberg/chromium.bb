@@ -26,6 +26,8 @@ namespace {
 constexpr char kTimerNotificationGroupingKey[] = "assistant/timer";
 constexpr char kTimerNotificationIdPrefix[] = "assistant/timer";
 
+constexpr base::TimeDelta kOneMin = base::TimeDelta::FromMinutes(1);
+
 // Interval at which alarms/timers are ticked.
 constexpr base::TimeDelta kTickInterval = base::TimeDelta::FromSeconds(1);
 
@@ -66,6 +68,24 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
   const GURL action_url = assistant::util::CreateAssistantQueryDeepLink(
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
 
+  base::Optional<GURL> stop_alarm_timer_action_url;
+  base::Optional<GURL> add_time_to_timer_action_url;
+  if (chromeos::assistant::features::IsAlarmTimerManagerEnabled()) {
+    stop_alarm_timer_action_url = assistant::util::CreateAlarmTimerDeepLink(
+        assistant::util::AlarmTimerAction::kStopRinging,
+        /*alarm_timer_id=*/base::nullopt,
+        /*duration=*/base::nullopt);
+    add_time_to_timer_action_url = assistant::util::CreateAlarmTimerDeepLink(
+        assistant::util::AlarmTimerAction::kAddTimeToTimer, alarm_timer.id,
+        kOneMin);
+  } else {
+    stop_alarm_timer_action_url = assistant::util::CreateAssistantQueryDeepLink(
+        l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
+    add_time_to_timer_action_url =
+        assistant::util::CreateAssistantQueryDeepLink(l10n_util::GetStringUTF8(
+            IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY));
+  }
+
   AssistantNotificationPtr notification = AssistantNotification::New();
 
   // If in-Assistant notifications are supported, we'll allow alarm/timer
@@ -78,26 +98,35 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
 
   notification->title = title;
   notification->message = message;
-  notification->action_url = action_url;
   notification->client_id = CreateTimerNotificationId(alarm_timer.id);
   notification->grouping_key = kTimerNotificationGroupingKey;
 
   // This notification should be able to wake up the display if it was off.
   notification->is_high_priority = true;
 
+  if (!stop_alarm_timer_action_url.has_value()) {
+    LOG(ERROR) << "Can't create stop alarm timer action URL";
+    return notification;
+  }
+
+  notification->action_url = stop_alarm_timer_action_url.value();
+
   // "STOP" button.
   notification->buttons.push_back(AssistantNotificationButton::New(
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON),
-      action_url));
+      stop_alarm_timer_action_url.value()));
+
+  if (!add_time_to_timer_action_url.has_value()) {
+    LOG(ERROR) << "Can't create add time to timer action URL";
+    return notification;
+  }
 
   // "ADD 1 MIN" button.
   notification->buttons.push_back(
       chromeos::assistant::mojom::AssistantNotificationButton::New(
           l10n_util::GetStringUTF8(
               IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON),
-          assistant::util::CreateAssistantQueryDeepLink(
-              l10n_util::GetStringUTF8(
-                  IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY))));
+          add_time_to_timer_action_url.value()));
 
   return notification;
 }
@@ -110,9 +139,11 @@ AssistantAlarmTimerController::AssistantAlarmTimerController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller), binding_(this) {
   AddModelObserver(this);
+  assistant_controller_->AddObserver(this);
 }
 
 AssistantAlarmTimerController::~AssistantAlarmTimerController() {
+  assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
 }
 
@@ -223,4 +254,102 @@ void AssistantAlarmTimerController::OnAllAlarmsTimersRemoved() {
   }
 }
 
+void AssistantAlarmTimerController::SetAssistant(
+    chromeos::assistant::mojom::Assistant* assistant) {
+  assistant_ = assistant;
+}
+
+void AssistantAlarmTimerController::OnAssistantControllerConstructed() {
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantAlarmTimerController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
+void AssistantAlarmTimerController::OnDeepLinkReceived(
+    assistant::util::DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  using assistant::util::DeepLinkParam;
+  using assistant::util::DeepLinkType;
+
+  if (type != DeepLinkType::kAlarmTimer)
+    return;
+
+  const base::Optional<assistant::util::AlarmTimerAction>& action =
+      assistant::util::GetDeepLinkParamAsAlarmTimerAction(params);
+  if (!action.has_value())
+    return;
+
+  // Timer ID is optional. Only used for adding time to timer.
+  const base::Optional<std::string>& alarm_timer_id =
+      assistant::util::GetDeepLinkParam(params, DeepLinkParam::kId);
+
+  // Duration is optional. Only used for adding time to timer.
+  const base::Optional<base::TimeDelta>& duration =
+      assistant::util::GetDeepLinkParamAsTimeDelta(params,
+                                                   DeepLinkParam::kDurationMs);
+
+  PerformAlarmTimerAction(action.value(), alarm_timer_id, duration);
+}
+
+void AssistantAlarmTimerController::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  // When the Assistant UI transitions from a visible state, we'll dismiss any
+  // ringing alarms or timers (assuming certain conditions have been met).
+  if (old_visibility != AssistantVisibility::kVisible)
+    return;
+
+  // We only do this if the AlarmTimerManager is enabled, as otherwise we would
+  // have to issue an Assistant query to stop ringing alarms/timers which would
+  // cause Assistant UI to once again show. This would be a bad user experience.
+  if (!chromeos::assistant::features::IsAlarmTimerManagerEnabled())
+    return;
+
+  // We only do this if timer notifications are enabled, as otherwise the
+  // ringing alarm/timer isn't bound to any particular UI affordance so it can
+  // maintain its own lifecycle.
+  if (!chromeos::assistant::features::IsTimerNotificationEnabled())
+    return;
+
+  // We only do this if in-Assistant notifications are enabled, as in-Assistant
+  // alarm/timer notifications only live as long the Assistant UI. Per UX
+  // requirement, when Assistant UI dismisses with an in-Assistant timer
+  // notification showing, any ringing alarms/timers should be stopped.
+  if (!chromeos::assistant::features::IsInAssistantNotificationsEnabled())
+    return;
+
+  assistant_->StopAlarmTimerRinging();
+}
+
+void AssistantAlarmTimerController::PerformAlarmTimerAction(
+    const assistant::util::AlarmTimerAction& action,
+    const base::Optional<std::string>& alarm_timer_id,
+    const base::Optional<base::TimeDelta>& duration) {
+  DCHECK(assistant_);
+
+  switch (action) {
+    case assistant::util::AlarmTimerAction::kAddTimeToTimer:
+      if (!alarm_timer_id.has_value() || !duration.has_value()) {
+        LOG(ERROR) << "Ignore add time to timer action without timer ID or "
+                   << "duration.";
+        return;
+      }
+      // Verify the timer is ringing.
+      DCHECK(model_.GetAlarmTimerById(alarm_timer_id.value()));
+      // LibAssistant doesn't currently support adding time to an ringing timer.
+      // We'll create a new one with the duration specified. Note that we
+      // currently only support this deep link for an alarm/timer that is
+      // ringing.
+      assistant_->StopAlarmTimerRinging();
+      assistant_->CreateTimer(duration.value());
+      break;
+    case assistant::util::AlarmTimerAction::kStopRinging:
+      assistant_->StopAlarmTimerRinging();
+      break;
+  }
+}
 }  // namespace ash

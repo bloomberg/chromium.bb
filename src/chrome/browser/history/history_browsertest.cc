@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -88,34 +89,29 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     LoadAndWaitForURL(url);
   }
 
-  bool HistoryContainsURL(const GURL& url) {
-    base::RunLoop run_loop;
-    bool success = false;
-    base::CancelableTaskTracker tracker;
-    HistoryServiceFactory::GetForProfile(browser()->profile(),
-                                         ServiceAccessType::EXPLICIT_ACCESS)
-        ->QueryURL(url, true,
-                   base::BindOnce(&HistoryBrowserTest::SaveResultAndQuit,
-                                  base::Unretained(this), &success, nullptr,
-                                  run_loop.QuitClosure()),
-                   &tracker);
-    run_loop.Run();
-    return success;
-  }
+  bool HistoryContainsURL(const GURL& url) { return QueryURL(url).success; }
 
   history::URLRow LookUpURLInHistory(const GURL& url) {
+    return QueryURL(url).row;
+  }
+
+  history::QueryURLResult QueryURL(const GURL& url) {
+    history::QueryURLResult query_url_result;
+
     base::RunLoop run_loop;
-    history::URLRow row;
     base::CancelableTaskTracker tracker;
     HistoryServiceFactory::GetForProfile(browser()->profile(),
                                          ServiceAccessType::EXPLICIT_ACCESS)
-        ->QueryURL(url, true,
-                   base::BindOnce(&HistoryBrowserTest::SaveResultAndQuit,
-                                  base::Unretained(this), nullptr, &row,
-                                  run_loop.QuitClosure()),
-                   &tracker);
+        ->QueryURL(
+            url, true,
+            base::BindLambdaForTesting([&](history::QueryURLResult result) {
+              query_url_result = std::move(result);
+              run_loop.Quit();
+            }),
+            &tracker);
     run_loop.Run();
-    return row;
+
+    return query_url_result;
   }
 
  private:

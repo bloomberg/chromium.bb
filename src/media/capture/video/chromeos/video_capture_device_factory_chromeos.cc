@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/cros_image_capture_impl.h"
 #include "media/capture/video/chromeos/reprocess_manager.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
@@ -23,9 +25,13 @@ VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer)
     : task_runner_for_screen_observer_(task_runner_for_screen_observer),
       camera_hal_ipc_thread_("CameraHalIpcThread"),
-      reprocess_manager_(new ReprocessManager),
-      cros_image_capture_(new CrosImageCaptureImpl(reprocess_manager_.get())),
-      initialized_(Init()) {}
+      initialized_(Init()),
+      weak_ptr_factory_(this) {
+  auto callback =
+      base::BindRepeating(&VideoCaptureDeviceFactoryChromeOS::GetCameraInfo,
+                          base::Unretained(this));
+  reprocess_manager_ = std::make_unique<ReprocessManager>(std::move(callback));
+}
 
 VideoCaptureDeviceFactoryChromeOS::~VideoCaptureDeviceFactoryChromeOS() {
   camera_hal_delegate_->Reset();
@@ -90,9 +96,30 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
   return true;
 }
 
+void VideoCaptureDeviceFactoryChromeOS::GetCameraInfo(
+    const std::string& device_id) {
+  if (!initialized_) {
+    return;
+  }
+  camera_hal_delegate_->GetCameraInfo(
+      std::stoi(device_id),
+      BindToCurrentLoop(
+          base::BindOnce(&VideoCaptureDeviceFactoryChromeOS::OnGotCameraInfo,
+                         weak_ptr_factory_.GetWeakPtr(), device_id)));
+}
+
+void VideoCaptureDeviceFactoryChromeOS::OnGotCameraInfo(
+    const std::string& device_id,
+    int32_t result,
+    cros::mojom::CameraInfoPtr camera_info) {
+  reprocess_manager_->UpdateCameraInfo(device_id, std::move(camera_info));
+}
+
 void VideoCaptureDeviceFactoryChromeOS::BindCrosImageCaptureRequest(
     cros::mojom::CrosImageCaptureRequest request) {
-  cros_image_capture_->BindRequest(std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<CrosImageCaptureImpl>(reprocess_manager_.get()),
+      std::move(request));
 }
 
 }  // namespace media

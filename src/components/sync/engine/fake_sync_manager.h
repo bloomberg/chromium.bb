@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
@@ -100,9 +99,10 @@ class FakeSyncManager : public SyncManager {
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   UserShare* GetUserShare() override;
-  ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
-  const std::string cache_guid() override;
+  std::string cache_guid() override;
+  std::string birthday() override;
+  std::string bag_of_chips() override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
@@ -144,8 +144,6 @@ class FakeSyncManager : public SyncManager {
 
   // The most recent configure reason.
   ConfigureReason last_configure_reason_;
-
-  FakeModelTypeConnector fake_model_type_connector_;
 
   FakeSyncEncryptionHandler fake_encryption_handler_;
 

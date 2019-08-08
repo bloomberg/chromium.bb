@@ -192,7 +192,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   const bool has_location_bar =
       browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
   const bool has_bookmarks_bar =
-      bookmark_bar_ && bookmark_bar_->visible() &&
+      bookmark_bar_ && bookmark_bar_->GetVisible() &&
       browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
 
   gfx::Size tabstrip_size(has_tabstrip ? tab_strip_->GetMinimumSize()
@@ -256,8 +256,8 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   // Under ChromeOS, the top_container_ may include the title bar for hosted
   // apps. Just make sure something of consequence is visible before it's height
   // is used.
-  const int top_container_height = (browser_view->tabstrip()->visible() ||
-                                    browser_view->toolbar()->visible() ||
+  const int top_container_height = (browser_view->tabstrip()->GetVisible() ||
+                                    browser_view->toolbar()->GetVisible() ||
                                     browser_view->IsBookmarkBarVisible())
                                        ? top_container_->height()
                                        : 0;
@@ -488,7 +488,7 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
   // during an immersive fullscreen reveal.
   int height = 0;
   for (views::View* child : top_container_->children()) {
-    if (child->visible())
+    if (child->GetVisible())
       height = std::max(height, child->bounds().bottom());
   }
 

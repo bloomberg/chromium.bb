@@ -23,7 +23,7 @@ namespace blink {
 namespace {
 
 void RunSynchronous(base::TestSimpleTaskRunner* thread,
-                    WTF::CrossThreadClosure closure) {
+                    CrossThreadOnceClosure closure) {
   if (thread->BelongsToCurrentThread()) {
     std::move(closure).Run();
     return;
@@ -34,8 +34,8 @@ void RunSynchronous(base::TestSimpleTaskRunner* thread,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   PostCrossThreadTask(
       *thread, FROM_HERE,
-      CrossThreadBind(
-          [](WTF::CrossThreadClosure closure, base::WaitableEvent* event) {
+      CrossThreadBindOnce(
+          [](CrossThreadOnceClosure closure, base::WaitableEvent* event) {
             std::move(closure).Run();
             event->Signal();
           },
@@ -54,9 +54,10 @@ class MockPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
       base::OnceClosure closure,
       const char* trace_event_name) override {
     closure_ = std::move(closure);
-    RunSynchronous(signaling_thread_.get(),
-                   CrossThreadBind(&MockPeerConnectionHandler::RunOnceClosure,
-                                   CrossThreadUnretained(this)));
+    RunSynchronous(
+        signaling_thread_.get(),
+        CrossThreadBindOnce(&MockPeerConnectionHandler::RunOnceClosure,
+                            CrossThreadUnretained(this)));
   }
 
  private:
@@ -97,41 +98,43 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   void RegisterObserver(webrtc::DataChannelObserver* observer) override {
     RunSynchronous(
         signaling_thread_.get(),
-        CrossThreadBind(&MockDataChannel::RegisterObserverOnSignalingThread,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(observer)));
+        CrossThreadBindOnce(&MockDataChannel::RegisterObserverOnSignalingThread,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(observer)));
   }
 
   void UnregisterObserver() override {
-    RunSynchronous(
-        signaling_thread_.get(),
-        CrossThreadBind(&MockDataChannel::UnregisterObserverOnSignalingThread,
-                        CrossThreadUnretained(this)));
+    RunSynchronous(signaling_thread_.get(),
+                   CrossThreadBindOnce(
+                       &MockDataChannel::UnregisterObserverOnSignalingThread,
+                       CrossThreadUnretained(this)));
   }
 
   uint64_t buffered_amount() const override {
     uint64_t buffered_amount;
-    RunSynchronous(
-        signaling_thread_.get(),
-        CrossThreadBind(&MockDataChannel::GetBufferedAmountOnSignalingThread,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(&buffered_amount)));
+    RunSynchronous(signaling_thread_.get(),
+                   CrossThreadBindOnce(
+                       &MockDataChannel::GetBufferedAmountOnSignalingThread,
+                       CrossThreadUnretained(this),
+                       CrossThreadUnretained(&buffered_amount)));
     return buffered_amount;
   }
 
   DataState state() const override {
     DataState state;
-    RunSynchronous(signaling_thread_.get(),
-                   CrossThreadBind(&MockDataChannel::GetStateOnSignalingThread,
-                                   CrossThreadUnretained(this),
-                                   CrossThreadUnretained(&state)));
+    RunSynchronous(
+        signaling_thread_.get(),
+        CrossThreadBindOnce(&MockDataChannel::GetStateOnSignalingThread,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(&state)));
     return state;
   }
 
   bool Send(const webrtc::DataBuffer& buffer) override {
-    RunSynchronous(signaling_thread_.get(),
-                   CrossThreadBind(&MockDataChannel::SendOnSignalingThread,
-                                   CrossThreadUnretained(this), buffer.size()));
+    RunSynchronous(
+        signaling_thread_.get(),
+        CrossThreadBindOnce(&MockDataChannel::SendOnSignalingThread,
+                            CrossThreadUnretained(this), buffer.size()));
     return true;
   }
 
@@ -139,8 +142,8 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   void ChangeState(DataState state) {
     RunSynchronous(
         signaling_thread_.get(),
-        CrossThreadBind(&MockDataChannel::ChangeStateOnSignalingThread,
-                        CrossThreadUnretained(this), state));
+        CrossThreadBindOnce(&MockDataChannel::ChangeStateOnSignalingThread,
+                            CrossThreadUnretained(this), state));
     // The observer posts the state change from the signaling thread to the main
     // thread. Wait for the posted task to be executed.
     base::RunLoop().RunUntilIdle();

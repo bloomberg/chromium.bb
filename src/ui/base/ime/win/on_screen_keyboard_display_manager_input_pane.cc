@@ -182,7 +182,7 @@ OnScreenKeyboardDisplayManagerInputPane::
               main_task_runner_)),
       is_keyboard_visible_(false),
       weak_factory_(this) {
-  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN10_RS1);
+  DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN10_RS1);
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // We post the initiation of |virtual_keyboard_input_pane_| to the background

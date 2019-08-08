@@ -39,7 +39,7 @@
 #
 # == Regular ==
 # Mixin:
-#   'mac-rel-args': {
+#   'mac-archive-rel-args': {
 #     'args': [
 #       'mac-release/sizes',
 #     ],
@@ -49,11 +49,11 @@
 #   {
 #     'name': 'chromium'
 #     'machines': {
-#       'mac-rel': {
+#       'mac-archive-rel': {
 #         'test_suites': {
 #           'scripts': 'public_build_scripts',
 #         },
-#         'mixins': ['mac-rel-args'],
+#         'mixins': ['mac-archive-rel-args'],
 #       },
 #     },
 #   },
@@ -62,7 +62,7 @@
 #   {
 #     'name': 'chromium'
 #     'machines': {
-#       'mac-rel': {
+#       'mac-archive-rel': {
 #         "scripts": [
 #           {
 #             "args": [
@@ -183,6 +183,7 @@
     # NVIDIA SHIELD TV
     'swarming': {
       'dimensions': {
+        'device_os_type': 'user',
         'device_type': 'foster',
         'os': 'Android',
       },
@@ -226,7 +227,7 @@
       'expiration': 21600,
     },
   },
-  'linux-rel-args': {
+  'linux-archive-rel-args': {
     'args': [
       'linux-release-64/sizes',
     ],
@@ -235,6 +236,13 @@
     'swarming': {
       'dimensions': {
         'os': 'Ubuntu-14.04',
+      },
+    },
+  },
+  'linux-xenial': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-16.04',
       },
     },
   },
@@ -281,7 +289,7 @@
       'dimensions': {
         # Defined in bot_config.py in internal infradata/config workspace
         'gpu': 'nvidia-quadro-p400-ubuntu-stable',
-        'os': 'Ubuntu',
+        'os': 'Ubuntu-14.04',
         'pool': 'Chrome-GPU',
       }
     }
@@ -290,7 +298,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '10de:1cb3-410.78',
-        'os': 'Ubuntu',
+        'os': 'Ubuntu-14.04',
         'pool': 'Chrome-GPU',
       },
     },
@@ -302,7 +310,7 @@
       },
     },
   },
-  'mac-rel-args': {
+  'mac-archive-rel-args': {
     'args': [
       'mac-release/sizes',
     ],
@@ -501,6 +509,11 @@
       },
     },
   },
+  'swarming_containment_auto': {
+    'swarming': {
+      'containment_type': 'AUTO',
+    },
+  },
   'walleye': {
     # Pixel 2
     'swarming': {
@@ -541,6 +554,15 @@
       'dimensions': {
         # Defined in bot_config.py in internal infradata/config workspace
         'gpu': 'intel-hd-630-win10-stable',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'win10_nvidia_geforce_gtx_1660': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:2184',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },

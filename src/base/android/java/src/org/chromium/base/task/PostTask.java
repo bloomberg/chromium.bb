@@ -86,8 +86,8 @@ public class PostTask {
                 getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
             } else {
                 nativePostDelayedTask(taskTraits.mPrioritySetExplicitly, taskTraits.mPriority,
-                        taskTraits.mMayBlock, taskTraits.mExtensionId, taskTraits.mExtensionData,
-                        task, delay);
+                        taskTraits.mMayBlock, taskTraits.mUseThreadPool, taskTraits.mExtensionId,
+                        taskTraits.mExtensionData, task, delay);
             }
         }
     }
@@ -256,5 +256,6 @@ public class PostTask {
     }
 
     private static native void nativePostDelayedTask(boolean prioritySetExplicitly, int priority,
-            boolean mayBlock, byte extensionId, byte[] extensionData, Runnable task, long delay);
+            boolean mayBlock, boolean useThreadPool, byte extensionId, byte[] extensionData,
+            Runnable task, long delay);
 }

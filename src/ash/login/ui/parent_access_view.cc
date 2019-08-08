@@ -15,7 +15,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/optional.h"
@@ -391,7 +391,7 @@ ParentAccessView::Callbacks::Callbacks(const Callbacks& other) = default;
 
 ParentAccessView::Callbacks::~Callbacks() = default;
 
-ParentAccessView::ParentAccessView(const AccountId& account_id,
+ParentAccessView::ParentAccessView(const base::Optional<AccountId>& account_id,
                                    const Callbacks& callbacks)
     : NonAccessibleView(kParentAccessViewClassName),
       callbacks_(callbacks),
@@ -404,9 +404,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       gfx::Insets(kParentAccessViewVerticalInsetDp,
                   kParentAccessViewHorizontalInsetDp),
       0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   views::BoxLayout* main_layout = SetLayoutManager(std::move(layout));
 
   SetPreferredSize(GetParentAccessViewSize());
@@ -420,7 +420,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   auto header_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
   header_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+      views::BoxLayout::MainAxisAlignment::kStart);
   auto* header = new NonAccessibleView();
   header->SetPreferredSize(gfx::Size(child_view_width, 0));
   header->SetLayoutManager(std::move(header_layout));
@@ -433,8 +433,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   back_button_->SetImage(views::Button::STATE_NORMAL,
                          gfx::CreateVectorIcon(kLockScreenArrowBackIcon,
                                                kArrowSizeDp, SK_ColorWHITE));
-  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                  views::ImageButton::ALIGN_MIDDLE);
+  back_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  back_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   back_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME));
   back_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -623,10 +623,18 @@ void ParentAccessView::SubmitCode() {
   base::Optional<std::string> code = access_code_view_->GetCode();
   DCHECK(code.has_value());
 
-  Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
-      account_id_, *code,
-      base::BindOnce(&ParentAccessView::OnValidationResult,
-                     weak_ptr_factory_.GetWeakPtr()));
+  bool result =
+      Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
+          account_id_.value_or(AccountId()), *code);
+
+  if (result) {
+    VLOG(1) << "Parent access code successfully validated";
+    callbacks_.on_finished.Run(true);
+    return;
+  }
+
+  VLOG(1) << "Invalid parent access code entered";
+  UpdateState(State::kError);
 }
 
 void ParentAccessView::UpdateState(State state) {
@@ -656,17 +664,6 @@ void ParentAccessView::UpdatePreferredSize() {
   pin_keyboard_to_footer_spacer_->SetPreferredSize(
       GetPinKeyboardToFooterSpacerSize());
   SetPreferredSize(CalculatePreferredSize());
-}
-
-void ParentAccessView::OnValidationResult(base::Optional<bool> result) {
-  if (result.has_value() && *result) {
-    VLOG(1) << "Parent access code successfully validated";
-    callbacks_.on_finished.Run(true);
-    return;
-  }
-
-  VLOG(1) << "Invalid parent access code entered";
-  UpdateState(State::kError);
 }
 
 void ParentAccessView::OnInputChange(bool complete) {

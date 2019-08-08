@@ -38,7 +38,7 @@ cr.define('system_dialog_browsertest', function() {
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate(initialSettings.printerName));
       const pluginProxy = new print_preview.PDFPluginStub();
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       const page = document.createElement('print-preview-app');
       document.body.appendChild(page);

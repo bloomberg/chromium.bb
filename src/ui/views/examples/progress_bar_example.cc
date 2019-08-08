@@ -44,13 +44,12 @@ void ProgressBarExample::CreateExampleView(View* container) {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  minus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("-"));
+  minus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("-")).release();
   layout->AddView(minus_button_);
   progress_bar_ = new ProgressBar();
   layout->AddView(progress_bar_);
-  plus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("+"));
+  plus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("+")).release();
   layout->AddView(plus_button_);
-
   layout->StartRowWithPadding(0, 0, 0, 10);
   layout->AddView(new Label(base::ASCIIToUTF16("Infinite loader:")));
   ProgressBar* infinite_bar = new ProgressBar();

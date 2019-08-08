@@ -51,19 +51,11 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStreamBase : public QuicCryptoStream {
   // These are all accessors and setters to their respective counters.
   virtual uint8_t NumHandshakeMessages() const = 0;
   virtual uint8_t NumHandshakeMessagesWithServerNonces() const = 0;
-  virtual bool UseStatelessRejectsIfPeerSupported() const = 0;
-  virtual bool PeerSupportsStatelessRejects() const = 0;
   virtual bool ZeroRttAttempted() const = 0;
-  virtual void SetPeerSupportsStatelessRejects(bool set) = 0;
   virtual const CachedNetworkParameters* PreviousCachedNetworkParams()
       const = 0;
   virtual void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) = 0;
-
-  // Checks the options on the handshake-message to see whether the
-  // peer supports stateless-rejects.
-  static bool DoesPeerSupportStatelessRejects(
-      const CryptoHandshakeMessage& message);
 };
 
 class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
@@ -154,7 +146,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   // |helper| must outlive the stream.
   QuicCryptoServerStream(const QuicCryptoServerConfig* crypto_config,
                          QuicCompressedCertsCache* compressed_certs_cache,
-                         bool use_stateless_rejects_if_peer_supported,
                          QuicSession* session,
                          Helper* helper);
   QuicCryptoServerStream(const QuicCryptoServerStream&) = delete;
@@ -171,11 +162,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   uint8_t NumHandshakeMessagesWithServerNonces() const override;
   int NumServerConfigUpdateMessagesSent() const override;
   const CachedNetworkParameters* PreviousCachedNetworkParams() const override;
-  bool UseStatelessRejectsIfPeerSupported() const override;
-  bool PeerSupportsStatelessRejects() const override;
   bool ZeroRttAttempted() const override;
-  void SetPeerSupportsStatelessRejects(
-      bool peer_supports_stateless_rejects) override;
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
 
@@ -200,17 +187,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 
  private:
   std::unique_ptr<HandshakerDelegate> handshaker_;
-
-  // If true, the server should use stateless rejects, so long as the
-  // client supports them, as indicated by
-  // peer_supports_stateless_rejects_.
-  bool use_stateless_rejects_if_peer_supported_;
-
-  // Set to true, once the server has received information from the
-  // client that it supports stateless reject.
-  //  TODO(jokulik): Remove once client stateless reject support
-  // becomes the default.
-  bool peer_supports_stateless_rejects_;
 
   // Arguments from QuicCryptoServerStream constructor that might need to be
   // passed to the HandshakerDelegate constructor in its late construction.

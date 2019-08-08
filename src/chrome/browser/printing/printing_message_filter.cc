@@ -32,7 +32,7 @@
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/win/conflicts/module_database.h"
 #endif
 
 using content::BrowserThread;

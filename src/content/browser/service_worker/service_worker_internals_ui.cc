@@ -327,7 +327,6 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
                           IDR_SERVICE_WORKER_INTERNALS_CSS);
   source->SetDefaultResource(IDR_SERVICE_WORKER_INTERNALS_HTML);
   source->DisableDenyXFrameOptions();
-  source->UseGzip();
 
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 
 #import <Cocoa/Cocoa.h>
 #include <objc/runtime.h>
@@ -19,6 +19,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
@@ -37,9 +40,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-#import "ui/views_bridge_mac/bridged_content_view.h"
-#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
-#import "ui/views_bridge_mac/views_nswindow_delegate.h"
 
 using base::ASCIIToUTF16;
 using base::SysNSStringToUTF8;

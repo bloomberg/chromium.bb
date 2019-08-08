@@ -93,8 +93,7 @@ class MockNetworkURLLoaderFactory final
     // Pass the response header to the client.
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(response.headers.c_str(),
-                                          response.headers.size()));
+        net::HttpUtil::AssembleRawHeaders(response.headers));
     network::ResourceResponseHead response_head;
     response_head.headers = info.headers;
     response_head.headers->GetMimeType(&response_head.mime_type);
@@ -920,17 +919,13 @@ class ServiceWorkerNewScriptLoaderResumeTest
   }
 
   // Verify the received response.
-  void CheckReceivedResponse(bool has_body, const std::string& expected_body) {
+  void CheckReceivedResponse(const std::string& expected_body) {
     EXPECT_TRUE(client_->has_received_response());
-    EXPECT_EQ(has_body, client_->response_body().is_valid());
+    EXPECT_TRUE(client_->response_body().is_valid());
 
     // The response should also be stored in the storage.
     EXPECT_TRUE(ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
-        LookupResourceId(kScriptURL), context()->storage(),
-        has_body ? expected_body : ""));
-
-    if (!has_body)
-      return;
+        LookupResourceId(kScriptURL), context()->storage(), expected_body));
 
     std::string response;
     EXPECT_TRUE(mojo::BlockingCopyToString(client_->response_body_release(),
@@ -980,7 +975,7 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, FirstBlockDifferent) {
   EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  CheckReceivedResponse(true, kNewData);
+  CheckReceivedResponse(kNewData);
 }
 
 // Tests resume type loader when the script data block in the middle is
@@ -1012,7 +1007,7 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, MiddleBlockDifferent) {
   EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  CheckReceivedResponse(true, kNewData);
+  CheckReceivedResponse(kNewData);
 }
 
 // Tests resume type loader when the last script data block is different.
@@ -1039,7 +1034,7 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, LastBlockDifferent) {
   EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  CheckReceivedResponse(true, kNewData);
+  CheckReceivedResponse(kNewData);
 }
 
 // Tests resume type loader when the last script data block is different and
@@ -1064,7 +1059,7 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, LastBlockDifferentCompleted) {
   EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  CheckReceivedResponse(true, kNewData);
+  CheckReceivedResponse(kNewData);
 }
 
 // Tests resume type loader when the new script has more data appended.
@@ -1095,7 +1090,7 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, NewScriptLargerThanOld) {
   EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
   // The client should have received the response.
-  CheckReceivedResponse(true, kNewData);
+  CheckReceivedResponse(kNewData);
 }
 
 // Tests resume type loader when the script changed to have no body.
@@ -1117,7 +1112,7 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, NewScriptEmptyBody) {
 
   EXPECT_EQ(net::OK, client_->completion_status().error_code);
 
-  CheckReceivedResponse(false, kNewData);
+  CheckReceivedResponse(kNewData);
 }
 
 // Tests resume type loader could report error when the resumed network

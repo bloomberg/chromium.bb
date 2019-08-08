@@ -106,7 +106,8 @@ class TaggedTestListParser(object):
     """
 
     TAG_TOKEN = '# tags: ['
-    _MATCH_STRING = r'^(?:(crbug.com/\d+) )?'  # The bug field (optional).
+    # The bug field (optional), including optional subproject.
+    _MATCH_STRING = r'^(?:(crbug.com/(?:[^/]*/)?\d+) )?'
     _MATCH_STRING += r'(?:\[ (.+) \] )?'  # The label field (optional).
     _MATCH_STRING += r'(\S+) '  # The test path field.
     _MATCH_STRING += r'\[ ([^\[.]+) \]'  # The expectation field.
@@ -197,6 +198,11 @@ class TaggedTestListParser(object):
         reason, raw_tags, test, raw_results, _ = match.groups()
         tags = [raw_tag.lower() for raw_tag in raw_tags.split()] if raw_tags else []
         tag_set_ids = set()
+
+        if '*' in test[:-1]:
+            raise ParseError(lineno,
+                'Invalid glob, \'*\' can only be at the end of the pattern')
+
         for t in tags:
             if not t in  self._tag_to_tag_set:
                 raise ParseError(lineno, 'Unknown tag "%s"' % t)

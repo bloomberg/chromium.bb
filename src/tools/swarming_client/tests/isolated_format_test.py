@@ -5,18 +5,18 @@
 
 import hashlib
 import json
-import logging
 import os
 import sys
 import tempfile
 import unittest
 
-# net_utils adjusts sys.path.
-import net_utils
+# Mutates sys.path.
+import test_env
+
+# third_party/
+from depot_tools import auto_stub
 
 import isolated_format
-from depot_tools import auto_stub
-from depot_tools import fix_encoding
 from utils import file_path
 from utils import fs
 from utils import tools
@@ -134,7 +134,7 @@ class SymlinkTest(unittest.TestCase):
       expected = {
         # SHA-1 of empty string
         'h': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-        'm': 288,
+        'm': 256,
         's': 0,
       }
       self.assertEqual(expected, actual)
@@ -244,9 +244,4 @@ class TestIsolated(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  logging.basicConfig(
-      level=(logging.DEBUG if '-v' in sys.argv else logging.ERROR))
-  unittest.main()
+  test_env.main()

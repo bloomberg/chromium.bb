@@ -359,6 +359,13 @@ def _AssignNmAliasPathsAndCreatePathAliases(raw_symbols, object_paths_by_name):
   for symbol in raw_symbols:
     ret.append(symbol)
     full_name = symbol.full_name
+    # '__typeid_' symbols appear in linker .map only, and not nm output.
+    if full_name.startswith('__typeid_'):
+      if object_paths_by_name.get(full_name):
+        logging.warning('Found unexpected __typeid_ symbol in nm output: %s',
+                        full_name)
+      continue
+
     # Don't skip if symbol.IsBss(). This is needed for LLD-LTO to work, since
     # .bss object_path data are unavailable for linker_map_parser, and need to
     # be extracted here. For regular LLD flow, incorrect aliased symbols can
@@ -526,17 +533,6 @@ def _CalculatePadding(raw_symbols):
           'Found duplicate symbols:\n%r\n%r' % (prev_symbol, symbol))
 
     padding = symbol.address - prev_symbol.end_address
-    # These thresholds were found by experimenting with arm32 Chrome.
-    # E.g.: Set them to 0 and see what warnings get logged, then take max value.
-    # TODO(agrieve): See if these thresholds make sense for architectures
-    #     other than arm32.
-    if (not symbol.full_name.startswith('*') and
-        not symbol.IsStringLiteral() and (
-        symbol.section in 'rd' and padding >= 256 or
-        symbol.section in 't' and padding >= 64)):
-      # Should not happen.
-      logging.warning('Large padding of %d between:\n  A) %r\n  B) %r' % (
-                      padding, prev_symbol, symbol))
     symbol.padding = padding
     symbol.size += padding
     assert symbol.size >= 0, (
@@ -651,12 +647,15 @@ def _AddNmAliases(raw_symbols, names_by_address):
     # Don't alias padding-only symbols (e.g. ** symbol gap)
     if s.size_without_padding == 0:
       continue
+    # Also skip artificial symbols that won't appear in nm output.
+    if s.full_name.startswith('** CFI jump table'):
+      continue
     name_list = names_by_address.get(s.address)
     if name_list:
       if s.full_name not in name_list:
         missing_names[s.full_name].append(s.address)
-        logging.warning('Name missing from aliases: %s %s', s.full_name,
-                        name_list)
+        logging.warning('Name missing from aliases: %08x %s %s', s.address,
+                        s.full_name, name_list)
         continue
       replacements.append((i, name_list))
       num_new_symbols += len(name_list) - 1
@@ -1539,7 +1538,9 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
   aab_or_apk = args.apk_file or args.minimal_apks_file
   mapping_path = args.mapping_file
   if aab_or_apk:
+    # Allow either .minimal.apks or just .apks.
     aab_or_apk = aab_or_apk.replace('.minimal.apks', '.aab')
+    aab_or_apk = aab_or_apk.replace('.apks', '.aab')
     if not mapping_path:
       mapping_path = aab_or_apk + '.mapping'
       logging.debug('Detected --mapping-file=%s', mapping_path)

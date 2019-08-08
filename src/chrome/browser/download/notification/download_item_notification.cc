@@ -689,14 +689,9 @@ base::string16 DownloadItemNotification::GetWarningStatusString() const {
   DCHECK(item_->IsDangerous());
   base::string16 elided_filename =
       item_->GetFileNameToReportUser().LossyDisplayName();
-  bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
-      RequestsAdvancedProtectionVerdicts(profile());
   switch (item_->GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
-      return l10n_util::GetStringUTF16(
-          requests_ap_verdicts
-              ? IDS_PROMPT_MALICIOUS_DOWNLOAD_URL_IN_ADVANCED_PROTECTION
-              : IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
+      return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
       if (IsExtensionDownload(item_.get())) {
@@ -709,13 +704,13 @@ base::string16 DownloadItemNotification::GetWarningStatusString() const {
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
-      return l10n_util::GetStringFUTF16(
-          requests_ap_verdicts
-              ? IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION
-              : IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-          elided_filename);
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+                                        elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
+      bool requests_ap_verdicts =
+          safe_browsing::AdvancedProtectionStatusManager::
+              RequestsAdvancedProtectionVerdicts(profile());
       return l10n_util::GetStringFUTF16(
           requests_ap_verdicts
               ? IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION
@@ -723,11 +718,8 @@ base::string16 DownloadItemNotification::GetWarningStatusString() const {
           elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-      return l10n_util::GetStringFUTF16(
-          requests_ap_verdicts
-              ? IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION
-              : IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
-          elided_filename);
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
+                                        elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

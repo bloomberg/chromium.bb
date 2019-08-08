@@ -92,10 +92,8 @@ struct COMPONENT_EXPORT(FIDO) Credential {
   DISALLOW_COPY_AND_ASSIGN(Credential);
 };
 
-// Tries to find a credential for the given |rp_id| in the keychain.
-// |credential_id_filter| may be used to select credentials by ID. If it is
-// empty, any credential for the RP matches. If multiple credentials are found,
-// only one is returned.
+// FindCredentialInKeychain returns a credential for the given |rp_id| and with
+// a credential ID from |allowed_credential_ids| if such a credential exists.
 //
 // An LAContext that has been successfully evaluated using |TouchIdContext| may
 // be passed in |authenticaton_context|, in order to authorize the credential's
@@ -109,7 +107,7 @@ base::Optional<Credential> FindCredentialInKeychain(
     const std::string& keychain_access_group,
     const std::string& metadata_secret,
     const std::string& rp_id,
-    const std::set<std::vector<uint8_t>>& credential_id_filter,
+    const std::set<std::vector<uint8_t>>& allowed_credential_ids,
     LAContext* authentication_context) API_AVAILABLE(macosx(10.12.2));
 
 }  // namespace mac

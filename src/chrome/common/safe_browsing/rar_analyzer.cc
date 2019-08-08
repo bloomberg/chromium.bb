@@ -6,10 +6,12 @@
 
 #include <memory>
 #include <string>
+
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
@@ -20,116 +22,52 @@
 namespace safe_browsing {
 namespace rar_analyzer {
 
+namespace {
+
+// The maximum duration of RAR analysis, in milliseconds.
+const int kRarAnalysisTimeoutMs = 10000;
+
+}  // namespace
+
 void AnalyzeRarFile(base::File rar_file,
                     base::File temp_file,
                     ArchiveAnalyzerResults* results) {
+  base::Time start_time = base::Time::Now();
   results->success = false;
   results->file_count = 0;
   results->directory_count = 0;
 
-  // If the file is too big to unpack, fall back to the old method.
-  if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
-    bool too_big_to_unpack =
-        base::checked_cast<uint64_t>(rar_file.GetLength()) >
-        FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
-    if (too_big_to_unpack)
-      return;
+  // If the file is too big to unpack, return failure. This will still send a
+  // ping as an "invalid" RAR.
+  bool too_big_to_unpack =
+      base::checked_cast<uint64_t>(rar_file.GetLength()) >
+      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
+  if (too_big_to_unpack)
+    return;
 
-    third_party_unrar::RarReader reader;
-    if (!reader.Open(std::move(rar_file), temp_file.Duplicate()))
-      return;
+  third_party_unrar::RarReader reader;
+  if (!reader.Open(std::move(rar_file), temp_file.Duplicate()))
+    return;
 
-    while (reader.ExtractNextEntry()) {
-      const third_party_unrar::RarReader::EntryInfo& entry =
-          reader.current_entry();
-      UpdateArchiveAnalyzerResultsWithFile(entry.file_path, &temp_file,
-                                           entry.file_size, entry.is_encrypted,
-                                           results);
-      if (entry.is_directory)
-        results->directory_count++;
-      else
-        results->file_count++;
+  bool timeout = false;
+  while (reader.ExtractNextEntry()) {
+    if (base::Time::Now() - start_time >
+        base::TimeDelta::FromMilliseconds(kRarAnalysisTimeoutMs)) {
+      timeout = true;
+      break;
     }
-  } else {
-    // TODO(drubery): Remove this path once http://crbug/909778 is fully rolled
-    // out.
-    auto archive = std::make_unique<third_party_unrar::Archive>();
-    archive->SetFileHandle(rar_file.GetPlatformFile());
-
-    if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
-      archive->SetTempFileHandle(temp_file.GetPlatformFile());
-    }
-
-    bool open_success = archive->Open(L"dummy.rar");
-    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarOpenSuccess", open_success);
-    if (!open_success) {
-      DLOG(ERROR) << __FUNCTION__ << ": Unable to open rar_file: "
-                  << rar_file.GetPlatformFile();
-      return;
-    }
-
-    bool is_valid_archive = archive->IsArchive(/*EnableBroken=*/true);
-    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarValidArchive", is_valid_archive);
-    if (!is_valid_archive) {
-      DLOG(ERROR) << __FUNCTION__
-                  << ": !IsArchive: rar_file: " << rar_file.GetPlatformFile();
-      return;
-    }
-    std::set<base::FilePath> archived_archive_filenames;
-    for (archive->ViewComment();
-         archive->ReadHeader() > 0 &&
-         archive->GetHeaderType() != third_party_unrar::kUnrarEndarcHead;
-         archive->SeekToNext()) {
-      std::wstring wide_filename(archive->FileHead.FileName);
-#if defined(OS_WIN)
-      base::FilePath file_path(wide_filename);
-#else
-      std::string filename(wide_filename.begin(), wide_filename.end());
-      base::FilePath file_path(filename);
-#endif  // OS_WIN
-      bool is_executable =
-          FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file_path);
-      bool is_archive =
-          FileTypePolicies::GetInstance()->IsArchiveFile(file_path);
-      int64 unpacked_size =
-          archive->FileHead.UnpSize;  // Read from header, may not be accurate.
-      // TODO(vakh): Log UMA if |unpacked_size| < 0.
-
-      base::FilePath basename = file_path.BaseName();
-      std::string basename_utf8(basename.AsUTF8Unsafe());
-      bool is_utf8_valid_basename =
-          base::StreamingUtf8Validator::Validate(basename_utf8);
-
-      if (archive->FileHead.Dir)
-        results->directory_count++;
-      else
-        results->file_count++;
-
-      if (is_archive) {
-        results->has_archive = true;
-        archived_archive_filenames.insert(basename);
-        ClientDownloadRequest::ArchivedBinary* archived_archive =
-            results->archived_binary.Add();
-        if (is_utf8_valid_basename)
-          archived_archive->set_file_basename(basename_utf8);
-        archived_archive->set_download_type(ClientDownloadRequest::ARCHIVE);
-        archived_archive->set_length(unpacked_size);
-      } else if (is_executable) {
-        results->has_executable = true;
-        ClientDownloadRequest::ArchivedBinary* archived_binary =
-            results->archived_binary.Add();
-        if (is_utf8_valid_basename)
-          archived_binary->set_file_basename(basename_utf8);
-        archived_binary->set_download_type(
-            download_type_util::GetDownloadType(file_path));
-        archived_binary->set_length(unpacked_size);
-      }
-      results->archived_archive_filenames.assign(
-          archived_archive_filenames.begin(), archived_archive_filenames.end());
-    }
+    const third_party_unrar::RarReader::EntryInfo& entry =
+        reader.current_entry();
+    UpdateArchiveAnalyzerResultsWithFile(entry.file_path, &temp_file,
+                                         entry.file_size, entry.is_encrypted,
+                                         results);
+    if (entry.is_directory)
+      results->directory_count++;
+    else
+      results->file_count++;
   }
 
-  results->success = true;
+  results->success = !timeout;
 }
 
 }  // namespace rar_analyzer

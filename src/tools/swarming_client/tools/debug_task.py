@@ -12,7 +12,8 @@ import subprocess
 import sys
 import tempfile
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 
 
 # URL to point people to. *Chromium specific*
@@ -44,7 +45,7 @@ def retrieve_task_props(swarming, taskid):
       'task/%s/request' % taskid,
   ]
   try:
-    return json.loads(subprocess.check_output(cmd, cwd=ROOT_DIR))
+    return json.loads(subprocess.check_output(cmd, cwd=CLIENT_DIR))
   except subprocess.CalledProcessError:
     raise Failed('Are you sure the task ID and swarming server is valid?')
 
@@ -56,7 +57,7 @@ def retrieve_task_results(swarming, taskid):
       'task/%s/result' % taskid,
   ]
   try:
-    return json.loads(subprocess.check_output(cmd, cwd=ROOT_DIR))
+    return json.loads(subprocess.check_output(cmd, cwd=CLIENT_DIR))
   except subprocess.CalledProcessError:
     raise Failed('Are you sure the task ID and swarming server is valid?')
 
@@ -88,11 +89,11 @@ def get_swarming_args_from_task(task):
     try:
       cmd = [
         sys.executable, 'isolateserver.py', 'download',
-        '-I',  task['properties']['inputs_ref']['isolatedserver'],
-        '--namespace',  task['properties']['inputs_ref']['namespace'],
+        '-I', task['properties']['inputs_ref']['isolatedserver'],
+        '--namespace', task['properties']['inputs_ref']['namespace'],
         '-f', isolated, name,
       ]
-      subprocess.check_call(cmd, cwd=ROOT_DIR)
+      subprocess.check_call(cmd, cwd=CLIENT_DIR)
       with open(name, 'rb') as f:
         command = json.load(f).get('command')
     finally:
@@ -132,8 +133,8 @@ def trigger(swarming, taskid, task, duration, reuse_bot):
     cmd.extend(
         [
           '-s', task['properties']['inputs_ref']['isolated'],
-          '-I',  task['properties']['inputs_ref']['isolatedserver'],
-          '--namespace',  task['properties']['inputs_ref']['namespace'],
+          '-I', task['properties']['inputs_ref']['isolatedserver'],
+          '--namespace', task['properties']['inputs_ref']['namespace'],
         ])
 
   for i in task['properties'].get('env', []):
@@ -150,7 +151,7 @@ def trigger(swarming, taskid, task, duration, reuse_bot):
   cmd.append('--')
   cmd.extend(generate_command(swarming, taskid, task, duration))
   try:
-    return subprocess.call(cmd, cwd=ROOT_DIR)
+    return subprocess.call(cmd, cwd=CLIENT_DIR)
   except KeyboardInterrupt:
     return 0
 

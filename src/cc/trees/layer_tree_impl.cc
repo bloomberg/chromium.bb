@@ -619,33 +619,11 @@ LayerImplList::reverse_iterator LayerTreeImpl::rend() {
 }
 
 bool LayerTreeImpl::IsElementInPropertyTree(ElementId element_id) const {
-  return elements_in_property_trees_.count(element_id);
+  return property_trees()->HasElement(element_id);
 }
 
 ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
-}
-
-void LayerTreeImpl::AddToElementPropertyTreeList(ElementId element_id) {
-#if DCHECK_IS_ON()
-  bool element_id_collision_detected =
-      elements_in_property_trees_.count(element_id);
-
-  DCHECK(!element_id_collision_detected);
-#endif
-
-  elements_in_property_trees_.insert(element_id);
-
-  DCHECK(settings().use_layer_lists);
-  host_impl_->mutator_host()->RegisterElement(element_id,
-                                              GetElementTypeForAnimation());
-}
-
-void LayerTreeImpl::RemoveFromElementPropertyTreeList(ElementId element_id) {
-  DCHECK(settings().use_layer_lists);
-  host_impl_->mutator_host()->UnregisterElement(element_id,
-                                                GetElementTypeForAnimation());
-  elements_in_property_trees_.erase(element_id);
 }
 
 void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
@@ -658,9 +636,8 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
                element_id.AsValue().release());
 
   if (!settings().use_layer_lists) {
-    elements_in_property_trees_.insert(element_id);
-    host_impl_->mutator_host()->RegisterElement(element_id,
-                                                GetElementTypeForAnimation());
+    host_impl_->mutator_host()->RegisterElementId(element_id,
+                                                  GetElementTypeForAnimation());
   }
 
   if (layer->scrollable())
@@ -676,9 +653,8 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
                element_id.AsValue().release());
 
   if (!settings().use_layer_lists) {
-    elements_in_property_trees_.erase(element_id);
-    host_impl_->mutator_host()->UnregisterElement(element_id,
-                                                  GetElementTypeForAnimation());
+    host_impl_->mutator_host()->UnregisterElementId(
+        element_id, GetElementTypeForAnimation());
   }
 
   element_id_to_scrollable_layer_.erase(element_id);
@@ -723,6 +699,18 @@ void LayerTreeImpl::SetFilterMutated(ElementId element_id,
   if (IsSyncTree() || IsRecycleTree())
     element_id_to_filter_animations_[element_id] = filters;
   if (property_trees()->effect_tree.OnFilterAnimated(element_id, filters))
+    set_needs_update_draw_properties();
+}
+
+void LayerTreeImpl::SetBackdropFilterMutated(
+    ElementId element_id,
+    const FilterOperations& backdrop_filters) {
+  DCHECK_EQ(
+      1u, property_trees()->element_id_to_effect_node_index.count(element_id));
+  if (IsSyncTree() || IsRecycleTree())
+    element_id_to_backdrop_filter_animations_[element_id] = backdrop_filters;
+  if (property_trees()->effect_tree.OnBackdropFilterAnimated(element_id,
+                                                             backdrop_filters))
     set_needs_update_draw_properties();
 }
 
@@ -827,6 +815,23 @@ void LayerTreeImpl::UpdatePropertyTreeAnimationFromMainThread() {
     ++element_id_to_filter;
   }
 
+  auto element_id_to_backdrop_filter =
+      element_id_to_backdrop_filter_animations_.begin();
+  while (element_id_to_backdrop_filter !=
+         element_id_to_backdrop_filter_animations_.end()) {
+    const ElementId id = element_id_to_backdrop_filter->first;
+    EffectNode* node = property_trees_.effect_tree.FindNodeFromElementId(id);
+    if (!node || !node->is_currently_animating_backdrop_filter ||
+        node->backdrop_filters == element_id_to_backdrop_filter->second) {
+      element_id_to_backdrop_filter_animations_.erase(
+          element_id_to_backdrop_filter++);
+      continue;
+    }
+    node->backdrop_filters = element_id_to_backdrop_filter->second;
+    property_trees_.effect_tree.set_needs_update(true);
+    ++element_id_to_backdrop_filter;
+  }
+
   auto element_id_to_transform = element_id_to_transform_animations_.begin();
   while (element_id_to_transform != element_id_to_transform_animations_.end()) {
     const ElementId id = element_id_to_transform->first;
@@ -861,10 +866,9 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
                                                                   list_type);
       if (node->has_potential_animation != has_potential_animation) {
         node->has_potential_animation = has_potential_animation;
-        node->maximum_animation_scale =
-            mutator_host()->MaximumTargetScale(element_id, list_type);
-        node->starting_animation_scale =
-            mutator_host()->AnimationStartScale(element_id, list_type);
+        mutator_host()->GetAnimationScales(element_id, list_type,
+                                           &node->maximum_animation_scale,
+                                           &node->starting_animation_scale);
         transform_tree.set_needs_update(true);
         set_needs_update_draw_properties();
       }
@@ -1084,8 +1088,6 @@ void LayerTreeImpl::SetLocalSurfaceIdAllocationFromParent(
         local_surface_id_allocation_from_parent) {
   local_surface_id_allocation_from_parent_ =
       local_surface_id_allocation_from_parent;
-  if (IsActiveTree())
-    host_impl_->OnLayerTreeLocalSurfaceIdAllocationChanged();
 }
 
 void LayerTreeImpl::RequestNewLocalSurfaceId() {
@@ -1422,6 +1424,7 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       gfx::Rect(GetDeviceViewport().size()), host_impl_->DrawTransform(),
       &property_trees_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
+  host_impl_->UpdateElements(GetElementTypeForAnimation());
 }
 
 const RenderSurfaceList& LayerTreeImpl::GetRenderSurfaceList() const {
@@ -1755,8 +1758,15 @@ void LayerTreeImpl::QueuePinnedSwapPromise(
 
 void LayerTreeImpl::PassSwapPromises(
     std::vector<std::unique_ptr<SwapPromise>> new_swap_promises) {
-  for (auto& swap_promise : swap_promise_list_)
-    swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS);
+  for (auto& swap_promise : swap_promise_list_) {
+    if (swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS) ==
+        SwapPromise::DidNotSwapAction::KEEP_ACTIVE) {
+      // |swap_promise| must remain active, so place it in |new_swap_promises|
+      // in order to keep it alive and active.
+      new_swap_promises.push_back(std::move(swap_promise));
+    }
+  }
+  swap_promise_list_.clear();
   swap_promise_list_.swap(new_swap_promises);
 }
 
@@ -1784,13 +1794,30 @@ void LayerTreeImpl::ClearSwapPromises() {
 }
 
 void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  for (auto& swap_promise : swap_promise_list_)
-    swap_promise->DidNotSwap(reason);
-  swap_promise_list_.clear();
+  {
+    std::vector<std::unique_ptr<SwapPromise>> persistent_swap_promises;
+    for (auto& swap_promise : swap_promise_list_) {
+      if (swap_promise->DidNotSwap(reason) ==
+          SwapPromise::DidNotSwapAction::KEEP_ACTIVE) {
+        persistent_swap_promises.push_back(std::move(swap_promise));
+      }
+    }
+    // |persistent_swap_promises| must remain active even when swap fails.
+    swap_promise_list_ = std::move(persistent_swap_promises);
+  }
 
-  for (auto& swap_promise : pinned_swap_promise_list_)
-    swap_promise->DidNotSwap(reason);
-  pinned_swap_promise_list_.clear();
+  {
+    std::vector<std::unique_ptr<SwapPromise>> persistent_swap_promises;
+    for (auto& swap_promise : pinned_swap_promise_list_) {
+      if (swap_promise->DidNotSwap(reason) ==
+          SwapPromise::DidNotSwapAction::KEEP_ACTIVE) {
+        persistent_swap_promises.push_back(std::move(swap_promise));
+      }
+    }
+
+    // |persistent_swap_promises| must remain active even when swap fails.
+    pinned_swap_promise_list_ = std::move(persistent_swap_promises);
+  }
 }
 
 void LayerTreeImpl::DidModifyTilePriorities() {
@@ -2114,9 +2141,10 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-struct FindScrollingLayerOrScrollbarFunctor {
+struct HitTestScrollingLayerOrScrollbarFunctor {
   bool operator()(LayerImpl* layer) const {
-    return layer->scrollable() || layer->is_scrollbar();
+    return layer->HitTestable() &&
+           (layer->scrollable() || layer->is_scrollbar());
   }
 };
 
@@ -2128,7 +2156,7 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_[0];
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           FindScrollingLayerOrScrollbarFunctor(), &state);
+                           HitTestScrollingLayerOrScrollbarFunctor(), &state);
   return state.closest_match;
 }
 

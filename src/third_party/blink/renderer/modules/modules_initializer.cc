@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
+#include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
@@ -73,7 +74,6 @@
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
-#include "third_party/blink/renderer/modules/time_zone_monitor/time_zone_monitor_client.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
+#include "third_party/blink/renderer/modules/xr/navigator_xr.h"
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 #include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
 #endif
@@ -90,7 +91,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -119,12 +119,6 @@ void ModulesInitializer::Initialize() {
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
-  // Some unit tests may have no message loop ready, so we can't initialize the
-  // mojo stuff here. They can initialize those mojo stuff they're interested in
-  // later after they got a message loop ready.
-  if (CanInitializeMojo()) {
-    TimeZoneMonitorClient::Init();
-  }
 
   CoreInitializer::Initialize();
 
@@ -142,8 +136,6 @@ void ModulesInitializer::Initialize() {
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<ImageBitmapRenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
-      std::make_unique<XRPresentationContext::Factory>());
-  HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<GPUCanvasContext::Factory>());
 
   // OffscreenCanvas context types must be registered with the OffscreenCanvas.
@@ -153,6 +145,8 @@ void ModulesInitializer::Initialize() {
       std::make_unique<WebGLRenderingContext::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<WebGL2RenderingContext::Factory>());
+  OffscreenCanvas::RegisterRenderingContextFactory(
+      std::make_unique<ImageBitmapRenderingContext::Factory>());
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<WebGL2ComputeRenderingContext::Factory>());
@@ -192,9 +186,10 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
     PresentationController::ProvideTo(frame);
-  InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   ::blink::ProvideSpeechRecognitionTo(frame);
   InspectorAccessibilityAgent::ProvideTo(&frame);
+  ManifestManager::ProvideTo(frame);
+  InstalledAppController::ProvideTo(frame);
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
@@ -257,6 +252,8 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
   DOMWindowStorageController::From(document);
   if (RuntimeEnabledFeatures::WebVREnabled(document.GetExecutionContext()))
     NavigatorVR::From(document);
+  if (RuntimeEnabledFeatures::WebXREnabled(document.GetExecutionContext()))
+    NavigatorXR::From(document);
   if (RuntimeEnabledFeatures::PresentationEnabled() &&
       settings.GetPresentationReceiver()) {
     // We eagerly create PresentationReceiver so that the frame creating the
@@ -311,6 +308,18 @@ void ModulesInitializer::CloneSessionStorage(
   StorageNamespace* storage_namespace = StorageNamespace::From(clone_from_page);
   if (storage_namespace)
     storage_namespace->CloneTo(WebString::FromLatin1(clone_to_namespace));
+}
+
+void ModulesInitializer::DidCommitLoad(LocalFrame& frame) {
+  ManifestManager* manifest_manager = ManifestManager::From(frame);
+  if (manifest_manager)
+    manifest_manager->DidCommitLoad();
+}
+
+void ModulesInitializer::DidChangeManifest(LocalFrame& frame) {
+  ManifestManager* manifest_manager = ManifestManager::From(frame);
+  if (manifest_manager)
+    manifest_manager->DidChangeManifest();
 }
 
 void ModulesInitializer::RegisterInterfaces(

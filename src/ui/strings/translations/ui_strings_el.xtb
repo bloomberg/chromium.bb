@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1028699632127661925">Αποστολή στη συσκευή <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Ρυθμίσεις ειδοποιήσεων</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Πριν από 1 ημέρα}other{Πριν από # ημέρες}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="1409544243779336081">Πρόταση εφαρμογής</translation>
-<translation id="1413622004203049571">Απενεργοποίηση ειδοποιήσεων από <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">τώρα</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
-<translation id="1756116796893109054">Αποστολή καρτέλας…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Β</translation>
 <translation id="1801827354178857021">Περίοδος</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 μήνας}other{# μήνες}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Επέκταση σε όλες τις εφαρμογές</translation>
+<translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6264365405983206840">Επιλογή Όλ&amp;ων</translation>
 <translation id="6351032674660237738">ΠΡΟΤΑΣΕΙΣ ΕΦΑΡΜΟΓΩΝ</translation>
 <translation id="6364916375976753737">Κύλιση αριστερά</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Περισσότερες από 1 μη αναγνωσμένες ειδοποιήσεις}other{Περισσότερες από # μη αναγνωσμένες ειδοποιήσεις}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{σε 1 λ.}other{σε # λ.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Έναρξη φωνητικού ερωτήματος Βοηθού Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Πριν από 1 ώρα}other{Πριν από # ώρες}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
+<translation id="8144660977431427332">Οι αναζητήσεις σας παρέχονται από τον Βοηθό Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, αυτόματη συμπλήρωση</translation>
 <translation id="815598010540052116">Κύλιση κάτω</translation>
 <translation id="8170087467028567933">Η κατάργηση αυτής της πρότασης θα την αποκρύψει από τον λογαριασμό σας σε όλες τις συσκευές.</translation>

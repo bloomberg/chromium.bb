@@ -48,7 +48,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   // Prevents execution of ThreadPool tasks from the moment content is
   // entered. Handed off to |main_loop_| later so it can decide when to release
   // worker threads again.
-  std::unique_ptr<base::ThreadPool::ScopedExecutionFence>
+  std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
       scoped_execution_fence_;
 
   std::unique_ptr<NotificationServiceImpl> notification_service_;

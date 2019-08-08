@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
-#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "v8/include/v8.h"
 
@@ -56,7 +56,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
     EXPECT_EQ(TestReferrerURL(), url);
     ModuleScript* module_script =
-        ModuleScript::CreateForTest(this, ModuleRecord(), url);
+        JSModuleScript::CreateForTest(this, ModuleRecord(), url);
     return module_script;
   }
 
@@ -230,7 +230,7 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
       TestReferrerURL(), ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ModuleScript* module_script =
-      ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
+      JSModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
   modulator->ResolveTreeFetch(module_script);
 
@@ -322,7 +322,7 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
       TestReferrerURL(), ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ModuleScript* module_script =
-      ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
+      JSModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
   modulator->ResolveTreeFetch(module_script);
 
@@ -362,7 +362,7 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
       TestDependencyURL(), ScriptFetchOptions(),
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ModuleScript* module_script =
-      ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
+      JSModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
   modulator->ResolveTreeFetch(module_script);
 

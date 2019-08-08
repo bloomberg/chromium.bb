@@ -31,6 +31,11 @@ void TaskSession::DocumentSession::AddDetachedNode(int64_t id) {
   detached_nodes_.push_back(id);
 }
 
+void TaskSession::DocumentSession::AddChangedNodeHolder(
+    cc::NodeHolder node_holder) {
+  changed_content_.push_back(node_holder);
+}
+
 std::vector<int64_t> TaskSession::DocumentSession::MoveDetachedNodes() {
   return std::move(detached_nodes_);
 }
@@ -64,12 +69,36 @@ TaskSession::DocumentSession::GetNextUnsentContentHolder() {
   return content_holder;
 }
 
+scoped_refptr<blink::ContentHolder>
+TaskSession::DocumentSession::GetNextChangedContentHolder() {
+  scoped_refptr<ContentHolder> content_holder;
+  while (!changed_content_.empty() && !content_holder) {
+    auto node_holder = changed_content_.back();
+    if (node_holder.type == cc::NodeHolder::Type::kID) {
+      Node* node = DOMNodeIds::NodeForId(node_holder.id);
+      if (node && node->GetLayoutObject())
+        content_holder = base::MakeRefCounted<ContentHolder>(*node);
+    } else if (node_holder.type == cc::NodeHolder::Type::kTextHolder &&
+               node_holder.text_holder) {
+      content_holder = scoped_refptr<ContentHolder>(
+          static_cast<ContentHolder*>(node_holder.text_holder.get()));
+      if (content_holder && !content_holder->IsValid())
+        content_holder.reset();
+    }
+    changed_content_.pop_back();
+  }
+  if (content_holder)
+    total_sent_nodes_++;
+  return content_holder;
+}
+
 void TaskSession::DocumentSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(sent_nodes_);
   visitor->Trace(document_);
 }
 
 void TaskSession::DocumentSession::Reset() {
+  changed_content_.clear();
   captured_content_.clear();
   detached_nodes_.clear();
 }
@@ -97,6 +126,19 @@ void TaskSession::SetCapturedContent(
 void TaskSession::GroupCapturedContentByDocument(
     const std::vector<cc::NodeHolder>& captured_content) {
   for (const cc::NodeHolder& node_holder : captured_content) {
+    if (const Node* node = GetNode(node_holder)) {
+      node = changed_nodes_.Take(node);
+      if (node) {
+        // The changed node might not be sent.
+        if (GetNodeIf(true, node_holder)) {
+          EnsureDocumentSession(node->GetDocument())
+              .AddChangedNodeHolder(node_holder);
+        } else {
+          EnsureDocumentSession(node->GetDocument()).AddNodeHolder(node_holder);
+        }
+        continue;
+      }
+    }
     if (const Node* node = GetNodeIf(false /* sent */, node_holder)) {
       EnsureDocumentSession(node->GetDocument()).AddNodeHolder(node_holder);
     }
@@ -106,8 +148,14 @@ void TaskSession::GroupCapturedContentByDocument(
 void TaskSession::OnNodeDetached(const cc::NodeHolder& node_holder) {
   if (const Node* node = GetNodeIf(true /* sent */, node_holder)) {
     EnsureDocumentSession(node->GetDocument())
-        .AddDetachedNode(reinterpret_cast<int64_t>(&node));
+        .AddDetachedNode(reinterpret_cast<int64_t>(node));
     has_unsent_data_ = true;
+  }
+}
+
+void TaskSession::OnNodeChanged(const cc::NodeHolder& node_holder) {
+  if (const Node* node = GetNode(node_holder)) {
+    changed_nodes_.insert(WeakMember<const Node>(node));
   }
 }
 
@@ -125,6 +173,19 @@ const Node* TaskSession::GetNodeIf(bool sent,
         (content_holder->HasSent() == sent)) {
       return content_holder->GetNode();
     }
+  }
+  return nullptr;
+}
+
+const Node* TaskSession::GetNode(const cc::NodeHolder& node_holder) const {
+  if (node_holder.type == cc::NodeHolder::Type::kID)
+    return DOMNodeIds::NodeForId(node_holder.id);
+
+  if (node_holder.type == cc::NodeHolder::Type::kTextHolder) {
+    ContentHolder* content_holder =
+        static_cast<ContentHolder*>(node_holder.text_holder.get());
+    if (content_holder)
+      return content_holder->GetNode();
   }
   return nullptr;
 }
@@ -150,6 +211,7 @@ TaskSession::DocumentSession* TaskSession::GetDocumentSession(
 
 void TaskSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(sent_nodes_);
+  visitor->Trace(changed_nodes_);
   visitor->Trace(to_document_session_);
 }
 

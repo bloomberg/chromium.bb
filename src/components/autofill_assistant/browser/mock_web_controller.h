@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -24,6 +26,7 @@ class MockWebController : public WebController {
 
   void ClickOrTapElement(
       const Selector& selector,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
     // Transforming callback into a references allows using RunOnceCallback on
     // the argument.
@@ -35,11 +38,13 @@ class MockWebController : public WebController {
 
   void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnFocusElement(selector, callback);
+    OnFocusElement(selector, top_padding, callback);
   }
-  MOCK_METHOD2(OnFocusElement,
+  MOCK_METHOD3(OnFocusElement,
                void(const Selector& selector,
+                    const TopPadding& top_padding,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
   void ElementCheck(const Selector& selector,
@@ -61,6 +66,13 @@ class MockWebController : public WebController {
       void(const Selector& selector,
            base::OnceCallback<void(bool, const std::string&)>& callback));
 
+  void GetVisualViewport(
+      base::OnceCallback<void(bool, const RectF&)> callback) override {
+    OnGetVisualViewport(callback);
+  }
+  MOCK_METHOD1(OnGetVisualViewport,
+               void(base::OnceCallback<void(bool, const RectF&)>& callback));
+
   void GetElementPosition(
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback) override {
@@ -80,6 +92,14 @@ class MockWebController : public WebController {
   }
 
   MOCK_METHOD0(ClearCookie, void());
+
+  void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) {
+    OnWaitForWindowHeightChange(callback);
+  }
+
+  MOCK_METHOD1(OnWaitForWindowHeightChange,
+               void(base::OnceCallback<void(const ClientStatus&)>& callback));
 };
 
 }  // namespace autofill_assistant

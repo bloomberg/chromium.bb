@@ -168,7 +168,7 @@ class NativeWindowOcclusionTrackerTest : public test::AuraTestBase {
     Window* window = CreateNormalWindow(1, host()->window(), nullptr);
     window->SetBounds(bounds);
 
-    window->env()->GetWindowOcclusionTracker()->Track(window);
+    Env::GetInstance()->GetWindowOcclusionTracker()->Track(window);
   }
 
   int GetNumVisibleRootWindows() {

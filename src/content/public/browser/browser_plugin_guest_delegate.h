@@ -17,6 +17,7 @@ class Size;
 namespace content {
 
 class GuestHost;
+class RenderFrameHost;
 class RenderWidgetHost;
 class SiteInstance;
 
@@ -81,6 +82,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Returns true if the corresponding guest is allowed to be embedded inside an
   // <iframe> which is cross process.
   virtual bool CanBeEmbeddedInsideCrossProcessFrames();
+
+  // Returns the embedder frame for this guest.
+  virtual RenderFrameHost* GetEmbedderFrame() const;
 };
 
 }  // namespace content

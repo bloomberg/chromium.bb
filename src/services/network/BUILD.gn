@@ -61,8 +61,6 @@ jumbo_component("network_service") {
     "loader_util.h",
     "mojo_host_resolver_impl.cc",
     "mojo_host_resolver_impl.h",
-    "net_log_capture_mode_type_converter.cc",
-    "net_log_capture_mode_type_converter.h",
     "net_log_exporter.cc",
     "net_log_exporter.h",
     "network_change_manager.cc",
@@ -85,6 +83,11 @@ jumbo_component("network_service") {
     "network_service_proxy_delegate.h",
     "network_usage_accumulator.cc",
     "network_usage_accumulator.h",
+    "origin_policy/origin_policy_constants.h",
+    "origin_policy/origin_policy_fetcher.cc",
+    "origin_policy/origin_policy_fetcher.h",
+    "origin_policy/origin_policy_manager.cc",
+    "origin_policy/origin_policy_manager.h",
     "p2p/socket.cc",
     "p2p/socket.h",
     "p2p/socket_manager.cc",
@@ -125,6 +128,8 @@ jumbo_component("network_service") {
     "resource_scheduler_params_manager.h",
     "restricted_cookie_manager.cc",
     "restricted_cookie_manager.h",
+    "sec_fetch_site.cc",
+    "sec_fetch_site.h",
     "session_cleanup_cookie_store.cc",
     "session_cleanup_cookie_store.h",
     "socket_data_pump.cc",
@@ -215,7 +220,8 @@ jumbo_component("network_service") {
     "//components/network_session_configurator/common",
     "//components/os_crypt",
     "//components/prefs",
-    "//jingle:jingle_fake_socket",
+    "//jingle:fake_ssl_socket",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//net",
@@ -305,6 +311,8 @@ source_set("tests") {
     "network_service_proxy_delegate_unittest.cc",
     "network_service_unittest.cc",
     "network_usage_accumulator_unittest.cc",
+    "origin_policy/origin_policy_fetcher_unittest.cc",
+    "origin_policy/origin_policy_manager_unittest.cc",
     "p2p/socket_tcp_server_unittest.cc",
     "p2p/socket_tcp_unittest.cc",
     "p2p/socket_test_utils.cc",
@@ -346,7 +354,6 @@ source_set("tests") {
     data = [
       "//net/tools/testserver/",
       "//services/test/data",
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/src/mod_pywebsocket/",
       "//third_party/tlslite/",
     ]
@@ -368,7 +375,7 @@ source_set("tests") {
     "//components/prefs:test_support",
     "//components/variations:test_support",
     "//crypto:test_support",
-    "//jingle:jingle_fake_socket",
+    "//jingle:fake_ssl_socket",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -385,10 +392,7 @@ source_set("tests") {
   ]
 
   if (is_ct_supported) {
-    sources += [
-      "expect_ct_reporter_unittest.cc",
-      "network_context_cert_transparency_unittest.cc",
-    ]
+    sources += [ "expect_ct_reporter_unittest.cc" ]
     deps += [ "//components/certificate_transparency" ]
   }
 }

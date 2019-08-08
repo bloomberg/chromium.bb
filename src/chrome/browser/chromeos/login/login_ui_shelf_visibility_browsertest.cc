@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/files/file_path.h"
-#include "base/path_service.h"
+#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_screen_tester.h"
@@ -13,7 +12,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
@@ -30,34 +29,17 @@ class LoginUIShelfVisibilityTest : public MixinBasedInProcessBrowserTest {
   LoginUIShelfVisibilityTest() = default;
   ~LoginUIShelfVisibilityTest() override = default;
 
-  void SetUp() override {
-    base::FilePath test_data_dir;
-    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
-    // Don't spin up the IO thread yet since no threads are allowed while
-    // spawning sandbox host process. See crbug.com/322732.
-    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-
-    MixinBasedInProcessBrowserTest::SetUp();
-  }
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    embedded_test_server()->StartAcceptingConnections();
-
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-  }
-  void TearDownOnMainThread() override {
-    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
  private:
-  LoginManagerMixin login_manager_mixin_{
-      &mixin_host_,
-      {AccountId::FromUserEmailGaiaId(kExistingUserEmail,
-                                      kExistingUserGaiaId)}};
+  LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId(kExistingUserEmail, kExistingUserGaiaId)};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
+  EmbeddedTestServerSetupMixin test_server_mixin_{&mixin_host_,
+                                                  embedded_test_server()};
   FakeGaiaMixin fake_gaia_mixin_{&mixin_host_, embedded_test_server()};
 
   DISALLOW_COPY_AND_ASSIGN(LoginUIShelfVisibilityTest);
@@ -88,12 +70,12 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
   test::OobeGaiaPageWaiter().WaitUntilReady();
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kNewUserEmail, kNewUserGaiaId,
                                 FakeGaiaMixin::kEmptyUserServices);
 
   // Sync consent is the first post-login screen shown when a new user signs in.
-  OobeScreenWaiter(OobeScreen::SCREEN_SYNC_CONSENT).Wait();
+  OobeScreenWaiter(SyncConsentScreenView::kScreenId).Wait();
 
   EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
   EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());

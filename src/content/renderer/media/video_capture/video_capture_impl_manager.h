@@ -48,7 +48,7 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // is used.
   // Returns a callback that should be used to release the acquired
   // resources.
-  base::Closure UseDevice(media::VideoCaptureSessionId id);
+  base::OnceClosure UseDevice(media::VideoCaptureSessionId id);
 
   // Start receiving video frames for the given session ID.
   //
@@ -67,7 +67,7 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // video capture is not synchronous. Client should handle the case where
   // callbacks are called after capturing is instructed to stop, typically
   // by binding the passed callbacks on a WeakPtr.
-  base::Closure StartCapture(
+  base::OnceClosure StartCapture(
       media::VideoCaptureSessionId id,
       const media::VideoCaptureParams& params,
       const blink::VideoCaptureStateUpdateCB& state_update_cb,
@@ -83,15 +83,13 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
   // Get supported formats supported by the device for the given session
   // ID. |callback| will be called on the IO thread.
-  void GetDeviceSupportedFormats(
-      media::VideoCaptureSessionId id,
-      const blink::VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceSupportedFormats(media::VideoCaptureSessionId id,
+                                 blink::VideoCaptureDeviceFormatsCB callback);
 
   // Get supported formats currently in use for the given session ID.
   // |callback| will be called on the IO thread.
-  void GetDeviceFormatsInUse(
-      media::VideoCaptureSessionId id,
-      const blink::VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceFormatsInUse(media::VideoCaptureSessionId id,
+                             blink::VideoCaptureDeviceFormatsCB callback);
 
   // Make all VideoCaptureImpl instances in the input |video_devices|
   // stop/resume delivering video frames to their clients, depends on flag

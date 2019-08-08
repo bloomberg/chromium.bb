@@ -44,14 +44,10 @@ uint8_t SetPriorityFields(uint8_t num,
   }
 }
 
-// Length of the type field of a frame.
-static const size_t kFrameTypeLength = 1;
 // Length of the weight field of a priority frame.
 static const size_t kPriorityWeightLength = 1;
 // Length of a priority frame's first byte.
 static const size_t kPriorityFirstByteLength = 1;
-// Length of a key in the map of a settings frame.
-static const size_t kSettingsMapKeyLength = 2;
 
 }  // namespace
 
@@ -63,8 +59,9 @@ QuicByteCount HttpEncoder::SerializeDataFrameHeader(
     QuicByteCount payload_length,
     std::unique_ptr<char[]>* output) {
   DCHECK_NE(0u, payload_length);
-  QuicByteCount header_length =
-      QuicDataWriter::GetVarInt62Len(payload_length) + kFrameTypeLength;
+  QuicByteCount header_length = QuicDataWriter::GetVarInt62Len(payload_length) +
+                                QuicDataWriter::GetVarInt62Len(
+                                    static_cast<uint64_t>(HttpFrameType::DATA));
 
   output->reset(new char[header_length]);
   QuicDataWriter writer(header_length, output->get());
@@ -72,6 +69,8 @@ QuicByteCount HttpEncoder::SerializeDataFrameHeader(
   if (WriteFrameHeader(payload_length, HttpFrameType::DATA, &writer)) {
     return header_length;
   }
+  QUIC_DLOG(ERROR)
+      << "Http encoder failed when attempting to serialize data frame header.";
   return 0;
 }
 
@@ -80,7 +79,9 @@ QuicByteCount HttpEncoder::SerializeHeadersFrameHeader(
     std::unique_ptr<char[]>* output) {
   DCHECK_NE(0u, payload_length);
   QuicByteCount header_length =
-      QuicDataWriter::GetVarInt62Len(payload_length) + kFrameTypeLength;
+      QuicDataWriter::GetVarInt62Len(payload_length) +
+      QuicDataWriter::GetVarInt62Len(
+          static_cast<uint64_t>(HttpFrameType::HEADERS));
 
   output->reset(new char[header_length]);
   QuicDataWriter writer(header_length, output->get());
@@ -88,6 +89,9 @@ QuicByteCount HttpEncoder::SerializeHeadersFrameHeader(
   if (WriteFrameHeader(payload_length, HttpFrameType::HEADERS, &writer)) {
     return header_length;
   }
+  QUIC_DLOG(ERROR)
+      << "Http encoder failed when attempting to serialize headers "
+         "frame header.";
   return 0;
 }
 
@@ -99,12 +103,15 @@ QuicByteCount HttpEncoder::SerializePriorityFrame(
       QuicDataWriter::GetVarInt62Len(priority.prioritized_element_id) +
       QuicDataWriter::GetVarInt62Len(priority.element_dependency_id) +
       kPriorityWeightLength;
-  QuicByteCount total_length = GetTotalLength(payload_length);
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::PRIORITY);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
 
   if (!WriteFrameHeader(payload_length, HttpFrameType::PRIORITY, &writer)) {
+    QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
+                        "priority frame header.";
     return 0;
   }
 
@@ -122,6 +129,8 @@ QuicByteCount HttpEncoder::SerializePriorityFrame(
       writer.WriteUInt8(priority.weight)) {
     return total_length;
   }
+  QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
+                      "priority frame payload.";
   return 0;
 }
 
@@ -130,7 +139,8 @@ QuicByteCount HttpEncoder::SerializeCancelPushFrame(
     std::unique_ptr<char[]>* output) {
   QuicByteCount payload_length =
       QuicDataWriter::GetVarInt62Len(cancel_push.push_id);
-  QuicByteCount total_length = GetTotalLength(payload_length);
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::CANCEL_PUSH);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
@@ -139,30 +149,37 @@ QuicByteCount HttpEncoder::SerializeCancelPushFrame(
       writer.WriteVarInt62(cancel_push.push_id)) {
     return total_length;
   }
+  QUIC_DLOG(ERROR)
+      << "Http encoder failed when attempting to serialize cancel push frame.";
   return 0;
 }
 
 QuicByteCount HttpEncoder::SerializeSettingsFrame(
     const SettingsFrame& settings,
     std::unique_ptr<char[]>* output) {
-  // Calculate the key sizes.
-  QuicByteCount payload_length = settings.values.size() * kSettingsMapKeyLength;
-  // Calculate the value sizes.
+  QuicByteCount payload_length = 0;
+  // Calculate the payload length.
   for (auto it = settings.values.begin(); it != settings.values.end(); ++it) {
+    payload_length += QuicDataWriter::GetVarInt62Len(it->first);
     payload_length += QuicDataWriter::GetVarInt62Len(it->second);
   }
 
-  QuicByteCount total_length = GetTotalLength(payload_length);
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::SETTINGS);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
 
   if (!WriteFrameHeader(payload_length, HttpFrameType::SETTINGS, &writer)) {
+    QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
+                        "settings frame header.";
     return 0;
   }
 
   for (auto it = settings.values.begin(); it != settings.values.end(); ++it) {
-    if (!writer.WriteUInt16(it->first) || !writer.WriteVarInt62(it->second)) {
+    if (!writer.WriteVarInt62(it->first) || !writer.WriteVarInt62(it->second)) {
+      QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
+                          "settings frame payload.";
       return 0;
     }
   }
@@ -178,7 +195,9 @@ QuicByteCount HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
       push_promise.headers.length();
   // GetTotalLength() is not used because headers will not be serialized.
   QuicByteCount total_length =
-      QuicDataWriter::GetVarInt62Len(payload_length) + kFrameTypeLength +
+      QuicDataWriter::GetVarInt62Len(payload_length) +
+      QuicDataWriter::GetVarInt62Len(
+          static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE)) +
       QuicDataWriter::GetVarInt62Len(push_promise.push_id);
 
   output->reset(new char[total_length]);
@@ -188,6 +207,8 @@ QuicByteCount HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
       writer.WriteVarInt62(push_promise.push_id)) {
     return total_length;
   }
+  QUIC_DLOG(ERROR)
+      << "Http encoder failed when attempting to serialize push promise frame.";
   return 0;
 }
 
@@ -196,7 +217,8 @@ QuicByteCount HttpEncoder::SerializeGoAwayFrame(
     std::unique_ptr<char[]>* output) {
   QuicByteCount payload_length =
       QuicDataWriter::GetVarInt62Len(goaway.stream_id);
-  QuicByteCount total_length = GetTotalLength(payload_length);
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::GOAWAY);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
@@ -205,6 +227,8 @@ QuicByteCount HttpEncoder::SerializeGoAwayFrame(
       writer.WriteVarInt62(goaway.stream_id)) {
     return total_length;
   }
+  QUIC_DLOG(ERROR)
+      << "Http encoder failed when attempting to serialize goaway frame.";
   return 0;
 }
 
@@ -213,7 +237,8 @@ QuicByteCount HttpEncoder::SerializeMaxPushIdFrame(
     std::unique_ptr<char[]>* output) {
   QuicByteCount payload_length =
       QuicDataWriter::GetVarInt62Len(max_push_id.push_id);
-  QuicByteCount total_length = GetTotalLength(payload_length);
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::MAX_PUSH_ID);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
@@ -222,6 +247,8 @@ QuicByteCount HttpEncoder::SerializeMaxPushIdFrame(
       writer.WriteVarInt62(max_push_id.push_id)) {
     return total_length;
   }
+  QUIC_DLOG(ERROR)
+      << "Http encoder failed when attempting to serialize max push id frame.";
   return 0;
 }
 
@@ -230,7 +257,8 @@ QuicByteCount HttpEncoder::SerializeDuplicatePushFrame(
     std::unique_ptr<char[]>* output) {
   QuicByteCount payload_length =
       QuicDataWriter::GetVarInt62Len(duplicate_push.push_id);
-  QuicByteCount total_length = GetTotalLength(payload_length);
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::DUPLICATE_PUSH);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
@@ -240,18 +268,22 @@ QuicByteCount HttpEncoder::SerializeDuplicatePushFrame(
       writer.WriteVarInt62(duplicate_push.push_id)) {
     return total_length;
   }
+  QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
+                      "duplicate push frame.";
   return 0;
 }
 
 bool HttpEncoder::WriteFrameHeader(QuicByteCount length,
                                    HttpFrameType type,
                                    QuicDataWriter* writer) {
-  return writer->WriteVarInt62(length) &&
-         writer->WriteUInt8(static_cast<uint8_t>(type));
+  return writer->WriteVarInt62(static_cast<uint64_t>(type)) &&
+         writer->WriteVarInt62(length);
 }
 
-QuicByteCount HttpEncoder::GetTotalLength(QuicByteCount payload_length) {
-  return QuicDataWriter::GetVarInt62Len(payload_length) + kFrameTypeLength +
+QuicByteCount HttpEncoder::GetTotalLength(QuicByteCount payload_length,
+                                          HttpFrameType type) {
+  return QuicDataWriter::GetVarInt62Len(payload_length) +
+         QuicDataWriter::GetVarInt62Len(static_cast<uint64_t>(type)) +
          payload_length;
 }
 

@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -253,7 +253,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // Step 10. "Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, and options."
   // [spec text]
-  module_script_ = ModuleScript::Create(
+  module_script_ = JSModuleScript::Create(
       params->GetSourceText(), params->CacheHandler(),
       ScriptSourceLocationType::kExternalFile, modulator_,
       params->GetResponseUrl(), params->GetResponseUrl(), options_);

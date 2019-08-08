@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 """Dispatches requests to request handler classes."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 import gae_ts_mon
 import webapp2
@@ -33,6 +36,7 @@ from dashboard import graph_csv
 from dashboard import graph_json
 from dashboard import graph_revisions
 from dashboard import group_report
+from dashboard import jstsmon
 from dashboard import layered_cache_delete_expired
 from dashboard import list_monitored_tests
 from dashboard import list_tests
@@ -44,13 +48,10 @@ from dashboard import migrate_test_names
 from dashboard import navbar
 from dashboard import oauth2_decorator
 from dashboard import pinpoint_request
-from dashboard import post_bisect_results
 from dashboard import put_entities_task
 from dashboard import report
 from dashboard import short_uri
 from dashboard import speed_releasing
-from dashboard import start_try_job
-from dashboard import update_bug_with_results
 from dashboard import update_dashboard_stats
 from dashboard import update_test_suite_descriptors
 from dashboard import update_test_suites
@@ -60,7 +61,9 @@ from dashboard.api import config
 from dashboard.api import describe
 from dashboard.api import list_timeseries
 from dashboard.api import new_bug
+from dashboard.api import new_pinpoint
 from dashboard.api import existing_bug
+from dashboard.api import nudge_alert
 from dashboard.api import report_generate
 from dashboard.api import report_names
 from dashboard.api import report_template
@@ -71,6 +74,7 @@ from dashboard.api import timeseries2
 
 
 _URL_MAPPING = [
+    ('/_/jstsmon', jstsmon.JsTsMonHandler),
     ('/add_histograms', add_histograms.AddHistogramsHandler),
     ('/add_histograms/process', add_histograms.AddHistogramsProcessHandler),
     ('/add_histograms_queue', add_histograms_queue.AddHistogramsQueueHandler),
@@ -83,7 +87,9 @@ _URL_MAPPING = [
     (r'/api/describe', describe.DescribeHandler),
     (r'/api/list_timeseries/(.*)', list_timeseries.ListTimeseriesHandler),
     (r'/api/new_bug', new_bug.NewBugHandler),
+    (r'/api/new_pinpoint', new_pinpoint.NewPinpointHandler),
     (r'/api/existing_bug', existing_bug.ExistingBugHandler),
+    (r'/api/nudge_alert', nudge_alert.NudgeAlertHandler),
     (r'/api/report/generate', report_generate.ReportGenerateHandler),
     (r'/api/report/names', report_names.ReportNamesHandler),
     (r'/api/report/template', report_template.ReportTemplateHandler),
@@ -130,16 +136,12 @@ _URL_MAPPING = [
      pinpoint_request.PinpointNewPerfTryRequestHandler),
     ('/pinpoint/new/prefill',
      pinpoint_request.PinpointNewPrefillRequestHandler),
-    ('/post_bisect_results', post_bisect_results.PostBisectResultsHandler),
     ('/put_entities_task', put_entities_task.PutEntitiesTaskHandler),
     ('/report', report.ReportHandler),
     ('/short_uri', short_uri.ShortUriHandler),
     (r'/speed_releasing/(.*)',
      speed_releasing.SpeedReleasingHandler),
     ('/speed_releasing', speed_releasing.SpeedReleasingHandler),
-    ('/start_try_job', start_try_job.StartBisectHandler),
-    ('/update_bug_with_results',
-     update_bug_with_results.UpdateBugWithResultsHandler),
     ('/update_dashboard_stats',
      update_dashboard_stats.UpdateDashboardStatsHandler),
     ('/update_test_suites', update_test_suites.UpdateTestSuitesHandler),

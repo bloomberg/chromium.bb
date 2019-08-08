@@ -29,8 +29,6 @@ SVGSetElement::SVGSetElement(Document& document)
   SetAnimationMode(kToAnimation);
 }
 
-DEFINE_NODE_FACTORY(SVGSetElement)
-
 void SVGSetElement::UpdateAnimationMode() {
   // No-op, as <set> has a constant animation mode of ToAnimation.
   // See: http://www.w3.org/TR/SVG/single-page.html#animate-SetElement

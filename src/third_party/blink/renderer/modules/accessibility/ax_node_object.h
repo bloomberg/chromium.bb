@@ -195,6 +195,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   virtual void AddInlineTextBoxChildren(bool force) {}
   virtual void AddImageMapChildren() {}
   virtual void AddHiddenChildren() {}
+  virtual void AddPopupChildren() {}
 
   bool CanHaveChildren() const override;
   void AddChild(AXObject*);

@@ -53,8 +53,11 @@ void CompositorFilterOperations::AppendOpacityFilter(float amount) {
   filter_operations_.Append(cc::FilterOperation::CreateOpacityFilter(amount));
 }
 
-void CompositorFilterOperations::AppendBlurFilter(float amount) {
-  filter_operations_.Append(cc::FilterOperation::CreateBlurFilter(amount));
+void CompositorFilterOperations::AppendBlurFilter(
+    float amount,
+    SkBlurImageFilter::TileMode tile_mode) {
+  filter_operations_.Append(
+      cc::FilterOperation::CreateBlurFilter(amount, tile_mode));
 }
 
 void CompositorFilterOperations::AppendDropShadowFilter(IntPoint offset,

@@ -13,13 +13,13 @@
 #include <vector>
 
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_windowsrenderdevice.h"
 #include "core/fxge/renderdevicedriver_iface.h"
 #include "core/fxge/win32/cfx_psrenderer.h"
 #include "core/fxge/win32/cpsoutput.h"
 
-class CCodec_ModuleMgr;
 class CFX_ImageRenderer;
 class TextCharPos;
 struct WINDIB_Open_Args_;
@@ -59,9 +59,15 @@ class CGdiplusExt {
   HMODULE m_GdiModule = nullptr;
 };
 
-class CWin32Platform {
+class CWin32Platform : public CFX_GEModule::PlatformIface {
  public:
-  bool m_bHalfTone;
+  CWin32Platform();
+  ~CWin32Platform() override;
+
+  // CFX_GEModule::PlatformIface:
+  void Init() override;
+
+  bool m_bHalfTone = false;
   CGdiplusExt m_GdiplusExt;
 };
 
@@ -207,10 +213,7 @@ class CGdiPrinterDriver final : public CGdiDeviceDriver {
 
 class CPSPrinterDriver final : public RenderDeviceDriverIface {
  public:
-  CPSPrinterDriver(CCodec_ModuleMgr* pModuleMgr,
-                   HDC hDC,
-                   WindowsPrintMode mode,
-                   bool bCmykOutput);
+  CPSPrinterDriver(HDC hDC, WindowsPrintMode mode, bool bCmykOutput);
   ~CPSPrinterDriver() override;
 
  private:

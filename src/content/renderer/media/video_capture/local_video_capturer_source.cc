@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -27,7 +26,7 @@ LocalVideoCapturerSource::LocalVideoCapturerSource(
 
 LocalVideoCapturerSource::~LocalVideoCapturerSource() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  release_device_cb_.Run();
+  std::move(release_device_cb_).Run();
 }
 
 media::VideoCaptureFormats LocalVideoCapturerSource::GetPreferredFormats() {
@@ -54,7 +53,7 @@ void LocalVideoCapturerSource::StartCapture(
 
 void LocalVideoCapturerSource::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (stop_capture_cb_.is_null())
+  if (!stop_capture_cb_)
     return;  // Do not request frames if the source is stopped.
   manager_->RequestRefreshFrame(session_id_);
 }
@@ -72,8 +71,8 @@ void LocalVideoCapturerSource::Resume() {
 void LocalVideoCapturerSource::StopCapture() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Immediately make sure we don't provide more frames.
-  if (!stop_capture_cb_.is_null())
-    base::ResetAndReturn(&stop_capture_cb_).Run();
+  if (stop_capture_cb_)
+    std::move(stop_capture_cb_).Run();
 }
 
 void LocalVideoCapturerSource::OnFrameDropped(
@@ -105,7 +104,7 @@ void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
     case blink::VIDEO_CAPTURE_STATE_STOPPED:
     case blink::VIDEO_CAPTURE_STATE_ERROR:
     case blink::VIDEO_CAPTURE_STATE_ENDED:
-      release_device_cb_.Run();
+      std::move(release_device_cb_).Run();
       release_device_cb_ = manager_->UseDevice(session_id_);
       OnLog(
           "LocalVideoCapturerSource::OnStateUpdate signaling to "

@@ -12,8 +12,9 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
+#include "api/rtc_event_log/rtc_event_log.h"
+#include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "modules/audio_mixer/audio_mixer_impl.h"
-#include "modules/congestion_controller/goog_cc/test/goog_cc_printer.h"
 
 namespace webrtc {
 namespace test {
@@ -29,6 +30,8 @@ const uint32_t kAudioSendSsrc = 0xDEADBEEF;
 const uint32_t kReceiverLocalAudioSsrc = 0x1234567;
 
 const char* kPriorityStreamId = "priority-track";
+
+constexpr int kEventLogOutputIntervalMs = 5000;
 
 CallClientFakeAudio InitAudio(TimeController* time_controller) {
   CallClientFakeAudio setup;
@@ -50,10 +53,11 @@ CallClientFakeAudio InitAudio(TimeController* time_controller) {
 }
 
 Call* CreateCall(TimeController* time_controller,
+                 RtcEventLog* event_log,
                  CallClientConfig config,
                  LoggingNetworkControllerFactory* network_controller_factory,
                  rtc::scoped_refptr<AudioState> audio_state) {
-  CallConfig call_config(network_controller_factory->GetEventLog());
+  CallConfig call_config(event_log);
   call_config.bitrate_config.max_bitrate_bps =
       config.transport.rates.max_rate.bps_or(-1);
   call_config.bitrate_config.min_bitrate_bps =
@@ -67,76 +71,47 @@ Call* CreateCall(TimeController* time_controller,
                       time_controller->CreateProcessThread("CallModules"),
                       time_controller->CreateProcessThread("Pacer"));
 }
+
+std::unique_ptr<RtcEventLog> CreateEventLog(
+    TaskQueueFactory* task_queue_factory,
+    LogWriterFactoryInterface* log_writer_factory) {
+  if (!log_writer_factory) {
+    return absl::make_unique<RtcEventLogNull>();
+  }
+  auto event_log = RtcEventLogFactory(task_queue_factory)
+                       .CreateRtcEventLog(RtcEventLog::EncodingType::NewFormat);
+  bool success = event_log->StartLogging(log_writer_factory->Create(".rtc.dat"),
+                                         kEventLogOutputIntervalMs);
+  RTC_CHECK(success);
+  return event_log;
+}
 }
 
 LoggingNetworkControllerFactory::LoggingNetworkControllerFactory(
-    TimeController* time_controller,
     LogWriterFactoryInterface* log_writer_factory,
-    TransportControllerConfig config)
-    : time_controller_(time_controller) {
-  std::unique_ptr<RtcEventLogOutput> cc_out;
-  if (!log_writer_factory) {
-    event_log_ = RtcEventLog::CreateNull();
+    TransportControllerConfig config) {
+  if (config.cc_factory) {
+    cc_factory_ = config.cc_factory;
+    if (log_writer_factory)
+      RTC_LOG(LS_WARNING)
+          << "Can't log controller state for injected network controllers";
   } else {
-    event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy,
-                                     time_controller->GetTaskQueueFactory());
-    bool success = event_log_->StartLogging(
-        log_writer_factory->Create(".rtc.dat"), RtcEventLog::kImmediateOutput);
-    RTC_CHECK(success);
-    cc_out = log_writer_factory->Create(".cc_state.txt");
-  }
-  switch (config.cc) {
-    case TransportControllerConfig::CongestionController::kGoogCc:
-      if (cc_out) {
-        auto goog_printer = absl::make_unique<GoogCcStatePrinter>();
-        owned_cc_factory_.reset(
-            new GoogCcDebugFactory(event_log_.get(), goog_printer.get()));
-        cc_printer_.reset(new ControlStatePrinter(std::move(cc_out),
-                                                  std::move(goog_printer)));
-      } else {
-        owned_cc_factory_.reset(
-            new GoogCcNetworkControllerFactory(event_log_.get()));
-      }
-      break;
-    case TransportControllerConfig::CongestionController::kGoogCcFeedback:
-      if (cc_out) {
-        auto goog_printer = absl::make_unique<GoogCcStatePrinter>();
-        owned_cc_factory_.reset(new GoogCcFeedbackDebugFactory(
-            event_log_.get(), goog_printer.get()));
-        cc_printer_.reset(new ControlStatePrinter(std::move(cc_out),
-                                                  std::move(goog_printer)));
-      } else {
-        owned_cc_factory_.reset(
-            new GoogCcFeedbackNetworkControllerFactory(event_log_.get()));
-      }
-      break;
-    case TransportControllerConfig::CongestionController::kInjected:
-      cc_factory_ = config.cc_factory;
-      if (cc_out)
-        RTC_LOG(LS_WARNING)
-            << "Can't log controller state for injected network controllers";
-      break;
-  }
-  if (cc_printer_)
-    cc_printer_->PrintHeaders();
-  if (owned_cc_factory_) {
-    RTC_DCHECK(!cc_factory_);
-    cc_factory_ = owned_cc_factory_.get();
+    if (log_writer_factory) {
+      goog_cc_factory_.AttachWriter(
+          log_writer_factory->Create(".cc_state.txt"));
+      print_cc_state_ = true;
+    }
+    cc_factory_ = &goog_cc_factory_;
   }
 }
 
 LoggingNetworkControllerFactory::~LoggingNetworkControllerFactory() {
-  time_controller_->InvokeWithControlledYield([this]() { event_log_.reset(); });
 }
 
 void LoggingNetworkControllerFactory::LogCongestionControllerStats(
     Timestamp at_time) {
-  if (cc_printer_)
-    cc_printer_->PrintState(at_time);
-}
-
-RtcEventLog* LoggingNetworkControllerFactory::GetEventLog() const {
-  return event_log_.get();
+  if (print_cc_state_)
+    goog_cc_factory_.PrintState(at_time);
 }
 
 std::unique_ptr<NetworkControllerInterface>
@@ -155,16 +130,16 @@ CallClient::CallClient(
     : time_controller_(time_controller),
       clock_(time_controller->GetClock()),
       log_writer_factory_(std::move(log_writer_factory)),
-      network_controller_factory_(time_controller,
-                                  log_writer_factory_.get(),
-                                  config.transport),
+      network_controller_factory_(log_writer_factory_.get(), config.transport),
       header_parser_(RtpHeaderParser::Create()),
       task_queue_(time_controller->GetTaskQueueFactory()->CreateTaskQueue(
           "CallClient",
           TaskQueueFactory::Priority::NORMAL)) {
   SendTask([this, config] {
+    event_log_ = CreateEventLog(time_controller_->GetTaskQueueFactory(),
+                                log_writer_factory_.get());
     fake_audio_setup_ = InitAudio(time_controller_);
-    call_.reset(CreateCall(time_controller_, config,
+    call_.reset(CreateCall(time_controller_, event_log_.get(), config,
                            &network_controller_factory_,
                            fake_audio_setup_.audio_state));
     transport_ = absl::make_unique<NetworkNodeTransport>(clock_, call_.get());
@@ -175,6 +150,10 @@ CallClient::~CallClient() {
   SendTask([&] {
     call_.reset();
     fake_audio_setup_ = {};
+    rtc::Event done;
+    event_log_->StopLogging([&done] { done.Set(); });
+    done.Wait(rtc::Event::kForever);
+    event_log_.reset();
   });
 }
 

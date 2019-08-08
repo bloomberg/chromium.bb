@@ -77,7 +77,7 @@ void AssistantHeaderView::InitLayout() {
       gfx::Insets(0, 0, kSpacingDip, 0)));
 
   layout_manager_->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
   molecule_icon_ = LogoView::Create();

@@ -40,7 +40,7 @@ bool IsLoginShelfViewButtonShown(int button_view_id) {
 
   views::View* button_view = shelf_view->GetViewByID(button_view_id);
 
-  return button_view && button_view->visible();
+  return button_view && button_view->GetVisible();
 }
 
 }  // anonymous namespace
@@ -132,7 +132,7 @@ void LoginScreenTestApi::IsLockShown(IsLockShownCallback callback) {
 
 void LoginScreenTestApi::IsLoginShelfShown(IsLoginShelfShownCallback callback) {
   LoginShelfView* view = GetLoginShelfView();
-  std::move(callback).Run(view && view->visible());
+  std::move(callback).Run(view && view->GetVisible());
 }
 
 void LoginScreenTestApi::IsRestartButtonShown(
@@ -152,7 +152,7 @@ void LoginScreenTestApi::IsAuthErrorBubbleShown(
   ash::LockScreen::TestApi lock_screen_test(ash::LockScreen::Get());
   ash::LockContentsView::TestApi lock_contents_test(
       lock_screen_test.contents_view());
-  std::move(callback).Run(lock_contents_test.auth_error_bubble()->visible());
+  std::move(callback).Run(lock_contents_test.auth_error_bubble()->GetVisible());
 }
 
 void LoginScreenTestApi::IsGuestButtonShown(
@@ -185,7 +185,7 @@ void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
   // users this API needs to search all user views for the associated user and
   // potentially activate that user so it is showing its password field.
   CHECK_EQ(account_id,
-           auth_test.user_view()->current_user()->basic_user_info->account_id);
+           auth_test.user_view()->current_user().basic_user_info.account_id);
 
   password_test.SubmitPassword(password);
 
@@ -211,6 +211,12 @@ void LoginScreenTestApi::ClickAddUserButton(
   LoginShelfView* view = GetLoginShelfView();
 
   std::move(callback).Run(view && view->SimulateAddUserButtonForTesting());
+}
+
+void LoginScreenTestApi::ClickGuestButton(ClickGuestButtonCallback callback) {
+  LoginShelfView* view = GetLoginShelfView();
+
+  std::move(callback).Run(view && view->SimulateGuestButtonForTesting());
 }
 
 void LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count,

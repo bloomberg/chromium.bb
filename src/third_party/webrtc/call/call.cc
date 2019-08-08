@@ -708,7 +708,8 @@ webrtc::AudioSendStream* Call::CreateAudioSendStream(
   TRACE_EVENT0("webrtc", "Call::CreateAudioSendStream");
   RTC_DCHECK_RUN_ON(&configuration_sequence_checker_);
 
-  RTC_DCHECK(media_transport() == config.media_transport);
+  RTC_DCHECK_EQ(media_transport(),
+                config.media_transport_config.media_transport);
 
   RegisterRateObserver();
 
@@ -1496,6 +1497,8 @@ void Call::NotifyBweOfReceivedPacket(const RtpPacketReceived& packet,
 
   RTPHeader header;
   packet.GetHeader(&header);
+
+  transport_send_ptr_->OnReceivedPacket(packet);
 
   if (!use_send_side_bwe && header.extension.hasTransportSequenceNumber) {
     // Inconsistent configuration of send side BWE. Do nothing.

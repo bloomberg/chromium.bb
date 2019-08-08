@@ -5,14 +5,13 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
@@ -27,7 +26,6 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
     private static final float ANIMATION_PERCENTAGE_ZERO = 0.f;
     private static final float ANIMATION_PERCENTAGE_COMPLETE = 1.f;
     private static final float EXPANDED_CAPTION_THRESHOLD = 0.5f;
-    private static final Interpolator ANIMATION_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     /**
      * The resource id for the string to display when the Bar is expanded.
@@ -125,6 +123,15 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
      * @param percentage The percentage to the more opened state.
      */
     public void onUpdateFromPeekToExpand(float percentage) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            if (mHasPeekingCaption) {
+                if (mTransitionAnimator != null) mTransitionAnimator.cancel();
+                mAnimationPercentage = 1.f - percentage;
+            }
+            return;
+        }
+
+        // ChromeFeatureList.OVERLAY_NEW_LAYOUT not enabled.
         if (!mShouldShowExpandedCaption) {
             if (mHasPeekingCaption) {
                 if (mTransitionAnimator != null) mTransitionAnimator.cancel();
@@ -173,9 +180,14 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
      * Hides the caption.
      */
     public void hide() {
-        if (!mShowingExpandedCaption) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
             mIsVisible = false;
             mAnimationPercentage = ANIMATION_PERCENTAGE_ZERO;
+        } else {
+            if (!mShowingExpandedCaption) {
+                mIsVisible = false;
+                mAnimationPercentage = ANIMATION_PERCENTAGE_ZERO;
+            }
         }
         mHasPeekingCaption = false;
     }
@@ -245,7 +257,10 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
 
         mDidCapture = true;
 
-        if (!mShowingExpandedCaption) animateTransitionIn();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            animateTransitionIn();
+        } else if (!mShowingExpandedCaption)
+            animateTransitionIn();
     }
 
     // ============================================================================================
@@ -258,7 +273,8 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
                 OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
         mTransitionAnimator.addUpdateListener(
                 animator -> mAnimationPercentage = animator.getAnimatedValue());
-        mTransitionAnimator.setInterpolator(ANIMATION_INTERPOLATOR);
+        mTransitionAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+
         mTransitionAnimator.start();
     }
 }

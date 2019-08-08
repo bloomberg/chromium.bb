@@ -52,11 +52,23 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
 
+  base::string16 GetHypertext() const override;
+  bool SetHypertextSelection(int start_offset, int end_offset) override;
+
+  base::string16 GetInnerText() const override;
+
   gfx::Rect GetBoundsRect(const AXCoordinateSystem coordinate_system,
                           const AXClippingBehavior clipping_behavior,
                           AXOffscreenResult* offscreen_result) const override;
 
-  gfx::Rect GetRangeBoundsRect(
+  gfx::Rect GetHypertextRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result) const override;
+
+  gfx::Rect GetInnerTextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
       const AXCoordinateSystem coordinate_system,
@@ -118,10 +130,12 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   std::set<AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntListAttribute attr) override;
 
+  base::string16 GetAuthorUniqueId() const override;
+
   const AXUniqueId& GetUniqueId() const override;
 
   base::Optional<int> FindTextBoundary(
-      TextBoundaryType boundary_type,
+      AXTextBoundary boundary,
       int offset,
       TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const override;

@@ -34,8 +34,8 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
   if (device_manager) {
     pending_open_device_id_ = device_manager->OpenDevice(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE, device_id, handler->pp_instance(),
-        base::Bind(&PepperPlatformVideoCapture::OnDeviceOpened,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&PepperPlatformVideoCapture::OnDeviceOpened,
+                       weak_factory_.GetWeakPtr()));
     pending_open_device_ = true;
   }
 }
@@ -43,35 +43,32 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
 void PepperPlatformVideoCapture::StartCapture(
     const media::VideoCaptureParams& params) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!stop_capture_cb_.is_null())
+  if (stop_capture_cb_)
     return;
   VideoCaptureImplManager* manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   stop_capture_cb_ =
-      manager->StartCapture(session_id_,
-                            params,
-                            media::BindToCurrentLoop(base::Bind(
+      manager->StartCapture(session_id_, params,
+                            media::BindToCurrentLoop(base::BindRepeating(
                                 &PepperPlatformVideoCapture::OnStateUpdate,
                                 weak_factory_.GetWeakPtr())),
-                            media::BindToCurrentLoop(base::Bind(
+                            media::BindToCurrentLoop(base::BindRepeating(
                                 &PepperPlatformVideoCapture::OnFrameReady,
                                 weak_factory_.GetWeakPtr())));
 }
 
 void PepperPlatformVideoCapture::StopCapture() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (stop_capture_cb_.is_null())
+  if (!stop_capture_cb_)
     return;
-  stop_capture_cb_.Run();
-  stop_capture_cb_.Reset();
+  std::move(stop_capture_cb_).Run();
 }
 
 void PepperPlatformVideoCapture::DetachEventHandler() {
   handler_ = nullptr;
   StopCapture();
-  if (!release_device_cb_.is_null()) {
-    release_device_cb_.Run();
-    release_device_cb_.Reset();
+  if (release_device_cb_) {
+    std::move(release_device_cb_).Run();
   }
   if (!label_.empty()) {
     PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
@@ -89,8 +86,8 @@ void PepperPlatformVideoCapture::DetachEventHandler() {
 }
 
 PepperPlatformVideoCapture::~PepperPlatformVideoCapture() {
-  DCHECK(stop_capture_cb_.is_null());
-  DCHECK(release_device_cb_.is_null());
+  DCHECK(!stop_capture_cb_);
+  DCHECK(!release_device_cb_);
   DCHECK(label_.empty());
   DCHECK(!pending_open_device_);
 }
@@ -138,10 +135,10 @@ void PepperPlatformVideoCapture::OnStateUpdate(blink::VideoCaptureState state) {
 }
 
 void PepperPlatformVideoCapture::OnFrameReady(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
-  if (handler_ && !stop_capture_cb_.is_null())
-    handler_->OnFrameReady(frame);
+  if (handler_ && stop_capture_cb_)
+    handler_->OnFrameReady(*frame);
 }
 
 PepperMediaDeviceManager* PepperPlatformVideoCapture::GetMediaDeviceManager() {

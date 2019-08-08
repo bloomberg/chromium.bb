@@ -124,15 +124,14 @@ View* DropHelper::CalculateTargetViewImpl(
   // Walk the tree, stopping at target_view_ as we know it'll accept the
   // drop.
   while (view && view != target_view_ &&
-         (!view->enabled() || !view->CanDrop(data))) {
+         (!view->GetEnabled() || !view->CanDrop(data))) {
     view = view->parent();
   }
 #else
   int formats = 0;
   std::set<ui::ClipboardFormatType> format_types;
   while (view && view != target_view_) {
-    if (view->enabled() &&
-        view->GetDropFormats(&formats, &format_types) &&
+    if (view->GetEnabled() && view->GetDropFormats(&formats, &format_types) &&
         data.HasAnyFormat(formats, format_types) &&
         (!check_can_drop || view->CanDrop(data))) {
       // Found the view.

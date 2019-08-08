@@ -369,11 +369,8 @@ bool CachedStorageArea::OnMemoryDump(
       IsSessionStorage() ? "session_storage" : "local_storage",
       reinterpret_cast<uintptr_t>(this));
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name.Utf8().data());
-  // TODO(triploblastic@): rename memory_used() to quota_used() and create
-  // memory_used() function to actually count the memory used.
   dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                  MemoryAllocatorDump::kUnitsBytes,
-                  memory_used() / sizeof(UChar));
+                  MemoryAllocatorDump::kUnitsBytes, memory_used());
   pmd->AddSuballocation(
       dump->guid(),
       String(WTF::Partitions::kAllocatedObjectPoolName).Utf8().data());

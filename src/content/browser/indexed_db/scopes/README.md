@@ -6,17 +6,35 @@ See LevelDB Scopes general design doc [here](https://docs.google.com/document/d/
 
 # Status / Current State
 
-The only thing implemented so far is the lock manager interface & discrete implementation.
+* Lock manager - Done
+* Scopes - Done
+* Blob / large value support - Future
+
+Things not covered in this README:
+
+* How iterators & scopes interact to ensure the iterator is operating on fresh data
 
 # Vocabulary
 
 **Scope**
 
-A scope encompasses a group of changes that can be reverted. It is basically synonymous with a transaction, and would be used for readwrite and versionchange transactions in LevelDB. The scope has a defined list of key ranges where the changes can occur. It operates by keeping an undo log, which is either discarded on commit, or replayed on revert.
+A scope encompasses a group of changes that can be reverted. It is basically synonymous with a transaction, and would be used for readwrite and versionchange transactions in LevelDB. The scope has a defined list of key ranges where the changes can occur. It operates by keeping an undo task log, which is either discarded on commit, or replayed on revert. It also keeps a cleanup task log for specialty operations to happen during log cleanup.
 
-**Undo Log**
+**Task**
 
-Each scope saves an undo log, which has all the information needed to undo all changes performed in the scope.
+A task is something that is executed after a scope has been committed. There are two types of tasks (**undo/revert** tasks and **cleanup** tasks), and they are stored in the separate **log**s.
+
+**Undo Task**
+
+Undo tasks are used to revert a scope (that is, undo the changes that were written by the scope). An undo task is a single operation that is used to undo one or more of these changes. See the [LevelDBScopesUndoTask in `scopes_metadata.proto`](scopes_metadata.proto). Undo tasks are only executed when a scope is reverted.
+
+**Cleanup Tasks**
+
+Cleanup tasks are optionally executed when a scopes is cleaned up. They consist of deferred deletions (range deletions that the user doesn't need to happen right away).
+
+**Log**
+
+There are two task logs in a scope, the `undo task log` and the `cleanup task log`. They each have a unique key prefix so they can be iterated easily.
 
 **Scope Number (scope#)**
 
@@ -24,11 +42,11 @@ Each scope has an identifier unique to the backing store that is auto-incrementi
 
 **Sequence Number (seq#)**
 
-Every undo log entry has a unique sequence number within the scope. These should start at <max int> (using Fixed64) and decrement. The sequence number '0' is reserved for the commit point
+Every undo log entry has a unique sequence number within the scope. These should start at {max int} (using Fixed64) and decrement.
 
 **Commit Point**
 
-This signifies that a scope has been committed. It also means that a specific sequence number was written for a scope.
+This signifies that a scope has been committed. The commit point for a scope is the absence of `locks` in the scope's metadata.
 
 **Key Range**
 
@@ -40,12 +58,12 @@ To prevent reading uncommitted data, IndexedDB 'locks' objects stores when there
 
 ## New LevelDB Table Data
 
-|Purpose|Key |Final format|Value (protobufs)|
+|Purpose|Key |Format|Value (protobufs)|
 |---|---|---|---|
-|Metadata|undo-metadata|`prefix-0`|`{version: 1}`|
-|Scope Metadata|undo-scopes-<scope#>|`prefix-1-<scope#>`|key ranges if scope is active, or \<empty\> if committed.|
-|Undo log operations|undo-log-<scope#>-<seq#>|`prefix-2-<scope#>-<seq#>`|undo operation|
-|Commit point|undo-log-<scope#>-0|`prefix-2-<scope#>-0`| \<empty\> OR \<ranges to delete\> |
+|Metadata|metadata|`prefix0`|`LevelDBScopesMetadata`|
+|Scope Metadata|scope-{scope#}|`prefix1{scope#}`|`LevelDBScopesScopeMetadata`|
+|Undo log operations|log-undo-{scope#}-{seq#}|`prefix20{scope#}{seq#}`|`LevelDBScopesUndoTask`|
+|Cleanup log operations|log-cleanup-{scope#}-{seq#}|`prefix21{scope#}{seq#}`|`LevelDBScopesCleanupTask`|
 
 
 ### Key Format
@@ -54,72 +72,82 @@ To prevent reading uncommitted data, IndexedDB 'locks' objects stores when there
 * Scope # is a varint
 * Sequence # is a Fixed64
 
+See [`leveldb_scopes_coding.h`](leveldb_scopes_coding.h) for the key encoding implementation.
+
 ### Value Format
 
-All values will be protobufs
+All values are protobufs, see [`scopes_metadata.proto`](scopes_metadata.proto).
 
 # Operation Flows
 
-## Creating & Using a Scope
-IndexedDB Sequence
+## Acquiring Locks
+**IndexedDB Sequence**
 
-* Input - key ranges for the scope. Eg - the applicable object stores (and indexes) for a readwrite txn, or a whole database for a versionchange txn.
-* If any of the key ranges are currently locked, then wait until they are free. This would replace the IDB transaction sequencing logic.
+* Input - lock ranges & types. The lock ranges should correspond to the key ranges that will be read from or written to. The type signifies if the lock range should be requested as exclusive or shared.
+* If any of the key ranges are currently locked, then wait until they are all free. This is the IDB transaction sequencing logic.
+* Output - a list of locks, one per requested lock range.
+
+## Creating & Using a Scope
+**IndexedDB Sequence**
+
+* Input - a list of locks for the scope. See [Acquiring Locks](#acquiring-locks) above
 * Create the scope 
     * Use the next available scope # (and increment the next scope #)
-    * Signal the locks service that the key ranges for this scope are now locked
-    * Write undo-scopes-scope# -> key_ranges to LevelDB
-* Enable operations on the scope (probably eventually by binding it using Mojo)
-* For every operation, the scope must read the database to generate the undo log
+* Enable operations on the scope
+* While the total size of changes is less than X Mb, buffer them in a write batch.
+    * If the scope is committed before reaching X Mb, then just commit the scope without generating an undo log.
+* If the size of the buffer write batch is > X Mb, or the user needs to 'read' in the range that was just written to, then the changes must be written to disk.
+  * For every operation, the scope must read the database and append the undo operation to the undo task log.
     * See the [Undo Operation Generation](#undo-operations) section below
+* Deferred operations are written do the cleanup task log.
 * Output - a Scope
 
 ## Committing a Scope
 **IndexedDB Sequence**
 
 * Input - a Scope
-* The scope is marked as 'committed', the commit point is written to the undo log (undo-scope#-0), and the metadata is updated to remove the key ranges (undo-scopes-scope# -> <empty>). This change is flushed to disk.
-* The Cleanup & Revert Sequence is signalled for cleaning up the committed scope #.
+* The scope is marked as 'committed' by writing the `LevelDBScopesScopeMetadata` (at `scope-{scope#}`) to remove the `lock` key ranges. This change is flushed to disk.
+* The Cleanup Sequence is signalled for cleaning up the committed scope #.
 * Output - Scope is committed, and lock is released.
 
 ## Reverting a Scope
-**Cleanup & Revert Sequence**
+**Revert Sequence**
 
 * Input - revert a given scope number.
-* Opens a cursor to undo-<scope#>-0
+* Opens a cursor to `log-undo-{scope#}-0`
     * Cursor should be at the first undo entry
-    * If sequence #0 exists (this key exists), then error - reverting a committed scope is an invalid state in this design
-* Iterate through undo log, commiting operations and deleting each undo entry.
-* Delete the lock entry at undo-scopes-<scope#>, and flush this change to disk.
+    * If the scope's commit point exists (in the scope's metadata, if the locks are empty) then error - reverting a committed scope is an invalid state in this design
+* Iterate through undo tasks, committing operations.
+* Update the Scope's `LevelDBScopesScopeMetadata` entry (at `scope-{scope#}`) by cleaning the `locks` and setting `ignore_cleanup_tasks = true`, and flush this change to disk.
+* The Cleanup Sequence is signalled for cleaning up the reverted scope #.
 * Output - Scope was successfully reverted, and lock released.
 
 ## Startup & Recovery
 **IndexedDB Sequence**
 
 * Input - the database
-* Reads undo-metadata (fail for unknown version)
-* Opens a cursor to undo-scopes- & iterates to read in all scopes
-    * If the scope metadata has key ranges, then those are considered locked
+* Reads metadata (fail for unknown version)
+* Opens a cursor to scopes- & iterates to read in all scopes
+    * If the scope metadata (`LevelDBScopesScopeMetadata` at `scope-{scope#}`) has `locks`, then those are considered locked
     * The maximum scope # is found and used to determine the next scope number (used in scope creation)
-* Signals the lock system which locks are held
+* Requests locks from the lock system
 * Signals IndexedDB that it can start accepting operations (IndexedDB can now start running)
-* For every undo-scopes- metadata that is empty
+* For every `LevelDBScopesScopeMetadata` that has no `locks`
     * Kick off an [Undo Log Cleanup](#undo-log-cleanup) task to eventually clean this up.
-* For every undo-scopes- metadata with key ranges
-    * If there is a commit point for any of these scopes, then that is an invalid state / corruption (as the scopes value should have been emptied in the same writebatch that wrote the commit point).
+* For every `LevelDBScopesScopeMetadata` that has `locks`
     * Kick off a [Reverting a Scope](#reverting-a-scope) task. This state indicates a shutdown while a revert was in progress.
 * Output - nothing, done
 
 ## Undo Log Cleanup
 **Cleanup & Revert Sequence**
 
-* Input - nothing
-* Scan the undo- namespace for commit points. If a undo-scope#-0 is found, then start deleting that undo log
-    * This can happen in multiple write batches
-* If ranges are found in the undo-scope#-0 (commit point), then
-    * Those ranges are also deleted, in batches.
-    * Possibly compact these ranges at the end.
-* The undo-scope#-0 and undo-scopes-scope# entries must be deleted last, in the last deletion write batch, so this scope isn't mistaken later as something to be reverted.
+* Input - scope #
+* Open the `scope-{scope#}` metadata
+  * If the commit point is not there (if the `locks` are not empty), then error.
+* If the 'ignore_cleanup_tasks' value is false, then
+  * Iterate through the `log-cleanup-{scope#}-` cleanup tasks and execute them (range deletes).
+* Delete both the undo tasks log and the cleanup task log
+* Delete the `scope-{scope#}` metadata
 * Output - nothing
 
 # Lock Manager
@@ -128,9 +156,11 @@ The scopes feature needs a fairly generic lock manager. This lock manager needs 
 
 ### API Methods
 
-#### AcquireLock
+#### AcquireLocks
 
-Accepts a lock type (shared or exclusive), a level number, a key range, and a callback which is given a moveable-only lock object, which releases its lock on destruction. The levels are totally independent from the perspective of the lock manager. IF an application wants to use multiple levels, they should employ an acquisition order (like, always acquire locks in increasing level order) so they don't deadlock.
+Accepts a list of lock request and a callback which is given a moveable-only lock object, which releases its lock on destruction. Each lock request consists of a lock type (shared or exclusive), a level number, and a key range.  The levels are totally independent from the perspective of the lock manager.
+
+To keep the implementation simple, all required locks for a given scope or operation need to be acquired all at once.
 
 ### Internal Data Structure
 
@@ -138,11 +168,15 @@ The lock manager basically holds ranges, and needs to know if a new range inters
 
 # Undo Operations
 
+Undo operations are generated when the undo tasks are required. Note that for under a certain scope 'size' (where the buffer write batch is small enough), no undo operations are generated.
+
 ## Types
 
 * `Put(key, value)`
 * `Delete(key)`
 * `DeleteRange(key_range)`
+
+See `LevelDBScopesUndoTask` in the [`scopes_metadata.proto`](scopes_metadata.proto)
 
 ## Generation
 
@@ -154,7 +188,7 @@ Note - all cases where "old_value" is used requires reading the current value fr
 
 * `Delete(key)` if an old value doesn't exist,
 * `Put(key, old_value)` if an old value does exist, or
-* Nothing if the old value and new value matches
+* Nothing if the old value and new value matche
 
 **`Add(key, value)`**
 
@@ -177,8 +211,8 @@ If the values being created are in a key range that is initially empty (we trust
 
 `DeleteRange(key_range)`
 
-Examples of this are creating new databases or indexes in a versionchange transaction. The scopes system can check to make sure it's range is empty before doing operations. This can either be done as a hint (per-range, per-scope), or always.
+Examples of this are creating new databases or indexes in a versionchange transaction. The scopes system can check to make sure it's range is empty before doing operations in debug builds.
 
 #### Deletion - key range will never be used again.
 
-This is done by having commit ranges in the value of the commit point. A new scope is created, and committed, with the key ranges never-to-be-used-again will be the value of the commit point record.
+This is done by creating a cleanup task (see `LevelDBScopesCleanupTask` in [`scopes_metadata.proto`](scopes_metadata.proto)). When the scope is cleaned up, these operations are executed. This allows a user to defer the deletion to a later time and a different thread.

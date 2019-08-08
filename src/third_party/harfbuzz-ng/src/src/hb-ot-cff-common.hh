@@ -97,12 +97,12 @@ struct CFFIndex
   unsigned int offset_array_size () const
   { return calculate_offset_array_size (offSize, count); }
 
-  static unsigned int calculate_serialized_size (unsigned int offSize, unsigned int count, unsigned int dataSize)
+  static unsigned int calculate_serialized_size (unsigned int offSize_, unsigned int count, unsigned int dataSize)
   {
     if (count == 0)
       return COUNT::static_size;
     else
-      return min_size + calculate_offset_array_size (offSize, count) + dataSize;
+      return min_size + calculate_offset_array_size (offSize_, count) + dataSize;
   }
 
   bool serialize (hb_serialize_context_t *c, const CFFIndex &src)
@@ -167,7 +167,7 @@ struct CFFIndex
     byteArray.resize (buffArray.length);
     for (unsigned int i = 0; i < byteArray.length; i++)
     {
-      byteArray[i] = byte_str_t (buffArray[i].arrayZ (), buffArray[i].length);
+      byteArray[i] = byte_str_t (buffArray[i].arrayZ, buffArray[i].length);
     }
     bool result = this->serialize (c, offSize_, byteArray);
     byteArray.fini ();
@@ -589,7 +589,7 @@ struct FDSelect0 {
 
 template <typename GID_TYPE, typename FD_TYPE>
 struct FDSelect3_4_Range {
-  bool sanitize (hb_sanitize_context_t *c, const void */*nullptr*/, unsigned int fdcount) const
+  bool sanitize (hb_sanitize_context_t *c, const void * /*nullptr*/, unsigned int fdcount) const
   {
     TRACE_SANITIZE (this);
     return_trace (first < c->get_num_glyphs () && (fd < fdcount));

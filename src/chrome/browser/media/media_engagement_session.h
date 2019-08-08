@@ -9,10 +9,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/origin.h"
 
-namespace ukm {
-class UkmRecorder;
-}  // namespace ukm
-
 class MediaEngagementService;
 
 // Represents a session with regards to the Media Engagement. A session consists
@@ -32,7 +28,8 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
 
   MediaEngagementSession(MediaEngagementService* service,
                          const url::Origin& origin,
-                         RestoreType restore_status);
+                         RestoreType restore_status,
+                         ukm::SourceId ukm_source_id);
 
   // Returns whether the session's origin is same origin with |origin|.
   bool IsSameOriginWith(const url::Origin& origin) const;
@@ -67,9 +64,6 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // Private because the class is RefCounted.
   ~MediaEngagementSession();
 
-  // Returns the UkmRecorder with the right source id set.
-  ukm::UkmRecorder* GetUkmRecorder();
-
   // Records a significant playback that is either a media element or an audio
   // context playback.
   void RecordSignificantPlayback();
@@ -100,7 +94,7 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
 
   // UKM source ID associated with the session. It will be used by all the
   // session clients.
-  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
+  ukm::SourceId ukm_source_id_;
 
   // Delta counts are counts to be added to the score while total counts are
   // the sum of all the changes that happened during the session lifetime. The

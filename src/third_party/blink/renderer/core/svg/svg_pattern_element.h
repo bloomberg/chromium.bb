@@ -45,8 +45,6 @@ class SVGPatternElement final : public SVGElement,
   USING_GARBAGE_COLLECTED_MIXIN(SVGPatternElement);
 
  public:
-  DECLARE_NODE_FACTORY(SVGPatternElement);
-
   explicit SVGPatternElement(Document&);
 
   void CollectPatternAttributes(PatternAttributes&) const;

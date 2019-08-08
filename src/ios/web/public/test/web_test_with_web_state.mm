@@ -10,11 +10,13 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
+#include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -128,7 +130,7 @@ bool WebTestWithWebState::LoadHtmlWithoutSubresources(const std::string& html) {
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // Initiate asynchronous HTML load.
   CRWWebController* web_controller = GetWebController(web_state());
-  ASSERT_EQ(PAGE_LOADED, web_controller.loadPhase);
+  ASSERT_EQ(web::WKNavigationState::FINISHED, web_controller.navigationState);
 
   // If the underlying WKWebView is empty, first load a placeholder to create a
   // WKBackForwardListItem to store the NavigationItem associated with the
@@ -141,17 +143,17 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
     ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-      return web_controller.loadPhase == PAGE_LOADED;
+      return web_controller.navigationState == web::WKNavigationState::FINISHED;
     }));
   }
 
   [web_controller loadHTML:html forURL:url];
-  ASSERT_EQ(LOAD_REQUESTED, web_controller.loadPhase);
+  ASSERT_EQ(web::WKNavigationState::REQUESTED, web_controller.navigationState);
 
   // Wait until the page is loaded.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return web_controller.loadPhase == PAGE_LOADED;
+    return web_controller.navigationState == web::WKNavigationState::FINISHED;
   }));
 
   // Wait until the script execution is possible. Script execution will fail if
@@ -206,7 +208,7 @@ id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
   __block id execution_result = nil;
   __block bool execution_completed = false;
   SCOPED_TRACE(base::SysNSStringToUTF8(script));
-  [GetWebController(web_state())
+  [GetWebController(web_state()).jsInjector
       executeJavaScript:script
       completionHandler:^(id result, NSError* error) {
         // Most of executed JS does not return the result, and there is no need

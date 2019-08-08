@@ -12,13 +12,13 @@
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/base/ui_base_features.h"
@@ -269,21 +269,24 @@ void LoginDisplayHostCommon::ShutdownDisplayHost() {
 }
 
 void LoginDisplayHostCommon::OnStartSignInScreenCommon() {
-  kiosk_updater_.SendKioskApps();
+  kiosk_app_menu_controller_.SendKioskApps();
 }
 
 void LoginDisplayHostCommon::ShowGaiaDialogCommon(
-    const base::Optional<AccountId>& prefilled_account) {
+    const AccountId& prefilled_account) {
   DCHECK(GetOobeUI());
 
-  if (prefilled_account) {
+  if (prefilled_account.is_valid()) {
     // Make sure gaia displays |account| if requested.
-    if (!GetLoginDisplay()->delegate()->IsSigninInProgress())
-      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
-    LoadWallpaper(*prefilled_account);
+    if (!GetLoginDisplay()->delegate()->IsSigninInProgress()) {
+      GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(
+          prefilled_account);
+    }
+    LoadWallpaper(prefilled_account);
   } else {
-    if (GetOobeUI()->current_screen() != OobeScreen::SCREEN_GAIA_SIGNIN) {
-      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    if (GetOobeUI()->current_screen() != GaiaView::kScreenId) {
+      GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(
+          EmptyAccountId());
     }
     LoadSigninWallpaper();
   }

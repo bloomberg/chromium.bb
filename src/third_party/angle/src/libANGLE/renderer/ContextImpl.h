@@ -21,6 +21,7 @@ namespace gl
 class ErrorSet;
 class MemoryProgramCache;
 class Path;
+class Semaphore;
 struct Workarounds;
 }  // namespace gl
 
@@ -39,6 +40,22 @@ class ContextImpl : public GLImplFactory
     // Flush and finish.
     virtual angle::Result flush(const gl::Context *context)  = 0;
     virtual angle::Result finish(const gl::Context *context) = 0;
+
+    // Semaphore operations.
+    virtual angle::Result waitSemaphore(const gl::Context *context,
+                                        const gl::Semaphore *semaphore,
+                                        GLuint numBufferBarriers,
+                                        const GLuint *buffers,
+                                        GLuint numTextureBarriers,
+                                        const GLuint *textures,
+                                        const GLenum *srcLayouts)   = 0;
+    virtual angle::Result signalSemaphore(const gl::Context *context,
+                                          const gl::Semaphore *semaphore,
+                                          GLuint numBufferBarriers,
+                                          const GLuint *buffers,
+                                          GLuint numTextureBarriers,
+                                          const GLuint *textures,
+                                          const GLenum *dstLayouts) = 0;
 
     // Drawing methods.
     virtual angle::Result drawArrays(const gl::Context *context,
@@ -154,6 +171,7 @@ class ContextImpl : public GLImplFactory
 
     // Context switching
     virtual angle::Result onMakeCurrent(const gl::Context *context) = 0;
+    virtual angle::Result onUnMakeCurrent(const gl::Context *context);
 
     // Native capabilities, unmodified by gl::Context.
     virtual gl::Caps getNativeCaps() const                         = 0;

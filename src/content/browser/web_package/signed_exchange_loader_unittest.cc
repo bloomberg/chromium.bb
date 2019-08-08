@@ -62,7 +62,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
                       const network::ResourceResponseHead&));
     MOCK_METHOD3(OnUploadProgress,
                  void(int64_t, int64_t, base::OnceCallback<void()> callback));
-    MOCK_METHOD1(OnReceiveCachedMetadata, void(const std::vector<uint8_t>&));
+    MOCK_METHOD1(OnReceiveCachedMetadata, void(mojo_base::BigBuffer));
     MOCK_METHOD1(OnTransferSizeUpdated, void(int32_t));
     MOCK_METHOD1(OnStartLoadingResponseBody,
                  void(mojo::ScopedDataPipeConsumerHandle));
@@ -163,12 +163,13 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
 
   network::ResourceResponseHead response;
   std::string headers("HTTP/1.1 200 OK\nnContent-type: foo/bar\n\n");
-  response.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
 
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
       resource_request.url, SignedExchangeLoadResult::kSuccess, net::OK,
-      GURL("https://publisher.example.com/"), "text/html", {})});
+      GURL("https://publisher.example.com/"), "text/html", {},
+      net::SHA256HashValue({{0x00}}))});
 
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =

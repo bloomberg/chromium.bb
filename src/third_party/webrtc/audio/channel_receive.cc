@@ -79,7 +79,7 @@ class ChannelReceive : public ChannelReceiveInterface,
   ChannelReceive(Clock* clock,
                  ProcessThread* module_process_thread,
                  AudioDeviceModule* audio_device_module,
-                 MediaTransportInterface* media_transport,
+                 const MediaTransportConfig& media_transport_config,
                  Transport* rtcp_send_transport,
                  RtcEventLog* rtc_event_log,
                  uint32_t remote_ssrc,
@@ -156,6 +156,12 @@ class ChannelReceive : public ChannelReceiveInterface,
   void SetAssociatedSendChannel(const ChannelSendInterface* channel) override;
 
   std::vector<RtpSource> GetSources() const override;
+
+  // TODO(sukhanov): Return const pointer. It requires making media transport
+  // getters like GetLatestTargetTransferRate to be also const.
+  MediaTransportInterface* media_transport() const {
+    return media_transport_config_.media_transport;
+  }
 
  private:
   bool ReceivePacket(const uint8_t* packet,
@@ -254,7 +260,7 @@ class ChannelReceive : public ChannelReceiveInterface,
 
   rtc::ThreadChecker construction_thread_;
 
-  MediaTransportInterface* const media_transport_;
+  MediaTransportConfig media_transport_config_;
 
   // E2EE Audio Frame Decryption
   rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor_;
@@ -265,7 +271,7 @@ int32_t ChannelReceive::OnReceivedPayloadData(const uint8_t* payloadData,
                                               size_t payloadSize,
                                               const RTPHeader& rtp_header) {
   // We should not be receiving any RTP packets if media_transport is set.
-  RTC_CHECK(!media_transport_);
+  RTC_CHECK(!media_transport());
 
   if (!Playing()) {
     // Avoid inserting into NetEQ when we are not playing. Count the
@@ -296,7 +302,7 @@ int32_t ChannelReceive::OnReceivedPayloadData(const uint8_t* payloadData,
 // MediaTransportAudioSinkInterface override.
 void ChannelReceive::OnData(uint64_t channel_id,
                             MediaTransportEncodedAudioFrame frame) {
-  RTC_CHECK(media_transport_);
+  RTC_CHECK(media_transport());
 
   if (!Playing()) {
     // Avoid inserting into NetEQ when we are not playing. Count the
@@ -432,7 +438,7 @@ ChannelReceive::ChannelReceive(
     Clock* clock,
     ProcessThread* module_process_thread,
     AudioDeviceModule* audio_device_module,
-    MediaTransportInterface* media_transport,
+    const MediaTransportConfig& media_transport_config,
     Transport* rtcp_send_transport,
     RtcEventLog* rtc_event_log,
     uint32_t remote_ssrc,
@@ -458,7 +464,7 @@ ChannelReceive::ChannelReceive(
       _audioDeviceModulePtr(audio_device_module),
       _outputGain(1.0f),
       associated_send_channel_(nullptr),
-      media_transport_(media_transport),
+      media_transport_config_(media_transport_config),
       frame_decryptor_(frame_decryptor),
       crypto_options_(crypto_options) {
   // TODO(nisse): Use _moduleProcessThreadPtr instead?
@@ -503,16 +509,16 @@ ChannelReceive::ChannelReceive(
   // RTCP is enabled by default.
   _rtpRtcpModule->SetRTCPStatus(RtcpMode::kCompound);
 
-  if (media_transport_) {
-    media_transport_->SetReceiveAudioSink(this);
+  if (media_transport()) {
+    media_transport()->SetReceiveAudioSink(this);
   }
 }
 
 ChannelReceive::~ChannelReceive() {
   RTC_DCHECK(construction_thread_.IsCurrent());
 
-  if (media_transport_) {
-    media_transport_->SetReceiveAudioSink(nullptr);
+  if (media_transport()) {
+    media_transport()->SetReceiveAudioSink(nullptr);
   }
 
   StopPlayout();
@@ -558,9 +564,10 @@ std::vector<webrtc::RtpSource> ChannelReceive::GetSources() const {
     sources = contributing_sources_.GetSources(now_ms);
     if (last_received_rtp_system_time_ms_ >=
         now_ms - ContributingSources::kHistoryMs) {
+      RTC_DCHECK(last_received_rtp_timestamp_.has_value());
       sources.emplace_back(*last_received_rtp_system_time_ms_, remote_ssrc_,
-                           RtpSourceType::SSRC);
-      sources.back().set_audio_level(last_received_rtp_audio_level_);
+                           RtpSourceType::SSRC, last_received_rtp_audio_level_,
+                           *last_received_rtp_timestamp_);
     }
   }
   return sources;
@@ -593,7 +600,8 @@ void ChannelReceive::OnRtpPacket(const RtpPacketReceived& packet) {
     std::vector<uint32_t> csrcs = packet.Csrcs();
     contributing_sources_.Update(
         now_ms, csrcs,
-        has_audio_level ? absl::optional<uint8_t>(audio_level) : absl::nullopt);
+        has_audio_level ? absl::optional<uint8_t>(audio_level) : absl::nullopt,
+        packet.Timestamp());
   }
 
   // Store playout timestamp for the received RTP packet
@@ -786,11 +794,12 @@ void ChannelReceive::SetNACKStatus(bool enable, int max_packets) {
   RTC_DCHECK(worker_thread_checker_.IsCurrent());
   // None of these functions can fail.
   if (enable) {
-    rtp_receive_statistics_->SetMaxReorderingThreshold(max_packets);
+    rtp_receive_statistics_->SetMaxReorderingThreshold(remote_ssrc_,
+                                                       max_packets);
     audio_coding_->EnableNack(max_packets);
   } else {
     rtp_receive_statistics_->SetMaxReorderingThreshold(
-        kDefaultMaxReorderingThreshold);
+        remote_ssrc_, kDefaultMaxReorderingThreshold);
     audio_coding_->DisableNack();
   }
 }
@@ -921,8 +930,8 @@ int ChannelReceive::GetRtpTimestampRateHz() const {
 }
 
 int64_t ChannelReceive::GetRTT() const {
-  if (media_transport_) {
-    auto target_rate = media_transport_->GetLatestTargetTransferRate();
+  if (media_transport()) {
+    auto target_rate = media_transport()->GetLatestTargetTransferRate();
     if (target_rate.has_value()) {
       return target_rate->network_estimate.round_trip_time.ms();
     }
@@ -966,7 +975,7 @@ std::unique_ptr<ChannelReceiveInterface> CreateChannelReceive(
     Clock* clock,
     ProcessThread* module_process_thread,
     AudioDeviceModule* audio_device_module,
-    MediaTransportInterface* media_transport,
+    const MediaTransportConfig& media_transport_config,
     Transport* rtcp_send_transport,
     RtcEventLog* rtc_event_log,
     uint32_t remote_ssrc,
@@ -979,7 +988,7 @@ std::unique_ptr<ChannelReceiveInterface> CreateChannelReceive(
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
     const webrtc::CryptoOptions& crypto_options) {
   return absl::make_unique<ChannelReceive>(
-      clock, module_process_thread, audio_device_module, media_transport,
+      clock, module_process_thread, audio_device_module, media_transport_config,
       rtcp_send_transport, rtc_event_log, remote_ssrc,
       jitter_buffer_max_packets, jitter_buffer_fast_playout,
       jitter_buffer_min_delay_ms, jitter_buffer_enable_rtx_handling,

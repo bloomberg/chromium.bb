@@ -23,10 +23,6 @@
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
-#endif
-
 namespace {
 
 struct SupervisedUserSettingsPrefMappingEntry {
@@ -136,11 +132,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
     prefs_->SetBoolean(ntp_snippets::prefs::kEnableSnippets, false);
-
-#if defined(OS_ANDROID)
-    prefs_->SetBoolean(
-        contextual_suggestions::prefs::kContextualSuggestionsEnabled, false);
-#endif
 
     // Copy supervised user settings to prefs.
     for (const auto& entry : kSupervisedUserSettingsPrefMapping) {

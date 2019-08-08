@@ -19,8 +19,8 @@
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
 #include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -85,10 +85,14 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
     ProcessNodeImpl* process_node,
     PageNodeImpl* page_node,
     FrameNodeImpl* parent_frame_node,
-    int frame_tree_node_id) {
-  return CreateNodeImpl<FrameNodeImpl>(FrameNodeCreationCallback(),
-                                       process_node, page_node,
-                                       parent_frame_node, frame_tree_node_id);
+    int frame_tree_node_id,
+    const base::UnguessableToken& dev_tools_token,
+    int32_t browsing_instance_id,
+    int32_t site_instance_id) {
+  return CreateNodeImpl<FrameNodeImpl>(
+      FrameNodeCreationCallback(), process_node, page_node, parent_frame_node,
+      frame_tree_node_id, dev_tools_token, browsing_instance_id,
+      site_instance_id);
 }
 
 std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
@@ -96,16 +100,21 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
     PageNodeImpl* page_node,
     FrameNodeImpl* parent_frame_node,
     int frame_tree_node_id,
+    const base::UnguessableToken& dev_tools_token,
+    int32_t browsing_instance_id,
+    int32_t site_instance_id,
     FrameNodeCreationCallback creation_callback) {
-  return CreateNodeImpl<FrameNodeImpl>(std::move(creation_callback),
-                                       process_node, page_node,
-                                       parent_frame_node, frame_tree_node_id);
+  return CreateNodeImpl<FrameNodeImpl>(
+      std::move(creation_callback), process_node, page_node, parent_frame_node,
+      frame_tree_node_id, dev_tools_token, browsing_instance_id,
+      site_instance_id);
 }
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
-    const base::WeakPtr<WebContentsProxy>& contents_proxy) {
+    const WebContentsProxy& contents_proxy,
+    bool is_visible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
-                                      contents_proxy);
+                                      contents_proxy, is_visible);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
@@ -144,7 +153,7 @@ template <typename NodeType>
 void AddNodeAndInvokeCreationCallback(
     base::OnceCallback<void(NodeType*)> callback,
     NodeType* node,
-    Graph* graph) {
+    GraphImpl* graph) {
   graph->AddNewNode(node);
   if (!callback.is_null())
     std::move(callback).Run(node);
@@ -198,8 +207,8 @@ void PerformanceManager::BatchDeleteNodesImpl(
   base::flat_set<ProcessNodeImpl*> process_nodes;
 
   for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-    switch ((*it)->id().type) {
-      case resource_coordinator::CoordinationUnitType::kPage: {
+    switch ((*it)->type()) {
+      case PageNodeImpl::Type(): {
         auto* page_node = PageNodeImpl::FromNodeBase(it->get());
 
         // Delete the main frame nodes until no more exist.
@@ -210,17 +219,17 @@ void PerformanceManager::BatchDeleteNodesImpl(
         graph_.RemoveNode(page_node);
         break;
       }
-      case resource_coordinator::CoordinationUnitType::kProcess: {
+      case ProcessNodeImpl::Type(): {
         // Keep track of the process nodes for removing once all frames nodes
         // are removed.
         auto* process_node = ProcessNodeImpl::FromNodeBase(it->get());
         process_nodes.insert(process_node);
         break;
       }
-      case resource_coordinator::CoordinationUnitType::kFrame:
+      case FrameNodeImpl::Type():
         break;
-      case resource_coordinator::CoordinationUnitType::kSystem:
-      case resource_coordinator::CoordinationUnitType::kInvalidType:
+      case SystemNodeImpl::Type():
+      case NodeTypeEnum::kInvalidType:
       default: {
         NOTREACHED();
         break;
@@ -255,15 +264,10 @@ void PerformanceManager::OnStartImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Register new |GraphObserver| implementations here.
-  auto page_signal_generator_impl = std::make_unique<PageSignalGeneratorImpl>();
-  interface_registry_.AddInterface(
-      base::BindRepeating(&PageSignalGeneratorImpl::BindToInterface,
-                          base::Unretained(page_signal_generator_impl.get())));
-  RegisterObserver(std::move(page_signal_generator_impl));
-
   RegisterObserver(std::make_unique<MetricsCollector>());
   RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
   RegisterObserver(std::make_unique<FrozenFrameAggregator>());
+  RegisterObserver(std::make_unique<IsolationContextMetrics>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
@@ -288,7 +292,7 @@ void PerformanceManager::BindInterfaceImpl(
 }
 
 void PerformanceManager::BindWebUIGraphDump(
-    resource_coordinator::mojom::WebUIGraphDumpRequest request,
+    mojom::WebUIGraphDumpRequest request,
     const service_manager::BindSourceInfo& source_info) {
   std::unique_ptr<WebUIGraphDumpImpl> graph_dump =
       std::make_unique<WebUIGraphDumpImpl>(&graph_);

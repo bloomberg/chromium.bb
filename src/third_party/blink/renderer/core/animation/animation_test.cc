@@ -31,9 +31,11 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 
 #include <memory>
+
+#include "base/bits.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -46,6 +48,8 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -86,7 +90,7 @@ class AnimationAnimationTest : public RenderingTest {
     // Egregious hack: Sideload the compositor value.
     // This is usually set in a part of the rendering process SimulateFrame
     // doesn't call.
-    start_keyframe->SetCompositorValue(AnimatableDouble::Create(1.0));
+    start_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(1.0));
     TransitionKeyframe* end_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
     end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
@@ -94,13 +98,13 @@ class AnimationAnimationTest : public RenderingTest {
         std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);
     // Egregious hack: Sideload the compositor value.
-    end_keyframe->SetCompositorValue(AnimatableDouble::Create(0.0));
+    end_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(0.0));
 
     TransitionKeyframeVector keyframes;
     keyframes.push_back(start_keyframe);
     keyframes.push_back(end_keyframe);
 
-    return TransitionKeyframeEffectModel::Create(keyframes);
+    return MakeGarbageCollected<TransitionKeyframeEffectModel>(keyframes);
   }
 
   void ResetWithCompositedAnimation() {
@@ -115,11 +119,13 @@ class AnimationAnimationTest : public RenderingTest {
     Timing timing;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
 
-    Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
+    Persistent<StringKeyframe> start_keyframe =
+        MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                         SecureContextMode::kInsecureContext,
                                         nullptr);
-    Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
+    Persistent<StringKeyframe> end_keyframe =
+        MakeGarbageCollected<StringKeyframe>();
     end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
@@ -129,35 +135,40 @@ class AnimationAnimationTest : public RenderingTest {
     keyframes.push_back(end_keyframe);
 
     Element* element = GetElementById("target");
-    StringKeyframeEffectModel* model =
-        StringKeyframeEffectModel::Create(keyframes);
-    animation = timeline->Play(KeyframeEffect::Create(element, model, timing));
+    auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+    animation = timeline->Play(
+        MakeGarbageCollected<KeyframeEffect>(element, model, timing));
 
     // After creating the animation we need to clean the lifecycle so that the
     // animation can be pushed to the compositor.
     UpdateAllLifecyclePhasesForTest();
 
     document->GetAnimationClock().UpdateTime(base::TimeTicks());
-    document->GetPendingAnimations().Update(base::nullopt, true);
+    document->GetPendingAnimations().Update(nullptr, true);
   }
 
   KeyframeEffectModelBase* MakeEmptyEffectModel() {
-    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+    return MakeGarbageCollected<StringKeyframeEffectModel>(
+        StringKeyframeVector());
   }
 
   KeyframeEffect* MakeAnimation(double duration = 30) {
     Timing timing;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
-    return KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
+    return MakeGarbageCollected<KeyframeEffect>(nullptr, MakeEmptyEffectModel(),
+                                                timing);
   }
 
-  bool SimulateFrame(
-      double time,
-      base::Optional<CompositorElementIdSet> composited_element_ids =
-          base::Optional<CompositorElementIdSet>()) {
+  bool SimulateFrame(double time) {
+    const PaintArtifactCompositor* paint_artifact_compositor = nullptr;
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      paint_artifact_compositor =
+          document->GetFrame()->View()->GetPaintArtifactCompositorForTesting();
+    }
     document->GetAnimationClock().UpdateTime(
         base::TimeTicks() + base::TimeDelta::FromSecondsD(time));
-    document->GetPendingAnimations().Update(composited_element_ids, false);
+    document->GetPendingAnimations().Update(paint_artifact_compositor, false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
     return animation->Update(kTimingUpdateForAnimationFrame);
@@ -441,8 +452,12 @@ TEST_F(AnimationAnimationTest, Reverse) {
   animation->pause();
   animation->reverse();
   EXPECT_FALSE(animation->Paused());
-  EXPECT_EQ(-1, animation->playbackRate());
+  EXPECT_TRUE(animation->pending());
+  EXPECT_EQ(1, animation->playbackRate());
   EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(0);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(-1, animation->playbackRate());
 }
 
 TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero) {
@@ -521,8 +536,8 @@ TEST_F(AnimationAnimationTest, FinishRaisesException) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.iteration_count = std::numeric_limits<double>::infinity();
-  animation->setEffect(
-      KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing));
+  animation->setEffect(MakeGarbageCollected<KeyframeEffect>(
+      nullptr, MakeEmptyEffectModel(), timing));
   animation->SetCurrentTimeInternal(10);
 
   DummyExceptionStateForTesting exception_state;
@@ -616,6 +631,67 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
   EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
+TEST_F(AnimationAnimationTest, UpdatePlaybackRate) {
+  animation->updatePlaybackRate(2);
+  EXPECT_EQ(1, animation->playbackRate());
+
+  SimulateFrame(0);
+  EXPECT_EQ(2, animation->playbackRate());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+
+  SimulateFrame(10);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhilePaused) {
+  animation->pause();
+
+  // Pending playback rate on pending-paused animation is picked up after async
+  // tick.
+  EXPECT_TRUE(animation->Paused());
+  EXPECT_TRUE(animation->pending());
+  animation->updatePlaybackRate(2);
+  EXPECT_EQ(1, animation->playbackRate());
+
+  SimulateFrame(1);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(2, animation->playbackRate());
+
+  // Pending playback rate on a paused animation is resolved immediately.
+  animation->updatePlaybackRate(3);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(3, animation->playbackRate());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileLimited) {
+  NonThrowableExceptionState exception_state;
+  animation->finish(exception_state);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+
+  // Updating playback rate does not affect current time.
+  animation->updatePlaybackRate(2);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+
+  // Updating payback rate is resolved immediately for an animation in the
+  // finished state.
+  EXPECT_EQ(2, animation->playbackRate());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileRunning) {
+  animation->play();
+  SimulateFrame(1);
+  animation->updatePlaybackRate(2);
+
+  // Updating playback rate triggers pending state for the play state.
+  // Pending playback rate is not resolved until next async tick.
+  EXPECT_TRUE(animation->pending());
+  EXPECT_EQ(1, animation->playbackRate());
+
+  SimulateFrame(1);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(2, animation->playbackRate());
+}
+
 TEST_F(AnimationAnimationTest, SetEffect) {
   animation = timeline->Play(nullptr);
   animation->setStartTime(0, false);
@@ -674,8 +750,8 @@ TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   timing.start_delay = 1;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.end_delay = 1;
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      nullptr, MakeEmptyEffectModel(), timing);
   animation = timeline->Play(keyframe_effect);
   animation->setStartTime(0, false);
 
@@ -779,8 +855,8 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
   Persistent<Element> element = document->CreateElementForBinding("foo");
 
   Timing timing;
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), MakeEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      element.Get(), MakeEmptyEffectModel(), timing);
   Animation* animation = timeline->Play(keyframe_effect);
   SimulateFrame(0);
   timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
@@ -870,42 +946,40 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel) {
 
 TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   ScopedCompositeAfterPaintForTest enable_cap(true);
+  EnableCompositing();
 
   SetBodyInnerHTML(
-      "<div id='foo' style='position: relative'></div>"
-      "<div id='bar' style='position: relative'></div>");
+      "<div id='foo' style='position: relative; will-change: "
+      "opacity;'>composited</div>"
+      "<div id='bar' style='position: relative'>not composited</div>");
 
   LayoutObject* object_composited = GetLayoutObjectByElementId("foo");
   LayoutObject* object_not_composited = GetLayoutObjectByElementId("bar");
 
-  base::Optional<CompositorElementIdSet> composited_element_ids =
-      CompositorElementIdSet();
-  CompositorElementId expected_compositor_element_id =
-      CompositorElementIdFromUniqueObjectId(
-          ToLayoutBoxModelObject(object_composited)->UniqueId(),
-          CompositorElementIdNamespace::kPrimaryEffect);
-  composited_element_ids->insert(expected_compositor_element_id);
-
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
-  KeyframeEffect* keyframe_effect_composited = KeyframeEffect::Create(
-      ToElement(object_composited->GetNode()), MakeSimpleEffectModel(), timing);
+  auto* keyframe_effect_composited = MakeGarbageCollected<KeyframeEffect>(
+      To<Element>(object_composited->GetNode()), MakeSimpleEffectModel(),
+      timing);
   Animation* animation_composited = timeline->Play(keyframe_effect_composited);
-  KeyframeEffect* keyframe_effect_not_composited =
-      KeyframeEffect::Create(ToElement(object_not_composited->GetNode()),
-                             MakeSimpleEffectModel(), timing);
+  auto* keyframe_effect_not_composited = MakeGarbageCollected<KeyframeEffect>(
+      To<Element>(object_not_composited->GetNode()), MakeSimpleEffectModel(),
+      timing);
   Animation* animation_not_composited =
       timeline->Play(keyframe_effect_not_composited);
 
-  SimulateFrame(0, composited_element_ids);
-  EXPECT_TRUE(
-      animation_composited->CheckCanStartAnimationOnCompositorInternal().Ok());
-  EXPECT_TRUE(animation_composited
-                  ->CheckCanStartAnimationOnCompositor(composited_element_ids)
-                  .Ok());
-  EXPECT_FALSE(animation_not_composited
-                   ->CheckCanStartAnimationOnCompositor(composited_element_ids)
-                   .Ok());
+  SimulateFrame(0);
+  EXPECT_EQ(animation_composited->CheckCanStartAnimationOnCompositorInternal(),
+            CompositorAnimations::kNoFailure);
+  const PaintArtifactCompositor* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositor();
+  ASSERT_TRUE(paint_artifact_compositor);
+  EXPECT_EQ(animation_composited->CheckCanStartAnimationOnCompositor(
+                paint_artifact_compositor),
+            CompositorAnimations::kNoFailure);
+  EXPECT_NE(animation_not_composited->CheckCanStartAnimationOnCompositor(
+                paint_artifact_compositor),
+            CompositorAnimations::kNoFailure);
 }
 
 // Regression test for http://crbug.com/819591 . If a compositable animation is
@@ -939,7 +1013,85 @@ TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
 
   // At this point, a call to PreCommit should bail out and tell us to wait for
   // next commit because there are no resolved start times.
-  EXPECT_FALSE(animation->PreCommit(0, base::nullopt, true));
+  EXPECT_FALSE(animation->PreCommit(0, nullptr, true));
+}
+
+namespace {
+int GenerateHistogramValue(CompositorAnimations::FailureReason reason) {
+  // The enum values in CompositorAnimations::FailureReasons are stored as 2^i
+  // as they are a bitmask, but are recorded into the histogram as (i+1) to give
+  // sequential histogram values. The exception is kNoFailure, which is stored
+  // as 0 and recorded as 0.
+  if (reason == CompositorAnimations::kNoFailure)
+    return CompositorAnimations::kNoFailure;
+  return base::bits::CountTrailingZeroBits(static_cast<uint32_t>(reason)) + 1;
+}
+}  // namespace
+
+TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
+  const std::string histogram_name =
+      "Blink.Animation.CompositedAnimationFailureReason";
+
+  // Initially the animation in this test has no target, so it is invalid.
+  {
+    HistogramTester histogram;
+    ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kInvalidAnimationOrEffect),
+        1);
+  }
+
+  // Restart the animation with a target and compositing state.
+  {
+    HistogramTester histogram;
+    ResetWithCompositedAnimation();
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kNoFailure), 1);
+  }
+
+  // Now make the playback rate 0. This trips both the invalid animation and
+  // unsupported timing parameter reasons.
+  animation->setPlaybackRate(0);
+  animation->NotifyCompositorStartTime(100);
+  {
+    HistogramTester histogram;
+    ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kInvalidAnimationOrEffect),
+        1);
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(
+            CompositorAnimations::kEffectHasUnsupportedTimingParameters),
+        1);
+  }
+  animation->setPlaybackRate(1);
+
+  // Finally, change the keyframes to something unsupported by the compositor.
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  start_keyframe->SetCSSPropertyValue(
+      CSSPropertyID::kLeft, "0", SecureContextMode::kInsecureContext, nullptr);
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kLeft, "100px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
+
+  ToKeyframeEffect(animation->effect())
+      ->SetKeyframes({start_keyframe, end_keyframe});
+  UpdateAllLifecyclePhasesForTest();
+  {
+    HistogramTester histogram;
+    ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
+    histogram.ExpectBucketCount(
+        histogram_name,
+        GenerateHistogramValue(CompositorAnimations::kUnsupportedCSSProperty),
+        1);
+  }
 }
 
 TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
@@ -952,11 +1104,13 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
 
   // Now change the keyframes; this should mark the animation as compositor
   // pending as we need to sync the compositor side.
-  Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
-  Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
   end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);

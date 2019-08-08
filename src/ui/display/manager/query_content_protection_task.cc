@@ -34,7 +34,8 @@ QueryContentProtectionTask::~QueryContentProtectionTask() {
 void QueryContentProtectionTask::Run() {
   std::vector<DisplaySnapshot*> hdcp_capable_displays;
   for (DisplaySnapshot* display : layout_manager_->GetDisplayStates()) {
-    // Query display if it is in mirror mode or client on the same display.
+    // Query all displays in mirroring mode. Otherwise, query the given display,
+    // which must exist because tasks are killed on display reconfiguration.
     if (!layout_manager_->IsMirroring() && display->display_id() != display_id_)
       continue;
 

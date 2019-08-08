@@ -12,25 +12,25 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/common/push_messaging.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 
 class GURL;
 
 namespace blink {
-struct Manifest;
-struct WebPushSubscriptionOptions;
-}
-
-namespace content {
 
 namespace mojom {
 enum class PushRegistrationStatus;
 }
 
-struct PushSubscriptionOptions;
+struct Manifest;
+struct WebPushSubscriptionOptions;
+struct WebPushSubscriptionOptions;
+}  // namespace blink
+
+namespace content {
 
 class PushMessagingClient : public RenderFrameObserver,
                             public blink::WebPushClient {
@@ -54,24 +54,24 @@ class PushMessagingClient : public RenderFrameObserver,
       const blink::WebPushSubscriptionOptions& options,
       bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      const GURL& manifest_url,
+      const blink::WebURL& manifest_url,
       const blink::Manifest& manifest);
 
   void DoSubscribe(
       int64_t service_worker_registration_id,
-      const PushSubscriptionOptions& options,
+      const blink::WebPushSubscriptionOptions& options,
       bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
   void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      mojom::PushRegistrationStatus status,
+      blink::mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<PushSubscriptionOptions>& options,
+      const base::Optional<blink::WebPushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
-  mojom::PushMessagingPtr push_messaging_manager_;
+  blink::mojom::PushMessagingPtr push_messaging_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingClient);
 };

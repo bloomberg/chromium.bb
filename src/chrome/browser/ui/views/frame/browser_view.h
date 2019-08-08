@@ -322,6 +322,7 @@ class BrowserView : public BrowserWindow,
   ui::WindowShowState GetRestoredState() const override;
   gfx::Rect GetBounds() const override;
   gfx::Size GetContentsSize() const override;
+  void SetContentsSize(const gfx::Size& size) override;
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Maximize() override;
@@ -367,11 +368,14 @@ class BrowserView : public BrowserWindow,
       bool show_stay_in_chrome,
       bool show_remember_selection,
       IntentPickerResponse callback) override;
-  void SetIntentPickerViewVisibility(bool visible) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
+      bool is_user_gesture) override;
+  send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
+      content::WebContents* contents,
+      send_tab_to_self::SendTabToSelfBubbleController* controller,
       bool is_user_gesture) override;
   autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
       content::WebContents* contents,
@@ -534,7 +538,7 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveModeControllerDestroyed() override;
 
   // banners::AppBannerManager::Observer:
-  void OnInstallabilityUpdated() override;
+  void OnInstallableWebAppStatusUpdated() override;
 
   // Creates an accessible tab label for screen readers that includes the tab
   // status for the given tab index. This takes the form of
@@ -547,9 +551,6 @@ class BrowserView : public BrowserWindow,
   FullscreenControlHost* fullscreen_control_host_for_test() {
     return fullscreen_control_host_.get();
   }
-
-  // Called by BrowserFrame during theme changes.
-  void NativeThemeUpdated(const ui::NativeTheme* theme);
 
   // Gets the amount to vertically shift the placement of the icons on the
   // bookmark bar so the icons appear centered relative to the views above and
@@ -782,12 +783,14 @@ class BrowserView : public BrowserWindow,
   // True if we have already been initialized.
   bool initialized_ = false;
 
-  // True if we're currently handling a theme change (i.e. inside
-  // OnThemeChanged()).
-  bool handling_theme_changed_ = false;
-
   // True if (as of the last time it was checked) the frame type is native.
   bool using_native_frame_ = true;
+
+#if defined(OS_WIN)
+  // True if (as of the last time it was checked) we're using a custom drawn
+  // title bar.
+  bool using_custom_titlebar_ = true;
+#endif
 
   // True when in ProcessFullscreen(). The flag is used to avoid reentrance and
   // to ignore requests to layout while in ProcessFullscreen() to reduce

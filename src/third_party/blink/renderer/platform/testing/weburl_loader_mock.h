@@ -55,7 +55,6 @@ class WebURLLoaderMock : public WebURLLoader {
                          blink::WebBlobInfo& downloaded_blob) override;
   void LoadAsynchronously(const WebURLRequest& request,
                           WebURLLoaderClient* client) override;
-  void Cancel() override;
   void SetDefersLoading(bool defer) override;
   void DidChangePriority(WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
@@ -67,6 +66,8 @@ class WebURLLoaderMock : public WebURLLoader {
   base::WeakPtr<WebURLLoaderMock> GetWeakPtr();
 
  private:
+  void Cancel();
+
   WebURLLoaderMockFactoryImpl* factory_ = nullptr;
   WebURLLoaderClient* client_ = nullptr;
   std::unique_ptr<WebURLLoader> default_loader_;

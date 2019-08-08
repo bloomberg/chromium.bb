@@ -14,11 +14,11 @@ window.onload = () => {
     console.log('[piexwasm] failed loading script:', script.src);
   };
 
-  self.Module = {
+  window.Module = {
     onRuntimeInitialized: () => {
       console.log('[piexwasm] runtime loaded');
     },
   };
 
-  script.src = 'a.out.js';
+  script.src = '/piex.js.wasm';
 };

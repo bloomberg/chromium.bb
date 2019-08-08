@@ -43,9 +43,12 @@ void SendTabToSelfInfoBar::OnLinkClicked(
 }
 
 // static
-void SendTabToSelfInfoBar::ShowInfoBar(content::WebContents* web_contents,
-                                       SendTabToSelfInfoBarDelegate* delegate) {
-  NOTIMPLEMENTED();
+void SendTabToSelfInfoBar::ShowInfoBar(
+    content::WebContents* web_contents,
+    std::unique_ptr<SendTabToSelfInfoBarDelegate> delegate) {
+  InfoBarService* service = InfoBarService::FromWebContents(web_contents);
+  service->AddInfoBar(
+      base::WrapUnique(new SendTabToSelfInfoBar(std::move(delegate))));
 }
 
 }  // namespace send_tab_to_self

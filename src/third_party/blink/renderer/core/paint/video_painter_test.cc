@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
-#include "third_party/blink/renderer/core/paint/stub_chrome_client_for_cap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -65,8 +64,7 @@ class VideoPainterTestForCAP : private ScopedCompositeAfterPaintForTest,
   VideoPainterTestForCAP()
       : ScopedCompositeAfterPaintForTest(true),
         PaintControllerPaintTestBase(
-            MakeGarbageCollected<VideoStubLocalFrameClient>()),
-        chrome_client_(MakeGarbageCollected<StubChromeClientForCAP>()) {}
+            MakeGarbageCollected<VideoStubLocalFrameClient>()) {}
 
   void SetUp() override {
     PaintControllerPaintTestBase::SetUp();
@@ -75,13 +73,8 @@ class VideoPainterTestForCAP : private ScopedCompositeAfterPaintForTest,
   }
 
   bool HasLayerAttached(const cc::Layer& layer) {
-    return chrome_client_->HasLayer(layer);
+    return GetChromeClient().HasLayer(layer);
   }
-
-  ChromeClient& GetChromeClient() const override { return *chrome_client_; }
-
- private:
-  Persistent<StubChromeClientForCAP> chrome_client_;
 };
 
 TEST_F(VideoPainterTestForCAP, VideoLayerAppearsInLayerTree) {

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -27,7 +26,6 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
@@ -42,6 +40,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/json_parser/in_process_json_parser.h"
 #include "ios/chrome/browser/leveldb_proto/proto_database_provider_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -56,7 +55,6 @@ using image_fetcher::CreateIOSImageDecoder;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
-using ntp_snippets::Logger;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcherImpl;
@@ -64,25 +62,6 @@ using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusServiceImpl;
 using ntp_snippets::UserClassifier;
-
-namespace {
-
-void ParseJson(const std::string& json,
-               const ntp_snippets::SuccessCallback& success_callback,
-               const ntp_snippets::ErrorCallback& error_callback) {
-  base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value = json_reader.ReadToValueDeprecated(json);
-  if (value) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(success_callback, std::move(value)));
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(error_callback, json_reader.GetErrorMessage()));
-  }
-}
-
-}  // namespace
 
 namespace ntp_snippets {
 
@@ -113,13 +92,11 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   auto user_classifier = std::make_unique<UserClassifier>(
       prefs, base::DefaultClock::GetInstance());
 
-  auto debug_logger = std::make_unique<Logger>();
-
   // TODO(crbug.com/676249): Implement a persistent scheduler for iOS.
   auto scheduler = std::make_unique<RemoteSuggestionsSchedulerImpl>(
       /*persistent_scheduler=*/nullptr, user_classifier.get(), prefs,
       GetApplicationContext()->GetLocalState(),
-      base::DefaultClock::GetInstance(), debug_logger.get());
+      base::DefaultClock::GetInstance());
 
   // Create the ContentSuggestionsService.
   identity::IdentityManager* identity_manager =
@@ -136,7 +113,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   return std::make_unique<ContentSuggestionsService>(
       State::ENABLED, identity_manager, history_service, large_icon_service,
       prefs, std::move(category_ranker), std::move(user_classifier),
-      std::move(scheduler), std::move(debug_logger));
+      std::move(scheduler));
 }
 
 void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
@@ -164,8 +141,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
   }
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, url_loader_factory, prefs, nullptr,
-      base::BindRepeating(&ParseJson), GetFetchEndpoint(), api_key,
-      service->user_classifier());
+      base::BindRepeating(&InProcessJsonParser::Parse), GetFetchEndpoint(),
+      api_key, service->user_classifier());
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
       leveldb_proto::ProtoDatabaseProviderFactory::GetForBrowserState(
@@ -183,7 +160,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       std::make_unique<RemoteSuggestionsDatabase>(db_provider, database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), prefs, pref_name),
-      /*prefetched_pages_tracker=*/nullptr, service->debug_logger(),
+      /*prefetched_pages_tracker=*/nullptr,
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

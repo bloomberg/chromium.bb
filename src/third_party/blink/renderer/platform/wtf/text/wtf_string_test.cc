@@ -62,8 +62,7 @@ TEST(StringTest, ASCII) {
 namespace {
 
 void TestNumberToStringECMAScript(double number, const char* reference) {
-  CString number_string = String::NumberToStringECMAScript(number).Latin1();
-  EXPECT_STREQ(reference, number_string.data());
+  EXPECT_EQ(reference, String::NumberToStringECMAScript(number));
 }
 
 }  // anonymous namespace
@@ -114,34 +113,34 @@ TEST(StringTest, ReplaceWithLiteral) {
   String test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('2', "");
-  EXPECT_STREQ("14", test_string.Utf8().data());
+  EXPECT_EQ("14", test_string);
 
   test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('2', "3");
-  EXPECT_STREQ("1334", test_string.Utf8().data());
+  EXPECT_EQ("1334", test_string);
 
   test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('2', "555");
-  EXPECT_STREQ("15555554", test_string.Utf8().data());
+  EXPECT_EQ("15555554", test_string);
 
   test_string = "1224";
   EXPECT_TRUE(test_string.Is8Bit());
   test_string.Replace('3', "NotFound");
-  EXPECT_STREQ("1224", test_string.Utf8().data());
+  EXPECT_EQ("1224", test_string);
 
   // Cases for 16Bit source.
   // U+00E9 (=0xC3 0xA9 in UTF-8) is e with accent.
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
   test_string.Replace(UChar(0x00E9), "e");
-  EXPECT_STREQ("resume", test_string.Utf8().data());
+  EXPECT_EQ("resume", test_string);
 
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
   test_string.Replace(UChar(0x00E9), "");
-  EXPECT_STREQ("rsum", test_string.Utf8().data());
+  EXPECT_EQ("rsum", test_string);
 
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
@@ -422,10 +421,10 @@ TEST(StringTest, FindIgnoringASCIICase) {
 }
 
 TEST(StringTest, DeprecatedLower) {
-  EXPECT_STREQ("link", String("LINK").DeprecatedLower().Ascii().data());
-  EXPECT_STREQ("link", String("lInk").DeprecatedLower().Ascii().data());
-  EXPECT_STREQ("lin\xE1k",
-               String("lIn\xC1k").DeprecatedLower().Latin1().data());
+  EXPECT_EQ("link", String("LINK").DeprecatedLower());
+  EXPECT_EQ("link", String("lInk").DeprecatedLower());
+  EXPECT_EQ("lin\xE1k", String("lIn\xC1k").DeprecatedLower().Latin1());
+
   // U+212A -> k
   EXPECT_STREQ(
       "link",

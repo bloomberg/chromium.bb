@@ -13,12 +13,15 @@
 
 namespace blink {
 
+class Document;
 class ExecutionContext;
 class ExceptionState;
 class PostMessageOptions;
 class ScriptValue;
+class SecurityOrigin;
 class SerializedScriptValue;
 class Transferables;
+class WindowPostMessageOptions;
 
 class CORE_EXPORT PostMessageHelper {
   STATIC_ONLY(PostMessageHelper);
@@ -43,6 +46,13 @@ class CORE_EXPORT PostMessageHelper {
   static mojom::blink::UserActivationSnapshotPtr CreateUserActivationSnapshot(
       ExecutionContext*,
       const PostMessageOptions*);
+
+  // Extracts target origin from |options|. Throws SyntaxError, if the origin
+  // provided is an invalid URL.
+  static scoped_refptr<const SecurityOrigin> GetTargetOrigin(
+      const WindowPostMessageOptions* options,
+      const Document& document,
+      ExceptionState& state);
 };
 
 }  // namespace blink

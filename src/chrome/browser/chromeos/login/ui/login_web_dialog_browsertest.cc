@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
@@ -25,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CannotMinimize) {
   aura::Window* window = dialog->get_dialog_window_for_test();
   ASSERT_TRUE(window);
   EXPECT_EQ(0, window->GetProperty(aura::client::kResizeBehaviorKey) &
-                   ws::mojom::kResizeBehaviorCanMinimize);
+                   aura::client::kResizeBehaviorCanMinimize);
 }
 
 // Tests that LoginWebDialog can be closed by 'Shift + BrowserBack' accelerator.

@@ -79,8 +79,8 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
     EXPECT_TRUE(reader_);
 
     ASSERT_FALSE(writer_);
-    writer_ = data_store_->GetWriterForOrigin(kTestOrigin,
-                                              TabVisibility::kBackground);
+    writer_ = data_store_->GetWriterForOrigin(
+        kTestOrigin, performance_manager::TabVisibility::kBackground);
     EXPECT_TRUE(writer_);
 
     ASSERT_FALSE(data_);
@@ -88,11 +88,11 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
         data_store_->origin_data_map_for_testing().find(kTestOrigin)->second;
     EXPECT_TRUE(data_);
 
-    EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+    EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
               reader_->UpdatesTitleInBackground());
     writer_->NotifySiteLoaded();
     writer_->NotifyUpdatesTitleInBackground();
-    EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+    EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
               reader_->UpdatesTitleInBackground());
     test_clock_.Advance(kDelay);
 
@@ -102,8 +102,8 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
     EXPECT_TRUE(reader2_);
 
     ASSERT_FALSE(writer2_);
-    writer2_ = data_store_->GetWriterForOrigin(kTestOrigin2,
-                                               TabVisibility::kBackground);
+    writer2_ = data_store_->GetWriterForOrigin(
+        kTestOrigin2, performance_manager::TabVisibility::kBackground);
     EXPECT_TRUE(writer2_);
 
     ASSERT_FALSE(data2_);
@@ -111,11 +111,11 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
         data_store_->origin_data_map_for_testing().find(kTestOrigin2)->second;
     EXPECT_TRUE(data2_);
 
-    EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+    EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
               reader2_->UpdatesFaviconInBackground());
     writer2_->NotifySiteLoaded();
     writer2_->NotifyUpdatesFaviconInBackground();
-    EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+    EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
               reader2_->UpdatesFaviconInBackground());
     test_clock_.Advance(kDelay);
   }
@@ -143,20 +143,20 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
 TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
   auto reader = data_store_->GetReaderForOrigin(kTestOrigin);
   EXPECT_TRUE(reader);
-  auto writer =
-      data_store_->GetWriterForOrigin(kTestOrigin, TabVisibility::kBackground);
+  auto writer = data_store_->GetWriterForOrigin(
+      kTestOrigin, performance_manager::TabVisibility::kBackground);
   EXPECT_TRUE(writer);
 
   EXPECT_EQ(1U, data_store_->origin_data_map_for_testing().size());
 
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
   writer->NotifySiteLoaded();
   writer->NotifyUpdatesTitleInBackground();
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
   writer->NotifySiteUnloaded();
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
 
   auto reader_copy = data_store_->GetReaderForOrigin(kTestOrigin);
@@ -209,12 +209,12 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest,
   // loaded time should be equal to the current time.
   EXPECT_EQ(data_->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
   // The second site shouldn't have been cleared.
   EXPECT_EQ(data2_->last_loaded_time_for_testing(),
             last_loaded_time2_before_urls_deleted);
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader2_->UpdatesFaviconInBackground());
 
   writer_->NotifySiteUnloaded();
@@ -251,11 +251,11 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest,
   // Sites shouldn't have been cleared.
   EXPECT_EQ(data_->last_loaded_time_for_testing(),
             last_loaded_time_before_urls_deleted);
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader_->UpdatesTitleInBackground());
   EXPECT_EQ(data2_->last_loaded_time_for_testing(),
             last_loaded_time2_before_urls_deleted);
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader2_->UpdatesFaviconInBackground());
 
   writer_->NotifySiteUnloaded();
@@ -275,11 +275,11 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, OnURLsDeleted_Full) {
   // The information for both sites should have been cleared.
   EXPECT_EQ(data_->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
   EXPECT_EQ(data2_->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader2_->UpdatesFaviconInBackground());
 
   writer_->NotifySiteUnloaded();
@@ -298,7 +298,7 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, InspectorWorks) {
 
   // We expect an empty data store at the outset.
   EXPECT_EQ(0U, inspector->GetAllInMemoryOrigins().size());
-  std::unique_ptr<SiteCharacteristicsProto> data;
+  std::unique_ptr<SiteDataProto> data;
   bool is_dirty = false;
   EXPECT_FALSE(inspector->GetDataForOrigin(kTestOrigin, &is_dirty, &data));
   EXPECT_FALSE(is_dirty);
@@ -306,8 +306,8 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, InspectorWorks) {
 
   {
     // Add an entry, see that it's reflected in the inspector interface.
-    auto writer = data_store_->GetWriterForOrigin(kTestOrigin,
-                                                  TabVisibility::kBackground);
+    auto writer = data_store_->GetWriterForOrigin(
+        kTestOrigin, performance_manager::TabVisibility::kBackground);
 
     EXPECT_EQ(1U, inspector->GetAllInMemoryOrigins().size());
     EXPECT_TRUE(inspector->GetDataForOrigin(kTestOrigin, &is_dirty, &data));

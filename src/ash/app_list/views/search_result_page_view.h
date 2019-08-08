@@ -16,6 +16,7 @@
 
 namespace app_list {
 
+class AppListViewDelegate;
 class SearchResultBaseView;
 
 // The search results page for the app list.
@@ -23,7 +24,7 @@ class APP_LIST_EXPORT SearchResultPageView
     : public AppListPage,
       public SearchResultContainerView::Delegate {
  public:
-  SearchResultPageView();
+  explicit SearchResultPageView(AppListViewDelegate* view_delegate);
   ~SearchResultPageView() override;
 
   void AddSearchResultContainerView(
@@ -59,6 +60,8 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnSearchResultContainerResultFocused(
       SearchResultBaseView* focused_result_view) override;
 
+  void OnAssistantPrivacyInfoViewCloseButtonPressed();
+
   views::View* contents_view() { return contents_view_; }
 
   SearchResultBaseView* first_result_view() const { return first_result_view_; }
@@ -74,6 +77,8 @@ class APP_LIST_EXPORT SearchResultPageView
   // Sort the result container views.
   void ReorderSearchResultContainers();
 
+  AppListViewDelegate* view_delegate_;
+
   // The SearchResultContainerViews that compose the search page. All owned by
   // the views hierarchy.
   std::vector<SearchResultContainerView*> result_container_views_;
@@ -85,6 +90,8 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // The first search result's view or nullptr if there's no search result.
   SearchResultBaseView* first_result_view_ = nullptr;
+
+  views::View* assistant_privacy_info_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };

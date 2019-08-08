@@ -409,5 +409,24 @@ TEST(StringNumberConversionsTest, FormatNSInteger) {
   }
 }
 
+#define EXPECT_LOG_EQ(expected, val) \
+  EXPECT_EQ(expected, (std::ostringstream() << (val)).str())
+
+TEST(FoundationLoggingTest, ObjCObject) {
+  EXPECT_LOG_EQ("Hello, world!", @"Hello, world!");
+}
+
+TEST(FoundationLoggingTest, ObjCNil) {
+  EXPECT_LOG_EQ("(nil)", static_cast<id>(nil));
+}
+
+TEST(FoundationLoggingTest, CFRange) {
+  EXPECT_LOG_EQ("{0, 100}", CFRangeMake(0, 100));
+}
+
+TEST(FoundationLoggingTest, NSRange) {
+  EXPECT_LOG_EQ("{0, 100}", NSMakeRange(0, 100));
+}
+
 }  // namespace mac
 }  // namespace base

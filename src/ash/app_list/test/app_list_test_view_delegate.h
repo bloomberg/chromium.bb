@@ -15,7 +15,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -63,8 +63,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void StartSearch(const base::string16& raw_query) override {}
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
-                        ash::mojom::AppListLaunchedFrom launched_from,
-                        ash::mojom::AppListLaunchType launch_type,
+                        ash::AppListLaunchedFrom launched_from,
+                        ash::AppListLaunchType launch_type,
                         int suggestion_index) override;
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
@@ -76,27 +76,16 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(
-      const std::string& result_id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchType launch_type) override {}
   void ViewShown(int64_t display_id) override {}
   void DismissAppList() override;
   void ViewClosing() override {}
   void ViewClosed() override {}
-  void GetWallpaperProminentColors(
-      GetWallpaperProminentColorsCallback callback) override {}
+  const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
-                    ash::mojom::AppListLaunchedFrom launched_from) override;
+                    ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(
-      const std::string& id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchedFrom launched_from) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
@@ -109,8 +98,13 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
+  bool ShouldShowAssistantPrivacyInfo() const override;
+  void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
+  void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) override;
+      ash::AppListViewState state) override;
+  void GetAppLaunchedMetricParams(
+      app_list::AppLaunchedMetricParams* metric_params) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -119,7 +113,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   AppListTestModel* GetTestModel() { return model_.get(); }
 
  private:
-  void RecordAppLaunched(ash::mojom::AppListLaunchedFrom launched_from);
+  void RecordAppLaunched(ash::AppListLaunchedFrom launched_from);
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;
@@ -135,7 +129,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
   std::vector<SkColor> wallpaper_prominent_colors_;
-  ui::SimpleMenuModel search_result_context_menu_model_;
   content::FakeNavigableContentsFactory fake_navigable_contents_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);

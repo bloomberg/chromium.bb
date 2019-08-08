@@ -164,7 +164,7 @@ class PrerenderContents : public content::NotificationObserver,
   // |url| and |session_storage_namespace|.
   bool Matches(
       const GURL& url,
-      const content::SessionStorageNamespace* session_storage_namespace) const;
+      content::SessionStorageNamespace* session_storage_namespace) const;
 
   // content::WebContentsObserver implementation.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;

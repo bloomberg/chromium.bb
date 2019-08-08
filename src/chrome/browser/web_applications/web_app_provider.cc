@@ -14,6 +14,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -24,7 +26,6 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/external_web_apps.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
@@ -73,12 +75,12 @@ void WebAppProvider::Init() {
     CreateWebAppsSubsystems(profile_);
   else
     CreateBookmarkAppsSubsystems(profile_);
+
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::Source<Profile>(profile_));
 }
 
 void WebAppProvider::StartRegistry() {
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile_));
-
   registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
@@ -104,17 +106,35 @@ WebAppUiDelegate& WebAppProvider::ui_delegate() {
   return *ui_delegate_;
 }
 
+void WebAppProvider::Shutdown() {
+  // Destroy subsystems.
+  // The order of destruction is the reverse order of creation:
+  // TODO(calamity): Make subsystem destruction happen in destructor.
+  web_app_policy_manager_.reset();
+  system_web_app_manager_.reset();
+  pending_app_manager_.reset();
+
+  install_manager_.reset();
+  install_finalizer_.reset();
+  icon_manager_.reset();
+  registrar_.reset();
+  database_.reset();
+  database_factory_.reset();
+  audio_focus_id_map_.reset();
+}
+
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
-  auto web_app_registrar = std::make_unique<WebAppRegistrar>(database_.get());
+  auto web_app_registrar =
+      std::make_unique<WebAppRegistrar>(profile, database_.get());
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       web_app_registrar.get(), icon_manager_.get());
-  install_manager_ =
-      std::make_unique<WebAppInstallManager>(profile, install_finalizer_.get());
+  install_manager_ = std::make_unique<WebAppInstallManager>(
+      profile, web_app_registrar.get(), install_finalizer_.get());
 
   registrar_ = std::move(web_app_registrar);
 }
@@ -125,8 +145,14 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile_);
-  install_manager_ =
-      std::make_unique<extensions::BookmarkAppInstallManager>(profile);
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
+    install_manager_ = std::make_unique<WebAppInstallManager>(
+        profile, bookmark_app_registrar.get(), install_finalizer_.get());
+  } else {
+    install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>(
+        profile, install_finalizer_.get());
+  }
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(
@@ -162,9 +188,10 @@ void WebAppProvider::OnRegistryReady() {
 // static
 void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  ExtensionIdsMap::RegisterProfilePrefs(registry);
+  ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
   SystemWebAppManager::RegisterProfilePrefs(registry);
+  RegisterInstallBounceMetricProfilePrefs(registry);
 }
 
 // static
@@ -196,11 +223,18 @@ void WebAppProvider::Observe(int type,
                              const content::NotificationDetails& detals) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
 
+  ProfileDestroyed();
+}
+
+void WebAppProvider::ProfileDestroyed() {
   // KeyedService::Shutdown() gets called when the profile is being destroyed,
   // but after DCHECK'ing that no RenderProcessHosts are being leaked. The
   // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
   // DCHECK so we use that to clean up RenderProcessHosts instead.
-  Reset();
+  if (pending_app_manager_)
+    pending_app_manager_->Shutdown();
+
+  install_manager_->Shutdown();
 }
 
 void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {
@@ -219,27 +253,6 @@ int WebAppProvider::CountUserInstalledApps() const {
     return 0;
 
   return extensions::CountUserInstalledBookmarkApps(profile_);
-}
-
-void WebAppProvider::Reset() {
-  // TODO(loyso): Make it independent to the order of destruction via using two
-  // end-to-end passes:
-  // 1) Do Reset() for each subsystem to nullify pointers (detach subsystems).
-  install_manager_->Reset();
-
-  // 2) Destroy subsystems.
-  // The order of destruction is the reverse order of creation:
-  web_app_policy_manager_.reset();
-  system_web_app_manager_.reset();
-  pending_app_manager_.reset();
-
-  install_manager_.reset();
-  install_finalizer_.reset();
-  icon_manager_.reset();
-  registrar_.reset();
-  database_.reset();
-  database_factory_.reset();
-  audio_focus_id_map_.reset();
 }
 
 void WebAppProvider::OnScanForExternalWebApps(

@@ -75,8 +75,7 @@ IdleManager::~IdleManager() {
   }
 }
 
-void IdleManager::CreateService(blink::mojom::IdleManagerRequest request,
-                                const url::Origin& origin) {
+void IdleManager::CreateService(blink::mojom::IdleManagerRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bindings_.AddBinding(this, std::move(request));

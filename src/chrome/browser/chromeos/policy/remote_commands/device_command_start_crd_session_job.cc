@@ -32,6 +32,9 @@ constexpr char kUMAIdlenessOverride[] =
 // activity.
 const char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
 
+// Regulates if remote session should be terminated upon any local input event.
+const char kTerminateUponInputFieldName[] = "terminateUponInput";
+
 // Result payload fields:
 
 // Integer value containing DeviceCommandStartCRDSessionJob::ResultCode
@@ -154,6 +157,14 @@ bool DeviceCommandStartCRDSessionJob::ParseCommandPayload(
     idleness_cutoff_ = base::TimeDelta::FromSeconds(0);
   }
 
+  base::Value* terminate_upon_input_value = root->FindKeyOfType(
+      kTerminateUponInputFieldName, base::Value::Type::BOOLEAN);
+  if (terminate_upon_input_value) {
+    terminate_upon_input_ = terminate_upon_input_value->GetBool();
+  } else {
+    terminate_upon_input_ = false;
+  }
+
   return true;
 }
 
@@ -220,19 +231,17 @@ void DeviceCommandStartCRDSessionJob::RunImpl(
 void DeviceCommandStartCRDSessionJob::OnOAuthTokenReceived(
     const std::string& token) {
   oauth_token_ = token;
-  delegate_->FetchICEConfig(
-      oauth_token_,
-      base::BindOnce(&DeviceCommandStartCRDSessionJob::OnICEConfigReceived,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,
-                     weak_factory_.GetWeakPtr()));
+  // Skip ICE config fetching since the It2Me host will handle that for us.
+  // TODO(crbug/976535): Remove the ICE config logic and methods for this
+  // scenario once the change to short-circuit the fetch has been merged.
+  OnICEConfigReceived(base::Value());
 }
 
 void DeviceCommandStartCRDSessionJob::OnICEConfigReceived(
     base::Value ice_config) {
   ice_config_ = std::move(ice_config);
   delegate_->StartCRDHostAndGetCode(
-      oauth_token_, std::move(ice_config_),
+      oauth_token_, std::move(ice_config_), terminate_upon_input_,
       base::BindOnce(&DeviceCommandStartCRDSessionJob::OnAccessCodeReceived,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,

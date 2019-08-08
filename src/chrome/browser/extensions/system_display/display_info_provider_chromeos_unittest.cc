@@ -80,14 +80,21 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
         new DisplayInfoProviderChromeOS(connector_.get()));
 
     tablet_mode_client_ = std::make_unique<TabletModeClient>();
-    ash::mojom::TabletModeControllerPtr controller;
-    ash::Shell::Get()->tablet_mode_controller()->BindRequest(
-        mojo::MakeRequest(&controller));
-    tablet_mode_client_->InitForTesting(std::move(controller));
-    // We must flush the TabletModeClient as we are waiting for the initial
-    // value to be set, as the TabletModeController sends an initial message on
-    // startup when it observes the PowerManagerClient.
-    tablet_mode_client_->FlushForTesting();
+    tablet_mode_client_->Init();
+
+    // Wait for TabletModeController to take its initial state from the power
+    // manager.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(ash::Shell::Get()
+                     ->tablet_mode_controller()
+                     ->IsTabletModeWindowManagerEnabled());
+  }
+
+  void TearDown() override {
+    ChromeAshTestBase::TearDown();
+    // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
+    // after Shell.
+    tablet_mode_client_.reset();
   }
 
   void AddCrosDisplayConfigControllerBinding(
@@ -123,7 +130,6 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     ash::TabletModeController* controller =
         ash::Shell::Get()->tablet_mode_controller();
     controller->EnableTabletModeWindowManager(enable);
-    tablet_mode_client_->FlushForTesting();
   }
 
   display::DisplayManager* GetDisplayManager() const {
@@ -1571,6 +1577,9 @@ TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
   // Entering tablet mode will cause DisplayConfigurationObserver to set
   // forced mirror mode. https://crbug.com/733092.
   EnableTabletMode(true);
+  // DisplayConfigurationObserver enables mirror mode asynchronously after
+  // tablet mode is enabled.
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
   result = GetAllDisplaysInfo();
   ASSERT_EQ(1u, result.size());

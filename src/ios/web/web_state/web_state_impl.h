@@ -22,7 +22,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/java_script_dialog_callback.h"
 #include "ios/web/public/java_script_dialog_type.h"
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -131,9 +131,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            const base::ListValue& args);
-  // Invokes page load for WebUI URL with HTML. URL must have an application
-  // specific scheme.
-  virtual void LoadWebUIHtml(const base::string16& html, const GURL& url);
 
   // Gets the HTTP response headers associated with the current page.
   // NOTE: For a WKWebView-based WebState, these headers are generated via

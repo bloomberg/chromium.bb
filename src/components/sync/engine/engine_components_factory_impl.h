@@ -35,11 +35,14 @@ class EngineComponentsFactoryImpl : public EngineComponentsFactory {
       DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id,
+      const std::string& store_birthday,
+      const std::string& bag_of_chips,
       base::TimeDelta poll_interval) override;
 
   std::unique_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
       StorageOption storage,
       const std::string& dir_name,
+      const base::RepeatingCallback<std::string()>& cache_guid_generator,
       const base::FilePath& backing_filepath) override;
 
   Switches GetSwitches() const override;

@@ -17,6 +17,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -36,11 +37,16 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/gfx/platform_font_skia.h"
 #include "ui/gfx/system_fonts_win.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
+
+// Enable the use of PlatformFontSkia instead of PlatformFontWin.
+const base::Feature kPlatformFontSkiaOnWindows{
+    "PlatformFontSkiaOnWindows", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sets style properties on |font_info| based on |font_style|.
 void SetLogFontStyle(int font_style, LOGFONT* font_info) {
@@ -625,6 +631,8 @@ PlatformFontWin::HFontRef::~HFontRef() {
 
 // static
 PlatformFont* PlatformFont::CreateDefault() {
+  if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
+    return new PlatformFontSkia;
   return new PlatformFontWin;
 }
 
@@ -632,6 +640,8 @@ PlatformFont* PlatformFont::CreateDefault() {
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromNameAndSize");
+  if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
+    return new PlatformFontSkia(font_name, font_size);
   return new PlatformFontWin(font_name, font_size);
 }
 

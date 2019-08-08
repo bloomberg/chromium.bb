@@ -325,6 +325,8 @@ class GN(object):
                                 files['test_support_headers'])
       self.PrintVariableSection(out, 'crypto_test_sources',
                                 files['crypto_test'])
+      self.PrintVariableSection(out, 'crypto_test_data',
+                                files['crypto_test_data'])
       self.PrintVariableSection(out, 'ssl_test_sources', files['ssl_test'])
 
 
@@ -590,7 +592,8 @@ def ExtractVariablesFromCMakeFile(cmakefile):
 def main(platforms):
   cmake = ExtractVariablesFromCMakeFile(os.path.join('src', 'sources.cmake'))
   crypto_c_files = (FindCFiles(os.path.join('src', 'crypto'), NoTestsNorFIPSFragments) +
-                    FindCFiles(os.path.join('src', 'third_party', 'fiat'), NoTestsNorFIPSFragments))
+                    FindCFiles(os.path.join('src', 'third_party', 'fiat'), NoTestsNorFIPSFragments) +
+                    FindCFiles(os.path.join('src', 'third_party', 'sike'), NoTestsNorFIPSFragments))
   fips_fragments = FindCFiles(os.path.join('src', 'crypto', 'fipsmodule'), OnlyFIPSFragments)
   ssl_source_files = FindCFiles(os.path.join('src', 'ssl'), NoTests)
   tool_c_files = FindCFiles(os.path.join('src', 'tool'), NoTests)
@@ -655,7 +658,8 @@ def main(platforms):
   ssl_internal_h_files = FindHeaderFiles(os.path.join('src', 'ssl'), NoTests)
   crypto_internal_h_files = (
       FindHeaderFiles(os.path.join('src', 'crypto'), NoTests) +
-      FindHeaderFiles(os.path.join('src', 'third_party', 'fiat'), NoTests))
+      FindHeaderFiles(os.path.join('src', 'third_party', 'fiat'), NoTests) +
+      FindHeaderFiles(os.path.join('src', 'third_party', 'sike'), NoTests))
 
   files = {
       'crypto': crypto_c_files,
@@ -691,7 +695,7 @@ if __name__ == '__main__':
   parser.add_option(
       '--embed_test_data', type='choice', dest='embed_test_data',
       action='store', default="true", choices=["true", "false"],
-      help='For Bazel, don\'t embed data files in crypto_test_data.cc')
+      help='For Bazel or GN, don\'t embed data files in crypto_test_data.cc')
   options, args = parser.parse_args(sys.argv[1:])
   PREFIX = options.prefix
   EMBED_TEST_DATA = (options.embed_test_data == "true")

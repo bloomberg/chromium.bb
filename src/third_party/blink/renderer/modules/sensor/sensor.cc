@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor.h"
 
+#include <utility>
+
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -15,6 +17,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_error_event.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -330,8 +333,8 @@ void Sensor::HandleError(DOMExceptionCode code,
 
   Deactivate();
 
-  auto* error =
-      DOMException::Create(code, sanitized_message, unsanitized_message);
+  auto* error = MakeGarbageCollected<DOMException>(code, sanitized_message,
+                                                   unsanitized_message);
   pending_error_notification_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
       WTF::Bind(&Sensor::NotifyError, WrapWeakPersistent(this),

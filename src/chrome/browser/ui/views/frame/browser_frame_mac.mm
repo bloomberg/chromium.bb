@@ -23,17 +23,17 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
+#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
-#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
-#import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 namespace {
 
@@ -151,7 +151,7 @@ void BrowserFrameMac::OnWindowFullscreenStateChange() {
 
 void BrowserFrameMac::ValidateUserInterfaceItem(
     int32_t tag,
-    views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result) {
+    remote_cocoa::mojom::ValidateUserInterfaceItemResult* result) {
   Browser* browser = browser_view_->browser();
   if (!chrome::SupportsCommand(browser, tag)) {
     result->enable = false;
@@ -289,14 +289,14 @@ bool BrowserFrameMac::ExecuteCommand(
 
 void BrowserFrameMac::PopulateCreateWindowParams(
     const views::Widget::InitParams& widget_params,
-    views_bridge_mac::mojom::CreateWindowParams* params) {
+    remote_cocoa::mojom::CreateWindowParams* params) {
   params->style_mask = NSTitledWindowMask | NSClosableWindowMask |
                        NSMiniaturizableWindowMask | NSResizableWindowMask;
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
   if (browser_view_->IsBrowserTypeNormal() ||
       browser_view_->IsBrowserTypeHostedApp()) {
-    params->window_class = views_bridge_mac::mojom::WindowClass::kBrowser;
+    params->window_class = remote_cocoa::mojom::WindowClass::kBrowser;
     params->style_mask |= NSFullSizeContentViewWindowMask;
 
     // Ensure tabstrip/profile button are visible.
@@ -306,13 +306,13 @@ void BrowserFrameMac::PopulateCreateWindowParams(
     if (browser_view_->IsBrowserTypeHostedApp())
       params->window_title_hidden = true;
   } else {
-    params->window_class = views_bridge_mac::mojom::WindowClass::kDefault;
+    params->window_class = remote_cocoa::mojom::WindowClass::kDefault;
   }
   params->animation_enabled = true;
 }
 
 NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
-    const views_bridge_mac::mojom::CreateWindowParams* params) {
+    const remote_cocoa::mojom::CreateWindowParams* params) {
   NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
   if (@available(macOS 10.12.2, *)) {
     touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]

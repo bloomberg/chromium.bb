@@ -8,6 +8,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId DiscoverScreenView::kScreenId;
+
 DiscoverScreenHandler::DiscoverScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

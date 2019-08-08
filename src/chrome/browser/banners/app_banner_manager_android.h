@@ -10,8 +10,10 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
@@ -41,6 +43,7 @@ class AppBannerUiDelegateAndroid;
 // together.
 class AppBannerManagerAndroid
     : public AppBannerManager,
+      public InstallableAmbientBadgeInfoBarDelegate::Client,
       public content::WebContentsUserData<AppBannerManagerAndroid> {
  public:
   explicit AppBannerManagerAndroid(content::WebContents* web_contents);
@@ -84,9 +87,8 @@ class AppBannerManagerAndroid
 
   // AppBannerManager overrides.
   void RequestAppBanner(const GURL& validated_url) override;
-  void SendBannerDismissed() override;
 
-  // InstallableAmbientBadgeInfoBarAndroid::Client overrides.
+  // InstallableAmbientBadgeInfoBarDelegate::Client overrides.
   void AddToHomescreenFromBadge() override;
   void BadgeDismissed() override;
 
@@ -94,17 +96,23 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
-  bool CheckIfInstalled() override;
   bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
                                    const GURL& validated_url,
                                    const GURL& start_url,
                                    const GURL& manifest_url) override;
-  InstallableParams ParamsToPerformInstallableCheck() override;
-  void PerformInstallableCheck() override;
-  void OnDidPerformInstallableCheck(const InstallableData& result) override;
-  void OnAppIconFetched(const SkBitmap& bitmap) override;
+  void PerformInstallableChecks() override;
+  InstallableParams ParamsToPerformInstallableWebAppCheck() override;
+  void PerformInstallableWebAppCheck() override;
+  void OnDidPerformInstallableWebAppCheck(
+      const InstallableData& result) override;
   void ResetCurrentPageData() override;
   void ShowBannerUi(WebappInstallSource install_source) override;
+  void MaybeShowAmbientBadge() override;
+  base::WeakPtr<AppBannerManager> GetWeakPtr() override;
+  void InvalidateWeakPtrs() override;
+  bool IsSupportedAppPlatform(const base::string16& platform) const override;
+  bool IsRelatedAppInstalled(
+      const blink::Manifest::RelatedApplication& related_app) const override;
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;
@@ -116,6 +124,9 @@ class AppBannerManagerAndroid
   std::string ExtractQueryValueForName(const GURL& url,
                                        const std::string& name);
 
+  bool ShouldPerformInstallableNativeAppCheck();
+  void PerformInstallableNativeAppCheck();
+
   // Returns NO_ERROR_DETECTED if |platform|, |url|, and |id| are consistent and
   // can be used to query the Play Store for a native app. Otherwise returns the
   // error which prevents querying from taking place. The query may not
@@ -126,12 +137,13 @@ class AppBannerManagerAndroid
                                        const GURL& url,
                                        const std::string& id);
 
+  // Called when the download of a native app's icon is complete, as native
+  // banners use an icon provided from the Play Store rather than the web
+  // manifest.
+  void OnNativeAppIconFetched(const SkBitmap& bitmap);
+
   // Returns the appropriate app name based on whether we have a native/web app.
   base::string16 GetAppName() const override;
-
-  // Shows the ambient badge if the current page advertises a native app or is
-  // a PWA.
-  void MaybeShowAmbientBadge();
 
   // Hides the ambient badge if it is showing.
   void HideAmbientBadge();
@@ -158,6 +170,8 @@ class AppBannerManagerAndroid
 
   // Whether WebAPKs can be installed.
   bool can_install_webapk_;
+
+  base::WeakPtrFactory<AppBannerManagerAndroid> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

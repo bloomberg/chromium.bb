@@ -25,6 +25,7 @@ class Connector;
 namespace device {
 
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 class AuthenticatorGetAssertionResponse;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
@@ -33,6 +34,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
  public:
   GetAssertionRequestHandler(
       service_manager::Connector* connector,
+      FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapGetAssertionRequest request_parameter,
       CompletionCallback completion_callback);

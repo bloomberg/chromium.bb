@@ -51,21 +51,28 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace base {
+class Clock;
+class TickClock;
+}  // namespace base
+
 namespace blink {
 
 class PerformanceMarkOptions;
 class ExceptionState;
+class LayoutShift;
 class MemoryInfo;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
-class PerformanceLayoutJank;
 class PerformanceMark;
 class PerformanceMeasure;
 class PerformanceNavigation;
 class PerformanceObserver;
 class PerformanceTiming;
+class ProfilerInitOptions;
 class ResourceResponse;
 class ResourceTimingInfo;
+class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 class SecurityOrigin;
@@ -180,7 +187,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void setEventTimingBufferMaxSize(unsigned);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull, kEventtimingbufferfull)
 
-  void AddLayoutJankBuffer(PerformanceLayoutJank&);
+  void AddLayoutJankBuffer(LayoutShift&);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
@@ -230,6 +237,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
     kMaxValue = kDomLoading
   };
 
+  UserTiming& GetUserTiming();
   PerformanceMeasure* measure(ScriptState*,
                               const AtomicString& measure_name,
                               ExceptionState&);
@@ -248,6 +256,10 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ExceptionState&);
 
   void clearMeasures(const AtomicString& measure_name);
+
+  ScriptPromise profile(ScriptState*,
+                        const ProfilerInitOptions*,
+                        ExceptionState&);
 
   void UnregisterPerformanceObserver(PerformanceObserver&);
   void RegisterPerformanceObserver(PerformanceObserver&);
@@ -270,6 +282,23 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   void Trace(blink::Visitor*) override;
+
+  class UnifiedClock {
+   public:
+    UnifiedClock(const base::Clock* clock, const base::TickClock* tick_clock)
+        : clock_(clock), tick_clock_(tick_clock) {}
+    DOMHighResTimeStamp GetUnixAtZeroMonotonic() const;
+    TimeTicks NowTicks() const;
+
+   private:
+    const base::Clock* clock_;
+    const base::TickClock* tick_clock_;
+    mutable base::Optional<DOMHighResTimeStamp> unix_at_zero_monotonic_;
+  };
+
+  // The caller owns the |clock|.
+  void SetClocksForTesting(const UnifiedClock* clock);
+  void ResetTimeOriginForTesting(base::TimeTicks time_origin);
 
  private:
   void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
@@ -332,6 +361,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<PerformanceEventTiming> first_input_timing_;
 
   TimeTicks time_origin_;
+  const UnifiedClock* unified_clock_;
 
   PerformanceEntryTypeMask observer_filter_options_;
   HeapLinkedHashSet<Member<PerformanceObserver>> observers_;

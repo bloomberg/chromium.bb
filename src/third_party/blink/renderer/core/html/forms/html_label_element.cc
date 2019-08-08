@@ -44,12 +44,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLLabelElement::HTMLLabelElement(Document& document)
+HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(kLabelTag, document), processing_click_(false) {}
-
-HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLLabelElement>(document);
-}
 
 HTMLElement* HTMLLabelElement::control() const {
   // https://html.spec.whatwg.org/C/#labeled-control
@@ -129,10 +125,11 @@ bool HTMLLabelElement::IsInteractiveContent() const {
 }
 
 bool HTMLLabelElement::IsInInteractiveContent(Node* node) const {
-  if (!IsShadowIncludingInclusiveAncestorOf(node))
+  if (!node || !IsShadowIncludingInclusiveAncestorOf(*node))
     return false;
   while (node && this != node) {
-    if (node->IsHTMLElement() && ToHTMLElement(node)->IsInteractiveContent())
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    if (html_element && html_element->IsInteractiveContent())
       return true;
     node = node->ParentOrShadowHostNode();
   }
@@ -145,13 +142,17 @@ void HTMLLabelElement::DefaultEventHandler(Event& evt) {
 
     // If we can't find a control or if the control received the click
     // event, then there's no need for us to do anything.
-    if (!element ||
-        (evt.target() &&
-         element->IsShadowIncludingInclusiveAncestorOf(evt.target()->ToNode())))
+    if (!element)
       return;
+    if (evt.target()) {
+      Node* target_node = evt.target()->ToNode();
+      if (target_node &&
+          element->IsShadowIncludingInclusiveAncestorOf(*target_node))
+        return;
 
-    if (evt.target() && IsInInteractiveContent(evt.target()->ToNode()))
-      return;
+      if (IsInInteractiveContent(target_node))
+        return;
+    }
 
     //   Behaviour of label element is as follows:
     //     - If there is double click, two clicks will be passed to control

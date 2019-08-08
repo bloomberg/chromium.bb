@@ -6,26 +6,20 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_GRAPH_OBSERVER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
 
-class FrameNodeImpl;
-class Graph;
-class NodeBase;
-class PageNodeImpl;
-class ProcessNodeImpl;
-class SystemNodeImpl;
-
-// An observer API for the coordination unit graph maintained by GRC.
+// An observer API for the graph.
 //
-// Observers are instantiated when the resource_coordinator service
-// is created and are destroyed when the resource_coordinator service
-// is destroyed. Therefore observers are guaranteed to be alive before
-// any coordination unit is created and will be alive after any
-// coordination unit is destroyed. Additionally, any
-// Coordination Unit reachable within a callback will always be
-// initialized and valid.
+// Observers are generally instantiated when the graph is empty, and outlive it,
+// though it's valid for an observer to be registered at any time. Observers
+// must unregister before they're destroyed.
 //
 // To create and install a new observer:
 //   (1) Derive from this class.
@@ -33,63 +27,72 @@ class SystemNodeImpl;
 //   (3) Before destruction, unregister by calling on
 //       |graph().UnregisterObserver|.
 //
-// TODO: Clean up the observer API, and create a wrapper version that sees
-// const Node* rather then mutable NodeImpl* types for external consumers.
-class GraphObserver {
+// NOTE: This interface is deprecated. Please use the individual interfaces
+// that this class is implementing.
+class GraphObserver : public GraphImpl::Observer,
+                      public FrameNodeImpl::Observer,
+                      public PageNodeImpl::Observer,
+                      public ProcessNodeImpl::Observer,
+                      public SystemNodeImpl::Observer {
  public:
   GraphObserver();
-  virtual ~GraphObserver();
-
-  // Invoked when an observer is added to or removed from the graph. This is a
-  // convenient place for observers to initialize any necessary state, validate
-  // graph invariants, etc.
-  virtual void OnRegistered() {}
-  virtual void OnUnregistered() {}
+  ~GraphObserver() override;
 
   // Determines whether or not the observer should be registered with, and
   // invoked for, the |node|.
+  // TODO(chrisha): Kill this function entirely and delegate that logic to the
+  // actual observer implementations.
   virtual bool ShouldObserve(const NodeBase* node) = 0;
 
-  // Called whenever a CoordinationUnit is created.
-  virtual void OnNodeAdded(NodeBase* node) {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GraphObserver);
+};
 
-  // Called when the |node| is about to be destroyed.
-  virtual void OnBeforeNodeRemoved(NodeBase* node) {}
+// An empty implementation of the interface.
+class GraphObserverDefaultImpl : public GraphObserver {
+ public:
+  GraphObserverDefaultImpl();
+  ~GraphObserverDefaultImpl() override;
 
-  // FrameNodeImpl notifications.
-  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) {}
-  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) {}
-  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) {}
-  virtual void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) {}
+  // GraphImplObserver implementation:
+  void OnRegistered() override {}
+  void OnUnregistered() override {}
+  void OnNodeAdded(NodeBase* node) override {}
+  void OnBeforeNodeRemoved(NodeBase* node) override {}
+  void SetGraph(GraphImpl* graph) override;
 
-  // PageNodeImpl notifications.
-  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
-  virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
-  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) {}
-  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) {}
-  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}
-  virtual void OnFaviconUpdated(PageNodeImpl* page_node) {}
-  virtual void OnTitleUpdated(PageNodeImpl* page_node) {}
-  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) {}
+  // FrameNodeImplObserver implementation:
+  void OnIsCurrentChanged(FrameNodeImpl* frame_node) override {}
+  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override {}
+  void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override {}
+  void OnURLChanged(FrameNodeImpl* frame_node) override {}
+  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
 
-  // ProcessNodeImpl notifications.
-  virtual void OnExpectedTaskQueueingDurationSample(
-      ProcessNodeImpl* process_node) {}
-  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) {}
-  virtual void OnRendererIsBloated(ProcessNodeImpl* process_node) {}
-  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) {}
+  // PageNodeImplObserver implementation:
+  void OnIsVisibleChanged(PageNodeImpl* page_node) override {}
+  void OnIsLoadingChanged(PageNodeImpl* page_node) override {}
+  void OnUkmSourceIdChanged(PageNodeImpl* page_node) override {}
+  void OnLifecycleStateChanged(PageNodeImpl* page_node) override {}
+  void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override {}
+  void OnFaviconUpdated(PageNodeImpl* page_node) override {}
+  void OnTitleUpdated(PageNodeImpl* page_node) override {}
+  void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override {}
 
-  // SystemNodeImpl notifications.
-  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) {}
+  // ProcessNodeImplObserver implementation:
+  void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) override {}
+  void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override {}
+  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
 
-  void set_node_graph(Graph* graph) { node_graph_ = graph; }
+  // SystemNodeImplObserver implementation:
+  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
 
-  Graph* graph() const { return node_graph_; }
+  GraphImpl* graph() const { return graph_; }
 
  private:
-  Graph* node_graph_ = nullptr;
+  GraphImpl* graph_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(GraphObserver);
+  DISALLOW_COPY_AND_ASSIGN(GraphObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

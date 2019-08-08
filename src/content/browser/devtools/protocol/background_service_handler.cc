@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/protocol/background_service_handler.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
@@ -21,6 +22,12 @@ devtools::proto::BackgroundService ServiceNameToEnum(
   } else if (service_name ==
              BackgroundService::ServiceNameEnum::BackgroundSync) {
     return devtools::proto::BackgroundService::BACKGROUND_SYNC;
+  } else if (service_name ==
+             BackgroundService::ServiceNameEnum::PushMessaging) {
+    return devtools::proto::BackgroundService::PUSH_MESSAGING;
+  } else if (service_name ==
+             BackgroundService::ServiceNameEnum::Notifications) {
+    return devtools::proto::BackgroundService::NOTIFICATIONS;
   }
   return devtools::proto::BackgroundService::UNKNOWN;
 }
@@ -31,6 +38,10 @@ std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
       return BackgroundService::ServiceNameEnum::BackgroundFetch;
     case devtools::proto::BackgroundService::BACKGROUND_SYNC:
       return BackgroundService::ServiceNameEnum::BackgroundSync;
+    case devtools::proto::BackgroundService::PUSH_MESSAGING:
+      return BackgroundService::ServiceNameEnum::PushMessaging;
+    case devtools::proto::BackgroundService::NOTIFICATIONS:
+      return BackgroundService::ServiceNameEnum::Notifications;
     default:
       NOTREACHED();
   }
@@ -188,10 +199,13 @@ Response BackgroundServiceHandler::SetRecording(bool should_record,
   if (service_enum == devtools::proto::BackgroundService::UNKNOWN)
     return Response::InvalidParams("Invalid service name");
 
-  if (should_record)
+  if (should_record) {
     devtools_context_->StartRecording(service_enum);
-  else
+    base::UmaHistogramEnumeration("DevTools.BackgroundService.StartRecording",
+                                  service_enum, devtools::proto::COUNT);
+  } else {
     devtools_context_->StopRecording(service_enum);
+  }
 
   return Response::OK();
 }

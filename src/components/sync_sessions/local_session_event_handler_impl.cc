@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -290,7 +291,7 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   specifics->set_session_tag(current_session_tag_);
   specifics->set_tab_node_id(tab_node_id);
   GetTabSpecificsFromDelegate(*tab_delegate).Swap(specifics->mutable_tab());
-  WriteTasksIntoSpecifics(specifics->mutable_tab());
+  WriteTasksIntoSpecifics(specifics->mutable_tab(), tab_delegate);
 
   // Update the tracker's session representation. Timestamp will be overwriten,
   // so we set a null time first to prevent the update from being ignored, if
@@ -330,17 +331,22 @@ void LocalSessionEventHandlerImpl::UpdateTaskTracker(
 }
 
 void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
-    sync_pb::SessionTab* tab_specifics) {
+    sync_pb::SessionTab* tab_specifics,
+    SyncedTabDelegate* tab_delegate) {
+#if defined(OS_IOS)
   TabTasks* tab_tasks = task_tracker_.GetTabTasks(
       SessionID::FromSerializedValue(tab_specifics->tab_id()),
       /*parent_tab_id=*/SessionID::InvalidValue());
+#endif
   for (int i = 0; i < tab_specifics->navigation_size(); i++) {
     // Excluding blocked navigations, which are appended at tail.
     if (tab_specifics->navigation(i).blocked_state() ==
         sync_pb::TabNavigation::STATE_BLOCKED) {
       break;
     }
-
+// TODO(davidjm) https://crbug.com/946356 - new task track implementation
+// doesn't support iOS yet.
+#if defined(OS_IOS)
     std::vector<int64_t> task_ids = tab_tasks->GetTaskIdsForNavigation(
         tab_specifics->navigation(i).unique_id());
     if (task_ids.empty()) {
@@ -355,6 +361,18 @@ void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
       tab_specifics->mutable_navigation(i)->add_ancestor_task_id(
           ancestor_task_id);
     }
+#else
+    int64_t task_id = tab_delegate->GetTaskIdForNavigationId(
+        tab_specifics->navigation(i).unique_id());
+    int64_t parent_task_id = tab_delegate->GetParentTaskIdForNavigationId(
+        tab_specifics->navigation(i).unique_id());
+    int64_t root_task_id = tab_delegate->GetRootTaskIdForNavigationId(
+        tab_specifics->navigation(i).unique_id());
+
+    tab_specifics->mutable_navigation(i)->set_task_id(task_id);
+    tab_specifics->mutable_navigation(i)->add_ancestor_task_id(parent_task_id);
+    tab_specifics->mutable_navigation(i)->add_ancestor_task_id(root_task_id);
+#endif
   }
 }
 

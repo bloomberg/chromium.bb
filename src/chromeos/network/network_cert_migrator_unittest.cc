@@ -43,7 +43,7 @@ class NetworkCertMigratorTest : public testing::Test {
   NetworkCertMigratorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         service_test_(nullptr) {}
   ~NetworkCertMigratorTest() override = default;
 

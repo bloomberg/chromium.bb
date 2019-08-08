@@ -197,10 +197,8 @@ void SSLErrorControllerClient::Proceed() {
   // certificate. So, when users click proceed on an interstitial, move the tab
   // to a regular Chrome window and proceed as usual there.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (browser &&
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
+  if (web_app::AppBrowserController::IsForWebAppBrowser(browser))
     chrome::OpenInChrome(browser);
-  }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   if (!AreCommittedInterstitialsEnabled()) {
@@ -214,8 +212,7 @@ void SSLErrorControllerClient::Proceed() {
       profile->GetSSLHostStateDelegate());
   // ChromeSSLHostStateDelegate can be null during tests.
   if (state) {
-    state->AllowCert(request_url_.host(), *ssl_info_.cert.get(),
-                     net::MapCertStatusToNetError(ssl_info_.cert_status));
+    state->AllowCert(request_url_.host(), *ssl_info_.cert.get(), cert_error_);
     Reload();
   }
 }

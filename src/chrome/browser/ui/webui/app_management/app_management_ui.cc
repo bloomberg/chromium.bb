@@ -11,6 +11,7 @@
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -28,32 +29,32 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAppManagementHost);
 
-  source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
-  source->AddLocalizedString("appNoPermission",
-                             IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT);
-  source->AddLocalizedString("back", IDS_APP_MANAGEMENT_BACK);
-  source->AddLocalizedString("camera", IDS_APP_MANAGEMENT_CAMERA);
-  source->AddLocalizedString("lessApps", IDS_APP_MANAGEMENT_LESS_APPS);
-  source->AddLocalizedString("location", IDS_APP_MANAGEMENT_LOCATION);
-  source->AddLocalizedString("microphone", IDS_APP_MANAGEMENT_MICROPHONE);
-  source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
-  source->AddLocalizedString("noSearchResults", IDS_APP_MANAGEMENT_NO_RESULTS);
-  source->AddLocalizedString("notificationSublabel",
-                             IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL);
-  source->AddLocalizedString("notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS);
-  source->AddLocalizedString("openAndroidSettings",
-                             IDS_APP_MANAGEMENT_ANDROID_SETTINGS);
-  source->AddLocalizedString("openExtensionsSettings",
-                             IDS_APP_MANAGEMENT_EXTENSIONS_SETTINGS);
-  source->AddLocalizedString("openSiteSettings",
-                             IDS_APP_MANAGEMENT_SITE_SETTING);
-  source->AddLocalizedString("permissions", IDS_APP_MANAGEMENT_PERMISSIONS);
-  source->AddLocalizedString("pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF);
-  source->AddLocalizedString("searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT);
-  source->AddLocalizedString("size", IDS_APP_MANAGEMENT_SIZE);
-  source->AddLocalizedString("title", IDS_APP_MANAGEMENT_TITLE);
-  source->AddLocalizedString("uninstall", IDS_APP_MANAGEMENT_UNINSTALL);
-  source->AddLocalizedString("version", IDS_APP_MANAGEMENT_VERSION);
+  static constexpr LocalizedString kStrings[] = {
+      {"appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE},
+      {"appNoPermission", IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
+      {"back", IDS_APP_MANAGEMENT_BACK},
+      {"camera", IDS_APP_MANAGEMENT_CAMERA},
+      {"lessApps", IDS_APP_MANAGEMENT_LESS_APPS},
+      {"location", IDS_APP_MANAGEMENT_LOCATION},
+      {"microphone", IDS_APP_MANAGEMENT_MICROPHONE},
+      {"moreApps", IDS_APP_MANAGEMENT_MORE_APPS},
+      {"noSearchResults", IDS_APP_MANAGEMENT_NO_RESULTS},
+      {"notificationSublabel", IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL},
+      {"notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS},
+      {"openAndroidSettings", IDS_APP_MANAGEMENT_ANDROID_SETTINGS},
+      {"openExtensionsSettings", IDS_APP_MANAGEMENT_EXTENSIONS_SETTINGS},
+      {"openSiteSettings", IDS_APP_MANAGEMENT_SITE_SETTING},
+      {"permissions", IDS_APP_MANAGEMENT_PERMISSIONS},
+      {"morePermissions", IDS_APP_MANAGEMENT_MORE_PERMISSIONS},
+      {"thisAppCan", IDS_APP_MANAGEMENT_THIS_APP_CAN},
+      {"pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF},
+      {"searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
+      {"size", IDS_APP_MANAGEMENT_SIZE},
+      {"title", IDS_APP_MANAGEMENT_TITLE},
+      {"uninstall", IDS_APP_MANAGEMENT_UNINSTALL},
+      {"version", IDS_APP_MANAGEMENT_VERSION},
+  };
+  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);

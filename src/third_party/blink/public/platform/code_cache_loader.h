@@ -16,7 +16,7 @@ namespace blink {
 class CodeCacheLoader {
  public:
   using FetchCodeCacheCallback =
-      base::OnceCallback<void(const base::Time&, const std::vector<uint8_t>&)>;
+      base::OnceCallback<void(base::Time, base::span<const uint8_t>)>;
   virtual ~CodeCacheLoader() = default;
 
   // Fetched code cache corresponding to |url| synchronously and returns

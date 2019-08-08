@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/welcome_win10_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -45,31 +46,25 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
                               : IDS_WIN10_WELCOME_HEADER_AFTER_FIRST_RUN;
   html_source->AddLocalizedString("headerText", welcome_header_id);
 
-  html_source->AddLocalizedString("continueText", IDS_WIN10_WELCOME_CONTINUE);
+  static constexpr LocalizedString kStrings[] = {
+      {"continueText", IDS_WIN10_WELCOME_CONTINUE},
 
-  // Default browser strings.
-  html_source->AddLocalizedString("defaultBrowserSubheaderText",
-                                  IDS_WIN10_WELCOME_MAKE_DEFAULT_SUBHEADING);
-  html_source->AddLocalizedString("openSettingsText",
-                                  IDS_WIN10_WELCOME_OPEN_SETTINGS);
-  html_source->AddLocalizedString("clickEdgeText",
-                                  IDS_WIN10_WELCOME_CLICK_EDGE);
-  html_source->AddLocalizedString("clickSelectChrome",
-                                  IDS_WIN10_WELCOME_SELECT);
-  html_source->AddLocalizedString("switchAnywayLabel",
-                                  IDS_WIN10_WELCOME_SWITCH_ANYWAY_LABEL);
-  html_source->AddLocalizedString("clickSwitchAnywayText",
-                                  IDS_WIN10_WELCOME_CLICK_SWITCH_ANYWAY);
+      // Default browser strings.
+      {"defaultBrowserSubheaderText",
+       IDS_WIN10_WELCOME_MAKE_DEFAULT_SUBHEADING},
+      {"openSettingsText", IDS_WIN10_WELCOME_OPEN_SETTINGS},
+      {"clickEdgeText", IDS_WIN10_WELCOME_CLICK_EDGE},
+      {"clickSelectChrome", IDS_WIN10_WELCOME_SELECT},
+      {"switchAnywayLabel", IDS_WIN10_WELCOME_SWITCH_ANYWAY_LABEL},
+      {"clickSwitchAnywayText", IDS_WIN10_WELCOME_CLICK_SWITCH_ANYWAY},
 
-  // Taskbar pin strings.
-  html_source->AddLocalizedString("pinSubheaderText",
-                                  IDS_WIN10_WELCOME_PIN_SUBHEADING);
-  html_source->AddLocalizedString("rightClickText",
-                                  IDS_WIN10_WELCOME_RIGHT_CLICK_TASKBAR);
-  html_source->AddLocalizedString("pinInstructionText",
-                                  IDS_WIN10_WELCOME_PIN_INSTRUCTION);
-  html_source->AddLocalizedString("pinToTaskbarLabel",
-                                  IDS_WIN10_WELCOME_PIN_LABEL);
+      // Taskbar pin strings.
+      {"pinSubheaderText", IDS_WIN10_WELCOME_PIN_SUBHEADING},
+      {"rightClickText", IDS_WIN10_WELCOME_RIGHT_CLICK_TASKBAR},
+      {"pinInstructionText", IDS_WIN10_WELCOME_PIN_INSTRUCTION},
+      {"pinToTaskbarLabel", IDS_WIN10_WELCOME_PIN_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
 }
 
 }  // namespace

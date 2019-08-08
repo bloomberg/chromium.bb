@@ -50,6 +50,11 @@ class StatisticsCalculator {
   // Same as ExpandedVoiceSamplesCorrection but for noise samples.
   void ExpandedNoiseSamplesCorrection(int num_samples);
 
+  void DecodedOutputPlayed();
+
+  // Mark end of expand event; triggers some stats to be reported.
+  void EndExpandEvent(int fs_hz);
+
   // Reports that |num_samples| samples were produced through preemptive
   // expansion.
   void PreemptiveExpandedSamples(size_t num_samples);
@@ -63,8 +68,11 @@ class StatisticsCalculator {
   // Reports that |num_packets| packets were discarded.
   virtual void PacketsDiscarded(size_t num_packets);
 
-  // Reports that |num_packets| packets samples were discarded.
-  virtual void SecondaryPacketsDiscarded(size_t num_samples);
+  // Reports that |num_packets| secondary (FEC) packets were discarded.
+  virtual void SecondaryPacketsDiscarded(size_t num_packets);
+
+  // Reports that |num_packets| secondary (FEC) packets were received.
+  virtual void SecondaryPacketsReceived(size_t num_packets);
 
   // Reports that |num_samples| were lost.
   void LostSamples(size_t num_samples);
@@ -191,12 +199,13 @@ class StatisticsCalculator {
   NetEqLifetimeStatistics lifetime_stats_;
   NetEqOperationsAndState operations_and_state_;
   size_t concealed_samples_correction_ = 0;
-  size_t voice_concealed_samples_correction_ = 0;
+  size_t silent_concealed_samples_correction_ = 0;
   size_t preemptive_samples_;
   size_t accelerate_samples_;
   size_t added_zero_samples_;
   size_t expanded_speech_samples_;
   size_t expanded_noise_samples_;
+  size_t concealed_samples_at_event_end_ = 0;
   size_t discarded_packets_;
   size_t lost_timestamps_;
   uint32_t timestamps_since_last_report_;
@@ -206,6 +215,7 @@ class StatisticsCalculator {
   PeriodicUmaCount delayed_packet_outage_counter_;
   PeriodicUmaAverage excess_buffer_delay_;
   PeriodicUmaCount buffer_full_counter_;
+  bool decoded_output_played_ = false;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(StatisticsCalculator);
 };

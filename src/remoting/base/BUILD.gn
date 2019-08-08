@@ -64,6 +64,7 @@ source_set("base") {
     "//base",
     "//net",
     "//remoting/proto",
+    "//remoting/proto/remoting/v1:telemetry_grpc_library",
     "//third_party/protobuf:protobuf_lite",
   ]
   deps = [
@@ -82,6 +83,7 @@ source_set("base") {
       "telemetry_log_writer.cc",
       "url_request_context_getter.cc",
     ]
+    public_deps -= [ "//remoting/proto/remoting/v1:telemetry_grpc_library" ]
     deps -= [ "//google_apis" ]
   }
 }
@@ -91,10 +93,16 @@ source_set("authorization") {
     "gaia_oauth_client.cc",
     "gaia_oauth_client.h",
     "oauth_client.h",
+    "oauth_token_exchanger.cc",
+    "oauth_token_exchanger.h",
     "oauth_token_getter.cc",
     "oauth_token_getter.h",
     "oauth_token_getter_impl.cc",
     "oauth_token_getter_impl.h",
+    "oauth_token_getter_proxy.cc",
+    "oauth_token_getter_proxy.h",
+    "offline_token_exchanger.cc",
+    "offline_token_exchanger.h",
   ]
 
   configs += [
@@ -106,6 +114,10 @@ source_set("authorization") {
     "//base",
     "//google_apis",
     "//net",
+  ]
+
+  deps = [
+    "//remoting/proto/remoting/v1:directory_grpc_library",
   ]
 }
 
@@ -165,13 +177,17 @@ source_set("unit_tests") {
     "buffered_socket_writer_unittest.cc",
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
+    "oauth_token_getter_proxy_unittest.cc",
     "rate_counter_unittest.cc",
     "result_unittest.cc",
     "rsa_key_pair_unittest.cc",
     "run_all_unittests.cc",
     "running_samples_unittest.cc",
     "session_options_unittest.cc",
-    "telemetry_log_writer_unittest.cc",
+
+    # TODO(https://crbug.com/968640): Fix and reenable tests once we have some
+    # breathing room.
+    # "telemetry_log_writer_unittest.cc",
     "typed_buffer_unittest.cc",
     "util_unittest.cc",
     "weighted_samples_unittest.cc",

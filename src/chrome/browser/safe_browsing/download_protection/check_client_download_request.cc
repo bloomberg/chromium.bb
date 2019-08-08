@@ -24,7 +24,6 @@
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
@@ -37,38 +36,18 @@
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "url/url_constants.h"
 
 namespace safe_browsing {
 
 namespace {
 
 const char kDownloadExtensionUmaName[] = "SBClientDownload.DownloadExtensions";
-const char kUnsupportedSchemeUmaPrefix[] = "SBClientDownload.UnsupportedScheme";
 
 void RecordFileExtensionType(const std::string& metric_name,
                              const base::FilePath& file) {
   base::UmaHistogramSparse(
       metric_name, FileTypePolicies::GetInstance()->UmaValueForFile(file));
-}
-
-std::string GetUnsupportedSchemeName(const GURL& download_url) {
-  if (download_url.SchemeIs(url::kContentScheme))
-    return "ContentScheme";
-  if (download_url.SchemeIs(url::kContentIDScheme))
-    return "ContentIdScheme";
-  if (download_url.SchemeIsFile())
-    return download_url.has_host() ? "RemoteFileScheme" : "LocalFileScheme";
-  if (download_url.SchemeIsFileSystem())
-    return "FileSystemScheme";
-  if (download_url.SchemeIs(url::kFtpScheme))
-    return "FtpScheme";
-  if (download_url.SchemeIs(url::kGopherScheme))
-    return "GopherScheme";
-  if (download_url.SchemeIs(url::kJavaScriptScheme))
-    return "JavaScriptScheme";
-  if (download_url.SchemeIsWSOrWSS())
-    return "WSOrWSSScheme";
-  return "OtherUnsupportedScheme";
 }
 
 bool CheckUrlAgainstWhitelist(
@@ -394,11 +373,6 @@ void CheckClientDownloadRequest::AnalyzeFile() {
         FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
       case REASON_UNSUPPORTED_URL_SCHEME:
-        RecordFileExtensionType(
-            base::StringPrintf(
-                "%s.%s", kUnsupportedSchemeUmaPrefix,
-                GetUnsupportedSchemeName(item_->GetUrlChain().back()).c_str()),
-            item_->GetTargetFilePath());
         FinishRequest(DownloadCheckResult::UNKNOWN, reason);
         return;
       case REASON_NOT_BINARY_FILE:
@@ -554,20 +528,20 @@ void CheckClientDownloadRequest::GetTabRedirects() {
 
   history->QueryRedirectsTo(
       tab_url_,
-      base::Bind(&CheckClientDownloadRequest::OnGotTabRedirects,
-                 weakptr_factory_.GetWeakPtr(), tab_url_),
+      base::BindOnce(&CheckClientDownloadRequest::OnGotTabRedirects,
+                     weakptr_factory_.GetWeakPtr(), tab_url_),
       &request_tracker_);
 }
 
 void CheckClientDownloadRequest::OnGotTabRedirects(
     const GURL& url,
-    const history::RedirectList* redirect_list) {
+    history::RedirectList redirect_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(url, tab_url_);
 
-  if (!redirect_list->empty()) {
-    tab_redirects_.insert(tab_redirects_.end(), redirect_list->rbegin(),
-                          redirect_list->rend());
+  if (!redirect_list.empty()) {
+    tab_redirects_.insert(tab_redirects_.end(), redirect_list.rbegin(),
+                          redirect_list.rend());
   }
 
   SendRequest();

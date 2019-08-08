@@ -191,7 +191,8 @@ int main(int argc, char* argv[]) {
 #endif
   }
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("ChromotingTestDriver");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "ChromotingTestDriver");
 
   mojo::core::Init();
 

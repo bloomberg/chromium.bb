@@ -10,20 +10,20 @@
 
 namespace echo {
 
-const service_manager::Manifest& GetManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .WithServiceName(mojom::kServiceName)
-          .WithDisplayName("Echo Service")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
-          .ExposeCapability(
-              "echo", service_manager::Manifest::InterfaceList<mojom::Echo>())
-          .Build()};
-  return *manifest;
+service_manager::Manifest GetManifest(
+    service_manager::Manifest::ExecutionMode execution_mode) {
+  return service_manager::ManifestBuilder()
+      .WithServiceName(mojom::kServiceName)
+      .WithDisplayName("Echo Service")
+      .WithOptions(service_manager::ManifestOptionsBuilder()
+                       .WithInstanceSharingPolicy(
+                           service_manager::Manifest::InstanceSharingPolicy::
+                               kSharedAcrossGroups)
+                       .WithExecutionMode(execution_mode)
+                       .Build())
+      .ExposeCapability("echo",
+                        service_manager::Manifest::InterfaceList<mojom::Echo>())
+      .Build();
 }
 
 }  // namespace echo

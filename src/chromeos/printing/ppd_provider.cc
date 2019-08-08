@@ -18,6 +18,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/json/json_parser.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -50,6 +51,11 @@ namespace chromeos {
 namespace {
 
 const char kEpsonGenericPPD[] = "epson generic escpr printer";
+
+struct UsbVendorPair {
+  int vendor_id;
+  const char* vendor_name;
+};
 
 // Holds a metadata_v2 reverse-index response
 struct ReverseIndexJSON {
@@ -360,6 +366,32 @@ void FilterRestrictedPpdReferences(const base::Version& version,
   });
 }
 
+// TODO(crbug.com/953968): Implement network lookup to PPD server to get the USB
+// manufacturer.
+const std::unordered_map<int, std::string>& GetVendorIdMap() {
+  static base::NoDestructor<std::unordered_map<int, std::string>> keys(
+      {{0x05ac, "Apple"},
+       {0x04f9, "Brother"},
+       {0x04a9, "Canon"},
+       {0x049f, "Compaq"},
+       {0x413c, "Dell"},
+       {0x04b8, "Epson"},
+       {0x0550, "Fuji Xerox"},
+       {0x03f0, "HP"},
+       {0x040a, "Kodak"},
+       {0x0482, "Kyocera"},
+       {0x043d, "LexMark"},
+       {0x0409, "NEC"},
+       {0x06bc, "Oki"},
+       {0x04da, "Panasonic"},
+       {0x05ca, "Ricoh"},
+       {0x04e8, "Samsung"},
+       {0x04dd, "Sharp"},
+       {0x0930, "Toshiba"},
+       {0x0924, "Xerox"}});
+  return *keys;
+}
+
 class PpdProviderImpl : public PpdProvider {
  public:
   // What kind of thing is the fetcher currently fetching?  We use this to
@@ -434,12 +466,8 @@ class PpdProviderImpl : public PpdProvider {
           if (base::ContainsKey(cached_ppd_idxs_[ppd_index_shard],
                                 make_and_model)) {
             // Found a hit, satisfy this resolution.
-            Printer::PpdReference ret;
-            ret.effective_make_and_model = make_and_model;
-            base::SequencedTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE,
-                base::BindOnce(std::move(next.cb), PpdProvider::SUCCESS, ret));
-            ppd_reference_resolution_queue_.pop_front();
+            RunPpdReferenceResolutionSucceeded(std::move(next.cb),
+                                               make_and_model);
             resolved_next = true;
             break;
           }
@@ -460,20 +488,12 @@ class PpdProviderImpl : public PpdProvider {
       // If possible, here we fall back to OEM designated generic PPDs.
       if (CanUseEpsonGenericPPD(search_data)) {
         // Found a hit, satisfy this resolution.
-        Printer::PpdReference ret;
-        ret.effective_make_and_model = kEpsonGenericPPD;
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(std::move(next.cb), PpdProvider::SUCCESS, ret));
-        ppd_reference_resolution_queue_.pop_front();
-      } else {
-        // We don't have anything else left to try.  NOT_FOUND it is.
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(std::move(next.cb), PpdProvider::NOT_FOUND,
-                           Printer::PpdReference()));
-        ppd_reference_resolution_queue_.pop_front();
+        RunPpdReferenceResolutionSucceeded(std::move(next.cb),
+                                           kEpsonGenericPPD);
       }
+      // We don't have anything else left to try. We've reached unsupported USB
+      // printer, try to grab the manufacturer name.
+      ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
     }
     // Didn't start any fetches.
     return false;
@@ -745,9 +765,8 @@ class PpdProviderImpl : public PpdProvider {
       auto resource_request = std::make_unique<network::ResourceRequest>();
       resource_request->url = url;
       resource_request->load_flags =
-          net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-          net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
-          net::LOAD_DO_NOT_SEND_AUTH_DATA;
+          net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+      resource_request->allow_credentials = false;
 
       // TODO(luum): confirm correct traffic annotation
       fetcher_ = network::SimpleURLLoader::Create(std::move(resource_request),
@@ -1086,13 +1105,8 @@ class PpdProviderImpl : public PpdProvider {
       }
     }
     if (result == PpdProvider::SUCCESS) {
-      Printer::PpdReference ret;
-      ret.effective_make_and_model = contents;
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(ppd_reference_resolution_queue_.front().cb),
-                         result, std::move(ret)));
-      ppd_reference_resolution_queue_.pop_front();
+      RunPpdReferenceResolutionSucceeded(
+          std::move(ppd_reference_resolution_queue_.front().cb), contents);
     } else {
       ppd_reference_resolution_queue_.front().usb_resolution_attempted = true;
     }
@@ -1132,8 +1146,10 @@ class PpdProviderImpl : public PpdProvider {
     // so should also be failed.
     auto task_runner = base::SequencedTaskRunnerHandle::Get();
     for (auto& entry : ppd_reference_resolution_queue_) {
-      task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(entry.cb), code,
-                                                      Printer::PpdReference()));
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(entry.cb), code, Printer::PpdReference(),
+                         "" /* usb_manufacturer */));
     }
     ppd_reference_resolution_queue_.clear();
   }
@@ -1470,11 +1486,48 @@ class PpdProviderImpl : public PpdProvider {
     return ret;
   }
 
+  void ResolveUsbManufacturer(ResolvePpdReferenceCallback cb, int vendor_id) {
+    std::string manufacturer;
+    if (base::ContainsKey(GetVendorIdMap(), vendor_id)) {
+      manufacturer = GetVendorIdMap().at(vendor_id);
+    } else {
+      LOG(ERROR) << "Unable to find vendor_id: " << vendor_id;
+    }
+    // This look up is done asynchronously since we will later be using a server
+    // look up for the manufacturer name.
+    RunPpdReferenceResolutionNotFound(std::move(cb), manufacturer);
+  }
+
   void PostReverseLookupFailure(CallbackResultCode result,
                                 ReverseLookupCallback cb) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(cb), result, std::string(), std::string()));
+  }
+
+  // Helper function that runs |cb| with the PpdProvider::SUCCESS as the result.
+  void RunPpdReferenceResolutionSucceeded(ResolvePpdReferenceCallback cb,
+                                          const std::string& make_and_model) {
+    DCHECK(!ppd_reference_resolution_queue_.empty());
+
+    Printer::PpdReference ret;
+    ret.effective_make_and_model = make_and_model;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::SUCCESS, ret,
+                                  "" /* usb_manufacturer */));
+    ppd_reference_resolution_queue_.pop_front();
+  }
+
+  // Helper function that runs |cb| with the PpdProvider::NOT_FOUND as the
+  // result.
+  void RunPpdReferenceResolutionNotFound(ResolvePpdReferenceCallback cb,
+                                         const std::string& manufacturer) {
+    DCHECK(!ppd_reference_resolution_queue_.empty());
+
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::NOT_FOUND,
+                                  Printer::PpdReference(), manufacturer));
+    ppd_reference_resolution_queue_.pop_front();
   }
 
   // The hash function to calculate the hash of canonical identifiers to the

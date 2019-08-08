@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1282031177488366470">Помощ за подобряването на функциите и ефективността на Chrome</translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
+<translation id="1682483655351012182">Синхронизиране на данните ви в Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Съобщение за поверителност на Google Chrome</translation>
 <translation id="1863312987075920112">С използването на това приложение приемате <ph name="BEGIN_LINK_TOS" />Общите условия<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Съобщението за поверителност<ph name="END_LINK_PRIVACY" /> на Chrome.</translation>
-<translation id="1984705450038014246">Синхронизиране на данните ви в Chrome</translation>
 <translation id="2147651015520127414">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Данни от синхронизирането в Chrome</translation>
 <translation id="2342981853652716282">Влезте в Chrome, за да получите отметките, паролите и др. на всичките си устройства.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="415767770115540173">Подобрете практическата си работа с Google в Chrome въз основа на местоположението ви.</translation>
 <translation id="424864128008805179">Искате ли да излезете от Chrome?</translation>
-<translation id="447252321002412580">Помощ за подобряването на функциите и ефективността на Chrome</translation>
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
 <translation id="4615174829807303908">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="5389212809648216794">Google Chrome не може да използва камерата ви, защото е заета от друго приложение</translation>

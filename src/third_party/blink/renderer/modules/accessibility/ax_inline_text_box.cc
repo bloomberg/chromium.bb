@@ -168,27 +168,27 @@ Node* AXInlineTextBox::GetNode() const {
 }
 
 AXObject* AXInlineTextBox::NextOnLine() const {
+  if (inline_text_box_->IsLast())
+    return ParentObject()->NextOnLine();
+
   scoped_refptr<AbstractInlineTextBox> next_on_line =
       inline_text_box_->NextOnLine();
   if (next_on_line)
     return ax_object_cache_->GetOrCreate(next_on_line.get());
 
-  if (!inline_text_box_->IsLast())
-    return nullptr;
-
-  return ParentObject()->NextOnLine();
+  return nullptr;
 }
 
 AXObject* AXInlineTextBox::PreviousOnLine() const {
+  if (inline_text_box_->IsFirst())
+    return ParentObject()->PreviousOnLine();
+
   scoped_refptr<AbstractInlineTextBox> previous_on_line =
       inline_text_box_->PreviousOnLine();
   if (previous_on_line)
     return ax_object_cache_->GetOrCreate(previous_on_line.get());
 
-  if (!inline_text_box_->IsFirst())
-    return nullptr;
-
-  return ParentObject()->PreviousOnLine();
+  return nullptr;
 }
 
 }  // namespace blink

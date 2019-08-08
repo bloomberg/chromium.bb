@@ -15,6 +15,7 @@
 #include "components/sync/engine/sync_credentials.h"
 #include "net/base/net_errors.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,6 +131,40 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
       identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             second_account_id);
+}
+
+TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
+
+  base::MockCallback<AccountStateChangedCallback> account_state_changed;
+  base::MockCallback<CredentialsChangedCallback> credentials_changed;
+  EXPECT_CALL(account_state_changed, Run()).Times(0);
+  EXPECT_CALL(credentials_changed, Run()).Times(0);
+  auto auth_manager =
+      CreateAuthManager(account_state_changed.Get(), credentials_changed.Get());
+  auth_manager->RegisterForAuthNotifications();
+
+  ASSERT_TRUE(
+      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
+
+  // Make a non-primary account available with both a refresh token and cookie.
+  EXPECT_CALL(account_state_changed, Run());
+  AccountInfo account_info =
+      identity_env()->MakeAccountAvailable("test@email.com");
+  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
+
+  EXPECT_FALSE(auth_manager->GetActiveAccountInfo().is_primary);
+  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_info.account_id);
+
+  // Make the account primary.
+  EXPECT_CALL(account_state_changed, Run());
+  identity::PrimaryAccountMutator* primary_account_mutator =
+      identity_env()->identity_manager()->GetPrimaryAccountMutator();
+  primary_account_mutator->SetPrimaryAccount(account_info.account_id);
+
+  EXPECT_TRUE(auth_manager->GetActiveAccountInfo().is_primary);
 }
 
 TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
@@ -571,7 +606,13 @@ TEST_F(SyncAuthManagerTest,
 TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
-  auto auth_manager = CreateAuthManager();
+
+  base::MockCallback<AccountStateChangedCallback> account_state_changed;
+  base::MockCallback<CredentialsChangedCallback> credentials_changed;
+  EXPECT_CALL(account_state_changed, Run()).Times(0);
+  EXPECT_CALL(credentials_changed, Run()).Times(0);
+  auto auth_manager =
+      CreateAuthManager(account_state_changed.Get(), credentials_changed.Get());
   auth_manager->RegisterForAuthNotifications();
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
@@ -581,6 +622,7 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   // An invalid refresh token gets set, i.e. we enter the "Sync paused" state
   // (only from SyncAuthManager's point of view - Sync as a whole is still
   // disabled).
+  EXPECT_CALL(credentials_changed, Run());
   identity_env()->SetInvalidRefreshTokenForPrimaryAccount();
   ASSERT_TRUE(auth_manager->GetCredentials().access_token.empty());
   ASSERT_TRUE(auth_manager->IsSyncPaused());
@@ -591,7 +633,11 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_env()->SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
+  // This *should* notify about changed credentials though, so that the
+  // SyncService can decide to start syncing.
+  EXPECT_CALL(credentials_changed, Run());
   identity_env()->SetRefreshTokenForPrimaryAccount();
+  ASSERT_FALSE(auth_manager->IsSyncPaused());
 
   // Since the access token request goes through posted tasks, we have to spin
   // the message loop to make sure it didn't happen.

@@ -36,10 +36,6 @@ class LanguagePrefs;
 
 namespace translate {
 
-// Enables or disables the regional locales as valid selection for the display
-// UI.
-extern const base::Feature kRegionalLocalesAsDisplayUI;
-
 // Enables or disables using the most recent target language as the default
 // target language option.
 extern const base::Feature kTranslateRecentTarget;

@@ -15,8 +15,9 @@
 
 namespace web_app {
 
-WebAppRegistrar::WebAppRegistrar(AbstractWebAppDatabase* database)
-    : database_(database) {
+WebAppRegistrar::WebAppRegistrar(Profile* profile,
+                                 AbstractWebAppDatabase* database)
+    : AppRegistrar(profile), database_(database) {
   DCHECK(database_);
 }
 
@@ -72,6 +73,11 @@ void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,
   DCHECK(is_empty());
   registry_ = std::move(registry);
   std::move(callback).Run();
+}
+
+bool WebAppRegistrar::IsInstalled(const GURL& start_url) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {

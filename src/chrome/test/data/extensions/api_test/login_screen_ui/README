@@ -1,0 +1,13 @@
+The whitelisted_extension.crx package must be signed by WebStore, in order for
+the extension to have the expected ID which is whitelisted in Chrome:
+"oclffehlkdgibkainkilopaalpdobkan".
+
+The not_whitelisted_extension.crx can be packed using the private key
+./not_whitelisted_extension.pem. For the instructions, refer to:
+<https://developer.chrome.com/extensions/packaging#creating>.
+
+These extensions are intended to be used for the manual testing of the
+chrome.loginScreenUi API.
+
+In case a new version of the test extension has to be published on WebStore,
+please reach out to the managed-devices@ mailing list.

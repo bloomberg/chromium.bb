@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1282031177488366470">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="1326317727527857210">Log in bij Chrome om de tabbladen van je andere apparaten te bekijken.</translation>
+<translation id="1682483655351012182">Je Chrome-gegevens synchroniseren</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Privacybeleid voor Google Chrome</translation>
 <translation id="1863312987075920112">Als je deze app gebruikt, ga je akkoord met de <ph name="BEGIN_LINK_TOS" />servicevoorwaarden<ph name="END_LINK_TOS" /> en het <ph name="BEGIN_LINK_PRIVACY" />privacybeleid<ph name="END_LINK_PRIVACY" /> van Chrome.</translation>
-<translation id="1984705450038014246">Je Chrome-gegevens synchroniseren</translation>
 <translation id="2147651015520127414">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
 <translation id="2199719347983604670">Gegevens van Chrome-synchronisatie</translation>
 <translation id="2342981853652716282">Log in bij Chrome om je bladwijzers, wachtwoorden en meer op al je apparaten te gebruiken.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="415767770115540173">Gebruik Google beter in Chrome op basis van je locatie.</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
-<translation id="447252321002412580">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="4523886039239821078">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder de volgende add-ons:</translation>
 <translation id="4615174829807303908">Je logt uit van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />. Hierdoor worden je Chrome-gegevens verwijderd van dit apparaat. Je gegevens blijven echter opgeslagen in je Google-account.</translation>
 <translation id="5389212809648216794">Google Chrome kan je camera niet gebruiken omdat deze wordt gebruikt door een andere app</translation>

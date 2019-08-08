@@ -52,7 +52,7 @@ public class ClientManagerTest {
                                   .getTargetContext()
                                   .getApplicationContext();
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         mClientManager = new ClientManager();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> OriginVerifier.clearCachedVerificationsForTesting());
@@ -295,7 +295,7 @@ public class ClientManagerTest {
         mClientManager.registerLaunch(mSession, URL);
 
         // Low -> High as well.
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         Assert.assertTrue(
                 mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
         Assert.assertTrue(
@@ -303,7 +303,7 @@ public class ClientManagerTest {
         mClientManager.registerLaunch(mSession, URL);
 
         // High -> Low as well.
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         Assert.assertTrue(
                 mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
         Assert.assertTrue(
@@ -335,21 +335,21 @@ public class ClientManagerTest {
         Assert.assertEquals(1, noMayLaunchUrlDelta.getDelta());
 
         // Low confidence.
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         Assert.assertTrue(
                 mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
         mClientManager.registerLaunch(mSession, URL);
         Assert.assertEquals(1, lowConfidenceDelta.getDelta());
 
         // High confidence.
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         Assert.assertTrue(
                 mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
         mClientManager.registerLaunch(mSession, URL);
         Assert.assertEquals(1, highConfidenceDelta.getDelta());
 
         // Low and High confidence.
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         Assert.assertTrue(
                 mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
         Assert.assertTrue(
@@ -358,7 +358,7 @@ public class ClientManagerTest {
         Assert.assertEquals(1, bothDelta.getDelta());
 
         // Low and High confidence, same call.
-        RequestThrottler.purgeAllEntriesForTesting(context);
+        RequestThrottler.purgeAllEntriesForTesting();
         bothDelta = new MetricsUtils.HistogramDelta(name, ClientManager.MayLaunchUrlType.BOTH);
         Assert.assertTrue(
                 mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, true));

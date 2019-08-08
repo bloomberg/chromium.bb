@@ -18,6 +18,10 @@
 
 namespace net {
 
+namespace der {
+class Parser;
+}
+
 class CertErrors;
 struct ParsedTbsCertificate;
 
@@ -53,6 +57,19 @@ struct ParsedTbsCertificate;
 NET_EXPORT bool VerifySerialNumber(const der::Input& value,
                                    bool warnings_only,
                                    CertErrors* errors) WARN_UNUSED_RESULT;
+
+// Consumes a "Time" value (as defined by RFC 5280) from |parser|. On success
+// writes the result to |*out| and returns true. On failure no guarantees are
+// made about the state of |parser|.
+//
+// From RFC 5280:
+//
+//     Time ::= CHOICE {
+//          utcTime        UTCTime,
+//          generalTime    GeneralizedTime }
+NET_EXPORT bool ReadUTCOrGeneralizedTime(der::Parser* parser,
+                                         der::GeneralizedTime* out)
+    WARN_UNUSED_RESULT;
 
 struct NET_EXPORT ParseCertificateOptions {
   // If set to true, then parsing will skip checks on the certificate's serial

@@ -48,7 +48,6 @@ source_set("feed_core") {
   ]
 
   deps = [
-    "//components/data_use_measurement/core",
     "//components/prefs",
     "//components/variations",
     "//components/variations/net",

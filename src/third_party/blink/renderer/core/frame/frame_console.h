@@ -51,15 +51,11 @@ class SourceLocation;
 class CORE_EXPORT FrameConsole final
     : public GarbageCollectedFinalized<FrameConsole> {
  public:
-  static FrameConsole* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<FrameConsole>(frame);
-  }
-
   explicit FrameConsole(LocalFrame&);
 
-  void AddMessage(ConsoleMessage*);
+  void AddMessage(ConsoleMessage*, bool discard_duplicates = false);
 
-  bool AddMessageToStorage(ConsoleMessage*);
+  bool AddMessageToStorage(ConsoleMessage*, bool discard_duplicates = false);
   void ReportMessageToClient(mojom::ConsoleMessageSource,
                              mojom::ConsoleMessageLevel,
                              const String& message,

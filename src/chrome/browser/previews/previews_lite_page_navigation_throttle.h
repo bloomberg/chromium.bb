@@ -39,9 +39,9 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
  public:
   // Reasons that a navigation is blacklisted from this preview. This enum must
   // remain synchronized with the enum |PreviewsServerLitePageBlacklistReason|
-  // in metrics/histograms/enums.xml.
+  // in tools/metrics/histograms/enums.xml.
   enum class BlacklistReason {
-    kPathSuffixBlacklisted = 0,
+    kPathSuffixBlacklisted_DEPRECATED = 0,
     kNavigationToPreviewsDomain = 1,
     kNavigationToPrivateDomain = 2,
     kHostBypassBlacklisted = 3,
@@ -63,7 +63,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kECTUnknown_DEPRECATED = 8,
     kExceededMaxNavigationRestarts = 9,
     kPreviewsState_DEPRECATED = 10,
-    kMaxValue = kPreviewsState_DEPRECATED,
+    kInvalidProxyHeaders = 11,
+    kMaxValue = kInvalidProxyHeaders,
   };
 
   // The response type from the previews server. This enum must

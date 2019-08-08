@@ -158,8 +158,8 @@ void URLRequestMockDataJob::GetResponseInfoConst(HttpResponseInfo* info) const {
     raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
                                           static_cast<int>(data_.length())));
   }
-  info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(
-      raw_headers.c_str(), static_cast<int>(raw_headers.length())));
+  info->headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
 }
 
 void URLRequestMockDataJob::StartAsync() {

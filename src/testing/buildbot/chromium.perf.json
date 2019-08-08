@@ -653,6 +653,104 @@
       "microdump_stackwalk",
       "angle_perftests",
       "chrome_apk"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_chrome_modern_public_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_modern_public_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_chrome_modern_public_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_chrome_public_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_public_apk",
+        "override_compile_targets": [
+          "resource_sizes_chrome_public_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_monochrome_public_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_monochrome_public_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_monochrome_public_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_system_webview_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_system_webview_apk",
+        "override_compile_targets": [
+          "resource_sizes_system_webview_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      }
     ]
   },
   "android-go-perf": {
@@ -1029,11 +1127,202 @@
       }
     ]
   },
+  "android-pixel2-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=exact",
+          "--upload-results",
+          "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
+          "--device=android",
+          "--test-shard-map-filename=android-pixel2-perf_map.json"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 35
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "android-pixel2_webview-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-webview-google",
+          "--upload-results",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
+          "--test-shard-map-filename=android-pixel2_webview-perf_map.json"
+        ],
+        "isolate_name": "performance_webview_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_webview_test_suite",
+        "override_compile_targets": [
+          "performance_webview_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.tests.perf-webview"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 28
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "android_arm64-builder-perf": {
     "additional_compile_targets": [
       "microdump_stackwalk",
       "angle_perftests",
       "chrome_apk"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_chrome_modern_public_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_modern_public_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_chrome_modern_public_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_chrome_public_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chrome_public_apk",
+        "override_compile_targets": [
+          "resource_sizes_chrome_public_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_monochrome_public_minimal_apks",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_monochrome_public_minimal_apks",
+        "override_compile_targets": [
+          "resource_sizes_monochrome_public_minimal_apks"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_system_webview_apk",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_system_webview_apk",
+        "override_compile_targets": [
+          "resource_sizes_system_webview_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800
+        }
+      }
     ]
   },
   "linux-builder-perf": {

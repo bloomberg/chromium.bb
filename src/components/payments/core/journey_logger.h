@@ -40,6 +40,7 @@ class JourneyLogger {
     COMPLETION_STATUS_COMPLETED = 0,
     COMPLETION_STATUS_USER_ABORTED = 1,
     COMPLETION_STATUS_OTHER_ABORTED = 2,
+    COMPLETION_STATUS_COULD_NOT_SHOW = 3,
     COMPLETION_STATUS_MAX,
   };
 
@@ -96,6 +97,8 @@ class JourneyLogger {
     // not called, or the user was in incognito mode.
     EVENT_HAS_ENROLLED_INSTRUMENT_TRUE = 1 << 21,
     EVENT_HAS_ENROLLED_INSTRUMENT_FALSE = 1 << 22,
+    // True when a NotShownReason is set.
+    EVENT_COULD_NOT_SHOW = 1 << 23,
     EVENT_ENUM_MAX = 2097152,
   };
 
@@ -224,6 +227,9 @@ class JourneyLogger {
   // Records the metric about the different events that happened during the
   // Payment Request.
   void RecordEventsMetric(CompletionStatus completion_status);
+
+  // Validates the recorded event sequence during the Payment Request.
+  void ValidateEventBits() const;
 
   // Returns whether this Payment Request was triggered (shown or skipped show).
   bool WasPaymentRequestTriggered();

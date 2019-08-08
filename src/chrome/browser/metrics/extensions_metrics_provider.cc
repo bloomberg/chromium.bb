@@ -145,6 +145,8 @@ ExtensionInstallProto::Type GetType(Manifest::Type type) {
       return ExtensionInstallProto::PLATFORM_APP;
     case Manifest::TYPE_SHARED_MODULE:
       return ExtensionInstallProto::SHARED_MODULE;
+    case Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
+      return ExtensionInstallProto::LOGIN_SCREEN_EXTENSION;
     case Manifest::NUM_LOAD_TYPES:
       NOTREACHED();
       // Fall through.

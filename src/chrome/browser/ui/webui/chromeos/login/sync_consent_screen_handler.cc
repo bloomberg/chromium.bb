@@ -55,6 +55,8 @@ void GetConsentIDs(const std::unordered_set<int>& known_ids,
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId SyncConsentScreenView::kScreenId;
+
 SyncConsentScreenHandler::SyncConsentScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

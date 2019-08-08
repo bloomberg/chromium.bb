@@ -362,7 +362,10 @@ TEST_F(SecurityOriginTest, CanRequestWithAllowListedAccess) {
   EXPECT_FALSE(origin->CanRequest(url));
   // Adding the url to the access allowlist should allow the request.
   SecurityPolicy::AddOriginAccessAllowListEntry(
-      *origin, "https", "example.com", false,
+      *origin, "https", "example.com",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
   EXPECT_TRUE(origin->CanRequest(url));
 }
@@ -375,10 +378,16 @@ TEST_F(SecurityOriginTest, CannotRequestWithBlockListedAccess) {
 
   // BlockList that is more or same specificity wins.
   SecurityPolicy::AddOriginAccessAllowListEntry(
-      *origin, "https", "example.com", true,
+      *origin, "https", "example.com",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   SecurityPolicy::AddOriginAccessBlockListEntry(
-      *origin, "https", "example.com", false,
+      *origin, "https", "example.com",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
   // Block since example.com is on the allowlist & blocklist.
   EXPECT_FALSE(origin->CanRequest(blocked_url));
@@ -393,16 +402,45 @@ TEST_F(SecurityOriginTest, CanRequestWithMoreSpecificAllowList) {
   const blink::KURL blocked_url("https://example.com");
 
   SecurityPolicy::AddOriginAccessAllowListEntry(
-      *origin, "https", "test.example.com", true,
+      *origin, "https", "test.example.com",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
   SecurityPolicy::AddOriginAccessBlockListEntry(
-      *origin, "https", "example.com", true,
+      *origin, "https", "example.com",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
   // Allow since test.example.com (allowlist) has a higher priority than
   // *.example.com (blocklist).
   EXPECT_TRUE(origin->CanRequest(allowed_url));
   // Block since example.com isn't on the allowlist.
   EXPECT_FALSE(origin->CanRequest(blocked_url));
+}
+
+TEST_F(SecurityOriginTest, CanRequestWithPortSpecificAllowList) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "test1.example.com", 443,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
+      network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "test2.example.com", 444,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
+      network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
+
+  EXPECT_TRUE(origin->CanRequest(blink::KURL("https://test1.example.com")));
+  EXPECT_TRUE(origin->CanRequest(blink::KURL("https://test1.example.com:443")));
+  EXPECT_FALSE(origin->CanRequest(blink::KURL("https://test1.example.com:43")));
+
+  EXPECT_FALSE(origin->CanRequest(blink::KURL("https://test2.example.com")));
+  EXPECT_FALSE(origin->CanRequest(blink::KURL("https://test2.example.com:44")));
+  EXPECT_TRUE(origin->CanRequest(blink::KURL("https://test2.example.com:444")));
 }
 
 TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
@@ -417,14 +455,20 @@ TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
 
   // Verify unicode origin can not be allowlisted.
   SecurityPolicy::AddOriginAccessAllowListEntry(
-      *origin, "https", "☃.net", true,
+      *origin, "https", "☃.net",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
   EXPECT_FALSE(origin->CanRequest(punycode_url));
   EXPECT_FALSE(origin->CanRequest(unicode_url));
 
   // Verify punycode allowlist only affects punycode URLs.
   SecurityPolicy::AddOriginAccessAllowListEntry(
-      *origin, "https", "xn--n3h.net", true,
+      *origin, "https", "xn--n3h.net",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
   EXPECT_TRUE(origin->CanRequest(punycode_url));
   EXPECT_FALSE(origin->CanRequest(unicode_url));
@@ -437,7 +481,10 @@ TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
 
   // Simulate <all_urls> being in the extension permissions.
   SecurityPolicy::AddOriginAccessAllowListEntry(
-      *origin, "https", "", true,
+      *origin, "https", "",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
   EXPECT_TRUE(origin->CanRequest(punycode_url));
@@ -445,14 +492,20 @@ TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
 
   // Verify unicode origin can not be blocklisted.
   SecurityPolicy::AddOriginAccessBlockListEntry(
-      *origin, "https", "☃.net", true,
+      *origin, "https", "☃.net",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
   EXPECT_TRUE(origin->CanRequest(punycode_url));
   EXPECT_FALSE(origin->CanRequest(unicode_url));
 
   // Verify punycode blocklist only affects punycode URLs.
   SecurityPolicy::AddOriginAccessBlockListEntry(
-      *origin, "https", "xn--n3h.net", true,
+      *origin, "https", "xn--n3h.net",
+      /*destination_port=*/0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
   EXPECT_FALSE(origin->CanRequest(punycode_url));
   EXPECT_FALSE(origin->CanRequest(unicode_url));

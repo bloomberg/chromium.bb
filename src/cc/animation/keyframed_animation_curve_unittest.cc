@@ -602,30 +602,6 @@ TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtEnd) {
   }
 }
 
-// Tests a frames timing function.
-TEST(KeyframedAnimationCurveTest, FramesTimingFunction) {
-  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
-      KeyframedFloatAnimationCurve::Create());
-  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.f,
-                                           FramesTimingFunction::Create(5)));
-  curve->AddKeyframe(
-      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 1.f, nullptr));
-
-  struct Expected {
-    double time;
-    float value;
-  } expectations[] = {
-      {0.0, 0.f},     {0.1999, 0.f},  {0.2001, 0.25f}, {0.3999, 0.25f},
-      {0.4001, 0.5f}, {0.5999, 0.5f}, {0.6001, 0.75f}, {0.7999, 0.75f},
-      {0.8001, 1.f},  {1.0, 1.f},
-  };
-  for (const auto& expectation : expectations) {
-    EXPECT_FLOAT_EQ(
-        expectation.value,
-        curve->GetValue(base::TimeDelta::FromSecondsD(expectation.time)));
-  }
-}
-
 // Tests that animations that are translations are correctly identified.
 TEST(KeyframedAnimationCurveTest, IsTranslation) {
   std::unique_ptr<KeyframedTransformAnimationCurve> curve(
@@ -914,23 +890,6 @@ TEST(KeyframedAnimationCurveTest, StepsTimingEndInputsOutsideZeroOneRange) {
 
   EXPECT_FLOAT_EQ(-0.5f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)));
   EXPECT_FLOAT_EQ(2.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
-}
-
-// Tests that a frames timing function works as expected for inputs outside of
-// range [0,1]
-TEST(KeyframedAnimationCurveTest, FramesTimingInputsOutsideZeroOneRange) {
-  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
-      KeyframedFloatAnimationCurve::Create());
-  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.f,
-                                           FramesTimingFunction::Create(5)));
-  curve->AddKeyframe(
-      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 2.f, nullptr));
-  // Curve timing function producing timing outputs outside of range [0,1].
-  curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
-
-  EXPECT_FLOAT_EQ(-0.5f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)));
-  EXPECT_FLOAT_EQ(2.5f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
 }
 
 // Tests that an animation with a curve timing function and multiple keyframes

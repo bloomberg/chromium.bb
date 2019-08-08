@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1028699632127661925">Изпраща се до <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Настройки за известяване</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Преди 1 ден}other{Преди # дни}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Преди 1 минута}other{Преди # минути}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="1409544243779336081">Препоръка за приложение</translation>
-<translation id="1413622004203049571">Деактивиране на известията от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }other{# минути и }}</translation>
 <translation id="1643823602425662293">Известие</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">сега</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минута}other{# минути}}</translation>
-<translation id="1756116796893109054">Разделът се изпраща...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Б</translation>
 <translation id="1801827354178857021">Период</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}other{# месеца}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Б/сек</translation>
 <translation id="6156262341071374681">Разгъване на списъка с всички приложения</translation>
+<translation id="6165508094623778733">Научете повече</translation>
 <translation id="6264365405983206840">Избиране на &amp;всички</translation>
 <translation id="6351032674660237738">ПРЕДЛОЖЕНИЯ ЗА ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Превъртане наляво</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Повече от 1 непрочетено известие}other{Повече от # непрочетени известия}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{след 1 м}other{след # м}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Стартиране на гласова заявка към Google Асистент</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Преди 1 час}other{Преди # часа}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Остава 1 сек}other{Остават # сек}}</translation>
+<translation id="8144660977431427332">Търсенията се извършват с помощта на Google Асистент. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автоматично довършване</translation>
 <translation id="815598010540052116">Превъртане надолу</translation>
 <translation id="8170087467028567933">При премахване на това предложение то ще бъде скрито от профила ви на всичките ви устройства.</translation>

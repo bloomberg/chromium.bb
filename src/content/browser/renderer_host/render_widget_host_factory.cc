@@ -12,7 +12,7 @@ namespace content {
 RenderWidgetHostFactory* RenderWidgetHostFactory::factory_ = nullptr;
 
 // static
-RenderWidgetHostImpl* RenderWidgetHostFactory::Create(
+std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostFactory::Create(
     RenderWidgetHostDelegate* delegate,
     RenderProcessHost* process,
     int32_t routing_id,
@@ -22,8 +22,8 @@ RenderWidgetHostImpl* RenderWidgetHostFactory::Create(
     return factory_->CreateRenderWidgetHost(
         delegate, process, routing_id, std::move(widget_interface), hidden);
   }
-  return new RenderWidgetHostImpl(delegate, process, routing_id,
-                                  std::move(widget_interface), hidden);
+  return std::make_unique<RenderWidgetHostImpl>(
+      delegate, process, routing_id, std::move(widget_interface), hidden);
 }
 
 // static

@@ -37,6 +37,9 @@ class StubSurfaceClient : public SurfaceClient {
       const CompositorFrame& frame,
       const gfx::Rect& damage_rect,
       base::TimeTicks expected_display_time) override {}
+  void OnSurfacePresented(uint32_t frame_token,
+                          const gfx::PresentationFeedback& feedback) override {}
+  bool NeedsSyncTokens() const override;
 
   base::WeakPtrFactory<StubSurfaceClient> weak_factory;
 };

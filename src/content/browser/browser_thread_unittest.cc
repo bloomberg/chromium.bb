@@ -2,23 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/browser/browser_thread.h"
+
 #include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_io_task_environment.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -30,14 +34,30 @@ namespace content {
 
 namespace {
 
+using ::testing::Invoke;
+
+using StrictMockTask =
+    testing::StrictMock<base::MockCallback<base::Callback<void()>>>;
+
 class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
  public:
-  SequenceManagerTaskEnvironment(
-      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
-      scoped_refptr<base::SingleThreadTaskRunner> default_task_runner)
-      : sequence_manager_(std::move(sequence_manager)),
-        default_task_runner_(std::move(default_task_runner)) {
+  SequenceManagerTaskEnvironment() {
+    sequence_manager_ =
+        base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
+            base::sequence_manager::SequenceManager::Settings());
+    auto browser_ui_thread_scheduler =
+        BrowserUIThreadScheduler::CreateForTesting(
+            sequence_manager_.get(), sequence_manager_->GetRealTimeDomain());
+
+    default_task_runner_ =
+        browser_ui_thread_scheduler->GetHandle().GetDefaultTaskRunner();
+
     sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
+
+    BrowserTaskExecutor::CreateForTesting(
+        std::move(browser_ui_thread_scheduler),
+        std::make_unique<BrowserIOTaskEnvironment>());
+    BrowserTaskExecutor::EnableAllQueues();
   }
 
   ~SequenceManagerTaskEnvironment() override {
@@ -51,8 +71,7 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
 
   void BindToCurrentThread(base::TimerSlack timer_slack) override {
     sequence_manager_->BindToMessagePump(
-        base::MessageLoop::CreateMessagePumpForType(
-            base::MessageLoop::TYPE_DEFAULT));
+        base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
     sequence_manager_->SetTimerSlack(timer_slack);
   }
 
@@ -80,28 +99,11 @@ class BrowserThreadTest : public testing::Test {
  protected:
   void SetUp() override {
     ui_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::UI);
-    std::unique_ptr<base::sequence_manager::internal::SequenceManagerImpl>
-        sequence_manager = base::sequence_manager::internal::
-            SequenceManagerImpl::CreateUnbound(
-                base::sequence_manager::SequenceManager::Settings());
-    std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
-        BrowserUIThreadScheduler::CreateForTesting(
-            sequence_manager.get(), sequence_manager->GetRealTimeDomain());
-
     base::Thread::Options ui_options;
-    ui_options.task_environment = new SequenceManagerTaskEnvironment(
-        std::move(sequence_manager),
-        browser_ui_thread_scheduler->GetTaskRunnerForTesting(
-            BrowserUIThreadScheduler::QueueType::kDefault));
-
-    BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
-        std::move(browser_ui_thread_scheduler));
+    ui_options.task_environment = new SequenceManagerTaskEnvironment();
     ui_thread_->StartWithOptions(ui_options);
 
-    io_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
-    base::Thread::Options io_options;
-    io_options.message_loop_type = base::MessageLoop::TYPE_IO;
-    io_thread_->StartWithOptions(io_options);
+    io_thread_ = BrowserTaskExecutor::CreateIOThread();
 
     ui_thread_->RegisterAsBrowserThread();
     io_thread_->RegisterAsBrowserThread();
@@ -291,6 +293,70 @@ TEST_F(BrowserThreadTest, RunsTasksInCurrentSequencedDuringShutdown) {
   loop.Run();
 
   EXPECT_TRUE(did_shutdown);
+}
+
+class BrowserThreadWithCustomSchedulerTest : public testing::Test {
+ private:
+  class ScopedTaskEnvironmentWithCustomScheduler
+      : public base::test::ScopedTaskEnvironment {
+   public:
+    ScopedTaskEnvironmentWithCustomScheduler()
+        : base::test::ScopedTaskEnvironment(
+              SubclassCreatesDefaultTaskRunner{}) {
+      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
+          BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
+                                                     GetTimeDomain());
+      DeferredInitFromSubclass(
+          browser_ui_thread_scheduler->GetHandle().GetBrowserTaskRunner(
+              QueueType::kDefault));
+      BrowserTaskExecutor::CreateForTesting(
+          std::move(browser_ui_thread_scheduler),
+          std::make_unique<BrowserIOTaskEnvironment>());
+
+      ui_thread_ = BrowserTaskExecutor::CreateIOThread();
+      BrowserTaskExecutor::InitializeIOThread();
+      ui_thread_->RegisterAsBrowserThread();
+    }
+
+    ~ScopedTaskEnvironmentWithCustomScheduler() override {
+      ui_thread_.reset();
+      BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
+      BrowserTaskExecutor::ResetForTesting();
+    }
+
+   private:
+    std::unique_ptr<BrowserProcessSubThread> ui_thread_;
+  };
+
+ public:
+  using QueueType = BrowserTaskQueues::QueueType;
+
+ protected:
+  ScopedTaskEnvironmentWithCustomScheduler scoped_task_environment_;
+};
+
+TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
+  StrictMockTask best_effort_task;
+  StrictMockTask regular_task;
+
+  auto task_runner = base::CreateTaskRunnerWithTraits(
+      {BrowserThread::UI, base::TaskPriority::HIGHEST});
+
+  task_runner->PostTask(FROM_HERE, regular_task.Get());
+  BrowserThread::PostBestEffortTask(FROM_HERE, task_runner,
+                                    best_effort_task.Get());
+
+  EXPECT_CALL(regular_task, Run);
+  scoped_task_environment_.RunUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&regular_task);
+
+  BrowserTaskExecutor::EnableAllQueues();
+  base::RunLoop run_loop;
+  EXPECT_CALL(best_effort_task, Run).WillOnce(Invoke([&]() {
+    run_loop.Quit();
+  }));
+  run_loop.Run();
 }
 
 }  // namespace content

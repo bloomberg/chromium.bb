@@ -31,8 +31,6 @@ namespace {
 constexpr char kNotAvailable[] = "<not available>";
 constexpr char kRoutesKeyName[] = "routes";
 constexpr char kNetworkStatusKeyName[] = "network-status";
-constexpr char kModemStatusKeyName[] = "modem-status";
-constexpr char kWiMaxStatusKeyName[] = "wimax-status";
 
 // List of user log files that Chrome reads directly as these logs are generated
 // by Chrome itself.
@@ -96,16 +94,6 @@ void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
   client->GetNetworkStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
                                           weak_ptr_factory_.GetWeakPtr(),
                                           kNetworkStatusKeyName));
-  ++num_pending_requests_;
-
-  client->GetModemStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        kModemStatusKeyName));
-  ++num_pending_requests_;
-
-  client->GetWiMaxStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        kWiMaxStatusKeyName));
   ++num_pending_requests_;
 
   if (scrub_) {

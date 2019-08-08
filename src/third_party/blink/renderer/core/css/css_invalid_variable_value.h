@@ -15,6 +15,10 @@ class CORE_EXPORT CSSInvalidVariableValue : public CSSValue {
  public:
   static CSSInvalidVariableValue* Create();
 
+  // Only construct through MakeGarbageCollected for the initial value. Use
+  // Create() to get the pooled value.
+  CSSInvalidVariableValue() : CSSValue(kInvalidVariableValueClass) {}
+
   String CustomCSSText() const;
 
   bool Equals(const CSSInvalidVariableValue&) const { return true; }
@@ -25,8 +29,6 @@ class CORE_EXPORT CSSInvalidVariableValue : public CSSValue {
 
  private:
   friend class CSSValuePool;
-
-  CSSInvalidVariableValue() : CSSValue(kInvalidVariableValueClass) {}
 };
 
 template <>

@@ -23,6 +23,8 @@ Polymer({
     },
 
     // <if expr="chromeos">
+    showApps: Boolean,
+
     showAndroidApps: Boolean,
 
     showCrostini: Boolean,
@@ -273,21 +275,15 @@ Polymer({
    * @private
    */
   advancedToggleExpandedChanged_: function() {
-    if (this.advancedToggleExpanded) {
-      // In Polymer2, async() does not wait long enough for layout to complete.
-      // Polymer.RenderStatus.beforeNextRender() must be used instead.
-      // TODO (rbpotter): Remove conditional when migration to Polymer 2 is
-      // completed.
-      if (Polymer.DomIf) {
-        Polymer.RenderStatus.beforeNextRender(this, () => {
-          this.$$('#advancedPageTemplate').get();
-        });
-      } else {
-        this.async(() => {
-          this.$$('#advancedPageTemplate').get();
-        });
-      }
+    if (!this.advancedToggleExpanded) {
+      return;
     }
+
+    // In Polymer2, async() does not wait long enough for layout to complete.
+    // Polymer.RenderStatus.beforeNextRender() must be used instead.
+    Polymer.RenderStatus.beforeNextRender(this, () => {
+      this.$$('#advancedPageTemplate').get();
+    });
   },
 
   advancedToggleClicked_: function() {

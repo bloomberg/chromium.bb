@@ -353,9 +353,6 @@ void ExtensionActionRunner::NotifyChange(const Extension* extension) {
     extension_action_api->NotifyChange(extension_action, web_contents(),
                                        browser_context_);
   }
-
-  // We also notify that page actions may have changed.
-  extension_action_api->NotifyPageActionsChanged(web_contents());
 }
 
 void ExtensionActionRunner::LogUMA() const {
@@ -539,8 +536,7 @@ void ExtensionActionRunner::OnExtensionUnloaded(
   auto iter = pending_scripts_.find(extension->id());
   if (iter != pending_scripts_.end()) {
     pending_scripts_.erase(iter);
-    ExtensionActionAPI::Get(browser_context_)
-        ->NotifyPageActionsChanged(web_contents());
+    NotifyChange(extension);
   }
 }
 

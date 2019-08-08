@@ -39,11 +39,11 @@ class CastReceiverSessionDelegate : public CastSessionDelegateBase {
 
  private:
   void OnDecodedAudioFrame(std::unique_ptr<media::AudioBus> audio_bus,
-                           const base::TimeTicks& playout_time,
+                           base::TimeTicks playout_time,
                            bool is_continuous);
 
-  void OnDecodedVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                           const base::TimeTicks& playout_time,
+  void OnDecodedVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
+                           base::TimeTicks playout_time,
                            bool is_continuous);
 
   scoped_refptr<CastReceiverAudioValve> audio_valve_;

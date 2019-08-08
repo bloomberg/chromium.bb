@@ -88,7 +88,7 @@ SessionStorageNamespaceImpl::CloneFrom(
       std::move(context), std::move(context_impl), std::move(namespace_id)));
 }
 
-const std::string& SessionStorageNamespaceImpl::id() const {
+const std::string& SessionStorageNamespaceImpl::id() {
   return namespace_id_;
 }
 
@@ -96,7 +96,7 @@ void SessionStorageNamespaceImpl::SetShouldPersist(bool should_persist) {
   should_persist_ = should_persist;
 }
 
-bool SessionStorageNamespaceImpl::should_persist() const {
+bool SessionStorageNamespaceImpl::should_persist() {
   return should_persist_;
 }
 

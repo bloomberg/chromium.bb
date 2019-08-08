@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/ios/features.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -27,17 +28,14 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
@@ -116,10 +114,6 @@ id<GREYMatcher> PrivacyHandoffButton() {
 // Matcher for the Privacy Block Popups button on the privacy UI.
 id<GREYMatcher> BlockPopupsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
-}
-// Matcher for the Privacy Translate Settings button on the privacy UI.
-id<GREYMatcher> TranslateSettingsButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TRANSLATE_SETTING);
 }
 // Matcher for the Bandwidth Settings button on the main Settings screen.
 id<GREYMatcher> BandwidthSettingsButton() {
@@ -460,18 +454,24 @@ id<GREYMatcher> BandwidthSettingsButton() {
   web::test::SetUpSimpleHttpServerWithSetCookies(response);
 
   // Load |kUrl| and check that cookie is not set.
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
-  [ChromeEarlGrey waitForWebViewContainingText:kResponse];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
 
   NSDictionary* cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
 
   // Visit |kUrlWithSetCookie| to set a cookie and then load |kUrl| to check it
   // is still set.
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrlWithSetCookie)];
-  [ChromeEarlGrey waitForWebViewContainingText:kResponseWithSetCookie];
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
-  [ChromeEarlGrey waitForWebViewContainingText:kResponse];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kUrlWithSetCookie)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kResponseWithSetCookie]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqualObjects(kCookieValue, cookies[kCookieName],
@@ -489,13 +489,15 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [self clearCookiesAndSiteData];
 
   // Reload and test that there are no cookies left.
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
-  [ChromeEarlGrey waitForWebViewContainingText:kResponse];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
 
-  chrome_test_util::CloseAllTabs();
+  [ChromeEarlGrey closeAllTabs];
 }
 
 // Verifies that metrics reporting works properly under possible settings of the
@@ -537,14 +539,13 @@ id<GREYMatcher> BandwidthSettingsButton() {
 // Verifies that Settings opens when signed-out and in Incognito mode.
 // This tests that crbug.com/607335 has not regressed.
 - (void)testSettingsSignedOutIncognito {
-  [ChromeEarlGrey openNewIncognitoTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [ChromeEarlGrey closeAllIncognitoTabs];
 }
 
 // Verifies the UI elements are accessible on the Settings page.
@@ -569,17 +570,6 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
   [[EarlGrey selectElementWithMatcher:BlockPopupsButton()]
-      performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [self closeSubSettingsMenu];
-}
-
-// Verifies the UI elements are accessible on the Content Translations Settings
-// page.
-- (void)testAccessibilityOnContentSettingsTranslatePage {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
-  [[EarlGrey selectElementWithMatcher:TranslateSettingsButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
@@ -702,10 +692,20 @@ id<GREYMatcher> BandwidthSettingsButton() {
                 @"Settings should not register key commands when presented.");
 
   // Dismiss the Sign-in UI.
-  id<GREYMatcher> cancelButton =
-      grey_allOf(grey_accessibilityID(@"cancel"),
-                 grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-  [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Cancel the sign-in operation.
+    [[EarlGrey selectElementWithMatcher:
+                   grey_buttonTitle([l10n_util::GetNSString(
+                       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                       uppercaseString])] performAction:grey_tap()];
+  } else {
+    // Cancel the add account operation.
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
+                                            grey_sufficientlyVisible(), nil)]
+        performAction:grey_tap()];
+  }
+
   // Wait for UI to finish closing the Sign-in screen.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
@@ -716,6 +716,13 @@ id<GREYMatcher> BandwidthSettingsButton() {
 
 // Verifies the UI elements are accessible on the Send Usage Data page.
 - (void)testAccessibilityOnSendUsageData {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Privacy switch for ContentSuggestion was moved to the Sync and "
+         "Google services settings screen, so it is no longer present in the "
+         "privacy section. This test is now covered by "
+         "-[GoogleServicesSettingsTestCase testOpeningServices].");
+  }
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:SendUsageDataButton()];

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/text_detector.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -12,6 +14,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -35,9 +38,9 @@ ScriptPromise TextDetector::DoDetect(ScriptPromiseResolver* resolver,
                                      SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
   if (!text_service_) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "Text detection service unavailable."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError,
+        "Text detection service unavailable."));
     return promise;
   }
   text_service_requests_.insert(resolver);
@@ -77,8 +80,9 @@ void TextDetector::OnDetectText(
 
 void TextDetector::OnTextServiceConnectionError() {
   for (const auto& request : text_service_requests_) {
-    request->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                         "Text Detection not implemented."));
+    request->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           "Text Detection not implemented."));
   }
   text_service_requests_.clear();
   text_service_.reset();

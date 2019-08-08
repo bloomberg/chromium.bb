@@ -112,10 +112,6 @@ class SVGStringListBase : public SVGPropertyBase {
 template <char list_delimiter>
 class SVGStringList final : public SVGStringListBase {
  public:
-  static SVGStringList<list_delimiter>* Create() {
-    return MakeGarbageCollected<SVGStringList<list_delimiter>>();
-  }
-
   SVGStringList() = default;
   ~SVGStringList() override = default;
 

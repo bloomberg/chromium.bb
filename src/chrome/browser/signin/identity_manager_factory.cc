@@ -11,7 +11,6 @@
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_builder.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -48,11 +47,11 @@ using ConcreteSigninManager = SigninManagerBase;
 // |profile|.  May return null if mutation of the signed-in state is not
 // supported on the current platform.
 std::unique_ptr<identity::PrimaryAccountMutator> BuildPrimaryAccountMutator(
-    Profile* profile,
+    AccountTrackerService* account_tracker_service,
     ConcreteSigninManager* signin_manager) {
 #if !defined(OS_CHROMEOS)
   return std::make_unique<identity::PrimaryAccountMutatorImpl>(
-      AccountTrackerServiceFactory::GetForProfile(profile),
+      account_tracker_service,
       SigninManager::FromSigninManagerBase(signin_manager));
 #else
   return nullptr;
@@ -64,12 +63,13 @@ std::unique_ptr<identity::PrimaryAccountMutator> BuildPrimaryAccountMutator(
 // current platform.
 std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
     Profile* profile,
+    AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager) {
 #if !defined(OS_ANDROID)
   return std::make_unique<identity::AccountsMutatorImpl>(
-      token_service, AccountTrackerServiceFactory::GetForProfile(profile),
-      signin_manager, profile->GetPrefs());
+      token_service, account_tracker_service, signin_manager,
+      profile->GetPrefs());
 #else
   return nullptr;
 #endif
@@ -77,6 +77,7 @@ std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
 
 std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
     Profile* profile,
+    AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* gaia_cookie_manager_service) {
   std::unique_ptr<ConcreteSigninManager> signin_manager;
@@ -84,17 +85,24 @@ std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
   signin_manager = std::make_unique<ConcreteSigninManager>(
-      client, token_service,
-      AccountTrackerServiceFactory::GetForProfile(profile));
+      client, token_service, account_tracker_service,
+      gaia_cookie_manager_service,
+      AccountConsistencyModeManager::GetMethodForProfile(profile));
 #else
   signin_manager = std::make_unique<ConcreteSigninManager>(
-      client, token_service,
-      AccountTrackerServiceFactory::GetForProfile(profile),
+      client, token_service, account_tracker_service,
       gaia_cookie_manager_service,
       AccountConsistencyModeManager::GetMethodForProfile(profile));
 #endif
   signin_manager->Initialize(g_browser_process->local_state());
   return signin_manager;
+}
+
+std::unique_ptr<AccountTrackerService> BuildAccountTrackerService(
+    Profile* profile) {
+  auto account_tracker_service = std::make_unique<AccountTrackerService>();
+  account_tracker_service->Initialize(profile->GetPrefs(), profile->GetPath());
+  return account_tracker_service;
 }
 
 std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
@@ -125,7 +133,6 @@ IdentityManagerFactory::IdentityManagerFactory()
 #if !defined(OS_ANDROID)
   DependsOn(WebDataServiceFactory::GetInstance());
 #endif
-  DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
 }
 
@@ -154,7 +161,6 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
 // static
 void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   IdentityManagerFactory::GetInstance();
-  AccountTrackerServiceFactory::GetInstance();
   ChromeSigninClientFactory::GetInstance();
 }
 
@@ -171,20 +177,27 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   // Construct the dependencies that IdentityManager will own.
-  auto token_service =
-      ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(context);
+  std::unique_ptr<AccountTrackerService> account_tracker_service =
+      BuildAccountTrackerService(profile);
+
+  std::unique_ptr<ProfileOAuth2TokenService> token_service =
+      ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
+          context, account_tracker_service.get());
 
   auto gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
       token_service.get(), ChromeSigninClientFactory::GetForProfile(profile));
 
   std::unique_ptr<ConcreteSigninManager> signin_manager = BuildSigninManager(
-      profile, token_service.get(), gaia_cookie_manager_service.get());
+      profile, account_tracker_service.get(), token_service.get(),
+      gaia_cookie_manager_service.get());
 
   std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator =
-      BuildPrimaryAccountMutator(profile, signin_manager.get());
+      BuildPrimaryAccountMutator(account_tracker_service.get(),
+                                 signin_manager.get());
 
   std::unique_ptr<identity::AccountsMutator> accounts_mutator =
-      BuildAccountsMutator(profile, token_service.get(), signin_manager.get());
+      BuildAccountsMutator(profile, account_tracker_service.get(),
+                           token_service.get(), signin_manager.get());
 
   auto accounts_cookie_mutator =
       std::make_unique<identity::AccountsCookieMutatorImpl>(
@@ -194,16 +207,13 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       std::make_unique<identity::DiagnosticsProviderImpl>(
           token_service.get(), gaia_cookie_manager_service.get());
 
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-
   std::unique_ptr<AccountFetcherService> account_fetcher_service =
       BuildAccountFetcherService(
           ChromeSigninClientFactory::GetForProfile(profile),
-          token_service.get(), account_tracker_service);
+          token_service.get(), account_tracker_service.get());
 
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
-      account_tracker_service, std::move(token_service),
+      std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service), std::move(signin_manager),
       std::move(account_fetcher_service), std::move(primary_account_mutator),
       std::move(accounts_mutator), std::move(accounts_cookie_mutator),

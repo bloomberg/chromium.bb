@@ -161,8 +161,11 @@ class FileSystemEntryURLLoader
       return;
     }
 
+    // If the requested URL is not commitable in the current process, block the
+    // request.  This prevents one origin from fetching filesystem: resources
+    // belonging to another origin, see https://crbug.com/964245.
     if (params_.render_process_host_id != ChildProcessHost::kInvalidUniqueID &&
-        !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+        !ChildProcessSecurityPolicyImpl::GetInstance()->CanCommitURL(
             params_.render_process_host_id, request.url)) {
       DVLOG(1) << "Denied unauthorized request for "
                << request.url.possibly_invalid_spec();
@@ -336,8 +339,7 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
-    options.capacity_num_bytes =
-        std::max(data_.size(), kDefaultFileSystemUrlPipeSize);
+    options.capacity_num_bytes = kDefaultFileSystemUrlPipeSize;
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
@@ -475,7 +477,7 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
-    options.capacity_num_bytes = remaining_bytes_;
+    options.capacity_num_bytes = kDefaultFileSystemUrlPipeSize;
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
     MojoResult rv =
@@ -493,15 +495,16 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
     data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
         std::move(producer_handle));
 
-    file_data_ =
-        base::MakeRefCounted<net::IOBuffer>(kDefaultFileSystemUrlPipeSize);
+    size_t bytes_to_read = std::min(
+        static_cast<int64_t>(kDefaultFileSystemUrlPipeSize), remaining_bytes_);
+    file_data_ = base::MakeRefCounted<net::IOBuffer>(bytes_to_read);
     ReadMoreFileData();
   }
 
   void ReadMoreFileData() {
     int64_t bytes_to_read = std::min(
         static_cast<int64_t>(kDefaultFileSystemUrlPipeSize), remaining_bytes_);
-    if (!bytes_to_read) {
+    if (bytes_to_read == 0) {
       if (consumer_handle_.is_valid()) {
         // This was an empty file; make sure to call OnReceiveResponse and
         // OnStartLoadingResponseBody regardless.

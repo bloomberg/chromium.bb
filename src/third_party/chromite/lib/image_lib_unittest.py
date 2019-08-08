@@ -304,6 +304,11 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
     expected_content = ('y=2\nx=1\nfoo=bar\nnewkey2=value2\na=3\n'
                         'newkey1=value1\nb=4\n')
     self.assertFileContents(lsb_release_file, expected_content)
+    expected_selinux_label = 'u:object_r:cros_conf_file:s0'
+    actual_selinux_label = cros_build_lib.RunCommand([
+        'getfattr', '-n', 'security.selinux', '--only-values',
+        lsb_release_file], capture_output=True).output
+    self.assertEqual(actual_selinux_label, expected_selinux_label)
 
 
 class BuildImagePathTest(cros_test_lib.MockTempDirTestCase):

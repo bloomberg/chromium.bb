@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
@@ -64,7 +65,7 @@ void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
 void GoogleAssistantHandler::HandleRetrainVoiceModel(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  chromeos::AssistantOptInDialog::Show(ash::mojom::FlowType::SPEAKER_ID_RETRAIN,
+  chromeos::AssistantOptInDialog::Show(ash::FlowType::kSpeakerIdRetrain,
                                        base::DoNothing());
 }
 

@@ -26,8 +26,8 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
@@ -72,29 +72,25 @@ public class SelectableListLayout<E>
         @Override
         public void onChanged() {
             super.onChanged();
-            updateEmptyViewVisibility();
-            if (mAdapter.getItemCount() == 0) {
-                mRecyclerView.setVisibility(View.GONE);
-            } else {
-                mRecyclerView.setVisibility(View.VISIBLE);
-            }
+            updateLayout();
             // At inflation, the RecyclerView is set to gone, and the loading view is visible. As
             // long as the adapter data changes, we show the recycler view, and hide loading view.
             mLoadingView.hideLoadingUI();
-
-            mToolbar.setSearchEnabled(mAdapter.getItemCount() != 0);
         }
 
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
             super.onItemRangeInserted(positionStart, itemCount);
-            updateEmptyViewVisibility();
+            updateLayout();
+            // At inflation, the RecyclerView is set to gone, and the loading view is visible. As
+            // long as the adapter data changes, we show the recycler view, and hide loading view.
+            mLoadingView.hideLoadingUI();
         }
 
         @Override
         public void onItemRangeRemoved(int positionStart, int itemCount) {
             super.onItemRangeRemoved(positionStart, itemCount);
-            updateEmptyViewVisibility();
+            updateLayout();
         }
     };
 
@@ -299,10 +295,12 @@ public class SelectableListLayout<E>
     }
 
     /**
-     * Sets the tab the page including this layout is running on.
+     * Sets the delegate object needed for history navigation logic.
+     * @param delegate {@link HistoryNavigationDelegate} object.
      */
-    public void setTab(Tab tab) {
-        ((HistoryNavigationLayout) findViewById(R.id.list_content)).setTab(tab);
+    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {
+        HistoryNavigationLayout layout = (HistoryNavigationLayout) findViewById(R.id.list_content);
+        layout.setNavigationDelegate(delegate);
     }
 
     /**
@@ -356,6 +354,17 @@ public class SelectableListLayout<E>
         int visible = mAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE;
         mEmptyView.setVisibility(visible);
         mEmptyViewWrapper.setVisibility(visible);
+    }
+
+    private void updateLayout() {
+        updateEmptyViewVisibility();
+        if (mAdapter.getItemCount() == 0) {
+            mRecyclerView.setVisibility(View.GONE);
+        } else {
+            mRecyclerView.setVisibility(View.VISIBLE);
+        }
+
+        mToolbar.setSearchEnabled(mAdapter.getItemCount() != 0);
     }
 
     @VisibleForTesting

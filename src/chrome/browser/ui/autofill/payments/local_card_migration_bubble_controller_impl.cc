@@ -185,7 +185,7 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
 }
 
 void LocalCardMigrationBubbleControllerImpl::UpdateLocalCardMigrationIcon() {
-  ::autofill::UpdateCreditCardIcon(PageActionIconType::kLocalCardMigration,
+  ::autofill::UpdatePageActionIcon(PageActionIconType::kLocalCardMigration,
                                    web_contents());
 }
 

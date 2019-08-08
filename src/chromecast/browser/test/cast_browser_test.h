@@ -49,10 +49,11 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
                      int error_code) override;
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
-  bool OnAddMessageToConsoleReceived(int32_t level,
-                                     const base::string16& message,
-                                     int32_t line_no,
-                                     const base::string16& source_id) override;
+  bool OnAddMessageToConsoleReceived(
+      blink::mojom::ConsoleMessageLevel log_level,
+      const base::string16& message,
+      int32_t line_no,
+      const base::string16& source_id) override;
   void OnVisibilityChange(VisibilityType visibility_type) override;
   bool CanHandleGesture(GestureType gesture_type) override;
   bool ConsumeGesture(GestureType gesture_type) override;

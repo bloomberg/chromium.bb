@@ -123,6 +123,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       const CompositorFrame& frame,
       const gfx::Rect& damage_rect,
       base::TimeTicks expected_display_time) override;
+  void OnSurfacePresented(uint32_t frame_token,
+                          const gfx::PresentationFeedback& feedback) override;
+  bool NeedsSyncTokens() const override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);
@@ -218,8 +221,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool IsRoot() const override;
 
   void UpdateNeedsBeginFramesInternal();
-  Surface* CreateSurface(const SurfaceInfo& surface_info,
-                         bool block_activation_on_parent);
 
   // For the sync API calls, if we are blocking a client callback, runs it once
   // BeginFrame and FrameAck are done.
@@ -232,6 +233,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool ShouldSendBeginFrame(base::TimeTicks timestamp);
 
   bool IsEvicted(const LocalSurfaceId& local_surface_id) const;
+
+  // Checks if any of the pending surfaces should activate now because their
+  // deadline has passed. This is called every BeginFrame.
+  void CheckPendingSurfaces();
 
   mojom::CompositorFrameSinkClient* const client_;
 
@@ -322,6 +327,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   static_assert(kFrameIndexStart > 1,
                 "|last_drawn_frame_index| relies on kFrameIndexStart > 1");
   uint64_t last_drawn_frame_index_ = kFrameIndexStart - 1;
+
+  // The set of surfaces owned by this frame sink that have pending frame.
+  base::flat_set<Surface*> pending_surfaces_;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

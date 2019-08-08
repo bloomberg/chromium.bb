@@ -47,10 +47,6 @@ include_rules = [
   # header required to launch the app.
   "-ash/components",
 
-  # Ash can talk to public interfaces for mini-apps.
-  "+ash/components/shortcut_viewer/public",
-  "+ash/components/tap_visualizer/public",
-
   # Ash sits above content. Exceptions live in //ash/content.
   "-content",
 
@@ -61,6 +57,7 @@ include_rules = [
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/constants",
   # TODO(https://crbug.com/940810): Eliminate this.
+  "+chromeos/dbus/initialize_dbus_client.h",
   "+chromeos/dbus/audio",
   "+chromeos/dbus/hammerd",
   # TODO(https://crbug.com/644348): Eliminate this.
@@ -74,6 +71,8 @@ include_rules = [
   "+chromeos/services/assistant/public" ,
   "+chromeos/services/assistant/test_support",
   "+chromeos/services/multidevice_setup/public",
+  "+chromeos/services/network_config/public",
+  "+chromeos/services/power/public",
   # TODO(https://crbug.com/644361): Eliminate this.
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/strings",
@@ -107,6 +106,9 @@ include_rules = [
 specific_include_rules = {
   "ash_service\.*": [
     "+chromeos/cryptohome",
+  ],
+  "login_types\.*": [
+    "+chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h",
   ],
   "message_center_controller\.*": [
     "+components/arc/common/notifications.mojom.h"

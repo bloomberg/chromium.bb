@@ -147,7 +147,7 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
-ContentLayerClientImpl::TakeDebugInfo(cc::Layer* layer) {
+ContentLayerClientImpl::TakeDebugInfo(const cc::Layer* layer) {
   DCHECK_EQ(layer, cc_picture_layer_.get());
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
   traced_value->SetString("layer_name",
@@ -183,7 +183,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     json->SetArray("displayItems",
                    paint_artifact->GetDisplayItemList().SubsequenceAsJSON(
                        chunk.begin_index, chunk.end_index,
-                       DisplayItemList::kShownOnlyDisplayItemTypes));
+                       DisplayItemList::kShowOnlyDisplayItemTypes));
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
 #endif

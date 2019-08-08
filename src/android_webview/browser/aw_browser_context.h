@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
@@ -187,6 +188,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   std::unique_ptr<AwSafeBrowsingWhitelistManager>
       safe_browsing_whitelist_manager_;
+  SimpleFactoryKey simple_factory_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

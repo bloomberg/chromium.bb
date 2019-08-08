@@ -11,7 +11,9 @@
 
 namespace blink {
 
+class HTMLElement;
 class HTMLVideoElement;
+class PictureInPictureOptions;
 class ScriptPromiseResolver;
 
 // PictureInPictureController allows to know if Picture-in-Picture is allowed
@@ -34,11 +36,6 @@ class CORE_EXPORT PictureInPictureController
   // returns false if PictureInPictureController is not attached to a document.
   static bool IsElementInPictureInPicture(const Element*);
 
-  // Returns whether the given shadow host is currently in Picture-in-Picture.
-  // It returns false if PictureInPictureController is not attached to a
-  // document.
-  static bool IsShadowHostInPictureInPicture(const Element&);
-
   // List of Picture-in-Picture support statuses. If status is kEnabled,
   // Picture-in-Picture is enabled for a document or element, otherwise it is
   // not supported.
@@ -52,17 +49,19 @@ class CORE_EXPORT PictureInPictureController
     kDisabledByAttribute,
   };
 
-  // Enter Picture-in-Picture for a video element and resolve promise if any.
-  virtual void EnterPictureInPicture(HTMLVideoElement*,
+  // Enter Picture-in-Picture for an element with options if any and resolve
+  // promise if any.
+  virtual void EnterPictureInPicture(HTMLElement*,
+                                     PictureInPictureOptions*,
                                      ScriptPromiseResolver*) = 0;
 
   // Exit Picture-in-Picture for a video element and resolve promise if any.
   virtual void ExitPictureInPicture(HTMLVideoElement*,
                                     ScriptPromiseResolver*) = 0;
 
-  // Returns whether a given video element in a document associated with the
+  // Returns whether a given element in a document associated with the
   // controller is allowed to request Picture-in-Picture.
-  virtual Status IsElementAllowed(const HTMLVideoElement&) const = 0;
+  virtual Status IsElementAllowed(const HTMLElement&) const = 0;
 
   // Should be called when an element has exited Picture-in-Picture.
   virtual void OnExitedPictureInPicture(ScriptPromiseResolver*) = 0;
@@ -88,11 +87,6 @@ class CORE_EXPORT PictureInPictureController
   // It is protected so that clients use the static method
   // IsElementInPictureInPicture() that avoids creating the controller.
   virtual bool IsPictureInPictureElement(const Element*) const = 0;
-
-  // Returns whether the given shadow host is currently in Picture-in-Picture.
-  // It is protected so that clients use the static method
-  // IsShadowHostInPictureInPicture() that avoids creating the controller.
-  virtual bool IsPictureInPictureShadowHost(const Element&) const = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureController);
 };

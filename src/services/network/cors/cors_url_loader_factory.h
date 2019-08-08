@@ -6,6 +6,7 @@
 #define SERVICES_NETWORK_CORS_CORS_URL_LOADER_FACTORY_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -69,8 +70,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   void DeleteIfNeeded();
 
-  static bool IsSane(const NetworkContext* context,
-                     const ResourceRequest& request);
+  bool IsSane(const NetworkContext* context, const ResourceRequest& request);
 
   mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
 
@@ -79,9 +79,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   NetworkContext* const context_ = nullptr;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
+  // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
-
-  const uint32_t process_id_;
+  const uint32_t process_id_ = mojom::kInvalidProcessId;
+  const base::Optional<url::Origin> request_initiator_site_lock_;
 
   // Relative order of |network_loader_factory_| and |loaders_| matters -
   // URLLoaderFactory needs to live longer than URLLoaders created using the

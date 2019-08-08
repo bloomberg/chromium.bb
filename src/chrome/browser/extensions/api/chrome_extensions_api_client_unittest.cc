@@ -38,23 +38,31 @@ TEST_F(ChromeExtensionsAPIClientTest, ShouldHideResponseHeader) {
 TEST_F(ChromeExtensionsAPIClientTest, ShouldHideBrowserNetworkRequest) {
   ChromeExtensionsAPIClient client;
 
+  auto create_params = [](content::ResourceType type) {
+    WebRequestInfoInitParams request_params;
+    request_params.url = GURL("https://example.com/script.js");
+    request_params.initiator =
+        url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
+    request_params.render_process_id = -1;
+    request_params.type = type;
+    return request_params;
+  };
+
   // Requests made by the browser with chrome://newtab as its initiator should
   // not be visible to extensions.
-  WebRequestInfo request;
-  request.url = GURL("https://example.com/script.js");
-  request.initiator = url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
-  request.render_process_id = -1;
-  request.type = content::ResourceType::kScript;
-  EXPECT_TRUE(client.ShouldHideBrowserNetworkRequest(request));
+  EXPECT_TRUE(client.ShouldHideBrowserNetworkRequest(
+      WebRequestInfo(create_params(content::ResourceType::kScript))));
 
   // Main frame requests should always be visible to extensions.
-  request.type = content::ResourceType::kMainFrame;
-  EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(request));
+  EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(
+      WebRequestInfo(create_params(content::ResourceType::kMainFrame))));
 
   // Similar requests made by the renderer should be visible to extensions.
-  request.type = content::ResourceType::kScript;
-  request.render_process_id = 2;
-  EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(request));
+  WebRequestInfoInitParams params =
+      create_params(content::ResourceType::kScript);
+  params.render_process_id = 2;
+  EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(
+      WebRequestInfo(std::move(params))));
 }
 
 }  // namespace extensions

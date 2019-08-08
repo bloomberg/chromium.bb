@@ -8,7 +8,6 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_password_view.h"
-#include "ash/public/interfaces/login_user_info.mojom.h"
 
 namespace ui {
 namespace test {
@@ -30,17 +29,17 @@ LoginAuthUserView::TestApi MakeLoginAuthTestApi(LockContentsView* view,
 LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view,
                                                     AuthTarget auth);
 
-// Utility method to create a new |mojom::LoginUserInfoPtr| instance
+// Utility method to create a new |LoginUserInfo| instance
 // for regular user.
-mojom::LoginUserInfoPtr CreateUser(const std::string& email);
+LoginUserInfo CreateUser(const std::string& email);
 
-// Utility method to create a new |mojom::LoginUserInfoPtr| instance for child
+// Utility method to create a new |LoginUserInfo| instance for child
 // user.
-mojom::LoginUserInfoPtr CreateChildUser(const std::string& email);
+LoginUserInfo CreateChildUser(const std::string& email);
 
-// Utility method to create a new |mojom::LoginUserInfoPtr| instance for
+// Utility method to create a new |LoginUserInfo| instance for
 // public account user.
-mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email);
+LoginUserInfo CreatePublicAccountUser(const std::string& email);
 
 // Returns true if |view| or any child of it has focus.
 bool HasFocusInAnyChildView(const views::View* view);

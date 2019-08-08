@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_source.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -35,7 +36,7 @@ class SourceListDirectiveTest : public testing::Test {
     KURL secure_url("https://example.test/image.png");
     scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));
-    document = Document::CreateForTest();
+    document = MakeGarbageCollected<Document>();
     document->SetSecurityOrigin(secure_origin);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
   }
@@ -44,7 +45,7 @@ class SourceListDirectiveTest : public testing::Test {
     KURL secure_url(origin);
     scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));
-    Document* document = Document::CreateForTest();
+    auto* document = MakeGarbageCollected<Document>();
     document->SetSecurityOrigin(secure_origin);
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());

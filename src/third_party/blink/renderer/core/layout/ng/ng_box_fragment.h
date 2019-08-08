@@ -38,16 +38,23 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                                       const NGConstraintSpace&) const;
 
   NGBoxStrut Borders() const {
-    const auto& physical_fragment =
+    const NGPhysicalBoxFragment& physical_box_fragment =
         To<NGPhysicalBoxFragment>(physical_fragment_);
-    return physical_fragment.Borders().ConvertToLogical(GetWritingMode(),
-                                                        direction_);
+    return physical_box_fragment.Borders().ConvertToLogical(GetWritingMode(),
+                                                            direction_);
   }
   NGBoxStrut Padding() const {
-    const auto& physical_fragment =
+    const NGPhysicalBoxFragment& physical_box_fragment =
         To<NGPhysicalBoxFragment>(physical_fragment_);
-    return physical_fragment.Padding().ConvertToLogical(GetWritingMode(),
-                                                        direction_);
+    return physical_box_fragment.Padding().ConvertToLogical(GetWritingMode(),
+                                                            direction_);
+  }
+
+  NGBorderEdges BorderEdges() const {
+    const NGPhysicalBoxFragment& physical_box_fragment =
+        To<NGPhysicalBoxFragment>(physical_fragment_);
+    return NGBorderEdges::FromPhysical(physical_box_fragment.BorderEdges(),
+                                       GetWritingMode());
   }
 
  protected:

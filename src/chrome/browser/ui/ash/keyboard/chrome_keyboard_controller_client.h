@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "ash/public/interfaces/keyboard_config.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -18,7 +19,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/keyboard/public/keyboard_config.mojom.h"
 #include "url/gurl.h"
 
 class ChromeKeyboardWebContents;
@@ -160,8 +160,7 @@ class ChromeKeyboardControllerClient
   void OnLoadKeyboardContentsRequested() override;
   void OnKeyboardUIDestroyed() override;
 
-  void OnKeyboardContentsLoaded(const base::UnguessableToken& token,
-                                const gfx::Size& size);
+  void OnKeyboardContentsLoaded(const gfx::Size& size);
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;

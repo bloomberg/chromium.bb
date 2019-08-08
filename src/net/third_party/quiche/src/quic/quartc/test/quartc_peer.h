@@ -39,7 +39,6 @@ struct ReceivedMessage {
 // datagram frames.  It also adjusts the bitrate of each source to fit within
 // the bandwidth available to the session.
 class QuartcPeer : public QuartcEndpoint::Delegate,
-                   public QuartcSession::Delegate,
                    public QuartcDataSource::Delegate {
  public:
   // Creates a QuartcPeer that sends data from a set of sources described by
@@ -48,6 +47,7 @@ class QuartcPeer : public QuartcEndpoint::Delegate,
   QuartcPeer(const QuicClock* clock,
              QuicAlarmFactory* alarm_factory,
              QuicRandom* random,
+             QuicBufferAllocator* buffer_allocator,
              const std::vector<QuartcDataSource::Config>& configs);
   QuartcPeer(QuartcPeer&) = delete;
   QuartcPeer& operator=(QuartcPeer&) = delete;
@@ -72,8 +72,6 @@ class QuartcPeer : public QuartcEndpoint::Delegate,
 
   // QuartcEndpoint::Delegate overrides.
   void OnSessionCreated(QuartcSession* session) override;
-  void OnConnectError(QuicErrorCode error,
-                      const std::string& error_details) override;
 
   // QuartcSession::Delegate overrides.
   void OnCryptoHandshakeComplete() override;
@@ -86,6 +84,7 @@ class QuartcPeer : public QuartcEndpoint::Delegate,
                           const std::string& error_details,
                           ConnectionCloseSource source) override;
   void OnMessageReceived(QuicStringPiece message) override;
+  void OnMessageSent(int64_t datagram_id) override {}
 
   // QuartcDataSource::Delegate overrides.
   void OnDataProduced(const char* data, size_t length) override;
@@ -94,6 +93,7 @@ class QuartcPeer : public QuartcEndpoint::Delegate,
   const QuicClock* clock_;
   QuicAlarmFactory* alarm_factory_;
   QuicRandom* random_;
+  QuicBufferAllocator* buffer_allocator_;
 
   // Whether the peer is currently sending.
   bool enabled_;

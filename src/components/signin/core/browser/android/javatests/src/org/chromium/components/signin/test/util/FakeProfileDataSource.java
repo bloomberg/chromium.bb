@@ -22,7 +22,7 @@ public class FakeProfileDataSource implements ProfileDataSource {
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final Map<String, ProfileData> mProfileDataMap = new HashMap<>();
 
-    FakeProfileDataSource() {}
+    public FakeProfileDataSource() {}
 
     @Override
     public Map<String, ProfileData> getProfileDataMap() {

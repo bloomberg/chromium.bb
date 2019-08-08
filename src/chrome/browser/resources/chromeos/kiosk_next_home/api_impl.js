@@ -68,6 +68,9 @@ class KioskNextHomeBridge {
     /** @private @const */
     this.identityAccessorProxy_ = new identity.mojom.IdentityAccessorProxy();
     /** @private @const */
+    this.identityControllerProxy_ =
+        new chromeos.kioskNextHome.mojom.IdentityControllerProxy();
+    /** @private @const */
     this.appControllerProxy_ =
         new chromeos.kioskNextHome.mojom.AppControllerProxy();
     /** @private @const */
@@ -78,6 +81,8 @@ class KioskNextHomeBridge {
         chromeos.kioskNextHome.mojom.KioskNextHomeInterfaceBroker.getProxy();
     kioskNextHomeInterfaceBrokerProxy.getIdentityAccessor(
         this.identityAccessorProxy_.$.createRequest());
+    kioskNextHomeInterfaceBrokerProxy.getIdentityController(
+        this.identityControllerProxy_.$.createRequest());
     kioskNextHomeInterfaceBrokerProxy.getAppController(
         this.appControllerProxy_.$.createRequest());
 
@@ -107,6 +112,18 @@ class KioskNextHomeBridge {
   /** @override */
   addListener(listener) {
     this.listeners_.push(listener);
+  }
+
+  /** @override */
+  getUserGivenName() {
+    return this.identityControllerProxy_.getUserInfo().then(
+        result => result.userInfo.givenName);
+  }
+
+  /** @override */
+  getUserDisplayName() {
+    return this.identityControllerProxy_.getUserInfo().then(
+        result => result.userInfo.displayName);
   }
 
   /** @override */
@@ -154,8 +171,8 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
-  launchHomeUrl(suffix) {
-    return this.appControllerProxy_.launchHomeUrl(suffix).then(result => {
+  launchIntent(intent) {
+    return this.appControllerProxy_.launchIntent(intent).then(result => {
       if (!result.launched) {
         throw result.errorMessage;
       }

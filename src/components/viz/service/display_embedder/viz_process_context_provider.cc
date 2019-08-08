@@ -85,8 +85,6 @@ gpu::ContextCreationAttribs CreateAttributes(
   }
 
   attributes.enable_swap_timestamps_if_supported = true;
-  attributes.backed_by_surface_texture =
-      renderer_settings.backed_by_surface_texture;
 #endif  // defined(OS_ANDROID)
 
   return attributes;
@@ -209,9 +207,16 @@ void VizProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {
 }
 
 void VizProcessContextProvider::SetUpdateVSyncParametersCallback(
-    const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
-        callback) {
-  command_buffer_->SetUpdateVSyncParametersCallback(callback);
+    UpdateVSyncParametersCallback callback) {
+  command_buffer_->SetUpdateVSyncParametersCallback(std::move(callback));
+}
+
+void VizProcessContextProvider::SetGpuVSyncCallback(GpuVSyncCallback callback) {
+  command_buffer_->SetGpuVSyncCallback(std::move(callback));
+}
+
+void VizProcessContextProvider::SetGpuVSyncEnabled(bool enabled) {
+  command_buffer_->SetGpuVSyncEnabled(enabled);
 }
 
 bool VizProcessContextProvider::UseRGB565PixelFormat() const {
@@ -237,8 +242,7 @@ void VizProcessContextProvider::InitializeContext(
       GURL("chrome://gpu/VizProcessContextProvider::InitializeContext"));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
-      /*share_command_buffer=*/nullptr, gpu_memory_buffer_manager,
-      image_factory, gpu_channel_manager_delegate,
+      gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
       base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
   if (context_result_ != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
@@ -303,6 +307,10 @@ bool VizProcessContextProvider::OnMemoryDump(
         gles2_implementation_->ShareGroupTracingGUID());
   }
   return true;
+}
+
+base::ScopedClosureRunner VizProcessContextProvider::GetCacheBackBufferCb() {
+  return command_buffer_->GetCacheBackBufferCb();
 }
 
 }  // namespace viz

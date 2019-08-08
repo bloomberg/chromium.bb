@@ -36,13 +36,13 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_tree_host_lookup.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
-#include "services/ws/public/mojom/constants.mojom.h"
-#include "services/ws/public/mojom/event_injector.mojom.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -286,15 +286,11 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
           static_cast<ui::KeyboardCode>(key_data->key_code),
           static_cast<ui::DomCode>(0), modifiers);
 
-  ws::mojom::EventInjectorPtr event_injector_ptr;
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(ws::mojom::kServiceName,
-                                            &event_injector_ptr);
-  event_injector_ptr->InjectEventNoAckNoRewriters(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      std::move(synthetic_key_event));
-
+  auto* host = ash::GetWindowTreeHostForDisplay(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  DCHECK(host);
+  // This skips rewriters.
+  host->DeliverEventToSink(synthetic_key_event.get());
   return RespondNow(NoArguments());
 }
 
@@ -354,13 +350,15 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
                                        ui::EventTimeForNow(), flags,
                                        flags /* changed_button_flags */);
 
-  ws::mojom::EventInjectorPtr event_injector_ptr;
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(ws::mojom::kServiceName,
-                                            &event_injector_ptr);
-  event_injector_ptr->InjectEventNoAckNoRewriters(
-      display.id(), std::move(synthetic_mouse_event));
+  auto* host = ash::GetWindowTreeHostForDisplay(display.id());
+  DCHECK(host);
+  // Transforming the coordinate to the root will apply the screen scale factor
+  // to the event's location and also the screen rotation degree.
+  synthetic_mouse_event->UpdateForRootTransform(
+      host->GetRootTransform(),
+      host->GetRootTransformForLocalEventCoordinates());
+  // This skips rewriters.
+  host->DeliverEventToSink(synthetic_mouse_event.get());
 
   return RespondNow(NoArguments());
 }

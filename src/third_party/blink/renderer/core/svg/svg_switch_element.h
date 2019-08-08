@@ -29,8 +29,6 @@ class SVGSwitchElement final : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGSwitchElement);
-
   explicit SVGSwitchElement(Document&);
 
  private:

@@ -60,7 +60,7 @@ void Link::PaintFocusRing(gfx::Canvas* canvas) const {
 gfx::Insets Link::GetInsets() const {
   gfx::Insets insets = Label::GetInsets();
   if (GetFocusStyle() == FocusStyle::RING &&
-      focus_behavior() != FocusBehavior::NEVER) {
+      GetFocusBehavior() != FocusBehavior::NEVER) {
     DCHECK(!text().empty());
     insets += gfx::Insets(kFocusBorderPadding);
   }
@@ -72,7 +72,7 @@ const char* Link::GetClassName() const {
 }
 
 gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
-  if (!enabled())
+  if (!GetEnabled())
     return gfx::kNullCursor;
   return GetNativeHandCursor();
 }
@@ -84,7 +84,7 @@ bool Link::CanProcessEventsWithinSubtree() const {
 }
 
 bool Link::OnMousePressed(const ui::MouseEvent& event) {
-  if (!enabled() ||
+  if (!GetEnabled() ||
       (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
   SetPressed(true);
@@ -92,7 +92,7 @@ bool Link::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool Link::OnMouseDragged(const ui::MouseEvent& event) {
-  SetPressed(enabled() &&
+  SetPressed(GetEnabled() &&
              (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
              HitTestPoint(event.location()));
   return true;
@@ -102,7 +102,7 @@ void Link::OnMouseReleased(const ui::MouseEvent& event) {
   // Change the highlight first just in case this instance is deleted
   // while calling the controller
   OnMouseCaptureLost();
-  if (enabled() &&
+  if (GetEnabled() &&
       (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
       HitTestPoint(event.location())) {
     // Focus the link on click.
@@ -137,7 +137,7 @@ bool Link::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void Link::OnGestureEvent(ui::GestureEvent* event) {
-  if (!enabled())
+  if (!GetEnabled())
     return;
 
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
@@ -190,8 +190,8 @@ void Link::SetText(const base::string16& text) {
   ConfigureFocus();
 }
 
-void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  Label::OnNativeThemeChanged(theme);
+void Link::OnThemeChanged() {
+  Label::OnThemeChanged();
   Label::SetEnabledColor(GetColor());
 }
 
@@ -243,8 +243,9 @@ void Link::RecalculateFont() {
   const int style = font_list().GetFontStyle();
   const bool underline =
       underline_ || (HasFocus() && GetFocusStyle() == FocusStyle::UNDERLINE);
-  const int intended_style = (enabled() && underline) ?
-      (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
+  const int intended_style = (GetEnabled() && underline)
+                                 ? (style | gfx::Font::UNDERLINE)
+                                 : (style & ~gfx::Font::UNDERLINE);
 
   if (style != intended_style)
     Label::SetFontList(font_list().DeriveWithStyle(intended_style));
@@ -267,7 +268,7 @@ SkColor Link::GetColor() {
   // TODO(tapted): Use style::GetColor().
   const ui::NativeTheme* theme = GetNativeTheme();
   DCHECK(theme);
-  if (!enabled())
+  if (!GetEnabled())
     return theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled);
 
   if (requested_enabled_color_set_)

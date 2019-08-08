@@ -6,8 +6,10 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
+#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_window_visibility_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
@@ -54,6 +57,10 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -85,7 +92,6 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
@@ -94,7 +100,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace em = enterprise_management;
 
@@ -592,7 +597,7 @@ class KioskTest : public OobeBaseTest {
     if (wizard_controller)
       wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
-    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
   }
 
   void PrepareAppLaunch() {
@@ -662,12 +667,7 @@ class KioskTest : public OobeBaseTest {
         apps::AppWindowWaiter(app_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
-    // Login screen should be gone or fading out.
-    LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
-    EXPECT_TRUE(
-        login_display_host == NULL ||
-        login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() ==
-            0.0f);
+    OobeWindowVisibilityWaiter(false /*target_visibility*/).Wait();
 
     // Terminate the app.
     if (terminate_app)
@@ -738,7 +738,7 @@ class KioskTest : public OobeBaseTest {
     // Start app launch and wait for network connectivity timeout.
     StartAppLaunchFromLoginScreen(
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
-    OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+    OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);
     splash_waiter.Wait();
     WaitForAppLaunchNetworkTimeout();
 
@@ -757,7 +757,7 @@ class KioskTest : public OobeBaseTest {
     test::OobeJS().ExpectTrue("$('pod-row').alwaysFocusSinglePod");
 
     // A network error screen should be shown after authenticating.
-    OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
+    OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
     static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
         ->OnOwnerSigninSuccess();
     error_screen_waiter.Wait();
@@ -967,11 +967,11 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
-  OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);
   splash_waiter.Wait();
 
   // A network error screen should be shown after authenticating.
-  OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
+  OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
   // Simulate Ctrl+Alt+N accelerator.
   GetLoginUI()->CallJavascriptFunctionUnsafe(
       "cr.ui.Oobe.handleAccelerator", base::Value("app_launch_network_config"));
@@ -997,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
-  OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);
   splash_waiter.Wait();
   WaitForAppLaunchNetworkTimeout();
 
@@ -1017,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
-  OobeScreenWaiter app_splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter app_splash_waiter(AppLaunchSplashScreenView::kScreenId);
   app_splash_waiter.set_no_assert_last_screen();
   app_splash_waiter.Wait();
 
@@ -1025,17 +1025,18 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
 
   // Network error should show up automatically since this test does not
   // require owner auth to configure network.
-  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
   SimulateNetworkOnline();
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
+// TODO(https://crbug.com/964333): Flakily seg faults.
+IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
-  OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
   splash_waiter.Wait();
@@ -1087,7 +1088,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
 
   // Start login screen after configuring auto launch app since the warning
   // is triggered when switching to login screen.
-  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
@@ -1120,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
 
   // Start login screen after configuring auto launch app since the warning
   // is triggered when switching to login screen.
-  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
@@ -1163,7 +1164,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
 
@@ -1199,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
 
@@ -1232,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
 
@@ -1252,7 +1253,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
 
   // Show signin screen again.
   LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Show kiosk enable screen again.
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
@@ -1315,7 +1316,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_NoConsumerAutoLaunchWhenUntrusted) {
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
-  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
   content::WindowedNotificationObserver(
@@ -1330,7 +1331,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_NoConsumerAutoLaunchWhenUntrusted) {
       CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Check that the attempt to auto-launch a kiosk app fails with an error.
-  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 }
 
 // Verifies available volumes for kiosk apps in kiosk session.
@@ -2203,6 +2204,7 @@ class KioskEnterpriseTest : public KioskTest {
  protected:
   KioskEnterpriseTest() { set_use_consumer_kiosk_mode(false); }
 
+  // KioskTest:
   void SetUpInProcessBrowserTestFixture() override {
     settings_helper_.SetCurrentUserIsOwner(false);
 
@@ -2474,20 +2476,19 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
 // Specialized test fixture for testing kiosk mode on the
 // hidden WebUI initialization flow for slow hardware.
 class KioskHiddenWebUITest : public KioskTest,
-                             public ash::mojom::WallpaperObserver {
+                             public ash::WallpaperControllerObserver {
  public:
-  KioskHiddenWebUITest() : wallpaper_loaded_(false), observer_binding_(this) {}
+  KioskHiddenWebUITest() = default;
 
+  // KioskTest:
   void SetUpOnMainThread() override {
     LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
     KioskTest::SetUpOnMainThread();
-    ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
+    WallpaperControllerClient::Get()->AddObserver(this);
   }
-
   void TearDownOnMainThread() override {
+    WallpaperControllerClient::Get()->RemoveObserver(this);
     KioskTest::TearDownOnMainThread();
   }
 
@@ -2500,24 +2501,16 @@ class KioskHiddenWebUITest : public KioskTest,
 
   bool wallpaper_loaded() const { return wallpaper_loaded_; }
 
-  // ash::mojom::WallpaperObserver:
-  void OnWallpaperChanged(uint32_t image_id) override {
+  // ash::WallpaperControllerObserver:
+  void OnWallpaperChanged() override {
     wallpaper_loaded_ = true;
     if (runner_.get())
       runner_->Quit();
   }
 
-  void OnWallpaperColorsChanged(
-      const std::vector<SkColor>& prominent_colors) override {}
-
-  void OnWallpaperBlurChanged(bool blurred) override {}
-
-  bool wallpaper_loaded_;
-  scoped_refptr<content::MessageLoopRunner> runner_;
-
  private:
-  // The binding this instance uses to implement ash::mojom::WallpaperObserver.
-  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
+  bool wallpaper_loaded_ = false;
+  scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
 };
@@ -2536,7 +2529,7 @@ IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
 
   // Start login screen after configuring auto launch app since the warning
   // is triggered when switching to login screen.
-  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 

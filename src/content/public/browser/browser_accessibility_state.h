@@ -31,7 +31,7 @@ class CONTENT_EXPORT BrowserAccessibilityState {
 
   virtual bool IsRendererAccessibilityEnabled() = 0;
 
-  virtual ui::AXMode GetAccessibilityMode() const = 0;
+  virtual ui::AXMode GetAccessibilityMode() = 0;
 
   // Adds the given accessibility mode flags to the current accessibility
   // mode bitmap.

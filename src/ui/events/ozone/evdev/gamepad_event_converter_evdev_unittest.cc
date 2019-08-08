@@ -158,16 +158,29 @@ TEST_F(GamepadEventConverterEvdevTest, XboxGamepadEvents) {
   clock.SetNowSeconds(1493076833);
 
   struct ExpectedEvent expected_events[] = {
-      {GamepadEventType::AXIS, 0, 0.583062}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::AXIS, 0, 0.547234}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::AXIS, 0, 0.530968}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 4, 1},      {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 4, 0},      {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 3, 1},      {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 3, 0},      {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 1, 1},      {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 1, 0},      {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 2, 1},      {GamepadEventType::FRAME, 0, 0}};
+      {GamepadEventType::AXIS, 4, 19105},
+      {GamepadEventType::AXIS, 0, 0.583062},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 17931},
+      {GamepadEventType::AXIS, 0, 0.547234},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 17398},
+      {GamepadEventType::AXIS, 0, 0.530968},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 4, 1},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 4, 0},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 3, 1},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 3, 0},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 1, 1},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 1, 0},
+      {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::BUTTON, 2, 1},
+      {GamepadEventType::FRAME, 0, 0}};
 
   for (unsigned i = 0; i < base::size(mock_kernel_queue); ++i) {
     dev->ProcessEvent(mock_kernel_queue[i]);
@@ -176,9 +189,12 @@ TEST_F(GamepadEventConverterEvdevTest, XboxGamepadEvents) {
   for (unsigned i = 0; i < observer.events.size(); ++i) {
     EXPECT_EQ(observer.events[i].type(), expected_events[i].type);
     EXPECT_EQ(observer.events[i].code(), expected_events[i].code);
-    double d = observer.events[i].value() - expected_events[i].value;
-    d = d > 0 ? d : -d;
-    EXPECT_LT(d, axis_delta);
+    if (observer.events[i].type() != GamepadEventType::AXIS ||
+        observer.events[i].code() != WG_ABS_COUNT) {
+      double d = observer.events[i].value() - expected_events[i].value;
+      d = d > 0 ? d : -d;
+      EXPECT_LT(d, axis_delta);
+    }
   }
 }
 
@@ -295,15 +311,28 @@ TEST_F(GamepadEventConverterEvdevTest, iBuffaloGamepadEvents) {
       {GamepadEventType::BUTTON, 4, 0},  {GamepadEventType::FRAME, 0, 0},
       {GamepadEventType::BUTTON, 5, 1},  {GamepadEventType::FRAME, 0, 0},
       {GamepadEventType::BUTTON, 5, 0},  {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 13, 1}, {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 128},  {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 127},  {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 128},  {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 255},  {GamepadEventType::BUTTON, 13, 1},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 128},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 127},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 128},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 127},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 128},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 255},
       {GamepadEventType::BUTTON, 15, 1}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 13, 0}, {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 128},  {GamepadEventType::BUTTON, 13, 0},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 0},
       {GamepadEventType::BUTTON, 12, 1}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 15, 0}, {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 128},  {GamepadEventType::BUTTON, 15, 0},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 255},
       {GamepadEventType::BUTTON, 15, 1}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 15, 0}, {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 128},  {GamepadEventType::BUTTON, 15, 0},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 0},
       {GamepadEventType::BUTTON, 14, 1}, {GamepadEventType::FRAME, 0, 0},
-      {GamepadEventType::BUTTON, 12, 0}, {GamepadEventType::FRAME, 0, 0},
+      {GamepadEventType::AXIS, 4, 128},  {GamepadEventType::BUTTON, 12, 0},
+      {GamepadEventType::FRAME, 0, 0},   {GamepadEventType::AXIS, 4, 255},
       {GamepadEventType::BUTTON, 13, 1}, {GamepadEventType::FRAME, 0, 0}};
 
   for (unsigned i = 0; i < base::size(mock_kernel_queue); ++i) {
@@ -313,9 +342,12 @@ TEST_F(GamepadEventConverterEvdevTest, iBuffaloGamepadEvents) {
   for (unsigned i = 0; i < observer.events.size(); ++i) {
     EXPECT_EQ(observer.events[i].type(), expected_events[i].type);
     EXPECT_EQ(observer.events[i].code(), expected_events[i].code);
-    double d = observer.events[i].value() - expected_events[i].value;
-    d = d > 0 ? d : -d;
-    EXPECT_LT(d, axis_delta);
+    if (observer.events[i].type() != GamepadEventType::AXIS ||
+        observer.events[i].code() != WG_ABS_COUNT) {
+      double d = observer.events[i].value() - expected_events[i].value;
+      d = d > 0 ? d : -d;
+      EXPECT_LT(d, axis_delta);
+    }
   }
 }
 }  // namespace ui

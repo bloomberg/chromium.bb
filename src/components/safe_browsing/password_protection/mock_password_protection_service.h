@@ -50,8 +50,11 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                void(content::WebContents*,
                     const std::string&,
                     ReusedPasswordType));
-  MOCK_METHOD3(MaybeReportPasswordReuseDetected,
-               void(content::WebContents*, ReusedPasswordType, bool));
+  MOCK_METHOD4(MaybeReportPasswordReuseDetected,
+               void(content::WebContents*,
+                    const std::string&,
+                    ReusedPasswordType,
+                    bool));
   MOCK_METHOD3(UpdateSecurityState,
                void(safe_browsing::SBThreatType,
                     ReusedPasswordType,
@@ -71,9 +74,10 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD4(
       MaybeStartPasswordFieldOnFocusRequest,
       void(content::WebContents*, const GURL&, const GURL&, const GURL&));
-  MOCK_METHOD5(MaybeStartProtectedPasswordEntryRequest,
+  MOCK_METHOD6(MaybeStartProtectedPasswordEntryRequest,
                void(content::WebContents*,
                     const GURL&,
+                    const std::string&,
                     ReusedPasswordType,
                     const std::vector<std::string>&,
                     bool));

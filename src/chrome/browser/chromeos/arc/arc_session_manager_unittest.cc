@@ -25,19 +25,17 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -1214,8 +1212,7 @@ class ArcSessionOobeOptInNegotiatorTest
 
     if (IsManagedUser()) {
       policy::ProfilePolicyConnector* const connector =
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-              profile());
+          profile()->GetProfilePolicyConnector();
       connector->OverrideIsManagedForTesting(true);
 
       profile()->GetTestingPrefService()->SetManagedPref(
@@ -1436,8 +1433,7 @@ class ArcSessionRetryTest
     if (GetParam().negotiation ==
         ArcSessionRetryTestParam::Negotiation::SKIPPED) {
       policy::ProfilePolicyConnector* const connector =
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-              profile());
+          profile()->GetProfilePolicyConnector();
       connector->OverrideIsManagedForTesting(true);
 
       profile()->GetTestingPrefService()->SetManagedPref(

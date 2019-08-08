@@ -9,7 +9,9 @@
 
 namespace content {
 
-class WebThemeEngineImpl : public blink::WebThemeEngine {
+class WebThemeEngineMac : public blink::WebThemeEngine {
+ public:
+  ~WebThemeEngineMac() override {}
 };
 
 }  // namespace content

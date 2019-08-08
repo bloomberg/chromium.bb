@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
@@ -89,18 +90,20 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
-      CrossThreadBind(&ThreadedWorkletObjectProxy::FetchAndInvokeScript,
-                      CrossThreadUnretained(worklet_object_proxy_.get()),
-                      module_url_record, credentials_mode,
-                      WTF::Passed(outside_settings_object.CopyData()),
-                      std::move(outside_settings_task_runner),
-                      WrapCrossThreadPersistent(pending_tasks),
-                      CrossThreadUnretained(GetWorkerThread())));
+      CrossThreadBindOnce(
+          &ThreadedWorkletObjectProxy::FetchAndInvokeScript,
+          CrossThreadUnretained(worklet_object_proxy_.get()), module_url_record,
+          credentials_mode, WTF::Passed(outside_settings_object.CopyData()),
+          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          std::move(outside_settings_task_runner),
+          WrapCrossThreadPersistent(pending_tasks),
+          CrossThreadUnretained(GetWorkerThread())));
 }
 
 void ThreadedWorkletMessagingProxy::WorkletObjectDestroyed() {

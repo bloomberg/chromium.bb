@@ -8,7 +8,8 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
-#import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/deprecated/crw_native_content.h"
+#import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,17 +21,18 @@
 // Redefine properties as readwrite.
 @property(nonatomic, strong, readwrite)
     CRWWebViewContentView* webViewContentView;
-@property(nonatomic, strong, readwrite) id<CRWNativeContent> nativeController;
 @property(nonatomic, strong, readwrite) CRWContentView* transientContentView;
 
 // Convenience getter for the proxy object.
 @property(nonatomic, weak, readonly) CRWWebViewProxyImpl* contentViewProxy;
 
+// The native controller whose content is being displayed.
+@property(nonatomic, strong, readonly) id<CRWNativeContent> nativeController;
+
 @end
 
 @implementation CRWWebControllerContainerView
 @synthesize webViewContentView = _webViewContentView;
-@synthesize nativeController = _nativeController;
 @synthesize transientContentView = _transientContentView;
 @synthesize delegate = _delegate;
 
@@ -63,26 +65,17 @@
 
 #pragma mark Accessors
 
+- (id<CRWNativeContent>)nativeController {
+  return
+      [[self.delegate containerViewNativeContentHolder:self] nativeController];
+}
+
 - (void)setWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   if (![_webViewContentView isEqual:webViewContentView]) {
     [_webViewContentView removeFromSuperview];
     _webViewContentView = webViewContentView;
     [_webViewContentView setFrame:self.bounds];
     [self addSubview:_webViewContentView];
-  }
-}
-
-- (void)setNativeController:(id<CRWNativeContent>)nativeController {
-  if (![_nativeController isEqual:nativeController]) {
-    __weak id oldController = _nativeController;
-    if ([oldController respondsToSelector:@selector(willBeDismissed)]) {
-      [oldController willBeDismissed];
-    }
-    [[oldController view] removeFromSuperview];
-    _nativeController = nativeController;
-    // TODO(crbug.com/503297): Re-enable this DCHECK once native controller
-    // leaks are fixed.
-    //    DCHECK(!oldController);
   }
 }
 
@@ -173,9 +166,21 @@
 
 #pragma mark Content Setters
 
+- (void)resetNativeContent:(id<CRWNativeContent>)nativeControllerToReset {
+  __weak id oldController = nativeControllerToReset;
+  if ([oldController respondsToSelector:@selector(willBeDismissed)]) {
+    [oldController willBeDismissed];
+  }
+  [[oldController view] removeFromSuperview];
+  // TODO(crbug.com/503297): Re-enable this DCHECK once native controller
+  // leaks are fixed.
+  //    DCHECK(!oldController);
+}
+
 - (void)resetContent {
   self.webViewContentView = nil;
-  self.nativeController = nil;
+  [self resetNativeContent:self.nativeController];
+  [self.delegate containerViewResetNativeController:self];
   self.transientContentView = nil;
   self.contentViewProxy.contentView = nil;
 }
@@ -183,17 +188,20 @@
 - (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   DCHECK(webViewContentView);
   self.webViewContentView = webViewContentView;
-  self.nativeController = nil;
+  [self resetNativeContent:self.nativeController];
+  [self.delegate containerViewResetNativeController:self];
   self.transientContentView = nil;
   self.contentViewProxy.contentView = self.webViewContentView;
   [self updateWebViewContentViewForContainerWindow:self.window];
   [self setNeedsLayout];
 }
 
-- (void)displayNativeContent:(id<CRWNativeContent>)nativeController {
-  DCHECK(nativeController);
+- (void)nativeContentDidChange:(id<CRWNativeContent>)previousNativeController {
+  DCHECK(self.nativeController);
   self.webViewContentView = nil;
-  self.nativeController = nativeController;
+  if (![self.nativeController isEqual:previousNativeController]) {
+    [self resetNativeContent:previousNativeController];
+  }
   self.transientContentView = nil;
   self.contentViewProxy.contentView = nil;
   [self setNeedsLayout];

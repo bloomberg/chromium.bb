@@ -232,7 +232,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
   if ((state == shill::kStateIdle) || (state == shill::kStateFailure) ||
       (state == ""))
     return arc::mojom::ConnectionStateType::NOT_CONNECTED;
-  if (state == shill::kStatePortal)
+  if (chromeos::NetworkState::StateIsPortalled(state))
     return arc::mojom::ConnectionStateType::PORTAL;
   if (state == shill::kStateOnline)
     return arc::mojom::ConnectionStateType::ONLINE;
@@ -264,8 +264,6 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
     DCHECK(wifi_dict);
     mojo->wifi = TranslateONCWifi(wifi_dict);
     mojo->tethering_client_state = GetWifiTetheringClientState(wifi_dict);
-  } else if (type == onc::network_type::kWimax) {
-    mojo->type = arc::mojom::NetworkType::WIMAX;
   } else {
     NOTREACHED() << "Unknown network type: " << type;
   }

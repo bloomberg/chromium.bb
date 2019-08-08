@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/unified_consent/feature.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -110,18 +111,23 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 - (void)dismissWithSignedIn:(BOOL)signedIn
        showAccountsSettings:(BOOL)showAccountsSettings {
   DCHECK(self.presentingViewController);
-  __weak UIViewController* presentingViewController =
-      self.presentingViewController;
-  __weak id<ApplicationCommands> weakDispatcher = self.dispatcher;
-  [presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:^{
-                           if (showAccountsSettings) {
-                             [weakDispatcher
-                                 showAccountsSettingsFromViewController:
-                                     presentingViewController];
-                           }
-                         }];
+  ProceduralBlock completion = nil;
+  if (showAccountsSettings) {
+    __weak UIViewController* presentingViewController =
+        self.presentingViewController;
+    __weak id<ApplicationCommands> dispatcher = self.dispatcher;
+    completion = ^{
+      if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+        [dispatcher showAdvancedSigninSettingsFromViewController:
+                        presentingViewController];
+      } else {
+        [dispatcher
+            showAccountsSettingsFromViewController:presentingViewController];
+      }
+    };
+  }
+  [self.presentingViewController dismissViewControllerAnimated:YES
+                                                    completion:completion];
 }
 
 // Records in user defaults that the promo has been shown as well as the number
@@ -185,7 +191,7 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   // Do not show the SSO promo if the user is already logged in.
-  if (authService->GetAuthenticatedUserEmail())
+  if (authService->IsAuthenticated())
     return NO;
 
   // Show the promo at most every two major versions.

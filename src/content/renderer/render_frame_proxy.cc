@@ -46,13 +46,7 @@
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size_conversions.h"
-
-#if defined(USE_AURA)
-#include "content/renderer/mus/mus_embedded_frame.h"
-#include "content/renderer/mus/renderer_window_tree_client.h"
-#endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 // nogncheck because dependency on //printing is conditional upon
@@ -177,9 +171,11 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 
 RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
     RenderFrameImpl* parent,
-    int proxy_routing_id) {
+    int proxy_routing_id,
+    const base::UnguessableToken& devtools_frame_token) {
   std::unique_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(proxy_routing_id));
+  proxy->devtools_frame_token_ = devtools_frame_token;
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
       blink::WebTreeScopeType::kDocument, proxy.get());
   proxy->Init(web_frame, parent->render_view(),
@@ -262,19 +258,6 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 
   pending_visual_properties_.screen_info =
       render_widget_->GetOriginalScreenInfo();
-
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    RendererWindowTreeClient* renderer_window_tree_client =
-        RendererWindowTreeClient::Get(render_widget_->routing_id());
-    // It's possible a MusEmbeddedFrame has already been scheduled for creation
-    // (that is, RendererWindowTreeClient::Embed() was called). Call to
-    // OnRenderFrameProxyCreated() to potentially get the MusEmbeddedFrame.
-    // OnRenderFrameProxyCreated() returns null if Embed() was not called.
-    mus_embedded_frame_ =
-        renderer_window_tree_client->OnRenderFrameProxyCreated(this);
-  }
-#endif
 }
 
 void RenderFrameProxy::ResendVisualProperties() {
@@ -514,16 +497,13 @@ void RenderFrameProxy::OnDidStartLoading() {
 void RenderFrameProxy::OnViewChanged(
     const FrameMsg_ViewChanged_Params& params) {
   crashed_ = false;
-  // In mash the FrameSinkId comes from RendererWindowTreeClient.
-  if (!features::IsMultiProcessMash()) {
-    // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
-    // two different frame sinks, so recreate it here.
-    if (frame_sink_id_ != *params.frame_sink_id) {
-      parent_local_surface_id_allocator_ =
-          std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
-    }
-    frame_sink_id_ = *params.frame_sink_id;
+  // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
+  // two different frame sinks, so recreate it here.
+  if (frame_sink_id_ != params.frame_sink_id) {
+    parent_local_surface_id_allocator_ =
+        std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
   }
+  frame_sink_id_ = params.frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
@@ -629,7 +609,7 @@ void RenderFrameProxy::OnScrollRectToVisible(
 
 void RenderFrameProxy::OnBubbleLogicalScroll(
     blink::WebScrollDirection direction,
-    blink::WebScrollGranularity granularity) {
+    ui::input_types::ScrollGranularity granularity) {
   web_frame_->BubbleLogicalScroll(direction, granularity);
 }
 
@@ -658,13 +638,6 @@ void RenderFrameProxy::OnDisableAutoResize() {
   pending_visual_properties_.auto_resize_enabled = false;
   SynchronizeVisualProperties();
 }
-
-#if defined(USE_AURA)
-void RenderFrameProxy::SetMusEmbeddedFrame(
-    std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame) {
-  mus_embedded_frame_ = std::move(mus_embedded_frame);
-}
-#endif
 
 void RenderFrameProxy::SynchronizeVisualProperties() {
   if (!frame_sink_id_.is_valid() || crashed_)
@@ -724,15 +697,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
                           pending_visual_properties_.screen_space_rect;
   bool visual_properties_changed = synchronized_props_changed || rect_changed;
 
-#if defined(USE_AURA)
-  if (rect_changed && mus_embedded_frame_) {
-    mus_embedded_frame_->SetWindowBounds(
-        parent_local_surface_id_allocator_
-            ->GetCurrentLocalSurfaceIdAllocation(),
-        gfx::Rect(local_frame_size()));
-  }
-#endif
-
   if (!visual_properties_changed)
     return;
 
@@ -770,10 +734,6 @@ void RenderFrameProxy::OnRenderFallbackContent() const {
 }
 
 void RenderFrameProxy::FrameDetached(DetachType type) {
-#if defined(USE_AURA)
-  mus_embedded_frame_.reset();
-#endif
-
   if (type == DetachType::kRemove) {
     // Let the browser process know this subframe is removed, so that it is
     // destroyed in its current process.
@@ -871,8 +831,8 @@ void RenderFrameProxy::Navigate(
   params.blob_url_token = blob_url_token.release();
 
   // Note: For the AdFrame download policy here it only covers the case where
-  // the navigation initiator frame is ad.
-  // TODO(yaoxia): Also cover the case where the navigating frame is ad.
+  // the navigation initiator frame is ad. The download_policy may be further
+  // augmented in RenderFrameProxyHost::OnOpenURL if the navigating frame is ad.
   RenderFrameImpl::MaybeSetDownloadFramePolicy(
       is_opener_navigation, request, web_frame_->GetSecurityOrigin(),
       has_download_sandbox_flag,
@@ -960,24 +920,6 @@ void RenderFrameProxy::FrameFocused() {
 base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }
-
-#if defined(USE_AURA)
-void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
-    const viz::FrameSinkId& frame_sink_id) {
-  // RendererWindowTreeClient should only call this when mus is hosting viz.
-  DCHECK(features::IsMultiProcessMash());
-  // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
-  // two different frame sinks, so re-create it here.
-  if (frame_sink_id_ != frame_sink_id) {
-    parent_local_surface_id_allocator_ =
-        std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
-  }
-  frame_sink_id_ = frame_sink_id;
-  // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
-  // changes.
-  ResendVisualProperties();
-}
-#endif
 
 cc::Layer* RenderFrameProxy::GetLayer() {
   return embedded_layer_.get();

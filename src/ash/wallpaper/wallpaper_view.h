@@ -5,8 +5,8 @@
 #ifndef ASH_WALLPAPER_WALLPAPER_VIEW_H_
 #define ASH_WALLPAPER_WALLPAPER_VIEW_H_
 
+#include "ash/wallpaper/wallpaper_base_view.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/view.h"
 
 namespace aura {
 class Window;
@@ -16,7 +16,10 @@ namespace ash {
 
 class PreEventDispatchHandler;
 
-class WallpaperView : public views::View, public views::ContextMenuController {
+// The desktop wallpaper view that, in addition to painting the wallpaper, can
+// also add blur and dimming effects, as well as handle context menu requests.
+class WallpaperView : public WallpaperBaseView,
+                      public views::ContextMenuController {
  public:
   WallpaperView(int blur, float opacity);
   ~WallpaperView() override;
@@ -31,7 +34,7 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   friend class WallpaperControllerTest;
 
   // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // views::ContextMenuController:
@@ -39,12 +42,12 @@ class WallpaperView : public views::View, public views::ContextMenuController {
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
 
-  // Helper to draw the wallpaper.
+  // WallpaperBaseView:
   void DrawWallpaper(const gfx::ImageSkia& wallpaper,
                      const gfx::Rect& src,
                      const gfx::Rect& dst,
                      const cc::PaintFlags& flags,
-                     gfx::Canvas* canvas);
+                     gfx::Canvas* canvas) override;
 
   // These are used by overview mode to animate the blur and opacity on the
   // wallpaper. If |repaint_blur_| is not 0 and |repaint_opacity_| is not 1, the

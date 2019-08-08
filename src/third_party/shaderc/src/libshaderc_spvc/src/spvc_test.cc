@@ -52,14 +52,13 @@ TEST(Init, MultipleThreadsCalling) {
 #endif
 
 TEST(Compile, Glsl) {
-  shaderc_spvc_compiler_t compiler;
-  shaderc_spvc_compile_options_t options;
-
-  compiler = shaderc_spvc_compiler_initialize();
-  options = shaderc_spvc_compile_options_initialize();
+  shaderc_spvc_compiler_t compiler = shaderc_spvc_compiler_initialize();
+  shaderc_spvc_compile_options_t options =
+      shaderc_spvc_compile_options_initialize();
 
   shaderc_spvc_compilation_result_t result = shaderc_spvc_compile_into_glsl(
-      compiler, kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      compiler, kSmokeShaderBinary,
+      sizeof(kSmokeShaderBinary) / sizeof(uint32_t), options);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(shaderc_compilation_status_success,
             shaderc_spvc_result_get_status(result));
@@ -70,14 +69,13 @@ TEST(Compile, Glsl) {
 }
 
 TEST(Compile, Hlsl) {
-  shaderc_spvc_compiler_t compiler;
-  shaderc_spvc_compile_options_t options;
-
-  compiler = shaderc_spvc_compiler_initialize();
-  options = shaderc_spvc_compile_options_initialize();
+  shaderc_spvc_compiler_t compiler = shaderc_spvc_compiler_initialize();
+  shaderc_spvc_compile_options_t options =
+      shaderc_spvc_compile_options_initialize();
 
   shaderc_spvc_compilation_result_t result = shaderc_spvc_compile_into_hlsl(
-      compiler, kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      compiler, kSmokeShaderBinary,
+      sizeof(kSmokeShaderBinary) / sizeof(uint32_t), options);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(shaderc_compilation_status_success,
             shaderc_spvc_result_get_status(result));
@@ -88,14 +86,13 @@ TEST(Compile, Hlsl) {
 }
 
 TEST(Compile, Msl) {
-  shaderc_spvc_compiler_t compiler;
-  shaderc_spvc_compile_options_t options;
-
-  compiler = shaderc_spvc_compiler_initialize();
-  options = shaderc_spvc_compile_options_initialize();
+  shaderc_spvc_compiler_t compiler = shaderc_spvc_compiler_initialize();
+  shaderc_spvc_compile_options_t options =
+      shaderc_spvc_compile_options_initialize();
 
   shaderc_spvc_compilation_result_t result = shaderc_spvc_compile_into_msl(
-      compiler, kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      compiler, kSmokeShaderBinary,
+      sizeof(kSmokeShaderBinary) / sizeof(uint32_t), options);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(shaderc_compilation_status_success,
             shaderc_spvc_result_get_status(result));

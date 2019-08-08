@@ -18,7 +18,7 @@
 #include "components/grit/components_resources.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
-#include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/webui/ntp_tiles_internals_message_handler.h"
@@ -81,6 +81,7 @@ bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(
       return true;
     case ntp_tiles::TileSource::POPULAR_BAKED_IN:
     case ntp_tiles::TileSource::POPULAR:
+    case ntp_tiles::TileSource::EXPLORE:
 #if defined(OS_ANDROID)
       return true;
 #else
@@ -130,7 +131,6 @@ content::WebUIDataSource* CreateNTPTilesInternalsHTMLSource() {
   source->AddResourcePath("ntp_tiles_internals.css",
                           IDR_NTP_TILES_INTERNALS_CSS);
   source->SetDefaultResource(IDR_NTP_TILES_INTERNALS_HTML);
-  source->UseGzip();
   return source;
 }
 

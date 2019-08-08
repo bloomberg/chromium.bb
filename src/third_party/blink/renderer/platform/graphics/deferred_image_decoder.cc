@@ -222,6 +222,17 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
       ReportIncrementalDecodeNeeded(all_data_received_, image_type);
     }
   }
+  DCHECK(incremental_decode_needed_.has_value());
+
+  // TODO(crbug.com/943519):
+  // If we haven't received all data, we might veto YUV and begin doing
+  // incremental RGB decoding until all data were received. Then the final
+  // decode would be in YUV (but from the beginning of the image).
+  //
+  // The memory/speed tradeoffs of mixing RGB and YUV decoding are unclear due
+  // to caching at various levels. Additionally, incremental decoding is less
+  // common, so we avoid worrying about this with the line below.
+  can_yuv_decode_ &= !incremental_decode_needed_.value();
 
   auto generator = DecodingImageGenerator::Create(
       frame_generator_, info, std::move(segment_reader), std::move(frames),
@@ -406,11 +417,10 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
         metadata_decoder_->FrameIsReceivedAtIndex(last_frame);
   }
 
-  // YUV decoding does not currently support progressive decoding. See comment
-  // in image_frame_generator.h.
-  can_yuv_decode_ = RuntimeEnabledFeatures::DecodeToYUVEnabled() &&
-                    metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
-                    !frame_generator_->IsMultiFrame();
+  can_yuv_decode_ =
+      RuntimeEnabledFeatures::DecodeLossyWebPImagesToYUVEnabled() &&
+      metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
+      !frame_generator_->IsMultiFrame();
 
   // If we've received all of the data, then we can reset the metadata decoder,
   // since everything we care about should now be stored in |frame_data_|.

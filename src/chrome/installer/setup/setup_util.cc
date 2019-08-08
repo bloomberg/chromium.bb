@@ -38,6 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/install_static/install_details.h"
@@ -912,8 +913,7 @@ base::FilePath GetElevationServicePath(const base::FilePath& target_path,
 }
 
 base::string16 GetElevationServiceGuid(base::StringPiece16 prefix) {
-  base::string16 result =
-      InstallUtil::String16FromGUID(install_static::GetElevatorClsid());
+  auto result = base::win::String16FromGUID(install_static::GetElevatorClsid());
   result.insert(0, prefix.data(), prefix.size());
   return result;
 }
@@ -927,8 +927,7 @@ base::string16 GetElevationServiceAppidRegistryPath() {
 }
 
 base::string16 GetElevationServiceIid(base::StringPiece16 prefix) {
-  base::string16 result =
-      InstallUtil::String16FromGUID(install_static::GetElevatorIid());
+  auto result = base::win::String16FromGUID(install_static::GetElevatorIid());
   result.insert(0, prefix.data(), prefix.size());
   return result;
 }

@@ -25,7 +25,8 @@ import histograms_print_style
 
 ENUMS_PATH = histogram_paths.ENUMS_XML
 POLICY_TEMPLATES_PATH = 'components/policy/resources/policy_templates.json'
-ENUM_NAME = 'EnterprisePolicies'
+POLICIES_ENUM_NAME = 'EnterprisePolicies'
+POLICY_ATOMIC_GROUPS_ENUM_NAME = 'PolicyAtomicGroups'
 
 class UserError(Exception):
   def __init__(self, message):
@@ -36,7 +37,7 @@ class UserError(Exception):
     return self.args[0]
 
 
-def UpdateHistogramDefinitions(policy_templates, doc):
+def UpdatePoliciesHistogramDefinitions(policy_templates, doc):
   """Sets the children of <enum name="EnterprisePolicies" ...> node in |doc| to
   values generated from policy ids contained in |policy_templates|.
 
@@ -49,7 +50,7 @@ def UpdateHistogramDefinitions(policy_templates, doc):
   """
   # Find EnterprisePolicies enum.
   for enum_node in doc.getElementsByTagName('enum'):
-    if enum_node.attributes['name'].value == ENUM_NAME:
+    if enum_node.attributes['name'].value == POLICIES_ENUM_NAME:
         policy_enum_node = enum_node
         break
   else:
@@ -74,6 +75,44 @@ def UpdateHistogramDefinitions(policy_templates, doc):
     policy_enum_node.appendChild(node)
 
 
+def UpdateAtomicGroupsHistogramDefinitions(policy_templates, doc):
+  """Sets the children of <enum name="PolicyAtomicGroups" ...> node in |doc| to
+  values generated from policy ids contained in |policy_templates|.
+
+  Args:
+    policy_templates: A list of dictionaries, defining policy atomic
+                      groups. The format is exactly the same as in
+                      policy_templates.json file.
+    doc: A minidom.Document object representing parsed histogram definitions
+         XML file.
+  """
+  # Find EnterprisePolicies enum.
+  for enum_node in doc.getElementsByTagName('enum'):
+    if enum_node.attributes['name'].value == POLICY_ATOMIC_GROUPS_ENUM_NAME:
+        atomic_group_enum_node = enum_node
+        break
+  else:
+    raise UserError('No policy atomic group enum node found')
+
+  # Remove existing values.
+  while atomic_group_enum_node.hasChildNodes():
+    atomic_group_enum_node.removeChild(atomic_group_enum_node.lastChild)
+
+  # Add a "Generated from (...)" comment
+  comment = ' Generated from {0} '.format(POLICY_TEMPLATES_PATH)
+  atomic_group_enum_node.appendChild(doc.createComment(comment))
+
+  # Add values generated from policy templates.
+  ordered_atomic_groups = [
+    x for x in policy_templates['policy_atomic_group_definitions']
+  ]
+  ordered_atomic_groups.sort(key=lambda policy: policy['id'])
+  for group in ordered_atomic_groups:
+    node = doc.createElement('int')
+    node.attributes['value'] = str(group['id'])
+    node.attributes['label'] = group['name']
+    atomic_group_enum_node.appendChild(node)
+
 def main():
   if len(sys.argv) > 1:
     print >>sys.stderr, 'No arguments expected!'
@@ -82,12 +121,14 @@ def main():
 
   with open(path_util.GetInputFile(POLICY_TEMPLATES_PATH), 'rb') as f:
     policy_templates = literal_eval(f.read())
+
   with open(ENUMS_PATH, 'rb') as f:
     histograms_doc = minidom.parse(f)
     f.seek(0)
     xml = f.read()
 
-  UpdateHistogramDefinitions(policy_templates, histograms_doc)
+  UpdatePoliciesHistogramDefinitions(policy_templates, histograms_doc)
+  UpdateAtomicGroupsHistogramDefinitions(policy_templates, histograms_doc)
   new_xml = histograms_print_style.GetPrintStyle().PrettyPrintXml(
       histograms_doc)
   if PromptUserToAcceptDiff(xml, new_xml, 'Is the updated version acceptable?'):

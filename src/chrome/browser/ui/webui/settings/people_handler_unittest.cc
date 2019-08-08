@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -16,6 +17,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -1389,6 +1392,14 @@ class PeopleHandlerDiceUnifiedConsentTest
     : public ::testing::TestWithParam<std::tuple<bool, bool>> {};
 
 TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
+  // Do not be in first run, so that the profiles are not created as "new
+  // profiles" and automatically migrated to Dice.
+  first_run::ResetCachedSentinelDataForTesting();
+  base::ScopedClosureRunner(
+      base::BindOnce(&first_run::ResetCachedSentinelDataForTesting));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNoFirstRun);
+  ASSERT_FALSE(first_run::IsChromeFirstRun());
+
   content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // Decode test parameters.
@@ -1407,6 +1418,9 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   std::unique_ptr<TestingProfile> profile =
       IdentityTestEnvironmentProfileAdaptor::
           CreateProfileForIdentityTestEnvironment();
+  ASSERT_EQ(
+      dice_enabled,
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
 
   auto identity_test_env_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());

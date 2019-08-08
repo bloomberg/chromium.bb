@@ -55,11 +55,8 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceRequestDone(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller,
     const JavaParamRef<jobjectArray>& devices) {
-  size_t size = env->GetArrayLength(devices);
   UsbMidiDevice::Devices devices_to_pass;
-  for (size_t i = 0; i < size; ++i) {
-    base::android::ScopedJavaLocalRef<jobject> raw_device(
-        env, env->GetObjectArrayElement(devices, i));
+  for (auto raw_device : devices.ReadElements<jobject>()) {
     devices_to_pass.push_back(
         std::make_unique<UsbMidiDeviceAndroid>(raw_device, delegate_));
   }

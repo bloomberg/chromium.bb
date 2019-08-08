@@ -49,6 +49,7 @@ class CRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate,
   void StartCRDHostAndGetCode(
       const std::string& oauth_token,
       base::Value ice_config,
+      bool terminate_upon_input,
       DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
 

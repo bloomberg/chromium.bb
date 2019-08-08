@@ -22,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -317,26 +318,50 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
   }
 
   const std::string raw_email = it->second.raw_email;
-  MaybeRevokeTokenOnServer(account_key);
+  const std::string old_token = it->second.token;
   accounts_.erase(it);
   PersistAccountsAsync();
   NotifyAccountRemovalObservers(Account{account_key, raw_email});
+  MaybeRevokeTokenOnServer(account_key, old_token);
+}
+
+void AccountManager::RemoveAccount(const std::string& email) {
+  DCHECK_NE(init_state_, InitializationState::kNotStarted);
+
+  base::OnceClosure closure =
+      base::BindOnce(&AccountManager::RemoveAccountByEmailInternal,
+                     weak_factory_.GetWeakPtr(), email);
+  RunOnInitialization(std::move(closure));
+}
+
+void AccountManager::RemoveAccountByEmailInternal(const std::string& email) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(init_state_, InitializationState::kInitialized);
+
+  for (const std::pair<AccountKey, AccountInfo> account : accounts_) {
+    if (gaia::AreEmailsSame(account.second.raw_email, email)) {
+      RemoveAccountInternal(account.first /* account_key */);
+      return;
+    }
+  }
 }
 
 void AccountManager::UpsertAccount(const AccountKey& account_key,
                                    const std::string& raw_email,
-                                   const std::string& token) {
+                                   const std::string& token,
+                                   bool revoke_old_token) {
   DCHECK_NE(init_state_, InitializationState::kNotStarted);
   DCHECK(!raw_email.empty());
 
   base::OnceClosure closure = base::BindOnce(
       &AccountManager::UpsertAccountInternal, weak_factory_.GetWeakPtr(),
-      account_key, AccountInfo{raw_email, token});
+      account_key, AccountInfo{raw_email, token}, revoke_old_token);
   RunOnInitialization(std::move(closure));
 }
 
 void AccountManager::UpdateToken(const AccountKey& account_key,
-                                 const std::string& token) {
+                                 const std::string& token,
+                                 bool revoke_old_token) {
   DCHECK_NE(init_state_, InitializationState::kNotStarted);
 
   if (account_key.account_type ==
@@ -344,21 +369,23 @@ void AccountManager::UpdateToken(const AccountKey& account_key,
     DCHECK_EQ(token, kActiveDirectoryDummyToken);
   }
 
-  base::OnceClosure closure =
-      base::BindOnce(&AccountManager::UpdateTokenInternal,
-                     weak_factory_.GetWeakPtr(), account_key, token);
+  base::OnceClosure closure = base::BindOnce(
+      &AccountManager::UpdateTokenInternal, weak_factory_.GetWeakPtr(),
+      account_key, token, revoke_old_token);
   RunOnInitialization(std::move(closure));
 }
 
 void AccountManager::UpdateTokenInternal(const AccountKey& account_key,
-                                         const std::string& token) {
+                                         const std::string& token,
+                                         bool revoke_old_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
 
   auto it = accounts_.find(account_key);
   DCHECK(it != accounts_.end())
       << "UpdateToken cannot be used for adding accounts";
-  UpsertAccountInternal(account_key, AccountInfo{it->second.raw_email, token});
+  UpsertAccountInternal(account_key, AccountInfo{it->second.raw_email, token},
+                        revoke_old_token);
 }
 
 void AccountManager::UpdateEmail(const AccountKey& account_key,
@@ -380,11 +407,13 @@ void AccountManager::UpdateEmailInternal(const AccountKey& account_key,
   auto it = accounts_.find(account_key);
   DCHECK(it != accounts_.end())
       << "UpdateEmail cannot be used for adding accounts";
-  UpsertAccountInternal(account_key, AccountInfo{raw_email, it->second.token});
+  UpsertAccountInternal(account_key, AccountInfo{raw_email, it->second.token},
+                        false /* revoke_old_token */);
 }
 
 void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
-                                           const AccountInfo& account) {
+                                           const AccountInfo& account,
+                                           bool revoke_old_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
   DCHECK(account_key.IsValid()) << "Invalid account_key: " << account_key;
@@ -412,15 +441,16 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
 
   // Precondition: Iterator |it| is valid and points to a previously known
   // account.
-  const bool did_token_change = (it->second.token != account.token);
-  if (did_token_change) {
-    MaybeRevokeTokenOnServer(account_key);
-  }
+  const std::string old_token = it->second.token;
+  const bool did_token_change = (old_token != account.token);
   it->second = account;
   PersistAccountsAsync();
 
   if (did_token_change) {
     NotifyTokenObservers(Account{account_key, account.raw_email});
+  }
+  if (did_token_change && revoke_old_token) {
+    MaybeRevokeTokenOnServer(account_key, old_token);
   }
 }
 
@@ -523,18 +553,12 @@ bool AccountManager::HasDummyGaiaToken(const AccountKey& account_key) const {
   return it != accounts_.end() && it->second.token == kInvalidToken;
 }
 
-void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
-  auto it = accounts_.find(account_key);
-  if (it == accounts_.end()) {
-    return;
-  }
-
-  const std::string& token = it->second.token;
-
+void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key,
+                                              const std::string& old_token) {
   if ((account_key.account_type ==
        account_manager::AccountType::ACCOUNT_TYPE_GAIA) &&
-      !token.empty() && (token != kInvalidToken)) {
-    RevokeGaiaTokenOnServer(token);
+      !old_token.empty() && (old_token != kInvalidToken)) {
+    RevokeGaiaTokenOnServer(old_token);
   }
 }
 

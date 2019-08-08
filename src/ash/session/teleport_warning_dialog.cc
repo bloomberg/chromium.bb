@@ -52,7 +52,7 @@ bool TeleportWarningDialog::Cancel() {
 }
 
 bool TeleportWarningDialog::Accept() {
-  std::move(on_accept_).Run(true, never_show_again_checkbox_->checked());
+  std::move(on_accept_).Run(true, never_show_again_checkbox_->GetChecked());
   return true;
 }
 

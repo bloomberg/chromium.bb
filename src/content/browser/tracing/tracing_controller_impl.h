@@ -84,6 +84,10 @@ class TracingControllerImpl : public TracingController,
   // exists.
   void FinalizeStartupTracingIfNeeded();
 
+  const PerfettoFileTracer* perfetto_file_tracer_for_testing() const {
+    return perfetto_file_tracer_.get();
+  }
+
  private:
   friend std::default_delete<TracingControllerImpl>;
 

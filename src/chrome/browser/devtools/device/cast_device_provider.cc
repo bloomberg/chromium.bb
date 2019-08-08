@@ -57,6 +57,16 @@ std::unique_ptr<ServiceTxtRecordMap> ParseServiceTxtRecord(
   return record_map;
 }
 
+// Returns the value in the TXT |record_map| for the two-character |key|, or
+// |default_value| if |key| was not found.
+std::string GetServiceMapValue(const ServiceTxtRecordMap& record_map,
+                               const std::string& key,
+                               const char* default_value) {
+  const auto it = record_map.find(key);
+  return (it != record_map.end() && !it->second.empty()) ? it->second
+                                                         : default_value;
+}
+
 AndroidDeviceManager::DeviceInfo ServiceDescriptionToDeviceInfo(
     const ServiceDescription& service_description) {
   std::unique_ptr<ServiceTxtRecordMap> record_map =
@@ -64,18 +74,10 @@ AndroidDeviceManager::DeviceInfo ServiceDescriptionToDeviceInfo(
 
   AndroidDeviceManager::DeviceInfo device_info;
   device_info.connected = true;
-  const auto it = record_map->find("md");
-  if (it != record_map->end() && !it->second.empty())
-    device_info.model = it->second;
-  else
-    device_info.model = kUnknownCastDevice;
-
+  device_info.model = GetServiceMapValue(*record_map, "md", kUnknownCastDevice);
   AndroidDeviceManager::BrowserInfo browser_info;
   browser_info.socket_name = base::NumberToString(kCastInspectPort);
-  browser_info.display_name =
-      base::SplitString(service_description.service_name, ".",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)[0];
-
+  browser_info.display_name = GetServiceMapValue(*record_map, "fn", "");
   browser_info.type = AndroidDeviceManager::BrowserInfo::kTypeChrome;
   device_info.browser_info.push_back(browser_info);
   return device_info;
@@ -88,6 +90,8 @@ AndroidDeviceManager::DeviceInfo ServiceDescriptionToDeviceInfo(
 // DevTools ADB thread). Cancellable callbacks are necessary since
 // CastDeviceProvider and ServiceDiscoveryDeviceLister are destroyed on
 // different threads in undefined order.
+//
+// TODO(crbug.com/963216): Consolidate DNS-SD implementations for Cast.
 class CastDeviceProvider::DeviceListerDelegate
     : public ServiceDiscoveryDeviceLister::Delegate,
       public base::SupportsWeakPtr<DeviceListerDelegate> {

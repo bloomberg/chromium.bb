@@ -29,6 +29,7 @@ namespace blink {
 
 class Frame;
 struct FrameLoadRequest;
+class KURL;
 
 class CORE_EXPORT FrameTree final {
   DISALLOW_NEW();
@@ -59,6 +60,9 @@ class CORE_EXPORT FrameTree final {
   bool IsDescendantOf(const Frame* ancestor) const;
   Frame* TraverseNext(const Frame* stay_within = nullptr) const;
 
+  // For plugins and tests only.
+  Frame* FindFrameByName(const AtomicString& name) const;
+
   // https://html.spec.whatwg.org/#the-rules-for-choosing-a-browsing-context-given-a-browsing-context-name
   struct FindResult {
     STACK_ALLOCATED();
@@ -68,8 +72,8 @@ class CORE_EXPORT FrameTree final {
     Member<Frame> frame;
     bool new_window;
   };
-  FindResult FindFrameForNavigation(FrameLoadRequest&) const;
-  FindResult FindOrCreateFrameForNavigation(FrameLoadRequest&) const;
+  FindResult FindOrCreateFrameForNavigation(FrameLoadRequest&,
+                                            const AtomicString& name) const;
 
   unsigned ChildCount() const;
 
@@ -86,7 +90,8 @@ class CORE_EXPORT FrameTree final {
   void Trace(blink::Visitor*);
 
  private:
-  Frame* FindFrameForNavigationInternal(FrameLoadRequest&) const;
+  Frame* FindFrameForNavigationInternal(const AtomicString& name,
+                                        const KURL&) const;
 
   Member<Frame> this_frame_;
 
@@ -102,8 +107,8 @@ class CORE_EXPORT FrameTree final {
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from gdb.
 void showFrameTree(const blink::Frame*);
 #endif
 

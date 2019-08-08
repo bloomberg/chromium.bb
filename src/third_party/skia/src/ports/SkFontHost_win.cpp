@@ -5,36 +5,37 @@
  * found in the LICENSE file.
  */
 
-#include "SkTypes.h"
+#include "include/core/SkTypes.h"
 #if defined(SK_BUILD_FOR_WIN)
 
-#include "SkAdvancedTypefaceMetrics.h"
-#include "SkBase64.h"
-#include "SkColorData.h"
-#include "SkData.h"
-#include "SkDescriptor.h"
-#include "SkFontDescriptor.h"
-#include "SkFontMetrics.h"
-#include "SkGlyph.h"
-#include "SkHRESULT.h"
-#include "SkMacros.h"
-#include "SkMakeUnique.h"
-#include "SkMaskGamma.h"
-#include "SkMatrix22.h"
-#include "SkOTTable_OS_2.h"
-#include "SkOTTable_maxp.h"
-#include "SkOTTable_name.h"
-#include "SkOTUtils.h"
-#include "SkOnce.h"
-#include "SkPath.h"
-#include "SkSFNTHeader.h"
-#include "SkStream.h"
-#include "SkString.h"
-#include "SkTemplates.h"
-#include "SkTo.h"
-#include "SkTypefaceCache.h"
-#include "SkTypeface_win.h"
-#include "SkUtils.h"
+#include "include/core/SkData.h"
+#include "include/core/SkFontMetrics.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkString.h"
+#include "include/ports/SkTypeface_win.h"
+#include "include/private/SkColorData.h"
+#include "include/private/SkMacros.h"
+#include "include/private/SkOnce.h"
+#include "include/private/SkTemplates.h"
+#include "include/private/SkTo.h"
+#include "include/utils/SkBase64.h"
+#include "src/core/SkAdvancedTypefaceMetrics.h"
+#include "src/core/SkDescriptor.h"
+#include "src/core/SkFontDescriptor.h"
+#include "src/core/SkGlyph.h"
+#include "src/core/SkLeanWindows.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkMaskGamma.h"
+#include "src/core/SkTypefaceCache.h"
+#include "src/core/SkUtils.h"
+#include "src/sfnt/SkOTTable_OS_2.h"
+#include "src/sfnt/SkOTTable_maxp.h"
+#include "src/sfnt/SkOTTable_name.h"
+#include "src/sfnt/SkOTUtils.h"
+#include "src/sfnt/SkSFNTHeader.h"
+#include "src/utils/SkMatrix22.h"
+#include "src/utils/win/SkHRESULT.h"
 
 #include <tchar.h>
 #include <usp10.h>
@@ -88,7 +89,7 @@ static bool needToRenderWithSkia(const SkScalerContextRec& rec) {
         return true;
     }
 #endif
-    return rec.getHinting() == kNo_SkFontHinting || rec.getHinting() == kSlight_SkFontHinting;
+    return rec.getHinting() == SkFontHinting::kNone || rec.getHinting() == SkFontHinting::kSlight;
 }
 
 static void tchar_to_skstring(const TCHAR t[], SkString* s) {
@@ -269,6 +270,7 @@ protected:
     void onGetFontDescriptor(SkFontDescriptor*, bool*) const override;
     void onCharsToGlyphs(const SkUnichar* chars, int count, SkGlyphID glyphs[]) const override;
     int onCountGlyphs() const override;
+    void getPostScriptGlyphNames(SkString*) const override;
     int onGetUPEM() const override;
     void onGetFamilyName(SkString* familyName) const override;
     SkTypeface::LocalizedStrings* onCreateFamilyNameIterator() const override;
@@ -636,7 +638,7 @@ SkScalerContext_GDI::SkScalerContext_GDI(sk_sp<LogFontTypeface> rawTypeface,
     // When GDI hinting, remove the entire Y scale from sA and GsA. (Prevents 'linear' metrics.)
     // When not hinting, remove only the integer Y scale from sA and GsA. (Applied by GDI.)
     SkScalerContextRec::PreMatrixScale scaleConstraints =
-        (fRec.getHinting() == kNo_SkFontHinting || fRec.getHinting() == kSlight_SkFontHinting)
+        (fRec.getHinting() == SkFontHinting::kNone || fRec.getHinting() == SkFontHinting::kSlight)
                    ? SkScalerContextRec::kVerticalInteger_PreMatrixScale
                    : SkScalerContextRec::kVertical_PreMatrixScale;
     SkVector scale;
@@ -722,7 +724,7 @@ SkScalerContext_GDI::SkScalerContext_GDI(sk_sp<LogFontTypeface> rawTypeface,
         }
 
         // Create a hires matrix if we need linear metrics.
-        if (this->isSubpixel()) {
+        if (this->isLinearMetrics()) {
             OUTLINETEXTMETRIC otm;
             UINT success = GetOutlineTextMetrics(fDDC, sizeof(otm), &otm);
             if (0 == success) {
@@ -884,7 +886,7 @@ void SkScalerContext_GDI::generateMetrics(SkGlyph* glyph) {
     glyph->fAdvanceX = (float)((int)gm.gmCellIncX);
     glyph->fAdvanceY = (float)((int)gm.gmCellIncY);
 
-    if (this->isSubpixel()) {
+    if ((fTM.tmPitchAndFamily & TMPF_VECTOR) && this->isLinearMetrics()) {
         sk_bzero(&gm, sizeof(gm));
         status = GetGlyphOutlineW(fDDC, glyphId, GGO_METRICS | GGO_GLYPH_INDEX, &gm, 0, nullptr, &fHighResMat22);
         if (GDI_ERROR != status) {
@@ -1022,7 +1024,7 @@ static const uint8_t* getInverseGammaTableClearType() {
     return gTableClearType;
 }
 
-#include "SkColorData.h"
+#include "include/private/SkColorData.h"
 
 //Cannot assume that the input rgb is gray due to possible setting of kGenA8FromLCD_Flag.
 template<bool APPLY_PREBLEND>
@@ -1485,7 +1487,7 @@ bool SkScalerContext_GDI::generatePath(SkGlyphID glyph, SkPath* path) {
 
     //GDI only uses hinted outlines when axis aligned.
     UINT format = GGO_NATIVE | GGO_GLYPH_INDEX;
-    if (fRec.getHinting() == kNo_SkFontHinting || fRec.getHinting() == kSlight_SkFontHinting){
+    if (fRec.getHinting() == SkFontHinting::kNone || fRec.getHinting() == SkFontHinting::kSlight){
         format |= GGO_UNHINTED;
     }
     SkAutoSTMalloc<BUFFERSIZE, uint8_t> glyphbuf(BUFFERSIZE);
@@ -1494,7 +1496,7 @@ bool SkScalerContext_GDI::generatePath(SkGlyphID glyph, SkPath* path) {
         return false;
     }
 
-    if (fRec.getHinting() != kSlight_SkFontHinting) {
+    if (fRec.getHinting() != SkFontHinting::kSlight) {
         sk_path_from_gdi_path(path, glyphbuf, total_size);
     } else {
         //GDI only uses hinted outlines when axis aligned.
@@ -1887,7 +1889,27 @@ static uint16_t nonBmpCharToGlyph(HDC hdc, SCRIPT_CACHE* scriptCache, const WCHA
     WORD outGlyphs[maxGlyphs];
     WORD logClust[numWCHAR];
     int numGlyphs;
-    HRZM(ScriptShape(hdc, scriptCache, utf16, numWCHAR, maxGlyphs, &si[0].a,
+    SCRIPT_ANALYSIS& script = si[0].a;
+    script.eScript = SCRIPT_UNDEFINED;
+    script.fRTL = FALSE;
+    script.fLayoutRTL = FALSE;
+    script.fLinkBefore = FALSE;
+    script.fLinkAfter = FALSE;
+    script.fLogicalOrder = FALSE;
+    script.fNoGlyphIndex = FALSE;
+    script.s.uBidiLevel = 0;
+    script.s.fOverrideDirection = 0;
+    script.s.fInhibitSymSwap = TRUE;
+    script.s.fCharShape = FALSE;
+    script.s.fDigitSubstitute = FALSE;
+    script.s.fInhibitLigate = FALSE;
+    script.s.fDisplayZWG = TRUE;
+    script.s.fArabicNumContext = FALSE;
+    script.s.fGcpClusters = FALSE;
+    script.s.fReserved = 0;
+    script.s.fEngineReserved = 0;
+    // For the future, 0x80040200 from here is USP_E_SCRIPT_NOT_IN_FONT
+    HRZM(ScriptShape(hdc, scriptCache, utf16, numWCHAR, maxGlyphs, &script,
                      outGlyphs, logClust, vsa, &numGlyphs),
          "Could not shape character.");
     if (1 == numGlyphs) {
@@ -1974,6 +1996,8 @@ int LogFontTypeface::onCountGlyphs() const {
 
     return glyphCount;
 }
+
+void LogFontTypeface::getPostScriptGlyphNames(SkString*) const {}
 
 int LogFontTypeface::onGetUPEM() const {
     HDC hdc = ::CreateCompatibleDC(nullptr);
@@ -2076,21 +2100,21 @@ void LogFontTypeface::onFilterRec(SkScalerContextRec* rec) const {
 
     SkFontHinting h = rec->getHinting();
     switch (h) {
-        case kNo_SkFontHinting:
+        case SkFontHinting::kNone:
             break;
-        case kSlight_SkFontHinting:
+        case SkFontHinting::kSlight:
             // Only do slight hinting when axis aligned.
             // TODO: re-enable slight hinting when FontHostTest can pass.
             //if (!isAxisAligned(*rec)) {
-                h = kNo_SkFontHinting;
+                h = SkFontHinting::kNone;
             //}
             break;
-        case kNormal_SkFontHinting:
-        case kFull_SkFontHinting:
+        case SkFontHinting::kNormal:
+        case SkFontHinting::kFull:
             // TODO: need to be able to distinguish subpixel positioned glyphs
             // and linear metrics.
             //rec->fFlags &= ~SkScalerContext::kSubpixelPositioning_Flag;
-            h = kNormal_SkFontHinting;
+            h = SkFontHinting::kNormal;
             break;
         default:
             SkDEBUGFAIL("unknown hinting");
@@ -2114,8 +2138,8 @@ void LogFontTypeface::onFilterRec(SkScalerContextRec* rec) const {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "SkFontMgr.h"
-#include "SkDataTable.h"
+#include "include/core/SkDataTable.h"
+#include "include/core/SkFontMgr.h"
 
 static bool valid_logfont_for_enum(const LOGFONT& lf) {
     // TODO: Vector FON is unsupported and should not be listed.

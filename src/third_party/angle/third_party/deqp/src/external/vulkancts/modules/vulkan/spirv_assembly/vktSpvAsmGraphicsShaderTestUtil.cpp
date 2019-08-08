@@ -260,7 +260,6 @@ InstanceContext::InstanceContext (const RGBA						(&inputs)[4],
 								  const GraphicsResources&			resources_,
 								  const GraphicsInterfaces&			interfaces_,
 								  const vector<string>&				extensions_,
-								  const vector<string>&				features_,
 								  VulkanFeatures					vulkanFeatures_,
 								  VkShaderStageFlags				customizedStages_)
 	: testCodeFragments				(testCodeFragments_)
@@ -268,7 +267,6 @@ InstanceContext::InstanceContext (const RGBA						(&inputs)[4],
 	, hasTessellation				(false)
 	, requiredStages				(static_cast<VkShaderStageFlagBits>(0))
 	, requiredDeviceExtensions		(extensions_)
-	, requiredDeviceFeatures		(features_)
 	, requestedFeatures				(vulkanFeatures_)
 	, pushConstants					(pushConsants_)
 	, customizedStages				(customizedStages_)
@@ -296,7 +294,6 @@ InstanceContext::InstanceContext (const InstanceContext& other)
 	, hasTessellation				(other.hasTessellation)
 	, requiredStages				(other.requiredStages)
 	, requiredDeviceExtensions		(other.requiredDeviceExtensions)
-	, requiredDeviceFeatures		(other.requiredDeviceFeatures)
 	, requestedFeatures				(other.requestedFeatures)
 	, pushConstants					(other.pushConstants)
 	, customizedStages				(other.customizedStages)
@@ -406,6 +403,7 @@ string makeVertexShaderAssembly (const map<string, string>& fragments)
 		"${extension:opt}\n"
 		"OpMemoryModel Logical GLSL450\n"
 		"OpEntryPoint Vertex %BP_main \"main\" %BP_stream %BP_position %BP_vtx_color %BP_color %BP_gl_VertexIndex %BP_gl_InstanceIndex ${IF_entrypoint:opt} \n"
+		"${execution_mode:opt}\n"
 		"${debug:opt}\n"
 		"${moduleprocessed:opt}\n"
 		"OpMemberDecorate %BP_gl_PerVertex 0 BuiltIn Position\n"
@@ -489,6 +487,7 @@ string makeTessControlShaderAssembly (const map<string, string>& fragments)
 		"OpMemoryModel Logical GLSL450\n"
 		"OpEntryPoint TessellationControl %BP_main \"main\" %BP_out_color %BP_gl_InvocationID %BP_gl_PrimitiveID %BP_in_color %BP_gl_out %BP_gl_in %BP_gl_TessLevelOuter %BP_gl_TessLevelInner ${IF_entrypoint:opt} \n"
 		"OpExecutionMode %BP_main OutputVertices 3\n"
+		"${execution_mode:opt}\n"
 		"${debug:opt}\n"
 		"${moduleprocessed:opt}\n"
 		"OpDecorate %BP_out_color Location 1\n"
@@ -614,6 +613,7 @@ string makeTessEvalShaderAssembly (const map<string, string>& fragments)
 		"OpExecutionMode %BP_main Triangles\n"
 		"OpExecutionMode %BP_main SpacingEqual\n"
 		"OpExecutionMode %BP_main VertexOrderCcw\n"
+		"${execution_mode:opt}\n"
 		"${debug:opt}\n"
 		"${moduleprocessed:opt}\n"
 		"OpMemberDecorate %BP_gl_PerVertexOut 0 BuiltIn Position\n"
@@ -762,6 +762,7 @@ string makeGeometryShaderAssembly (const map<string, string>& fragments)
 		"OpExecutionMode %BP_main Triangles\n"
 		"OpExecutionMode %BP_main OutputTriangleStrip\n"
 		"OpExecutionMode %BP_main OutputVertices 3\n"
+		"${execution_mode:opt}\n"
 		"${debug:opt}\n"
 		"${moduleprocessed:opt}\n"
 		"OpDecorate %BP_gl_PrimitiveID BuiltIn PrimitiveId\n"
@@ -881,6 +882,7 @@ string makeFragmentShaderAssembly (const map<string, string>& fragments)
 		"OpMemoryModel Logical GLSL450\n"
 		"OpEntryPoint Fragment %BP_main \"main\" %BP_vtxColor %BP_fragColor %BP_gl_FragCoord ${IF_entrypoint:opt} \n"
 		"OpExecutionMode %BP_main OriginUpperLeft\n"
+		"${execution_mode:opt}\n"
 		"${debug:opt}\n"
 		"${moduleprocessed:opt}\n"
 		"OpDecorate %BP_fragColor Location 0\n"
@@ -1016,6 +1018,7 @@ map<string, string> fillInterfacePlaceholderVert (void)
 	// Make sure the rest still need to be instantialized.
 	fragments["capability"]				= "${capability:opt}";
 	fragments["extension"]				= "${extension:opt}";
+	fragments["execution_mode"]			= "${execution_mode:opt}";
 	fragments["debug"]					= "${debug:opt}";
 	fragments["decoration"]				= "${decoration:opt}";
 	fragments["pre_main"]				= "${pre_main:opt}";
@@ -1052,6 +1055,7 @@ map<string, string> fillInterfacePlaceholderFrag (void)
 	// Make sure the rest still need to be instantialized.
 	fragments["capability"]				= "${capability:opt}";
 	fragments["extension"]				= "${extension:opt}";
+	fragments["execution_mode"]			= "${execution_mode:opt}";
 	fragments["debug"]					= "${debug:opt}";
 	fragments["decoration"]				= "${decoration:opt}";
 	fragments["pre_main"]				= "${pre_main:opt}";
@@ -1100,6 +1104,7 @@ map<string, string> fillInterfacePlaceholderTessCtrl (void)
 	// Make sure the rest still need to be instantialized.
 	fragments["capability"]					= "${capability:opt}";
 	fragments["extension"]					= "${extension:opt}";
+	fragments["execution_mode"]				= "${execution_mode:opt}";
 	fragments["debug"]						= "${debug:opt}";
 	fragments["decoration"]					= "${decoration:opt}";
 	fragments["decoration_tessc"]			= "${decoration_tessc:opt}";
@@ -1139,6 +1144,7 @@ map<string, string> fillInterfacePlaceholderTessEvalGeom (void)
 	// Make sure the rest still need to be instantialized.
 	fragments["capability"]					= "${capability:opt}";
 	fragments["extension"]					= "${extension:opt}";
+	fragments["execution_mode"]				= "${execution_mode:opt}";
 	fragments["debug"]						= "${debug:opt}";
 	fragments["decoration"]					= "${decoration:opt}";
 	fragments["pre_main"]					= "${pre_main:opt}";
@@ -1361,7 +1367,10 @@ void createCombinedModule (vk::SourceCollections& dst, InstanceContext ctx)
 
 	// opEntryPoints
 	{
-		opEntryPoints << "OpEntryPoint Vertex %vert_main \"main\" %vert_Position %vert_vtxColor %vert_color %vert_vtxPosition %vert_vertex_id %vert_instance_id\n";
+		if (useTessellation)
+			opEntryPoints << "OpEntryPoint Vertex %vert_main \"main\" %vert_Position %vert_vtxColor %vert_color %vert_vtxPosition %vert_vertex_id %vert_instance_id\n";
+		else
+			opEntryPoints << "OpEntryPoint Vertex %vert_main \"main\" %vert_Position %vert_vtxColor %vert_color %vert_glPerVertex %vert_vertex_id %vert_instance_id\n";
 
 		if (useGeometry)
 			opEntryPoints << "OpEntryPoint Geometry %geom_main \"main\" %geom_out_gl_position %geom_gl_in %geom_out_color %geom_in_color\n";
@@ -1396,20 +1405,25 @@ void createCombinedModule (vk::SourceCollections& dst, InstanceContext ctx)
 
 	combinedModule <<	"OpExecutionMode %frag_main OriginUpperLeft\n"
 
-						"; Vertex decorations\n";
+						"; Vertex decorations\n"
+						"OpDecorate %vert_Position Location 0\n"
+						"OpDecorate %vert_vtxColor Location 1\n"
+						"OpDecorate %vert_color Location 1\n"
+						"OpDecorate %vert_vertex_id BuiltIn VertexIndex\n"
+						"OpDecorate %vert_instance_id BuiltIn InstanceIndex\n";
 
 	// If tessellation is used, vertex position is written by tessellation stage.
 	// Otherwise it will be written by vertex stage.
 	if (useTessellation)
 		combinedModule <<	"OpDecorate %vert_vtxPosition Location 2\n";
 	else
-		combinedModule <<	"OpDecorate %vert_vtxPosition BuiltIn Position\n";
-
-	combinedModule	<<	"OpDecorate %vert_Position Location 0\n"
-						"OpDecorate %vert_vtxColor Location 1\n"
-						"OpDecorate %vert_color Location 1\n"
-						"OpDecorate %vert_vertex_id BuiltIn VertexIndex\n"
-						"OpDecorate %vert_instance_id BuiltIn InstanceIndex\n";
+	{
+		combinedModule <<	"OpMemberDecorate %vert_per_vertex_out 0 BuiltIn Position\n"
+							"OpMemberDecorate %vert_per_vertex_out 1 BuiltIn PointSize\n"
+							"OpMemberDecorate %vert_per_vertex_out 2 BuiltIn ClipDistance\n"
+							"OpMemberDecorate %vert_per_vertex_out 3 BuiltIn CullDistance\n"
+							"OpDecorate %vert_per_vertex_out Block\n";
+	}
 
 	if (useGeometry)
 	{
@@ -1458,12 +1472,20 @@ void createCombinedModule (vk::SourceCollections& dst, InstanceContext ctx)
 						SPIRV_ASSEMBLY_ARRAYS
 
 						"; Vertex Variables\n"
-						"%vert_vtxPosition = OpVariable %op_v4f32 Output\n"
 						"%vert_Position = OpVariable %ip_v4f32 Input\n"
 						"%vert_vtxColor = OpVariable %op_v4f32 Output\n"
 						"%vert_color = OpVariable %ip_v4f32 Input\n"
 						"%vert_vertex_id = OpVariable %ip_i32 Input\n"
 						"%vert_instance_id = OpVariable %ip_i32 Input\n";
+
+	if (useTessellation)
+		combinedModule <<	"%vert_vtxPosition = OpVariable %op_v4f32 Output\n";
+	else
+	{
+		combinedModule <<	"%vert_per_vertex_out = OpTypeStruct %v4f32 %f32 %a1f32 %a1f32\n"
+							"%vert_op_per_vertex_out = OpTypePointer Output %vert_per_vertex_out\n"
+							"%vert_glPerVertex = OpVariable %vert_op_per_vertex_out Output\n";
+	}
 
 	if (useGeometry)
 	{
@@ -1505,9 +1527,17 @@ void createCombinedModule (vk::SourceCollections& dst, InstanceContext ctx)
 						"; Vertex Entry\n"
 						"%vert_main = OpFunction %void None %fun\n"
 						"%vert_label = OpLabel\n"
-						"%vert_tmp_position = OpLoad %v4f32 %vert_Position\n"
-						"OpStore %vert_vtxPosition %vert_tmp_position\n"
-						"%vert_tmp_color = OpLoad %v4f32 %vert_color\n"
+						"%vert_tmp_position = OpLoad %v4f32 %vert_Position\n";
+
+	if (useTessellation)
+		combinedModule <<	"OpStore %vert_vtxPosition %vert_tmp_position\n";
+	else
+	{
+		combinedModule <<	"%vert_out_pos_ptr = OpAccessChain %op_v4f32 %vert_glPerVertex %c_i32_0\n"
+							"OpStore %vert_out_pos_ptr %vert_tmp_position\n";
+	}
+
+	combinedModule <<	"%vert_tmp_color = OpLoad %v4f32 %vert_color\n"
 						"OpStore %vert_vtxColor %vert_tmp_color\n"
 						"OpReturn\n"
 						"OpFunctionEnd\n";
@@ -2474,38 +2504,6 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 	{
 		if (!de::contains(context.getDeviceExtensions().begin(), context.getDeviceExtensions().end(), *i))
 			TCU_THROW(NotSupportedError, (std::string("Extension not supported: ") + *i).c_str());
-	}
-
-	{
-		for (deUint32 featureNdx = 0; featureNdx < instance.requiredDeviceFeatures.size(); ++featureNdx)
-		{
-			const string& feature = instance.requiredDeviceFeatures[featureNdx];
-
-			if (feature == "shaderInt16")
-			{
-				if (features.shaderInt16 != VK_TRUE)
-					TCU_THROW(NotSupportedError, "Device feature not supported: shaderInt16");
-			}
-			else if (feature == "shaderInt64")
-			{
-				if (features.shaderInt64 != VK_TRUE)
-					TCU_THROW(NotSupportedError, "Device feature not supported: shaderInt64");
-			}
-			else if (feature == "shaderFloat64")
-			{
-				if (features.shaderFloat64 != VK_TRUE)
-					TCU_THROW(NotSupportedError, "Device feature not supported: shaderFloat64");
-			}
-			else if (feature == "fragmentStoresAndAtomics")
-			{
-				if (features.fragmentStoresAndAtomics != VK_TRUE)
-					TCU_THROW(NotSupportedError, "Device feature not supported: fragmentStoresAndAtomics");
-			}
-			else
-			{
-				TCU_THROW(InternalError, (std::string("Unimplemented physical device feature: ") + feature).c_str());
-			}
-		}
 	}
 
 	// Core features
@@ -4141,7 +4139,6 @@ void createTestForStage (vk::VkShaderStageFlagBits	stage,
 						 const GraphicsResources&	resources,
 						 const GraphicsInterfaces&	interfaces,
 						 const vector<string>&		extensions,
-						 const vector<string>&		features,
 						 VulkanFeatures				vulkanFeatures,
 						 tcu::TestCaseGroup*		tests,
 						 const qpTestResult			failResult,
@@ -4156,7 +4153,7 @@ void createTestForStage (vk::VkShaderStageFlagBits	stage,
 	if (!specConstants.empty())
 		specConstantMap[stage] = specConstants;
 
-	InstanceContext					ctx					(inputColors, outputColors, testCodeFragments, specConstantMap, pushConstants, resources, interfaces, extensions, features, vulkanFeatures, stage);
+	InstanceContext					ctx					(inputColors, outputColors, testCodeFragments, specConstantMap, pushConstants, resources, interfaces, extensions, vulkanFeatures, stage);
 	for (size_t i = 0; i < pipeline.size(); ++i)
 	{
 		ctx.moduleMap[pipeline[i].moduleName].push_back(std::make_pair(pipeline[i].entryName, pipeline[i].stage));
@@ -4180,7 +4177,6 @@ void createTestsForAllStages (const std::string&			name,
 							  const GraphicsResources&		resources,
 							  const GraphicsInterfaces&		interfaces,
 							  const vector<string>&			extensions,
-							  const vector<string>&			features,
 							  VulkanFeatures				vulkanFeatures,
 							  tcu::TestCaseGroup*			tests,
 							  const qpTestResult			failResult,
@@ -4188,23 +4184,23 @@ void createTestsForAllStages (const std::string&			name,
 {
 	createTestForStage(VK_SHADER_STAGE_VERTEX_BIT, name + "_vert",
 					   inputColors, outputColors, testCodeFragments, specConstants, pushConstants, resources,
-					   interfaces, extensions, features, vulkanFeatures, tests, failResult, failMessageTemplate);
+					   interfaces, extensions, vulkanFeatures, tests, failResult, failMessageTemplate);
 
 	createTestForStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, name + "_tessc",
 					   inputColors, outputColors, testCodeFragments, specConstants, pushConstants, resources,
-					   interfaces, extensions, features, vulkanFeatures, tests, failResult, failMessageTemplate);
+					   interfaces, extensions, vulkanFeatures, tests, failResult, failMessageTemplate);
 
 	createTestForStage(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, name + "_tesse",
 					   inputColors, outputColors, testCodeFragments, specConstants, pushConstants, resources,
-					   interfaces, extensions, features, vulkanFeatures, tests, failResult, failMessageTemplate);
+					   interfaces, extensions, vulkanFeatures, tests, failResult, failMessageTemplate);
 
 	createTestForStage(VK_SHADER_STAGE_GEOMETRY_BIT, name + "_geom",
 					   inputColors, outputColors, testCodeFragments, specConstants, pushConstants, resources,
-					   interfaces, extensions, features, vulkanFeatures, tests, failResult, failMessageTemplate);
+					   interfaces, extensions, vulkanFeatures, tests, failResult, failMessageTemplate);
 
 	createTestForStage(VK_SHADER_STAGE_FRAGMENT_BIT, name + "_frag",
 					   inputColors, outputColors, testCodeFragments, specConstants, pushConstants, resources,
-					   interfaces, extensions, features, vulkanFeatures, tests, failResult, failMessageTemplate);
+					   interfaces, extensions, vulkanFeatures, tests, failResult, failMessageTemplate);
 }
 
 void addTessCtrlTest (tcu::TestCaseGroup* group, const char* name, const map<string, string>& fragments)
@@ -4214,7 +4210,7 @@ void addTessCtrlTest (tcu::TestCaseGroup* group, const char* name, const map<str
 
 	createTestForStage(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, name,
 					   defaultColors, defaultColors, fragments, SpecConstants(), PushConstants(), GraphicsResources(),
-					   GraphicsInterfaces(), vector<string>(), vector<string>(), VulkanFeatures(), group);
+					   GraphicsInterfaces(), vector<string>(), VulkanFeatures(), group);
 }
 
 } // SpirVAssembly

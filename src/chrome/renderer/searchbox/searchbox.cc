@@ -242,19 +242,6 @@ void SearchBox::LogMostVisitedNavigation(
   embedded_search_service_->LogMostVisitedNavigation(page_seq_no_, impression);
 }
 
-void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {
-  embedded_search_service_->ChromeIdentityCheck(
-      page_seq_no_, identity,
-      base::BindOnce(&SearchBox::ChromeIdentityCheckResult,
-                     weak_ptr_factory_.GetWeakPtr(), identity));
-}
-
-void SearchBox::CheckIsUserSyncingHistory() {
-  embedded_search_service_->HistorySyncCheck(
-      page_seq_no_, base::BindOnce(&SearchBox::HistorySyncCheckResult,
-                                   weak_ptr_factory_.GetWeakPtr()));
-}
-
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
   GURL url = GetURLForMostVisitedItem(most_visited_item_id);
@@ -377,10 +364,6 @@ std::string SearchBox::FixupAndValidateUrl(const std::string& url) const {
   return internal::FixupAndValidateUrl(url);
 }
 
-void SearchBox::SetCustomBackgroundURL(const GURL& background_url) {
-  embedded_search_service_->SetCustomBackgroundURL(background_url);
-}
-
 void SearchBox::SetCustomBackgroundURLWithAttributions(
     const GURL& background_url,
     const std::string& attribution_line_1,
@@ -421,14 +404,6 @@ void SearchBox::SetPageSequenceNumber(int page_seq_no) {
   page_seq_no_ = page_seq_no;
 }
 
-void SearchBox::ChromeIdentityCheckResult(const base::string16& identity,
-                                          bool identity_match) {
-  if (can_run_js_in_renderframe_) {
-    SearchBoxExtension::DispatchChromeIdentityCheckResult(
-        render_frame()->GetWebFrame(), identity, identity_match);
-  }
-}
-
 void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
                              OmniboxFocusChangeReason reason) {
   bool key_capture_enabled = new_focus_state == OMNIBOX_FOCUS_INVISIBLE;
@@ -456,13 +431,6 @@ void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
     DVLOG(1) << render_frame() << " FocusChange";
     if (can_run_js_in_renderframe_)
       SearchBoxExtension::DispatchFocusChange(render_frame()->GetWebFrame());
-  }
-}
-
-void SearchBox::HistorySyncCheckResult(bool sync_history) {
-  if (can_run_js_in_renderframe_) {
-    SearchBoxExtension::DispatchHistorySyncCheckResult(
-        render_frame()->GetWebFrame(), sync_history);
   }
 }
 

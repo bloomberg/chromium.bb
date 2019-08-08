@@ -118,6 +118,9 @@ component("bindings") {
     "associated_interface_ptr.h",
     "associated_interface_ptr_info.h",
     "associated_interface_request.h",
+    "associated_receiver.h",
+    "associated_receiver_set.h",
+    "associated_remote.h",
     "binding.h",
     "binding_set.h",
     "callback_helpers.h",
@@ -162,6 +165,8 @@ component("bindings") {
     "lib/task_runner_helper.cc",
     "lib/task_runner_helper.h",
     "native_enum.h",
+    "pending_associated_receiver.h",
+    "pending_associated_remote.h",
     "pending_receiver.h",
     "pending_remote.h",
     "pipe_control_message_handler.h",
@@ -171,7 +176,10 @@ component("bindings") {
     "receiver.h",
     "receiver_set.h",
     "remote.h",
+    "self_owned_receiver.h",
     "sequence_local_sync_event_watcher.h",
+    "shared_associated_remote.h",
+    "shared_remote.h",
     "strong_associated_binding.h",
     "strong_binding.h",
     "strong_binding_set.h",
@@ -181,6 +189,7 @@ component("bindings") {
     "sync_handle_watcher.h",
     "thread_safe_interface_ptr.h",
     "unique_ptr_impl_ref_traits.h",
+    "unique_receiver_set.h",
   ]
 
   if (enable_random_mojo_delays) {

@@ -40,9 +40,9 @@ ConflictResolution ModelTypeSyncBridge::ResolveConflict(
     const std::string& storage_key,
     const EntityData& remote_data) const {
   if (remote_data.is_deleted()) {
-    return ConflictResolution::UseLocal();
+    return ConflictResolution::kUseLocal;
   }
-  return ConflictResolution::UseRemote();
+  return ConflictResolution::kUseRemote;
 }
 
 void ModelTypeSyncBridge::ApplyStopSyncChanges(

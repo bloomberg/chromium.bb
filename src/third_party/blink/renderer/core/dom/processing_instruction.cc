@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -32,6 +33,7 @@
 #include "third_party/blink/renderer/core/xml/document_xslt.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"  // for parseAttributes()
 #include "third_party/blink/renderer/core/xml/xsl_style_sheet.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -206,15 +208,15 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   } else {
     DCHECK(is_css_);
     CSSStyleSheetResource* style_resource = ToCSSStyleSheetResource(resource);
-    CSSParserContext* parser_context = CSSParserContext::Create(
+    auto* parser_context = MakeGarbageCollected<CSSParserContext>(
         GetDocument(), style_resource->GetResponse().ResponseUrl(),
         style_resource->GetResponse().IsCorsSameOrigin(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
 
-    StyleSheetContents* new_sheet =
-        StyleSheetContents::Create(style_resource->Url(), parser_context);
+    auto* new_sheet = MakeGarbageCollected<StyleSheetContents>(
+        parser_context, style_resource->Url());
 
-    CSSStyleSheet* css_sheet = CSSStyleSheet::Create(new_sheet, *this);
+    auto* css_sheet = MakeGarbageCollected<CSSStyleSheet>(new_sheet, *this);
     css_sheet->setDisabled(alternate_);
     css_sheet->SetTitle(title_);
     if (!alternate_ && !title_.IsEmpty()) {

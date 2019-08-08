@@ -4,26 +4,26 @@
 
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 
-#include <algorithm>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/printing/automatic_usb_printer_configurer.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
+#include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
+#include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/browser/chromeos/printing/zeroconf_printer_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -34,15 +34,6 @@
 
 namespace chromeos {
 namespace {
-
-// This is akin to python's filter() builtin, but with reverse polarity on the
-// test function -- *remove* all entries in printers for which test_fn returns
-// true, discard the rest.
-void FilterOutPrinters(std::vector<Printer>* printers,
-                       std::function<bool(const Printer&)> test_fn) {
-  auto new_end = std::remove_if(printers->begin(), printers->end(), test_fn);
-  printers->resize(new_end - printers->begin());
-}
 
 class CupsPrintersManagerImpl : public CupsPrintersManager,
                                 public SyncedPrintersManager::Observer {
@@ -58,6 +49,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                           std::unique_ptr<PrinterDetector> usb_detector,
                           std::unique_ptr<PrinterDetector> zeroconf_detector,
                           scoped_refptr<PpdProvider> ppd_provider,
+                          std::unique_ptr<PrinterConfigurer> printer_configurer,
+                          std::unique_ptr<UsbPrinterNotificationController>
+                              usb_notification_controller,
                           PrinterEventTracker* event_tracker,
                           PrefService* pref_service)
       : synced_printers_manager_(synced_printers_manager),
@@ -65,16 +59,25 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         usb_detector_(std::move(usb_detector)),
         zeroconf_detector_(std::move(zeroconf_detector)),
         ppd_provider_(std::move(ppd_provider)),
+        usb_notification_controller_(std::move(usb_notification_controller)),
+        auto_usb_printer_configurer_(std::move(printer_configurer),
+                                     this,
+                                     usb_notification_controller_.get()),
         event_tracker_(event_tracker),
-        printers_(kNumPrinterClasses),
         weak_ptr_factory_(this) {
+    // Add the |auto_usb_printer_configurer_| as an observer.
+    AddObserver(&auto_usb_printer_configurer_);
+
     // Prime the printer cache with the saved and enterprise printers.
-    printers_[kSaved] = synced_printers_manager_->GetSavedPrinters();
-    RebuildConfiguredPrintersIndex();
+    printers_.ReplacePrintersInClass(
+        PrinterClass::kSaved, synced_printers_manager_->GetSavedPrinters());
     synced_printers_manager_observer_.Add(synced_printers_manager_);
+
+    std::vector<Printer> enterprise_printers;
     enterprise_printers_are_ready_ =
-        synced_printers_manager_->GetEnterprisePrinters(
-            &(printers_[kEnterprise]));
+        synced_printers_manager_->GetEnterprisePrinters(&enterprise_printers);
+    printers_.ReplacePrintersInClass(PrinterClass::kEnterprise,
+                                     enterprise_printers);
 
     // Callbacks may ensue immediately when the observer proxies are set up, so
     // these instantiations must come after everything else is initialized.
@@ -99,45 +102,33 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Public API function.
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    if (!native_printers_allowed_.GetValue() && printer_class != kEnterprise) {
+    if (!native_printers_allowed_.GetValue() &&
+        printer_class != PrinterClass::kEnterprise) {
       // If native printers are disabled then simply return an empty vector.
       LOG(WARNING) << "Attempting to retrieve native printers when "
                       "UserNativePrintersAllowed is set to false";
       return {};
     }
+
     if (send_username_and_filename_.GetValue()) {
-      std::vector<Printer> result(printers_[printer_class].size());
-      auto it_end = std::copy_if(
-          printers_[printer_class].begin(), printers_[printer_class].end(),
-          result.begin(), [](const Printer& printer) {
-            return !printer.HasNetworkProtocol() ||
-                   printer.GetProtocol() == Printer::kIpps;
-          });
-      result.resize(it_end - result.begin());
-      return result;
+      // If |send_username_and_filename_| is set, only return printers with a
+      // secure protocol over which we can send username and filename.
+      return printers_.GetSecurePrinters(printer_class);
     }
-    return printers_.at(printer_class);
+
+    // Without user data there is not need to filter out non-enterprise or
+    // insecure printers so return all the printers in |printer_class|.
+    return printers_.Get(printer_class);
   }
 
   // Public API function.
-  void RemoveUnavailablePrinters(
-      std::vector<Printer>* printers) const override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    FilterOutPrinters(printers, [this](const Printer& printer) {
-      return !PrinterAvailable(printer);
-    });
-  }
-
-  // Public API function.
-  void UpdateSavedPrinter(const Printer& printer) override {
+  void SavePrinter(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (!native_printers_allowed_.GetValue()) {
-      LOG(WARNING) << "UpdateSavedPrinter() called when "
+      LOG(WARNING) << "SavePrinter() called when "
                       "UserNativePrintersAllowed is set to false";
       return;
     }
-    // If this is an 'add' instead of just an update, record the event.
-    MaybeRecordInstallation(printer, false /* is_automatic_installation */);
     synced_printers_manager_->UpdateSavedPrinter(printer);
     // Note that we will rebuild our lists when we get the observer
     // callback from |synced_printers_manager_|.
@@ -179,19 +170,21 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       return;
     }
     MaybeRecordInstallation(printer, is_automatic);
-    synced_printers_manager_->PrinterInstalled(printer);
+    MarkPrinterInstalledWithCups(printer);
   }
 
   // Public API function.
   bool IsPrinterInstalled(const Printer& printer) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    return synced_printers_manager_->IsConfigurationCurrent(printer);
+    const auto found = installed_printer_fingerprints_.find(printer.id());
+    if (found == installed_printer_fingerprints_.end()) {
+      return false;
+    }
+
+    return found->second == PrinterConfigurer::SetupFingerprint(printer);
   }
 
   // Public API function.
-  // Note this is linear in the number of printers.  If the number of printers
-  // gets so large that a linear search is prohibative, we'll have to rethink
-  // more than just this function.
   base::Optional<Printer> GetPrinter(const std::string& id) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (!native_printers_allowed_.GetValue()) {
@@ -200,38 +193,36 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       return GetEnterprisePrinter(id);
     }
 
-    for (const auto& printer_list : printers_) {
-      for (const auto& printer : printer_list) {
-        if (printer.id() == id) {
-          return printer;
-        }
-      }
-    }
-    return base::nullopt;
+    return printers_.Get(id);
   }
 
   // SyncedPrintersManager::Observer implementation
   void OnSavedPrintersChanged() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    printers_[kSaved] = synced_printers_manager_->GetSavedPrinters();
-    RebuildConfiguredPrintersIndex();
+    ResetNearbyPrintersLists();
+    printers_.ReplacePrintersInClass(
+        PrinterClass::kSaved, synced_printers_manager_->GetSavedPrinters());
     RebuildDetectedLists();
-    NotifyObservers({kSaved});
+    NotifyObservers({PrinterClass::kSaved});
   }
 
   // SyncedPrintersManager::Observer implementation
   void OnEnterprisePrintersChanged() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    std::vector<Printer> enterprise_printers;
     const bool enterprise_printers_are_ready =
-        synced_printers_manager_->GetEnterprisePrinters(
-            &(printers_[kEnterprise]));
-    if (enterprise_printers_are_ready && !enterprise_printers_are_ready_) {
-      enterprise_printers_are_ready_ = true;
-      for (auto& observer : observer_list_) {
-        observer.OnEnterprisePrintersInitialized();
+        synced_printers_manager_->GetEnterprisePrinters(&enterprise_printers);
+    if (enterprise_printers_are_ready) {
+      printers_.ReplacePrintersInClass(PrinterClass::kEnterprise,
+                                       std::move(enterprise_printers));
+      if (!enterprise_printers_are_ready_) {
+        enterprise_printers_are_ready_ = true;
+        for (auto& observer : observer_list_) {
+          observer.OnEnterprisePrintersInitialized();
+        }
       }
     }
-    NotifyObservers({kEnterprise});
+    NotifyObservers({PrinterClass::kEnterprise});
   }
 
   // Callback for PrinterDetectors.
@@ -252,32 +243,22 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
  private:
   base::Optional<Printer> GetEnterprisePrinter(const std::string& id) const {
-    for (const auto& printer : printers_[kEnterprise]) {
-      if (printer.id() == id) {
-        return printer;
-      }
-    }
-    return base::nullopt;
+    return printers_.Get(PrinterClass::kEnterprise, id);
+  }
+
+  // TODO(baileyberro): Remove the need for this function by pushing additional
+  // logic into PrintersMap. https://crbug.com/956172
+  void ResetNearbyPrintersLists() {
+    printers_.Clear(PrinterClass::kAutomatic);
+    printers_.Clear(PrinterClass::kDiscovered);
   }
 
   // Notify observers on the given classes the the relevant lists have changed.
-  void NotifyObservers(
-      const std::vector<CupsPrintersManager::PrinterClass>& printer_classes) {
+  void NotifyObservers(const std::vector<PrinterClass>& printer_classes) {
     for (auto& observer : observer_list_) {
       for (auto printer_class : printer_classes) {
-        observer.OnPrintersChanged(printer_class, printers_[printer_class]);
+        observer.OnPrintersChanged(printer_class, printers_.Get(printer_class));
       }
-    }
-  }
-
-  // Rebuild the index from printer id to index for configured printers.
-  // TODO(baileyberro): Update ConfiguredPrintersIndex to support saved and
-  // unsaved printers, since either could need an updated URI.
-  void RebuildConfiguredPrintersIndex() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    configured_printers_index_.clear();
-    for (size_t i = 0; i < printers_[kSaved].size(); ++i) {
-      configured_printers_index_[printers_[kSaved][i].id()] = i;
     }
   }
 
@@ -340,28 +321,14 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
   }
 
-  // Return whether or not we believe this printer is currently available for
-  // printing.  This is not a perfect test -- we just assume any IPP printers
-  // are available because, in cases where there are a large number of
-  // printers available, probing IPP printers would generate too much network
-  // spam.  This is intended to help filter out local printers that are not
-  // available (USB, zeroconf, ...)
-  //
-  // TODO(justincarlson) - Implement this.  Until it's implemented, we'll never
-  // filter out unavailable printers from potential printer targets.  While
-  // suboptimal, this is ok--it just means that we will fail to print if the
-  // user selects a printer that's not available.
-  bool PrinterAvailable(const Printer& printer) const { return true; }
-
   void AddDetectedList(
       const std::vector<PrinterDetector::DetectedPrinter>& detected_list) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const PrinterDetector::DetectedPrinter& detected : detected_list) {
       const std::string& detected_printer_id = detected.printer.id();
-
-      if (base::ContainsKey(configured_printers_index_, detected_printer_id)) {
-        // It's already in the configured class, don't need to do anything
-        // else here.
+      if (printers_.IsPrinterInClass(PrinterClass::kSaved,
+                                     detected_printer_id)) {
+        // It's already in the saved class, don't need to do anything else here.
         continue;
       }
 
@@ -369,17 +336,21 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       // those printers can go directly into the automatic class without further
       // processing.
       if (detected.printer.IsIppEverywhere()) {
-        printers_[kAutomatic].push_back(detected.printer);
+        printers_.Insert(PrinterClass::kAutomatic, detected.printer);
         continue;
       }
       if (ppd_resolution_tracker_.IsResolutionComplete(detected_printer_id)) {
+        auto printer = detected.printer;
         if (!ppd_resolution_tracker_.WasResolutionSuccessful(
                 detected_printer_id)) {
-          auto printer = detected.printer;
           if (!printer.supports_ippusb()) {
             // We couldn't figure out this printer, so it's in the discovered
             // class.
-            printers_[kDiscovered].push_back(printer);
+            if (printer.IsUsbProtocol()) {
+              printer.set_manufacturer(
+                  ppd_resolution_tracker_.GetManufacturer(detected_printer_id));
+            }
+            printers_.Insert(PrinterClass::kDiscovered, printer);
             continue;
           }
           // If the detected printer supports ipp-over-usb and we could not find
@@ -390,13 +361,13 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                                  detected.ppd_search_data.usb_vendor_id,
                                  detected.ppd_search_data.usb_product_id));
           printer.mutable_ppd_reference()->autoconf = true;
-          printers_[kAutomatic].push_back(printer);
+          printers_.Insert(PrinterClass::kAutomatic, printer);
         } else {
           // We have a ppd reference, so we think we can set this up
           // automatically.
-          printers_[kAutomatic].push_back(detected.printer);
-          *printers_[kAutomatic].back().mutable_ppd_reference() =
+          *printer.mutable_ppd_reference() =
               ppd_resolution_tracker_.GetPpdReference(detected_printer_id);
+          printers_.Insert(PrinterClass::kAutomatic, printer);
         }
       } else {
         // Didn't find an entry for this printer in the PpdReferences cache.  We
@@ -404,7 +375,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         // PpdReference.  If there's not already an outstanding request for one,
         // start one.  When the request comes back, we'll rerun classification
         // and then should be able to figure out where this printer belongs.
-
         if (!ppd_resolution_tracker_.IsResolutionPending(detected_printer_id)) {
           ppd_resolution_tracker_.MarkResolutionPending(detected_printer_id);
           ppd_provider_->ResolvePpdReference(
@@ -439,24 +409,34 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // kDiscovered).
   void RebuildDetectedLists() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    printers_[kAutomatic].clear();
-    printers_[kDiscovered].clear();
+    ResetNearbyPrintersLists();
     AddDetectedList(usb_detections_);
     AddDetectedList(zeroconf_detections_);
-    NotifyObservers({kAutomatic, kDiscovered});
+    NotifyObservers({PrinterClass::kAutomatic, PrinterClass::kDiscovered});
   }
 
   // Callback invoked on completion of PpdProvider::ResolvePpdReference.
   void ResolvePpdReferenceDone(const std::string& printer_id,
                                PpdProvider::CallbackResultCode code,
-                               const Printer::PpdReference& ref) {
+                               const Printer::PpdReference& ref,
+                               const std::string& usb_manufacturer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (code == PpdProvider::SUCCESS) {
       ppd_resolution_tracker_.MarkResolutionSuccessful(printer_id, ref);
     } else {
       ppd_resolution_tracker_.MarkResolutionFailed(printer_id);
+      if (!usb_manufacturer.empty()) {
+        ppd_resolution_tracker_.SetManufacturer(printer_id, usb_manufacturer);
+      }
     }
     RebuildDetectedLists();
+  }
+
+  // Records that |printer| has been installed in CUPS.
+  void MarkPrinterInstalledWithCups(const Printer& printer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    installed_printer_fingerprints_[printer.id()] =
+        PrinterConfigurer::SetupFingerprint(printer);
   }
 
   SEQUENCE_CHECKER(sequence_);
@@ -476,26 +456,28 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   scoped_refptr<PpdProvider> ppd_provider_;
 
+  std::unique_ptr<UsbPrinterNotificationController>
+      usb_notification_controller_;
+
+  AutomaticUsbPrinterConfigurer auto_usb_printer_configurer_;
+
   // Not owned
   PrinterEventTracker* const event_tracker_;
 
   // Categorized printers.  This is indexed by PrinterClass.
-  std::vector<std::vector<Printer>> printers_;
+  PrintersMap printers_;
 
   // Equals true if the list of enterprise printers and related policies
   // is initialized and configured correctly.
   bool enterprise_printers_are_ready_ = false;
 
-  // Printer ids that occur in one of our categories or printers.
-  std::unordered_set<std::string> known_printer_ids_;
-
   // Tracks PpdReference resolution. Also stores USB manufacturer string if
   // available.
   PpdResolutionTracker ppd_resolution_tracker_;
 
-  // Map from printer id to printers_[kSaved] index for configured
-  // printers.
-  std::unordered_map<std::string, int> configured_printers_index_;
+  // Map of printer ids to PrinterConfigurer setup fingerprints at the time
+  // the printers was last installed with CUPS.
+  std::map<std::string, std::string> installed_printer_fingerprints_;
 
   base::ObserverList<CupsPrintersManager::Observer>::Unchecked observer_list_;
 
@@ -518,7 +500,8 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
       SyncedPrintersManagerFactory::GetInstance()->GetForBrowserContext(
           profile),
       UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(),
-      CreatePpdProvider(profile),
+      CreatePpdProvider(profile), PrinterConfigurer::Create(profile),
+      UsbPrinterNotificationController::Create(profile),
       PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile),
       profile->GetPrefs());
 }
@@ -529,12 +512,16 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::CreateForTesting(
     std::unique_ptr<PrinterDetector> usb_detector,
     std::unique_ptr<PrinterDetector> zeroconf_detector,
     scoped_refptr<PpdProvider> ppd_provider,
+    std::unique_ptr<PrinterConfigurer> printer_configurer,
+    std::unique_ptr<UsbPrinterNotificationController>
+        usb_notification_controller,
     PrinterEventTracker* event_tracker,
     PrefService* pref_service) {
   return std::make_unique<CupsPrintersManagerImpl>(
       synced_printers_manager, std::move(usb_detector),
-      std::move(zeroconf_detector), std::move(ppd_provider), event_tracker,
-      pref_service);
+      std::move(zeroconf_detector), std::move(ppd_provider),
+      std::move(printer_configurer), std::move(usb_notification_controller),
+      event_tracker, pref_service);
 }
 
 // static

@@ -4,12 +4,8 @@
 
 /** @fileoverview Runs the Polymer Settings tests. */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 
@@ -25,8 +21,9 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
 
   /** @override */
   get extraLibraries() {
-    return PolymerTest.getLibraries(ROOT_PATH).concat([
-      ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    return [
+      ...super.extraLibraries,
+      '//ui/webui/resources/js/assert.js',
       'test_util.js',
       '../mock_controller.js',
       '../../../../../ui/webui/resources/js/promise_resolver.js',
@@ -35,7 +32,7 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'test_service.js',
-    ]);
+    ];
   }
 
   /** @override */
@@ -46,6 +43,25 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
   // The name of the mocha suite. Should be overriden by subclasses.
   get suiteName() {
     return null;
+  }
+
+  /** @override */
+  get loaderFile() {
+    return 'subpage_loader.html';
+  }
+
+  // The name of the custom element under test. Should be overridden by
+  // subclasses that are loading the URL of a non-element.
+  get customElementName() {
+    const r = /chrome\:\/\/extensions\/(([a-zA-Z-_]+)\/)?([a-zA-Z-_]+)\.html/;
+    const result = r.exec(this.browsePreload);
+    if (result && result.length > 3) {
+      const element = result[3].replace(/_/gi, '-');
+      return result[2] === undefined ? 'extensions-' + element : element;
+    }
+
+    // Loading the main page, return extensions manager.
+    return 'extensions-manager';
   }
 
   /** @param {string} testName The name of the test to run. */
@@ -210,6 +226,12 @@ CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
       'activity_log_test.js',
     ]);
   }
+
+  /** @override */
+  get customElementName() {
+    // This element's naming scheme is unusual.
+    return 'extensions-activity-log';
+  }
 };
 
 TEST_F('CrExtensionsActivityLogTest', 'All', () => {
@@ -242,7 +264,7 @@ TEST_F('CrExtensionsActivityLogHistoryTest', 'All', () => {
 CrExtensionsActivityLogHistoryItemTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_item.html';
+    return 'chrome://extensions/activity_log/activity_log_history_item.html';
   }
 
   get extraLibraries() {
@@ -502,6 +524,7 @@ CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'manager_test.js',
     ]);
   }
@@ -548,6 +571,7 @@ CrExtensionsManagerTestWithIdQueryParam =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'manager_test.js',
     ]);
   }
@@ -804,6 +828,12 @@ CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
   get suiteName() {
     return extension_navigation_helper_tests.suiteName;
   }
+
+  /** @override */
+  get customElementName() {
+    // This test is verifying a class, not a custom element.
+    return null;
+  }
 };
 
 TEST_F('CrExtensionsNavigationHelperTest', 'Basic', function() {
@@ -829,8 +859,11 @@ TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
 
 CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get suiteName() {
-    return 'ErrorConsoleTests';
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'error_console_test.js',
+    ]);
   }
 
   /** @override */
@@ -851,38 +884,8 @@ CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   }
 };
 
-TEST_F('CrExtensionsErrorConsoleTest', 'TestUpDownErrors', function() {
-  const STACK_ERRORS = 'li';
-  const ACTIVE_ERROR_IN_STACK = 'li[tabindex="0"]';
-
-  let initialFocus =
-      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0];
-  assertTrue(!!initialFocus);
-  assertEquals(
-      1,
-      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK).length);
-  assertEquals(
-      4, extension_test_util.findMatches(document, STACK_ERRORS).length);
-
-  // Pressing up when the first item is focused should NOT change focus.
-  MockInteractions.keyDownOn(initialFocus, 38, '', 'ArrowUp');
-  assertEquals(
-      initialFocus,
-      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0]);
-
-  // Pressing down when the first item is focused should change focus.
-  MockInteractions.keyDownOn(initialFocus, 40, '', 'ArrowDown');
-  assertNotEquals(
-      initialFocus,
-      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0]);
-
-  // Pressing up when the second item is focused should focus the first again.
-  MockInteractions.keyDownOn(initialFocus, 38, '', 'ArrowUp');
-  assertEquals(
-      initialFocus,
-      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0]);
-
-  testDone();
+TEST_F('CrExtensionsErrorConsoleTest', 'TestUpDownErrors', () => {
+  mocha.run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -961,7 +964,7 @@ GEN('#endif');
 
 CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get browserPreload() {
+  get browsePreload() {
     return 'chrome://extensions/runtime_hosts_dialog.html';
   }
 
@@ -981,7 +984,7 @@ TEST_F('CrExtensionsRuntimeHostsDialogTest', 'All', () => {
 
 CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get browserPreload() {
+  get browsePreload() {
     return 'chrome://extensions/runtime_host_permissions.html';
   }
 
@@ -1002,7 +1005,7 @@ TEST_F('CrExtensionsRuntimeHostPermissionsTest', 'All', () => {
 CrExtensionsHostPermissionsToggleListTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
-  get browserPreload() {
+  get browsePreload() {
     return 'chrome://extensions/host_permissions_toggle_list.html';
   }
 

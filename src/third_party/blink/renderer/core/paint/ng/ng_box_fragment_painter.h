@@ -21,7 +21,6 @@ class FillLayer;
 class HitTestLocation;
 class HitTestRequest;
 class HitTestResult;
-class LayoutRect;
 class NGPhysicalFragment;
 class ScopedPaintState;
 struct PaintInfo;
@@ -36,7 +35,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void Paint(const PaintInfo&);
   void PaintObject(const PaintInfo&,
-                   const LayoutPoint&,
+                   const PhysicalOffset&,
                    bool suppress_box_decoration_background = false);
 
   // Hit tests this box fragment.
@@ -57,20 +56,21 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void PaintTextClipMask(GraphicsContext&,
                          const IntRect& mask_rect,
-                         const LayoutPoint& paint_offset,
+                         const PhysicalOffset& paint_offset,
                          bool object_has_multiple_boxes) override;
-  LayoutRect AdjustRectForScrolledContent(const PaintInfo&,
-                                          const BoxPainterBase::FillLayerInfo&,
-                                          const LayoutRect&) override;
+  PhysicalRect AdjustRectForScrolledContent(
+      const PaintInfo&,
+      const BoxPainterBase::FillLayerInfo&,
+      const PhysicalRect&) override;
 
  private:
   bool IsPaintingScrollingBackground(const NGPaintFragment&, const PaintInfo&);
   bool ShouldPaint(const ScopedPaintState&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paint_offset);
+                                    const PhysicalOffset& paint_offset);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
-                                            const LayoutRect&);
+                                            const PhysicalRect&);
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
 
   void PaintInternal(const PaintInfo&);
@@ -78,32 +78,29 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintBlockChildren(const PaintInfo&);
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
-                            const LayoutPoint& paint_offset);
+                            const PhysicalOffset& paint_offset);
   void PaintInlineChildren(NGPaintFragment::ChildList,
                            const PaintInfo&,
-                           const LayoutPoint& paint_offset);
-  void PaintInlineChildrenOutlines(NGPaintFragment::ChildList,
-                                   const PaintInfo&,
-                                   const LayoutPoint& paint_offset);
+                           const PhysicalOffset& paint_offset);
   void PaintInlineChildBoxUsingLegacyFallback(const NGPhysicalFragment&,
                                               const PaintInfo&);
   void PaintBlockFlowContents(const PaintInfo&,
-                              const LayoutPoint& paint_offset);
+                              const PhysicalOffset& paint_offset);
   void PaintAtomicInlineChild(const NGPaintFragment&, const PaintInfo&);
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
-                      const LayoutPoint& paint_offset);
+                      const PhysicalOffset& paint_offset);
   void PaintFloatingChildren(NGPaintFragment::ChildList, const PaintInfo&);
   void PaintFloats(const PaintInfo&);
-  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintOverflowControlsIfNeeded(const PaintInfo&,
-                                     const LayoutPoint& paint_offset);
+                                     const PhysicalOffset& paint_offset);
   void PaintAtomicInline(const PaintInfo&);
   void PaintBackground(const PaintInfo&,
-                       const LayoutRect&,
+                       const PhysicalRect&,
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
-  void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintCarets(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   void RecordHitTestData(const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset);

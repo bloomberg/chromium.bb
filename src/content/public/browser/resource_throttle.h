@@ -58,7 +58,7 @@ class CONTENT_EXPORT ResourceThrottle {
   // Returns the name of the throttle, as a UTF-8 C-string, for logging
   // purposes.  nullptr is not allowed.  Caller does *not* take ownership of the
   // returned string.
-  virtual const char* GetNameForLogging() const = 0;
+  virtual const char* GetNameForLogging() = 0;
 
   // Whether this ResourceThrottle needs to execute WillProcessResponse before
   // any part of the response body is read. Normally this is false. This should

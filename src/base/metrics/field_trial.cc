@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/debug/activity_tracker.h"
 #include "base/logging.h"
@@ -82,33 +81,6 @@ void PickleFieldTrial(const FieldTrial::State& trial_state, Pickle* pickle) {
   // Write params to pickle.
   for (const auto& param : params)
     WriteStringPair(pickle, param.first, param.second);
-}
-
-// Created a time value based on |year|, |month| and |day_of_month| parameters.
-Time CreateTimeFromParams(int year, int month, int day_of_month) {
-  DCHECK_GT(year, 1970);
-  DCHECK_GT(month, 0);
-  DCHECK_LT(month, 13);
-  DCHECK_GT(day_of_month, 0);
-  DCHECK_LT(day_of_month, 32);
-
-  Time::Exploded exploded;
-  exploded.year = year;
-  exploded.month = month;
-  exploded.day_of_week = 0;  // Should be unused.
-  exploded.day_of_month = day_of_month;
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-  Time out_time;
-  if (!Time::FromLocalExploded(exploded, &out_time)) {
-    // TODO(maksims): implement failure handling.
-    // We might just return |out_time|, which is Time(0).
-    NOTIMPLEMENTED();
-  }
-
-  return out_time;
 }
 
 // Returns the boundary value for comparing against the FieldTrial's added
@@ -228,8 +200,6 @@ bool DeserializeGUIDFromStringPieces(base::StringPiece first,
 const int FieldTrial::kNotFinalized = -1;
 const int FieldTrial::kDefaultGroupNumber = 0;
 bool FieldTrial::enable_benchmarking_ = false;
-
-int FieldTrialList::kNoExpirationYear = 0;
 
 //------------------------------------------------------------------------------
 // FieldTrial methods and members.
@@ -448,8 +418,8 @@ bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
 }
 
 bool FieldTrial::GetStateWhileLocked(State* field_trial_state,
-                                     bool include_expired) {
-  if (!include_expired && !enable_field_trial_)
+                                     bool include_disabled) {
+  if (!include_disabled && !enable_field_trial_)
     return false;
   FinalizeGroupChoiceImpl(true);
   field_trial_state->trial_name = &trial_name_;
@@ -477,11 +447,6 @@ FieldTrialList::FieldTrialList(
   DCHECK(!global_);
   DCHECK(!used_without_global_);
   global_ = this;
-
-  Time two_years_from_build_time = GetBuildTime() + TimeDelta::FromDays(730);
-  Time::Exploded exploded;
-  two_years_from_build_time.LocalExplode(&exploded);
-  kNoExpirationYear = exploded.year;
 }
 
 FieldTrialList::~FieldTrialList() {
@@ -500,14 +465,11 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrial(
     const std::string& trial_name,
     FieldTrial::Probability total_probability,
     const std::string& default_group_name,
-    const int year,
-    const int month,
-    const int day_of_month,
     FieldTrial::RandomizationType randomization_type,
     int* default_group_number) {
   return FactoryGetFieldTrialWithRandomizationSeed(
-      trial_name, total_probability, default_group_name, year, month,
-      day_of_month, randomization_type, 0, default_group_number, nullptr);
+      trial_name, total_probability, default_group_name, randomization_type, 0,
+      default_group_number, nullptr);
 }
 
 // static
@@ -515,9 +477,6 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
     const std::string& trial_name,
     FieldTrial::Probability total_probability,
     const std::string& default_group_name,
-    const int year,
-    const int month,
-    const int day_of_month,
     FieldTrial::RandomizationType randomization_type,
     uint32_t randomization_seed,
     int* default_group_number,
@@ -570,8 +529,6 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
 
   FieldTrial* field_trial = new FieldTrial(trial_name, total_probability,
                                            default_group_name, entropy_value);
-  if (GetBuildTime() > CreateTimeFromParams(year, month, day_of_month))
-    field_trial->Disable();
   FieldTrialList::Register(field_trial);
   return field_trial;
 }
@@ -616,29 +573,28 @@ bool FieldTrialList::IsTrialActive(const std::string& trial_name) {
 void FieldTrialList::StatesToString(std::string* output) {
   FieldTrial::ActiveGroups active_groups;
   GetActiveFieldTrialGroups(&active_groups);
-  for (FieldTrial::ActiveGroups::const_iterator it = active_groups.begin();
-       it != active_groups.end(); ++it) {
+  for (const auto& active_group : active_groups) {
     DCHECK_EQ(std::string::npos,
-              it->trial_name.find(kPersistentStringSeparator));
+              active_group.trial_name.find(kPersistentStringSeparator));
     DCHECK_EQ(std::string::npos,
-              it->group_name.find(kPersistentStringSeparator));
-    output->append(it->trial_name);
+              active_group.group_name.find(kPersistentStringSeparator));
+    output->append(active_group.trial_name);
     output->append(1, kPersistentStringSeparator);
-    output->append(it->group_name);
+    output->append(active_group.group_name);
     output->append(1, kPersistentStringSeparator);
   }
 }
 
 // static
 void FieldTrialList::AllStatesToString(std::string* output,
-                                       bool include_expired) {
+                                       bool include_disabled) {
   if (!global_)
     return;
   AutoLock auto_lock(global_->lock_);
 
   for (const auto& registered : global_->registered_) {
     FieldTrial::State trial;
-    if (!registered.second->GetStateWhileLocked(&trial, include_expired))
+    if (!registered.second->GetStateWhileLocked(&trial, include_disabled))
       continue;
     DCHECK_EQ(std::string::npos,
               trial.trial_name->find(kPersistentStringSeparator));
@@ -654,14 +610,14 @@ void FieldTrialList::AllStatesToString(std::string* output,
 }
 
 // static
-std::string FieldTrialList::AllParamsToString(bool include_expired,
+std::string FieldTrialList::AllParamsToString(bool include_disabled,
                                               EscapeDataFunc encode_data_func) {
   FieldTrialParamAssociator* params_associator =
       FieldTrialParamAssociator::GetInstance();
   std::string output;
   for (const auto& registered : GetRegisteredTrials()) {
     FieldTrial::State trial;
-    if (!registered.second->GetStateWhileLocked(&trial, include_expired))
+    if (!registered.second->GetStateWhileLocked(&trial, include_disabled))
       continue;
     DCHECK_EQ(std::string::npos,
               trial.trial_name->find(kPersistentStringSeparator));
@@ -705,10 +661,9 @@ void FieldTrialList::GetActiveFieldTrialGroups(
     return;
   AutoLock auto_lock(global_->lock_);
 
-  for (auto it = global_->registered_.begin(); it != global_->registered_.end();
-       ++it) {
+  for (const auto& registered : global_->registered_) {
     FieldTrial::ActiveGroup active_group;
-    if (it->second->GetActiveGroup(&active_group))
+    if (registered.second->GetActiveGroup(&active_group))
       active_groups->push_back(active_group);
   }
 }

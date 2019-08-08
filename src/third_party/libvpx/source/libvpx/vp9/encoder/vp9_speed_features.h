@@ -288,9 +288,6 @@ typedef struct SPEED_FEATURES {
   // level within a frame.
   int allow_skip_recode;
 
-  // Enable Wiener filter based block complexity analysis.
-  int enable_wiener_variance;
-
   // Coefficient probability model approximation step size
   int coeff_prob_appx_step;
 
@@ -608,6 +605,9 @@ typedef struct SPEED_FEATURES {
 
   // Multiplier for base thresold for variance partitioning.
   int variance_part_thresh_mult;
+
+  // Force subpel motion filter to always use SMOOTH_FILTER.
+  int force_smooth_interpol;
 } SPEED_FEATURES;
 
 struct VP9_COMP;

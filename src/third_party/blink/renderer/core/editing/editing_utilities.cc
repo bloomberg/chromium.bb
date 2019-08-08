@@ -99,19 +99,7 @@ InputEvent::EventCancelable InputTypeIsCancelable(
     InputEvent::InputType input_type) {
   using InputType = InputEvent::InputType;
   switch (input_type) {
-    case InputType::kInsertText:
-    case InputType::kInsertLineBreak:
-    case InputType::kInsertParagraph:
     case InputType::kInsertCompositionText:
-    case InputType::kInsertReplacementText:
-    case InputType::kDeleteWordBackward:
-    case InputType::kDeleteWordForward:
-    case InputType::kDeleteSoftLineBackward:
-    case InputType::kDeleteSoftLineForward:
-    case InputType::kDeleteHardLineBackward:
-    case InputType::kDeleteHardLineForward:
-    case InputType::kDeleteContentBackward:
-    case InputType::kDeleteContentForward:
       return InputEvent::EventCancelable::kNotCancelable;
     default:
       return InputEvent::EventCancelable::kIsCancelable;
@@ -803,9 +791,10 @@ int FindNextBoundaryOffset(const String& str, int current) {
 int PreviousGraphemeBoundaryOf(const Node& node, int current) {
   // TODO(yosin): Need to support grapheme crossing |Node| boundary.
   DCHECK_GE(current, 0);
-  if (current <= 1 || !node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (current <= 1 || !text_node)
     return current - 1;
-  const String& text = ToText(node).data();
+  const String& text = text_node->data();
   // TODO(yosin): Replace with DCHECK for out-of-range request.
   if (static_cast<unsigned>(current) > text.length())
     return current - 1;
@@ -817,19 +806,21 @@ static int PreviousBackwardDeletionOffsetOf(const Node& node, int current) {
   DCHECK_GE(current, 0);
   if (current <= 1)
     return 0;
-  if (!node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return current - 1;
 
-  const String& text = ToText(node).data();
+  const String& text = text_node->data();
   DCHECK_LT(static_cast<unsigned>(current - 1), text.length());
   return FindNextBoundaryOffset<BackspaceStateMachine>(text, current);
 }
 
 int NextGraphemeBoundaryOf(const Node& node, int current) {
   // TODO(yosin): Need to support grapheme crossing |Node| boundary.
-  if (!node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return current + 1;
-  const String& text = ToText(node).data();
+  const String& text = text_node->data();
   const int length = text.length();
   DCHECK_LE(current, length);
   if (current >= length - 1)
@@ -1129,14 +1120,14 @@ bool IsListItem(const Node* n) {
 }
 
 bool IsPresentationalHTMLElement(const Node* node) {
-  if (!node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(kUTag) || element.HasTagName(kSTag) ||
-         element.HasTagName(kStrikeTag) || element.HasTagName(kITag) ||
-         element.HasTagName(kEmTag) || element.HasTagName(kBTag) ||
-         element.HasTagName(kStrongTag);
+  return element->HasTagName(kUTag) || element->HasTagName(kSTag) ||
+         element->HasTagName(kStrikeTag) || element->HasTagName(kITag) ||
+         element->HasTagName(kEmTag) || element->HasTagName(kBTag) ||
+         element->HasTagName(kStrongTag);
 }
 
 Element* AssociatedElementOf(const Position& position) {
@@ -1256,7 +1247,7 @@ bool IsTableCell(const Node* node) {
 HTMLElement* CreateDefaultParagraphElement(Document& document) {
   switch (document.GetFrame()->GetEditor().DefaultParagraphSeparator()) {
     case EditorParagraphSeparator::kIsDiv:
-      return HTMLDivElement::Create(document);
+      return MakeGarbageCollected<HTMLDivElement>(document);
     case EditorParagraphSeparator::kIsP:
       return MakeGarbageCollected<HTMLParagraphElement>(document);
   }
@@ -1269,9 +1260,10 @@ bool IsTabHTMLSpanElement(const Node* node) {
   if (!IsHTMLSpanElement(node))
     return false;
   const Node* const first_child = NodeTraversal::FirstChild(*node);
-  if (!first_child || !first_child->IsTextNode())
+  auto* first_child_text_node = DynamicTo<Text>(first_child);
+  if (!first_child_text_node)
     return false;
-  if (!ToText(first_child)->data().Contains('\t'))
+  if (!first_child_text_node->data().Contains('\t'))
     return false;
   // TODO(editing-dev): Hoist the call of UpdateStyleAndLayoutTree to callers.
   // See crbug.com/590369 for details.
@@ -1294,7 +1286,7 @@ HTMLSpanElement* TabSpanElement(const Node* node) {
 static HTMLSpanElement* CreateTabSpanElement(Document& document,
                                              Text* tab_text_node) {
   // Make the span to hold the tab.
-  HTMLSpanElement* span_element = HTMLSpanElement::Create(document);
+  auto* span_element = MakeGarbageCollected<HTMLSpanElement>(document);
   span_element->setAttribute(kStyleAttr, "white-space:pre");
 
   // Add tab text to that span.
@@ -1319,61 +1311,75 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     const Position& position,
     const LayoutPoint& local_point,
     Node* target_node) {
-  if (!target_node->GetLayoutObject())
+  const LayoutObject* target_object = target_node->GetLayoutObject();
+  if (!target_object)
     return PositionWithAffinity();
 
+  // Note that local_point is in flipped blocks direction.
   LayoutPoint selection_end_point = local_point;
   Element* editable_element = RootEditableElementOf(position);
 
   if (editable_element && !editable_element->contains(target_node)) {
-    if (!editable_element->GetLayoutObject())
+    const LayoutObject* editable_object = editable_element->GetLayoutObject();
+    if (!editable_object)
       return PositionWithAffinity();
 
-    FloatPoint absolute_point = target_node->GetLayoutObject()->LocalToAbsolute(
-        FloatPoint(selection_end_point));
-    selection_end_point = LayoutPoint(
-        editable_element->GetLayoutObject()->AbsoluteToLocal(absolute_point));
-    target_node = editable_element;
+    // TODO(yosin): This kIgnoreTransforms correct here?
+    PhysicalOffset absolute_point = target_object->LocalToAbsolutePoint(
+        target_object->FlipForWritingMode(selection_end_point),
+        kIgnoreTransforms);
+    selection_end_point = editable_object->FlipForWritingMode(
+        editable_object->AbsoluteToLocalPoint(absolute_point,
+                                              kIgnoreTransforms));
+    target_object = editable_object;
   }
 
-  return target_node->GetLayoutObject()->PositionForPoint(selection_end_point);
+  return target_object->PositionForPoint(selection_end_point);
 }
 
 Position ComputePositionForNodeRemoval(const Position& position,
                                        const Node& node) {
   if (position.IsNull())
     return position;
+  Node* container_node;
+  Node* anchor_node;
   switch (position.AnchorType()) {
     case PositionAnchorType::kBeforeChildren:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(
-              position.ComputeContainerNode())) {
+      container_node = position.ComputeContainerNode();
+      if (!container_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
       return Position::InParentBeforeNode(node);
     case PositionAnchorType::kAfterChildren:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(
-              position.ComputeContainerNode())) {
+      container_node = position.ComputeContainerNode();
+      if (!container_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
       return Position::InParentAfterNode(node);
     case PositionAnchorType::kOffsetInAnchor:
-      if (position.ComputeContainerNode() == node.parentNode() &&
+      container_node = position.ComputeContainerNode();
+      if (container_node == node.parentNode() &&
           static_cast<unsigned>(position.OffsetInContainerNode()) >
               node.NodeIndex()) {
-        return Position(position.ComputeContainerNode(),
-                        position.OffsetInContainerNode() - 1);
+        return Position(container_node, position.OffsetInContainerNode() - 1);
       }
-      if (!node.IsShadowIncludingInclusiveAncestorOf(
-              position.ComputeContainerNode())) {
+      if (!container_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
       return Position::InParentBeforeNode(node);
     case PositionAnchorType::kAfterAnchor:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(position.AnchorNode()))
+      anchor_node = position.AnchorNode();
+      if (!anchor_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*anchor_node))
         return position;
       return Position::InParentAfterNode(node);
     case PositionAnchorType::kBeforeAnchor:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(position.AnchorNode()))
+      anchor_node = position.AnchorNode();
+      if (!anchor_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*anchor_node))
         return position;
       return Position::InParentBeforeNode(node);
   }
@@ -1382,19 +1388,20 @@ Position ComputePositionForNodeRemoval(const Position& position,
 }
 
 bool IsMailHTMLBlockquoteElement(const Node* node) {
-  if (!node || !node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(*node);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(kBlockquoteTag) &&
-         element.getAttribute("type") == "cite";
+  return element->HasTagName(kBlockquoteTag) &&
+         element->getAttribute("type") == "cite";
 }
 
 bool ElementCannotHaveEndTag(const Node& node) {
-  if (!node.IsHTMLElement())
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  if (!html_element)
     return false;
 
-  return !ToHTMLElement(node).ShouldSerializeEndTag();
+  return !html_element->ShouldSerializeEndTag();
 }
 
 // FIXME: indexForVisiblePosition and visiblePositionForIndex use TextIterators
@@ -1506,16 +1513,16 @@ bool IsRenderedAsNonInlineTableImageOrHR(const Node* node) {
 }
 
 bool IsNonTableCellHTMLBlockElement(const Node* node) {
-  if (!node->IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
 
-  const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(kListingTag) || element.HasTagName(kOlTag) ||
-         element.HasTagName(kPreTag) || element.HasTagName(kTableTag) ||
-         element.HasTagName(kUlTag) || element.HasTagName(kXmpTag) ||
-         element.HasTagName(kH1Tag) || element.HasTagName(kH2Tag) ||
-         element.HasTagName(kH3Tag) || element.HasTagName(kH4Tag) ||
-         element.HasTagName(kH5Tag);
+  return element->HasTagName(kListingTag) || element->HasTagName(kOlTag) ||
+         element->HasTagName(kPreTag) || element->HasTagName(kTableTag) ||
+         element->HasTagName(kUlTag) || element->HasTagName(kXmpTag) ||
+         element->HasTagName(kH1Tag) || element->HasTagName(kH2Tag) ||
+         element->HasTagName(kH3Tag) || element->HasTagName(kH4Tag) ||
+         element->HasTagName(kH5Tag);
 }
 
 bool IsBlockFlowElement(const Node& node) {
@@ -1560,8 +1567,7 @@ wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
 }
 
 FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
-  return caret_rect.layout_object->LocalToAbsoluteQuad(
-      FloatRect(caret_rect.rect));
+  return caret_rect.layout_object->LocalRectToAbsoluteQuad(caret_rect.rect);
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
@@ -1703,12 +1709,12 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
-    return ToHTMLElement(node).getAttribute(kSrcAttr);
+    return To<HTMLElement>(node).getAttribute(kSrcAttr);
   if (IsSVGImageElement(node))
-    return ToSVGElement(node).ImageSourceURL();
+    return To<SVGElement>(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
       IsHTMLCanvasElement(node))
-    return ToHTMLElement(node).ImageSourceURL();
+    return To<HTMLElement>(node).ImageSourceURL();
   return AtomicString();
 }
 

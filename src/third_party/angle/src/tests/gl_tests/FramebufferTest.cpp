@@ -108,7 +108,7 @@ class FramebufferFormatsTest : public ANGLETest
 
         if (clientVersion == 2)
         {
-            if (extensionEnabled("ANGLE_framebuffer_multisample"))
+            if (IsGLExtensionEnabled("ANGLE_framebuffer_multisample"))
             {
                 int maxSamples;
                 glGetIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSamples);
@@ -148,18 +148,14 @@ class FramebufferFormatsTest : public ANGLETest
         EXPECT_GL_NO_ERROR();
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenFramebuffers(1, &mFramebuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
-        ANGLETest::TearDown();
-
         if (mTexture != 0)
         {
             glDeleteTextures(1, &mTexture);
@@ -193,23 +189,25 @@ class FramebufferFormatsTest : public ANGLETest
 
 TEST_P(FramebufferFormatsTest, RGBA4)
 {
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       !IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     testTextureFormat(GL_RGBA4, 4, 4, 4, 4);
 }
 
 TEST_P(FramebufferFormatsTest, RGB565)
 {
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       !IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     testTextureFormat(GL_RGB565, 5, 6, 5, 0);
 }
 
 TEST_P(FramebufferFormatsTest, RGB8)
 {
-    ANGLE_SKIP_TEST_IF(
-        getClientMajorVersion() < 3 &&
-        (!extensionEnabled("GL_OES_rgb8_rgba8") || !extensionEnabled("GL_EXT_texture_storage")));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       (!IsGLExtensionEnabled("GL_OES_rgb8_rgba8") ||
+                        !IsGLExtensionEnabled("GL_EXT_texture_storage")));
 
     testTextureFormat(GL_RGB8_OES, 8, 8, 8, 0);
 }
@@ -217,17 +215,17 @@ TEST_P(FramebufferFormatsTest, RGB8)
 TEST_P(FramebufferFormatsTest, BGRA8)
 {
     ANGLE_SKIP_TEST_IF(
-        !extensionEnabled("GL_EXT_texture_format_BGRA8888") ||
-        (getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage")));
+        !IsGLExtensionEnabled("GL_EXT_texture_format_BGRA8888") ||
+        (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_EXT_texture_storage")));
 
     testTextureFormat(GL_BGRA8_EXT, 8, 8, 8, 8);
 }
 
 TEST_P(FramebufferFormatsTest, RGBA8)
 {
-    ANGLE_SKIP_TEST_IF(
-        getClientMajorVersion() < 3 &&
-        (!extensionEnabled("GL_OES_rgb8_rgba8") || !extensionEnabled("GL_EXT_texture_storage")));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       (!IsGLExtensionEnabled("GL_OES_rgb8_rgba8") ||
+                        !IsGLExtensionEnabled("GL_EXT_texture_storage")));
 
     testTextureFormat(GL_RGBA8_OES, 8, 8, 8, 8);
 }
@@ -928,7 +926,7 @@ class AddDummyTextureNoRenderTargetTest : public ANGLETest
 
     void overrideWorkaroundsD3D(WorkaroundsD3D *workarounds) override
     {
-        workarounds->addDummyTextureNoRenderTarget = true;
+        workarounds->forceFeatureEnabled("add_dummy_texture_no_render_target", true);
     }
 };
 

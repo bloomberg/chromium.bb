@@ -11,33 +11,34 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
-class RenderViewHost;
-struct DateTimeSuggestion;
+class WebContentsImpl;
+class RenderFrameHost;
 
 // Android implementation for DateTimeChooser dialogs.
-class DateTimeChooserAndroid {
+class DateTimeChooserAndroid : public blink::mojom::DateTimeChooser,
+                               public WebContentsObserver {
  public:
-  DateTimeChooserAndroid();
-  ~DateTimeChooserAndroid();
+  explicit DateTimeChooserAndroid(WebContentsImpl* web_contents);
+  ~DateTimeChooserAndroid() override;
 
-  // DateTimeChooser implementation:
-  // Shows the dialog. |dialog_value| is the date/time value converted to a
+  void OnDateTimeChooserRequest(blink::mojom::DateTimeChooserRequest request);
+
+  // blink::mojom::DateTimeChooser implementation:
+  // Shows the dialog. |value| is the date/time value converted to a
   // number as defined in HTML. (See blink::InputType::parseToNumber())
-  void ShowDialog(gfx::NativeWindow native_window,
-                  RenderViewHost* host,
-                  ui::TextInputType dialog_type,
-                  double dialog_value,
-                  double min,
-                  double max,
-                  double step,
-                  const std::vector<DateTimeSuggestion>& suggestions);
+  void OpenDateTimeDialog(blink::mojom::DateTimeDialogValuePtr value,
+                          OpenDateTimeDialogCallback callback) override;
 
-  // Replaces the current value
+  // Replaces the current value.
   void ReplaceDateTime(JNIEnv* env,
                        const base::android::JavaRef<jobject>&,
                        jdouble value);
@@ -45,10 +46,20 @@ class DateTimeChooserAndroid {
   // Closes the dialog without propagating any changes.
   void CancelDialog(JNIEnv* env, const base::android::JavaRef<jobject>&);
 
+  // WebContentsObserver overrides:
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
+
  private:
-  RenderViewHost* host_;
+  OpenDateTimeDialogCallback open_date_time_response_callback_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_date_time_chooser_;
+
+  mojo::Binding<blink::mojom::DateTimeChooser> date_time_chooser_binding_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(DateTimeChooserAndroid);
 };

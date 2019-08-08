@@ -26,6 +26,7 @@ class Point;
 namespace ui {
 
 class WaylandConnection;
+class WaylandShm;
 
 // Manages the actual visual representation (what users see drawn) of the
 // 'pointer' (which is the Wayland term for mouse/mice).
@@ -54,7 +55,7 @@ class WaylandCursor {
 
   void HideCursor(uint32_t serial);
 
-  wl_shm* shm_ = nullptr;                // Owned by WaylandConnection.
+  WaylandShm* shm_ = nullptr;            // Owned by WaylandConnection.
   wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
 
   // Holds the buffers and their memory until the compositor releases them.

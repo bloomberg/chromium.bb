@@ -11,8 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/filling_status.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
 
@@ -41,8 +42,8 @@
 class ManualFillingController {
  public:
   // The controller checks if at least one of these sources needs the accessory
-  // to be displayed. Only if neither needs the accessory, it will not show up.
-  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS };
+  // to be displayed.
+  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS, ADDRESS_FALLBACKS };
 
   ManualFillingController() = default;
   virtual ~ManualFillingController() = default;
@@ -59,10 +60,9 @@ class ManualFillingController {
   // --------------------------------------------
 
   // Forwards |accessory_sheet_data| to the view provided by a type-specific
-  // controller to be shown on the accessory sheet. If a field lost focus,
-  // |is_fillable| should be false.
+  // controller to be shown on the accessory sheet.
   virtual void RefreshSuggestionsForField(
-      bool is_fillable,
+      autofill::mojom::FocusedFieldType focused_field_type,
       const autofill::AccessorySheetData& accessory_sheet_data) = 0;
 
   // Completes a filling attempt by recording metrics, giving feedback to the
@@ -72,6 +72,9 @@ class ManualFillingController {
   // Requests to show the accessory bar. The accessory will only be shown
   // when the keyboard becomes visible.
   virtual void ShowWhenKeyboardIsVisible(FillingSource source) = 0;
+
+  // Requests to show the touch to fill sheet.
+  virtual void ShowTouchToFillSheet() = 0;
 
   // Requests to hide the accessory. This hides both the accessory sheet
   // (if open) and the accessory bar.
@@ -91,15 +94,14 @@ class ManualFillingController {
   // Called by the UI code to request that |text_to_fill| is to be filled into
   // the currently focused field. Forwards the request to a type-specific
   // accessory controller.
-  virtual void OnFillingTriggered(bool is_password,
-                                  const base::string16& text_to_fill) = 0;
+  virtual void OnFillingTriggered(
+      autofill::AccessoryTabType type,
+      const autofill::UserInfo::Field& selection) = 0;
 
-  // Called by the UI code because a user triggered the |selected_option|,
-  // such as "Manage passwords..."
-  // TODO(crbug.com/905669): Replace the string param with an enum to indicate
-  // the selected option.
+  // Called by the UI code because a user triggered the |selected_action|,
+  // such as "Manage passwords...".
   virtual void OnOptionSelected(
-      const base::string16& selected_option) const = 0;
+      autofill::AccessoryAction selected_action) const = 0;
 
   // Called by the UI code to signal that the user requested password
   // generation. This should prompt a modal dialog with the generated password.

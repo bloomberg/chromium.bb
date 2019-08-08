@@ -198,10 +198,6 @@ cr.define('extensions', function() {
      * @private
      */
     onDeleteErrorAction_: function(e) {
-      if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter'))) {
-        return;
-      }
-
       this.delegate.deleteErrors(
           this.data.id, [(/** @type {!{model:Object}} */ (e)).model.item.id]);
       e.stopPropagation();

@@ -16,12 +16,10 @@ namespace blink {
 class A : public GarbageCollected<A> {
  public:
   void Trace(Visitor*) {
-    // Missing visitor->Trace(a_);
     // Missing visitor->Trace(str_);
   }
 
  private:
-  TraceWrapperMember<A> a_;
   TraceWrapperV8Reference<v8::String> str_;
 };
 
@@ -34,12 +32,10 @@ class B : public GarbageCollected<A> {
 class C : public B {
  public:
   void TraceAfterDispatch(Visitor*) {
-    // Missing visitor->Trace(a_);
     // Missing visitor->Trace(str_);
   }
 
  private:
-  TraceWrapperMember<A> a_;
   TraceWrapperV8Reference<v8::String> str_;
 };
 

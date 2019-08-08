@@ -142,6 +142,18 @@ public class ExploreSitesPageTest {
 
     @Test
     @SmallTest
+    @CommandLineFlags.
+    Add({"enabled-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile"})
+    @Feature({"ExploreSites", "RenderTest"})
+    public void
+    testInitialLayout_MostLikely() throws Exception {
+        mRenderTestRule.render(mRecyclerView, "initial_layout");
+        Assert.assertEquals(0, getFirstVisiblePosition());
+    }
+
+    @Test
+    @SmallTest
     @Feature({"ExploreSites", "RenderTest"})
     public void testScrollingFromNTP() throws Exception {
         mActivityTestRule.loadUrl("about:blank");

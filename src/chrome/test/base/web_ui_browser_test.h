@@ -13,6 +13,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_browser_test.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
+#endif
+
 namespace {
 class WebUITestMessageHandler;
 }
@@ -99,13 +103,15 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
  protected:
   // URL to dummy WebUI page for testing framework.
-  static const char kDummyURL[];
+  static const std::string kDummyURL;
 
   BaseWebUIBrowserTest();
 
   // Accessors for preload test fixture and name.
   void set_preload_test_fixture(const std::string& preload_test_fixture);
   void set_preload_test_name(const std::string& preload_test_name);
+
+  void set_loader_file(const std::string& loader_file);
 
   // Enable command line flags for test.
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -162,11 +168,19 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   std::string preload_test_fixture_;
   std::string preload_test_name_;
 
+  // When this is non-empty, this is the file to be substituted for the file in
+  // browsePreload, to load the HTML Imports polyfill and then load the real
+  // file after the polyfill is ready.
+  std::string loader_file_;
+
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.
   content::WebUI* override_selected_web_ui_;
 
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList scoped_feature_list_;
+#endif
 };
 
 class WebUIBrowserTest : public BaseWebUIBrowserTest {

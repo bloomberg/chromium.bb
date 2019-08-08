@@ -47,6 +47,11 @@ class MockFrameHost : public mojom::FrameHost {
     return std::move(last_document_interface_broker_request_);
   }
 
+  void SetDidAddMessageToConsoleCallback(
+      base::OnceCallback<void(const base::string16& msg)> callback) {
+    did_add_message_to_console_callback_ = std::move(callback);
+  }
+
   // Holds on to the request end of the InterfaceProvider interface whose client
   // end is bound to the corresponding RenderFrame's |remote_interfaces_| to
   // facilitate retrieving the most recent |interface_provider_request| in
@@ -101,13 +106,15 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   void CreatePortal(blink::mojom::PortalAssociatedRequest request,
+                    blink::mojom::PortalClientAssociatedPtrInfo client,
                     CreatePortalCallback callback) override {
-    std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken());
+    std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken(),
+                            base::UnguessableToken());
   }
 
   void AdoptPortal(const base::UnguessableToken&,
                    AdoptPortalCallback callback) override {
-    std::move(callback).Run(MSG_ROUTING_NONE);
+    std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken());
   }
 
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
@@ -156,6 +163,25 @@ class MockFrameHost : public mojom::FrameHost {
 
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
 
+  void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
+                              const base::string16& msg,
+                              int32_t line_number,
+                              const base::string16& source_id) override {
+    if (did_add_message_to_console_callback_) {
+      std::move(did_add_message_to_console_callback_).Run(msg);
+    }
+  }
+
+  void DidFailProvisionalLoadWithError(
+      const GURL& url,
+      int error_code,
+      const base::string16& error_description,
+      bool showing_repost_interstitial) override {}
+
+  void DidFailLoadWithError(const GURL& url,
+                            int error_code,
+                            const base::string16& error_description) override {}
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
@@ -167,6 +193,9 @@ class MockFrameHost : public mojom::FrameHost {
       last_interface_provider_request_;
   blink::mojom::DocumentInterfaceBrokerRequest
       last_document_interface_broker_request_;
+
+  base::OnceCallback<void(const base::string16& msg)>
+      did_add_message_to_console_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -329,6 +358,11 @@ void TestRenderFrame::BeginNavigation(
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 TestRenderFrame::TakeLastCommitParams() {
   return mock_frame_host_->TakeLastCommitParams();
+}
+
+void TestRenderFrame::SetDidAddMessageToConsoleCallback(
+    base::OnceCallback<void(const base::string16& msg)> callback) {
+  mock_frame_host_->SetDidAddMessageToConsoleCallback(std::move(callback));
 }
 
 service_manager::mojom::InterfaceProviderRequest

@@ -12,18 +12,16 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
-#include "ash/session/session_controller.h"
+#include "ash/screen_util.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/ws/window_service_owner.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -65,14 +63,6 @@ bool MoveWindowToRoot(aura::Window* window, aura::Window* root) {
   return true;
 }
 
-// Asks the remote client that owns |window| to close it. Returns true if there
-// was a remote client for |window|, false otherwise.
-bool AskRemoteClientToCloseWindow(aura::Window* window) {
-  ws::WindowService* window_service =
-      Shell::Get()->window_service_owner()->window_service();
-  return window_service && window_service->RequestClose(window);
-}
-
 // This window targeter reserves space for the portion of the resize handles
 // that extend within a top level window.
 class InteriorResizeHandleTargeter : public aura::WindowTargeter {
@@ -103,12 +93,8 @@ class InteriorResizeHandleTargeter : public aura::WindowTargeter {
   bool ShouldUseExtendedBounds(const aura::Window* target) const override {
     // Fullscreen/maximized windows can't be drag-resized.
     const WindowState* window_state = GetWindowState(window());
-    const WindowState* target_window_state = GetWindowState(target);
-    if ((window_state && window_state->IsMaximizedOrFullscreenOrPinned()) ||
-        (target_window_state && !target_window_state->CanResize())) {
+    if (window_state && window_state->IsMaximizedOrFullscreenOrPinned())
       return false;
-    }
-
     // The shrunken hit region only applies to children of |window()|.
     return target->parent() == window();
   }
@@ -117,65 +103,7 @@ class InteriorResizeHandleTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(InteriorResizeHandleTargeter);
 };
 
-// A class to track immersive and tablet mode state and update
-// kGestureDragFromClientAreaTopMovesWindow accordingly. It is owned by the
-// window it tracks by way of being an owned property.
-class GestureDraggableTracker : public aura::WindowObserver,
-                                public TabletModeObserver {
- public:
-  explicit GestureDraggableTracker(aura::Window* window)
-      : observed_window_(window) {
-    observed_window_->AddObserver(this);
-    Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  }
-
-  ~GestureDraggableTracker() override {
-    observed_window_->RemoveObserver(this);
-    if (Shell::Get()->tablet_mode_controller())
-      Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  }
-
-  // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    if (key == kImmersiveIsActive)
-      UpdateFlag();
-  }
-
-  // TabletModeObserver:
-  void OnTabletModeStarted() override { UpdateFlag(); }
-  void OnTabletModeEnded() override { UpdateFlag(); }
-
- private:
-  void UpdateFlag() {
-    observed_window_->SetProperty(
-        aura::client::kGestureDragFromClientAreaTopMovesWindow,
-        observed_window_->GetProperty(kImmersiveIsActive) &&
-            Shell::Get()->tablet_mode_controller() &&
-            Shell::Get()
-                ->tablet_mode_controller()
-                ->IsTabletModeWindowManagerEnabled());
-  }
-
-  // |observed_window_| owns |this|.
-  aura::Window* observed_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureDraggableTracker);
-};
-
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(GestureDraggableTracker,
-                                   kGestureDraggableTracker,
-                                   nullptr)
-
 }  // namespace
-}  // namespace wm
-}  // namespace ash
-
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::wm::GestureDraggableTracker*)
-
-namespace ash {
-namespace wm {
 
 // TODO(beng): replace many of these functions with the corewm versions.
 void ActivateWindow(aura::Window* window) {
@@ -247,17 +175,18 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
   DCHECK(window);
   WindowState* window_state = GetWindowState(window);
   if (window_state->allow_set_bounds_direct()) {
-    aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
-    if (root) {
-      gfx::Rect bounds = window->bounds();
-      MoveWindowToRoot(window, root);
-      // Client controlled won't update the bounds upon the root window
-      // Change. Explicitly update the bounds so that the client can
-      // make decision.
-      window->SetBounds(bounds);
-      return true;
-    }
-    return false;
+    display::Display display;
+    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                               &display))
+      return false;
+    gfx::Rect bounds = window->bounds();
+    gfx::Rect work_area_in_display(display.size());
+    work_area_in_display.Inset(display.GetWorkAreaInsets());
+    wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_display,
+                                                    &bounds);
+    wm::SetBoundsEvent event(bounds, display_id);
+    window_state->OnWMEvent(&event);
+    return true;
   }
   aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
   // Update restore bounds to target root window.
@@ -306,10 +235,7 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
 }
 
 void CloseWidgetForWindow(aura::Window* window) {
-  if (AskRemoteClientToCloseWindow(window))
-    return;
-
-  views::Widget* widget = GetInternalWidgetForWindow(window);
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
   DCHECK(widget);
   widget->Close();
 }
@@ -320,19 +246,6 @@ void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
   // ServerWindowTargeter, so make sure it knows about the resize insets.
   window->SetProperty(aura::client::kResizeHandleInset,
                       kResizeInsideBoundsSize);
-}
-
-void MakeGestureDraggableInImmersiveMode(aura::Window* frame_window) {
-  // For Browser windows, gesture drags from the top in immersive mode reveal
-  // the frame, so kGestureDragFromClientAreaTopMovesWindow should always be
-  // false.
-  if (static_cast<ash::AppType>(frame_window->GetProperty(
-          aura::client::kAppType)) == AppType::BROWSER) {
-    return;
-  }
-
-  frame_window->SetProperty(kGestureDraggableTracker,
-                            new GestureDraggableTracker(frame_window));
 }
 
 bool IsDraggingTabs(const aura::Window* window) {

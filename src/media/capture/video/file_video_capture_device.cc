@@ -18,7 +18,7 @@
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video_capture_types.h"
-#include "media/filters/jpeg_parser.h"
+#include "media/parsers/jpeg_parser.h"
 
 namespace media {
 
@@ -431,8 +431,11 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   const base::TimeTicks current_time = base::TimeTicks::Now();
   if (first_ref_time_.is_null())
     first_ref_time_ = current_time;
-  client_->OnIncomingCapturedData(frame_ptr, frame_size, capture_format_, 0,
-                                  current_time, current_time - first_ref_time_);
+  // Leave the color space unset for compatibility purposes but this
+  // information should be retrieved from the container when possible.
+  client_->OnIncomingCapturedData(frame_ptr, frame_size, capture_format_,
+                                  gfx::ColorSpace(), 0, current_time,
+                                  current_time - first_ref_time_);
 
   // Process waiting photo callbacks
   while (!take_photo_callbacks_.empty()) {

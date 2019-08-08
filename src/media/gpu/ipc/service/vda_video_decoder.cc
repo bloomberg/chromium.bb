@@ -212,7 +212,7 @@ std::string VdaVideoDecoder::GetDisplayName() const {
 void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool low_delay,
                                  CdmContext* cdm_context,
-                                 const InitCB& init_cb,
+                                 InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__ << "(" << config.AsHumanReadableString() << ")";
@@ -224,7 +224,8 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(decode_cbs_.empty());
 
   if (has_error_) {
-    parent_task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
+    parent_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
     return;
   }
 
@@ -232,7 +233,7 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Store |init_cb| ASAP so that EnterErrorState() can use it. Leave |config_|
   // alone for now so that the checks can inspect it.
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
 
   // Verify that the configuration is supported.
@@ -397,7 +398,7 @@ void VdaVideoDecoder::InitializeDone(bool status) {
 }
 
 void VdaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                             const DecodeCB& decode_cb) {
+                             DecodeCB decode_cb) {
   DVLOG(3) << __func__ << "(" << (buffer->end_of_stream() ? "EOS" : "") << ")";
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
@@ -407,13 +408,14 @@ void VdaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   if (has_error_) {
     parent_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
   // Convert EOS frame to Flush().
   if (buffer->end_of_stream()) {
-    flush_cb_ = decode_cb;
+    flush_cb_ = std::move(decode_cb);
     gpu_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&VideoDecodeAccelerator::Flush, gpu_weak_vda_));
@@ -423,7 +425,7 @@ void VdaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   // Assign a bitstream buffer ID and record the decode request.
   int32_t bitstream_buffer_id = NextID(&bitstream_buffer_id_);
   timestamps_.Put(bitstream_buffer_id, buffer->timestamp());
-  decode_cbs_[bitstream_buffer_id] = decode_cb;
+  decode_cbs_[bitstream_buffer_id] = std::move(decode_cb);
 
   if (decode_on_parent_thread_) {
     vda_->Decode(std::move(buffer), bitstream_buffer_id);
@@ -447,7 +449,7 @@ void VdaVideoDecoder::DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
   vda_->Decode(std::move(buffer), bitstream_id);
 }
 
-void VdaVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
+void VdaVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DVLOG(2) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
@@ -456,11 +458,11 @@ void VdaVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
   DCHECK(!reset_cb_);
 
   if (has_error_) {
-    parent_task_runner_->PostTask(FROM_HERE, reset_cb);
+    parent_task_runner_->PostTask(FROM_HERE, std::move(reset_cb));
     return;
   }
 
-  reset_cb_ = reset_cb;
+  reset_cb_ = std::move(reset_cb);
   gpu_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoDecodeAccelerator::Reset, gpu_weak_vda_));
 }
@@ -666,9 +668,9 @@ void VdaVideoDecoder::NotifyEndOfBitstreamBufferOnParentThread(
   }
 
   // Run a local copy in case the decode callback modifies |decode_cbs_|.
-  DecodeCB decode_cb = decode_cb_it->second;
+  DecodeCB decode_cb = std::move(decode_cb_it->second);
   decode_cbs_.erase(decode_cb_it);
-  decode_cb.Run(DecodeStatus::OK);
+  std::move(decode_cb).Run(DecodeStatus::OK);
 }
 
 void VdaVideoDecoder::NotifyFlushDone() {
@@ -723,10 +725,10 @@ void VdaVideoDecoder::NotifyResetDoneOnParentThread() {
   // them.
   base::WeakPtr<VdaVideoDecoder> weak_this = parent_weak_this_;
 
-  std::map<int32_t, DecodeCB> local_decode_cbs = decode_cbs_;
+  std::map<int32_t, DecodeCB> local_decode_cbs = std::move(decode_cbs_);
   decode_cbs_.clear();
-  for (const auto& it : local_decode_cbs) {
-    it.second.Run(DecodeStatus::ABORTED);
+  for (auto& it : local_decode_cbs) {
+    std::move(it.second).Run(DecodeStatus::ABORTED);
     if (!weak_this)
       return;
   }
@@ -799,10 +801,10 @@ void VdaVideoDecoder::DestroyCallbacks() {
   // when |has_error_| is set.
   base::WeakPtr<VdaVideoDecoder> weak_this = parent_weak_this_;
 
-  std::map<int32_t, DecodeCB> local_decode_cbs = decode_cbs_;
+  std::map<int32_t, DecodeCB> local_decode_cbs = std::move(decode_cbs_);
   decode_cbs_.clear();
-  for (const auto& it : local_decode_cbs) {
-    it.second.Run(DecodeStatus::DECODE_ERROR);
+  for (auto& it : local_decode_cbs) {
+    std::move(it.second).Run(DecodeStatus::DECODE_ERROR);
     if (!weak_this)
       return;
   }

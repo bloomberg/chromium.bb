@@ -16,13 +16,10 @@ class ExecutionContext;
 class Visitor;
 
 // Helper class used to setup beforeunload listener for certain documents which
-// include MimeHandlerView (some PluginDocuments and HTMLDocuments).
+// include plugins that are handled externally and need user verification before
+// before closing the page.
 class BeforeUnloadEventListener : public NativeEventListener {
  public:
-  static BeforeUnloadEventListener* Create(Document* document) {
-    return MakeGarbageCollected<BeforeUnloadEventListener>(document);
-  }
-
   explicit BeforeUnloadEventListener(Document*);
 
   void SetShowBeforeUnloadDialog(bool show_dialog) {

@@ -126,9 +126,11 @@ namespace dawn_native {
             // Perform binding-type specific validation.
             switch (layoutInfo.types[bindingIndex]) {
                 case dawn::BindingType::UniformBuffer:
+                case dawn::BindingType::DynamicUniformBuffer:
                     DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsageBit::Uniform));
                     break;
                 case dawn::BindingType::StorageBuffer:
+                case dawn::BindingType::DynamicStorageBuffer:
                     DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsageBit::Storage));
                     break;
                 case dawn::BindingType::SampledTexture:
@@ -138,10 +140,6 @@ namespace dawn_native {
                 case dawn::BindingType::Sampler:
                     DAWN_TRY(ValidateSamplerBinding(device, binding));
                     break;
-                // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset.
-                case dawn::BindingType::DynamicUniformBuffer:
-                case dawn::BindingType::DynamicStorageBuffer:
-                    return DAWN_VALIDATION_ERROR("Dawn doesn't support dynamic buffer yet");
             }
         }
 
@@ -209,8 +207,11 @@ namespace dawn_native {
         ASSERT(binding < kMaxBindingsPerGroup);
         ASSERT(mLayout->GetBindingInfo().mask[binding]);
         ASSERT(mLayout->GetBindingInfo().types[binding] == dawn::BindingType::UniformBuffer ||
-               mLayout->GetBindingInfo().types[binding] == dawn::BindingType::StorageBuffer);
-        BufferBase* buffer = reinterpret_cast<BufferBase*>(mBindings[binding].Get());
+               mLayout->GetBindingInfo().types[binding] == dawn::BindingType::StorageBuffer ||
+               mLayout->GetBindingInfo().types[binding] ==
+                   dawn::BindingType::DynamicUniformBuffer ||
+               mLayout->GetBindingInfo().types[binding] == dawn::BindingType::DynamicStorageBuffer);
+        BufferBase* buffer = static_cast<BufferBase*>(mBindings[binding].Get());
         return {buffer, mOffsets[binding], mSizes[binding]};
     }
 
@@ -219,7 +220,7 @@ namespace dawn_native {
         ASSERT(binding < kMaxBindingsPerGroup);
         ASSERT(mLayout->GetBindingInfo().mask[binding]);
         ASSERT(mLayout->GetBindingInfo().types[binding] == dawn::BindingType::Sampler);
-        return reinterpret_cast<SamplerBase*>(mBindings[binding].Get());
+        return static_cast<SamplerBase*>(mBindings[binding].Get());
     }
 
     TextureViewBase* BindGroupBase::GetBindingAsTextureView(size_t binding) {
@@ -227,7 +228,7 @@ namespace dawn_native {
         ASSERT(binding < kMaxBindingsPerGroup);
         ASSERT(mLayout->GetBindingInfo().mask[binding]);
         ASSERT(mLayout->GetBindingInfo().types[binding] == dawn::BindingType::SampledTexture);
-        return reinterpret_cast<TextureViewBase*>(mBindings[binding].Get());
+        return static_cast<TextureViewBase*>(mBindings[binding].Get());
     }
 
 }  // namespace dawn_native

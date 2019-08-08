@@ -66,7 +66,7 @@ void TrayItemView::SetVisible(bool set_visible) {
     animation_.reset(new gfx::SlideAnimation(this));
     animation_->SetSlideDuration(GetAnimationDurationMS());
     animation_->SetTweenType(gfx::Tween::LINEAR);
-    animation_->Reset(visible() ? 1.0 : 0.0);
+    animation_->Reset(GetVisible() ? 1.0 : 0.0);
   }
 
   if (!set_visible) {
@@ -108,6 +108,10 @@ gfx::Size TrayItemView::CalculatePreferredSize() const {
 
 int TrayItemView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
+}
+
+const char* TrayItemView::GetClassName() const {
+  return "TrayItemView";
 }
 
 void TrayItemView::ChildPreferredSizeChanged(views::View* child) {

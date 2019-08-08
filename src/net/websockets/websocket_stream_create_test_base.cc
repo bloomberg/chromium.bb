@@ -62,6 +62,7 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
   void OnSSLCertificateError(
       std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {
     owner_->ssl_error_callbacks_ = std::move(ssl_error_callbacks);

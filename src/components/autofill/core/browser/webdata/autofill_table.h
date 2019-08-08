@@ -561,11 +561,9 @@ class AutofillTable : public WebDatabaseTable,
       AutofillTableTest,
       Autofill_RemoveFormElementsAddedBetween_OlderThan30Days);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           RemoveExpiredFormElements_FlagOff_Removes);
+                           RemoveExpiredFormElements_Expires_DeleteEntry);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           RemoveExpiredFormElements_FlagOn_Expires);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           RemoveExpiredFormElements_FlagOn_NotOldEnough);
+                           RemoveExpiredFormElements_NotOldEnough);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddFormFieldValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateAutofillProfile);

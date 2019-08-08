@@ -338,9 +338,9 @@ void WebContentsAccessibilityAndroid::Connector::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {
   if (old_rwhva)
-    old_rwhva->set_web_contents_accessibility(nullptr);
+    old_rwhva->SetWebContentsAccessibility(nullptr);
   if (new_rwhva)
-    new_rwhva->set_web_contents_accessibility(accessibility_.get());
+    new_rwhva->SetWebContentsAccessibility(accessibility_.get());
 }
 
 WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(
@@ -683,7 +683,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()));
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoText(
       env, obj, info,
-      base::android::ConvertUTF16ToJavaString(env, node->GetText()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()),
       node->IsLink(), node->IsEditableText(),
       base::android::ConvertUTF16ToJavaString(
           env, node->GetInheritedString16Attribute(
@@ -777,7 +777,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityEvent(
   switch (event_type) {
     case ANDROID_ACCESSIBILITY_EVENT_TEXT_CHANGED: {
       base::string16 before_text = node->GetTextChangeBeforeText();
-      base::string16 text = node->GetText();
+      base::string16 text = node->GetInnerText();
       Java_WebContentsAccessibilityImpl_setAccessibilityEventTextChangedAttrs(
           env, obj, event, node->GetTextChangeFromIndex(),
           node->GetTextChangeAddedCount(), node->GetTextChangeRemovedCount(),
@@ -786,7 +786,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityEvent(
       break;
     }
     case ANDROID_ACCESSIBILITY_EVENT_TEXT_SELECTION_CHANGED: {
-      base::string16 text = node->GetText();
+      base::string16 text = node->GetInnerText();
       Java_WebContentsAccessibilityImpl_setAccessibilityEventSelectionAttrs(
           env, obj, event, node->GetSelectionStart(), node->GetSelectionEnd(),
           node->GetEditableTextLength(),
@@ -1009,7 +1009,7 @@ jboolean WebContentsAccessibilityAndroid::NextAtGranularity(
   int end_index = -1;
   if (root_manager_->NextAtGranularity(granularity, cursor_index, node,
                                        &start_index, &end_index)) {
-    base::string16 text = node->GetText();
+    base::string16 text = node->GetInnerText();
     Java_WebContentsAccessibilityImpl_finishGranularityMove(
         env, obj, base::android::ConvertUTF16ToJavaString(env, text),
         extend_selection, start_index, end_index, true);
@@ -1025,7 +1025,7 @@ jint WebContentsAccessibilityAndroid::GetTextLength(
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (!node)
     return -1;
-  base::string16 text = node->GetText();
+  base::string16 text = node->GetInnerText();
   return text.size();
 }
 
@@ -1047,7 +1047,8 @@ jboolean WebContentsAccessibilityAndroid::PreviousAtGranularity(
   if (root_manager_->PreviousAtGranularity(granularity, cursor_index, node,
                                            &start_index, &end_index)) {
     Java_WebContentsAccessibilityImpl_finishGranularityMove(
-        env, obj, base::android::ConvertUTF16ToJavaString(env, node->GetText()),
+        env, obj,
+        base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()),
         extend_selection, start_index, end_index, false);
     return true;
   }
@@ -1101,8 +1102,7 @@ void WebContentsAccessibilityAndroid::OnAutofillPopupDisplayed(
   DeleteAutofillPopupProxy();
 
   g_autofill_popup_proxy_node = BrowserAccessibility::Create();
-  g_autofill_popup_proxy_node_ax_node =
-      new ui::AXNode(nullptr, nullptr, -1, -1);
+  g_autofill_popup_proxy_node_ax_node = new ui::AXNode(nullptr, nullptr, -1, 0);
   ui::AXNodeData ax_node_data;
   ax_node_data.role = ax::mojom::Role::kMenu;
   ax_node_data.SetName("Autofill");
@@ -1201,8 +1201,8 @@ WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
   gfx::Rect object_bounds = node->GetUnclippedRootFrameBoundsRect();
   int coords[4 * len];
   for (int i = 0; i < len; i++) {
-    gfx::Rect char_bounds = node->GetRootFrameRangeBoundsRect(
-        start + i, 1, ui::AXClippingBehavior::kUnclipped);
+    gfx::Rect char_bounds = node->GetUnclippedRootFrameInnerTextRangeBoundsRect(
+        start + i, start + i + 1);
     if (char_bounds.IsEmpty())
       char_bounds = object_bounds;
     coords[4 * i + 0] = char_bounds.x();

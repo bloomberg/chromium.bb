@@ -365,11 +365,6 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (forced_redraw_state_ == ForcedRedrawOnTimeoutState::WAITING_FOR_DRAW)
     return true;
 
-  // Delay draws when we have pending animation worklet updates to give them
-  // time to produce output before we draw.
-  if (processing_animation_worklets_for_active_tree_)
-    return false;
-
   return needs_redraw_;
 }
 

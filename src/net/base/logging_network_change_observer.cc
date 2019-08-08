@@ -38,29 +38,28 @@ int HumanReadableNetworkHandle(NetworkChangeNotifier::NetworkHandle network) {
 // Return a dictionary of values that provide information about a
 // network-specific change. This also includes relevant current state
 // like the default network, and the types of active networks.
-std::unique_ptr<base::Value> NetworkSpecificNetLogCallback(
+base::Value NetworkSpecificNetLogCallback(
     NetworkChangeNotifier::NetworkHandle network,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("changed_network_handle",
-                   HumanReadableNetworkHandle(network));
-  dict->SetString(
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("changed_network_handle", HumanReadableNetworkHandle(network));
+  dict.SetStringKey(
       "changed_network_type",
       NetworkChangeNotifier::ConnectionTypeToString(
           NetworkChangeNotifier::GetNetworkConnectionType(network)));
-  dict->SetInteger(
+  dict.SetIntKey(
       "default_active_network_handle",
       HumanReadableNetworkHandle(NetworkChangeNotifier::GetDefaultNetwork()));
   NetworkChangeNotifier::NetworkList networks;
   NetworkChangeNotifier::GetConnectedNetworks(&networks);
   for (NetworkChangeNotifier::NetworkHandle active_network : networks) {
-    dict->SetString(
+    dict.SetStringKey(
         "current_active_networks." +
             base::NumberToString(HumanReadableNetworkHandle(active_network)),
         NetworkChangeNotifier::ConnectionTypeToString(
             NetworkChangeNotifier::GetNetworkConnectionType(active_network)));
   }
-  return std::move(dict);
+  return dict;
 }
 
 }  // namespace

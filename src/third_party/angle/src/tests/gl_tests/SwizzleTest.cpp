@@ -60,10 +60,8 @@ class SwizzleTest : public ANGLETest
         }
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] = R"(precision highp float;
 attribute vec4 position;
 varying vec2 texcoord;
@@ -93,12 +91,10 @@ void main()
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteProgram(mProgram);
         glDeleteTextures(1, &mTexture);
-
-        ANGLETest::TearDown();
     }
 
     template <typename T>
@@ -204,10 +200,8 @@ void main()
 class SwizzleIntegerTest : public SwizzleTest
 {
   protected:
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] =
             "#version 300 es\n"
             "precision highp float;\n"
@@ -356,7 +350,7 @@ TEST_P(SwizzleTest, LA8_2D)
 
 TEST_P(SwizzleTest, L32F_2D)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
 
     GLfloat data[] = {0.7f};
     init2DTexture(GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT, data);
@@ -365,7 +359,7 @@ TEST_P(SwizzleTest, L32F_2D)
 
 TEST_P(SwizzleTest, A32F_2D)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
 
     GLfloat data[] = {
         0.4f,
@@ -376,7 +370,7 @@ TEST_P(SwizzleTest, A32F_2D)
 
 TEST_P(SwizzleTest, LA32F_2D)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
 
     GLfloat data[] = {
         0.5f,
@@ -386,11 +380,11 @@ TEST_P(SwizzleTest, LA32F_2D)
     runTest2D();
 }
 
-#include "media/pixel.inl"
+#include "media/pixel.inc"
 
 TEST_P(SwizzleTest, CompressedDXT_2D)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_dxt1"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_dxt1"));
 
     init2DCompressedTexture(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, pixel_0_width, pixel_0_height,
                             pixel_0_size, pixel_0_data);
@@ -435,13 +429,7 @@ TEST_P(SwizzleTest, SubUpdate)
     EXPECT_PIXEL_COLOR_EQ(0, 0, expectedUpdateData);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
-ANGLE_INSTANTIATE_TEST(SwizzleTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGL(3, 3), ES3_OPENGLES());
-ANGLE_INSTANTIATE_TEST(SwizzleIntegerTest,
-                       ES3_D3D11(),
-                       ES3_OPENGL(),
-                       ES3_OPENGL(3, 3),
-                       ES3_OPENGLES());
+ANGLE_INSTANTIATE_TEST(SwizzleTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
+ANGLE_INSTANTIATE_TEST(SwizzleIntegerTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 
 }  // namespace

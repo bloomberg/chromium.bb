@@ -33,8 +33,6 @@ class CORE_EXPORT HTMLBRElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLBRElement);
-
   explicit HTMLBRElement(Document&);
 
   bool CanContainRangeEndPoint() const override { return false; }

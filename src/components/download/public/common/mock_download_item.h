@@ -12,11 +12,13 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace download {
 
@@ -65,6 +67,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetSiteUrl, const GURL&());
   MOCK_CONST_METHOD0(GetTabUrl, const GURL&());
   MOCK_CONST_METHOD0(GetTabReferrerUrl, const GURL&());
+  MOCK_CONST_METHOD0(GetRequestInitiator, const base::Optional<url::Origin>&());
   MOCK_CONST_METHOD0(GetSuggestedFilename, std::string());
   MOCK_CONST_METHOD0(GetContentDisposition, std::string());
   MOCK_CONST_METHOD0(GetResponseHeaders,

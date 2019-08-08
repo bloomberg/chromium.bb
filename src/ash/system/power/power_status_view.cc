@@ -83,7 +83,7 @@ void PowerStatusView::Layout() {
   // Move the time_status_label_, separator_label_, and percentage_label_
   // closer to each other.
   if (percentage_label_ && separator_label_ && time_status_label_ &&
-      percentage_label_->visible() && time_status_label_->visible()) {
+      percentage_label_->GetVisible() && time_status_label_->GetVisible()) {
     separator_label_->SetX(percentage_label_->bounds().right() + 1);
     time_status_label_->SetX(separator_label_->bounds().right() + 1);
   }
@@ -92,6 +92,10 @@ void PowerStatusView::Layout() {
 void PowerStatusView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kLabelText;
   node_data->SetName(accessible_name_);
+}
+
+const char* PowerStatusView::GetClassName() const {
+  return "PowerStatusView";
 }
 
 }  // namespace ash

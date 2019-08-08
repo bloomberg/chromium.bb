@@ -24,6 +24,7 @@
 namespace webrtc {
 
 class PacketFeedbackObserver;
+struct RtpPacketSendInfo;
 
 namespace rtcp {
 class TransportFeedback;
@@ -37,12 +38,9 @@ class TransportFeedbackAdapter {
   void RegisterPacketFeedbackObserver(PacketFeedbackObserver* observer);
   void DeRegisterPacketFeedbackObserver(PacketFeedbackObserver* observer);
 
-  void AddPacket(uint32_t ssrc,
-                 uint16_t sequence_number,
-                 size_t length,
-                 const PacedPacketInfo& pacing_info,
+  void AddPacket(const RtpPacketSendInfo& packet_info,
+                 size_t overhead_bytes,
                  Timestamp creation_time);
-
   absl::optional<SentPacket> ProcessSentPacket(
       const rtc::SentPacket& sent_packet);
 

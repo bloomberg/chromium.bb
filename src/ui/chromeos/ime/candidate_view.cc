@@ -263,7 +263,7 @@ void CandidateView::Layout() {
   x += candidate_width_ + padding_width;
 
   int right = bounds().right();
-  if (infolist_icon_ && infolist_icon_->visible()) {
+  if (infolist_icon_ && infolist_icon_->GetVisible()) {
     infolist_icon_->SetBounds(
         right - kInfolistIndicatorIconWidth - kInfolistIndicatorIconPadding,
         kInfolistIndicatorIconPadding,
@@ -278,7 +278,7 @@ gfx::Size CandidateView::CalculatePreferredSize() const {
   const int padding_width =
       orientation_ == ui::CandidateWindow::VERTICAL ? 4 : 6;
   gfx::Size size;
-  if (shortcut_label_->visible()) {
+  if (shortcut_label_->GetVisible()) {
     size = shortcut_label_->GetPreferredSize();
     size.SetToMax(gfx::Size(shortcut_width_, 0));
     size.Enlarge(padding_width, 0);
@@ -287,7 +287,7 @@ gfx::Size CandidateView::CalculatePreferredSize() const {
   candidate_size.SetToMax(gfx::Size(candidate_width_, 0));
   size.Enlarge(candidate_size.width() + padding_width, 0);
   size.SetToMax(candidate_size);
-  if (annotation_label_->visible()) {
+  if (annotation_label_->GetVisible()) {
     gfx::Size annotation_size = annotation_label_->GetPreferredSize();
     size.Enlarge(annotation_size.width() + padding_width, 0);
     size.SetToMax(annotation_size);

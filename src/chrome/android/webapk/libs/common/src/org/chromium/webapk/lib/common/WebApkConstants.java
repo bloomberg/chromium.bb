@@ -41,11 +41,4 @@ public final class WebApkConstants {
 
     /** Name of the shared preferences file. */
     public static final String PREF_PACKAGE = "org.chromium.webapk.shell_apk";
-
-    /**
-     * Action used by host browser to launch splash screen activity to hide web contents while the
-     * page is loading.
-     */
-    public static final String ACTION_SHOW_SPLASH =
-            "org.chromium.webapk.shell_apk.ACTION_SHOW_SPLASH";
 }

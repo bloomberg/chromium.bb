@@ -540,6 +540,9 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
       base::UTF8ToUTF16(extension_sync_data.bookmark_app_description());
   web_app_info->scope = GURL(extension_sync_data.bookmark_app_scope());
   web_app_info->theme_color = extension_sync_data.bookmark_app_theme_color();
+  web_app_info->open_as_window =
+      extension_sync_data.launch_type() == extensions::LAUNCH_TYPE_WINDOW;
+
   if (!extension_sync_data.bookmark_app_icon_color().empty()) {
     extensions::image_util::ParseHexColorString(
         extension_sync_data.bookmark_app_icon_color(),

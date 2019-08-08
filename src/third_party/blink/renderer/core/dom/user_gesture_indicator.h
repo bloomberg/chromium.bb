@@ -10,6 +10,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
+namespace base {
+class Clock;
+}
+
 namespace blink {
 
 // A UserGestureToken represents the current state of a user gesture. It can be
@@ -32,6 +36,9 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   // need to investigate the usecase closely.
   bool HasGestures() const;
 
+  void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
+  void ResetTimestampForTesting() { ResetTimestamp(); }
+
  private:
   UserGestureToken(Status);
 
@@ -44,6 +51,7 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   void SetWasForwardedCrossProcess();
 
   size_t consumable_gestures_;
+  const base::Clock* clock_;
   double timestamp_;
   TimeoutPolicy timeout_policy_;
   bool was_forwarded_cross_process_;

@@ -61,6 +61,27 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) IsolatedContext : public MountPoints {
     std::set<MountPointInfo> fileset_;
   };
 
+  // A handle to a Isolated File System, which properly refcounts the file
+  // system with the IsolatedContext when handles are created and destroyed.
+  class COMPONENT_EXPORT(STORAGE_BROWSER) ScopedFSHandle {
+   public:
+    ScopedFSHandle() = default;
+    // Like scoped_refptr, creating a new handle increases the refcount of the
+    // file system being referenced.
+    explicit ScopedFSHandle(std::string file_system_id);
+    ~ScopedFSHandle();
+    ScopedFSHandle(const ScopedFSHandle& other);
+    ScopedFSHandle(ScopedFSHandle&& other);
+    ScopedFSHandle& operator=(const ScopedFSHandle& other);
+    ScopedFSHandle& operator=(ScopedFSHandle&& other);
+
+    const std::string& id() const { return file_system_id_; }
+    bool is_valid() const { return !file_system_id_.empty(); }
+
+   private:
+    std::string file_system_id_;
+  };
+
   // The instance is lazily created per browser process.
   static IsolatedContext* GetInstance();
 
@@ -93,15 +114,16 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) IsolatedContext : public MountPoints {
   std::string RegisterDraggedFileSystem(const FileInfoSet& files);
 
   // Registers a new isolated filesystem for a given |path| of filesystem
-  // |type| filesystem with |filesystem_id| and returns a new filesystem ID.
+  // |type| filesystem with |filesystem_id| and returns a handle for a new
+  // filesystem ID.
   // |path| must be an absolute path which has no parent references ('..').
   // If |register_name| is non-null and has non-empty string the path is
   // registered as the given |register_name|, otherwise it is populated
   // with the name internally assigned to the path.
-  std::string RegisterFileSystemForPath(FileSystemType type,
-                                        const std::string& filesystem_id,
-                                        const base::FilePath& path,
-                                        std::string* register_name);
+  ScopedFSHandle RegisterFileSystemForPath(FileSystemType type,
+                                           const std::string& filesystem_id,
+                                           const base::FilePath& path,
+                                           std::string* register_name);
 
   // Registers a virtual filesystem. This is different from
   // RegisterFileSystemForPath because register_name is required, and

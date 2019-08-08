@@ -183,15 +183,6 @@ def return_code_from_exception(exception):
   return 1
 
 
-def seconds_to_weeks(duration):
-  """Transform a |duration| from seconds to weeks approximately.
-
-  Drops the lowest 19 bits of the integer representation, which ammounts to
-  about 6 days.
-  """
-  return int(duration) >> 19
-
-
 def extract_known_subcommand_args(args):
   """Extract the known arguments from the passed list of args."""
   known_args = []
@@ -276,8 +267,7 @@ def get_repo_timestamp(path_to_repo):
   if p.returncode != 0:
     return None
 
-  # Get the age of the checkout in weeks.
-  return seconds_to_weeks(stdout.strip())
+  return stdout.strip()
 
 def print_boxed_text(out, min_width, lines):
   [EW, NS, SE, SW, NE, NW] = list('=|++++')

@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -55,11 +56,14 @@ WebEngineBrowserContext::WebEngineBrowserContext(bool force_incognito)
       data_dir_path_.clear();
     }
   }
-
+  simple_factory_key_ =
+      std::make_unique<SimpleFactoryKey>(GetPath(), IsOffTheRecord());
+  SimpleKeyMap::GetInstance()->Associate(this, simple_factory_key_.get());
   BrowserContext::Initialize(this, data_dir_path_);
 }
 
 WebEngineBrowserContext::~WebEngineBrowserContext() {
+  SimpleKeyMap::GetInstance()->Dissociate(this);
   NotifyWillBeDestroyed(this);
 
   if (resource_context_) {

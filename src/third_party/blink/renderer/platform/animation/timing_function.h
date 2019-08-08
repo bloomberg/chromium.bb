@@ -30,21 +30,34 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
+class PLATFORM_EXPORT TimingFunction
+    : public ThreadSafeRefCounted<TimingFunction> {
  public:
   using Type = cc::TimingFunction::Type;
+  using LimitDirection = cc::TimingFunction::LimitDirection;
 
   virtual ~TimingFunction() = default;
 
   Type GetType() const { return type_; }
 
   virtual String ToString() const = 0;
+
+  // Evaluates the timing function at the given fraction. The limit direction
+  // applies when evaluating a function at a discontinuous boundary and
+  // indicates if the left or right limit should be applied. The accuracy
+  // parameter provides a hint as to the required accuracy and is not
+  // guaranteed.
+  virtual double Evaluate(double fraction,
+                          LimitDirection limit_direction,
+                          double accuracy) const {
+    return Evaluate(fraction, accuracy);
+  }
 
   // Evaluates the timing function at the given fraction. The accuracy parameter
   // provides a hint as to the required accuracy and is not guaranteed.
@@ -177,7 +190,11 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 
   // TimingFunction implementation.
   String ToString() const override;
+  double Evaluate(double fraction,
+                  LimitDirection limit_direction,
+                  double) const override;
   double Evaluate(double fraction, double) const override;
+
   void Range(double* min_value, double* max_value) const override;
   std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 
@@ -192,32 +209,6 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
   std::unique_ptr<cc::StepsTimingFunction> steps_;
 };
 
-class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
- public:
-  static scoped_refptr<FramesTimingFunction> Create(int frames) {
-    return base::AdoptRef(new FramesTimingFunction(frames));
-  }
-
-  ~FramesTimingFunction() override = default;
-
-  // TimingFunction implementation.
-  String ToString() const override;
-  double Evaluate(double fraction, double) const override;
-  void Range(double* min_value, double* max_value) const override;
-  std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
-
-  int NumberOfFrames() const { return frames_->frames(); }
-
- private:
-  FramesTimingFunction(int frames)
-      : TimingFunction(Type::FRAMES),
-        frames_(cc::FramesTimingFunction::Create(frames)) {
-    DCHECK(RuntimeEnabledFeatures::FramesTimingFunctionEnabled());
-  }
-
-  std::unique_ptr<cc::FramesTimingFunction> frames_;
-};
-
 PLATFORM_EXPORT scoped_refptr<TimingFunction>
 CreateCompositorTimingFunctionFromCC(const cc::TimingFunction*);
 
@@ -226,8 +217,6 @@ PLATFORM_EXPORT bool operator==(const LinearTimingFunction&,
 PLATFORM_EXPORT bool operator==(const CubicBezierTimingFunction&,
                                 const TimingFunction&);
 PLATFORM_EXPORT bool operator==(const StepsTimingFunction&,
-                                const TimingFunction&);
-PLATFORM_EXPORT bool operator==(const FramesTimingFunction&,
                                 const TimingFunction&);
 
 PLATFORM_EXPORT bool operator==(const TimingFunction&, const TimingFunction&);
@@ -241,7 +230,6 @@ PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear, LINEAR);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier, CUBIC_BEZIER);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps, STEPS);
-DEFINE_TIMING_FUNCTION_TYPE_CASTS(Frames, FRAMES);
 
 }  // namespace blink
 

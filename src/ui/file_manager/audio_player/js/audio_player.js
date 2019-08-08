@@ -268,8 +268,8 @@ AudioPlayer.prototype.onExternallyUnmounted_ = function(event) {
     return;
   }
 
-  if (this.volumeManager_.getVolumeInfo(this.selectedEntry_) ===
-      event.volumeInfo) {
+  event = /** @type {!ExternallyUnmountedEvent} */ (event);
+  if (this.volumeManager_.getVolumeInfo(this.selectedEntry_) === event.detail) {
     window.close();
   }
 };

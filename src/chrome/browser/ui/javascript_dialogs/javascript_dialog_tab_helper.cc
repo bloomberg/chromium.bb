@@ -11,11 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -32,7 +28,11 @@
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
 namespace {
@@ -449,34 +449,32 @@ void JavaScriptDialogTabHelper::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   if (change.type() == TabStripModelChange::kReplaced) {
-    for (const auto& delta : change.deltas()) {
-      if (delta.replace.old_contents != WebContentsObserver::web_contents())
-        continue;
-
+    auto* replace = change.GetReplace();
+    if (replace->old_contents == WebContentsObserver::web_contents()) {
       // At this point, this WebContents is no longer in the tabstrip. The usual
       // teardown will not be able to turn off the attention indicator, so that
       // must be done here.
-      SetTabNeedsAttentionImpl(false, tab_strip_model, delta.replace.index);
+      SetTabNeedsAttentionImpl(false, tab_strip_model, replace->index);
 
       CloseDialog(DismissalCause::kTabSwitchedOut, false, base::string16());
     }
   } else if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& delta : change.deltas()) {
-      if (delta.remove.contents != WebContentsObserver::web_contents())
-        continue;
-
-      // We don't call TabStripModel::SetTabNeedsAttention because it causes
-      // re-entrancy into TabStripModel and correctness of the |index| parameter
-      // is dependent on observer ordering.
-      // This is okay in the short term because the tab in question is being
-      // removed.
-      // TODO(erikchen): Clean up TabStripModel observer API so that this
-      // doesn't require re-entrancy and/or works correctly
-      // https://crbug.com/842194.
-      DCHECK(tab_strip_model_being_observed_);
-      tab_strip_model_being_observed_->RemoveObserver(this);
-      tab_strip_model_being_observed_ = nullptr;
-      CloseDialog(DismissalCause::kTabHelperDestroyed, false, base::string16());
+    for (const auto& contents : change.GetRemove()->contents) {
+      if (contents.contents == WebContentsObserver::web_contents()) {
+        // We don't call TabStripModel::SetTabNeedsAttention because it causes
+        // re-entrancy into TabStripModel and correctness of the |index|
+        // parameter is dependent on observer ordering. This is okay in the
+        // short term because the tab in question is being removed.
+        // TODO(erikchen): Clean up TabStripModel observer API so that this
+        // doesn't require re-entrancy and/or works correctly
+        // https://crbug.com/842194.
+        DCHECK(tab_strip_model_being_observed_);
+        tab_strip_model_being_observed_->RemoveObserver(this);
+        tab_strip_model_being_observed_ = nullptr;
+        CloseDialog(DismissalCause::kTabHelperDestroyed, false,
+                    base::string16());
+        break;
+      }
     }
   }
 }

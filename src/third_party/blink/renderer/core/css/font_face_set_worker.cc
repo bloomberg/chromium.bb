@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -74,8 +75,8 @@ bool FontFaceSetWorker::ResolveFontStyle(const String& font_string,
 
   // Interpret fontString in the same way as the 'font' attribute of
   // CanvasRenderingContext2D.
-  MutableCSSPropertyValueSet* parsed_style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* parsed_style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   CSSParser::ParseValue(parsed_style, CSSPropertyID::kFont, font_string, true,
                         GetExecutionContext()->GetSecureContextMode());
   if (parsed_style->IsEmpty())

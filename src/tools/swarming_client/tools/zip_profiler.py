@@ -17,11 +17,17 @@ import tempfile
 import time
 import zlib
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, CLIENT_DIR)
 
-from third_party.depot_tools import fix_encoding
+from utils import tools
+tools.force_local_third_party()
+
+# third_party/
+from depot_tools import fix_encoding
+
+# pylint: disable=ungrouped-imports
 from utils import file_path
 from utils import tools
 
@@ -89,7 +95,7 @@ def main():
     temp_dir = tempfile.mkdtemp(prefix=u'zip_profiler')
 
     # Create a directory of the required files
-    subprocess.check_call([os.path.join(ROOT_DIR, 'isolate.py'),
+    subprocess.check_call([os.path.join(CLIENT_DIR, 'isolate.py'),
                            'remap',
                            '-s', options.isolated,
                            '--outdir', temp_dir])
@@ -97,7 +103,7 @@ def main():
     file_set = tree_files(temp_dir)
 
     if options.largest_files:
-      sorted_by_size = sorted(file_set.iteritems(),  key=lambda x: x[1],
+      sorted_by_size = sorted(file_set.iteritems(), key=lambda x: x[1],
                               reverse=True)
       files_to_compress = sorted_by_size[:options.largest_files]
 

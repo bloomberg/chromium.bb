@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/grit/components_resources.h"
-#import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
+#import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

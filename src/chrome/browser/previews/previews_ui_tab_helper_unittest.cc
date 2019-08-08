@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -60,7 +59,6 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
     offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents());
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-    MockInfoBarService::CreateForWebContents(web_contents());
     PreviewsUITabHelper::CreateForWebContents(web_contents());
     test_handle_ = std::make_unique<content::MockNavigationHandle>(
         GURL(kTestUrl), main_rfh());
@@ -128,10 +126,6 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
         test_handle_.get(), page_id);
   }
 
-  InfoBarService* infobar_service() {
-    return InfoBarService::FromWebContents(web_contents());
-  }
-
  protected:
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
@@ -150,9 +144,6 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysUI) {
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
-#if !defined(OS_ANDROID)
-  EXPECT_EQ(1U, infobar_service()->infobar_count());
-#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -164,15 +155,10 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysUI) {
 
 #if defined(OS_ANDROID)
 TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      previews::features::kAndroidOmniboxPreviewsBadge);
-
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
   EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
 
   SetCommittedPreviewsType(previews::PreviewsType::LITE_PAGE);
   SimulateWillProcessResponse();
@@ -181,7 +167,6 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
 
   EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 #endif
 
@@ -196,9 +181,6 @@ TEST_F(PreviewsUITabHelperUnitTest,
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
-#if !defined(OS_ANDROID)
-  EXPECT_EQ(1U, infobar_service()->infobar_count());
-#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -209,11 +191,7 @@ TEST_F(PreviewsUITabHelperUnitTest,
 }
 
 TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationDoesCreateLoFiPreviewsInfoBar) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      previews::features::kAndroidOmniboxPreviewsBadge);
-
+       DidFinishNavigationDoesCreateLoFiPreviewsUI) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -225,10 +203,8 @@ TEST_F(PreviewsUITabHelperUnitTest,
 
 #if defined(OS_ANDROID)
   EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
-#else
-  EXPECT_EQ(1U, infobar_service()->infobar_count());
-  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 #endif
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
   content::WebContentsTester::For(web_contents())
@@ -236,32 +212,8 @@ TEST_F(PreviewsUITabHelperUnitTest,
 
 #if defined(OS_ANDROID)
   EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
-#else
-  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 #endif
-}
-
-TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      previews::features::kAndroidOmniboxPreviewsBadge);
-
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
-
-  SetCommittedPreviewsType(previews::PreviewsType::LOFI);
-  SimulateWillProcessResponse();
-  CallDidFinishNavigation();
-  base::RunLoop().RunUntilIdle();
-
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
-#else
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
-  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
-#endif
 }
 
 TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
@@ -324,9 +276,6 @@ TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineUI) {
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
-#if !defined(OS_ANDROID)
-  EXPECT_EQ(1U, infobar_service()->infobar_count());
-#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -384,7 +333,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsCallbackCalledOptOut) {
 
   base::Optional<bool> on_dismiss_value;
 
-  ui_tab_helper->ShowUIElement(previews::PreviewsType::OFFLINE, true,
+  ui_tab_helper->ShowUIElement(previews::PreviewsType::OFFLINE,
                                base::BindOnce(&OnDismiss, &on_dismiss_value));
 
   EXPECT_FALSE(on_dismiss_value);
@@ -405,7 +354,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsCallbackCalledNonOptOut) {
 
   base::Optional<bool> on_dismiss_value;
 
-  ui_tab_helper->ShowUIElement(previews::PreviewsType::OFFLINE, true,
+  ui_tab_helper->ShowUIElement(previews::PreviewsType::OFFLINE,
                                base::BindOnce(&OnDismiss, &on_dismiss_value));
 
   EXPECT_FALSE(on_dismiss_value);
@@ -434,4 +383,19 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsLitePageRedirect) {
 
   EXPECT_EQ(previews_url,
             web_contents()->GetController().GetLastCommittedEntry()->GetURL());
+}
+
+TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsDeferAllScript) {
+  GURL test_url("https://tribbles.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(test_url);
+
+  PreviewsUITabHelper::FromWebContents(web_contents())
+      ->ReloadWithoutPreviews(previews::PreviewsType::DEFER_ALL_SCRIPT);
+  base::RunLoop().RunUntilIdle();
+
+  ui::PageTransition transition_type = web_contents()
+                                           ->GetController()
+                                           .GetLastCommittedEntry()
+                                           ->GetTransitionType();
+  EXPECT_TRUE(transition_type & ui::PAGE_TRANSITION_RELOAD);
 }

@@ -38,7 +38,7 @@ base::subtle::Atomic32 GLContext::total_gl_contexts_ = 0;
 // static
 bool GLContext::switchable_gpus_supported_ = false;
 // static
-GpuPreference GLContext::forced_gpu_preference_ = GpuPreferenceNone;
+GpuPreference GLContext::forced_gpu_preference_ = GpuPreference::kDefault;
 
 GLContext::ScopedReleaseCurrent::ScopedReleaseCurrent() : canceled_(false) {}
 
@@ -89,21 +89,21 @@ void GLContext::SetSwitchableGPUsSupported() {
 
 // static
 void GLContext::SetForcedGpuPreference(GpuPreference gpu_preference) {
-  DCHECK_EQ(GpuPreferenceNone, forced_gpu_preference_);
+  DCHECK_EQ(GpuPreference::kDefault, forced_gpu_preference_);
   forced_gpu_preference_ = gpu_preference;
 }
 
 // static
 GpuPreference GLContext::AdjustGpuPreference(GpuPreference gpu_preference) {
   switch (forced_gpu_preference_) {
-    case GpuPreferenceNone:
+    case GpuPreference::kDefault:
       return gpu_preference;
-    case PreferIntegratedGpu:
-    case PreferDiscreteGpu:
+    case GpuPreference::kLowPower:
+    case GpuPreference::kHighPerformance:
       return forced_gpu_preference_;
     default:
       NOTREACHED();
-      return GpuPreferenceNone;
+      return GpuPreference::kDefault;
   }
 }
 

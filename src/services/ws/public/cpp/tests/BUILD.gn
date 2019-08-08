@@ -10,7 +10,6 @@ source_set("tests") {
 
   sources = [
     "gpu_unittest.cc",
-    "property_type_converters_unittest.cc",
   ]
 
   deps = [
@@ -19,7 +18,7 @@ source_set("tests") {
     "//mojo/core/embedder",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/cpp",
+    "//services/ws/public/cpp/gpu",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

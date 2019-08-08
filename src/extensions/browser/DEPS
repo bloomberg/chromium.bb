@@ -16,8 +16,6 @@ include_rules = [
   "+components/zoom",
   "+content/public/browser",
   "+device/bluetooth",
-  "+device/serial",
-  "+device/usb",
   "+google_apis/gaia",
   "+gpu/config",
   "+grit/extensions_strings.h",
@@ -25,6 +23,7 @@ include_rules = [
   # This directory contains build flags and does not pull all of PPAPI in.
   "+ppapi/buildflags",
   "+services/data_decoder/public",
+  "+services/device/public",
   "+services/identity/public/cpp",
   "+services/network/public/cpp",
   "+services/network/public/mojom",

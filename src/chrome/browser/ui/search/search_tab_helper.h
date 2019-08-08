@@ -70,16 +70,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class SearchIPCRouterTest;
 
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, ChromeIdentityCheckMatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           ChromeIdentityCheckMatchSlightlyDifferentGmail);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           ChromeIdentityCheckMatchSlightlyDifferentGmail2);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, ChromeIdentityCheckMismatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           ChromeIdentityCheckSignedOutMismatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, HistorySyncCheckSyncing);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, HistorySyncCheckNotSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            FileSelectedUpdatesLastSelectedDirectory);
 
@@ -119,9 +109,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnLogMostVisitedNavigation(
       const ntp_tiles::NTPTileImpression& impression) override;
   void PasteIntoOmnibox(const base::string16& text) override;
-  bool ChromeIdentityCheck(const base::string16& identity) override;
-  bool HistorySyncCheck() override;
-  void OnSetCustomBackgroundURL(const GURL& url) override;
   void OnSetCustomBackgroundURLWithAttributions(
       const GURL& background_url,
       const std::string& attribution_line_1,

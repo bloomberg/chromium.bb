@@ -26,6 +26,41 @@ source_set("omnibox_popup_shared") {
   ]
 }
 
+# This util file must be separate from the below
+# omnibox_util file because it is used in showcase. This
+# means that its dependencies should be limited, avoiding
+# components code.
+source_set("omnibox_suggestion_icon_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "omnibox_suggestion_icon_util.h",
+    "omnibox_suggestion_icon_util.mm",
+  ]
+  deps = [
+    "resources:answer_calculator",
+    "resources:answer_conversion",
+    "resources:answer_dictionary",
+    "resources:answer_local_time",
+    "resources:answer_stock",
+    "resources:answer_sunrise",
+    "resources:answer_translation",
+    "resources:answer_when_is",
+    "resources:background_solid",
+    "resources:background_stroke",
+    "resources:favicon_fallback",
+    "resources:omnibox_completion_bookmark",
+    "resources:omnibox_completion_calculator",
+    "resources:omnibox_completion_default_favicon",
+    "resources:omnibox_completion_history",
+    "resources:omnibox_completion_search",
+    "resources:search",
+    "//base",
+  ]
+}
+
+# See the comment above on omnibox_suggestion_icon_util
+# for why these two targets are separated.
 source_set("omnibox_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -34,16 +69,18 @@ source_set("omnibox_util") {
     "omnibox_util.mm",
   ]
   deps = [
+    ":omnibox_suggestion_icon_util",
     "resources:omnibox_background",
-    "resources:omnibox_clear_icon",
     "resources:omnibox_completion_bookmark",
     "resources:omnibox_completion_calculator",
     "resources:omnibox_completion_default_favicon",
     "resources:omnibox_completion_history",
     "resources:omnibox_completion_search",
+    "resources:search",
     "//base",
     "//components/omnibox/browser",
     "//components/security_state/core",
+    "//ios/chrome/browser/ui:feature_flags",
   ]
   public_deps = [
     "//ios/chrome/app/theme",
@@ -78,6 +115,7 @@ source_set("omnibox_internal") {
     ":omnibox",
     ":omnibox_popup_shared",
     ":omnibox_util",
+    "resources:omnibox_clear_icon",
     "resources:omnibox_transparent_background",
     "//base",
     "//components/favicon/ios",
@@ -92,11 +130,11 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fullscreen",
@@ -107,7 +145,9 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
+    "//ios/chrome/common/favicon",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/images",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//net",

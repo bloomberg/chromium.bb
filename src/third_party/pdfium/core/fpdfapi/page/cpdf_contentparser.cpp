@@ -50,7 +50,7 @@ CPDF_ContentParser::CPDF_ContentParser(CPDF_Page* pPage)
 }
 
 CPDF_ContentParser::CPDF_ContentParser(CPDF_Form* pForm,
-                                       CPDF_AllStates* pGraphicStates,
+                                       const CPDF_AllStates* pGraphicStates,
                                        const CFX_Matrix* pParentMatrix,
                                        CPDF_Type3Char* pType3Char,
                                        std::set<const uint8_t*>* parsedSet)
@@ -209,7 +209,7 @@ CPDF_ContentParser::Stage CPDF_ContentParser::CheckClip() {
                                            m_pParser->GetType3Data());
   }
 
-  for (auto& pObj : *m_pObjectHolder->GetPageObjectList()) {
+  for (auto& pObj : *m_pObjectHolder) {
     if (!pObj->m_ClipPath.HasRef())
       continue;
     if (pObj->m_ClipPath.GetPathCount() != 1)

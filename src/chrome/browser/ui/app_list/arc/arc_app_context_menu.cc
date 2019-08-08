@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 
 ArcAppContextMenu::ArcAppContextMenu(app_list::AppContextMenuDelegate* delegate,
@@ -127,6 +130,10 @@ void ArcAppContextMenu::ShowPackageInfo() {
   if (!app_info) {
     VLOG(2) << "Requesting AppInfo for package that does not exist: "
             << app_id() << ".";
+    return;
+  }
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+    chrome::ShowAppManagementPage(profile(), app_id());
     return;
   }
   if (arc::ShowPackageInfo(app_info->package_name,

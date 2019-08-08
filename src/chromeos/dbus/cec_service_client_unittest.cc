@@ -96,7 +96,7 @@ class CecServiceClientTest : public testing::Test {
         .WillByDefault(Return(mock_proxy_.get()));
 
     // Create a client with the mock bus.
-    client_ = CecServiceClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION);
+    client_ = CecServiceClient::Create();
     client_->Init(mock_bus_.get());
 
     // Run the message loop to run the signal connection result callback.

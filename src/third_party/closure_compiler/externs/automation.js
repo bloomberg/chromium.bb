@@ -7,7 +7,8 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.automation.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See
+// https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: automation */
 
@@ -899,6 +900,14 @@ chrome.automation.AutomationNode.prototype.markerEnds;
  * @see https://developer.chrome.com/extensions/automation#type-markerTypes
  */
 chrome.automation.AutomationNode.prototype.markerTypes;
+
+/**
+ * If a selection is present, whether the anchor of the selection comes after
+ * its focus in the accessibility tree.
+ * @type {(boolean|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-isSelectionBackward
+ */
+chrome.automation.AutomationNode.prototype.isSelectionBackward;
 
 /**
  * The anchor node of the tree selection, if any.

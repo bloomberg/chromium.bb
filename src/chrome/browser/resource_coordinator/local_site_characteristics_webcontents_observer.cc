@@ -4,10 +4,17 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "content/public/browser/navigation_handle.h"
@@ -19,32 +26,66 @@ namespace {
 
 using LoadingState = TabLoadTracker::LoadingState;
 
-TabVisibility ContentVisibilityToRCVisibility(content::Visibility visibility) {
+performance_manager::TabVisibility ContentVisibilityToRCVisibility(
+    content::Visibility visibility) {
   if (visibility == content::Visibility::VISIBLE)
-    return TabVisibility::kForeground;
-  return TabVisibility::kBackground;
+    return performance_manager::TabVisibility::kForeground;
+  return performance_manager::TabVisibility::kBackground;
 }
 
 }  // namespace
 
+class LocalSiteCharacteristicsWebContentsObserver::GraphObserver
+    : public performance_manager::GraphObserverDefaultImpl {
+ public:
+  using NodeBase = performance_manager::NodeBase;
+  using FrameNodeImpl = performance_manager::FrameNodeImpl;
+  using WebContentsProxy = performance_manager::WebContentsProxy;
+
+  GraphObserver();
+
+  // GraphObserver implementation.
+  void OnRegistered() override;
+  bool ShouldObserve(const NodeBase* node) override;
+  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override;
+
+ private:
+  static void DispatchNonPersistentNotificationCreated(
+      WebContentsProxy contents_proxy,
+      int64_t navigation_id);
+
+  // Binds to the task runner where the object is constructed.
+  scoped_refptr<base::SequencedTaskRunner> destination_task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
 LocalSiteCharacteristicsWebContentsObserver::
     LocalSiteCharacteristicsWebContentsObserver(
         content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      performance_manager_(
+          performance_manager::PerformanceManager::GetInstance()) {
   // May not be present in some tests.
-  if (performance_manager::PerformanceManager::GetInstance()) {
-    // The PageSignalReceiver has to be enabled in order to properly track the
+  if (performance_manager_) {
+    // The performance manager has to be enabled in order to properly track the
     // non-persistent notification events.
     TabLoadTracker::Get()->AddObserver(this);
-    page_signal_receiver_ = GetPageSignalReceiver();
-    DCHECK(page_signal_receiver_);
-    page_signal_receiver_->AddObserver(this);
   }
 }
 
 LocalSiteCharacteristicsWebContentsObserver::
     ~LocalSiteCharacteristicsWebContentsObserver() {
   DCHECK(!writer_);
+}
+
+// static
+void LocalSiteCharacteristicsWebContentsObserver::MaybeCreateGraphObserver() {
+  auto* perf_man = performance_manager::PerformanceManager::GetInstance();
+  if (!perf_man)
+    return;
+
+  perf_man->RegisterObserver(std::make_unique<GraphObserver>());
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::OnVisibilityChanged(
@@ -60,9 +101,8 @@ void LocalSiteCharacteristicsWebContentsObserver::OnVisibilityChanged(
 
 void LocalSiteCharacteristicsWebContentsObserver::WebContentsDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (page_signal_receiver_) {
+  if (performance_manager_) {
     TabLoadTracker::Get()->RemoveObserver(this);
-    page_signal_receiver_->RemoveObserver(this);
   }
   writer_.reset();
   writer_origin_ = url::Origin();
@@ -184,57 +224,13 @@ void LocalSiteCharacteristicsWebContentsObserver::OnLoadingStateChange(
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::
-    OnNonPersistentNotificationCreated(
-        content::WebContents* contents,
-        const PageNavigationIdentity& page_navigation_id) {
+    OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (web_contents() != contents)
-    return;
+  DCHECK_NE(nullptr, performance_manager_);
 
-  DCHECK_NE(nullptr, page_signal_receiver_);
-
-  // Don't notify the writer if the origin of this navigation event isn't the
-  // same as the one tracked by the writer.
-  if ((page_signal_receiver_->GetNavigationIDForWebContents(contents) ==
-       page_navigation_id.navigation_id) ||
-      url::Origin::Create(GURL(page_navigation_id.url))
-          .IsSameOriginWith(writer_origin_)) {
-    MaybeNotifyBackgroundFeatureUsage(
-        &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground,
-        FeatureType::kNotificationUsage);
-  }
-}
-
-void LocalSiteCharacteristicsWebContentsObserver::OnLoadTimePerformanceEstimate(
-    content::WebContents* contents,
-    const PageNavigationIdentity& page_navigation_id,
-    base::TimeDelta load_duration,
-    base::TimeDelta cpu_usage_estimate,
-    uint64_t private_footprint_kb_estimate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (web_contents() != contents)
-    return;
-
-  DCHECK_NE(nullptr, page_signal_receiver_);
-
-  bool late_notification = page_signal_receiver_->GetNavigationIDForWebContents(
-                               contents) != page_navigation_id.navigation_id;
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "ResourceCoordinator.Measurement.Memory.LateNotification",
-      late_notification);
-
-  // Don't notify the writer if the origin of this navigation event isn't the
-  // same as the one tracked by the writer.
-  // TODO(siggi): Deal with late notifications by getting a writer for
-  //     the measurement's origin.
-  if (!late_notification || url::Origin::Create(GURL(page_navigation_id.url))
-                                .IsSameOriginWith(writer_origin_)) {
-    if (writer_) {
-      writer_->NotifyLoadTimePerformanceMeasurement(
-          load_duration, cpu_usage_estimate, private_footprint_kb_estimate);
-    }
-  }
+  MaybeNotifyBackgroundFeatureUsage(
+      &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground,
+      FeatureType::kNotificationUsage);
 }
 
 bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
@@ -253,7 +249,7 @@ bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
 
   // Ignore events if the tab is not in background.
   if (ContentVisibilityToRCVisibility(web_contents()->GetVisibility()) !=
-      TabVisibility::kBackground) {
+      performance_manager::TabVisibility::kBackground) {
     return true;
   }
 
@@ -294,12 +290,82 @@ void LocalSiteCharacteristicsWebContentsObserver::OnSiteLoaded() {
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::UpdateBackgroundedTime(
-    TabVisibility visibility) {
-  if (visibility == TabVisibility::kBackground) {
+    performance_manager::TabVisibility visibility) {
+  if (visibility == performance_manager::TabVisibility::kBackground) {
     backgrounded_time_ = NowTicks();
   } else {
     backgrounded_time_ = base::TimeTicks();
   }
+}
+
+LocalSiteCharacteristicsWebContentsObserver::GraphObserver::GraphObserver()
+    : destination_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+  // This object will be used on the PM sequence hereafter.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
+    OnRegistered() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(graph()->nodes().empty());
+}
+
+bool LocalSiteCharacteristicsWebContentsObserver::GraphObserver::ShouldObserve(
+    const NodeBase* node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Observe all frame nodes.
+  if (node->type() == performance_manager::FrameNodeImpl::Type())
+    return true;
+
+  return false;
+}
+
+void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
+    OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  performance_manager::PageNodeImpl* page_node = frame_node->page_node();
+  destination_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GraphObserver::DispatchNonPersistentNotificationCreated,
+                     page_node->contents_proxy(), page_node->navigation_id()));
+}
+
+namespace {
+
+// Return the WCO if notification is not late, and it's available.
+LocalSiteCharacteristicsWebContentsObserver* MaybeGetWCO(
+    performance_manager::WebContentsProxy contents_proxy,
+    int64_t navigation_id) {
+  // Bail if this is a late notification.
+  if (contents_proxy.LastNavigationId() != navigation_id)
+    return nullptr;
+
+  // The proxy is guaranteed to dereference if the navigation ID above was
+  // valid.
+  content::WebContents* web_contents = contents_proxy.Get();
+  DCHECK(web_contents);
+
+  // The L41r is not itself WebContentsUserData, but rather stored on
+  // the RC TabHelper, so retrieve that first - if available.
+  ResourceCoordinatorTabHelper* rc_th =
+      ResourceCoordinatorTabHelper::FromWebContents(web_contents);
+  if (!rc_th)
+    return nullptr;
+
+  return rc_th->local_site_characteristics_wc_observer();
+}
+
+}  // namespace
+
+// static
+void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
+    DispatchNonPersistentNotificationCreated(WebContentsProxy contents_proxy,
+                                             int64_t navigation_id) {
+  if (auto* wco = MaybeGetWCO(contents_proxy, navigation_id))
+    wco->OnNonPersistentNotificationCreated();
 }
 
 }  // namespace resource_coordinator

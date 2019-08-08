@@ -6,9 +6,9 @@
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/wallet_helper.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -65,15 +65,6 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
 
   bool SetupSync() override {
     test_clock_.SetNow(kArbitraryDefaultTime);
-
-    // Plug in SyncService into PDM so that it can check we use full sync. We
-    // need to do it before starting the sync in SetupSync(). We need to setup
-    // the clients before that so we can access their sync service.
-    if (!SetupClients()) {
-      return false;
-    }
-    GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
-    GetPersonalDataManager(1)->OnSyncServiceInitialized(GetSyncService(1));
 
     if (!SyncTest::SetupSync()) {
       return false;

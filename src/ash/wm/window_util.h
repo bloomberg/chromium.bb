@@ -100,10 +100,6 @@ ASH_EXPORT void CloseWidgetForWindow(aura::Window* window);
 ASH_EXPORT void InstallResizeHandleWindowTargeterForWindow(
     aura::Window* window);
 
-// Sets up the given window to be draggable via gesture sequences in certain
-// circumstances. See aura::client::kGestureDragFromClientAreaTopMovesWindow.
-ASH_EXPORT void MakeGestureDraggableInImmersiveMode(aura::Window* frame_window);
-
 // Returns true if |window| is currently in tab-dragging process.
 ASH_EXPORT bool IsDraggingTabs(const aura::Window* window);
 

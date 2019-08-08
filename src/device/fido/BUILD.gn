@@ -27,6 +27,10 @@ component("fido") {
     "authenticator_selection_criteria.h",
     "authenticator_supported_options.cc",
     "authenticator_supported_options.h",
+    "bio/enrollment.cc",
+    "bio/enrollment.h",
+    "bio/enrollment_handler.cc",
+    "bio/enrollment_handler.h",
     "ble/fido_ble_connection.cc",
     "ble/fido_ble_connection.h",
     "ble/fido_ble_device.cc",
@@ -52,6 +56,10 @@ component("fido") {
     "cable/fido_cable_discovery.h",
     "cable/fido_cable_handshake_handler.cc",
     "cable/fido_cable_handshake_handler.h",
+    "credential_management.cc",
+    "credential_management.h",
+    "credential_management_handler.cc",
+    "credential_management_handler.h",
     "ctap2_device_operation.h",
     "ctap_empty_authenticator_request.cc",
     "ctap_empty_authenticator_request.h",
@@ -272,6 +280,7 @@ fuzzer_test("ctap_response_fuzzer") {
     "//base",
     "//base:i18n",
     "//components/cbor",
+    "//components/device_event_log",
   ]
   seed_corpus = "response_data_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]
@@ -284,6 +293,7 @@ fuzzer_test("fido_cable_handshake_handler_fuzzer") {
   deps = [
     ":fido",
     "//base",
+    "//base/test:test_support",
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
@@ -298,9 +308,9 @@ source_set("test_support") {
   sources = [
     "fake_fido_discovery.cc",
     "fake_fido_discovery.h",
-    "scoped_virtual_fido_device.cc",
-    "scoped_virtual_fido_device.h",
     "test_callback_receiver.h",
+    "virtual_fido_device_factory.cc",
+    "virtual_fido_device_factory.h",
   ]
   deps = [
     "//base",

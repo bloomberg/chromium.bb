@@ -237,6 +237,12 @@ MemoryObjectImpl *Context11::createMemoryObject()
     return nullptr;
 }
 
+SemaphoreImpl *Context11::createSemaphore()
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
 angle::Result Context11::flush(const gl::Context *context)
 {
     return mRenderer->flush(this);
@@ -245,6 +251,30 @@ angle::Result Context11::flush(const gl::Context *context)
 angle::Result Context11::finish(const gl::Context *context)
 {
     return mRenderer->finish(this);
+}
+
+angle::Result Context11::waitSemaphore(const gl::Context *context,
+                                       const gl::Semaphore *semaphore,
+                                       GLuint numBufferBarriers,
+                                       const GLuint *buffers,
+                                       GLuint numTextureBarriers,
+                                       const GLuint *textures,
+                                       const GLenum *srcLayouts)
+{
+    ANGLE_GL_UNREACHABLE(this);
+    return angle::Result::Stop;
+}
+
+angle::Result Context11::signalSemaphore(const gl::Context *context,
+                                         const gl::Semaphore *semaphore,
+                                         GLuint numBufferBarriers,
+                                         const GLuint *buffers,
+                                         GLuint numTextureBarriers,
+                                         const GLuint *textures,
+                                         const GLenum *dstLayouts)
+{
+    ANGLE_GL_UNREACHABLE(this);
+    return angle::Result::Stop;
 }
 
 angle::Result Context11::drawArrays(const gl::Context *context,

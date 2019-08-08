@@ -15,15 +15,19 @@ import org.chromium.chrome.autofill_assistant.R;
  * The {@link ViewHolder} responsible for reflecting an {@link AssistantChip} to a {@link
  * ButtonView}.
  */
-class AssistantChipViewHolder extends ViewHolder {
-    final ButtonView mView;
+public class AssistantChipViewHolder extends ViewHolder {
+    private final ButtonView mView;
 
-    private AssistantChipViewHolder(ButtonView view) {
+    /** The type of this ViewHolder, as returned by {@link #getViewType(AssistantChip)}. */
+    private final int mType;
+
+    private AssistantChipViewHolder(ButtonView view, int type) {
         super(view);
         mView = view;
+        mType = type;
     }
 
-    static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
+    public static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         ButtonView view = null;
         switch (viewType % AssistantChip.Type.NUM_ENTRIES) {
@@ -49,10 +53,10 @@ class AssistantChipViewHolder extends ViewHolder {
             view.setEnabled(false);
         }
 
-        return new AssistantChipViewHolder(view);
+        return new AssistantChipViewHolder(view, viewType);
     }
 
-    static int getViewType(AssistantChip chip) {
+    public static int getViewType(AssistantChip chip) {
         // We add AssistantChip.Type.CHIP_TYPE_NUMBER to differentiate between enabled and disabled
         // chips of the same type. Ideally, we should return a (type, disabled) tuple but
         // RecyclerView does not allow that.
@@ -61,6 +65,14 @@ class AssistantChipViewHolder extends ViewHolder {
         }
 
         return chip.getType();
+    }
+
+    public ButtonView getView() {
+        return mView;
+    }
+
+    public int getType() {
+        return mType;
     }
 
     public void bind(AssistantChip chip) {
@@ -73,19 +85,35 @@ class AssistantChipViewHolder extends ViewHolder {
         }
 
         mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
-        mView.setIcon(getIconResource(chip.getIcon()), /* tintWithTextColor= */ true);
-    }
 
-    private int getIconResource(@AssistantChip.Icon int icon) {
-        switch (icon) {
+        int iconResource;
+        int iconDescriptionResource = 0;
+        switch (chip.getIcon()) {
             case AssistantChip.Icon.CLEAR:
-                return R.drawable.ic_clear_black_24dp;
+                iconResource = R.drawable.ic_clear_black_24dp;
+                iconDescriptionResource = R.string.close;
+                break;
             case AssistantChip.Icon.DONE:
-                return R.drawable.ic_done_black_24dp;
+                iconResource = R.drawable.ic_done_black_24dp;
+                iconDescriptionResource = R.string.done;
+                break;
             case AssistantChip.Icon.REFRESH:
-                return R.drawable.ic_refresh_black_24dp;
+                iconResource = R.drawable.ic_refresh_black_24dp;
+                iconDescriptionResource = R.string.menu_refresh;
+                break;
             default:
-                return ButtonView.INVALID_ICON_ID;
+                iconResource = ButtonView.INVALID_ICON_ID;
+                break;
+        }
+
+        mView.setIcon(iconResource, /* tintWithTextColor= */ true);
+
+        // We set the content description of the icon on the whole button view if there is no text.
+        // Otherwise the text description will be used by TalkBack.
+        if (iconDescriptionResource != 0 && text.isEmpty()) {
+            mView.setContentDescription(mView.getContext().getString(iconDescriptionResource));
+        } else {
+            mView.setContentDescription(null);
         }
     }
 }

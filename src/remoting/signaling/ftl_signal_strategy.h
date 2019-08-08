@@ -13,6 +13,8 @@
 namespace remoting {
 
 class FtlDeviceIdProvider;
+class MessagingClient;
+class RegistrationManager;
 class OAuthTokenGetter;
 
 // FtlSignalStrategy implements SignalStrategy using the FTL messaging service.
@@ -20,11 +22,9 @@ class OAuthTokenGetter;
 // (when Connect() is called).
 class FtlSignalStrategy : public SignalStrategy {
  public:
-  // |oauth_token_getter| must outlive |core_|. Ideally it should be a
-  // singleton.
-  // TODO(yuweih): Consider taking weak pointer to OAuthTokenGetter or wrapping
-  // it with OAuthTokenGetterProxy.
-  FtlSignalStrategy(OAuthTokenGetter* oauth_token_getter,
+  // We take unique_ptr<OAuthTokenGetter> here so that we still have a chance to
+  // send out pending requests after the instance is deleted.
+  FtlSignalStrategy(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
                     std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
   ~FtlSignalStrategy() override;
 
@@ -44,6 +44,16 @@ class FtlSignalStrategy : public SignalStrategy {
   bool IsSignInError() const;
 
  private:
+  friend class FtlSignalStrategyTest;
+
+  FtlSignalStrategy(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
+                    std::unique_ptr<RegistrationManager> registration_manager,
+                    std::unique_ptr<MessagingClient> messaging_client);
+
+  void CreateCore(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
+                  std::unique_ptr<RegistrationManager> registration_manager,
+                  std::unique_ptr<MessagingClient> messaging_client);
+
   // This ensures that even if a Listener deletes the current instance during
   // OnSignalStrategyIncomingStanza(), we can delete |core_| asynchronously.
   class Core;

@@ -5,14 +5,15 @@
 #include "ash/wm/overview/overview_controller.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -44,9 +45,9 @@ namespace ash {
 
 namespace {
 
-// Do not blur or unblur the wallpaper when entering or exiting overview mode
-// when this is true.
-bool g_disable_wallpaper_blur_for_tests = false;
+// Do not change the wallpaper when entering or exiting overview mode when this
+// is true.
+bool g_disable_wallpaper_change_for_tests = false;
 
 constexpr int kBlurSlideDurationMs = 250;
 
@@ -59,8 +60,8 @@ constexpr int kOcclusionPauseDurationForStartMs = 50;
 // overview mode immediately, contents are ready.
 constexpr int kOcclusionPauseDurationForEndMs = 500;
 
-bool IsBlurAllowed() {
-  return !g_disable_wallpaper_blur_for_tests &&
+bool IsWallpaperChangeAllowed() {
+  return !g_disable_wallpaper_change_for_tests &&
          Shell::Get()->wallpaper_controller()->IsBlurAllowed();
 }
 
@@ -92,14 +93,13 @@ bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
 // exiting overview mode. Blurs the wallpaper automatically if the wallpaper is
 // not visible prior to entering overview mode (covered by a window), otherwise
 // animates the blur and dim.
-// TODO(sammiequon): Rename since this dims as well now.
-class OverviewController::OverviewBlurController
+class OverviewController::OverviewWallpaperController
     : public ui::CompositorAnimationObserver,
       public aura::WindowObserver {
  public:
-  OverviewBlurController() = default;
+  OverviewWallpaperController() = default;
 
-  ~OverviewBlurController() override {
+  ~OverviewWallpaperController() override {
     if (compositor_)
       compositor_->RemoveAnimationObserver(this);
     for (aura::Window* root : roots_to_animate_)
@@ -253,12 +253,13 @@ class OverviewController::OverviewBlurController
   // blur animated after Blur or Unblur is called.
   std::vector<aura::Window*> roots_to_animate_;
 
-  DISALLOW_COPY_AND_ASSIGN(OverviewBlurController);
+  DISALLOW_COPY_AND_ASSIGN(OverviewWallpaperController);
 };
 
 OverviewController::OverviewController()
     : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
-      overview_blur_controller_(std::make_unique<OverviewBlurController>()),
+      overview_wallpaper_controller_(
+          std::make_unique<OverviewWallpaperController>()),
       delayed_animation_task_delay_(kTransition),
       weak_ptr_factory_(this) {
   Shell::Get()->activation_client()->AddObserver(this);
@@ -266,7 +267,7 @@ OverviewController::OverviewController()
 
 OverviewController::~OverviewController() {
   Shell::Get()->activation_client()->RemoveObserver(this);
-  overview_blur_controller_.reset();
+  overview_wallpaper_controller_.reset();
 
   // Destroy widgets that may be still animating if shell shuts down soon after
   // exiting overview mode.
@@ -281,19 +282,6 @@ OverviewController::~OverviewController() {
   }
 }
 
-// static
-bool OverviewController::CanSelect() {
-  // Don't allow a window overview if the user session is not active (e.g.
-  // locked or in user-adding screen) or a modal dialog is open or running in
-  // kiosk app session.
-  SessionController* session_controller = Shell::Get()->session_controller();
-  return session_controller->GetSessionState() ==
-             session_manager::SessionState::ACTIVE &&
-         !Shell::IsSystemModalWindowOpen() &&
-         !Shell::Get()->screen_pinning_controller()->IsPinned() &&
-         !session_controller->IsRunningInAppMode();
-}
-
 bool OverviewController::ToggleOverview(
     OverviewSession::EnterExitOverviewType type) {
   // Hide the virtual keyboard as it obstructs the overview mode.
@@ -301,7 +289,8 @@ bool OverviewController::ToggleOverview(
   // can accept text input and it resizes correctly with the a11y keyboard.
   keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
 
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
   // Hidden windows will be removed by wm::ShouldExcludeForOverview so we
   // must copy them out first.
@@ -324,7 +313,7 @@ bool OverviewController::ToggleOverview(
     new_type = OverviewSession::EnterExitOverviewType::kWindowsMinimized;
   }
 
-  if (IsSelecting()) {
+  if (InOverviewSession()) {
     // Do not allow ending overview if we're in single split mode unless swiping
     // up from the shelf in tablet mode.
     if (windows.empty() &&
@@ -357,10 +346,10 @@ bool OverviewController::ToggleOverview(
       wm::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize, true);
     }
 
-    OnSelectionEnded();
+    EndOverview();
   } else {
-    // Don't start overview if window selection is not allowed.
-    if (!CanSelect())
+    // Don't start overview if it is not allowed.
+    if (!CanEnterOverview())
       return false;
 
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
@@ -380,8 +369,8 @@ bool OverviewController::ToggleOverview(
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
     overview_session_->Init(windows, hide_windows);
-    if (IsBlurAllowed())
-      overview_blur_controller_->Blur(/*animate_only=*/false);
+    if (IsWallpaperChangeAllowed())
+      overview_wallpaper_controller_->Blur(/*animate_only=*/false);
 
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
@@ -396,57 +385,25 @@ bool OverviewController::ToggleOverview(
     if (start_animations_.empty())
       OnStartingAnimationComplete(/*canceled=*/false);
 
-    OnSelectionStarted();
+    if (!last_overview_session_time_.is_null()) {
+      UMA_HISTOGRAM_LONG_TIMES("Ash.WindowSelector.TimeBetweenUse",
+                               base::Time::Now() - last_overview_session_time_);
+    }
   }
   return true;
 }
 
-void OverviewController::OnStartingAnimationComplete(bool canceled) {
-  if (IsBlurAllowed() && !canceled)
-    overview_blur_controller_->Blur(/*animate_only=*/true);
-
-  for (auto& observer : observers_)
-    observer.OnOverviewModeStartingAnimationComplete(canceled);
-  if (overview_session_)
-    overview_session_->OnStartingAnimationComplete(canceled);
-  UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
-  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
-                         "canceled", canceled);
-}
-
-void OverviewController::OnEndingAnimationComplete(bool canceled) {
-  // Unblur when animation is completed (or right away if there was no
-  // delayed animation) unless it's canceled, in which case, we should keep
-  // the blur.
-  if (IsBlurAllowed() && !canceled)
-    overview_blur_controller_->Unblur();
-
-  for (auto& observer : observers_)
-    observer.OnOverviewModeEndingAnimationComplete(canceled);
-  UnpauseOcclusionTracker(occlusion_pause_duration_for_end_ms_);
-  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::ExitOverview", this,
-                         "canceled", canceled);
-}
-
-void OverviewController::ResetPauser() {
-  occlusion_tracker_pauser_.reset();
-}
-
-bool OverviewController::IsSelecting() const {
+bool OverviewController::InOverviewSession() const {
   return overview_session_ && !overview_session_->is_shutting_down();
 }
 
-bool OverviewController::IsCompletingShutdownAnimations() {
-  return !delayed_animations_.empty();
-}
-
 void OverviewController::IncrementSelection(int increment) {
-  DCHECK(IsSelecting());
+  DCHECK(InOverviewSession());
   overview_session_->IncrementSelection(increment);
 }
 
 bool OverviewController::AcceptSelection() {
-  DCHECK(IsSelecting());
+  DCHECK(InOverviewSession());
   return overview_session_->AcceptSelection();
 }
 
@@ -471,9 +428,9 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   // Exit split view mode if we are already in it.
-  if (split_view_controller->IsSplitViewModeActive()) {
+  if (split_view_controller->InSplitViewMode()) {
     // In some cases the window returned by wm::GetActiveWindow will be an item
-    // in overview mode (maybe the overview mode text selection widget). The
+    // in overview mode (maybe the overview mode dummy focus widget). The
     // active window may also be a transient descendant of the left or right
     // snapped window, in which we want to activate the transient window's
     // ancestor (left or right snapped window). Manually set |active_window| as
@@ -485,7 +442,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
       active_window = split_view_controller->GetDefaultSnappedWindow();
     DCHECK(active_window);
     split_view_controller->EndSplitView();
-    if (IsSelecting())
+    if (InOverviewSession())
       ToggleOverview();
     MaximizeIfSnapped(active_window);
     ::wm::ActivateWindow(active_window);
@@ -495,7 +452,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
   }
 
   OverviewItem* item_to_snap = nullptr;
-  if (!IsSelecting()) {
+  if (!InOverviewSession()) {
     // The current active window may be a transient child.
     aura::Window* active_window = wm::GetActiveWindow();
     while (active_window && ::wm::GetTransientParent(active_window))
@@ -547,14 +504,17 @@ bool OverviewController::IsInStartAnimation() {
   return !start_animations_.empty();
 }
 
+bool OverviewController::IsCompletingShutdownAnimations() {
+  return !delayed_animations_.empty();
+}
+
 void OverviewController::PauseOcclusionTracker() {
   if (occlusion_tracker_pauser_)
     return;
 
   reset_pauser_task_.Cancel();
   occlusion_tracker_pauser_ =
-      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-          Shell::Get()->aura_env());
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
 }
 
 void OverviewController::UnpauseOcclusionTracker(int delay) {
@@ -581,10 +541,9 @@ void OverviewController::DelayedUpdateMaskAndShadow() {
 
 // TODO(flackr): Make OverviewController observe the activation of
 // windows, so we can remove OverviewDelegate.
-// TODO(sammiequon): Rename to something like EndOverview() and refactor to use
-// a single entry point for overview.
-void OverviewController::OnSelectionEnded() {
-  if (!IsSelecting())
+// TODO(sammiequon): Refactor to use a single entry point for overview.
+void OverviewController::EndOverview() {
+  if (!InOverviewSession())
     return;
 
   if (!occlusion_tracker_pauser_)
@@ -594,17 +553,29 @@ void OverviewController::OnSelectionEnded() {
     OnStartingAnimationComplete(/*canceled=*/true);
   start_animations_.clear();
 
-  auto* overview_session = overview_session_.release();
-  overview_session->set_is_shutting_down(true);
+  overview_session_->set_is_shutting_down(true);
   // Do not show mask and show during overview shutdown.
-  overview_session->UpdateMaskAndShadow();
+  overview_session_->UpdateMaskAndShadow();
 
   for (auto& observer : observers_)
-    observer.OnOverviewModeEnding(overview_session);
-  overview_session->Shutdown();
+    observer.OnOverviewModeEnding(overview_session_.get());
+  overview_session_->Shutdown();
+
+#if DCHECK_IS_ON()
+  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  if (enter_exit_type ==
+          OverviewSession::EnterExitOverviewType::kImmediateExit &&
+      !delayed_animations_.empty()) {
+    // Immediate exit type implies no delayed exit animations at all, if we get
+    // here then this is a bug.
+    NOTREACHED();
+  }
+#endif
+
   // Don't delete |overview_session_| yet since the stack is still using it.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, overview_session);
-  last_selection_time_ = base::Time::Now();
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  overview_session_.release());
+  last_overview_session_time_ = base::Time::Now();
   for (auto& observer : observers_)
     observer.OnOverviewModeEnded();
   if (delayed_animations_.empty())
@@ -613,6 +584,11 @@ void OverviewController::OnSelectionEnded() {
 
 void OverviewController::AddExitAnimationObserver(
     std::unique_ptr<DelayedAnimationObserver> animation_observer) {
+  // No delayed animations should be created when overview mode is set to exit
+  // immediately.
+  DCHECK_NE(overview_session_->enter_exit_overview_type(),
+            OverviewSession::EnterExitOverviewType::kImmediateExit);
+
   animation_observer->SetOwner(this);
   delayed_animations_.push_back(std::move(animation_observer));
 }
@@ -631,42 +607,6 @@ void OverviewController::RemoveAndDestroyExitAnimationObserver(
     OnEndingAnimationComplete(/*canceled=*/false);
 }
 
-void OverviewController::OnWindowActivating(ActivationReason reason,
-                                            aura::Window* gained_active,
-                                            aura::Window* lost_active) {
-  if (IsSelecting())
-    overview_session_->OnWindowActivating(reason, gained_active, lost_active);
-}
-
-void OverviewController::OnAttemptToReactivateWindow(
-    aura::Window* request_active,
-    aura::Window* actual_active) {
-  if (IsSelecting()) {
-    overview_session_->OnWindowActivating(
-        ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
-        request_active, actual_active);
-  }
-}
-
-bool OverviewController::HasBlurForTest() const {
-  return overview_blur_controller_->has_blur();
-}
-
-bool OverviewController::HasBlurAnimationForTest() const {
-  return overview_blur_controller_->has_blur_animation();
-}
-
-std::vector<aura::Window*>
-OverviewController::GetWindowsListInOverviewGridsForTest() {
-  std::vector<aura::Window*> windows;
-  for (const std::unique_ptr<OverviewGrid>& grid :
-       overview_session_->grid_list_for_testing()) {
-    for (const auto& overview_session_item : grid->window_list())
-      windows.push_back(overview_session_item->GetWindow());
-  }
-  return windows;
-}
-
 void OverviewController::AddEnterAnimationObserver(
     std::unique_ptr<DelayedAnimationObserver> animation_observer) {
   animation_observer->SetOwner(this);
@@ -682,21 +622,105 @@ void OverviewController::RemoveAndDestroyEnterAnimationObserver(
     OnStartingAnimationComplete(/*canceled=*/false);
 }
 
-void OverviewController::UpdateMaskAndShadow() {
-  if (overview_session_)
-    overview_session_->UpdateMaskAndShadow();
+void OverviewController::OnWindowActivating(ActivationReason reason,
+                                            aura::Window* gained_active,
+                                            aura::Window* lost_active) {
+  if (InOverviewSession())
+    overview_session_->OnWindowActivating(reason, gained_active, lost_active);
+}
+
+void OverviewController::OnAttemptToReactivateWindow(
+    aura::Window* request_active,
+    aura::Window* actual_active) {
+  if (InOverviewSession()) {
+    overview_session_->OnWindowActivating(
+        ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
+        request_active, actual_active);
+  }
+}
+
+bool OverviewController::HasBlurForTest() const {
+  return overview_wallpaper_controller_->has_blur();
+}
+
+bool OverviewController::HasBlurAnimationForTest() const {
+  return overview_wallpaper_controller_->has_blur_animation();
+}
+
+std::vector<aura::Window*>
+OverviewController::GetWindowsListInOverviewGridsForTest() {
+  std::vector<aura::Window*> windows;
+  for (const std::unique_ptr<OverviewGrid>& grid :
+       overview_session_->grid_list_for_testing()) {
+    for (const auto& overview_item : grid->window_list())
+      windows.push_back(overview_item->GetWindow());
+  }
+  return windows;
+}
+
+std::vector<aura::Window*>
+OverviewController::GetItemWindowListInOverviewGridsForTest() {
+  std::vector<aura::Window*> windows;
+  for (const std::unique_ptr<OverviewGrid>& grid :
+       overview_session_->grid_list_for_testing()) {
+    for (const auto& overview_item : grid->window_list())
+      windows.push_back(overview_item->item_widget()->GetNativeWindow());
+  }
+  return windows;
 }
 
 // static
-void OverviewController::SetDoNotChangeWallpaperBlurForTests() {
-  g_disable_wallpaper_blur_for_tests = true;
+void OverviewController::SetDoNotChangeWallpaperForTests() {
+  g_disable_wallpaper_change_for_tests = true;
 }
 
-void OverviewController::OnSelectionStarted() {
-  if (!last_selection_time_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES("Ash.WindowSelector.TimeBetweenUse",
-                             base::Time::Now() - last_selection_time_);
-  }
+bool OverviewController::CanEnterOverview() {
+  // Don't allow a window overview if the user session is not active (e.g.
+  // locked or in user-adding screen) or a modal dialog is open or running in
+  // kiosk app session.
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
+  return session_controller->GetSessionState() ==
+             session_manager::SessionState::ACTIVE &&
+         !Shell::IsSystemModalWindowOpen() &&
+         !Shell::Get()->screen_pinning_controller()->IsPinned() &&
+         !session_controller->IsRunningInAppMode();
+}
+
+void OverviewController::OnStartingAnimationComplete(bool canceled) {
+  if (IsWallpaperChangeAllowed() && !canceled)
+    overview_wallpaper_controller_->Blur(/*animate_only=*/true);
+
+  for (auto& observer : observers_)
+    observer.OnOverviewModeStartingAnimationComplete(canceled);
+  if (overview_session_)
+    overview_session_->OnStartingAnimationComplete(canceled);
+  UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
+  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
+                         "canceled", canceled);
+}
+
+void OverviewController::OnEndingAnimationComplete(bool canceled) {
+  // Unblur when animation is completed (or right away if there was no
+  // delayed animation) unless it's canceled, in which case, we should keep
+  // the blur.
+  if (IsWallpaperChangeAllowed() && !canceled)
+    overview_wallpaper_controller_->Unblur();
+
+  for (auto& observer : observers_)
+    observer.OnOverviewModeEndingAnimationComplete(canceled);
+  UnpauseOcclusionTracker(occlusion_pause_duration_for_end_ms_);
+  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::ExitOverview", this,
+                         "canceled", canceled);
+}
+
+void OverviewController::ResetPauser() {
+  occlusion_tracker_pauser_.reset();
+}
+
+void OverviewController::UpdateMaskAndShadow() {
+  if (overview_session_)
+    overview_session_->UpdateMaskAndShadow();
 }
 
 }  // namespace ash

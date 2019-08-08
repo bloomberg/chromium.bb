@@ -12,6 +12,9 @@ const char kAccessibilityLabelsLearnMoreURL[] =
 const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
+const char kAdvancedProtectionDownloadLearnMoreURL[] =
+    "https://support.google.com/accounts/?p=ap_faq";
+
 const char kBluetoothAdapterOffHelpURL[] =
 #if defined(OS_CHROMEOS)
     "chrome://settings/?search=bluetooth";
@@ -262,6 +265,9 @@ const char kEnhancedPlaybackNotificationLearnMoreURL[] =
 #endif
 
 #if defined(OS_CHROMEOS)
+const char kAccountManagerLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=google_accounts";
+
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
 
@@ -281,6 +287,9 @@ const char kCrosScheme[] = "cros";
 
 const char kCupsPrintLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_printing";
+
+const char kCupsPrintPPDLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=printing_advancedconfigurations";
 
 const char kEasyUnlockLearnMoreUrl[] =
     "https://support.google.com/chromebook/?p=smart_lock";

@@ -33,13 +33,13 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
   DCHECK(!native_view_);
   native_view_ = native_view;
   native_wrapper_->AttachNativeView();
-  // This does not use InvalidateLayout() to ensure the visibility state of
-  // the NativeView is correctly set (if this View isn't visible, Layout()
-  // won't, be called, resulting in the NativeView potentially having the wrong
-  // visibility state).
-  // TODO(https://crbug.com/947051): inestigate removing updating visibility
-  // immediately and calling InvalidateLayout() to update bounds.
-  Layout();
+  InvalidateLayout();
+  // The call to InvalidateLayout() triggers an async call to Layout(), which
+  // updates the visibility of the NativeView. The call to Layout() only happens
+  // if |this| is drawn. Call hide if not drawn as otherwise the NativeView
+  // could be visible when |this| is not.
+  if (!IsDrawn())
+    native_wrapper_->HideWidget();
 
   Widget* widget = Widget::GetWidgetForNativeView(native_view);
   if (widget)
@@ -130,7 +130,6 @@ void NativeViewHost::Layout() {
   } else {
     native_wrapper_->HideWidget();
   }
-  fast_resize_at_last_layout_ = visible && fast_resize_;
 }
 
 void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
@@ -222,7 +221,8 @@ gfx::NativeCursor NativeViewHost::GetCursor(const ui::MouseEvent& event) {
 }
 
 void NativeViewHost::SetVisible(bool visible) {
-  native_wrapper_->SetVisible(visible);
+  if (native_view_)
+    native_wrapper_->SetVisible(visible);
   View::SetVisible(visible);
 }
 
@@ -249,8 +249,8 @@ void NativeViewHost::ClearFocus() {
 
   Widget::Widgets widgets;
   Widget::GetAllChildWidgets(native_view(), &widgets);
-  for (auto i = widgets.begin(); i != widgets.end(); ++i) {
-    focus_manager->ViewRemoved((*i)->GetRootView());
+  for (auto* widget : widgets) {
+    focus_manager->ViewRemoved(widget->GetRootView());
     if (!focus_manager->GetFocusedView())
       return;
   }

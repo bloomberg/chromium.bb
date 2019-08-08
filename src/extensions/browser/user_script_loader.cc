@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -226,7 +227,7 @@ void UserScriptLoader::Observe(int type,
           browser_context_, process->GetBrowserContext()))
     return;
   if (initial_load_complete()) {
-    SendUpdate(process, shared_memory_.get(),
+    SendUpdate(process, shared_memory_,
                std::set<HostID>());  // Include all hosts.
   }
 }
@@ -331,7 +332,7 @@ bool UserScriptLoader::HasLoadedScripts(const HostID& host_id) const {
 }
 
 // static
-std::unique_ptr<base::SharedMemory> UserScriptLoader::Serialize(
+base::ReadOnlySharedMemoryRegion UserScriptLoader::Serialize(
     const UserScriptList& scripts) {
   base::Pickle pickle;
   pickle.WriteUInt32(scripts.size());
@@ -355,31 +356,14 @@ std::unique_ptr<base::SharedMemory> UserScriptLoader::Serialize(
   }
 
   // Create the shared memory object.
-  base::SharedMemory shared_memory;
-
-  base::SharedMemoryCreateOptions options;
-  options.size = pickle.size();
-  options.share_read_only = true;
-  if (!shared_memory.Create(options))
-    return std::unique_ptr<base::SharedMemory>();
-
-  if (!shared_memory.Map(pickle.size()))
-    return std::unique_ptr<base::SharedMemory>();
+  base::MappedReadOnlyRegion shared_memory =
+      base::ReadOnlySharedMemoryRegion::Create(pickle.size());
+  if (!shared_memory.IsValid())
+    return {};
 
   // Copy the pickle to shared memory.
-  memcpy(shared_memory.memory(), pickle.data(), pickle.size());
-
-  base::SharedMemoryHandle readonly_handle = shared_memory.GetReadOnlyHandle();
-  if (!readonly_handle.IsValid())
-    return std::unique_ptr<base::SharedMemory>();
-
-#if defined(OS_ANDROID)
-  // Seal the region read-only now. http://crbug.com/789959
-  readonly_handle.SetRegionReadOnly();
-#endif
-
-  return std::make_unique<base::SharedMemory>(readonly_handle,
-                                              /*read_only=*/true);
+  memcpy(shared_memory.mapping.memory(), pickle.data(), pickle.size());
+  return std::move(shared_memory.region);
 }
 
 void UserScriptLoader::AddObserver(Observer* observer) {
@@ -399,7 +383,7 @@ void UserScriptLoader::SetReady(bool ready) {
 
 void UserScriptLoader::OnScriptsLoaded(
     std::unique_ptr<UserScriptList> user_scripts,
-    std::unique_ptr<base::SharedMemory> shared_memory) {
+    base::ReadOnlySharedMemoryRegion shared_memory) {
   loaded_scripts_ = std::move(user_scripts);
   if (queued_load_) {
     // While we were loading, there were further changes. Don't bother
@@ -409,7 +393,7 @@ void UserScriptLoader::OnScriptsLoaded(
     return;
   }
 
-  if (shared_memory.get() == NULL) {
+  if (!shared_memory.IsValid()) {
     // This can happen if we run out of file descriptors.  In that case, we
     // have a choice between silently omitting all user scripts for new tabs,
     // by nulling out shared_memory_, or only silently omitting new ones by
@@ -427,7 +411,7 @@ void UserScriptLoader::OnScriptsLoaded(
   for (content::RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    SendUpdate(i.GetCurrentValue(), shared_memory_.get(), changed_hosts_);
+    SendUpdate(i.GetCurrentValue(), shared_memory_, changed_hosts_);
   }
   changed_hosts_.clear();
 
@@ -435,14 +419,15 @@ void UserScriptLoader::OnScriptsLoaded(
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<BrowserContext>(browser_context_),
-      content::Details<base::SharedMemory>(shared_memory_.get()));
+      content::Details<base::ReadOnlySharedMemoryRegion>(&shared_memory_));
   for (auto& observer : observers_)
     observer.OnScriptsLoaded(this);
 }
 
-void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
-                                  base::SharedMemory* shared_memory,
-                                  const std::set<HostID>& changed_hosts) {
+void UserScriptLoader::SendUpdate(
+    content::RenderProcessHost* process,
+    const base::ReadOnlySharedMemoryRegion& shared_memory,
+    const std::set<HostID>& changed_hosts) {
   // Don't allow injection of non-whitelisted extensions' content scripts
   // into <webview>.
   bool whitelisted_only = process->IsForGuestsOnly() && host_id().id().empty();
@@ -458,13 +443,14 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
   if (!handle)
     return;
 
-  base::SharedMemoryHandle handle_for_process =
-      shared_memory->handle().Duplicate();
-  if (!handle_for_process.IsValid())
+  base::ReadOnlySharedMemoryRegion region_for_process =
+      shared_memory.Duplicate();
+  if (!region_for_process.IsValid())
     return;
 
   process->Send(new ExtensionMsg_UpdateUserScripts(
-      handle_for_process, host_id(), changed_hosts, whitelisted_only));
+      std::move(region_for_process), host_id(), changed_hosts,
+      whitelisted_only));
 }
 
 }  // namespace extensions

@@ -9,7 +9,6 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "components/arc/arc_service_manager.h"
@@ -57,7 +56,7 @@ void ArcAppShortcutsRequest::OnGetAppShortcutItems(
   // |barrier_closure_| will happen on deleted object that will cause memory
   // corruption.
   if (shortcut_items.empty()) {
-    base::ResetAndReturn(&callback_).Run(nullptr);
+    std::move(callback_).Run(nullptr);
     return;
   }
 
@@ -89,7 +88,7 @@ void ArcAppShortcutsRequest::OnGetAppShortcutItems(
 void ArcAppShortcutsRequest::OnAllIconDecodeRequestsDone() {
   icon_decode_requests_.clear();
   DCHECK(callback_);
-  base::ResetAndReturn(&callback_).Run(std::move(items_));
+  std::move(callback_).Run(std::move(items_));
 }
 
 void ArcAppShortcutsRequest::OnSingleIconDecodeRequestDone(

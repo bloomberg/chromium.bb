@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -35,6 +36,7 @@ PlatformNotificationServiceFactory::PlatformNotificationServiceFactory()
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(NotificationDisplayServiceFactory::GetInstance());
   DependsOn(NotificationMetricsLoggerFactory::GetInstance());
+  DependsOn(ukm::UkmBackgroundRecorderFactory::GetInstance());
 }
 
 KeyedService* PlatformNotificationServiceFactory::BuildServiceInstanceFor(

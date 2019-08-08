@@ -33,15 +33,14 @@ namespace journey {
 // serializing the request body protos.
 class JourneyInfoJsonRequest {
   // Callbacks for JSON parsing to allow injecting platform-dependent code.
-  using SuccessCallback =
-      base::RepeatingCallback<void(std::unique_ptr<base::Value> result)>;
-  using ErrorCallback = base::RepeatingCallback<void(const std::string& error)>;
+  using SuccessCallback = base::OnceCallback<void(base::Value result)>;
+  using ErrorCallback = base::OnceCallback<void(const std::string& error)>;
   using ParseJSONCallback =
       base::RepeatingCallback<void(const std::string& raw_json_string,
-                                   const SuccessCallback& success_callback,
-                                   const ErrorCallback& error_callback)>;
+                                   SuccessCallback success_callback,
+                                   ErrorCallback error_callback)>;
   using CompletedCallback =
-      base::OnceCallback<void(std::unique_ptr<base::Value> result,
+      base::OnceCallback<void(base::Optional<base::Value> result,
                               const std::string& error_detail)>;
 
  public:
@@ -87,7 +86,7 @@ class JourneyInfoJsonRequest {
 
  private:
   void OnSimpleURLLoaderComplete(std::unique_ptr<std::string> response_body);
-  void OnJsonParsed(std::unique_ptr<base::Value> result);
+  void OnJsonParsed(base::Value result);
   void OnJsonError(const std::string& error);
 
   // This callback is called to parse a json string. It contains callbacks for

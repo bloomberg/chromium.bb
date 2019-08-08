@@ -25,8 +25,8 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -44,7 +44,6 @@ web::WebUIIOSDataSource* CreateNetExportHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath(net_log::kNetExportUIJS, IDR_NET_LOG_NET_EXPORT_JS);
   source->SetDefaultResource(IDR_NET_LOG_NET_EXPORT_HTML);
-  source->UseGzip();
   return source;
 }
 

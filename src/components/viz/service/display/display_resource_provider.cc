@@ -556,6 +556,10 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
   metadata.origin = kTopLeft_GrSurfaceOrigin;
 
   resource->locked_for_external_use = true;
+
+  if (resource->transferable.read_lock_fences_enabled)
+    resource->read_lock_fence = current_read_lock_fence_;
+
   return metadata;
 }
 
@@ -668,12 +672,6 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   to_return.reserve(unused.size());
   std::vector<ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;
-  std::vector<ResourceId> external_used_resource_ids;
-  std::vector<ReturnedResource*> external_used_resources;
-  if (external_use_client_) {
-    external_used_resource_ids.reserve(unused.size());
-    external_used_resources.reserve(unused.size());
-  }
 
   GLES2Interface* gl = ContextGL();
   for (ResourceId local_id : unused) {
@@ -681,13 +679,8 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     CHECK(it != resources_.end());
     ChildResource& resource = it->second;
 
-    bool is_external_used_resource = false;
     auto sk_image_it = resource_sk_images_.find(local_id);
     if (sk_image_it != resource_sk_images_.end()) {
-      if (external_use_client_) {
-        external_used_resource_ids.push_back(local_id);
-        is_external_used_resource = true;
-      }
       resource_sk_images_.erase(sk_image_it);
     }
 
@@ -740,9 +733,6 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
                  !returned.sync_token.verified_flush()) {
         unverified_sync_tokens.push_back(returned.sync_token.GetData());
       }
-
-      if (is_external_used_resource)
-        external_used_resources.push_back(&returned);
     }
 
     child_info->child_to_parent_map.erase(child_id);
@@ -772,10 +762,8 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   for (ReturnedResource* returned : need_synchronization_resources)
     returned->sync_token = new_sync_token;
 
-  if (external_use_client_ && !external_used_resource_ids.empty()) {
-    external_use_client_->ReleaseCachedPromiseSkImages(
-        std::move(external_used_resource_ids));
-  }
+  if (external_use_client_ && !unused.empty())
+    external_use_client_->ReleaseCachedResources(unused);
 
   if (!to_return.empty())
     child_info->return_callback.Run(to_return);
@@ -936,7 +924,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
 
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(
     DisplayResourceProvider* resource_provider,
-    SkiaOutputSurface* client)
+    ExternalUseClient* client)
     : resource_provider_(resource_provider) {
   DCHECK(!resource_provider_->external_use_client_);
   resource_provider_->external_use_client_ = client;
@@ -976,10 +964,6 @@ bool DisplayResourceProvider::SynchronousFence::HasPassed() {
     Synchronize();
   }
   return true;
-}
-
-void DisplayResourceProvider::SynchronousFence::Wait() {
-  HasPassed();
 }
 
 void DisplayResourceProvider::SynchronousFence::Synchronize() {

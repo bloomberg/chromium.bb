@@ -23,7 +23,13 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
     Invalidate(PaintInvalidationReason::kUncacheable);
   }
 
-  String DebugName() const final { return "ForeignLayer"; }
+  String DebugName() const final {
+#if DCHECK_IS_ON()
+    return String("ForeignLayer for ") + layer_->DebugName().c_str();
+#else
+    return "ForeignLayer";
+#endif
+  }
 
   DOMNodeId OwnerNodeId() const final { return layer_->owner_node_id(); }
 
@@ -54,6 +60,9 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
   DCHECK(IsForeignLayerType(type));
   DCHECK(GetLayer());
   DCHECK(!IsCacheable());
+  // TODO(959734): This CHECK is intended to find stack traces that are causing
+  // a segfault.
+  CHECK(GetLayer());
 }
 
 ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {

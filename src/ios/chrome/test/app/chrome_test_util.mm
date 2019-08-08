@@ -24,9 +24,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
-#import "ios/chrome/browser/ui/main/tab_switcher.h"
-#import "ios/chrome/browser/ui/main/view_controller_swapping.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation_manager.h"
@@ -84,14 +82,6 @@ MainController* GetMainController() {
 
 DeviceSharingManager* GetDeviceSharingManager() {
   return [GetMainController() deviceSharingManager];
-}
-
-NewTabPageController* GetCurrentNewTabPageController() {
-  web::WebState* web_state = GetCurrentWebState();
-  id nativeController = web::test::GetCurrentNativeController(web_state);
-  if (![nativeController isKindOfClass:[NewTabPageController class]])
-    return nil;
-  return base::mac::ObjCCast<NewTabPageController>(nativeController);
 }
 
 web::WebState* GetCurrentWebState() {

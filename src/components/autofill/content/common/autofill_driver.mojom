@@ -4,7 +4,7 @@
 
 module autofill.mojom;
 
-import "components/autofill/content/common/autofill_types.mojom";
+import "components/autofill/core/common/mojom/autofill_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
@@ -129,7 +129,7 @@ interface PasswordManagerDriver {
 
   // The focus changed to a different input in the same frame (e.g. tabbed from
   // email to password field).
-  FocusedInputChanged(bool is_fillable, bool is_password_field);
+  FocusedInputChanged(FocusedFieldType focused_field_type);
 
   // Sends the success state of filling credentials into a form. This happens
   // only if the form being filled has a renderer_id. |result| is an

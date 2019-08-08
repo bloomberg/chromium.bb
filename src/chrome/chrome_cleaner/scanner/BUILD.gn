@@ -8,7 +8,7 @@ source_set("signature_matcher_api") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
   ]
 }
 
@@ -19,12 +19,12 @@ source_set("matcher_util") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/scanner:signature_matcher_api",
-    "//chrome/chrome_cleaner/settings:settings",
+    "//chrome/chrome_cleaner/settings",
     "//chrome/chrome_cleaner/strings",
   ]
 }
@@ -73,7 +73,7 @@ source_set("reporter_scanner") {
     "//chrome/chrome_cleaner/parsers/shortcut_parser/broker:shortcut_parser_api",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/scanner:signature_matcher_api",
-    "//chrome/chrome_cleaner/settings:settings",
+    "//chrome/chrome_cleaner/settings",
     "//components/chrome_cleaner/public/constants:constants",
     "//third_party/crashpad/crashpad/client",
     "//third_party/crashpad/crashpad/util",
@@ -94,7 +94,7 @@ source_set("unittest_sources") {
     ":force_installed_extension_scanner_api",
     ":matcher_util",
     ":signature_matcher",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/chrome_utils:extension_id",
@@ -103,7 +103,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/logging:mock_logging_service",
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
     "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/parsers/json_parser:json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:test_uws",
     "//chrome/chrome_cleaner/strings",
@@ -126,7 +126,7 @@ source_set("force_installed_extension_scanner_api") {
 
   deps = [
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",
-    "//chrome/chrome_cleaner/parsers/json_parser:json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser",
     "//chrome/chrome_cleaner/proto:uwe_matcher_proto",
   ]
 }
@@ -143,7 +143,7 @@ source_set("force_installed_extension_scanner") {
     "//chrome/chrome_cleaner/chrome_utils:extensions_util_lib",
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",
     "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/parsers/json_parser:json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser",
     "//chrome/chrome_cleaner/proto:uwe_matcher_proto",
   ]
 }
@@ -162,7 +162,7 @@ source_set("mock_force_installed_extension_scanner") {
     "//chrome/chrome_cleaner/chrome_utils:extensions_util_lib",
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",
     "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/parsers/json_parser:json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser",
     "//chrome/chrome_cleaner/proto:uwe_matcher_proto",
     "//testing/gmock",
   ]

@@ -8,6 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -24,7 +25,6 @@
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
 
@@ -71,7 +71,7 @@ Shelf* Shelf::ForWindow(aura::Window* window) {
 
 // static
 void Shelf::LaunchShelfItem(int item_index) {
-  ShelfModel* shelf_model = Shell::Get()->shelf_model();
+  const ShelfModel* shelf_model = ShelfModel::Get();
   const ShelfItems& items = shelf_model->items();
   int item_count = shelf_model->item_count();
   int indexes_left = item_index >= 0 ? item_index : item_count;
@@ -102,7 +102,7 @@ void Shelf::ActivateShelfItem(int item_index) {
 
 // static
 void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
-  ShelfModel* shelf_model = Shell::Get()->shelf_model();
+  const ShelfModel* shelf_model = ShelfModel::Get();
   const ShelfItem& item = shelf_model->items()[item_index];
   ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
   std::unique_ptr<ui::Event> event = std::make_unique<ui::KeyEvent>(
@@ -327,15 +327,15 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   keyboard::KeyboardStateDescriptor state;
   state.is_visible = !bounds.IsEmpty();
   state.visual_bounds = bounds;
-  state.occluded_bounds = bounds;
-  state.displaced_bounds = gfx::Rect();
+  state.occluded_bounds_in_screen = bounds;
+  state.displaced_bounds_in_screen = gfx::Rect();
   WorkAreaInsets* work_area_insets = GetWorkAreaInsets();
   work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
   work_area_insets->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
   work_area_insets->OnKeyboardWorkspaceOccludedBoundsChanged(
-      state.occluded_bounds);
+      state.occluded_bounds_in_screen);
   work_area_insets->OnKeyboardWorkspaceDisplacingBoundsChanged(
-      state.displaced_bounds);
+      state.displaced_bounds_in_screen);
   work_area_insets->OnKeyboardAppearanceChanged(state);
 }
 

@@ -55,9 +55,8 @@ class RedirectTest : public InProcessBrowserTest {
     std::vector<GURL> rv;
     history_service->QueryRedirectsFrom(
         url,
-        base::Bind(&RedirectTest::OnRedirectQueryComplete,
-                   base::Unretained(this),
-                   &rv),
+        base::BindOnce(&RedirectTest::OnRedirectQueryComplete,
+                       base::Unretained(this), &rv),
         &tracker_);
     content::RunMessageLoop();
     return rv;
@@ -65,8 +64,8 @@ class RedirectTest : public InProcessBrowserTest {
 
  protected:
   void OnRedirectQueryComplete(std::vector<GURL>* rv,
-                               const history::RedirectList* redirects) {
-    rv->insert(rv->end(), redirects->begin(), redirects->end());
+                               history::RedirectList redirects) {
+    rv->insert(rv->end(), redirects.begin(), redirects.end());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
@@ -145,11 +144,10 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
                             file_redirect_contents.data(),
                             file_redirect_contents.size()));
 
-  // Navigate to the file through the browser. The client redirect will appear
-  // as two page visits in the browser.
+  // Navigate to the file through the browser.
   GURL first_url = net::FilePathToFileURL(temp_file);
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), first_url, 2);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            first_url, 1);
 
   std::vector<GURL> redirects = GetRedirects(first_url);
   ASSERT_EQ(1U, redirects.size());
@@ -178,10 +176,10 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
 
   std::vector<GURL> redirects = GetRedirects(first_url);
 
-  // There should be no redirects from first_url, because the anchor location
-  // change that occurs should not be flagged as a redirect and the meta-refresh
+  // There should be 1 redirect from first_url, because the anchor location
+  // change that occurs should be flagged as a redirect but the meta-refresh
   // won't have fired yet.
-  ASSERT_EQ(0U, redirects.size());
+  ASSERT_EQ(1U, redirects.size());
   EXPECT_EQ("myanchor", web_contents->GetURL().ref());
 }
 

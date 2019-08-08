@@ -14,8 +14,6 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/search/ntp_user_data_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -461,7 +459,7 @@ void NTPUserDataLogger::LogSuggestionEventWithValue(
 
 void NTPUserDataLogger::LogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
-  if ((impression.index >= kNumMostVisited) ||
+  if ((impression.index >= ntp_tiles::kMaxNumTiles) ||
       logged_impressions_[impression.index].has_value()) {
     return;
   }
@@ -505,11 +503,6 @@ void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
 
 bool NTPUserDataLogger::DefaultSearchProviderIsGoogle() const {
   return search::DefaultSearchProviderIsGoogle(profile_);
-}
-
-bool NTPUserDataLogger::ThemeIsConfigured() const {
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  return !theme_service->GetThemeID().empty();
 }
 
 bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
@@ -563,19 +556,14 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // since the page load started. That's unlikely enough to not warrant special
   // handling.
   bool is_google = DefaultSearchProviderIsGoogle();
-  bool is_theme_configured = ThemeIsConfigured();
 
   // Split between Web and Local.
   if (ntp_url_.SchemeIsHTTPOrHTTPS()) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.Web",
                             tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web", load_time);
-    // Further split between Google and non-Google.
-    if (is_google) {
-      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Google", load_time);
-    } else {
-      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
-    }
+    // Only third-party NTPs can be loaded from the web.
+    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
   } else {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.LocalNTP",
                             tiles_received_time_);
@@ -604,9 +592,6 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     LogBackgroundCustomizationAvailability(
         BackgroundCustomization::
             BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-  } else if (is_theme_configured) {
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_UNAVAILABLE_THEME);
   } else {
     LogBackgroundCustomizationAvailability(
         BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);

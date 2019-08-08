@@ -35,6 +35,10 @@ OutputSurface::OutputSurface(
 
 OutputSurface::~OutputSurface() = default;
 
+SkiaOutputSurface* OutputSurface::AsSkiaOutputSurface() {
+  return nullptr;
+}
+
 void OutputSurface::UpdateLatencyInfoOnSwap(
     const gfx::SwapResponse& response,
     std::vector<ui::LatencyInfo>* latency_info) {
@@ -49,6 +53,18 @@ void OutputSurface::UpdateLatencyInfoOnSwap(
 void OutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   DCHECK(!needs_swap_size_notifications);
+}
+
+base::ScopedClosureRunner OutputSurface::GetCacheBackBufferCb() {
+  return base::ScopedClosureRunner();
+}
+
+void OutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
+  NOTREACHED();
+}
+
+void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
+  NOTREACHED();
 }
 
 }  // namespace viz

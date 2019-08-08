@@ -24,10 +24,6 @@ config("chrome") {
   ldflags = [ "/NATVIS:" + rebase_path("chrome.natvis", root_build_dir) ]
 }
 
-config("libc++") {
-  ldflags = [ "/NATVIS:" + rebase_path("libc++.natvis", root_build_dir) ]
-}
-
 config("skia") {
   ldflags = [ "/NATVIS:" + rebase_path("skia.natvis", root_build_dir) ]
 }

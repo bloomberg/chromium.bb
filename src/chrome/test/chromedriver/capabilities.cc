@@ -391,6 +391,8 @@ Status ParseExcludeSwitches(const base::Value& option,
       return Status(kInvalidArgument,
                     "each switch to be removed must be a string");
     }
+    if (switch_name.substr(0, 2) == "--")
+      switch_name = switch_name.substr(2);
     capabilities->exclude_switches.insert(switch_name);
   }
   return Status(kOk);

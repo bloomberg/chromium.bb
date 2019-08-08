@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -359,9 +361,9 @@ void XMLHttpRequest::InitResponseDocument() {
                           .WithContextDocument(GetDocument()->ContextDocument())
                           .WithURL(response_.ResponseUrl());
   if (is_html)
-    response_document_ = HTMLDocument::Create(init);
+    response_document_ = MakeGarbageCollected<HTMLDocument>(init);
   else
-    response_document_ = XMLDocument::Create(init);
+    response_document_ = MakeGarbageCollected<XMLDocument>(init);
 
   // FIXME: Set Last-Modified.
   response_document_->SetSecurityOrigin(GetMutableSecurityOrigin());
@@ -1043,17 +1045,10 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     }
   }
 
-  const bool same_origin_request = GetSecurityOrigin()->CanRequest(url_);
-
-  if (!same_origin_request && with_credentials_) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kXMLHttpRequestCrossOriginWithCredentials);
-  }
-
   // We also remember whether upload events should be allowed for this request
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
-      same_origin_request || upload_events ||
+      GetSecurityOrigin()->CanRequest(url_) || upload_events ||
       !cors::IsCorsSafelistedMethod(method_) ||
       !cors::ContainsOnlyCorsSafelistedHeaders(request_headers_);
 
@@ -1070,6 +1065,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetSkipServiceWorker(is_isolated_world_);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
+  request.SetShouldAlsoUseFactoryBoundOriginForCors(is_isolated_world_);
 
   probe::WillLoadXHR(&execution_context, method_, url_, async_, http_body.get(),
                      request_headers_, with_credentials_);

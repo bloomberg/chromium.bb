@@ -53,7 +53,7 @@ public class NativePostTaskTest {
         // This should not timeout.
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        PostTask.postTask(new TaskTraits(), new Runnable() {
+        PostTask.postTask(TaskTraits.USER_BLOCKING, new Runnable() {
             @Override
             public void run() {
                 synchronized (lock) {
@@ -75,7 +75,7 @@ public class NativePostTaskTest {
     public void testNativePostDelayedTask() throws Exception {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        PostTask.postDelayedTask(new TaskTraits(), () -> {
+        PostTask.postDelayedTask(TaskTraits.USER_BLOCKING, () -> {
             synchronized (lock) {
                 taskExecuted.set(true);
                 lock.notify();
@@ -99,7 +99,7 @@ public class NativePostTaskTest {
     @MediumTest
     public void testCreateTaskRunner() throws Exception {
         startNativeScheduler();
-        TaskRunner taskQueue = PostTask.createTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createTaskRunner(TaskTraits.USER_BLOCKING);
         // This should not time out.
         try {
             SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
@@ -131,7 +131,7 @@ public class NativePostTaskTest {
     @MediumTest
     public void testCreateSequencedTaskRunner() throws Exception {
         startNativeScheduler();
-        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
         testRunningTasksInSequence(taskQueue);
     }
 
@@ -139,7 +139,7 @@ public class NativePostTaskTest {
     @MediumTest
     public void testCreateSingleThreadSequencedTaskRunner() throws Exception {
         startNativeScheduler();
-        TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         testRunningTasksInSequence(taskQueue);
     }
 
@@ -164,7 +164,7 @@ public class NativePostTaskTest {
     public void testCreateTaskRunnerMigrationToNative() throws Exception {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        TaskRunner taskQueue = PostTask.createTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createTaskRunner(TaskTraits.USER_BLOCKING);
 
         postRepeatingTaskAndStartNativeSchedulerThenWaitForTaskToRun(taskQueue, new Runnable() {
             @Override
@@ -194,7 +194,7 @@ public class NativePostTaskTest {
     public void testCreateSequencedTaskRunnerMigrationToNative() throws Exception {
         List<Integer> orderListImmediate = new ArrayList<>();
         List<Integer> orderListDelayed = new ArrayList<>();
-        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
         try {
             performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
         } finally {
@@ -210,7 +210,7 @@ public class NativePostTaskTest {
     public void testCreateSingleThreadSequencedTaskRunnerMigrationToNative() throws Exception {
         List<Integer> orderListImmediate = new ArrayList<>();
         List<Integer> orderListDelayed = new ArrayList<>();
-        TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         try {
             performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
         } finally {
@@ -256,7 +256,7 @@ public class NativePostTaskTest {
 
     private void startNativeScheduler() throws Exception {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
-        ContentMain.start(/* startServiceManagerOnly */ true);
+        ContentMain.start(/* startServiceManagerOnly */ false);
         ThreadPoolTestHelpers.enableThreadPoolExecutionForTesting();
     }
 }

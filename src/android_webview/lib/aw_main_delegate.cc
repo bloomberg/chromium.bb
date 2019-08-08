@@ -14,15 +14,14 @@
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
+#include "android_webview/common/aw_resource_bundle.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/gpu/aw_content_gpu_client.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
-#include "android_webview/utility/aw_content_utility_client.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
-#include "base/android/locale_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -30,14 +29,14 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/path_service.h"
+#include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
-#include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"
@@ -54,8 +53,6 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -248,23 +245,7 @@ void AwMainDelegate::PreSandboxStartup() {
   }
 
   if (process_type == switches::kRendererProcess) {
-    auto* global_descriptors = base::GlobalDescriptors::GetInstance();
-    int pak_fd = global_descriptors->Get(kAndroidWebViewLocalePakDescriptor);
-    base::MemoryMappedFile::Region pak_region =
-        global_descriptors->GetRegion(kAndroidWebViewLocalePakDescriptor);
-    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
-                                                            pak_region);
-
-    std::pair<int, ui::ScaleFactor> extra_paks[] = {
-        {kAndroidWebViewMainPakDescriptor, ui::SCALE_FACTOR_NONE},
-        {kAndroidWebView100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
-
-    for (const auto& pak_info : extra_paks) {
-      pak_fd = global_descriptors->Get(pak_info.first);
-      pak_region = global_descriptors->GetRegion(pak_info.first);
-      ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-          base::File(pak_fd), pak_region, pak_info.second);
-    }
+    InitResourceBundleRendererSide();
   }
 
   EnableCrashReporter(process_type);
@@ -288,17 +269,18 @@ void AwMainDelegate::PreSandboxStartup() {
 int AwMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-  if (process_type.empty()) {
-    browser_runner_ = content::BrowserMainRunner::Create();
-    int exit_code = browser_runner_->Initialize(main_function_params);
-    DCHECK_LT(exit_code, 0);
+  // Defer to the default main method outside the browser process.
+  if (!process_type.empty())
+    return -1;
 
-    // Return 0 so that we do NOT trigger the default behavior. On Android, the
-    // UI message loop is managed by the Java application.
-    return 0;
-  }
-
-  return -1;
+  browser_runner_ = content::BrowserMainRunner::Create();
+  int exit_code = browser_runner_->Initialize(main_function_params);
+  // We do not expect Initialize() to ever fail in AndroidWebView. On success
+  // it returns a negative value but we do not want to use that on Android.
+  DCHECK_LT(exit_code, 0);
+  // Return 0 so that we do NOT trigger the default behavior. On Android, the
+  // UI message loop is managed by the Java application.
+  return 0;
 }
 
 void AwMainDelegate::ProcessExiting(const std::string& process_type) {
@@ -316,23 +298,7 @@ bool AwMainDelegate::ShouldCreateFeatureList() {
 
 // This function is called only on the browser process.
 void AwMainDelegate::PostEarlyInitialization(bool is_running_tests) {
-  ui::SetLocalePaksStoredInApk(true);
-  std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
-      base::android::GetDefaultLocaleString(), NULL,
-      ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-  if (locale.empty()) {
-    LOG(WARNING) << "Failed to load locale .pak from the apk. "
-                    "Bringing up WebView without any locale";
-  }
-  base::i18n::SetICUDefaultLocale(locale);
-
-  // Try to directly mmap the resources.pak from the apk. Fall back to load
-  // from file, using PATH_SERVICE, otherwise.
-  base::FilePath pak_file_path;
-  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
-  pak_file_path = pak_file_path.AppendASCII("resources.pak");
-  ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
-
+  InitIcuAndResourceBundleBrowserSide();
   aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
 }
 
@@ -370,11 +336,6 @@ content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
 content::ContentRendererClient* AwMainDelegate::CreateContentRendererClient() {
   content_renderer_client_.reset(new AwContentRendererClient());
   return content_renderer_client_.get();
-}
-
-content::ContentUtilityClient* AwMainDelegate::CreateContentUtilityClient() {
-  content_utility_client_.reset(new AwContentUtilityClient());
-  return content_utility_client_.get();
 }
 
 }  // namespace android_webview

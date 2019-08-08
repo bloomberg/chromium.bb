@@ -254,8 +254,8 @@ void BrowsingHistoryService::QueryHistoryInternal(
           state->search_text,
           OptionsWithEndTime(state->original_options,
                              state->local_end_time_for_continuation),
-          base::Bind(&BrowsingHistoryService::QueryComplete,
-                     weak_factory_.GetWeakPtr(), state),
+          base::BindOnce(&BrowsingHistoryService::QueryComplete,
+                         weak_factory_.GetWeakPtr(), state),
           &query_task_tracker_);
     }
   } else {
@@ -537,11 +537,11 @@ void BrowsingHistoryService::MergeDuplicateResults(
 
 void BrowsingHistoryService::QueryComplete(
     scoped_refptr<QueryHistoryState> state,
-    QueryResults* results) {
+    QueryResults results) {
   std::vector<HistoryEntry>& output = state->local_results;
-  output.reserve(output.size() + results->size());
+  output.reserve(output.size() + results.size());
 
-  for (const auto& page : *results) {
+  for (const auto& page : results) {
     // TODO(dubroy): Use sane time (crbug.com/146090) here when it's ready.
     output.emplace_back(HistoryEntry(
         HistoryEntry::LOCAL_ENTRY, page.url(), page.title(), page.visit_time(),
@@ -550,7 +550,7 @@ void BrowsingHistoryService::QueryComplete(
   }
 
   state->local_status =
-      results->reached_beginning() ? REACHED_BEGINNING : MORE_RESULTS;
+      results.reached_beginning() ? REACHED_BEGINNING : MORE_RESULTS;
 
   if (!web_history_timer_->IsRunning())
     ReturnResultsToDriver(std::move(state));

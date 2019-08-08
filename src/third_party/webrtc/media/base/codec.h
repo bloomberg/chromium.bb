@@ -73,6 +73,7 @@ struct RTC_EXPORT Codec {
 
   // Indicates if this codec is compatible with the specified codec.
   bool Matches(const Codec& codec) const;
+  bool MatchesCapability(const webrtc::RtpCodecCapability& capability) const;
 
   // Find the parameter for |name| and write the value to |out|.
   bool GetParam(const std::string& name, std::string* out) const;
@@ -191,18 +192,22 @@ struct RTC_EXPORT VideoCodec : public Codec {
   void SetDefaultParameters();
 };
 
-struct DataCodec : public Codec {
-  DataCodec(int id, const std::string& name);
-  DataCodec();
-  DataCodec(const DataCodec& c);
-  DataCodec(DataCodec&& c);
-  ~DataCodec() override = default;
+struct RtpDataCodec : public Codec {
+  RtpDataCodec(int id, const std::string& name);
+  RtpDataCodec();
+  RtpDataCodec(const RtpDataCodec& c);
+  RtpDataCodec(RtpDataCodec&& c);
+  ~RtpDataCodec() override = default;
 
-  DataCodec& operator=(const DataCodec& c);
-  DataCodec& operator=(DataCodec&& c);
+  RtpDataCodec& operator=(const RtpDataCodec& c);
+  RtpDataCodec& operator=(RtpDataCodec&& c);
 
   std::string ToString() const;
 };
+
+// For backwards compatibility
+// TODO(bugs.webrtc.org/10597): Remove when no longer needed.
+typedef RtpDataCodec DataCodec;
 
 // Get the codec setting associated with |payload_type|. If there
 // is no codec associated with that payload type it returns nullptr.
@@ -215,6 +220,7 @@ const Codec* FindCodecById(const std::vector<Codec>& codecs, int payload_type) {
   return nullptr;
 }
 
+bool HasLntf(const Codec& codec);
 bool HasNack(const Codec& codec);
 bool HasRemb(const Codec& codec);
 bool HasRrtr(const Codec& codec);

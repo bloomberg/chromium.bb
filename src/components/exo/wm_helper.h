@@ -9,10 +9,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/env.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 
 namespace aura {
 class Window;
@@ -41,6 +40,7 @@ class ActivationChangeObserver;
 }
 
 namespace exo {
+class VSyncTimingManager;
 
 // Helper interface for accessing WindowManager related features.
 class WMHelper : public aura::client::DragDropDelegate {
@@ -87,8 +87,6 @@ class WMHelper : public aura::client::DragDropDelegate {
   static WMHelper* GetInstance();
   static bool HasInstance();
 
-  virtual aura::Env* env() = 0;
-
   virtual void AddActivationObserver(
       wm::ActivationChangeObserver* observer) = 0;
   virtual void RemoveActivationObserver(
@@ -102,10 +100,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   virtual void RemoveDragDropObserver(DragDropObserver* observer) = 0;
   virtual void SetDragDropDelegate(aura::Window*) = 0;
   virtual void ResetDragDropDelegate(aura::Window*) = 0;
-  virtual void AddVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) = 0;
-  virtual void RemoveVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) = 0;
+  virtual VSyncTimingManager& GetVSyncTimingManager() = 0;
 
   virtual const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const = 0;

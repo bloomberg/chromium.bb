@@ -33,7 +33,6 @@ namespace syncer {
 
 class CancelationSignal;
 class HttpPostProviderFactory;
-class ModelTypeControllerDelegate;
 class SyncEngineHost;
 class SyncManagerFactory;
 class UnrecoverableErrorHandler;
@@ -74,12 +73,9 @@ class SyncEngine : public ModelTypeConfigurer {
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::Closure report_unrecoverable_error_function;
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
     std::map<ModelType, int64_t> invalidation_versions;
 
-    // Non-authoritative values from prefs, to be compared with the Directory's
-    // counterparts.
-    // TODO(crbug.com/923285): Consider making these the authoritative data.
+    // Initial authoritative values (usually read from prefs).
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;
@@ -194,10 +190,6 @@ class SyncEngine : public ModelTypeConfigurer {
 
   // Enables/Disables invalidations for session sync related datatypes.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
-
-  // Returns ModelTypeControllerDelegate for Nigori.
-  virtual std::unique_ptr<ModelTypeControllerDelegate>
-  GetNigoriControllerDelegate() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);

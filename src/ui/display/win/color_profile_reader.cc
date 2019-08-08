@@ -121,7 +121,7 @@ gfx::ColorSpace ColorProfileReader::GetDisplayColorSpace(
     icc_profile = found->second;
   if (has_read_profiles_)
     icc_profile.HistogramDisplay(display_id);
-  return icc_profile.IsValid() ? icc_profile.GetColorSpace()
+  return icc_profile.IsValid() ? icc_profile.GetPrimariesOnlyColorSpace()
                                : gfx::ColorSpace::CreateSRGB();
 }
 

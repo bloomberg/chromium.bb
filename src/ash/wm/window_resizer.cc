@@ -13,7 +13,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
@@ -27,20 +26,6 @@
 
 namespace ash {
 namespace {
-
-void OnFramePresented(base::TimeTicks start_time,
-                      const gfx::PresentationFeedback& feedback) {
-  UMA_HISTOGRAM_TIMES("Ash.InteractiveWindowResize.TimeToPresent",
-                      feedback.timestamp - start_time);
-}
-
-void RecordMetricsForResize(base::TimeTicks start_time, aura::Window* window) {
-  DCHECK(window);
-  ui::Compositor* compositor = window->GetHost()->compositor();
-  DCHECK(compositor);
-  compositor->RequestPresentationTimeForNextFrame(
-      base::BindOnce(&OnFramePresented, start_time));
-}
 
 // Returns true for resize components along the right edge, where a drag in
 // positive x will make the window larger.
@@ -92,6 +77,10 @@ const int WindowResizer::kBoundsChangeDirection_Vertical = 2;
 
 WindowResizer::WindowResizer(wm::WindowState* window_state)
     : window_state_(window_state) {
+  recorder_ = ash::CreatePresentationTimeHistogramRecorder(
+      GetTarget()->layer()->GetCompositor(),
+      "Ash.InteractiveWindowResize.TimeToPresent",
+      "Ash.InteractiveWindowResize.TimeToPresent.MaxLatency");
   DCHECK(window_state_->drag_details());
 }
 
@@ -279,17 +268,18 @@ bool WindowResizer::IsBottomEdge(int window_component) {
 void WindowResizer::SetBoundsDuringResize(const gfx::Rect& bounds) {
   aura::Window* window = GetTarget();
   DCHECK(window);
-  // Consider having this time come from the event.
-  base::TimeTicks start = base::TimeTicks::Now();
+  auto ptr = weak_ptr_factory_.GetWeakPtr();
   const gfx::Rect original_bounds = window->bounds();
   window->SetBounds(bounds);
-  aura::WindowTracker tracker;
-  tracker.Add(window);
-  if (tracker.windows().empty())
-    return;  // Assume we've been destroyed.
+
+  // Resizer can be destroyed when a window is attached during tab dragging.
+  // crbug.com/970911.
+  if (!ptr)
+    return;
+
   if (bounds.size() == original_bounds.size())
     return;
-  RecordMetricsForResize(start, window);
+  recorder_->RequestNext();
 }
 
 void WindowResizer::AdjustDeltaForTouchResize(int* delta_x, int* delta_y) {

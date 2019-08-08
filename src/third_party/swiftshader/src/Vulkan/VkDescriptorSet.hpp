@@ -24,19 +24,24 @@ namespace vk
 {
 	class DescriptorSetLayout;
 
+	struct alignas(16) DescriptorSetHeader
+	{
+		DescriptorSetLayout* layout;
+	};
+
 	class DescriptorSet
 	{
 	public:
 		using Bindings = std::array<vk::DescriptorSet*, vk::MAX_BOUND_DESCRIPTOR_SETS>;
 		using DynamicOffsets = std::array<uint32_t, vk::MAX_DESCRIPTOR_SET_COMBINED_BUFFERS_DYNAMIC>;
 
-		DescriptorSetLayout* layout;
-		uint8_t data[1];
+		DescriptorSetHeader header;
+		alignas(16) uint8_t data[1];
 	};
 
 	inline DescriptorSet* Cast(VkDescriptorSet object)
 	{
-		return reinterpret_cast<DescriptorSet*>(object);
+		return reinterpret_cast<DescriptorSet*>(object.get());
 	}
 
 } // namespace vk

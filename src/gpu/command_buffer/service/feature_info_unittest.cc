@@ -277,11 +277,11 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
   // Check a couple of random extensions that should not be there.
   EXPECT_FALSE(gfx::HasExtension(info_->extensions(), "GL_OES_texture_npot"));
   EXPECT_FALSE(gfx::HasExtension(info_->extensions(),
-                                 "GL_EXT_texture_compression_dxt1"));
+                                 "GL_ANGLE_texture_compression_dxt1"));
   EXPECT_FALSE(gfx::HasExtension(info_->extensions(),
-                                 "GL_CHROMIUM_texture_compression_dxt3"));
+                                 "GL_ANGLE_texture_compression_dxt3"));
   EXPECT_FALSE(gfx::HasExtension(info_->extensions(),
-                                 "GL_CHROMIUM_texture_compression_dxt5"));
+                                 "GL_ANGLE_texture_compression_dxt5"));
   EXPECT_FALSE(
       gfx::HasExtension(info_->extensions(), "GL_ANGLE_texture_usage"));
   EXPECT_FALSE(
@@ -408,9 +408,9 @@ TEST_P(FeatureInfoTest, InitializeNPOTExtensionGL) {
 }
 
 TEST_P(FeatureInfoTest, InitializeDXTExtensionGLES2) {
-  SetupInitExpectations("GL_EXT_texture_compression_dxt1");
+  SetupInitExpectations("GL_ANGLE_texture_compression_dxt1");
   EXPECT_TRUE(gfx::HasExtension(info_->extensions(),
-                                "GL_EXT_texture_compression_dxt1"));
+                                "GL_ANGLE_texture_compression_dxt1"));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
@@ -424,11 +424,11 @@ TEST_P(FeatureInfoTest, InitializeDXTExtensionGLES2) {
 TEST_P(FeatureInfoTest, InitializeDXTExtensionGL) {
   SetupInitExpectations("GL_EXT_texture_compression_s3tc");
   EXPECT_TRUE(gfx::HasExtension(info_->extensions(),
-                                "GL_EXT_texture_compression_dxt1"));
+                                "GL_ANGLE_texture_compression_dxt1"));
   EXPECT_TRUE(gfx::HasExtension(info_->extensions(),
-                                "GL_CHROMIUM_texture_compression_dxt3"));
+                                "GL_ANGLE_texture_compression_dxt3"));
   EXPECT_TRUE(gfx::HasExtension(info_->extensions(),
-                                "GL_CHROMIUM_texture_compression_dxt5"));
+                                "GL_ANGLE_texture_compression_dxt5"));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(

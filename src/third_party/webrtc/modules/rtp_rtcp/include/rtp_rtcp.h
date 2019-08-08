@@ -24,6 +24,7 @@
 #include "modules/include/module.h"
 #include "modules/rtp_rtcp/include/flexfec_sender.h"
 #include "modules/rtp_rtcp/include/receive_statistics.h"
+#include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_sender.h"
 #include "rtc_base/constructor_magic.h"
@@ -260,11 +261,12 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
                                  int payload_type,
                                  bool force_sender_report) = 0;
 
-  virtual bool TimeToSendPacket(uint32_t ssrc,
-                                uint16_t sequence_number,
-                                int64_t capture_time_ms,
-                                bool retransmission,
-                                const PacedPacketInfo& pacing_info) = 0;
+  virtual RtpPacketSendResult TimeToSendPacket(
+      uint32_t ssrc,
+      uint16_t sequence_number,
+      int64_t capture_time_ms,
+      bool retransmission,
+      const PacedPacketInfo& pacing_info) = 0;
 
   virtual size_t TimeToSendPadding(size_t bytes,
                                    const PacedPacketInfo& pacing_info) = 0;
@@ -325,12 +327,6 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   // Returns -1 on failure else 0.
   virtual int32_t SendRTCP(RTCPPacketType rtcp_packet_type) = 0;
 
-  // Forces a send of a RTCP packet with more than one packet type.
-  // periodic SR and RR are triggered via the process function
-  // Returns -1 on failure else 0.
-  virtual int32_t SendCompoundRTCP(
-      const std::set<RTCPPacketType>& rtcp_packet_types) = 0;
-
   // Returns statistics of the amount of data sent.
   // Returns -1 on failure else 0.
   virtual int32_t DataCountersRTP(size_t* bytes_sent,
@@ -349,8 +345,15 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
 
   // Returns received RTCP report block.
   // Returns -1 on failure else 0.
+  // TODO(https://crbug.com/webrtc/10678): Remove this in favor of
+  // GetLatestReportBlockData().
   virtual int32_t RemoteRTCPStat(
       std::vector<RTCPReportBlock>* receive_blocks) const = 0;
+  // A snapshot of Report Blocks with additional data of interest to statistics.
+  // Within this list, the sender-source SSRC pair is unique and per-pair the
+  // ReportBlockData represents the latest Report Block that was received for
+  // that pair.
+  virtual std::vector<ReportBlockData> GetLatestReportBlockData() const = 0;
 
   // (APP) Sets application specific data.
   // Returns -1 on failure else 0.
@@ -397,9 +400,19 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   virtual bool StorePackets() const = 0;
 
   // Called on receipt of RTCP report block from remote side.
+  // TODO(https://crbug.com/webrtc/10678): Remove RtcpStatisticsCallback in
+  // favor of ReportBlockDataObserver.
+  // TODO(https://crbug.com/webrtc/10679): Consider whether we want to use only
+  // getters or only callbacks. If we decide on getters, the
+  // ReportBlockDataObserver should also be removed in favor of
+  // GetLatestReportBlockData().
   virtual void RegisterRtcpStatisticsCallback(
       RtcpStatisticsCallback* callback) = 0;
   virtual RtcpStatisticsCallback* GetRtcpStatisticsCallback() = 0;
+  // TODO(https://crbug.com/webrtc/10680): When callbacks are registered at
+  // construction, remove this setter.
+  virtual void SetReportBlockDataObserver(
+      ReportBlockDataObserver* observer) = 0;
   // BWE feedback packets.
   bool SendFeedbackPacket(const rtcp::TransportFeedback& packet) override = 0;
 

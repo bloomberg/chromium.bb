@@ -7,23 +7,54 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_features.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
 
 namespace plugin_vm {
 
+// For PluginVm to be allowed:
+// * Profile should be eligible.
+// * PluginVm feature should be enabled.
+// If device is not enterprise enrolled:
+//     * Device should be in a dev mode.
+// If device is enterprise enrolled:
+//     * User should be affiliated.
+//     * All necessary policies should be set (PluginVmAllowed, PluginVmImage
+//       and PluginVmLicenseKey).
+//
+// TODO(okalitova, aoldemeier): PluginVm should be disabled in case of
+// non-managed devices once it is launched. Currently this conditions are used
+// for making manual tests easier.
 bool IsPluginVmAllowedForProfile(const Profile* profile) {
   // Check that the profile is eligible.
   if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
       profile->IsOffTheRecord() ||
       chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return false;
+  }
+
+  // Check that PluginVm feature is enabled.
+  if (!base::FeatureList::IsEnabled(features::kPluginVm))
+    return false;
+
+  // TODO(okalitova, aoldemeier): Remove once PluginVm is ready to be launched.
+  // Check for alternative condition for manual testing, i.e. the device is in
+  // developer mode and the device is not enterprise-enrolled.
+  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kSystemDevMode)) {
+      return true;
+    }
     return false;
   }
 
@@ -70,40 +101,19 @@ bool IsPluginVmEnabled(Profile* profile) {
   return IsPluginVmAllowedForProfile(profile) && IsPluginVmConfigured(profile);
 }
 
-// TODO(timloh): Implement detection for Plugin VM windows, e.g. by setting an
-// exo application id (crbug.com/940319).
+bool IsPluginVmRunning(Profile* profile) {
+  // TODO(timloh): This should probably also check the state of the VM. Once we
+  // have a signal to update us on VM state changes, we should keep track of it
+  // for use here.
+  return ChromeLauncherController::instance()->IsOpen(
+      ash::ShelfID(kPluginVmAppId));
+}
+
 bool IsPluginVmWindow(const aura::Window* window) {
-  return false;
-}
-
-void OnPluginVmDispatcherStarted(Profile* profile,
-                                 PluginVmStartedCallback callback,
-                                 bool success) {
-  if (!success) {
-    LOG(ERROR) << "Failed to start PluginVm dispatcher service";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  // TODO(https://crbug.com/904853): Send dbus call to dispatcher to start
-  // PluginVm.
-  std::move(callback).Run(false);
-}
-
-void StartPluginVmForProfile(Profile* profile,
-                             PluginVmStartedCallback callback) {
-  // Defensive check to prevent starting PluginVm when it is not allowed.
-  if (!IsPluginVmAllowedForProfile(profile)) {
-    LOG(ERROR) << "Attempt to start PluginVm when it is not allowed";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  VLOG(1) << "Starting PluginVm dispatcher service";
-  chromeos::DBusThreadManager::Get()
-      ->GetDebugDaemonClient()
-      ->StartPluginVmDispatcher(base::BindOnce(&OnPluginVmDispatcherStarted,
-                                               profile, std::move(callback)));
+  const std::string* app_id = exo::GetShellApplicationId(window);
+  if (!app_id)
+    return false;
+  return *app_id == "org.chromium.plugin_vm_ui";
 }
 
 std::string GetPluginVmLicenseKey() {

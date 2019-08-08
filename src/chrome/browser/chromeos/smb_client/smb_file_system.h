@@ -45,6 +45,8 @@ class RequestManager;
 class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
                       public base::SupportsWeakPtr<SmbFileSystem> {
  public:
+  using MountIdCallback =
+      base::RepeatingCallback<int32_t(const ProvidedFileSystemInfo&)>;
   using UnmountCallback = base::OnceCallback<base::File::Error(
       const std::string&,
       file_system_provider::Service::UnmountReason)>;
@@ -60,6 +62,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   SmbFileSystem(
       const file_system_provider::ProvidedFileSystemInfo& file_system_info,
+      MountIdCallback mount_id_callback,
       UnmountCallback unmount_callback,
       RequestCredentialsCallback request_creds_callback,
       RequestUpdatedSharePathCallback request_path_callback);
@@ -364,6 +367,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   // opened_files_ is marked const since is currently unsupported.
   const file_system_provider::OpenedFiles opened_files_;
 
+  MountIdCallback mount_id_callback_;
   UnmountCallback unmount_callback_;
   RequestCredentialsCallback request_creds_callback_;
   RequestUpdatedSharePathCallback request_path_callback_;

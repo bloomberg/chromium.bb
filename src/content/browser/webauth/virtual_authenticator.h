@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "device/fido/fido_transport_protocol.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/virtual_fido_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
@@ -26,12 +26,18 @@ namespace content {
 class CONTENT_EXPORT VirtualAuthenticator
     : public blink::test::mojom::VirtualAuthenticator {
  public:
-  explicit VirtualAuthenticator(::device::FidoTransportProtocol transport);
+  VirtualAuthenticator(::device::ProtocolVersion protocol,
+                       ::device::FidoTransportProtocol transport,
+                       ::device::AuthenticatorAttachment attachment,
+                       bool has_resident_key,
+                       bool has_user_verification);
   ~VirtualAuthenticator() override;
 
   void AddBinding(blink::test::mojom::VirtualAuthenticatorRequest request);
 
-  ::device::FidoTransportProtocol transport() const { return transport_; }
+  ::device::FidoTransportProtocol transport() const {
+    return state_->transport;
+  }
   const std::string& unique_id() const { return unique_id_; }
 
   // Constructs a VirtualFidoDevice instance that will perform cryptographic
@@ -55,7 +61,10 @@ class CONTENT_EXPORT VirtualAuthenticator
   void GetUserPresence(GetUserPresenceCallback callback) override;
 
  private:
-  const ::device::FidoTransportProtocol transport_;
+  const ::device::ProtocolVersion protocol_;
+  const ::device::AuthenticatorAttachment attachment_;
+  const bool has_resident_key_;
+  const bool has_user_verification_;
   const std::string unique_id_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
   mojo::BindingSet<blink::test::mojom::VirtualAuthenticator> binding_set_;

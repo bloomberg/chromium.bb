@@ -47,7 +47,7 @@ class ScrollPredictorTest : public testing::Test {
       float delta_y = 0,
       double time_delta_in_milliseconds = 0,
       WebGestureEvent::InertialPhaseState phase =
-          WebGestureEvent::kNonMomentumPhase) {
+          WebGestureEvent::InertialPhaseState::kNonMomentum) {
     WebGestureEvent gesture(
         WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests() +
@@ -163,8 +163,8 @@ TEST_F(ScrollPredictorTest, ScrollResamplingStates) {
   EXPECT_TRUE(GetResamplingState());
 
   // after GSU with momentum phase
-  gesture_update = CreateGestureScrollUpdate(0, 10, 10 /* ms */,
-                                             WebGestureEvent::kMomentumPhase);
+  gesture_update = CreateGestureScrollUpdate(
+      0, 10, 10 /* ms */, WebGestureEvent::InertialPhaseState::kMomentum);
   HandleResampleScrollEvents(gesture_update, 15 /* ms */);
   EXPECT_FALSE(GetResamplingState());
 

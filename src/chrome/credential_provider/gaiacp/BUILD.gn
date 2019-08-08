@@ -37,7 +37,7 @@ source_set("common") {
   ]
   deps = [
     ":string_resources",
-    "//base:base",
+    "//base",
     "//chrome/common:version_header",
     "//components/crash/core/common",
     "//components/version_info",

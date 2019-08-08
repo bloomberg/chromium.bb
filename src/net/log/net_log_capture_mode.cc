@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
+#include "base/strings/string_piece.h"
+
 namespace net {
 
 namespace {
@@ -62,6 +65,25 @@ bool NetLogCaptureMode::operator!=(NetLogCaptureMode mode) const {
 }
 
 NetLogCaptureMode::NetLogCaptureMode(uint32_t value) : value_(value) {
+}
+
+NetLogCaptureMode GetNetCaptureModeFromCommandLine(
+    const base::CommandLine& command_line,
+    base::StringPiece switch_name) {
+  if (command_line.HasSwitch(switch_name)) {
+    std::string value = command_line.GetSwitchValueASCII(switch_name);
+
+    if (value == "Default")
+      return NetLogCaptureMode::Default();
+    if (value == "IncludeCookiesAndCredentials")
+      return NetLogCaptureMode::IncludeCookiesAndCredentials();
+    if (value == "IncludeSocketBytes")
+      return NetLogCaptureMode::IncludeSocketBytes();
+
+    LOG(ERROR) << "Unrecognized value for --" << switch_name;
+  }
+
+  return net::NetLogCaptureMode::Default();
 }
 
 }  // namespace net

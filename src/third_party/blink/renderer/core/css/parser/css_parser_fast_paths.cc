@@ -899,7 +899,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kSubpixelAntialiased;
     case CSSPropertyID::kLineBreak:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kLoose ||
-             value_id == CSSValueID::kNormal || value_id == CSSValueID::kStrict;
+             value_id == CSSValueID::kNormal ||
+             value_id == CSSValueID::kStrict ||
+             (RuntimeEnabledFeatures::CSS3TextBreakAnywhereEnabled() &&
+              value_id == CSSValueID::kAnywhere);
     case CSSPropertyID::kWebkitLineBreak:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kLoose ||
              value_id == CSSValueID::kNormal ||
@@ -956,8 +959,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kPreWrap ||
              value_id == CSSValueID::kPreLine ||
              value_id == CSSValueID::kNowrap ||
-             (RuntimeEnabledFeatures::CSS3TextBreakSpacesEnabled() &&
-              value_id == CSSValueID::kBreakSpaces);
+             value_id == CSSValueID::kBreakSpaces;
     case CSSPropertyID::kWordBreak:
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kBreakAll ||

@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">স্লাইডার</translation>
 <translation id="1211441953136645838">এন্ডনোট</translation>
 <translation id="1281252709823657822">ডায়ালগ</translation>
-<translation id="1289247557029249093">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="1335095011850992622">ক্রেডিট</translation>
 <translation id="1342835525016946179">নিবন্ধ</translation>
 <translation id="1359897965706325498">ব্যানার</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2158401438286456825">পৃষ্ঠা তালিকা</translation>
 <translation id="2226276347425096477">দয়া করে এই পাঠ্যটি <ph name="MAX_CHARACTERS" />টি অক্ষর বা তার কমে (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করছেন) সংক্ষিপ্ত করুন৷</translation>
+<translation id="2246498165605549352">স্থানীয় ফাইল</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" /> সপ্তাহ, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ট্র্যাক <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">চেকবাক্স</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">লেবেল ছাড়া ছবি</translation>
 <translation id="3706100364254443312">পরিবর্তন করুন</translation>
 <translation id="3732799496749320381">মিমি</translation>
+<translation id="3754210790023674521">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> জিবি</translation>
 <translation id="3808586225841795776">পদ</translation>
 <translation id="3822383571486410024">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করেছেন) দৈর্ঘের করুন।</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER" />' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="4668956016107839909">পরিশিষ্ট</translation>
+<translation id="4718048029184481307">ছবির-মধ্যে-ছবি মোডে চলছে</translation>
 <translation id="4742539557769756338">কভার</translation>
 <translation id="4748357248530471599">ডিসপ্লে কাট-আউট ফুল-স্ক্রিনে টগল করুন</translation>
 <translation id="4757246831282535685">ট্যাব প্যানেল</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">পরিশিষ্ট</translation>
 <translation id="6209276755895393898">মনে হচ্ছে: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">শব্দকোষ</translation>
-<translation id="628938136236500310">ছবির-মধ্যে-ছবি মোডে চালানো হচ্ছে</translation>
+<translation id="6310801910862476708">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="6398862346408813489">মাস নির্বাচনের প্যানেল দেখান</translation>
 <translation id="6404546809543547843">অডিও সময় স্ক্রাবার</translation>
 <translation id="6443871981718447451">ক্লোজড ক্যাপশনের মেনু দেখান</translation>

@@ -9,10 +9,10 @@
 
 namespace blink {
 
-struct PaintInfo;
 class IntRect;
 class LayoutFrameSet;
-class LayoutPoint;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class FrameSetPainter {
   STACK_ALLOCATED();
@@ -24,7 +24,7 @@ class FrameSetPainter {
   void Paint(const PaintInfo&);
 
  private:
-  void PaintBorders(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintBorders(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintChildren(const PaintInfo&);
   void PaintRowBorder(const PaintInfo&, const IntRect&);
   void PaintColumnBorder(const PaintInfo&, const IntRect&);

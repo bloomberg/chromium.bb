@@ -44,20 +44,12 @@ class LineLayoutBox : public LineLayoutBoxModel {
     return ToBox()->FlipForWritingMode(unit);
   }
 
-  void FlipForWritingMode(FloatRect& rect) const {
-    ToBox()->FlipForWritingMode(rect);
-  }
-
-  FloatPoint FlipForWritingMode(const FloatPoint& point) const {
-    return ToBox()->FlipForWritingMode(point);
-  }
-
   void FlipForWritingMode(LayoutRect& rect) const {
-    ToBox()->FlipForWritingMode(rect);
+    ToBox()->DeprecatedFlipForWritingMode(rect);
   }
 
   LayoutPoint FlipForWritingMode(const LayoutPoint& point) const {
-    return ToBox()->FlipForWritingMode(point);
+    return ToBox()->DeprecatedFlipForWritingMode(point);
   }
 
   LayoutPoint FlipForWritingModeForChild(const LineLayoutBox& child,
@@ -101,7 +93,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
     return ToBox()->SetInlineBoxWrapper(box);
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
   void ShowLineTreeAndMark(const InlineBox* marked_box1,
                            const char* marked_label1) const {

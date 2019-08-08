@@ -6,7 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {

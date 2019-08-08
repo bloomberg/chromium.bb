@@ -5,7 +5,6 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 
 #include "base/bind.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -74,13 +73,10 @@ std::unique_ptr<KeyedService>
 IdentityTestEnvironmentProfileAdaptor::BuildIdentityManagerForTests(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  auto fake_token_service =
-      std::make_unique<FakeProfileOAuth2TokenService>(profile->GetPrefs());
 
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       ChromeSigninClientFactory::GetForProfile(profile), profile->GetPrefs(),
-      std::move(fake_token_service),
-      AccountTrackerServiceFactory::GetForProfile(profile));
+      profile->GetPath());
 }
 
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(

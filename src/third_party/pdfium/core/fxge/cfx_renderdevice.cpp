@@ -10,13 +10,15 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxge/cfx_color.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
-#include "core/fxge/cfx_facecache.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_glyphbitmap.h"
+#include "core/fxge/cfx_glyphcache.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -349,7 +351,7 @@ void DrawNormalTextHelper(const RetainPtr<CFX_DIBitmap>& bitmap,
 }
 
 bool ShouldDrawDeviceText(const CFX_Font* pFont, uint32_t text_flags) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   if (text_flags & FXFONT_CIDFONT)
     return false;
 
@@ -365,17 +367,7 @@ bool ShouldDrawDeviceText(const CFX_Font* pFont, uint32_t text_flags) {
 
 }  // namespace
 
-TextCharPos::TextCharPos()
-    : m_Unicode(0),
-      m_GlyphIndex(0),
-      m_FontCharWidth(0),
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-      m_ExtGID(0),
-#endif
-      m_FallbackFontPosition(0),
-      m_bGlyphAdjust(false),
-      m_bFontStyle(false) {
-}
+TextCharPos::TextCharPos() = default;
 
 TextCharPos::TextCharPos(const TextCharPos&) = default;
 
@@ -461,14 +453,14 @@ bool CFX_RenderDevice::CreateCompatibleBitmap(
   }
   if (m_RenderCaps & FXRC_BYTEMASK_OUTPUT)
     return pDIB->Create(width, height, FXDIB_8bppMask);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_ || defined _SKIA_SUPPORT_PATHS_
+#if defined(OS_MACOSX) || defined _SKIA_SUPPORT_PATHS_
+  constexpr FXDIB_Format kPlatformFormat = FXDIB_Rgb32;
+#else
+  constexpr FXDIB_Format kPlatformFormat = FXDIB_Rgb;
+#endif
   return pDIB->Create(
       width, height,
-      m_RenderCaps & FXRC_ALPHA_OUTPUT ? FXDIB_Argb : FXDIB_Rgb32);
-#else
-  return pDIB->Create(
-      width, height, m_RenderCaps & FXRC_ALPHA_OUTPUT ? FXDIB_Argb : FXDIB_Rgb);
-#endif
+      m_RenderCaps & FXRC_ALPHA_OUTPUT ? FXDIB_Argb : kPlatformFormat);
 }
 
 bool CFX_RenderDevice::SetClip_PathFill(const CFX_PathData* pPathData,
@@ -957,11 +949,11 @@ bool CFX_RenderDevice::DrawNormalText(int nChars,
       new_matrix.Concat(deviceCtm);
       glyph.m_pGlyph = pFont->LoadGlyphBitmap(
           charpos.m_GlyphIndex, charpos.m_bFontStyle, new_matrix,
-          charpos.m_FontCharWidth, anti_alias, nativetext_flags);
+          charpos.m_FontCharWidth, anti_alias, &nativetext_flags);
     } else {
       glyph.m_pGlyph = pFont->LoadGlyphBitmap(
           charpos.m_GlyphIndex, charpos.m_bFontStyle, deviceCtm,
-          charpos.m_FontCharWidth, anti_alias, nativetext_flags);
+          charpos.m_FontCharWidth, anti_alias, &nativetext_flags);
     }
   }
   if (anti_alias < FXFT_RENDER_MODE_LCD && glyphs.size() > 1)

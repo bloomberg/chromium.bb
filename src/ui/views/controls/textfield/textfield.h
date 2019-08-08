@@ -15,6 +15,7 @@
 #include <vector>
 #endif
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -285,12 +286,11 @@ class VIEWS_EXPORT Textfield : public View,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
   void OnVisibleBoundsChanged() override;
-  void OnEnabledChanged() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
   gfx::Point GetKeyboardContextMenuLocation() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // TextfieldModel::Delegate overrides:
   void OnCompositionTextConfirmedOrCleared() override;
@@ -372,11 +372,13 @@ class VIEWS_EXPORT Textfield : public View,
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
-#if defined(OS_WIN)
-  // Overridden from ui::TextInputClient(Windows only):
-  void SetCompositionFromExistingText(
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
+
+#if defined(OS_WIN)
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const base::string16& active_composition_text,
@@ -522,6 +524,8 @@ class VIEWS_EXPORT Textfield : public View,
   // Returns the color to use for the FocusRing, if one is present.
   SkColor GetFocusRingColor() const;
 
+  void OnEnabledChanged();
+
   // The text model.
   std::unique_ptr<TextfieldModel> model_;
 
@@ -656,6 +660,12 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Extra insets, useful to make room for a button for example.
   gfx::Insets extra_insets_ = gfx::Insets();
+
+  // Holds the subscription object for the enabled changed callback.
+  PropertyChangedSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&Textfield::OnEnabledChanged,
+                              base::Unretained(this)));
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

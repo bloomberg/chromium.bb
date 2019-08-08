@@ -22,20 +22,21 @@ import threading
 import time
 import zipfile
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, CLIENT_DIR)
 
-from third_party import colorama
+from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+
+# pylint: disable=ungrouped-imports
 import swarming
-
 from utils import graph
 from utils import net
 from utils import threading_utils
-
-# Line too long (NN/80)
-# pylint: disable=C0301
 
 OS_NAME = 'Comodore64'
 TASK_OUTPUT = 'This task ran with great success'
@@ -326,7 +327,7 @@ def main():
   print_results(results, options.columns, options.buckets)
   if options.dump:
     with open(options.dump, 'w') as f:
-      json.dump(results, f, separators=(',',':'))
+      json.dump(results, f, separators=(',', ':'))
   return 0
 
 

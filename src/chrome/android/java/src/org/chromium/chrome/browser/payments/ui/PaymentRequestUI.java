@@ -618,6 +618,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
+     * Sets the retry error message. This is used to display error message on the header UI when
+     * retry() is called on merchant side. The error message may be reset when users click 'Pay'
+     * button or expand any section.
+     *
+     * @param error The error message to display on the header.
+     */
+    public void setRetryErrorMessage(String error) {
+        ((PaymentRequestHeader) mRequestView.findViewById(R.id.header)).setRetryErrorMessage(error);
+    }
+
+    /**
      * Updates the line items in response to a changed shipping address or option.
      *
      * @param cart The shopping cart, including the line items and the total.
@@ -821,6 +832,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 expand(mOrderSummarySection);
             }
         }
+
+        setRetryErrorMessage(null);
 
         updatePayButtonEnabled();
     }

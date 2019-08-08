@@ -1413,6 +1413,8 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
       HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
       LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
     }
+
+    ::RtlSecureZeroMemory(const_cast<char*>(json.data()), json.size());
   } else {
     LOGFN(ERROR) << "base::JSONWriter::Write failed";
   }
@@ -1690,6 +1692,11 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
                  << "'. Maximum attempts reached.";
     *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
+  } else if (FAILED(hr)) {
+    LOGFN(ERROR) << "Failed to create user '" << found_domain << "\\"
+                 << found_username << "'. hr=" << putHR(hr);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
+    return hr;
   }
 
   *domain = ::SysAllocString(found_domain);
@@ -1790,6 +1797,12 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
                                          BSTR status_text) {
   USES_CONVERSION;
   LOGFN(INFO);
+
+  // Provider may be unset if the GLS process ended as a result of a kill
+  // request coming from Terminate() which would release the |provider_|
+  // reference.
+  if (!provider_)
+    return S_OK;
 
   result_status_ = status;
 

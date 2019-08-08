@@ -437,20 +437,24 @@ GpuImageDecodeCache::InUseCacheKey::FromDrawImage(const DrawImage& draw_image) {
 GpuImageDecodeCache::InUseCacheKey::InUseCacheKey(const DrawImage& draw_image)
     : frame_key(draw_image.frame_key()),
       upload_scale_mip_level(CalculateUploadScaleMipLevel(draw_image)),
-      filter_quality(CalculateDesiredFilterQuality(draw_image)) {}
+      filter_quality(CalculateDesiredFilterQuality(draw_image)),
+      target_color_space(draw_image.target_color_space()) {}
 
 bool GpuImageDecodeCache::InUseCacheKey::operator==(
     const InUseCacheKey& other) const {
   return frame_key == other.frame_key &&
          upload_scale_mip_level == other.upload_scale_mip_level &&
-         filter_quality == other.filter_quality;
+         filter_quality == other.filter_quality &&
+         target_color_space == other.target_color_space;
 }
 
 size_t GpuImageDecodeCache::InUseCacheKeyHash::operator()(
     const InUseCacheKey& cache_key) const {
-  return base::HashInts(cache_key.frame_key.hash(),
-                        base::HashInts(cache_key.upload_scale_mip_level,
-                                       cache_key.filter_quality));
+  return base::HashInts(
+      cache_key.target_color_space.GetHash(),
+      base::HashInts(cache_key.frame_key.hash(),
+                     base::HashInts(cache_key.upload_scale_mip_level,
+                                    cache_key.filter_quality)));
 }
 
 GpuImageDecodeCache::InUseCacheEntry::InUseCacheEntry(
@@ -773,17 +777,20 @@ void GpuImageDecodeCache::UploadedImageData::ReportUsageStats() const {
                         usage_stats_.first_lock_wasted);
 }
 
-GpuImageDecodeCache::ImageData::ImageData(PaintImage::Id paint_image_id,
-                                          DecodedDataMode mode,
-                                          size_t size,
-                                          SkFilterQuality quality,
-                                          int upload_scale_mip_level,
-                                          bool needs_mips,
-                                          bool is_bitmap_backed,
-                                          bool is_yuv_format)
+GpuImageDecodeCache::ImageData::ImageData(
+    PaintImage::Id paint_image_id,
+    DecodedDataMode mode,
+    size_t size,
+    const gfx::ColorSpace& target_color_space,
+    SkFilterQuality quality,
+    int upload_scale_mip_level,
+    bool needs_mips,
+    bool is_bitmap_backed,
+    bool is_yuv_format)
     : paint_image_id(paint_image_id),
       mode(mode),
       size(size),
+      target_color_space(target_color_space),
       quality(quality),
       upload_scale_mip_level(upload_scale_mip_level),
       needs_mips(needs_mips),
@@ -853,8 +860,7 @@ GpuImageDecodeCache::GpuImageDecodeCache(
     SkColorType color_type,
     size_t max_working_set_bytes,
     int max_texture_size,
-    PaintImage::GeneratorClientId generator_client_id,
-    sk_sp<SkColorSpace> target_color_space)
+    PaintImage::GeneratorClientId generator_client_id)
     : color_type_(color_type),
       use_transfer_cache_(use_transfer_cache),
       context_(context),
@@ -862,8 +868,7 @@ GpuImageDecodeCache::GpuImageDecodeCache(
       generator_client_id_(generator_client_id),
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
       max_working_set_bytes_(max_working_set_bytes),
-      max_working_set_items_(kMaxItemsInWorkingSet),
-      target_color_space_(std::move(target_color_space)) {
+      max_working_set_items_(kMaxItemsInWorkingSet) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -886,17 +891,6 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-
-  // TODO(vmpstr): If we don't have a client name, it may cause problems in
-  // unittests, since most tests don't set the name but some do. The UMA system
-  // expects the name to be always the same. This assertion is violated in the
-  // tests that do set the name.
-  if (GetClientNameForMetrics()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        base::StringPrintf("Compositing.%s.CachedImagesCount.Gpu",
-                           GetClientNameForMetrics()),
-        lifetime_max_items_in_cache_, 1, 1000, 20);
-  }
 }
 
 ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRef(
@@ -1588,9 +1582,6 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
                "GpuImageDecodeCache::EnsureCapacity");
   lock_.AssertAcquired();
 
-  lifetime_max_items_in_cache_ =
-      std::max(lifetime_max_items_in_cache_, persistent_cache_.size());
-
   // While we are over preferred item capacity, we iterate through our set of
   // cached image data in LRU order, removing unreferenced images.
   for (auto it = persistent_cache_.rbegin();
@@ -1669,7 +1660,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     return;
   }
 
-  TRACE_EVENT0("cc", "GpuImageDecodeCache::DecodeImage");
+  TRACE_EVENT0("cc,benchmark", "GpuImageDecodeCache::DecodeImage");
   RecordImageMipLevelUMA(image_data->upload_scale_mip_level);
 
   image_data->decode.ResetData();
@@ -1791,7 +1782,10 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
   image_data->decode.mark_used();
   sk_sp<SkColorSpace> color_space =
-      SupportsColorSpaceConversion() ? target_color_space_ : nullptr;
+      SupportsColorSpaceConversion() &&
+              draw_image.target_color_space().IsValid()
+          ? draw_image.target_color_space().ToSkColorSpace()
+          : nullptr;
   // The value of |decoded_target_colorspace| takes into account the fact
   // that we might need to ignore an embedded image color space if |color_type_|
   // does not support color space conversions or that color conversion might
@@ -1874,7 +1868,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
       uploaded_image = CreateImageFromYUVATexturesInternal(
           uploaded_y_image.get(), uploaded_u_image.get(),
           uploaded_v_image.get(), image_width, image_height, &yuva_color_space,
-          decoded_target_colorspace);
+          color_space, decoded_target_colorspace);
     }
 
     // At-raster may have decoded this while we were unlocked. If so, ignore our
@@ -2032,6 +2026,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
 
   return base::WrapRefCounted(new ImageData(
       draw_image.paint_image().stable_id(), mode, data_size,
+      draw_image.target_color_space(),
       CalculateDesiredFilterQuality(draw_image), upload_scale_mip_level,
       needs_mips, is_bitmap_backed, is_yuv));
 }
@@ -2112,6 +2107,7 @@ void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
       images_pending_unlock_.push_back(image_data->upload.y_image().get());
       images_pending_unlock_.push_back(image_data->upload.u_image().get());
       images_pending_unlock_.push_back(image_data->upload.v_image().get());
+      yuv_images_pending_unlock_.push_back(image_data->upload.image());
     } else {
       images_pending_unlock_.push_back(image_data->upload.image().get());
     }
@@ -2142,11 +2138,32 @@ void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
   }
 }
 
+// YUV images are handled slightly differently because they are not themselves
+// registered with the discardable memory system. We cannot use
+// GlIdFromSkImage on these YUV SkImages to flush pending operations because
+// doing so will flatten it to RGB.
+void GpuImageDecodeCache::FlushYUVImages(
+    std::vector<sk_sp<SkImage>>* yuv_images) {
+  CheckContextLockAcquiredIfNecessary();
+  lock_.AssertAcquired();
+  for (auto& image : *yuv_images) {
+    image->flush(context_->GrContext());
+  }
+  yuv_images->clear();
+}
+
 // We always run pending operations in the following order:
-//   Lock > Unlock > Delete
+//   > Lock
+//   > Flush YUV images that will be unlocked
+//   > Unlock
+//   > Flush YUV images that will be deleted
+//   > Delete
 // This ensures that:
 //   a) We never fully unlock an image that's pending lock (lock before unlock)
 //   b) We never delete an image that has pending locks/unlocks.
+//   c) We never unlock or delete the underlying texture planes for a YUV
+//      image before all operations referencing it have completed.
+//
 // As this can be run at-raster, to unlock/delete an image that was just used,
 // we need to call GlIdFromSkImage, which flushes pending IO on the image,
 // rather than just using a cached GL ID.
@@ -2164,6 +2181,7 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   }
   images_pending_complete_lock_.clear();
 
+  FlushYUVImages(&yuv_images_pending_unlock_);
   for (auto* image : images_pending_unlock_) {
     context_->ContextGL()->UnlockDiscardableTextureCHROMIUM(
         GlIdFromSkImage(image));
@@ -2176,8 +2194,7 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   }
   ids_pending_unlock_.clear();
 
-  yuv_images_pending_deletion_.clear();
-
+  FlushYUVImages(&yuv_images_pending_deletion_);
   for (auto& image : images_pending_deletion_) {
     uint32_t texture_id = GlIdFromSkImage(image.get());
     if (context_->ContextGL()->LockDiscardableTextureCHROMIUM(texture_id)) {
@@ -2322,6 +2339,10 @@ bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
                              image_data->upload_scale_mip_level;
   bool quality_is_compatible =
       CalculateDesiredFilterQuality(draw_image) <= image_data->quality;
+  bool color_is_compatible =
+      image_data->target_color_space == draw_image.target_color_space();
+  if (!color_is_compatible)
+    return false;
   if (is_scaled && (!scale_is_compatible || !quality_is_compatible))
     return false;
   return true;
@@ -2423,7 +2444,7 @@ sk_sp<SkColorSpace> GpuImageDecodeCache::ColorSpaceForImageDecode(
     return nullptr;
 
   if (mode == DecodedDataMode::kCpu)
-    return target_color_space_;
+    return image.target_color_space().ToSkColorSpace();
 
   // For kGpu or kTransferCache images color conversion is handled during
   // upload, so keep the original colorspace here.
@@ -2443,6 +2464,7 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
     const size_t image_width,
     const size_t image_height,
     const SkYUVColorSpace* yuva_color_space,
+    sk_sp<SkColorSpace> target_color_space,
     sk_sp<SkColorSpace> decoded_color_space) const {
   DCHECK(uploaded_y_image);
   DCHECK(uploaded_u_image);
@@ -2460,8 +2482,6 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
   indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
   indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
 
-  sk_sp<SkColorSpace> target_color_space =
-      SupportsColorSpaceConversion() ? target_color_space_ : nullptr;
   if (target_color_space && SkColorSpace::Equals(target_color_space.get(),
                                                  decoded_color_space.get())) {
     target_color_space = nullptr;
@@ -2551,13 +2571,18 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
     SkYUVColorSpace yuva_color_space = SkYUVColorSpace::kRec601_SkYUVColorSpace;
     size_t width = image_y_with_mips_owned->width();
     size_t height = image_y_with_mips_owned->height();
+    sk_sp<SkColorSpace> color_space =
+        SupportsColorSpaceConversion() &&
+                draw_image.target_color_space().IsValid()
+            ? draw_image.target_color_space().ToSkColorSpace()
+            : nullptr;
     sk_sp<SkColorSpace> decoded_color_space =
         ColorSpaceForImageDecode(draw_image, image_data->mode);
     sk_sp<SkImage> yuv_image_with_mips_owned =
         CreateImageFromYUVATexturesInternal(
             image_y_with_mips_owned.get(), image_u_with_mips_owned.get(),
             image_v_with_mips_owned.get(), width, height, &yuva_color_space,
-            decoded_color_space);
+            color_space, decoded_color_space);
     // In case of lost context
     if (!yuv_image_with_mips_owned) {
       DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";

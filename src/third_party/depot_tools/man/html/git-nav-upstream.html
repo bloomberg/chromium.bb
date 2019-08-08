@@ -787,18 +787,24 @@ Your branch is ahead of 'origin/master' by 4 commits.
 </span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
 </span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
 </span><span style="font-weight: bold; color: #ffffff">$ git nav-upstream</span>
-Note: checking out 'origin/master'.
+Note: switching to 'origin/master'.
 
 You are in 'detached HEAD' state. You can look around, make experimental</span> <b>&lt;1&gt;</b><span>
 changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by performing another checkout.
+state without impacting any branches by switching back to a branch.
 
 If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
+do so (now or later) by using -c with the switch command. Example:
 
-  git checkout -b &lt;new-branch-name&gt;
+  git switch -c &lt;new-branch-name&gt;
 
-HEAD is now at beec6f4... Make ReflectorImpl use mailboxes
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at beec6f4 Make ReflectorImpl use mailboxes
 <span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
 <span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/master
 </span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  cool_feature
@@ -840,7 +846,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-12-15 15:36:52 PST
+Last updated 2019-05-03 10:40:16 EDT
 </div>
 </div>
 </body>

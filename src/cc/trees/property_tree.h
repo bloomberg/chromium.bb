@@ -319,6 +319,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   EffectNode* FindNodeFromElementId(ElementId id);
   bool OnOpacityAnimated(ElementId id, float opacity);
   bool OnFilterAnimated(ElementId id, const FilterOperations& filters);
+  bool OnBackdropFilterAnimated(ElementId id,
+                                const FilterOperations& backdrop_filters);
 
   void UpdateEffects(int id);
 
@@ -699,6 +701,8 @@ class CC_EXPORT PropertyTrees final {
       int effect_id) const;
 
   ClipRectData* FetchClipRectFromCache(int clip_id, int target_id);
+
+  bool HasElement(ElementId element_id) const;
 
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;

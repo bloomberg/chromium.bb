@@ -14,8 +14,10 @@
   <template>
     <style include="settings-shared">
       :host {
+        box-sizing: border-box;
         display: block;
-        margin-top: 8px;
+        padding-bottom: 2px;
+        padding-top: 8px;
       }
 
       a[href],
@@ -68,9 +70,14 @@
         outline: auto 5px -webkit-focus-ring-color;
       }
 
-      #advancedButton > span,
+      #advancedButton > span {
+        flex: 1;
+      }
 
-      #advancedButton > iron-icon,
+      #advancedButton > iron-icon {
+        @apply --cr-icon-height-width;
+        margin-inline-end: 14px;  /* 16px - 2px from margin for outline. */
+      }
 
       #menuSeparator {
         /* Per bettes@, this is different from the other separator lines. */
@@ -105,15 +112,9 @@
         <iron-icon icon="cr:person"></iron-icon>
         $i18n{peoplePageTitle}
       </a>
-      <a id="autofill" href="/autofill"
-          hidden="[[!pageVisibility.autofill]]">
-        <iron-icon icon="settings:assignment"></iron-icon>
-        $i18n{autofillPageTitle}
-      </a>
-      <a id="appearance" href="/appearance"
-        hidden="[[!pageVisibility.appearance]]">
+      <a id="personalization" href="/personalization">
         <iron-icon icon="settings:palette"></iron-icon>
-        $i18n{appearancePageTitle}
+        $i18n{personalizationPageTitle}
       </a>
       <a href="/device">
         <iron-icon icon="settings:laptop-chromebook"></iron-icon>
@@ -121,7 +122,11 @@
       </a>
       <a href="/search">
         <iron-icon icon="cr:search"></iron-icon>
-        $i18n{searchPageTitle}
+        $i18n{osSearchPageTitle}
+      </a>
+      <a href="/apps" hidden="[[!showApps]]">
+        <iron-icon icon="settings:apps"></iron-icon>
+        $i18n{appsPageTitle}
       </a>
       <a href="/androidApps" hidden="[[!showAndroidApps]]">
         <iron-icon icon="settings:play-prism"></iron-icon>
@@ -132,15 +137,8 @@
         $i18n{crostiniPageTitle}
       </a>
       <a href="/pluginVm" hidden="[[!showPluginVm]]">
-        <!-- TODO(crbug.com/950738): The placeholder iron-icon here is needed
-          for spacing. Replace this once we get the proper icon. -->
-        <iron-icon icon="cr:info"></iron-icon>
+        <iron-icon icon="settings:plugin-vm"></iron-icon>
         $i18n{pluginVmPageTitle}
-      </a>
-      <a id="onStartup" href="/onStartup"
-        hidden="[[!pageVisibility.onStartup]]">
-        <iron-icon icon="settings:power-settings-new"></iron-icon>
-        $i18n{onStartup}
       </a>
       <paper-button toggles id="advancedButton"
           aria-active-attribute="aria-expanded" active="{{advancedOpened}}"
@@ -183,7 +181,6 @@
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
-      <a id="about-menu" href="/help">$i18n{aboutPageTitle}</a>
     </iron-selector>
   </template>
   <script src="os_settings_menu.js"></script>

@@ -564,7 +564,7 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
 }
 
 void FrameSelection::PaintCaret(GraphicsContext& context,
-                                const LayoutPoint& paint_offset) {
+                                const PhysicalOffset& paint_offset) {
   frame_caret_->PaintCaret(context, paint_offset);
 }
 
@@ -791,13 +791,16 @@ void FrameSelection::SelectSubString(const Element& element,
 }
 
 void FrameSelection::NotifyAccessibilityForSelectionChange() {
-  if (GetSelectionInDOMTree().IsNone())
-    return;
   AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
   if (!cache)
     return;
-  const Position& start = GetSelectionInDOMTree().ComputeStartPosition();
-  cache->SelectionChanged(start.ComputeContainerNode());
+  const Position& extent = GetSelectionInDOMTree().Extent();
+  Node* anchor = extent.ComputeContainerNode();
+  if (anchor) {
+    cache->SelectionChanged(anchor);
+  } else {
+    cache->SelectionChanged(RootEditableElementOrDocumentElement());
+  }
 }
 
 void FrameSelection::NotifyCompositorForSelectionChange() {
@@ -916,22 +919,31 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
   }
 }
 
+static EphemeralRangeInFlatTree ComputeRangeForSerialization(
+    const SelectionInDOMTree& selection) {
+  const EphemeralRangeInFlatTree& range =
+      ConvertToSelectionInFlatTree(selection).ComputeRange();
+  const PositionInFlatTree& start =
+      CreateVisiblePosition(range.StartPosition()).DeepEquivalent();
+  const PositionInFlatTree& end =
+      CreateVisiblePosition(range.EndPosition()).DeepEquivalent();
+  if (start.IsNull() || end.IsNull() || start >= end)
+    return EphemeralRangeInFlatTree();
+  return NormalizeRange(EphemeralRangeInFlatTree(start, end));
+}
+
 static String ExtractSelectedText(const FrameSelection& selection,
                                   TextIteratorBehavior behavior) {
-  const VisibleSelectionInFlatTree& visible_selection =
-      selection.ComputeVisibleSelectionInFlatTree();
   const EphemeralRangeInFlatTree& range =
-      visible_selection.ToNormalizedEphemeralRange();
+      ComputeRangeForSerialization(selection.GetSelectionInDOMTree());
   // We remove '\0' characters because they are not visibly rendered to the
   // user.
   return PlainText(range, behavior).Replace(0, "");
 }
 
 String FrameSelection::SelectedHTMLForClipboard() const {
-  const VisibleSelectionInFlatTree& visible_selection =
-      ComputeVisibleSelectionInFlatTree();
   const EphemeralRangeInFlatTree& range =
-      visible_selection.ToNormalizedEphemeralRange();
+      ComputeRangeForSerialization(GetSelectionInDOMTree());
   return CreateMarkup(
       range.StartPosition(), range.EndPosition(), kAnnotateForInterchange,
       ConvertBlocksToInlines::kNotConvert, kResolveNonLocalURLs);
@@ -1055,7 +1067,7 @@ void FrameSelection::SetShouldShowBlockCursor(bool should_show_block_cursor) {
   frame_caret_->SetShouldShowBlockCursor(should_show_block_cursor);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void FrameSelection::ShowTreeForThis() const {
   ComputeVisibleSelectionInDOMTreeDeprecated().ShowTreeForThis();
@@ -1242,7 +1254,7 @@ bool FrameSelection::IsDirectional() const {
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::FrameSelection& sel) {
   sel.ShowTreeForThis();

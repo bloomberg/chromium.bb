@@ -162,6 +162,8 @@ class CONTENT_EXPORT RTCRtpReceiverOnlyTransceiver
       const override;
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
+  webrtc::RTCError SetCodecPreferences(
+      blink::WebVector<webrtc::RtpCodecCapability>) override;
 
  private:
   std::unique_ptr<blink::WebRTCRtpReceiver> receiver_;

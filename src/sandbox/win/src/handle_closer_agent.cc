@@ -66,24 +66,61 @@ bool HandleCloserAgent::AttemptToStuffHandleSlot(HANDLE closed_handle,
   DCHECK(dummy_handle_.Get() != closed_handle);
 
   std::vector<HANDLE> to_close;
-  HANDLE dup_dummy = nullptr;
-  size_t count = 16;
+
+  const DWORD original_proc_num = GetCurrentProcessorNumber();
+  DWORD proc_num = original_proc_num;
+  DWORD_PTR original_affinity_mask =
+      SetThreadAffinityMask(GetCurrentThread(), DWORD_PTR{1} << proc_num);
+  bool found_handle = false;
+  BOOL result = FALSE;
+
+  // There is per-processor based free list of handles entries. The free handle
+  // from current processor's freelist is preferred for reusing, so cycling
+  // through all possible processors to find closed_handle.
+  // Start searching from current processor which covers usual cases.
 
   do {
-    if (!::DuplicateHandle(::GetCurrentProcess(), dummy_handle_.Get(),
-                           ::GetCurrentProcess(), &dup_dummy, 0, false, 0))
+    DWORD_PTR current_mask = DWORD_PTR{1} << proc_num;
+
+    if (original_affinity_mask & current_mask) {
+      if (proc_num != original_proc_num) {
+        SetThreadAffinityMask(GetCurrentThread(), current_mask);
+      }
+
+      HANDLE dup_dummy = nullptr;
+      size_t count = 16;
+
+      do {
+        result =
+            ::DuplicateHandle(::GetCurrentProcess(), dummy_handle_.Get(),
+                              ::GetCurrentProcess(), &dup_dummy, 0, false, 0);
+        if (!result) {
+          break;
+        }
+        if (dup_dummy != closed_handle) {
+          to_close.push_back(dup_dummy);
+        } else {
+          found_handle = true;
+        }
+      } while (count-- && reinterpret_cast<uintptr_t>(dup_dummy) <
+                              reinterpret_cast<uintptr_t>(closed_handle));
+    }
+
+    proc_num++;
+    if (proc_num == sizeof(DWORD_PTR) * 8) {
+      proc_num = 0;
+    }
+    if (proc_num == original_proc_num) {
       break;
-    if (dup_dummy != closed_handle)
-      to_close.push_back(dup_dummy);
-  } while (count-- && reinterpret_cast<uintptr_t>(dup_dummy) <
-                          reinterpret_cast<uintptr_t>(closed_handle));
+    }
+  } while (result && !found_handle);
+
+  SetThreadAffinityMask(GetCurrentThread(), original_affinity_mask);
 
   for (HANDLE h : to_close)
     ::CloseHandle(h);
 
-  // TODO(wfh): Investigate why stuffing handles sometimes fails.
-  // http://crbug.com/649904
-  return dup_dummy == closed_handle;
+  return found_handle;
 }
 
 // Reads g_handles_to_close and creates the lookup map.

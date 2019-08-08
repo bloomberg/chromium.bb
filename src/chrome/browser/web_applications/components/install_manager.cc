@@ -54,6 +54,11 @@ InstallManager::InstallManager(Profile* profile) : profile_(profile) {}
 
 InstallManager::~InstallManager() = default;
 
+void InstallManager::Shutdown() {
+  for (InstallManagerObserver& observer : observers_)
+    observer.OnInstallManagerShutdown();
+}
+
 void InstallManager::LoadWebAppAndCheckInstallability(
     const GURL& web_app_url,
     WebAppInstallabilityCheckCallback callback) {
@@ -69,11 +74,6 @@ void InstallManager::LoadWebAppAndCheckInstallability(
   url_loader_.LoadUrl(web_app_url, web_contents_ptr,
                       base::BindOnce(&OnWebAppUrlLoaded, std::move(callback),
                                      std::move(web_contents)));
-}
-
-void InstallManager::Reset() {
-  for (InstallManagerObserver& observer : observers_)
-    observer.InstallManagerReset();
 }
 
 void InstallManager::AddObserver(InstallManagerObserver* observer) {

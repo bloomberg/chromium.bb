@@ -57,13 +57,14 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
       const GURL& url,
       int child_id,
       int frame_id,
+      int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal) override {
     ssl_error_handler_delegate_ =
         std::make_unique<SSLErrorHandlerDelegate>(std::move(callbacks));
     SSLManager::OnSSLCertificateSubresourceError(
         ssl_error_handler_delegate_->GetWeakPtr(), url, child_id, frame_id,
-        ssl_info, fatal);
+        net_error, ssl_info, fatal);
   }
 
   void ReportBadMessage(BadMessageReason reason,

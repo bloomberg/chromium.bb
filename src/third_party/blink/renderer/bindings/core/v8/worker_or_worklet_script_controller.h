@@ -73,10 +73,15 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   // For main thread WorkletGlobalScope, WorkerOrWorkletGlobalScope::Name() is
   // used for setting DOMWrapperWorld's human readable name.
   // This should be called only once.
-  bool Initialize(const KURL& url_for_debugger);
+  void Initialize(const KURL& url_for_debugger);
+
+  // Prepares for script evaluation. This must be called after Initialize()
+  // before Evaluate().
+  void PrepareForEvaluation();
 
   // Used by WorkerGlobalScope:
   void RethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
+  // Disables `eval()` on JavaScript. This must be called before Evaluate().
   void DisableEval(const String&);
 
   // Used by Inspector agents:
@@ -103,6 +108,8 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
  private:
   class ExecutionState;
 
+  void DisableEvalInternal(const String& error_message);
+
   // Evaluate a script file in the current execution environment.
   ScriptValue EvaluateInternal(const ScriptSourceCode&,
                                SanitizeScriptErrors,
@@ -118,8 +125,12 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
 
   Member<ScriptState> script_state_;
   scoped_refptr<DOMWrapperWorld> world_;
+
+  // Keeps the error message for `eval()` on JavaScript until Initialize().
   String disable_eval_pending_;
-  bool execution_forbidden_;
+
+  bool is_ready_to_evaluate_ = false;
+  bool execution_forbidden_ = false;
 
   scoped_refptr<RejectedPromises> rejected_promises_;
 

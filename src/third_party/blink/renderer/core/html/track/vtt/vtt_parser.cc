@@ -33,9 +33,11 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_region.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/segmented_string.h"
@@ -91,7 +93,9 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
       current_start_time_(0),
       current_end_time_(0),
       current_region_(nullptr),
-      client_(client) {}
+      client_(client) {
+  UseCounter::Count(document, WebFeature::kVTTCueParser);
+}
 
 void VTTParser::GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues) {
   DCHECK(output_cues.IsEmpty());
@@ -532,15 +536,15 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
       if (node_type == kVTTNodeTypeNone)
         break;
 
-      VTTNodeType current_type =
-          current_node_->IsVTTElement()
-              ? ToVTTElement(current_node_.Get())->WebVTTNodeType()
-              : kVTTNodeTypeNone;
+      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_.Get());
+      VTTNodeType current_type = curr_vtt_element
+                                     ? curr_vtt_element->WebVTTNodeType()
+                                     : kVTTNodeTypeNone;
       // <rt> is only allowed if the current node is <ruby>.
       if (node_type == kVTTNodeTypeRubyText && current_type != kVTTNodeTypeRuby)
         break;
 
-      VTTElement* child = VTTElement::Create(node_type, &document);
+      auto* child = MakeGarbageCollected<VTTElement>(node_type, &document);
       if (!token_.Classes().IsEmpty())
         child->setAttribute(kClassAttr, token_.Classes());
 
@@ -565,11 +569,11 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
 
       // The only non-VTTElement would be the DocumentFragment root. (Text
       // nodes and PIs will never appear as current_node_.)
-      if (!current_node_->IsVTTElement())
+      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_.Get());
+      if (!curr_vtt_element)
         break;
 
-      VTTNodeType current_type =
-          ToVTTElement(current_node_.Get())->WebVTTNodeType();
+      VTTNodeType current_type = curr_vtt_element->WebVTTNodeType();
       bool matches_current = node_type == current_type;
       if (!matches_current) {
         // </ruby> auto-closes <rt>.

@@ -16,7 +16,7 @@ class SoftwareOutputDevice;
 }
 
 namespace viz {
-class CompositorOverlayCandidateValidator;
+class OverlayCandidateValidator;
 }
 
 namespace gfx {
@@ -32,9 +32,14 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   ~BrowserCompositorOutputSurface() override;
 
   // viz::OutputSurface implementation.
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   void SetReflector(ReflectorImpl* reflector);
 
@@ -43,25 +48,19 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
  protected:
   // Constructor used by the accelerated implementation.
-  BrowserCompositorOutputSurface(
-      scoped_refptr<viz::ContextProvider> context,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback,
-      std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-          overlay_candidate_validator);
+  BrowserCompositorOutputSurface(scoped_refptr<viz::ContextProvider> context,
+                                 std::unique_ptr<viz::OverlayCandidateValidator>
+                                     overlay_candidate_validator);
 
   // Constructor used by the software implementation.
-  BrowserCompositorOutputSurface(
-      std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback);
+  explicit BrowserCompositorOutputSurface(
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device);
 
-  const viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
-  ReflectorImpl* reflector_;
+  viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  ReflectorImpl* reflector_ = nullptr;
 
  private:
-  std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-      overlay_candidate_validator_;
+  std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);
 };

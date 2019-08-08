@@ -4,32 +4,47 @@
 
 #include "base/callback_helpers.h"
 
+#include <functional>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-void Increment(int* value) {
-  (*value)++;
+TEST(CallbackHelpersTest, IsBaseCallback) {
+  // Check that base::Closures and references to them are considered
+  // base::Callbacks.
+  static_assert(base::IsBaseCallback<base::OnceClosure>::value, "");
+  static_assert(base::IsBaseCallback<base::RepeatingClosure>::value, "");
+  static_assert(base::IsBaseCallback<base::OnceClosure&&>::value, "");
+  static_assert(base::IsBaseCallback<const base::RepeatingClosure&>::value, "");
+
+  // Check that base::Callbacks with a given RunType and references to them are
+  // considered base::Callbacks.
+  static_assert(base::IsBaseCallback<base::OnceCallback<int(int)>>::value, "");
+  static_assert(base::IsBaseCallback<base::RepeatingCallback<int(int)>>::value,
+                "");
+  static_assert(base::IsBaseCallback<base::OnceCallback<int(int)>&&>::value,
+                "");
+  static_assert(
+      base::IsBaseCallback<const base::RepeatingCallback<int(int)>&>::value,
+      "");
+
+  // Check that POD types are not considered base::Callbacks.
+  static_assert(!base::IsBaseCallback<bool>::value, "");
+  static_assert(!base::IsBaseCallback<int>::value, "");
+  static_assert(!base::IsBaseCallback<double>::value, "");
+
+  // Check that the closely related std::function is not considered a
+  // base::Callback.
+  static_assert(!base::IsBaseCallback<std::function<void()>>::value, "");
+  static_assert(!base::IsBaseCallback<const std::function<void()>&>::value, "");
+  static_assert(!base::IsBaseCallback<std::function<void()>&&>::value, "");
 }
 
-TEST(CallbackHelpersTest, TestResetAndReturn) {
-  int run_count = 0;
-
-  base::Closure cb = base::Bind(&Increment, &run_count);
-  EXPECT_EQ(0, run_count);
-  base::ResetAndReturn(&cb).Run();
-  EXPECT_EQ(1, run_count);
-  EXPECT_FALSE(cb);
-
-  run_count = 0;
-
-  base::OnceClosure cb2 = base::BindOnce(&Increment, &run_count);
-  EXPECT_EQ(0, run_count);
-  base::ResetAndReturn(&cb2).Run();
-  EXPECT_EQ(1, run_count);
-  EXPECT_FALSE(cb2);
+void Increment(int* value) {
+  (*value)++;
 }
 
 TEST(CallbackHelpersTest, TestScopedClosureRunnerExitScope) {

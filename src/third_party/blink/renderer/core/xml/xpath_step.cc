@@ -181,7 +181,7 @@ static inline bool NodeMatchesBasicTest(Node* node,
       const AtomicString& namespace_uri = node_test.NamespaceURI();
 
       if (axis == Step::kAttributeAxis) {
-        Attr* attr = ToAttr(node);
+        auto* attr = To<Attr>(node);
 
         // In XPath land, namespace nodes are not accessible on the
         // attribute axis.
@@ -217,7 +217,7 @@ static inline bool NodeMatchesBasicTest(Node* node,
           // Paths without namespaces should match HTML elements in HTML
           // documents despite those having an XHTML namespace. Names are
           // compared case-insensitively.
-          return DeprecatedEqualIgnoringCase(element.localName(), name) &&
+          return EqualIgnoringASCIICase(element.localName(), name) &&
                  (namespace_uri.IsNull() ||
                   namespace_uri == element.namespaceURI());
         }
@@ -286,8 +286,8 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
       return;
 
     case kParentAxis:
-      if (context->IsAttributeNode()) {
-        Element* n = ToAttr(context)->ownerElement();
+      if (auto* attr = DynamicTo<Attr>(context)) {
+        Element* n = attr->ownerElement();
         if (NodeMatches(evaluation_context, n, kParentAxis, GetNodeTest()))
           nodes.Append(n);
       } else {
@@ -299,8 +299,8 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
 
     case kAncestorAxis: {
       Node* n = context;
-      if (context->IsAttributeNode()) {
-        n = ToAttr(context)->ownerElement();
+      if (auto* attr = DynamicTo<Attr>(context)) {
+        n = attr->ownerElement();
         if (NodeMatches(evaluation_context, n, kAncestorAxis, GetNodeTest()))
           nodes.Append(n);
       }
@@ -336,9 +336,8 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
       return;
 
     case kFollowingAxis:
-      if (context->IsAttributeNode()) {
-        for (Node& p :
-             NodeTraversal::StartsAfter(*ToAttr(context)->ownerElement())) {
+      if (auto* attr = DynamicTo<Attr>(context)) {
+        for (Node& p : NodeTraversal::StartsAfter(*attr->ownerElement())) {
           if (NodeMatches(evaluation_context, &p, kFollowingAxis,
                           GetNodeTest()))
             nodes.Append(&p);
@@ -360,8 +359,8 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
       return;
 
     case kPrecedingAxis: {
-      if (context->IsAttributeNode())
-        context = ToAttr(context)->ownerElement();
+      if (auto* attr = DynamicTo<Attr>(context))
+        context = attr->ownerElement();
 
       Node* n = context;
       while (ContainerNode* parent = n->parentNode()) {
@@ -437,8 +436,8 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
                       GetNodeTest()))
         nodes.Append(context);
       Node* n = context;
-      if (context->IsAttributeNode()) {
-        n = ToAttr(context)->ownerElement();
+      if (auto* attr = DynamicTo<Attr>(context)) {
+        n = attr->ownerElement();
         if (NodeMatches(evaluation_context, n, kAncestorOrSelfAxis,
                         GetNodeTest()))
           nodes.Append(n);

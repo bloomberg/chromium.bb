@@ -14,6 +14,9 @@
 #include <memory>
 #include <utility>
 
+#include "absl/memory/memory.h"
+#include "api/task_queue/default_task_queue_factory.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "pc/video_track_source.h"
 #include "test/frame_generator_capturer.h"
 
@@ -37,20 +40,27 @@ class FrameGeneratorCapturerVideoTrackSource : public VideoTrackSource {
     int num_squares_generated = 50;
   };
 
-  explicit FrameGeneratorCapturerVideoTrackSource(Clock* clock)
-      : FrameGeneratorCapturerVideoTrackSource(Config(), clock) {}
-
-  FrameGeneratorCapturerVideoTrackSource(Config config, Clock* clock)
-      : VideoTrackSource(false /* remote */) {
-    video_capturer_.reset(test::FrameGeneratorCapturer::Create(
-        config.width, config.height, absl::nullopt,
-        config.num_squares_generated, config.frames_per_second, clock));
+  FrameGeneratorCapturerVideoTrackSource(Config config,
+                                         Clock* clock,
+                                         bool is_screencast)
+      : VideoTrackSource(false /* remote */),
+        task_queue_factory_(CreateDefaultTaskQueueFactory()),
+        is_screencast_(is_screencast) {
+    video_capturer_ = absl::make_unique<test::FrameGeneratorCapturer>(
+        clock,
+        test::FrameGenerator::CreateSquareGenerator(
+            config.width, config.height, absl::nullopt,
+            config.num_squares_generated),
+        config.frames_per_second, *task_queue_factory_);
+    video_capturer_->Init();
   }
 
-  explicit FrameGeneratorCapturerVideoTrackSource(
-      std::unique_ptr<test::FrameGeneratorCapturer> video_capturer)
+  FrameGeneratorCapturerVideoTrackSource(
+      std::unique_ptr<test::FrameGeneratorCapturer> video_capturer,
+      bool is_screencast)
       : VideoTrackSource(false /* remote */),
-        video_capturer_(std::move(video_capturer)) {}
+        video_capturer_(std::move(video_capturer)),
+        is_screencast_(is_screencast) {}
 
   ~FrameGeneratorCapturerVideoTrackSource() = default;
 
@@ -62,13 +72,17 @@ class FrameGeneratorCapturerVideoTrackSource : public VideoTrackSource {
     SetState(kMuted);
   }
 
+  bool is_screencast() const override { return is_screencast_; }
+
  protected:
   rtc::VideoSourceInterface<VideoFrame>* source() override {
     return video_capturer_.get();
   }
 
  private:
+  const std::unique_ptr<TaskQueueFactory> task_queue_factory_;
   std::unique_ptr<test::FrameGeneratorCapturer> video_capturer_;
+  const bool is_screencast_;
 };
 
 }  // namespace webrtc

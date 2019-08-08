@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -33,10 +34,11 @@ def EnsureEmptyDir(path):
 
 def BuildForArch(arch):
   build_dir = 'out/release-' + arch
-  Run('scripts/fx', '--dir', build_dir, 'set', 'sdk_image.' + arch,
-      '--with=//topaz/packages/sdk:topaz', '--args=is_debug=false',
-      '--args=build_sdk_archives=true')
-  Run('scripts/fx', 'build', 'topaz/public/sdk:topaz')
+  Run('scripts/fx', '--dir', build_dir, 'set', 'terminal.' + arch,
+      '--with=//topaz/packages/sdk:topaz', '--with-base=//sdk/bundles:tools',
+      '--args=is_debug=false', '--args=build_sdk_archives=true')
+  Run('scripts/fx', 'build', 'topaz/public/sdk:fuchsia_dart', 'sdk',
+      'sdk:images_archive')
 
 
 def main(args):
@@ -60,8 +62,14 @@ def main(args):
   BuildForArch(arch)
 
   tempdir = tempfile.mkdtemp()
-  sdk_tar = os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk',
-                         'archive', 'topaz.tar.gz')
+  sdk_tars = [
+      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                   'images.tar.gz'),
+      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                   'core.tar.gz'),
+      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                   'fuchsia_dart.tar.gz'),
+  ]
 
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the
@@ -69,7 +77,29 @@ def main(args):
   output_dir = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk',
                             'sdk')
   EnsureEmptyDir(output_dir)
-  tarfile.open(sdk_tar, mode='r:gz').extractall(path=output_dir)
+
+  # Extract tars merging manifests
+  manifest_path = os.path.join(output_dir, 'meta', 'manifest.json')
+  merged_manifest = None
+  parts = set()
+  for sdk_tar in sdk_tars:
+    tarfile.open(sdk_tar, mode='r:gz').extractall(path=output_dir)
+
+    # Merge the manifest ensuring that we don't have duplicate entries.
+    if os.path.isfile(manifest_path):
+      manifest = json.load(open(manifest_path))
+      os.remove(manifest_path)
+      if not merged_manifest:
+        merged_manifest = manifest
+      else:
+        for part in manifest['parts']:
+          if part['meta'] not in parts:
+            parts.add(part['meta'])
+            merged_manifest['parts'].append(part)
+
+  # Write merged manifest file.
+  with open(manifest_path, 'w') as manifest_file:
+    json.dump(merged_manifest, manifest_file)
 
   print 'Hashing sysroot...'
   # Hash the sysroot to catch updates to the headers, but don't hash the whole

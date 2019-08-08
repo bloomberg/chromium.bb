@@ -4,6 +4,9 @@
 
 #include "chrome/browser/policy/policy_conversions.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
@@ -12,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,7 +58,7 @@ namespace {
 // Maps known policy names to their schema. If a policy is not present, it is
 // not known (either through policy_templates.json or through an extenion's
 // managed storage schema).
-using PolicyToSchemaMap = base::flat_map<std::string, policy::Schema>;
+using PolicyToSchemaMap = base::flat_map<std::string, Schema>;
 
 // Utility function that returns a JSON serialization of the given |dict|.
 std::string DictionaryToJSONString(const Value& dict, bool is_pretty_print) {
@@ -72,7 +74,7 @@ std::string DictionaryToJSONString(const Value& dict, bool is_pretty_print) {
 // i18n_template.js will display.
 Value CopyAndMaybeConvert(const Value& value,
                           bool convert_values,
-                          const base::Optional<policy::Schema>& schema,
+                          const base::Optional<Schema>& schema,
                           bool is_pretty_print) {
   Value value_copy = value.Clone();
   if (schema.has_value())
@@ -99,13 +101,13 @@ Value CopyAndMaybeConvert(const Value& value,
 }
 
 PolicyService* GetPolicyService(content::BrowserContext* context) {
-  return ProfilePolicyConnectorFactory::GetForBrowserContext(context)
-      ->policy_service();
+  Profile* profile = Profile::FromBrowserContext(context);
+  return profile->GetProfilePolicyConnector()->policy_service();
 }
 
 // Returns the Schema for |policy_name| if that policy is known. If the policy
 // is unknown, returns |base::nullopt|.
-base::Optional<policy::Schema> GetKnownPolicySchema(
+base::Optional<Schema> GetKnownPolicySchema(
     const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
     const std::string& policy_name) {
   if (!known_policy_schemas.has_value())
@@ -124,27 +126,26 @@ base::Optional<policy::Schema> GetKnownPolicySchema(
 // |known_policy_schemas| is an unknown policy.
 Value GetPolicyValue(
     const std::string& policy_name,
-    const policy::PolicyMap::Entry& policy,
-    policy::PolicyErrorMap* errors,
+    const PolicyMap::Entry& policy,
+    PolicyErrorMap* errors,
     bool convert_values,
     const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
     bool is_pretty_print) {
-  base::Optional<policy::Schema> known_policy_schema =
+  base::Optional<Schema> known_policy_schema =
       GetKnownPolicySchema(known_policy_schemas, policy_name);
   Value value(Value::Type::DICTIONARY);
   value.SetKey("value",
                CopyAndMaybeConvert(*policy.value, convert_values,
                                    known_policy_schema, is_pretty_print));
-  value.SetKey(
-      "scope",
-      Value((policy.scope == policy::POLICY_SCOPE_USER)
-                ? "user"
-                : ((policy.scope == policy::POLICY_SCOPE_MACHINE) ? "machine"
-                                                                  : "merged")));
-  value.SetKey("level", Value((policy.level == policy::POLICY_LEVEL_RECOMMENDED)
-                                  ? "recommended"
-                                  : "mandatory"));
-  value.SetKey("source", Value(kPolicySources[policy.source].key));
+  value.SetKey("scope", Value((policy.scope == POLICY_SCOPE_USER)
+                                  ? "user"
+                                  : ((policy.scope == POLICY_SCOPE_MACHINE)
+                                         ? "machine"
+                                         : "merged")));
+  value.SetKey("level",
+               Value((policy.level == POLICY_LEVEL_RECOMMENDED) ? "recommended"
+                                                                : "mandatory"));
+  value.SetKey("source", Value(kPolicySources[policy.source].name));
   base::string16 error;
   if (!known_policy_schema.has_value()) {
     // We don't know what this policy is. This is an important error to
@@ -152,14 +153,29 @@ Value GetPolicyValue(
     error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
   } else {
     // The PolicyMap contains errors about retrieving the policy, while the
-    // PolicyErrorMap contains validation errors. Give priority to PolicyMap.
-    error = policy.GetLocalizedErrors(
+    // PolicyErrorMap contains validation errors. Concat the errors.
+    auto policy_map_errors = policy.GetLocalizedErrors(
         base::BindRepeating(&l10n_util::GetStringUTF16));
-    if (error.empty())
-      error = errors->GetErrors(policy_name);
+    auto error_map_errors = errors->GetErrors(policy_name);
+    if (policy_map_errors.empty())
+      error = error_map_errors;
+    else if (error_map_errors.empty())
+      error = policy_map_errors;
+    else
+      error =
+          base::JoinString({policy_map_errors, errors->GetErrors(policy_name)},
+                           base::ASCIIToUTF16("\n"));
   }
   if (!error.empty())
     value.SetKey("error", Value(error));
+
+  base::string16 warning = policy.GetLocalizedWarnings(
+      base::BindRepeating(&l10n_util::GetStringUTF16));
+  if (!warning.empty())
+    value.SetKey("warning", Value(warning));
+
+  if (policy.IsBlockedOrIgnored())
+    value.SetBoolKey("ignored", true);
 
   if (!policy.conflicts.empty()) {
     Value conflict_values(Value::Type::LIST);
@@ -183,8 +199,8 @@ Value GetPolicyValue(
 // policy namespace of |map|. A policy in |map| but without an entry
 // |known_policy_schemas| is an unknown policy.
 void GetPolicyValues(
-    const policy::PolicyMap& map,
-    policy::PolicyErrorMap* errors,
+    const PolicyMap& map,
+    PolicyErrorMap* errors,
     bool with_user_policies,
     bool convert_values,
     const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
@@ -194,7 +210,7 @@ void GetPolicyValues(
   for (const auto& entry : map) {
     const std::string& policy_name = entry.first;
     const PolicyMap::Entry& policy = entry.second;
-    if (policy.scope == policy::POLICY_SCOPE_USER && !with_user_policies)
+    if (policy.scope == POLICY_SCOPE_USER && !with_user_policies)
       continue;
     base::Value value =
         GetPolicyValue(policy_name, policy, errors, convert_values,
@@ -204,7 +220,7 @@ void GetPolicyValues(
 }
 
 base::Optional<PolicyToSchemaMap> GetKnownPolicies(
-    const scoped_refptr<policy::SchemaMap> schema_map,
+    const scoped_refptr<SchemaMap> schema_map,
     const PolicyNamespace& policy_namespace,
     bool is_pretty_print) {
   const Schema* schema = schema_map->GetSchema(policy_namespace);
@@ -216,9 +232,8 @@ base::Optional<PolicyToSchemaMap> GetKnownPolicies(
   // |flat_map|) from that. The reason is that insertion into a |flat_map| is
   // O(n), which would make the loop O(n^2), but constructing from a
   // pre-populated vector is less expensive.
-  std::vector<std::pair<std::string, policy::Schema>> policy_to_schema_entries;
-  for (policy::Schema::Iterator it = schema->GetPropertiesIterator();
-       !it.IsAtEnd(); it.Advance()) {
+  std::vector<std::pair<std::string, Schema>> policy_to_schema_entries;
+  for (auto it = schema->GetPropertiesIterator(); !it.IsAtEnd(); it.Advance()) {
     policy_to_schema_entries.push_back(std::make_pair(it.key(), it.schema()));
   }
   return PolicyToSchemaMap(std::move(policy_to_schema_entries));
@@ -229,8 +244,8 @@ void GetChromePolicyValues(content::BrowserContext* context,
                            bool convert_values,
                            Value* values,
                            bool is_pretty_print) {
-  policy::PolicyService* policy_service = GetPolicyService(context);
-  policy::PolicyMap map;
+  PolicyService* policy_service = GetPolicyService(context);
+  PolicyMap map;
 
   Profile* profile = Profile::FromBrowserContext(context);
   auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
@@ -239,20 +254,20 @@ void GetChromePolicyValues(content::BrowserContext* context,
     return;
   }
 
-  const scoped_refptr<policy::SchemaMap> schema_map =
+  const scoped_refptr<SchemaMap> schema_map =
       schema_registry_service->registry()->schema_map();
 
   PolicyNamespace policy_namespace =
-      PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string());
 
   // Make a copy that can be modified, since some policy values are modified
   // before being displayed.
   map.CopyFrom(policy_service->GetPolicies(policy_namespace));
 
   // Get a list of all the errors in the policy values.
-  const policy::ConfigurationPolicyHandlerList* handler_list =
+  const ConfigurationPolicyHandlerList* handler_list =
       g_browser_process->browser_policy_connector()->GetHandlerList();
-  policy::PolicyErrorMap errors;
+  PolicyErrorMap errors;
   handler_list->ApplyPolicySettings(map, NULL, &errors);
 
   // Convert dictionary values to strings for display.
@@ -306,11 +321,11 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
     auto* cloud_policy_store = cloud_policy_core->store();
     DCHECK(cloud_policy_store);
 
-    const scoped_refptr<policy::SchemaMap> schema_map =
+    const scoped_refptr<SchemaMap> schema_map =
         device_local_account_policy_broker->schema_registry()->schema_map();
 
     PolicyNamespace policy_namespace =
-        PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+        PolicyNamespace(POLICY_DOMAIN_CHROME, std::string());
 
     // Make a copy that can be modified, since some policy values are modified
     // before being displayed.
@@ -318,9 +333,9 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
     map.CopyFrom(cloud_policy_store->policy_map());
 
     // Get a list of all the errors in the policy values.
-    const policy::ConfigurationPolicyHandlerList* handler_list =
+    const ConfigurationPolicyHandlerList* handler_list =
         connector->GetHandlerList();
-    policy::PolicyErrorMap errors;
+    PolicyErrorMap errors;
     handler_list->ApplyPolicySettings(map, NULL, &errors);
 
     // Convert dictionary values to strings for display.
@@ -348,11 +363,12 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
 
 }  // namespace
 
-const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
+const LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
     {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
     {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
     {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
-    {"sourcePublicSessionOverride", IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE},
+    {"sourceDeviceLocalAccountOverride",
+     IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
     {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
     {"sourcePriorityCloud", IDS_POLICY_SOURCE_CLOUD},
     {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
@@ -392,7 +408,7 @@ Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
     LOG(ERROR) << "Can not dump extension policies, no schema registry service";
     return all_policies;
   }
-  const scoped_refptr<policy::SchemaMap> schema_map =
+  const scoped_refptr<SchemaMap> schema_map =
       schema_registry_service->registry()->schema_map();
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
@@ -403,9 +419,9 @@ Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
     }
 
     Value extension_policies(Value::Type::DICTIONARY);
-    policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
-        policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
-    policy::PolicyErrorMap empty_error_map;
+    PolicyNamespace policy_namespace =
+        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension->id());
+    PolicyErrorMap empty_error_map;
     GetPolicyValues(
         GetPolicyService(context)->GetPolicies(policy_namespace),
         &empty_error_map, with_user_policies, convert_values,
@@ -462,7 +478,7 @@ Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
     LOG(ERROR) << "Can not dump extension policies, no schema registry service";
     return all_policies;
   }
-  const scoped_refptr<policy::SchemaMap> schema_map =
+  const scoped_refptr<SchemaMap> schema_map =
       schema_registry_service->registry()->schema_map();
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
@@ -471,9 +487,9 @@ Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
             extensions::manifest_keys::kStorageManagedSchema))
       continue;
     Value extension_policies(Value::Type::DICTIONARY);
-    policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
-        policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
-    policy::PolicyErrorMap empty_error_map;
+    PolicyNamespace policy_namespace =
+        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension->id());
+    PolicyErrorMap empty_error_map;
     GetPolicyValues(
         GetPolicyService(context)->GetPolicies(policy_namespace),
         &empty_error_map, with_user_policies, convert_values,
@@ -552,7 +568,7 @@ std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
                                      bool with_user_policies,
                                      bool with_device_data,
                                      bool is_pretty_print) {
-  Value all_policies = policy::GetAllPolicyValuesAsDictionary(
+  Value all_policies = GetAllPolicyValuesAsDictionary(
       context, with_user_policies, false /* convert_values */, with_device_data,
       is_pretty_print);
   if (with_device_data) {

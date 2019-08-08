@@ -83,6 +83,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
  private:
   using OriginGroup = std::pair<url::Origin, std::string>;
   using OriginEndpoint = std::pair<url::Origin, GURL>;
+  using OriginGroupEndpoint = std::tuple<url::Origin, std::string, GURL>;
 
   class Delivery {
    public:
@@ -92,16 +93,19 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
     ~Delivery() = default;
 
-    void AddReports(const ReportingClient* client,
+    void AddReports(const ReportingEndpoint& endpoint,
                     const std::vector<const ReportingReport*>& to_add) {
-      reports_per_client[client->origin][client->endpoint] += to_add.size();
+      OriginGroupEndpoint key =
+          std::make_tuple(endpoint.group_key.origin,
+                          endpoint.group_key.group_name, endpoint.info.url);
+      reports_per_endpoint[key] += to_add.size();
       reports.insert(reports.end(), to_add.begin(), to_add.end());
     }
 
     const url::Origin report_origin;
     const GURL endpoint;
     std::vector<const ReportingReport*> reports;
-    std::map<url::Origin, std::map<GURL, int>> reports_per_client;
+    std::map<OriginGroupEndpoint, int> reports_per_endpoint;
   };
 
   bool CacheHasReports() {
@@ -169,13 +173,14 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       if (base::ContainsKey(pending_origin_groups_, origin_group))
         continue;
 
-      const ReportingClient* client =
-          endpoint_manager()->FindClientForOriginAndGroup(report_origin, group);
-      if (client == nullptr) {
+      const ReportingEndpoint endpoint =
+          endpoint_manager()->FindEndpointForDelivery(report_origin, group);
+      if (!endpoint) {
+        // TODO(chlily): Remove reports for which there are no valid
+        // delivery endpoints.
         continue;
       }
-      cache()->MarkClientUsed(client);
-      OriginEndpoint report_origin_endpoint(report_origin, client->endpoint);
+      OriginEndpoint report_origin_endpoint(report_origin, endpoint.info.url);
 
       Delivery* delivery;
       auto delivery_it = deliveries.find(report_origin_endpoint);
@@ -187,7 +192,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
         delivery = delivery_it->second.get();
       }
 
-      delivery->AddReports(client, it.second);
+      delivery->AddReports(endpoint, it.second);
       pending_origin_groups_.insert(origin_group);
     }
 
@@ -226,15 +231,14 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void OnUploadComplete(std::unique_ptr<Delivery> delivery,
                         ReportingUploader::Outcome outcome) {
-    for (const auto& origin_and_pair : delivery->reports_per_client) {
-      const url::Origin& client_origin = origin_and_pair.first;
-      for (const auto& endpoint_and_count : origin_and_pair.second) {
-        const GURL& endpoint = endpoint_and_count.first;
-        int report_count = endpoint_and_count.second;
-        cache()->IncrementEndpointDeliveries(
-            client_origin, endpoint, report_count,
-            outcome == ReportingUploader::Outcome::SUCCESS);
-      }
+    for (const auto& endpoint_and_count : delivery->reports_per_endpoint) {
+      const url::Origin& origin = std::get<0>(endpoint_and_count.first);
+      const std::string& group = std::get<1>(endpoint_and_count.first);
+      const GURL& endpoint = std::get<2>(endpoint_and_count.first);
+      int report_count = endpoint_and_count.second;
+      cache()->IncrementEndpointDeliveries(
+          origin, group, endpoint, report_count,
+          outcome == ReportingUploader::Outcome::SUCCESS);
     }
 
     if (outcome == ReportingUploader::Outcome::SUCCESS) {
@@ -247,7 +251,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     }
 
     if (outcome == ReportingUploader::Outcome::REMOVE_ENDPOINT)
-      cache()->RemoveClientsForEndpoint(delivery->endpoint);
+      cache()->RemoveEndpointsForUrl(delivery->endpoint);
 
     for (const ReportingReport* report : delivery->reports) {
       pending_origin_groups_.erase(

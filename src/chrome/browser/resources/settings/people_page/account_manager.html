@@ -24,6 +24,16 @@
         width: 40px;
       }
 
+      .account-list-item {
+        padding-inline-end: 8px;
+        padding-inline-start: 0;
+      }
+
+      .account-manager-description {
+        /* Up to 70 characters. */
+        max-width: 35em;
+      }
+
       #outer {
         margin-inline-end: var(--cr-section-padding);
         margin-inline-start: 60px;
@@ -34,7 +44,11 @@
       }
 
       #account-list-header {
-        padding-bottom: 1em;
+        padding-bottom: 8px;
+      }
+
+      #add-account-button {
+        margin-top: 16px;
       }
 
       #add-account-icon {
@@ -45,10 +59,19 @@
         width: 24px;
       }
 
+      .signed-out-text {
+        color: var(--google-red-600);
+      }
+
       .error-badge {
+        background: url(chrome://resources/images/error_badge.svg)
+            center / cover no-repeat;
+        display: block;
+        height: 20px;
         left: 60%;
         position: relative;
         top: 60%;
+        width: 20px;
       }
 
       :host-context([dir='rtl']) .error-badge {
@@ -61,7 +84,14 @@
       }
     </style>
 
-    <div class="settings-box first">$i18n{accountManagerDescription}</div>
+    <div class="settings-box first">
+      <span class="account-manager-description">
+        $i18n{accountManagerDescription}
+        <a href="$i18nRaw{accountManagerLearnMoreUrl}" target="_blank">
+          $i18n{learnMore}
+        </a>
+      </span>
+    </div>
 
     <div class="settings-box first">
       <div id="account-list-header" class="flex">
@@ -80,13 +110,12 @@
 
     <div id="outer" class="layout vertical nowrap">
       <template is="dom-repeat" id="account-list" items="[[accounts_]]">
-        <div class="settings-box">
+        <div class="settings-box account-list-item">
 
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
             <template is="dom-if" if="[[!item.isSignedIn]]">
-              <img class="error-badge"
-                  src="chrome://resources/images/error_badge.svg">
+              <span class="error-badge"></span>
             </template>
           </div>
 
@@ -98,8 +127,8 @@
               </template>
               <!-- Else, display a re-authentication message -->
               <template is="dom-if" if="[[!item.isSignedIn]]">
-                <span style="color:red">
-                  $i18n{accountManagerSignedOutAccountName}
+                <span class="signed-out-text">
+                  [[getAccountManagerSignedOutName_(item.unmigrated)]]
                 </span>
               </template>
 
@@ -111,7 +140,7 @@
               if="[[shouldShowReauthenticationButton_(item)]]">
             <paper-button class="reauth-button"
                 on-click="onReauthenticationTap_">
-              $i18n{accountManagerReauthenticationLabel}
+              [[getAccountManagerSignedOutLabel_(item.unmigrated)]]
             </paper-button>
           </template>
 
@@ -124,7 +153,7 @@
           <!-- Else, display a hamburger menu for removing the account -->
           <template is="dom-if" if="[[!item.isDeviceAccount]]">
             <cr-icon-button class="icon-more-vert" title="$i18n{moreActions}"
-                  on-click="onAccountActionsMenuButtonTap_"></cr-icon-button>
+                on-click="onAccountActionsMenuButtonTap_"></cr-icon-button>
           </template>
         </div>
       </template>
@@ -132,8 +161,7 @@
       <div class="clear settings-box"></div>
 
       <cr-action-menu>
-        <button class="dropdown-item"
-            on-click="onRemoveAccountTap_">
+        <button class="dropdown-item" on-click="onRemoveAccountTap_">
           $i18n{removeAccountLabel}
         </button>
       </cr-action-menu>

@@ -5,8 +5,22 @@
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
+#include "third_party/inspector_protocol/encoding/encoding.h"
 
 namespace blink {
+namespace {
+using ::inspector_protocol_encoding::span;
+using ::inspector_protocol_encoding::SpanFrom;
+using ::inspector_protocol_encoding::cbor::CBORTokenizer;
+using ::inspector_protocol_encoding::cbor::CBORTokenTag;
+using ::inspector_protocol_encoding::cbor::EncodeDouble;
+using ::inspector_protocol_encoding::cbor::EncodeFalse;
+using ::inspector_protocol_encoding::cbor::EncodeFromLatin1;
+using ::inspector_protocol_encoding::cbor::EncodeFromUTF16;
+using ::inspector_protocol_encoding::cbor::EncodeInt32;
+using ::inspector_protocol_encoding::cbor::EncodeNull;
+using ::inspector_protocol_encoding::cbor::EncodeTrue;
+}  // namespace
 
 //
 // InspectorSessionState
@@ -22,8 +36,14 @@ const mojom::blink::DevToolsSessionState* InspectorSessionState::ReattachState()
 }
 
 void InspectorSessionState::EnqueueUpdate(const WTF::String& key,
-                                          const WTF::String& value) {
-  updates_->entries.Set(key, value);
+                                          const std::vector<uint8_t>* value) {
+  base::Optional<WTF::Vector<uint8_t>> updated_value;
+  if (value) {
+    WTF::Vector<uint8_t> payload;
+    payload.Append(value->data(), value->size());
+    updated_value = std::move(payload);
+  }
+  updates_->entries.Set(key, std::move(updated_value));
 }
 
 mojom::blink::DevToolsSessionStatePtr InspectorSessionState::TakeUpdates() {
@@ -36,56 +56,101 @@ mojom::blink::DevToolsSessionStatePtr InspectorSessionState::TakeUpdates() {
 // Encoding / Decoding routines.
 //
 /*static*/
-void InspectorAgentState::EncodeToJSON(bool v, WTF::String* out) {
-  std::unique_ptr<protocol::FundamentalValue> value =
-      blink::protocol::FundamentalValue::create(v);
-  *out = value->toJSONString();
+void InspectorAgentState::Serialize(bool v, std::vector<uint8_t>* out) {
+  out->push_back(v ? EncodeTrue() : EncodeFalse());
 }
 
 /*static*/
-bool InspectorAgentState::DecodeFromJSON(const WTF::String& in, bool* v) {
-  std::unique_ptr<protocol::Value> parsed = protocol::StringUtil::parseJSON(in);
-  return parsed->asBoolean(v);
+bool InspectorAgentState::Deserialize(span<uint8_t> in, bool* v) {
+  CBORTokenizer tokenizer(in);
+  if (tokenizer.TokenTag() == CBORTokenTag::TRUE_VALUE) {
+    *v = true;
+    return true;
+  }
+  if (tokenizer.TokenTag() == CBORTokenTag::FALSE_VALUE) {
+    *v = false;
+    return true;
+  }
+  return false;
 }
 
 /*static*/
-void InspectorAgentState::EncodeToJSON(int32_t v, WTF::String* out) {
-  std::unique_ptr<protocol::FundamentalValue> value =
-      blink::protocol::FundamentalValue::create(v);
-  *out = value->toJSONString();
+void InspectorAgentState::Serialize(int32_t v, std::vector<uint8_t>* out) {
+  ::inspector_protocol_encoding::cbor::EncodeInt32(v, out);
 }
 
 /*static*/
-bool InspectorAgentState::DecodeFromJSON(const WTF::String& in, int32_t* v) {
-  std::unique_ptr<protocol::Value> parsed = protocol::StringUtil::parseJSON(in);
-  return parsed->asInteger(v);
+bool InspectorAgentState::Deserialize(span<uint8_t> in, int32_t* v) {
+  CBORTokenizer tokenizer(in);
+  if (tokenizer.TokenTag() == CBORTokenTag::INT32) {
+    *v = tokenizer.GetInt32();
+    return true;
+  }
+  return false;
 }
 
 /*static*/
-void InspectorAgentState::EncodeToJSON(double v, WTF::String* out) {
-  std::unique_ptr<protocol::FundamentalValue> value =
-      blink::protocol::FundamentalValue::create(v);
-  *out = value->toJSONString();
+void InspectorAgentState::Serialize(double v, std::vector<uint8_t>* out) {
+  ::inspector_protocol_encoding::cbor::EncodeDouble(v, out);
 }
 
 /*static*/
-bool InspectorAgentState::DecodeFromJSON(const WTF::String& in, double* v) {
-  std::unique_ptr<protocol::Value> parsed = protocol::StringUtil::parseJSON(in);
-  return parsed->asDouble(v);
+bool InspectorAgentState::Deserialize(span<uint8_t> in, double* v) {
+  CBORTokenizer tokenizer(in);
+  if (tokenizer.TokenTag() == CBORTokenTag::DOUBLE) {
+    *v = tokenizer.GetDouble();
+    return true;
+  }
+  return false;
 }
 
 /*static*/
-void InspectorAgentState::EncodeToJSON(const WTF::String& v, WTF::String* out) {
-  std::unique_ptr<protocol::StringValue> value =
-      protocol::StringValue::create(v);
-  *out = value->toJSONString();
+void InspectorAgentState::Serialize(const WTF::String& v,
+                                    std::vector<uint8_t>* out) {
+  if (v.Is8Bit()) {
+    auto span8 = v.Span8();
+    EncodeFromLatin1(span<uint8_t>(span8.data(), span8.size()), out);
+  } else {
+    auto span16 = v.Span16();
+    EncodeFromUTF16(
+        span<uint16_t>(reinterpret_cast<const uint16_t*>(span16.data()),
+                       span16.size()),
+        out);
+  }
 }
 
 /*static*/
-bool InspectorAgentState::DecodeFromJSON(const WTF::String& in,
-                                         WTF::String* v) {
-  std::unique_ptr<protocol::Value> parsed = protocol::StringUtil::parseJSON(in);
-  return parsed->asString(v);
+bool InspectorAgentState::Deserialize(span<uint8_t> in, WTF::String* v) {
+  CBORTokenizer tokenizer(in);
+  if (tokenizer.TokenTag() == CBORTokenTag::STRING8) {
+    *v = WTF::String(
+        reinterpret_cast<const char*>(tokenizer.GetString8().data()),
+        static_cast<size_t>(tokenizer.GetString8().size()));
+    return true;
+  }
+  if (tokenizer.TokenTag() == CBORTokenTag::STRING16) {
+    *v = WTF::String(
+        reinterpret_cast<const UChar*>(tokenizer.GetString16WireRep().data()),
+        tokenizer.GetString16WireRep().size() / 2);
+    return true;
+  }
+  return false;
+}
+
+/*static*/
+void InspectorAgentState::Serialize(const std::vector<uint8_t>& v,
+                                    std::vector<uint8_t>* out) {
+  // We could CBOR encode this, but since we never look at the contents
+  // anyway (except for decoding just below), we just cheat and use the
+  // blob directly.
+  out->insert(out->end(), v.begin(), v.end());
+}
+
+/*static*/
+bool InspectorAgentState::Deserialize(span<uint8_t> in,
+                                      std::vector<uint8_t>* v) {
+  v->insert(v->end(), in.begin(), in.end());
+  return true;
 }
 
 //

@@ -40,6 +40,7 @@
 #include "ui/gfx/render_text_harfbuzz.h"
 #include "ui/gfx/render_text_test_api.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
 #if defined(OS_WIN)
@@ -50,6 +51,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
+using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
 
@@ -72,6 +74,19 @@ enum {
   STRIKE_MASK = 1 << TEXT_STYLE_STRIKE,
   UNDERLINE_MASK = 1 << TEXT_STYLE_UNDERLINE,
 };
+
+bool IsFontsSmoothingEnabled() {
+#if defined(OS_WIN)
+  BOOL antialiasing = TRUE;
+  BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+  if (result == FALSE) {
+    ADD_FAILURE() << "Failed to retrieve font aliasing configuration.";
+  }
+  return antialiasing;
+#else
+  return true;
+#endif
+}
 
 // Checks whether |range| contains |index|. This is not the same as calling
 // range.Contains(Range(index)), which returns true if |index| == |range.end()|.
@@ -106,6 +121,28 @@ void RunMoveCursorTestAndClearExpectations(RenderText* render_text,
 
     render_text->MoveCursor(break_type, direction, selection_behavior);
     EXPECT_EQ(expected->at(i), render_text->selection());
+  }
+  expected->clear();
+}
+
+// Execute MoveCursor on the given |render_text| instance for the given
+// arguments and verify the line matches |expected|. Also, clears the
+// expectations.
+void RunMoveCursorTestAndClearExpectations(RenderText* render_text,
+                                           BreakType break_type,
+                                           VisualCursorDirection direction,
+                                           SelectionBehavior selection_behavior,
+                                           std::vector<size_t>* expected) {
+  int case_index = 0;
+  for (auto expected_line : *expected) {
+    SCOPED_TRACE(testing::Message()
+                 << "Text: " << render_text->text() << " BreakType: "
+                 << break_type << " VisualCursorDirection: " << direction
+                 << " SelectionBehavior: " << selection_behavior
+                 << " Case: " << case_index++);
+    render_text->MoveCursor(break_type, direction, selection_behavior);
+    EXPECT_EQ(expected_line, render_text->GetLineContainingCaret(
+                                 render_text->selection_model()));
   }
   expected->clear();
 }
@@ -400,6 +437,12 @@ class RenderTextTest : public testing::Test {
     test_api_.reset(new test::RenderTextTestApi(GetRenderText()));
   }
 
+  void ResetCursorX() { test_api()->reset_cached_cursor_x(); }
+
+  int GetLineContainingYCoord(float text_y) {
+    return test_api()->GetLineContainingYCoord(text_y);
+  }
+
   RenderTextHarfBuzz* GetRenderText() { return render_text_.get(); }
 
   Rect GetSubstringBoundsUnion(const Range& range) {
@@ -476,6 +519,11 @@ class RenderTextTest : public testing::Test {
 
   int GetCursorYForTesting(int line_num = 0) {
     return GetRenderText()->GetLineOffset(line_num).y() + 1;
+  }
+
+  size_t GetLineContainingCaret() {
+    return GetRenderText()->GetLineContainingCaret(
+        GetRenderText()->selection_model());
   }
 
   // Do not use this function to ensure layout. This is only used to run a
@@ -741,7 +789,7 @@ TEST_F(RenderTextTest, ObscuredText) {
 
   // GetCursorSpan() should yield the entire string bounds for text index 0.
   EXPECT_EQ(render_text->GetStringSize().width(),
-            static_cast<int>(render_text->GetCursorSpan({0, 1}).length()));
+            std::ceil(render_text->GetCursorSpan({0, 1}).length()));
 
   // Cursoring is independent of underlying characters when text is obscured.
   const char* const texts[] = {
@@ -945,7 +993,7 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
   const base::char16 elided_obscured_text[] = {
       RenderText::kPasswordReplacementChar,
-      RenderText::kPasswordReplacementChar, 0x2026, 0};
+      RenderText::kPasswordReplacementChar, kEllipsisUTF16[0], 0};
   expected_render_text->SetText(elided_obscured_text);
 
   RenderText* render_text = GetRenderText();
@@ -982,7 +1030,6 @@ TEST_F(RenderTextTest, MultilineElide) {
   render_text->GetStringSize();
   EXPECT_EQ(input_text, render_text->GetDisplayText());
 
-  const base::char16 kEllipsisUTF16[] = {0x2026, 0};
   base::string16 actual_text;
   // Try widening the space gradually, one pixel at a time, trying
   // to trigger a failure in layout. There was an issue where, right at
@@ -1026,7 +1073,6 @@ TEST_F(RenderTextTest, MultilineElideWrap) {
 
   render_text->SetDisplayRect(Rect(30, 0));
 
-  const base::char16 kEllipsisUTF16[] = {0x2026, 0};
   base::string16 actual_text;
 
   // ELIDE_LONG_WORDS doesn't make sense in multiline, and triggers assertion
@@ -1082,6 +1128,60 @@ TEST_F(RenderTextTest, MultilineElideWrapStress) {
       EXPECT_LE(render_text->GetNumLines(), 3U);
     }
   }
+}
+
+TEST_F(RenderTextTest, MultilineElideRTL) {
+  RenderText* render_text = GetRenderText();
+  SetGlyphWidth(5);
+
+  base::string16 input_text(UTF8ToUTF16("זהו המסר של ההודעה"));
+  render_text->SetText(input_text);
+  render_text->SetCursorEnabled(false);
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(1);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetDisplayRect(Rect(45, 0));
+  render_text->GetStringSize();
+
+  EXPECT_EQ(render_text->GetDisplayText(),
+            input_text.substr(0, 8) + base::string16(kEllipsisUTF16));
+  EXPECT_EQ(render_text->GetNumLines(), 1U);
+}
+
+TEST_F(RenderTextTest, MultilineElideBiDi) {
+  RenderText* render_text = GetRenderText();
+  SetGlyphWidth(5);
+
+  base::string16 input_text(UTF8ToUTF16("אa\nbcdבגדהefg\nhו"));
+  render_text->SetText(input_text);
+  render_text->SetCursorEnabled(false);
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(2);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetDisplayRect(Rect(30, 0));
+  render_text->GetStringSize();
+
+  EXPECT_EQ(render_text->GetDisplayText(),
+            UTF8ToUTF16("אa\nbcdבג") + base::string16(kEllipsisUTF16));
+  EXPECT_EQ(render_text->GetNumLines(), 2U);
+}
+
+TEST_F(RenderTextTest, MultilineElideLinebreak) {
+  RenderText* render_text = GetRenderText();
+  SetGlyphWidth(5);
+
+  base::string16 input_text(UTF8ToUTF16("hello\nworld"));
+  render_text->SetText(input_text);
+  render_text->SetCursorEnabled(false);
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(1);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetDisplayRect(Rect(100, 0));
+  render_text->GetStringSize();
+
+  EXPECT_EQ(render_text->GetDisplayText(),
+            input_text.substr(0, 5) + base::string16(kEllipsisUTF16));
+  EXPECT_EQ(render_text->GetNumLines(), 1U);
 }
 
 TEST_F(RenderTextTest, ElidedStyledTextRtl) {
@@ -1189,7 +1289,8 @@ TEST_F(RenderTextTest, TruncatedObscuredText) {
   render_text->SetObscured(true);
   render_text->SetText(UTF8ToUTF16("abcdef"));
   EXPECT_EQ(UTF8ToUTF16("abcdef"), render_text->text());
-  EXPECT_EQ(GetObscuredString(3, 2, 0x2026), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(3, 2, kEllipsisUTF16[0]),
+            render_text->GetDisplayText());
 }
 
 TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
@@ -1506,77 +1607,218 @@ TEST_F(RenderTextTest, MoveCursor_Line) {
   render_text->SetText(UTF8ToUTF16("123 456 789"));
   std::vector<Range> expected;
 
+  for (auto break_type : {LINE_BREAK, FIELD_BREAK}) {
+    // SELECTION_NONE.
+    render_text->SelectRange(Range(6));
+
+    // Move right twice.
+    expected.push_back(Range(11));
+    expected.push_back(Range(11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_NONE, &expected);
+
+    // Move left twice.
+    expected.push_back(Range(0));
+    expected.push_back(Range(0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_NONE, &expected);
+
+    // SELECTION_CARET.
+    render_text->SelectRange(Range(6));
+
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_CARET, &expected);
+
+    // Move left twice.
+    expected.push_back(Range(6));
+    expected.push_back(Range(6, 0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_CARET, &expected);
+
+    // Move right.
+    expected.push_back(Range(6));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_CARET, &expected);
+
+    // SELECTION_RETAIN.
+    render_text->SelectRange(Range(6));
+
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_RETAIN, &expected);
+
+    // Move left twice.
+    expected.push_back(Range(6, 0));
+    expected.push_back(Range(6, 0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_RETAIN, &expected);
+
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_RETAIN, &expected);
+
+    // SELECTION_EXTEND.
+    render_text->SelectRange(Range(6));
+
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_EXTEND, &expected);
+
+    // Move left twice.
+    expected.push_back(Range(11, 0));
+    expected.push_back(Range(11, 0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_EXTEND, &expected);
+
+    // Move right.
+    expected.push_back(Range(0, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_EXTEND, &expected);
+  }
+}
+
+TEST_F(RenderTextTest, MoveCursor_UpDown) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(45, 1000));
+  render_text->SetMultiline(true);
+
+  std::vector<size_t> expected_lines;
+  std::vector<Range> expected_range;
+  for (auto text :
+       {ASCIIToUTF16("123 456 123 456 "), UTF8ToUTF16("אבג דהו זחט זחט ")}) {
+    render_text->SetText(text);
+    EXPECT_EQ(2U, render_text->GetNumLines());
+
+    // SELECTION_NONE.
+    render_text->SelectRange(Range(0));
+    ResetCursorX();
+
+    // Move down twice.
+    expected_lines.push_back(1);
+    expected_lines.push_back(1);
+    RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                          CURSOR_DOWN, SELECTION_NONE,
+                                          &expected_lines);
+
+    // Move up twice.
+    expected_lines.push_back(0);
+    expected_lines.push_back(0);
+    RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                          CURSOR_UP, SELECTION_NONE,
+                                          &expected_lines);
+
+    // SELECTION_CARET.
+    render_text->SelectRange(Range(0));
+    ResetCursorX();
+
+    // Move down twice.
+    expected_range.push_back(Range(0, 8));
+    expected_range.push_back(Range(0, 16));
+    RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                          CURSOR_DOWN, SELECTION_CARET,
+                                          &expected_range);
+
+    // Move up twice.
+    expected_range.push_back(Range(0, 8));
+    expected_range.push_back(Range(0));
+    RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                          CURSOR_UP, SELECTION_CARET,
+                                          &expected_range);
+  }
+}
+
+TEST_F(RenderTextTest, MoveCursor_UpDown_Newline) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("123 456\n123 456 "));
+  render_text->SetDisplayRect(Rect(100, 1000));
+  render_text->SetMultiline(true);
+  EXPECT_EQ(2U, render_text->GetNumLines());
+
+  std::vector<size_t> expected_lines;
+  std::vector<Range> expected_range;
+
   // SELECTION_NONE.
-  render_text->SelectRange(Range(6));
+  render_text->SelectRange(Range(0));
+  ResetCursorX();
 
-  // Move right twice.
-  expected.push_back(Range(11));
-  expected.push_back(Range(11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_NONE, &expected);
+  // Move down twice.
+  expected_lines.push_back(1);
+  expected_lines.push_back(1);
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_NONE,
+                                        &expected_lines);
 
-  // Move left twice.
-  expected.push_back(Range(0));
-  expected.push_back(Range(0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_NONE, &expected);
+  // Move up twice.
+  expected_lines.push_back(0);
+  expected_lines.push_back(0);
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK, CURSOR_UP,
+                                        SELECTION_NONE, &expected_lines);
 
   // SELECTION_CARET.
-  render_text->SelectRange(Range(6));
+  render_text->SelectRange(Range(0));
+  ResetCursorX();
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_CARET, &expected);
+  // Move down twice.
+  expected_range.push_back(Range(0, 8));
+  expected_range.push_back(Range(0, 16));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_CARET,
+                                        &expected_range);
 
-  // Move left twice.
-  expected.push_back(Range(6));
-  expected.push_back(Range(6, 0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_CARET, &expected);
+  // Move up twice.
+  expected_range.push_back(Range(0, 7));
+  expected_range.push_back(Range(0));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK, CURSOR_UP,
+                                        SELECTION_CARET, &expected_range);
+}
 
-  // Move right.
-  expected.push_back(Range(6));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_CARET, &expected);
+TEST_F(RenderTextTest, MoveCursor_UpDown_Cache) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("123 456\n\n123 456"));
+  render_text->SetDisplayRect(Rect(45, 1000));
+  render_text->SetMultiline(true);
+  EXPECT_EQ(3U, render_text->GetNumLines());
 
-  // SELECTION_RETAIN.
-  render_text->SelectRange(Range(6));
+  std::vector<size_t> expected_lines;
+  std::vector<Range> expected_range;
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_RETAIN, &expected);
+  // SELECTION_NONE.
+  render_text->SelectRange(Range(2));
+  ResetCursorX();
 
-  // Move left twice.
-  expected.push_back(Range(6, 0));
-  expected.push_back(Range(6, 0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_RETAIN, &expected);
+  // Move down twice.
+  expected_range.push_back(Range(8));
+  expected_range.push_back(Range(11));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_NONE,
+                                        &expected_range);
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_RETAIN, &expected);
+  // Move up twice.
+  expected_range.push_back(Range(8));
+  expected_range.push_back(Range(2));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK, CURSOR_UP,
+                                        SELECTION_NONE, &expected_range);
 
-  // SELECTION_EXTEND.
-  render_text->SelectRange(Range(6));
+  // Move left.
+  expected_range.push_back(Range(1));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_LEFT, SELECTION_NONE,
+                                        &expected_range);
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_EXTEND, &expected);
-
-  // Move left twice.
-  expected.push_back(Range(11, 0));
-  expected.push_back(Range(11, 0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_EXTEND, &expected);
-
-  // Move right.
-  expected.push_back(Range(0, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_EXTEND, &expected);
+  // Move down twice again.
+  expected_range.push_back(Range(8));
+  expected_range.push_back(Range(10));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_NONE,
+                                        &expected_range);
 }
 
 TEST_F(RenderTextTest, GetDisplayTextDirection) {
@@ -1938,7 +2180,7 @@ TEST_F(RenderTextTest, FindCursorPosition) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     for (size_t j = 0; j < render_text->text().length(); ++j) {
-      const Range range(render_text->GetCursorSpan(Range(j, j + 1)));
+      const Range range(render_text->GetCursorSpan(Range(j, j + 1)).Round());
       // Test a point just inside the leading edge of the glyph bounds.
       int x = range.is_reversed() ? range.GetMax() - 1 : range.GetMin() + 1;
       EXPECT_EQ(
@@ -2120,6 +2362,96 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   EXPECT_EQ(Range(4, 6), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(Range(4), render_text->selection());
+}
+
+TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection_Multiline) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetDisplayRect(Rect(20, 1000));
+  render_text->SetText(UTF8ToUTF16("012 456\n\n90"));
+  EXPECT_EQ(4U, render_text->GetNumLines());
+
+  // Move cursor right to the end of the text.
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(4), render_text->selection());
+  EXPECT_EQ(0U, GetLineContainingCaret());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(5), render_text->selection());
+  EXPECT_EQ(1U, GetLineContainingCaret());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(7), render_text->selection());
+  EXPECT_EQ(1U, GetLineContainingCaret());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(8), render_text->selection());
+  EXPECT_EQ(2U, GetLineContainingCaret());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(9), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(11), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+
+  // Move cursor left to the beginning of the text.
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(9), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(8), render_text->selection());
+  EXPECT_EQ(2U, GetLineContainingCaret());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(7), render_text->selection());
+  EXPECT_EQ(1U, GetLineContainingCaret());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(4), render_text->selection());
+  EXPECT_EQ(1U, GetLineContainingCaret());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(3), render_text->selection());
+  EXPECT_EQ(0U, GetLineContainingCaret());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(0), render_text->selection());
+  EXPECT_EQ(0U, GetLineContainingCaret());
+
+  // Move cursor right with WORD_BREAK.
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+#if defined(OS_WIN)
+  EXPECT_EQ(Range(4), render_text->selection());
+#else
+  EXPECT_EQ(Range(3), render_text->selection());
+#endif
+  EXPECT_EQ(0U, GetLineContainingCaret());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+#if defined(OS_WIN)
+  EXPECT_EQ(Range(9), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+#else
+  EXPECT_EQ(Range(7), render_text->selection());
+  EXPECT_EQ(1U, GetLineContainingCaret());
+#endif
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(11), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+
+  // Move cursor left with WORD_BREAK.
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(9), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(4), render_text->selection());
+  EXPECT_EQ(1U, GetLineContainingCaret());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(0), render_text->selection());
+  EXPECT_EQ(0U, GetLineContainingCaret());
+
+  // Move cursor right with FIELD_BREAK.
+  render_text->MoveCursor(FIELD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(11), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+
+  // Move cursor left with FIELD_BREAK.
+  render_text->MoveCursor(FIELD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(0), render_text->selection());
+  EXPECT_EQ(0U, GetLineContainingCaret());
 }
 
 TEST_F(RenderTextTest, CenteredDisplayOffset) {
@@ -2489,6 +2821,65 @@ TEST_F(RenderTextTest, DirectedSelections) {
   EXPECT_EQ(Range(2, 2), render_text->selection());  // Collapse right.
 }
 
+TEST_F(RenderTextTest, DirectedSelections_Multiline) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+
+  auto ResultAfter = [&](VisualCursorDirection direction) {
+    render_text->MoveCursor(CHARACTER_BREAK, direction, SELECTION_RETAIN);
+    return GetSelectedText(render_text);
+  };
+
+  render_text->SetText(UTF8ToUTF16("01234\n56789\nabcde"));
+  render_text->SetMultiline(true);
+  render_text->SetDisplayRect(Rect(500, 500));
+  ResetCursorX();
+
+  // Test Down, then Up. LTR.
+  // Undirected, or forward when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({2, 4});
+  EXPECT_EQ(UTF8ToUTF16("23"), GetSelectedText(render_text));
+  EXPECT_EQ(UTF8ToUTF16("234\n5678"), ResultAfter(CURSOR_DOWN));
+  EXPECT_EQ(UTF8ToUTF16("23"), ResultAfter(CURSOR_UP));
+
+  // Test collapsing the selection. This always ignores any existing direction.
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(2, 2), render_text->selection());  // Collapse left.
+
+  // Undirected, or backward when kSelectionIsAlwaysDirected.
+  ResetCursorX();  // Reset cached cursor x position.
+  render_text->SelectRange({4, 2});
+  EXPECT_EQ(UTF8ToUTF16("23"), GetSelectedText(render_text));
+  if (RenderText::kSelectionIsAlwaysDirected) {
+    EXPECT_EQ(UTF8ToUTF16("4\n56"), ResultAfter(CURSOR_DOWN));  // Keep left.
+  } else {
+    EXPECT_EQ(UTF8ToUTF16("234\n5678"),
+              ResultAfter(CURSOR_DOWN));  // Pick right.
+  }
+  EXPECT_EQ(UTF8ToUTF16("23"), ResultAfter(CURSOR_UP));
+
+  // Test with multi-line selection.
+  // Undirected, or forward when kSelectionIsAlwaysDirected.
+  ResetCursorX();
+  render_text->SelectRange({2, 7});  // Select multi-line.
+  EXPECT_EQ(UTF8ToUTF16("234\n5"), GetSelectedText(render_text));
+  EXPECT_EQ(UTF8ToUTF16("234\n56789\na"), ResultAfter(CURSOR_DOWN));
+  EXPECT_EQ(UTF8ToUTF16("234\n5"), ResultAfter(CURSOR_UP));
+
+  // Undirected, or backward when kSelectionIsAlwaysDirected.
+  ResetCursorX();
+  render_text->SelectRange({7, 2});  // Select multi-line.
+  EXPECT_EQ(UTF8ToUTF16("234\n5"), GetSelectedText(render_text));
+
+  if (RenderText::kSelectionIsAlwaysDirected) {
+    EXPECT_EQ(UTF8ToUTF16("6"), ResultAfter(CURSOR_DOWN));  // Keep left.
+  } else {
+    EXPECT_EQ(UTF8ToUTF16("234\n56789\na"),
+              ResultAfter(CURSOR_DOWN));  // Pick right.
+  }
+  EXPECT_EQ(UTF8ToUTF16("234\n5"), ResultAfter(CURSOR_UP));
+}
+
 TEST_F(RenderTextTest, StringSizeSanity) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("Hello World"));
@@ -2586,6 +2977,29 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
 
+TEST_F(RenderTextTest, StringSizeMultiline) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("Hello\nWorld"));
+  const Size string_size = render_text->GetStringSize();
+  EXPECT_EQ(55, string_size.width());
+
+  render_text->SetDisplayRect(Rect(30, 1000));
+  render_text->SetMultiline(true);
+  EXPECT_EQ(55, render_text->TotalLineWidth());
+
+  EXPECT_EQ(
+      30, render_text->GetLineSize(SelectionModel(0, CURSOR_FORWARD)).width());
+  EXPECT_EQ(
+      25, render_text->GetLineSize(SelectionModel(6, CURSOR_FORWARD)).width());
+  // |GetStringSize()| of multi-line text does not include newline character.
+  EXPECT_EQ(25, render_text->GetStringSize().width());
+  // Expect height to be 2 times the font height. This assumes simple strings
+  // that do not have special metrics.
+  int font_height = render_text->font_list().GetHeight();
+  EXPECT_EQ(font_height * 2, render_text->GetStringSize().height());
+}
+
 TEST_F(RenderTextTest, MinLineHeight) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("Hello!"));
@@ -2655,6 +3069,12 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   // TODO(mboc): Add some unittests for other weights (currently not
   // implemented because of test system font configuration).
   RenderText* render_text = GetRenderText();
+
+#if defined(OS_FUCHSIA)
+  // Increase font size to ensure that bold and regular styles differ in width.
+  render_text->SetFontList(FontList("Arial, 20px"));
+#endif  // defined(OS_FUCHSIA)
+
   render_text->SetText(UTF8ToUTF16("Hello World"));
 
   const int plain_width = render_text->GetStringSize().width();
@@ -3335,13 +3755,13 @@ TEST_F(RenderTextTest, Multiline_Newline) {
   const struct {
     const char* const text;
     const size_t lines_count;
-    // Ranges of the characters on each line preceding the newline.
+    // Ranges of the characters on each line.
     const Range line_char_ranges[3];
   } kTestStrings[] = {
-      {"abc\ndef", 2ul, {Range(0, 3), Range(4, 7), Range::InvalidRange()}},
-      {"a \n b ", 2ul, {Range(0, 2), Range(3, 6), Range::InvalidRange()}},
-      {"ab\n", 2ul, {Range(0, 2), Range(), Range::InvalidRange()}},
-      {"a\n\nb", 3ul, {Range(0, 1), Range(2, 3), Range(3, 4)}},
+      {"abc\ndef", 2ul, {Range(0, 4), Range(4, 7), Range::InvalidRange()}},
+      {"a \n b ", 2ul, {Range(0, 3), Range(3, 6), Range::InvalidRange()}},
+      {"ab\n", 2ul, {Range(0, 3), Range(), Range::InvalidRange()}},
+      {"a\n\nb", 3ul, {Range(0, 2), Range(2, 3), Range(3, 4)}},
       {"\nab", 2ul, {Range(0, 1), Range(1, 3), Range::InvalidRange()}},
       {"\n", 2ul, {Range(0, 1), Range(), Range::InvalidRange()}},
   };
@@ -3478,7 +3898,7 @@ TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
       EXPECT_EQ(1u, run_list->runs()[1]->shape.glyph_count);  // \n.
       EXPECT_EQ(lines[1].length(), run_list->runs()[2]->shape.glyph_count);
 
-      int difference = (lines[0].length() - lines[1].length()) * kGlyphSize;
+      int difference = (lines[0].length() - lines[1].length() + 1) * kGlyphSize;
       EXPECT_EQ(test_api()->GetAlignmentOffset(0).x() + difference,
                 test_api()->GetAlignmentOffset(1).x());
     }
@@ -3663,7 +4083,7 @@ TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
                             UTF8ToUTF16("test."));
   const int kTestWidth =
       GetStringWidth(UTF8ToUTF16("test"), render_text->font_list());
-  const Range char_ranges[3] = {Range(0, 5), Range(6, 11), Range(11, 12)};
+  const Range char_ranges[3] = {Range(0, 6), Range(6, 11), Range(11, 12)};
 
   render_text->SetText(text);
   render_text->SetDisplayRect(Rect(0, 0, kTestWidth, 0));
@@ -3679,6 +4099,52 @@ TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
         test_api()->lines()[j].segments[0].char_range.start(),
         test_api()->lines()[j].segments[segment_size - 1].char_range.end());
     EXPECT_EQ(char_ranges[j], line_range);
+  }
+}
+
+TEST_F(RenderTextTest, Multiline_GetLineContainingCaret) {
+  struct {
+    const SelectionModel caret;
+    const size_t line_num;
+  } cases[] = {
+      {SelectionModel(8, CURSOR_FORWARD), 1},
+      {SelectionModel(9, CURSOR_BACKWARD), 1},
+      {SelectionModel(9, CURSOR_FORWARD), 2},
+      {SelectionModel(12, CURSOR_BACKWARD), 2},
+      {SelectionModel(12, CURSOR_FORWARD), 2},
+      {SelectionModel(13, CURSOR_BACKWARD), 3},
+      {SelectionModel(13, CURSOR_FORWARD), 3},
+      {SelectionModel(14, CURSOR_BACKWARD), 4},
+      {SelectionModel(14, CURSOR_FORWARD), 4},
+  };
+
+  // Set a non-integral width to cause rounding errors in calculating cursor
+  // bounds. GetCursorBounds calculates cursor position based on the horizontal
+  // span of the cursor, which is compared with the line widths to find out on
+  // which line the span stops. Rounding errors should be taken into
+  // consideration in comparing these two non-integral values.
+  SetGlyphWidth(5.3);
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(45, 1000));
+  render_text->SetMultiline(true);
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+
+  for (auto text : {ASCIIToUTF16("\n123 456 789\n\n123"),
+                    UTF8ToUTF16("\nשנב גקכ עין\n\nחלך")}) {
+    for (const auto& sample : cases) {
+      SCOPED_TRACE(testing::Message()
+                   << "Testing " << (text[1] == '1' ? "LTR" : "RTL")
+                   << " Caret " << sample.caret << " line " << sample.line_num);
+      render_text->SetText(text);
+      EXPECT_EQ(5U, render_text->GetNumLines());
+      EXPECT_EQ(sample.line_num,
+                render_text->GetLineContainingCaret(sample.caret));
+
+      // GetCursorBounds should be in the same line as GetLineContainingCaret.
+      Rect bounds = render_text->GetCursorBounds(sample.caret, true);
+      EXPECT_EQ(int{sample.line_num},
+                GetLineContainingYCoord(bounds.origin().y() + 1));
+    }
   }
 }
 
@@ -4116,6 +4582,11 @@ TEST_F(RenderTextTest, EmojiFlagGlyphCount) {
 #if defined(OS_MACOSX)
   // On Mac, the flags should be found, so two glyphs result.
   EXPECT_EQ(2u, run_list->runs()[0]->shape.glyph_count);
+#elif defined(OS_ANDROID)
+  // It seems that some versions of android support the flags. Older versions
+  // don't support it.
+  EXPECT_TRUE(2u == run_list->runs()[0]->shape.glyph_count ||
+              4u == run_list->runs()[0]->shape.glyph_count);
 #else
   // Elsewhere, the flags are not found, so each surrogate pair gets a
   // placeholder glyph. Eventually, all platforms should have 2 glyphs.
@@ -4232,7 +4703,7 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
   std::string localized_font_name;
 
   base::win::Version version = base::win::GetVersion();
-  if (version < base::win::VERSION_WIN10) {
+  if (version < base::win::Version::WIN10) {
     // The font 'Meiryo' exists on windows 7 and windows 8. see:
     // https://docs.microsoft.com/en-us/typography/fonts/windows_7_font_list
     // https://docs.microsoft.com/en-us/typography/fonts/windows_8_font_list
@@ -4240,7 +4711,7 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
     // Japanese name for Meiryo.
     localized_font_name = "\u30e1\u30a4\u30ea\u30aa";
   } else {
-    ASSERT_GE(version, base::win::VERSION_WIN10);
+    ASSERT_GE(version, base::win::Version::WIN10);
     // The font 'Malgun Gothic' exists on windows 10. see:
     // https://docs.microsoft.com/en-us/typography/fonts/windows_10_font_list
     font_name = "Malgun Gothic";
@@ -4285,6 +4756,86 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
 #endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
+
+// Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
+// for different languages.
+TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
+  // The word 'test' in different languages.
+  static const wchar_t* kLanguageTests[] = {
+      L"test", L"اختبار", L"Δοκιμή", L"परीक्षा", L"تست", L"Փորձարկում",
+  };
+
+  for (const wchar_t* text : kLanguageTests) {
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(text));
+    test_api()->EnsureLayout();
+
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    ASSERT_EQ(1U, run_list->size());
+    int missing_glyphs = run_list->runs()[0]->CountMissingGlyphs();
+    if (missing_glyphs != 0) {
+      ADD_FAILURE() << "Text '" << text << "' is missing " << missing_glyphs
+                    << " glyphs.";
+    }
+  }
+}
+
+// Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
+// for different languages.
+TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
+  static const wchar_t* kLanguageTests[] = {
+      L"www.اختبار.com",
+      L"(اختبار)",
+      L"/ זה (מבחן) /",
+  };
+
+  for (const wchar_t* text : kLanguageTests) {
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(text));
+    test_api()->EnsureLayout();
+
+    int missing_glyphs = 0;
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    for (const auto& run : run_list->runs())
+      missing_glyphs += run->CountMissingGlyphs();
+
+    if (missing_glyphs != 0) {
+      ADD_FAILURE() << "Text '" << text << "' is missing " << missing_glyphs
+                    << " glyphs.";
+    }
+  }
+}
+
+#if defined(OS_WIN)
+// Ensures that locale is used for fonts selection.
+TEST_F(RenderTextTest, CJKFontWithLocale) {
+  // The uniscribe fallback used by win7 is not supporting locale.
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return;
+
+  const wchar_t kCJKTest[] = L"\u8AA4\u904E\u9AA8";
+  static const char* kLocaleTests[] = {"zh-CN", "ja-JP", "ko-KR"};
+
+  std::set<std::string> tested_font_names;
+  for (const auto* locale : kLocaleTests) {
+    base::i18n::SetICUDefaultLocale(locale);
+    ResetRenderTextInstance();
+
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(kCJKTest));
+    test_api()->EnsureLayout();
+
+    const std::vector<RenderText::FontSpan> font_spans =
+        render_text->GetFontSpansForTesting();
+    ASSERT_EQ(font_spans.size(), 1U);
+
+    // Expect the font name to be different for each locale.
+    bool unique_font_name =
+        tested_font_names.insert(font_spans[0].first.GetFontName()).second;
+    EXPECT_TRUE(unique_font_name);
+  }
+}
+#endif  // defined(OS_WIN)
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
@@ -4345,39 +4896,23 @@ TEST_F(RenderTextTest, TextDoesntClip) {
     }
     {
       SCOPED_TRACE("TextDoesntClip Left Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID) || defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, Linux, Android, and Mac
-      // smoothing draws to the left of text.  This appears to be a preexisting
-      // issue that wasn't revealed by the prior unit tests.  RenderText
-      // currently only uses origins and advances and ignores bounding boxes so
-      // cannot account for under- and over-hang.
+      // TODO(dschuyler): Smoothing draws to the left of text. This appears to
+      // be a preexisting issue that wasn't revealed by the prior unit tests.
+      // RenderText currently only uses origins and advances and ignores
+      // bounding boxes so cannot account for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize - 1,
                                   string_size.height());
-#else
-      rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize,
-                                  string_size.height());
-#endif
     }
     {
       SCOPED_TRACE("TextDoesntClip Right Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID) || defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, Linux, Android, and Mac
-      // smoothing draws to the right of text.  This appears to be a preexisting
-      // issue that wasn't revealed by the prior unit tests.  RenderText
-      // currently only uses origins and advances and ignores bounding boxes so
-      // cannot account for under- and over-hang.
+      // TODO(dschuyler): Smoothing draws to the right of text. This appears to
+      // be a preexisting issue that wasn't revealed by the prior unit tests.
+      // RenderText currently only uses origins and advances and ignores
+      // bounding boxes so cannot account for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE,
                                   kTestSize + string_size.width() + 1,
                                   kTestSize, kTestSize - 1,
                                   string_size.height());
-#else
-      rect_buffer.EnsureSolidRect(SK_ColorWHITE,
-                                  kTestSize + string_size.width(),
-                                  kTestSize, kTestSize,
-                                  string_size.height());
-#endif
     }
   }
 }
@@ -4489,11 +5024,16 @@ TEST_F(RenderTextTest, StylePropagated) {
 
 // Ensure the painter adheres to RenderText::subpixel_rendering_suppressed().
 TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
+  ASSERT_TRUE(IsFontsSmoothingEnabled())
+      << "The test requires that fonts smoothing (anti-aliasing) is activated. "
+         "If this assert is failing you need to manually activate the flag in "
+         "your system fonts settings.";
+
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("x"));
 
   DrawVisualText();
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // On Linux, whether subpixel AA is supported is determined by the platform
   // FontConfig. Force it into a particular style after computing runs. Other
   // platforms use a known default FontRenderParams from a static local.
@@ -4507,7 +5047,7 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
 
   render_text->set_subpixel_rendering_suppressed(true);
   DrawVisualText();
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // For Linux, runs shouldn't be re-calculated, and the suppression of the
   // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
   // checking, apply the override anyway to be explicit that it is suppressed.
@@ -4900,7 +5440,9 @@ TEST_F(RenderTextTest, GetLookupDataAtRange_Multiline) {
 // text.
 TEST_F(RenderTextTest, LineEndSelections) {
   const char* const ltr = "abc\n\ndef";
-  const char* const rtl = "\u05d0\u05d1\u05d2\n\n\u05d3\u05d4\u05d5";
+  const char* const rtl = "שנב\n\nגקכ";
+  const char* const ltr_single = "abc def ghi";
+  const char* const rtl_single = "שנב גקכ עין";
   const int left_x = -100;
   const int right_x = 200;
   struct {
@@ -4910,19 +5452,30 @@ TEST_F(RenderTextTest, LineEndSelections) {
     const char* const selected_text;
   } cases[] = {
       {ltr, 1, left_x, "abc\n"},
-      {ltr, 1, right_x, "abc\n\n"},
+      {ltr, 1, right_x, "abc\n"},
       {ltr, 2, left_x, "abc\n\n"},
       {ltr, 2, right_x, ltr},
 
-      {rtl, 1, left_x, "\u05d0\u05d1\u05d2\n\n"},
-      {rtl, 1, right_x, "\u05d0\u05d1\u05d2\n"},
+      {rtl, 1, left_x, "שנב\n"},
+      {rtl, 1, right_x, "שנב\n"},
       {rtl, 2, left_x, rtl},
-      {rtl, 2, right_x, "\u05d0\u05d1\u05d2\n\n"},
+      {rtl, 2, right_x, "שנב\n\n"},
+
+      {ltr_single, 1, left_x, "abc "},
+      {ltr_single, 1, right_x, "abc def "},
+      {ltr_single, 2, left_x, "abc def "},
+      {ltr_single, 2, right_x, ltr_single},
+
+      {rtl_single, 1, left_x, "שנב גקכ "},
+      {rtl_single, 1, right_x, "שנב "},
+      {rtl_single, 2, left_x, rtl_single},
+      {rtl_single, 2, right_x, "שנב גקכ "},
   };
 
+  SetGlyphWidth(5);
   RenderText* render_text = GetRenderText();
   render_text->SetMultiline(true);
-  render_text->SetDisplayRect(Rect(200, 1000));
+  render_text->SetDisplayRect(Rect(20, 1000));
 
   for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
@@ -4948,7 +5501,7 @@ TEST_F(RenderTextTest, GetSubstringBoundsMultiline) {
   render_text->SetText(UTF8ToUTF16("abc\n\ndef"));
   test_api()->EnsureLayout();
 
-  const std::vector<Range> line_char_range = {Range(0, 3), Range(4, 5),
+  const std::vector<Range> line_char_range = {Range(0, 4), Range(4, 5),
                                               Range(5, 8)};
 
   // Test bounds for individual lines.

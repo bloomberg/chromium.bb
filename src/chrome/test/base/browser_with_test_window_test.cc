@@ -33,13 +33,9 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "content/public/browser/context_factory.h"
-#include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/test/env_test_helper.h"
-#include "ui/views/mus/mus_client.h"
 #else
 #include "ui/views/test/test_views_delegate.h"
 #endif
@@ -56,9 +52,6 @@ void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
   ash_test_helper_.SetUp(true);
-  ash_test_helper_.SetRunningOutsideAsh();
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    ash_test_helper_.CreateMusClient();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif
@@ -87,8 +80,8 @@ void BrowserWithTestWindowTest::SetUp() {
   // responsible for cleaning it up (usually by NativeWidget destruction).
   window_ = CreateBrowserWindow();
 
-  browser_.reset(
-      CreateBrowser(profile(), browser_type_, hosted_app_, window_.get()));
+  browser_ =
+      CreateBrowser(profile(), browser_type_, hosted_app_, window_.get());
 }
 
 void BrowserWithTestWindowTest::TearDown() {
@@ -195,7 +188,7 @@ BrowserWithTestWindowTest::CreateBrowserWindow() {
   return std::make_unique<TestBrowserWindow>();
 }
 
-Browser* BrowserWithTestWindowTest::CreateBrowser(
+std::unique_ptr<Browser> BrowserWithTestWindowTest::CreateBrowser(
     Profile* profile,
     Browser::Type browser_type,
     bool hosted_app,
@@ -208,7 +201,7 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
     params.type = browser_type;
   }
   params.window = browser_window;
-  return new Browser(params);
+  return std::make_unique<Browser>(params);
 }
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(

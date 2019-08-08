@@ -14,41 +14,38 @@ namespace device {
 // static
 base::Optional<PublicKeyCredentialRpEntity>
 PublicKeyCredentialRpEntity::CreateFromCBORValue(const cbor::Value& cbor) {
-  if (!cbor.is_map() || cbor.GetMap().size() > 3)
+  if (!cbor.is_map() || cbor.GetMap().size() > 3) {
     return base::nullopt;
-
-  const auto& rp_map = cbor.GetMap();
-  bool is_rp_map_format_correct =
-      std::all_of(rp_map.begin(), rp_map.end(), [](const auto& element) {
-        if (!element.first.is_string() || !element.second.is_string())
-          return false;
-
-        const auto& key = element.first.GetString();
-        return (key == kEntityIdMapKey || key == kEntityNameMapKey ||
-                key == kIconUrlMapKey);
-      });
-
-  if (!is_rp_map_format_correct)
+  }
+  const cbor::Value::MapValue& rp_map = cbor.GetMap();
+  for (const auto& element : rp_map) {
+    if (!element.first.is_string() || !element.second.is_string()) {
+      return base::nullopt;
+    }
+    const std::string& key = element.first.GetString();
+    if (key != kEntityIdMapKey && key != kEntityNameMapKey &&
+        key != kIconUrlMapKey) {
+      return base::nullopt;
+    }
+  }
+  const auto id_it = rp_map.find(cbor::Value(kEntityIdMapKey));
+  if (id_it == rp_map.end()) {
     return base::nullopt;
-
-  const auto& id_it = rp_map.find(cbor::Value(kEntityIdMapKey));
-  const auto& name_it = rp_map.find(cbor::Value(kEntityNameMapKey));
-  const auto& icon_it = rp_map.find(cbor::Value(kIconUrlMapKey));
-  if (id_it == rp_map.end())
-    return base::nullopt;
+  }
   PublicKeyCredentialRpEntity rp(id_it->second.GetString());
-
-  if (name_it != rp_map.end())
-    rp.SetRpName(name_it->second.GetString());
-
-  if (icon_it != rp_map.end())
-    rp.SetRpIconUrl(GURL(icon_it->second.GetString()));
-
+  const auto name_it = rp_map.find(cbor::Value(kEntityNameMapKey));
+  if (name_it != rp_map.end()) {
+    rp.name = name_it->second.GetString();
+  }
+  const auto icon_it = rp_map.find(cbor::Value(kIconUrlMapKey));
+  if (icon_it != rp_map.end()) {
+    rp.icon_url = GURL(icon_it->second.GetString());
+  }
   return rp;
 }
 
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
-    : rp_id_(std::move(rp_id)) {}
+    : id(std::move(rp_id)) {}
 
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(
     const PublicKeyCredentialRpEntity& other) = default;
@@ -64,26 +61,14 @@ PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::operator=(
 
 PublicKeyCredentialRpEntity::~PublicKeyCredentialRpEntity() = default;
 
-PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::SetRpName(
-    std::string rp_name) {
-  rp_name_ = std::move(rp_name);
-  return *this;
-}
-
-PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::SetRpIconUrl(
-    GURL icon_url) {
-  rp_icon_url_ = std::move(icon_url);
-  return *this;
-}
-
-cbor::Value PublicKeyCredentialRpEntity::ConvertToCBOR() const {
+cbor::Value AsCBOR(const PublicKeyCredentialRpEntity& entity) {
   cbor::Value::MapValue rp_map;
-  rp_map.emplace(kEntityIdMapKey, rp_id_);
-  if (rp_name_)
-    rp_map.emplace(kEntityNameMapKey, *rp_name_);
+  rp_map.emplace(kEntityIdMapKey, entity.id);
+  if (entity.name)
+    rp_map.emplace(kEntityNameMapKey, *entity.name);
 
-  if (rp_icon_url_)
-    rp_map.emplace(kIconUrlMapKey, rp_icon_url_->spec());
+  if (entity.icon_url)
+    rp_map.emplace(kIconUrlMapKey, entity.icon_url->spec());
 
   return cbor::Value(std::move(rp_map));
 }

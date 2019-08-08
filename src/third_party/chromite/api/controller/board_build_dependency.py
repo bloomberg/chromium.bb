@@ -11,21 +11,19 @@ graphs mapping from portage packages to the dependency source.
 
 from __future__ import print_function
 
-from chromite.api.gen.chromite.api import depgraph_pb2
 from chromite.lib import portage_util
 from chromite.service import dependency
 
-from google.protobuf import json_format
 
-
-def CreateDepGraphProtoFromJsonMap(json_map):
-  """Return the depgraph proto message from package deps json map.
+def AugmentDepGraphProtoFromJsonMap(json_map, graph):
+  """Augment package deps from |json_map| to graph object.
 
   Args:
     json_map: the json object that stores the portage package. This is
       generated from chromite.lib.service.dependency.GetBuildDependency()
+    graph: the proto object that represents the dependency graph (see DepGraph
+      message in chromite/api/depgraph.proto)
   """
-  graph = depgraph_pb2.DepGraph()
   graph.build_target.name = json_map['target_board']
 
   for data in json_map['package_deps'].itervalues():
@@ -48,7 +46,6 @@ def CreateDepGraphProtoFromJsonMap(json_map):
       source_path = package_dep_info.dependency_source_paths.add()
       source_path.path = path
 
-  return graph
 
 def GetBuildDependencyGraph(input_proto, output_proto):
   """Create the build dependency graph.
@@ -58,17 +55,8 @@ def GetBuildDependencyGraph(input_proto, output_proto):
     output_proto (GetBuildDependencyGraphResponse): The empty output message.
   """
   board = input_proto.build_target.name
-  output_path = input_proto.output_path
 
   assert board, 'Missing build target name'
-  assert output_path, 'Missing output file'
-
 
   json_map = dependency.GetBuildDependency(board)
-  graph = CreateDepGraphProtoFromJsonMap(json_map)
-
-  with open(output_path, 'w') as f:
-    f.write(
-        json_format.MessageToJson(graph, including_default_value_fields=True))
-
-  output_proto.build_dependency_graph_file = output_path
+  AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)

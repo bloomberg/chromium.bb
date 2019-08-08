@@ -187,6 +187,9 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->type = update.AppType();
   app->title = update.Name();
   app->permissions = std::move(permissions);
+  app->install_source = update.InstallSource();
+
+  app->description = update.Description();
 
   // On other OS's, is_pinned defaults to OptionalBool::kUnknown, which is
   // used to represent the fact that there is no concept of being pinned.
@@ -200,18 +203,25 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 }
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
+  if (update.ReadinessChanged() &&
+      update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
+    page_->OnAppRemoved(update.AppId());
+    return;
+  }
+
   if (update.ShowInManagement() != apps::mojom::OptionalBool::kTrue) {
     return;
   }
 
   if (update.ReadinessChanged() &&
-      update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
-    page_->OnAppRemoved(update.AppId());
-
-  } else if (update.ReadinessChanged() &&
-             update.Readiness() == apps::mojom::Readiness::kReady) {
+      update.Readiness() == apps::mojom::Readiness::kReady) {
     page_->OnAppAdded(CreateUIAppPtr(update));
   } else {
     page_->OnAppChanged(CreateUIAppPtr(update));
   }
+}
+
+void AppManagementPageHandler::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
 }

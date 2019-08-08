@@ -26,6 +26,10 @@ namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
 
+namespace views {
+class Label;
+}  // namespace views
+
 namespace app_list {
 
 // AssistantMainStage is the child of AssistantMainView responsible for
@@ -63,6 +67,13 @@ class APP_LIST_EXPORT AssistantMainStage
 
  private:
   void InitLayout();
+  views::View* CreateContentLayoutContainer();
+  void InitGreetingLabel();
+  views::View* CreateMainContentLayoutContainer();
+  views::View* CreateDividerLayoutContainer();
+  views::View* CreateFooterLayoutContainer();
+
+  void MaybeHideGreetingLabel();
 
   void UpdateFooter();
 
@@ -78,6 +89,7 @@ class APP_LIST_EXPORT AssistantMainStage
   views::View* horizontal_separator_;
   ash::AssistantQueryView* query_view_;
   ash::UiElementContainerView* ui_element_container_;
+  views::Label* greeting_label_;
   ash::AssistantFooterView* footer_;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver>

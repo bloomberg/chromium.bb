@@ -18,16 +18,20 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_layout_manager.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/virtual_keyboard_container_layout_manager.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -39,11 +43,14 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/window_factory.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_action_handler_layout_manager.h"
@@ -80,9 +87,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_layout_manager.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view_model.h"
@@ -213,9 +217,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 // Reparents the appropriate set of windows from |src| to |dst|.
 void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
-  const int kContainerIdsToMove[] = {
-      // TODO(afakhry): Add rest of desks containers.
-      kShellWindowId_DefaultContainerDeprecated,
+  constexpr int kContainerIdsToMove[] = {
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_PipContainer,
       kShellWindowId_SystemModalContainer,
@@ -224,18 +226,22 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_OverlayContainer,
       kShellWindowId_LockActionHandlerContainer,
   };
-  const int kExtraContainerIdsToMoveInUnifiedMode[] = {
+  constexpr int kExtraContainerIdsToMoveInUnifiedMode[] = {
       kShellWindowId_LockScreenContainer,
   };
-  std::vector<int> container_ids(
-      kContainerIdsToMove,
-      kContainerIdsToMove + base::size(kContainerIdsToMove));
+
+  // The list of desks containers depends on whether the Virtual Desks feature
+  // is enabled or not.
+  std::vector<int> container_ids = desks_util::GetDesksContainersIds();
+  for (const int id : kContainerIdsToMove)
+    container_ids.emplace_back(id);
+
   // Check the display mode as this is also necessary when trasitioning between
   // mirror and unified mode.
   if (Shell::Get()->display_manager()->current_default_multi_display_mode() ==
       display::DisplayManager::UNIFIED) {
-    for (int id : kExtraContainerIdsToMoveInUnifiedMode)
-      container_ids.push_back(id);
+    for (const int id : kExtraContainerIdsToMoveInUnifiedMode)
+      container_ids.emplace_back(id);
   }
 
   for (int id : container_ids) {
@@ -510,7 +516,7 @@ StatusAreaWidget* RootWindowController::GetStatusAreaWidget() {
 
 bool RootWindowController::IsSystemTrayVisible() {
   TrayBackgroundView* tray = GetStatusAreaWidget()->unified_system_tray();
-  return tray && tray->GetWidget()->IsVisible() && tray->visible();
+  return tray && tray->GetWidget()->IsVisible() && tray->GetVisible();
 }
 
 bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
@@ -613,13 +619,17 @@ void RootWindowController::CloseChildWindows() {
     return;
   did_close_child_windows_ = true;
 
+  aura::Window* root = GetRootWindow();
+
+  if (features::IsVirtualDesksEnabled())
+    Shell::Get()->desks_controller()->OnRootWindowClosing(root);
+
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
-  Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(GetRootWindow());
+  Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(root);
 
   shelf_->ShutdownShelfWidget();
 
-  aura::Window* root = GetRootWindow();
   ClearWorkspaceControllers(root);
 
   // Explicitly destroy top level windows. We do this because such windows may
@@ -679,7 +689,11 @@ void RootWindowController::InitTouchHuds() {
   // Enable touch debugging features when each display is initialized.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
-    set_touch_observer_hud(new TouchObserverHUD(GetRootWindow()));
+    set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
+
+  // TouchHudProjection manages its own lifetime.
+  if (command_line->HasSwitch(switches::kShowTaps))
+    touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
@@ -703,14 +717,10 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                  ->GetDisplayNearestWindow(GetRootWindow())
                                  .id();
 
-  std::unique_ptr<ShelfContextMenuModel> menu_model =
-      std::make_unique<ShelfContextMenuModel>(std::vector<mojom::MenuItemPtr>(),
-                                              nullptr, display_id);
-
   root_window_menu_model_adapter_ =
       std::make_unique<RootWindowMenuModelAdapter>(
-          std::move(menu_model), wallpaper_widget_controller()->GetWidget(),
-          source_type,
+          std::make_unique<ShelfContextMenuModel>(nullptr, display_id),
+          wallpaper_widget_controller()->GetWidget(), source_type,
           base::BindOnce(&RootWindowController::OnMenuClosed,
                          base::Unretained(this)),
           Shell::Get()
@@ -802,6 +812,13 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   }
 
   root_window_layout_manager_->OnWindowResized();
+
+  // Explicitly update the desks controller before notifying the ShellObservers.
+  // This is to make sure the desks' states are correct before clients are
+  // updated.
+  if (features::IsVirtualDesksEnabled())
+    Shell::Get()->desks_controller()->OnRootWindowAdded(root_window);
+
   if (root_window_type == RootWindowType::PRIMARY) {
     shell->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
   } else {
@@ -891,11 +908,21 @@ void RootWindowController::CreateContainers() {
   aura::Window* screen_rotation_container = CreateContainer(
       kShellWindowId_ScreenRotationContainer, "ScreenRotationContainer", root);
 
+  // Everything that needs to be included in the docked magnifier, when enabled,
+  // should be a descendant of MagnifiedContainer. The DockedMagnifierContainer
+  // should not be a descendant of this container, otherwise there would be a
+  // cycle (docked magnifier trying to magnify itself).
+  aura::Window* magnified_container =
+      CreateContainer(kShellWindowId_MagnifiedContainer, "MagnifiedContainer",
+                      screen_rotation_container);
+
+  CreateContainer(kShellWindowId_DockedMagnifierContainer,
+                  "DockedMagnifierContainer", screen_rotation_container);
+
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
-  // on those containers. These are direct children of the
-  // screen_rotation_container window; all of the other containers are their
-  // children.
+  // on those containers. These are direct children of the magnified_container
+  // window; all of the other containers are their children.
 
   // The wallpaper container is not part of the lock animation, so it is not
   // included in those animate groups. When the screen is locked, the wallpaper
@@ -903,27 +930,27 @@ void RootWindowController::CreateContainers() {
   // Ensure that there's an opaque layer occluding the non-lock-screen layers.
   aura::Window* wallpaper_container =
       CreateContainer(kShellWindowId_WallpaperContainer, "WallpaperContainer",
-                      screen_rotation_container);
+                      magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(wallpaper_container);
 
-  aura::Window* non_lock_screen_containers = CreateContainer(
-      kShellWindowId_NonLockScreenContainersContainer,
-      "NonLockScreenContainersContainer", screen_rotation_container);
+  aura::Window* non_lock_screen_containers =
+      CreateContainer(kShellWindowId_NonLockScreenContainersContainer,
+                      "NonLockScreenContainersContainer", magnified_container);
   // Clip all windows inside this container, as half pixel of the window's
   // texture may become visible when the screen is scaled. crbug.com/368591.
   non_lock_screen_containers->layer()->SetMasksToBounds(true);
 
-  aura::Window* lock_wallpaper_containers = CreateContainer(
-      kShellWindowId_LockScreenWallpaperContainer,
-      "LockScreenWallpaperContainer", screen_rotation_container);
+  aura::Window* lock_wallpaper_containers =
+      CreateContainer(kShellWindowId_LockScreenWallpaperContainer,
+                      "LockScreenWallpaperContainer", magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(lock_wallpaper_containers);
 
-  aura::Window* lock_screen_containers = CreateContainer(
-      kShellWindowId_LockScreenContainersContainer,
-      "LockScreenContainersContainer", screen_rotation_container);
+  aura::Window* lock_screen_containers =
+      CreateContainer(kShellWindowId_LockScreenContainersContainer,
+                      "LockScreenContainersContainer", magnified_container);
   aura::Window* lock_screen_related_containers = CreateContainer(
       kShellWindowId_LockScreenRelatedContainersContainer,
-      "LockScreenRelatedContainersContainer", screen_rotation_container);
+      "LockScreenRelatedContainersContainer", magnified_container);
 
   aura::Window* app_list_tablet_mode_container =
       CreateContainer(kShellWindowId_HomeScreenContainer, "HomeScreenContainer",
@@ -1102,19 +1129,16 @@ void RootWindowController::CreateContainers() {
   overlay_container->SetLayoutManager(
       new OverlayLayoutManager(overlay_container));  // Takes ownership.
 
-  CreateContainer(kShellWindowId_DockedMagnifierContainer,
-                  "DockedMagnifierContainer", lock_screen_related_containers);
-
   aura::Window* mouse_cursor_container =
       CreateContainer(kShellWindowId_MouseCursorContainer,
-                      "MouseCursorContainer", screen_rotation_container);
+                      "MouseCursorContainer", magnified_container);
   mouse_cursor_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   CreateContainer(kShellWindowId_AlwaysOnTopWallpaperContainer,
-                  "AlwaysOnTopWallpaperContainer", screen_rotation_container);
+                  "AlwaysOnTopWallpaperContainer", magnified_container);
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
-                  "PowerButtonAnimationContainer", screen_rotation_container);
+                  "PowerButtonAnimationContainer", magnified_container);
 }
 
 void RootWindowController::CreateSystemWallpaper(

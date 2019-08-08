@@ -4,9 +4,102 @@
 */
 'use strict';
 
-export default class ChartSection extends cp.ElementBase {
+import './chart-legend.js';
+import './cp-input.js';
+import './cp-loading.js';
+import './expand-button.js';
+import ChartBase from './chart-base.js';
+import ChartCompound from './chart-compound.js';
+import ChartTimeseries from './chart-timeseries.js';
+import MenuInput from './menu-input.js';
+import OptionGroup from './option-group.js';
+import SparklineCompound from './sparkline-compound.js';
+import TimeseriesDescriptor from './timeseries-descriptor.js';
+import sha from './sha.js';
+import {CHAIN, UPDATE} from './simple-redux.js';
+import {ElementBase, STORE} from './element-base.js';
+import {MODE} from './layout-timeseries.js';
+import {get} from '@polymer/polymer/lib/utils/path.js';
+import {html} from '@polymer/polymer/polymer-element.js';
+import {simpleGUID} from './utils.js';
+
+export default class ChartSection extends ElementBase {
+  static get is() { return 'chart-section'; }
+
+  static get properties() {
+    return {
+      statePath: String,
+      linkedStatePath: String,
+      sectionId: Number,
+      descriptor: Object,
+      title_: String,
+      isTitleCustom: Boolean,
+      legend: Object,
+      selectedLineDescriptorHash: String,
+      isLoading: Boolean,
+      ...ChartCompound.properties,
+      ...SparklineCompound.properties,
+    };
+  }
+
+  static buildState(options = {}) {
+    const params = options.parameters || {};
+
+    // Support old spelling of some parameters including 'test'.
+    if (params.testSuites || params.testCases) {
+      params.suites = params.testSuites;
+      params.suitesAggregated = params.testSuitesAggregated;
+      params.cases = params.testCases;
+      params.casesAggregated = params.testCasesAggregated;
+    }
+
+    const descriptor = TimeseriesDescriptor.buildState({
+      suite: {
+        selectedOptions: params.suites,
+        isAggregated: params.suitesAggregated,
+      },
+      measurement: {
+        selectedOptions: params.measurements,
+      },
+      bot: {
+        selectedOptions: params.bots,
+        isAggregated: params.botsAggregated,
+      },
+      case: {
+        selectedOptions: params.cases,
+        isAggregated: params.casesAggregated,
+      },
+    });
+
+    let selectedOptions = ['avg'];
+    if (options.statistics) selectedOptions = options.statistics;
+    if (options.parameters && options.parameters.statistics) {
+      // Support old format.
+      selectedOptions = options.parameters.statistics;
+    }
+    const statistic = MenuInput.buildState({
+      label: 'Statistics',
+      required: true,
+      selectedOptions,
+      options: ['avg', 'std', 'count', 'min', 'max', 'sum'],
+    });
+
+    return {
+      sectionId: options.sectionId || simpleGUID(),
+      ...ChartCompound.buildState(options),
+      ...SparklineCompound.buildState(options),
+      descriptor,
+      title_: options.title || '',
+      isTitleCustom: false,
+      legend: undefined,
+      selectedLineDescriptorHash: options.selectedLineDescriptorHash,
+      isLoading: false,
+      statistic,
+    };
+  }
+
   static get template() {
-    return Polymer.html`
+    return html`
       <style>
         #controls {
           align-items: center;
@@ -74,7 +167,7 @@ export default class ChartSection extends cp.ElementBase {
           <iron-collapse opened="[[!isExpanded]]">
             <cp-input
                 id="title"
-                value="[[title]]"
+                value="[[title_]]"
                 label="Title"
                 on-keyup="onTitleKeyup_">
             </cp-input>
@@ -118,7 +211,7 @@ export default class ChartSection extends cp.ElementBase {
         <iron-collapse
             id="legend_container"
             horizontal
-            opened="[[isLegendOpen_(isExpanded, legend, histograms)]]"
+            opened="[[isLegendOpen_(isExpanded, legend)]]"
             on-click="onLegendClick_">
           <chart-legend
               items="[[legend]]"
@@ -148,22 +241,22 @@ export default class ChartSection extends cp.ElementBase {
     return false;
   }
 
-  isLegendOpen_(isExpanded, legend, histograms) {
-    return isExpanded && !this.isEmpty_(legend) && this.isEmpty_(histograms);
+  isLegendOpen_(isExpanded, legend) {
+    return isExpanded && !this.isEmpty_(legend);
   }
 
   async onMatrixChange_(event) {
     if (!this.descriptor) return;
-    await this.dispatch('maybeLoadTimeseries', this.statePath);
+    await ChartSection.maybeLoadTimeseries(this.statePath);
   }
 
   async onStatisticSelect_(event) {
-    await this.dispatch('maybeLoadTimeseries', this.statePath);
+    await ChartSection.maybeLoadTimeseries(this.statePath);
   }
 
   async onTitleKeyup_(event) {
-    await this.dispatch(Redux.UPDATE(this.statePath, {
-      title: event.target.value,
+    await STORE.dispatch(UPDATE(this.statePath, {
+      title_: event.target.value,
       isTitleCustom: true,
     }));
   }
@@ -177,7 +270,7 @@ export default class ChartSection extends cp.ElementBase {
           clone: true,
           minRevision: this.minRevision,
           maxRevision: this.maxRevision,
-          title: this.title,
+          title: this.title_,
           parameters: {
             suites: [...this.descriptor.suite.selectedOptions],
             suitesAggregated: this.descriptor.suite.isAggregated,
@@ -202,213 +295,127 @@ export default class ChartSection extends cp.ElementBase {
   }
 
   onLegendMouseOver_(event) {
-    this.dispatch('legendMouseOver', this.statePath,
-        event.detail.lineDescriptor);
+    ChartSection.legendMouseOver(
+        this.statePath, event.detail.lineDescriptor);
   }
 
   onLegendMouseOut_(event) {
-    this.dispatch('legendMouseOut', this.statePath);
+    STORE.dispatch(CHAIN(
+        {
+          type: ChartTimeseries.reducers.mouseYTicks.name,
+          statePath: statePath + '.chartLayout',
+        },
+        {
+          type: ChartBase.reducers.boldLine.name,
+          statePath: statePath + '.chartLayout',
+        },
+    ));
   }
 
-  onLegendLeafClick_(event) {
-    this.dispatch('legendLeafClick', this.statePath,
-        event.detail.lineDescriptor);
+  async onLegendLeafClick_(event) {
+    STORE.dispatch({
+      type: ChartSection.reducers.selectLine.name,
+      statePath: this.statePath,
+      lineDescriptor: event.detail.lineDescriptor,
+      selectedLineDescriptorHash: await sha(
+          ChartTimeseries.stringifyDescriptor(event.detail.lineDescriptor)),
+    });
   }
 
   async onLegendClick_(event) {
-    this.dispatch('legendClick', this.statePath);
+    STORE.dispatch({
+      type: ChartSection.reducers.deselectLine.name,
+      statePath: this.statePath,
+    });
   }
 
   onLineCountChange_() {
-    this.dispatch('updateLegendColors', this.statePath);
+    const state = get(STORE.getState(), this.statePath);
+    if (!state || !state.legend) return;
+    STORE.dispatch({
+      type: ChartSection.reducers.updateLegendColors.name,
+      statePath: this.statePath,
+    });
   }
-}
 
-ChartSection.State = {
-  sectionId: options => options.sectionId || cp.simpleGUID(),
-  ...cp.ChartCompound.State,
-  ...cp.SparklineCompound.State,
-  descriptor: options => {
-    const params = options.parameters || {};
-
-    // Support old spelling of some parameters including 'test'.
-    if (params.testSuites || params.testCases) {
-      params.suites = params.testSuites;
-      params.suitesAggregated = params.testSuitesAggregated;
-      params.cases = params.testCases;
-      params.casesAggregated = params.testCasesAggregated;
-    }
-
-    return cp.TimeseriesDescriptor.buildState({
-      suite: {
-        selectedOptions: params.suites,
-        isAggregated: params.suitesAggregated,
-      },
-      measurement: {
-        selectedOptions: params.measurements,
-      },
-      bot: {
-        selectedOptions: params.bots,
-        isAggregated: params.botsAggregated,
-      },
-      case: {
-        selectedOptions: params.cases,
-        isAggregated: params.casesAggregated,
-      },
-    });
-  },
-  title: options => options.title || '',
-  isTitleCustom: options => false,
-  legend: options => undefined,
-  selectedLineDescriptorHash: options => options.selectedLineDescriptorHash,
-  isLoading: options => false,
-  statistic: options => {
-    let selectedOptions = ['avg'];
-    if (options) {
-      if (options.statistics) selectedOptions = options.statistics;
-      if (options.parameters && options.parameters.statistics) {
-        // Support old format.
-        selectedOptions = options.parameters.statistics;
-      }
-    }
-    return cp.MenuInput.buildState({
-      label: 'Statistics',
-      required: true,
-      selectedOptions,
-      options: ['avg', 'std', 'count', 'min', 'max', 'sum'],
-    });
-  },
-  histograms: options => undefined,
-};
-
-ChartSection.buildState = options => cp.buildState(
-    ChartSection.State, options);
-
-ChartSection.properties = {
-  ...cp.buildProperties('state', ChartSection.State),
-  ...cp.buildProperties('linkedState', {
-    // ChartSection only needs the linkedStatePath property to forward to
-    // ChartCompound.
-  }),
-};
-
-ChartSection.actions = {
-  maybeLoadTimeseries: statePath => async(dispatch, getState) => {
+  static async maybeLoadTimeseries(statePath) {
     // If the first 3 components are filled, then load the timeseries.
-    const state = Polymer.Path.get(getState(), statePath);
-    if (state.descriptor.suite.selectedOptions.length &&
+    const state = get(STORE.getState(), statePath);
+    if (state.descriptor.suite.selectedOptions &&
+        state.descriptor.suite.selectedOptions.length &&
+        state.descriptor.measurement.selectedOptions &&
         state.descriptor.measurement.selectedOptions.length &&
+        state.statistic.selectedOptions &&
         state.statistic.selectedOptions.length) {
-      ChartSection.actions.loadTimeseries(statePath)(dispatch, getState);
+      METRICS.endChartAction();
+      ChartSection.loadTimeseries(statePath);
     } else {
-      dispatch(Redux.UPDATE(statePath, {lineDescriptors: []}));
+      STORE.dispatch(UPDATE(statePath, {lineDescriptors: []}));
     }
-  },
+  }
 
-  loadTimeseries: statePath => async(dispatch, getState) => {
-    dispatch(Redux.CHAIN(
+  static async loadTimeseries(statePath) {
+    STORE.dispatch(CHAIN(
         {type: ChartSection.reducers.loadTimeseries.name, statePath},
         {
-          type: cp.SparklineCompound.reducers.buildRelatedTabs.name,
+          type: SparklineCompound.reducers.buildRelatedTabs.name,
           statePath,
         }));
 
-    const state = Polymer.Path.get(getState(), statePath);
+    const state = get(STORE.getState(), statePath);
     if (state.selectedLineDescriptorHash) {
       // Restore from URL.
       for (const lineDescriptor of state.lineDescriptors) {
-        const lineDescriptorHash = await cp.sha(
-            cp.ChartTimeseries.stringifyDescriptor(lineDescriptor));
+        const lineDescriptorHash = await sha(
+            ChartTimeseries.stringifyDescriptor(lineDescriptor));
         if (!lineDescriptorHash.startsWith(
             state.selectedLineDescriptorHash)) {
           continue;
         }
-        dispatch(Redux.UPDATE(statePath, {
+        STORE.dispatch(UPDATE(statePath, {
           lineDescriptors: [lineDescriptor],
         }));
         break;
       }
     }
-  },
+  }
 
-  legendMouseOver: (statePath, lineDescriptor) =>
-    async(dispatch, getState) => {
-      const chartPath = statePath + '.chartLayout';
-      const state = Polymer.Path.get(getState(), statePath);
-      lineDescriptor = JSON.stringify(lineDescriptor);
-      for (let lineIndex = 0; lineIndex < state.chartLayout.lines.length;
-        ++lineIndex) {
-        const line = state.chartLayout.lines[lineIndex];
-        if (JSON.stringify(line.descriptor) === lineDescriptor) {
-          dispatch(Redux.CHAIN(
-              {
-                type: cp.ChartTimeseries.reducers.mouseYTicks.name,
-                statePath: chartPath,
-                line,
-              },
-              {
-                type: cp.ChartBase.reducers.boldLine.name,
-                statePath: chartPath,
-                lineIndex,
-              },
-          ));
-          break;
-        }
-      }
-    },
-
-  legendMouseOut: statePath => async(dispatch, getState) => {
+  static async legendMouseOver(statePath, lineDescriptor) {
     const chartPath = statePath + '.chartLayout';
-    dispatch(Redux.CHAIN(
-        {
-          type: cp.ChartTimeseries.reducers.mouseYTicks.name,
-          statePath: chartPath,
-        },
-        {
-          type: cp.ChartBase.reducers.boldLine.name,
-          statePath: chartPath,
-        },
-    ));
-  },
-
-  legendLeafClick: (statePath, lineDescriptor) =>
-    async(dispatch, getState) => {
-      dispatch({
-        type: ChartSection.reducers.selectLine.name,
-        statePath,
-        lineDescriptor,
-        selectedLineDescriptorHash: await cp.sha(
-            cp.ChartTimeseries.stringifyDescriptor(lineDescriptor)),
-      });
-    },
-
-  legendClick: statePath => async(dispatch, getState) => {
-    dispatch({
-      type: ChartSection.reducers.deselectLine.name,
-      statePath,
-    });
-  },
-
-  updateLegendColors: statePath => async(dispatch, getState) => {
-    const state = Polymer.Path.get(getState(), statePath);
-    if (!state || !state.legend) return;
-    dispatch({
-      type: ChartSection.reducers.updateLegendColors.name,
-      statePath,
-    });
-  },
-};
+    const state = get(STORE.getState(), statePath);
+    lineDescriptor = JSON.stringify(lineDescriptor);
+    for (let lineIndex = 0; lineIndex < state.chartLayout.lines.length;
+      ++lineIndex) {
+      const line = state.chartLayout.lines[lineIndex];
+      if (JSON.stringify(line.descriptor) === lineDescriptor) {
+        STORE.dispatch(CHAIN(
+            {
+              type: ChartTimeseries.reducers.mouseYTicks.name,
+              statePath: chartPath,
+              line,
+            },
+            {
+              type: ChartBase.reducers.boldLine.name,
+              statePath: chartPath,
+              lineIndex,
+            },
+        ));
+        break;
+      }
+    }
+  }
+}
 
 ChartSection.reducers = {
   loadTimeseries: (state, action, rootState) => {
-    const title = ChartSection.computeTitle(state);
-    const parameterMatrix = cp.SparklineCompound.parameterMatrix(state);
+    const title_ = ChartSection.computeTitle(state);
+    const parameterMatrix = SparklineCompound.parameterMatrix(state);
     const legend = ChartSection.buildLegend(parameterMatrix);
-    const lineDescriptors = cp.TimeseriesDescriptor.createLineDescriptors(
+    const lineDescriptors = TimeseriesDescriptor.createLineDescriptors(
         parameterMatrix);
     return {
       ...state,
-      title,
+      title_,
       legend,
       lineDescriptors,
     };
@@ -427,8 +434,8 @@ ChartSection.reducers = {
   },
 
   deselectLine: (state, action, rootState) => {
-    const parameterMatrix = cp.SparklineCompound.parameterMatrix(state);
-    const lineDescriptors = cp.TimeseriesDescriptor.createLineDescriptors(
+    const parameterMatrix = SparklineCompound.parameterMatrix(state);
+    const lineDescriptors = TimeseriesDescriptor.createLineDescriptors(
         parameterMatrix);
     return {
       ...state,
@@ -441,14 +448,14 @@ ChartSection.reducers = {
     if (!state.legend) return state;
     const colorMap = new Map();
     for (const line of state.chartLayout.lines) {
-      colorMap.set(cp.ChartTimeseries.stringifyDescriptor(
+      colorMap.set(ChartTimeseries.stringifyDescriptor(
           line.descriptor), line.color);
     }
     function handleLegendEntry(entry) {
       if (entry.children) {
         return {...entry, children: entry.children.map(handleLegendEntry)};
       }
-      const color = colorMap.get(cp.ChartTimeseries.stringifyDescriptor(
+      const color = colorMap.get(ChartTimeseries.stringifyDescriptor(
           entry.lineDescriptor)) || 'grey';
       return {...entry, color};
     }
@@ -578,9 +585,9 @@ Don't change the session state (aka options) format!
   selectedLineDescriptorHash: string,
 }
 
-This format is slightly different from ChartSection.State, which has
-`descriptor` (which does not include statistics) instead of `parameters`
-(which does include statistics).
+This format is slightly different from ChartSection.buildState(), which has
+`descriptor` (which does not include statistics) instead of `parameters` (which
+does include statistics).
 */
 
 ChartSection.getSessionState = state => {
@@ -597,7 +604,7 @@ ChartSection.getSessionState = state => {
     },
     isLinked: state.isLinked,
     isExpanded: state.isExpanded,
-    title: state.title,
+    title: state.title_,
     minRevision: state.minRevision,
     maxRevision: state.maxRevision,
     brushRevisions: state.chartLayout && state.chartLayout.brushRevisions,
@@ -611,7 +618,7 @@ ChartSection.getSessionState = state => {
 
 ChartSection.getRouteParams = state => {
   const allBotsSelected = state.descriptor.bot.selectedOptions.length ===
-      cp.OptionGroup.countDescendents(state.descriptor.bot.options);
+      OptionGroup.countDescendents(state.descriptor.bot.options);
 
   if (state.descriptor.suite.selectedOptions.length > 2 ||
       state.descriptor.case.selectedOptions.length > 2 ||
@@ -662,7 +669,7 @@ ChartSection.getRouteParams = state => {
   if (state.maxRevision !== undefined) {
     routeParams.set('maxRev', state.maxRevision);
   }
-  if (state.mode !== cp.MODE.NORMALIZE_UNIT) {
+  if (state.mode !== MODE.NORMALIZE_UNIT) {
     routeParams.set('mode', state.mode);
   }
   if (state.selectedLineDescriptorHash) {
@@ -689,7 +696,7 @@ ChartSection.getRouteParams = state => {
 };
 
 ChartSection.computeTitle = state => {
-  if (state.isTitleCustom) return state.title;
+  if (state.isTitleCustom) return state.title_;
   let title = state.descriptor.measurement.selectedOptions.join(', ');
   if (state.descriptor.bot.selectedOptions.length > 0 &&
       state.descriptor.bot.selectedOptions.length < 4) {
@@ -801,4 +808,4 @@ ChartSection.matchesOptions = (state, options) => {
   return true;
 };
 
-cp.ElementBase.register(ChartSection);
+ElementBase.register(ChartSection);

@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigator.h"
 
 #include "base/time/time.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace content {
@@ -19,7 +20,8 @@ NavigationController* Navigator::GetController() {
 
 bool Navigator::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url) {
+    const GURL& default_url,
+    mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
   return false;
 }
 
@@ -33,6 +35,8 @@ void Navigator::OnBeginNavigation(
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator) {}
+    blink::mojom::NavigationInitiatorPtr navigation_initiator,
+    scoped_refptr<PrefetchedSignedExchangeCache>
+        prefetched_signed_exchange_cache) {}
 
 }  // namespace content

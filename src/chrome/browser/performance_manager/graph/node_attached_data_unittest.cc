@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/graph/node_attached_data.h"
+#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
 
 #include <utility>
 
 #include "base/test/gtest_util.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
@@ -29,15 +29,12 @@ constexpr size_t kFooDataSize = sizeof(uintptr_t);
 // A dummy node type so that we can exercise node attached storage code paths.
 class DummyNode : public NodeBase {
  public:
-  explicit DummyNode(Graph* graph)
-      : NodeBase(resource_coordinator::CoordinationUnitType::kInvalidType,
-                 graph) {}
+  explicit DummyNode(GraphImpl* graph)
+      : NodeBase(NodeTypeEnum::kInvalidType, graph) {}
 
   ~DummyNode() override = default;
 
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kInvalidType;
-  }
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kInvalidType; }
 
   // Internal storage for DummyData and FooData types. These would normally be
   // protected and the data classes friended, but we also want to access these
@@ -58,6 +55,9 @@ class DummyData : public NodeAttachedDataImpl<DummyData> {
                   public NodeAttachedDataOwnedByNodeType<DummyNode> {};
 
   DummyData() = default;
+  explicit DummyData(const PageNodeImpl* page_node) {}
+  explicit DummyData(const ProcessNodeImpl* process_node) {}
+  explicit DummyData(const DummyNode* dummy_node) {}
   ~DummyData() override = default;
 
   // Provides access to storage on DummyNodes.
@@ -78,6 +78,8 @@ class FooData : public NodeAttachedDataImpl<FooData> {
                   public NodeAttachedDataInternalOnNodeType<DummyNode> {};
 
   FooData() = default;
+  explicit FooData(const PageNodeImpl* page_node) {}
+  explicit FooData(const DummyNode* dummy_node) {}
   ~FooData() override = default;
 
   // Provides access to storage on DummyNodes.
@@ -90,6 +92,16 @@ class FooData : public NodeAttachedDataImpl<FooData> {
   DISALLOW_COPY_AND_ASSIGN(FooData);
 };
 
+// An implementation of map-stored user-data using the public interface.
+class BarData : public ExternalNodeAttachedDataImpl<BarData> {
+ public:
+  explicit BarData(const PageNode* page_node) : page_node_(page_node) {}
+
+  ~BarData() override = default;
+
+  const PageNode* page_node_ = nullptr;
+};
+
 }  // namespace
 
 class NodeAttachedDataTest : public GraphTestHarness {
@@ -99,56 +111,26 @@ class NodeAttachedDataTest : public GraphTestHarness {
 
   static void AttachInMap(const NodeBase* node,
                           std::unique_ptr<NodeAttachedData> data) {
-    return NodeAttachedData::AttachInMap(node, std::move(data));
+    return NodeAttachedDataMapHelper::AttachInMap(node, std::move(data));
   }
 
   // Retrieves the data associated with the provided |node| and |key|. This
   // returns nullptr if no data exists.
   static NodeAttachedData* GetFromMap(const NodeBase* node, const void* key) {
-    return NodeAttachedData::GetFromMap(node, key);
+    return NodeAttachedDataMapHelper::GetFromMap(node, key);
   }
 
   // Detaches the data associated with the provided |node| and |key|. It is
   // harmless to call this when no data exists.
   static std::unique_ptr<NodeAttachedData> DetachFromMap(const NodeBase* node,
                                                          const void* key) {
-    return NodeAttachedData::DetachFromMap(node, key);
+    return NodeAttachedDataMapHelper::DetachFromMap(node, key);
   }
 };
 
 TEST_F(NodeAttachedDataTest, UserDataKey) {
   std::unique_ptr<NodeAttachedData> data = std::make_unique<DummyData>();
-  EXPECT_EQ(data->key(), DummyData::UserDataKey());
-}
-
-TEST_F(NodeAttachedDataTest, CanAttach) {
-  EXPECT_FALSE(DummyData::CanAttachToNodeType<FrameNodeImpl>());
-  EXPECT_TRUE(DummyData::CanAttachToNodeType<PageNodeImpl>());
-  EXPECT_TRUE(DummyData::CanAttachToNodeType<ProcessNodeImpl>());
-  EXPECT_FALSE(DummyData::CanAttachToNodeType<SystemNodeImpl>());
-
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kInvalidType));
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kFrame));
-  EXPECT_TRUE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kPage));
-  EXPECT_TRUE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kProcess));
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kSystem));
-
-  std::unique_ptr<NodeAttachedData> data = std::make_unique<DummyData>();
-  EXPECT_FALSE(data->CanAttach(
-      resource_coordinator::CoordinationUnitType::kInvalidType));
-  EXPECT_FALSE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kFrame));
-  EXPECT_TRUE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kPage));
-  EXPECT_TRUE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kProcess));
-  EXPECT_FALSE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kSystem));
+  EXPECT_EQ(data->GetKey(), DummyData::UserDataKey());
 }
 
 TEST_F(NodeAttachedDataTest, RawAttachDetach) {
@@ -163,28 +145,19 @@ TEST_F(NodeAttachedDataTest, RawAttachDetach) {
 
   // No data yet exists.
   EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
-  EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->key()));
+  EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->GetKey()));
 
   // Attach the data and look it up again.
   AttachInMap(page_node, std::move(data));
   EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
-  EXPECT_EQ(raw_base, GetFromMap(page_node, raw_data->key()));
+  EXPECT_EQ(raw_base, GetFromMap(page_node, raw_data->GetKey()));
 
   // Detach the data.
   std::unique_ptr<NodeAttachedData> base_data =
-      DetachFromMap(page_node, raw_data->key());
+      DetachFromMap(page_node, raw_data->GetKey());
   EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(raw_base, base_data.get());
-  EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->key()));
-}
-
-TEST_F(NodeAttachedDataTest, RawAttachExplodesOnWrongNodeType) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-  auto* frame_node = mock_graph.frame.get();
-
-  // Trying to attach a DummyData to a FrameNode should explode with a CHECK.
-  std::unique_ptr<DummyData> data = std::make_unique<DummyData>();
-  EXPECT_CHECK_DEATH(AttachInMap(frame_node, std::move(data)));
+  EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->GetKey()));
 }
 
 TEST_F(NodeAttachedDataTest, TypedAttachDetach) {
@@ -288,6 +261,30 @@ TEST_F(NodeAttachedDataTest, NodeInternalStorage) {
   FooData::Destroy(&dummy_node);
   EXPECT_FALSE(dummy_node.foo_data_.Get());
   EXPECT_FALSE(FooData::Get(&dummy_node));
+}
+
+TEST_F(NodeAttachedDataTest, PublicNodeAttachedData) {
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  PageNodeImpl* page_node_impl = mock_graph.page.get();
+  const PageNode* page_node = page_node_impl;
+
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
+  BarData* bar_data = BarData::Get(page_node);
+  EXPECT_FALSE(bar_data);
+
+  bar_data = BarData::GetOrCreate(page_node);
+  EXPECT_TRUE(bar_data);
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(
+                    page_node_impl, bar_data->GetKey()));
+  EXPECT_EQ(page_node, bar_data->page_node_);
+
+  EXPECT_EQ(bar_data, BarData::Get(page_node));
+
+  EXPECT_TRUE(BarData::Destroy(page_node));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
+  EXPECT_FALSE(BarData::Destroy(page_node));
+  EXPECT_FALSE(BarData::Get(page_node));
 }
 
 }  // namespace performance_manager

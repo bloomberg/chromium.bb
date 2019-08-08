@@ -39,17 +39,6 @@ def _WaitUntilCtrlC():
     print()  # print a new line after the "^C" the user typed to the console
 
 
-# TODO(ntfschr): upstream this into devil, since we can avoid a read+write to
-# improve performance.
-def _PullFileWithRoot(device, device_path, host_path):
-  dirname = os.path.dirname(host_path)
-  if dirname and not os.path.exists(dirname):
-    os.makedirs(dirname)
-  with open(host_path, 'w') as f:
-    contents = device.ReadFile(device_path, as_root=True)
-    f.write(contents)
-
-
 def CheckAppNotRunning(device, package_name, force):
   processes = device.ListProcesses(package_name)
   if processes:
@@ -127,7 +116,7 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/net-d
   # The netlog file will be under the app's uid, which the default shell doesn't
   # have permission to read (but root does). Prefer this to EnableRoot(), which
   # restarts the adb daemon.
-  _PullFileWithRoot(device, device_netlog_path, host_netlog_path)
+  device.PullFile(device_netlog_path, host_netlog_path, as_root=True)
   device.RemovePath(device_netlog_path, as_root=True)
 
 

@@ -149,53 +149,51 @@ class FindBarView::MatchCountLabel : public views::Label {
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
 
-FindBarView::FindBarView(FindBarHost* host)
-    : find_bar_host_(host),
-      find_text_(new views::Textfield),
-      match_count_text_(new MatchCountLabel()),
-      focus_forwarder_view_(new FocusForwarderView(find_text_)),
-      separator_(new views::Separator()),
-      find_previous_button_(views::CreateVectorImageButton(this)),
-      find_next_button_(views::CreateVectorImageButton(this)),
-      close_button_(views::CreateVectorImageButton(this)) {
-  find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
-  find_text_->SetDefaultWidthInChars(kDefaultCharWidth);
-  find_text_->SetMinimumWidthInChars(kMinimumCharWidth);
-  find_text_->set_controller(this);
-  find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
-  find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
-  AddChildView(find_text_);
+FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
+  auto find_text = std::make_unique<views::Textfield>();
+  find_text->SetID(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  find_text->SetDefaultWidthInChars(kDefaultCharWidth);
+  find_text->SetMinimumWidthInChars(kMinimumCharWidth);
+  find_text->set_controller(this);
+  find_text->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
+  find_text->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  find_text_ = AddChildView(std::move(find_text));
 
-  match_count_text_->SetEventTargeter(
+  auto match_count_text = std::make_unique<MatchCountLabel>();
+  match_count_text->SetEventTargeter(
       std::make_unique<views::ViewTargeter>(this));
-  AddChildView(match_count_text_);
+  match_count_text_ = AddChildView(std::move(match_count_text));
 
-  AddChildView(separator_);
+  separator_ = AddChildView(std::make_unique<views::Separator>());
 
-  find_previous_button_->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
-  find_previous_button_->SetFocusForPlatform();
-  find_previous_button_->SetTooltipText(
+  auto find_previous_button = views::CreateVectorImageButton(this);
+  find_previous_button->SetID(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
+  find_previous_button->SetFocusForPlatform();
+  find_previous_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
-  find_previous_button_->SetAccessibleName(
+  find_previous_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_PREVIOUS));
-  AddChildView(find_previous_button_);
+  find_previous_button_ = AddChildView(std::move(find_previous_button));
 
-  find_next_button_->set_id(VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON);
-  find_next_button_->SetFocusForPlatform();
-  find_next_button_->SetTooltipText(
+  auto find_next_button = views::CreateVectorImageButton(this);
+  find_next_button->SetID(VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON);
+  find_next_button->SetFocusForPlatform();
+  find_next_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
-  find_next_button_->SetAccessibleName(
+  find_next_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEXT));
-  AddChildView(find_next_button_);
+  find_next_button_ = AddChildView(std::move(find_next_button));
 
-  close_button_->set_id(VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON);
-  close_button_->SetFocusForPlatform();
-  close_button_->SetTooltipText(
+  auto close_button = views::CreateVectorImageButton(this);
+  close_button->SetID(VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON);
+  close_button->SetFocusForPlatform();
+  close_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
-  close_button_->SetAnimationDuration(0);
-  AddChildView(close_button_);
+  close_button->SetAnimationDuration(0);
+  close_button_ = AddChildView(std::move(close_button));
 
-  AddChildView(focus_forwarder_view_);
+  auto focus_forwarder_view = std::make_unique<FocusForwarderView>(find_text_);
+  focus_forwarder_view_ = AddChildView(std::move(focus_forwarder_view));
 
   EnableCanvasFlippingForRTLUI(true);
 
@@ -359,8 +357,10 @@ gfx::Size FindBarView::CalculatePreferredSize() const {
 void FindBarView::AddedToWidget() {
   // Since the find bar now works/looks like a location bar bubble, make sure it
   // doesn't get dark themed in incognito mode.
-  if (find_bar_host_->browser_view()->browser()->profile()->GetProfileType() ==
-      Profile::INCOGNITO_PROFILE)
+  if (find_bar_host_->browser_view()
+          ->browser()
+          ->profile()
+          ->IsIncognitoProfile())
     SetNativeTheme(ui::NativeTheme::GetInstanceForNativeUi());
 }
 
@@ -381,7 +381,7 @@ void FindBarView::FocusAndSelectAll() {
 
 void FindBarView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
-  switch (sender->id()) {
+  switch (sender->GetID()) {
     case VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON:
     case VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON:
       if (!find_text_->text().empty()) {
@@ -389,7 +389,7 @@ void FindBarView::ButtonPressed(
             find_bar_host_->GetFindBarController()->web_contents());
         find_tab_helper->StartFinding(
             find_text_->text(),
-            sender->id() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
+            sender->GetID() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
             false);  // Not case sensitive.
       }
       break;
@@ -502,7 +502,8 @@ const char* FindBarView::GetClassName() const {
   return "FindBarView";
 }
 
-void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void FindBarView::OnThemeChanged() {
+  ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
       SkColorSetA(theme->GetSystemColor(
                       ui::NativeTheme::kColorId_TextfieldDefaultBackground),
@@ -517,8 +518,8 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 
-  const SkColor base_foreground_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  const SkColor base_foreground_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
 
   match_count_text_->SetBackgroundColor(bg_color);
   match_count_text_->SetEnabledColor(

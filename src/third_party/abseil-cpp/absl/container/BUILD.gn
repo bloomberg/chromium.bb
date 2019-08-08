@@ -6,6 +6,7 @@ import("//build_overrides/build.gni")
 
 if (build_with_chromium) {
   visibility = [
+    "//libassistant/*",
     "//third_party/webrtc/*",
     "//third_party/abseil-cpp/*",
     "//third_party/googletest:gtest",
@@ -60,6 +61,7 @@ source_set("inlined_vector_internal") {
     "internal/inlined_vector.h",
   ]
   deps = [
+    ":compressed_tuple",
     "../meta:type_traits",
   ]
 }
@@ -111,6 +113,9 @@ source_set("test_instance_tracker") {
   ]
   public = [
     "internal/test_instance_tracker.h",
+  ]
+  deps = [
+    "../types:compare",
   ]
   visibility = []
   visibility += [ "../*" ]

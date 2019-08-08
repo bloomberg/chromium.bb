@@ -118,7 +118,7 @@ class CONTENT_EXPORT LayerTreeView
   void RequestNewLocalSurfaceId();
   void RequestForceSendMetadata();
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
-  void SetURLForUkm(const GURL& url);
+  void SetSourceURL(ukm::SourceId source_id, const GURL& url);
   // Call this if the compositor is becoming non-visible in a way that it won't
   // be used any longer. In this case, becoming visible is longer but this
   // releases more resources (such as its use of the GpuChannel).
@@ -132,7 +132,7 @@ class CONTENT_EXPORT LayerTreeView
   std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits() override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void ForceRecalculateRasterScales() override;
   void SetEventListenerProperties(
       cc::EventListenerClass eventClass,
@@ -181,8 +181,6 @@ class CONTENT_EXPORT LayerTreeView
       const gfx::PresentationFeedback& feedback) override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  void DidGenerateLocalSurfaceIdAllocation(
-      const viz::LocalSurfaceIdAllocation& allocation) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

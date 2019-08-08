@@ -17,10 +17,6 @@
 
 namespace content {
 
-namespace {
-const char* const kDefaultInstanceSiteURL = "http://unisolated.invalid";
-}  // namespace
-
 // Start the BrowsingInstance ID counter from 1 to avoid a conflict with the
 // invalid BrowsingInstanceId value, which is 0 in its underlying IdType32.
 int BrowsingInstance::next_browsing_instance_id_ = 1;
@@ -60,9 +56,7 @@ bool BrowsingInstance::IsDefaultSiteInstance(
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = SiteInstanceImpl::GetSiteForURL(isolation_context_, url)
-                         .possibly_invalid_spec();
-
+  std::string site = GetSiteForURL(url).possibly_invalid_spec();
   return site_instance_map_.find(site) != site_instance_map_.end();
 }
 
@@ -98,8 +92,7 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
     return;
   }
 
-  *site_url = SiteInstanceImpl::GetSiteForURL(
-      isolation_context_, url, true /* should_use_effective_urls */);
+  *site_url = GetSiteForURL(url);
   *lock_url =
       SiteInstanceImpl::DetermineProcessLockURL(isolation_context_, url);
 }
@@ -107,9 +100,7 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     const GURL& url,
     bool allow_default_instance) {
-  std::string site = SiteInstanceImpl::GetSiteForURL(isolation_context_, url)
-                         .possibly_invalid_spec();
-
+  std::string site = GetSiteForURL(url).possibly_invalid_spec();
   auto i = site_instance_map_.find(site);
   if (i != site_instance_map_.end())
     return i->second;
@@ -119,8 +110,13 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
   // have multiple unisolated sites share a process. We don't use the default
   // instance when kProcessSharingWithStrictSiteInstances is enabled because in
   // that case we want each site to have their own SiteInstance object and logic
-  // elsewhere ensures that those SiteInstances share a process.
-  if (allow_default_instance &&
+  // elsewhere ensures that those SiteInstances share a process.  We also don't
+  // use default SiteInstances when SiteInstance doesn't assign a site URL for
+  // |url|, since in that case the SiteInstance should remain unused, and a
+  // subsequent navigation should always be able to reuse it, whether or not
+  // it's to a site requiring a dedicated process or to a site that will use
+  // the default SiteInstance.
+  if (allow_default_instance && SiteInstanceImpl::ShouldAssignSiteForURL(url) &&
       !base::FeatureList::IsEnabled(
           features::kProcessSharingWithStrictSiteInstances) &&
       !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context_,
@@ -139,7 +135,7 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
       // calls RegisterSiteInstance().
       default_site_instance_ = site_instance.get();
 
-      site_instance->SetSite(GURL(kDefaultInstanceSiteURL));
+      site_instance->SetSite(SiteInstanceImpl::GetDefaultSiteURL());
     }
     return site_instance;
   }
@@ -204,6 +200,10 @@ BrowsingInstance::~BrowsingInstance() {
   DCHECK(!default_site_instance_);
   if (default_process_)
     default_process_->RemoveObserver(this);
+}
+
+GURL BrowsingInstance::GetSiteForURL(const GURL& url) const {
+  return SiteInstanceImpl::GetSiteForURL(isolation_context_, url);
 }
 
 }  // namespace content

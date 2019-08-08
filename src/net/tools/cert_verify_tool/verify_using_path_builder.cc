@@ -131,7 +131,8 @@ bool VerifyUsingPathBuilder(
     const std::vector<CertInput>& intermediate_der_certs,
     const std::vector<CertInput>& root_der_certs,
     const base::Time at_time,
-    const base::FilePath& dump_prefix_path) {
+    const base::FilePath& dump_prefix_path,
+    scoped_refptr<net::CertNetFetcher> cert_net_fetcher) {
   base::Time::Exploded exploded_time;
   at_time.UTCExplode(&exploded_time);
   net::der::GeneralizedTime time = ConvertExplodedTime(exploded_time);
@@ -173,12 +174,12 @@ bool VerifyUsingPathBuilder(
       net::InitialAnyPolicyInhibit::kFalse, &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
 
-  // TODO(mattm): add command line flags to configure using
-  // CertIssuerSourceAia
-  DCHECK(net::GetGlobalCertNetFetcher());
-  net::CertIssuerSourceAia aia_cert_issuer_source(
-      net::GetGlobalCertNetFetcher());
-  path_builder.AddCertIssuerSource(&aia_cert_issuer_source);
+  std::unique_ptr<net::CertIssuerSourceAia> aia_cert_issuer_source;
+  if (cert_net_fetcher.get()) {
+    aia_cert_issuer_source =
+        std::make_unique<net::CertIssuerSourceAia>(std::move(cert_net_fetcher));
+    path_builder.AddCertIssuerSource(aia_cert_issuer_source.get());
+  }
 
   // Run the path builder.
   path_builder.Run();

@@ -33,10 +33,13 @@
 #include "base/observer_list.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class AccountTrackerService;
+class GaiaCookieManagerService;
 class PrefRegistrySimple;
 class PrefService;
 class ProfileOAuth2TokenService;
@@ -52,6 +55,14 @@ class SigninManagerBase {
 
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const AccountInfo& account_info) {}
+
+    // Called during the signin as soon as
+    // SigninManagerBase::authenticated_account_id_ is set.
+    virtual void AuthenticatedAccountSet(const AccountInfo& account_info) {}
+
+    // Called during the signout as soon as
+    // SigninManagerBase::authenticated_account_id_ is cleared.
+    virtual void AuthenticatedAccountCleared() {}
 
    protected:
     virtual ~Observer() {}
@@ -73,9 +84,23 @@ class SigninManagerBase {
 #endif
   SigninManagerBase(SigninClient* client,
                     ProfileOAuth2TokenService* token_service,
-                    AccountTrackerService* account_tracker_service);
+                    AccountTrackerService* account_tracker_service,
+                    GaiaCookieManagerService* cookie_manager_service,
+                    signin::AccountConsistencyMethod account_consistency);
 #if !defined(OS_CHROMEOS)
  public:
+#endif
+
+#if !defined(OS_CHROMEOS)
+  // Used to remove accounts from the token service and the account tracker.
+  enum class RemoveAccountsOption {
+    // Do not remove accounts.
+    kKeepAllAccounts,
+    // Remove all the accounts.
+    kRemoveAllAccounts,
+    // Removes the authenticated account if it is in authentication error.
+    kRemoveAuthenticatedAccountIfInError
+  };
 #endif
 
   virtual ~SigninManagerBase();
@@ -122,6 +147,34 @@ class SigninManagerBase {
   void SetObserver(Observer* observer);
   void ClearObserver();
 
+  // Signout API surfaces (not supported on ChromeOS, where signout is not
+  // permitted).
+#if !defined(OS_CHROMEOS)
+  // Signs a user out, removing the preference, erasing all keys
+  // associated with the authenticated user, and canceling all auth in progress.
+  // On mobile and on desktop pre-DICE, this also removes all accounts from
+  // Chrome by revoking all refresh tokens.
+  // On desktop with DICE enabled, this will remove the authenticated account
+  // from Chrome only if it is in authentication error. No other accounts are
+  // removed.
+  void SignOut(signin_metrics::ProfileSignout signout_source_metric,
+               signin_metrics::SignoutDelete signout_delete_metric);
+
+  // Signs a user out, removing the preference, erasing all keys
+  // associated with the authenticated user, and canceling all auth in progress.
+  // It removes all accounts from Chrome by revoking all refresh tokens.
+  void SignOutAndRemoveAllAccounts(
+      signin_metrics::ProfileSignout signout_source_metric,
+      signin_metrics::SignoutDelete signout_delete_metric);
+
+  // Signs a user out, removing the preference, erasing all keys
+  // associated with the authenticated user, and canceling all auth in progress.
+  // Does not remove the accounts from the token service.
+  void SignOutAndKeepAllAccounts(
+      signin_metrics::ProfileSignout signout_source_metric,
+      signin_metrics::SignoutDelete signout_delete_metric);
+#endif
+
  protected:
   SigninClient* signin_client() const { return client_; }
 
@@ -160,6 +213,23 @@ class SigninManagerBase {
   // SigninManagerBase.
   friend class SigninManager;
 
+#if !defined(OS_CHROMEOS)
+  // Starts the sign out process.
+  void StartSignOut(signin_metrics::ProfileSignout signout_source_metric,
+                    signin_metrics::SignoutDelete signout_delete_metric,
+                    RemoveAccountsOption remove_option);
+
+  // The sign out process which is started by SigninClient::PreSignOut()
+  void OnSignoutDecisionReached(
+      signin_metrics::ProfileSignout signout_source_metric,
+      signin_metrics::SignoutDelete signout_delete_metric,
+      RemoveAccountsOption remove_option,
+      SigninClient::SignoutDecision signout_decision);
+
+  // Send all observers |GoogleSignedOut| notifications.
+  void FireGoogleSignedOut(const AccountInfo& account_info);
+#endif
+
   SigninClient* client_;
 
   // The ProfileOAuth2TokenService instance associated with this object. Must
@@ -167,6 +237,7 @@ class SigninManagerBase {
   ProfileOAuth2TokenService* token_service_;
 
   AccountTrackerService* account_tracker_service_;
+
   bool initialized_;
 
   // Account id after successful authentication.
@@ -174,6 +245,8 @@ class SigninManagerBase {
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;
+
+  signin::AccountConsistencyMethod account_consistency_;
 
   base::WeakPtrFactory<SigninManagerBase> weak_pointer_factory_;
 

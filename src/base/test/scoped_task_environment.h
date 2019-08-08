@@ -20,10 +20,9 @@
 
 namespace base {
 
-
 class Clock;
 class FileDescriptorWatcher;
-class ThreadPool;
+class ThreadPoolInstance;
 class TickClock;
 
 namespace test {
@@ -40,9 +39,9 @@ namespace test {
 // the thread where the ScopedTaskEnvironment lives.
 //
 // Tasks posted through base/task/post_task.h run on dedicated threads. If
-// ExecutionMode is QUEUED, they run when RunUntilIdle() or
-// ~ScopedTaskEnvironment is called. If ExecutionMode is ASYNC, they run as they
-// are posted.
+// ThreadPoolExecutionMode is QUEUED, they run when RunUntilIdle() or
+// ~ScopedTaskEnvironment is called. If ThreadPoolExecutionMode is ASYNC, they
+// run as they are posted.
 //
 // All methods of ScopedTaskEnvironment must be called from the same thread.
 //
@@ -81,7 +80,7 @@ class ScopedTaskEnvironment {
     // The main thread doesn't pump system messages and uses a mock clock for
     // delayed tasks (controllable via FastForward*() methods).
     // TODO(gab): Make this the default |main_thread_type|.
-    // TODO(gab): Also mock the ThreadPool's clock simultaneously (this
+    // TODO(gab): Also mock the ThreadPoolInstance's clock simultaneously (this
     // currently only mocks the main thread's clock).
     MOCK_TIME,
     // The main thread pumps UI messages.
@@ -100,14 +99,22 @@ class ScopedTaskEnvironment {
     IO_MOCK_TIME,
   };
 
-  enum class ExecutionMode {
-    // Tasks are queued and only executed when RunUntilIdle() is explicitly
+  // Note that this is irrelevant (and ignored) under
+  // ThreadingMode::MAIN_THREAD_ONLY
+  enum class ThreadPoolExecutionMode {
+    // Thread pool tasks are queued and only executed when RunUntilIdle() is
+    // explicitly
     // called.
     QUEUED,
-    // Tasks run as they are posted. RunUntilIdle() can still be used to block
+    // Thread pool tasks run as they are posted. RunUntilIdle() can still be
+    // used to block
     // until done.
     ASYNC,
+    DEFAULT = ASYNC
   };
+
+  // TODO(carlscab): Deprecated. Migrate all uses and remove.
+  using ExecutionMode = ThreadPoolExecutionMode;
 
   enum class NowSource {
     // base::Time::Now() and base::TimeTicks::Now() are real time.
@@ -126,12 +133,23 @@ class ScopedTaskEnvironment {
     MAIN_THREAD_MOCK_TIME,
   };
 
+  enum class ThreadingMode {
+    // ThreadPool will be initialized, thus adding support for multi-threaded
+    // tests.
+    MULTIPLE_THREADS,
+    // No thread pool will be initialized. Useful for tests that want to run
+    // single threaded.
+    MAIN_THREAD_ONLY,
+    DEFAULT = MULTIPLE_THREADS
+  };
+
   // List of traits that are valid inputs for the constructor below.
   struct ValidTrait {
     ValidTrait(MainThreadType);
-    ValidTrait(ExecutionMode);
+    ValidTrait(ThreadPoolExecutionMode);
     ValidTrait(NowSource);
     ValidTrait(SubclassCreatesDefaultTaskRunner);
+    ValidTrait(ThreadingMode);
   };
 
   // Constructor accepts zero or more traits which customize the testing
@@ -143,14 +161,16 @@ class ScopedTaskEnvironment {
       : ScopedTaskEnvironment(
             trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
                 args...),
-            trait_helpers::GetEnum<ExecutionMode, ExecutionMode::ASYNC>(
-                args...),
+            trait_helpers::GetEnum<ThreadPoolExecutionMode,
+                                   ThreadPoolExecutionMode::DEFAULT>(args...),
             trait_helpers::GetEnum<NowSource, NowSource::REAL_TIME>(args...),
+            trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
+                args...),
             trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner>(args...),
             trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the
-  // ThreadPool and the (Thread|Sequenced)TaskRunnerHandle.
+  // ThreadPoolInstance and the (Thread|Sequenced)TaskRunnerHandle.
   virtual ~ScopedTaskEnvironment();
 
   // Returns a TaskRunner that schedules tasks on the main thread.
@@ -229,12 +249,15 @@ class ScopedTaskEnvironment {
     return main_thread_type_;
   }
 
-  constexpr ExecutionMode execution_control_mode() const {
-    return execution_control_mode_;
+  constexpr ThreadPoolExecutionMode thread_pool_execution_mode() const {
+    return thread_pool_execution_mode_;
   }
 
   // Returns the TimeDomain driving this ScopedTaskEnvironment.
   sequence_manager::TimeDomain* GetTimeDomain() const;
+
+  // For testing the MockTimeDomain.
+  void SetAllowTimeToAutoAdvanceUntilForTesting(TimeTicks advance_until);
 
   sequence_manager::SequenceManager* sequence_manager() const;
 
@@ -248,18 +271,22 @@ class ScopedTaskEnvironment {
   class MockTimeDomain;
   class TestTaskTracker;
 
+  void InitializeThreadPool();
+  void DestroyThreadPool();
+
   void CompleteInitialization();
 
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   ScopedTaskEnvironment(MainThreadType main_thread_type,
-                        ExecutionMode execution_control_mode,
+                        ThreadPoolExecutionMode thread_pool_execution_mode,
                         NowSource now_source,
+                        ThreadingMode threading_mode,
                         bool subclass_creates_default_taskrunner,
                         trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
-  const ExecutionMode execution_control_mode_;
+  const ThreadPoolExecutionMode thread_pool_execution_mode_;
   const bool subclass_creates_default_taskrunner_;
 
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
@@ -276,10 +303,10 @@ class ScopedTaskEnvironment {
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
 
-  const ThreadPool* thread_pool_ = nullptr;
+  const ThreadPoolInstance* thread_pool_ = nullptr;
 
   // Owned by |thread_pool_|.
-  TestTaskTracker* const task_tracker_;
+  TestTaskTracker* task_tracker_ = nullptr;
 
   // Ensures destruction of lazy TaskRunners when this is destroyed.
   std::unique_ptr<internal::ScopedLazyTaskRunnerListForTesting>
@@ -296,4 +323,4 @@ class ScopedTaskEnvironment {
 }  // namespace test
 }  // namespace base
 
-#endif  // BASE_TEST_SCOPED_ASYNC_TASK_SCHEDULER_H_
+#endif  // BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_

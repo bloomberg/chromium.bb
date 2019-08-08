@@ -103,8 +103,9 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  void RequestTextChecking(const base::string16& text,
-                           blink::WebTextCheckingCompletion* completion);
+  void RequestTextChecking(
+      const base::string16& text,
+      std::unique_ptr<blink::WebTextCheckingCompletion> completion);
 #endif
 
   // Creates a list of WebTextCheckingResult objects (used by WebKit) from a

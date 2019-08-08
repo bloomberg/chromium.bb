@@ -24,14 +24,13 @@ namespace net {
 namespace {
 
 // Returns event parameters for a PAC error message (line number + message).
-std::unique_ptr<base::Value> NetLogErrorCallback(
-    int line_number,
-    const base::string16* message,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("line_number", line_number);
-  dict->SetString("message", *message);
-  return std::move(dict);
+base::Value NetLogErrorCallback(int line_number,
+                                const base::string16* message,
+                                NetLogCaptureMode /* capture_mode */) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("line_number", line_number);
+  dict.SetStringKey("message", *message);
+  return dict;
 }
 
 class BindingsImpl : public ProxyResolverV8Tracing::Bindings {

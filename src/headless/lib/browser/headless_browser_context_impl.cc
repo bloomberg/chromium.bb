@@ -12,6 +12,7 @@
 #include "base/guid.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -34,6 +35,9 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
       permission_controller_delegate_(
           std::make_unique<HeadlessPermissionManager>(this)) {
   InitWhileIOAllowed();
+  simple_factory_key_ =
+      std::make_unique<SimpleFactoryKey>(GetPath(), IsOffTheRecord());
+  SimpleKeyMap::GetInstance()->Associate(this, simple_factory_key_.get());
   base::FilePath user_data_path =
       IsOffTheRecord() || context_options_->user_data_dir().empty()
           ? base::FilePath()
@@ -44,6 +48,7 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
 
 HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  SimpleKeyMap::GetInstance()->Dissociate(this);
   NotifyWillBeDestroyed(this);
 
   // Destroy all web contents before shutting down storage partitions.

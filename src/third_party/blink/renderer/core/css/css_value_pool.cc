@@ -44,10 +44,10 @@ CSSValuePool& CssValuePool() {
 }
 
 CSSValuePool::CSSValuePool()
-    : inherited_value_(new CSSInheritedValue),
+    : inherited_value_(MakeGarbageCollected<CSSInheritedValue>()),
       initial_value_(MakeGarbageCollected<CSSInitialValue>()),
-      unset_value_(new CSSUnsetValue),
-      invalid_variable_value_(new CSSInvalidVariableValue),
+      unset_value_(MakeGarbageCollected<CSSUnsetValue>()),
+      invalid_variable_value_(MakeGarbageCollected<CSSInvalidVariableValue>()),
       color_transparent_(
           MakeGarbageCollected<CSSColorValue>(Color::kTransparent)),
       color_white_(MakeGarbageCollected<CSSColorValue>(Color::kWhite)),

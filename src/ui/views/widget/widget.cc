@@ -4,9 +4,11 @@
 
 #include "ui/views/widget/widget.h"
 
+#include <set>
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,10 +43,6 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"     // nogncheck
-#endif
-
 namespace views {
 
 namespace {
@@ -69,14 +67,13 @@ NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
   if (params.native_widget)
     return params.native_widget;
 
-  ViewsDelegate* views_delegate = ViewsDelegate::GetInstance();
-  if (views_delegate && !views_delegate->native_widget_factory().is_null()) {
-    NativeWidget* native_widget =
-        views_delegate->native_widget_factory().Run(params, delegate);
+  const auto& factory = ViewsDelegate::GetInstance()->native_widget_factory();
+  if (!factory.is_null()) {
+    NativeWidget* native_widget = factory.Run(params, delegate);
     if (native_widget)
       return native_widget;
   }
-  return internal::NativeWidgetPrivate::CreateNativeWidget(params, delegate);
+  return internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
 }
 
 void NotifyCaretBoundsChanged(ui::InputMethod* input_method) {
@@ -115,6 +112,30 @@ class DefaultWidgetDelegate : public WidgetDelegate {
   Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, PaintAsActiveLock:
+
+Widget::PaintAsActiveLock::PaintAsActiveLock() = default;
+Widget::PaintAsActiveLock::~PaintAsActiveLock() = default;
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, PaintAsActiveLockImpl:
+
+class Widget::PaintAsActiveLockImpl : public Widget::PaintAsActiveLock {
+ public:
+  explicit PaintAsActiveLockImpl(base::WeakPtr<Widget>&& widget)
+      : widget_(widget) {}
+
+  ~PaintAsActiveLockImpl() override {
+    Widget* const widget = widget_.get();
+    if (widget)
+      widget->UnlockPaintAsActive();
+  }
+
+ private:
+  base::WeakPtr<Widget> widget_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +188,8 @@ Widget::~Widget() {
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
   } else {
-    DCHECK(native_widget_destroyed_)
+    // TODO(crbug.com/937381): Revert to DCHECK once we figure out the reason.
+    CHECK(native_widget_destroyed_)
         << "Destroying a widget with a live native widget. "
         << "Widget probably should use WIDGET_OWNS_NATIVE_WIDGET ownership.";
   }
@@ -296,8 +318,7 @@ void Widget::Init(const InitParams& in_params) {
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   }
 
-  if (ViewsDelegate::GetInstance())
-    ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
+  ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY)
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
@@ -356,9 +377,14 @@ void Widget::Init(const InitParams& in_params) {
     SetContentsView(params.delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(params.bounds);
   }
-  // This must come after SetContentsView() or it might not be able to find
-  // the correct NativeTheme (on Linux). See http://crbug.com/384492
+  // TODO(https://crbug.com/953978): Use GetNativeTheme() for all platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  if (native_theme)
+    observer_manager_.Add(native_theme);
+#else
   observer_manager_.Add(GetNativeTheme());
+#endif
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
 }
@@ -887,7 +913,7 @@ NonClientFrameView* Widget::CreateNonClientFrameView() {
       widget_delegate_->CreateNonClientFrameView(this);
   if (!frame_view)
     frame_view = native_widget_->CreateNonClientFrameView();
-  if (!frame_view && ViewsDelegate::GetInstance()) {
+  if (!frame_view) {
     frame_view =
         ViewsDelegate::GetInstance()->CreateDefaultNonClientFrameView(this);
   }
@@ -989,11 +1015,7 @@ gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
 void Widget::SynthesizeMouseMoveEvent() {
   // In screen coordinate.
   gfx::Point mouse_location =
-#if defined(USE_AURA)
-      GetNativeWindow()->env()->last_mouse_location();
-#else
       display::Screen::GetScreen()->GetCursorScreenPoint();
-#endif
   if (!GetWindowBoundsInScreen().Contains(mouse_location))
     return;
 
@@ -1031,6 +1053,20 @@ std::string Widget::GetName() const {
   return native_widget_->GetName();
 }
 
+std::unique_ptr<Widget::PaintAsActiveLock> Widget::LockPaintAsActive() {
+  const bool was_paint_as_active = ShouldPaintAsActive();
+  ++paint_as_active_refcount_;
+  const bool paint_as_active = ShouldPaintAsActive();
+  if (paint_as_active != was_paint_as_active)
+    UpdatePaintAsActiveState(paint_as_active);
+  return std::make_unique<PaintAsActiveLockImpl>(
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+bool Widget::ShouldPaintAsActive() const {
+  return native_widget_active_ || paint_as_active_refcount_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
 
@@ -1046,10 +1082,6 @@ bool Widget::CanActivate() const {
   // This may be called after OnNativeWidgetDestroyed(), which sets
   // |widget_delegate_| to null.
   return widget_delegate_ && widget_delegate_->CanActivate();
-}
-
-bool Widget::IsAlwaysRenderAsActive() const {
-  return always_render_as_active_;
 }
 
 bool Widget::IsNativeWidgetInitialized() const {
@@ -1069,20 +1101,21 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetActivationChanged(this, active);
 
-  if (non_client_view())
-    non_client_view()->frame_view()->ActivationChanged(active);
+  const bool was_paint_as_active = ShouldPaintAsActive();
+  native_widget_active_ = active;
+  const bool paint_as_active = ShouldPaintAsActive();
+  if (paint_as_active != was_paint_as_active)
+    UpdatePaintAsActiveState(paint_as_active);
 
   return true;
 }
 
 void Widget::OnNativeFocus() {
-  WidgetFocusManager::GetInstance(GetNativeWindow())
-      ->OnNativeFocusChanged(GetNativeView());
+  WidgetFocusManager::GetInstance()->OnNativeFocusChanged(GetNativeView());
 }
 
 void Widget::OnNativeBlur() {
-  WidgetFocusManager::GetInstance(GetNativeWindow())
-      ->OnNativeFocusChanged(nullptr);
+  WidgetFocusManager::GetInstance()->OnNativeFocusChanged(nullptr);
 }
 
 void Widget::OnNativeWidgetVisibilityChanging(bool visible) {
@@ -1390,9 +1423,8 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
   if (child_layer_iter == root_layer->children().end())
     return true;
 
-  for (auto iter = views_with_layers.rbegin(); iter != views_with_layers.rend();
-       ++iter) {
-    ui::Layer* layer = (*iter)->layer();
+  for (View* view : base::Reversed(views_with_layers)) {
+    ui::Layer* layer = view->layer();
     DCHECK(layer);
     if (layer->visible() && layer->bounds().Contains(location)) {
       auto root_layer_iter = std::find(root_layer->children().begin(),
@@ -1406,7 +1438,6 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
       // from the bounds of the layer. Verify the view hosting the layer
       // actually contains |location|. Use GetVisibleBounds(), which is
       // effectively what event targetting uses.
-      View* view = *iter;
       gfx::Rect vis_bounds = view->GetVisibleBounds();
       gfx::Point point_in_view = location;
       View::ConvertPointToTarget(GetRootView(), view, &point_in_view);
@@ -1455,17 +1486,25 @@ View* Widget::GetFocusTraversableParentView() {
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK(observer_manager_.IsObserving(observed_theme));
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  ui::NativeTheme* current_native_theme = observed_theme;
+#else
   ui::NativeTheme* current_native_theme = GetNativeTheme();
+#endif
   if (!observer_manager_.IsObserving(current_native_theme)) {
     observer_manager_.RemoveAll();
     observer_manager_.Add(current_native_theme);
   }
 
-  root_view_->PropagateNativeThemeChanged(current_native_theme);
+  PropagateNativeThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, protected:
+
+void Widget::PropagateNativeThemeChanged() {
+  root_view_->PropagateThemeChanged();
+}
 
 internal::RootView* Widget::CreateRootView() {
   return new internal::RootView(this);
@@ -1485,19 +1524,6 @@ void Widget::OnDragComplete() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
-
-void Widget::SetAlwaysRenderAsActive(bool always_render_as_active) {
-  if (always_render_as_active_ == always_render_as_active)
-    return;
-
-  always_render_as_active_ = always_render_as_active;
-
-  // If active, the frame should already be painted. Otherwise,
-  // |always_render_as_active_| just changed, and the widget is inactive, so
-  // schedule a repaint.
-  if (non_client_view_ && !IsActive())
-    non_client_view_->frame_view()->SchedulePaint();
-}
 
 void Widget::SaveWindowPlacement() {
   // The window delegate does the actual saving for us. It seems like (judging
@@ -1600,6 +1626,22 @@ const View::Views& Widget::GetViewsWithLayers() {
     BuildViewsWithLayers(GetRootView(), &views_with_layers_);
   }
   return views_with_layers_;
+}
+
+void Widget::UnlockPaintAsActive() {
+  const bool was_paint_as_active = ShouldPaintAsActive();
+  DCHECK_GT(paint_as_active_refcount_, 0U);
+  --paint_as_active_refcount_;
+  const bool paint_as_active = ShouldPaintAsActive();
+  if (paint_as_active != was_paint_as_active)
+    UpdatePaintAsActiveState(paint_as_active);
+}
+
+void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
+  if (non_client_view())
+    non_client_view()->frame_view()->PaintAsActiveChanged(paint_as_active);
+  if (widget_delegate())
+    widget_delegate()->OnPaintAsActiveChanged(paint_as_active);
 }
 
 namespace internal {

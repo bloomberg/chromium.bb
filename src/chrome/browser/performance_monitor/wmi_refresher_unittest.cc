@@ -25,7 +25,10 @@ using WMIRefresherTest = testing::Test;
 
 // This test assume that the WMI service is available in all supported version
 // of Windows.
-TEST_F(WMIRefresherTest, EndToEnd) {
+//
+// TODO(https://crbug.com/956638): Investigate why the initialization of WMI
+// might fail in some situations and reenable this test.
+TEST_F(WMIRefresherTest, DISABLED_EndToEnd) {
   base::test::ScopedTaskEnvironment env;
   PostTask(FROM_HERE, base::BindOnce([] {
              // The WMIRefresher objects have to live on a sequence with the

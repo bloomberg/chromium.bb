@@ -38,7 +38,8 @@ class VIZ_COMMON_EXPORT SurfaceDrawQuad : public DrawQuad {
               const SurfaceRange& surface_range,
               SkColor default_background_color,
               bool stretch_content_to_fill_bounds,
-              bool ignores_input_event);
+              bool ignores_input_event,
+              bool is_reflection);
 
   SurfaceRange surface_range;
   SkColor default_background_color = SK_ColorWHITE;
@@ -46,6 +47,7 @@ class VIZ_COMMON_EXPORT SurfaceDrawQuad : public DrawQuad {
   // TODO(crbug.com/914530): Remove once VizHitTestSurfaceLayer is enabled by
   // default.
   bool ignores_input_event = false;
+  bool is_reflection = false;
 
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 

@@ -45,13 +45,13 @@
     "channel": "stable",
     "extension_types": [
       // Platform apps specify their background page via app.background.
-      "extension", "legacy_packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app", "login_screen_extension"
     ]
   },
   "background.persistent": {
     "channel": "stable",
     "extension_types": [
-      "extension", "legacy_packaged_app"
+      "extension", "legacy_packaged_app", "login_screen_extension"
     ],
     "min_manifest_version": 2
   },
@@ -288,7 +288,11 @@
   "permissions": {
     "channel": "stable",
     "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
+      "extension",
+      "legacy_packaged_app",
+      "hosted_app",
+      "platform_app",
+      "login_screen_extension"
     ]
   },
   "replacement_web_app": {

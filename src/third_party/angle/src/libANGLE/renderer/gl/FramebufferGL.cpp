@@ -451,9 +451,9 @@ angle::Result FramebufferGL::readPixels(const gl::Context *context,
 
     stateManager->bindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
 
-    bool useOverlappingRowsWorkaround = workarounds.packOverlappingRowsSeparatelyPackBuffer &&
-                                        packBuffer && packState.rowLength != 0 &&
-                                        packState.rowLength < clippedArea.width;
+    bool useOverlappingRowsWorkaround =
+        workarounds.packOverlappingRowsSeparatelyPackBuffer.enabled && packBuffer &&
+        packState.rowLength != 0 && packState.rowLength < clippedArea.width;
 
     GLubyte *outPtr = static_cast<GLubyte *>(pixels);
     int leftClip    = clippedArea.x - area.x;
@@ -487,7 +487,7 @@ angle::Result FramebufferGL::readPixels(const gl::Context *context,
     }
 
     bool useLastRowPaddingWorkaround = false;
-    if (workarounds.packLastRowSeparatelyForPaddingInclusion)
+    if (workarounds.packLastRowSeparatelyForPaddingInclusion.enabled)
     {
         ANGLE_TRY(ShouldApplyLastRowPaddingWorkaround(
             contextGL, gl::Extents(clippedArea.width, clippedArea.height, 1), packState, packBuffer,
@@ -602,6 +602,11 @@ angle::Result FramebufferGL::getSamplePosition(const gl::Context *context,
     return angle::Result::Continue;
 }
 
+bool FramebufferGL::shouldSyncStateBeforeCheckStatus() const
+{
+    return true;
+}
+
 bool FramebufferGL::checkStatus(const gl::Context *context) const
 {
     const FunctionsGL *functions = GetFunctionsGL(context);
@@ -691,16 +696,19 @@ angle::Result FramebufferGL::syncState(const gl::Context *context,
                 break;
             default:
             {
-                ASSERT(Framebuffer::DIRTY_BIT_COLOR_ATTACHMENT_0 == 0 &&
-                       dirtyBit < Framebuffer::DIRTY_BIT_COLOR_ATTACHMENT_MAX);
-                size_t index =
-                    static_cast<size_t>(dirtyBit - Framebuffer::DIRTY_BIT_COLOR_ATTACHMENT_0);
-                const FramebufferAttachment *newAttachment = mState.getColorAttachment(index);
-                BindFramebufferAttachment(
-                    functions, static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + index), newAttachment);
-                if (newAttachment)
+                static_assert(Framebuffer::DIRTY_BIT_COLOR_ATTACHMENT_0 == 0, "FB dirty bits");
+                if (dirtyBit < Framebuffer::DIRTY_BIT_COLOR_ATTACHMENT_MAX)
                 {
-                    attachment = newAttachment;
+                    size_t index =
+                        static_cast<size_t>(dirtyBit - Framebuffer::DIRTY_BIT_COLOR_ATTACHMENT_0);
+                    const FramebufferAttachment *newAttachment = mState.getColorAttachment(index);
+                    BindFramebufferAttachment(functions,
+                                              static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + index),
+                                              newAttachment);
+                    if (newAttachment)
+                    {
+                        attachment = newAttachment;
+                    }
                 }
                 break;
             }
@@ -726,30 +734,6 @@ bool FramebufferGL::isDefault() const
     return mIsDefault;
 }
 
-void FramebufferGL::maskOutInactiveOutputDrawBuffersImpl(const gl::Context *context,
-                                                         DrawBufferMask targetAppliedDrawBuffers)
-{
-
-    ASSERT(mAppliedEnabledDrawBuffers != targetAppliedDrawBuffers);
-    mAppliedEnabledDrawBuffers = targetAppliedDrawBuffers;
-
-    const auto &stateDrawBuffers = mState.getDrawBufferStates();
-    GLsizei drawBufferCount      = static_cast<GLsizei>(stateDrawBuffers.size());
-    ASSERT(drawBufferCount <= IMPLEMENTATION_MAX_DRAW_BUFFERS);
-
-    GLenum drawBuffers[IMPLEMENTATION_MAX_DRAW_BUFFERS];
-    for (GLenum i = 0; static_cast<int>(i) < drawBufferCount; ++i)
-    {
-        drawBuffers[i] = targetAppliedDrawBuffers[i] ? stateDrawBuffers[i] : GL_NONE;
-    }
-
-    const FunctionsGL *functions = GetFunctionsGL(context);
-    StateManagerGL *stateManager = GetStateManagerGL(context);
-
-    ASSERT(stateManager->getFramebufferID(angle::FramebufferBindingDraw) == mFramebufferID);
-    functions->drawBuffers(drawBufferCount, drawBuffers);
-}
-
 void FramebufferGL::syncClearState(const gl::Context *context, GLbitfield mask)
 {
     const FunctionsGL *functions = GetFunctionsGL(context);
@@ -759,7 +743,7 @@ void FramebufferGL::syncClearState(const gl::Context *context, GLbitfield mask)
         StateManagerGL *stateManager     = GetStateManagerGL(context);
         const WorkaroundsGL &workarounds = GetWorkaroundsGL(context);
 
-        if (workarounds.doesSRGBClearsOnLinearFramebufferAttachments &&
+        if (workarounds.doesSRGBClearsOnLinearFramebufferAttachments.enabled &&
             (mask & GL_COLOR_BUFFER_BIT) != 0 && !mIsDefault)
         {
             bool hasSRGBAttachment = false;
@@ -792,8 +776,8 @@ void FramebufferGL::syncClearBufferState(const gl::Context *context,
         StateManagerGL *stateManager     = GetStateManagerGL(context);
         const WorkaroundsGL &workarounds = GetWorkaroundsGL(context);
 
-        if (workarounds.doesSRGBClearsOnLinearFramebufferAttachments && buffer == GL_COLOR &&
-            !mIsDefault)
+        if (workarounds.doesSRGBClearsOnLinearFramebufferAttachments.enabled &&
+            buffer == GL_COLOR && !mIsDefault)
         {
             // If doing a clear on a color buffer, set SRGB blend enabled only if the color buffer
             // is an SRGB format.

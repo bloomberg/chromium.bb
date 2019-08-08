@@ -85,7 +85,7 @@ config("compiler") {
   # TODO(crbug.com/771171): Remove this define once code that uses it has been
   # updated to no longer need it. This is leftover from older Android NDK
   # versions.
-  if (compile_api_level < 20) {
+  if (compile_api_level < 21) {
     cflags += [ "-DHAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC=1" ]
   }
 
@@ -168,7 +168,7 @@ config("default_orderfile_instrumentation") {
     cflags = [ "-finstrument-function-entry-bare" ]
     if (use_thin_lto) {
       # TODO(pcc): This should not be necessary. Remove once
-      # https://reviews.llvm.org/D50017 lands and gets rolled in.
+      # https://reviews.llvm.org/D50016 lands and gets rolled in.
       ldflags = [ "-Wl,-u,__cyg_profile_func_enter_bare" ]
     }
   }

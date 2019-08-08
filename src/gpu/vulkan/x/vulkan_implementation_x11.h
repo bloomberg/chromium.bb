@@ -17,7 +17,7 @@ namespace gpu {
 class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
     : public VulkanImplementation {
  public:
-  VulkanImplementationX11();
+  explicit VulkanImplementationX11(bool use_swiftshader = false);
   ~VulkanImplementationX11() override;
 
   // VulkanImplementation:
@@ -40,6 +40,16 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
   SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                      VkSemaphore vk_semaphore) override;
   VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
+  bool CanImportGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType memory_buffer_type) override;
+  bool CreateImageFromGpuMemoryHandle(
+      VkDevice vk_device,
+      gfx::GpuMemoryBufferHandle gmb_handle,
+      gfx::Size size,
+      VkImage* vk_image,
+      VkImageCreateInfo* vk_image_info,
+      VkDeviceMemory* vk_device_memory,
+      VkDeviceSize* mem_allocation_size) override;
 
  private:
   bool using_surface_ = true;

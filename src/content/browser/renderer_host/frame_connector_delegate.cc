@@ -38,9 +38,6 @@ void FrameConnectorDelegate::SynchronizeVisualProperties(
 
   if (!view_)
     return;
-#if defined(USE_AURA)
-  view_->SetFrameSinkId(frame_sink_id);
-#endif  // defined(USE_AURA)
 
   RenderWidgetHostImpl* render_widget_host = view_->host();
   DCHECK(render_widget_host);

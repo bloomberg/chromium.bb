@@ -113,6 +113,13 @@ class MostVisitedSites : public history::TopSitesObserver,
     virtual void QueryHomepageTitle(TitleCallback title_callback) = 0;
   };
 
+  class ExploreSitesClient {
+   public:
+    virtual ~ExploreSitesClient() = default;
+    virtual GURL GetExploreSitesUrl() const = 0;
+    virtual base::string16 GetExploreSitesTitle() const = 0;
+  };
+
   // Construct a MostVisitedSites instance.
   //
   // |prefs| and |suggestions| are required and may not be null. |top_sites|,
@@ -152,6 +159,10 @@ class MostVisitedSites : public history::TopSitesObserver,
   // |client| must not be null and outlive this object.
   void SetHomepageClient(std::unique_ptr<HomepageClient> client);
 
+  // Sets the client that provides the Explore Sites tile. Can be null if no
+  // such tile is desirable.
+  void SetExploreSitesClient(std::unique_ptr<ExploreSitesClient> client);
+
   // Requests an asynchronous refresh of the suggestions. Notifies the observer
   // if the request resulted in the set of tiles changing.
   void Refresh();
@@ -176,24 +187,25 @@ class MostVisitedSites : public history::TopSitesObserver,
   void EnableCustomLinks(bool enable);
   // Adds a custom link. If the number of current links is maxed, returns false
   // and does nothing. Will initialize custom links if they have not been
-  // initialized yet. Custom links must be enabled.
+  // initialized yet, unless the action fails. Custom links must be enabled.
   bool AddCustomLink(const GURL& url, const base::string16& title);
   // Updates the URL and/or title of the custom link specified by |url|. If
   // |url| does not exist or |new_url| already exists in the custom link list,
   // returns false and does nothing. Will initialize custom links if they have
-  // not been initialized yet. Custom links must be enabled.
+  // not been initialized yet, unless the action fails. Custom links must be
+  // enabled.
   bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
                         const base::string16& new_title);
   // Moves the custom link specified by |url| to the index |new_pos|. If |url|
   // does not exist, or |new_pos| is invalid, returns false and does nothing.
-  // Will initialize custom links if they have not been initialized yet. Custom
-  // links must be enabled.
+  // Will initialize custom links if they have not been initialized yet, unless
+  // the action fails. Custom links must be enabled.
   bool ReorderCustomLink(const GURL& url, size_t new_pos);
   // Deletes the custom link with the specified |url|. If |url| does not exist
   // in the custom link list, returns false and does nothing. Will initialize
-  // custom links if they have not been initialized yet. Custom links must be
-  // enabled.
+  // custom links if they have not been initialized yet, unless the action
+  // fails. Custom links must be enabled.
   bool DeleteCustomLink(const GURL& url);
   // Restores the previous state of custom links before the last action that
   // modified them. If there was no action, does nothing. If this is undoing the
@@ -213,7 +225,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // public method for ease of testing.
   static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
                                    NTPTilesVector whitelist_tiles,
-                                   NTPTilesVector popular_tiles);
+                                   NTPTilesVector popular_tiles,
+                                   base::Optional<NTPTile> explore_tile);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesTest,
@@ -309,6 +322,10 @@ class MostVisitedSites : public history::TopSitesObserver,
   NTPTilesVector InsertHomeTile(NTPTilesVector tiles,
                                 const base::string16& title) const;
 
+  // Creates a tile for the Explore Sites page, if enabled. The tile is added to
+  // the front of the list.
+  base::Optional<NTPTile> CreateExploreSitesTile();
+
   // Adds the Google Search page as first tile to |tiles| and returns them as
   // new vector. Drops existing tiles with the same host as the Google Search
   // page and tiles that would exceed the maximum.
@@ -333,6 +350,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   std::unique_ptr<IconCacher> const icon_cacher_;
   std::unique_ptr<MostVisitedSitesSupervisor> supervisor_;
   std::unique_ptr<HomepageClient> homepage_client_;
+  std::unique_ptr<ExploreSitesClient> explore_sites_client_;
 
   Observer* observer_;
 

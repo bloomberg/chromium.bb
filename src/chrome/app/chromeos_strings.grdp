@@ -193,11 +193,76 @@
   <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
     Checking for updates
   </message>
+  <message name="IDS_QUICK_FIX_RELEASE_BUILD" desc="Quick Fix build which is Chrome OS release build displayed string instead of canary/dev/beta.">
+    QuickFix
+  </message>
   <message name="IDS_UPDATE_VERIFYING" desc="Message that the system is verifying an update">
     Verifying...
   </message>
   <message name="IDS_UPDATE_FINALIZING" desc="Message that the system is finalizing an update">
     Finalizing...
+  </message>
+
+  <!-- Cellular Setup UI Strings -->
+  <message name="IDS_CELLULAR_SETUP_BACK_LABEL" desc="Label for button to go to previous screen during cellular setup">
+    Back
+  </message>
+  <message name="IDS_CELLULAR_SETUP_FINISH_LABEL" desc="Label for button to finish and exit cellular setup">
+    Finish
+  </message>
+  <message name="IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry a step during cellular setup">
+    Try again
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE" desc="Title for first screen of cellular setup during which ChromeOS is preparing the cellular device for setup." translateable="false">
+    Sim Detect Page
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_TITLE" desc="Title for cellular setup step in which the user uses the embedded carrier provisioning portal to make payment and activate the device." translateable="false">
+    Provisioning Page
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SUCCESS_PAGE_TITLE" desc="Title for the final success screen of cellular setup that tells the user that setup is completed but service is being activated" translateable="false">
+    Success Page
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SUCCESS_PAGE_MESSAGE" desc="Message displayed under title in final success screen of cellular setup that tells user that service may take a while to activate." translateable="false">
+    Setup Completed.
+  </message>
+
+  <!-- Upgrade notifications -->
+  <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the device must be restarted within two or more days.">
+    {0, plural,
+      =1 {Update within a day}
+      other {Update within # days}}
+  </message>
+  <message name="IDS_RELAUNCH_REQUIRED_TITLE_HOURS" desc="The title of a dialog that tells users the device must be restarted within one or more hours.">
+    {0, plural,
+      =1 {Update within an hour}
+      other {Update within # hours}}
+  </message>
+  <message name="IDS_RELAUNCH_REQUIRED_TITLE_MINUTES" desc="The title of a dialog that tells users the device must be restarted within one or more minutes.">
+    {0, plural,
+      =1 {Update within 1 minute}
+      other {Update within # minutes}}
+  </message>
+  <message name="IDS_RELAUNCH_REQUIRED_TITLE_SECONDS" desc="The title of a dialog that tells users the device must be restarted within some number of seconds.">
+    {0, plural,
+      =0 {Update now}
+      =1 {Update within 1 second}
+      other {Update within # seconds}}
+  </message>
+  <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
+    Your company or organization requires an update to this device
+  </message>
+
+  <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a device restart is recommended for an update.">
+    Update available
+  </message>
+  <message name="IDS_RELAUNCH_RECOMMENDED_OVERDUE_TITLE" desc="The title of a dialog that tells users that a device restart had been recommended for an update.">
+    Update overdue
+  </message>
+  <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
+    Your company or organization asks that you update this device
+  </message>
+  <message name="IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY" desc="The body text of a dialog that tells users the device must be restarted right now.">
+    Your company or organization requires an update to this device right away
   </message>
 
   <!-- Chrome OS Strings -->
@@ -872,6 +937,9 @@
   <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
   </message>
+  <message name="IDS_LOGIN_SAML_PASSWORD_CHANGE_NOTICE" desc="Text message displayed in the system dialog title. The dialog shows a web-page where the user can change their SAML password while staying in the session">
+    This authentication service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
+  </message>
   <message name="IDS_LOGIN_SAML_NOTICE_WITH_VIDEO" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider which has requested video media access.">
     This sign-in service, hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>, is accessing your camera.
   </message>
@@ -1268,6 +1336,12 @@
   </message>
   <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view for Chrome OS Secondary Accounts.">
     Your Google Account(s) need attention
+  </message>
+  <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_MIGRATION_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification for Chrome OS Secondary Accounts that have not been migrated to Chrome OS Account Manager.">
+    Sign-in has changed
+  </message>
+  <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_MIGRATION_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view for Chrome OS Secondary Accounts that have not been migrated to Chrome OS Account Manager.">
+    Account update required
   </message>
 
   <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
@@ -1715,9 +1789,6 @@
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_TITLE" desc="Title of the notification which is shown when the managed guest session auto launched.">
     Managed guest session
   </message>
-  <message name="IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE" desc="Message of the notification which is shown when the managed guest session auto launched.">
-    The administrator of this device has access to all activity, including passwords and communications.
-  </message>
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON" desc="Text of the button.">
     View details
   </message>
@@ -1730,11 +1801,20 @@
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to the Files app. If user clicks a button in the notification, the Files app opens.">
     Explore the device's content in the Files app.
   </message>
+  <message name="IDS_REMOVABLE_DEVICE_ALLOW_PLAY_STORE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
+    Allow Play Store applications to access this device via Settings.
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_PLAY_STORE_APPS_HAVE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
+    Play Store applications have access to this device.
+  </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY" desc="Text of notification message to navigate users to the Files app when attaching a removable media, but the administrator's poilcy forbids writing data to them. If user clicks a button in the notification, the Files app opens.">
     Explore the device's content in the Files app. The content is restricted by an admin and can’t be modified.
   </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to the Files app. If user clicks the button, the Files app opens.">
     Open Files app
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to the ARC settings page. If user clicks the button, the page opens.">
+    Open settings
   </message>
   <message name="IDS_REMOVABLE_DEVICE_IMPORT_MESSAGE" desc="Text of notification message to start the media import flow. If user clicks a button in the notification, the import flow begins.">
     Back up media from the device using the Files app.
@@ -2103,14 +2183,11 @@
   </message>
 
   <!-- EOL Notification Strings -->
-  <message name="IDS_EOL_NOTIFICATION_DISPLAY_SOURCE" desc="Notification header title shown to inform the user that this device is no longer supported.">
-    End of support
-  </message>
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
-    This device is no longer supported
+    Final software update
   </message>
   <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive latest software updates.">
-    This device will no longer receive the latest software updates. Please consider upgrading.
+    This is the last automatic software and security update for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. To get future updates, upgrade to a newer model.
   </message>
   <message name="IDS_EOL_DISMISS_BUTTON" desc="A button label shown in the notification for eol status change to dismiss the notification.">
     Don't remind me again
@@ -2122,6 +2199,17 @@
   </message>
   <message name="IDS_TPM_FIRMWARE_UPDATE_NOTIFICATION_MESSAGE" desc="Notification shown to inform the user that there is a pending TPM firmware update for the device.">
     Reset your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to upgrade your security.
+  </message>
+
+  <!-- U2F Notification Strings -->
+  <message name="IDS_U2F_INSECURE_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that the legacy U2F feature is insecure.">
+    Internal security key requires reset
+  </message>
+  <message name="IDS_U2F_INSECURE_NOTIFICATION_MESSAGE" desc="Notification shown to inform the user that the legacy U2F feature is insecure.">
+    Your internal security key is currently insecure. Please remove it from any services that you used it with. In order to resolve the issue, please reset the security key.
+  </message>
+  <message name="IDS_U2F_INSECURE_NOTIFICATION_RESET" desc="Label for the reset button in the notification shown to inform the user that the legacy U2F feature is insecure.">
+    Reset
   </message>
 
   <!-- Obsolete versions Notification strings-->
@@ -3184,6 +3272,20 @@
     Please wait...
   </message>
 
+  <!-- Supervision Onboarding OOBE screen. -->
+  <message name="IDS_SUPERVISION_ONBOARDING_NEXT_BUTTON" desc="Label for button that shows the next page in the Supervision Onboarding flow.">
+    Next
+  </message>
+  <message name="IDS_SUPERVISION_ONBOARDING_SKIP_BUTTON" desc="Label for button that skips the whole Supervision Onboarding flow.">
+    Skip
+  </message>
+  <message name="IDS_SUPERVISION_ONBOARDING_BACK_BUTTON" desc="Label for button that shows the previous page in the Supervision Onboarding flow.">
+    Back
+  </message>
+  <message name="IDS_SUPERVISION_ONBOARDING_WAIT_MESSAGE" desc="Message shown while we load the Supervision Onboarding flow.">
+    Please wait...
+  </message>
+
   <!-- Supervision transition OOBE screen. -->
   <message name="IDS_REMOVING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when stopping supervision.">
     Stopping supervision...
@@ -3234,6 +3336,20 @@
   </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_GET_HELP_BUTTON" desc="Text on the button for the user to get help about the current print job.">
     Get help
+  </message>
+
+  <!-- USB Printer Installation Notification -->
+  <message name="IDS_USB_PRINTER_NOTIFICATION_CONNECTED_TITLE" desc="Title of the USB printer connected successfully notification.">
+    USB printer connected
+  </message>
+  <message name="IDS_USB_PRINTER_NOTIFICATION_CONNECTED_MESSAGE" desc="Message displayed when the USB printer is connected successfully.">
+    <ph name="PRINTER_NAME">$1<ex> Google InkJet 1234</ex></ph> is connected and ready
+  </message>
+  <message name="IDS_USB_PRINTER_NOTIFICATION_CONFIGURATION_REQUIRED_TITLE" desc="Title of the USB printer needs configuration notification.">
+    USB printer needs configuration
+  </message>
+  <message name="IDS_USB_PRINTER_NOTIFICATION_CONFIGURATION_REQUIRED_MESSAGE" desc="Message displayed when the USB printer is connected but needs configuration.">
+    <ph name="PRINTER_NAME">$1<ex> Google InkJet 1234</ex></ph> is connected but needs configuration
   </message>
 
   <!-- RequestPin dialog messages -->
@@ -3369,8 +3485,11 @@
   <message name="IDS_CROSTINI_INSTALLER_INSTALLING" desc="Text shown in the Crostini installer dialog while  Linux is installing.">
     Installing Linux...
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_CANCELING_TITLE" desc="Title of the Crostini installer when the install is canceled.">
+    Cancelling Linux installation...
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_CANCELING" desc="Text shown in the Crostini installer dialog when the install is canceled.">
-    Canceling...
+    This window will close after cancellation is complete.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_ERROR_TITLE" desc="Title of the Crostini installer when an error occurs.">
     Error installing Linux...
@@ -3457,7 +3576,7 @@
     Your app will open when the upgrade is finished. Upgrades can take a few minutes.
   </message>
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
-    Shut Down Linux (Beta)
+    Shut down Linux (Beta)
   </message>
   <message name="IDS_CROSTINI_TERMINA_UPDATE_REQUIRED" desc="Text shown in the Crostini update dialog when the VM component needs updating.">
     Linux (Beta) update required
@@ -3828,64 +3947,76 @@
     Password (optional)
   </message>
 
-  <!-- Strings for PluginVm -->
-  <!-- TODO(okalitova, timloh): Remove translatable flag after strings are finalized. -->
-  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the PluginVm app." translateable="false">
+  <!-- Strings for Plugin VM -->
+  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the 'Plugin VM' app.">
     Plugin VM
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    Finishing <ph name="APP_NAME">Plugin VM</ph> installation...
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the Plugin VM installer during installation.">
+    Setting up Plugin VM...
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    <ph name="APP_NAME">Plugin VM</ph> installation complete
+  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE" desc="Title of the Plugin VM installer after successful installation.">
+    Setup complete
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    Error installing <ph name="APP_NAME">Plugin VM</ph>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the Plugin VM installer if there was an error during installation.">
+    Could not set up Plugin VM
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE" desc="Message that informs user that PluginVm environment setting may take a while." translateable="false">
-    This process may take a few minutes.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer that informs the user that setup may take a while.">
+    This may take several minutes.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer while downloading the VM.">
     Downloading the virtual machine.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Configuring the virtual machine. This process might take around 3 minutes.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_IMPORTING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM.">
+    Configuring the virtual machine. This may take a few minutes.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Putting on final touches...
+  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
+    Click or tap Launch to use Plugin VM. In the future, you can start Plugin VM by selecting the icon in the Launcher.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Set up was successfully completed. Click on the launch button to start using <ph name="APP_NAME">Plugin VM</ph>.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Text of the Plugin VM installer if the installation failed.">
+    An error occurred. Please try again.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    The <ph name="APP_NAME">Plugin VM</ph> installation failed. Please try again.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disabled.">
+   Please contact your admin to enable Plugin VM on this device.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text of the Plugin VM installer while downloading Plugin VM image, showing download progress when the full download size is not known.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_PREPARING_TO_DOWNLOAD_MESSAGE" desc="Text shown in the PluginVm launcher that informs user that download is about to be started." translateable="false">
-    Preparing to download
-  </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_TIME_LEFT_MESSAGE" desc="Text shown in the PluginVm launcher that shows estimated time left before current installation stage ends." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_TIME_LEFT_MESSAGE" desc="Text of the Plugin VM installer that shows estimated time left before current installation stage ends.">
     <ph name="TIME_LEFT">$1<ex>30 mins</ex></ph> left
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON" desc="Label for the button in the PluginVm launcher dialog to launch PluginVm." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON" desc="Label for the button in the Plugin VM installer to launch Plugin VM after successful installation.">
     Launch
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON" desc="Label for the button in the PluginVm launcher dialog to retry PluginVm environment setting." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON" desc="Label for the button in the Plugin VM installer to retry installation on failure.">
     Retry
+  </message>
+  <message name="IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM" desc="Text shown in the launcher and shelf context menus for the Plugin VM app to shut it down.">
+    Shut down
   </message>
 
   <!-- Strings for Account Manager welcome screen -->
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">
-    Manage your Google Accounts in one place
+    Sign-in has changed
   </message>
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TEXT" desc="Text body for the Chrome OS Account Manager Welcome screen.">
-    Switch accounts quickly and sign in to apps and websites all at once.
-    Apps and sites can ask you for permission to use some of your Google Account info. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com/chromebook/?p=google_accounts</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+    You can now manage all of your Google Accounts in one place. Access and permissions you've granted to apps, websites, and extensions in Chrome and Google Play may now apply to all of your signed-in accounts. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com/chromebook/?p=google_accounts</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_WELCOME_BUTTON" desc="Label for the button to view accounts on the Chrome OS Account Manager Welcome screen.">
+    View accounts
+  </message>
+
+  <!-- Strings for per-account Migration welcome screen -->
+  <message name="IDS_ACCOUNT_MIGRATION_WELCOME_TITLE" desc="Title for the Account Migration Welcome screen.">
+    Sign in again to update <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph>
+  </message>
+  <message name="IDS_ACCOUNT_MIGRATION_WELCOME_TEXT" desc="Text body for the Account Migration Welcome screen.">
+    Please sign in again to confirm that your account <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> can be used with websites, apps, and extensions in Chrome and Google Play. You may also remove this account. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_ACCOUNT_MIGRATION_UPDATE_BUTTON" desc="Label for the button in Account Migration dialog to migrate the account.">
+    Update account
   </message>
 
   <!-- TPM firmware auto-update notifications -->
@@ -3900,5 +4031,22 @@
   </message>
   <message name="IDS_TPM_AUTO_UPDATE_REBOOT_NOTIFICATION_MESSAGE" desc="Text for the notification informing the user that a TPM update will be performed after reboot which will result in local data being deleted.">
     The next time you restart your device, your administrator will perform a one-time update that will delete your local data.
+  </message>
+
+  <!-- Strings for Add Supervision screen -->
+  <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
+    Add Supervision
+  </message>
+    <!-- Strings for gnubby U2FD authentication UI -->
+  <message name="IDS_GNUBBY_NOTIFICATION_TITLE" desc="Title for notification informing user to press power button for gnubby U2FD.">
+    A security key is being requested
+  </message>
+  <message name="IDS_GNUBBY_NOTIFICATION_MESSAGE" desc="Text for notifications informing user that Chrome is requestor for U2FD.">
+    Please tap your power button
+  </message>
+
+  <!-- Strings for login screen extension UI -->
+  <message name="IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE" desc="Dialog title for windows opened from a login screen extension. These windows will be displayed over the login screen.">
+    This authentication service is hosted by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
   </message>
 </grit-part>

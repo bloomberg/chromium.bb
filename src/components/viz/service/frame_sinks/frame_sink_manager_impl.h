@@ -24,7 +24,6 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
-#include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
 #include "components/viz/service/frame_sinks/video_detector.h"
@@ -44,7 +43,7 @@ namespace viz {
 
 class CapturableFrameSink;
 class CompositorFrameSinkSupport;
-class DisplayProvider;
+class OutputSurfaceProvider;
 class SharedBitmapManager;
 
 // FrameSinkManagerImpl manages BeginFrame hierarchy. This is the implementation
@@ -56,11 +55,26 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       public HitTestAggregatorDelegate,
       public SurfaceManagerDelegate {
  public:
-  explicit FrameSinkManagerImpl(
+  struct VIZ_SERVICE_EXPORT InitParams {
+    InitParams();
+    InitParams(SharedBitmapManager* shared_bitmap_manager,
+               OutputSurfaceProvider* output_surface_provider);
+    InitParams(InitParams&& other);
+    ~InitParams();
+    InitParams& operator=(InitParams&& other);
+
+    SharedBitmapManager* shared_bitmap_manager = nullptr;
+    base::Optional<uint32_t> activation_deadline_in_frames =
+        kDefaultActivationDeadlineInFrames;
+    OutputSurfaceProvider* output_surface_provider = nullptr;
+    uint32_t restart_id = BeginFrameSource::kNotRestartableId;
+    bool run_all_compositor_stages_before_draw = false;
+  };
+  explicit FrameSinkManagerImpl(const InitParams& params);
+  // TODO(kylechar): Cleanup tests and remove this constructor.
+  FrameSinkManagerImpl(
       SharedBitmapManager* shared_bitmap_manager,
-      base::Optional<uint32_t> activation_deadline_in_frames =
-          kDefaultActivationDeadlineInFrames,
-      DisplayProvider* display_provider = nullptr);
+      OutputSurfaceProvider* output_surface_provider = nullptr);
   ~FrameSinkManagerImpl() override;
 
   // Performs cleanup needed to force shutdown from the GPU process. Stops all
@@ -114,6 +128,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue)
       override;
+  void CacheBackBuffer(uint32_t cache_id,
+                       const FrameSinkId& root_frame_sink_id) override;
+  void EvictBackBuffer(uint32_t cache_id,
+                       EvictBackBufferCallback callback) override;
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -156,10 +174,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                                 const FrameSinkId& frame_sink_id);
   void UnregisterBeginFrameSource(BeginFrameSource* source);
 
-  // Returns a stable BeginFrameSource that forwards BeginFrames from the first
-  // available BeginFrameSource.
-  BeginFrameSource* GetPrimaryBeginFrameSource();
-
   SurfaceManager* surface_manager() { return &surface_manager_; }
   const HitTestManager* hit_test_manager() { return &hit_test_manager_; }
   SharedBitmapManager* shared_bitmap_manager() {
@@ -197,6 +211,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   const CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
+  void SetPreferredFrameIntervalForFrameSinkId(const FrameSinkId& id,
+                                               base::TimeDelta interval);
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
       const FrameSinkId& id) const;
 
@@ -260,16 +276,21 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // SharedBitmapManager for the viz display service for receiving software
   // resources in CompositorFrameSinks.
   SharedBitmapManager* const shared_bitmap_manager_;
-  // Provides a Display for CreateRootCompositorFrameSink().
-  DisplayProvider* const display_provider_;
 
-  PrimaryBeginFrameSource primary_source_;
+  // Provides an output surface for CreateRootCompositorFrameSink().
+  OutputSurfaceProvider* const output_surface_provider_;
 
-  // Must be created after and destroyed before |primary_source_|.
   SurfaceManager surface_manager_;
 
   // Must be created after and destroyed before |surface_manager_|.
   HitTestManager hit_test_manager_;
+
+  // Restart id to generate unique begin frames across process restarts.  Used
+  // for creating a BeginFrameSource for RootCompositorFrameSink.
+  const uint32_t restart_id_;
+
+  // Whether display scheduler should wait for all pipeline stages before draw.
+  const bool run_all_compositor_stages_before_draw_;
 
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and
@@ -297,6 +318,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   base::flat_set<std::unique_ptr<FrameSinkVideoCapturerImpl>,
                  base::UniquePtrComparator>
       video_capturers_;
+
+  base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
 
   THREAD_CHECKER(thread_checker_);
 

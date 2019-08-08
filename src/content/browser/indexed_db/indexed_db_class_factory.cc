@@ -30,27 +30,33 @@ IndexedDBClassFactory* IndexedDBClassFactory::Get() {
     return s_factory.Pointer();
 }
 
-scoped_refptr<IndexedDBDatabase> IndexedDBClassFactory::CreateIndexedDBDatabase(
+std::unique_ptr<IndexedDBDatabase>
+IndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
-    scoped_refptr<IndexedDBBackingStore> backing_store,
-    scoped_refptr<IndexedDBFactory> factory,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBFactory* factory,
+    IndexedDBDatabase::ErrorCallback error_callback,
+    base::OnceClosure destroy_me,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
-  return new IndexedDBDatabase(name, backing_store, factory,
-                               std::move(metadata_coding), unique_identifier,
-                               transaction_lock_manager);
+  return base::WrapUnique(new IndexedDBDatabase(
+      name, backing_store, factory, std::move(error_callback),
+      std::move(destroy_me), std::move(metadata_coding), unique_identifier,
+      transaction_lock_manager));
 }
 
 std::unique_ptr<IndexedDBTransaction>
 IndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
+    ErrorCallback error_callback,
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  return std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-      id, connection, scope, mode, backing_store_transaction));
+  return base::WrapUnique(
+      new IndexedDBTransaction(id, connection, std::move(error_callback), scope,
+                               mode, backing_store_transaction));
 }
 
 scoped_refptr<LevelDBTransaction>

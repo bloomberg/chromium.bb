@@ -138,17 +138,10 @@ void QuicCryptoServerHandshaker::FinishProcessingHandshakeMessage(
     QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
         result,
     std::unique_ptr<ProofSource::Details> details) {
-  const CryptoHandshakeMessage& message = result->client_hello;
-
   // Clear the callback that got us here.
   DCHECK(validate_client_hello_cb_ != nullptr);
   DCHECK(process_client_hello_cb_ == nullptr);
   validate_client_hello_cb_ = nullptr;
-
-  if (stream_->UseStatelessRejectsIfPeerSupported()) {
-    stream_->SetPeerSupportsStatelessRejects(
-        QuicCryptoServerStreamBase::DoesPeerSupportStatelessRejects(message));
-  }
 
   std::unique_ptr<ProcessClientHelloCallback> cb(
       new ProcessClientHelloCallback(this, result));
@@ -176,29 +169,9 @@ void QuicCryptoServerHandshaker::
   }
 
   if (reply->tag() != kSHLO) {
-    if (reply->tag() == kSREJ) {
-      DCHECK(stream_->UseStatelessRejectsIfPeerSupported());
-      DCHECK(stream_->PeerSupportsStatelessRejects());
-      // Before sending the SREJ, cause the connection to save crypto packets
-      // so that they can be added to the time wait list manager and
-      // retransmitted.
-      session()->connection()->EnableSavingCryptoPackets();
-    }
     session()->connection()->set_fully_pad_crypto_hadshake_packets(
         crypto_config_->pad_rej());
     SendHandshakeMessage(*reply);
-
-    if (reply->tag() == kSREJ) {
-      DCHECK(stream_->UseStatelessRejectsIfPeerSupported());
-      DCHECK(stream_->PeerSupportsStatelessRejects());
-      DCHECK(!handshake_confirmed());
-      QUIC_DLOG(INFO) << "Closing connection "
-                      << session()->connection()->connection_id()
-                      << " because of a stateless reject.";
-      session()->connection()->CloseConnection(
-          QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, "stateless reject",
-          ConnectionCloseBehavior::SILENT_CLOSE);
-    }
     return;
   }
 
@@ -217,7 +190,7 @@ void QuicCryptoServerHandshaker::
 
   session()->OnConfigNegotiated();
 
-  config->ToHandshakeMessage(reply.get());
+  config->ToHandshakeMessage(reply.get(), session()->transport_version());
 
   // Receiving a full CHLO implies the client is prepared to decrypt with
   // the new server write key.  We can start to encrypt with the new server
@@ -431,16 +404,13 @@ void QuicCryptoServerHandshaker::ProcessClientHello(
   }
   previous_source_address_tokens_ = result->info.source_address_tokens;
 
-  const bool use_stateless_rejects_in_crypto_config =
-      stream_->UseStatelessRejectsIfPeerSupported() &&
-      stream_->PeerSupportsStatelessRejects();
   QuicConnection* connection = session()->connection();
   const QuicConnectionId server_designated_connection_id =
-      GenerateConnectionIdForReject(use_stateless_rejects_in_crypto_config);
+      GenerateConnectionIdForReject(/*use_stateless_rejects=*/false);
   crypto_config_->ProcessClientHello(
       result, /*reject_only=*/false, connection->connection_id(),
       connection->self_address(), GetClientAddress(), connection->version(),
-      session()->supported_versions(), use_stateless_rejects_in_crypto_config,
+      session()->supported_versions(), /*use_stateless_rejects=*/false,
       server_designated_connection_id, connection->clock(),
       connection->random_generator(), compressed_certs_cache_,
       crypto_negotiated_params_, signed_config_,

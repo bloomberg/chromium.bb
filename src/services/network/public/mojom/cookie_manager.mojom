@@ -112,6 +112,12 @@ struct CookieWithStatus {
   CookieInclusionStatus status;
 };
 
+struct CookieAndLineWithStatus {
+  CanonicalCookie? cookie;
+  string cookie_string;
+  CookieInclusionStatus status;
+};
+
 // Keep values here in sync with net::CookieStore::ChangeCause.
 // (Not typemapped to avoid forcing clients to know about net::CookieStore.)
 enum CookieChangeCause {

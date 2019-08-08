@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/metrics/user_metrics.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_consumer.h"

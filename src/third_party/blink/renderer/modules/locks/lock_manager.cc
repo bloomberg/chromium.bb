@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -102,8 +103,8 @@ class LockManager::LockRequestImpl final
     if (!resolver_->GetScriptState()->ContextIsValid())
       return;
 
-    resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kAbortError, reason));
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, reason));
   }
 
   void Failed() override {
@@ -225,8 +226,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   }
 
   if (!service_.get()) {
-    if (auto* provider = context->GetInterfaceProvider())
-      provider->GetInterface(mojo::MakeRequest(&service_));
+    if (auto* provider = context->GetInterfaceProvider()) {
+      provider->GetInterface(mojo::MakeRequest(
+          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    }
     if (!service_.get()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
@@ -342,8 +345,10 @@ ScriptPromise LockManager::query(ScriptState* script_state,
   }
 
   if (!service_.get()) {
-    if (auto* provider = context->GetInterfaceProvider())
-      provider->GetInterface(mojo::MakeRequest(&service_));
+    if (auto* provider = context->GetInterfaceProvider()) {
+      provider->GetInterface(mojo::MakeRequest(
+          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    }
     if (!service_.get()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();

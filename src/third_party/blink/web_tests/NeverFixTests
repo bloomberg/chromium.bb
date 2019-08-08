@@ -41,8 +41,6 @@ fast/harness/results.html [ WontFix ]
  [ Linux ] fast/events/inputevents/inputevent-yank.html [ WontFix ]
  [ Win ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ WontFix ]
  [ Linux ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ WontFix ]
- [ Win ] virtual/user-activation-v2/fast/events/inputevents/inputevent-yank.html [ WontFix ]
- [ Linux ] virtual/user-activation-v2/fast/events/inputevents/inputevent-yank.html [ WontFix ]
 
 # Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
 [ Mac ] editing/input/ctrl-up-down.html [ WontFix ]
@@ -53,8 +51,6 @@ fast/harness/results.html [ WontFix ]
  [ Win ] fast/events/option-tab.html [ WontFix ]
  [ Linux ] virtual/mouseevent_fractional/fast/events/option-tab.html [ WontFix ]
  [ Win ] virtual/mouseevent_fractional/fast/events/option-tab.html [ WontFix ]
- [ Linux ] virtual/user-activation-v2/fast/events/option-tab.html [ WontFix ]
- [ Win ] virtual/user-activation-v2/fast/events/option-tab.html [ WontFix ]
 
 # This test only applies to overlay scrollbar platforms.
  [ Win ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
@@ -100,13 +96,6 @@ fast/harness/results.html [ WontFix ]
 [ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-position.html [ WontFix ]
 [ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-reveal-focus.html [ WontFix ]
 [ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/context-menu-key-shift-f10-modifiers.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/context-menu-key-shift-f10-prevent-default.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/contextmenu-follows-focus.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu-document.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu-position.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu-reveal-focus.html [ WontFix ]
-[ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu.html [ WontFix ]
 
 # These tests are specific to Linux.
  [ Mac ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
@@ -144,13 +133,10 @@ fast/harness/results.html [ WontFix ]
 
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
-[ Linux ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
 
 # Segoe UI matching is only relevant on Windows
 [ Mac ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
-[ Mac ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
 [ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
-[ Linux ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
@@ -1682,9 +1668,6 @@ http/tests/ManualTests/ [ WontFix ]
 # direct compositing reason (for performance). Only applies to SPv1.
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ WontFix ]
 
-# This test will only work in the "video-surface-layer" virtual test suite.
-media/picture-in-picture/picture-in-picture-interstitial-sizing.html [ WontFix ]
-
 # Tests that use too much storage for automation.
 http/tests/cachestorage/large-put.html [ WontFix ]
 
@@ -1702,20 +1685,6 @@ crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experiment
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
-crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
-crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
-crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
-
-# Tests that are not supported if outofblink-cors feature is enabled.
-# These functionarities should be verified on browser_tests for outofblink-cors.
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
-
-# Tests that passes iff outofblink-cors feature is enabled.
-# TODO(toyoshim): Remove this if Out-Of-Blink CORS is enabled
-http/tests/security/img-redirect-to-crossorigin-credentials.html [ WontFix ]
 
 # Tests that only work when the mixed content autoupgrade experiment is enabled
 http/tests/mixed-autoupgrade [ WontFix ]
@@ -2100,7 +2069,7 @@ external/wpt/payment-request/payment-response/requestId-attribute-manual.https.h
 external/wpt/payment-request/payment-response/retry-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/shippingAddress-attribute-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/shippingOption-attribute-manual.https.html [ WontFix ]
-external/wpt/payment-request/rejects_if_not_active_manual.https.html [ WontFix ]
+external/wpt/payment-request/rejects_if_not_active-manual.https.html [ WontFix ]
 external/wpt/payment-request/shipping-address-changed-manual.https.html [ WontFix ]
 external/wpt/payment-request/show-method-optional-promise-rejects-manual.https.html [ WontFix ]
 external/wpt/payment-request/show-method-optional-promise-resolves-manual.https.html [ WontFix ]
@@ -2174,6 +2143,7 @@ external/wpt/visual-viewport/viewport-scale-iframe-manual.html [ WontFix ]
 external/wpt/visual-viewport/viewport-scale-manual.html [ WontFix ]
 external/wpt/visual-viewport/viewport-scroll-event-manual.html [ WontFix ]
 external/wpt/visual-viewport/viewport-url-bar-changes-height-manual.html [ WontFix ]
+external/wpt/wake-lock/wakelock-document-hidden-manual.https.html [ WontFix ]
 external/wpt/web-share/share-cancel-manual.html [ WontFix ]
 external/wpt/web-share/share-extra-argument-manual.html [ WontFix ]
 external/wpt/web-share/share-extra-field-manual.html [ WontFix ]
@@ -2194,11 +2164,6 @@ external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
@@ -2266,7 +2231,6 @@ Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin
 # https://foo.example.com/path?token=secret needs to be replaced with just
 # https://foo.example.com).
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
-crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
 # --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
@@ -2277,7 +2241,6 @@ crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss
 # 3) site isolation is enabled without also enabling
 #    IsolatedCodeCache (tests disabled by the test expectation below).
 Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
-Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally fail on Win7,
@@ -2292,7 +2255,6 @@ crbug.com/946022 [ Win7 ] fast/autoresize/turn-off-autoresize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/autoresize/basic.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/dom/viewport/resize-event-fired-window-resized.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/dom/Window/window-resize-contents.html [ WontFix ]
-crbug.com/946022 [ Win7 ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/dom/rtl-scroll-to-leftmost-and-resize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/dynamic/window-resize-scrollbars-test.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/events/resize-events-count.html [ WontFix ]
@@ -2303,10 +2265,13 @@ crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ W
 crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ WontFix ]
 crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
-crbug.com/946022 [ Win7 ] virtual/video-surface-layer/media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ WontFix ]
+
+# We don't plan to support this use-case in the near future.
+crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ WontFix ]
+crbug.com/940797 virtual/sxg-with-network-service/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ WontFix ]
 
 external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ WontFix ]
 external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ WontFix ]
@@ -2316,3 +2281,10 @@ external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-att
 external/wpt/payment-request/payment-response/retry-method-warnings-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/payerdetailschange-updateWith-manual.https.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html [ WontFix ]
+external/wpt/web-share/share-files-manual.html [ WontFix ]
+external/wpt/web-share/share-image-manual.html [ WontFix ]

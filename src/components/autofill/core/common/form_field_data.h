@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 
 namespace base {
 class Pickle;
@@ -50,34 +51,9 @@ typedef uint32_t FieldPropertiesMask;
 
 // Stores information about a field in a form.
 struct FormFieldData {
-  // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
-  enum RoleAttribute {
-    // "presentation"
-    ROLE_ATTRIBUTE_PRESENTATION,
-    // Anything else.
-    ROLE_ATTRIBUTE_OTHER,
-  };
-
-  enum CheckStatus {
-    NOT_CHECKABLE,
-    CHECKABLE_BUT_UNCHECKED,
-    CHECKED,
-  };
-
-  // From which source the label is inferred.
-  enum LabelSource {
-    UNKNOWN,  // The source is unknown.
-    LABEL_TAG,
-    P_TAG,
-    DIV_TABLE,
-    TD_TAG,
-    DD_TAG,
-    LI_TAG,
-    PLACE_HOLDER,
-    ARIA_LABEL,
-    COMBINED,  // Combined with various elements.
-    VALUE,     // label is the value of element.
-  };
+  using CheckStatus = mojom::FormFieldData_CheckStatus;
+  using RoleAttribute = mojom::FormFieldData_RoleAttribute;
+  using LabelSource = mojom::FormFieldData_LabelSource;
 
   static constexpr uint32_t kNotSetFormControlRendererId =
       std::numeric_limits<uint32_t>::max();
@@ -107,7 +83,7 @@ struct FormFieldData {
 
   // Returns true if the field is visible to the user.
   bool IsVisible() const {
-    return is_focusable && role != ROLE_ATTRIBUTE_PRESENTATION;
+    return is_focusable && role != RoleAttribute::kPresentation;
   }
 
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
@@ -166,19 +142,19 @@ struct FormFieldData {
   // IPC which could span 32 & 64 bit processes. We chose uint64_t instead of
   // uint32_t to maintain compatibility with old code which used size_t
   // (base::Pickle used to serialize that as 64 bit).
-  uint64_t max_length;
-  bool is_autofilled;
-  CheckStatus check_status;
-  bool is_focusable;
-  bool should_autocomplete;
-  RoleAttribute role;
-  base::i18n::TextDirection text_direction;
-  FieldPropertiesMask properties_mask;
+  uint64_t max_length = 0;
+  bool is_autofilled = false;
+  CheckStatus check_status = CheckStatus::kNotCheckable;
+  bool is_focusable = true;
+  bool should_autocomplete = true;
+  RoleAttribute role = RoleAttribute::kOther;
+  base::i18n::TextDirection text_direction = base::i18n::UNKNOWN_DIRECTION;
+  FieldPropertiesMask properties_mask = 0;
 
   // Data members from the next block are used for parsing only, they are not
   // serialised for storage.
-  bool is_enabled;
-  bool is_readonly;
+  bool is_enabled = false;
+  bool is_readonly = false;
   base::string16 typed_value;
 
   // For the HTML snippet |<option value="US">United States</option>|, the
@@ -188,7 +164,7 @@ struct FormFieldData {
 
   // Password Manager doesn't use labels nor client side nor server side, so
   // label_source isn't in serialize methods.
-  LabelSource label_source;
+  LabelSource label_source = LabelSource::kUnknown;
 };
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects

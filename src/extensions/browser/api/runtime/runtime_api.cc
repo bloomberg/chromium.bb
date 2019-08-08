@@ -736,14 +736,16 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
 
   std::string relative_path = kPackageDirectoryPath;
   base::FilePath path = extension_->path();
-  std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-      storage::kFileSystemTypeNativeLocal, std::string(), path, &relative_path);
+  storage::IsolatedContext::ScopedFSHandle filesystem =
+      isolated_context->RegisterFileSystemForPath(
+          storage::kFileSystemTypeNativeLocal, std::string(), path,
+          &relative_path);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantReadFileSystem(source_process_id(), filesystem_id);
+  policy->GrantReadFileSystem(source_process_id(), filesystem.id());
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("fileSystemId", filesystem_id);
+  dict->SetString("fileSystemId", filesystem.id());
   dict->SetString("baseName", relative_path);
   return RespondNow(OneArgument(std::move(dict)));
 }

@@ -31,6 +31,7 @@
 #include "modules/congestion_controller/goog_cc/alr_detector.h"
 #include "modules/congestion_controller/goog_cc/congestion_window_pushback_controller.h"
 #include "modules/congestion_controller/goog_cc/delay_based_bwe.h"
+#include "modules/congestion_controller/goog_cc/overuse_predictor.h"
 #include "modules/congestion_controller/goog_cc/probe_controller.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/experiments/field_trial_parser.h"
@@ -56,6 +57,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   NetworkControlUpdate OnRemoteBitrateReport(RemoteBitrateReport msg) override;
   NetworkControlUpdate OnRoundTripTimeUpdate(RoundTripTimeUpdate msg) override;
   NetworkControlUpdate OnSentPacket(SentPacket msg) override;
+  NetworkControlUpdate OnReceivedPacket(ReceivedPacket msg) override;
   NetworkControlUpdate OnStreamsConfig(StreamsConfig msg) override;
   NetworkControlUpdate OnTargetRateConstraints(
       TargetRateConstraints msg) override;
@@ -72,6 +74,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   void ClampConstraints();
   void MaybeTriggerOnNetworkChanged(NetworkControlUpdate* update,
                                     Timestamp at_time);
+  void UpdateCongestionWindowSize(TimeDelta time_since_last_packet);
   PacerConfig GetPacingRates(Timestamp at_time) const;
   const FieldTrialBasedConfig trial_based_config_;
 
@@ -81,6 +84,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   FieldTrialFlag safe_reset_on_route_change_;
   FieldTrialFlag safe_reset_acknowledged_rate_;
   const bool use_stable_bandwidth_estimate_;
+  const bool use_downlink_delay_for_congestion_window_;
   const bool fall_back_to_probe_rate_;
   const bool use_min_allocatable_as_lower_bound_;
   const RateControlSettings rate_control_settings_;
@@ -96,6 +100,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   std::unique_ptr<NetworkStatePredictor> network_state_predictor_;
   std::unique_ptr<DelayBasedBwe> delay_based_bwe_;
   std::unique_ptr<AcknowledgedBitrateEstimator> acknowledged_bitrate_estimator_;
+  OverusePredictor overuse_predictor_;
 
   absl::optional<NetworkControllerConfig> initial_config_;
 
@@ -117,13 +122,14 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   int32_t last_estimated_bitrate_bps_ = 0;
   uint8_t last_estimated_fraction_loss_ = 0;
   int64_t last_estimated_rtt_ms_ = 0;
+  Timestamp last_packet_received_time_ = Timestamp::MinusInfinity();
 
   double pacing_factor_;
   DataRate min_total_allocated_bitrate_;
   DataRate max_padding_rate_;
   DataRate max_total_allocated_bitrate_;
 
-  bool previously_in_alr = false;
+  bool previously_in_alr_ = false;
 
   absl::optional<DataSize> current_data_window_;
 

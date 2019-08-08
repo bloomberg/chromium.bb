@@ -24,8 +24,6 @@ jumbo_source_set("fxge") {
     "cfx_color.cpp",
     "cfx_color.h",
     "cfx_defaultrenderdevice.h",
-    "cfx_facecache.cpp",
-    "cfx_facecache.h",
     "cfx_folderfontinfo.cpp",
     "cfx_folderfontinfo.h",
     "cfx_font.cpp",
@@ -39,6 +37,8 @@ jumbo_source_set("fxge") {
     "cfx_gemodule.h",
     "cfx_glyphbitmap.cpp",
     "cfx_glyphbitmap.h",
+    "cfx_glyphcache.cpp",
+    "cfx_glyphcache.h",
     "cfx_graphstate.cpp",
     "cfx_graphstate.h",
     "cfx_graphstatedata.cpp",
@@ -57,6 +57,8 @@ jumbo_source_set("fxge") {
     "dib/cfx_bitmapcomposer.h",
     "dib/cfx_bitmapstorer.cpp",
     "dib/cfx_bitmapstorer.h",
+    "dib/cfx_cmyk_to_srgb.cpp",
+    "dib/cfx_cmyk_to_srgb.h",
     "dib/cfx_dibbase.cpp",
     "dib/cfx_dibbase.h",
     "dib/cfx_dibitmap.cpp",
@@ -168,6 +170,7 @@ jumbo_source_set("fxge") {
       "apple/fx_mac_imp.cpp",
       "apple/fx_quartz_device.cpp",
     ]
+    libs = [ "CoreGraphics.framework" ]
   }
 
   if (is_win) {
@@ -194,6 +197,7 @@ jumbo_source_set("fxge") {
 
 pdfium_unittest_source_set("unittests") {
   sources = [
+    "dib/cfx_cmyk_to_srgb_unittest.cpp",
     "dib/cfx_dibitmap_unittest.cpp",
     "dib/cstretchengine_unittest.cpp",
   ]

@@ -35,6 +35,7 @@
 #include <string>
 
 #include "base/stl_util.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_host.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_date_time_chooser_completion.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -95,6 +95,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -116,6 +117,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -128,7 +130,6 @@
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -231,32 +232,19 @@ class TapHandlingWebWidgetClient
   int longpress_y_;
 };
 
-class DateTimeChooserWebViewClient
-    : public frame_test_helpers::TestWebViewClient {
- public:
-  WebDateTimeChooserCompletion* ChooserCompletion() {
-    return chooser_completion_;
-  }
-
-  void ClearChooserCompletion() { chooser_completion_ = nullptr; }
-
-  // WebViewClient methods
-  bool OpenDateTimeChooser(
-      const WebDateTimeChooserParams&,
-      WebDateTimeChooserCompletion* chooser_completion) override {
-    chooser_completion_ = chooser_completion;
-    return true;
-  }
-
- private:
-  WebDateTimeChooserCompletion* chooser_completion_;
-};
-
 class WebViewTest : public testing::Test {
  public:
   WebViewTest() : base_url_("http://www.test.com/") {}
 
+  void SetUp() override {
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    // Advance clock so time is not 0.
+    test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    EventTiming::SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+  }
+
   void TearDown() override {
+    EventTiming::SetTickClockForTesting(nullptr);
     Platform::Current()
         ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
@@ -293,17 +281,31 @@ class WebViewTest : public testing::Test {
                          const std::string& html_file);
   void TestInputMode(WebTextInputMode expected_input_mode,
                      const std::string& html_file);
+  void TestInputAction(ui::TextInputAction expected_input_action,
+                       const std::string& html_file);
   bool TapElement(WebInputEvent::Type, Element*);
   bool TapElementById(WebInputEvent::Type, const WebString& id);
   IntSize PrintICBSizeFromPageSize(const FloatSize& page_size);
+
+  ExternalDateTimeChooser* GetExternalDateTimeChooser(
+      WebViewImpl* web_view_impl);
 
   void UpdateAllLifecyclePhases() {
     web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
+  InteractiveDetector* GetTestInteractiveDetector(Document& document) {
+    InteractiveDetector* detector(InteractiveDetector::From(document));
+    EXPECT_NE(nullptr, detector);
+    detector->SetTaskRunnerForTesting(test_task_runner_);
+    detector->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+    return detector;
+  }
+
   std::string base_url_;
   frame_test_helpers::WebViewHelper web_view_helper_;
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 };
 
 static bool HitTestIsContentEditable(WebView* view, int x, int y) {
@@ -549,8 +551,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   LocalFrameView* view = web_view_helper_.LocalMainFrame()->GetFrameView();
   PaintLayer* root_layer = view->GetLayoutView()->Layer();
   CullRect paint_rect(IntRect(0, 0, kWidth, kHeight));
-  PaintLayerPaintingInfo painting_info(root_layer, paint_rect,
-                                       kGlobalPaintNormalPhase, LayoutSize());
+  PaintLayerPaintingInfo painting_info(
+      root_layer, paint_rect, kGlobalPaintNormalPhase, PhysicalOffset());
 
   view->GetLayoutView()->GetDocument().Lifecycle().AdvanceTo(
       DocumentLifecycle::kInPaint);
@@ -565,6 +567,34 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);
   EXPECT_TRUE(RedChannel(color));
   EXPECT_TRUE(GreenChannel(color));
+}
+
+TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
+  ScopedCSSColorSchemeForTest enable_color_scheme(true);
+
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  web_view->SettingsImpl()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  frame_test_helpers::LoadHTMLString(
+      web_view->MainFrameImpl(),
+      "<style>:root { color-scheme: light dark }<style>", base_url);
+  UpdateAllLifecyclePhases();
+
+  LocalFrameView* frame_view = web_view->MainFrameImpl()->GetFrame()->View();
+  EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
+
+  web_view->SettingsImpl()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+
+  web_view->SettingsImpl()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
 }
 
 TEST_F(WebViewTest, FocusIsInactive) {
@@ -624,8 +654,7 @@ TEST_F(WebViewTest, DocumentHasFocus) {
   Document* document = frame->GetFrame()->GetDocument();
   WebElement log_element = frame->GetDocument().GetElementById("log");
   EXPECT_TRUE(document->hasFocus());
-  EXPECT_STREQ("document.hasFocus(): true",
-               log_element.TextContent().Utf8().data());
+  EXPECT_EQ("document.hasFocus(): true", log_element.TextContent());
 
   web_view->SetIsActive(false);
   web_view->MainFrameWidget()->SetFocus(false);
@@ -634,8 +663,7 @@ TEST_F(WebViewTest, DocumentHasFocus) {
 
   web_view->MainFrameWidget()->SetFocus(true);
   EXPECT_TRUE(document->hasFocus());
-  EXPECT_STREQ("document.hasFocus(): true",
-               log_element.TextContent().Utf8().data());
+  EXPECT_EQ("document.hasFocus(): true", log_element.TextContent());
 }
 
 TEST_F(WebViewTest, ActiveState) {
@@ -981,6 +1009,33 @@ TEST_F(WebViewTest, InputMode) {
                 "input_mode_type_decimal.html");
   TestInputMode(WebTextInputMode::kWebTextInputModeSearch,
                 "input_mode_type_search.html");
+}
+
+void WebViewTest::TestInputAction(ui::TextInputAction expected_input_action,
+                                  const std::string& html_file) {
+  RegisterMockedHttpURLLoad(html_file);
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad(base_url_ + html_file);
+  web_view_impl->SetInitialFocus(false);
+  EXPECT_EQ(expected_input_action, web_view_impl->MainFrameImpl()
+                                       ->GetInputMethodController()
+                                       ->TextInputInfo()
+                                       .action);
+}
+
+TEST_F(WebViewTest, TextInputAction) {
+  TestInputAction(ui::TextInputAction::kDefault, "enter_key_hint_default.html");
+  TestInputAction(ui::TextInputAction::kDefault,
+                  "enter_key_hint_default_unknown.html");
+  TestInputAction(ui::TextInputAction::kEnter, "enter_key_hint_enter.html");
+  TestInputAction(ui::TextInputAction::kGo, "enter_key_hint_go.html");
+  TestInputAction(ui::TextInputAction::kDone, "enter_key_hint_done.html");
+  TestInputAction(ui::TextInputAction::kNext, "enter_key_hint_next.html");
+  TestInputAction(ui::TextInputAction::kPrevious,
+                  "enter_key_hint_previous.html");
+  TestInputAction(ui::TextInputAction::kSearch, "enter_key_hint_search.html");
+  TestInputAction(ui::TextInputAction::kSend, "enter_key_hint_send.html");
+  TestInputAction(ui::TextInputAction::kNext, "enter_key_hint_mixed_case.html");
 }
 
 TEST_F(WebViewTest, TextInputInfoWithReplacedElements) {
@@ -2340,13 +2395,13 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
 
   // Go back, then forward, then back again.
-  main_frame_local->Loader().CommitSameDocumentNavigation(
+  main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
-  main_frame_local->Loader().CommitSameDocumentNavigation(
+  main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
-  main_frame_local->Loader().CommitSameDocumentNavigation(
+  main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
 
@@ -2359,10 +2414,10 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
 
   // Go back, then forward. The scroll position should be properly set on the
   // forward navigation.
-  main_frame_local->Loader().CommitSameDocumentNavigation(
+  main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
-  main_frame_local->Loader().CommitSameDocumentNavigation(
+  main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
@@ -2547,6 +2602,12 @@ IntSize WebViewTest::PrintICBSizeFromPageSize(const FloatSize& page_size) {
   return IntSize(icb_width, icb_height);
 }
 
+ExternalDateTimeChooser* WebViewTest::GetExternalDateTimeChooser(
+    WebViewImpl* web_view_impl) {
+  return web_view_impl->GetChromeClient()
+      .GetExternalDateTimeChooserForTesting();
+}
+
 TEST_F(WebViewTest, ClientTapHandling) {
   TapHandlingWebWidgetClient client;
   WebView* web_view = web_view_helper_.InitializeAndLoad("about:blank", nullptr,
@@ -2659,8 +2720,8 @@ TEST_F(WebViewTest, LongPressObject) {
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
 
-  HTMLElement* element = ToHTMLElement(
-      web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
+  auto* element = To<HTMLElement>(static_cast<Node*>(
+      web_view->MainFrameImpl()->GetDocument().GetElementById("obj")));
   EXPECT_FALSE(element->CanStartSelection());
 }
 
@@ -2684,8 +2745,8 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
 
-  HTMLElement* element = ToHTMLElement(
-      web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
+  auto* element = To<HTMLElement>(static_cast<Node*>(
+      web_view->MainFrameImpl()->GetDocument().GetElementById("obj")));
   EXPECT_TRUE(element->CanStartSelection());
 }
 
@@ -2779,8 +2840,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
 
   // Send long press to start dragging
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target_id));
-  EXPECT_STREQ("dragstart",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("dragstart", web_view->MainFrameImpl()->GetDocument().Title());
 
   // Check pointer cancel is sent to dom.
   WebPointerEvent pointer_cancel(
@@ -2791,8 +2851,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(pointer_cancel)));
   web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
-  EXPECT_STREQ("touchcancel",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("touchcancel", web_view->MainFrameImpl()->GetDocument().Title());
 }
 
 TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
@@ -2813,12 +2872,12 @@ TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
   WebString image_tag_id = WebString::FromUTF8("imageTag");
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, anchor_tag_id));
-  EXPECT_STREQ("anchor contextmenu",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("anchor contextmenu",
+            web_view->MainFrameImpl()->GetDocument().Title());
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, image_tag_id));
-  EXPECT_STREQ("image contextmenu",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("image contextmenu",
+            web_view->MainFrameImpl()->GetDocument().Title());
 }
 
 TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
@@ -2947,9 +3006,10 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
-  HTMLTextAreaElement* text_area_element = ToHTMLTextAreaElement(
-      web_view->MainFrameImpl()->GetDocument().GetElementById(
-          blanklinestextbox));
+  HTMLTextAreaElement* text_area_element =
+      ToHTMLTextAreaElement(static_cast<Node*>(
+          web_view->MainFrameImpl()->GetDocument().GetElementById(
+              blanklinestextbox)));
   text_area_element->setValue("hello");
 
   // Long-press past last word of textbox.
@@ -3267,10 +3327,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
 
 class MockAutofillClient : public WebAutofillClient {
  public:
-  MockAutofillClient()
-      : text_changes_(0),
-        text_changes_from_user_gesture_(0),
-        user_gesture_notifications_count_(0) {}
+  MockAutofillClient() = default;
 
   ~MockAutofillClient() override = default;
 
@@ -3282,6 +3339,12 @@ class MockAutofillClient : public WebAutofillClient {
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
+  bool HasFillData(const WebFormControlElement&) const override {
+    return has_fill_data_;
+  }
+
+  void SetFillData(bool has_fill_data) { has_fill_data_ = has_fill_data; }
+
   void ClearChangeCounts() { text_changes_ = 0; }
 
   int TextChanges() { return text_changes_; }
@@ -3291,9 +3354,10 @@ class MockAutofillClient : public WebAutofillClient {
   }
 
  private:
-  int text_changes_;
-  int text_changes_from_user_gesture_;
-  int user_gesture_notifications_count_;
+  int text_changes_ = 0;
+  int text_changes_from_user_gesture_ = 0;
+  int user_gesture_notifications_count_ = 0;
+  bool has_fill_data_ = false;
 };
 
 TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
@@ -3502,10 +3566,9 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
           ->GetFrame();
   FrameLoadRequest request_with_target_start(
       local_frame->GetDocument(),
-      web_url_request_with_target_start.ToResourceRequest(), "_top");
-  local_frame->Loader().StartNavigation(request_with_target_start);
-  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
-      To<WebLocalFrameImpl>(web_view_impl->MainFrame()->FirstChild()));
+      web_url_request_with_target_start.ToResourceRequest());
+  local_frame->Tree().FindOrCreateFrameForNavigation(request_with_target_start,
+                                                     "_top");
   EXPECT_FALSE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3520,11 +3583,10 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
 
   // Make a request that will open a new window
   WebURLRequest web_url_request(KURL("about:blank"));
-  FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest(),
-                           "_blank");
+  FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest());
   To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
-      ->Loader()
-      .StartNavigation(request);
+      ->Tree()
+      .FindOrCreateFrameForNavigation(request, "_blank");
   ASSERT_TRUE(client.CreatedWebView());
   EXPECT_FALSE(client.DidFocusCalled());
 
@@ -3532,12 +3594,12 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   // The original window should be focused.
   WebURLRequest web_url_request_with_target_start(KURL("about:blank"));
   FrameLoadRequest request_with_target_start(
-      nullptr, web_url_request_with_target_start.ToResourceRequest(), "_start");
+      nullptr, web_url_request_with_target_start.ToResourceRequest());
   To<LocalFrame>(static_cast<WebViewImpl*>(client.CreatedWebView())
                      ->GetPage()
                      ->MainFrame())
-      ->Loader()
-      .StartNavigation(request_with_target_start);
+      ->Tree()
+      .FindOrCreateFrameForNavigation(request_with_target_start, "_start");
   EXPECT_TRUE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3565,33 +3627,12 @@ class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
   WebView* web_view_ = nullptr;
 };
 
-class NavigationPolicyWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  NavigationPolicyWebFrameClient() = default;
-
-  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
-    begin_navigation_called_ = true;
-    last_navigation_policy_ = info->navigation_policy;
-  }
-
-  bool BeginNavigationWasCalled() const { return begin_navigation_called_; }
-  WebNavigationPolicy LastNavigationPolicy() const {
-    return last_navigation_policy_;
-  }
-
- private:
-  WebNavigationPolicy last_navigation_policy_ = kWebNavigationPolicyCurrentTab;
-  bool begin_navigation_called_ = false;
-};
-
 TEST_F(WebViewTest,
        ReuseExistingWindowOnCreateViewUsesCorrectNavigationPolicy) {
   ViewReusingWebViewClient view_client;
-  NavigationPolicyWebFrameClient frame_client;
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
-      web_view_helper.Initialize(&frame_client, &view_client);
+      web_view_helper.Initialize(nullptr, &view_client);
   view_client.SetWebView(web_view_impl);
   LocalFrame* frame = To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
 
@@ -3599,11 +3640,11 @@ TEST_F(WebViewTest,
   // return the current window.
   WebURLRequest web_url_request(KURL("about:blank"));
   FrameLoadRequest request(frame->GetDocument(),
-                           web_url_request.ToResourceRequest(), "_blank");
-  frame->Loader().StartNavigation(request);
-  ASSERT_TRUE(frame_client.BeginNavigationWasCalled());
-  EXPECT_EQ(kWebNavigationPolicyCurrentTab,
-            frame_client.LastNavigationPolicy());
+                           web_url_request.ToResourceRequest());
+  FrameTree::FindResult result =
+      frame->Tree().FindOrCreateFrameForNavigation(request, "_blank");
+  EXPECT_EQ(frame, result.frame);
+  EXPECT_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 }
 
 TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
@@ -3617,7 +3658,7 @@ TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
-  EXPECT_STREQ("focusoutfocusin", element.TextContent().Utf8().data());
+  EXPECT_EQ("focusoutfocusin", element.TextContent());
 }
 
 TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
@@ -3631,7 +3672,7 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
-  EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.TextContent().Utf8().data());
+  EXPECT_EQ("DOMFocusOutDOMFocusIn", element.TextContent());
 }
 
 static void OpenDateTimeChooser(WebView* web_view,
@@ -3651,17 +3692,11 @@ static void OpenDateTimeChooser(WebView* web_view,
       WebCoalescedInputEvent(key_event));
 }
 
-// TODO(crbug.com/605112) This test is crashing on Android (Nexus 4) bot.
-#if defined(OS_ANDROID)
-TEST_F(WebViewTest, DISABLED_ChooseValueFromDateTimeChooser) {
-#else
 TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
-#endif
   ScopedInputMultipleFieldsUIForTest input_multiple_fields_ui(false);
-  DateTimeChooserWebViewClient client;
   std::string url = RegisterMockedHttpURLLoad("date_time_chooser.html");
   WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(url, nullptr, &client);
+      web_view_helper_.InitializeAndLoad(url, nullptr, nullptr);
 
   Document* document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
@@ -3670,63 +3705,53 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
 
   input_element = ToHTMLInputElement(document->getElementById("date"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-01-01", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
+  EXPECT_EQ("1970-01-01", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-01-01T00:00", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
+  EXPECT_EQ("1970-01-01T00:00", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-01", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
+  EXPECT_EQ("1970-01", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("00:00", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
+  EXPECT_EQ("00:00", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("1970-W01", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
+  EXPECT_EQ("1970-W01", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
+  EXPECT_EQ("", input_element->value());
 
   // Clear the WebViewClient from the webViewHelper to avoid use-after-free in
   // the WebViewHelper destructor.
@@ -3745,7 +3770,7 @@ TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle) {
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
   // Expect not to see duplication of events.
-  EXPECT_STREQ("blurfocus", element.TextContent().Utf8().data());
+  EXPECT_EQ("blurfocus", element.TextContent());
 }
 
 class CreateChildCounterFrameClient
@@ -4631,6 +4656,28 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
 
 #endif
 
+TEST_F(WebViewTest, PasswordFieldCanBeAutofilled) {
+  RegisterMockedHttpURLLoad("input_field_password.html");
+  // Pretend client has fill data for all fields it's queried.
+  MockAutofillClient client;
+  client.SetFillData(true);
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "input_field_password.html");
+  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  frame->SetAutofillClient(&client);
+  // No field is focused.
+  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+
+  // Focusing a field should result in treating it autofillable.
+  web_view->SetInitialFocus(false);
+  EXPECT_TRUE(frame->CanFocusedFieldBeAutofilled());
+
+  // Pretend that |client| no longer has autofill data available.
+  client.SetFillData(false);
+  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+  frame->SetAutofillClient(nullptr);
+}
+
 TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture) {
   RegisterMockedHttpURLLoad("input_field_password.html");
   MockAutofillClient client;
@@ -4685,8 +4732,8 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
     frame->ExecuteScript(
         WebScriptSource("addEventListener('beforeunload', function() {});"));
     web_view->MainFrameImpl()->DispatchBeforeUnloadEvent(false);
-    EXPECT_FALSE(UseCounter::IsCounted(*document,
-                                       WebFeature::kSubFrameBeforeUnloadFired));
+    EXPECT_FALSE(
+        document->IsUseCounted(WebFeature::kSubFrameBeforeUnloadFired));
   }
 
   // Add a beforeunload handler in the iframe and dispatch. Make sure we do
@@ -4705,8 +4752,8 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
                                                   ->Tree()
                                                   .FirstChild())
                                    ->GetDocument();
-    EXPECT_TRUE(UseCounter::IsCounted(*child_document,
-                                      WebFeature::kSubFrameBeforeUnloadFired));
+    EXPECT_TRUE(
+        child_document->IsUseCounted(WebFeature::kSubFrameBeforeUnloadFired));
   }
 }
 
@@ -5171,12 +5218,11 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  base::TimeTicks start_time = test_task_runner_->NowTicks();
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
 
@@ -5185,15 +5231,14 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
-  key_event1.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  key_event1.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
               0.01);
-  EXPECT_EQ(70, interactive_detector->GetFirstInputTimestamp()
-                    .since_origin()
+  EXPECT_EQ(70, (interactive_detector->GetFirstInputTimestamp() - start_time)
                     .InMillisecondsF());
 
   // Sending a second event won't change the FirstInputDelay.
@@ -5202,15 +5247,14 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
-  clock.Advance(TimeDelta::FromMilliseconds(60));
-  key_event2.SetTimeStamp(CurrentTimeTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(60));
+  key_event2.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
               0.01);
-  EXPECT_EQ(70, interactive_detector->GetFirstInputTimestamp()
-                    .since_origin()
+  EXPECT_EQ(70, (interactive_detector->GetFirstInputTimestamp() - start_time)
                     .InMillisecondsF());
 }
 
@@ -5227,12 +5271,10 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 
@@ -5241,12 +5283,12 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
-  key_event1.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  key_event1.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
-  TimeTicks longest_input_timestamp = CurrentTimeTicks();
+  TimeTicks longest_input_timestamp = test_task_runner_->NowTicks();
 
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5254,7 +5296,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(longest_input_timestamp);
-  clock.Advance(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
@@ -5263,8 +5305,8 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
-  key_event3.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  key_event3.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
@@ -5276,16 +5318,22 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
 }
 
 TEST_F(WebViewTest, InputDelayReported) {
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
-                                     "<html><body></body></html>", base_url);
+                                     "<html><body></body></html>", base_url,
+                                     test_task_runner_->GetMockTickClock());
 
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  ASSERT_NE(nullptr, main_frame);
+  Document* document = main_frame->GetDocument();
+  ASSERT_NE(nullptr, document);
+  GetTestInteractiveDetector(*document);
+
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
   HistogramTester histogram_tester;
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
@@ -5293,8 +5341,8 @@ TEST_F(WebViewTest, InputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
-  key_event1.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  key_event1.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5303,8 +5351,8 @@ TEST_F(WebViewTest, InputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
-  key_event2.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  key_event2.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
@@ -5313,8 +5361,8 @@ TEST_F(WebViewTest, InputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
-  key_event3.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  key_event3.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
@@ -5349,12 +5397,10 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 
@@ -5363,9 +5409,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
-  TimeTicks key_event1_time = CurrentTimeTicks();
+  TimeTicks key_event1_time = test_task_runner_->NowTicks();
   key_event1.SetTimeStamp(key_event1_time);
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5374,12 +5420,12 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
-  key_event2.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(100));
+  key_event2.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  clock.Advance(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  clock.Advance(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   // Total input delay is >300ms.
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
@@ -5405,20 +5451,18 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
-  key_event.SetTimeStamp(CurrentTimeTicks());
-  clock.Advance(TimeDelta::FromMilliseconds(100));
+  key_event.SetTimeStamp(test_task_runner_->NowTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -5440,28 +5484,26 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 
   web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  clock.Advance(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  clock.Advance(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
-  TimeTicks key_event_time = CurrentTimeTicks();
+  TimeTicks key_event_time = test_task_runner_->NowTicks();
   key_event.SetTimeStamp(key_event_time);
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
@@ -5490,21 +5532,20 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromMilliseconds(70));
+  base::TimeTicks start_time = test_task_runner_->NowTicks();
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   WebPointerEvent pointer_down(
       WebInputEvent::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  pointer_down.SetTimeStamp(CurrentTimeTicks());
+  pointer_down.SetTimeStamp(test_task_runner_->NowTicks());
   // Set this to the left button, needed for testing to behave properly.
   pointer_down.SetModifiers(WebInputEvent::kLeftButtonDown);
   pointer_down.button = WebPointerProperties::Button::kLeft;
-  clock.Advance(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_down));
 
@@ -5516,15 +5557,14 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   WebPointerEvent pointer_up(
       WebInputEvent::kPointerUp,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  clock.Advance(TimeDelta::FromMilliseconds(60));
-  pointer_up.SetTimeStamp(CurrentTimeTicks());
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(60));
+  pointer_up.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_up));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
               0.01);
-  EXPECT_EQ(70, interactive_detector->GetFirstInputTimestamp()
-                    .since_origin()
+  EXPECT_EQ(70, (interactive_detector->GetFirstInputTimestamp() - start_time)
                     .InMillisecondsF());
 }
 
@@ -5533,33 +5573,35 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
 class MockClockAdvancingWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
-  MockClockAdvancingWebFrameClient(WTF::ScopedMockClock* mock_clock,
-                                   TimeDelta event_handling_delay)
-      : mock_clock_(mock_clock), event_handling_delay_(event_handling_delay) {}
+  MockClockAdvancingWebFrameClient(
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
+      TimeDelta event_handling_delay)
+      : task_runner_(std::move(task_runner)),
+        event_handling_delay_(event_handling_delay) {}
   // WebLocalFrameClient overrides:
   void DidAddMessageToConsole(const WebConsoleMessage& message,
                               const WebString& source_name,
                               unsigned source_line,
                               const WebString& stack_trace) override {
-    mock_clock_->Advance(event_handling_delay_);
+    task_runner_->FastForwardBy(event_handling_delay_);
   }
 
  private:
-  WTF::ScopedMockClock* mock_clock_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   TimeDelta event_handling_delay_;
 };
 
 // Check that the input delay is correctly reported to the document.
 TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
-  WTF::ScopedMockClock clock;
   // Page load timing logic depends on the time not being zero.
-  clock.Advance(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
   MockClockAdvancingWebFrameClient frame_client(
-      &clock, TimeDelta::FromMilliseconds(6000));
+      test_task_runner_, TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
-                                     "<html><body></body></html>", base_url);
+                                     "<html><body></body></html>", base_url,
+                                     test_task_runner_->GetMockTickClock());
 
   LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
   ASSERT_NE(nullptr, main_frame);
@@ -5573,18 +5615,17 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
       WebScriptSource("document.addEventListener('keydown', "
                       "() => {console.log('advancing timer');})"));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
-  key_event.SetTimeStamp(CurrentTimeTicks());
+  key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  clock.Advance(TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -5597,11 +5638,10 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
 
 // Check that the longest input delay is correctly reported to the document.
 TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
-  WTF::ScopedMockClock clock;
   // Page load timing logic depends on the time not being zero.
-  clock.Advance(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
   MockClockAdvancingWebFrameClient frame_client(
-      &clock, TimeDelta::FromMilliseconds(6000));
+      test_task_runner_, TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5619,18 +5659,17 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
       WebScriptSource("document.addEventListener('keydown', "
                       "() => {console.log('advancing timer');})"));
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*document));
-  ASSERT_NE(nullptr, interactive_detector);
+  InteractiveDetector* interactive_detector =
+      GetTestInteractiveDetector(*document);
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
-  key_event.SetTimeStamp(CurrentTimeTicks());
+  key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  clock.Advance(TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));

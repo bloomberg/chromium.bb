@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
@@ -108,7 +109,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   ParsePortRange(webrtc_udp_port_range, &prefs->webrtc_udp_min_port,
                  &prefs->webrtc_udp_max_port);
 
-#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
+#if defined(USE_AURA)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 #if defined(OS_CHROMEOS)
   // This color is 0x544d90fe modulated with 0xffffff.
@@ -156,6 +157,12 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   prefs->plugin_fullscreen_allowed =
       pref_service->GetBoolean(prefs::kFullscreenAllowed);
 #endif
+
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    prefs->allow_cross_origin_auth_prompt =
+        local_state->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
+  }
 }
 
 }  // namespace renderer_preferences_util

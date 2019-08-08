@@ -124,7 +124,7 @@ class Shell : public WebContentsDelegate,
 
   // Used for content_browsertests. Called once.
   static void SetShellCreatedCallback(
-      base::Callback<void(Shell*)> shell_created_callback);
+      base::OnceCallback<void(Shell*)> shell_created_callback);
 
   WebContents* web_contents() const { return web_contents_.get(); }
   gfx::NativeWindow window() { return window_; }
@@ -170,12 +170,15 @@ class Shell : public WebContentsDelegate,
   std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler) override;
+  std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
+      RenderFrameHost* frame,
+      const BluetoothScanningPrompt::EventHandler& event_handler) override;
 #if defined(OS_MACOSX)
   bool HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;
 #endif
   bool DidAddMessageToConsole(WebContents* source,
-                              int32_t level,
+                              blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
@@ -310,7 +313,7 @@ class Shell : public WebContentsDelegate,
   // of ordering.
   static std::vector<Shell*> windows_;
 
-  static base::Callback<void(Shell*)> shell_created_callback_;
+  static base::OnceCallback<void(Shell*)> shell_created_callback_;
 };
 
 }  // namespace content

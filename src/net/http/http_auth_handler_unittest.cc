@@ -32,39 +32,41 @@ TEST(HttpAuthHandlerTest, NetLog) {
   std::string auth_token;
   HttpRequestInfo request;
 
-  for (int i = 0; i < 2; ++i) {
-    bool async = (i == 0);
-    for (int j = 0; j < 2; ++j) {
-      int rv = (j == 0) ? OK : ERR_UNEXPECTED;
-      for (int k = 0; k < 2; ++k) {
-        TestCompletionCallback test_callback;
-        HttpAuth::Target target =
-            (k == 0) ? HttpAuth::AUTH_PROXY : HttpAuth::AUTH_SERVER;
-        NetLogEventType event_type = (k == 0) ? NetLogEventType::AUTH_PROXY
-                                              : NetLogEventType::AUTH_SERVER;
-        HttpAuthChallengeTokenizer tokenizer(
-            challenge.begin(), challenge.end());
-        HttpAuthHandlerMock mock_handler;
-        TestNetLog test_net_log;
-        NetLogWithSource net_log(
-            NetLogWithSource::Make(&test_net_log, NetLogSourceType::NONE));
+  for (auto async : {true, false}) {
+    for (auto target : {HttpAuth::AUTH_PROXY, HttpAuth::AUTH_SERVER}) {
+      TestCompletionCallback test_callback;
+      HttpAuthChallengeTokenizer tokenizer(challenge.begin(), challenge.end());
+      HttpAuthHandlerMock mock_handler;
+      BoundTestNetLog test_net_log;
 
-        SSLInfo empty_ssl_info;
-        mock_handler.InitFromChallenge(&tokenizer, target, empty_ssl_info,
-                                       origin, net_log);
-        mock_handler.SetGenerateExpectation(async, rv);
-        mock_handler.GenerateAuthToken(&credentials, &request,
-                                       test_callback.callback(), &auth_token);
-        if (async)
-          test_callback.WaitForResult();
+      // set_connection_based(true) indicates that the HandleAnotherChallenge()
+      // call after GenerateAuthToken() is expected and does not result in
+      // AUTHORIZATION_RESULT_REJECT.
+      mock_handler.set_connection_based(true);
+      mock_handler.InitFromChallenge(&tokenizer, target, SSLInfo(), origin,
+                                     test_net_log.bound());
+      mock_handler.SetGenerateExpectation(async, OK);
+      mock_handler.GenerateAuthToken(&credentials, &request,
+                                     test_callback.callback(), &auth_token);
+      if (async)
+        test_callback.WaitForResult();
 
-        TestNetLogEntry::List entries;
-        test_net_log.GetEntries(&entries);
+      mock_handler.HandleAnotherChallenge(&tokenizer);
 
-        EXPECT_EQ(2u, entries.size());
-        EXPECT_TRUE(LogContainsBeginEvent(entries, 0, event_type));
-        EXPECT_TRUE(LogContainsEndEvent(entries, 1, event_type));
-      }
+      TestNetLogEntry::List entries;
+      test_net_log.GetEntries(&entries);
+
+      ASSERT_EQ(5u, entries.size());
+      EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                        NetLogEventType::AUTH_HANDLER_INIT));
+      EXPECT_TRUE(
+          LogContainsEndEvent(entries, 1, NetLogEventType::AUTH_HANDLER_INIT));
+      EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
+                                        NetLogEventType::AUTH_GENERATE_TOKEN));
+      EXPECT_TRUE(LogContainsEndEvent(entries, 3,
+                                      NetLogEventType::AUTH_GENERATE_TOKEN));
+      EXPECT_TRUE(LogContainsEntryWithType(
+          entries, 4, NetLogEventType::AUTH_HANDLE_CHALLENGE));
     }
   }
 }

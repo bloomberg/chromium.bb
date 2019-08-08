@@ -27,6 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
+#include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,6 +74,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                               std::move(db),
                               task_runner),
         database_id_(0) {}
+  ~TestableIndexedDBBackingStore() override = default;
 
   const std::vector<IndexedDBBackingStore::Transaction::WriteDescriptor>&
   writes() const {
@@ -87,8 +89,6 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   }
 
  protected:
-  ~TestableIndexedDBBackingStore() override {}
-
   bool WriteBlobFile(
       int64_t database_id,
       const Transaction::WriteDescriptor& descriptor,
@@ -128,36 +128,24 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   DISALLOW_COPY_AND_ASSIGN(TestableIndexedDBBackingStore);
 };
 
+// Factory subclass to allow the test to use the
+// TestableIndexedDBBackingStore subclass.
 class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
       : IndexedDBFactoryImpl(idb_context,
                              indexed_db::GetDefaultLevelDBFactory(),
                              base::DefaultClock::GetInstance()) {}
-
-  scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
-      const Origin& origin) {
-    IndexedDBDataLossInfo data_loss_info;
-    bool disk_full;
-    leveldb::Status s;
-    scoped_refptr<IndexedDBBackingStore> backing_store;
-    std::tie(backing_store, s, data_loss_info, disk_full) =
-        OpenBackingStore(origin, context()->data_path());
-    scoped_refptr<TestableIndexedDBBackingStore> testable_store =
-        static_cast<TestableIndexedDBBackingStore*>(backing_store.get());
-    return testable_store;
-  }
+  ~TestIDBFactory() override = default;
 
  protected:
-  ~TestIDBFactory() override {}
-
-  scoped_refptr<IndexedDBBackingStore> CreateBackingStore(
+  std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<LevelDBDatabase> db,
       base::SequencedTaskRunner* task_runner) override {
-    return base::MakeRefCounted<TestableIndexedDBBackingStore>(
+    return std::make_unique<TestableIndexedDBBackingStore>(
         backing_store_mode, this, origin, blob_path, std::move(db),
         task_runner);
   }
@@ -174,39 +162,16 @@ class IndexedDBBackingStoreTest : public testing::Test {
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
-  void CreateFactoryAndBackingStore() {
-    // Factory and backing store must be created on IDB task runner.
-    base::RunLoop loop;
-    idb_context_->TaskRunner()->PostTask(
-        FROM_HERE, base::BindLambdaForTesting([&]() {
-          const Origin origin = Origin::Create(GURL("http://localhost:81"));
-          idb_factory_ =
-              base::MakeRefCounted<TestIDBFactory>(idb_context_.get());
-          backing_store_ = idb_factory_->OpenBackingStoreForTest(origin);
-          loop.Quit();
-        }));
-    loop.Run();
-  }
-
-  void DestroyFactoryAndBackingStore() {
-    // Factory and backing store must be destroyed on IDB task runner
-    base::RunLoop loop;
-    idb_context_->TaskRunner()->PostTask(FROM_HERE,
-                                         base::BindLambdaForTesting([&]() {
-                                           idb_factory_.reset();
-                                           backing_store_.reset();
-                                           loop.Quit();
-                                         }));
-    loop.Run();
-  }
-
   void SetUp() override {
     special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
-        indexed_db::GetDefaultLevelDBFactory());
+        indexed_db::GetDefaultLevelDBFactory(),
+        base::DefaultClock::GetInstance());
+    idb_context_->SetTaskRunnerForTesting(
+        base::SequencedTaskRunnerHandle::Get());
 
     CreateFactoryAndBackingStore();
 
@@ -218,15 +183,34 @@ class IndexedDBBackingStoreTest : public testing::Test {
     key2_ = IndexedDBKey(ASCIIToUTF16("key2"));
   }
 
+  void CreateFactoryAndBackingStore() {
+    const Origin origin = Origin::Create(GURL("http://localhost:81"));
+    idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get());
+
+    leveldb::Status s;
+    std::tie(origin_state_handle_, s, std::ignore, std::ignore) =
+        idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path());
+    if (!origin_state_handle_.IsHeld()) {
+      backing_store_ = nullptr;
+      return;
+    }
+    backing_store_ = static_cast<TestableIndexedDBBackingStore*>(
+        origin_state_handle_.origin_state()->backing_store());
+  }
+
+  void DestroyFactoryAndBackingStore() {
+    origin_state_handle_.Release();
+    idb_factory_.reset();
+    backing_store_ = nullptr;
+  }
+
   void TearDown() override {
     DestroyFactoryAndBackingStore();
 
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
-  TestableIndexedDBBackingStore* backing_store() const {
-    return backing_store_.get();
-  }
+  TestableIndexedDBBackingStore* backing_store() { return backing_store_; }
 
  protected:
   TestBrowserThreadBundle thread_bundle_;
@@ -235,9 +219,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
-  scoped_refptr<TestIDBFactory> idb_factory_;
+  std::unique_ptr<TestIDBFactory> idb_factory_;
 
-  scoped_refptr<TestableIndexedDBBackingStore> backing_store_;
+  IndexedDBOriginStateHandle origin_state_handle_;
+  TestableIndexedDBBackingStore* backing_store_ = nullptr;
 
   // Sample keys and values that are consistent.
   IndexedDBKey key1_;
@@ -370,28 +355,30 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTestWithBlobs);
 };
 
-class TestCallback : public IndexedDBBackingStore::BlobWriteCallback {
+class TestCallback {
  public:
-  TestCallback() : called(false), succeeded(false) {}
-  leveldb::Status Run(IndexedDBBackingStore::BlobWriteResult result) override {
-    called = true;
-    switch (result) {
-      case IndexedDBBackingStore::BlobWriteResult::FAILURE_ASYNC:
-        // Not tested.
-        succeeded = false;
-        break;
-      case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
-      case IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC:
-        succeeded = true;
-        break;
-    }
-    return leveldb::Status::OK();
-  }
-  bool called;
-  bool succeeded;
+  TestCallback() = default;
+  ~TestCallback() = default;
 
- protected:
-  ~TestCallback() override {}
+  IndexedDBBackingStore::BlobWriteCallback CreateCallback() {
+    return base::BindLambdaForTesting(
+        [this](IndexedDBBackingStore::BlobWriteResult result) {
+          this->called = true;
+          switch (result) {
+            case IndexedDBBackingStore::BlobWriteResult::FAILURE_ASYNC:
+              // Not tested.
+              this->succeeded = false;
+              break;
+            case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
+            case IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC:
+              this->succeeded = true;
+              break;
+          }
+          return leveldb::Status::OK();
+        });
+  }
+  bool called = false;
+  bool succeeded = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCallback);
@@ -410,10 +397,12 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
           leveldb::Status s = backing_store()->PutRecord(&transaction1, 1, 1,
                                                          key, &value, &record);
           EXPECT_TRUE(s.ok());
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction1.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction1.CommitPhaseTwo().ok());
         }
 
@@ -424,10 +413,12 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
           EXPECT_TRUE(backing_store()
                           ->GetRecord(&transaction2, 1, 1, key, &result_value)
                           .ok());
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction2.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
           EXPECT_EQ(value.bits, result_value.bits);
         }
@@ -438,9 +429,9 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
 
 TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
-  scoped_refptr<TestCallback> callback1;
+  TestCallback callback_creator1;
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3;
-  scoped_refptr<TestCallback> callback3;
+  TestCallback callback_creator3;
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -453,16 +444,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
             backing_store()
                 ->PutRecord(transaction1.get(), 1, 1, key3_, &value3_, &record)
                 .ok());
-        callback1 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction1->CommitPhaseOne(callback1).ok());
+        EXPECT_TRUE(
+            transaction1->CommitPhaseOne(callback_creator1.CreateCallback())
+                .ok());
       }));
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         // Finish up transaction1, verifying blob writes.
-        EXPECT_TRUE(callback1->called);
-        EXPECT_TRUE(callback1->succeeded);
+        EXPECT_TRUE(callback_creator1.called);
+        EXPECT_TRUE(callback_creator1.succeeded);
         EXPECT_TRUE(CheckBlobWrites());
         EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
@@ -475,10 +467,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
                         .ok());
 
         // Finish up transaction2, verifying blob reads.
-        auto callback = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
-        EXPECT_TRUE(callback->called);
-        EXPECT_TRUE(callback->succeeded);
+        TestCallback callback_creator;
+        EXPECT_TRUE(
+            transaction2.CommitPhaseOne(callback_creator.CreateCallback())
+                .ok());
+        EXPECT_TRUE(callback_creator.called);
+        EXPECT_TRUE(callback_creator.succeeded);
         EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
         EXPECT_EQ(value3_.bits, result_value.bits);
         EXPECT_TRUE(CheckBlobInfoMatches(result_value.blob_info));
@@ -492,8 +486,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
                         ->DeleteRange(transaction3.get(), 1, 1,
                                       IndexedDBKeyRange(key3_))
                         .ok());
-        callback3 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction3->CommitPhaseOne(callback3).ok());
+        EXPECT_TRUE(
+            transaction3->CommitPhaseOne(callback_creator3.CreateCallback())
+                .ok());
 
       }));
   RunAllTasksUntilIdle();
@@ -506,9 +501,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
 
         // Clean up on the IDB sequence.
         transaction1.reset();
-        callback1.reset();
         transaction3.reset();
-        callback3.reset();
       }));
   RunAllTasksUntilIdle();
 }
@@ -530,9 +523,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
     const IndexedDBKeyRange& range = ranges[i];
 
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
-    scoped_refptr<TestCallback> callback1;
+    TestCallback callback_creator1;
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
-    scoped_refptr<TestCallback> callback2;
+    TestCallback callback_creator2;
     std::vector<std::unique_ptr<storage::BlobDataHandle>> blobs;
 
     for (size_t j = 0; j < 4; ++j)
@@ -581,16 +574,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
           }
 
           // Start committing transaction1.
-          callback1 = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction1->CommitPhaseOne(callback1).ok());
+          EXPECT_TRUE(
+              transaction1->CommitPhaseOne(callback_creator1.CreateCallback())
+                  .ok());
         }));
     RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
           // Finish committing transaction1.
-          EXPECT_TRUE(callback1->called);
-          EXPECT_TRUE(callback1->succeeded);
+          EXPECT_TRUE(callback_creator1.called);
+          EXPECT_TRUE(callback_creator1.succeeded);
           EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
           // Initiate transaction 2 - delete range.
@@ -604,16 +598,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
                           .ok());
 
           // Start committing transaction2.
-          callback2 = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction2->CommitPhaseOne(callback2).ok());
+          EXPECT_TRUE(
+              transaction2->CommitPhaseOne(callback_creator2.CreateCallback())
+                  .ok());
         }));
     RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
           // Finish committing transaction2.
-          EXPECT_TRUE(callback2->called);
-          EXPECT_TRUE(callback2->succeeded);
+          EXPECT_TRUE(callback_creator2.called);
+          EXPECT_TRUE(callback_creator2.succeeded);
           EXPECT_TRUE(transaction2->CommitPhaseTwo().ok());
 
           // Verify blob removals.
@@ -625,9 +620,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
 
           // Clean up on the IDB sequence.
           transaction1.reset();
-          callback1.reset();
           transaction2.reset();
-          callback2.reset();
         }));
     RunAllTasksUntilIdle();
   }
@@ -649,9 +642,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
     const IndexedDBKeyRange& range = ranges[i];
 
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
-    scoped_refptr<TestCallback> callback1;
+    TestCallback callback_creator1;
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
-    scoped_refptr<TestCallback> callback2;
+    TestCallback callback_creator2;
     std::vector<std::unique_ptr<storage::BlobDataHandle>> blobs;
 
     for (size_t j = 0; j < 4; ++j)
@@ -700,16 +693,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
                             .ok());
           }
           // Start committing transaction1.
-          callback1 = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction1->CommitPhaseOne(callback1).ok());
+          EXPECT_TRUE(
+              transaction1->CommitPhaseOne(callback_creator1.CreateCallback())
+                  .ok());
         }));
     RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
           // Finish committing transaction1.
-          EXPECT_TRUE(callback1->called);
-          EXPECT_TRUE(callback1->succeeded);
+          EXPECT_TRUE(callback_creator1.called);
+          EXPECT_TRUE(callback_creator1.succeeded);
           EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
           // Initiate transaction 2 - delete range.
@@ -723,16 +717,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
                           .ok());
 
           // Start committing transaction2.
-          callback2 = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction2->CommitPhaseOne(callback2).ok());
+          EXPECT_TRUE(
+              transaction2->CommitPhaseOne(callback_creator2.CreateCallback())
+                  .ok());
         }));
     RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
           // Finish committing transaction2.
-          EXPECT_TRUE(callback2->called);
-          EXPECT_TRUE(callback2->succeeded);
+          EXPECT_TRUE(callback_creator2.called);
+          EXPECT_TRUE(callback_creator2.succeeded);
           EXPECT_TRUE(transaction2->CommitPhaseTwo().ok());
 
           // Verify blob removals.
@@ -740,9 +735,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
 
           // Clean on the IDB sequence.
           transaction1.reset();
-          callback1.reset();
           transaction2.reset();
-          callback2.reset();
         }));
     RunAllTasksUntilIdle();
   }
@@ -750,9 +743,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
 
 TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
-  scoped_refptr<TestCallback> callback1;
+  TestCallback callback_creator1;
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
-  scoped_refptr<TestCallback> callback2;
+  TestCallback callback_creator2;
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -765,16 +758,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
             backing_store()
                 ->PutRecord(transaction1.get(), 1, 1, key3_, &value3_, &record1)
                 .ok());
-        callback1 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction1->CommitPhaseOne(callback1).ok());
+        EXPECT_TRUE(
+            transaction1->CommitPhaseOne(callback_creator1.CreateCallback())
+                .ok());
       }));
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         // Verify transaction1 phase one completed.
-        EXPECT_TRUE(callback1->called);
-        EXPECT_TRUE(callback1->succeeded);
+        EXPECT_TRUE(callback_creator1.called);
+        EXPECT_TRUE(callback_creator1.succeeded);
         EXPECT_TRUE(CheckBlobWrites());
         EXPECT_EQ(0U, backing_store()->removals().size());
 
@@ -787,16 +781,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
             backing_store()
                 ->PutRecord(transaction2.get(), 1, 1, key1_, &value1_, &record2)
                 .ok());
-        callback2 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction2->CommitPhaseOne(callback2).ok());
+        EXPECT_TRUE(
+            transaction2->CommitPhaseOne(callback_creator2.CreateCallback())
+                .ok());
       }));
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         // Verify transaction2 phase one completed.
-        EXPECT_TRUE(callback2->called);
-        EXPECT_TRUE(callback2->succeeded);
+        EXPECT_TRUE(callback_creator2.called);
+        EXPECT_TRUE(callback_creator2.succeeded);
         EXPECT_TRUE(CheckBlobWrites());
         EXPECT_EQ(0U, backing_store()->removals().size());
 
@@ -809,18 +804,16 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
 
         // Clean up on the IDB sequence.
         transaction1.reset();
-        callback1.reset();
         transaction2.reset();
-        callback2.reset();
       }));
   RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
-  scoped_refptr<TestCallback> callback1;
+  TestCallback callback_creator1;
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3;
-  scoped_refptr<TestCallback> callback3;
+  TestCallback callback_creator3;
   IndexedDBValue read_result_value;
 
   idb_context_->TaskRunner()->PostTask(
@@ -833,15 +826,16 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
             backing_store()
                 ->PutRecord(transaction1.get(), 1, 1, key3_, &value3_, &record)
                 .ok());
-        callback1 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction1->CommitPhaseOne(callback1).ok());
+        EXPECT_TRUE(
+            transaction1->CommitPhaseOne(callback_creator1.CreateCallback())
+                .ok());
       }));
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
-        EXPECT_TRUE(callback1->called);
-        EXPECT_TRUE(callback1->succeeded);
+        EXPECT_TRUE(callback_creator1.called);
+        EXPECT_TRUE(callback_creator1.succeeded);
         EXPECT_TRUE(CheckBlobWrites());
         EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
@@ -851,10 +845,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
             backing_store()
                 ->GetRecord(&transaction2, 1, 1, key3_, &read_result_value)
                 .ok());
-        auto callback = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
-        EXPECT_TRUE(callback->called);
-        EXPECT_TRUE(callback->succeeded);
+        TestCallback callback_creator;
+        EXPECT_TRUE(
+            transaction2.CommitPhaseOne(callback_creator.CreateCallback())
+                .ok());
+        EXPECT_TRUE(callback_creator.called);
+        EXPECT_TRUE(callback_creator.succeeded);
         EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
         EXPECT_EQ(value3_.bits, read_result_value.bits);
         EXPECT_TRUE(CheckBlobInfoMatches(read_result_value.blob_info));
@@ -870,15 +866,16 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
                         ->DeleteRange(transaction3.get(), 1, 1,
                                       IndexedDBKeyRange(key3_))
                         .ok());
-        callback3 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction3->CommitPhaseOne(callback3).ok());
+        EXPECT_TRUE(
+            transaction3->CommitPhaseOne(callback_creator3.CreateCallback())
+                .ok());
       }));
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
-        EXPECT_TRUE(callback3->called);
-        EXPECT_TRUE(callback3->succeeded);
+        EXPECT_TRUE(callback_creator3.called);
+        EXPECT_TRUE(callback_creator3.succeeded);
         EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
         EXPECT_EQ(0U, backing_store()->removals().size());
         for (size_t i = 0; i < read_result_value.blob_info.size(); ++i) {
@@ -909,9 +906,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
 
         // Clean on the IDB sequence.
         transaction1.reset();
-        callback1.reset();
         transaction3.reset();
-        callback3.reset();
         IndexedDBValue read_result_value;
       }));
   RunAllTasksUntilIdle();
@@ -956,10 +951,12 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
               high_index_id, index_key, record);
           EXPECT_TRUE(s.ok());
 
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction1.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction1.CommitPhaseTwo().ok());
         }
 
@@ -985,10 +982,12 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
           EXPECT_TRUE(s.ok());
           EXPECT_TRUE(new_primary_key->Equals(key1));
 
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction2.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
         }
         loop.Quit();
@@ -1118,10 +1117,12 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
               index_name, index_key_path, unique, multi_entry, &index);
           EXPECT_TRUE(s.ok());
 
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
         }
 
@@ -1303,10 +1304,12 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
               &object_store);
           EXPECT_TRUE(s.ok());
 
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
         }
       }));
@@ -1323,10 +1326,12 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
         leveldb::Status s = backing_store()->PutRecord(
             &transaction1, database_id, object_store_id, key, &value, &record);
         EXPECT_TRUE(s.ok());
-        auto callback = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
-        EXPECT_TRUE(callback->called);
-        EXPECT_TRUE(callback->succeeded);
+        TestCallback callback_creator;
+        EXPECT_TRUE(
+            transaction1.CommitPhaseOne(callback_creator.CreateCallback())
+                .ok());
+        EXPECT_TRUE(callback_creator.called);
+        EXPECT_TRUE(callback_creator.succeeded);
         EXPECT_TRUE(transaction1.CommitPhaseTwo().ok());
 
         // Set the schema to 2, which was before blob support.
@@ -1354,10 +1359,12 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
                         ->GetRecord(&transaction2, database_id, object_store_id,
                                     key, &result_value)
                         .ok());
-        auto callback = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
-        EXPECT_TRUE(callback->called);
-        EXPECT_TRUE(callback->succeeded);
+        TestCallback callback_creator;
+        EXPECT_TRUE(
+            transaction2.CommitPhaseOne(callback_creator.CreateCallback())
+                .ok());
+        EXPECT_TRUE(callback_creator.called);
+        EXPECT_TRUE(callback_creator.succeeded);
         EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
         EXPECT_EQ(value.bits, result_value.bits);
 
@@ -1389,9 +1396,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
   int64_t database_id;
   const int64_t object_store_id = 99;
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
-  scoped_refptr<TestCallback> callback1;
-  std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3;
-  scoped_refptr<TestCallback> callback3;
+  TestCallback callback_creator1;
 
   // The database metadata needs to be written so the blob entry keys can
   // be detected.
@@ -1426,10 +1431,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
               &object_store);
           EXPECT_TRUE(s.ok());
 
-          auto callback = base::MakeRefCounted<TestCallback>();
-          EXPECT_TRUE(transaction.CommitPhaseOne(callback).ok());
-          EXPECT_TRUE(callback->called);
-          EXPECT_TRUE(callback->succeeded);
+          TestCallback callback_creator;
+          EXPECT_TRUE(
+              transaction.CommitPhaseOne(callback_creator.CreateCallback())
+                  .ok());
+          EXPECT_TRUE(callback_creator.called);
+          EXPECT_TRUE(callback_creator.succeeded);
           EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
         }
       }));
@@ -1446,16 +1453,17 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
                         ->PutRecord(transaction1.get(), database_id,
                                     object_store_id, key3_, &value3_, &record)
                         .ok());
-        callback1 = base::MakeRefCounted<TestCallback>();
-        EXPECT_TRUE(transaction1->CommitPhaseOne(callback1).ok());
+        EXPECT_TRUE(
+            transaction1->CommitPhaseOne(callback_creator1.CreateCallback())
+                .ok());
       }));
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         // Finish up transaction1, verifying blob writes.
-        EXPECT_TRUE(callback1->called);
-        EXPECT_TRUE(callback1->succeeded);
+        EXPECT_TRUE(callback_creator1.called);
+        EXPECT_TRUE(callback_creator1.succeeded);
         EXPECT_TRUE(CheckBlobWrites());
         EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
@@ -1469,9 +1477,6 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
 
         // Clean up on the IDB sequence.
         transaction1.reset();
-        callback1.reset();
-        transaction3.reset();
-        callback3.reset();
       }));
   RunAllTasksUntilIdle();
 

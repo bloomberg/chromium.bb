@@ -277,8 +277,12 @@ void ServiceWorkerProviderContext::SetController(
          state->client_id == controller_info->client_id);
   state->client_id = controller_info->client_id;
 
-  if (controller_info->fetch_request_window_id)
+  if (controller_info->fetch_request_window_id) {
+    DCHECK(state->controller);
     state->fetch_request_window_id = *controller_info->fetch_request_window_id;
+  } else {
+    state->fetch_request_window_id = base::UnguessableToken();
+  }
 
   DCHECK((controller_info->mode ==
               blink::mojom::ControllerServiceWorkerMode::kNoController &&

@@ -25,9 +25,16 @@ enum CarrierPortalStatus {
 
 // Potential results for an activation attempt.
 enum ActivationResult {
-  kSuccess,
+  // Activation was initiated successfully by the attempt. Note that the device
+  // may not be fully activated by the time this result occurs since the process
+  // completes in the background.
+  kSuccessfullyStartedActivation,
+
+  // Activation was unnecessary because the SIM is already activated.
+  kAlreadyActivated,
+
+  // Activation failed (e.g., due to a failure within Shill).
   kFailedToActivate,
-  kTimedOutActivating
 };
 
 // Metadata corresponding to a cellular activation request which allows the
@@ -36,6 +43,9 @@ struct CellularMetadata {
   // URL to which users should be directed in order to complete the
   // carrier-based payment flow.
   url.mojom.Url payment_url;
+
+  // Data to be passed to the payment portal to verify the SIM.
+  string payment_post_data;
 
   // Human-readable name of the carrier associated with the SIM card.
   string carrier;
@@ -60,22 +70,18 @@ interface CarrierPortalHandler {
 // Delegate which is notified when activation starts and finishes. Used by the
 // service to notify the UI of the state of the activation flow.
 interface ActivationDelegate {
-  // Called when activation has started; provides relevant metadata for
-  // activation.
+  // Called when the flow has started; only called when the device is eligible
+  // for activation (i.e., has a valid, unactivated SIM).
   OnActivationStarted(CellularMetadata metadata);
 
-  // Called when activation finishes, regardless of success or failure.
+  // Called when the flow has finished, regardless of success or failure.
   OnActivationFinished(ActivationResult result);
 };
 
 // Interface used to set up a cellular connection.
 interface CellularSetup {
-  // Entrypoint to the activation flow. |cellular_network_guid| corresponds to
-  // the GUID associated with the cellular network, obtained via
-  // chromeos::NetworkState::guid(). |delegate|'s OnActivationFinished()
-  // function is guaranteed to be called. If |delegate| becomes disconnected
+  // Entrypoint to the activation flow. If |delegate| becomes disconnected
   // during the activation process, activation is cancelled.
-  StartActivation(
-      string cellular_network_guid,
-      ActivationDelegate delegate) => (CarrierPortalHandler observer);
+  StartActivation(ActivationDelegate delegate)
+      => (CarrierPortalHandler observer);
 };

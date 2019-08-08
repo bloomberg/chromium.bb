@@ -123,6 +123,12 @@ size_t NetworkResourcesData::ResourceData::RemoveContent() {
     result += post_data_->SizeInBytes();
     post_data_ = nullptr;
   }
+
+  if (xhr_replay_data_ && xhr_replay_data_->FormData()) {
+    result += xhr_replay_data_->FormData()->SizeInBytes();
+    xhr_replay_data_->DeleteFormData();
+  }
+
   return result;
 }
 
@@ -161,9 +167,17 @@ void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
 }
 
 uint64_t NetworkResourcesData::ResourceData::DataLength() const {
-  uint64_t data_buffer_size = data_buffer_ ? data_buffer_->size() : 0;
-  uint64_t post_data_size = post_data_ ? post_data_->SizeInBytes() : 0;
-  return data_buffer_size + post_data_size;
+  uint64_t data_length = 0;
+  if (data_buffer_)
+    data_length += data_buffer_->size();
+
+  if (post_data_)
+    data_length += post_data_->SizeInBytes();
+
+  if (xhr_replay_data_ && xhr_replay_data_->FormData())
+    data_length += xhr_replay_data_->FormData()->SizeInBytes();
+
+  return data_length;
 }
 
 void NetworkResourcesData::ResourceData::AppendData(const char* data,
@@ -360,8 +374,19 @@ void NetworkResourcesData::SetCertificate(
 void NetworkResourcesData::SetXHRReplayData(const String& request_id,
                                             XHRReplayData* xhr_replay_data) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
-  if (resource_data)
-    resource_data->SetXHRReplayData(xhr_replay_data);
+  if (!resource_data || resource_data->IsContentEvicted())
+    return;
+
+  if (xhr_replay_data->FormData()) {
+    if (!EnsureFreeSpace(xhr_replay_data->FormData()->SizeInBytes())) {
+      xhr_replay_data->DeleteFormData();
+    } else {
+      content_size_ += xhr_replay_data->FormData()->SizeInBytes();
+      request_ids_deque_.push_back(request_id);
+    }
+  }
+
+  resource_data->SetXHRReplayData(xhr_replay_data);
 }
 
 HeapVector<Member<NetworkResourcesData::ResourceData>>

@@ -5,6 +5,8 @@
 
 """Display active git branches and code changes in a chromiumos workspace."""
 
+from __future__ import print_function
+
 import gclient_utils
 import os
 import re
@@ -38,7 +40,7 @@ def show_dir(full_name, relative_name, color):
     if lines_printed == 0:
       show_name()
     lines_printed += 1
-    print branch
+    print(branch)
 
   status = subprocess.Popen(['git', 'status'],
                             cwd=full_name,
@@ -48,8 +50,8 @@ def show_dir(full_name, relative_name, color):
     if lines_printed == 0:
       show_name()
     if lines_printed == 1:
-      print '---------------'
-    print status
+      print('---------------')
+    print(status)
 
 
 def main():

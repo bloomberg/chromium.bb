@@ -258,8 +258,8 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDevice) {
   base::RunLoop loop;
   renderer_proxy_->SwitchOutputDevice(
       kOtherOutputDeviceId,
-      base::Bind(&WebRtcAudioRendererTest::SwitchDeviceCallback,
-                 base::Unretained(this), &loop));
+      base::BindOnce(&WebRtcAudioRendererTest::SwitchDeviceCallback,
+                     base::Unretained(this), &loop));
   loop.Run();
   EXPECT_EQ(kOtherOutputDeviceId,
             mock_sink_->GetOutputDeviceInfo().device_id());
@@ -284,8 +284,8 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
   base::RunLoop loop;
   renderer_proxy_->SwitchOutputDevice(
       kInvalidOutputDeviceId,
-      base::Bind(&WebRtcAudioRendererTest::SwitchDeviceCallback,
-                 base::Unretained(this), &loop));
+      base::BindOnce(&WebRtcAudioRendererTest::SwitchDeviceCallback,
+                     base::Unretained(this), &loop));
   loop.Run();
   EXPECT_EQ(kDefaultOutputDeviceId,
             original_sink->GetOutputDeviceInfo().device_id());
@@ -325,8 +325,8 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceStoppedSource) {
   renderer_proxy_->Stop();
   renderer_proxy_->SwitchOutputDevice(
       kInvalidOutputDeviceId,
-      base::BindRepeating(&WebRtcAudioRendererTest::SwitchDeviceCallback,
-                          base::Unretained(this), &loop));
+      base::BindOnce(&WebRtcAudioRendererTest::SwitchDeviceCallback,
+                     base::Unretained(this), &loop));
   loop.Run();
 }
 

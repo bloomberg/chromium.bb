@@ -34,7 +34,8 @@
       <h1 slot="title">$i18n{supervisionTransitionErrorTitle}</h1>
       <div slot="subtitle">$i18n{supervisionTransitionErrorMessage}</div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button on-tap="onAcceptAndContinue_" inverse>
+        <oobe-text-button id="accept-button" on-tap="onAcceptAndContinue_"
+            inverse>
           <div>$i18n{supervisionTransitionButton}</div>
         </oobe-text-button>
       </div>

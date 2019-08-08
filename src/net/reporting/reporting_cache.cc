@@ -11,8 +11,9 @@ namespace net {
 
 // static
 std::unique_ptr<ReportingCache> ReportingCache::Create(
-    ReportingContext* context) {
-  return std::make_unique<ReportingCacheImpl>(context);
+    ReportingContext* context,
+    PersistentReportingStore* store) {
+  return std::make_unique<ReportingCacheImpl>(context, store);
 }
 
 ReportingCache::~ReportingCache() = default;

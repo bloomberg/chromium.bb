@@ -4,7 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//chrome/android/features/module_names_to_package_ids.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
 
 template("tab_ui_module_tmpl") {
   assert(defined(invoker.version_code))

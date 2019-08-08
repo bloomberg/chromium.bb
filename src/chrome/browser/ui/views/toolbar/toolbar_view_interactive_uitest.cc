@@ -239,12 +239,12 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   while (view != first_view) {
     focus_manager->AdvanceFocus(false);
     view = focus_manager->GetFocusedView();
-    ids.push_back(view->id());
-    if (view->id() == VIEW_ID_RELOAD_BUTTON)
+    ids.push_back(view->GetID());
+    if (view->GetID() == VIEW_ID_RELOAD_BUTTON)
       found_reload = true;
-    if (view->id() == VIEW_ID_APP_MENU)
+    if (view->GetID() == VIEW_ID_APP_MENU)
       found_app_menu = true;
-    if (view->id() == VIEW_ID_OMNIBOX)
+    if (view->GetID() == VIEW_ID_OMNIBOX)
       found_location_bar = true;
     if (ids.size() > 100)
       GTEST_FAIL() << "Tabbed 100 times, still haven't cycled back!";
@@ -261,7 +261,7 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   while (view != first_view) {
     focus_manager->AdvanceFocus(true);
     view = focus_manager->GetFocusedView();
-    reverse_ids.push_back(view->id());
+    reverse_ids.push_back(view->GetID());
     if (reverse_ids.size() > 100)
       GTEST_FAIL() << "Tabbed 100 times, still haven't cycled back!";
   }
@@ -312,18 +312,18 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
   ToolbarView* toolbar =
       BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
-  EXPECT_FALSE(toolbar->back_button()->enabled());
+  EXPECT_FALSE(toolbar->back_button()->GetEnabled());
 
   // Navigate to title1.html. Back button should be enabled.
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("title1.html")));
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(toolbar->back_button()->enabled());
+  EXPECT_TRUE(toolbar->back_button()->GetEnabled());
 
   // Delete old navigations. Back button will be disabled.
   auto& controller =
       browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(
       [&](content::NavigationEntry* entry) { return true; }));
-  EXPECT_FALSE(toolbar->back_button()->enabled());
+  EXPECT_FALSE(toolbar->back_button()->GetEnabled());
 }

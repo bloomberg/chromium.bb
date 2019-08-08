@@ -210,7 +210,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Generates a process global unique ID that can be used to key a color space.
   static int GetNextId();
-  static int kInvalidId;
+  static constexpr int kInvalidId = -1;
+
+  static constexpr float kDefaultSDRWhiteLevel = 80.f;
 
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
@@ -243,6 +245,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // If |this| is the final output color space, return the color space that
   // would be appropriate for blending.
   ColorSpace GetBlendingColorSpace() const;
+
+  // Return a combined color space with has the same primary and transfer than
+  // the caller but replacing the matrix and range with the given values.
+  ColorSpace GetWithMatrixAndRange(MatrixID matrix, RangeID range) const;
 
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.

@@ -48,7 +48,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
@@ -362,9 +361,7 @@ bool NotificationsApiFunction::CreateNotification(
   }
 
   optional_fields.settings_button_handler =
-      base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)
-          ? message_center::SettingsButtonHandler::INLINE
-          : message_center::SettingsButtonHandler::NONE;
+      message_center::SettingsButtonHandler::INLINE;
 
   // TODO(crbug.com/772004): Remove the manual limitation in favor of an IDL
   // annotation once supported.

@@ -2063,16 +2063,32 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
   }
 
   track_metrics_.IceConnectionChange(new_state);
-  if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackIceConnectionStateChange(this, new_state);
   if (!is_closed_)
     client_->DidChangeIceConnectionState(new_state);
+}
+
+void RTCPeerConnectionHandler::TrackIceConnectionStateChange(
+    WebRTCPeerConnectionHandler::IceConnectionStateVersion version,
+    webrtc::PeerConnectionInterface::IceConnectionState state) {
+  if (!peer_connection_tracker_)
+    return;
+  switch (version) {
+    case WebRTCPeerConnectionHandler::IceConnectionStateVersion::kLegacy:
+      peer_connection_tracker_->TrackLegacyIceConnectionStateChange(this,
+                                                                    state);
+      break;
+    case WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault:
+      peer_connection_tracker_->TrackIceConnectionStateChange(this, state);
+      break;
+  }
 }
 
 // Called any time the combined peerconnection state changes
 void RTCPeerConnectionHandler::OnConnectionChange(
     webrtc::PeerConnectionInterface::PeerConnectionState new_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackConnectionStateChange(this, new_state);
   if (!is_closed_)
     client_->DidChangePeerConnectionState(new_state);
 }

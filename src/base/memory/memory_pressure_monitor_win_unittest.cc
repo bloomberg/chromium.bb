@@ -227,8 +227,13 @@ TEST_F(WinMemoryPressureMonitorTest, CheckMemoryPressure) {
   testing::Mock::VerifyAndClearExpectations(&monitor);
 
   // Check that the event gets reposted after a while.
-  for (int i = 0; i < monitor.kModeratePressureCooldownCycles; ++i) {
-    if (i + 1 == monitor.kModeratePressureCooldownCycles) {
+  const int kModeratePressureCooldownCycles =
+      monitor.kModeratePressureCooldownMs /
+      base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod
+          .InMilliseconds();
+
+  for (int i = 0; i < kModeratePressureCooldownCycles; ++i) {
+    if (i + 1 == kModeratePressureCooldownCycles) {
       EXPECT_CALL(monitor,
                   OnMemoryPressure(MemoryPressureListener::
                                        MEMORY_PRESSURE_LEVEL_MODERATE));
@@ -274,8 +279,8 @@ TEST_F(WinMemoryPressureMonitorTest, CheckMemoryPressure) {
   testing::Mock::VerifyAndClearExpectations(&monitor);
 
   // Check that the event gets reposted after a while.
-  for (int i = 0; i < monitor.kModeratePressureCooldownCycles; ++i) {
-    if (i + 1 == monitor.kModeratePressureCooldownCycles) {
+  for (int i = 0; i < kModeratePressureCooldownCycles; ++i) {
+    if (i + 1 == kModeratePressureCooldownCycles) {
       EXPECT_CALL(monitor,
                   OnMemoryPressure(MemoryPressureListener::
                                        MEMORY_PRESSURE_LEVEL_MODERATE));

@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "ash/test/ash_test_base.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/skia_util.h"
@@ -67,14 +67,12 @@ gfx::ImageSkia CreateTestBackgroundImage(SkColor color) {
 
 }  // namespace
 
-class MediaNotificationBackgroundTest : public AshTestBase {
+class MediaNotificationBackgroundTest : public testing::Test {
  public:
   MediaNotificationBackgroundTest() = default;
   ~MediaNotificationBackgroundTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
-
     owner_ = std::make_unique<views::StaticSizedView>();
     background_ = std::make_unique<MediaNotificationBackground>(owner_.get(),
                                                                 10, 10, 0.1);
@@ -85,8 +83,6 @@ class MediaNotificationBackgroundTest : public AshTestBase {
   void TearDown() override {
     background_.reset();
     owner_.reset();
-
-    AshTestBase::TearDown();
   }
 
   MediaNotificationBackground* background() const { return background_.get(); }

@@ -60,7 +60,10 @@ if (enable_me2me_host) {
       ":remoting_user_session",
     ]
     if (is_component_build) {
-      sources += [ "$root_build_dir/libbase.so" ]
+      sources += [
+        "$root_build_dir/libbase.so",
+        "$root_build_dir/libboringssl.so",
+      ]
       deps += [ "//base:base" ]
       if (use_custom_libcxx) {
         sources += [ "$root_build_dir/libc++.so" ]

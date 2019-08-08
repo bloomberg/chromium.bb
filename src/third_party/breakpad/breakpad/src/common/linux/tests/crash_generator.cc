@@ -184,6 +184,12 @@ bool CrashGenerator::CreateChildCrash(
 
   pid_t pid = fork();
   if (pid == 0) {
+    // Custom signal handlers, which may have been installed by a test launcher,
+    // are undesirable in this child.
+    if (signal(crash_signal, SIG_DFL) == SIG_ERR) {
+      perror("CrashGenerator: signal");
+      exit(1);
+    }
     if (chdir(temp_dir_.path().c_str()) == -1) {
       perror("CrashGenerator: Failed to change directory");
       exit(1);

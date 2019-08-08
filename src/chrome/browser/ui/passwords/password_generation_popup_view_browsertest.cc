@@ -21,8 +21,8 @@ namespace autofill {
 class TestPasswordGenerationPopupController
     : public PasswordGenerationPopupControllerImpl {
  public:
-  TestPasswordGenerationPopupController(content::WebContents* web_contents,
-                                        gfx::NativeView native_view)
+  explicit TestPasswordGenerationPopupController(
+      content::WebContents* web_contents)
       : PasswordGenerationPopupControllerImpl(
             gfx::RectF(0, 0, 10, 10),
             PasswordForm(),
@@ -34,7 +34,7 @@ class TestPasswordGenerationPopupController
                     ->AsWeakPtr(),
             nullptr /* PasswordGenerationPopupObserver*/,
             web_contents,
-            native_view) {}
+            web_contents->GetMainFrame()) {}
 
   ~TestPasswordGenerationPopupController() override {}
 
@@ -46,8 +46,6 @@ class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
   content::WebContents* GetWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
-
-  gfx::NativeView GetNativeView() { return GetWebContents()->GetNativeView(); }
 
   std::unique_ptr<PasswordGenerationPopupViewTester> GetViewTester() {
     return PasswordGenerationPopupViewTester::For(controller_->view());
@@ -61,8 +59,8 @@ class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
 // editing dialog doesn't crash.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        MouseMovementInEditingPopup) {
-  controller_ = new autofill::TestPasswordGenerationPopupController(
-      GetWebContents(), GetNativeView());
+  controller_ =
+      new autofill::TestPasswordGenerationPopupController(GetWebContents());
   controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
 
   GetViewTester()->SimulateMouseMovementAt(gfx::Point(1, 1));
@@ -71,22 +69,11 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
   GetWebContents()->Close();
 }
 
-// Verify that we calling Show() with an invalid container does not crash.
-// Regression test for crbug.com/439618.
-IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest, InvalidContainerView) {
-  controller_ = new autofill::TestPasswordGenerationPopupController(
-      GetWebContents(), NULL);
-
-  // Creation of the popup view should fail, in which case the controller
-  // is destroyed.
-  controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
-}
-
 // Verify that destroying web contents with visible popup does not crash.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        CloseWebContentsWithVisiblePopup) {
-  controller_ = new autofill::TestPasswordGenerationPopupController(
-      GetWebContents(), GetNativeView());
+  controller_ =
+      new autofill::TestPasswordGenerationPopupController(GetWebContents());
   controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
 
   GetWebContents()->Close();

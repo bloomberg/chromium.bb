@@ -22,6 +22,7 @@ class FakeActivationDelegate : public mojom::ActivationDelegate {
   ~FakeActivationDelegate() override;
 
   mojom::ActivationDelegatePtr GenerateInterfacePtr();
+  void DisconnectBindings();
 
   const std::vector<mojom::CellularMetadataPtr>& cellular_metadata_list()
       const {

@@ -5,7 +5,7 @@
 #include "ash/system/toast/toast_manager.h"
 
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -108,10 +108,10 @@ class ToastManagerTest : public AshTestBase {
   void CancelToast(const std::string& id) { manager()->Cancel(id); }
 
   void ChangeLockState(bool lock) {
-    mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
-    info_ptr->state = lock ? session_manager::SessionState::LOCKED
-                           : session_manager::SessionState::ACTIVE;
-    Shell::Get()->session_controller()->SetSessionInfo(std::move(info_ptr));
+    SessionInfo info;
+    info.state = lock ? session_manager::SessionState::LOCKED
+                      : session_manager::SessionState::ACTIVE;
+    Shell::Get()->session_controller()->SetSessionInfo(info);
   }
 
  private:
@@ -142,7 +142,8 @@ TEST_F(ToastManagerTest, ShowAndCloseManually) {
   EXPECT_EQ(nullptr, GetCurrentOverlay());
 }
 
-TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
+// TODO(crbug.com/959781): Test is flaky.
+TEST_F(ToastManagerTest, DISABLED_ShowAndCloseManuallyDuringAnimation) {
   ui::ScopedAnimationDurationScaleMode slow_animation_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
 
@@ -163,13 +164,15 @@ TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
   EXPECT_TRUE(GetCurrentOverlay() != nullptr);
 }
 
-TEST_F(ToastManagerTest, NullMessageHasNoDismissButton) {
+// TODO(crbug.com/959781): Test is flaky.
+TEST_F(ToastManagerTest, DISABLED_NullMessageHasNoDismissButton) {
   ShowToastWithDismiss("DUMMY", 10, base::Optional<std::string>());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetDismissButton());
 }
 
-TEST_F(ToastManagerTest, QueueMessage) {
+// TODO(crbug.com/959781): Test is flaky.
+TEST_F(ToastManagerTest, DISABLED_QueueMessage) {
   ShowToast("DUMMY1", 10);
   ShowToast("DUMMY2", 10);
   ShowToast("DUMMY3", 10);

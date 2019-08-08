@@ -90,8 +90,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
     CustomHttpBridge()
         : HttpBridge(kUserAgent,
                      nullptr /*SharedURLLoaderFactoryInfo*/,
-                     NetworkTimeUpdateCallback(),
-                     BindToTrackerCallback()) {}
+                     NetworkTimeUpdateCallback()) {}
 
    protected:
     ~CustomHttpBridge() override {}
@@ -126,8 +125,7 @@ class ShuntedHttpBridge : public HttpBridge {
       : HttpBridge(
             kUserAgent,
             nullptr /*SharedURLLoaderFactoryInfo, unneeded as we mock stuff*/,
-            NetworkTimeUpdateCallback(),
-            BindToTrackerCallback()),
+            NetworkTimeUpdateCallback()),
         test_(test),
         never_finishes_(never_finishes) {}
 

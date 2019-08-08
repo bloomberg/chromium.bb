@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
@@ -104,6 +105,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
   bool had_ipv4_;
   bool had_ipv6_;
+
+  base::WeakPtrFactory<WebSocketTransportConnectJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTransportConnectJob);
 };

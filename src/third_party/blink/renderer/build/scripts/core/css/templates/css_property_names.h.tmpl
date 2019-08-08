@@ -65,7 +65,7 @@ inline CSSPropertyID resolveCSSPropertyID(CSSPropertyID id)
 
 inline bool isPropertyAlias(CSSPropertyID id) { return static_cast<int>(id) & {{alias_offset}}; }
 
-CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
+CSSPropertyID CORE_EXPORT unresolvedCSSPropertyID(const WTF::String&);
 
 CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
 

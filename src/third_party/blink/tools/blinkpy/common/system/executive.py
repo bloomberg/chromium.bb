@@ -311,13 +311,17 @@ class Executive(object):
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
-                    decode_output=True, debug_logging=True):
+                    ignore_stderr=False,
+                    decode_output=True,
+                    debug_logging=True):
         """Popen wrapper for convenience and to work around python bugs."""
         assert isinstance(args, list) or isinstance(args, tuple)
         start_time = time.time()
 
+        assert not (return_stderr and ignore_stderr)
         stdin, string_to_communicate = self._compute_stdin(input)
-        stderr = self.STDOUT if return_stderr else None
+        stderr = self.STDOUT if return_stderr else (
+            self.DEVNULL if ignore_stderr else None)
 
         process = self.popen(args,
                              stdin=stdin,

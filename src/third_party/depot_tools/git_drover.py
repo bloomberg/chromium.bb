@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """git drover: A tool for merging changes to release branches."""
 
+from __future__ import print_function
+
 import argparse
 import cPickle
 import functools
@@ -452,7 +454,7 @@ def main():
                          options.parent_checkout, options.dry_run,
                          options.verbose)
   except Error as e:
-    print 'Error:', e.message
+    print('Error:', e.message)
     sys.exit(128)
 
 

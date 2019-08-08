@@ -337,6 +337,10 @@ void AlsaPcmOutputStream::Stop() {
   TransitionTo(kIsStopped);
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void AlsaPcmOutputStream::Flush() {}
+
 void AlsaPcmOutputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

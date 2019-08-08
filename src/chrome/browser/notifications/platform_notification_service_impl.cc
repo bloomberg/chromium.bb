@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -18,20 +17,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -42,16 +35,21 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
-#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "url/origin.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
@@ -72,8 +70,7 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return false;
-#endif  // defined(OS_ANDROID)
-
+#else
   // Check to see if this notification comes from a webpage that is displaying
   // fullscreen content.
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -97,6 +94,7 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
       return true;
     }
   }
+#endif
 
   return false;
 }
@@ -335,18 +333,13 @@ void PlatformNotificationServiceImpl::RecordNotificationUkmEvent(
     return;
   }
 
-  // Query the HistoryService so we only record a notification if the origin is
-  // in the user's history.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  DCHECK(history_service);
-  history_service->QueryURL(
-      data.origin, /*want_visits=*/false,
-      base::BindOnce(
-          &PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete,
-          std::move(history_query_complete_closure_for_testing_), data),
-      &task_tracker_);
+  // Check if this event can be recorded via UKM.
+  auto* ukm_background_service =
+      ukm::UkmBackgroundRecorderFactory::GetForProfile(profile_);
+  ukm_background_service->GetBackgroundSourceIdIfAllowed(
+      url::Origin::Create(data.origin),
+      base::BindOnce(&PlatformNotificationServiceImpl::DidGetBackgroundSourceId,
+                     std::move(ukm_recorded_closure_for_testing_), data));
 }
 
 NotificationTriggerScheduler*
@@ -355,31 +348,15 @@ PlatformNotificationServiceImpl::GetNotificationTriggerScheduler() {
 }
 
 // static
-void PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete(
-    base::OnceClosure callback,
+void PlatformNotificationServiceImpl::DidGetBackgroundSourceId(
+    base::OnceClosure recorded_closure,
     const content::NotificationDatabaseData& data,
-    bool found_url,
-    const history::URLRow& url_row,
-    const history::VisitVector& visits) {
-  // Post the |callback| closure to the current task runner to inform tests that
-  // the history query has completed.
-  if (callback)
-    base::PostTask(FROM_HERE, std::move(callback));
-
-  // Only record the notification if the |data.origin| is in the history
-  // service.
-  if (!found_url)
+    base::Optional<ukm::SourceId> source_id) {
+  // This background event did not meet the requirements for the UKM service.
+  if (!source_id)
     return;
 
-  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
-  DCHECK(recorder);
-  // We are using UpdateSourceURL as notifications are not tied to a navigation.
-  // This is ok from a privacy perspective as we have explicitly verified that
-  // |data.origin| is in the HistoryService before recording to UKM.
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  recorder->UpdateSourceURL(source_id, data.origin);
-
-  ukm::builders::Notification builder(source_id);
+  ukm::builders::Notification builder(*source_id);
 
   int64_t time_until_first_click_millis =
       data.time_until_first_click_millis.has_value()
@@ -412,7 +389,10 @@ void PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete(
       .SetTimeUntilClose(time_until_close_millis)
       .SetTimeUntilFirstClick(time_until_first_click_millis)
       .SetTimeUntilLastClick(time_until_last_click_millis)
-      .Record(recorder);
+      .Record(ukm::UkmRecorder::Get());
+
+  if (recorded_closure)
+    std::move(recorded_closure).Run();
 }
 
 message_center::Notification
@@ -427,9 +407,7 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   message_center::RichNotificationData optional_fields;
 
   optional_fields.settings_button_handler =
-      base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)
-          ? message_center::SettingsButtonHandler::INLINE
-          : message_center::SettingsButtonHandler::DELEGATE;
+      message_center::SettingsButtonHandler::INLINE;
 
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.

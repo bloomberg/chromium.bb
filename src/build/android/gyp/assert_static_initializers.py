@@ -5,6 +5,8 @@
 
 """Checks the number of static initializers in an APK's library."""
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -54,7 +56,7 @@ def _PrintDumpSIsCount(apk_so_name, unzipped_so, out_dir, tool_prefix):
   _VerifyLibBuildIdsMatch(tool_prefix, unzipped_so, so_with_symbols_path)
   sis, _ = _GetStaticInitializers(so_with_symbols_path, tool_prefix)
   for si in sis:
-    print si
+    print(si)
 
 
 # Mostly copied from //infra/scripts/legacy/scripts/slave/chromium/sizes.py.
@@ -132,24 +134,24 @@ def main():
   si_count = _AnalyzeStaticInitializers(args.apk, args.tool_prefix, False, '.',
                                         ignored_libs)
   if si_count != args.expected_count:
-    print 'Expected {} static initializers, but found {}.'.format(
-        args.expected_count, si_count)
+    print('Expected {} static initializers, but found {}.'.format(
+        args.expected_count, si_count))
     if args.expected_count > si_count:
-      print 'You have removed one or more static initializers. Thanks!'
-      print 'To fix the build, update the expectation in:'
-      print '    //chrome/android/static_initializers.gni'
+      print('You have removed one or more static initializers. Thanks!')
+      print('To fix the build, update the expectation in:')
+      print('    //chrome/android/static_initializers.gni')
     else:
-      print 'Dumping static initializers via dump-static-initializers.py:'
+      print('Dumping static initializers via dump-static-initializers.py:')
       sys.stdout.flush()
       _AnalyzeStaticInitializers(args.apk, args.tool_prefix, True, '.',
                                  ignored_libs)
-      print
-      print 'If the above list is not useful, consider listing them with:'
-      print '    //tools/binary_size/diagnose_bloat.py'
-      print
-      print 'For more information:'
-      print ('    https://chromium.googlesource.com/chromium/src/+/master/docs/'
-             'static_initializers.md')
+      print()
+      print('If the above list is not useful, consider listing them with:')
+      print('    //tools/binary_size/diagnose_bloat.py')
+      print()
+      print('For more information:')
+      print('    https://chromium.googlesource.com/chromium/src/+/master/docs/'
+            'static_initializers.md')
     sys.exit(1)
 
   if args.touch:

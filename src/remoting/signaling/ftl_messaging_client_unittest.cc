@@ -19,11 +19,11 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "remoting/base/grpc_support/grpc_async_executor.h"
-#include "remoting/base/grpc_support/grpc_async_test_server.h"
-#include "remoting/base/grpc_support/grpc_test_util.h"
 #include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
+#include "remoting/base/grpc_test_support/grpc_async_test_server.h"
+#include "remoting/base/grpc_test_support/grpc_test_util.h"
+#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
-#include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/message_reception_channel.h"
 #include "remoting/signaling/registration_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,9 +48,13 @@ constexpr char kFakeSenderId[] = "fake_sender@gmail.com";
 constexpr char kFakeSenderRegId[] = "fake_sender_reg_id";
 constexpr char kFakeReceiverId[] = "fake_receiver@gmail.com";
 constexpr char kMessage1Id[] = "msg_1";
-constexpr char kMessage2Id[] = "msg_1";
+constexpr char kMessage2Id[] = "msg_2";
 constexpr char kMessage1Text[] = "Message 1";
 constexpr char kMessage2Text[] = "Message 2";
+
+MATCHER(IsFakeSenderId, "") {
+  return arg.id() == kFakeSenderId;
+}
 
 ftl::ChromotingMessage CreateXmppMessage(const std::string& message_text) {
   ftl::ChromotingMessage crd_message;
@@ -72,6 +76,12 @@ ftl::InboxMessage CreateInboxMessage(const std::string& message_id,
   EXPECT_TRUE(succeeded);
   message.set_message(serialized_message);
   return message;
+}
+
+FtlMessagingClient::MessageCallback CreateNotReachedMessageCallback() {
+  return base::BindRepeating(
+      [](const ftl::Id& sender_id, const std::string& sender_registration_id,
+         const ftl::ChromotingMessage& message) { NOTREACHED(); });
 }
 
 std::string GetChromotingMessageText(const ftl::InboxMessage& message) {
@@ -96,7 +106,7 @@ class MockMessageReceptionChannel : public MessageReceptionChannel {
 
   MOCK_METHOD2(StartReceivingMessages, void(base::OnceClosure, DoneCallback));
   MOCK_METHOD0(StopReceivingMessages, void());
-  MOCK_METHOD0(IsReceivingMessages, bool());
+  MOCK_CONST_METHOD0(IsReceivingMessages, bool());
 
   StreamOpener* stream_opener() { return &stream_opener_; }
 
@@ -236,11 +246,8 @@ void FtlMessagingClientTest::ServerWaitAndRespondToAckMessagesRequest(
 
 TEST_F(FtlMessagingClientTest, TestPullMessages_ReturnsNoMessage) {
   base::RunLoop run_loop;
-  auto subscription =
-      messaging_client_->RegisterMessageCallback(base::BindRepeating(
-          [](const std::string& sender_id,
-             const std::string& sender_registration_id,
-             const ftl::ChromotingMessage& message) { NOTREACHED(); }));
+  auto subscription = messaging_client_->RegisterMessageCallback(
+      CreateNotReachedMessageCallback());
   messaging_client_->PullMessages(test::CheckStatusThenQuitRunLoopCallback(
       FROM_HERE, grpc::StatusCode::OK, &run_loop));
   ServerWaitAndRespondToPullMessagesRequest(ftl::PullMessagesResponse(),
@@ -250,11 +257,8 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_ReturnsNoMessage) {
 
 TEST_F(FtlMessagingClientTest, TestPullMessages_Unauthenticated) {
   base::RunLoop run_loop;
-  auto subscription =
-      messaging_client_->RegisterMessageCallback(base::BindRepeating(
-          [](const std::string& sender_id,
-             const std::string& sender_registration_id,
-             const ftl::ChromotingMessage& message) { NOTREACHED(); }));
+  auto subscription = messaging_client_->RegisterMessageCallback(
+      CreateNotReachedMessageCallback());
   messaging_client_->PullMessages(test::CheckStatusThenQuitRunLoopCallback(
       FROM_HERE, grpc::StatusCode::UNAUTHENTICATED, &run_loop));
   ServerWaitAndRespondToPullMessagesRequest(
@@ -263,23 +267,43 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_Unauthenticated) {
   run_loop.Run();
 }
 
-TEST_F(FtlMessagingClientTest, TestPullMessages_IgnoresUnknownMessageType) {
+TEST_F(FtlMessagingClientTest, TestPullMessages_IgnoresMessageWithoutRegId) {
   base::RunLoop run_loop;
 
-  auto subscription =
-      messaging_client_->RegisterMessageCallback(base::BindRepeating(
-          [](const std::string& sender_id,
-             const std::string& sender_registration_id,
-             const ftl::ChromotingMessage& message) { NOTREACHED(); }));
+  auto subscription = messaging_client_->RegisterMessageCallback(
+      CreateNotReachedMessageCallback());
 
   messaging_client_->PullMessages(test::CheckStatusThenQuitRunLoopCallback(
       FROM_HERE, grpc::StatusCode::OK, &run_loop));
 
   ftl::PullMessagesResponse response;
   ftl::InboxMessage* message = response.add_messages();
-  message->set_message_id(kMessage1Id);
-  message->mutable_sender_id()->set_id(kFakeSenderId);
-  message->mutable_receiver_id()->set_id(kFakeReceiverId);
+  *message = CreateInboxMessage(kMessage1Id, kMessage1Text);
+  message->clear_sender_registration_id();
+  ServerWaitAndRespondToPullMessagesRequest(response, grpc::Status::OK);
+  ServerWaitAndRespondToAckMessagesRequest(
+      base::BindLambdaForTesting([&](const ftl::AckMessagesRequest& request) {
+        EXPECT_EQ(1, request.messages_size());
+        EXPECT_EQ(kFakeReceiverId, request.messages(0).receiver_id().id());
+        EXPECT_EQ(kMessage1Id, request.messages(0).message_id());
+        return grpc::Status::OK;
+      }),
+      base::DoNothing());
+  run_loop.Run();
+}
+
+TEST_F(FtlMessagingClientTest, TestPullMessages_IgnoresUnknownMessageType) {
+  base::RunLoop run_loop;
+
+  auto subscription = messaging_client_->RegisterMessageCallback(
+      CreateNotReachedMessageCallback());
+
+  messaging_client_->PullMessages(test::CheckStatusThenQuitRunLoopCallback(
+      FROM_HERE, grpc::StatusCode::OK, &run_loop));
+
+  ftl::PullMessagesResponse response;
+  ftl::InboxMessage* message = response.add_messages();
+  *message = CreateInboxMessage(kMessage1Id, kMessage1Text);
   message->set_message_type(ftl::InboxMessage_MessageType_UNKNOWN);
   ServerWaitAndRespondToPullMessagesRequest(response, grpc::Status::OK);
   ServerWaitAndRespondToAckMessagesRequest(
@@ -298,10 +322,10 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_ReturnsAndAcksTwoMessages) {
 
   base::MockCallback<FtlMessagingClient::MessageCallback> mock_on_incoming_msg;
 
-  EXPECT_CALL(mock_on_incoming_msg, Run(kFakeSenderId, kFakeSenderRegId,
+  EXPECT_CALL(mock_on_incoming_msg, Run(IsFakeSenderId(), kFakeSenderRegId,
                                         StanzaTextMatches(kMessage1Text)))
       .WillOnce(Return());
-  EXPECT_CALL(mock_on_incoming_msg, Run(kFakeSenderId, kFakeSenderRegId,
+  EXPECT_CALL(mock_on_incoming_msg, Run(IsFakeSenderId(), kFakeSenderRegId,
                                         StanzaTextMatches(kMessage2Text)))
       .WillOnce(Return());
 
@@ -485,6 +509,42 @@ TEST_F(FtlMessagingClientTest,
         return grpc::Status::OK;
       }),
       run_loop.QuitWhenIdleClosure());
+
+  run_loop.Run();
+}
+
+TEST_F(FtlMessagingClientTest, ReceivedDuplicatedMessage_AckAndDrop) {
+  base::RunLoop run_loop;
+
+  base::MockCallback<FtlMessagingClient::MessageCallback> mock_on_incoming_msg;
+  EXPECT_CALL(mock_on_incoming_msg, Run(IsFakeSenderId(), kFakeSenderRegId,
+                                        StanzaTextMatches(kMessage1Text)))
+      .WillOnce(Return());
+
+  auto subscription =
+      messaging_client_->RegisterMessageCallback(mock_on_incoming_msg.Get());
+
+  messaging_client_->PullMessages(test::CheckStatusThenQuitRunLoopCallback(
+      FROM_HERE, grpc::StatusCode::OK, &run_loop));
+
+  ftl::PullMessagesResponse pull_messages_response;
+  *pull_messages_response.add_messages() =
+      CreateInboxMessage(kMessage1Id, kMessage1Text);
+  *pull_messages_response.add_messages() =
+      CreateInboxMessage(kMessage1Id, kMessage1Text);
+  ServerWaitAndRespondToPullMessagesRequest(pull_messages_response,
+                                            grpc::Status::OK);
+
+  ServerWaitAndRespondToAckMessagesRequest(
+      base::BindLambdaForTesting([&](const ftl::AckMessagesRequest& request) {
+        EXPECT_EQ(2, request.messages_size());
+        EXPECT_EQ(kFakeReceiverId, request.messages(0).receiver_id().id());
+        EXPECT_EQ(kFakeReceiverId, request.messages(1).receiver_id().id());
+        EXPECT_EQ(kMessage1Id, request.messages(0).message_id());
+        EXPECT_EQ(kMessage1Id, request.messages(1).message_id());
+        return grpc::Status::OK;
+      }),
+      base::DoNothing());
 
   run_loop.Run();
 }

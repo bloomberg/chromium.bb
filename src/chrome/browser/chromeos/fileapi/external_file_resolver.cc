@@ -39,7 +39,7 @@ class URLHelper {
   using HelperCallback = base::OnceCallback<void(
       net::Error,
       const scoped_refptr<storage::FileSystemContext>& file_system_context,
-      std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+      storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope,
       const storage::FileSystemURL& file_system_url,
       const std::string& mime_type)>;
 
@@ -73,17 +73,15 @@ class URLHelper {
     const base::FilePath virtual_path = ExternalFileURLToVirtualPath(url);
 
     // Obtain the file system URL.
-    file_system_url_ = file_manager::util::CreateIsolatedURLFromVirtualPath(
-        *context, /* empty origin */ GURL(), virtual_path);
+    std::tie(file_system_url_, isolated_file_system_scope_) =
+        file_manager::util::CreateIsolatedURLFromVirtualPath(
+            *context, /* empty origin */ GURL(), virtual_path);
 
     // Check if the obtained path providing external file URL or not.
     if (!file_system_url_.is_valid()) {
       ReplyResult(net::ERR_INVALID_URL);
       return;
     }
-
-    isolated_file_system_scope_.reset(
-        new IsolatedFileSystemScope(file_system_url_.filesystem_id()));
 
     if (!IsExternalFileURLType(file_system_url_.type())) {
       ReplyResult(net::ERR_FAILED);
@@ -114,13 +112,13 @@ class URLHelper {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(std::move(callback_), error, file_system_context_,
-                       base::Passed(&isolated_file_system_scope_),
-                       file_system_url_, mime_type_));
+                       std::move(isolated_file_system_scope_), file_system_url_,
+                       mime_type_));
   }
 
   HelperCallback callback_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope_;
+  storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope_;
   storage::FileSystemURL file_system_url_;
   std::string mime_type_;
 
@@ -128,14 +126,6 @@ class URLHelper {
 };
 
 }  // namespace
-
-IsolatedFileSystemScope::IsolatedFileSystemScope(
-    const std::string& file_system_id)
-    : file_system_id_(file_system_id) {}
-
-IsolatedFileSystemScope::~IsolatedFileSystemScope() {
-  storage::IsolatedContext::GetInstance()->RevokeFileSystem(file_system_id_);
-}
 
 ExternalFileResolver::ExternalFileResolver(void* profile_id)
     : profile_id_(profile_id),
@@ -202,7 +192,7 @@ void ExternalFileResolver::Resolve(const std::string& method,
 void ExternalFileResolver::OnHelperResultObtained(
     net::Error error,
     const scoped_refptr<storage::FileSystemContext>& file_system_context,
-    std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+    storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope,
     const storage::FileSystemURL& file_system_url,
     const std::string& mime_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

@@ -7,15 +7,17 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
-#include "content/public/browser/download_manager.h"
 
 using DownloadItem = download::DownloadItem;
-using DownloadManager = content::DownloadManager;
+using SimpleDownloadManagerCoordinator =
+    download::SimpleDownloadManagerCoordinator;
 using ContentId = offline_items_collection::ContentId;
 using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
@@ -26,18 +28,20 @@ using LaunchLocation = offline_items_collection::LaunchLocation;
 class SkBitmap;
 
 // This class handles the task of observing the downloads associated with a
-// single DownloadManager (or in-progress download manager in service manager
-// only mode) and notifies UI about updates about various downloads.
-class DownloadOfflineContentProvider : public OfflineContentProvider,
-                                       public download::DownloadItem::Observer,
-                                       public DownloadManager::Observer {
+// SimpleDownloadManagerCoordinator and notifies UI about updates about various
+// downloads.
+class DownloadOfflineContentProvider
+    : public OfflineContentProvider,
+      public DownloadItem::Observer,
+      public SimpleDownloadManagerCoordinator::Observer {
  public:
   explicit DownloadOfflineContentProvider(OfflineContentAggregator* aggregator,
                                           const std::string& name_space);
   ~DownloadOfflineContentProvider() override;
 
   // Should be called when a DownloadManager is available.
-  void SetDownloadManager(DownloadManager* manager);
+  void SetSimpleDownloadManagerCoordinator(
+      SimpleDownloadManagerCoordinator* manager);
 
   // OfflineContentProvider implmentation.
   void OpenItem(LaunchLocation location, const ContentId& id) override;
@@ -52,6 +56,7 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
       OfflineContentProvider::MultipleItemCallback callback) override;
   void GetVisualsForItem(
       const ContentId& id,
+      GetVisualsOptions options,
       OfflineContentProvider::VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback callback) override;
@@ -72,10 +77,10 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
   void OnDownloadRemoved(DownloadItem* item) override;
   void OnDownloadDestroyed(DownloadItem* download) override;
 
-  // DownloadManager::Observer overrides
-  void ManagerGoingDown(DownloadManager* manager) override;
+  // SimpleDownloadManagerCoordinator::Observer overrides
+  void OnManagerGoingDown() override;
 
-  void GetAllDownloads(DownloadManager::DownloadVector* all_items);
+  void GetAllDownloads(std::vector<DownloadItem*>* all_items);
   DownloadItem* GetDownload(const std::string& download_guid);
   void OnThumbnailRetrieved(const ContentId& id,
                             VisualsCallback callback,
@@ -89,7 +94,7 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
-  DownloadManager* manager_;
+  SimpleDownloadManagerCoordinator* manager_;
   std::set<std::string> completed_downloads_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;

@@ -31,8 +31,6 @@ class SVGEllipseElement final : public SVGGeometryElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGEllipseElement);
-
   explicit SVGEllipseElement(Document&);
 
   Path AsPath() const override;

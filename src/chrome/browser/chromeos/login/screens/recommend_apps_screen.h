@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
-#include "chrome/browser/chromeos/login/screens/recommend_apps_screen_view.h"
 
 namespace base {
 class Value;
@@ -21,11 +20,11 @@ class Value;
 namespace chromeos {
 
 class RecommendAppsFetcher;
+class RecommendAppsScreenView;
 
 // This is Recommend Apps screen that is displayed as a part of user first
 // sign-in flow.
 class RecommendAppsScreen : public BaseScreen,
-                            public RecommendAppsScreenViewObserver,
                             public RecommendAppsFetcherDelegate {
  public:
   enum class Result { SELECTED, SKIPPED };
@@ -35,15 +34,21 @@ class RecommendAppsScreen : public BaseScreen,
                       const ScreenExitCallback& exit_callback);
   ~RecommendAppsScreen() override;
 
+  // Called when the user skips the Recommend Apps screen.
+  void OnSkip();
+
+  // Called when the user tries to reload the screen.
+  void OnRetry();
+
+  // Called when the user Install the selected apps.
+  void OnInstall();
+
+  // Called when the view is destroyed so there is no dead reference to it.
+  void OnViewDestroyed(RecommendAppsScreenView* view);
+
   // BaseScreen:
   void Show() override;
   void Hide() override;
-
-  // RecommendAppsScreenViewObserver:
-  void OnSkip() override;
-  void OnRetry() override;
-  void OnInstall() override;
-  void OnViewDestroyed(RecommendAppsScreenView* view) override;
 
   // RecommendAppsFetcherDelegate:
   void OnLoadSuccess(const base::Value& app_list) override;

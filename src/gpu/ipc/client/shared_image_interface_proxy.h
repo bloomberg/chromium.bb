@@ -8,6 +8,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/buffer.h"
 
@@ -40,6 +41,15 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
                           const Mailbox& mailbox) override;
   SyncToken GenVerifiedSyncToken() override;
   SyncToken GenUnverifiedSyncToken() override;
+
+#if defined(OS_WIN)
+  SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
+                                     const gfx::Size& size,
+                                     const gfx::ColorSpace& color_space,
+                                     uint32_t usage) override;
+  void PresentSwapChain(const SyncToken& sync_token,
+                        const Mailbox& mailbox) override;
+#endif  // OS_WIN
 
  private:
   bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,

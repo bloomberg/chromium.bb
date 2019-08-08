@@ -77,7 +77,7 @@ public class MenuButton extends FrameLayout implements TintObserver {
         View touchView = mWrapper != null ? mWrapper : mMenuImageButton;
         if (mWrapper != null) mWrapper.setOnTouchListener(mAppMenuButtonHelper);
         mMenuImageButton.setOnTouchListener(mAppMenuButtonHelper);
-        touchView.setAccessibilityDelegate(mAppMenuButtonHelper);
+        touchView.setAccessibilityDelegate(mAppMenuButtonHelper.getAccessibilityDelegate());
     }
 
     public AppMenuButtonHelper getAppMenuButtonHelper() {

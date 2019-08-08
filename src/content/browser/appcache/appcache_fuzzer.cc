@@ -146,21 +146,25 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   // Create a context for mojo::ReportBadMessage.
   mojo::Message message;
   auto dispatch_context =
-        std::make_unique<mojo::internal::MessageDispatchContext>(&message);
+      std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
   blink::mojom::AppCacheBackendPtr host;
   SingletonEnv().appcache_service->CreateBackend(/*process_id=*/1,
                                                  mojo::MakeRequest(&host));
 
   std::map<int, blink::mojom::AppCacheHostPtr> registered_hosts;
+  std::map<int, base::UnguessableToken> registered_host_ids_;
   for (const fuzzing::proto::Command& command : session.commands()) {
     switch (command.command_case()) {
       case fuzzing::proto::Command::kRegisterHost: {
         int32_t host_id = command.register_host().host_id();
+        auto& host_id_token = registered_host_ids_[host_id];
+        if (host_id_token.is_empty())
+          host_id_token = base::UnguessableToken::Create();
         blink::mojom::AppCacheFrontendPtr frontend;
         mojo::MakeRequest(&frontend);
         host->RegisterHost(mojo::MakeRequest(&registered_hosts[host_id]),
-                           std::move(frontend), host_id, MSG_ROUTING_NONE);
+                           std::move(frontend), host_id_token);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {
@@ -192,7 +196,10 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
           break;
         int32_t spawning_host_id =
             command.set_spawning_host_id().spawning_host_id();
-        host_it->second->SetSpawningHostId(spawning_host_id);
+        auto& spawning_host_id_token = registered_host_ids_[spawning_host_id];
+        if (spawning_host_id_token.is_empty())
+          spawning_host_id_token = base::UnguessableToken::Create();
+        host_it->second->SetSpawningHostId(spawning_host_id_token);
         break;
       }
       case fuzzing::proto::Command::kSelectCacheForSharedWorker: {

@@ -93,7 +93,7 @@ class NetworkPortalDetectorImplBrowserTest
                              true /* add_to_visible */);
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
-        base::Value(shill::kStatePortal), base::DoNothing(),
+        base::Value(shill::kStateRedirectFound), base::DoNothing(),
         base::Bind(&ErrorCallbackFunction));
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(

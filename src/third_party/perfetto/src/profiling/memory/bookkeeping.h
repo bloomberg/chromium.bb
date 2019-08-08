@@ -23,9 +23,7 @@
 
 #include "perfetto/base/lookup_set.h"
 #include "perfetto/base/string_splitter.h"
-#include "perfetto/trace/profiling/profile_packet.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
-#include "perfetto/tracing/core/trace_writer.h"
+#include "perfetto/base/time.h"
 #include "src/profiling/memory/interner.h"
 #include "src/profiling/memory/unwound_messages.h"
 
@@ -110,6 +108,11 @@ struct Mapping {
            std::tie(other.build_id, other.offset, other.start, other.end,
                     other.load_bias, other.path_components);
   }
+  bool operator==(const Mapping& other) const {
+    return std::tie(build_id, offset, start, end, load_bias, path_components) ==
+           std::tie(other.build_id, other.offset, other.start, other.end,
+                    other.load_bias, other.path_components);
+  }
 };
 
 struct Frame {
@@ -121,6 +124,11 @@ struct Frame {
 
   bool operator<(const Frame& other) const {
     return std::tie(mapping, function_name, rel_pc) <
+           std::tie(other.mapping, other.function_name, other.rel_pc);
+  }
+
+  bool operator==(const Frame& other) const {
+    return std::tie(mapping, function_name, rel_pc) ==
            std::tie(other.mapping, other.function_name, other.rel_pc);
   }
 };
@@ -190,73 +198,10 @@ class GlobalCallstackTrie {
   Node root_{MakeRootFrame()};
 };
 
-struct DumpState {
-  DumpState(TraceWriter* tw, uint64_t* ni) : trace_writer(tw), next_index(ni) {
-    last_written = trace_writer->written();
-
-    current_trace_packet = trace_writer->NewTracePacket();
-    current_profile_packet = current_trace_packet->set_profile_packet();
-    current_profile_packet->set_index((*next_index)++);
-  }
-
-  void WriteMap(const Interned<Mapping> map);
-  void WriteFrame(const Interned<Frame> frame);
-  void WriteString(const Interned<std::string>& str);
-
-  std::set<InternID> dumped_strings;
-  std::set<InternID> dumped_frames;
-  std::set<InternID> dumped_mappings;
-
-  std::set<GlobalCallstackTrie::Node*> callstacks_to_dump;
-
-  TraceWriter* trace_writer;
-  protos::pbzero::ProfilePacket* current_profile_packet;
-  TraceWriter::TracePacketHandle current_trace_packet;
-  uint64_t* next_index;
-  uint64_t last_written = 0;
-
-  void NewProfilePacket() {
-    PERFETTO_DLOG("New profile packet after %" PRIu64 " bytes. Total: %" PRIu64
-                  ", before %" PRIu64,
-                  trace_writer->written() - last_written,
-                  trace_writer->written(), last_written);
-    current_profile_packet->set_continued(true);
-    last_written = trace_writer->written();
-
-    current_trace_packet->Finalize();
-    current_trace_packet = trace_writer->NewTracePacket();
-    current_profile_packet = current_trace_packet->set_profile_packet();
-    current_profile_packet->set_index((*next_index)++);
-  }
-
-  uint64_t currently_written() {
-    return trace_writer->written() - last_written;
-  }
-};
-
 // Snapshot for memory allocations of a particular process. Shares callsites
 // with other processes.
 class HeapTracker {
  public:
-  // Caller needs to ensure that callsites outlives the HeapTracker.
-  explicit HeapTracker(GlobalCallstackTrie* callsites)
-      : callsites_(callsites) {}
-
-  void RecordMalloc(const std::vector<FrameData>& stack,
-                    uint64_t address,
-                    uint64_t size,
-                    uint64_t sequence_number);
-  void Dump(
-      std::function<void(protos::pbzero::ProfilePacket::ProcessHeapSamples*)>
-          fill_process_header,
-      DumpState* dump_state);
-  void RecordFree(uint64_t address, uint64_t sequence_number) {
-    RecordOperation(sequence_number, address);
-  }
-
-  uint64_t GetSizeForTesting(const std::vector<FrameData>& stack);
-
- private:
   // Sum of all the allocations for a given callstack.
   struct CallstackAllocations {
     CallstackAllocations(GlobalCallstackTrie::Node* n) : node(n) {}
@@ -277,6 +222,63 @@ class HeapTracker {
     }
   };
 
+  // Caller needs to ensure that callsites outlives the HeapTracker.
+  explicit HeapTracker(GlobalCallstackTrie* callsites)
+      : callsites_(callsites) {}
+
+  void RecordMalloc(const std::vector<FrameData>& stack,
+                    uint64_t address,
+                    uint64_t size,
+                    uint64_t sequence_number,
+                    uint64_t timestamp);
+
+  template <typename F>
+  void GetCallstackAllocations(F fn) {
+    // There are two reasons we remove the unused callstack allocations on the
+    // next iteration of Dump:
+    // * We need to remove them after the callstacks were dumped, which
+    //   currently happens after the allocations are dumped.
+    // * This way, we do not destroy and recreate callstacks as frequently.
+    for (auto it_and_alloc : dead_callstack_allocations_) {
+      auto& it = it_and_alloc.first;
+      uint64_t allocated = it_and_alloc.second;
+      const CallstackAllocations& alloc = it->second;
+      if (alloc.allocs == 0 && alloc.allocation_count == allocated)
+        callstack_allocations_.erase(it);
+    }
+    dead_callstack_allocations_.clear();
+
+    for (auto it = callstack_allocations_.begin();
+         it != callstack_allocations_.end(); ++it) {
+      const CallstackAllocations& alloc = it->second;
+      fn(alloc);
+
+      if (alloc.allocs == 0)
+        dead_callstack_allocations_.emplace_back(it, alloc.allocation_count);
+    }
+  }
+
+  template <typename F>
+  void GetAllocations(F fn) {
+    for (const auto& addr_and_allocation : allocations_) {
+      const Allocation& alloc = addr_and_allocation.second;
+      fn(addr_and_allocation.first, alloc.total_size,
+         alloc.callstack_allocations->node->id());
+    }
+  }
+
+  void RecordFree(uint64_t address,
+                  uint64_t sequence_number,
+                  uint64_t timestamp) {
+    RecordOperation(sequence_number, {address, timestamp});
+  }
+
+  uint64_t committed_timestamp() { return committed_timestamp_; }
+
+  uint64_t GetSizeForTesting(const std::vector<FrameData>& stack);
+  uint64_t GetTimestampForTesting() { return committed_timestamp_; }
+
+ private:
   struct Allocation {
     Allocation(uint64_t size, uint64_t seq, CallstackAllocations* csa)
         : total_size(size), sequence_number(seq), callstack_allocations(csa) {
@@ -312,6 +314,11 @@ class HeapTracker {
     CallstackAllocations* callstack_allocations;
   };
 
+  struct PendingOperation {
+    uint64_t allocation_address;
+    uint64_t timestamp;
+  };
+
   CallstackAllocations* MaybeCreateCallstackAllocations(
       GlobalCallstackTrie::Node* node) {
     auto callstack_allocations_it = callstack_allocations_.find(node);
@@ -325,7 +332,8 @@ class HeapTracker {
     return &callstack_allocations_it->second;
   }
 
-  void RecordOperation(uint64_t sequence_number, uint64_t address);
+  void RecordOperation(uint64_t sequence_number,
+                       const PendingOperation& operation);
 
   // Commits a malloc or free operation.
   // See comment of pending_operations_ for encoding of malloc and free
@@ -335,7 +343,8 @@ class HeapTracker {
   // CallstackAllocation::allocated.
   // Committing a free operation: Add the allocation's size to
   // CallstackAllocation::freed and delete the allocation.
-  void CommitOperation(uint64_t sequence_number, uint64_t address);
+  void CommitOperation(uint64_t sequence_number,
+                       const PendingOperation& operation);
 
   // We cannot use an interner here, because after the last allocation goes
   // away, we still need to keep the CallstackAllocations around until the next
@@ -355,9 +364,10 @@ class HeapTracker {
   //
   // If its seq_id is less than the sequence_number of the corresponding
   // allocation it could be either, but is ignored either way.
-  std::map<uint64_t /* seq_id */, uint64_t /* allocation address */>
+  std::map<uint64_t /* seq_id */, PendingOperation /* allocation address */>
       pending_operations_;
 
+  uint64_t committed_timestamp_ = 0;
   // The sequence number all mallocs and frees have been handled up to.
   uint64_t committed_sequence_number_ = 0;
   GlobalCallstackTrie* callsites_;
@@ -365,5 +375,36 @@ class HeapTracker {
 
 }  // namespace profiling
 }  // namespace perfetto
+
+namespace std {
+template <>
+struct hash<::perfetto::profiling::Mapping> {
+  using argument_type = ::perfetto::profiling::Mapping;
+  using result_type = size_t;
+  result_type operator()(const argument_type& mapping) {
+    size_t h =
+        std::hash<::perfetto::profiling::InternID>{}(mapping.build_id.id());
+    h ^= std::hash<uint64_t>{}(mapping.offset);
+    h ^= std::hash<uint64_t>{}(mapping.start);
+    h ^= std::hash<uint64_t>{}(mapping.end);
+    h ^= std::hash<uint64_t>{}(mapping.load_bias);
+    for (const auto& path : mapping.path_components)
+      h ^= std::hash<uint64_t>{}(path.id());
+    return h;
+  }
+};
+
+template <>
+struct hash<::perfetto::profiling::Frame> {
+  using argument_type = ::perfetto::profiling::Frame;
+  using result_type = size_t;
+  result_type operator()(const argument_type& frame) {
+    size_t h = std::hash<::perfetto::profiling::InternID>{}(frame.mapping.id());
+    h ^= std::hash<::perfetto::profiling::InternID>{}(frame.function_name.id());
+    h ^= std::hash<uint64_t>{}(frame.rel_pc);
+    return h;
+  }
+};
+}  // namespace std
 
 #endif  // SRC_PROFILING_MEMORY_BOOKKEEPING_H_

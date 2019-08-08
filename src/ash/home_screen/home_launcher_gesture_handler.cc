@@ -10,7 +10,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -30,7 +29,6 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -166,7 +164,7 @@ aura::Window* GetBackdropWindow(aura::Window* window) {
 aura::Window* GetDividerWindow() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (!split_view_controller->IsSplitViewModeActive())
+  if (!split_view_controller->InSplitViewMode())
     return nullptr;
   return split_view_controller->split_view_divider()
       ->divider_widget()
@@ -189,7 +187,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   explicit ScopedWindowModifier(aura::Window* window) : window_(window) {
     DCHECK(window_);
     original_event_targeting_policy_ = window_->event_targeting_policy();
-    window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+    window_->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
   }
   ~ScopedWindowModifier() override {
     for (const auto& descendant : transient_descendants_values_)
@@ -275,9 +273,9 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   std::map<aura::Window*, WindowValues> transient_descendants_values_;
 
   // For the duration of this object |window_| event targeting policy will be
-  // sent to NONE. Store the original so we can change it back when destroying
+  // sent to kNone. Store the original so we can change it back when destroying
   // this object.
-  ws::mojom::EventTargetingPolicy original_event_targeting_policy_;
+  aura::EventTargetingPolicy original_event_targeting_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
 };
@@ -359,7 +357,7 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
       // triggered by opening |active_window_| with modal dialog in
       // OnPressEvent(). In that case, just leave the |active_window_| in show
       // state and stop tracking.
-      AnimateToFinalState();
+      AnimateToFinalState(AnimationTrigger::kDragRelease);
       RemoveObserversAndStopTracking();
       return true;
     }
@@ -367,7 +365,7 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
   }
 
   last_event_location_ = base::make_optional(location);
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kDragRelease);
   return true;
 }
 
@@ -379,7 +377,7 @@ void HomeLauncherGestureHandler::Cancel() {
   DCHECK(home_screen_delegate);
   home_screen_delegate->OnHomeLauncherDragEnd();
 
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kDragRelease);
   return;
 }
 
@@ -398,7 +396,7 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   mode_ = Mode::kSlideUpToShow;
 
   UpdateWindows(0.0, /*animate=*/false);
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kLauncherButton);
   return true;
 }
 
@@ -418,7 +416,7 @@ bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
   mode_ = Mode::kSlideDownToHide;
 
   UpdateWindows(1.0, /*animate=*/false);
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kHideForWindow);
   return true;
 }
 
@@ -500,7 +498,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   const bool is_final_state_show = IsFinalStateShow();
   NotifyHomeLauncherAnimationComplete(is_final_state_show /*shown*/,
                                       display_.id());
-  if (Shell::Get()->overview_controller()->IsSelecting()) {
+  if (Shell::Get()->overview_controller()->InOverviewSession()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
       // end splitview if it is active as SplitViewController observes
@@ -528,7 +526,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
 
   // Explicitly exit split view if two windows are snapped.
   if (is_final_state_show && Shell::Get()->split_view_controller()->state() ==
-                                 SplitViewController::BOTH_SNAPPED) {
+                                 SplitViewState::kBothSnapped) {
     Shell::Get()->split_view_controller()->EndSplitView();
   }
 
@@ -572,8 +570,10 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   RemoveObserversAndStopTracking();
 }
 
-void HomeLauncherGestureHandler::AnimateToFinalState() {
+void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
   const bool is_final_state_show = IsFinalStateShow();
+  GetHomeScreenDelegate()->NotifyHomeLauncherAnimationTransition(
+      trigger, is_final_state_show);
   UpdateWindows(is_final_state_show ? 1.0 : 0.0, /*animate=*/true);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {
@@ -623,12 +623,13 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   // observe the animation of a window in overview.
   OverviewController* controller = Shell::Get()->overview_controller();
   std::unique_ptr<ui::ScopedLayerAnimationSettings> overview_settings;
-  if (overview_active_on_gesture_start_ && controller->IsSelecting()) {
+  if (overview_active_on_gesture_start_ && controller->InOverviewSession()) {
     DCHECK_EQ(mode_, Mode::kSlideUpToShow);
+    const int inverted_y_position = gfx::Tween::IntValueBetween(
+        progress, work_area.y(), work_area.bottom());
     overview_settings =
         controller->overview_session()->UpdateGridAtLocationYPositionAndOpacity(
-            display_.id(), y_position - work_area.height(), 1.f - opacity,
-            work_area,
+            display_.id(), inverted_y_position, 1.f - opacity,
             animate ? base::BindRepeating(
                           &HomeLauncherGestureHandler::UpdateSettings,
                           base::Unretained(this))
@@ -733,7 +734,7 @@ bool HomeLauncherGestureHandler::IsAnimating() {
     return true;
 
   if (overview_active_on_gesture_start_ &&
-      Shell::Get()->overview_controller()->IsSelecting() &&
+      Shell::Get()->overview_controller()->InOverviewSession() &&
       (Shell::Get()->overview_controller()->IsInStartAnimation() ||
        animating_to_close_overview_)) {
     return true;
@@ -768,9 +769,10 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   overview_active_on_gesture_start_ =
-      Shell::Get()->overview_controller()->IsSelecting();
-  const bool split_view_active = split_view_controller->IsSplitViewModeActive();
-  auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->overview_controller()->InOverviewSession();
+  const bool split_view_active = split_view_controller->InSplitViewMode();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   if (window && (mode != Mode::kSlideDownToHide ||
                  overview_active_on_gesture_start_ || split_view_active)) {
     active_window_.reset();
@@ -822,7 +824,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   // Alter a second window if we are in split view mode with two windows
   // snapped.
   if (mode == Mode::kSlideUpToShow &&
-      split_view_controller->state() == SplitViewController::BOTH_SNAPPED) {
+      split_view_controller->state() == SplitViewState::kBothSnapped) {
     DCHECK_GT(windows.size(), 0u);
     aura::Window* second_window =
         split_view_controller->default_snap_position() ==

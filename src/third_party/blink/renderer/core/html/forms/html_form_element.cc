@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 
 #include <limits>
+
 #include "base/auto_reset.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
@@ -63,8 +64,8 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -81,11 +82,8 @@ HTMLFormElement::HTMLFormElement(Document& document)
       is_in_reset_function_(false) {
   static unsigned next_nique_renderer_form_id = 0;
   unique_renderer_form_id_ = next_nique_renderer_form_id++;
-}
 
-HTMLFormElement* HTMLFormElement::Create(Document& document) {
   UseCounter::Count(document, WebFeature::kFormElement);
-  return MakeGarbageCollected<HTMLFormElement>(document);
 }
 
 HTMLFormElement::~HTMLFormElement() = default;
@@ -214,7 +212,7 @@ void HTMLFormElement::SubmitImplicitly(Event& event,
     }
   }
   if (from_implicit_submission_trigger && submission_trigger_count == 1)
-    PrepareForSubmission(event, nullptr);
+    PrepareForSubmission(&event, nullptr);
 }
 
 bool HTMLFormElement::ValidateInteractively() {
@@ -236,7 +234,7 @@ bool HTMLFormElement::ValidateInteractively() {
 
   // Focus on the first focusable control and show a validation message.
   for (const auto& unhandled : unhandled_invalid_controls) {
-    if (ToHTMLElement(unhandled)->IsFocusable()) {
+    if (unhandled->ValidationAnchorOrHostIsFocusable()) {
       unhandled->ShowValidationMessage();
       UseCounter::Count(GetDocument(),
                         WebFeature::kFormValidationShowedMessage);
@@ -246,7 +244,7 @@ bool HTMLFormElement::ValidateInteractively() {
   // Warn about all of unfocusable controls.
   if (GetDocument().GetFrame()) {
     for (const auto& unhandled : unhandled_invalid_controls) {
-      if (ToHTMLElement(unhandled)->IsFocusable())
+      if (unhandled->ValidationAnchorOrHostIsFocusable())
         continue;
       String message(
           "An invalid form control with name='%name' is not focusable.");
@@ -260,7 +258,7 @@ bool HTMLFormElement::ValidateInteractively() {
 }
 
 void HTMLFormElement::PrepareForSubmission(
-    Event& event,
+    Event* event,
     HTMLFormControlElement* submit_button) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || is_submitting_ || in_user_js_submit_event_)
@@ -329,7 +327,7 @@ void HTMLFormElement::PrepareForSubmission(
   }
   if (should_submit) {
     planned_navigation_ = nullptr;
-    Submit(&event, submit_button);
+    Submit(event, submit_button);
   }
   if (!planned_navigation_)
     return;
@@ -340,6 +338,39 @@ void HTMLFormElement::PrepareForSubmission(
 
 void HTMLFormElement::submitFromJavaScript() {
   Submit(nullptr, nullptr);
+}
+
+void HTMLFormElement::requestSubmit(ExceptionState& exception_state) {
+  requestSubmit(nullptr, exception_state);
+}
+
+// https://html.spec.whatwg.org/multipage/forms.html#dom-form-requestsubmit
+void HTMLFormElement::requestSubmit(HTMLElement* submitter,
+                                    ExceptionState& exception_state) {
+  HTMLFormControlElement* control = nullptr;
+  // 1. If submitter was given, then:
+  if (submitter) {
+    // 1.1. If submitter is not a submit button, then throw a TypeError.
+    control = ToHTMLFormControlElementOrNull(submitter);
+    // button[type] is a subset of input[type]. So it's ok to compare button's
+    // type and input_type_names.
+    if (!control || (control->type() != input_type_names::kSubmit &&
+                     control->type() != input_type_names::kImage)) {
+      exception_state.ThrowTypeError(
+          "The specified element is not a submit button.");
+      return;
+    }
+    // 1.2. If submitter's form owner is not this form element, then throw a
+    // "NotFoundError" DOMException.
+    if (control->formOwner() != this) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotFoundError,
+          "The specified element is not owned by this form element.");
+      return;
+    }
+  }
+  // 3. Submit this form element, from submitter.
+  PrepareForSubmission(nullptr, control);
 }
 
 void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
@@ -440,7 +471,7 @@ FormData* HTMLFormElement::ConstructEntryList(
     submit_button->SetActivatedSubmit(true);
   for (ListedElement* control : ListedElements()) {
     DCHECK(control);
-    HTMLElement& element = ToHTMLElement(*control);
+    HTMLElement& element = control->ToHTMLElement();
     if (!element.IsDisabledFormControl())
       control->AppendToFormData(form_data);
     if (auto* input = ToHTMLInputElementOrNull(element)) {
@@ -450,7 +481,7 @@ FormData* HTMLFormElement::ConstructEntryList(
     }
   }
   if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    DispatchEvent(*FormDataEvent::Create(form_data));
+    DispatchEvent(*MakeGarbageCollected<FormDataEvent>(form_data));
 
   if (submit_button)
     submit_button->SetActivatedSubmit(false);
@@ -491,13 +522,7 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
                       WebFeature::kFormDisabledAttributePresentAndSubmit);
   }
 
-  FrameLoadRequest frame_load_request =
-      submission->CreateFrameLoadRequest(&GetDocument());
-  frame_load_request.SetNavigationPolicy(submission->GetNavigationPolicy());
-  frame_load_request.GetResourceRequest().SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-  GetDocument().GetFrame()->Navigate(frame_load_request,
-                                     WebFrameLoadType::kStandard);
+  submission->Navigate();
 }
 
 void HTMLFormElement::reset() {
@@ -517,10 +542,11 @@ void HTMLFormElement::reset() {
   // structure.
   ListedElement::List elements(ListedElements());
   for (const auto& element : elements) {
-    if (element->IsFormControlElement())
+    if (element->IsFormControlElement()) {
       ToHTMLFormControlElement(element)->Reset();
-    else if (element->IsElementInternals())
-      CustomElement::EnqueueFormResetCallback(*ToHTMLElement(element));
+    } else if (element->IsElementInternals()) {
+      CustomElement::EnqueueFormResetCallback(element->ToHTMLElement());
+    }
   }
 
   is_in_reset_function_ = false;
@@ -563,14 +589,14 @@ void HTMLFormElement::ParseAttribute(
 void HTMLFormElement::Associate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
-  if (ToHTMLElement(e).FastHasAttribute(kFormAttr))
+  if (e.ToHTMLElement().FastHasAttribute(kFormAttr))
     has_elements_associated_by_form_attribute_ = true;
 }
 
 void HTMLFormElement::Disassociate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
-  RemoveFromPastNamesMap(ToHTMLElement(e));
+  RemoveFromPastNamesMap(e.ToHTMLElement());
 }
 
 bool HTMLFormElement::IsURLAttribute(const Attribute& attribute) const {
@@ -748,7 +774,7 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
 #if DCHECK_IS_ON()
   if (!element)
     return nullptr;
-  SECURITY_DCHECK(ToHTMLElement(element)->formOwner() == this);
+  SECURITY_DCHECK(To<HTMLElement>(element)->formOwner() == this);
   if (IsHTMLImageElement(*element)) {
     SECURITY_DCHECK(ImageElements().Find(element) != kNotFound);
   } else if (IsHTMLObjectElement(*element)) {

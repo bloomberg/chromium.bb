@@ -102,18 +102,17 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void StorePolicy(const login_manager::PolicyDescriptor& descriptor,
                    const std::string& policy_blob,
                    VoidDBusMethodCallback callback) override;
-  bool SupportsRestartToApplyUserFlags() const override;
+  bool SupportsBrowserRestart() const override;
   void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(StateKeysCallback callback) override;
 
   void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
-      StartArcMiniContainerCallback callback) override;
+      VoidDBusMethodCallback callback) override;
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      base::OnceClosure success_callback,
-      UpgradeErrorCallback error_callback) override;
+      VoidDBusMethodCallback callback) override;
   void StopArcInstance(VoidDBusMethodCallback callback) override;
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
@@ -123,8 +122,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
-  void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason,
-                                const std::string& conainer_instance_id);
+  void NotifyArcInstanceStopped();
 
   // Returns true if flags for |cryptohome_id| have been set. If the return
   // value is |true|, |*out_flags_for_user| is filled with the flags passed to
@@ -133,14 +131,21 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
                        std::vector<std::string>* out_flags_for_user) const;
 
   // Sets whether FakeSessionManagerClient should advertise (through
-  // |SupportsRestartToApplyUserFlags|) that it supports restarting chrome to
-  // apply user-session flags. The default is |false|.
-  void set_supports_restart_to_apply_user_flags(
-      bool supports_restart_to_apply_user_flags) {
-    supports_restart_to_apply_user_flags_ =
-        supports_restart_to_apply_user_flags;
+  // |SupportsBrowserRestart|) that it supports restarting Chrome. For example,
+  // to apply user-session flags, or to start guest session.
+  // The default is |false|.
+  void set_supports_browser_restart(bool supports_browser_restart) {
+    supports_browser_restart_ = supports_browser_restart;
   }
 
+  // Requires set_support_restart_job() to be called.
+  void set_restart_job_callback(base::OnceClosure callback) {
+    restart_job_callback_ = std::move(callback);
+  }
+
+  const base::Optional<std::vector<std::string>>& restart_job_argv() const {
+    return restart_job_argv_;
+  }
   // If |force_failure| is true, forces StorePolicy() to fail.
   void ForceStorePolicyFailure(bool force_failure) {
     force_store_policy_failure_ = force_failure;
@@ -224,18 +229,38 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   }
 
   void set_arc_available(bool available) { arc_available_ = available; }
+  void set_force_upgrade_failure(bool force_upgrade_failure) {
+    force_upgrade_failure_ = force_upgrade_failure;
+  }
   void set_arc_start_time(base::TimeTicks arc_start_time) {
     arc_start_time_ = arc_start_time;
   }
 
-  void set_low_disk(bool low_disk) { low_disk_ = low_disk; }
+  void set_force_state_keys_missing(bool force_state_keys_missing) {
+    force_state_keys_missing_ = force_state_keys_missing;
+  }
 
-  const std::string& container_instance_id() const {
-    return container_instance_id_;
+  bool session_stopped() const { return session_stopped_; }
+
+  const SessionManagerClient::ActiveSessionsMap& user_sessions() const {
+    return user_sessions_;
   }
 
  private:
-  bool supports_restart_to_apply_user_flags_ = false;
+  // Called in response to writing owner key file specified in new device
+  // policy - used for in-memory fake only.
+  // Notifies OwnerKeySet() observers, and runs |callback_to_run|.
+  void HandleOwnerKeySet(base::OnceClosure callback_to_run);
+
+  // Whether browser restarts should be handled - intended for use in tests.
+  bool supports_browser_restart_ = false;
+
+  // Callback that will be run, if set, when RestartJob() is called.
+  base::OnceClosure restart_job_callback_;
+
+  // If restart job was requested, and the client supports restart job, the
+  // requested restarted arguments.
+  base::Optional<std::vector<std::string>> restart_job_argv_;
 
   base::ObserverList<Observer>::Unchecked observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;
@@ -261,13 +286,13 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   int start_tpm_firmware_update_call_count_ = 0;
   std::string last_tpm_firmware_update_mode_;
   bool screen_is_locked_ = false;
+  bool force_state_keys_missing_ = false;
 
   bool arc_available_ = false;
+  bool force_upgrade_failure_ = false;
   base::TimeTicks arc_start_time_;
 
-  bool low_disk_ = false;
-  // Pseudo running container id. If not running, empty.
-  std::string container_instance_id_;
+  bool container_running_ = false;
 
   // Contains last request passed to StartArcMiniContainer
   login_manager::StartArcMiniContainerRequest
@@ -277,6 +302,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   login_manager::UpgradeArcContainerRequest last_upgrade_arc_request_;
 
   StubDelegate* delegate_ = nullptr;
+
+  bool session_stopped_ = false;
 
   // The last-set flags for user set through |SetFlagsForUser|.
   std::map<cryptohome::AccountIdentifier, std::vector<std::string>>

@@ -32,28 +32,28 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogSpdyStreamErrorCallback(
+base::Value NetLogSpdyStreamErrorCallback(
     spdy::SpdyStreamId stream_id,
     int net_error,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetString("net_error", ErrorToShortString(net_error));
-  dict->SetString("description", *description);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetStringKey("net_error", ErrorToShortString(net_error));
+  dict.SetStringKey("description", *description);
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogSpdyStreamWindowUpdateCallback(
+base::Value NetLogSpdyStreamWindowUpdateCallback(
     spdy::SpdyStreamId stream_id,
     int32_t delta,
     int32_t window_size,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetInteger("stream_id", stream_id);
-  dict->SetInteger("delta", delta);
-  dict->SetInteger("window_size", window_size);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", stream_id);
+  dict.SetIntKey("delta", delta);
+  dict.SetIntKey("window_size", window_size);
+  return dict;
 }
 
 }  // namespace
@@ -109,7 +109,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       net_log_(net_log),
       raw_received_bytes_(0),
       raw_sent_bytes_(0),
-      send_bytes_(0),
       recv_bytes_(0),
       write_handler_guard_(false),
       traffic_annotation_(traffic_annotation),
@@ -123,7 +122,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
 
 SpdyStream::~SpdyStream() {
   CHECK(!write_handler_guard_);
-  UpdateHistograms();
 }
 
 void SpdyStream::SetDelegate(Delegate* delegate) {
@@ -654,8 +652,6 @@ int SpdyStream::OnDataSent(size_t frame_size) {
   CHECK_GE(frame_size, spdy::kDataFrameMinimumSize);
   CHECK_LE(frame_payload_size, spdy::kHttp2DefaultFramePayloadLimit);
 
-  send_bytes_ += frame_payload_size;
-
   // If more data is available to send, dispatch it and
   // return that the write operation is still ongoing.
   pending_send_data_->DidConsume(frame_payload_size);
@@ -833,36 +829,6 @@ size_t SpdyStream::EstimateMemoryUsage() const {
          base::trace_event::EstimateMemoryUsage(request_headers_) +
          base::trace_event::EstimateMemoryUsage(pending_recv_data_) +
          base::trace_event::EstimateMemoryUsage(response_headers_);
-}
-
-void SpdyStream::UpdateHistograms() {
-  // We need at least the receive timers to be filled in, as otherwise
-  // metrics can be bogus.
-  if (recv_first_byte_time_.is_null() || recv_last_byte_time_.is_null())
-    return;
-
-  base::TimeTicks effective_send_time;
-  if (type_ == SPDY_PUSH_STREAM) {
-    // Push streams shouldn't have |send_time_| filled in.
-    DCHECK(send_time_.is_null());
-    effective_send_time = recv_first_byte_time_;
-  } else {
-    // For non-push streams, we also need |send_time_| to be filled
-    // in.
-    if (send_time_.is_null())
-      return;
-    effective_send_time = send_time_;
-  }
-
-  UMA_HISTOGRAM_TIMES("Net.SpdyStreamTimeToFirstByte",
-                      recv_first_byte_time_ - effective_send_time);
-  UMA_HISTOGRAM_TIMES("Net.SpdyStreamDownloadTime",
-                      recv_last_byte_time_ - recv_first_byte_time_);
-  UMA_HISTOGRAM_TIMES("Net.SpdyStreamTime",
-                      recv_last_byte_time_ - effective_send_time);
-
-  UMA_HISTOGRAM_COUNTS_1M("Net.SpdySendBytes", send_bytes_);
-  UMA_HISTOGRAM_COUNTS_1M("Net.SpdyRecvBytes", recv_bytes_);
 }
 
 void SpdyStream::QueueNextDataFrame() {

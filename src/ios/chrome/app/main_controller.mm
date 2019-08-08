@@ -112,8 +112,8 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -122,15 +122,13 @@
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
-#import "ios/chrome/browser/ui/main/browser_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
-#import "ios/chrome/browser/ui/main/tab_switcher.h"
-#import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
-#import "ios/chrome/browser/ui/settings/google_services/google_services_navigation_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
+#import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -143,11 +141,11 @@
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
-#import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
@@ -312,11 +310,10 @@ enum class EnterTabSwitcherSnapshotResult {
 
 @interface MainController () <AppURLLoadingServiceDelegate,
                               BrowserStateStorageSwitching,
-                              GoogleServicesNavigationCoordinatorDelegate,
                               PrefObserverDelegate,
                               SettingsNavigationControllerDelegate,
-                              TabModelObserver,
                               TabSwitcherDelegate,
+                              WebStateListObserving,
                               UserFeedbackDataSource> {
   IBOutlet UIWindow* _window;
 
@@ -433,9 +430,10 @@ enum class EnterTabSwitcherSnapshotResult {
 @property(nonatomic, strong)
     SigninInteractionCoordinator* signinInteractionCoordinator;
 
-// Coordinator to display the Google services settings.
-@property(nonatomic, strong)
-    GoogleServicesNavigationCoordinator* googleServicesNavigationCoordinator;
+// Returns YES if the settings are presented, either from
+// _settingsNavigationController or from SigninInteractionCoordinator.
+@property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
+    BOOL settingsViewPresented;
 
 // Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
 // |currentBVC| can be made active.
@@ -446,17 +444,12 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearchInCurrentBVC;
-// Loads the query from startup parameters in the current BVC.
-- (void)loadStartupQueryInCurrentBVC;
 // Dismisses |signinInteractionCoordinator|.
 - (void)dismissSigninInteractionCoordinator;
 // Called when the last incognito tab was closed.
 - (void)lastIncognitoTabClosed;
 // Called when the last regular tab was closed.
 - (void)lastRegularTabClosed;
-// Post a notification with name |notificationName| on the first available
-// run loop cycle.
-- (void)postNotificationOnNextRunLoopCycle:(NSString*)notificationName;
 // Opens a tab in the target BVC, and switches to it in a way that's appropriate
 // to the current UI, based on the |dismissModals| flag:
 // - If a modal dialog is showing and |dismissModals| is NO, the selected tab of
@@ -600,8 +593,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)dealloc {
-  net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
-  net::RequestTracker::SetRequestTrackerFactory(nullptr);
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
@@ -731,7 +722,7 @@ enum class EnterTabSwitcherSnapshotResult {
   [_browserViewWrangler shutdown];
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
-                                       tabModelObserver:self
+                                   webStateListObserver:self
                              applicationCommandEndpoint:self
                                    appURLLoadingService:_appURLLoadingService
                                         storageSwitcher:self];
@@ -943,6 +934,11 @@ enum class EnterTabSwitcherSnapshotResult {
   return [[PreviousSessionInfo sharedInstance] isFirstSessionAfterUpgrade];
 }
 
+- (BOOL)isSettingsViewPresented {
+  return _settingsNavigationController ||
+         self.signinInteractionCoordinator.isSettingsViewPresented;
+}
+
 #pragma mark - StartupInformation implementation.
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {
@@ -966,9 +962,15 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)stopChromeMain {
+  // The UI should be stopped before the models they observe are stopped.
+  [_mainCoordinator stop];
+  _mainCoordinator = nil;
+
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
+  // Invariant: The UI is stopped before the model is shutdown.
+  DCHECK(!_mainCoordinator);
   [_browserViewWrangler shutdown];
   _browserViewWrangler = nil;
 
@@ -976,8 +978,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   [_historyCoordinator stop];
   _historyCoordinator = nil;
-
-  [_mainCoordinator stop];
 
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
@@ -1543,6 +1543,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove showing settings from MainController.
 - (void)showAutofillSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController)
     return;
   _settingsNavigationController = [SettingsNavigationController
@@ -1560,6 +1561,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{
+    DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
     if (_settingsNavigationController)
       return;
     _settingsNavigationController = [SettingsNavigationController
@@ -1613,6 +1615,17 @@ enum class EnterTabSwitcherSnapshotResult {
   }
 }
 
+- (void)showAdvancedSigninSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
+  self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+      initWithBrowserState:_mainBrowserState
+                dispatcher:self.mainBVC.dispatcher];
+  [self.signinInteractionCoordinator
+      showAdvancedSigninSettingsWithPresentingViewController:
+          baseViewController];
+}
+
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
   if (!self.signinInteractionCoordinator) {
@@ -1639,6 +1652,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings from MainController.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
@@ -1661,18 +1675,15 @@ enum class EnterTabSwitcherSnapshotResult {
                                  completion:nil];
 }
 
-// TODO(crbug.com/779791) : Remove show settings from MainController.
+// TODO(crbug.com/779791) : Remove Google services settings from MainController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
   }
   DCHECK(![baseViewController presentedViewController]);
-  if ([self currentBrowserState]->IsOffTheRecord()) {
-    NOTREACHED();
-    return;
-  }
   if (_settingsNavigationController) {
     // Navigate to the Google services settings if the settings dialog is
     // already opened.
@@ -1680,16 +1691,15 @@ enum class EnterTabSwitcherSnapshotResult {
         showGoogleServicesSettingsFromViewController:baseViewController];
     return;
   }
-  // If the settings dialog is not already opened, start a new
-  // GoogleServicesNavigationCoordinator.
-  self.googleServicesNavigationCoordinator =
-      [[GoogleServicesNavigationCoordinator alloc]
-          initWithBaseViewController:baseViewController
-                        browserState:_mainBrowserState];
-  self.googleServicesNavigationCoordinator.delegate = self;
-  self.googleServicesNavigationCoordinator.dispatcherForSettings =
-      self.dispatcherForSettings;
-  [self.googleServicesNavigationCoordinator start];
+
+  ios::ChromeBrowserState* originalBrowserState =
+      self.currentBrowserState->GetOriginalChromeBrowserState();
+  _settingsNavigationController = [SettingsNavigationController
+      newGoogleServicesController:originalBrowserState
+                         delegate:self];
+  [baseViewController presentViewController:_settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -1698,6 +1708,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // When unified consent feather is enabled,
   // |showGoogleServicesSettingsFromViewController:| should be called.
   DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSyncSettingsFromViewController:baseViewController];
@@ -1705,7 +1716,6 @@ enum class EnterTabSwitcherSnapshotResult {
   }
   _settingsNavigationController =
       [SettingsNavigationController newSyncController:_mainBrowserState
-                               allowSwitchSyncAccount:YES
                                              delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
@@ -1715,6 +1725,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSyncPassphraseSettingsFromViewController:baseViewController];
@@ -1731,6 +1742,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController];
@@ -1747,6 +1759,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showProfileSettingsFromViewController:baseViewController];
@@ -1763,6 +1776,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showCreditCardSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showCreditCardSettingsFromViewController:baseViewController];
@@ -1821,35 +1835,6 @@ enum class EnterTabSwitcherSnapshotResult {
     [backgroundBVC startVoiceSearch];
   else
     [self.currentBVC startVoiceSearch];
-}
-
-- (void)loadStartupQueryInCurrentBVC {
-  NSString* query = self.startupParameters.textQuery;
-
-  TemplateURLService* templateURLService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(_mainBrowserState);
-  const TemplateURL* defaultURL =
-      templateURLService->GetDefaultSearchProvider();
-  DCHECK(!defaultURL->url().empty());
-  DCHECK(
-      defaultURL->url_ref().IsValid(templateURLService->search_terms_data()));
-  base::string16 queryString = base::SysNSStringToUTF16(query);
-  TemplateURLRef::SearchTermsArgs search_args(queryString);
-
-  GURL result(defaultURL->url_ref().ReplaceSearchTerms(
-      search_args, templateURLService->search_terms_data()));
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(result);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  UrlLoadingServiceFactory::GetForBrowserState([self.currentBVC browserState])
-      ->Load(params);
-}
-
-// Loads the image from startup parameters as search-by-image in the current
-// BVC.
-- (void)loadStartupImageQueryInCurrentBVC {
-  NSData* query = self.startupParameters.imageSearchData;
-
-  [self.currentBVC.dispatcher searchByImage:[UIImage imageWithData:query]];
 }
 
 #pragma mark - Preferences Management
@@ -2029,9 +2014,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
-  if (_settingsNavigationController) {
-    return false;
-  }
   if (_tabSwitcherIsActive) {
     // Only attempt to dismiss the tab switcher and open a new tab if:
     // - there are no tabs open in either tab model, and
@@ -2219,6 +2201,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController)
     return;
   [[DeferredInitializationRunner sharedInstance]
@@ -2240,33 +2223,40 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
-  DCHECK(_settingsNavigationController);
-  [_settingsNavigationController settingsWillBeDismissed];
-  UIViewController* presentingViewController =
-      [_settingsNavigationController presentingViewController];
-  DCHECK(presentingViewController);
-  [presentingViewController dismissViewControllerAnimated:animated
-                                               completion:^{
-                                                 if (completion)
-                                                   completion();
-                                               }];
-  _settingsNavigationController = nil;
+  if (_settingsNavigationController) {
+    [_settingsNavigationController settingsWillBeDismissed];
+    UIViewController* presentingViewController =
+        [_settingsNavigationController presentingViewController];
+    DCHECK(presentingViewController);
+    [presentingViewController dismissViewControllerAnimated:animated
+                                                 completion:completion];
+    _settingsNavigationController = nil;
+    return;
+  }
+  // |self.signinInteractionCoordinator| can also present settings, like
+  // the advanced sign-in settings navigation controller. If the settings has
+  // to be cloase, it is thus the responsibility of the main controller to
+  // dismiss the the advanced sign-in settings by dismssing the settings
+  // presented by |self.signinInteractionCoordinator|.
+  DCHECK(self.signinInteractionCoordinator.isSettingsViewPresented);
+  [self.signinInteractionCoordinator
+      abortAndDismissSettingsViewAnimated:animated
+                               completion:completion];
 }
 
-#pragma mark - TabModelObserver
+#pragma mark - WebStateListObserving
 
-// Called when a Tab is removed. Triggers the switcher view when the last tab is
-// closed on a device that uses the switcher.
-- (void)tabModel:(TabModel*)notifiedTabModel
-    didRemoveTab:(Tab*)tab
-         atIndex:(NSUInteger)index {
-  TabModel* currentTabModel = [self currentTabModel];
+// Called when a WebState is removed. Triggers the switcher view when the last
+// WebState is closed on a device that uses the switcher.
+- (void)webStateList:(WebStateList*)notifiedWebStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
   // Do nothing on initialization.
-  if (!currentTabModel)
+  if (![self currentTabModel].webStateList)
     return;
 
-  if (notifiedTabModel.count == 0U) {
-    if ([notifiedTabModel isOffTheRecord]) {
+  if (notifiedWebStateList->empty()) {
+    if (webState->GetBrowserState()->IsOffTheRecord()) {
       [self lastIncognitoTabClosed];
     } else {
       [self lastRegularTabClosed];
@@ -2341,14 +2331,6 @@ enum class EnterTabSwitcherSnapshotResult {
     case FOCUS_OMNIBOX:
       return ^{
         [self.currentBVC.dispatcher focusOmnibox];
-      };
-    case SEARCH_TEXT:
-      return ^{
-        [self loadStartupQueryInCurrentBVC];
-      };
-    case SEARCH_IMAGE:
-      return ^{
-        [self loadStartupImageQueryInCurrentBVC];
       };
     default:
       return nil;
@@ -2454,10 +2436,6 @@ enum class EnterTabSwitcherSnapshotResult {
   // First, cancel the signin interaction.
   [self.signinInteractionCoordinator cancel];
 
-  [self.googleServicesNavigationCoordinator dismissAnimated:NO];
-  // Need to stop and set |self.googleServicesNavigationCoordinator| to nil.
-  [self stopGoogleServicesNavigationCoordinator];
-
   // Then, depending on what the SSO view controller is presented on, dismiss
   // it.
   ProceduralBlock completionWithBVC = ^{
@@ -2482,11 +2460,12 @@ enum class EnterTabSwitcherSnapshotResult {
   // As a top level rule, if the settings are showing, they need to be
   // dismissed. Then, based on whether the BVC is present or not, a different
   // completion callback is called.
-  if (![self isTabSwitcherActive] && _settingsNavigationController) {
+  if (![self isTabSwitcherActive] && self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
     // settings then call the BVC completion.
+    DCHECK(!self.signinInteractionCoordinator.isActive);
     [self closeSettingsAnimated:NO completion:completionWithBVC];
-  } else if (_settingsNavigationController) {
+  } else if (self.isSettingsViewPresented) {
     // In this case, the settings are up but the BVC is not showing. Close the
     // settings then call the no-BVC completion.
     [self closeSettingsAnimated:NO completion:completionWithoutBVC];
@@ -2502,21 +2481,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // Verify that no modal views are left presented.
   ios::GetChromeBrowserProvider()->LogIfModalViewsArePresented();
-}
-
-// iOS does not guarantee the order in which the observers are notified by
-// the notification center. There are different parts of the application that
-// register for UIApplication notifications so recording them in order to
-// measure the performance of the app being moved to the foreground / background
-// is not reliable. Instead we prefer using designated notifications that are
-// posted to the observers on the first available run loop cycle, which
-// guarantees that they are delivered to the observer only after UIApplication
-// notifications have been treated.
-- (void)postNotificationOnNextRunLoopCycle:(NSString*)notificationName {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
-                                                        object:self];
-  });
 }
 
 - (bool)mustShowRestoreInfobar {
@@ -2670,24 +2634,6 @@ enum class EnterTabSwitcherSnapshotResult {
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
-}
-
-#pragma mark - GoogleServicesNavigationCoordinatorDelegate
-
-- (void)googleServicesNavigationCoordinatorDidClose:
-    (GoogleServicesNavigationCoordinator*)coordinator {
-  DCHECK_EQ(self.googleServicesNavigationCoordinator, coordinator);
-  // Need to stop and set |self.googleServicesNavigationCoordinator| to nil.
-  DCHECK(self.googleServicesNavigationCoordinator);
-  [self stopGoogleServicesNavigationCoordinator];
-}
-
-#pragma mark - GoogleServicesNavigationCoordinator helpers
-
-- (void)stopGoogleServicesNavigationCoordinator {
-  self.googleServicesNavigationCoordinator.delegate = nil;
-  [self.googleServicesNavigationCoordinator stop];
-  self.googleServicesNavigationCoordinator = nil;
 }
 
 @end

@@ -123,6 +123,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override;
 
@@ -200,6 +201,7 @@ void ConnectTestingEventInterface::OnFinishOpeningHandshake(
 void ConnectTestingEventInterface::OnSSLCertificateError(
     std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
     const GURL& url,
+    int net_error,
     const SSLInfo& ssl_info,
     bool fatal) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

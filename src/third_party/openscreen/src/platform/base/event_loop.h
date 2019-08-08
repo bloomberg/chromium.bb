@@ -11,8 +11,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "base/error.h"
-#include "base/ip_address.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/event_waiter.h"
 
 namespace openscreen {
@@ -22,6 +22,7 @@ static constexpr int kUdpMaxPacketSize = 1 << 16;
 
 struct ReceivedData {
   ReceivedData();
+  ReceivedData(ReceivedData&&) MAYBE_NOEXCEPT;
   ~ReceivedData();
 
   IPEndpoint source;

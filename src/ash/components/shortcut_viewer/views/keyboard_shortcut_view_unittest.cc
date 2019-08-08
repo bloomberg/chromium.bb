@@ -30,7 +30,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   ~KeyboardShortcutViewTest() override = default;
 
   views::Widget* Toggle() {
-    return KeyboardShortcutView::Toggle(base::TimeTicks(), CurrentContext());
+    return KeyboardShortcutView::Toggle(CurrentContext());
   }
 
   // ash::AshTestBase:
@@ -157,13 +157,11 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
     // |shortcut_label_view_| should be center aligned. Only need to check one
     // view in the top line, because StyledLabel always center align all the
     // views in a line.
-    const views::View* description_view = item_view->child_at(0);
-    const views::View* shortcut_view = item_view->child_at(1);
-    const views::View* description_top_line_view =
-        description_view->child_at(0);
-    const views::View* shortcut_top_line_view = shortcut_view->child_at(0);
-    EXPECT_EQ(description_top_line_view->GetBoundsInScreen().CenterPoint().y(),
-              shortcut_top_line_view->GetBoundsInScreen().CenterPoint().y());
+    const views::View* description = item_view->children()[0];
+    const views::View* shortcut = item_view->children()[1];
+    EXPECT_EQ(
+        description->children().front()->GetBoundsInScreen().CenterPoint().y(),
+        shortcut->children().front()->GetBoundsInScreen().CenterPoint().y());
   }
 
   // Cleaning up.
@@ -180,7 +178,7 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
 
   // Press a key should enter search mode.
   KeyPress(ui::VKEY_A, /*should_insert=*/true);
-  EXPECT_TRUE(GetSearchBoxView()->back_button()->visible());
+  EXPECT_TRUE(GetSearchBoxView()->back_button()->GetVisible());
   EXPECT_FALSE(GetSearchBoxView()->search_box()->text().empty());
 
   // Case 2: Exit search mode by clicking |back_button|. The focus should be on

@@ -14,6 +14,7 @@ from blinkpy.common.net.web_test_results import WebTestResult, WebTestResults
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, SimpleTestResult, MARKER_COMMENT
+from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 
@@ -61,7 +62,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
         # Write a dummy manifest file, describing what tests exist.
         host.filesystem.write_text_file(
-            host.port_factory.get().web_tests_dir() + '/external/wpt/MANIFEST.json',
+            host.port_factory.get().web_tests_dir() + '/external/' + BASE_MANIFEST_NAME,
             json.dumps({
                 'items': {
                     'reftest': {
@@ -281,17 +282,20 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             updater.get_expectations(SimpleTestResult('SLOW CRASH FAIL TIMEOUT', 'PASS', 'bug')),
             {'Pass'})
         self.assertEqual(
-            updater.get_expectations(SimpleTestResult('Pass', 'IMAGE+TEXT IMAGE IMAGE', 'bug')),
+            updater.get_expectations(SimpleTestResult('PASS', 'IMAGE+TEXT IMAGE IMAGE', 'bug')),
             {'Failure'})
         self.assertEqual(
-            updater.get_expectations(SimpleTestResult('Pass', 'MISSING', 'bug')),
+            updater.get_expectations(SimpleTestResult('PASS', 'MISSING', 'bug')),
             {'Skip'})
         self.assertEqual(
-            updater.get_expectations(SimpleTestResult('Pass', 'MISSING MISSING', 'bug')),
+            updater.get_expectations(SimpleTestResult('PASS', 'MISSING MISSING', 'bug')),
             {'Skip'})
         self.assertEqual(
-            updater.get_expectations(SimpleTestResult('Pass', 'TIMEOUT', 'bug'), test_name='foo/bar-manual.html'),
+            updater.get_expectations(SimpleTestResult('PASS', 'TIMEOUT', 'bug'), test_name='foo/bar-manual.html'),
             {'WontFix'})
+        self.assertEqual(
+            updater.get_expectations(SimpleTestResult('PASS', 'FAIL', 'bug'), test_name='external/wpt/webdriver/foo/a'),
+            {'Failure'})
 
     def test_create_line_dict_old_tests(self):
         # In this example, there are two failures that are not in wpt.
@@ -408,6 +412,16 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
         self.assertEqual(updater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
 
+    def test_simplify_specifiers_port_not_tested_by_trybots(self):
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        macros = {
+            'mac': ['Mac10.10', 'mac10.11'],
+            'win': ['win10'],
+            'foo': ['bar'],
+        }
+        self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
+
     def test_normalized_specifiers_with_skipped_test(self):
         host = self.mock_host()
         expectations_path = '/test.checkout/wtests/NeverFixTests'
@@ -510,6 +524,41 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertMultiLineEqual(
             wontfix_value,
             wontfix_value_origin)
+
+    def test_write_to_test_expectations_with_webdriver_lines(self):
+        host = self.mock_host()
+
+        webdriver_expectations_path = host.port_factory.get().path_to_webdriver_expectations_file()
+        host.filesystem.write_text_file(
+            webdriver_expectations_path,
+            MARKER_COMMENT + '\n')
+        updater = WPTExpectationsUpdater(host)
+        line_dict = {'external/wpt/webdriver/fake/file/path.html':
+                     ['crbug.com/123 [ Trusty ] external/wpt/webdriver/fake/file/path.html [ Pass ]']}
+
+        expectations_path = host.port_factory.get().path_to_generic_test_expectations_file()
+        expectations_value_origin = host.filesystem.read_text_file(expectations_path)
+
+        wontfix_path = host.port_factory.get().path_to_never_fix_tests_file()
+        wontfix_value_origin = host.filesystem.read_text_file(wontfix_path)
+
+        updater.write_to_test_expectations(line_dict)
+        value = host.filesystem.read_text_file(webdriver_expectations_path)
+
+        self.assertMultiLineEqual(
+            value,
+            (MARKER_COMMENT + '\n'
+             'crbug.com/123 [ Trusty ] external/wpt/webdriver/fake/file/path.html [ Pass ]\n'))
+
+        wontfix_value = host.filesystem.read_text_file(wontfix_path)
+        self.assertMultiLineEqual(
+            wontfix_value,
+            wontfix_value_origin)
+
+        expectations_value = host.filesystem.read_text_file(expectations_path)
+        self.assertMultiLineEqual(
+            expectations_value,
+            expectations_value_origin)
 
     def test_write_to_test_expectations_with_no_marker_comment(self):
         host = self.mock_host()

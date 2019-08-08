@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRUCT_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRUCT_PTR_H_
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <new>
@@ -35,11 +36,11 @@ class StructPtr {
   using Struct = S;
 
   StructPtr() = default;
-  StructPtr(decltype(nullptr)) {}
+  StructPtr(std::nullptr_t) {}
 
   ~StructPtr() = default;
 
-  StructPtr& operator=(decltype(nullptr)) {
+  StructPtr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }
@@ -130,11 +131,11 @@ class InlinedStructPtr {
   using Struct = S;
 
   InlinedStructPtr() : state_(NIL) {}
-  InlinedStructPtr(decltype(nullptr)) : state_(NIL) {}
+  InlinedStructPtr(std::nullptr_t) : state_(NIL) {}
 
   ~InlinedStructPtr() {}
 
-  InlinedStructPtr& operator=(decltype(nullptr)) {
+  InlinedStructPtr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }

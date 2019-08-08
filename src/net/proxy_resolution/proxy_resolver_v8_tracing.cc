@@ -406,7 +406,12 @@ void Job::Cancel() {
 
   ReleaseCallback();
 
-  pending_dns_.reset();
+  // Note we only mutate |pending_dns_| if it is non-null. If it is null, the
+  // worker thread may be about to request a new DNS resolution. This avoids a
+  // race condition with the DCHECK in PostDnsOperationAndWait().
+  // See https://crbug.com/699562.
+  if (pending_dns_)
+    pending_dns_.reset();
 
   // The worker thread might be blocked waiting for DNS.
   event_.Signal();
@@ -695,7 +700,9 @@ bool Job::ResolveDnsNonBlocking(const std::string& host,
 bool Job::PostDnsOperationAndWait(const std::string& host,
                                   ProxyResolveDnsOperation op,
                                   bool* completed_synchronously) {
-  // Post the DNS request to the origin thread.
+  // Post the DNS request to the origin thread. It is safe to mutate
+  // |pending_dns_host_| and |pending_dns_op_| because there cannot be another
+  // DNS operation in progress or scheduled.
   DCHECK(!pending_dns_);
   pending_dns_host_ = host;
   pending_dns_op_ = op;

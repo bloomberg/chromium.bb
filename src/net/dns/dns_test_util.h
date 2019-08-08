@@ -227,7 +227,7 @@ struct MockDnsClientRule {
   // with the same context.
   MockDnsClientRule(const std::string& prefix,
                     uint16_t qtype,
-                    SecureDnsMode secure_dns_mode,
+                    DnsConfig::SecureDnsMode secure_dns_mode,
                     Result result,
                     bool delay,
                     URLRequestContext* context = nullptr);
@@ -236,7 +236,7 @@ struct MockDnsClientRule {
   Result result;
   std::string prefix;
   uint16_t qtype;
-  SecureDnsMode secure_dns_mode;
+  DnsConfig::SecureDnsMode secure_dns_mode;
   bool delay;
   URLRequestContext* context;
 };

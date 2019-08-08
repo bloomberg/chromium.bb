@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/data_use_measurement/core",
   "+components/google/core/common/google_util.h",
   "+components/grit/components_scaled_resources.h",
   "+components/history/core/browser",

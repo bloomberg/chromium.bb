@@ -15,7 +15,6 @@
 
 namespace base {
 class Value;
-class DictionaryValue;
 }
 
 namespace net {
@@ -162,7 +161,7 @@ class NET_EXPORT ProxyConfig {
   void ClearAutomaticSettings();
 
   // Creates a Value dump of this configuration.
-  std::unique_ptr<base::DictionaryValue> ToValue() const;
+  base::Value ToValue() const;
 
   ProxyRules& proxy_rules() {
     return proxy_rules_;

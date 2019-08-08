@@ -3,11 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import shutil
 import sys
 import tempfile
-import json
 import unittest
 
 from core import path_util
@@ -98,6 +98,7 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
   @decorators.Disabled('chromeos')  # crbug.com/865800
   @decorators.Disabled('win')  # crbug.com/860677, mock doesn't integrate well
                                # with multiprocessing on Windows.
+  @decorators.Disabled('all')  # crbug.com/967125
   def testIntegration(self):
     build_properties = json.dumps({
         'perf_dashboard_machine_group': 'test-builder',
@@ -218,6 +219,20 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
 
 
 class ProcessPerfResults_HardenedUnittest(unittest.TestCase):
+  def setUp(self):
+    self._logdog_text = mock.patch(
+        'process_perf_results.logdog_helper.text',
+        return_value = 'http://foo.link')
+    self._logdog_text.start()
+    self.addCleanup(self._logdog_text.stop)
+
+    self._logdog_open_text = mock.patch(
+        'process_perf_results.logdog_helper.open_text',
+        return_value=_FakeLogdogStream())
+    self._logdog_open_text.start()
+    self.addCleanup(self._logdog_open_text.stop)
+
+  @decorators.Disabled('chromeos')  # crbug.com/956178
   def test_handle_perf_json_test_results_IOError(self):
     directory_map = {
         'benchmark.example': ['directory_that_does_not_exist']}
@@ -225,11 +240,31 @@ class ProcessPerfResults_HardenedUnittest(unittest.TestCase):
     ppr_module._handle_perf_json_test_results(directory_map, test_results_list)
     self.assertEqual(test_results_list, [])
 
+  @decorators.Disabled('chromeos')  # crbug.com/956178
   def test_merge_perf_results_IOError(self):
     results_filename = None
     directories = ['directory_that_does_not_exist']
     ppr_module._merge_perf_results('benchmark.example', results_filename,
                                    directories)
+
+  @decorators.Disabled('chromeos')  # crbug.com/956178
+  def test_handle_perf_logs_no_log(self):
+    tempdir = tempfile.mkdtemp()
+    try:
+      dir1 = os.path.join(tempdir, '1')
+      dir2 = os.path.join(tempdir, '2')
+      os.makedirs(dir1)
+      os.makedirs(dir2)
+      with open(os.path.join(dir1, 'benchmark_log.txt'), 'w') as logfile:
+        logfile.write('hello world')
+      directory_map = {
+          'benchmark.with.log': [dir1],
+          'benchmark.with.no.log': [dir2],
+      }
+      extra_links = {}
+      ppr_module._handle_perf_logs(directory_map, extra_links)
+    finally:
+      shutil.rmtree(tempdir)
 
 
 if __name__ == '__main__':

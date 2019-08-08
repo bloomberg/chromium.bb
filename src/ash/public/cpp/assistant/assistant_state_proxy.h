@@ -51,6 +51,7 @@ class ASH_PUBLIC_EXPORT AssistantStateProxy
       mojom::AssistantAllowedState state) override;
   void OnLocaleChanged(const std::string& locale) override;
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
+  void OnLockedFullScreenStateChanged(bool enabled) override;
 
   base::ObserverList<DefaultVoiceInteractionObserver> observers_;
 

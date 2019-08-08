@@ -23,7 +23,7 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
     private final SparseArray<Tab> mTabsToClose = new SparseArray<>();
 
     /**
-     * Constructs an observer that should be notified of tabs changes for all tabs owned
+     * Constructs an observer that should be notified of tab changes for all tabs owned
      * by a specified {@link TabModelSelector}.  Any Tabs created after this call will be
      * observed as well, and Tabs removed will no longer have their information broadcast.
      *

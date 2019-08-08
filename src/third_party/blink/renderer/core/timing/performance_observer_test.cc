@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
-#include "third_party/blink/renderer/core/timing/performance_layout_jank.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_observer_init.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -69,12 +69,12 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
 
   NonThrowableExceptionState exception_state;
   PerformanceObserverInit* options = PerformanceObserverInit::Create();
-  options->setType("layoutJank");
+  options->setType("layoutShift");
   options->setBuffered(true);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   // add a layoutjank to performance so getEntries() returns it
-  auto* entry = MakeGarbageCollected<PerformanceLayoutJank>(1234);
+  auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234);
   base_->AddLayoutJankBuffer(*entry);
 
   // call observe with the buffered flag

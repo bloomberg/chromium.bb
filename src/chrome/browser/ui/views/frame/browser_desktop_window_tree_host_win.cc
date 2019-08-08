@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -41,8 +42,7 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
       browser_view_(browser_view),
       browser_frame_(browser_frame) {}
 
-BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {
-}
+BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {}
 
 views::NativeMenuWin* BrowserDesktopWindowTreeHostWin::GetSystemMenu() {
   if (!system_menu_.get()) {
@@ -73,6 +73,51 @@ bool BrowserDesktopWindowTreeHostWin::UsesNativeSystemMenu() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, views::DesktopWindowTreeHostWin overrides:
+
+void BrowserDesktopWindowTreeHostWin::Init(
+    const views::Widget::InitParams& params) {
+  DesktopWindowTreeHostWin::Init(params);
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return;  // VirtualDesktopManager isn't support pre Win-10.
+
+  // Virtual Desktops on Windows are best-effort and may not always be
+  // available.
+  if (FAILED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
+                                CLSCTX_ALL,
+                                IID_PPV_ARGS(&virtual_desktop_manager_)))) {
+    return;
+  }
+
+  if (!params.workspace.empty()) {
+    GUID guid = GUID_NULL;
+    HRESULT hr =
+        CLSIDFromString(base::UTF8ToUTF16(params.workspace).c_str(), &guid);
+    if (SUCCEEDED(hr)) {
+      // There are valid reasons MoveWindowToDesktop can fail, e.g.,
+      // the desktop was deleted. If it fails, the window will open on the
+      // current desktop.
+      virtual_desktop_manager_->MoveWindowToDesktop(GetHWND(), guid);
+    }
+  }
+}
+
+std::string BrowserDesktopWindowTreeHostWin::GetWorkspace() const {
+  std::string workspace_id;
+  if (virtual_desktop_manager_) {
+    GUID workspace_guid;
+    HRESULT hr = virtual_desktop_manager_->GetWindowDesktopId(GetHWND(),
+                                                              &workspace_guid);
+    if (FAILED(hr) || workspace_guid == GUID_NULL)
+      return workspace_.value_or("");
+
+    LPOLESTR workspace_widestr;
+    StringFromCLSID(workspace_guid, &workspace_widestr);
+    workspace_id = base::WideToUTF8(workspace_widestr);
+    workspace_ = workspace_id;
+    CoTaskMemFree(workspace_widestr);
+  }
+  return workspace_id;
+}
 
 int BrowserDesktopWindowTreeHostWin::GetInitialShowState() const {
   STARTUPINFO si = {0};
@@ -137,7 +182,7 @@ bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
     // The 2 px (not DIP) at the inner edges of Win 7 glass are a light and dark
     // line, so we must inset further to account for those.
     constexpr int kWin7GlassInset = 2;
-    const int inset = (base::win::GetVersion() < base::win::VERSION_WIN8)
+    const int inset = (base::win::GetVersion() < base::win::Version::WIN8)
                           ? kWin7GlassInset
                           : 0;
     *insets = gfx::Insets(tabstrip_region_bounds.bottom() + inset, inset, inset,
@@ -195,6 +240,13 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
   switch (message) {
+    case WM_SETFOCUS: {
+      // GetWorkspace sets |workspace_|, so stash prev value.
+      std::string prev_workspace = workspace_.value_or("");
+      if (prev_workspace != GetWorkspace())
+        OnHostWorkspaceChanged();
+      break;
+    }
     case WM_CREATE:
       minimize_button_metrics_.Init(GetHWND());
       break;
@@ -285,7 +337,7 @@ bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
   // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for hosted app
   // window titlebar controls.
   return browser_view_->IsBrowserTypeHostedApp() &&
-         base::win::GetVersion() < base::win::VERSION_WIN10;
+         base::win::GetVersion() < base::win::Version::WIN10;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -300,6 +352,5 @@ BrowserDesktopWindowTreeHost*
         BrowserFrame* browser_frame) {
   return new BrowserDesktopWindowTreeHostWin(native_widget_delegate,
                                              desktop_native_widget_aura,
-                                             browser_view,
-                                             browser_frame);
+                                             browser_view, browser_frame);
 }

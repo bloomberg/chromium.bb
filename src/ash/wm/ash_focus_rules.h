@@ -5,6 +5,8 @@
 #ifndef ASH_WM_ASH_FOCUS_RULES_H_
 #define ASH_WM_ASH_FOCUS_RULES_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -33,6 +35,10 @@ class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
   aura::Window* GetTopmostWindowToActivateInContainer(
       aura::Window* container,
       aura::Window* ignore) const;
+
+  // List of container IDs in the order of actiavation. This list doesn't change
+  // for the lifetime of this object.
+  const std::vector<int> activatable_container_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusRules);
 };

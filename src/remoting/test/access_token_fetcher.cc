@@ -5,10 +5,10 @@
 #include "remoting/test/access_token_fetcher.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -164,8 +164,7 @@ void AccessTokenFetcher::OnGetTokenInfoResponse(
     VLOG(1) << "Access Token has been validated";
   }
 
-  base::ResetAndReturn(&access_token_callback_)
-      .Run(access_token_, refresh_token_);
+  std::move(access_token_callback_).Run(access_token_, refresh_token_);
 }
 
 void AccessTokenFetcher::OnOAuthError() {
@@ -174,8 +173,7 @@ void AccessTokenFetcher::OnOAuthError() {
   access_token_.clear();
   refresh_token_.clear();
 
-  base::ResetAndReturn(&access_token_callback_)
-      .Run(access_token_, refresh_token_);
+  std::move(access_token_callback_).Run(access_token_, refresh_token_);
 }
 
 void AccessTokenFetcher::OnNetworkError(int response_code) {
@@ -185,8 +183,7 @@ void AccessTokenFetcher::OnNetworkError(int response_code) {
   access_token_.clear();
   refresh_token_.clear();
 
-  base::ResetAndReturn(&access_token_callback_)
-      .Run(access_token_, refresh_token_);
+  std::move(access_token_callback_).Run(access_token_, refresh_token_);
 }
 
 void AccessTokenFetcher::ValidateAccessToken() {

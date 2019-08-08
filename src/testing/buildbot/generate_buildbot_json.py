@@ -353,12 +353,15 @@ class BBJSONGenerator(object):
                 raise BBGenErr('Error merging list keys ' + str(key) +
                                ' and indices ' + str(idx) + ' between ' +
                                str(a) + ' and ' + str(b)) # pragma: no cover
-        elif update: # pragma: no cover
-          a[key] = b[key] # pragma: no cover
+        elif update:
+          if b[key] is None:
+            del a[key]
+          else:
+            a[key] = b[key]
         else:
           raise BBGenErr('Conflict at %s' % '.'.join(
             path + [str(key)])) # pragma: no cover
-      else:
+      elif b[key] is not None:
         a[key] = b[key]
     return a
 
@@ -377,6 +380,7 @@ class BBJSONGenerator(object):
     add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
     add_conditional_args('linux_args', self.is_linux)
     add_conditional_args('android_args', self.is_android)
+    add_conditional_args('chromeos_args', self.is_chromeos)
 
     for key in additional_arg_keys or []:
       args.extend(generated_test.pop(key, []))
@@ -437,6 +441,13 @@ class BBJSONGenerator(object):
       test = self.dictionary_merge(test, modifications)
     if 'swarming' in test:
       self.clean_swarming_dictionary(test['swarming'])
+    # Ensure all Android Swarming tests run only on userdebug builds if another
+    # build type was not specified.
+    if 'swarming' in test and self.is_android(tester_config):
+      for d in test['swarming'].get('dimension_sets', []):
+        if d.get('os') == 'Android' and not d.get('device_os_type'):
+          d['device_os_type'] = 'userdebug'
+
     return test
 
   def add_common_test_properties(self, test, tester_config):
@@ -524,6 +535,14 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
+
+    if not result.get('merge'):
+      # TODO(https://crbug.com/958376): Consider adding the ability to not have
+      # this default.
+      result['merge'] = {
+        'script': '//testing/merge_scripts/standard_gtest_merge.py',
+        'args': [],
+      }
     return result
 
   def generate_isolated_script_test(self, waterfall, tester_name, tester_config,
@@ -541,10 +560,24 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
+
+    if not result.get('merge'):
+      # TODO(https://crbug.com/958376): Consider adding the ability to not have
+      # this default.
+      result['merge'] = {
+        'script': '//testing/merge_scripts/standard_isolated_script_merge.py',
+        'args': [],
+      }
     return result
 
   def generate_script_test(self, waterfall, tester_name, tester_config,
                            test_name, test_config):
+    # TODO(https://crbug.com/953072): Remove this check whenever a better
+    # long-term solution is implemented.
+    if (waterfall.get('forbid_script_tests', False) or
+        waterfall['machines'][tester_name].get('forbid_script_tests', False)):
+      raise BBGenErr('Attempted to generate a script test on tester ' +
+                     tester_name + ', which explicitly forbids script tests')
     if not self.should_run_on_tester(waterfall, tester_name, test_name,
                                      test_config):
       return None
@@ -920,6 +953,7 @@ class BBJSONGenerator(object):
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
     return [
+      'GPU FYI Fuchsia Builder',
       'ANGLE GPU Linux Release (Intel HD 630)',
       'ANGLE GPU Linux Release (NVIDIA)',
       'ANGLE GPU Mac Release (Intel)',
@@ -959,11 +993,21 @@ class BBJSONGenerator(object):
       # chromium, due to https://crbug.com/878915
       'win-dbg',
       'win32-dbg',
+      'win-archive-dbg',
+      'win32-archive-dbg',
       # chromium.mac, see https://crbug.com/943804
       'mac-dummy-rel',
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
+      # code coverage, see see https://crbug.com/930364
+      'Linux Builder Code Coverage',
+      'Linux Tests Code Coverage',
+      'GPU Linux Builder Code Coverage',
+      'Linux Release Code Coverage (NVIDIA)',
+      # chromium.memory. exists, but is omitted from consoles for now.
+      # https://crbug.com/790202
+      'android-asan'
     ]
 
   def check_input_file_consistency(self, verbose=False):

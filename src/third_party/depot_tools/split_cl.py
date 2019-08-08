@@ -5,6 +5,8 @@
 
 """Splits a branch into smaller branches and uploads CLs."""
 
+from __future__ import print_function
+
 import collections
 import os
 import re
@@ -95,7 +97,7 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
   # Create a branch.
   if not CreateBranchForDirectory(
       refactor_branch, directory, refactor_branch_upstream):
-    print 'Skipping ' + directory + ' for which a branch already exists.'
+    print('Skipping ' + directory + ' for which a branch already exists.')
     return
 
   # Checkout all changes to files in |files|.
@@ -124,7 +126,7 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
     upload_args.append('--send-mail')
   if enable_auto_submit:
     upload_args.append('--enable-auto-submit')
-  print 'Uploading CL for ' + directory + '.'
+  print('Uploading CL for ' + directory + '.')
   cmd_upload(upload_args)
   if comment:
     changelist().AddComment(FormatDescriptionOrComment(comment, directory),
@@ -162,12 +164,12 @@ def PrintClInfo(cl_index, num_cls, directory, file_paths, description,
                                                  directory).splitlines()
   indented_description = '\n'.join(['    ' + l for l in description_lines])
 
-  print 'CL {}/{}'.format(cl_index, num_cls)
-  print 'Path: {}'.format(directory)
-  print 'Reviewers: {}'.format(', '.join(reviewers))
-  print '\n' + indented_description + '\n'
-  print '\n'.join(file_paths)
-  print
+  print('CL {}/{}'.format(cl_index, num_cls))
+  print('Path: {}'.format(directory))
+  print('Reviewers: {}'.format(', '.join(reviewers)))
+  print('\n' + indented_description + '\n')
+  print('\n'.join(file_paths))
+  print()
 
 
 def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
@@ -197,7 +199,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
     files = change.AffectedFiles()
 
     if not files:
-      print 'Cannot split an empty CL.'
+      print('Cannot split an empty CL.')
       return 1
 
     author = git.run('config', 'user.email').strip() or None
@@ -216,12 +218,12 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
     print('Will split current branch (' + refactor_branch + ') into ' +
           str(num_cls) + ' CLs.\n')
     if cq_dry_run and num_cls > CL_SPLIT_FORCE_LIMIT:
-      print (
+      print(
         'This will generate "%r" CLs. This many CLs can potentially generate'
         ' too much load on the build infrastructure. Please email'
         ' infra-dev@chromium.org to ensure that this won\'t  break anything.'
         ' The infra team reserves the right to cancel your jobs if they are'
-        ' overloading the CQ.') % num_cls
+        ' overloading the CQ.' % num_cls)
       answer = raw_input('Proceed? (y/n):')
       if answer.lower() != 'y':
         return 0

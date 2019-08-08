@@ -10,19 +10,13 @@
 #include "base/files/platform_file.h"
 #include "base/memory/scoped_refptr.h"
 
-// TODO(drubery): Remove this once http://crbug/909778 is fully rolled out.
-#include "third_party/unrar/src/rar.hpp"
-
-namespace third_party_unrar {
-
-// TODO(drubery): Remove this once http://crbug/909778 is fully rolled out.
-static const int kUnrarEndarcHead = HEAD_ENDARC;
-
 // Forward declare the unrar symbols needed for extraction, so users of
 // RarReader don't need all the symbols from unrar.
 class Archive;
 class CmdExtract;
 class CommandData;
+
+namespace third_party_unrar {
 
 // This class is used for extracting RAR files, one entry at a time.
 class RarReader {

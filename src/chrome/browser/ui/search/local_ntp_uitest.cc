@@ -36,7 +36,7 @@ class LocalNTPUITest : public InProcessBrowserTest {
  private:
   void SetUp() override {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kUseGoogleLocalNtp},
+        /*enabled_features=*/{},
         /*disabled_features=*/{features::kRemoveNtpFakebox});
     InProcessBrowserTest::SetUp();
   }

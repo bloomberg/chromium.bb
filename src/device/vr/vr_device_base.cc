@@ -4,6 +4,7 @@
 
 #include "device/vr/vr_device_base.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_display_impl.h"
 
@@ -125,6 +126,10 @@ void VRDeviceBase::ReturnNonImmersiveSession(
   }
 
   std::move(callback).Run(std::move(session), std::move(controller));
+}
+
+void LogViewerType(VrViewerType type) {
+  base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
 }
 
 void VRDeviceBase::EndMagicWindowSession(VRDisplayImpl* session) {

@@ -106,7 +106,7 @@ bool TabUIHelper::ShouldUseFaviconFromHistory() const {
 
 void TabUIHelper::FetchFaviconFromHistory(
     const GURL& url,
-    const favicon_base::FaviconImageCallback& callback) {
+    favicon_base::FaviconImageCallback callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   favicon::FaviconService* favicon_service =
@@ -114,7 +114,7 @@ void TabUIHelper::FetchFaviconFromHistory(
                                            ServiceAccessType::EXPLICIT_ACCESS);
   // |favicon_service| might be null when testing.
   if (favicon_service) {
-    favicon_service->GetFaviconImageForPageURL(url, callback,
+    favicon_service->GetFaviconImageForPageURL(url, std::move(callback),
                                                &favicon_tracker_);
   }
 }

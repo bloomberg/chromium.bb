@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1282031177488366470">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
+<translation id="1682483655351012182">Chrome 데이터 동기화</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Chrome 개인정보처리방침</translation>
 <translation id="1863312987075920112">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK_TOS" />서비스 약관<ph name="END_LINK_TOS" /> 및 <ph name="BEGIN_LINK_PRIVACY" />개인정보처리방침<ph name="END_LINK_PRIVACY" />에 동의하는 것으로 간주됩니다.</translation>
-<translation id="1984705450038014246">Chrome 데이터 동기화</translation>
 <translation id="2147651015520127414">Chrome이 <ph name="ISSUER" />에서 이 웹사이트의 인증서를 발행했음을 확인했습니다.</translation>
 <translation id="2199719347983604670">Chrome 동기화 데이터</translation>
 <translation id="2342981853652716282">Chrome에 로그인하여 모든 기기에서 내 북마크, 비밀번호 등을 사용하세요.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하여 Chrome을 개선하는 데 동참하세요.</translation>
 <translation id="415767770115540173">위치 정보를 기반으로 Chrome에서 더 나은 Google 환경을 이용할 수 있습니다.</translation>
 <translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
-<translation id="447252321002412580">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="4523886039239821078">일부 부가기능이 Chrome을 비정상 종료시킵니다. 다음 항목을 제거하세요.</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="5389212809648216794">다른 애플리케이션에서 카메라를 사용하고 있으므로 Chrome에서 카메라를 사용할 수 없습니다.</translation>

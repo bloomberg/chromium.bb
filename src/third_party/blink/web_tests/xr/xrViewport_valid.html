@@ -13,7 +13,7 @@ let testName = "XRViewport attributes are valid";
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = ['immersive-vr'];
+let requestSessionModes = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
@@ -31,7 +31,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
-  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" })
+  return session.requestReferenceSpace('local')
     .then((referenceSpace) => new Promise((resolve) =>{
       function onFrame(time, xrFrame) {
         let pose = xrFrame.getViewerPose(referenceSpace);
@@ -90,6 +90,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

@@ -1485,8 +1485,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     args = func.GetOriginalArgs()
     arg_string = ", ".join(
         ["%s /* %s */" % (arg.type, arg.name) for arg in args])
-    f.write("%s GLES2InterfaceStub::%s(%s) {\n" %
-               (func.return_type, func.original_name, arg_string))
+    f.write("%s %sInterfaceStub::%s(%s) {\n" %
+               (func.return_type, _prefix, func.original_name, arg_string))
     if func.return_type != "void":
       f.write("  return 0;\n")
     f.write("}\n")

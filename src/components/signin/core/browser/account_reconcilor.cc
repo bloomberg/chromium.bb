@@ -23,6 +23,7 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/core/browser/consistency_cookie_manager_base.h"
+#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -89,7 +90,7 @@ bool RevokeAllSecondaryTokens(
   if (revoke_option ==
       AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke)
     return false;
-  for (const AccountInfo& account_info :
+  for (const CoreAccountInfo& account_info :
        identity_manager->GetAccountsWithRefreshTokens()) {
     std::string account(account_info.account_id);
     if (account == primary_account)
@@ -395,7 +396,7 @@ void AccountReconcilor::PerformSetCookiesAction(
     const signin::MultiloginParameters& parameters) {
   reconcile_is_noop_ = false;
   if (!delegate_->IsAccountConsistencyEnforced()) {
-    OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
+    OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult::kSuccess);
     return;
   }
   VLOG(1) << "AccountReconcilor::PerformSetCookiesAction: "
@@ -509,7 +510,8 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
       // instead.
       PerformLogoutAllAccountsAction();
       gaia_accounts.clear();
-      OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
+      OnSetAccountsInCookieCompleted(
+          signin::SetAccountsInCookieResult::kSuccess);
       DCHECK(!is_reconcile_started_);
     } else {
       // Reconcilor has to do some calls to gaia. is_reconcile_started_ is true
@@ -521,7 +523,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     }
   } else {
     // Nothing to do, accounts already match.
-    OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
+    OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult::kSuccess);
     DCHECK(!is_reconcile_started_);
   }
 
@@ -865,13 +867,17 @@ bool AccountReconcilor::IsIdentityManagerReady() {
 }
 
 void AccountReconcilor::OnSetAccountsInCookieCompleted(
-    const GoogleServiceAuthError& error) {
+    signin::SetAccountsInCookieResult result) {
   VLOG(1) << "AccountReconcilor::OnSetAccountsInCookieCompleted: "
-          << "Error was " << error.ToString();
+          << "Error was " << static_cast<int>(result);
   if (is_reconcile_started_) {
-    if (error.state() != GoogleServiceAuthError::State::NONE &&
+    if (result != signin::SetAccountsInCookieResult::kSuccess &&
         !error_during_last_reconcile_.IsPersistentError()) {
-      error_during_last_reconcile_ = error;
+      error_during_last_reconcile_ =
+          result == signin::SetAccountsInCookieResult::kTransientError
+              ? GoogleServiceAuthError(
+                    GoogleServiceAuthError::CONNECTION_FAILED)
+              : GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR);
       delegate_->OnReconcileError(error_during_last_reconcile_);
     }
 

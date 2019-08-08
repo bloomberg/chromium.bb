@@ -43,6 +43,10 @@ interface LoginScreenTestApi {
   // Returns true if request was successful.
   ClickAddUserButton() => (bool success);
 
+  // Simulate click on the guest login button.
+  // Returns whether the request was succesful.
+  ClickGuestButton() => (bool success);
+
   // Blocks until UI update counter is greated than |previous_update_count|.
   // Returns true on success, false on error.
   WaitForUiUpdate(int64 previous_update_count) => (bool success);

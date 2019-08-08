@@ -5,8 +5,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,15 +28,6 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         GetActiveWebContents(), "install();", &contents));
     ASSERT_EQ(contents, "instruments.set(): Payment handler installed.");
-  }
-
-  // Allows to skip UI into payment handler for "basic-card".
-  void EnalbeSkipUIForForBasicCard() {
-    std::vector<PaymentRequest*> requests =
-        GetPaymentRequests(GetActiveWebContents());
-    ASSERT_EQ(1U, requests.size());
-    requests.front()
-        ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
   }
 
   // Shows the browser payment sheet.
@@ -63,7 +54,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
   void ExpectNoDisplayItems() {
     views::View* view = dialog_view()->GetViewByID(
         static_cast<int>(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
-    EXPECT_TRUE(!view || !view->visible() ||
+    EXPECT_TRUE(!view || !view->GetVisible() ||
                 static_cast<views::Label*>(view)->text().empty())
         << "Found unexpected display item: "
         << static_cast<views::Label*>(view)->text();
@@ -74,7 +65,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
   void ExpectNoShippingWarningMessage() {
     views::View* view = dialog_view()->GetViewByID(
         static_cast<int>(DialogViewID::WARNING_LABEL));
-    if (!view || !view->visible())
+    if (!view || !view->GetVisible())
       return;
 
     EXPECT_EQ(base::string16(), static_cast<views::Label*>(view)->text());
@@ -248,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SkipUI) {
   NavigateTo("/show_promise/digital_goods.html");
   InstallEchoPaymentHandlerForBasicCard();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "create();"));
-  EnalbeSkipUIForForBasicCard();
+  EnableSkipUIForForBasicCard();
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_SHOWN,
        DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,

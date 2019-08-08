@@ -10,6 +10,7 @@
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -71,8 +72,17 @@ void NetworkStateTestHelper::ResetDevicesAndServices() {
 
   // A Wifi device should always exist and default to enabled.
   manager_test_->AddTechnology(shill::kTypeWifi, true /* enabled */);
-  device_test_->AddDevice("/device/wifi1", shill::kTypeWifi, "wifi_device1");
+  const char* kDevicePath = "/device/wifi1";
+  device_test_->AddDevice(kDevicePath, shill::kTypeWifi, "wifi_device1");
 
+  // Set initial IPConfigs for the wifi device. The IPConfigs are set up in
+  // FakeShillManagerClient::SetupDefaultEnvironment() and do not get cleared.
+  base::ListValue ip_configs;
+  ip_configs.AppendString("ipconfig_v4_path");
+  ip_configs.AppendString("ipconfig_v6_path");
+  device_test_->SetDeviceProperty(kDevicePath, shill::kIPConfigsProperty,
+                                  ip_configs,
+                                  /*notify_changed=*/false);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -135,19 +145,52 @@ void NetworkStateTestHelper::SetServiceProperty(const std::string& service_path,
   base::RunLoop().RunUntilIdle();
 }
 
-std::unique_ptr<NetworkState>
-NetworkStateTestHelper::CreateStandaloneNetworkState(
+network_config::mojom::NetworkStatePropertiesPtr
+NetworkStateTestHelper::CreateStandaloneNetworkProperties(
     const std::string& id,
-    const std::string& type,
-    const std::string& connection_state,
+    network_config::mojom::NetworkType type,
+    network_config::mojom::ConnectionStateType connection_state,
     int signal_strength) {
-  auto network = std::make_unique<NetworkState>(id);
-  network->SetGuid(id);
-  network->set_name(id);
-  network->set_type(type);
-  network->set_visible(true);
-  network->SetConnectionState(connection_state);
-  network->set_signal_strength(signal_strength);
+  auto network = network_config::mojom::NetworkStateProperties::New();
+  network->guid = id;
+  network->name = id;
+  network->type = type;
+  network->connection_state = connection_state;
+  switch (type) {
+    case network_config::mojom::NetworkType::kAll:
+    case network_config::mojom::NetworkType::kMobile:
+    case network_config::mojom::NetworkType::kWireless:
+      NOTREACHED();
+      break;
+    case network_config::mojom::NetworkType::kCellular: {
+      auto cellular = network_config::mojom::CellularStateProperties::New();
+      cellular->signal_strength = signal_strength;
+      network->cellular = std::move(cellular);
+      break;
+    }
+    case network_config::mojom::NetworkType::kEthernet:
+      break;
+    case network_config::mojom::NetworkType::kTether: {
+      auto tether = network_config::mojom::TetherStateProperties::New();
+      tether->signal_strength = signal_strength;
+      network->tether = std::move(tether);
+      break;
+    }
+    case network_config::mojom::NetworkType::kVPN:
+      break;
+    case network_config::mojom::NetworkType::kWiFi: {
+      auto wifi = network_config::mojom::WiFiStateProperties::New();
+      wifi->signal_strength = signal_strength;
+      network->wifi = std::move(wifi);
+      break;
+    }
+    case network_config::mojom::NetworkType::kWiMAX: {
+      auto wimax = network_config::mojom::WiMAXStateProperties::New();
+      wimax->signal_strength = signal_strength;
+      network->wimax = std::move(wimax);
+      break;
+    }
+  }
   return network;
 }
 

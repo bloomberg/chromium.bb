@@ -14,6 +14,7 @@ enum class DarkMode {
   kSimpleInvertForTesting,
   kInvertBrightness,
   kInvertLightness,
+  kInvertLightnessLAB,
 };
 
 enum class DarkModeImagePolicy {
@@ -32,11 +33,23 @@ enum class DarkModePagePolicy {
   kFilterByBackground,
 };
 
+// If adding new values to this enum, also update the logic in
+// DarkModeFilter::ShouldInvertTextColor().
+enum class DarkModeTextPolicy {
+  kInvertAll,
+  kInvertDarkOnly,
+};
+
+// New variables added to this struct should also be added to
+// BuildDarkModeSettings() in
+//   //src/third_party/blink/renderer/core/accessibility/apply_dark_mode.h
 struct DarkModeSettings {
   DarkMode mode = DarkMode::kOff;
   bool grayscale = false;
-  float contrast = 0.0;  // Valid range from -1.0 to 1.0
+  float image_grayscale_percent = 0.0;  // Valid range from 0.0 to 1.0
+  float contrast = 0.0;                 // Valid range from -1.0 to 1.0
   DarkModeImagePolicy image_policy = DarkModeImagePolicy::kFilterAll;
+  DarkModeTextPolicy text_policy = DarkModeTextPolicy::kInvertAll;
 };
 
 }  // namespace blink

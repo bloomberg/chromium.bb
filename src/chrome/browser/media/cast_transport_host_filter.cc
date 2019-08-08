@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/cast_messages.h"
-#include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -175,8 +174,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   }
 
   auto udp_transport = std::make_unique<media::cast::UdpTransportImpl>(
-      g_browser_process->net_log(), base::ThreadTaskRunnerHandle::Get(),
-      local_end_point, remote_end_point,
+      base::ThreadTaskRunnerHandle::Get(), local_end_point, remote_end_point,
       base::BindRepeating(&CastTransportHostFilter::OnStatusChanged,
                           weak_factory_.GetWeakPtr(), channel_id));
   udp_transport->SetUdpOptions(options);

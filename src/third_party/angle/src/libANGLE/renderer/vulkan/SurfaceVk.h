@@ -20,7 +20,23 @@ namespace rx
 {
 class RendererVk;
 
-class OffscreenSurfaceVk : public SurfaceImpl
+class SurfaceVk : public SurfaceImpl
+{
+  public:
+    angle::Result getAttachmentRenderTarget(const gl::Context *context,
+                                            GLenum binding,
+                                            const gl::ImageIndex &imageIndex,
+                                            FramebufferAttachmentRenderTarget **rtOut) override;
+
+  protected:
+    SurfaceVk(const egl::SurfaceState &surfaceState);
+    ~SurfaceVk() override;
+
+    RenderTargetVk mColorRenderTarget;
+    RenderTargetVk mDepthStencilRenderTarget;
+};
+
+class OffscreenSurfaceVk : public SurfaceVk
 {
   public:
     OffscreenSurfaceVk(const egl::SurfaceState &surfaceState, EGLint width, EGLint height);
@@ -52,11 +68,6 @@ class OffscreenSurfaceVk : public SurfaceImpl
     EGLint isPostSubBufferSupported() const override;
     EGLint getSwapBehavior() const override;
 
-    angle::Result getAttachmentRenderTarget(const gl::Context *context,
-                                            GLenum binding,
-                                            const gl::ImageIndex &imageIndex,
-                                            FramebufferAttachmentRenderTarget **rtOut) override;
-
     angle::Result initializeContents(const gl::Context *context,
                                      const gl::ImageIndex &imageIndex) override;
 
@@ -71,12 +82,12 @@ class OffscreenSurfaceVk : public SurfaceImpl
         angle::Result initialize(DisplayVk *displayVk,
                                  EGLint width,
                                  EGLint height,
-                                 const vk::Format &vkFormat);
+                                 const vk::Format &vkFormat,
+                                 GLint samples);
         void destroy(const egl::Display *display);
 
         vk::ImageHelper image;
         vk::ImageView imageView;
-        RenderTargetVk renderTarget;
     };
 
     angle::Result initializeImpl(DisplayVk *displayVk);
@@ -88,7 +99,7 @@ class OffscreenSurfaceVk : public SurfaceImpl
     AttachmentImage mDepthStencilAttachment;
 };
 
-class WindowSurfaceVk : public SurfaceImpl
+class WindowSurfaceVk : public SurfaceVk
 {
   public:
     WindowSurfaceVk(const egl::SurfaceState &surfaceState,
@@ -124,11 +135,6 @@ class WindowSurfaceVk : public SurfaceImpl
     EGLint isPostSubBufferSupported() const override;
     EGLint getSwapBehavior() const override;
 
-    angle::Result getAttachmentRenderTarget(const gl::Context *context,
-                                            GLenum binding,
-                                            const gl::ImageIndex &imageIndex,
-                                            FramebufferAttachmentRenderTarget **rtOut) override;
-
     angle::Result initializeContents(const gl::Context *context,
                                      const gl::ImageIndex &imageIndex) override;
 
@@ -146,23 +152,30 @@ class WindowSurfaceVk : public SurfaceImpl
     VkInstance mInstance;
 
   private:
-    virtual angle::Result createSurfaceVk(vk::Context *context, gl::Extents *extentsOut) = 0;
+    virtual angle::Result createSurfaceVk(vk::Context *context, gl::Extents *extentsOut)      = 0;
     virtual angle::Result getCurrentWindowSize(vk::Context *context, gl::Extents *extentsOut) = 0;
 
     angle::Result initializeImpl(DisplayVk *displayVk);
-    angle::Result recreateSwapchain(DisplayVk *displayVk,
+    angle::Result recreateSwapchain(ContextVk *contextVk,
                                     const gl::Extents &extents,
                                     uint32_t swapHistoryIndex);
-    angle::Result checkForOutOfDateSwapchain(DisplayVk *displayVk,
+    angle::Result createSwapChain(vk::Context *context,
+                                  const gl::Extents &extents,
+                                  VkSwapchainKHR oldSwapchain);
+    angle::Result checkForOutOfDateSwapchain(ContextVk *contextVk,
                                              uint32_t swapHistoryIndex,
                                              bool presentOutOfDate);
-    void releaseSwapchainImages(RendererVk *renderer);
-    angle::Result nextSwapchainImage(DisplayVk *displayVk);
-    angle::Result present(DisplayVk *displayVk,
+    void releaseSwapchainImages(ContextVk *contextVk);
+    void destroySwapChainImages(DisplayVk *displayVk);
+    angle::Result nextSwapchainImage(vk::Context *context);
+    angle::Result present(ContextVk *contextVk,
                           EGLint *rects,
                           EGLint n_rects,
                           bool &swapchainOutOfDate);
-    angle::Result swapImpl(DisplayVk *displayVk, EGLint *rects, EGLint n_rects);
+
+    angle::Result swapImpl(const gl::Context *context, EGLint *rects, EGLint n_rects);
+
+    bool isMultiSampled() const;
 
     VkSurfaceCapabilitiesKHR mSurfaceCaps;
     std::vector<VkPresentModeKHR> mPresentModes;
@@ -174,9 +187,6 @@ class WindowSurfaceVk : public SurfaceImpl
     uint32_t mMinImageCount;
     VkSurfaceTransformFlagBitsKHR mPreTransform;
     VkCompositeAlphaFlagBitsKHR mCompositeAlpha;
-
-    RenderTargetVk mColorRenderTarget;
-    RenderTargetVk mDepthStencilRenderTarget;
 
     uint32_t mCurrentSwapchainImageIndex;
 
@@ -223,7 +233,11 @@ class WindowSurfaceVk : public SurfaceImpl
 
         void destroy(VkDevice device);
 
-        Serial serial;
+        angle::Result waitFence(ContextVk *contextVk);
+
+        // Fence associated with the last submitted work to render to this swapchain image.
+        vk::Shared<vk::Fence> sharedFence;
+
         std::vector<vk::Semaphore> semaphores;
         VkSwapchainKHR swapchain = VK_NULL_HANDLE;
     };
@@ -231,8 +245,14 @@ class WindowSurfaceVk : public SurfaceImpl
     std::array<SwapHistory, kSwapHistorySize> mSwapHistory;
     size_t mCurrentSwapHistoryIndex;
 
+    // Depth/stencil image.  Possibly multisampled.
     vk::ImageHelper mDepthStencilImage;
     vk::ImageView mDepthStencilImageView;
+
+    // Multisample color image, view and framebuffer, if multisampling enabled.
+    vk::ImageHelper mColorImageMS;
+    vk::ImageView mColorImageViewMS;
+    vk::Framebuffer mFramebufferMS;
 };
 
 }  // namespace rx

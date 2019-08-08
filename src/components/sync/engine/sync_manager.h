@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync/base/invalidation_interface.h"
@@ -51,7 +52,6 @@ class JsBackend;
 class JsEventHandler;
 class ProtocolEvent;
 class SyncCycleSnapshot;
-class SyncEncryptionHandler;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct UserShare;
@@ -213,6 +213,8 @@ class SyncManager {
 
     std::vector<scoped_refptr<ModelSafeWorker>> workers;
 
+    std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;
+
     // Must outlive SyncManager.
     ExtensionsActivity* extensions_activity;
 
@@ -242,15 +244,10 @@ class SyncManager {
     // Must outlive SyncManager.
     CancelationSignal* cancelation_signal;
 
-    // Optional nigori state to be restored.
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
-
     // Define the polling interval. Must not be zero.
     base::TimeDelta poll_interval;
 
-    // Non-authoritative values from prefs, to be compared with the Directory's
-    // counterparts.
-    // TODO(crbug.com/923285): Consider making these the authoritative data.
+    // Initial authoritative values (usually read from prefs).
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;
@@ -344,18 +341,21 @@ class SyncManager {
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;
 
-  // Returns non-owning pointer to ModelTypeConnector. In contrast with
-  // ModelTypeConnectorProxy all calls are executed synchronously, thus the
-  // pointer should be used on sync thread.
-  virtual ModelTypeConnector* GetModelTypeConnector() = 0;
-
   // Returns an instance of the main interface for registering sync types with
   // sync engine.
   virtual std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.
-  virtual const std::string cache_guid() = 0;
+  virtual std::string cache_guid() = 0;
+
+  // Returns the birthday of the currently open database.
+  // Requires that the SyncManager be initialized.
+  virtual std::string birthday() = 0;
+
+  // Returns the bag of chips of the currently open database.
+  // Requires that the SyncManager be initialized.
+  virtual std::string bag_of_chips() = 0;
 
   // Returns whether there are remaining unsynced items.
   virtual bool HasUnsyncedItemsForTest() = 0;

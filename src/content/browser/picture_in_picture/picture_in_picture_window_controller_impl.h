@@ -19,8 +19,7 @@
 namespace content {
 
 class MediaWebContentsObserver;
-class OverlaySurfaceEmbedder;
-class PictureInPictureServiceImpl;
+class PictureInPictureSession;
 class WebContents;
 class WebContentsImpl;
 
@@ -48,8 +47,7 @@ class PictureInPictureWindowControllerImpl
 
   // PictureInPictureWindowController:
   CONTENT_EXPORT gfx::Size Show() override;
-  CONTENT_EXPORT void Close(bool should_pause_video,
-                            bool should_reset_pip_player) override;
+  CONTENT_EXPORT void Close(bool should_pause_video) override;
   CONTENT_EXPORT void CloseAndFocusInitiator() override;
   CONTENT_EXPORT void OnWindowDestroyed() override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
@@ -86,7 +84,11 @@ class PictureInPictureWindowControllerImpl
   // state of this object.
   void UpdateMediaPlayerId();
 
-  void set_service(PictureInPictureServiceImpl* service) { service_ = service; }
+  // Sets the active Picture-in-Picture session associated with the controller.
+  // This is different from the service's active session as there is one
+  // controller per WebContents and one service per RenderFrameHost.
+  // The current session may be shut down as a side effect of this.
+  void SetActiveSession(PictureInPictureSession* session);
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;
@@ -97,12 +99,11 @@ class PictureInPictureWindowControllerImpl
       WebContents* initiator);
 
   // Signal to the media player that |this| is leaving Picture-in-Picture mode.
-  void OnLeavingPictureInPicture(bool should_pause_video,
-                                 bool should_reset_pip_player);
+  void OnLeavingPictureInPicture(bool should_pause_video);
 
   // Internal method to set the states after the window was closed, whether via
   // the system or Chromium.
-  void CloseInternal(bool should_pause_video, bool should_reset_pip_player);
+  void CloseInternal(bool should_pause_video);
 
   // Creates a new window if the previous one was destroyed. It can happen
   // because of the system control of the window.
@@ -118,7 +119,7 @@ class PictureInPictureWindowControllerImpl
   bool RemoveMutedPlayerEntry(const MediaPlayerId& id);
 
   std::unique_ptr<OverlayWindow> window_;
-  std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
+
   // TODO(929156): remove this as it should be accessible via `web_contents()`.
   WebContentsImpl* const initiator_;
 
@@ -149,10 +150,11 @@ class PictureInPictureWindowControllerImpl
   // origin trial is disabled.
   bool always_hide_mute_button_ = false;
 
-  // Service currently associated with the Picture-in-Picture window. The
-  // service makes the bridge with the renderer process by sending enter/exit
-  // requests. It is also holding the Picture-in-Picture MediaPlayerId.
-  PictureInPictureServiceImpl* service_ = nullptr;
+  // Session currently associated with the Picture-in-Picture window. The
+  // session object makes the bridge with the renderer process by handling
+  // requests and holding states such as the active player id.
+  // The session will be nullptr when there is no active session.
+  PictureInPictureSession* active_session_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

@@ -67,6 +67,15 @@ class LocationBarModelDelegate {
   // previously-downloaded content.
   virtual bool IsOfflinePage() const;
 
+  // Returns true if the current page is a New Tab Page rendered by Instant.
+  virtual bool IsInstantNTP() const;
+
+  // Returns whether |url| corresponds to the new tab page.
+  virtual bool IsNewTabPage(const GURL& url) const;
+
+  // Returns whether |url| corresponds to the user's home page.
+  virtual bool IsHomePage(const GURL& url) const;
+
   // Returns the AutocompleteClassifier instance for the current page.
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
 

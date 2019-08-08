@@ -96,7 +96,7 @@ void TestOverflowedToolbarAction(Browser* browser,
   ASSERT_TRUE(overflow_container);
   ToolbarActionView* action_view =
       overflow_container->GetToolbarActionViewAt(0);
-  EXPECT_TRUE(action_view->visible());
+  EXPECT_TRUE(action_view->GetVisible());
 
   // Click on the toolbar action to activate it.
   gfx::Point action_view_loc =
@@ -124,7 +124,7 @@ void TestWhileContextMenuOpen(Browser* browser,
   // Make sure we're showing the right context menu.
   EXPECT_EQ(base::UTF8ToUTF16("Browser Action Popup"),
             first_menu_item->title());
-  EXPECT_TRUE(first_menu_item->enabled());
+  EXPECT_TRUE(first_menu_item->GetEnabled());
 
   // Get the overflow container.
   auto* app_menu_button = GetAppMenuButtonFromBrowser(browser);
@@ -144,8 +144,8 @@ void TestWhileContextMenuOpen(Browser* browser,
   ToolbarActionView* second_row_action =
       overflow_container->GetToolbarActionViewAt(second_row_index);
 
-  EXPECT_TRUE(second_row_action->visible());
-  EXPECT_TRUE(second_row_action->enabled());
+  EXPECT_TRUE(second_row_action->GetVisible());
+  EXPECT_TRUE(second_row_action->GetEnabled());
 
   gfx::Point action_view_loc =
       ui_test_utils::GetCenterInScreenCoordinates(second_row_action);
@@ -196,9 +196,20 @@ void ToolbarActionViewInteractiveUITest::TearDownOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
+// TODO(crbug.com/963678): fails on ChromeOS as it's assuming SendMouseMove()
+// synchronously updates the location of the mouse (which is needed by
+// SendMouseClick()).
+#if defined(OS_CHROMEOS)
+// TODO(pkasting): https://crbug.com/911374 Menu controller thinks the mouse is
+// already down when handling the left click.
+#define MAYBE_TestClickingOnOverflowedAction \
+  DISABLED_TestClickingOnOverflowedAction
+#else
+#define MAYBE_TestClickingOnOverflowedAction TestClickingOnOverflowedAction
+#endif
 // Tests clicking on an overflowed extension action.
 IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
-                       TestClickingOnOverflowedAction) {
+                       MAYBE_TestClickingOnOverflowedAction) {
   // Load an extension.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
@@ -356,8 +367,18 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   EXPECT_EQ(nullptr, toolbar_actions_bar->popup_owner());
 }
 
+// TODO(crbug.com/963678): fails on ChromeOS as it's assuming SendMouseMove()
+// synchronously updates the location of the mouse (which is needed by
+// SendMouseClick()).
+#if defined(OS_CHROMEOS)
+#define MAYBE_ActivateOverflowedToolbarActionWithKeyboard \
+  DISABLED_ActivateOverflowedToolbarActionWithKeyboard
+#else
+#define MAYBE_ActivateOverflowedToolbarActionWithKeyboard \
+  ActivateOverflowedToolbarActionWithKeyboard
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
-                       ActivateOverflowedToolbarActionWithKeyboard) {
+                       MAYBE_ActivateOverflowedToolbarActionWithKeyboard) {
   views::MenuController::TurnOffMenuSelectionHoldForTest();
   // Load an extension with an action.
   ASSERT_TRUE(LoadExtension(

@@ -185,6 +185,15 @@ void GetLocaleAndPreferredLanguages(const Profile* profle,
 void GetAndroidId(
     base::OnceCallback<void(bool ok, int64_t android_id)> callback);
 
+// Returns the Arc package name for the specified app_id, which must
+// be the AppID of an ARC app.
+std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile);
+
+// Returns true if the ARC app is sticky (not uninstallable). This function
+// will DCHECK if app_id isn't installed. This functionality should eventually
+// move to the App Service: (https://crbug.com/948408).
+bool IsArcAppSticky(const std::string& app_id, Profile* profile);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_

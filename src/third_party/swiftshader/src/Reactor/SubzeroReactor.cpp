@@ -136,6 +136,7 @@ namespace rr
 	const Capabilities Caps =
 	{
 		false, // CallSupported
+		false, // CoroutinesSupported
 	};
 
 	enum EmulatedType
@@ -430,8 +431,8 @@ namespace rr
 	template<typename T>
 	struct ExecutableAllocator
 	{
-		ExecutableAllocator() {};
-		template<class U> ExecutableAllocator(const ExecutableAllocator<U> &other) {};
+		ExecutableAllocator() {}
+		template<class U> ExecutableAllocator(const ExecutableAllocator<U> &other) {}
 
 		using value_type = T;
 		using size_type = std::size_t;
@@ -497,8 +498,9 @@ namespace rr
 
 		void seek(uint64_t Off) override { position = Off; }
 
-		const void *getEntry() override
+		const void *getEntry(int index) override
 		{
+			ASSERT(index == 0); // Subzero does not support multiple entry points per routine yet.
 			if(!entry)
 			{
 				position = std::numeric_limits<std::size_t>::max();   // Can't stream more data after this
@@ -1033,9 +1035,69 @@ namespace rr
 		return createAdd(ptr, index);
 	}
 
-	Value *Nucleus::createAtomicAdd(Value *ptr, Value *value)
+	Value *Nucleus::createAtomicAdd(Value *ptr, Value *value, std::memory_order memoryOrder)
 	{
 		UNIMPLEMENTED("createAtomicAdd");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicSub(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicSub");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicAnd(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicAnd");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicOr(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicOr");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicXor(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicXor");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicMin(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicMin");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicMax(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicMax");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicUMin(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicUMin");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicUMax(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicUMax");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicExchange(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		UNIMPLEMENTED("createAtomicExchange");
+		return nullptr;
+	}
+
+	Value *Nucleus::createAtomicCompareExchange(Value *ptr, Value *value, Value *compare, std::memory_order memoryOrderEqual, std::memory_order memoryOrderUnequal)
+	{
+		UNIMPLEMENTED("createAtomicCompareExchange");
 		return nullptr;
 	}
 
@@ -2639,16 +2701,6 @@ namespace rr
 		return T(Type_v2i32);
 	}
 
-	RValue<UInt> Extract(RValue<UInt2> val, int i)
-	{
-		return RValue<UInt>(Nucleus::createExtractElement(val.value, UInt::getType(), i));
-	}
-
-	RValue<UInt2> Insert(RValue<UInt2> val, RValue<UInt> element, int i)
-	{
-		return RValue<UInt2>(Nucleus::createInsertElement(val.value, element.value, i));
-	}
-
 	RValue<UInt2> operator<<(RValue<UInt2> lhs, unsigned char rhs)
 	{
 		if(emulateIntrinsics)
@@ -2953,6 +3005,16 @@ namespace rr
 		          (~uiValue & Int4(cast));
 		// If the value is negative, store 0, otherwise store the result of the conversion
 		storeValue((~(As<Int4>(cast) >> 31) & uiValue).value);
+	}
+
+	UInt4::UInt4(RValue<UInt> rhs) : XYZW(this)
+	{
+		Value *vector = Nucleus::createBitCast(rhs.value, UInt4::getType());
+
+		int swizzle[4] = {0, 0, 0, 0};
+		Value *replicate = Nucleus::createShuffleVector(vector, vector, swizzle);
+
+		storeValue(replicate);
 	}
 
 	RValue<UInt4> operator<<(RValue<UInt4> lhs, unsigned char rhs)
@@ -3405,6 +3467,9 @@ namespace rr
 
 	// Below are functions currently unimplemented for the Subzero backend.
 	// They are stubbed to satisfy the linker.
+	void Nucleus::createFence(std::memory_order memoryOrder) { UNIMPLEMENTED("Subzero createFence()"); }
+	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createGather()"); return nullptr; }
+	void Nucleus::createScatter(Value *base, Value *val, Value *offsets, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createScatter()"); }
 	RValue<Float4> Sin(RValue<Float4> x) { UNIMPLEMENTED("Subzero Sin()"); return Float4(0); }
 	RValue<Float4> Cos(RValue<Float4> x) { UNIMPLEMENTED("Subzero Cos()"); return Float4(0); }
 	RValue<Float4> Tan(RValue<Float4> x) { UNIMPLEMENTED("Subzero Tan()"); return Float4(0); }
@@ -3429,4 +3494,9 @@ namespace rr
 	void EmitDebugLocation() {}
 	void EmitDebugVariable(Value* value) {}
 	void FlushDebug() {}
+
+	void Nucleus::createCoroutine(Type *YieldType, std::vector<Type*> &Params) { UNIMPLEMENTED("createCoroutine"); }
+	Routine* Nucleus::acquireCoroutine(const char *name, bool runOptimizations) { UNIMPLEMENTED("acquireCoroutine"); return nullptr; }
+	void Nucleus::yield(Value* val) { UNIMPLEMENTED("Yield"); }
+
 }

@@ -9,6 +9,8 @@ include_rules = [
   "+gpu/command_buffer/client/shared_image_interface.h",
   "+gpu/command_buffer/common/capabilities.h",
   "+gpu/command_buffer/common/context_result.h",
+  "+gpu/command_buffer/common/mailbox.h",
+  "+gpu/command_buffer/common/shared_image_usage.h",
   "+gpu/command_buffer/common/skia_utils.h",
   "+gpu/command_buffer/common/sync_token.h",
   "+gpu/config/gpu_feature_info.h",
@@ -37,5 +39,18 @@ specific_include_rules = {
 
   "run_all_unittests\.cc": [
     "+mojo/core/embedder/embedder.h",
+  ],
+
+  "test_gpu_service_holder\.h": [
+    "+gpu/vulkan/buildflags.h",
+  ],
+
+  "test_gpu_service_holder\.cc": [
+    "+gpu/command_buffer/service/service_utils.h",
+    "+gpu/config",
+    "+gpu/ipc/gpu_in_process_thread_service.h",
+    "+gpu/ipc/service/gpu_watchdog_thread.h",
+    "+gpu/vulkan/init/vulkan_factory.h",
+    "+gpu/vulkan/vulkan_implementation.h",
   ],
 }

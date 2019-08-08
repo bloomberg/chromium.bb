@@ -44,6 +44,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -104,11 +105,18 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
           this,
           AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
-  // AutocompleteInput object.
-  base::string16 fake_request_source(base::ASCIIToUTF16(
-      "http://www.foobarbazblah.com"));
-  AutocompleteInput input(fake_request_source,
-                          metrics::OmniboxEventProto::OTHER,
+  // AutocompleteInput object. This source is ignored entirely when
+  // kZeroSuggestionsOnNTP feature flag is enabled.
+  base::string16 fake_request_source =
+      base::ASCIIToUTF16("chrome-native://newtab");
+  auto context = metrics::OmniboxEventProto::NTP;
+
+  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
+    fake_request_source = base::ASCIIToUTF16("http://www.foobarbazblah.com");
+    context = metrics::OmniboxEventProto::OTHER;
+  }
+
+  AutocompleteInput input(fake_request_source, context,
                           ChromeAutocompleteSchemeClassifier(profile));
   input.set_current_url(GURL(fake_request_source));
   input.set_from_omnibox_focus(true);
@@ -259,11 +267,19 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
   const auto& match =
       autocomplete_controller_->result().match_at(selected_index);
   SuggestionAnswer::LogAnswerUsed(match.answer);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Omnibox.SuggestionUsed.RichEntity",
+      match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+
   if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
     UMA_HISTOGRAM_LONG_TIMES_100(
         "MobileOmnibox.PressedClipboardSuggestionAge",
         ClipboardRecentContent::GetInstance()->GetClipboardContentAge());
   }
+
+  AutocompleteMatch::LogSearchEngineUsed(
+      match, TemplateURLServiceFactory::GetForProfile(profile_));
 
   OmniboxLog log(
       // For zero suggest, record an empty input string instead of the
@@ -554,6 +570,18 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ConvertUTF16ToJavaString(env, match.fill_into_edit);
   ScopedJavaLocalRef<jstring> destination_url =
       ConvertUTF8ToJavaString(env, match.destination_url.spec());
+  ScopedJavaLocalRef<jstring> image_url;
+  ScopedJavaLocalRef<jstring> image_dominant_color;
+
+  if (!match.image_url.empty()) {
+    image_url = ConvertUTF8ToJavaString(env, match.image_url);
+  }
+
+  if (!match.image_dominant_color.empty()) {
+    image_dominant_color =
+        ConvertUTF8ToJavaString(env, match.image_dominant_color);
+  }
+
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
   return Java_AutocompleteController_buildOmniboxSuggestion(
@@ -563,7 +591,7 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ToJavaIntArray(env, contents_class_styles), description,
       ToJavaIntArray(env, description_class_offsets),
       ToJavaIntArray(env, description_class_styles), janswer, fill_into_edit,
-      destination_url,
+      destination_url, image_url, image_dominant_color,
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url),
       match.SupportsDeletion());
 }
@@ -661,8 +689,13 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   if (!profile)
     return;
 
-  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
+  // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
+  // See its constructor.
+  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
+      !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+          OmniboxEventProto::OTHER)) {
     return;
+  }
 
   // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
   new ZeroSuggestPrefetcher(profile);

@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -43,8 +42,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
             new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address associated with a credit card.
         String firstAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -69,7 +67,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressFormat_BottomSheet()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that the shipping label on the bottomsheet does not include the country.
@@ -91,7 +89,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressFormat_FullSheet()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Focus on a section other that shipping addresses to enter fullsheet mode.
@@ -114,8 +112,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testShippingAddressFormat_Expanded()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testShippingAddressFormat_Expanded() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Focus on the shipping addresses section to enter expanded mode.
@@ -146,7 +143,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressFormat_NewAddress()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Add a shipping address.
@@ -178,7 +175,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testEditShippingAddressAndCancelEditorShouldKeepAddressSelected()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -202,7 +199,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testEditShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -226,7 +223,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testAddShippingAddressAndCancelEditorShouldKeepAddressSelected()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -250,7 +247,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
     @MediumTest
     @Feature({"Payments"})
     public void testAddShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

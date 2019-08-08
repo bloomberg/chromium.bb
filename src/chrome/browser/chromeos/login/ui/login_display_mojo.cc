@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 
-#include "ash/public/interfaces/login_user_info.mojom.h"
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -58,17 +60,14 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
   // login screen multiple times. Views-login only supports initialization once.
   if (!initialized_) {
     client->SetDelegate(host_);
-
-    client->login_screen()->ShowLoginScreen(
-        base::BindOnce(&LoginDisplayMojo::OnLoginScreenShown,
-                       weak_factory_.GetWeakPtr(), filtered_users.empty()));
+    ash::LoginScreen::Get()->ShowLoginScreen();
   }
 
   UserSelectionScreen* user_selection_screen = host_->user_selection_screen();
   user_selection_screen->Init(filtered_users);
-  client->login_screen()->SetUserList(
-      user_selection_screen->UpdateAndReturnUserListForMojo());
-  client->login_screen()->SetAllowLoginAsGuest(show_guest);
+  ash::LoginScreen::Get()->GetModel()->SetUserList(
+      user_selection_screen->UpdateAndReturnUserListForAsh());
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
 
   // Enable pin for any users who can use it.
@@ -78,7 +77,38 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     }
   }
 
-  initialized_ = true;
+  if (!initialized_) {
+    initialized_ = true;
+
+    // login-prompt-visible is recorded and tracked to verify boot performance
+    // does not regress. Autotests may also depend on it (ie,
+    // login_SameSessionTwice).
+    VLOG(1) << "Emitting login-prompt-visible";
+    SessionManagerClient::Get()->EmitLoginPromptVisible();
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+
+    // If there no available users exist, delay showing the dialogs until after
+    // GAIA dialog is shown (GAIA dialog will check these local state values,
+    // too). Login UI will show GAIA dialog if no user are registered, which
+    // might hide any UI shown here.
+    if (filtered_users.empty())
+      return;
+
+    // Check whether factory reset or debugging feature have been requested in
+    // prior session, and start reset or enable debugging wizard as needed.
+    // This has to happen after login-prompt-visible, as some reset dialog
+    // features (TPM firmware update) depend on system services running, which
+    // is in turn blocked on the 'login-prompt-visible' signal.
+    PrefService* local_state = g_browser_process->local_state();
+    if (local_state->GetBoolean(prefs::kFactoryResetRequested))
+      host_->StartWizard(ResetView::kScreenId);
+    else if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested))
+      host_->StartWizard(EnableDebuggingScreenView::kScreenId);
+  }
 }
 
 void LoginDisplayMojo::OnPreferencesChanged() {
@@ -258,49 +288,15 @@ void LoginDisplayMojo::CheckUserStatus(const AccountId& account_id) {
 }
 
 void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {
-  LoginScreenClient::Get()->login_screen()->SetAvatarForUser(
+  ash::LoginScreen::Get()->GetModel()->SetAvatarForUser(
       user.GetAccountId(),
-      UserSelectionScreen::BuildMojoUserAvatarForUser(&user));
-}
-
-void LoginDisplayMojo::OnLoginScreenShown(bool users_empty, bool did_show) {
-  CHECK(did_show);
-
-  // login-prompt-visible is recorded and tracked to verify boot performance
-  // does not regress. Autotests may also depend on it (ie,
-  // login_SameSessionTwice).
-  VLOG(1) << "Emitting login-prompt-visible";
-  SessionManagerClient::Get()->EmitLoginPromptVisible();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-
-  // If there no available users exist, delay showing the dialogs until after
-  // GAIA dialog is shown (GAIA dialog will check these local state values,
-  // too). Login UI will show GAIA dialog if no user are registered, which might
-  // hide any UI shown here.
-  if (users_empty)
-    return;
-
-  // Check whether factory reset or debugging feature have been requested in
-  // prior session, and start reset or enable debugging wizard as needed.
-  // This has to happen after login-prompt-visible, as some reset dialog
-  // features (TPM firmware update) depend on system services running, which is
-  // in turn blocked on the 'login-prompt-visible' signal.
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state->GetBoolean(prefs::kFactoryResetRequested)) {
-    host_->StartWizard(ResetView::kScreenId);
-  } else if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-    host_->StartWizard(EnableDebuggingScreenView::kScreenId);
-  }
+      UserSelectionScreen::BuildAshUserAvatarForUser(user));
 }
 
 void LoginDisplayMojo::OnPinCanAuthenticate(const AccountId& account_id,
                                             bool can_authenticate) {
-  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
-      account_id, can_authenticate);
+  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
+                                                            can_authenticate);
 }
 
 }  // namespace chromeos

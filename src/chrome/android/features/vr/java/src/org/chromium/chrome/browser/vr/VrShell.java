@@ -1119,7 +1119,7 @@ public class VrShell extends GvrLayout
         if (mActivity instanceof ChromeTabbedActivity) {
             // If hitting back would minimize Chrome, disable the back button.
             // See ChromeTabbedActivity#handleBackPressed().
-            willCloseTab = ChromeTabbedActivity.backShouldCloseTab(mTab)
+            willCloseTab = mActivity.backShouldCloseTab(mTab)
                     && !TabAssociatedApp.isOpenedFromExternalApp(mTab);
         }
         boolean canGoBack = mTab.canGoBack() || willCloseTab;

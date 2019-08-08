@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import json
 import unittest
 
@@ -365,7 +369,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
   def testReadHistogramsJsonValueSummaryTIRLabel(self):
     samples = []
     hists = []
-    for i in xrange(10):
+    for i in range(10):
       hist = histogram_module.Histogram('hist', 'count')
       hist.AddSample(0)
       hist.AddSample(1)
@@ -394,7 +398,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
   def testReadHistogramsJsonValueSummary(self):
     samples = []
     hists = []
-    for i in xrange(10):
+    for i in range(10):
       hist = histogram_module.Histogram('hist', 'count')
       hist.AddSample(0)
       hist.AddSample(1)
@@ -406,7 +410,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
       hists.append(hist)
       samples.extend(hist.sample_values)
 
-    for i in xrange(10):
+    for i in range(10):
       hist = histogram_module.Histogram('hist', 'count')
       hist.AddSample(0)
       hist.AddSample(1)
@@ -437,7 +441,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
   def testReadHistogramsJsonValueSummaryNoHistName(self):
     samples = []
     hists = []
-    for i in xrange(10):
+    for i in range(10):
       hist = histogram_module.Histogram('hist', 'count')
       hist.AddSample(0)
       hist.AddSample(1)

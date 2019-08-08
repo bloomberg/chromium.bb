@@ -60,8 +60,8 @@ MatchResult GetMatchResult(const PasswordForm& form,
     return MatchResult::EXACT_MATCH;
 
   // PSL and federated matches only apply to HTML forms.
-  if (form_digest.scheme != PasswordForm::SCHEME_HTML ||
-      form.scheme != PasswordForm::SCHEME_HTML)
+  if (form_digest.scheme != PasswordForm::Scheme::kHtml ||
+      form.scheme != PasswordForm::Scheme::kHtml)
     return MatchResult::NO_MATCH;
 
   const bool allow_psl_match = ShouldPSLDomainMatchingApply(

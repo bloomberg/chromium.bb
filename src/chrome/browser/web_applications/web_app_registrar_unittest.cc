@@ -49,7 +49,7 @@ std::set<AppId> RegisterAppsForTesting(WebAppRegistrar* registrar,
 
 TEST(WebAppRegistrar, CreateRegisterUnregister) {
   auto database = std::make_unique<TestWebAppDatabase>();
-  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
 
   EXPECT_EQ(nullptr, registrar->GetAppById(AppId()));
   EXPECT_FALSE(registrar->GetAppById(AppId()));
@@ -115,7 +115,7 @@ TEST(WebAppRegistrar, CreateRegisterUnregister) {
 
 TEST(WebAppRegistrar, DestroyRegistrarOwningRegisteredApps) {
   auto database = std::make_unique<TestWebAppDatabase>();
-  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
 
   const AppId app_id = GenerateAppIdFromURL(GURL("https://example.com/path"));
   const AppId app_id2 = GenerateAppIdFromURL(GURL("https://example.com/path2"));
@@ -131,7 +131,7 @@ TEST(WebAppRegistrar, DestroyRegistrarOwningRegisteredApps) {
 
 TEST(WebAppRegistrar, ForEachAndUnregisterAll) {
   auto database = std::make_unique<TestWebAppDatabase>();
-  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
 
   Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
   auto ids = RegisterAppsForTesting(registrar.get(), std::move(registry));
@@ -151,7 +151,7 @@ TEST(WebAppRegistrar, ForEachAndUnregisterAll) {
 
 TEST(WebAppRegistrar, AbstractWebAppDatabase) {
   auto database = std::make_unique<TestWebAppDatabase>();
-  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
 
   registrar->Init(base::DoNothing());
   EXPECT_TRUE(registrar->is_empty());

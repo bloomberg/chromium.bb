@@ -2725,7 +2725,7 @@ TEST(SchedulerStateMachineTest, AllowSkippingActiveTreeFirstDraws) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
 }
 
-TEST(SchedulerStateMachineTest, BlockDrawIfAnimationWorkletsPending) {
+TEST(SchedulerStateMachineTest, DelayDrawIfAnimationWorkletsPending) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -2774,6 +2774,8 @@ TEST(SchedulerStateMachineTest, BlockDrawIfAnimationWorkletsPending) {
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
             state.CurrentBeginImplFrameDeadlineMode());
 
+  // AnimationWorkletState does not effect CanDraw, only whether an early draw
+  // deadline should be used (crbug/937975).
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrameDeadline();
   EXPECT_IMPL_FRAME_STATE(
@@ -2782,7 +2784,7 @@ TEST(SchedulerStateMachineTest, BlockDrawIfAnimationWorkletsPending) {
   state.NotifyAnimationWorkletStateChange(
       SchedulerStateMachine::AnimationWorkletState::PROCESSING,
       SchedulerStateMachine::TreeType::ACTIVE);
-  EXPECT_FALSE(state.ShouldDraw());
+  EXPECT_TRUE(state.ShouldDraw());
   state.NotifyAnimationWorkletStateChange(
       SchedulerStateMachine::AnimationWorkletState::IDLE,
       SchedulerStateMachine::TreeType::ACTIVE);

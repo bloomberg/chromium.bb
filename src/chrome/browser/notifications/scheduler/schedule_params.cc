@@ -6,7 +6,11 @@
 
 namespace notifications {
 
-ScheduleParams::ScheduleParams() = default;
+ScheduleParams::ScheduleParams() : priority(Priority::kLow) {}
+
+bool ScheduleParams::operator==(const ScheduleParams& other) const {
+  return priority == other.priority;
+}
 
 ScheduleParams::~ScheduleParams() = default;
 

@@ -52,9 +52,9 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/public/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -411,9 +411,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     _browserLauncher.interfaceProvider.currentInterface.userInteractionEnabled =
         NO;
   }
-
-  // TODO(crbug.com/585700): remove this.
-  web::RequestTrackerImpl::BlockUntilTrackersShutdown();
 
   [_startupInformation stopChromeMain];
 }

@@ -4,10 +4,7 @@
 
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 
-#include <HolographicSpaceInterop.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
-#include <windows.graphics.holographic.h>
-#include <windows.perception.h>
 #include <windows.perception.spatial.h>
 
 #include <algorithm>
@@ -22,8 +19,17 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_hstring.h"
+#include "device/vr/test/test_hook.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_frame.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_space.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_logging.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_rendering.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_timestamp.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_wrapper_factories.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
@@ -31,25 +37,21 @@
 
 namespace device {
 
-// TODO(crbug.com/941546): Remove namespaces to comply with coding standard.
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::Graphics::Holographic;
-using namespace ABI::Windows::Perception;
-using namespace ABI::Windows::Perception::Spatial;
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-
-namespace WFC = ABI::Windows::Foundation::Collections;
 namespace WFN = ABI::Windows::Foundation::Numerics;
-namespace WInput = ABI::Windows::UI::Input::Spatial;
-
-using ABI::Windows::Foundation::IEventHandler;
-using ABI::Windows::Foundation::IReference;
+using SpatialMovementRange =
+    ABI::Windows::Perception::Spatial::SpatialMovementRange;
+using ABI::Windows::Foundation::DateTime;
+using ABI::Windows::Foundation::TimeSpan;
 using ABI::Windows::Foundation::Numerics::Matrix4x4;
+using ABI::Windows::Graphics::Holographic::HolographicStereoTransform;
+using Microsoft::WRL::ComPtr;
 
 class MixedRealityWindow : public gfx::WindowImpl {
  public:
-  MixedRealityWindow() : gfx::WindowImpl() { set_window_style(WS_OVERLAPPED); }
+  MixedRealityWindow(base::OnceCallback<void()> on_destroyed)
+      : gfx::WindowImpl(), on_destroyed_(std::move(on_destroyed)) {
+    set_window_style(WS_OVERLAPPED);
+  }
 
   BOOL ProcessWindowMessage(HWND window,
                             UINT message,
@@ -57,6 +59,9 @@ class MixedRealityWindow : public gfx::WindowImpl {
                             LPARAM l_param,
                             LRESULT& result,
                             DWORD msg_map_id) override;
+
+ private:
+  base::OnceCallback<void()> on_destroyed_;
 };
 
 BOOL MixedRealityWindow::ProcessWindowMessage(HWND window,
@@ -65,25 +70,15 @@ BOOL MixedRealityWindow::ProcessWindowMessage(HWND window,
                                               LPARAM l_param,
                                               LRESULT& result,
                                               DWORD msg_map_id) {
-  return false;  // We don't currently handle any messages ourselves.
+  if (message == WM_DESTROY) {
+    // Despite handling WM_DESTROY, we still return false so the base class can
+    // also process this message.
+    std::move(on_destroyed_).Run();
+  }
+  return false;  // Base class should handle all messages.
 }
 
 namespace {
-// This enum is used in TRACE_EVENTs.  Try to keep enum values the same to make
-// analysis easier across builds.
-enum class ErrorLocation {
-  kAcquireCurrentStage = 1,
-  kStationaryReferenceCreation = 2,
-  kGetTransformBetweenOrigins = 3,
-  kGamepadMissingTimestamp = 4,
-  kGamepadMissingOrigin = 5,
-};
-
-void TraceError(ErrorLocation location, HRESULT hr) {
-  TRACE_EVENT_INSTANT2("xr", "WMRRenderLoopError", TRACE_EVENT_SCOPE_THREAD,
-                       "ErrorLocation", location, "hr", hr);
-}
-
 std::vector<float> ConvertToStandingTransform(const Matrix4x4& transform) {
   return {transform.M11, transform.M12, transform.M13, transform.M14,
           transform.M21, transform.M22, transform.M23, transform.M24,
@@ -143,7 +138,6 @@ MixedRealityRenderLoop::MixedRealityRenderLoop(
     : XRCompositorCommon(),
       on_display_info_changed_(std::move(on_display_info_changed)),
       weak_ptr_factory_(this) {
-  stage_changed_token_.value = 0;
 }
 
 MixedRealityRenderLoop::~MixedRealityRenderLoop() {
@@ -152,32 +146,16 @@ MixedRealityRenderLoop::~MixedRealityRenderLoop() {
 
 bool MixedRealityRenderLoop::PreComposite() {
   if (rendering_params_) {
-    Microsoft::WRL::ComPtr<
-        ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface>
-        surface;
-    if (FAILED(rendering_params_->get_Direct3D11BackBuffer(&surface)))
-      return false;
-    Microsoft::WRL::ComPtr<
-        Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>
-        dxgi_interface_access;
-    if (FAILED(surface.As(&dxgi_interface_access)))
-      return false;
-    Microsoft::WRL::ComPtr<ID3D11Resource> native_resource;
-    if (FAILED(dxgi_interface_access->GetInterface(
-            IID_PPV_ARGS(&native_resource))))
+    ComPtr<ID3D11Texture2D> texture =
+        rendering_params_->TryGetBackbufferAsTexture2D();
+    if (!texture)
       return false;
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    if (FAILED(native_resource.As(&texture)))
-      return false;
-    texture_helper_.SetBackbuffer(texture);
     D3D11_TEXTURE2D_DESC desc;
     texture->GetDesc(&desc);
 
-    ABI::Windows::Foundation::Rect viewport;
-    if (FAILED(pose_->get_Viewport(&viewport)))
-      return false;
-
+    texture_helper_.SetBackbuffer(texture);
+    ABI::Windows::Foundation::Rect viewport = pose_->Viewport();
     gfx::RectF override_viewport =
         gfx::RectF(viewport.X / desc.Width, viewport.Y / desc.Height,
                    viewport.Width / desc.Width, viewport.Height / desc.Height);
@@ -191,17 +169,7 @@ bool MixedRealityRenderLoop::PreComposite() {
 }
 
 bool MixedRealityRenderLoop::SubmitCompositedFrame() {
-  ABI::Windows::Graphics::Holographic::HolographicFramePresentResult result =
-      HolographicFramePresentResult_Success;
-  HRESULT hr = holographic_frame_->PresentUsingCurrentPrediction(&result);
-
-  TRACE_EVENT_INSTANT2("xr", "SubmitWMR", TRACE_EVENT_SCOPE_THREAD, "hr", hr,
-                       "result", result);
-
-  if (FAILED(hr))
-    return false;
-
-  return true;
+  return holographic_frame_->TryPresentUsingCurrentPrediction();
 }
 
 namespace {
@@ -233,16 +201,21 @@ HRESULT WrapperCreateDirect3D11DeviceFromDXGIDevice(IDXGIDevice* in,
 bool MixedRealityRenderLoop::StartRuntime() {
   initializer_ = std::make_unique<base::win::ScopedWinrtInitializer>();
 
+  {
+    auto hook = MixedRealityDeviceStatics::GetLockedTestHook();
+    if (hook.GetHook()) {
+      hook.GetHook()->AttachCurrentThread();
+    }
+  }
+
   InitializeSpace();
   if (!holographic_space_)
     return false;
 
   input_helper_ = std::make_unique<MixedRealityInputHelper>(window_->hwnd());
 
-  ABI::Windows::Graphics::Holographic::HolographicAdapterId id;
-  HRESULT hr = holographic_space_->get_PrimaryAdapterId(&id);
-  if (FAILED(hr))
-    return false;
+  ABI::Windows::Graphics::Holographic::HolographicAdapterId id =
+      holographic_space_->PrimaryAdapterId();
 
   LUID adapter_luid;
   adapter_luid.HighPart = id.HighPart;
@@ -255,7 +228,7 @@ bool MixedRealityRenderLoop::StartRuntime() {
 
   // Associate our holographic space with our directx device.
   ComPtr<IDXGIDevice> dxgi_device;
-  hr = texture_helper_.GetDevice().As(&dxgi_device);
+  HRESULT hr = texture_helper_.GetDevice().As(&dxgi_device);
   if (FAILED(hr))
     return false;
 
@@ -269,15 +242,15 @@ bool MixedRealityRenderLoop::StartRuntime() {
   if (FAILED(hr))
     return false;
 
-  hr = holographic_space_->SetDirect3D11Device(device.Get());
-  return SUCCEEDED(hr);
+  return holographic_space_->TrySetDirect3D11Device(device);
 }
 
 void MixedRealityRenderLoop::StopRuntime() {
   if (window_)
     ShowWindow(window_->hwnd(), SW_HIDE);
   holographic_space_ = nullptr;
-  origin_ = nullptr;
+  anchor_origin_ = nullptr;
+  stationary_origin_ = nullptr;
   last_origin_from_attached_ = base::nullopt;
   attached_ = nullptr;
   ClearStageStatics();
@@ -285,7 +258,6 @@ void MixedRealityRenderLoop::StopRuntime() {
 
   holographic_frame_ = nullptr;
   timestamp_ = nullptr;
-  poses_ = nullptr;
   pose_ = nullptr;
   rendering_params_ = nullptr;
   camera_ = nullptr;
@@ -300,6 +272,13 @@ void MixedRealityRenderLoop::StopRuntime() {
 
   if (initializer_)
     initializer_ = nullptr;
+
+  {
+    auto hook = MixedRealityDeviceStatics::GetLockedTestHook();
+    if (hook.GetHook()) {
+      hook.GetHook()->DetachCurrentThread();
+    }
+  }
 }
 
 void MixedRealityRenderLoop::InitializeOrigin() {
@@ -309,37 +288,22 @@ void MixedRealityRenderLoop::InitializeOrigin() {
 
   // Try to get a stationary frame.  We'll hand out all of our poses in this
   // space.
-  ComPtr<ISpatialLocatorStatics> spatial_locator_statics;
-  base::win::ScopedHString spatial_locator_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Perception_Spatial_SpatialLocator);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      spatial_locator_string.get(), IID_PPV_ARGS(&spatial_locator_statics));
-  if (FAILED(hr))
-    return;
-
-  ComPtr<ISpatialLocator> locator;
-  hr = spatial_locator_statics->GetDefault(&locator);
-  if (FAILED(hr))
-    return;
-
   if (!attached_) {
-    hr = locator->CreateAttachedFrameOfReferenceAtCurrentHeading(&attached_);
-    if (FAILED(hr))
+    attached_ = WMRAttachedOriginFactory::CreateAtCurrentLocation();
+    if (!attached_)
       return;
   }
 
-  ComPtr<ISpatialStationaryFrameOfReference> stationary_frame;
-  hr = locator->CreateStationaryFrameOfReferenceAtCurrentLocation(
-      &stationary_frame);
-  if (FAILED(hr)) {
-    TraceError(ErrorLocation::kStationaryReferenceCreation, hr);
+  std::unique_ptr<WMRStationaryOrigin> stationary_frame =
+      WMRStationaryOriginFactory::CreateAtCurrentLocation();
+  if (!stationary_frame)
     return;
-  }
 
-  hr = stationary_frame->get_CoordinateSystem(&origin_);
-  if (FAILED(hr))
-    return;
+  stationary_origin_ = stationary_frame->CoordinateSystem();
+
+  // Instead of using the stationary_frame, use an anchor.
+  anchor_origin_ =
+      WMRSpatialAnchorFactory::TryCreateRelativeTo(stationary_origin_.get());
 }
 
 void MixedRealityRenderLoop::ClearStageOrigin() {
@@ -358,16 +322,11 @@ void MixedRealityRenderLoop::InitializeStageOrigin() {
 
   // Try to get a SpatialStageFrameOfReference.  We'll use this to calculate
   // the transform between the poses we're handing out and where the floor is.
-  HRESULT hr = stage_statics_->get_Current(&spatial_stage_);
-  if (FAILED(hr) || !spatial_stage_) {
-    TraceError(ErrorLocation::kAcquireCurrentStage, hr);
-    return;
-  }
-
-  hr = spatial_stage_->get_CoordinateSystem(&stage_origin_);
-  if (FAILED(hr))
+  spatial_stage_ = stage_statics_->CurrentStage();
+  if (!spatial_stage_)
     return;
 
+  stage_origin_ = spatial_stage_->CoordinateSystem();
   EnsureStageBounds();
 }
 
@@ -375,61 +334,38 @@ bool MixedRealityRenderLoop::EnsureStageStatics() {
   if (stage_statics_)
     return true;
 
-  base::win::ScopedHString spatial_stage_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Perception_Spatial_SpatialStageFrameOfReference);
-  HRESULT hr = base::win::RoGetActivationFactory(spatial_stage_string.get(),
-                                                 IID_PPV_ARGS(&stage_statics_));
-  if (FAILED(hr))
+  stage_statics_ = WMRStageStaticsFactory::Create();
+  if (!stage_statics_)
     return false;
 
-  auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  scoped_refptr<base::SingleThreadTaskRunner> thread_runner = task_runner();
-
-  auto callback = Microsoft::WRL::Callback<IEventHandler<IInspectable*>>(
-      [weak_this, thread_runner](IInspectable*, IInspectable*) {
-        thread_runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(&MixedRealityRenderLoop::OnCurrentStageChanged,
-                           weak_this));
-        return S_OK;
-      });
-
-  DCHECK(stage_changed_token_.value == 0);
-  hr =
-      stage_statics_->add_CurrentChanged(callback.Get(), &stage_changed_token_);
-  DCHECK(SUCCEEDED(hr));
+  // Since we explicitly null out both the statics and the subscription during
+  // StopRuntime (which happens before destruction), base::Unretained is safe.
+  stage_changed_subscription_ = stage_statics_->AddStageChangedCallback(
+      base::BindRepeating(&MixedRealityRenderLoop::OnCurrentStageChanged,
+                          base::Unretained(this)));
 
   return true;
 }
 
 void MixedRealityRenderLoop::ClearStageStatics() {
-  if (!stage_statics_)
-    return;
-
-  HRESULT hr = S_OK;
-  if (stage_changed_token_.value != 0) {
-    hr = stage_statics_->remove_CurrentChanged(stage_changed_token_);
-    stage_changed_token_.value = 0;
-    DCHECK(SUCCEEDED(hr));
-  }
-
+  stage_changed_subscription_ = nullptr;
   stage_statics_ = nullptr;
 }
 
 void MixedRealityRenderLoop::OnCurrentStageChanged() {
-  stage_origin_ = nullptr;
-  InitializeStageOrigin();
+  // Unretained is safe here because the task_runner() gets invalidated
+  // during Stop() which happens before our destruction
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(
+                              [](MixedRealityRenderLoop* render_loop) {
+                                render_loop->stage_origin_ = nullptr;
+                                render_loop->InitializeStageOrigin();
+                              },
+                              base::Unretained(this)));
 }
 
 void MixedRealityRenderLoop::EnsureStageBounds() {
   if (!spatial_stage_)
-    return;
-
-  SpatialMovementRange movement_range;
-  HRESULT hr = spatial_stage_->get_MovementRange(&movement_range);
-  DCHECK(SUCCEEDED(hr));
-  if (movement_range != SpatialMovementRange::SpatialMovementRange_Bounded)
     return;
 
   if (bounds_.size() != 0)
@@ -438,31 +374,29 @@ void MixedRealityRenderLoop::EnsureStageBounds() {
   if (!stage_origin_)
     return;
 
-  uint32_t size;
-  base::win::ScopedCoMem<WFN::Vector3> bounds;
-  hr =
-      spatial_stage_->TryGetMovementBounds(stage_origin_.Get(), &size, &bounds);
-  if (FAILED(hr))
+  SpatialMovementRange movement_range = spatial_stage_->MovementRange();
+  if (movement_range != SpatialMovementRange::SpatialMovementRange_Bounded)
     return;
 
-  if (size == 0)
-    return;
-
-  // TryGetMovementBounds gives us the points in clockwise order, so we don't
+  // GetMovementBounds gives us the points in clockwise order, so we don't
   // need to reverse their order here.
-  for (uint32_t i = 0; i < size; i++) {
-    WFN::Vector3 val = bounds[i];
-    bounds_.emplace_back(val.X, val.Y, val.Z);
+  std::vector<WFN::Vector3> bounds =
+      spatial_stage_->GetMovementBounds(stage_origin_.get());
+  for (const auto& bound : bounds) {
+    bounds_.emplace_back(bound.X, bound.Y, bound.Z);
   }
-
-  bounds_updated_ = true;
+  bounds_updated_ = (bounds_.size() != 0);
 }
 
 void MixedRealityRenderLoop::OnSessionStart() {
+  LogViewerType(VrViewerType::WINDOWS_MIXED_REALITY_UNKNOWN);
+
   // Each session should start with new origins.
-  origin_ = nullptr;
+  stationary_origin_ = nullptr;
+  anchor_origin_ = nullptr;
   attached_ = nullptr;
   last_origin_from_attached_ = base::nullopt;
+
   InitializeOrigin();
 
   ClearStageOrigin();
@@ -471,25 +405,22 @@ void MixedRealityRenderLoop::OnSessionStart() {
   StartPresenting();
 }
 
+void MixedRealityRenderLoop::OnWindowDestroyed() {
+  window_ = nullptr;
+  ExitPresent();
+  StopRuntime();
+}
+
 void MixedRealityRenderLoop::InitializeSpace() {
   // Create a Window, which is required to get an IHolographicSpace.
-  window_ = std::make_unique<MixedRealityWindow>();
+  // base::Unretained is safe because 'this' outlives our window.
+  window_ = std::make_unique<MixedRealityWindow>(base::BindOnce(
+      &MixedRealityRenderLoop::OnWindowDestroyed, base::Unretained(this)));
 
   // A small arbitrary size that keeps the window from being distracting.
   window_->Init(NULL, gfx::Rect(25, 10));
-
-  // Create a holographic space from that Window.
-  ComPtr<IHolographicSpaceInterop> holographic_space_interop;
-  base::win::ScopedHString holographic_space_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Graphics_Holographic_HolographicSpace);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      holographic_space_string.get(), IID_PPV_ARGS(&holographic_space_interop));
-
-  if (SUCCEEDED(hr)) {
-    hr = holographic_space_interop->CreateForWindow(
-        window_->hwnd(), IID_PPV_ARGS(&holographic_space_));
-  }
+  holographic_space_ =
+      WMRHolographicSpaceFactory::CreateForWindow(window_->hwnd());
 }
 
 void MixedRealityRenderLoop::StartPresenting() {
@@ -498,16 +429,17 @@ void MixedRealityRenderLoop::StartPresenting() {
 
 mojom::XRGamepadDataPtr MixedRealityRenderLoop::GetNextGamepadData() {
   if (!timestamp_) {
-    TraceError(ErrorLocation::kGamepadMissingTimestamp, E_UNEXPECTED);
+    WMRLogging::TraceError(WMRErrorLocation::kGamepadMissingTimestamp);
     return nullptr;
   }
 
-  if (!origin_) {
-    TraceError(ErrorLocation::kGamepadMissingOrigin, E_UNEXPECTED);
+  if (!anchor_origin_) {
+    WMRLogging::TraceError(WMRErrorLocation::kGamepadMissingOrigin);
     return nullptr;
   }
 
-  return input_helper_->GetWebVRGamepadData(origin_, timestamp_);
+  return input_helper_->GetWebVRGamepadData(anchor_origin_.get(),
+                                            timestamp_.get());
 }
 
 struct EyeToWorldDecomposed {
@@ -614,27 +546,20 @@ PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
   return ret;
 }
 
-mojom::XRFrameDataPtr CreateDefaultFrameData(
-    ComPtr<IPerceptionTimestamp> timestamp,
-    int16_t frame_id) {
+mojom::XRFrameDataPtr CreateDefaultFrameData(const WMRTimestamp* timestamp,
+                                             int16_t frame_id) {
   mojom::XRFrameDataPtr ret = mojom::XRFrameData::New();
 
-  ABI::Windows::Foundation::DateTime date_time;
-  HRESULT hr = timestamp->get_TargetTime(&date_time);
-  DCHECK(SUCCEEDED(hr));
+  // relative_time.Duration is a count of 100ns units, so multiply by 100
+  // to get a count of nanoseconds.
+  TimeSpan relative_time = timestamp->PredictionAmount();
+  double milliseconds =
+      base::TimeDelta::FromNanosecondsD(100.0 * relative_time.Duration)
+          .InMillisecondsF();
+  TRACE_EVENT_INSTANT1("gpu", "WebXR pose prediction", TRACE_EVENT_SCOPE_THREAD,
+                       "milliseconds", milliseconds);
 
-  ABI::Windows::Foundation::TimeSpan relative_time;
-  if (SUCCEEDED(timestamp->get_PredictionAmount(&relative_time))) {
-    // relative_time.Duration is a count of 100ns units, so multiply by 100
-    // to get a count of nanoseconds.
-    double milliseconds =
-        base::TimeDelta::FromNanosecondsD(100.0 * relative_time.Duration)
-            .InMillisecondsF();
-    TRACE_EVENT_INSTANT1("gpu", "WebXR pose prediction",
-                         TRACE_EVENT_SCOPE_THREAD, "milliseconds",
-                         milliseconds);
-  }
-
+  DateTime date_time = timestamp->TargetTime();
   ret->time_delta =
       base::TimeDelta::FromMicroseconds(date_time.UniversalTime / 10);
   ret->frame_id = frame_id;
@@ -643,48 +568,32 @@ mojom::XRFrameDataPtr CreateDefaultFrameData(
 
 void MixedRealityRenderLoop::UpdateWMRDataForNextFrame() {
   holographic_frame_ = nullptr;
-  poses_ = nullptr;
   pose_ = nullptr;
   rendering_params_ = nullptr;
   camera_ = nullptr;
   timestamp_ = nullptr;
 
   // Start populating this frame's data.
-  HRESULT hr = holographic_space_->CreateNextFrame(&holographic_frame_);
-  if (FAILED(hr))
+  holographic_frame_ = holographic_space_->TryCreateNextFrame();
+  if (!holographic_frame_)
     return;
 
-  ComPtr<IHolographicFramePrediction> prediction;
-  hr = holographic_frame_->get_CurrentPrediction(&prediction);
-  if (FAILED(hr))
-    return;
+  auto prediction = holographic_frame_->CurrentPrediction();
+  timestamp_ = prediction->Timestamp();
 
-  hr = prediction->get_Timestamp(&timestamp_);
-  if (FAILED(hr))
-    return;
+  auto poses = prediction->CameraPoses();
 
-  hr = prediction->get_CameraPoses(&poses_);
-  if (FAILED(hr))
+  // We expect there to only be one pose
+  if (poses.size() != 1)
     return;
-
-  unsigned int num;
-  hr = poses_->get_Size(&num);
-  if (FAILED(hr) || num != 1) {
-    return;
-  }
-
-  // There is only 1 pose.
-  hr = poses_->GetAt(0, &pose_);
-  if (FAILED(hr))
-    return;
-
-  hr = holographic_frame_->GetRenderingParameters(pose_.Get(),
-                                                  &rendering_params_);
-  if (FAILED(hr))
+  pose_ = std::move(poses[0]);
+  rendering_params_ =
+      holographic_frame_->TryGetRenderingParameters(pose_.get());
+  if (!rendering_params_)
     return;
 
   // Make sure we have an origin.
-  if (!origin_) {
+  if (!anchor_origin_) {
     InitializeOrigin();
   }
 
@@ -692,8 +601,7 @@ void MixedRealityRenderLoop::UpdateWMRDataForNextFrame() {
   if (!stage_origin_)
     InitializeStageOrigin();
 
-  if (FAILED(pose_->get_HolographicCamera(&camera_)))
-    return;
+  camera_ = pose_->HolographicCamera();
 }
 
 bool MixedRealityRenderLoop::UpdateDisplayInfo() {
@@ -702,17 +610,11 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
   if (!camera_)
     return false;
 
-  ABI::Windows::Graphics::Holographic::HolographicStereoTransform projection;
-  if (FAILED(pose_->get_ProjectionTransform(&projection)))
-    return false;
+  ABI::Windows::Graphics::Holographic::HolographicStereoTransform projection =
+      pose_->ProjectionTransform();
 
-  ABI::Windows::Foundation::Size size;
-  if (FAILED(camera_->get_RenderTargetSize(&size)))
-    return false;
-  boolean stereo;
-  if (FAILED(camera_->get_IsStereo(&stereo)))
-    return false;
-
+  ABI::Windows::Foundation::Size size = camera_->RenderTargetSize();
+  bool stereo = camera_->IsStereo();
   bool changed = false;
 
   if (!current_display_info_) {
@@ -786,31 +688,25 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
   // SpatialStageFrameOfReference.CurrentChanged to also re-calculate this.
   bool changed = false;
   if (stage_transform_needs_updating_) {
-    if (!(stage_origin_ && origin_) && current_display_info_->stageParameters) {
+    if (!(stage_origin_ && anchor_origin_) &&
+        current_display_info_->stageParameters) {
       changed = true;
       current_display_info_->stageParameters = nullptr;
-    } else if (stage_origin_ && origin_) {
+    } else if (stage_origin_ && anchor_origin_) {
       changed = true;
       current_display_info_->stageParameters = nullptr;
 
       mojom::VRStageParametersPtr stage_parameters =
           mojom::VRStageParameters::New();
 
-      ComPtr<IReference<Matrix4x4>> origin_to_stage_ref;
-      HRESULT hr =
-          origin_->TryGetTransformTo(stage_origin_.Get(), &origin_to_stage_ref);
-      if (FAILED(hr) || !origin_to_stage_ref) {
-        TraceError(ErrorLocation::kGetTransformBetweenOrigins, hr);
-
+      Matrix4x4 origin_to_stage;
+      if (!anchor_origin_->TryGetTransformTo(stage_origin_.get(),
+                                             &origin_to_stage)) {
         // We failed to get a transform between the two, so force a
         // recalculation of the stage origin and leave the stageParameters null.
         ClearStageOrigin();
         return changed;
       }
-
-      Matrix4x4 origin_to_stage;
-      hr = origin_to_stage_ref->get_Value(&origin_to_stage);
-      DCHECK(SUCCEEDED(hr));
 
       stage_parameters->standingTransform =
           ConvertToStandingTransform(origin_to_stage);
@@ -839,9 +735,9 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
 
   // Once we have a prediction, we can generate a frame data.
   mojom::XRFrameDataPtr ret =
-      CreateDefaultFrameData(timestamp_, next_frame_id_);
+      CreateDefaultFrameData(timestamp_.get(), next_frame_id_);
 
-  if ((!attached_ && !origin_) || !pose_) {
+  if ((!attached_ && !anchor_origin_) || !pose_) {
     TRACE_EVENT_INSTANT0("xr", "No origin or no pose",
                          TRACE_EVENT_SCOPE_THREAD);
     // If we don't have an origin or pose for this frame, we can still give out
@@ -849,29 +745,22 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     return ret;
   }
 
-  ComPtr<ISpatialCoordinateSystem> attached_coordinates;
-  HRESULT hr = attached_->GetStationaryCoordinateSystemAtTimestamp(
-      timestamp_.Get(), &attached_coordinates);
-  if (FAILED(hr))
+  std::unique_ptr<WMRCoordinateSystem> attached_coordinates =
+      attached_->TryGetCoordinatesAtTimestamp(timestamp_.get());
+  if (!attached_coordinates)
     return ret;
 
-  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IReference<
-      ABI::Windows::Graphics::Holographic::HolographicStereoTransform>>
-      view_ref;
-  if (origin_ &&
-      SUCCEEDED(pose_->TryGetViewTransform(origin_.Get(), &view_ref)) &&
-      view_ref) {
+  ABI::Windows::Graphics::Holographic::HolographicStereoTransform view;
+  bool got_view = false;
+  if (anchor_origin_ &&
+      pose_->TryGetViewTransform(anchor_origin_.get(), &view)) {
+    got_view = true;
     // TODO(http://crbug.com/931393): Send down emulated_position_, and report
     // reset events when this changes.
     emulated_position_ = false;
-    ComPtr<IReference<ABI::Windows::Foundation::Numerics::Matrix4x4>>
-        attached_to_origin_ref;
-    hr = attached_coordinates->TryGetTransformTo(origin_.Get(),
-                                                 &attached_to_origin_ref);
-    if (SUCCEEDED(hr) && attached_to_origin_ref) {
-      ABI::Windows::Foundation::Numerics::Matrix4x4 transform;
-      hr = attached_to_origin_ref->get_Value(&transform);
-      DCHECK(SUCCEEDED(hr));
+    ABI::Windows::Foundation::Numerics::Matrix4x4 transform;
+    if (attached_coordinates->TryGetTransformTo(anchor_origin_.get(),
+                                                &transform)) {
       last_origin_from_attached_ = gfx::Transform(
           transform.M11, transform.M21, transform.M31, transform.M41,
           transform.M12, transform.M22, transform.M32, transform.M42,
@@ -880,17 +769,16 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     }
   } else {
     emulated_position_ = true;
-    if (FAILED(pose_->TryGetViewTransform(attached_coordinates.Get(),
-                                          &view_ref)) ||
-        !view_ref) {
+    if (!pose_->TryGetViewTransform(attached_coordinates.get(), &view)) {
       TRACE_EVENT_INSTANT0("xr", "Failed to locate origin",
                            TRACE_EVENT_SCOPE_THREAD);
       return ret;
+    } else {
+      got_view = true;
     }
   }
 
-  ABI::Windows::Graphics::Holographic::HolographicStereoTransform view;
-  if (FAILED(view_ref->get_Value(&view))) {
+  if (!got_view) {
     TRACE_EVENT_INSTANT0("xr", "No view transform", TRACE_EVENT_SCOPE_THREAD);
     return ret;
   }
@@ -945,7 +833,8 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
                                   current_display_info_.Clone()));
   }
 
-  ret->pose->input_state = input_helper_->GetInputState(origin_, timestamp_);
+  ret->pose->input_state =
+      input_helper_->GetInputState(anchor_origin_.get(), timestamp_.get());
 
   if (emulated_position_ && last_origin_from_attached_) {
     gfx::DecomposedTransform attached_from_view_decomp;

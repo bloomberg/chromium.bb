@@ -47,7 +47,6 @@
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -129,14 +128,6 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
               net::CompletionOnceCallback callback) const override {
     GenerateBackgroundPageContents(extension_.get(), mime_type, charset, data);
     return net::OK;
-  }
-
-  // base::PowerObserver override:
-  void OnSuspend() override {
-    // Unlike URLRequestJob, don't suspend active requests here. Requests for
-    // generated background pages need not be suspended when the system
-    // suspends. This is not needed for URLRequestExtensionJob since it inherits
-    // from URLRequestFileJob, which has the same behavior.
   }
 
   void GetResponseInfo(net::HttpResponseInfo* info) override {
@@ -275,7 +266,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       // proceed; see crbug.com/703888.
       if (verify_job_.get()) {
         std::string tmp;
-        verify_job_->BytesRead(0, base::data(tmp));
+        verify_job_->BytesRead(base::data(tmp), 0,
+                               base::File::FILE_ERROR_FAILED);
         verify_job_->DoneReading();
       }
     }
@@ -286,8 +278,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
     // crbug.com/369895.
-    if (result > 0 && verify_job_.get())
-      verify_job_ = NULL;
+    const bool is_seek_contiguous = result == bytes_read_;
+    if (result > 0 && verify_job_.get() && !is_seek_contiguous)
+      verify_job_ = nullptr;
   }
 
   void OnReadComplete(net::IOBuffer* buffer, int result) override {
@@ -300,7 +293,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     if (result > 0) {
       bytes_read_ += result;
       if (verify_job_.get())
-        verify_job_->BytesRead(result, buffer->data());
+        verify_job_->BytesRead(buffer->data(), result, base::File::FILE_OK);
     }
   }
 
@@ -382,7 +375,7 @@ bool ExtensionCanLoadInIncognito(bool is_main_frame,
                                  bool extension_enabled_in_incognito) {
   if (!extension || !extension_enabled_in_incognito)
     return false;
-  if (!is_main_frame)
+  if (!is_main_frame || extension->is_login_screen_extension())
     return true;
 
   // Only allow incognito toplevel navigations to extension resources in
@@ -529,8 +522,9 @@ void GetSecurityPolicyForURL(const GURL& url,
 }
 
 bool IsBackgroundPageURL(const GURL& url) {
-  std::string path = url.path();
-  return path.size() > 1 && path.substr(1) == kGeneratedBackgroundPageFilename;
+  base::StringPiece path_piece = url.path_piece();
+  return path_piece.size() > 1 &&
+         path_piece.substr(1) == kGeneratedBackgroundPageFilename;
 }
 
 class ExtensionProtocolHandler
@@ -711,7 +705,8 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
     // crbug.com/369895.
-    if (result > 0 && verify_job_.get())
+    const bool is_seek_contiguous = result == bytes_read_;
+    if (result > 0 && verify_job_.get() && !is_seek_contiguous)
       verify_job_ = nullptr;
   }
 
@@ -721,14 +716,21 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
     if (read_result == base::File::FILE_OK) {
       UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.OnReadCompleteResult",
                               read_result);
-      base::AutoLock auto_lock(lock_);
-      bytes_read_ += num_bytes_read;
-      if (verify_job_.get())
-        verify_job_->BytesRead(num_bytes_read, static_cast<const char*>(data));
     } else {
       net::Error net_error = net::FileErrorToNetError(read_result);
       base::UmaHistogramSparse("ExtensionUrlRequest.OnReadCompleteError",
                                net_error);
+    }
+    {
+      base::AutoLock auto_lock(lock_);
+      bytes_read_ += num_bytes_read;
+      if (verify_job_) {
+        // Note: We still pass the data to |verify_job_|, even if there was a
+        // read error, because some errors are ignorable. See
+        // ContentVerifyJob::BytesRead() for more details.
+        verify_job_->BytesRead(static_cast<const char*>(data), num_bytes_read,
+                               read_result);
+      }
     }
   }
 
@@ -870,13 +872,13 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     // Component extension resources may be part of the embedder's resource
     // files, for example component_extension_resources.pak in Chrome.
-    ComponentExtensionResourceInfo resource_info;
+    int resource_id = 0;
     const base::FilePath bundle_resource_path =
         ExtensionsBrowserClient::Get()->GetBundleResourcePath(
-            request, directory_path, &resource_info);
+            request, directory_path, &resource_id);
     if (!bundle_resource_path.empty()) {
       ExtensionsBrowserClient::Get()->LoadResourceFromResourceBundle(
-          request, std::move(loader), bundle_resource_path, resource_info,
+          request, std::move(loader), bundle_resource_path, resource_id,
           content_security_policy, std::move(client), send_cors_header);
       return;
     }

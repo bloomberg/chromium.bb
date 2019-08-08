@@ -199,10 +199,6 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   return gfx::Rect(x, y, size.width(), size.height());
 }
 
-int BubbleBorder::GetBorderCornerRadius() const {
-  return corner_radius_.value_or(0);
-}
-
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   if (shadow_ == NO_ASSETS)
     return PaintNoAssets(view, canvas);
@@ -306,8 +302,8 @@ gfx::Size BubbleBorder::GetSizeForContentsSize(
 SkRRect BubbleBorder::GetClientRect(const View& view) const {
   gfx::RectF bounds(view.GetLocalBounds());
   bounds.Inset(GetInsets());
-  return SkRRect::MakeRectXY(gfx::RectFToSkRect(bounds),
-                             GetBorderCornerRadius(), GetBorderCornerRadius());
+  return SkRRect::MakeRectXY(gfx::RectFToSkRect(bounds), corner_radius(),
+                             corner_radius());
 }
 
 void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {
@@ -326,7 +322,7 @@ void BubbleBorder::PaintNoShadow(const View& view, gfx::Canvas* canvas) {
   flags.setStrokeWidth(kBorderThicknessDip);
   constexpr SkColor kBorderColor = gfx::kGoogleGrey600;
   flags.setColor(kBorderColor);
-  canvas->DrawRoundRect(bounds, GetBorderCornerRadius(), flags);
+  canvas->DrawRoundRect(bounds, corner_radius(), flags);
 }
 
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
@@ -341,7 +337,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   gfx::RectF bounds(view->GetLocalBounds());
   bounds.Inset(gfx::InsetsF(border_->GetInsets()));
 
-  canvas->DrawRoundRect(bounds, border_->GetBorderCornerRadius(), flags);
+  canvas->DrawRoundRect(bounds, border_->corner_radius(), flags);
 }
 
 }  // namespace views

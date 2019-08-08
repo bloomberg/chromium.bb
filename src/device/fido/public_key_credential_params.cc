@@ -58,11 +58,11 @@ PublicKeyCredentialParams& PublicKeyCredentialParams::operator=(
 
 PublicKeyCredentialParams::~PublicKeyCredentialParams() = default;
 
-cbor::Value PublicKeyCredentialParams::ConvertToCBOR() const {
+cbor::Value AsCBOR(const PublicKeyCredentialParams& params) {
   cbor::Value::ArrayValue credential_param_array;
-  credential_param_array.reserve(public_key_credential_params_.size());
+  credential_param_array.reserve(params.public_key_credential_params().size());
 
-  for (const auto& credential : public_key_credential_params_) {
+  for (const auto& credential : params.public_key_credential_params()) {
     cbor::Value::MapValue cbor_credential_map;
     cbor_credential_map.emplace(kCredentialTypeMapKey,
                                 CredentialTypeToString(credential.type));

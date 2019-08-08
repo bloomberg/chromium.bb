@@ -212,6 +212,8 @@ class CORE_EXPORT ScrollbarTheme {
     return IntRect();
   }
 
+  virtual bool AllowsHitTest() const { return true; }
+
   // Warning: Please call Page::GetScrollbarTheme instead of call this method
   // directly since we support different native scrollbar theme base on page
   // settings. See crrev.com/c/646727, this function will eventually be removed.

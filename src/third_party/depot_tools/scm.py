@@ -117,8 +117,8 @@ class GIT(object):
   def Capture(args, cwd, strip_out=True, **kwargs):
     env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
-        ['git'] + args,
-        cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)
+        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env,
+        **kwargs).decode('utf-8', 'replace')
     return output.strip() if strip_out else output
 
   @staticmethod
@@ -147,7 +147,7 @@ class GIT(object):
         # 3-way merges can cause the status can be 'MMM' instead of 'M'. This
         # can happen when the user has 2 local branches and he diffs between
         # these 2 branches instead diffing to upstream.
-        m = re.match('^(\w)+\t(.+)$', statusline)
+        m = re.match(r'^(\w)+\t(.+)$', statusline)
         if not m:
           raise gclient_utils.Error(
               'status currently unsupported: %s' % statusline)
@@ -369,9 +369,14 @@ class GIT(object):
 
     sha_only: Fail unless rev is a sha hash.
     """
+    if sys.platform.startswith('win'):
+      # Windows .bat scripts use ^ as escape sequence, which means we have to
+      # escape it with itself for every .bat invocation.
+      needle = '%s^^^^{commit}' % rev
+    else:
+      needle = '%s^{commit}' % rev
     try:
-      sha = GIT.Capture(['rev-parse', '--verify', '%s^{commit}' % rev],
-                        cwd=cwd)
+      sha = GIT.Capture(['rev-parse', '--verify', needle], cwd=cwd)
       if sha_only:
         return sha == rev.lower()
       return True
@@ -383,7 +388,7 @@ class GIT(object):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
       current_version = cls.Capture(['--version'], '.')
-      matched = re.search(r'version ([0-9\.]+)', current_version.decode())
+      matched = re.search(r'version ([0-9\.]+)', current_version)
       cls.current_version = matched.group(1)
     current_version_list = list(map(only_int, cls.current_version.split('.')))
     for min_ver in map(int, min_version.split('.')):

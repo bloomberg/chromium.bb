@@ -538,12 +538,12 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
 
   VideoPixelFormat pixel_format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_);
-
   child_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-                     client_, num_pictures, pixel_format, 1, coded_size_,
-                     device_->GetTextureTarget()));
+      base::BindOnce(
+          &VideoDecodeAccelerator::Client::ProvidePictureBuffersWithVisibleRect,
+          client_, num_pictures, pixel_format, 1, coded_size_,
+          decoder_->GetVisibleRect(), device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
   // or event handling while we are waiting for AssignPictureBuffers(). Not
@@ -1044,8 +1044,7 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
   return true;
 }
 
-void V4L2SliceVideoDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer) {
+void V4L2SliceVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
   Decode(bitstream_buffer.ToDecoderBuffer(), bitstream_buffer.id());
 }
 

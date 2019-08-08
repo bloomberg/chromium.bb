@@ -133,14 +133,13 @@ class WebRtcAudioProcessorTest : public ::testing::Test {
     EXPECT_TRUE(ap_config.echo_canceller.enabled);
     EXPECT_FALSE(ap_config.echo_canceller.mobile_mode);
     EXPECT_TRUE(ap_config.high_pass_filter.enabled);
+    EXPECT_TRUE(ap_config.gain_controller1.enabled);
+    EXPECT_EQ(ap_config.gain_controller1.mode,
+              ap_config.gain_controller1.kAdaptiveAnalog);
+    EXPECT_TRUE(ap_config.noise_suppression.enabled);
+    EXPECT_EQ(ap_config.noise_suppression.level,
+              ap_config.noise_suppression.kHigh);
     EXPECT_TRUE(ap_config.voice_detection.enabled);
-
-    EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
-    EXPECT_TRUE(audio_processing->noise_suppression()->level() ==
-                webrtc::NoiseSuppression::kHigh);
-    EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
-    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
-                webrtc::GainControl::kAdaptiveAnalog);
   }
 
   AudioProcessingSettings GetEnabledAudioProcessingSettings() const {

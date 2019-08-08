@@ -19,9 +19,9 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/predictors/glowplug_key_value_data.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/predictors/resource_prefetch_common.h"
+#include "chrome/browser/predictors/loading_predictor_key_value_data.h"
+#include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -110,9 +110,10 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   };
 
   using RedirectDataMap =
-      GlowplugKeyValueData<RedirectData, internal::LastVisitTimeCompare>;
+      LoadingPredictorKeyValueData<RedirectData,
+                                   internal::LastVisitTimeCompare>;
   using OriginDataMap =
-      GlowplugKeyValueData<OriginData, internal::LastVisitTimeCompare>;
+      LoadingPredictorKeyValueData<OriginData, internal::LastVisitTimeCompare>;
   using NavigationMap =
       std::map<NavigationID, std::unique_ptr<PageRequestSummary>>;
 

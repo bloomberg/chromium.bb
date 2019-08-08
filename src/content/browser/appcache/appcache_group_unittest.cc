@@ -23,8 +23,7 @@ namespace {
 class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
  public:
   TestAppCacheFrontend()
-      : last_host_id_(-1),
-        last_cache_id_(-1),
+      : last_cache_id_(-1),
         last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE) {}
 
   void CacheSelected(blink::mojom::AppCacheInfoPtr info) override {
@@ -48,16 +47,18 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
   void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  blink::mojom::AppCacheFrontendPtr Bind(int32_t host_id) {
+  blink::mojom::AppCacheFrontendPtr Bind(
+      const base::UnguessableToken& host_id) {
     blink::mojom::AppCacheFrontendPtr result;
     bindings_.AddBinding(this, mojo::MakeRequest(&result), host_id);
     return result;
   }
 
-  int32_t last_host_id_;
+  base::UnguessableToken last_host_id_;
   int64_t last_cache_id_;
   blink::mojom::AppCacheStatus last_status_;
-  mojo::BindingSet<blink::mojom::AppCacheFrontend, int32_t> bindings_;
+  mojo::BindingSet<blink::mojom::AppCacheFrontend, base::UnguessableToken>
+      bindings_;
 };
 
 }  // namespace
@@ -81,7 +82,7 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
 
 class TestAppCacheHost : public AppCacheHost {
  public:
-  TestAppCacheHost(int host_id,
+  TestAppCacheHost(const base::UnguessableToken& host_id,
                    TestAppCacheFrontend* frontend,
                    AppCacheServiceImpl* service)
       : AppCacheHost(host_id,
@@ -179,10 +180,14 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCacheGroup* group =
       new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111);
 
-  AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
-                     frontend.Bind(/*host_id=*/1), &service);
-  AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
-                     frontend.Bind(/*host_id=*/2), &service);
+  auto host1_id = base::UnguessableToken::Create();
+  AppCacheHost host1(host1_id,
+                     /*process_id=*/1, /*render_frame_id=*/1,
+                     frontend.Bind(host1_id), &service);
+  auto host2_id = base::UnguessableToken::Create();
+  AppCacheHost host2(host2_id,
+                     /*process_id=*/2, /*render_frame_id=*/2,
+                     frontend.Bind(host2_id), &service);
 
   base::Time now = base::Time::Now();
 
@@ -277,7 +282,7 @@ TEST_F(AppCacheGroupTest, QueueUpdate) {
   EXPECT_TRUE(group->update_job_->IsTerminating());
 
   TestAppCacheFrontend frontend;
-  TestAppCacheHost host(1, &frontend, &service);
+  TestAppCacheHost host(base::UnguessableToken::Create(), &frontend, &service);
   host.new_master_entry_url_ = GURL("http://foo.com/bar.txt");
   group->StartUpdateWithNewMasterEntry(&host, host.new_master_entry_url_);
   EXPECT_FALSE(group->queued_updates_.empty());

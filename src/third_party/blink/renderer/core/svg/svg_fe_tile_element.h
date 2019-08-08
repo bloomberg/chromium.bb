@@ -30,8 +30,6 @@ class SVGFETileElement final : public SVGFilterPrimitiveStandardAttributes {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFETileElement);
-
   explicit SVGFETileElement(Document&);
 
   SVGAnimatedString* in1() { return in1_.Get(); }

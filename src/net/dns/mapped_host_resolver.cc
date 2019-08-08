@@ -4,6 +4,7 @@
 
 #include "net/dns/mapped_host_resolver.h"
 
+#include <string>
 #include <utility>
 
 #include "base/no_destructor.h"
@@ -70,45 +71,20 @@ MappedHostResolver::CreateRequest(
   return impl_->CreateRequest(rewritten, source_net_log, optional_parameters);
 }
 
-void MappedHostResolver::SetDnsClientEnabled(bool enabled) {
-  impl_->SetDnsClientEnabled(enabled);
-}
-
 HostCache* MappedHostResolver::GetHostCache() {
   return impl_->GetHostCache();
-}
-
-bool MappedHostResolver::HasCached(base::StringPiece hostname,
-                                   HostCache::Entry::Source* source_out,
-                                   HostCache::EntryStaleness* stale_out,
-                                   bool* secure_out) const {
-  return impl_->HasCached(hostname, source_out, stale_out, secure_out);
 }
 
 std::unique_ptr<base::Value> MappedHostResolver::GetDnsConfigAsValue() const {
   return impl_->GetDnsConfigAsValue();
 }
 
-void MappedHostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  impl_->SetNoIPv6OnWifi(no_ipv6_on_wifi);
-}
-
-bool MappedHostResolver::GetNoIPv6OnWifi() {
-  return impl_->GetNoIPv6OnWifi();
-}
-
-void MappedHostResolver::SetDnsConfigOverrides(
-    const DnsConfigOverrides& overrides) {
-  impl_->SetDnsConfigOverrides(overrides);
-}
-
 void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
   impl_->SetRequestContext(request_context);
 }
 
-const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-MappedHostResolver::GetDnsOverHttpsServersForTesting() const {
-  return impl_->GetDnsOverHttpsServersForTesting();
+HostResolverManager* MappedHostResolver::GetManagerForTesting() {
+  return impl_->GetManagerForTesting();
 }
 
 }  // namespace net

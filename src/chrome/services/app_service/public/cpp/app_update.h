@@ -67,6 +67,9 @@ class AppUpdate {
   const std::string& ShortName() const;
   bool ShortNameChanged() const;
 
+  const std::string& Description() const;
+  bool DescriptionChanged() const;
+
   std::vector<std::string> AdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 
@@ -82,11 +85,19 @@ class AppUpdate {
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
   bool PermissionsChanged() const;
 
+  apps::mojom::InstallSource InstallSource() const;
+  bool InstallSourceChanged() const;
+
   apps::mojom::OptionalBool InstalledInternally() const;
-  bool InstalledInternallyChanged() const;
 
   apps::mojom::OptionalBool IsPlatformApp() const;
   bool IsPlatformAppChanged() const;
+
+  apps::mojom::OptionalBool Recommendable() const;
+  bool RecommendableChanged() const;
+
+  apps::mojom::OptionalBool Searchable() const;
+  bool SearchableChanged() const;
 
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;

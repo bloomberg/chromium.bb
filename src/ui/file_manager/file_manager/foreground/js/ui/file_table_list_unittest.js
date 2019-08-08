@@ -19,6 +19,9 @@ let historyLoader;
 /** @type {!HTMLElement} */
 let element;
 
+/** @type {!A11yAnnounce} */
+let a11y;
+
 // Set up test components.
 function setUp() {
   // Mock LoadTimeData strings.
@@ -31,6 +34,13 @@ function setUp() {
   historyLoader = /** @type {!importer.HistoryLoader} */ ({
     getHistory: () => {
       return Promise.resolve();
+    },
+  });
+
+  const a11Messages = [];
+  a11y = /** @type {!A11yAnnounce} */ ({
+    speakA11yMessage: (text) => {
+      a11Messages.push(text);
     },
   });
 
@@ -97,7 +107,7 @@ function testMultipleSelectionWithKeyboard() {
   // Render the FileTable on |element|.
   const fullPage = true;
   FileTable.decorate(
-      element, metadataModel, volumeManager, historyLoader, fullPage);
+      element, metadataModel, volumeManager, historyLoader, a11y, fullPage);
 
   // Overwrite the selectionModel of the FileTable class (since events
   // would be handled by cr.ui.ListSelectionModel otherwise).
@@ -228,7 +238,7 @@ function testKeyboardOperations() {
   // Render the FileTable on |element|.
   const fullPage = true;
   FileTable.decorate(
-      element, metadataModel, volumeManager, historyLoader, fullPage);
+      element, metadataModel, volumeManager, historyLoader, a11y, fullPage);
 
   // Overwrite the selectionModel of the FileTable class (since events
   // would be handled by cr.ui.ListSelectionModel otherwise).

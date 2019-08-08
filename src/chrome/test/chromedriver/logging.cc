@@ -39,6 +39,8 @@ Log::Level g_log_level = Log::kWarning;
 
 int64_t g_start_time = 0;
 
+bool readable_timestamp;
+
 // Array indices are the Log::Level enum values.
 const char* const kLevelToName[] = {
   "ALL",  // kAll
@@ -109,13 +111,47 @@ bool HandleLogMessage(int severity,
 
   if (level >= g_log_level) {
     const char* level_name = LevelToName(level);
-    std::string entry = base::StringPrintf(
-        "[%.3lf][%s]: %s",
-        base::TimeDelta(base::TimeTicks::Now() -
-                        base::TimeTicks::UnixEpoch())
-            .InSecondsF(),
-        level_name,
-        message.c_str());
+    std::string entry;
+
+    if (readable_timestamp) {
+#if defined(OS_WIN)
+      SYSTEMTIME local_time;
+      GetLocalTime(&local_time);
+
+      entry = base::StringPrintf(
+          "[%02d-%02d-%04d %02d:%02d:%02d.%03d][%s]: %s",
+          local_time.wMonth, local_time.wDay, local_time.wYear,
+          local_time.wHour, local_time.wMinute, local_time.wSecond,
+          local_time.wMilliseconds,
+          level_name,
+          message.c_str());
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+      timeval tv;
+      gettimeofday(&tv, nullptr);
+      time_t t = tv.tv_sec;
+      struct tm local_time;
+      localtime_r(&t, &local_time);
+      struct tm* tm_time = &local_time;
+
+      entry = base::StringPrintf(
+          "[%02d-%02d-%04d %02d:%02d:%02d.%06ld][%s]: %s",
+          1 + tm_time->tm_mon, tm_time->tm_mday, 1900 + tm_time->tm_year,
+          tm_time->tm_hour, tm_time->tm_min, tm_time->tm_sec,
+          static_cast<long>(tv.tv_usec),
+          level_name,
+          message.c_str());
+#else
+#error Unsupported platform
+#endif
+    } else {
+      entry = base::StringPrintf(
+          "[%.3lf][%s]: %s",
+          base::TimeDelta(base::TimeTicks::Now() -
+                          base::TimeTicks::UnixEpoch())
+              .InSecondsF(),
+          level_name,
+          message.c_str());
+    }
     fprintf(stderr, "%s", entry.c_str());
     fflush(stderr);
   }
@@ -245,6 +281,9 @@ bool InitLogging() {
     if (cmd_line->HasSwitch("append-log")) {
         logMode = FILE_PATH_LITERAL("a");
     }
+  if (cmd_line->HasSwitch("readable-timestamp")) {
+    readable_timestamp = true;
+  }
 #if defined(OS_WIN)
     FILE* redir_stderr = _wfreopen(log_path.value().c_str(), logMode, stderr);
 #else
@@ -297,7 +336,8 @@ bool InitLogging() {
   logging::SetLogMessageHandler(&HandleLogMessage);
 
   logging::LoggingSettings logging_settings;
-  logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging_settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   bool res = logging::InitLogging(logging_settings);
   if (cmd_line->HasSwitch("log-path") && res) {
     VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;

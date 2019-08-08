@@ -37,18 +37,12 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
     kThick,
   };
 
-  // The default constructor is used by generated Mojo code.
-  ImeTextSpan();
-  // TODO(huangs): remove this constructor.
-  ImeTextSpan(uint32_t start_offset,
-              uint32_t end_offset,
-              Thickness thickness);
   ImeTextSpan(
-      Type type,
-      uint32_t start_offset,
-      uint32_t end_offset,
-      Thickness thickness,
-      SkColor background_color,
+      Type type = Type::kComposition,
+      uint32_t start_offset = 0,
+      uint32_t end_offset = 0,
+      Thickness thickness = Thickness::kThin,
+      SkColor background_color = SK_ColorTRANSPARENT,
       SkColor suggestion_highlight_color = SK_ColorTRANSPARENT,
       const std::vector<std::string>& suggestions = std::vector<std::string>());
 

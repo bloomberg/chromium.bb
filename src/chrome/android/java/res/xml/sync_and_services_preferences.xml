@@ -8,9 +8,16 @@
      chrome/browser/unified_consent/unified_consent_service_factory.cc has to be
      updated accordingly. -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:key="user_category"
+        android:title="@string/user"/>
     <org.chromium.chrome.browser.preferences.SignInPreference
         android:key="sign_in"
         android:title="@string/sign_in_to_chrome"/>
+
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+        android:key="manage_your_google_account"
+        android:title="@string/manage_your_google_account"/>
 
     <PreferenceCategory
         android:key="sync_category"
@@ -69,9 +76,5 @@
             android:key="contextual_search"
             android:title="@string/contextual_search_title"
             android:fragment="org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment"/>
-        <Preference
-            android:key="contextual_suggestions"
-            android:title="@string/prefs_contextual_suggestions"
-            android:fragment="org.chromium.chrome.browser.preferences.ContextualSuggestionsPreference"/>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
@@ -50,7 +51,9 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
@@ -107,6 +110,31 @@ class WorkerThread::RefCountedWaitableEvent
   DISALLOW_COPY_AND_ASSIGN(RefCountedWaitableEvent);
 };
 
+// A class that is passed into V8 Interrupt and via a PostTask. Once both have
+// run this object will be destroyed in
+// PauseOrFreezeWithInterruptDataOnWorkerThread. The V8 API only takes a raw ptr
+// otherwise this could have been done with base::Bind and ref counted objects.
+class WorkerThread::InterruptData {
+ public:
+  InterruptData(WorkerThread* worker_thread, mojom::FrameLifecycleState state)
+      : worker_thread_(worker_thread), state_(state) {}
+
+  bool ShouldRemoveFromList() { return seen_interrupt_ && seen_post_task_; }
+  void MarkPostTaskCalled() { seen_post_task_ = true; }
+  void MarkInterruptCalled() { seen_interrupt_ = true; }
+
+  mojom::FrameLifecycleState state() { return state_; }
+  WorkerThread* worker_thread() { return worker_thread_; }
+
+ private:
+  WorkerThread* worker_thread_;
+  mojom::FrameLifecycleState state_;
+  bool seen_interrupt_ = false;
+  bool seen_post_task_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(InterruptData);
+};
+
 WorkerThread::~WorkerThread() {
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
@@ -134,19 +162,19 @@ void WorkerThread::Start(
   // Synchronously initialize the per-global-scope scheduler to prevent someone
   // from posting a task to the thread before the scheduler is ready.
   base::WaitableEvent waitable_event;
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
-      CrossThreadBind(&WorkerThread::InitializeSchedulerOnWorkerThread,
-                      CrossThreadUnretained(this),
-                      CrossThreadUnretained(&waitable_event)));
+  PostCrossThreadTask(
+      *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(&WorkerThread::InitializeSchedulerOnWorkerThread,
+                          CrossThreadUnretained(this),
+                          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
   inspector_task_runner_ =
       InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
 
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
-      CrossThreadBind(
+  PostCrossThreadTask(
+      *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(
           &WorkerThread::InitializeOnWorkerThread, CrossThreadUnretained(this),
           WTF::Passed(std::move(global_scope_creation_params)),
           thread_startup_data, WTF::Passed(std::move(devtools_params))));
@@ -160,35 +188,61 @@ void WorkerThread::EvaluateClassicScript(
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url, source_code,
-                      WTF::Passed(std::move(cached_meta_data)), stack_id));
+      CrossThreadBindOnce(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
+                          CrossThreadUnretained(this), script_url, source_code,
+                          WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
 void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url,
-                      WTF::Passed(outside_settings_object.CopyData()),
-                      stack_id));
+      CrossThreadBindOnce(
+          &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
+          CrossThreadUnretained(this), script_url,
+          WTF::Passed(outside_settings_object.CopyData()),
+          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          stack_id));
 }
 
 void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url,
-                      WTF::Passed(outside_settings_object.CopyData()),
-                      credentials_mode));
+      CrossThreadBindOnce(
+          &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
+          CrossThreadUnretained(this), script_url,
+          WTF::Passed(outside_settings_object.CopyData()),
+          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          credentials_mode));
+}
+
+void WorkerThread::Pause() {
+  PauseOrFreeze(mojom::FrameLifecycleState::kPaused);
+}
+
+void WorkerThread::Freeze() {
+  PauseOrFreeze(mojom::FrameLifecycleState::kFrozen);
+}
+
+void WorkerThread::Resume() {
+  // Might be called from any thread.
+  if (IsCurrentThread()) {
+    ResumeOnWorkerThread();
+  } else {
+    PostCrossThreadTask(
+        *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(&WorkerThread::ResumeOnWorkerThread,
+                            CrossThreadUnretained(this)));
+  }
 }
 
 void WorkerThread::Terminate() {
@@ -207,13 +261,16 @@ void WorkerThread::Terminate() {
 
   inspector_task_runner_->Dispose();
 
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
-      CrossThreadBind(&WorkerThread::PrepareForShutdownOnWorkerThread,
-                      CrossThreadUnretained(this)));
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&WorkerThread::PerformShutdownOnWorkerThread,
-                                 CrossThreadUnretained(this)));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetWorkerBackingThread().BackingThread().GetTaskRunner();
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(&WorkerThread::PrepareForShutdownOnWorkerThread,
+                          CrossThreadUnretained(this)));
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(&WorkerThread::PerformShutdownOnWorkerThread,
+                          CrossThreadUnretained(this)));
 }
 
 void WorkerThread::TerminateForTesting() {
@@ -251,7 +308,21 @@ void WorkerThread::WillProcessTask(const base::PendingTask& pending_task) {
 
 void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
   DCHECK(IsCurrentThread());
-  Microtask::PerformCheckpoint(GetIsolate());
+
+  // TODO(tzik): Move this to WorkerThreadScheduler::OnTaskCompleted(), so that
+  // metrics for microtasks are counted as a part of the preceding task.
+  // TODO(nhiroki): Replace this null check with DCHECK(agent) after making
+  // WorkletGlobalScope take a proper Agent.
+  if (Agent* agent = GlobalScope()->GetAgent())
+    agent->event_loop()->PerformMicrotaskCheckpoint();
+
+  // Microtask::PerformCheckpoint() runs microtasks and its completion hooks for
+  // the default microtask queue. The default queue may contain the microtasks
+  // queued by V8 itself, and legacy blink::MicrotaskQueue::EnqueueMicrotask.
+  // The completion hook contains IndexedDB clean-up task, as described at
+  // https://html.spec.whatwg.org/C#perform-a-microtask-checkpoint
+  // TODO(tzik): Move rejected promise handling to EventLoop.
+
   GlobalScope()->ScriptController()->GetRejectedPromises()->ProcessQueue();
   if (GlobalScope()->IsClosing()) {
     // This WorkerThread will eventually be requested to terminate.
@@ -380,32 +451,42 @@ void WorkerThread::ScheduleToTerminateScriptExecution() {
       forcible_termination_delay_);
 }
 
-bool WorkerThread::ShouldTerminateScriptExecution() {
+WorkerThread::TerminationState WorkerThread::ShouldTerminateScriptExecution() {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   switch (thread_state_) {
     case ThreadState::kNotStarted:
       // Shutdown sequence will surely start during initialization sequence
       // on the worker thread. Don't have to schedule a termination task.
-      return false;
+      return TerminationState::kTerminationUnnecessary;
     case ThreadState::kRunning:
       // Terminating during debugger task may lead to crash due to heavy use
       // of v8 api in debugger. Any debugger task is guaranteed to finish, so
       // we can wait for the completion.
-      return !debugger_task_counter_;
+      return debugger_task_counter_ > 0 ? TerminationState::kPostponeTerminate
+                                        : TerminationState::kTerminate;
     case ThreadState::kReadyToShutdown:
-      // Shutdown sequence will surely start soon. Don't have to schedule a
-      // termination task.
-      return false;
+      // Shutdown sequence might have started in a nested event loop but
+      // JS might continue running after it exits the nested loop.
+      return exit_code_ == ExitCode::kNotTerminated
+                 ? TerminationState::kTerminate
+                 : TerminationState::kTerminationUnnecessary;
   }
   NOTREACHED();
-  return false;
+  return TerminationState::kTerminationUnnecessary;
 }
 
 void WorkerThread::EnsureScriptExecutionTerminates(ExitCode exit_code) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(mutex_);
-  if (!ShouldTerminateScriptExecution())
-    return;
+  switch (ShouldTerminateScriptExecution()) {
+    case TerminationState::kTerminationUnnecessary:
+      return;
+    case TerminationState::kTerminate:
+      break;
+    case TerminationState::kPostponeTerminate:
+      ScheduleToTerminateScriptExecution();
+      return;
+  }
 
   DCHECK(exit_code == ExitCode::kSyncForciblyTerminated ||
          exit_code == ExitCode::kAsyncForciblyTerminated);
@@ -468,18 +549,11 @@ void WorkerThread::InitializeOnWorkerThread(
             WorkerThreadDebugger::From(GetIsolate()))
       debugger->WorkerThreadCreated(this);
 
-    if (GlobalScope()->ScriptController()->Initialize(url_for_debugger)) {
-      worker_reporting_proxy_.DidInitializeWorkerContext();
-      v8::HandleScope handle_scope(GetIsolate());
-      Platform::Current()->WorkerContextCreated(
-          GlobalScope()->ScriptController()->GetContext());
-    } else {
-      // TODO(nhiroki): Handle a case where the script controller fails to
-      // initialize the context. Specifically, we need to terminate this worker
-      // thread from the the parent thread. Currently we only record trace
-      // event.
-      worker_reporting_proxy_.DidFailToInitializeWorkerContext();
-    }
+    GlobalScope()->ScriptController()->Initialize(url_for_debugger);
+    worker_reporting_proxy_.DidInitializeWorkerContext();
+    v8::HandleScope handle_scope(GetIsolate());
+    Platform::Current()->WorkerContextCreated(
+        GlobalScope()->ScriptController()->GetContext());
 
     inspector_task_runner_->InitIsolate(GetIsolate());
     SetThreadState(ThreadState::kRunning);
@@ -522,20 +596,24 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(outside_resource_timing_notifier);
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunClassicScript(
           script_url,
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
-          stack_id);
+          *outside_resource_timing_notifier, stack_id);
 }
 
 void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     network::mojom::FetchCredentialsMode credentials_mode) {
+  DCHECK(outside_resource_timing_notifier);
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
@@ -544,7 +622,7 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
           script_url,
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
-          credentials_mode);
+          *outside_resource_timing_notifier, credentials_mode);
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {
@@ -554,8 +632,12 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
     if (thread_state_ == ThreadState::kReadyToShutdown)
       return;
     SetThreadState(ThreadState::kReadyToShutdown);
-    if (exit_code_ == ExitCode::kNotTerminated)
-      SetExitCode(ExitCode::kGracefullyTerminated);
+  }
+
+  if (pause_or_freeze_count_ > 0) {
+    DCHECK(nested_runner_);
+    pause_or_freeze_count_ = 0;
+    nested_runner_->QuitNow();
   }
 
   if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
@@ -576,13 +658,13 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
 
 void WorkerThread::PerformShutdownOnWorkerThread() {
   DCHECK(IsCurrentThread());
-#if DCHECK_IS_ON()
   {
     MutexLocker lock(mutex_);
     DCHECK(requested_to_terminate_);
     DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
+    if (exit_code_ == ExitCode::kNotTerminated)
+      SetExitCode(ExitCode::kGracefullyTerminated);
   }
-#endif
 
   // When child workers are present, wait for them to shutdown before shutting
   // down this thread. ChildThreadTerminatedOnWorkerThread() is responsible
@@ -646,6 +728,114 @@ void WorkerThread::SetExitCode(ExitCode exit_code) {
 bool WorkerThread::CheckRequestedToTerminate() {
   MutexLocker lock(mutex_);
   return requested_to_terminate_;
+}
+
+void WorkerThread::PauseOrFreeze(mojom::FrameLifecycleState state) {
+  if (IsCurrentThread()) {
+    PauseOrFreezeOnWorkerThread(state);
+  } else {
+    // We send a V8 interrupt to break active JS script execution because
+    // workers might not yield. Likewise we might not be in JS and the
+    // interrupt might not fire right away, so we post a task as well.
+    // Use a token to mitigate both the interrupt and post task firing.
+    MutexLocker lock(mutex_);
+
+    InterruptData* interrupt_data = new InterruptData(this, state);
+    pending_interrupts_.insert(std::unique_ptr<InterruptData>(interrupt_data));
+
+    if (auto* isolate = GetIsolate()) {
+      isolate->RequestInterrupt(&PauseOrFreezeInsideV8InterruptOnWorkerThread,
+                                interrupt_data);
+    }
+    PostCrossThreadTask(
+        *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(
+            &WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread,
+            CrossThreadUnretained(interrupt_data)));
+  }
+}
+
+void WorkerThread::PauseOrFreezeOnWorkerThread(
+    mojom::FrameLifecycleState state) {
+  DCHECK(IsCurrentThread());
+  DCHECK(state == mojom::FrameLifecycleState::kFrozen ||
+         state == mojom::FrameLifecycleState::kPaused);
+  pause_or_freeze_count_++;
+  GlobalScope()->SetLifecycleState(state);
+
+  // If already paused return early.
+  if (pause_or_freeze_count_ > 1)
+    return;
+
+  std::unique_ptr<scheduler::WorkerScheduler::PauseHandle> pause_handle =
+      GetScheduler()->Pause();
+  {
+    // Since the nested message loop runner needs to be created and destroyed on
+    // the same thread we allocate and destroy a new message loop runner each
+    // time we pause or freeze. The AutoReset allows a raw ptr to be stored in
+    // the worker thread such that the resume/terminate can quit this runner.
+    std::unique_ptr<Platform::NestedMessageLoopRunner> nested_runner =
+        Platform::Current()->CreateNestedMessageLoopRunner();
+    base::AutoReset<Platform::NestedMessageLoopRunner*> nested_runner_autoreset(
+        &nested_runner_, nested_runner.get());
+    nested_runner->Run();
+  }
+  GlobalScope()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
+}
+
+void WorkerThread::ResumeOnWorkerThread() {
+  DCHECK(IsCurrentThread());
+  if (pause_or_freeze_count_ > 0) {
+    DCHECK(nested_runner_);
+    pause_or_freeze_count_--;
+    if (pause_or_freeze_count_ == 0)
+      nested_runner_->QuitNow();
+  }
+}
+
+void WorkerThread::PauseOrFreezeWithInterruptDataOnWorkerThread(
+    InterruptData* interrupt_data) {
+  DCHECK(IsCurrentThread());
+  bool should_execute = false;
+  mojom::FrameLifecycleState state;
+  {
+    MutexLocker lock(mutex_);
+    state = interrupt_data->state();
+    // If both the V8 interrupt and PostTask have executed we can remove
+    // the matching InterruptData from the |pending_interrupts_| as it is
+    // no longer used.
+    if (interrupt_data->ShouldRemoveFromList()) {
+      auto iter = pending_interrupts_.begin();
+      while (iter != pending_interrupts_.end()) {
+        if (iter->get() == interrupt_data) {
+          pending_interrupts_.erase(iter);
+          break;
+        }
+        ++iter;
+      }
+    } else {
+      should_execute = true;
+    }
+  }
+
+  if (should_execute) {
+    PauseOrFreezeOnWorkerThread(state);
+  }
+}
+
+void WorkerThread::PauseOrFreezeInsideV8InterruptOnWorkerThread(v8::Isolate*,
+                                                                void* data) {
+  InterruptData* interrupt_data = static_cast<InterruptData*>(data);
+  interrupt_data->MarkInterruptCalled();
+  interrupt_data->worker_thread()->PauseOrFreezeWithInterruptDataOnWorkerThread(
+      interrupt_data);
+}
+
+void WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread(
+    InterruptData* interrupt_data) {
+  interrupt_data->MarkPostTaskCalled();
+  interrupt_data->worker_thread()->PauseOrFreezeWithInterruptDataOnWorkerThread(
+      interrupt_data);
 }
 
 }  // namespace blink

@@ -138,7 +138,7 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
 
     // The UpdateMtab call performs the actual mounting by posting tasks
     // to the thread pool. This also needs to be flushed.
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
 
     // Once the storage monitor picks up the changes to the fake mtab file,
     // exit the RunLoop that should be blocking the main test thread.

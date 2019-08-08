@@ -27,8 +27,7 @@ static const LayoutBoxModelObject* ClippingContainerFromClipChainParent(
 CompositingInputsUpdater::CompositingInputsUpdater(
     PaintLayer* root_layer,
     PaintLayer* compositing_inputs_root)
-    : geometry_map_(kUseTransforms),
-      root_layer_(root_layer),
+    : root_layer_(root_layer),
       compositing_inputs_root_(compositing_inputs_root) {}
 
 CompositingInputsUpdater::~CompositingInputsUpdater() = default;
@@ -339,7 +338,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   // in absolute, unscrolled space, without any scroll applied.
   properties.unclipped_absolute_bounding_box =
       EnclosingIntRect(geometry_map_.AbsoluteRect(
-          FloatRect(layer->BoundingBoxForCompositingOverlapTest())));
+          layer->BoundingBoxForCompositingOverlapTest()));
 
   bool affected_by_scroll = root_layer_->GetScrollableArea() &&
                             layer->IsAffectedByScrollOf(root_layer_);

@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/path_service.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/test/active_directory_login_mixin.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
@@ -71,7 +73,10 @@ class ActiveDirectoryLoginTest : public OobeBaseTest {
 
   const std::string test_realm_;
   const std::string test_user_;
-  ActiveDirectoryLoginMixin ad_login_{&mixin_host_, test_realm_};
+  DeviceStateMixin device_state_{
+      &mixin_host_,
+      DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED};
+  ActiveDirectoryLoginMixin ad_login_{&mixin_host_};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginTest);
@@ -228,8 +233,23 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
   ad_login_.TestPasswordChangeOldPasswordError();
 }
 
+class ActiveDirectoryWebUILoginTest : public ActiveDirectoryLoginTest {
+ public:
+  ActiveDirectoryWebUILoginTest() = default;
+  ~ActiveDirectoryWebUILoginTest() override = default;
+
+  // chromeos::ActiveDirectoryLoginTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
+    chromeos::ActiveDirectoryLoginTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryWebUILoginTest);
+};
+
 // Test reopening Active Directory password change screen clears errors.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryWebUILoginTest,
                        PasswordChange_ReopenClearErrors) {
   OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());

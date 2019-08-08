@@ -23,11 +23,13 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/internal/ocsp.h"
+#include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
@@ -35,6 +37,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
 
 #if defined(USE_NSS_CERTS)
@@ -310,7 +313,7 @@ bool AreSHA1IntermediatesAllowed() {
   // TODO(rsleevi): Remove this once https://crbug.com/588789 is resolved
   // for Windows 7/2008 users.
   // Note: This must be kept in sync with cert_verify_proc_unittest.cc
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
+  return base::win::GetVersion() < base::win::Version::WIN8;
 #else
   return false;
 #endif
@@ -448,11 +451,12 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
 }  // namespace
 
 // static
-scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault() {
+scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
 #if defined(USE_NSS_CERTS)
   return new CertVerifyProcNSS();
 #elif defined(OS_ANDROID)
-  return new CertVerifyProcAndroid();
+  return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
 #elif defined(OS_IOS)
   return new CertVerifyProcIOS();
 #elif defined(OS_MACOSX)
@@ -460,7 +464,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault() {
 #elif defined(OS_WIN)
   return new CertVerifyProcWin();
 #elif defined(OS_FUCHSIA)
-  return CreateCertVerifyProcBuiltin();
+  return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
 #else
 #error Unsupported platform
 #endif
@@ -473,6 +477,7 @@ CertVerifyProc::~CertVerifyProc() = default;
 int CertVerifyProc::Verify(X509Certificate* cert,
                            const std::string& hostname,
                            const std::string& ocsp_response,
+                           const std::string& sct_list,
                            int flags,
                            CRLSet* crl_set,
                            const CertificateList& additional_trust_anchors,
@@ -490,8 +495,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   verify_result->verified_cert = cert;
 
   DCHECK(crl_set);
-  int rv = VerifyInternal(cert, hostname, ocsp_response, flags, crl_set,
-                          additional_trust_anchors, verify_result);
+  int rv = VerifyInternal(cert, hostname, ocsp_response, sct_list, flags,
+                          crl_set, additional_trust_anchors, verify_result);
 
   // Check for mismatched signature algorithms and unknown signature algorithms
   // in the chain. Also fills in the has_* booleans for the digest algorithms
@@ -605,6 +610,72 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   }
 
   return rv;
+}
+
+// static
+void CertVerifyProc::LogNameNormalizationResult(
+    const std::string& histogram_suffix,
+    NameNormalizationResult result) {
+  base::UmaHistogramEnumeration(
+      std::string("Net.CertVerifier.NameNormalizationPrivateRoots") +
+          histogram_suffix,
+      result);
+}
+
+// static
+void CertVerifyProc::LogNameNormalizationMetrics(
+    const std::string& histogram_suffix,
+    X509Certificate* verified_cert,
+    bool is_issued_by_known_root) {
+  if (is_issued_by_known_root)
+    return;
+
+  if (verified_cert->intermediate_buffers().empty()) {
+    LogNameNormalizationResult(histogram_suffix,
+                               NameNormalizationResult::kChainLengthOne);
+    return;
+  }
+
+  std::vector<CRYPTO_BUFFER*> der_certs;
+  der_certs.push_back(verified_cert->cert_buffer());
+  for (const auto& buf : verified_cert->intermediate_buffers())
+    der_certs.push_back(buf.get());
+
+  ParseCertificateOptions options;
+  options.allow_invalid_serial_numbers = true;
+
+  std::vector<der::Input> subjects;
+  std::vector<der::Input> issuers;
+
+  for (auto* buf : der_certs) {
+    der::Input tbs_certificate_tlv;
+    der::Input signature_algorithm_tlv;
+    der::BitString signature_value;
+    ParsedTbsCertificate tbs;
+    if (!ParseCertificate(
+            der::Input(CRYPTO_BUFFER_data(buf), CRYPTO_BUFFER_len(buf)),
+            &tbs_certificate_tlv, &signature_algorithm_tlv, &signature_value,
+            nullptr /* errors*/) ||
+        !ParseTbsCertificate(tbs_certificate_tlv, options, &tbs,
+                             nullptr /*errors*/)) {
+      LogNameNormalizationResult(histogram_suffix,
+                                 NameNormalizationResult::kError);
+      return;
+    }
+    subjects.push_back(tbs.subject_tlv);
+    issuers.push_back(tbs.issuer_tlv);
+  }
+
+  for (size_t i = 0; i < subjects.size() - 1; ++i) {
+    if (issuers[i] != subjects[i + 1]) {
+      LogNameNormalizationResult(histogram_suffix,
+                                 NameNormalizationResult::kNormalized);
+      return;
+    }
+  }
+
+  LogNameNormalizationResult(histogram_suffix,
+                             NameNormalizationResult::kByteEqual);
 }
 
 // CheckNameConstraints verifies that every name in |dns_names| is in one of

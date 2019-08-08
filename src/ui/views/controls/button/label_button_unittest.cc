@@ -65,19 +65,6 @@ class LabelButtonTest : public test::WidgetTest {
  public:
   LabelButtonTest() = default;
 
-  // Adds a LabelButton to the test Widget with the STYLE_BUTTON platform style.
-  TestLabelButton* AddStyledButton(const char* label, bool is_default) {
-    TestLabelButton* button = new TestLabelButton;
-    button->SetText(ASCIIToUTF16(label));
-    button->SetStyleDeprecated(Button::STYLE_BUTTON);
-    if (is_default)
-      button->SetIsDefault(true);
-    button_->GetWidget()->GetContentsView()->AddChildView(button);
-    button->SizeToPreferredSize();
-    button->Layout();
-    return button;
-  }
-
   // testing::Test:
   void SetUp() override {
     WidgetTest::SetUp();
@@ -142,8 +129,7 @@ TEST_F(LabelButtonTest, Init) {
   EXPECT_EQ(text, accessible_node_data.GetString16Attribute(
                       ax::mojom::StringAttribute::kName));
 
-  EXPECT_FALSE(button.is_default());
-  EXPECT_EQ(button.style(), Button::STYLE_TEXTBUTTON);
+  EXPECT_FALSE(button.GetIsDefault());
   EXPECT_EQ(Button::STATE_NORMAL, button.state());
 
   EXPECT_EQ(button.image()->parent(), &button);
@@ -491,62 +477,13 @@ TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }
 
-// Ensure the label gets the correct style for default buttons (e.g. bolding)
-// and button size updates correctly. Regression test for crbug.com/578722.
-// Disabled on Mac. The system bold font on 10.10 doesn't get wide enough to
-// change the size, but we don't use styled buttons on Mac, just MdTextButton.
-#if defined(OS_MACOSX)
-#define MAYBE_ButtonStyleIsDefaultStyle DISABLED_ButtonStyleIsDefaultStyle
-#else
-#define MAYBE_ButtonStyleIsDefaultStyle ButtonStyleIsDefaultStyle
-#endif
-TEST_F(LabelButtonTest, MAYBE_ButtonStyleIsDefaultStyle) {
-  TestLabelButton* button = AddStyledButton("Save", false);
-  gfx::Size non_default_size = button->label()->size();
-  EXPECT_EQ(button->label()->GetPreferredSize().width(),
-            non_default_size.width());
-  EXPECT_EQ(button->label()->font_list().GetFontWeight(),
-            gfx::Font::Weight::NORMAL);
-  EXPECT_EQ(styled_normal_text_color_, button->label()->enabled_color());
-  button->SetIsDefault(true);
-  button->SizeToPreferredSize();
-  button->Layout();
-  EXPECT_EQ(styled_highlight_text_color_, button->label()->enabled_color());
-  EXPECT_NE(non_default_size, button->label()->size());
-  EXPECT_EQ(button->label()->font_list().GetFontWeight(),
-            gfx::Font::Weight::BOLD);
-}
-
 // Ensure the label gets the correct style when pressed or becoming default.
 TEST_F(LabelButtonTest, HighlightedButtonStyle) {
-  // For STYLE_TEXTBUTTON, the NativeTheme might not provide SK_ColorBLACK, but
-  // it should be the same for normal and pressed states.
+  // The NativeTheme might not provide SK_ColorBLACK, but it should be the same
+  // for normal and pressed states.
   EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
   button_->SetState(Button::STATE_PRESSED);
   EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
-
-  // Add a non-default button.
-  TestLabelButton* styled_button = AddStyledButton("OK", false);
-  EXPECT_EQ(styled_normal_text_color_, styled_button->label()->enabled_color());
-  styled_button->SetState(Button::STATE_PRESSED);
-  EXPECT_EQ(styled_highlight_text_color_,
-            styled_button->label()->enabled_color());
-
-  // If there's an explicit color set for STATE_PRESSED, that should be used.
-  styled_button->SetEnabledTextColors(SK_ColorRED);
-  EXPECT_EQ(SK_ColorRED, styled_button->label()->enabled_color());
-
-  // Test becoming default after adding to the Widget.
-  TestLabelButton* default_after = AddStyledButton("OK", false);
-  EXPECT_EQ(styled_normal_text_color_, default_after->label()->enabled_color());
-  default_after->SetIsDefault(true);
-  EXPECT_EQ(styled_highlight_text_color_,
-            default_after->label()->enabled_color());
-
-  // Test becoming default before adding to the Widget.
-  TestLabelButton* default_before = AddStyledButton("OK", true);
-  EXPECT_EQ(styled_highlight_text_color_,
-            default_before->label()->enabled_color());
 }
 
 // Ensure the label gets the correct enabled color after

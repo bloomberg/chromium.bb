@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -38,11 +39,13 @@ void GPUFence::OnCompletionCallback(ScriptPromiseResolver* resolver,
       resolver->Resolve();
       break;
     case DAWN_FENCE_COMPLETION_STATUS_ERROR:
-      resolver->Reject(DOMException::Create(DOMExceptionCode::kOperationError));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError));
       break;
     case DAWN_FENCE_COMPLETION_STATUS_UNKNOWN:
     case DAWN_FENCE_COMPLETION_STATUS_CONTEXT_LOST:
-      resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+      resolver->Reject(
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;
     default:
       NOTREACHED();

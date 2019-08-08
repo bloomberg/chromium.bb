@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
@@ -35,13 +35,16 @@ class Extension;
 
 // Class to encapsulate logic to control the browser UI for extension based web
 // apps.
-class HostedAppBrowserController : public TabStripModelObserver,
-                                   public ExtensionUninstallDialog::Delegate,
-                                   public WebAppBrowserController {
+class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
+                                   public web_app::AppBrowserController {
  public:
   // Functions to set preferences that are unique to app windows.
-  static void SetAppPrefsForWebContents(WebAppBrowserController* controller,
-                                        content::WebContents* web_contents);
+  static void SetAppPrefsForWebContents(
+      web_app::AppBrowserController* controller,
+      content::WebContents* web_contents);
+
+  // Clear preferences that are unique to app windows.
+  static void ClearAppPrefsForWebContents(content::WebContents* web_contents);
 
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController() override;
@@ -50,9 +53,6 @@ class HostedAppBrowserController : public TabStripModelObserver,
 
   // Returns true if the associated Hosted App is for a PWA.
   bool CreatedForInstalledPwa() const override;
-
-  // Returns true if this controller is for a System Web App.
-  bool IsForSystemWebApp() const;
 
   // Whether the browser being controlled should be currently showing the
   // toolbar.
@@ -89,25 +89,20 @@ class HostedAppBrowserController : public TabStripModelObserver,
 
   bool CanUninstall() const override;
 
-  void Uninstall(UninstallReason reason, UninstallSource source) override;
+  void Uninstall() override;
 
   // Returns whether the app is installed (uninstallation may complete within
   // the lifetime of HostedAppBrowserController).
   bool IsInstalled() const override;
 
-  // TabStripModelObserver overrides.
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
-
   bool IsHostedApp() const override;
 
- private:
-  // Called by OnTabstripModelChanged().
-  void OnTabInserted(content::WebContents* contents);
-  void OnTabRemoved(content::WebContents* contents);
+ protected:
+  void OnReceivedInitialURL() override;
+  void OnTabInserted(content::WebContents* contents) override;
+  void OnTabRemoved(content::WebContents* contents) override;
 
+ private:
   // Will return nullptr if the extension has been uninstalled.
   const Extension* GetExtension() const;
 

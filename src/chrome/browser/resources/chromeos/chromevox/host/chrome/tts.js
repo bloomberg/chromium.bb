@@ -137,5 +137,4 @@ cvox.ChromeTts.prototype.createMessageForProperties_ = function(
   return message;
 };
 
-/** @override */
 cvox.HostFactory.ttsConstructor = cvox.ChromeTts;

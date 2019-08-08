@@ -34,10 +34,11 @@ class PLATFORM_EXPORT UnifiedHeapController final
 
  public:
   explicit UnifiedHeapController(ThreadState*);
+  ~UnifiedHeapController() override;
 
   // v8::EmbedderHeapTracer implementation.
-  void TracePrologue() final;
-  void TraceEpilogue() final;
+  void TracePrologue(v8::EmbedderHeapTracer::TraceFlags) final;
+  void TraceEpilogue(v8::EmbedderHeapTracer::TraceSummary*) final;
   void EnterFinalPause(EmbedderStackState) final;
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&) final;
   bool AdvanceTracing(double) final;
@@ -46,14 +47,20 @@ class PLATFORM_EXPORT UnifiedHeapController final
 
   ThreadState* thread_state() const { return thread_state_; }
 
+  // Forwarded from ThreadHeapStatsCollector.
+  void UpdateAllocatedObjectSize(int64_t);
+
  private:
   static bool IsRootForNonTracingGCInternal(
       const v8::TracedGlobal<v8::Value>& handle);
 
   ThreadState* const thread_state_;
-
   // Returns whether the Blink heap has been fully processed.
   bool is_tracing_done_ = false;
+
+  // Buffered allocated size. Only positive values are forwarded to V8.
+  int64_t buffered_allocated_size_ = 0;
+  int64_t old_allocated_bytes_since_prev_gc_ = 0;
 };
 
 }  // namespace blink

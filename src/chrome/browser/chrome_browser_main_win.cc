@@ -39,11 +39,8 @@
 #include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/conflicts/enumerate_input_method_editors_win.h"
-#include "chrome/browser/conflicts/enumerate_shell_extensions_win.h"
-#include "chrome/browser/conflicts/module_database_win.h"
-#include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/memory/memory_pressure_monitor.h"
 #include "chrome/browser/memory/swap_thrashing_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -54,6 +51,10 @@
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_elf_init.h"
+#include "chrome/browser/win/conflicts/enumerate_input_method_editors.h"
+#include "chrome/browser/win/conflicts/enumerate_shell_extensions.h"
+#include "chrome/browser/win/conflicts/module_database.h"
+#include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -81,6 +82,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -90,10 +93,11 @@
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/system_fonts_win.h"
+#include "ui/gfx/win/crash_id_helper.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
+#include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 #endif
 
 namespace {
@@ -194,11 +198,13 @@ void DetectFaultTolerantHeap() {
 
 // Initializes the ModuleDatabase on its owning sequence. Also starts the
 // enumeration of registered modules in the Windows Registry.
-void InitializeModuleDatabase(bool is_third_party_blocking_policy_enabled) {
+void InitializeModuleDatabase(
+    std::unique_ptr<service_manager::Connector> connector,
+    bool is_third_party_blocking_policy_enabled) {
   DCHECK(ModuleDatabase::GetTaskRunner()->RunsTasksInCurrentSequence());
 
-  ModuleDatabase::SetInstance(
-      std::make_unique<ModuleDatabase>(is_third_party_blocking_policy_enabled));
+  ModuleDatabase::SetInstance(std::make_unique<ModuleDatabase>(
+      std::move(connector), is_third_party_blocking_policy_enabled));
 
   auto* module_database = ModuleDatabase::GetInstance();
   module_database->StartDrainingModuleLoadAttemptsLog();
@@ -410,8 +416,12 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
 #endif
 
   ModuleDatabase::GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&InitializeModuleDatabase,
-                                third_party_blocking_policy_enabled));
+      FROM_HERE,
+      base::BindOnce(&InitializeModuleDatabase,
+                     content::ServiceManagerConnection::GetForProcess()
+                         ->GetConnector()
+                         ->Clone(),
+                     third_party_blocking_policy_enabled));
 
   *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
 }
@@ -492,10 +502,11 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     StartupData* startup_data)
     : ChromeBrowserMainParts(parameters, startup_data) {}
 
-ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
-}
+ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() = default;
 
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
+  DCHECK_NE(base::PlatformThread::CurrentId(), base::kInvalidThreadId);
+  gfx::CrashIdHelper::RegisterMainThread(base::PlatformThread::CurrentId());
   ChromeBrowserMainParts::ToolkitInitialized();
   gfx::win::SetAdjustFontCallback(&AdjustUIFont);
   gfx::win::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
@@ -613,6 +624,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   // it easier to experiment with this monitor.
   if (base::FeatureList::IsEnabled(features::kSwapThrashingMonitor))
     memory::SwapThrashingMonitor::Initialize();
+
+  if (base::FeatureList::IsEnabled(features::kNewMemoryPressureMonitor))
+    memory_pressure_monitor_ = memory::MemoryPressureMonitor::Create();
 }
 
 // static

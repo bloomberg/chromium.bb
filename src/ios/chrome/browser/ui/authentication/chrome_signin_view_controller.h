@@ -7,6 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+#include <memory>
+
+#include "base/auto_reset.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #import "ios/chrome/browser/signin/constants.h"
@@ -121,6 +124,10 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // Timer generator. Should stay nil to use the default timer class:
 // base::OneShotTimer.
 @property(nonatomic, copy) TimerGeneratorBlock timerGenerator;
+
+// Returns an AutoReset object that ensures that all future
+// ChromeSigninViewController instances will not present the activity indicator.
++ (std::unique_ptr<base::AutoReset<BOOL>>)hideActivityIndicatorForTesting;
 
 @end
 

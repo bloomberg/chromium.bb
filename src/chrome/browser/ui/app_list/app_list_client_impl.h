@@ -10,8 +10,8 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -22,8 +22,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/user_manager/user_manager.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/types/display_constants.h"
 
 namespace app_list {
@@ -37,39 +35,23 @@ class AppSyncUIStateWatcher;
 class Profile;
 
 class AppListClientImpl
-    : public ash::mojom::AppListClient,
+    : public app_list::AppListClient,
       public AppListControllerDelegate,
       public user_manager::UserManager::UserSessionStateObserver,
       public TemplateURLServiceObserver {
  public:
-  class MojoRecorderForTest {
-   public:
-    MojoRecorderForTest();
-    ~MojoRecorderForTest();
-
-    void Record(int profile_id) { recorder_[profile_id]++; }
-
-    int Query(int profile_id) const;
-
-   private:
-    // For each pair in the map, the key is a profile id while the value is the
-    // mojo calling times associated with the particular profile.
-    std::map<int, int> recorder_;
-
-    DISALLOW_COPY_AND_ASSIGN(MojoRecorderForTest);
-  };
-
   AppListClientImpl();
   ~AppListClientImpl() override;
 
   static AppListClientImpl* GetInstance();
 
-  // ash::mojom::AppListClient:
+  // app_list::AppListClient:
+  void OnAppListControllerDestroyed() override;
   void StartSearch(const base::string16& trimmed_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
-                        ash::mojom::AppListLaunchedFrom launched_from,
-                        ash::mojom::AppListLaunchType launch_type,
+                        ash::AppListLaunchedFrom launched_from,
+                        ash::AppListLaunchType launch_type,
                         int suggestion_index) override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
@@ -77,9 +59,6 @@ class AppListClientImpl
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(const std::string& result_id,
-                                           int command_id,
-                                           int event_flags) override;
   void ViewClosing() override;
   void ViewShown(int64_t display_id) override;
   void ActivateItem(int profile_id,
@@ -88,18 +67,14 @@ class AppListClientImpl
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(int profile_id,
-                               const std::string& id,
-                               int command_id,
-                               int event_flags) override;
   void OnAppListTargetVisibilityChanged(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
   void OnFolderCreated(int profile_id,
-                       ash::mojom::AppListItemMetadataPtr item) override;
+                       std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnFolderDeleted(int profile_id,
-                       ash::mojom::AppListItemMetadataPtr item) override;
+                       std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnItemUpdated(int profile_id,
-                     ash::mojom::AppListItemMetadataPtr item) override;
+                     std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnPageBreakItemAdded(int profile_id,
                             const std::string& id,
                             const syncer::StringOrdinal& position) override;
@@ -153,7 +128,7 @@ class AppListClientImpl
   bool app_list_visible() const { return app_list_visible_; }
 
   // Returns a pointer to control the app list views in ash.
-  ash::mojom::AppListController* GetAppListController() const;
+  app_list::AppListController* GetAppListController() const;
 
   AppListControllerDelegate* GetControllerDelegate();
   Profile* GetCurrentAppListProfile() const;
@@ -161,13 +136,6 @@ class AppListClientImpl
   app_list::SearchController* search_controller();
 
   AppListModelUpdater* GetModelUpdaterForTest();
-
-  void SetUpMojoRecorderForTest();
-
-  int QueryMojoRecorderForTest(int profile_id);
-
-  // Flushes all pending mojo call to Ash for testing.
-  void FlushMojoForTesting();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AppListClientWithProfileTest, CheckDataRace);
@@ -207,20 +175,17 @@ class AppListClientImpl
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 
-  std::unique_ptr<MojoRecorderForTest> mojo_recorder_for_test_;
-
   ScopedObserver<TemplateURLService, AppListClientImpl>
-      template_url_service_observer_;
+      template_url_service_observer_{this};
 
-  mojo::Binding<ash::mojom::AppListClient> binding_;
-  ash::mojom::AppListControllerPtr app_list_controller_;
+  app_list::AppListController* app_list_controller_ = nullptr;
 
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;
 
   app_list::AppLaunchEventLogger app_launch_event_logger_;
 
-  base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListClientImpl);
 };

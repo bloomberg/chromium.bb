@@ -18,65 +18,37 @@
 #include "Routine.hpp"
 
 #include <cstdint>
+#include <stddef.h>
+#include <vector>
 
 namespace rr
 {
-#if REACTOR_LLVM_VERSION < 7
-	class LLVMRoutineManager;
-
-	class LLVMRoutine : public Routine
-	{
-		friend class LLVMRoutineManager;
-
-	public:
-		LLVMRoutine(int bufferSize);
-		//LLVMRoutine(void *memory, int bufferSize, int offset);
-
-		virtual ~LLVMRoutine();
-
-		//void setFunctionSize(int functionSize);
-
-		//const void *getBuffer();
-		const void *getEntry();
-		//int getBufferSize();
-		//int getFunctionSize();   // Includes constants before the entry point
-		int getCodeSize();       // Executable code only
-		//bool isDynamic();
-
-	private:
-		void *buffer;
-		const void *entry;
-		int bufferSize;
-		int functionSize;
-
-		//const bool dynamic;   // Generated or precompiled
-	};
-#else
 	class LLVMReactorJIT;
 
 	class LLVMRoutine : public Routine
 	{
 	public:
-		LLVMRoutine(void *ent, void (*callback)(LLVMReactorJIT *, uint64_t),
+		LLVMRoutine(void **entries, size_t entry_count,
+					void (*callback)(LLVMReactorJIT *, uint64_t),
 		            LLVMReactorJIT *jit, uint64_t key)
-			: entry(ent), dtor(callback), reactorJIT(jit), moduleKey(key)
+			: entries(entries, entries+entry_count),
+			  dtor(callback), reactorJIT(jit), moduleKey(key)
 		{ }
 
 		virtual ~LLVMRoutine();
 
-		const void *getEntry()
+		const void *getEntry(int index)
 		{
-			return entry;
+			return entries[index];
 		}
 
 	private:
-		const void *entry;
+		const std::vector<const void *> entries;
 
 		void (*dtor)(LLVMReactorJIT *, uint64_t);
 		LLVMReactorJIT *reactorJIT;
 		uint64_t moduleKey;
 	};
-#endif  // REACTOR_LLVM_VERSION < 7
 }
 
 #endif   // rr_LLVMRoutine_hpp

@@ -117,7 +117,7 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
       feature = WebFeature::kCSSFilterDropShadow;
       break;
   };
-  UseCounter::Count(document, feature);
+  document.CountUse(feature);
 }
 
 static double ResolveFirstArgumentForFunction(const CSSFunctionValue& filter,

@@ -125,11 +125,10 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
-  if (feature_state_ !=
-      multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+  if (!IsEnabled()) {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
-    PA_LOG(VERBOSE) << "Smart Lock is disabled; aborting.";
+    PA_LOG(VERBOSE) << "Smart Lock is not enabled by user; aborting.";
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
     return;
@@ -149,6 +148,8 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     pref_manager_->SetEasyUnlockEnabledStateSet();
     LogSmartLockEnabledState(SmartLockEnabledState::ENABLED);
   } else {
+    PA_LOG(ERROR) << "Smart Lock is enabled by user, but no unlock key is "
+                     "present; aborting.";
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
 
@@ -175,7 +176,11 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
 void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     const multidevice::RemoteDeviceRefList& remote_devices) {
   // When EasyUnlock is enabled, only one EasyUnlock host should exist.
-  DCHECK(remote_devices.size() == 1u);
+  if (remote_devices.size() != 1u) {
+    PA_LOG(ERROR) << "There should only be 1 Smart Lock host, but there are: "
+                  << remote_devices.size();
+    NOTREACHED();
+  }
 
   SetProximityAuthDevices(GetAccountId(), remote_devices,
                           device_sync_client_->GetLocalDeviceMetadata());
@@ -239,11 +244,38 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
                       multidevice::SoftwareFeatureState::kEnabled;
     dict->SetBoolean(key_names::kKeyUnlockKey, unlock_key);
 
+    PA_LOG(VERBOSE) << "Storing RemoteDevice: { "
+                    << "name: " << device.name()
+                    << ", unlock_key: " << unlock_key
+                    << ", id: " << device.GetTruncatedDeviceIdForLogs()
+                    << " }.";
     device_list->Append(std::move(dict));
   }
 
-  // TODO(tengs): Rename this function after the easy_unlock app is replaced.
-  SetRemoteDevices(*device_list);
+  if (device_list->GetSize() != 2u) {
+    PA_LOG(ERROR) << "There should only be 2 devices persisted, the host and "
+                     "the client, but there are: "
+                  << device_list->GetSize();
+    NOTREACHED();
+  }
+
+  SetStoredRemoteDevices(*device_list);
+}
+
+void EasyUnlockServiceRegular::SetStoredRemoteDevices(
+    const base::ListValue& devices) {
+  std::string remote_devices_json;
+  JSONStringValueSerializer serializer(&remote_devices_json);
+  serializer.Serialize(devices);
+
+  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  if (devices.empty())
+    pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
+  else
+    pairing_update->SetKey(kKeyDevices, devices.Clone());
+
+  RefreshCryptohomeKeysIfPossible();
 }
 
 proximity_auth::ProximityAuthPrefManager*
@@ -294,23 +326,6 @@ const base::ListValue* EasyUnlockServiceRegular::GetRemoteDevices() const {
   if (pairing_dict && pairing_dict->GetList(kKeyDevices, &devices))
     return devices;
   return NULL;
-}
-
-void EasyUnlockServiceRegular::SetRemoteDevices(
-    const base::ListValue& devices) {
-  std::string remote_devices_json;
-  JSONStringValueSerializer serializer(&remote_devices_json);
-  serializer.Serialize(devices);
-  PA_LOG(VERBOSE) << "Setting RemoteDevices:\n  " << remote_devices_json;
-
-  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
-                                      prefs::kEasyUnlockPairing);
-  if (devices.empty())
-    pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
-  else
-    pairing_update->SetKey(kKeyDevices, devices.Clone());
-
-  RefreshCryptohomeKeysIfPossible();
 }
 
 std::string EasyUnlockServiceRegular::GetChallenge() const {
@@ -394,19 +409,18 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   if (!ProfileHelper::IsPrimaryProfile(profile()))
     return false;
 
-  if (feature_state_ ==
+  if (multidevice_setup_client_->GetFeatureState(
+          multidevice_setup::mojom::Feature::kSmartLock) ==
       multidevice_setup::mojom::FeatureState::kProhibitedByPolicy) {
     return false;
   }
-
-  if (!profile()->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
-    return false;
 
   return true;
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {
-  return feature_state_ ==
+  return multidevice_setup_client_->GetFeatureState(
+             multidevice_setup::mojom::Feature::kSmartLock) ==
          multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
@@ -456,15 +470,6 @@ void EasyUnlockServiceRegular::OnNewDevicesSynced() {
 void EasyUnlockServiceRegular::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
-  const auto it =
-      feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
-  if (it == feature_states_map.end()) {
-    feature_state_ =
-        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
-    return;
-  }
-
-  feature_state_ = it->second;
   LoadRemoteDevices();
   UpdateAppState();
 }
@@ -473,7 +478,7 @@ void EasyUnlockServiceRegular::ShowChromebookAddedNotification() {
   // The user may have decided to disable Smart Lock or the whole multidevice
   // suite immediately after completing setup, so ensure that Smart Lock is
   // enabled.
-  if (feature_state_ == multidevice_setup::mojom::FeatureState::kEnabledByUser)
+  if (IsEnabled())
     notification_controller_->ShowChromebookAddedNotification();
 }
 

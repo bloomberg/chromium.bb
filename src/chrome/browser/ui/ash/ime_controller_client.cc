@@ -134,15 +134,6 @@ void ImeControllerClient::OverrideKeyboardKeyset(
   std::move(callback).Run();
 }
 
-// chromeos::input_method::InputMethodManager::Observer:
-void ImeControllerClient::InputMethodChanged(InputMethodManager* manager,
-                                             Profile* profile,
-                                             bool show_message) {
-  RefreshIme();
-  if (show_message)
-    ShowModeIndicator();
-}
-
 void ImeControllerClient::ShowModeIndicator() {
   // Get the short name of the changed input method (e.g. US, JA, etc.)
   const InputMethodDescriptor descriptor =
@@ -169,6 +160,15 @@ void ImeControllerClient::ShowModeIndicator() {
   // Mojo call to Ash to show the mode indicator view with the given anchor
   // bounds and short name.
   ime_controller_ptr_->ShowModeIndicator(anchor_bounds, short_name);
+}
+
+// chromeos::input_method::InputMethodManager::Observer:
+void ImeControllerClient::InputMethodChanged(InputMethodManager* manager,
+                                             Profile* profile,
+                                             bool show_message) {
+  RefreshIme();
+  if (show_message)
+    ShowModeIndicator();
 }
 
 // chromeos::input_method::InputMethodManager::ImeMenuObserver:

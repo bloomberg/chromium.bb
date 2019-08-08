@@ -4242,6 +4242,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.dc_layers = supports_dc_layers_;
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
+  caps.gpu_vsync = surface_->SupportsGpuVSync();
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
@@ -8258,12 +8259,19 @@ void GLES2DecoderImpl::DoFramebufferParameteri(GLenum target,
                                                GLenum pname,
                                                GLint param) {
   const char* func_name = "glFramebufferParameteri";
+  DCHECK(pname == GL_FRAMEBUFFER_FLIP_Y_MESA);
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no framebuffer bound");
     return;
   }
+  if (param != GL_TRUE && param != GL_FALSE) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
+                       "invalid parameter, only GL_TRUE or GL_FALSE accepted");
+    return;
+  }
   api()->glFramebufferParameteriFn(target, pname, param);
+  framebuffer->SetFlipY(param == GL_TRUE);
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
@@ -9971,11 +9979,18 @@ bool GLES2DecoderImpl::SupportsDrawBuffers() const {
 }
 
 bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
+  if (state_.GetEnabled(GL_RASTERIZER_DISCARD)) {
+    return true;
+  }
   if (!SupportsDrawBuffers()) {
     return true;
   }
   Framebuffer* framebuffer = framebuffer_state_.bound_draw_framebuffer.get();
   if (!state_.current_program.get() || !framebuffer) {
+    return true;
+  }
+  if (!state_.color_mask_red && !state_.color_mask_green &&
+      !state_.color_mask_blue && !state_.color_mask_alpha) {
     return true;
   }
   uint32_t fragment_output_type_mask =
@@ -14499,8 +14514,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
     GLsizei width, GLsizei height, GLsizei depth, GLenum format) {
   const char* error_message = "";
   if (!::gpu::gles2::ValidateCompressedTexDimensions(
-          target, level, width, height, depth, format,
-          feature_info_->IsWebGLContext(), &error_message)) {
+          target, level, width, height, depth, format, &error_message)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, error_message);
     return false;
   }
@@ -14515,7 +14529,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
   const char* error_message = "";
   if (!::gpu::gles2::ValidateCompressedTexSubDimensions(
           target, level, xoffset, yoffset, zoffset, width, height, depth,
-          format, texture, feature_info_->IsWebGLContext(), &error_message)) {
+          format, texture, &error_message)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, error_message);
     return false;
   }
@@ -17203,6 +17217,13 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
             "not enabled for commands completed queries");
+        return error::kNoError;
+      }
+      break;
+    case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
+      if (!features().chromium_completion_query) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                           "not enabled for program completion queries");
         return error::kNoError;
       }
       break;

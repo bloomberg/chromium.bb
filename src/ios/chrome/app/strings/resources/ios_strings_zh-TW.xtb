@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
 <translation id="1176932207622159128">無法儲存圖片</translation>
+<translation id="1180526666083833456">在所有裝置上保持同步，並享有個人化的體驗。</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1201530049782216880">新無痕式分頁</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
@@ -24,6 +25,7 @@
 <translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1265739287306757398">操作說明</translation>
 <translation id="1272079795634619415">停止</translation>
+<translation id="1283524564873030414">過去 24 小時</translation>
 <translation id="1323735185997015385">刪除</translation>
 <translation id="132683371494960526">輕觸兩下即可變更上層資料夾。</translation>
 <translation id="1340643665687018190">關閉選單</translation>
@@ -37,6 +39,8 @@
 <translation id="1400642268715879018">過去 4 週</translation>
 <translation id="1407135791313364759">全部開啟</translation>
 <translation id="1430915738399379752">列印</translation>
+<translation id="1436290164580597469">輸入通關密語即可開始同步處理。</translation>
+<translation id="1449835205994625556">隱藏密碼</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> 個項目</translation>
 <translation id="1491277525950327607">輕觸兩下即可切換設定</translation>
 <translation id="152234381334907219">永不儲存</translation>
@@ -66,20 +70,20 @@
 <translation id="1813414402673211292">清除瀏覽資料</translation>
 <translation id="1820259098641718022">已加入閱讀清單</translation>
 <translation id="1828824471510190776">建議密碼...</translation>
+<translation id="1870148520156231997">顯示密碼</translation>
 <translation id="1876721852596493031">傳送使用情況資料</translation>
-<translation id="1886928167269928266">不限時間</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
+<translation id="1923342640370224680">前一個小時</translation>
 <translation id="1941314575388338491">輕觸兩下即可複製。</translation>
+<translation id="1952172573699511566">Chrome 會儘可能以你慣用的語言顯示網站文字。</translation>
 <translation id="1952728750904661634">使用受管理的帳戶登入</translation>
 <translation id="1974060860693918893">進階</translation>
 <translation id="1989112275319619282">瀏覽</translation>
-<translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
 <translation id="2015722694326466240">你必須先在裝置上設定通行碼，才能查看密碼。</translation>
-<translation id="2068952045031577364">過去 1 週</translation>
+<translation id="2073572773299281212">上次使用時間：<ph name="DAYS" /> 天前</translation>
 <translation id="2074131957428911366">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步處理的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="209018056901015185">切換為電腦版網站</translation>
-<translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="213900355088104901">如要進行私密瀏覽，請開啟無痕式分頁</translation>
@@ -106,10 +110,12 @@
 <translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2481538920734869610">新增帳戶</translation>
 <translation id="2497852260688568942">你的管理員停用了同步功能</translation>
-<translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
+<translation id="2500374554657206846">儲存密碼的選項</translation>
 <translation id="2523363575747517183">這個網站不斷嘗試開啟其他應用程式。</translation>
 <translation id="2529021024822217800">全部開啟</translation>
+<translation id="2570206273416014374">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送至預設搜尋引擎。</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
+<translation id="2578571896248130439">傳送網頁</translation>
 <translation id="2584132361465095047">新增帳戶…</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2648803196158606475">刪除已讀取的項目</translation>
@@ -136,6 +142,7 @@
 <translation id="2871695793448672541">目前為隱藏狀態的密碼</translation>
 <translation id="288655811176831528">關閉分頁</translation>
 <translation id="2898963176829412617">新資料夾…</translation>
+<translation id="2916171785467530738">自動完成搜尋字詞與網址</translation>
 <translation id="291754862089661335">將這個方框對準 QR 圖碼或條碼</translation>
 <translation id="2921219216347069551">無法分享網頁</translation>
 <translation id="2923448633003185837">貼上並前往</translation>
@@ -144,11 +151,11 @@
 <translation id="2958718410589002129">密碼</translation>
 <translation id="2969979262385602596">無法登入，請稍後再試。</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
-<translation id="3024255823539804759">過去 1 天</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3157684681743766797">全部標示…</translation>
 <translation id="3175081911749765310">網路服務</translation>
+<translation id="3178650076442119961">上次使用時間：今天</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3224641773458703735">你必須先在裝置上設定通行碼，才能匯出密碼。</translation>
 <translation id="3240426699337459095">連結已複製</translation>
@@ -179,6 +186,7 @@
 <translation id="3533202363250687977">關閉所有無痕式分頁</translation>
 <translation id="3533436815740441613">新分頁</translation>
 <translation id="3551320343578183772">關閉分頁</translation>
+<translation id="3581564640715911333">詢問是否要將網頁內容翻譯成其他語言</translation>
 <translation id="3588820906588687999">在新分頁中開啟圖片</translation>
 <translation id="3603009562372709545">複製連結網址</translation>
 <translation id="3607167657931203000">自動填入資料</translation>
@@ -186,6 +194,7 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
+<translation id="3775743491439407556">同步功能無法正常運作</translation>
 <translation id="3779810277399252432">沒有網際網路連線。</translation>
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
@@ -202,6 +211,7 @@
 <translation id="3995521777587992544">網頁載入進度列，已載入 <ph name="EMAIL" />。</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4004204301268239848">系統會將密碼儲存在你的 Google 帳戶中，方便你在任何裝置上使用密碼。</translation>
+<translation id="4006921758705478413">傳送至你的裝置</translation>
 <translation id="4038354071007134711">這個裝置上沒有能開啟此檔案的應用程式。</translation>
 <translation id="4042870976416480368">在網頁中查找</translation>
 <translation id="4049507953662678203">請確定您已連上網路，然後再試一次。</translation>
@@ -214,16 +224,20 @@
 <translation id="4124987746317609294">時間範圍</translation>
 <translation id="4172051516777682613">一律顯示</translation>
 <translation id="418156467088430727">在新分頁中檢視離線版本</translation>
+<translation id="4181841719683918333">語言</translation>
 <translation id="4237682350741091554">前往<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />頁面管理 Chrome 同步功能和個人化設定</translation>
 <translation id="424315890655130736">輸入通關密語</translation>
 <translation id="4272631900155121838">如要掃描 QR 圖碼，請在設定中啟用相機</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="430793432425771671">同步處理所有資料</translation>
+<translation id="430967081421617822">不限時間</translation>
+<translation id="4338650699862464074">將你造訪的網頁網址傳送給 Google。</translation>
 <translation id="4359125752503270327">這個網頁會在其他應用程式中開啟。</translation>
 <translation id="4370827530403103842">同步處理功能無法正常運作。請輕觸這裡以修正同步問題。</translation>
 <translation id="4375040482473363939">QR 圖碼搜尋</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="441868831736628555">隱私權聲明</translation>
+<translation id="4454246407045105932">新增語言</translation>
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">新增分頁即可在各網頁之間自由切換</translation>
 <translation id="4508750114462689118">關閉登入提示</translation>
@@ -234,6 +248,7 @@
 <translation id="461440297010471931">目前的搜尋引擎是 Google</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4620246317052452550">你看過的網頁</translation>
+<translation id="4630540211544979320">翻譯網頁</translation>
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4659667755519643272">進入分頁切換選項</translation>
 <translation id="4666531726415300315">目前登入的帳戶是 <ph name="EMAIL" />。
@@ -248,7 +263,9 @@
 
 如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">閱讀清單中有 1 篇未讀文章。</translation>
+<translation id="4818522717893377262">新增語言...</translation>
 <translation id="481968316161811770">Cookie、網站資料</translation>
+<translation id="4833786495304741580">自動將使用統計資料和當機報告傳送給 Google。</translation>
 <translation id="4840495572919996524">你的書籤、歷史記錄、密碼等資料將停止同步到你的 Google 帳戶。</translation>
 <translation id="4854345657858711387">設定通行碼</translation>
 <translation id="4860895144060829044">撥號</translation>
@@ -256,6 +273,7 @@
 <translation id="4904877109095351937">標示為已讀取</translation>
 <translation id="4930268273022498155">刪除現有資料。你可以切換回 <ph name="USER_EMAIL1" />，重新取得現有資料。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
+<translation id="4945756290001680296">存取密碼設定</translation>
 <translation id="4979397965658815378">只要登入 Google 帳戶，即可在你的所有裝置上使用自己的書籤、密碼、歷史記錄和其他設定。</translation>
 <translation id="5005498671520578047">複製密碼</translation>
 <translation id="5010803260590204777">透過新開啟的無痕式分頁以私密模式瀏覽網頁。</translation>
@@ -268,18 +286,22 @@
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5132942445612118989">同步處理你所有裝置上的密碼、歷史記錄和其他設定</translation>
 <translation id="5140288047769711648">Chrome 會為你儲存這組密碼，因此你不必記住密碼。</translation>
+<translation id="5150492518600715772">傳送到你的裝置</translation>
 <translation id="5181140330217080051">下載中</translation>
 <translation id="5186185447130319458">私人</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="5197255632782567636">網際網路</translation>
 <translation id="5228579091201413441">啟用同步功能</translation>
+<translation id="5234764350956374838">關閉</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">取消同步處理</translation>
+<translation id="5271549068863921519">儲存密碼</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
+<translation id="5416022985862681400">過去 7 天</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="54401264925851789">網頁安全性資訊</translation>
 <translation id="5443952882982198570">信用卡</translation>
@@ -287,12 +309,14 @@
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
 
 此外，您必須在 [設定] 的「一般設定」部分中啟用 Handoff，且您的裝置必須使用同一個 iCloud 帳戶。</translation>
+<translation id="5551897871312988470">提供翻譯選項</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5614553682702429503">要儲存密碼嗎？</translation>
 <translation id="5626245204502895507">目前無法下載這個檔案。</translation>
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">上次使用時間：1 天前</translation>
 <translation id="5711039611392265845">如需更多隱私權、安全性和資料收集的相關設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" />。</translation>
 <translation id="5728700505257787410">很抱歉，登入您的帳戶時發生問題。</translation>
 <translation id="5737974891429562743">帳戶登入詳細資訊過舊。請先更新，再開始進行同步處理。</translation>
@@ -303,7 +327,6 @@
 <translation id="5857090052475505287">新資料夾</translation>
 <translation id="5857770089550859117">必須輸入通關密語，才能開始進行同步處理。</translation>
 <translation id="5860033963881614850">關閉</translation>
-<translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
 <translation id="5897956970858271241">前往複製的連結</translation>
@@ -312,6 +335,7 @@
 <translation id="5938160824633642847">你的裝置空間即將用盡，請在釋出空間後再試一次。</translation>
 <translation id="5948291296578561264">可讓你將相片儲存至相片庫。</translation>
 <translation id="5955891643922670672">正在查看離線版</translation>
+<translation id="5957613098218939406">更多選項</translation>
 <translation id="5964480694698977962">新增無痕式分頁。</translation>
 <translation id="5965679971710331625">你已登入帳戶</translation>
 <translation id="5979837087407522202">搜尋密碼</translation>
@@ -334,6 +358,7 @@
 <translation id="6187302354554850004">上次同步處理時間：<ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">未讀取</translation>
 <translation id="6196207969502475924">語音搜尋</translation>
+<translation id="6219688215832490856">一律不翻譯</translation>
 <translation id="6254066287920239840">使用應用程式開啟連結，而不要在瀏覽器中開啟。</translation>
 <translation id="6255097610484507482">編輯信用卡</translation>
 <translation id="6303969859164067831">登出並關閉同步處理功能</translation>
@@ -362,8 +387,6 @@
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
 <translation id="6476800141292307438">將網頁翻譯成<ph name="LANGUAGE" />。翻譯選項位於靠近畫面底部的位置。</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
-<translation id="6513773942555305766">Chrome 建議的密碼：<ph name="SUGGESTED_PASSWORD" /></translation>
-<translation id="6541915733953096570">過去 1 小時</translation>
 <translation id="6610002944194042868">翻譯選項</translation>
 <translation id="6642362222295953972">切換至現有分頁</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -389,6 +412,7 @@
 <translation id="6945221475159498467">選取</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
+<translation id="6988572888918530647">管理你的 Google 帳戶</translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7006788746334555276">內容設定</translation>
 <translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
@@ -408,8 +432,8 @@
 <translation id="7192050974311852563">開始記錄</translation>
 <translation id="7203585745079012652">語音答覆</translation>
 <translation id="722055596168483966">享有個人化的 Google 服務</translation>
+<translation id="7265758999917665941">一律不儲存這個網站的密碼</translation>
 <translation id="7272437679830969316">無法驗證你的身分，因此未複製密碼。</translation>
-<translation id="7280856130494094142">輸入通關密語即可開始同步處理</translation>
 <translation id="7285236536143823449">是，我同意</translation>
 <translation id="7291368939935408496">正在準備匯出密碼...</translation>
 <translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理你的 Chrome 資料」。</translation>
@@ -431,12 +455,10 @@
 <translation id="7554791636758816595">新增分頁</translation>
 <translation id="7561196759112975576">一律使用</translation>
 <translation id="7603852183842204213">已封鎖彈出式視窗 (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">同步處理功能無法正常運作</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="766891008101699113">如要以私密模式瀏覽網頁，請開啟新分頁。</translation>
 <translation id="7671141431838911305">安裝</translation>
-<translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
@@ -461,6 +483,7 @@
 <translation id="8059533439631660104">收合這個專區。</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
 <translation id="8073670137947914548">下載完成</translation>
+<translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">可下載檔案，相關選項位於畫面底部。</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -474,7 +497,6 @@
 <translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8458397775385147834">已刪除 1 個項目</translation>
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
@@ -485,6 +507,7 @@
 <translation id="8532105204136943229">到期年份</translation>
 <translation id="8534481786647257214">已順利發佈到 Google+。</translation>
 <translation id="8548878600947630424">在網頁中尋找...</translation>
+<translation id="8583866649835978847">將「<ph name="TITLE" />」傳送到你的其中一部裝置。</translation>
 <translation id="8605219856220328675">關閉分頁。</translation>
 <translation id="8620640915598389714">編輯</translation>
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>
@@ -507,6 +530,7 @@
 <translation id="8976382372951310360">說明</translation>
 <translation id="8981454092730389528">Google 活動控制項</translation>
 <translation id="8985320356172329008">已使用下列帳戶登入 Google：</translation>
+<translation id="9016406938567631235">正在傳送…</translation>
 <translation id="902659348151742535">Google 可能會使用您的瀏覽記錄，為您提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。</translation>
 <translation id="9034759925968272072">您並不會因此登出 Google 帳戶，不過帳戶中可能仍保留了其他類型的瀏覽記錄 (可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="9039373489628511875">頻寬</translation>
@@ -516,6 +540,8 @@
 <translation id="9081058212938299310">要更新 <ph name="USERNAME" /> 的密碼嗎？</translation>
 <translation id="9083392325882095631">1 個項目</translation>
 <translation id="9083838294503912307">想在所有裝置上保持同步並享有個人化體驗，請開啟同步功能。</translation>
+<translation id="9087108903408689779">Chrome 建議的密碼：</translation>
+<translation id="9094033019050270033">更新密碼</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9148126808321036104">重新登入</translation>
 <translation id="9157836665414082580">禁止顯示對話方塊</translation>

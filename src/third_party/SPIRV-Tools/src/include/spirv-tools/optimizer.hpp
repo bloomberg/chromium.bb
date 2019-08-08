@@ -738,9 +738,10 @@ Optimizer::PassToken CreateCombineAccessChainsPass();
 // |input_length_enable| controls instrumentation of runtime descriptor array
 // references, and |input_init_enable| controls instrumentation of descriptor
 // initialization checking, both of which require input buffer support.
+// |version| specifies the buffer record format.
 Optimizer::PassToken CreateInstBindlessCheckPass(
     uint32_t desc_set, uint32_t shader_id, bool input_length_enable = false,
-    bool input_init_enable = false);
+    bool input_init_enable = false, uint32_t version = 1);
 
 // Create a pass to upgrade to the VulkanKHR memory model.
 // This pass upgrades the Logical GLSL450 memory model to Logical VulkanKHR.
@@ -771,6 +772,10 @@ Optimizer::PassToken CreateLegalizeVectorShufflePass();
 // Create a pass to decompose initialized variables into a seperate variable
 // declaration and an initial store.
 Optimizer::PassToken CreateDecomposeInitializedVariablesPass();
+
+// Create a pass to attempt to split up invalid unreachable merge-blocks and
+// continue-targets to legalize for WebGPU.
+Optimizer::PassToken CreateSplitInvalidUnreachablePass();
 
 }  // namespace spvtools
 

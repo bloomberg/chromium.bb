@@ -18,6 +18,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -31,7 +32,8 @@ constexpr base::TimeDelta kArcKioskSplashScreenMinTime =
 
 ArcKioskController::ArcKioskController(LoginDisplayHost* host, OobeUI* oobe_ui)
     : host_(host),
-      arc_kiosk_splash_screen_view_(oobe_ui->GetArcKioskSplashScreenView()),
+      arc_kiosk_splash_screen_view_(
+          oobe_ui->GetView<ArcKioskSplashScreenHandler>()),
       weak_ptr_factory_(this) {}
 
 ArcKioskController::~ArcKioskController() {
@@ -117,7 +119,7 @@ void ArcKioskController::SetAuthFlowOffline(bool offline) {
 void ArcKioskController::OnOldEncryptionDetected(
     const UserContext& user_context,
     bool has_incomplete_migration) {
-  host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
+  host_->StartWizard(EncryptionMigrationScreenView::kScreenId);
 
   EncryptionMigrationScreen* migration_screen =
       static_cast<EncryptionMigrationScreen*>(

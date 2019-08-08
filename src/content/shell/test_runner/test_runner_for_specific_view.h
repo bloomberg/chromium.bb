@@ -16,13 +16,13 @@
 #include "content/shell/test_runner/test_runner_export.h"
 #include "v8/include/v8.h"
 
-class GURL;
 class SkBitmap;
 
 namespace blink {
 struct Manifest;
 class WebLocalFrame;
 class WebView;
+class WebURL;
 }
 
 namespace gfx {
@@ -102,7 +102,7 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
 
   void GetManifestThen(v8::Local<v8::Function> callback);
   void GetManifestCallback(v8::UniquePersistent<v8::Function> callback,
-                           const GURL& manifest_url,
+                           const blink::WebURL& manifest_url,
                            const blink::Manifest& manifest);
 
   // Calls |callback| with a DOMString[] representing the events recorded since

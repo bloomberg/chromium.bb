@@ -43,7 +43,10 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.mapBuffer              = true;
     mNativeExtensions.mapBufferRange         = true;
     mNativeExtensions.textureStorage         = true;
+    mNativeExtensions.drawBuffers            = true;
+    mNativeExtensions.fragDepth              = true;
     mNativeExtensions.framebufferBlit        = true;
+    mNativeExtensions.framebufferMultisample = true;
     mNativeExtensions.copyTexture            = true;
     mNativeExtensions.copyCompressedTexture  = true;
     mNativeExtensions.debugMarker            = true;
@@ -51,16 +54,19 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.textureBorderClamp     = false;  // not implemented yet
     mNativeExtensions.translatedShaderSource = true;
 
+    // Enable EXT_blend_minmax
+    mNativeExtensions.blendMinMax = true;
+
     mNativeExtensions.eglImage         = true;
     mNativeExtensions.eglImageExternal = true;
     // TODO(geofflang): Support GL_OES_EGL_image_external_essl3. http://anglebug.com/2668
     mNativeExtensions.eglImageExternalEssl3 = false;
 
     mNativeExtensions.memoryObject   = true;
-    mNativeExtensions.memoryObjectFd = getFeatures().supportsExternalMemoryFd;
+    mNativeExtensions.memoryObjectFd = getFeatures().supportsExternalMemoryFd.enabled;
 
     mNativeExtensions.semaphore   = true;
-    mNativeExtensions.semaphoreFd = getFeatures().supportsExternalSemaphoreFd;
+    mNativeExtensions.semaphoreFd = getFeatures().supportsExternalSemaphoreFd.enabled;
 
     // TODO: Enable this always and emulate instanced draws if any divisor exceeds the maximum
     // supported.  http://anglebug.com/2672
@@ -97,8 +103,9 @@ void RendererVk::ensureCapsInitialized() const
     // Vulkan natively supports non power-of-two textures
     mNativeExtensions.textureNPOT = true;
 
-    // TODO(lucferron): Eventually remove everything above this line in this function as the caps
-    // get implemented.
+    // Vulkan natively supports standard derivatives
+    mNativeExtensions.standardDerivatives = true;
+
     // https://vulkan.lunarg.com/doc/view/1.0.30.0/linux/vkspec.chunked/ch31s02.html
     mNativeCaps.maxElementIndex       = std::numeric_limits<GLuint>::max() - 1;
     mNativeCaps.max3DTextureSize      = mPhysicalDeviceProperties.limits.maxImageDimension3D;
@@ -178,11 +185,30 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.maxFragmentUniformVectors                            = maxUniformVectors;
     mNativeCaps.maxShaderUniformComponents[gl::ShaderType::Fragment] = maxUniformComponents;
 
-    // TODO(jmadill): this is an ES 3.0 property and we can skip implementing it for now.
-    // This is maxDescriptorSetUniformBuffers minus the number of uniform buffers we
-    // reserve for internal variables. We reserve one per shader stage for default uniforms
-    // and likely one per shader stage for ANGLE internal variables.
-    // mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Vertex] = ...
+    // A number of uniform buffers are reserved for internal use.  There's one dynamic uniform
+    // buffer used per stage for default uniforms, and a single uniform buffer object used for
+    // ANGLE internal variables.  ANGLE implements UBOs as uniform buffers, so the maximum number
+    // of uniform blocks is maxDescriptorSetUniformBuffers - 1:
+    const uint32_t maxUniformBuffers =
+        mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffers -
+        kReservedDriverUniformBindingCount;
+
+    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Vertex]   = maxUniformBuffers;
+    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Fragment] = maxUniformBuffers;
+    mNativeCaps.maxCombinedUniformBlocks                         = maxUniformBuffers;
+
+    mNativeCaps.maxUniformBufferBindings = maxUniformBuffers;
+    mNativeCaps.maxUniformBlockSize      = mPhysicalDeviceProperties.limits.maxUniformBufferRange;
+    mNativeCaps.uniformBufferOffsetAlignment =
+        static_cast<GLuint>(mPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
+
+    // There is no additional limit to the combined number of components.  We can have up to a
+    // maximum number of uniform buffers, each having the maximum number of components.
+    const uint32_t maxCombinedUniformComponents = maxUniformBuffers * maxUniformComponents;
+    for (gl::ShaderType shaderType : gl::kAllGraphicsShaderTypes)
+    {
+        mNativeCaps.maxCombinedShaderUniformComponents[shaderType] = maxCombinedUniformComponents;
+    }
 
     // we use the same bindings on each stage, so the limitation is the same combined or not.
     mNativeCaps.maxCombinedTextureImageUnits =
@@ -203,6 +229,13 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.maxVaryingVectors =
         (mPhysicalDeviceProperties.limits.maxVertexOutputComponents / 4) - kReservedVaryingCount;
     mNativeCaps.maxVertexOutputComponents = mNativeCaps.maxVaryingVectors * 4;
+
+    const VkPhysicalDeviceLimits &limits = mPhysicalDeviceProperties.limits;
+    const uint32_t sampleCounts          = limits.framebufferColorSampleCounts &
+                                  limits.framebufferDepthSampleCounts &
+                                  limits.framebufferStencilSampleCounts;
+
+    mNativeCaps.maxSamples = vk_gl::GetMaxSampleCount(sampleCounts);
 
     mNativeCaps.subPixelBits = mPhysicalDeviceProperties.limits.subPixelPrecisionBits;
 }
@@ -301,12 +334,30 @@ egl::ConfigSet GenerateConfigs(const GLenum *colorFormats,
                                size_t colorFormatsCount,
                                const GLenum *depthStencilFormats,
                                size_t depthStencilFormatCount,
-                               const EGLint *sampleCounts,
-                               size_t sampleCountsCount,
                                DisplayVk *display)
 {
     ASSERT(colorFormatsCount > 0);
     ASSERT(display != nullptr);
+
+    gl::SupportedSampleSet colorSampleCounts;
+    gl::SupportedSampleSet depthStencilSampleCounts;
+    gl::SupportedSampleSet sampleCounts;
+
+    const VkPhysicalDeviceLimits &limits =
+        display->getRenderer()->getPhysicalDeviceProperties().limits;
+    const uint32_t depthStencilSampleCountsLimit =
+        limits.framebufferDepthSampleCounts & limits.framebufferStencilSampleCounts;
+
+    vk_gl::AddSampleCounts(limits.framebufferColorSampleCounts, &colorSampleCounts);
+    vk_gl::AddSampleCounts(depthStencilSampleCountsLimit, &depthStencilSampleCounts);
+
+    // Always support 0 samples
+    colorSampleCounts.insert(0);
+    depthStencilSampleCounts.insert(0);
+
+    std::set_intersection(colorSampleCounts.begin(), colorSampleCounts.end(),
+                          depthStencilSampleCounts.begin(), depthStencilSampleCounts.end(),
+                          std::inserter(sampleCounts, sampleCounts.begin()));
 
     egl::ConfigSet configSet;
 
@@ -324,12 +375,22 @@ egl::ConfigSet GenerateConfigs(const GLenum *colorFormats,
             ASSERT(depthStencilFormats[depthStencilFormatIdx] == GL_NONE ||
                    depthStencilFormatInfo.sized);
 
-            for (size_t sampleCountIndex = 0; sampleCountIndex < sampleCountsCount;
-                 sampleCountIndex++)
+            const gl::SupportedSampleSet *configSampleCounts = &sampleCounts;
+            // If there is no depth/stencil buffer, use the color samples set.
+            if (depthStencilFormats[depthStencilFormatIdx] == GL_NONE)
             {
-                egl::Config config =
-                    GenerateDefaultConfig(display->getRenderer(), colorFormatInfo,
-                                          depthStencilFormatInfo, sampleCounts[sampleCountIndex]);
+                configSampleCounts = &colorSampleCounts;
+            }
+            // If there is no color buffer, use the depth/stencil samples set.
+            else if (colorFormats[colorFormatIdx] == GL_NONE)
+            {
+                configSampleCounts = &depthStencilSampleCounts;
+            }
+
+            for (EGLint sampleCount : *configSampleCounts)
+            {
+                egl::Config config = GenerateDefaultConfig(display->getRenderer(), colorFormatInfo,
+                                                           depthStencilFormatInfo, sampleCount);
                 if (display->checkConfigSupport(&config))
                 {
                     configSet.add(config);

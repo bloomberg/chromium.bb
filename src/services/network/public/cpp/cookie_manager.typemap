@@ -21,4 +21,5 @@ type_mappings = [
   "network.mojom.CanonicalCookie=net::CanonicalCookie",
   "network.mojom.CookieInclusionStatus=net::CanonicalCookie::CookieInclusionStatus",
   "network.mojom.CookieWithStatus=net::CookieWithStatus",
+  "network.mojom.CookieAndLineWithStatus=net::CookieAndLineWithStatus",
 ]

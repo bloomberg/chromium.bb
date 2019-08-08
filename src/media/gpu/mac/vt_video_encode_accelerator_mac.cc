@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mac/video_frame_mac.h"
 
@@ -71,11 +73,11 @@ struct VTVideoEncodeAccelerator::EncodeOutput {
 
 struct VTVideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id,
-                     std::unique_ptr<base::SharedMemory> shm,
+                     base::WritableSharedMemoryMapping mapping,
                      size_t size)
-      : id(id), shm(std::move(shm)), size(size) {}
+      : id(id), mapping(std::move(mapping)), size(size) {}
   const int32_t id;
-  const std::unique_ptr<base::SharedMemory> shm;
+  const base::WritableSharedMemoryMapping mapping;
   const size_t size;
 
  private:
@@ -177,18 +179,19 @@ bool VTVideoEncodeAccelerator::Initialize(const Config& config,
   return true;
 }
 
-void VTVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+void VTVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                       bool force_keyframe) {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   encoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VTVideoEncodeAccelerator::EncodeTask,
-                                base::Unretained(this), frame, force_keyframe));
+      FROM_HERE,
+      base::BindOnce(&VTVideoEncodeAccelerator::EncodeTask,
+                     base::Unretained(this), std::move(frame), force_keyframe));
 }
 
 void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
+    BitstreamBuffer buffer) {
   DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -199,16 +202,16 @@ void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  std::unique_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(buffer.handle(), false));
-  if (!shm->Map(buffer.size())) {
+  auto mapping =
+      base::UnsafeSharedMemoryRegion::Deserialize(buffer.TakeRegion()).Map();
+  if (!mapping.IsValid()) {
     DLOG(ERROR) << "Failed mapping shared memory.";
     client_->NotifyError(kPlatformFailureError);
     return;
   }
 
   std::unique_ptr<BitstreamBufferRef> buffer_ref(
-      new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
+      new BitstreamBufferRef(buffer.id(), std::move(mapping), buffer.size()));
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -249,9 +252,8 @@ void VTVideoEncodeAccelerator::Destroy() {
   delete this;
 }
 
-void VTVideoEncodeAccelerator::EncodeTask(
-    const scoped_refptr<VideoFrame>& frame,
-    bool force_keyframe) {
+void VTVideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
+                                          bool force_keyframe) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(compression_session_);
   DCHECK(frame);
@@ -452,7 +454,7 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   size_t used_buffer_size = 0;
   const bool copy_rv = video_toolbox::CopySampleBufferToAnnexBBuffer(
       encode_output->sample_buffer.get(), keyframe, buffer_ref->size,
-      static_cast<char*>(buffer_ref->shm->memory()), &used_buffer_size);
+      static_cast<char*>(buffer_ref->mapping.memory()), &used_buffer_size);
   if (!copy_rv) {
     DLOG(ERROR) << "Cannot copy output from SampleBuffer to AnnexBBuffer.";
     used_buffer_size = 0;

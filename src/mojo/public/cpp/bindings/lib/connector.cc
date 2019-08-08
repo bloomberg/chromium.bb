@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -31,13 +31,6 @@
 namespace mojo {
 
 namespace {
-
-// The NestingObserver for each thread. Note that this is always a
-// Connector::RunLoopNestingObserver; we use the base type here because that
-// subclass is private to Connector.
-base::LazyInstance<
-    base::SequenceLocalStorageSlot<base::RunLoop::NestingObserver*>>::Leaky
-    g_sls_nesting_observer = LAZY_INSTANCE_INITIALIZER;
 
 // The default outgoing serialization mode for new Connectors.
 Connector::OutgoingSerializationMode g_default_outgoing_serialization_mode =
@@ -80,15 +73,15 @@ class Connector::ActiveDispatchTracker {
 // Watches the MessageLoop on the current thread. Notifies the current chain of
 // ActiveDispatchTrackers when a nested run loop is started.
 class Connector::RunLoopNestingObserver
-    : public base::RunLoop::NestingObserver,
-      public base::MessageLoopCurrent::DestructionObserver {
+    : public base::RunLoop::NestingObserver {
  public:
   RunLoopNestingObserver() {
     base::RunLoop::AddNestingObserverOnCurrentThread(this);
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   }
 
-  ~RunLoopNestingObserver() override {}
+  ~RunLoopNestingObserver() override {
+    base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
+  }
 
   // base::RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override {
@@ -96,25 +89,16 @@ class Connector::RunLoopNestingObserver
       top_tracker_->NotifyBeginNesting();
   }
 
-  // base::MessageLoopCurrent::DestructionObserver:
-  void WillDestroyCurrentMessageLoop() override {
-    base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
-    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
-    DCHECK_EQ(this, g_sls_nesting_observer.Get().Get());
-    g_sls_nesting_observer.Get().Set(nullptr);
-    delete this;
-  }
-
   static RunLoopNestingObserver* GetForThread() {
     if (!base::MessageLoopCurrent::Get())
       return nullptr;
-    auto* observer = static_cast<RunLoopNestingObserver*>(
-        g_sls_nesting_observer.Get().Get());
-    if (!observer) {
-      observer = new RunLoopNestingObserver;
-      g_sls_nesting_observer.Get().Set(observer);
-    }
-    return observer;
+    // The NestingObserver for each thread. Note that this is always a
+    // Connector::RunLoopNestingObserver; we use the base type here because that
+    // subclass is private to Connector.
+    static base::NoDestructor<
+        base::SequenceLocalStorageSlot<RunLoopNestingObserver>>
+        sls_nesting_observer;
+    return &sls_nesting_observer->GetOrCreateValue();
   }
 
  private:

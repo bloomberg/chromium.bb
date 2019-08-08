@@ -49,21 +49,20 @@ void PaintWorkletPaintDispatcher::RegisterPaintWorkletPainter(
   TRACE_EVENT0("cc",
                "PaintWorkletPaintDispatcher::RegisterPaintWorkletPainter");
 
-  DCHECK(painter);
+  int worklet_id = painter->GetWorkletId();
   MutexLocker lock(painter_map_mutex_);
-  DCHECK(painter_map_.find(painter) == painter_map_.end());
-  painter_map_.insert(painter, painter_runner);
+  DCHECK(painter_map_.find(worklet_id) == painter_map_.end());
+  painter_map_.insert(worklet_id, std::make_pair(painter, painter_runner));
 }
 
 void PaintWorkletPaintDispatcher::UnregisterPaintWorkletPainter(
-    PaintWorkletPainter* painter) {
+    int worklet_id) {
   TRACE_EVENT0("cc",
                "PaintWorkletPaintDispatcher::"
                "UnregisterPaintWorkletPainter");
-  DCHECK(painter);
   MutexLocker lock(painter_map_mutex_);
-  DCHECK(painter_map_.find(painter) != painter_map_.end());
-  painter_map_.erase(painter);
+  DCHECK(painter_map_.find(worklet_id) != painter_map_.end());
+  painter_map_.erase(worklet_id);
 }
 
 // TODO(xidachen): we should bundle all PaintWorkletInputs and send them to the
@@ -86,29 +85,31 @@ sk_sp<cc::PaintRecord> PaintWorkletPaintDispatcher::Paint(
 
   base::WaitableEvent done_event;
 
-  for (auto& pair : copied_painter_map) {
-    if (pair.key->GetWorkletId() != input->WorkletId())
-      continue;
-    PaintWorkletPainter* painter = pair.key;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner = pair.value;
+  auto it = copied_painter_map.find(input->WorkletId());
+  if (it == copied_painter_map.end())
+    return output;
 
-    DCHECK(!task_runner->BelongsToCurrentThread());
-    std::unique_ptr<AutoSignal> done =
-        std::make_unique<AutoSignal>(&done_event);
+  PaintWorkletPainter* painter = it->value.first;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner = it->value.second;
+  DCHECK(!task_runner->BelongsToCurrentThread());
+  std::unique_ptr<AutoSignal> done = std::make_unique<AutoSignal>(&done_event);
 
-    PostCrossThreadTask(
-        *task_runner, FROM_HERE,
-        CrossThreadBind(
-            [](PaintWorkletPainter* painter, cc::PaintWorkletInput* input,
-               std::unique_ptr<AutoSignal> completion,
-               sk_sp<cc::PaintRecord>* output) {
-              *output = painter->Paint(input);
-            },
-            WrapCrossThreadPersistent(painter), CrossThreadUnretained(input),
-            WTF::Passed(std::move(done)), CrossThreadUnretained(&output)));
-  }
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(
+          [](PaintWorkletPainter* painter, cc::PaintWorkletInput* input,
+             std::unique_ptr<AutoSignal> completion,
+             sk_sp<cc::PaintRecord>* output) {
+            *output = painter->Paint(input);
+          },
+          WrapCrossThreadPersistent(painter), CrossThreadUnretained(input),
+          WTF::Passed(std::move(done)), CrossThreadUnretained(&output)));
 
   done_event.Wait();
+
+  // If the paint fails, PaintWorkletPainter should return an empty record
+  // rather than a nullptr.
+  DCHECK(output);
 
   return output;
 }

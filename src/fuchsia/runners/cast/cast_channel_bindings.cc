@@ -16,7 +16,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/engine/legacy_message_port_bridge.h"
 #include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 
@@ -27,25 +26,21 @@ const char kMessagePortName[] = "cast.__platform__.channel";
 CastChannelBindings::CastChannelBindings(
     fuchsia::web::Frame* frame,
     NamedMessagePortConnector* connector,
-    chromium::cast::CastChannelPtr channel_consumer,
-    base::OnceClosure on_error_closure)
+    chromium::cast::CastChannelPtr channel_consumer)
     : frame_(frame),
       connector_(connector),
-      on_error_closure_(std::move(on_error_closure)),
       channel_consumer_(std::move(channel_consumer)) {
   DCHECK(connector_);
   DCHECK(frame_);
 
-  channel_consumer_.set_error_handler([this](zx_status_t status) mutable {
-    ZX_LOG(ERROR, status) << " Agent disconnected";
-    std::move(on_error_closure_).Run();
+  channel_consumer_.set_error_handler([](zx_status_t status) mutable {
+    ZX_LOG(ERROR, status) << "Cast Channel FIDL client disconnected";
   });
 
   connector->Register(
       kMessagePortName,
       base::BindRepeating(&CastChannelBindings::OnMasterPortReceived,
-                          base::Unretained(this)),
-      frame_);
+                          base::Unretained(this)));
 
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
@@ -61,7 +56,7 @@ CastChannelBindings::CastChannelBindings(
 }
 
 CastChannelBindings::~CastChannelBindings() {
-  connector_->Unregister(frame_, kMessagePortName);
+  connector_->Unregister(kMessagePortName);
 }
 
 void CastChannelBindings::OnMasterPortError() {
@@ -69,10 +64,10 @@ void CastChannelBindings::OnMasterPortError() {
 }
 
 void CastChannelBindings::OnMasterPortReceived(
-    fuchsia::web::MessagePortPtr port) {
+    fidl::InterfaceHandle<fuchsia::web::MessagePort> port) {
   DCHECK(port);
 
-  master_port_ = std::move(port);
+  master_port_ = port.Bind();
   master_port_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(WARNING, status != ZX_ERR_PEER_CLOSED, status)
         << "Cast Channel master port disconnected.";
@@ -103,11 +98,8 @@ void CastChannelBindings::SendChannelToConsumer(
     fuchsia::web::MessagePortPtr channel) {
   if (consumer_ready_for_port_) {
     consumer_ready_for_port_ = false;
-    chromium::web::MessagePortPtr chromium_message_port;
-    new cr_fuchsia::LegacyMessagePortBridge(chromium_message_port.NewRequest(),
-                                            std::move(channel));
-    channel_consumer_->OnOpened(
-        std::move(chromium_message_port),
+    channel_consumer_->Open(
+        std::move(channel),
         fit::bind_member(this, &CastChannelBindings::OnConsumerReadyForPort));
   } else {
     connected_channel_queue_.push_front(std::move(channel));

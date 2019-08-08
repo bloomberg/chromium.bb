@@ -20,31 +20,29 @@ import threading
 import time
 import urllib
 
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
-from third_party.depot_tools import subcommand
-
-from utils import file_path
-from utils import fs
-from utils import logging_utils
-from third_party.chromium import natsort
-from utils import net
-from utils import on_error
-from utils import subprocess42
-from utils import threading_utils
 from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+from chromium import natsort
+from depot_tools import fix_encoding
+from depot_tools import subcommand
+
+# pylint: disable=ungrouped-imports
 import auth
 import cipd
 import isolateserver
 import isolate_storage
-import isolated_format
 import local_caching
 import run_isolated
-
-
-ROOT_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
+from utils import file_path
+from utils import fs
+from utils import logging_utils
+from utils import net
+from utils import on_error
+from utils import subprocess42
+from utils import threading_utils
 
 
 class Failure(Exception):
@@ -105,6 +103,14 @@ StringListPair = collections.namedtuple(
   ]
 )
 
+# See ../appengine/swarming/swarming_rpcs.py.
+Containment = collections.namedtuple(
+    'Containment',
+    [
+      'lower_priority',
+      'containment_type',
+    ])
+
 
 # See ../appengine/swarming/swarming_rpcs.py.
 TaskProperties = collections.namedtuple(
@@ -113,6 +119,7 @@ TaskProperties = collections.namedtuple(
       'caches',
       'cipd_input',
       'command',
+      'containment',
       'relative_cwd',
       'dimensions',
       'env',
@@ -726,13 +733,12 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
         tag_footer2,
         dash_pad,
         ])
-  else:
-    return '\n'.join([
-        dash_pad,
-        tag_header,
-        tag_footer2,
-        dash_pad,
-        ])
+  return '\n'.join([
+      dash_pad,
+      tag_header,
+      tag_footer2,
+      dash_pad,
+      ])
 
 
 def collect(
@@ -973,6 +979,14 @@ def add_trigger_options(parser):
   group.add_option(
       '--io-timeout', type='int', default=20*60, metavar='SECS',
       help='Seconds to allow the task to be silent.')
+  parser.add_option(
+      '--lower-priority', action='store_true',
+      help='Lowers the child process priority')
+  containment_choices = ('NONE', 'AUTO', 'JOB_OBJECT')
+  parser.add_option(
+      '--containment-type', default='NONE', metavar='NONE',
+      choices=containment_choices,
+      help='Containment to use; one of: %s' % ', '.join(containment_choices))
   group.add_option(
       '--raw-cmd', action='store_true', default=False,
       help='When set, the command after -- is used as-is without run_isolated. '
@@ -1141,6 +1155,10 @@ def process_trigger_options(parser, options, args):
       caches=caches,
       cipd_input=cipd_input,
       command=command,
+      containment=Containment(
+        lower_priority=bool(options.lower_priority),
+        containment_type=options.containment_type,
+      ),
       relative_cwd=options.relative_cwd,
       dimensions=orig_dims,
       env=options.env,
@@ -1237,7 +1255,7 @@ class TaskOutputStdoutOption(optparse.Option):
         *args,
         choices=self.choices,
         default=['console', 'json'],
-        help=re.sub('\s\s*', ' ', self.__doc__),
+        help=re.sub(r'\s\s*', ' ', self.__doc__),
         **kw)
 
   def convert_value(self, opt, value):
@@ -1597,6 +1615,8 @@ def CMDquery_list(parser, args):
       print '  ' + api['description'].strip()
       if 'resources' in api:
         # Old.
+        # TODO(maruel): Remove.
+        # pylint: disable=too-many-nested-blocks
         for j, (resource_name, resource) in enumerate(
             sorted(api['resources'].iteritems())):
           if j:
@@ -1652,6 +1672,9 @@ def CMDrun(parser, args):
     t['task_id']
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
   ]
+  for task_id in task_ids:
+    print('Task: {server}/task?id={task}'.format(
+        server=options.swarming, task=task_id))
   if not options.timeout:
     offset = 0
     for s in task_request.task_slices:

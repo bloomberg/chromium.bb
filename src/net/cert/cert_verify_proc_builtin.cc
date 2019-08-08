@@ -164,9 +164,9 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     // to |policy|. Depending on the policy, errors will be added to the
     // respective certificates, so |errors->ContainsHighSeverityErrors()| will
     // reflect the revocation status of the chain after this call.
-    CheckCertChainRevocation(path->certs, path->last_cert_trust, policy,
-                             stapled_leaf_ocsp_response_, net_fetcher_,
-                             &path->errors);
+    CheckValidatedChainRevocation(path->certs, policy,
+                                  stapled_leaf_ocsp_response_, net_fetcher_,
+                                  &path->errors);
   }
 
  private:
@@ -258,7 +258,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
 class CertVerifyProcBuiltin : public CertVerifyProc {
  public:
-  CertVerifyProcBuiltin();
+  explicit CertVerifyProcBuiltin(scoped_refptr<CertNetFetcher> net_fetcher);
 
   bool SupportsAdditionalTrustAnchors() const override;
 
@@ -269,13 +269,18 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
                      const std::string& ocsp_response,
+                     const std::string& sct_list,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
                      CertVerifyResult* verify_result) override;
+
+  scoped_refptr<CertNetFetcher> net_fetcher_;
 };
 
-CertVerifyProcBuiltin::CertVerifyProcBuiltin() = default;
+CertVerifyProcBuiltin::CertVerifyProcBuiltin(
+    scoped_refptr<CertNetFetcher> net_fetcher)
+    : net_fetcher_(std::move(net_fetcher)) {}
 
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
@@ -558,6 +563,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
     X509Certificate* input_cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
@@ -594,7 +600,6 @@ int CertVerifyProcBuiltin::VerifyInternal(
   }
 
   // Get the global dependencies.
-  CertNetFetcher* net_fetcher = GetGlobalCertNetFetcher();
   const EVRootCAMetadata* ev_metadata = EVRootCAMetadata::GetInstance();
 
   // This boolean tracks whether online revocation checking was performed for
@@ -631,7 +636,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
     TryBuildPath(target, &intermediates, ssl_trust_store.get(),
                  verification_time, cur_attempt.verification_type,
                  cur_attempt.digest_policy, flags, ocsp_response, crl_set,
-                 net_fetcher, ev_metadata, &result,
+                 net_fetcher_.get(), ev_metadata, &result,
                  &checked_revocation_for_some_path);
 
     if (result.HasValidPath())
@@ -658,15 +663,21 @@ int CertVerifyProcBuiltin::VerifyInternal(
   }
 
   // Write the results to |*verify_result|.
-  return AssignVerifyResult(input_cert, hostname, result, verification_type,
-                            checked_revocation_for_some_path,
-                            ssl_trust_store.get(), verify_result);
+  int error = AssignVerifyResult(
+      input_cert, hostname, result, verification_type,
+      checked_revocation_for_some_path, ssl_trust_store.get(), verify_result);
+  if (error == OK) {
+    LogNameNormalizationMetrics(".Builtin", verify_result->verified_cert.get(),
+                                verify_result->is_issued_by_known_root);
+  }
+  return error;
 }
 
 }  // namespace
 
-scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin() {
-  return scoped_refptr<CertVerifyProc>(new CertVerifyProcBuiltin());
+scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
+    scoped_refptr<CertNetFetcher> net_fetcher) {
+  return base::MakeRefCounted<CertVerifyProcBuiltin>(std::move(net_fetcher));
 }
 
 }  // namespace net

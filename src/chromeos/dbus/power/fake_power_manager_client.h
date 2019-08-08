@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
@@ -80,8 +81,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
-  void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override;
   void SetRenderProcessManagerDelegate(
       base::WeakPtr<RenderProcessManagerDelegate> delegate) override;
   void DecreaseScreenBrightness(bool allow_off) override;
@@ -113,8 +112,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void GetInactivityDelays(
       DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback)
       override;
-  base::OnceClosure GetSuspendReadinessCallback(
-      const base::Location& from_where) override;
+  void BlockSuspend(const base::UnguessableToken& token,
+                    const std::string& debug_info) override;
+  void UnblockSuspend(const base::UnguessableToken& token) override;
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -176,6 +176,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   // return false if there are no pending brightness changes.
   bool ApplyPendingScreenBrightnessChange();
 
+  // Returns time ticks from boot including time ticks spent during sleeping.
+  base::TimeTicks GetCurrentBootTime();
+
   // Sets the screen brightness percent to be returned.
   // The nullopt |percent| means an error. In case of success,
   // |percent| must be in the range of [0, 100].
@@ -187,11 +190,12 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
     keyboard_brightness_percent_ = percent;
   }
 
- private:
-  // Callback that will be run by asynchronous suspend delays to report
-  // readiness.
-  void HandleSuspendReadiness();
+  // Sets |tick_clock| to |tick_clock_|.
+  void set_tick_clock(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
 
+ private:
   // Notifies |observers_| that |props_| has been updated.
   void NotifyObservers();
 
@@ -283,6 +287,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // If non-empty, called by NotifyUserActivity().
   base::RepeatingClosure user_activity_callback_;
+
+  // Clock to use to calculate time ticks. Used for ArcTimer related APIs.
+  const base::TickClock* tick_clock_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -54,8 +54,8 @@ blink_python_runner("runtime_enabled_features") {
   ]
 
   visibility += [
-    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
-    "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_core",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info_modules",
   ]
 }
 
@@ -99,33 +99,6 @@ compiled_action("character_data") {
   args = rebase_path(outputs, root_build_dir)
 }
 
-action("instrumentation_probes") {
-  script = "../build/scripts/make_instrumenting_probes.py"
-
-  input_file = "probe/platform_probes.pidl"
-  inputs = [
-    input_file,
-    "probe/platform_probes.json5",
-    "../build/scripts/templates/instrumenting_probes_impl.cc.tmpl",
-    "../build/scripts/templates/instrumenting_probes_inl.h.tmpl",
-    "../build/scripts/templates/probe_sink.h.tmpl",
-  ]
-
-  outputs = [
-    "$blink_platform_output_dir/platform_probe_sink.h",
-    "$blink_platform_output_dir/platform_probes_impl.cc",
-    "$blink_platform_output_dir/platform_probes_inl.h",
-  ]
-
-  args = [
-    rebase_path(inputs[0], root_build_dir),
-    "--config",
-    rebase_path("probe/platform_probes.json5", root_build_dir),
-    "--output_dir",
-    rebase_path(blink_platform_output_dir, root_build_dir),
-  ]
-}
-
 executable("character_data_generator") {
   sources = [
     "text/character_property_data.h",
@@ -134,6 +107,7 @@ executable("character_data_generator") {
   configs += [ "//third_party/blink/renderer:config" ]
   deps = [
     # Default manifest on Windows (a no-op elsewhere).
+    "//base",
     "//build/win:default_exe_manifest",
     "//third_party/icu",
   ]
@@ -148,7 +122,6 @@ group("make_platform_generated") {
     ":character_data",
     ":color_data",
     ":font_family_names",
-    ":instrumentation_probes",
     ":runtime_enabled_features",
     "//third_party/blink/renderer/platform/network:make_generated",
   ]
@@ -193,9 +166,9 @@ group("blink_platform_public_deps") {
     "//skia",
     "//third_party:jpeg",
     "//third_party/blink/public:blink_headers",
-    "//third_party/blink/public:mojo_bindings_blink",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:mojom_platform_blink",
+    "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_blink",
     "//third_party/blink/renderer/platform/heap:blink_heap_buildflags",
     "//third_party/blink/renderer/platform/network:make_generated",
     "//third_party/blink/renderer/platform/wtf",
@@ -315,7 +288,6 @@ jumbo_component("platform") {
     "animation/compositor_transform_operations.h",
     "animation/timing_function.cc",
     "animation/timing_function.h",
-    "audio/android/fft_frame_open_maxdl_android.cc",
     "audio/audio_array.h",
     "audio/audio_bus.cc",
     "audio/audio_bus.h",
@@ -393,6 +365,7 @@ jumbo_component("platform") {
     "audio/multi_channel_resampler.h",
     "audio/panner.cc",
     "audio/panner.h",
+    "audio/pffft/fft_frame_pffft.cc",
     "audio/push_pull_fifo.cc",
     "audio/push_pull_fifo.h",
     "audio/reverb.cc",
@@ -511,7 +484,6 @@ jumbo_component("platform") {
     "exported/mediastream/web_platform_media_stream_source.cc",
     "exported/mediastream/web_platform_media_stream_track.cc",
     "exported/mediastream/webrtc_uma_histograms.cc",
-    "exported/notification_data_conversions.cc",
     "exported/platform.cc",
     "exported/service_registry.cc",
     "exported/url_conversion.cc",
@@ -520,7 +492,6 @@ jumbo_component("platform") {
     "exported/web_blob_info.cc",
     "exported/web_cache.cc",
     "exported/web_canonical_cookie.cc",
-    "exported/web_canvas_capture_handler.cc",
     "exported/web_coalesced_input_event.cc",
     "exported/web_content_decryption_module.cc",
     "exported/web_content_decryption_module_access.cc",
@@ -532,7 +503,6 @@ jumbo_component("platform") {
     "exported/web_crypto_result.cc",
     "exported/web_cursor_info.cc",
     "exported/web_data.cc",
-    "exported/web_data_consumer_handle.cc",
     "exported/web_drag_data.cc",
     "exported/web_encrypted_media_client.cc",
     "exported/web_encrypted_media_key_information.cc",
@@ -576,9 +546,6 @@ jumbo_component("platform") {
     "exported/web_rtc_void_request.cc",
     "exported/web_runtime_features.cc",
     "exported/web_security_origin.cc",
-    "exported/web_service_worker_request.cc",
-    "exported/web_service_worker_response.cc",
-    "exported/web_service_worker_stream_handle.cc",
     "exported/web_speech_synthesis_utterance.cc",
     "exported/web_speech_synthesis_voice.cc",
     "exported/web_speech_synthesizer_client_impl.cc",
@@ -709,7 +676,6 @@ jumbo_component("platform") {
     "fonts/shaping/harfbuzz_shaper.h",
     "fonts/shaping/run_segmenter.cc",
     "fonts/shaping/run_segmenter.h",
-    "fonts/shaping/shape_cache.cc",
     "fonts/shaping/shape_cache.h",
     "fonts/shaping/shape_result.cc",
     "fonts/shaping/shape_result.h",
@@ -888,10 +854,12 @@ jumbo_component("platform") {
     "graphics/cpu/x86/webgl_image_conversion_sse.h",
     "graphics/crossfade_generated_image.cc",
     "graphics/crossfade_generated_image.h",
+    "graphics/dark_mode_bitmap_image_classifier.cc",
+    "graphics/dark_mode_bitmap_image_classifier.h",
     "graphics/dark_mode_color_classifier.cc",
     "graphics/dark_mode_color_classifier.h",
-    "graphics/dark_mode_image_classifier.cc",
-    "graphics/dark_mode_image_classifier.h",
+    "graphics/dark_mode_filter.cc",
+    "graphics/dark_mode_filter.h",
     "graphics/dark_mode_settings.h",
     "graphics/darkmode/darkmode_classifier.cc",
     "graphics/darkmode/darkmode_classifier.h",
@@ -961,6 +929,8 @@ jumbo_component("platform") {
     "graphics/filters/spot_light_source.h",
     "graphics/generated_image.cc",
     "graphics/generated_image.h",
+    "graphics/gpu/dawn_control_client_holder.cc",
+    "graphics/gpu/dawn_control_client_holder.h",
     "graphics/gpu/drawing_buffer.cc",
     "graphics/gpu/drawing_buffer.h",
     "graphics/gpu/extensions_3d_util.cc",
@@ -975,6 +945,8 @@ jumbo_component("platform") {
     "graphics/gpu/shared_gpu_context.h",
     "graphics/gpu/webgl_image_conversion.cc",
     "graphics/gpu/webgl_image_conversion.h",
+    "graphics/gpu/webgpu_swap_buffer_provider.cc",
+    "graphics/gpu/webgpu_swap_buffer_provider.h",
     "graphics/gpu/xr_frame_transport.cc",
     "graphics/gpu/xr_frame_transport.h",
     "graphics/gpu/xr_webgl_drawing_buffer.cc",
@@ -1019,6 +991,7 @@ jumbo_component("platform") {
     "graphics/intercepting_canvas.h",
     "graphics/interpolation_space.cc",
     "graphics/interpolation_space.h",
+    "graphics/lab_color_space.h",
     "graphics/link_highlight.h",
     "graphics/logging_canvas.cc",
     "graphics/logging_canvas.h",
@@ -1230,7 +1203,6 @@ jumbo_component("platform") {
     "mhtml/serialized_resource.h",
     "mhtml/shared_buffer_chunk_reader.cc",
     "mhtml/shared_buffer_chunk_reader.h",
-    "mojo/big_string_mojom_traits.cc",
     "mojo/big_string_mojom_traits.h",
     "mojo/bluetooth_struct_traits.cc",
     "mojo/bluetooth_struct_traits.h",
@@ -1256,10 +1228,6 @@ jumbo_component("platform") {
     "prerender.cc",
     "prerender.h",
     "prerender_client.h",
-    "probe/platform_probes.cc",
-    "probe/platform_probes.h",
-    "probe/platform_trace_events_agent.cc",
-    "probe/platform_trace_events_agent.h",
     "resolution_units.h",
     "shared_buffer.cc",
     "shared_buffer.h",
@@ -1358,8 +1326,6 @@ jumbo_component("platform") {
     "transforms/skew_transform_operation.h",
     "transforms/transform_operations.cc",
     "transforms/transform_operations.h",
-    "transforms/transform_state.cc",
-    "transforms/transform_state.h",
     "transforms/transformation_matrix.cc",
     "transforms/transformation_matrix.h",
     "transforms/translate_transform_operation.cc",
@@ -1403,9 +1369,10 @@ jumbo_component("platform") {
   # Add in the generated files.
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
-             get_target_outputs(":font_family_names") +
-             get_target_outputs(":instrumentation_probes") +
-             get_target_outputs(":runtime_enabled_features")
+             get_target_outputs(":font_family_names")
+  set_sources_assignment_filter([ "*.pickle" ])
+  sources += get_target_outputs(":runtime_enabled_features")
+  set_sources_assignment_filter(sources_assignment_filter)
 
   if (is_win) {
     jumbo_excluded_sources = [
@@ -1475,11 +1442,6 @@ jumbo_component("platform") {
     "//ui/gfx/geometry",
   ]
 
-  # This is faster on armv7, untested on other CPUs (e.g. mips, power, etc).
-  # TODO(cavalcantii): add next xxhash.
-  defines = [ "USE_FUNCTION_CITYHASH" ]
-  deps += [ "//third_party/smhasher:cityhash" ]
-
   if (is_mac) {
     sources -= [
       "fonts/skia/font_cache_skia.cc",
@@ -1546,9 +1508,9 @@ jumbo_component("platform") {
     include_dirs += [ "//third_party/ffmpeg" ]
     deps += [ "//third_party/ffmpeg" ]
   }
-  if (use_openmax_dl_fft) {
-    include_dirs += [ "//third_party/openmax_dl" ]
-    deps += [ "//third_party/openmax_dl/dl" ]
+  if (use_webaudio_pffft) {
+    include_dirs += [ "//third_party/pffft/src" ]
+    deps += [ "//third_party/pffft" ]
   }
 
   configs -= [ "//build/config/compiler:default_symbols" ]
@@ -1576,6 +1538,8 @@ jumbo_static_library("test_support") {
     "testing/fuzzed_data_provider.h",
     "testing/histogram_tester.cc",
     "testing/histogram_tester.h",
+    "testing/io_task_runner_testing_platform_support.cc",
+    "testing/io_task_runner_testing_platform_support.h",
     "testing/layer_tree_host_embedder.cc",
     "testing/layer_tree_host_embedder.h",
     "testing/message_loop_for_mojo.h",
@@ -1671,8 +1635,8 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "bindings/parkable_string_test.cc",
     "bindings/runtime_call_stats_test.cc",
     "exported/file_path_conversion_test.cc",
+    "exported/mediastream/media_stream_audio_processor_options_test.cc",
     "exported/mediastream/webrtc_uma_histograms_test.cc",
-    "exported/notification_data_conversions_test.cc",
     "exported/web_canonical_cookie_test.cc",
     "exported/web_string_test.cc",
     "fonts/android/font_cache_android_test.cc",
@@ -1696,6 +1660,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "fonts/shaping/harfbuzz_shaper_test.cc",
     "fonts/shaping/run_segmenter_test.cc",
     "fonts/shaping/shape_result_bloberizer_test.cc",
+    "fonts/shaping/shape_result_run_info_test.cc",
     "fonts/shaping/shape_result_test.cc",
     "fonts/shaping/shape_result_view_test.cc",
     "fonts/shaping/shaping_line_breaker_test.cc",
@@ -1729,7 +1694,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "graphics/compositing/paint_chunks_to_cc_layer_test.cc",
     "graphics/compositor_element_id_test.cc",
     "graphics/contiguous_container_test.cc",
-    "graphics/dark_mode_image_classifier_test.cc",
+    "graphics/dark_mode_bitmap_image_classifier_test.cc",
     "graphics/decoding_image_generator_test.cc",
     "graphics/deferred_image_decoder_test_wo_platform.cc",
     "graphics/filters/fe_composite_test.cc",
@@ -1737,7 +1702,9 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "graphics/gpu/drawing_buffer_test.cc",
     "graphics/gpu/shared_gpu_context_test.cc",
     "graphics/gpu/webgl_image_conversion_test.cc",
+    "graphics/gpu/webgpu_swap_buffer_provider_test.cc",
     "graphics/graphics_context_test.cc",
+    "graphics/lab_color_space_test.cc",
     "graphics/paint/cull_rect_test.cc",
     "graphics/paint/display_item_client_test.cc",
     "graphics/paint/display_item_raster_invalidator_test.cc",
@@ -1947,6 +1914,9 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       ":blink_platform_config",
       ":blink_platform_implementation",
       "//third_party/blink/renderer:non_test_config",
+    ]
+    public_deps = [
+      ":blink_platform_public_deps",
     ]
     if (is_win) {
       cflags = [ "/arch:AVX" ]

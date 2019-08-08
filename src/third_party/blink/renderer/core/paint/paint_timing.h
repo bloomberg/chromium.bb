@@ -29,8 +29,8 @@ class CORE_EXPORT PaintTiming final
   USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
   friend class FirstMeaningfulPaintDetector;
   using ReportTimeCallback =
-      WTF::CrossThreadFunction<void(WebWidgetClient::SwapResult,
-                                    base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                        base::TimeTicks)>;
 
  public:
   static const char kSupplementName[];

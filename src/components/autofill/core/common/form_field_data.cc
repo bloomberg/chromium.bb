@@ -6,7 +6,6 @@
 
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
@@ -135,25 +134,14 @@ bool HaveSameLabel(const FormFieldData& field1, const FormFieldData& field2) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillSkipComparingInferredLabels)) {
     return field1.label_source == field2.label_source &&
-           field1.label_source != FormFieldData::LABEL_TAG;
+           field1.label_source != FormFieldData::LabelSource::kLabelTag;
   }
   return false;
 }
 
 }  // namespace
 
-FormFieldData::FormFieldData()
-    : max_length(0),
-      is_autofilled(false),
-      check_status(NOT_CHECKABLE),
-      is_focusable(true),
-      should_autocomplete(true),
-      role(ROLE_ATTRIBUTE_OTHER),
-      text_direction(base::i18n::UNKNOWN_DIRECTION),
-      properties_mask(0),
-      is_enabled(false),
-      is_readonly(false),
-      label_source(LabelSource::UNKNOWN) {}
+FormFieldData::FormFieldData() = default;
 
 FormFieldData::FormFieldData(const FormFieldData& other) = default;
 
@@ -319,10 +307,10 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString(field_data.autocomplete_attribute);
   pickle->WriteUInt64(field_data.max_length);
   pickle->WriteBool(field_data.is_autofilled);
-  pickle->WriteInt(field_data.check_status);
+  pickle->WriteInt(static_cast<int>(field_data.check_status));
   pickle->WriteBool(field_data.is_focusable);
   pickle->WriteBool(field_data.should_autocomplete);
-  pickle->WriteInt(field_data.role);
+  pickle->WriteInt(static_cast<int>(field_data.role));
   pickle->WriteInt(field_data.text_direction);
   AddVectorToPickle(field_data.option_values, pickle);
   AddVectorToPickle(field_data.option_contents, pickle);
@@ -456,51 +444,21 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
 }
 
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
-  const char* check_status_str = nullptr;
-  switch (field.check_status) {
-    case FormFieldData::CheckStatus::NOT_CHECKABLE:
-      check_status_str = "NOT_CHECKABLE";
-      break;
-    case FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED:
-      check_status_str = "CHECKABLE_BUT_UNCHECKED";
-      break;
-    case FormFieldData::CheckStatus::CHECKED:
-      check_status_str = "CHECKED";
-      break;
-    default:
-      NOTREACHED();
-      check_status_str = "<invalid>";
-  }
-
-  const char* role_str = nullptr;
-  switch (field.role) {
-    case FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION:
-      role_str = "ROLE_ATTRIBUTE_PRESENTATION";
-      break;
-    case FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_OTHER:
-      role_str = "ROLE_ATTRIBUTE_OTHER";
-      break;
-    default:
-      NOTREACHED();
-      role_str = "<invalid>";
-  }
-
-  return os << "label='" << base::UTF16ToUTF8(field.label) << "' "
-            << "name='" << base::UTF16ToUTF8(field.name) << "' "
-            << "id_attribute='" << base::UTF16ToUTF8(field.id_attribute) << "' "
-            << "name_attribute='" << base::UTF16ToUTF8(field.name_attribute)
-            << "' "
-            << "value='" << base::UTF16ToUTF8(field.value) << "' "
+  return os << "label='" << field.label << "' "
+            << "name='" << field.name << "' "
+            << "id_attribute='" << field.id_attribute << "' "
+            << "name_attribute='" << field.name_attribute << "' "
+            << "value='" << field.value << "' "
             << "control='" << field.form_control_type << "' "
             << "autocomplete='" << field.autocomplete_attribute << "' "
             << "placeholder='" << field.placeholder << "' "
             << "max_length=" << field.max_length << " "
             << "css_classes='" << field.css_classes << "' "
             << "autofilled=" << field.is_autofilled << " "
-            << "check_status=" << check_status_str << " "
+            << "check_status=" << field.check_status << " "
             << "is_focusable=" << field.is_focusable << " "
             << "should_autocomplete=" << field.should_autocomplete << " "
-            << "role=" << role_str << " "
+            << "role=" << field.role << " "
             << "text_direction=" << field.text_direction << " "
             << "is_enabled=" << field.is_enabled << " "
             << "is_readonly=" << field.is_readonly << " "

@@ -357,7 +357,7 @@ void SessionCrashedBubbleView::OpenStartupPages() {
 void SessionCrashedBubbleView::MaybeEnableUma() {
   // Record user's choice for opt-in in to UMA.
   // There's no opt-out choice in the crash restore bubble.
-  if (uma_option_ && uma_option_->checked()) {
+  if (uma_option_ && uma_option_->GetChecked()) {
     ChangeMetricsReportingState(true);
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);
   }

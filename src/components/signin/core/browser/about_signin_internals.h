@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -35,11 +36,11 @@ using TimedSigninStatusValue = std::pair<std::string, std::string>;
 
 // This class collects authentication, signin and token information
 // to propagate to about:signin-internals via SigninInternalsUI.
-class AboutSigninInternals
-    : public KeyedService,
-      SigninErrorController::Observer,
-      identity::IdentityManager::Observer,
-      identity::IdentityManager::DiagnosticsObserver {
+class AboutSigninInternals : public KeyedService,
+                             public content_settings::Observer,
+                             SigninErrorController::Observer,
+                             identity::IdentityManager::Observer,
+                             identity::IdentityManager::DiagnosticsObserver {
  public:
   class Observer {
    public:
@@ -216,6 +217,12 @@ class AboutSigninInternals
 
   // SigninErrorController::Observer implementation
   void OnErrorChanged() override;
+
+  // content_settings::Observer implementation.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               const std::string& resource_identifier) override;
 
   // Weak pointer to the identity manager.
   identity::IdentityManager* identity_manager_;

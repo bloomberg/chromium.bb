@@ -17,7 +17,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/background/background_trigger.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -62,34 +61,6 @@ std::unique_ptr<TestingProfileManager> CreateTestingProfileManager() {
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   EXPECT_TRUE(profile_manager->SetUp());
   return profile_manager;
-}
-
-class FakeBackgroundTrigger : public BackgroundTrigger {
- public:
-  ~FakeBackgroundTrigger() override;
-  base::string16 GetName() override;
-  gfx::ImageSkia* GetIcon() override;
-  void OnMenuClick() override;
-  int get_name_call_count_ = 0;
-  int get_icon_call_count_ = 0;
-  int on_menu_click_call_count_ = 0;
-};
-
-FakeBackgroundTrigger::~FakeBackgroundTrigger() {
-}
-
-base::string16 FakeBackgroundTrigger::GetName() {
-  get_name_call_count_++;
-  return base::ASCIIToUTF16("FakeBackgroundTrigger");
-}
-
-gfx::ImageSkia* FakeBackgroundTrigger::GetIcon() {
-  get_icon_call_count_++;
-  return nullptr;
-}
-
-void FakeBackgroundTrigger::OnMenuClick() {
-  on_menu_click_call_count_++;
 }
 
 // Helper class that tracks state transitions in BackgroundModeManager and
@@ -918,58 +889,4 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
   // show the balloon.
   service->AddExtension(upgraded_no_bg_ext_has_bg.get());
   EXPECT_TRUE(manager_->HasShownBalloon());
-}
-
-TEST_F(BackgroundModeManagerTest, TriggerRegisterUnregister) {
-  FakeBackgroundTrigger trigger;
-  TestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_attributes_storage());
-  manager.RegisterProfile(profile_);
-  AssertBackgroundModeInactive(manager);
-
-  // Registering a trigger turns on background mode and shows a notification to
-  // the user.
-  EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  manager.RegisterTrigger(profile_, &trigger, true /* should_notify_user */);
-  Mock::VerifyAndClearExpectations(&manager);
-  ASSERT_TRUE(manager.HasBackgroundClientForProfile(profile_));
-  AssertBackgroundModeActive(manager);
-  ASSERT_TRUE(manager.HasShownBalloon());
-
-  // Unregistering the trigger turns off background mode.
-  EXPECT_CALL(manager, EnableLaunchOnStartup(false));
-  manager.UnregisterTrigger(profile_, &trigger);
-  Mock::VerifyAndClearExpectations(&manager);
-  ASSERT_FALSE(manager.HasBackgroundClientForProfile(profile_));
-  AssertBackgroundModeInactive(manager);
-}
-
-// TODO(mvanouwerkerk): Make background mode behavior consistent when
-// registering a client while the pref is disabled - crbug.com/527032.
-TEST_F(BackgroundModeManagerTest, TriggerRegisterWhileDisabled) {
-  g_browser_process->local_state()->SetBoolean(prefs::kBackgroundModeEnabled,
-                                               false);
-  FakeBackgroundTrigger trigger;
-  TestBackgroundModeManager manager(
-      *command_line_, profile_manager_->profile_attributes_storage());
-  manager.RegisterProfile(profile_);
-  AssertBackgroundModeInactive(manager);
-  ASSERT_FALSE(manager.IsBackgroundModePrefEnabled());
-
-  // Registering a trigger while disabled has no immediate effect but it is
-  // stored as pending in case background mode is later enabled.
-  manager.RegisterTrigger(profile_, &trigger, true /* should_notify_user */);
-  ASSERT_FALSE(manager.HasBackgroundClientForProfile(profile_));
-  AssertBackgroundModeInactive(manager);
-  ASSERT_FALSE(manager.HasShownBalloon());
-
-  // When the background mode pref is enabled and there are pending triggers
-  // they will be registered and the user will be notified.
-  EXPECT_CALL(manager, EnableLaunchOnStartup(true));
-  g_browser_process->local_state()->SetBoolean(prefs::kBackgroundModeEnabled,
-                                               true);
-  Mock::VerifyAndClearExpectations(&manager);
-  ASSERT_TRUE(manager.HasBackgroundClientForProfile(profile_));
-  AssertBackgroundModeActive(manager);
-  ASSERT_TRUE(manager.HasShownBalloon());
 }

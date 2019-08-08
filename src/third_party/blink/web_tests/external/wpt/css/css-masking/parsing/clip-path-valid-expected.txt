@@ -18,6 +18,7 @@ PASS e.style['clip-path'] = "circle(4% at top right)" should set the property va
 PASS e.style['clip-path'] = "ellipse()" should set the property value
 PASS e.style['clip-path'] = "ellipse(1px closest-side)" should set the property value
 PASS e.style['clip-path'] = "ellipse(at 10% 20%)" should set the property value
+PASS e.style['clip-path'] = "ellipse(closest-side closest-side at 10% 20%)" should set the property value
 PASS e.style['clip-path'] = "ellipse(farthest-side 4% at bottom left)" should set the property value
 PASS e.style['clip-path'] = "polygon(1% 2%)" should set the property value
 PASS e.style['clip-path'] = "polygon(nonzero, 1px 2px, 3em 4em)" should set the property value

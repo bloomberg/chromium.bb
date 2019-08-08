@@ -40,9 +40,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
@@ -113,7 +111,7 @@ static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
   PostCrossThreadTask(
       *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(function, CrossThreadUnretained(context)));
+      CrossThreadBindOnce(function, CrossThreadUnretained(context)));
 }
 
 Platform::Platform() {
@@ -332,18 +330,6 @@ Platform::CreateRTCCertificateGenerator() {
 }
 
 std::unique_ptr<WebMediaStreamCenter> Platform::CreateMediaStreamCenter() {
-  return nullptr;
-}
-
-std::unique_ptr<WebCanvasCaptureHandler> Platform::CreateCanvasCaptureHandler(
-    const WebSize&,
-    double,
-    WebMediaStreamTrack*) {
-  return nullptr;
-}
-
-std::unique_ptr<WebImageCaptureFrameGrabber>
-Platform::CreateImageCaptureFrameGrabber() {
   return nullptr;
 }
 

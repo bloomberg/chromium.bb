@@ -10,10 +10,12 @@ import multiprocessing
 import os
 import time
 import unittest
+import sys
 
 from py_trace_event import trace_event
 from py_trace_event import trace_time
 from py_trace_event.trace_event_impl import log
+from py_trace_event.trace_event_impl import multiprocessing_shim
 from py_utils import tempfile_ext
 
 
@@ -70,10 +72,15 @@ class TraceEventTests(unittest.TestCase):
     assert False
 
   def testDisable(self):
+    _old_multiprocessing_process = multiprocessing.Process
     with self._test_trace(disable=False):
       with open(self._log_path, 'r') as f:
         self.assertTrue(trace_event.trace_is_enabled())
+        self.assertEqual(
+            multiprocessing.Process, multiprocessing_shim.ProcessShim)
         trace_event.trace_disable()
+        self.assertEqual(
+            multiprocessing.Process, _old_multiprocessing_process)
         self.assertEquals(len(json.loads(f.read() + ']')), 1)
         self.assertFalse(trace_event.trace_is_enabled())
 
@@ -387,6 +394,21 @@ class TraceEventTests(unittest.TestCase):
         self.assertEquals(parent_close['name'], 'parent_event')
         self.assertEquals(parent_close['ph'], 'E')
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/945819')
+  def testTracingControlDisabledInChildButNotInParent(self):
+    def child(resp):
+      # test tracing is not controllable in the child
+      resp.put(trace_event.is_tracing_controllable())
+
+    with self._test_trace():
+      q = multiprocessing.Queue()
+      p = multiprocessing.Process(target=child, args=[q])
+      p.start()
+      # test tracing is controllable in the parent
+      self.assertTrue(trace_event.is_tracing_controllable())
+      self.assertFalse(q.get())
+      p.join()
+
   def testMultiprocessExceptionInChild(self):
     def bad_child():
       trace_event.trace_disable()
@@ -439,17 +461,41 @@ class TraceEventTests(unittest.TestCase):
 
   def testAddMetadata(self):
     with self._test_trace(format=trace_event.JSON_WITH_METADATA):
-      trace_event.trace_add_metadata({'version': 1})
+      trace_event.trace_add_benchmark_metadata(
+          benchmark_start_time_us=1000,
+          story_run_time_us=2000,
+          benchmark_name='benchmark',
+          benchmark_description='desc',
+          story_name='story',
+          story_tags=['tag1', 'tag2'],
+          story_run_index=0,
+      )
       trace_event.trace_disable()
       with open(self._log_path, 'r') as f:
         log_output = json.load(f)
     self.assertEquals(len(log_output), 2)
-    self.assertEquals(log_output['metadata']['version'], 1)
+    telemetry_metadata = log_output['metadata']['telemetry']
+    self.assertEquals(len(telemetry_metadata), 7)
+    self.assertEquals(telemetry_metadata['benchmarkStart'], 1)
+    self.assertEquals(telemetry_metadata['traceStart'], 2)
+    self.assertEquals(telemetry_metadata['benchmarks'], ['benchmark'])
+    self.assertEquals(telemetry_metadata['benchmarkDescriptions'], ['desc'])
+    self.assertEquals(telemetry_metadata['stories'], ['story'])
+    self.assertEquals(telemetry_metadata['storyTags'], ['tag1', 'tag2'])
+    self.assertEquals(telemetry_metadata['storysetRepeats'], [0])
 
   def testAddMetadataInJsonFormatRaises(self):
     with self._test_trace(format=trace_event.JSON):
       with self.assertRaises(log.TraceException):
-        trace_event.trace_add_metadata({'version': 1})
+        trace_event.trace_add_benchmark_metadata(
+            benchmark_start_time_us=1000,
+            story_run_time_us=2000,
+            benchmark_name='benchmark',
+            benchmark_description='description',
+            story_name='story',
+            story_tags=['tag1', 'tag2'],
+            story_run_index=0,
+        )
 
 
 if __name__ == '__main__':

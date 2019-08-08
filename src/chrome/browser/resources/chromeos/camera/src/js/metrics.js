@@ -93,30 +93,37 @@ cca.metrics.launchType_ = function(ackMigrate) {
 
 /**
  * Returns event builder for the metrics type: capture.
- * @param {string} facingMode Camera facing-mode of the capture.
+ * @param {?string} facingMode Camera facing-mode of the capture.
  * @param {number=} length Length of 1 minute buckets for captured video.
+ * @param {number} width The width of the capture resolution.
+ * @param {number} height The height of the capture resolution.
  * @return {analytics.EventBuilder}
  * @private
  */
-cca.metrics.captureType_ = function(facingMode, length) {
-  var condState = (states, cond) => {
+cca.metrics.captureType_ = function(facingMode, length, [width, height]) {
+  var condState = (states, cond, strict) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
     const prerequisite = !cond || cca.state.get(cond);
-    return prerequisite && states.find((state) => cca.state.get(state)) || '';
+    if (strict && !prerequisite) {
+      return '';
+    }
+    return prerequisite && states.find((state) => cca.state.get(state)) ||
+        'n/a';
   };
 
   return cca.metrics.base_.category('capture')
       .action(/^(\w*)/.exec(condState(
           ['video-mode', 'photo-mode', 'square-mode', 'portrait-mode']))[0])
-      .label(facingMode)
+      .label(facingMode || '(not set)')
       .dimen(3, condState(['sound']))
       .dimen(4, condState(['mirror']))
       .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
       .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
-      .dimen(7, condState(['mic'], 'video-mode'))
+      .dimen(7, condState(['mic'], 'video-mode', true))
       .dimen(8, condState(['max-wnd']))
       .dimen(9, condState(['tall']))
+      .dimen(10, `${width}x${height}`)
       .value(length || 0);
 };
 

@@ -59,6 +59,7 @@ class SharedContextState;
 namespace viz {
 
 class VulkanContextProvider;
+class MetalContextProvider;
 
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
@@ -114,11 +115,14 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) override;
   void CreateArcProtectedBufferManager(
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override;
-  void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest jea_request) override;
-#endif  // defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override;
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
+      override;
+  void CreateJpegEncodeAccelerator(
+      chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request)
+      override;
+#endif  // defined(OS_CHROMEOS)
+
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
       override;
@@ -274,8 +278,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
-  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
-
   const gpu::GpuPreferences gpu_preferences_;
 
   // Information about the GPU, such as device and vendor ID.
@@ -308,6 +310,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::VulkanImplementation* vulkan_implementation_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
 #endif
+  std::unique_ptr<MetalContextProvider> metal_context_provider_;
+
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   // An event that will be signalled when we shutdown. On some platforms it
   // comes from external sources.

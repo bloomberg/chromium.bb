@@ -25,11 +25,10 @@ module.exports = {
     minimizer: [],
   },
   resolve: {
-    modules: [thirdParty],
+    modules: [nodeModules, thirdParty],
     alias: {
-      '/idb/idb.js': path.resolve(thirdParty, 'idb', 'idb.js'),
-      '/tsmon_client/tsmon-client.js': path.resolve(
-          thirdParty, 'tsmon_client', 'tsmon-client.js'),
+      'idb': path.resolve(thirdParty, 'idb', 'idb.js'),
+      'dashboard-metrics': path.resolve(__dirname, '../static/metrics.js'),
     },
   },
   resolveLoader: {

@@ -106,7 +106,8 @@ void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
         SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
                   "Data type is unready.", type));
   } else if (last_requested_types_.Has(type)) {
-    // Only reconfigure if the type is both ready and desired.
+    // Only reconfigure if the type is both ready and desired. This will
+    // internally also update ready state of all other requested types.
     ForceReconfiguration();
   }
 }

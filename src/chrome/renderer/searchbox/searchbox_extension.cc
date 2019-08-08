@@ -23,7 +23,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
-#include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
@@ -44,6 +44,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
@@ -66,6 +68,60 @@ v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
   color_array->CreateDataProperty(context, 3, v8::Int32::New(isolate, color.a))
       .Check();
   return color_array;
+}
+
+// Whether NTP background should be considered dark, so the colors of various
+// UI elements can be adjusted. Light text implies dark theme.
+bool IsNtpBackgroundDark(SkColor ntp_text) {
+  return !color_utils::IsDark(ntp_text);
+}
+
+// Calculate icon color for given background color.
+SkColor CalculateIconColor(SkColor bg_color) {
+  color_utils::HSL hsl;
+  SkColorToHSL(bg_color, &hsl);
+
+  // If luminosity is 0, it means |bg_color| color is black. Use white icon
+  // color for black backgrounds.
+  if (hsl.l == 0)
+    return SK_ColorWHITE;
+
+  // Decrease luminosity by 20%, unless color is already dark.
+  float change = -0.2;
+  if (hsl.l <= 0.15)
+    change = 0.2;
+
+  hsl.l *= 1 + change;
+  if (hsl.l >= 0.0f && hsl.l <= 1.0f)
+    return HSLToSkColor(hsl, 255);
+  return bg_color;
+}
+
+// TODO(gayane): Consider removing RGBAColor struct and replacing it with
+// SkColor.
+// Converts RGBAColor to SkColor.
+SkColor RGBAColorToSkColor(const RGBAColor& color) {
+  return SkColorSetARGB(color.a, color.r, color.g, color.b);
+}
+
+// Use dark icon when in dark mode and no background. Otherwise, use
+// light icon for NTPs with images, and themed icon for NTPs with solid color.
+SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
+  bool has_background_image =
+      crx_file::id_util::IdIsValid(theme_info.theme_id) ||
+      !theme_info.custom_background_url.is_empty();
+  if (has_background_image)
+    return gfx::kGoogleGrey100;
+
+  if (theme_info.using_dark_mode && theme_info.using_default_theme)
+    return gfx::kGoogleGrey900;
+
+  SkColor bg_color = RGBAColorToSkColor(theme_info.background_color);
+  SkColor icon_color = gfx::kGoogleGrey100;
+  if (!theme_info.using_default_theme && bg_color != SK_ColorWHITE)
+    icon_color = CalculateIconColor(bg_color);
+
+  return icon_color;
 }
 
 }  // namespace internal
@@ -192,6 +248,16 @@ base::Optional<int> CoerceToInt(v8::Isolate* isolate, v8::Value* value) {
   return maybe_int.ToLocalChecked()->Value();
 }
 
+// Converts SkColor to RGBAColor
+RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
+  RGBAColor color;
+  color.r = SkColorGetR(sKColor);
+  color.g = SkColorGetG(sKColor);
+  color.b = SkColorGetB(sKColor);
+  color.a = SkColorGetA(sKColor);
+  return color;
+}
+
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -211,31 +277,10 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   builder.Set("backgroundColorRgba",
               internal::RGBAColorToArray(isolate, theme_info.background_color));
 
-  // Theme color for text as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("textColorRgba",
-              internal::RGBAColorToArray(isolate, theme_info.text_color));
-
-  // Theme color for links as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("linkColorRgba",
-              internal::RGBAColorToArray(isolate, theme_info.link_color));
-
   // Theme color for light text as an array with the RGBA components in order.
   // Value is always valid.
   builder.Set("textColorLightRgba",
               internal::RGBAColorToArray(isolate, theme_info.text_color_light));
-
-  // Theme color for header as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("headerColorRgba",
-              internal::RGBAColorToArray(isolate, theme_info.header_color));
-
-  // Theme color for section border as an array with the RGBA components in
-  // order. Value is always valid.
-  builder.Set(
-      "sectionBorderColorRgba",
-      internal::RGBAColorToArray(isolate, theme_info.section_border_color));
 
   // The theme alternate logo value indicates a white logo when TRUE and a
   // colorful one when FALSE.
@@ -312,14 +357,13 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // Assume that a custom background has not been configured and then
   // override based on the condition below.
   builder.Set("customBackgroundConfigured", false);
+  RGBAColor ntp_text = theme_info.text_color;
 
   // If a custom background has been set provide the relevant information to the
   // page.
   if (!theme_info.custom_background_url.is_empty()) {
+    ntp_text = RGBAColor{248, 249, 250, 255};  // GG050
     builder.Set("alternateLogo", true);
-    RGBAColor whiteTextRgba = RGBAColor{255, 255, 255, 255};
-    builder.Set("textColorRgba",
-                internal::RGBAColorToArray(isolate, whiteTextRgba));
     builder.Set("customBackgroundConfigured", true);
     builder.Set("imageUrl", theme_info.custom_background_url.spec());
     builder.Set("attributionActionUrl",
@@ -332,6 +376,23 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     // a custom background is set.
     builder.Set("attributionUrl", std::string());
   }
+
+  // Theme color for text as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("textColorRgba", internal::RGBAColorToArray(isolate, ntp_text));
+
+  // Generate fields for themeing NTP elements.
+  builder.Set(
+      "isNtpBackgroundDark",
+      internal::IsNtpBackgroundDark(internal::RGBAColorToSkColor(ntp_text)));
+  builder.Set("useTitleContainer",
+              crx_file::id_util::IdIsValid(theme_info.theme_id));
+
+  SkColor icon_color = internal::GetIconColor(theme_info);
+  builder.Set(
+      "iconBackgroundColor",
+      internal::RGBAColorToArray(isolate, SkColorToRGBAColor(icon_color)));
+  builder.Set("useWhiteAddIcon", color_utils::IsDark(icon_color));
 
   return builder.Build();
 }
@@ -354,17 +415,6 @@ SearchBox* GetSearchBoxForCurrentContext() {
   return SearchBox::Get(main_frame);
 }
 
-static const char kDispatchChromeIdentityCheckResult[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.newTabPage &&"
-    "    window.chrome.embeddedSearch.newTabPage.onsignedincheckdone &&"
-    "    typeof window.chrome.embeddedSearch.newTabPage"
-    "        .onsignedincheckdone === 'function') {"
-    "  window.chrome.embeddedSearch.newTabPage.onsignedincheckdone(%s, %s);"
-    "  true;"
-    "}";
-
 static const char kDispatchFocusChangedScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -373,17 +423,6 @@ static const char kDispatchFocusChangedScript[] =
     "    typeof window.chrome.embeddedSearch.searchBox.onfocuschange =="
     "         'function') {"
     "  window.chrome.embeddedSearch.searchBox.onfocuschange();"
-    "  true;"
-    "}";
-
-static const char kDispatchHistorySyncCheckResult[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.newTabPage &&"
-    "    window.chrome.embeddedSearch.newTabPage.onhistorysynccheckdone &&"
-    "    typeof window.chrome.embeddedSearch.newTabPage"
-    "        .onhistorysynccheckdone === 'function') {"
-    "  window.chrome.embeddedSearch.newTabPage.onhistorysynccheckdone(%s);"
     "  true;"
     "}";
 
@@ -588,8 +627,6 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static bool GetIsCustomLinks();
 
   // Handlers for JS functions visible to all NTPs.
-  static void CheckIsUserSignedInToChromeAs(const std::string& identity);
-  static void CheckIsUserSyncingHistory();
   static void DeleteMostVisitedItem(v8::Isolate* isolate,
                                     v8::Local<v8::Value> rid);
   static void UndoAllMostVisitedDeletions();
@@ -657,10 +694,6 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetProperty("themeBackgroundInfo",
                    &NewTabPageBindings::GetThemeBackgroundInfo)
       .SetProperty("isCustomLinks", &NewTabPageBindings::GetIsCustomLinks)
-      .SetMethod("checkIsUserSignedIntoChromeAs",
-                 &NewTabPageBindings::CheckIsUserSignedInToChromeAs)
-      .SetMethod("checkIsUserSyncingHistory",
-                 &NewTabPageBindings::CheckIsUserSyncingHistory)
       .SetMethod("deleteMostVisitedItem",
                  &NewTabPageBindings::DeleteMostVisitedItem)
       .SetMethod("undoAllMostVisitedDeletions",
@@ -777,23 +810,6 @@ bool NewTabPageBindings::GetIsCustomLinks() {
     return false;
 
   return search_box->IsCustomLinks();
-}
-
-// static
-void NewTabPageBindings::CheckIsUserSignedInToChromeAs(
-    const std::string& identity) {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->CheckIsUserSignedInToChromeAs(base::UTF8ToUTF16(identity));
-}
-
-// static
-void NewTabPageBindings::CheckIsUserSyncingHistory() {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->CheckIsUserSyncingHistory();
 }
 
 // static
@@ -1009,7 +1025,7 @@ void NewTabPageBindings::SetCustomBackgroundURL(
     const std::string& background_url) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   GURL url(background_url);
-  search_box->SetCustomBackgroundURL(url);
+  search_box->SetCustomBackgroundURLWithAttributions(url, std::string(), std::string(), GURL());
 }
 
 // static
@@ -1047,7 +1063,7 @@ void NewTabPageBindings::BlocklistSearchSuggestionWithHash(
     int task_version,
     int task_id,
     const std::string& hash) {
-  if (hash.length() > 4) {
+  if (hash.length() != 4) {
     return;
   }
 
@@ -1121,29 +1137,8 @@ void SearchBoxExtension::Install(blink::WebLocalFrame* frame) {
 }
 
 // static
-void SearchBoxExtension::DispatchChromeIdentityCheckResult(
-    blink::WebLocalFrame* frame,
-    const base::string16& identity,
-    bool identity_match) {
-  std::string escaped_identity = base::GetQuotedJSONString(identity);
-  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
-      kDispatchChromeIdentityCheckResult, escaped_identity.c_str(),
-      identity_match ? "true" : "false")));
-  Dispatch(frame, script);
-}
-
-// static
 void SearchBoxExtension::DispatchFocusChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
-}
-
-// static
-void SearchBoxExtension::DispatchHistorySyncCheckResult(
-    blink::WebLocalFrame* frame,
-    bool sync_history) {
-  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
-      kDispatchHistorySyncCheckResult, sync_history ? "true" : "false")));
-  Dispatch(frame, script);
 }
 
 // static

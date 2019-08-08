@@ -16,6 +16,9 @@ MockIndexedDBDatabaseCallbacks::MockIndexedDBDatabaseCallbacks()
       abort_called_(false),
       forced_close_called_(false) {}
 
+void MockIndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
+                                                     int64_t new_version) {}
+
 void MockIndexedDBDatabaseCallbacks::OnForcedClose() {
   forced_close_called_ = true;
 }
@@ -25,5 +28,7 @@ void MockIndexedDBDatabaseCallbacks::OnAbort(
     const IndexedDBDatabaseError& error) {
   abort_called_ = true;
 }
+void MockIndexedDBDatabaseCallbacks::OnComplete(
+    const IndexedDBTransaction& transaction) {}
 
 }  // namespace content

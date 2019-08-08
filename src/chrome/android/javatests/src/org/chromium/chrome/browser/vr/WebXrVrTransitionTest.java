@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.vr.rules.VrSettingsFile;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
+import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrSettingsServiceUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
@@ -67,7 +68,8 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=LogJsConsoleMessages", "enable-webvr"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR and WebXR are only supported on L+
 @TargetApi(Build.VERSION_CODES.KITKAT) // Necessary to allow taking screenshots with UiAutomation
 public class WebXrVrTransitionTest {
@@ -506,5 +508,30 @@ public class WebXrVrTransitionTest {
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.APP_BUTTON_EXIT_TOAST, true /* visible*/, () -> {});
+    }
+
+    /**
+     * Tests that a consent dialog dismisses by itself when the page navigates away from
+     * the current page.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+            public void testConsentDialogIsDismissedWhenPageNavigatesAwayInMainFrame()
+            throws InterruptedException {
+        mWebXrVrTestFramework.setConsentDialogAction(
+                WebXrVrTestFramework.CONSENT_DIALOG_ACTION_DO_NOTHING);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterSessionWithUserGesture();
+        mWebXrVrTestFramework.runJavaScriptOrFail(
+                "window.location.href = 'https://google.com'", POLL_TIMEOUT_SHORT_MS);
+        PermissionUtils.waitForConsentPromptDismissal(
+                mWebXrVrTestFramework.getRule().getActivity());
+        mWebXrVrTestFramework.assertNoJavaScriptErrors();
     }
 }

@@ -446,9 +446,8 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
 
     std::string response_header_text =
         "HTTP/1.1 302 Redirect\n" + std::string(test.response_headers);
-    std::string raw_headers = HttpUtil::AssembleRawHeaders(
-        response_header_text.c_str(),
-        static_cast<int>(response_header_text.length()));
+    std::string raw_headers =
+        HttpUtil::AssembleRawHeaders(response_header_text);
     auto response_headers =
         base::MakeRefCounted<HttpResponseHeaders>(raw_headers);
     EXPECT_EQ(302, response_headers->response_code());

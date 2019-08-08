@@ -7,19 +7,14 @@
 
 #include "components/ui_devtools/views/overlay_agent_views.h"
 
-#include "components/ui_devtools/dom_agent.h"
-
-namespace aura {
-class Env;
-}
-
 namespace ui_devtools {
+
+class DOMAgent;
 
 class OverlayAgentAura : public OverlayAgentViews {
  public:
   OverlayAgentAura(DOMAgent* dom_agent);
   ~OverlayAgentAura() override;
-  void RegisterEnv(aura::Env* env);
 
   int FindElementIdTargetedByPoint(ui::LocatedEvent* event) const override;
   static OverlayAgentAura* GetInstance() { return overlay_agent_aura_; }
@@ -30,7 +25,6 @@ class OverlayAgentAura : public OverlayAgentViews {
 
   FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightWindow);
   FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightEmptyOrInvisibleWindow);
-  std::vector<aura::Env*> envs_;
 
   static OverlayAgentAura* overlay_agent_aura_;
 

@@ -45,13 +45,6 @@ class SVGAnimatedPreserveAspectRatio
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedPreserveAspectRatio);
 
  public:
-  static SVGAnimatedPreserveAspectRatio* Create(
-      SVGElement* context_element,
-      const QualifiedName& attribute_name) {
-    return MakeGarbageCollected<SVGAnimatedPreserveAspectRatio>(context_element,
-                                                                attribute_name);
-  }
-
   SVGAnimatedPreserveAspectRatio(SVGElement* context_element,
                                  const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGPreserveAspectRatio>(

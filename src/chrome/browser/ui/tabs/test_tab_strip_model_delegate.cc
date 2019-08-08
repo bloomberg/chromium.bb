@@ -18,7 +18,7 @@ TestTabStripModelDelegate::~TestTabStripModelDelegate() {
 void TestTabStripModelDelegate::AddTabAt(const GURL& url,
                                          int index,
                                          bool foreground,
-                                         base::Optional<int> group) {}
+                                         base::Optional<TabGroupId> group) {}
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(
     std::vector<NewStripContents> contentses,

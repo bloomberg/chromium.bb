@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -32,6 +33,7 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -40,8 +42,6 @@ using namespace html_names;
 
 HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(kHTMLTag, document) {}
-
-DEFINE_NODE_FACTORY(HTMLHtmlElement)
 
 bool HTMLHtmlElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == kManifestAttr ||
@@ -100,6 +100,19 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
     UseCounter::Count(GetDocument(),
                       WebFeature::kApplicationCacheInstalledButNoManifest);
   }
+}
+
+const CSSPropertyValueSet*
+HTMLHtmlElement::AdditionalPresentationAttributeStyle() {
+  if (const CSSValue* color_scheme =
+          GetDocument().GetStyleEngine().GetMetaColorSchemeValue()) {
+    DEFINE_STATIC_LOCAL(
+        Persistent<MutableCSSPropertyValueSet>, color_scheme_style,
+        (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
+    color_scheme_style->SetProperty(CSSPropertyID::kColorScheme, *color_scheme);
+    return color_scheme_style;
+  }
+  return nullptr;
 }
 
 }  // namespace blink

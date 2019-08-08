@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {
@@ -161,6 +161,13 @@ ColorSpace ICCProfile::GetColorSpace() const {
 
   return ColorSpace::CreateCustom(internals_->to_XYZD50_,
                                   internals_->transfer_fn_);
+}
+
+ColorSpace ICCProfile::GetPrimariesOnlyColorSpace() const {
+  ColorSpace result = GetColorSpace();
+  if (result.IsValid())
+    result.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
+  return result;
 }
 
 bool ICCProfile::IsColorSpaceAccurate() const {

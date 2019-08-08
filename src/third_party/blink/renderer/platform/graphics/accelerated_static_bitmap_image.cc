@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 
+#include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -41,18 +42,18 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     IntSize mailbox_size,
-    MailboxType mailbox_type) {
+    bool is_origin_top_left,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size, mailbox_type));
+      mailbox_size, is_origin_top_left, std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper)
-    : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
-      mailbox_type_(MailboxType::kDeprecatedMailbox) {
+    : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   CHECK(image && image->isTextureBacked());
   texture_holder_ = std::make_unique<SkiaTextureHolder>(
       std::move(image), std::move(context_provider_wrapper));
@@ -65,12 +66,13 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     IntSize mailbox_size,
-    MailboxType mailbox_type)
+    bool is_origin_top_left,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
-      mailbox_type_(mailbox_type) {
+      release_callback_(std::move(release_callback)) {
   texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size);
+      mailbox_size, is_origin_top_left);
 }
 
 namespace {
@@ -100,6 +102,11 @@ void DestroySkImageOnOriginalThread(
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (release_callback_) {
+    release_callback_->Run(texture_holder_->GetSyncToken(),
+                           false /* is_lost */);
+  }
+
   // If the original SkImage was retained, it must be destroyed on the thread
   // where it came from. In the same thread case, there is nothing to do because
   // the regular destruction flow is fine.
@@ -109,7 +116,7 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
     if (!original_skia_image_task_runner_->BelongsToCurrentThread()) {
       PostCrossThreadTask(
           *original_skia_image_task_runner_, FROM_HERE,
-          CrossThreadBind(
+          CrossThreadBindOnce(
               &DestroySkImageOnOriginalThread, std::move(original_skia_image_),
               std::move(original_skia_image_context_provider_wrapper_),
               WTF::Passed(std::move(sync_token))));
@@ -169,11 +176,14 @@ bool AcceleratedStaticBitmapImage::CopyToTexture(
   // that the source and destination context or on the same stream.
   EnsureMailbox(kUnverifiedSyncToken, GL_NEAREST);
 
+  DCHECK(texture_holder_->IsMailboxTextureHolder());
+  bool is_shared_image = texture_holder_->GetMailbox().IsSharedImage();
+
   // Get a texture id that |destProvider| knows about and copy from it.
   dest_gl->WaitSyncTokenCHROMIUM(
       texture_holder_->GetSyncToken().GetConstData());
   GLuint source_texture_id;
-  if (mailbox_type_ == MailboxType::kSharedImageId) {
+  if (is_shared_image) {
     source_texture_id = dest_gl->CreateAndTexStorage2DSharedImageCHROMIUM(
         texture_holder_->GetMailbox().name);
     dest_gl->BeginSharedImageAccessDirectCHROMIUM(
@@ -188,7 +198,7 @@ bool AcceleratedStaticBitmapImage::CopyToTexture(
       source_sub_rectangle.Y(), source_sub_rectangle.Width(),
       source_sub_rectangle.Height(), unpack_flip_y ? GL_FALSE : GL_TRUE,
       GL_FALSE, unpack_premultiply_alpha ? GL_FALSE : GL_TRUE);
-  if (mailbox_type_ == MailboxType::kSharedImageId) {
+  if (is_shared_image) {
     dest_gl->EndSharedImageAccessDirectCHROMIUM(source_texture_id);
   }
   // This drops the |destGL| context's reference on our |m_mailbox|, but it's
@@ -273,6 +283,7 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (texture_holder_->IsSkiaTextureHolder())
     return;
+
   texture_holder_ =
       std::make_unique<SkiaTextureHolder>(std::move(texture_holder_));
 }

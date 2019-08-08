@@ -45,6 +45,8 @@ component("auth") {
     "auth_status_consumer.h",
     "authenticator.cc",
     "authenticator.h",
+    "challenge_response/cert_utils.cc",
+    "challenge_response/cert_utils.h",
     "cryptohome_authenticator.cc",
     "cryptohome_authenticator.h",
     "extended_authenticator.cc",
@@ -57,6 +59,8 @@ component("auth") {
     "login_event_recorder.h",
     "login_performer.cc",
     "login_performer.h",
+    "saml_password_attributes.cc",
+    "saml_password_attributes.h",
     "stub_authenticator.cc",
     "stub_authenticator.h",
     "stub_authenticator_builder.cc",
@@ -88,8 +92,6 @@ source_set("test_support") {
     "mock_auth_attempt_state_resolver.h",
     "mock_auth_status_consumer.cc",
     "mock_auth_status_consumer.h",
-    "mock_url_fetchers.cc",
-    "mock_url_fetchers.h",
   ]
 }
 
@@ -117,11 +119,17 @@ source_set("unit_tests") {
     "//chromeos/dbus/auth_policy:authpolicy_proto",
     "//chromeos/dbus/cryptohome",
     "//chromeos/tpm:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//net",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
   ]
   sources = [
+    "challenge_response/cert_utils_unittest.cc",
     "key_unittest.cc",
+    "saml_password_attributes_unittest.cc",
   ]
 }

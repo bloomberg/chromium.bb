@@ -19,15 +19,18 @@ import string
 import sys
 import time
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
+sys.path.insert(0, CLIENT_DIR)
 
-sys.path.insert(0, ROOT_DIR)
+from utils import tools
+tools.force_local_third_party()
 
-from third_party import colorama
+# third_party/
+import colorama
 
+# pylint: disable=ungrouped-imports
 import swarming
-
 from utils import graph
 from utils import net
 from utils import threading_utils
@@ -71,6 +74,7 @@ def trigger_task(
   start = time.time()
 
   logging.info('trigger')
+  # TODO(maruel): Broken.
   manifest = swarming.Manifest(
     isolate_server='http://localhost:1',
     namespace='dummy-isolate',
@@ -97,7 +101,7 @@ def trigger_task(
     return 'failed_trigger'
 
   result = json.loads(response)
-  # Old API uses harcoded config name. New API doesn't have concept of config
+  # Old API uses hardcoded config name. New API doesn't have concept of config
   # name so it uses the task name. Ignore this detail.
   test_keys = []
   for key in result['test_keys']:
@@ -259,7 +263,7 @@ def main():
           if os.path.exists(options.dump):
             os.rename(options.dump, options.dump + '.old')
           with open(options.dump, 'wb') as f:
-            json.dump(results, f, separators=(',',':'))
+            json.dump(results, f, separators=(',', ':'))
       if not options.dump:
         results.sort()
     except KeyboardInterrupt:

@@ -68,6 +68,10 @@ bool IOSWebViewSigninClient::AreSigninCookiesAllowed() {
   return signin::SettingsAllowSigninCookies(cookie_settings_.get());
 }
 
+bool IOSWebViewSigninClient::AreSigninCookiesDeletedOnExit() {
+  return signin::SettingsDeleteSigninCookiesOnExit(cookie_settings_.get());
+}
+
 void IOSWebViewSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
   host_content_settings_map_->AddObserver(observer);
@@ -91,10 +95,9 @@ void IOSWebViewSigninClient::DelayNetworkCall(base::OnceClosure callback) {
 
 std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    gaia::GaiaSource source,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    gaia::GaiaSource source) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
-                                           url_loader_factory);
+                                           GetURLLoaderFactory());
 }
 
 void IOSWebViewSigninClient::SetSyncController(

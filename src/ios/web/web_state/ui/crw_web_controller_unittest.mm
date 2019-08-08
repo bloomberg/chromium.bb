@@ -19,28 +19,33 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
+#include "ios/web/navigation/block_universal_links_buildflags.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/public/crw_navigation_item_storage.h"
-#import "ios/web/public/crw_session_storage.h"
+#import "ios/web/navigation/wk_navigation_action_policy_util.h"
+
+#import "ios/web/public/deprecated/crw_native_content.h"
+#import "ios/web/public/deprecated/crw_native_content_holder.h"
+#import "ios/web/public/deprecated/crw_native_content_provider.h"
+#import "ios/web/public/deprecated/test_native_content.h"
+#import "ios/web/public/deprecated/test_native_content_provider.h"
+#include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
 #import "ios/web/public/test/fakes/fake_web_state_policy_decider.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#import "ios/web/public/test/fakes/test_native_content.h"
-#import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/web_state/ui/crw_native_content.h"
-#import "ios/web/public/web_state/ui/crw_native_content_provider.h"
-#include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #import "ios/web/test/fakes/crw_fake_wk_frame_info.h"
 #import "ios/web/test/fakes/crw_fake_wk_navigation_action.h"
@@ -48,13 +53,11 @@
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
-#include "ios/web/web_state/ui/block_universal_links_buildflags.h"
+#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
-#import "ios/web/web_state/ui/wk_navigation_action_policy_util.h"
 #import "ios/web/web_state/web_state_impl.h"
-#import "ios/web/web_state/wk_web_view_security_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cert/x509_util_ios_and_mac.h"
 #include "net/ssl/ssl_info.h"
@@ -283,6 +286,32 @@ TEST_P(CRWWebControllerTest, SslCertError) {
   EXPECT_FALSE(GetWebClient()->last_cert_error_overridable());
 }
 
+// Tests that when a committed but not-yet-finished navigation is cancelled,
+// the navigation item's ErrorRetryStateMachine is updated correctly.
+TEST_P(CRWWebControllerTest, CancelCommittedNavigation) {
+  [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
+  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:@""]) title];
+
+  WKNavigation* navigation =
+      static_cast<WKNavigation*>([[NSObject alloc] init]);
+  SetWebViewURL(@"http://chromium.test");
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:navigation];
+  [fake_wk_list_ setCurrentURL:@"http://chromium.test"];
+  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:navigation];
+  NSError* error = [NSError errorWithDomain:NSURLErrorDomain
+                                       code:NSURLErrorCancelled
+                                   userInfo:nil];
+  [navigation_delegate_ webView:mock_web_view_
+              didFailNavigation:navigation
+                      withError:error];
+  NavigationManagerImpl& navigation_manager =
+      web_controller().webStateImpl->GetNavigationManagerImpl();
+  NavigationItemImpl* item = navigation_manager.GetLastCommittedItemImpl();
+  EXPECT_EQ(ErrorRetryState::kNoNavigationError,
+            item->error_retry_state_machine().state());
+}
+
 // Tests that when a placeholder navigation is preempted by another navigation,
 // WebStateObservers get neither a DidStartNavigation nor a DidFinishNavigation
 // call for the corresponding native URL navigation.
@@ -306,7 +335,8 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
   TestNativeContent* content =
       [[TestNativeContent alloc] initWithURL:native_url virtualURL:native_url];
   [mock_native_provider setController:content forURL:native_url];
-  [web_controller() setNativeProvider:mock_native_provider];
+  [[web_controller() nativeContentHolder]
+      setNativeProvider:mock_native_provider];
 
   AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);
 
@@ -1002,7 +1032,8 @@ class CRWWebControllerNativeContentTest
   void SetUp() override {
     ProgrammaticWebTestWithWebController::SetUp();
     mock_native_provider_ = [[TestNativeContentProvider alloc] init];
-    [web_controller() setNativeProvider:mock_native_provider_];
+    [[web_controller() nativeContentHolder]
+        setNativeProvider:mock_native_provider_];
   }
 
   void Load(const GURL& URL) {
@@ -1127,7 +1158,6 @@ TEST_P(WindowOpenByDomTest, OpenWithUserGesture) {
 // Tests that window.open executed w/o user gesture does not open a new window,
 // but blocks popup instead.
 TEST_P(WindowOpenByDomTest, BlockPopup) {
-  ASSERT_FALSE([web_controller() userIsInteracting]);
   EXPECT_NSEQ([NSNull null], OpenWindowByDom());
 
   EXPECT_TRUE(delegate_.child_windows().empty());
@@ -1225,7 +1255,7 @@ class ScriptExecutionTest : public ProgrammaticWebTestWithWebController {
     __block id script_result = nil;
     __block NSError* script_error = nil;
     __block bool script_executed = false;
-    [web_controller()
+    [web_controller().jsInjector
         executeUserJavaScript:java_script
             completionHandler:^(id local_result, NSError* local_error) {
               script_result = local_result;
@@ -1273,7 +1303,7 @@ TEST_P(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   EXPECT_FALSE(ExecuteUserJavaScript(@"window.w = 0;", &error));
   ASSERT_TRUE(error);
   EXPECT_NSEQ(kJSEvaluationErrorDomain, error.domain);
-  EXPECT_EQ(JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW, error.code);
+  EXPECT_EQ(JS_EVALUATION_ERROR_CODE_REJECTED, error.code);
 
   EXPECT_FALSE(ExecuteJavaScript(@"window.w"));
 }

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_substfont.h"
@@ -22,16 +23,15 @@ RetainPtr<CFGAS_GEFont> CFGAS_GEFont::LoadFont(const wchar_t* pszFontFamily,
                                                uint32_t dwFontStyles,
                                                uint16_t wCodePage,
                                                CFGAS_FontMgr* pFontMgr) {
-#if _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
-  if (!pFontMgr)
-    return nullptr;
-
-  return pFontMgr->GetFontByCodePage(wCodePage, dwFontStyles, pszFontFamily);
-#else
+#if defined(OS_WIN)
   auto pFont = pdfium::MakeRetain<CFGAS_GEFont>(pFontMgr);
   if (!pFont->LoadFontInternal(pszFontFamily, dwFontStyles, wCodePage))
     return nullptr;
   return pFont;
+#else
+  if (!pFontMgr)
+    return nullptr;
+  return pFontMgr->GetFontByCodePage(wCodePage, dwFontStyles, pszFontFamily);
 #endif
 }
 
@@ -58,7 +58,7 @@ CFGAS_GEFont::CFGAS_GEFont(CFGAS_FontMgr* pFontMgr) : m_pFontMgr(pFontMgr) {}
 
 CFGAS_GEFont::~CFGAS_GEFont() = default;
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
 bool CFGAS_GEFont::LoadFontInternal(const wchar_t* pszFontFamily,
                                     uint32_t dwFontStyles,
                                     uint16_t wCodePage) {
@@ -82,7 +82,7 @@ bool CFGAS_GEFont::LoadFontInternal(const wchar_t* pszFontFamily,
                      false);
   return m_pFont->GetFace() && InitFont();
 }
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#endif  // defined(OS_WIN)
 
 bool CFGAS_GEFont::LoadFontInternal(CFX_Font* pExternalFont) {
   if (m_pFont || !pExternalFont)
@@ -154,7 +154,7 @@ bool CFGAS_GEFont::GetCharWidth(wchar_t wUnicode, int32_t* pWidth) {
   int32_t iGlyph;
   std::tie(iGlyph, pFont) = GetGlyphIndexAndFont(wUnicode, true);
   if (iGlyph != 0xFFFF && pFont) {
-    if (pFont.Get() == this) {
+    if (pFont == this) {
       *pWidth = m_pFont->GetGlyphWidth(iGlyph);
       if (*pWidth < 0)
         *pWidth = -1;
@@ -238,11 +238,11 @@ std::pair<int32_t, RetainPtr<CFGAS_GEFont>> CFGAS_GEFont::GetGlyphIndexAndFont(
   WideString wsFamily = GetFamilyName();
   RetainPtr<CFGAS_GEFont> pFont =
       m_pFontMgr->GetFontByUnicode(wUnicode, GetFontStyles(), wsFamily.c_str());
-#if _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
+#if !defined(OS_WIN)
   if (!pFont)
     pFont = m_pFontMgr->GetFontByUnicode(wUnicode, GetFontStyles(), nullptr);
 #endif
-  if (!pFont || pFont.Get() == this)  // Avoids direct cycles below.
+  if (!pFont || pFont == this)  // Avoids direct cycles below.
     return {0xFFFF, nullptr};
 
   m_FontMapper[wUnicode] = pFont;

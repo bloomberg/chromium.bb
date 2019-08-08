@@ -20,15 +20,10 @@ namespace content {
 
 // Creates a renderer for media flinging.
 // The FRCF uses a MojoRendererFactory to create a FlingingRenderer in the
-// browser process. The actual renderer returned by the FRCF is a MojoRenderer
-// directly (as opposed to a dedicated FlingingRendererClient), because all the
-// renderer needs to do is forward calls to the FlingingRenderer in the browser.
+// browser process.
 class CONTENT_EXPORT FlingingRendererClientFactory
     : public media::RendererFactory {
  public:
-  // |mojo_flinging_factory| should be created using
-  // HostedRendererType::kFlinging, and GetActivePresentationId()
-  // should be given to it through SetGetTypeSpecificIdCB().
   FlingingRendererClientFactory(
       std::unique_ptr<media::MojoRendererFactory> mojo_renderer_factory,
       std::unique_ptr<media::RemotePlaybackClientWrapper>

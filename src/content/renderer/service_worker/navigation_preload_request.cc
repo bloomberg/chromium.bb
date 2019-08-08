@@ -15,11 +15,11 @@
 namespace content {
 
 NavigationPreloadRequest::NavigationPreloadRequest(
-    base::WeakPtr<ServiceWorkerContextClient> owner,
+    ServiceWorkerContextClient* owner,
     int fetch_event_id,
     const GURL& url,
     blink::mojom::FetchEventPreloadHandlePtr preload_handle)
-    : owner_(std::move(owner)),
+    : owner_(owner),
       fetch_event_id_(fetch_event_id),
       url_(url),
       url_loader_(std::move(preload_handle->url_loader)),
@@ -46,7 +46,6 @@ void NavigationPreloadRequest::OnReceiveRedirect(
   DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
       response_head.headers->response_code()));
 
-  DCHECK(owner_);
   response_ = std::make_unique<blink::WebURLResponse>();
   WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
                                         false /* report_security_info */,
@@ -68,7 +67,7 @@ void NavigationPreloadRequest::OnUploadProgress(
 }
 
 void NavigationPreloadRequest::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {}
+    mojo_base::BigBuffer data) {}
 
 void NavigationPreloadRequest::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {}
@@ -106,7 +105,6 @@ void NavigationPreloadRequest::OnComplete(
     return;
   }
 
-  DCHECK(owner_);
   if (response_) {
     // When the response body from the server is empty, OnComplete() is called
     // without OnStartLoadingResponseBody().
@@ -123,7 +121,6 @@ void NavigationPreloadRequest::OnComplete(
 void NavigationPreloadRequest::MaybeReportResponseToOwner() {
   if (!response_ || !body_.is_valid())
     return;
-  DCHECK(owner_);
   owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                       std::move(body_));
 }
@@ -131,7 +128,6 @@ void NavigationPreloadRequest::MaybeReportResponseToOwner() {
 void NavigationPreloadRequest::ReportErrorToOwner(
     const std::string& message,
     const std::string& unsanitized_message) {
-  DCHECK(owner_);
   // This will delete |this|.
   owner_->OnNavigationPreloadError(
       fetch_event_id_, std::make_unique<blink::WebServiceWorkerError>(

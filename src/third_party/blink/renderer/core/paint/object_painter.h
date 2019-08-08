@@ -12,9 +12,9 @@
 
 namespace blink {
 
-struct PaintInfo;
 class LayoutObject;
-class LayoutPoint;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class ObjectPainter : public ObjectPainterBase {
   STACK_ALLOCATED();
@@ -23,9 +23,10 @@ class ObjectPainter : public ObjectPainterBase {
   ObjectPainter(const LayoutObject& layout_object)
       : layout_object_(layout_object) {}
 
-  void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintOutline(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintInlineChildrenOutlines(const PaintInfo&);
-  void AddPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paint_offset);
+  void AddPDFURLRectIfNeeded(const PaintInfo&,
+                             const PhysicalOffset& paint_offset);
 
   // Paints the object atomically as if it created a new stacking context, for:
   // - inline blocks, inline tables, inline-level replaced elements (Section

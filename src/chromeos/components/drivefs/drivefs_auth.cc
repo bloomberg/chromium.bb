@@ -51,7 +51,7 @@ void DriveFsAuth::GetAccessToken(
       base::BindOnce(&DriveFsAuth::AccountReady, base::Unretained(this)));
 }
 
-void DriveFsAuth::AccountReady(const AccountInfo& info,
+void DriveFsAuth::AccountReady(const CoreAccountInfo& info,
                                const identity::AccountState& state) {
   GetIdentityAccessor().GetAccessToken(
       delegate_->GetAccountId().GetUserEmail(),

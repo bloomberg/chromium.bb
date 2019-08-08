@@ -102,6 +102,12 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line);
 // Resets the internal secure schemes/origins whitelist.
 void ResetSchemesAndOriginsWhitelist();
 
+// Returns a GURL constructed from the WebUI scheme and the given host.
+GURL GetWebUIURL(const std::string& host);
+
+// Returns a string constructed from the WebUI scheme and the given host.
+std::string GetWebUIURLString(const std::string& host);
+
 // Appends command line switches to |command_line| to enable the |feature| and
 // to set field trial params associated with the feature as specified by
 // |param_name| and |param_value|.
@@ -290,12 +296,14 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
   ~InProcessUtilityThreadHelper() override;
 
  private:
-  void BrowserChildProcessHostConnected(const ChildProcessData& data) override;
+  void JoinAllUtilityThreads();
+  void CheckHasRunningChildProcess();
+  static void CheckHasRunningChildProcessOnIO(
+      const base::RepeatingClosure& quit_closure);
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
 
-  int child_thread_count_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::RepeatingClosure quit_closure_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);

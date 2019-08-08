@@ -7,11 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "ash/app_list/model/app_list_model_export.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
@@ -34,6 +35,8 @@ class AppListModel;
 // and action to be executed when the AppListItemView is activated.
 class APP_LIST_MODEL_EXPORT AppListItem {
  public:
+  using AppListItemMetadata = ash::AppListItemMetadata;
+
   explicit AppListItem(const std::string& id);
   virtual ~AppListItem();
 
@@ -60,14 +63,12 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   const std::string& folder_id() const { return metadata_->folder_id; }
   const syncer::StringOrdinal& position() const { return metadata_->position; }
 
-  void SetMetadata(ash::mojom::AppListItemMetadataPtr metadata) {
+  void SetMetadata(std::unique_ptr<AppListItemMetadata> metadata) {
     metadata_ = std::move(metadata);
   }
-  const ash::mojom::AppListItemMetadata* GetMetadata() const {
-    return metadata_.get();
-  }
-  ash::mojom::AppListItemMetadataPtr CloneMetadata() const {
-    return metadata_.Clone();
+  const AppListItemMetadata* GetMetadata() const { return metadata_.get(); }
+  std::unique_ptr<AppListItemMetadata> CloneMetadata() const {
+    return std::make_unique<AppListItemMetadata>(*metadata_);
   }
 
   void AddObserver(AppListItemObserver* observer);
@@ -97,7 +98,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
  protected:
   // Subclasses also have mutable access to the metadata ptr.
-  ash::mojom::AppListItemMetadata* metadata() { return metadata_.get(); }
+  AppListItemMetadata* metadata() { return metadata_.get(); }
 
   friend class ::FastShowPickler;
   friend class ash::AppListControllerImpl;
@@ -130,7 +131,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
  private:
   friend class AppListModelTest;
 
-  ash::mojom::AppListItemMetadataPtr metadata_;
+  std::unique_ptr<AppListItemMetadata> metadata_;
 
   // A shortened name for the item, used for display.
   std::string short_name_;

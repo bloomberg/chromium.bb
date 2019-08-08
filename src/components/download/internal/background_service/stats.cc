@@ -221,19 +221,6 @@ void LogStartDownloadResult(DownloadClient client,
                                 DownloadParams::StartResult::COUNT);
 }
 
-void LogStartDownloadResponse(DownloadClient client,
-                              Client::ShouldDownload should_download) {
-  // Total count for each start response.
-  std::string name("Download.Service.Request.StartResponse");
-  base::UmaHistogramEnumeration(name, should_download,
-                                Client::ShouldDownload::COUNT);
-
-  // Total count for each client response with client suffix.
-  name.append(".").append(ClientToHistogramSuffix(client));
-  base::UmaHistogramEnumeration(name, should_download,
-                                Client::ShouldDownload::COUNT);
-}
-
 void LogDownloadParams(const DownloadParams& params) {
   UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.BatteryRequirement",
                             params.scheduling_params.battery_requirements,
@@ -398,6 +385,12 @@ void LogHasUploadData(DownloadClient client, bool has_upload_data) {
 
 void LogHashPresence(bool hash_exists) {
   UMA_HISTOGRAM_BOOLEAN("Download.Service.Finish.ReportedHash", hash_exists);
+}
+
+void LogDownloadClientInflatedFullBrowser(DownloadClient client) {
+  std::string client_name(ClientToHistogramSuffix(client));
+  base::UmaHistogramBoolean(
+      "Download.Service.Clients.InflatedFullBrowser." + client_name, true);
 }
 
 }  // namespace stats

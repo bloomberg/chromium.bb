@@ -53,8 +53,11 @@ interface Blob
     attribute @@toStringTag
     getter size
     getter type
+    method arrayBuffer
     method constructor
     method slice
+    method stream
+    method text
 interface BroadcastChannel : EventTarget
     attribute @@toStringTag
     getter name
@@ -523,6 +526,7 @@ interface IDBCursor
     getter direction
     getter key
     getter primaryKey
+    getter request
     getter source
     method advance
     method constructor
@@ -639,6 +643,7 @@ interface IDBTransaction : EventTarget
     getter oncomplete
     getter onerror
     method abort
+    method commit
     method constructor
     method objectStore
     setter onabort
@@ -657,6 +662,11 @@ interface ImageBitmap
     getter width
     method close
     method constructor
+interface ImageBitmapRenderingContext
+    attribute @@toStringTag
+    getter canvas
+    method constructor
+    method transferFromImageBitmap
 interface ImageData
     attribute @@toStringTag
     getter data
@@ -676,6 +686,10 @@ interface LockManager
     method constructor
     method query
     method request
+interface MediaCapabilities
+    attribute @@toStringTag
+    method constructor
+    method decodingInfo
 interface MessageChannel
     attribute @@toStringTag
     getter port1
@@ -874,6 +888,7 @@ interface PaymentRequestEvent : ExtendableEvent
     getter paymentRequestOrigin
     getter topOrigin
     getter total
+    method changePaymentMethod
     method constructor
     method openWindow
     method respondWith
@@ -2542,6 +2557,7 @@ interface WorkerNavigator
     getter language
     getter languages
     getter locks
+    getter mediaCapabilities
     getter onLine
     getter permissions
     getter platform

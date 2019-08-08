@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/web_ui.h"
@@ -18,12 +17,44 @@
 namespace chromeos {
 
 class CoreOobeView;
+class HIDDetectionScreen;
+
+// Interface between HID detection screen and its representation, either WebUI
+// or Views one. Note, do not forget to call OnViewDestroyed in the
+// dtor.
+class HIDDetectionView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"hid-detection"};
+
+  virtual ~HIDDetectionView() {}
+
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+  virtual void Bind(HIDDetectionScreen* screen) = 0;
+  virtual void Unbind() = 0;
+  // Checks if we should show the screen or enough devices already present.
+  // Calls corresponding set of actions based on the bool result.
+  virtual void CheckIsScreenRequired(
+      const base::Callback<void(bool)>& on_check_done) = 0;
+
+  virtual void SetKeyboardState(const std::string& value) = 0;
+  virtual void SetMouseState(const std::string& value) = 0;
+  virtual void SetKeyboardPinCode(const std::string& value) = 0;
+  virtual void SetNumKeysEnteredExpected(bool value) = 0;
+  virtual void SetNumKeysEnteredPinCode(int value) = 0;
+  virtual void SetMouseDeviceName(const std::string& value) = 0;
+  virtual void SetKeyboardDeviceName(const std::string& value) = 0;
+  virtual void SetKeyboardDeviceLabel(const std::string& value) = 0;
+  virtual void SetContinueButtonEnabled(bool value) = 0;
+};
 
 // WebUI implementation of HIDDetectionScreenView.
 class HIDDetectionScreenHandler
     : public HIDDetectionView,
       public BaseScreenHandler {
  public:
+  using TView = HIDDetectionView;
+
   HIDDetectionScreenHandler(JSCallsContainer* js_calls_container,
                             CoreOobeView* core_oobe_view);
   ~HIDDetectionScreenHandler() override;

@@ -134,7 +134,7 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
                       : sibling->previousSibling())) {
     if (!IsActiveV0InsertionPoint(*sibling))
       return const_cast<Node*>(sibling);
-    const V0InsertionPoint& insertion_point = ToV0InsertionPoint(*sibling);
+    const auto& insertion_point = To<V0InsertionPoint>(*sibling);
     if (Node* found = (direction == kTraversalDirectionForward
                            ? insertion_point.FirstDistributedNode()
                            : insertion_point.LastDistributedNode()))

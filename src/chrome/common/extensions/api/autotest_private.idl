@@ -8,6 +8,10 @@
  implemented_in="chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"]
 namespace autotestPrivate {
 
+  enum ShelfAlignmentType {
+    Bottom, Left, Right, BottomLocked
+  };
+
   dictionary LoginStatusDict {
     // Are we logged in?
     boolean isLoggedIn;
@@ -155,9 +159,6 @@ namespace autotestPrivate {
 
   callback TakeScreenshotCallback = void (DOMString base64Png);
 
-  callback EnsureWindowServiceClientHasDrawnWindowCallback =
-      void(boolean success);
-
   callback GetPrimaryDisplayScaleFactorCallback = void (double scaleFactor);
 
   callback IsTabletModeEnabledCallback = void (boolean enabled);
@@ -165,6 +166,8 @@ namespace autotestPrivate {
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
+
+  callback GetShelfAlignmentCallback = void (ShelfAlignmentType alignment);
 
   callback VoidCallback = void ();
 
@@ -332,15 +335,6 @@ namespace autotestPrivate {
     static void setCrostiniAppScaled(DOMString appId, boolean scaled,
                                      VoidCallback callback);
 
-    // Ensure that the Window Service client identified by |clientName| has
-    // drawn any window. |callback| is invoked with true if the client has drawn
-    // anything or when it does so before the time out. Otherwise, an error
-    // is raised when timeout happens.
-    static void ensureWindowServiceClientHasDrawnWindow(
-        DOMString clientName,
-        long timeout_ms,
-        EnsureWindowServiceClientHasDrawnWindowCallback callback);
-
     // Get the primary display scale factor.
     // |callback| is invoked with the scale factor.
     static void getPrimaryDisplayScaleFactor(
@@ -371,6 +365,19 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setShelfAutoHideBehavior(DOMString displayId,
         DOMString behavior, VoidCallback callback);
+
+    // Get the shelf alignment.
+    // |displayId|: display that contains the shelf.
+    // |callback| is invoked with the shelf alignment type.
+    static void getShelfAlignment(DOMString displayId,
+        GetShelfAlignmentCallback callback);
+
+    // Set the shelf alignment.
+    // |displayId|: display that contains the shelf.
+    // |alignment|: the type of alignment to set.
+    // |callback|: Called when the operation has completed.
+    static void setShelfAlignment(DOMString displayId,
+        ShelfAlignmentType alignment, VoidCallback callback);
 
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();

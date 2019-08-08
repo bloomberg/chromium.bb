@@ -71,7 +71,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -5704,8 +5703,7 @@ TEST_F(ExtensionServiceTest, DoNotInstallForEnterprise) {
   ASSERT_TRUE(base_path.IsAbsolute());
   MockProviderVisitor visitor(base_path);
   policy::ProfilePolicyConnector* const connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-          visitor.profile());
+      visitor.profile()->GetProfilePolicyConnector();
   connector->OverrideIsManagedForTesting(true);
   EXPECT_TRUE(connector->IsManaged());
 
@@ -7422,12 +7420,16 @@ TEST_F(ExtensionServiceTest, PluginManagerCrash) {
   service()->BlockAllExtensions();
 }
 
+class ExternalExtensionPriorityTest
+    : public ExtensionServiceTest,
+      public testing::WithParamInterface<Manifest::Location> {};
+
 // Policy-forced extensions should be fetched with FOREGROUND priority,
 // otherwise they may be throttled (web store sends “noupdate” response to
 // reduce load), which is OK for updates, but not for a new install. This is
 // a regression test for problems described in https://crbug.com/904600 and
 // https://crbug.com/917700.
-TEST_F(ExtensionServiceTest, PolicyForegroundFetch) {
+TEST_P(ExternalExtensionPriorityTest, PolicyForegroundFetch) {
   ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_checks;
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.autoupdate_enabled = true;
@@ -7442,11 +7444,11 @@ TEST_F(ExtensionServiceTest, PolicyForegroundFetch) {
 
   GURL update_url(extension_urls::kChromeWebstoreUpdateURL);
   service()->OnExternalExtensionUpdateUrlFound(
-      ExternalInstallInfoUpdateUrl(
-          all_zero /* extension_id */, "" /* install_parameter */, update_url,
-          Manifest::EXTERNAL_POLICY_DOWNLOAD /* download_location */,
-          Extension::NO_FLAGS /* creation_flag */,
-          true /* mark_acknowledged */),
+      ExternalInstallInfoUpdateUrl(all_zero /* extension_id */,
+                                   "" /* install_parameter */, update_url,
+                                   GetParam() /* download_location */,
+                                   Extension::NO_FLAGS /* creation_flag */,
+                                   true /* mark_acknowledged */),
       true /* is_initial_load */);
 
   MockExternalProvider provider(nullptr, Manifest::EXTERNAL_POLICY_DOWNLOAD);
@@ -7460,10 +7462,19 @@ TEST_F(ExtensionServiceTest, PolicyForegroundFetch) {
   std::string header;
   EXPECT_TRUE(pending_request->request.headers.GetHeader(
       "X-Goog-Update-Interactivity", &header));
-  EXPECT_EQ(header, "fg");
+  bool is_high_priority = GetParam() == Manifest::EXTERNAL_POLICY_DOWNLOAD ||
+                          GetParam() == Manifest::EXTERNAL_COMPONENT;
+  const char* expected_header = is_high_priority ? "fg" : "bg";
+  EXPECT_EQ(expected_header, header);
 
   // Destroy updater's downloader as it uses |helper|.
   service()->updater()->SetExtensionDownloaderForTesting(nullptr);
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ExternalExtensionPriorityTest,
+                         testing::Values(Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                                         Manifest::EXTERNAL_COMPONENT,
+                                         Manifest::EXTERNAL_PREF_DOWNLOAD));
 
 }  // namespace extensions

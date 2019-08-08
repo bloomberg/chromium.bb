@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -275,10 +276,8 @@ std::string SanitizeRemoteBase(const std::string& value) {
 }
 
 std::string SanitizeRemoteFrontendURL(const std::string& value) {
-  GURL url(net::UnescapeURLComponent(value,
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+  GURL url(net::UnescapeBinaryURLComponent(
+      value, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
   std::string path = url.path();
   std::vector<std::string> parts = base::SplitString(
       path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -572,29 +571,28 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
   if (!frontend_host_)
     return;
-  std::string method;
-  base::ListValue empty_params;
-  base::ListValue* params = &empty_params;
-
-  base::DictionaryValue* dict = NULL;
-  std::unique_ptr<base::Value> parsed_message =
-      base::JSONReader::ReadDeprecated(message);
-  if (!parsed_message ||
-      !parsed_message->GetAsDictionary(&dict) ||
-      !dict->GetString(kFrontendHostMethod, &method) ||
-      (dict->HasKey(kFrontendHostParams) &&
-          !dict->GetList(kFrontendHostParams, &params))) {
+  const std::string* method = nullptr;
+  base::Value* params = nullptr;
+  base::Optional<base::Value> parsed_message = base::JSONReader::Read(message);
+  if (parsed_message && parsed_message->is_dict()) {
+    method = parsed_message->FindStringKey(kFrontendHostMethod);
+    params = parsed_message->FindKey(kFrontendHostParams);
+  }
+  if (!method || (params && !params->is_list())) {
     LOG(ERROR) << "Invalid message was sent to embedder: " << message;
     return;
   }
-  int id = 0;
-  dict->GetInteger(kFrontendHostId, &id);
+  base::Value empty_params(base::Value::Type::LIST);
+  if (!params) {
+    params = &empty_params;
+  }
+  int id = parsed_message->FindIntKey(kFrontendHostId).value_or(0);
+  base::ListValue* params_list;
+  params->GetAsList(&params_list);
   embedder_message_dispatcher_->Dispatch(
       base::Bind(&DevToolsUIBindings::SendMessageAck,
-                 weak_factory_.GetWeakPtr(),
-                 id),
-      method,
-      params);
+                 weak_factory_.GetWeakPtr(), id),
+      *method, params_list);
 }
 
 // content::DevToolsAgentHostClient implementation --------------------------
@@ -850,8 +848,8 @@ void DevToolsUIBindings::IndexPath(
   if (indexing_jobs_.count(index_request_id) != 0)
     return;
   std::vector<std::string> excluded_folders;
-  std::unique_ptr<base::Value> parsed_excluded_folders =
-      base::JSONReader::ReadDeprecated(excluded_folders_message);
+  base::Optional<base::Value> parsed_excluded_folders =
+      base::JSONReader::Read(excluded_folders_message);
   if (parsed_excluded_folders && parsed_excluded_folders->is_list()) {
     const std::vector<base::Value>& folder_paths =
         parsed_excluded_folders->GetList();
@@ -934,29 +932,24 @@ void DevToolsUIBindings::SetDevicesDiscoveryConfig(
     const std::string& port_forwarding_config,
     bool network_discovery_enabled,
     const std::string& network_discovery_config) {
-  base::DictionaryValue* port_forwarding_dict = nullptr;
-  std::unique_ptr<base::Value> parsed_port_forwarding =
-      base::JSONReader::ReadDeprecated(port_forwarding_config);
-  if (!parsed_port_forwarding ||
-      !parsed_port_forwarding->GetAsDictionary(&port_forwarding_dict)) {
+  base::Optional<base::Value> parsed_port_forwarding =
+      base::JSONReader::Read(port_forwarding_config);
+  if (!parsed_port_forwarding || !parsed_port_forwarding->is_dict())
     return;
-  }
-
-  base::ListValue* network_list = nullptr;
-  std::unique_ptr<base::Value> parsed_network =
-      base::JSONReader::ReadDeprecated(network_discovery_config);
-  if (!parsed_network || !parsed_network->GetAsList(&network_list))
+  base::Optional<base::Value> parsed_network =
+      base::JSONReader::Read(network_discovery_config);
+  if (!parsed_network || !parsed_network->is_list())
     return;
-
   profile_->GetPrefs()->SetBoolean(
       prefs::kDevToolsDiscoverUsbDevicesEnabled, discover_usb_devices);
   profile_->GetPrefs()->SetBoolean(
       prefs::kDevToolsPortForwardingEnabled, port_forwarding_enabled);
   profile_->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig,
-                            *port_forwarding_dict);
+                            *parsed_port_forwarding);
   profile_->GetPrefs()->SetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled,
                                    network_discovery_enabled);
-  profile_->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, *network_list);
+  profile_->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig,
+                            *parsed_network);
 }
 
 void DevToolsUIBindings::DevicesDiscoveryConfigUpdated() {
@@ -1147,6 +1140,14 @@ void DevToolsUIBindings::RecordPerformanceHistogram(const std::string& name,
   // DevTools frontend javascript and so will always have the same call site.
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(duration);
   base::UmaHistogramTimes(name, delta);
+}
+
+void DevToolsUIBindings::RecordUserMetricsAction(const std::string& name) {
+  if (!frontend_host_)
+    return;
+  // Use RecordComputedAction instead of RecordAction as the name comes from
+  // DevTools frontend javascript and so will always have the same call site.
+  base::RecordComputedAction(name);
 }
 
 void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,

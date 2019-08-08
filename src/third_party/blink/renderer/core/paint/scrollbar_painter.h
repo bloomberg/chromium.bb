@@ -13,10 +13,10 @@ namespace blink {
 
 class GraphicsContext;
 class IntRect;
-class LayoutPoint;
-class LayoutRect;
 class LayoutScrollbar;
 class LayoutScrollbarPart;
+struct PhysicalOffset;
+struct PhysicalRect;
 
 class ScrollbarPainter {
   STACK_ALLOCATED();
@@ -28,8 +28,8 @@ class ScrollbarPainter {
   void PaintPart(GraphicsContext&, ScrollbarPart, const IntRect&);
   static void PaintIntoRect(const LayoutScrollbarPart&,
                             GraphicsContext&,
-                            const LayoutPoint& paint_offset,
-                            const LayoutRect&,
+                            const PhysicalOffset& paint_offset,
+                            const PhysicalRect&,
                             const LayoutScrollbar* = nullptr);
 
  private:

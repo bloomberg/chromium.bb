@@ -5,6 +5,7 @@
 module cros.mojom;
 
 import "media/capture/mojom/image_capture.mojom";
+import "media/capture/video/chromeos/mojo/camera_common.mojom";
 
 // Effect that recognized by Chrome OS.
 enum Effect {
@@ -18,9 +19,10 @@ enum Effect {
 // translated to the actual video device id to be used in CrosImageCapture
 // implementation.
 interface CrosImageCapture {
-  // Gets supported effects that recognized by CrOS for device. The |source_id|
-  // might need translation to be actual video device id.
-  GetSupportedEffects(string source_id) => (array<Effect> supported_effects);
+  // Gets camera information |camera_info| which includes camera facing,
+  // characteristics, orientation, etc. The |source_id| might need translation
+  // to be actual video device id.
+  GetCameraInfo(string source_id) => (CameraInfo camera_info);
 
   // Sets reprocess option to bind with the coming take photo request. When this
   // method is called, the reprocess option will be queued. All reprocess

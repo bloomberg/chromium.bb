@@ -22,7 +22,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -142,7 +142,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
 
   void ClickSaveButton() {
     controller()->OnSaveButton({});
-    if (controller()->CanAnimate())
+    if (controller()->ShouldShowCardSavedAnimation())
       controller()->OnAnimationEnded();
   }
 
@@ -1633,9 +1633,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Local_FirstShow_SaveButton_SigninPromo) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   ShowLocalBubble();
   ClickSaveButton();
 
@@ -1644,41 +1641,10 @@ TEST_F(SaveCardBubbleControllerImplTest,
   EXPECT_NE(nullptr, controller()->save_card_bubble_view());
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, Local_FirstShow_SaveButton_NoBubble) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
-  ShowLocalBubble();
-  ClickSaveButton();
-
-  // When this flag is disabled, no promo should appear and
-  // the icon should go away.
-  EXPECT_FALSE(controller()->IsIconVisible());
-  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Local_FirstShow_SaveButton_NoBubble) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-  base::HistogramTester histogram_tester;
-
-  ShowLocalBubble();
-  controller()->OnSaveButton({});
-
-  // No other bubbles should have popped up.
-  histogram_tester.ExpectTotalCount("Autofill.SignInPromo", 0);
-  histogram_tester.ExpectTotalCount("Autofill.ManageCardsPrompt.Local", 0);
-  histogram_tester.ExpectTotalCount("Autofill.ManageCardsPrompt.Upload", 0);
-}
-
 // Tests for Manage Cards.
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_ManageCards) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   ShowLocalBubble();
   ClickSaveButton();
   CloseAndReshowBubble();
@@ -1692,8 +1658,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 TEST_F(
     SaveCardBubbleControllerImplTest,
     Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_ManageCards) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
@@ -1710,8 +1674,6 @@ TEST_F(
 TEST_F(
     SaveCardBubbleControllerImplTest,
     Metrics_Local_FirstShow_SaveButton_Close_Reshow_Close_Reshow_ManageCards) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
@@ -1728,9 +1690,6 @@ TEST_F(
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_Close_Navigate) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   ShowLocalBubble();
   ClickSaveButton();
   CloseAndReshowBubble();
@@ -1746,8 +1705,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_Navigate) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
@@ -1765,8 +1722,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 TEST_F(
     SaveCardBubbleControllerImplTest,
     Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_Close_Navigate) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
@@ -1784,8 +1739,6 @@ TEST_F(
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Local_ClickManageCardsDoneButton) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
@@ -1801,8 +1754,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Local_ClickManageCardsManageCardsButton) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
@@ -1818,9 +1769,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Upload_FirstShow_SaveButton_NoSigninPromo) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   ShowUploadBubble();
   ClickSaveButton();
 
@@ -1832,8 +1780,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
 TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Upload_FirstShow_SaveButton_NoSigninPromo) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowUploadBubble();
@@ -1846,8 +1792,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_ManageCards) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
   base::HistogramTester histogram_tester;
 
   ShowUploadBubble();

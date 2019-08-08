@@ -35,6 +35,7 @@ class ASH_PUBLIC_EXPORT DefaultVoiceInteractionObserver
       ash::mojom::AssistantAllowedState state) override {}
   void OnLocaleChanged(const std::string& locale) override {}
   void OnArcPlayStoreEnabledChanged(bool enabled) override {}
+  void OnLockedFullScreenStateChanged(bool enabled) override {}
 
  protected:
   DefaultVoiceInteractionObserver() = default;

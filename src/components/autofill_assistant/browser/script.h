@@ -19,15 +19,13 @@ struct ScriptHandle {
   ScriptHandle(const ScriptHandle& orig);
   ~ScriptHandle();
 
-  std::string name;
+  ChipProto chip;
   std::string path;
   std::string initial_prompt;
 
   // When set to true this script can be run in 'autostart mode'. Script won't
   // be shown.
   bool autostart;
-  ChipType chip_type;
-  ChipIcon chip_icon;
 
   // If set, the script might be run during WaitForDom actions with
   // allow_interrupt=true.

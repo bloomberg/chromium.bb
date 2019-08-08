@@ -2875,35 +2875,6 @@ TEST_F(ProxyResolutionServiceTest,
             factory->pending_requests()[0]->script_data()->url());
 }
 
-TEST_F(ProxyResolutionServiceTest, ResetProxyConfigService) {
-  ProxyConfig config1;
-  config1.proxy_rules().ParseFromString("foopy1:8080");
-  config1.set_auto_detect(false);
-  ProxyResolutionService service(
-      std::make_unique<MockProxyConfigService>(config1), nullptr, nullptr);
-
-  ProxyInfo info;
-  TestCompletionCallback callback1;
-  std::unique_ptr<ProxyResolutionService::Request> request1;
-  int rv =
-      service.ResolveProxy(GURL("http://request1"), std::string(), &info,
-                           callback1.callback(), &request1, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
-
-  ProxyConfig config2;
-  config2.proxy_rules().ParseFromString("foopy2:8080");
-  config2.set_auto_detect(false);
-  service.ResetConfigService(std::make_unique<MockProxyConfigService>(config2));
-  TestCompletionCallback callback2;
-  std::unique_ptr<ProxyResolutionService::Request> request2;
-  rv =
-      service.ResolveProxy(GURL("http://request2"), std::string(), &info,
-                           callback2.callback(), &request2, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("foopy2:8080", info.proxy_server().ToURI());
-}
-
 // Test that when going from a configuration that required PAC to one
 // that does NOT, we unset the variable |should_use_proxy_resolver_|.
 TEST_F(ProxyResolutionServiceTest, UpdateConfigFromPACToDirect) {

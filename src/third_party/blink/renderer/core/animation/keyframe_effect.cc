@@ -44,18 +44,10 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-
-KeyframeEffect* KeyframeEffect::Create(Element* target,
-                                       KeyframeEffectModelBase* model,
-                                       const Timing& timing,
-                                       Priority priority,
-                                       EventDelegate* event_delegate) {
-  return MakeGarbageCollected<KeyframeEffect>(target, model, timing, priority,
-                                              event_delegate);
-}
 
 KeyframeEffect* KeyframeEffect::Create(
     ScriptState* script_state,
@@ -84,7 +76,7 @@ KeyframeEffect* KeyframeEffect::Create(
       element, keyframes, composite, script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  return Create(element, model, timing);
+  return MakeGarbageCollected<KeyframeEffect>(element, model, timing);
 }
 
 KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
@@ -101,7 +93,7 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                            script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  return Create(element, model, Timing());
+  return MakeGarbageCollected<KeyframeEffect>(element, model, Timing());
 }
 
 KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
@@ -215,36 +207,37 @@ void KeyframeEffect::NotifySampledEffectRemovedFromEffectStack() {
   sampled_effect_ = nullptr;
 }
 
-CompositorAnimations::FailureCode
+CompositorAnimations::FailureReasons
 KeyframeEffect::CheckCanStartAnimationOnCompositor(
-    const base::Optional<CompositorElementIdSet>& composited_element_ids,
+    const PaintArtifactCompositor* paint_artifact_compositor,
     double animation_playback_rate) const {
-  if (!model_->HasFrames()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation effect has no keyframes");
-  }
+  CompositorAnimations::FailureReasons reasons =
+      CompositorAnimations::kNoFailure;
 
+  // There would be no reason to composite an effect that has no keyframes; it
+  // has no visual result.
+  if (model_->Properties().IsEmpty())
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+
+  // There would be no reason to composite an effect that has no target; it has
+  // no visual result.
   if (!target_) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation effect has no target element");
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+  } else {
+    if (target_->GetComputedStyle() && target_->GetComputedStyle()->HasOffset())
+      reasons |= CompositorAnimations::kTargetHasCSSOffset;
+
+    // Do not put transforms on compositor if more than one of them are defined
+    // in computed style because they need to be explicitly ordered
+    if (HasMultipleTransformProperties())
+      reasons |= CompositorAnimations::kTargetHasMultipleTransformProperties;
+
+    reasons |= CompositorAnimations::CheckCanStartAnimationOnCompositor(
+        SpecifiedTiming(), *target_, GetAnimation(), *Model(),
+        paint_artifact_compositor, animation_playback_rate);
   }
 
-  if (target_->GetComputedStyle() && target_->GetComputedStyle()->HasOffset()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Accelerated animations do not support elements with offset-position "
-        "or offset-path CSS properties");
-  }
-
-  // Do not put transforms on compositor if more than one of them are defined
-  // in computed style because they need to be explicitly ordered
-  if (HasMultipleTransformProperties()) {
-    return CompositorAnimations::FailureCode::Actionable(
-        "Animation effect applies to multiple transform-related properties");
-  }
-
-  return CompositorAnimations::CheckCanStartAnimationOnCompositor(
-      SpecifiedTiming(), *target_, GetAnimation(), *Model(),
-      composited_element_ids, animation_playback_rate);
+  return reasons;
 }
 
 void KeyframeEffect::StartAnimationOnCompositor(
@@ -378,9 +371,9 @@ void KeyframeEffect::ApplyEffects() {
 
   if (changed) {
     target_->SetNeedsAnimationStyleRecalc();
-    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-        target_->IsSVGElement())
-      ToSVGElement(*target_).SetWebAnimationsPending();
+    auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
+      svg_element->SetWebAnimationsPending();
   }
 }
 
@@ -392,9 +385,9 @@ void KeyframeEffect::ClearEffects() {
   if (GetAnimation())
     GetAnimation()->RestartAnimationOnCompositor();
   target_->SetNeedsAnimationStyleRecalc();
-  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-      target_->IsSVGElement())
-    ToSVGElement(*target_).ClearWebAnimatedAttributes();
+  auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
+    svg_element->ClearWebAnimatedAttributes();
   Invalidate();
 }
 
@@ -423,9 +416,9 @@ void KeyframeEffect::AttachTarget(Animation* animation) {
     return;
   target_->EnsureElementAnimations().Animations().insert(animation);
   target_->SetNeedsAnimationStyleRecalc();
-  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-      target_->IsSVGElement())
-    ToSVGElement(target_)->SetWebAnimationsPending();
+  auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
+    svg_element->SetWebAnimationsPending();
 }
 
 void KeyframeEffect::DetachTarget(Animation* animation) {

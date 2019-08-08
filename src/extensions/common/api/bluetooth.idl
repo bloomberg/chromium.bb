@@ -16,6 +16,9 @@ namespace bluetooth {
   // Types for filtering bluetooth devices.
   enum FilterType {all, known};
 
+  // Transport type of the bluetooth device.
+  enum Transport {invalid, classic, le, dual};
+
   // Information about the state of the Bluetooth adapter.
   dictionary AdapterState {
     // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.
@@ -90,6 +93,9 @@ namespace bluetooth {
     // that include this field in AD. It is avaliable and valid only during
     // discovery.
     long? inquiryTxPower;
+
+    // The transport type of the bluetooth device.
+    Transport? transport;
   };
 
   dictionary BluetoothFilter {

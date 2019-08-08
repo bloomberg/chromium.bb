@@ -47,7 +47,7 @@
                 android:drawablePadding="3dp"
                 android:visibility="gone"
                 android:textAppearance="@style/TextAppearance.BlackDisabledText1"
-                app:chromeDrawableTint="@color/light_icon_color"/>
+                app:chromeDrawableTint="@color/default_icon_color_secondary"/>
         </FrameLayout>
 
         <org.chromium.chrome.browser.widget.LoadingView

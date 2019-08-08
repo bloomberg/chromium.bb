@@ -88,6 +88,7 @@ public class TabSwitcherBottomToolbarCoordinator {
         mNewTabButton.setIncognitoStateProvider(incognitoStateProvider);
         mNewTabButton.setThemeColorProvider(themeColorProvider);
 
+        assert menuButtonHelper != null;
         mMenuButton = root.findViewById(R.id.menu_button_wrapper);
         mMenuButton.setWrapperView(root.findViewById(R.id.labeled_menu_button_wrapper));
         mMenuButton.setThemeColorProvider(themeColorProvider);

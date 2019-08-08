@@ -24,7 +24,7 @@ declare_args() {
 
   # If true, use cast CMA backend instead of default chromium media pipeline.
   # TODO(sanfin): Remove this flag when all builds enable CMA.
-  is_cast_using_cma_backend = true
+  is_cast_using_cma_backend = !is_android
 }
 
 # Note(slan): This arg depends on the value of is_chromecast, and thus must be

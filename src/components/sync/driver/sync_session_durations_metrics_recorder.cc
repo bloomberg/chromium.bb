@@ -136,7 +136,7 @@ void SyncSessionDurationsMetricsRecorder::OnRefreshTokenUpdatedForAccount(
 }
 
 void SyncSessionDurationsMetricsRecorder::OnRefreshTokenRemovedForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DVLOG(1) << __func__;
   HandleSyncAndAccountChange();
 }

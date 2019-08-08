@@ -13,11 +13,13 @@
 
 #include <limits>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
+#include "api/media_transport_config.h"
 #include "api/media_transport_interface.h"
 #include "api/rtp_headers.h"
 #include "api/rtp_parameters.h"
@@ -75,6 +77,10 @@ class VideoReceiveStream {
     int current_delay_ms = 0;
     int target_delay_ms = 0;
     int jitter_buffer_ms = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcvideoreceiverstats-jitterbufferdelay
+    double jitter_buffer_delay_seconds = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcvideoreceiverstats-jitterbufferemittedcount
+    uint64_t jitter_buffer_emitted_count = 0;
     int min_playout_delay_ms = 0;
     int render_delay_ms = 10;
     int64_t interframe_delay_max_ms = -1;
@@ -121,7 +127,7 @@ class VideoReceiveStream {
     Config() = delete;
     Config(Config&&);
     Config(Transport* rtcp_send_transport,
-           MediaTransportInterface* media_transport);
+           MediaTransportConfig media_transport_config);
     explicit Config(Transport* rtcp_send_transport);
     Config& operator=(Config&&);
     Config& operator=(const Config&) = delete;
@@ -131,6 +137,10 @@ class VideoReceiveStream {
     Config Copy() const { return Config(*this); }
 
     std::string ToString() const;
+
+    MediaTransportInterface* media_transport() const {
+      return media_transport_config.media_transport;
+    }
 
     // Decoders for every payload that we can receive.
     std::vector<Decoder> decoders;
@@ -173,6 +183,9 @@ class VideoReceiveStream {
       // See draft-holmer-rmcat-transport-wide-cc-extensions for details.
       bool transport_cc = false;
 
+      // See LntfConfig for description.
+      LntfConfig lntf;
+
       // See NackConfig for description.
       NackConfig nack;
 
@@ -190,6 +203,12 @@ class VideoReceiveStream {
       // For RTX to be enabled, both an SSRC and this mapping are needed.
       std::map<int, int> rtx_associated_payload_types;
 
+      // Payload types that should be depacketized using raw depacketizer
+      // (payload header will not be parsed and must not be present, additional
+      // meta data is expected to be present in generic frame descriptor
+      // RTP header extension).
+      std::set<int> raw_payload_types;
+
       // RTP header extensions used for the received stream.
       std::vector<RtpExtension> extensions;
     } rtp;
@@ -197,7 +216,7 @@ class VideoReceiveStream {
     // Transport for outgoing packets (RTCP).
     Transport* rtcp_send_transport = nullptr;
 
-    MediaTransportInterface* media_transport = nullptr;
+    MediaTransportConfig media_transport_config;
 
     // Must always be set.
     rtc::VideoSinkInterface<VideoFrame>* renderer = nullptr;

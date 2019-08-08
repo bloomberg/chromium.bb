@@ -113,7 +113,7 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   void WillStartRequest(bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
 
   void OnIoThreadClientReady(int new_render_process_id,
                              int new_render_frame_id);
@@ -144,7 +144,7 @@ IoThreadClientThrottle::~IoThreadClientThrottle() {
       RemovePendingThrottleOnIoThread(this);
 }
 
-const char* IoThreadClientThrottle::GetNameForLogging() const {
+const char* IoThreadClientThrottle::GetNameForLogging() {
   return "IoThreadClientThrottle";
 }
 

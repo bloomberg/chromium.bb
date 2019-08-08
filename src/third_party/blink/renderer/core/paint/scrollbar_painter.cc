@@ -20,28 +20,28 @@ void ScrollbarPainter::PaintPart(GraphicsContext& graphics_context,
   if (!part_layout_object)
     return;
   PaintIntoRect(*part_layout_object, graphics_context,
-                layout_scrollbar_->Location(), LayoutRect(rect),
-                layout_scrollbar_.Get());
+                PhysicalOffset(layout_scrollbar_->Location()),
+                PhysicalRect(rect), layout_scrollbar_.Get());
 }
 
 void ScrollbarPainter::PaintIntoRect(
     const LayoutScrollbarPart& layout_scrollbar_part,
     GraphicsContext& graphics_context,
-    const LayoutPoint& paint_offset,
-    const LayoutRect& rect,
+    const PhysicalOffset& paint_offset,
+    const PhysicalRect& rect,
     const LayoutScrollbar* scrollbar) {
   // Make sure our dimensions match the rect.
   // TODO(crbug.com/856802): Setting these is a bad layering violation!
   // Move these into layout stage.
   const_cast<LayoutScrollbarPart&>(layout_scrollbar_part)
-      .SetLocation(rect.Location() - ToSize(paint_offset));
+      .SetLocation((rect.offset - paint_offset).ToLayoutPoint());
   const_cast<LayoutScrollbarPart&>(layout_scrollbar_part)
-      .SetWidth(rect.Width());
+      .SetWidth(rect.size.width);
   const_cast<LayoutScrollbarPart&>(layout_scrollbar_part)
-      .SetHeight(rect.Height());
+      .SetHeight(rect.size.height);
   // TODO(crbug.com/856802): Move this into PaintPropertyTreeBuilder.
   layout_scrollbar_part.GetMutableForPainting().FirstFragment().SetPaintOffset(
-      (scrollbar ? scrollbar->Location() : LayoutPoint()) +
+      (scrollbar ? PhysicalOffset(scrollbar->Location()) : PhysicalOffset()) +
       layout_scrollbar_part.PhysicalLocation());
 
   PaintInfo paint_info(graphics_context, PixelSnappedIntRect(rect),

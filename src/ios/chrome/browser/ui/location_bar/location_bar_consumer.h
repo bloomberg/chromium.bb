@@ -5,11 +5,15 @@
 #ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
 #define IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
+
 // Consumer for the location bar mediator.
 @protocol LocationBarConsumer
 
 // Notifies the consumer to update the location text.
-- (void)updateLocationText:(NSString*)string;
+// |clipTail| indicates whether the tail or the head should be clipped when the
+// location text is too long.
+- (void)updateLocationText:(NSString*)string clipTail:(BOOL)clipTail;
 // Notifies the consumer to update the location icon and security status text.
 - (void)updateLocationIcon:(UIImage*)icon
         securityStatusText:(NSString*)statusText;
@@ -33,12 +37,7 @@
 // Notifies the consumer to display or hide the Infobar badge.
 // TODO(crbug.com/935804): This method is currently only being used in the
 // Infobar redesign.
-- (void)displayInfobarBadge:(BOOL)display;
-
-// Notifies the consumer that the InfobarBadge select state has changed.
-// TODO(crbug.com/935804): This method is currently only being used in the
-// Infobar redesign.
-- (void)selectInfobarBadge:(BOOL)select;
+- (void)displayInfobarBadge:(BOOL)display type:(InfobarType)infobarType;
 
 // Notifies the consumer that the InfobarBadge active state has changed.
 // TODO(crbug.com/935804): This method is currently only being used in the

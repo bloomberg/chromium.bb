@@ -69,6 +69,8 @@ copy("chrome_camera_app_images") {
     "src/images/camera_button_timer_on_10s.svg",
     "src/images/camera_button_timer_on_3s.svg",
     "src/images/camera_focus_aim.svg",
+    "src/images/camera_intro_banner_close.svg",
+    "src/images/camera_intro_banner_icon.svg",
     "src/images/camera_mode_photo.svg",
     "src/images/camera_mode_portrait.svg",
     "src/images/camera_mode_square.svg",
@@ -87,6 +89,7 @@ copy("chrome_camera_app_images") {
     "src/images/settings_feedback.svg",
     "src/images/settings_grid_type.svg",
     "src/images/settings_help.svg",
+    "src/images/settings_resolution.svg",
     "src/images/settings_timer_duration.svg",
     "src/images/spinner.svg",
   ]
@@ -104,6 +107,7 @@ copy("chrome_camera_app_js") {
     "src/js/main.js",
     "src/js/metrics.js",
     "src/js/nav.js",
+    "src/js/resolution_event_broker.js",
     "src/js/scrollbar.js",
     "src/js/sound.js",
     "src/js/state.js",
@@ -162,6 +166,7 @@ copy("chrome_camera_app_js_views_camera") {
     "src/js/views/camera/options.js",
     "src/js/views/camera/preview.js",
     "src/js/views/camera/recordtime.js",
+    "src/js/views/camera/resolution_preference.js",
     "src/js/views/camera/timertick.js",
   ]
 
@@ -196,6 +201,9 @@ copy("chrome_camera_app_views") {
 copy("chrome_camera_app_mojo_generated") {
   sources = [
     "$root_gen_dir/media/capture/mojom/image_capture.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_common.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_metadata.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_metadata_tags.mojom-lite.js",
     "$root_gen_dir/media/capture/video/chromeos/mojo/cros_image_capture.mojom-lite.js",
     "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
   ]

@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/interfaces/compositing/surface_range.mojom";
 import "services/viz/public/interfaces/compositing/shared_quad_state.mojom";
@@ -61,12 +62,14 @@ struct StreamVideoQuadState {
   gfx.mojom.Size resource_size_in_pixels;
   gfx.mojom.PointF uv_top_left;
   gfx.mojom.PointF uv_bottom_right;
+  gpu.mojom.VulkanYCbCrInfo? ycbcr_info;
 };
 
 struct SurfaceQuadState {
   SurfaceRange surface_range;
   uint32 default_background_color;
   bool stretch_content_to_fill_bounds;
+  bool is_reflection;
 };
 
 struct TextureQuadState {
@@ -86,7 +89,6 @@ struct TextureQuadState {
 struct TileQuadState {
   gfx.mojom.RectF tex_coord_rect;
   gfx.mojom.Size texture_size;
-  bool swizzle_contents;
   bool is_premultiplied;
   uint32 resource_id;
   bool nearest_neighbor;

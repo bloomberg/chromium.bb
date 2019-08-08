@@ -32,7 +32,7 @@
 
   <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1">
     <custom-style>
-      <style is="custom-style">
+      <style>
         #search-box cr-input {
           --cr-input-background-color: transparent;
           --cr-input-color: white;
@@ -525,6 +525,8 @@
               <div class="downloads-warning" hidden></div>
               <div id="list-container" role="main">
                 <div id="more-actions-info" hidden>$i18n{SEE_MENU_FOR_ACTIONS}</div>
+                <div id="sort-column-asc" hidden>$i18n{COLUMN_ASC_SORT_MESSAGE}</div>
+                <div id="sort-column-desc" hidden>$i18n{COLUMN_DESC_SORT_MESSAGE}</div>
                 <div id="empty-folder" hidden>
                   <div class="image"></div>
                   <span id="empty-folder-label" class="label">$i18n{EMPTY_FOLDER}</span>

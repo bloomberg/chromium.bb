@@ -6,9 +6,9 @@
 
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -60,7 +60,7 @@ class MultiWindowResizeControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+    WorkspaceController* wc = ShellTestApi().workspace_controller();
     WorkspaceEventHandler* event_handler =
         WorkspaceControllerTestApi(wc).GetEventHandler();
     resize_controller_ =
@@ -278,6 +278,17 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
   EXPECT_TRUE(IsShowing());
   EXPECT_EQ(gfx::Rect(0, 0, 110, 100), w1->bounds());
   EXPECT_EQ(gfx::Rect(110, 0, 100, 100), w2->bounds());
+
+  // It should be possible to move 1px.
+  bounds = resize_widget()->GetWindowBoundsInScreen();
+
+  generator->MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
+  generator->PressLeftButton();
+  generator->MoveMouseBy(1, 0);
+  generator->ReleaseLeftButton();
+
+  EXPECT_EQ(gfx::Rect(0, 0, 111, 100), w1->bounds());
+  EXPECT_EQ(gfx::Rect(111, 0, 100, 100), w2->bounds());
 }
 
 // Makes sure three windows are picked up.
@@ -562,7 +573,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   wm::WindowState* w1_state = wm::GetWindowState(w1.get());
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   w1_state->OnWMEvent(&snap_left);
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, w1_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, w1_state->GetStateType());
   aura::test::TestWindowDelegate delegate2;
   std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
       &delegate2, -2, gfx::Rect(100, 100, 100, 100)));
@@ -570,7 +581,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   wm::WindowState* w2_state = wm::GetWindowState(w2.get());
   const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
   w2_state->OnWMEvent(&snap_right);
-  EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kRightSnapped, w2_state->GetStateType());
   EXPECT_EQ(0.5f, *w1_state->snapped_width_ratio());
   EXPECT_EQ(0.5f, *w2_state->snapped_width_ratio());
 
@@ -602,9 +613,9 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   generator->ReleaseLeftButton();
 
   // Check snapped states and bounds.
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, w1_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, w1_state->GetStateType());
   EXPECT_EQ(gfx::Rect(0, 0, 300, bottom_inset), w1->bounds());
-  EXPECT_EQ(mojom::WindowStateType::RIGHT_SNAPPED, w2_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kRightSnapped, w2_state->GetStateType());
   EXPECT_EQ(gfx::Rect(300, 0, 100, bottom_inset), w2->bounds());
   EXPECT_EQ(0.75f, *w1_state->snapped_width_ratio());
   EXPECT_EQ(0.25f, *w2_state->snapped_width_ratio());

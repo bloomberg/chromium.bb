@@ -132,4 +132,9 @@ const BluetoothDiscoveryFilter* BluetoothDiscoverySession::GetDiscoveryFilter()
   return discovery_filter_.get();
 }
 
+base::WeakPtr<BluetoothDiscoverySession>
+BluetoothDiscoverySession::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 }  // namespace device

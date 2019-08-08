@@ -52,20 +52,36 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 }
 
 namespace {
-constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
+constexpr gfx::Size kMinWindowSize = gfx::Size(260, 146);
 
 const int kOverlayBorderThickness = 10;
 
-// play/pause control scales both its width and height to be 30% the size of
-// the smaller of the screen's width and height.
-const float kPlayPauseControlRatioToWindow = 0.3;
+// The opacity of the controls scrim.
+const double kControlsScrimOpacity = 0.6;
 
-// track controls scales both their width and height to be 60% the size of the
-// play/pause control.
-const float kTrackControlRatioToPlayPauseControl = 0.6;
+#if defined(OS_CHROMEOS)
+// The opacity of the resize handle control.
+const double kResizeHandleOpacity = 0.38;
+#endif
 
-const int kMinControlButtonSize = 48;
-const int kControlButtonMargin = 12;
+// Size of a primary control.
+constexpr gfx::Size kPrimaryControlSize = gfx::Size(36, 36);
+
+// Margin from the bottom of the window for primary controls.
+const int kPrimaryControlBottomMargin = 8;
+
+// Size of a secondary control.
+constexpr gfx::Size kSecondaryControlSize = gfx::Size(20, 20);
+
+// Margin from the bottom of the window for secondary controls.
+const int kSecondaryControlBottomMargin = 16;
+
+// Margin between controls.
+const int kControlMargin = 32;
+
+// Delay in milliseconds before controls bounds are updated. It is the same as
+// HIDE_NOTIFICATION_DELAY_MILLIS in MediaSessionTabHelper.java
+const int kUpdateControlsBoundsDelayMs = 1000;
 
 // Returns the quadrant the OverlayWindowViews is primarily in on the current
 // work area.
@@ -190,25 +206,24 @@ OverlayWindowViews::OverlayWindowViews(
       window_background_view_(new views::View()),
       video_view_(new views::View()),
       controls_scrim_view_(new views::View()),
-      controls_parent_view_(new views::View()),
-      back_to_tab_controls_view_(new views::BackToTabImageButton(this)),
-      mute_controls_view_(new views::MuteImageButton(this)),
-      skip_ad_controls_view_(new views::SkipAdLabelButton(this)),
       close_controls_view_(new views::CloseImageButton(this)),
-#if defined(OS_CHROMEOS)
-      resize_handle_view_(new views::ResizeHandleButton(this)),
-#endif
+      back_to_tab_controls_view_(new views::BackToTabImageButton(this)),
+      previous_track_controls_view_(new views::TrackImageButton(
+          this,
+          vector_icons::kMediaPreviousTrackIcon,
+          l10n_util::GetStringUTF16(
+              IDS_PICTURE_IN_PICTURE_PREVIOUS_TRACK_CONTROL_ACCESSIBLE_TEXT))),
       play_pause_controls_view_(new views::PlaybackImageButton(this)),
       next_track_controls_view_(new views::TrackImageButton(
           this,
           vector_icons::kMediaNextTrackIcon,
           l10n_util::GetStringUTF16(
               IDS_PICTURE_IN_PICTURE_NEXT_TRACK_CONTROL_ACCESSIBLE_TEXT))),
-      previous_track_controls_view_(new views::TrackImageButton(
-          this,
-          vector_icons::kMediaPreviousTrackIcon,
-          l10n_util::GetStringUTF16(
-              IDS_PICTURE_IN_PICTURE_PREVIOUS_TRACK_CONTROL_ACCESSIBLE_TEXT))),
+      mute_controls_view_(new views::MuteImageButton(this)),
+      skip_ad_controls_view_(new views::SkipAdLabelButton(this)),
+#if defined(OS_CHROMEOS)
+      resize_handle_view_(new views::ResizeHandleButton(this)),
+#endif
       hide_controls_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
@@ -342,32 +357,59 @@ void OverlayWindowViews::SetUpViews() {
   // views::View that is displayed when video is hidden. ----------------------
   // Adding an extra pixel to width/height makes sure controls background cover
   // entirely window when platform has fractional scale applied.
-  gfx::Rect larger_window_bounds = GetBounds();
+  gfx::Rect larger_window_bounds =
+      gfx::Rect(0, 0, GetBounds().width(), GetBounds().height());
   larger_window_bounds.Inset(-1, -1);
-  window_background_view_->SetSize(larger_window_bounds.size());
+  window_background_view_->SetBoundsRect(larger_window_bounds);
   window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   window_background_view_->layer()->set_name("WindowBackgroundView");
-  GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
+  window_background_view_->layer()->SetColor(SK_ColorBLACK);
+
+  // view::View that holds the video. -----------------------------------------
+  video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  video_view_->SetSize(GetBounds().size());
+  video_view_->layer()->SetMasksToBounds(true);
+  video_view_->layer()->SetFillsBoundsOpaquely(false);
+  video_view_->layer()->set_name("VideoView");
 
   // views::View that holds the scrim, which appears with the controls. -------
   controls_scrim_view_->SetSize(GetBounds().size());
   controls_scrim_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   controls_scrim_view_->layer()->set_name("ControlsScrimView");
   GetControlsScrimLayer()->SetColor(gfx::kGoogleGrey900);
-  GetControlsScrimLayer()->SetOpacity(0.43f);
+  GetControlsScrimLayer()->SetOpacity(kControlsScrimOpacity);
 
-  // view::View that holds the controls. --------------------------------------
-  controls_parent_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
-  controls_parent_view_->SetSize(GetBounds().size());
-  controls_parent_view_->layer()->SetFillsBoundsOpaquely(false);
-  controls_parent_view_->layer()->set_name("ControlsParentView");
-  controls_parent_view_->set_owned_by_client();
+  // views::View that closes the window. --------------------------------------
+  close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  close_controls_view_->layer()->set_name("CloseControlsView");
+  close_controls_view_->set_owned_by_client();
 
   // views::View that closes the window and focuses initiator tab. ------------
   back_to_tab_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   back_to_tab_controls_view_->layer()->SetFillsBoundsOpaquely(false);
   back_to_tab_controls_view_->layer()->set_name("BackToTabControlsView");
   back_to_tab_controls_view_->set_owned_by_client();
+
+  // views::View that holds the previous-track image button. ------------------
+  previous_track_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  previous_track_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  previous_track_controls_view_->layer()->set_name("PreviousTrackControlsView");
+  previous_track_controls_view_->set_owned_by_client();
+
+  // views::View that toggles play/pause/replay. ------------------------------
+  play_pause_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  play_pause_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  play_pause_controls_view_->layer()->set_name("PlayPauseControlsView");
+  play_pause_controls_view_->SetPlaybackState(
+      controller_->IsPlayerActive() ? kPlaying : kPaused);
+  play_pause_controls_view_->set_owned_by_client();
+
+  // views::View that holds the next-track image button. ----------------------
+  next_track_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  next_track_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  next_track_controls_view_->layer()->set_name("NextTrackControlsView");
+  next_track_controls_view_->set_owned_by_client();
 
   // views::View that holds the mute image button. -------------------------
   mute_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
@@ -382,50 +424,30 @@ void OverlayWindowViews::SetUpViews() {
   skip_ad_controls_view_->layer()->set_name("SkipAdControlsView");
   skip_ad_controls_view_->set_owned_by_client();
 
-  // views::View that closes the window. --------------------------------------
-  close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
-  close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
-  close_controls_view_->layer()->set_name("CloseControlsView");
-  close_controls_view_->set_owned_by_client();
-
-  // view::View that holds the video. -----------------------------------------
-  video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
-  video_view_->layer()->set_name("VideoView");
-
-  // views::View that toggles play/pause/replay. ------------------------------
-  play_pause_controls_view_->SetPlaybackState(
-      controller_->IsPlayerActive() ? kPlaying : kPaused);
-  play_pause_controls_view_->set_owned_by_client();
-
-  // views::View that holds the next-track image button. ----------------------
-  next_track_controls_view_->set_owned_by_client();
-
-  // views::View that holds the previous-track image button. ------------------
-  previous_track_controls_view_->set_owned_by_client();
-
 #if defined(OS_CHROMEOS)
   // views::View that shows the affordance that the window can be resized. ----
   resize_handle_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   resize_handle_view_->layer()->SetFillsBoundsOpaquely(false);
   resize_handle_view_->layer()->set_name("ResizeHandleView");
+  resize_handle_view_->layer()->SetOpacity(kResizeHandleOpacity);
   resize_handle_view_->set_owned_by_client();
 #endif
 
   // Set up view::Views hierarchy. --------------------------------------------
-  controls_parent_view_->AddChildView(play_pause_controls_view_.get());
-  controls_parent_view_->AddChildView(next_track_controls_view_.get());
-  controls_parent_view_->AddChildView(previous_track_controls_view_.get());
+  GetContentsView()->AddChildView(window_background_view_.get());
+  GetContentsView()->AddChildView(video_view_.get());
   GetContentsView()->AddChildView(controls_scrim_view_.get());
-  GetContentsView()->AddChildView(controls_parent_view_.get());
-  GetContentsView()->AddChildView(skip_ad_controls_view_.get());
-  GetContentsView()->AddChildView(back_to_tab_controls_view_.get());
-  GetContentsView()->AddChildView(mute_controls_view_.get());
   GetContentsView()->AddChildView(close_controls_view_.get());
+  GetContentsView()->AddChildView(back_to_tab_controls_view_.get());
+  GetContentsView()->AddChildView(previous_track_controls_view_.get());
+  GetContentsView()->AddChildView(play_pause_controls_view_.get());
+  GetContentsView()->AddChildView(next_track_controls_view_.get());
+  GetContentsView()->AddChildView(mute_controls_view_.get());
+  GetContentsView()->AddChildView(skip_ad_controls_view_.get());
 #if defined(OS_CHROMEOS)
   GetContentsView()->AddChildView(resize_handle_view_.get());
 #endif
 
-  UpdateButtonControlsSize();
   UpdateControlsVisibility(false);
 }
 
@@ -461,20 +483,26 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
   UpdateControlsBounds();
 
   // Update the surface layer bounds to scale with window size changes.
+  window_background_view_->SetBoundsRect(
+      gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
+  video_view_->SetBoundsRect(video_bounds_);
+  if (video_view_->layer()->has_external_content())
+    video_view_->layer()->SetSurfaceSize(video_bounds_.size());
+
+  // Notify the controller that the bounds have changed.
   controller_->UpdateLayerBounds();
 }
 
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
+  GetControlsScrimLayer()->SetVisible(is_visible);
+  GetCloseControlsLayer()->SetVisible(is_visible);
+  GetBackToTabControlsLayer()->SetVisible(is_visible);
+  previous_track_controls_view_->ToggleVisibility(is_visible &&
+                                                  show_previous_track_button_);
   play_pause_controls_view_->SetVisible(is_visible &&
                                         !always_hide_play_pause_button_);
   next_track_controls_view_->ToggleVisibility(is_visible &&
                                               show_next_track_button_);
-  previous_track_controls_view_->ToggleVisibility(is_visible &&
-                                                  show_previous_track_button_);
-  GetControlsScrimLayer()->SetVisible(is_visible);
-  GetControlsParentLayer()->SetVisible(is_visible);
-  GetBackToTabControlsLayer()->SetVisible(is_visible);
-  GetCloseControlsLayer()->SetVisible(is_visible);
 
   // We need to do more than usual visibility change because otherwise control
   // is accessible via accessibility tools.
@@ -487,43 +515,170 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
+  // If controls are hidden, let's update controls bounds immediately.
+  // Otherwise, wait a bit before updating controls bounds to avoid too many
+  // changes happening too quickly.
+  if (!AreControlsVisible()) {
+    OnUpdateControlsBounds();
+    return;
+  }
+
+  update_controls_bounds_timer_.reset(new base::OneShotTimer());
+  update_controls_bounds_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kUpdateControlsBoundsDelayMs),
+      base::BindOnce(&OverlayWindowViews::OnUpdateControlsBounds,
+                     base::Unretained(this)));
+}
+
+void OverlayWindowViews::OnUpdateControlsBounds() {
   // Adding an extra pixel to width/height makes sure the scrim covers the
   // entire window when the platform has fractional scaling applied.
-  gfx::Rect larger_window_bounds = GetBounds();
+  gfx::Rect larger_window_bounds =
+      gfx::Rect(0, 0, GetBounds().width(), GetBounds().height());
   larger_window_bounds.Inset(-1, -1);
-  controls_scrim_view_->SetBoundsRect(
-      gfx::Rect(gfx::Point(0, 0), larger_window_bounds.size()));
+  controls_scrim_view_->SetBoundsRect(larger_window_bounds);
 
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
-  back_to_tab_controls_view_->SetPosition(GetBounds().size(), quadrant);
-  mute_controls_view_->SetPosition(GetBounds().size(), quadrant);
-  skip_ad_controls_view_->SetPosition(GetBounds().size());
   close_controls_view_->SetPosition(GetBounds().size(), quadrant);
 #if defined(OS_CHROMEOS)
   resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
 #endif
 
-  controls_parent_view_->SetBoundsRect(
-      gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
+  skip_ad_controls_view_->SetPosition(GetBounds().size());
+
+  // Following controls order matters:
+  // #1 Back to tab
+  // #2 Previous track
+  // #3 Play/Pause
+  // #4 Next track
+  // #5 Mute
+  std::vector<views::ImageButton*> visible_controls_views;
+  visible_controls_views.push_back(back_to_tab_controls_view_.get());
+  if (show_previous_track_button_)
+    visible_controls_views.push_back(previous_track_controls_view_.get());
+  if (!always_hide_play_pause_button_)
+    visible_controls_views.push_back(play_pause_controls_view_.get());
+  if (show_next_track_button_)
+    visible_controls_views.push_back(next_track_controls_view_.get());
+  if (show_mute_button_)
+    visible_controls_views.push_back(mute_controls_view_.get());
 
   int mid_window_x = GetBounds().size().width() / 2;
-  play_pause_controls_view_->SetBoundsRect(CalculateControlsBounds(
-      mid_window_x - play_pause_controls_view_->size().width() / 2,
-      play_pause_controls_view_->size()));
+  int primary_control_y = GetBounds().size().height() -
+                          kPrimaryControlSize.height() -
+                          kPrimaryControlBottomMargin;
+  int secondary_control_y = GetBounds().size().height() -
+                            kSecondaryControlSize.height() -
+                            kSecondaryControlBottomMargin;
 
-  if (show_next_track_button_) {
-    next_track_controls_view_->SetBoundsRect(CalculateControlsBounds(
-        mid_window_x + play_pause_controls_view_->size().width() / 2 +
-            kControlButtonMargin,
-        next_track_controls_view_->GetLastVisibleSize()));
+  switch (visible_controls_views.size()) {
+    case 1: {
+      /* | --- --- [ ] --- --- | */
+      visible_controls_views[0]->SetSize(kSecondaryControlSize);
+      visible_controls_views[0]->SetPosition(
+          gfx::Point(mid_window_x - kSecondaryControlSize.width() / 2,
+                     secondary_control_y));
+      return;
+    }
+    case 2: {
+      /* | ----- [ ] [ ] ----- | */
+      visible_controls_views[0]->SetSize(kSecondaryControlSize);
+      visible_controls_views[0]->SetPosition(gfx::Point(
+          mid_window_x - kControlMargin / 2 - kSecondaryControlSize.width(),
+          secondary_control_y));
+
+      visible_controls_views[1]->SetSize(kSecondaryControlSize);
+      visible_controls_views[1]->SetPosition(
+          gfx::Point(mid_window_x + kControlMargin / 2, secondary_control_y));
+      return;
+    }
+    case 3: {
+      /* | --- [ ] [ ] [ ] --- | */
+      visible_controls_views[0]->SetSize(kSecondaryControlSize);
+      visible_controls_views[0]->SetPosition(
+          gfx::Point(mid_window_x - kPrimaryControlSize.width() / 2 -
+                         kControlMargin - kSecondaryControlSize.width(),
+                     secondary_control_y));
+
+      // Middle control is primary only if it's play/pause control.
+      if (visible_controls_views[1] == play_pause_controls_view_.get()) {
+        visible_controls_views[1]->SetSize(kPrimaryControlSize);
+        visible_controls_views[1]->SetPosition(gfx::Point(
+            mid_window_x - kPrimaryControlSize.width() / 2, primary_control_y));
+
+        visible_controls_views[2]->SetSize(kSecondaryControlSize);
+        visible_controls_views[2]->SetPosition(gfx::Point(
+            mid_window_x + kPrimaryControlSize.width() / 2 + kControlMargin,
+            secondary_control_y));
+      } else {
+        visible_controls_views[1]->SetSize(kSecondaryControlSize);
+        visible_controls_views[1]->SetPosition(
+            gfx::Point(mid_window_x - kSecondaryControlSize.width() / 2,
+                       secondary_control_y));
+
+        visible_controls_views[2]->SetSize(kSecondaryControlSize);
+        visible_controls_views[2]->SetPosition(gfx::Point(
+            mid_window_x + kSecondaryControlSize.width() / 2 + kControlMargin,
+            secondary_control_y));
+      }
+      return;
+    }
+    case 4: {
+      /* | - [ ] [ ] [ ] [ ] - | */
+      visible_controls_views[0]->SetSize(kSecondaryControlSize);
+      visible_controls_views[0]->SetPosition(
+          gfx::Point(mid_window_x - kControlMargin * 3 / 2 -
+                         kSecondaryControlSize.width() * 2,
+                     secondary_control_y));
+
+      visible_controls_views[1]->SetSize(kSecondaryControlSize);
+      visible_controls_views[1]->SetPosition(gfx::Point(
+          mid_window_x - kControlMargin / 2 - kSecondaryControlSize.width(),
+          secondary_control_y));
+
+      visible_controls_views[2]->SetSize(kSecondaryControlSize);
+      visible_controls_views[2]->SetPosition(
+          gfx::Point(mid_window_x + kControlMargin / 2, secondary_control_y));
+
+      visible_controls_views[3]->SetSize(kSecondaryControlSize);
+      visible_controls_views[3]->SetPosition(gfx::Point(
+          mid_window_x + kControlMargin * 3 / 2 + kSecondaryControlSize.width(),
+          secondary_control_y));
+      return;
+    }
+    case 5: {
+      /* | [ ] [ ] [ ] [ ] [ ] | */
+      visible_controls_views[0]->SetSize(kSecondaryControlSize);
+      visible_controls_views[0]->SetPosition(
+          gfx::Point(mid_window_x - kPrimaryControlSize.width() / 2 -
+                         kControlMargin * 2 - kSecondaryControlSize.width() * 2,
+                     secondary_control_y));
+
+      visible_controls_views[1]->SetSize(kSecondaryControlSize);
+      visible_controls_views[1]->SetPosition(
+          gfx::Point(mid_window_x - kPrimaryControlSize.width() / 2 -
+                         kControlMargin - kSecondaryControlSize.width(),
+                     secondary_control_y));
+
+      visible_controls_views[2]->SetSize(kPrimaryControlSize);
+      visible_controls_views[2]->SetPosition(gfx::Point(
+          mid_window_x - kPrimaryControlSize.width() / 2, primary_control_y));
+
+      visible_controls_views[3]->SetSize(kSecondaryControlSize);
+      visible_controls_views[3]->SetPosition(gfx::Point(
+          mid_window_x + kPrimaryControlSize.width() / 2 + kControlMargin,
+          secondary_control_y));
+
+      visible_controls_views[4]->SetSize(kSecondaryControlSize);
+      visible_controls_views[4]->SetPosition(
+          gfx::Point(mid_window_x + kPrimaryControlSize.width() / 2 +
+                         kControlMargin * 2 + kSecondaryControlSize.width(),
+                     secondary_control_y));
+      return;
+    }
   }
-  if (show_previous_track_button_) {
-    previous_track_controls_view_->SetBoundsRect(CalculateControlsBounds(
-        mid_window_x - play_pause_controls_view_->size().width() / 2 -
-            previous_track_controls_view_->GetLastVisibleSize().width() -
-            kControlButtonMargin,
-        previous_track_controls_view_->GetLastVisibleSize()));
-  }
+  DCHECK(false);
 }
 
 gfx::Rect OverlayWindowViews::CalculateControlsBounds(int x,
@@ -532,36 +687,20 @@ gfx::Rect OverlayWindowViews::CalculateControlsBounds(int x,
       gfx::Point(x, (GetBounds().size().height() - size.height()) / 2), size);
 }
 
-void OverlayWindowViews::UpdateButtonControlsSize() {
-  const gfx::Size window_size = GetBounds().size();
-  int scaled_button_dimension =
-      window_size.width() < window_size.height()
-          ? window_size.width() * kPlayPauseControlRatioToWindow
-          : window_size.height() * kPlayPauseControlRatioToWindow;
-
-  int new_button_dimension =
-      std::max(kMinControlButtonSize, scaled_button_dimension);
-
-  const gfx::Size play_pause_button_size(new_button_dimension,
-                                         new_button_dimension);
-
-  play_pause_controls_view_->SetSize(play_pause_button_size);
-  gfx::Size track_button_size = gfx::ScaleToRoundedSize(
-      play_pause_button_size, kTrackControlRatioToPlayPauseControl);
-  next_track_controls_view_->SetSize(track_button_size);
-  previous_track_controls_view_->SetSize(track_button_size);
-}
-
 bool OverlayWindowViews::IsActive() const {
   return views::Widget::IsActive();
 }
 
 void OverlayWindowViews::Close() {
   views::Widget::Close();
+
+  if (auto* frame_sink_id = GetCurrentFrameSinkId())
+    GetCompositor()->RemoveChildFrameSink(*frame_sink_id);
 }
 
 void OverlayWindowViews::ShowInactive() {
   views::Widget::ShowInactive();
+  views::Widget::SetVisibleOnAllWorkspaces(true);
 #if defined(OS_CHROMEOS)
   // For rounded corners.
   if (ash::features::IsPipRoundedCornersEnabled()) {
@@ -587,10 +726,6 @@ bool OverlayWindowViews::IsAlwaysOnTop() const {
   return true;
 }
 
-ui::Layer* OverlayWindowViews::GetLayer() {
-  return GetRootView()->layer();
-}
-
 gfx::Rect OverlayWindowViews::GetBounds() const {
   return views::Widget::GetRestoredBounds();
 }
@@ -611,12 +746,21 @@ void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
 }
 
 void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
+  if (always_hide_play_pause_button_ == !is_visible)
+    return;
+
   always_hide_play_pause_button_ = !is_visible;
+  UpdateControlsBounds();
 }
 
 void OverlayWindowViews::SetMutedState(MutedState muted_state) {
+  if (muted_state_for_testing_ == muted_state)
+    return;
+
   muted_state_for_testing_ = muted_state;
+  show_mute_button_ = (muted_state != kNoAudio);
   mute_controls_view_->SetMutedState(muted_state);
+  UpdateControlsBounds();
 }
 
 void OverlayWindowViews::SetSkipAdButtonVisibility(bool is_visible) {
@@ -628,7 +772,6 @@ void OverlayWindowViews::SetNextTrackButtonVisibility(bool is_visible) {
     return;
 
   show_next_track_button_ = is_visible;
-  UpdateButtonControlsSize();
   UpdateControlsBounds();
 }
 
@@ -637,20 +780,23 @@ void OverlayWindowViews::SetPreviousTrackButtonVisibility(bool is_visible) {
     return;
 
   show_previous_track_button_ = is_visible;
-  UpdateButtonControlsSize();
   UpdateControlsBounds();
 }
 
-ui::Layer* OverlayWindowViews::GetWindowBackgroundLayer() {
-  return window_background_view_->layer();
-}
+void OverlayWindowViews::SetSurfaceId(const viz::SurfaceId& surface_id) {
+  // TODO(https://crbug.com/925346): We also want to unregister the page that
+  // used to embed the video as its parent.
+  if (!GetCurrentFrameSinkId()) {
+    GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
+  } else if (*GetCurrentFrameSinkId() != surface_id.frame_sink_id()) {
+    GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
+    GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
+  }
 
-ui::Layer* OverlayWindowViews::GetVideoLayer() {
-  return video_view_->layer();
-}
-
-gfx::Rect OverlayWindowViews::GetVideoBounds() {
-  return video_bounds_;
+  video_view_->layer()->SetShowSurface(
+      surface_id, GetBounds().size(), SK_ColorBLACK,
+      cc::DeadlinePolicy::UseDefaultDeadline(),
+      true /* stretch_content_to_fill_bounds */);
 }
 
 void OverlayWindowViews::OnNativeBlur() {
@@ -689,8 +835,6 @@ void OverlayWindowViews::OnNativeWidgetMove() {
 #if defined(OS_CHROMEOS)
   // Update the positioning of some icons when the window is moved.
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
-  back_to_tab_controls_view_->SetPosition(GetBounds().size(), quadrant);
-  mute_controls_view_->SetPosition(GetBounds().size(), quadrant);
   close_controls_view_->SetPosition(GetBounds().size(), quadrant);
   resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
 #endif
@@ -703,7 +847,6 @@ void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
     UpdateControlsVisibility(false);
 
   // Update the view layers to scale to |new_size|.
-  UpdateButtonControlsSize();
   UpdateLayerBoundsWithLetterboxing(new_size);
 
   views::Widget::OnNativeWidgetSizeChanged(new_size);
@@ -745,8 +888,7 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 #if defined(OS_WIN)
   if (event->type() == ui::ET_KEY_PRESSED && event->IsAltDown() &&
       event->key_code() == ui::VKEY_F4) {
-    controller_->Close(true /* should_pause_video */,
-                       true /* should_reset_pip_player */);
+    controller_->Close(true /* should_pause_video */);
     event->SetHandled();
   }
 #endif  // OS_WIN
@@ -766,7 +908,7 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
       // On Windows, ui::ET_MOUSE_EXITED is triggered when hovering over the
       // media controls because of the HitTest. This check ensures the controls
       // are visible if the mouse is still over the window.
-      if (!GetVideoBounds().Contains(event->location()))
+      if (!video_bounds_.Contains(event->location()))
         UpdateControlsVisibility(false);
       break;
 
@@ -811,8 +953,7 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
     RecordTapGesture(OverlayWindowControl::kSkipAd);
     event->SetHandled();
   } else if (GetCloseControlsBounds().Contains(event->location())) {
-    controller_->Close(true /* should_pause_video */,
-                       true /* should_reset_pip_player */);
+    controller_->Close(true /* should_pause_video */);
     RecordTapGesture(OverlayWindowControl::kClose);
     event->SetHandled();
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
@@ -848,8 +989,7 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
   }
 
   if (sender == close_controls_view_.get()) {
-    controller_->Close(true /* should_pause_video */,
-                       true /* should_reset_pip_player */);
+    controller_->Close(true /* should_pause_video */);
     RecordButtonPressed(OverlayWindowControl::kClose);
   }
 
@@ -940,10 +1080,6 @@ ui::Layer* OverlayWindowViews::GetResizeHandleLayer() {
   return resize_handle_view_->layer();
 }
 
-ui::Layer* OverlayWindowViews::GetControlsParentLayer() {
-  return controls_parent_view_->layer();
-}
-
 void OverlayWindowViews::TogglePlayPause() {
   // Retrieve expected active state based on what command was sent in
   // TogglePlayPause() since the IPC message may not have been propagated
@@ -996,10 +1132,6 @@ gfx::Point OverlayWindowViews::resize_handle_position_for_testing() const {
   return resize_handle_view_->origin();
 }
 
-views::View* OverlayWindowViews::controls_parent_view_for_testing() const {
-  return controls_parent_view_.get();
-}
-
 OverlayWindowViews::PlaybackState
 OverlayWindowViews::playback_state_for_testing() const {
   return playback_state_for_testing_;
@@ -1008,4 +1140,19 @@ OverlayWindowViews::playback_state_for_testing() const {
 OverlayWindowViews::MutedState OverlayWindowViews::muted_state_for_testing()
     const {
   return muted_state_for_testing_;
+}
+
+ui::Layer* OverlayWindowViews::video_layer_for_testing() const {
+  return video_view_->layer();
+}
+
+cc::Layer* OverlayWindowViews::GetLayerForTesting() {
+  return GetRootView()->layer()->cc_layer_for_testing();
+}
+
+const viz::FrameSinkId* OverlayWindowViews::GetCurrentFrameSinkId() const {
+  if (auto* surface = video_view_->layer()->GetSurfaceId())
+    return &surface->frame_sink_id();
+
+  return nullptr;
 }

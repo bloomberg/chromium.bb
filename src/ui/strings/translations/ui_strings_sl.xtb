@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1028699632127661925">Pošiljanje v napravo <ph name="DEVICE_NAME" /> ...</translation>
 <translation id="111910763555783249">Nastavitve obvestil</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pred 1 dnevom}one{Pred # dnevom}two{Pred # dnevoma}few{Pred # dnevi}other{Pred # dnevi}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Pred 1 minuto}one{Pred # minuto}two{Pred # minutama}few{Pred # minutami}other{Pred # minutami}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="1409544243779336081">Priporočilo aplikacije</translation>
-<translation id="1413622004203049571">Izklop obvestil za <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">zdaj</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 min}one{# min}two{# min}few{# min}other{# min}}</translation>
-<translation id="1756116796893109054">Pošiljanje zavihka …</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Obdobje</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mesec}one{# mesec}two{# meseca}few{# mesece}other{# mesecev}}</translation>
@@ -134,6 +133,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Razširitev na vse aplikacije</translation>
+<translation id="6165508094623778733">Več o tem</translation>
 <translation id="6264365405983206840">Izberi &amp;vse</translation>
 <translation id="6351032674660237738">PREDLOGI ZA APLIKACIJE</translation>
 <translation id="6364916375976753737">Pomik levo</translation>
@@ -179,8 +179,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Več kot 1 neprebrano obvestilo}one{Več kot # neprebrano obvestilo}two{Več kot # neprebrani obvestili}few{Več kot # neprebrana obvestila}other{Več kot # neprebranih obvestil}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{čez 1 min}one{čez # min}two{čez # min}few{čez # min}other{čez # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Začetek glasovne poizvedbe za Pomočnika Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 h}one{Pred # h}two{Pred # urama}few{Pred # urami}other{Pred # urami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
+<translation id="8144660977431427332">Pri iskanju se uporablja tehnologija Pomočnika Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, samodokončanje</translation>
 <translation id="815598010540052116">Pomik dol</translation>
 <translation id="8170087467028567933">Če odstranite ta predlog, ne bo več prikazan v vašem računu v vseh vaših napravah.</translation>

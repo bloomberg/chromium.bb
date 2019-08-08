@@ -23,6 +23,8 @@ const service_manager::Manifest& GetManifest() {
         .WithDisplayName("Visuals Service")
         .WithOptions(
             service_manager::ManifestOptionsBuilder()
+                .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin)
                 // The viz service sometimes needs to do some additional work
                 // before entering the sandbox. So set sandbox type to "none",
                 // so that the service manager does not enter the sandbox. The

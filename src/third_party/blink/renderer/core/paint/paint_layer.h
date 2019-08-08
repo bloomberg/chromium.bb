@@ -107,7 +107,7 @@ struct PaintLayerRareData {
   ~PaintLayerRareData();
 
   // Our current relative position offset.
-  LayoutSize offset_for_in_flow_position;
+  PhysicalOffset offset_for_in_flow_position;
 
   std::unique_ptr<TransformationMatrix> transform;
 
@@ -152,7 +152,7 @@ struct PaintLayerRareData {
 
   // The accumulated subpixel offset of a composited layer's composited bounds
   // compared to absolute coordinates.
-  LayoutSize subpixel_accumulation;
+  PhysicalOffset subpixel_accumulation;
 
   DISALLOW_COPY_AND_ASSIGN(PaintLayerRareData);
 };
@@ -277,7 +277,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return curr;
   }
 
-  LayoutPoint Location() const {
+  PhysicalOffset Location() const {
 #if DCHECK_IS_ON()
     DCHECK(!needs_position_update_);
 #endif
@@ -324,8 +324,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* RenderingContextRoot();
   const PaintLayer* RenderingContextRoot() const;
 
-  LayoutSize OffsetForInFlowPosition() const {
-    return rare_data_ ? rare_data_->offset_for_in_flow_position : LayoutSize();
+  PhysicalOffset OffsetForInFlowPosition() const {
+    return rare_data_ ? rare_data_->offset_for_in_flow_position
+                      : PhysicalOffset();
   }
 
   PaintLayerStackingNode* StackingNode() { return stacking_node_.get(); }
@@ -395,9 +396,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   void ConvertToLayerCoords(const PaintLayer* ancestor_layer,
-                            LayoutPoint&) const;
+                            PhysicalOffset&) const;
   void ConvertToLayerCoords(const PaintLayer* ancestor_layer,
-                            LayoutRect&) const;
+                            PhysicalRect&) const;
 
   // Does the same as convertToLayerCoords() when not in multicol. For multicol,
   // however, convertToLayerCoords() calculates the offset in flow-thread
@@ -406,9 +407,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // layer starts in and adds in the offset. See
   // http://www.chromium.org/developers/design-documents/multi-column-layout for
   // more info.
-  LayoutPoint VisualOffsetFromAncestor(
+  PhysicalOffset VisualOffsetFromAncestor(
       const PaintLayer* ancestor_layer,
-      LayoutPoint offset = LayoutPoint()) const;
+      PhysicalOffset offset = PhysicalOffset()) const;
 
   // Convert a bounding box from flow thread coordinates, relative to |this|, to
   // visual coordinates, relative to |ancestorLayer|.
@@ -417,7 +418,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // to be paginated; i.e. it must have an enclosingPaginationLayer().
   void ConvertFromFlowThreadToVisualBoundingBoxInAncestor(
       const PaintLayer* ancestor_layer,
-      LayoutRect&) const;
+      PhysicalRect&) const;
 
   // The hitTest() method looks for mouse events by walking layers that
   // intersect the point from front to back.
@@ -427,9 +428,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                HitTestResult&,
                const LayoutRect& hit_test_area);
 
-  bool IntersectsDamageRect(const LayoutRect& layer_bounds,
-                            const LayoutRect& damage_rect,
-                            const LayoutPoint& offset_from_root) const;
+  bool IntersectsDamageRect(const PhysicalRect& layer_bounds,
+                            const PhysicalRect& damage_rect,
+                            const PhysicalOffset& offset_from_root) const;
 
   // MaybeIncludeTransformForAncestorLayer means that a transform on
   // |ancestorLayer| may be applied to the bounding box, in particular if
@@ -441,15 +442,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   };
 
   // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
-  LayoutRect PhysicalBoundingBox(const LayoutPoint& offset_from_root) const;
-  LayoutRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
-  LayoutRect PhysicalBoundingBoxIncludingStackingChildren(
-      const LayoutPoint& offset_from_root,
+  PhysicalRect PhysicalBoundingBox(
+      const PhysicalOffset& offset_from_root) const;
+  PhysicalRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
+  PhysicalRect PhysicalBoundingBoxIncludingStackingChildren(
+      const PhysicalOffset& offset_from_root,
       CalculateBoundsOptions = kMaybeIncludeTransformForAncestorLayer) const;
-  LayoutRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
+  PhysicalRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
-  LayoutRect BoundingBoxForCompositingOverlapTest() const;
-  LayoutRect BoundingBoxForCompositing() const;
+  PhysicalRect BoundingBoxForCompositingOverlapTest() const;
+  PhysicalRect BoundingBoxForCompositing() const;
 
   // If true, this layer's children are included in its bounds for overlap
   // testing.  We can't rely on the children's positions if this layer has a
@@ -467,8 +469,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     static_block_position_ = position;
   }
 
-  LayoutSize SubpixelAccumulation() const;
-  void SetSubpixelAccumulation(const LayoutSize&);
+  PhysicalOffset SubpixelAccumulation() const;
+  void SetSubpixelAccumulation(const PhysicalOffset&);
 
   bool HasTransformRelatedProperty() const {
     return GetLayoutObject().HasTransformRelatedProperty();
@@ -567,10 +569,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // CompositedLayerMapping).
   static void MapPointInPaintInvalidationContainerToBacking(
       const LayoutBoxModelObject& paint_invalidation_container,
-      FloatPoint&);
-  static void MapRectInPaintInvalidationContainerToBacking(
-      const LayoutBoxModelObject& paint_invalidation_container,
-      LayoutRect&);
+      PhysicalOffset&);
 
   bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
     return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);
@@ -596,7 +595,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // The query rect is given in local coordinates.
   // if |should_check_children| is true, checks non-composited stacking children
   // recursively to see if they paint opaquely over the rect.
-  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&,
+  bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
                                          bool should_check_children) const;
 
   bool ContainsDirtyOverlayScrollbars() const {
@@ -617,12 +616,21 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // |backdrop_filter_bounds| is an out param from both of these functions, and
   // it represents the clipping bounds for the filtered backdrop image only.
   // This rect lives in the local transform space of the containing
-  // EffectPaintPropertyNode.
+  // EffectPaintPropertyNode. If the input CompositorFilterOperation is not
+  // empty, it will be populated only if |backdrop_filter_on_effect_node_dirty_|
+  // is true or the reference box has changed. Otherwise it will be populated
+  // unconditionally.
   void UpdateCompositorFilterOperationsForBackdropFilter(
       CompositorFilterOperations& operations,
-      gfx::RRectF* backdrop_filter_bounds) const;
+      base::Optional<gfx::RRectF>* backdrop_filter_bounds) const;
   CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
       const;
+  void SetBackdropFilterOnEffectNodeDirty() {
+    backdrop_filter_on_effect_node_dirty_ = true;
+  }
+  void ClearBackdropFilterOnEffectNodeDirty() {
+    backdrop_filter_on_effect_node_dirty_ = false;
+  }
 
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
@@ -637,7 +645,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   FloatRect MapRectForFilter(const FloatRect&) const;
 
   // Calls the above, rounding outwards.
-  LayoutRect MapLayoutRectForFilter(const LayoutRect&) const;
+  PhysicalRect MapRectForFilter(const PhysicalRect&) const;
 
   bool HasFilterThatMovesPixels() const;
 
@@ -647,8 +655,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayerResourceInfo& EnsureResourceInfo();
 
   // Filter reference box is the area over which the filter is computed, in the
-  // coordinate system of the object with the filter. Filter bounds is the
-  // reference box, offset by the object's location in the graphics layer.
+  // local coordinate system of the effect node containing the filter.
   FloatRect FilterReferenceBox() const;
   FloatRect BackdropFilterReferenceBox() const;
   gfx::RRectF BackdropFilterBounds(const FloatRect& reference_box) const;
@@ -656,6 +663,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void UpdateFilterReferenceBox();
   void UpdateFilters(const ComputedStyle* old_style,
                      const ComputedStyle& new_style);
+  void UpdateBackdropFilters(const ComputedStyle* old_style,
+                             const ComputedStyle& new_style);
   void UpdateClipPath(const ComputedStyle* old_style,
                       const ComputedStyle& new_style);
 
@@ -919,13 +928,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Returned value does not include any composited scroll offset of
   // the transform ancestor.
-  LayoutPoint ComputeOffsetFromAncestor(const PaintLayer& ancestor_layer) const;
+  PhysicalOffset ComputeOffsetFromAncestor(
+      const PaintLayer& ancestor_layer) const;
 
   void DidUpdateScrollsOverflow();
 
-  LayoutRect PaintingExtent(const PaintLayer* root_layer,
-                            const LayoutSize& sub_pixel_accumulation,
-                            GlobalPaintFlags);
+  PhysicalRect PaintingExtent(const PaintLayer* root_layer,
+                              const PhysicalOffset& sub_pixel_accumulation,
+                              GlobalPaintFlags);
 
   void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
@@ -933,8 +943,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const CullRect* cull_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const LayoutPoint* offset_from_root = nullptr,
-      const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
+      const PhysicalOffset* offset_from_root = nullptr,
+      const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
 
   void CollectFragments(
       PaintLayerFragments&,
@@ -942,8 +952,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const CullRect* cull_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const LayoutPoint* offset_from_root = nullptr,
-      const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
+      const PhysicalOffset* offset_from_root = nullptr,
+      const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
 
   LayoutPoint LayoutBoxLocation() const {
     return GetLayoutObject().IsBox() ? ToLayoutBox(GetLayoutObject()).Location()
@@ -960,12 +970,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     kRootOfTransparencyClipBox
   };
 
-  static LayoutRect TransparencyClipBox(
+  static PhysicalRect TransparencyClipBox(
       const PaintLayer*,
       const PaintLayer* root_layer,
       TransparencyClipBoxBehavior transparency_behavior,
       TransparencyClipBoxMode transparency_mode,
-      const LayoutSize& sub_pixel_accumulation,
+      const PhysicalOffset& sub_pixel_accumulation,
       GlobalPaintFlags = kGlobalPaintNormalPhase);
 
   bool NeedsRepaint() const { return needs_repaint_; }
@@ -1097,7 +1107,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void Update3DTransformedDescendantStatus();
 
   // Bounding box in the coordinates of this layer.
-  LayoutRect LogicalBoundingBox() const;
+  PhysicalRect LocalBoundingBox() const;
 
   bool HasOverflowControls() const;
 
@@ -1176,7 +1186,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool HitTestClippedOutByClipPath(PaintLayer* root_layer,
                                    const HitTestLocation&) const;
 
-  bool ChildBackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;
+  bool ChildBackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const;
 
   bool ShouldBeSelfPaintingLayer() const;
 
@@ -1227,19 +1237,21 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   void ExpandRectForStackingChildren(const PaintLayer& composited_layer,
-                                     LayoutRect& result,
+                                     PhysicalRect& result,
                                      PaintLayer::CalculateBoundsOptions) const;
 
   // The return value is in the space of |stackingParent|, if non-null, or
   // |this| otherwise.
-  LayoutRect BoundingBoxForCompositingInternal(
+  PhysicalRect BoundingBoxForCompositingInternal(
       const PaintLayer& composited_layer,
       const PaintLayer* stacking_parent,
       CalculateBoundsOptions) const;
+  bool ShouldApplyTransformToBoundingBox(const PaintLayer& composited_layer,
+                                         CalculateBoundsOptions) const;
 
   bool NeedsFilterReferenceBox() const;
 
-  LayoutPoint LocationInternal() const;
+  PhysicalOffset LocationInternal() const;
 
   AncestorDependentCompositingInputs& EnsureAncestorDependentCompositingInputs()
       const {
@@ -1310,10 +1322,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned self_painting_status_changed_ : 1;
 
-  // It's set to true when filter style or filter resource changes, indicating
-  // that we need to update the filter field of the effect paint property node.
-  // It's cleared when the effect paint property node is updated.
+  // These are set to true when filter style or filter resource changes,
+  // indicating that we need to update the filter (or backdrop_filter) field of
+  // the effect paint property node. They are cleared when the effect paint
+  // property node is updated.
   unsigned filter_on_effect_node_dirty_ : 1;
+  unsigned backdrop_filter_on_effect_node_dirty_ : 1;
 
   // True if the current subtree is underneath a LayoutSVGHiddenContainer
   // ancestor.
@@ -1338,7 +1352,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* last_;
 
   // Our (x,y) coordinates are in our containing layer's coordinate space.
-  LayoutPoint location_;
+  PhysicalOffset location_;
 
   // The layer's size.
   //
@@ -1382,7 +1396,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 }  // namespace blink
 
 #if DCHECK_IS_ON()
-// Outside the WebCore namespace for ease of invocation from gdb.
+// Outside the blink namespace for ease of invocation from gdb.
 CORE_EXPORT void showLayerTree(const blink::PaintLayer*);
 CORE_EXPORT void showLayerTree(const blink::LayoutObject*);
 #endif

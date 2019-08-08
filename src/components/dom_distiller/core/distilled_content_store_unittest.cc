@@ -82,8 +82,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadSingleArticle) {
   const ArticleEntry entry = CreateEntry("test-id", "url1", "url2", "url3");
   const DistilledArticleProto stored_proto =
       CreateDistilledArticleForEntry(entry);
-  store_->SaveContent(entry,
-                      stored_proto,
+  store_->SaveContent(entry, stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -120,8 +119,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
   const ArticleEntry first_entry = CreateEntry("first", "url1", "url2", "url3");
   const DistilledArticleProto first_stored_proto =
       CreateDistilledArticleForEntry(first_entry);
-  store_->SaveContent(first_entry,
-                      first_stored_proto,
+  store_->SaveContent(first_entry, first_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -133,8 +131,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
       CreateEntry("second", "url4", "url5", "url6");
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
-  store_->SaveContent(second_entry,
-                      second_stored_proto,
+  store_->SaveContent(second_entry, second_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -175,8 +172,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   const ArticleEntry first_entry = CreateEntry("first", "url1", "url2", "url3");
   const DistilledArticleProto first_stored_proto =
       CreateDistilledArticleForEntry(first_entry);
-  store_->SaveContent(first_entry,
-                      first_stored_proto,
+  store_->SaveContent(first_entry, first_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -188,8 +184,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
       CreateEntry("second", "url4", "url5", "url6");
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
-  store_->SaveContent(second_entry,
-                      second_stored_proto,
+  store_->SaveContent(second_entry, second_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -200,8 +195,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   const ArticleEntry third_entry = CreateEntry("third", "url7", "url8", "url9");
   const DistilledArticleProto third_stored_proto =
       CreateDistilledArticleForEntry(third_entry);
-  store_->SaveContent(third_entry,
-                      third_stored_proto,
+  store_->SaveContent(third_entry, third_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -225,8 +219,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
       CreateEntry("fourth", "url10", "url11", "url12");
   const DistilledArticleProto fourth_stored_proto =
       CreateDistilledArticleForEntry(fourth_entry);
-  store_->SaveContent(fourth_entry,
-                      fourth_stored_proto,
+  store_->SaveContent(fourth_entry, fourth_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -250,8 +243,7 @@ TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
   const ArticleEntry entry = CreateEntry("test-id", "url1", "url2", "url3");
   const DistilledArticleProto stored_proto =
       CreateDistilledArticleForEntry(entry);
-  store_->SaveContent(entry,
-                      stored_proto,
+  store_->SaveContent(entry, stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -293,8 +285,7 @@ TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
   const ArticleEntry first_entry = CreateEntry("first", "url1", "url2", "url3");
   const DistilledArticleProto first_stored_proto =
       CreateDistilledArticleForEntry(first_entry);
-  store_->SaveContent(first_entry,
-                      first_stored_proto,
+  store_->SaveContent(first_entry, first_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -318,8 +309,7 @@ TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
       CreateEntry("second", "url4", "url5", "url6");
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
-  store_->SaveContent(second_entry,
-                      second_stored_proto,
+  store_->SaveContent(second_entry, second_stored_proto,
                       base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();

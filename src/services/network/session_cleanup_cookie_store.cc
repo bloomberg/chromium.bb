@@ -26,16 +26,15 @@ namespace network {
 
 namespace {
 
-std::unique_ptr<base::Value> CookieStoreOriginFiltered(
-    const std::string& origin,
-    bool is_https,
-    net::NetLogCaptureMode capture_mode) {
+base::Value CookieStoreOriginFiltered(const std::string& origin,
+                                      bool is_https,
+                                      net::NetLogCaptureMode capture_mode) {
   if (!capture_mode.include_cookies_and_credentials())
-    return nullptr;
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("origin", origin);
-  dict->SetBoolean("is_https", is_https);
-  return dict;
+    return base::Value();
+  base::DictionaryValue dict;
+  dict.SetString("origin", origin);
+  dict.SetBoolean("is_https", is_https);
+  return std::move(dict);
 }
 
 }  // namespace

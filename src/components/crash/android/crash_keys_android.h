@@ -17,7 +17,7 @@ enum class CrashKeyIndex {
   INSTALLED_MODULES,
   EMULATED_MODULES,
   DYNAMIC_MODULE_DEX_NAME,
-  NUM_KEYS
+  NUM_ENTRIES
 };
 
 // These methods are only exposed for testing -- normal usage should be from

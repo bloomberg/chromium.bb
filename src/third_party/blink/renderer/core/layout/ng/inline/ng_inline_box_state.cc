@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
@@ -254,8 +254,8 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   DCHECK(box->style);
   const ComputedStyle& style = *box->style;
 
-  NGLogicalOffset offset;
-  NGLogicalSize size;
+  LogicalOffset offset;
+  LogicalSize size;
   if (!is_empty_line_) {
     // The inline box should have the height of the font metrics without the
     // line-height property. Compute from style because |box->metrics| includes
@@ -394,12 +394,15 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
     const unsigned box_data_index = start->box_data_index;
     if (!box_data_index)
       continue;
+    // |box_data_list_[box_data_index - 1]| is the box for |start| child.
+    // Avoid keeping a pointer to the |BoxData| because it maybe invalidated as
+    // we add to |box_data_list_|.
 
     // As |box_data_index| is converted to start/end of BoxData, update
     // |box_data_index| to the parent box, or to 0 if no parent boxes.
     // This allows including this box to the nested parent box.
-    BoxData* box_data = &box_data_list_[box_data_index - 1];
-    start->box_data_index = box_data->parent_box_data_index;
+    start->box_data_index =
+        box_data_list_[box_data_index - 1].parent_box_data_index;
 
     // Find the end line box item.
     const unsigned start_index = index;
@@ -415,27 +418,33 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
       // because the update is limited only when its |box_data_index| is lower.
       while (end->box_data_index && end->box_data_index < box_data_index) {
         UpdateBoxDataFragmentRange(line_box, index);
-        // Re-compute |box_data| in case |box_data_list_| was reallocated when
-        // |UpdateBoxDataFragmentRange| added new fragments.
-        box_data = &box_data_list_[box_data_index - 1];
       }
 
       if (box_data_index != end->box_data_index)
         break;
-      end->box_data_index = box_data->parent_box_data_index;
+      end->box_data_index =
+          box_data_list_[box_data_index - 1].parent_box_data_index;
     }
 
     // If this is the first range for this BoxData, set it.
-    if (!box_data->fragment_end) {
-      box_data->fragment_start = start_index;
-      box_data->fragment_end = index;
+    if (!box_data_list_[box_data_index - 1].fragment_end) {
+      box_data_list_[box_data_index - 1].SetFragmentRange(start_index, index);
     } else {
       // This box is fragmented by BiDi reordering. Add a new BoxData for the
       // fragmented range.
-      box_data->fragmented_box_data_index = box_data_list_.size();
-      box_data_list_.emplace_back(*box_data, start_index, index);
+      box_data_list_[box_data_index - 1].fragmented_box_data_index =
+          box_data_list_.size();
+      // Do not use `emplace_back()` here because adding to |box_data_list_| may
+      // reallocate the buffer, but the `BoxData` ctor must run before the
+      // reallocation. Create a new instance and |push_back()| instead.
+      BoxData fragmented_box_data(box_data_list_[box_data_index - 1],
+                                  start_index, index);
+      box_data_list_.push_back(fragmented_box_data);
     }
-    return box_data->parent_box_data_index ? start_index : index;
+    // If this box has parent boxes, we need to process it again.
+    if (box_data_list_[box_data_index - 1].parent_box_data_index)
+      return start_index;
+    return index;
   }
   return index;
 }
@@ -572,10 +581,18 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   DCHECK(item);
   DCHECK(item->Style());
   const ComputedStyle& style = *item->Style();
+
+  NGFragmentGeometry fragment_geometry;
+  fragment_geometry.border_box_size = size;
+  fragment_geometry.border_box_size.inline_size.ClampNegativeToZero();
+  fragment_geometry.padding =
+      NGBoxStrut(padding, IsFlippedLinesWritingMode(style.GetWritingMode()));
+
   // Because children are already in the visual order, use LTR for the
   // fragment builder so that it should not transform the coordinates for RTL.
   NGBoxFragmentBuilder box(item->GetLayoutObject(), &style,
                            style.GetWritingMode(), TextDirection::kLtr);
+  box.SetInitialFragmentGeometry(fragment_geometry);
   box.SetBoxType(NGPhysicalFragment::kInlineBox);
   box.SetStyleVariant(item->StyleVariant());
 
@@ -583,14 +600,12 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // was fragmented. Fragmenting a line box in block direction is not
   // supported today.
   box.SetBorderEdges({true, has_line_right_edge, true, has_line_left_edge});
-  box.SetInlineSize(size.inline_size.ClampNegativeToZero());
-  box.SetBlockSize(size.block_size);
-  box.SetPadding(padding);
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
     if (child.layout_result) {
-      box.AddChild(*child.layout_result, child.offset - offset);
+      box.AddChild(child.layout_result->PhysicalFragment(),
+                   child.offset - offset);
       child.layout_result.reset();
     } else if (child.fragment) {
       box.AddChild(std::move(child.fragment), child.offset - offset);
@@ -601,13 +616,17 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       // child.offset is the static position wrt. the linebox. As we are adding
       // this as a child of an inline level fragment, we adjust the static
       // position to be relative to this fragment.
-      NGLogicalOffset static_offset = child.offset - offset;
+      LogicalOffset static_offset = child.offset - offset;
 
       box.AddOutOfFlowChildCandidate(oof_box, static_offset,
                                      child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
     }
   }
+
+  // Inline boxes that produce DisplayItemClient should do full paint
+  // invalidations.
+  item->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
   box.MoveOutOfFlowDescendantCandidatesToDescendants();
   return box.ToInlineBoxFragment();
@@ -747,10 +766,14 @@ NGLineHeightMetrics NGInlineLayoutStateStack::MetricsForTopAndBottomAlign(
 
   // BoxData contains inline boxes to be created later. Take them into account.
   for (const BoxData& box_data : box_data_list_) {
+    // |block_offset| is the top position when the baseline is at 0.
     LayoutUnit box_ascent =
         -line_box[box_data.fragment_end].offset.block_offset;
-    metrics.Unite(
-        NGLineHeightMetrics(box_ascent, box_data.size.block_size - box_ascent));
+    LayoutUnit box_descent = box_data.size.block_size - box_ascent;
+    // The top/bottom of inline boxes should not include their paddings.
+    box_ascent -= box_data.padding.line_over;
+    box_descent -= box_data.padding.line_under;
+    metrics.Unite(NGLineHeightMetrics(box_ascent, box_descent));
   }
 
   // In quirks mode, metrics is empty if no content.

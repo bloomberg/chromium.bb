@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "SkSurface_Gpu.h"
-#include "GrAHardwareBufferUtils.h"
-#include "GrBackendSurface.h"
-#include "GrCaps.h"
-#include "GrContextPriv.h"
-#include "GrContextThreadSafeProxyPriv.h"
-#include "GrRecordingContext.h"
-#include "GrRecordingContextPriv.h"
-#include "GrRenderTarget.h"
-#include "GrRenderTargetContextPriv.h"
-#include "GrRenderTargetProxyPriv.h"
-#include "GrTexture.h"
-#include "SkCanvas.h"
-#include "SkDeferredDisplayList.h"
-#include "SkGpuDevice.h"
-#include "SkImagePriv.h"
-#include "SkImage_Base.h"
-#include "SkImage_Gpu.h"
-#include "SkSurfaceCharacterization.h"
-#include "SkSurface_Base.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkSurfaceCharacterization.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrRenderTarget.h"
+#include "include/gpu/GrTexture.h"
+#include "include/private/GrRecordingContext.h"
+#include "include/private/SkDeferredDisplayList.h"
+#include "src/core/SkImagePriv.h"
+#include "src/gpu/GrAHardwareBufferUtils.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrContextThreadSafeProxyPriv.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrRenderTargetProxyPriv.h"
+#include "src/gpu/SkGpuDevice.h"
+#include "src/image/SkImage_Base.h"
+#include "src/image/SkImage_Gpu.h"
+#include "src/image/SkSurface_Base.h"
+#include "src/image/SkSurface_Gpu.h"
 
 #if SK_SUPPORT_GPU
 
@@ -130,6 +130,15 @@ sk_sp<SkImage> SkSurface_Gpu::onNewImageSnapshot(const SkIRect* subset) {
 
 void SkSurface_Gpu::onWritePixels(const SkPixmap& src, int x, int y) {
     fDevice->writePixels(src, x, y);
+}
+
+void SkSurface_Gpu::onAsyncRescaleAndReadPixels(const SkImageInfo& info, const SkIRect& srcRect,
+                                                SkSurface::RescaleGamma rescaleGamma,
+                                                SkFilterQuality rescaleQuality,
+                                                SkSurface::ReadPixelsCallback callback,
+                                                SkSurface::ReadPixelsContext context) {
+    auto* rtc = static_cast<SkSurface_Gpu*>(this)->fDevice->accessRenderTargetContext();
+    rtc->asyncRescaleAndReadPixels(info, srcRect, rescaleGamma, rescaleQuality, callback, context);
 }
 
 // Create a new render target and, if necessary, copy the contents of the old
@@ -507,6 +516,60 @@ sk_sp<SkSurface> SkSurface::MakeFromBackendTexture(GrContext* context, const GrB
         return nullptr;
     }
     return sk_make_sp<SkSurface_Gpu>(std::move(device));
+}
+
+bool SkSurface_Gpu::onReplaceBackendTexture(const GrBackendTexture& backendTexture,
+                                            GrSurfaceOrigin origin, TextureReleaseProc releaseProc,
+                                            ReleaseContext releaseContext) {
+    auto context = this->fDevice->context();
+    if (context->abandoned()) {
+        return false;
+    }
+    if (!backendTexture.isValid()) {
+        return false;
+    }
+    if (backendTexture.width() != this->width() || backendTexture.height() != this->height()) {
+        return false;
+    }
+    auto* oldRTC = fDevice->accessRenderTargetContext();
+    auto oldProxy = sk_ref_sp(oldRTC->asTextureProxy());
+    if (!oldProxy) {
+        return false;
+    }
+    auto* oldTexture = oldProxy->peekTexture();
+    if (!oldTexture) {
+        return false;
+    }
+    if (!oldTexture->resourcePriv().refsWrappedObjects()) {
+        return false;
+    }
+    if (oldTexture->backendFormat() != backendTexture.getBackendFormat()) {
+        return false;
+    }
+    if (oldTexture->getBackendTexture().isSameTexture(backendTexture)) {
+        return false;
+    }
+    SkASSERT(oldTexture->asRenderTarget());
+    int sampleCnt = oldTexture->asRenderTarget()->numStencilSamples();
+    GrBackendTexture texCopy = backendTexture;
+    auto colorSpace = sk_ref_sp(oldRTC->colorSpaceInfo().colorSpace());
+    if (!validate_backend_texture(context, texCopy, &texCopy.fConfig, sampleCnt,
+                                  this->getCanvas()->imageInfo().colorType(), colorSpace, true)) {
+        return false;
+    }
+    sk_sp<GrRenderTargetContext> rtc(
+            context->priv().makeBackendTextureRenderTargetContext(texCopy,
+                                                                  origin,
+                                                                  sampleCnt,
+                                                                  std::move(colorSpace),
+                                                                  &this->props(),
+                                                                  releaseProc,
+                                                                  releaseContext));
+    if (!rtc) {
+        return false;
+    }
+    fDevice->replaceRenderTargetContext(std::move(rtc), true);
+    return true;
 }
 
 bool validate_backend_render_target(GrContext* ctx, const GrBackendRenderTarget& rt,

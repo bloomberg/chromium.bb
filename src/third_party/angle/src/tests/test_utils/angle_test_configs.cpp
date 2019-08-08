@@ -12,47 +12,52 @@
 namespace angle
 {
 
-PlatformParameters::PlatformParameters() : PlatformParameters(2, 0, EGLPlatformParameters()) {}
+PlatformParameters::PlatformParameters() : PlatformParameters(2, 0, GLESDriverType::AngleEGL) {}
 
 PlatformParameters::PlatformParameters(EGLint majorVersion,
                                        EGLint minorVersion,
                                        const EGLPlatformParameters &eglPlatformParameters)
-    : majorVersion(majorVersion),
-      minorVersion(minorVersion),
+    : driver(GLESDriverType::AngleEGL),
+      noFixture(false),
       eglParameters(eglPlatformParameters),
-      driver(GLESDriverType::AngleEGL)
-{}
+      majorVersion(majorVersion),
+      minorVersion(minorVersion)
+{
+    initDefaultParameters();
+}
 
 PlatformParameters::PlatformParameters(EGLint majorVersion,
                                        EGLint minorVersion,
                                        GLESDriverType driver)
-    : majorVersion(majorVersion), minorVersion(minorVersion), driver(driver)
-{}
+    : driver(driver), noFixture(false), majorVersion(majorVersion), minorVersion(minorVersion)
+{
+    initDefaultParameters();
+}
 
 EGLint PlatformParameters::getRenderer() const
 {
     return eglParameters.renderer;
 }
 
+void PlatformParameters::initDefaultParameters()
+{
+    // Default debug layers to enabled in tests.
+    eglParameters.debugLayersEnabled = EGL_TRUE;
+}
+
 bool operator<(const PlatformParameters &a, const PlatformParameters &b)
 {
-    if (a.majorVersion != b.majorVersion)
-    {
-        return a.majorVersion < b.majorVersion;
-    }
-
-    if (a.minorVersion != b.minorVersion)
-    {
-        return a.minorVersion < b.minorVersion;
-    }
-
-    return a.eglParameters < b.eglParameters;
+    return a.tie() < b.tie();
 }
 
 bool operator==(const PlatformParameters &a, const PlatformParameters &b)
 {
-    return (a.majorVersion == b.majorVersion) && (a.minorVersion == b.minorVersion) &&
-           (a.eglParameters == b.eglParameters);
+    return a.tie() == b.tie();
+}
+
+bool operator!=(const PlatformParameters &a, const PlatformParameters &b)
+{
+    return a.tie() != b.tie();
 }
 
 std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
@@ -70,7 +75,7 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
             switch (pp.eglParameters.renderer)
             {
                 case EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE:
-                    stream << "DEFAULT";
+                    stream << "Default";
                     break;
                 case EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE:
                     stream << "D3D9";
@@ -79,19 +84,19 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
                     stream << "D3D11";
                     break;
                 case EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE:
-                    stream << "NULL";
+                    stream << "Null";
                     break;
                 case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
-                    stream << "OPENGL";
+                    stream << "OpenGL";
                     break;
                 case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
-                    stream << "OPENGLES";
+                    stream << "OpenGLES";
                     break;
                 case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
-                    stream << "VULKAN";
+                    stream << "Vulkan";
                     break;
                 default:
-                    stream << "UNDEFINED";
+                    stream << "Undefined";
                     break;
             }
             break;
@@ -103,7 +108,7 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
             stream << "GLES";
             break;
         default:
-            stream << "ERROR";
+            stream << "Error";
             break;
     }
 
@@ -125,30 +130,30 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
             break;
 
         case EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE:
-            stream << "_NULL";
+            stream << "_Null";
             break;
 
         case EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE:
-            stream << "_REFERENCE";
+            stream << "_Reference";
             break;
 
         case EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE:
-            stream << "_WARP";
+            stream << "_Warp";
             break;
 
         default:
-            stream << "_ERR";
+            stream << "_Error";
             break;
     }
 
     switch (pp.eglParameters.presentPath)
     {
         case EGL_EXPERIMENTAL_PRESENT_PATH_COPY_ANGLE:
-            stream << "_PRESENT_PATH_COPY";
+            stream << "_PresentPathCopy";
             break;
 
         case EGL_EXPERIMENTAL_PRESENT_PATH_FAST_ANGLE:
-            stream << "_PRESENT_PATH_FAST";
+            stream << "_PresentPathFast";
             break;
 
         case EGL_DONT_CARE:
@@ -156,8 +161,18 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
             break;
 
         default:
-            stream << "_ERR";
+            stream << "_Error";
             break;
+    }
+
+    if (pp.noFixture)
+    {
+        stream << "_NoFixture";
+    }
+
+    if (pp.eglParameters.contextVirtualization == EGL_FALSE)
+    {
+        stream << "_NoVirtual";
     }
 
     return stream;
@@ -202,10 +217,11 @@ EGLPlatformParameters D3D11()
                                  EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE);
 }
 
-EGLPlatformParameters D3D11(EGLenum presentPath)
+EGLPlatformParameters D3D11_PRESENT_PATH_FAST()
 {
     return EGLPlatformParameters(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_DONT_CARE, EGL_DONT_CARE,
-                                 EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE, presentPath);
+                                 EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE,
+                                 EGL_EXPERIMENTAL_PRESENT_PATH_FAST_ANGLE);
 }
 
 EGLPlatformParameters D3D11_FL11_1()
@@ -392,9 +408,9 @@ PlatformParameters ES2_D3D11()
     return PlatformParameters(2, 0, egl_platform::D3D11());
 }
 
-PlatformParameters ES2_D3D11(EGLenum presentPath)
+PlatformParameters ES2_D3D11_PRESENT_PATH_FAST()
 {
-    return PlatformParameters(2, 0, egl_platform::D3D11(presentPath));
+    return PlatformParameters(2, 0, egl_platform::D3D11_PRESENT_PATH_FAST());
 }
 
 PlatformParameters ES2_D3D11_FL11_0()

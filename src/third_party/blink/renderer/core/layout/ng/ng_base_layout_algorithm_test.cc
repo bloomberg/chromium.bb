@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 
@@ -28,16 +29,34 @@ void NGBaseLayoutAlgorithmTest::AdvanceToLayoutPhase() {
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPerformLayout);
 }
 
+scoped_refptr<const NGPhysicalBoxFragment>
+NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(
+    NGBlockNode node,
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token) {
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(space, node);
+
+  scoped_refptr<const NGLayoutResult> result =
+      NGBlockLayoutAlgorithm(
+          {node, fragment_geometry, space, To<NGBlockBreakToken>(break_token)})
+          .Layout();
+
+  return To<NGPhysicalBoxFragment>(&result->PhysicalFragment());
+}
+
 std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
   auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
   NGBlockNode node(block_flow);
   NGConstraintSpace space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(space, node);
 
   scoped_refptr<const NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, space).Layout();
-  return std::make_pair(To<NGPhysicalBoxFragment>(result->PhysicalFragment()),
+      NGBlockLayoutAlgorithm({node, fragment_geometry, space}).Layout();
+  return std::make_pair(To<NGPhysicalBoxFragment>(&result->PhysicalFragment()),
                         std::move(space));
 }
 
@@ -57,7 +76,7 @@ const NGPhysicalBoxFragment* NGBaseLayoutAlgorithmTest::CurrentFragmentFor(
 }
 
 const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
-    NGPhysicalOffset* fragment_offset) {
+    PhysicalOffset* fragment_offset) {
   if (!parent_)
     return nullptr;
   if (index_ >= parent_->Children().size())
@@ -77,12 +96,12 @@ const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     WritingMode writing_mode,
     TextDirection direction,
-    NGLogicalSize size,
+    LogicalSize size,
     bool shrink_to_fit,
     bool is_new_formatting_context,
     LayoutUnit fragmentainer_space_available) {
   NGFragmentationType block_fragmentation =
-      fragmentainer_space_available != NGSizeIndefinite
+      fragmentainer_space_available != kIndefiniteSize
           ? NGFragmentationType::kFragmentColumn
           : NGFragmentationType::kFragmentNone;
 

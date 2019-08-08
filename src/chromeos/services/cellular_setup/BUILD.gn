@@ -12,13 +12,35 @@ static_library("cellular_setup") {
     "cellular_setup_impl.h",
     "cellular_setup_service.cc",
     "cellular_setup_service.h",
+    "ota_activator.cc",
+    "ota_activator.h",
+    "ota_activator_impl.cc",
+    "ota_activator_impl.h",
   ]
 
   deps = [
     "//base",
+    "//chromeos/dbus/shill",
+    "//chromeos/network",
     "//chromeos/services/cellular_setup/public/mojom",
+    "//dbus",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_ota_activator.cc",
+    "fake_ota_activator.h",
+  ]
+
+  deps = [
+    ":cellular_setup",
+    "//base",
+    "//chromeos/services/cellular_setup/public/cpp:test_support",
   ]
 }
 
@@ -27,12 +49,14 @@ source_set("unit_tests") {
 
   sources = [
     "cellular_setup_service_unittest.cc",
+    "ota_activator_impl_unittest.cc",
   ]
 
   deps = [
     ":cellular_setup",
     "//base",
     "//base/test:test_support",
+    "//chromeos/network:test_support",
     "//chromeos/services/cellular_setup/public/cpp:test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

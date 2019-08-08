@@ -5,6 +5,12 @@
   <message name="IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL" desc="A label for the 'Play files' root which shows Android files. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated. Use sentence case.">
     Play files
   </message>
+  <message name="IDS_FILE_BROWSER_PLAY_STORE_ACCESS_LABEL" desc="A label for the toast which shows when Play Store apps don't have access to external storage devices.">
+    Play Store applications can't access this device
+  </message>
+  <message name="IDS_FILE_BROWSER_OPEN_PLAY_STORE_SETTINGS_LABEL" desc="A button for the toast which shows when Play Store apps don't have access to external storage devices.">
+    Open settings
+  </message>
   <message name="IDS_FILE_BROWSER_SHOW_ALL_ANDROID_FOLDERS_OPTION" desc="A label for an option menu item to show all Android folders. By default, only several folders are visible to users, and users will click this option menu item to show all folders. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated.">
     Show all Play folders
   </message>
@@ -77,6 +83,9 @@
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
     Audio
   </message>
+  <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" translateable="false" desc="PluginVm local directory label.">
+    Plugin VM
+  </message>
   <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root which shows files recently modified by the user.">
     Recent
   </message>
@@ -92,7 +101,18 @@
   <message name="IDS_FILE_BROWSER_SIZE_COLUMN_LABEL" desc="Size column label.">
     Size
   </message>
-
+  <message name="IDS_FILE_BROWSER_COLUMN_ASC_SORT_MESSAGE" desc="Message read by Chromevox/screenreader when focusing file list table column, when clicking will sort in ascending order.">
+    Click to sort the column in ascending order.
+  </message>
+  <message name="IDS_FILE_BROWSER_COLUMN_DESC_SORT_MESSAGE" desc="Message read by Chromevox/screenreader when focusing file list table column, when clicking will sort in descending order.">
+    Click to sort the column in descending order.
+  </message>
+  <message name="IDS_FILE_BROWSER_COLUMN_SORTED_ASC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in ascending order.">
+    File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in ascending order.
+  </message>
+  <message name="IDS_FILE_BROWSER_COLUMN_SORTED_DESC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in descending order.">
+    File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in descending order.
+  </message>
   <message name="IDS_FILE_BROWSER_SIZE_BYTES" desc="Size in bytes.">
     <ph name="NUMBER_OF_BYTES">$1<ex>42</ex></ph> bytes
   </message>
@@ -546,10 +566,10 @@
   <message name="IDS_FILE_BROWSER_MANAGE_LINUX_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the crostini Linux container.">
     Manage Linux sharing
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL" desc="Label for menu that will share a folder with the Plugin VM.">
+  <message name="IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL" translateable="false" desc="Label for menu that will share a folder with the Plugin VM.">
     Share with Plugin VM
   </message>
-  <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the Plugin VM.">
+  <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" translateable="false" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the Plugin VM.">
     Manage Plugin VM sharing
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
@@ -1072,10 +1092,10 @@
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
     To open files with <ph name="APP_NAME">$1<ex>Visual Studio Code</ex></ph>, first copy to Linux files folder.
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE" desc="Message title shown when a user shares the root of a volume such as Downloads with the crostini container.">
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE" desc="Message title shown when a user shares the root of a volume such as 'My files' with the crostini container.">
     Share folder with Linux
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI" desc="Confirmation message shown when a user shares the root of a volume such as Downloads with the crostini container.">
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with the crostini container.">
     Give Linux apps permission to modify files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_DRIVE" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the crostini container.">
@@ -1087,10 +1107,19 @@
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with the crostini container.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Linux
   </message>
-  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM" desc="Confirmation message shown when a user shares a folder with the Plugin VM.">
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE" translateable="false" desc="Message title shown when a user shares the root of a volume such as 'My files' with the Plugin VM.">
+    Share folder with PluginVm
+  </message>
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM" translateable="false" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with the Plugin VM." >
+    Give Plugin VM permission to modify files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
+  </message>
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE" translateable="false" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the Plugin VM.">
+    Give Plugin VM permission to modify files in your Google Drive. Changes will sync to your other devices.
+  </message>
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM" translateable="false" desc="Confirmation message shown when a user shares a folder with the Plugin VM.">
     1 folder shared with Plugin VM
   </message>
-  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with the Plugin VM.">
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL" translateable="false" desc="Confirmation message shown when a user shares more than 1 folder with the Plugin VM.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Plugin VM
   </message>
 

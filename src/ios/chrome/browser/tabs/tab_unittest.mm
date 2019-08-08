@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
@@ -42,6 +43,7 @@
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/common/features.h"
+#import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -49,7 +51,6 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
-#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -119,30 +120,6 @@ const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 @end
 
 namespace {
-
-// Observer of a QueryHistory request.
-class HistoryQueryResultsObserver
-    : public base::RefCountedThreadSafe<HistoryQueryResultsObserver> {
- public:
-  HistoryQueryResultsObserver(base::RunLoop* run_loop) : run_loop_(run_loop) {}
-
-  // Stores |results| and stops the current message loop.
-  void ProcessResults(history::QueryResults* results) {
-    results_.Swap(results);
-    run_loop_->QuitWhenIdle();
-  }
-  history::QueryResults* results() { return &results_; }
-
- protected:
-  friend base::RefCountedThreadSafe<HistoryQueryResultsObserver>;
-  virtual ~HistoryQueryResultsObserver();
-
- private:
-  history::QueryResults results_;
-  base::RunLoop* run_loop_;
-};
-
-HistoryQueryResultsObserver::~HistoryQueryResultsObserver() {}
 
 // TabTest is parameterized on this enum to test both LegacyNavigationManager
 // and WKBasedNavigationManager.
@@ -264,6 +241,7 @@ class TabTest : public BlockCleanupTest,
     if (GetParam() == NavigationManagerChoice::WK_BASED) {
       [fake_wk_list_
           setCurrentURL:base::SysUTF8ToNSString(redirect_url.spec())];
+      OCMStub([mock_web_view_ URL]).andReturn(fake_wk_list_.currentItem.URL);
     }
     web_state_impl_->GetNavigationManagerImpl().CommitPendingItem();
 
@@ -296,19 +274,17 @@ class TabTest : public BlockCleanupTest,
   }
 
   void QueryAllHistory(history::QueryResults* results) {
-    base::CancelableTaskTracker tracker;
     base::RunLoop run_loop;
-    scoped_refptr<HistoryQueryResultsObserver> observer(
-        new HistoryQueryResultsObserver(&run_loop));
-    history::HistoryService* history_service =
-        ios::HistoryServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
-    history_service->QueryHistory(
-        base::string16(), history::QueryOptions(),
-        base::Bind(&HistoryQueryResultsObserver::ProcessResults, observer),
-        &tracker);
+    base::CancelableTaskTracker tracker;
+    ios::HistoryServiceFactory::GetForBrowserState(
+        chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
+        ->QueryHistory(base::string16(), history::QueryOptions(),
+                       base::BindLambdaForTesting([&](history::QueryResults r) {
+                         *results = std::move(r);
+                         run_loop.Quit();
+                       }),
+                       &tracker);
     run_loop.Run();
-    results->Swap(observer->results());
   }
 
   void CheckHistoryResult(const history::URLResult& historyResult,
@@ -319,6 +295,7 @@ class TabTest : public BlockCleanupTest,
   }
 
   void CheckCurrentItem(const GURL& expectedUrl, NSString* expectedTitle) {
+    OCMStub([mock_web_view_ URL]).andReturn(net::NSURLWithGURL(expectedUrl));
     web::NavigationItem* item =
         web_state_impl_->GetNavigationManager()->GetVisibleItem();
     EXPECT_EQ(expectedUrl, item->GetURL());
@@ -326,6 +303,8 @@ class TabTest : public BlockCleanupTest,
   }
 
   void CheckCurrentItem(const history::URLResult& historyResult) {
+    OCMStub([mock_web_view_ URL])
+        .andReturn(net::NSURLWithGURL(historyResult.url()));
     web::NavigationItem* item =
         web_state_impl_->GetNavigationManager()->GetVisibleItem();
     CheckHistoryResult(historyResult, item->GetURL(),

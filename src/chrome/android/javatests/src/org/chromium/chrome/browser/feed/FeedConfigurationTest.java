@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
+import com.google.android.libraries.feed.api.host.config.Configuration;
+import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -58,6 +58,10 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getSessionLifetimeMs());
         Assert.assertEquals(
                 FeedConfiguration.SNIPPETS_ENABLED_DEFAULT, FeedConfiguration.getSnippetsEnabled());
+        Assert.assertEquals(
+                FeedConfiguration.SPINNER_DELAY_MS_DEFAULT, FeedConfiguration.getSpinnerDelayMs());
+        Assert.assertEquals(FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,
+                FeedConfiguration.getSpinnerMinimumShowTimeMs());
         Assert.assertEquals(FeedConfiguration.TRIGGER_IMMEDIATE_PAGINATION_DEFAULT,
                 FeedConfiguration.getTriggerImmediatePagination());
         Assert.assertEquals(FeedConfiguration.UNDOABLE_ACTIONS_ENABLED_DEFAULT,
@@ -195,6 +199,26 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:spinner_delay/333"})
+    public void
+    testSpinnerDelayMs() {
+        Assert.assertEquals(333, FeedConfiguration.getSpinnerDelayMs());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:spinner_minimum_show_time/444"})
+    public void
+    testSpinnerMinimumShowTimeMs() {
+        Assert.assertEquals(444, FeedConfiguration.getSpinnerMinimumShowTimeMs());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:trigger_immediate_pagination/true"})
     public void
     testTriggerImmedatePagination() {
@@ -253,23 +277,27 @@ public class FeedConfigurationTest {
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, 0));
+                configuration.getValueOrDefault(
+                        ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, false));
         Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, true));
-        Assert.assertEquals(Integer.valueOf(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
-        Assert.assertEquals(
-                Long.valueOf(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 configuration.getValueOrDefault(
                         ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, true));
-        Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0));
-        Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
-        Assert.assertEquals(Long.valueOf(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
         Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, true));
+        Assert.assertEquals((long) FeedConfiguration.SPINNER_DELAY_MS_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0l));
+        Assert.assertEquals((long) FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, 0l));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
         Assert.assertFalse(

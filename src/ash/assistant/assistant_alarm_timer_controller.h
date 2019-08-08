@@ -5,8 +5,10 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_ALARM_TIMER_CONTROLLER_H_
 #define ASH_ASSISTANT_ASSISTANT_ALARM_TIMER_CONTROLLER_H_
 
+#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -14,13 +16,21 @@
 
 namespace ash {
 
+namespace assistant {
+namespace util {
+enum class AlarmTimerAction;
+}  // namespace util
+}  // namespace assistant
+
 class AssistantController;
 
 // The AssistantAlarmTimerController is a sub-controller of AssistantController
 // tasked with tracking alarm/timer state and providing alarm/timer APIs.
 class AssistantAlarmTimerController
     : public mojom::AssistantAlarmTimerController,
-      public AssistantAlarmTimerModelObserver {
+      public AssistantControllerObserver,
+      public AssistantAlarmTimerModelObserver,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantAlarmTimerController(
       AssistantController* assistant_controller);
@@ -48,7 +58,29 @@ class AssistantAlarmTimerController
       const std::map<std::string, base::TimeDelta>& times_remaining) override;
   void OnAllAlarmsTimersRemoved() override;
 
+  // Provides a pointer to the |assistant| owned by AssistantController.
+  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+
+  // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
+  void OnAssistantControllerDestroying() override;
+  void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
+
  private:
+  void PerformAlarmTimerAction(
+      const assistant::util::AlarmTimerAction& action,
+      const base::Optional<std::string>& alarm_timer_id,
+      const base::Optional<base::TimeDelta>& duration);
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   mojo::Binding<mojom::AssistantAlarmTimerController> binding_;
@@ -56,6 +88,9 @@ class AssistantAlarmTimerController
   AssistantAlarmTimerModel model_;
 
   base::RepeatingTimer timer_;
+
+  // Owned by AssistantController.
+  chromeos::assistant::mojom::Assistant* assistant_;
 
   int next_timer_id_ = 1;
 

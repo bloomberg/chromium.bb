@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.appmenu;
 
-import android.app.Activity;
 import android.support.test.filters.SmallTest;
+import android.view.View;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,14 +13,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.base.ObservableSupplier;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -42,17 +43,20 @@ public class DataSaverAppMenuTest {
     private TestDataReductionProxySettings mSettings;
 
     /**
-     * AppMenuHandler that will be used to intercept the delegate for testing.
+     * AppMenuHandlerImpl that will be used to intercept the delegate for testing.
      */
-    public static class AppMenuHandlerForTest extends AppMenuHandler {
+    public static class AppMenuHandlerForTest extends AppMenuHandlerImpl {
         AppMenuPropertiesDelegate mDelegate;
 
         /**
-         * AppMenuHandler for intercepting options item selections.
+         * AppMenuHandlerImpl for intercepting options item selections.
          */
-        public AppMenuHandlerForTest(
-                Activity activity, AppMenuPropertiesDelegate delegate, int menuResourceId) {
-            super(activity, delegate, menuResourceId);
+        public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
+                AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
+                ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                    overviewModeBehaviorSupplier);
             mDelegate = delegate;
         }
 
@@ -80,10 +84,12 @@ public class DataSaverAppMenuTest {
 
     @Before
     public void setUp() throws Exception {
-        ChromeTabbedActivity.setAppMenuHandlerFactoryForTesting(
-                (activity, delegate, menuResourceId) -> {
-                    mAppMenuHandler =
-                            new AppMenuHandlerForTest(activity, delegate, menuResourceId);
+        AppMenuCoordinatorImpl.setAppMenuHandlerFactoryForTesting(
+                (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                        overviewModeBehaviorSupplier) -> {
+                    mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
+                            menuResourceId, decorView, activityLifecycleDispatcher,
+                            overviewModeBehaviorSupplier);
                     return mAppMenuHandler;
                 });
 
@@ -102,7 +108,6 @@ public class DataSaverAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testMenuDataSaver() throws Throwable {
         mActivityTestRule.runOnUiThread((Runnable) () -> {
-            ContextUtils.getAppSharedPreferences().edit().clear().apply();
             // Data Saver hasn't been turned on, the footer shouldn't show.
             Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 

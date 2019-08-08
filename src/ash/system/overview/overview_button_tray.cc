@@ -4,9 +4,10 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -69,6 +70,25 @@ void OverviewButtonTray::SnapRippleToActivated() {
   GetInkDrop()->SnapToActivated();
 }
 
+void OverviewButtonTray::UpdateIconVisibility() {
+  // The visibility of the OverviewButtonTray has diverged from
+  // OverviewController::CanSelect. The visibility of the button should
+  // not change during transient times in which CanSelect is false. Such as when
+  // a modal dialog is present.
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
+
+  bool kiosk_next = Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
+  bool events_blocked = Shell::Get()
+                            ->tablet_mode_controller()
+                            ->AreInternalInputDeviceEventsBlocked();
+  bool active_session = session_controller->GetSessionState() ==
+                        session_manager::SessionState::ACTIVE;
+  bool app_mode = session_controller->IsRunningInAppMode();
+
+  SetVisible(!kiosk_next && events_blocked && active_session && !app_mode);
+}
+
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
   Button::OnGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
@@ -84,15 +104,17 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Skip if the second tap happened outside of overview. This can happen if a
   // window gets activated in between, which cancels overview mode.
-  if (overview_controller->IsSelecting() && last_press_event_time_ &&
+  if (overview_controller->InOverviewSession() && last_press_event_time_ &&
       event.time_stamp() - last_press_event_time_.value() <
           kDoubleTapThresholdMs) {
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
 
     // Build mru window list. Use cycle as it excludes some windows we are not
-    // interested in such as transient children.
+    // interested in such as transient children. Limit only to windows in the
+    // current active desk for now. TODO(afakhry): Revisit with UX.
     MruWindowTracker::WindowList mru_window_list =
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
+            kActiveDesk);
 
     // Switch to the second most recently used window (most recent is the
     // current window) if it exists, unless splitview mode is active. Do not
@@ -108,7 +130,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       // mru list.
       SplitViewController* split_view_controller =
           Shell::Get()->split_view_controller();
-      if (split_view_controller->IsSplitViewModeActive() &&
+      if (split_view_controller->InSplitViewMode() &&
           mru_window_list.size() > 2u) {
         if (mru_window_list[0] ==
                 split_view_controller->GetDefaultSnappedWindow() ||
@@ -127,9 +149,10 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
   // If not in overview mode record the time of this tap. A subsequent tap will
   // be checked against this to see if we should quick switch.
-  last_press_event_time_ = Shell::Get()->overview_controller()->IsSelecting()
-                               ? base::nullopt
-                               : base::make_optional(event.time_stamp());
+  last_press_event_time_ =
+      Shell::Get()->overview_controller()->InOverviewSession()
+          ? base::nullopt
+          : base::make_optional(event.time_stamp());
 
   OverviewController* controller = Shell::Get()->overview_controller();
   // Note: Toggling overview mode will fail if there is no window to show, the
@@ -167,18 +190,8 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.
 }
 
-void OverviewButtonTray::UpdateIconVisibility() {
-  // The visibility of the OverviewButtonTray has diverged from
-  // OverviewController::CanSelect. The visibility of the button should
-  // not change during transient times in which CanSelect is false. Such as when
-  // a modal dialog is present.
-  SessionController* session_controller = Shell::Get()->session_controller();
-  SetVisible(Shell::Get()
-                 ->tablet_mode_controller()
-                 ->AreInternalInputDeviceEventsBlocked() &&
-             session_controller->GetSessionState() ==
-                 session_manager::SessionState::ACTIVE &&
-             !session_controller->IsRunningInAppMode());
+const char* OverviewButtonTray::GetClassName() const {
+  return "OverviewButtonTray";
 }
 
 }  // namespace ash

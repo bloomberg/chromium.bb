@@ -231,6 +231,12 @@ def main(args):
   # dependencies when is_component_build=true.
   depfile_deps = list(native_libs)
 
+  # For targets that depend on static library APKs, dex paths are created by
+  # the static library's dexsplitter target and GN doesn't know about these
+  # paths.
+  if options.dex_file:
+    depfile_deps.append(options.dex_file)
+
   secondary_native_libs = []
   if options.secondary_native_libs:
     secondary_native_libs = sorted(options.secondary_native_libs)

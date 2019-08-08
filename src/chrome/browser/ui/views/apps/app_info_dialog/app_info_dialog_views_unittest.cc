@@ -59,7 +59,7 @@ class AppInfoDialogTestApi {
   explicit AppInfoDialogTestApi(AppInfoDialog* dialog) : dialog_(dialog) {}
 
   AppInfoHeaderPanel* header_panel() {
-    return static_cast<AppInfoHeaderPanel*>(dialog_->child_at(0));
+    return static_cast<AppInfoHeaderPanel*>(dialog_->children().front());
   }
 
   views::Link* view_in_store_link() {
@@ -110,6 +110,16 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     chrome_launcher_controller_.reset();
     shelf_model_.reset();
 #endif
+
+    // The Browser class had dependencies on LocalState, which is owned by
+    // |extension_environment_|.
+    auto* browser = release_browser();
+    if (browser) {
+      browser->tab_strip_model()->CloseAllTabs();
+      delete browser;
+    }
+    extension_environment_.DeleteProfile();
+
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -327,21 +337,21 @@ TEST_F(AppInfoDialogViewsTest, PinButtonsAreFocusedAfterPinUnpin) {
   views::View* unpin_button = dialog_footer->unpin_from_shelf_button_;
 
   pin_button->RequestFocus();
-  EXPECT_TRUE(pin_button->visible());
-  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->GetVisible());
+  EXPECT_FALSE(unpin_button->GetVisible());
   EXPECT_TRUE(pin_button->HasFocus());
 
   // Avoid attempting to use sync, it's not initialized in this test.
   auto sync_disabler = chrome_launcher_controller_->GetScopedPinSyncDisabler();
 
   dialog_footer->SetPinnedToShelf(true);
-  EXPECT_FALSE(pin_button->visible());
-  EXPECT_TRUE(unpin_button->visible());
+  EXPECT_FALSE(pin_button->GetVisible());
+  EXPECT_TRUE(unpin_button->GetVisible());
   EXPECT_TRUE(unpin_button->HasFocus());
 
   dialog_footer->SetPinnedToShelf(false);
-  EXPECT_TRUE(pin_button->visible());
-  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->GetVisible());
+  EXPECT_FALSE(unpin_button->GetVisible());
   EXPECT_TRUE(pin_button->HasFocus());
 }
 #endif

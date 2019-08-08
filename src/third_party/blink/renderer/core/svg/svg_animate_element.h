@@ -40,8 +40,6 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimateElement* Create(Document&);
-
   explicit SVGAnimateElement(Document&);
   SVGAnimateElement(const QualifiedName&, Document&);
   ~SVGAnimateElement() override;

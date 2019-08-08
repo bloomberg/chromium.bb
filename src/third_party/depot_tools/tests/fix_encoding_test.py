@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# coding=utf8
+# coding=utf-8
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for fix_encoding.py."""
+
+from __future__ import print_function
 
 import os
 import sys
@@ -21,18 +23,18 @@ class FixEncodingTest(unittest.TestCase):
 
   def test_code_page(self):
     # Make sure printing garbage won't throw.
-    print self.text.encode() + '\xff'
-    print >> sys.stderr, self.text.encode() + '\xff'
+    print(self.text.encode() + '\xff')
+    print(self.text.encode() + '\xff', file=sys.stderr)
 
   def test_utf8(self):
     # Make sure printing utf-8 works.
-    print self.text.encode('utf-8')
-    print >> sys.stderr, self.text.encode('utf-8')
+    print(self.text.encode('utf-8'))
+    print(self.text.encode('utf-8'), file=sys.stderr)
 
   def test_unicode(self):
     # Make sure printing unicode works.
-    print self.text
-    print >> sys.stderr, self.text
+    print(self.text)
+    print(self.text, file=sys.stderr)
 
   def test_default_encoding(self):
     self.assertEquals('utf-8', sys.getdefaultencoding())

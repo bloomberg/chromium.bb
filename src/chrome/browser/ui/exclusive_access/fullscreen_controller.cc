@@ -32,10 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 
-#if defined(OS_MACOSX)
-#include "base/feature_list.h"
-#include "chrome/common/chrome_features.h"
-#else
+#if !defined(OS_MACOSX)
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #endif
@@ -443,11 +440,7 @@ bool FullscreenController::MaybeToggleFullscreenWithinTab(
     WebContents* web_contents,
     bool enter_fullscreen) {
   if (enter_fullscreen) {
-    if (web_contents->IsBeingCaptured()
-#if defined(OS_MACOSX)
-        || base::FeatureList::IsEnabled(features::kContentFullscreen)
-#endif
-            ) {
+    if (web_contents->IsBeingCaptured()) {
       FullscreenWithinTabHelper::CreateForWebContents(web_contents);
       FullscreenWithinTabHelper::FromWebContents(web_contents)
           ->SetIsFullscreenWithinTab(true);

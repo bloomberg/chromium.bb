@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #endif
 #include <cstring>
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
@@ -120,6 +121,16 @@ class WTF_EXPORT StringView {
   const UChar* Characters16() const {
     DCHECK(!Is8Bit());
     return characters16_;
+  }
+
+  base::span<const LChar> Span8() const {
+    DCHECK(Is8Bit());
+    return {characters8_, length_};
+  }
+
+  base::span<const UChar> Span16() const {
+    DCHECK(!Is8Bit());
+    return {characters16_, length_};
   }
 
   UChar32 CodepointAt(unsigned i) const {

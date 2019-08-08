@@ -47,7 +47,7 @@ class EnrollmentScreenView {
                                            const std::string& location) = 0;
   };
 
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_ENROLLMENT;
+  constexpr static StaticOobeScreenId kScreenId{"oauth-enrollment"};
 
   virtual ~EnrollmentScreenView() {}
 

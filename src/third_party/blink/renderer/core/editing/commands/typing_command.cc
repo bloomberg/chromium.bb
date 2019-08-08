@@ -737,11 +737,9 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
     }
   }
 
-  while (Node* child = root->firstChild()) {
-    RemoveNode(child, editing_state);
-    if (editing_state->IsAborted())
-      return false;
-  }
+  RemoveAllChildrenIfPossible(root, editing_state);
+  if (editing_state->IsAborted() || root->firstChild())
+    return false;
 
   AddBlockPlaceholderIfNeeded(root, editing_state);
   if (editing_state->IsAborted())

@@ -153,10 +153,10 @@ def wasm_llvm(c):
 @config_ctx()
 def emscripten_releases(c):
   s = c.solutions.add()
-  s.name = 'emscripten_releases'
+  s.name = 'emscripten-releases'
   s.url = ChromiumGitURL(c, 'emscripten-releases.git')
   m = c.got_revision_mapping
-  m['emscripten_releases'] = 'got_revision'
+  m['emscripten-releases'] = 'got_revision'
 
 @config_ctx()
 def gyp(c):
@@ -261,12 +261,6 @@ def pdfium(c):
   soln.url = 'https://pdfium.googlesource.com/pdfium.git'
   m = c.got_revision_mapping
   m['pdfium'] = 'got_revision'
-
-@config_ctx()
-def mojo(c):
-  soln = c.solutions.add()
-  soln.name = 'src'
-  soln.url = 'https://chromium.googlesource.com/external/mojo.git'
 
 @config_ctx()
 def crashpad(c):

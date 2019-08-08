@@ -5,6 +5,8 @@
 """Contains a helper function for deploying and executing a packaged
 executable on a Target."""
 
+from __future__ import print_function
+
 import common
 import hashlib
 import logging
@@ -42,16 +44,20 @@ class MergedInputStream(object):
   def __init__(self, streams):
     assert len(streams) > 0
     self._streams = streams
-    self._read_pipe, write_pipe = os.pipe()
+    self._output_stream = None
+    self._thread = None
+
+  def Start(self):
+    """Returns a pipe to the merged output stream."""
+
+    read_pipe, write_pipe = os.pipe()
+
     # Disable buffering for the stream to make sure there is no delay in logs.
     self._output_stream = os.fdopen(write_pipe, 'w', 0)
     self._thread = threading.Thread(target=self._Run)
-
-  def Start(self):
-    """Returns a file descriptor to the merged output stream."""
-
     self._thread.start();
-    return self._read_pipe
+
+    return os.fdopen(read_pipe, 'r')
 
   def _Run(self):
     streams_by_fd = {}
@@ -142,7 +148,7 @@ def _DrainStreamToStdout(stream, quit_event):
       line = rlist[0].readline()
       if not line:
         return
-      print line.rstrip()
+      print(line.rstrip())
 
 
 def RunPackage(output_dir, target, package_path, package_name,
@@ -190,20 +196,20 @@ def RunPackage(output_dir, target, package_path, package_name,
                                      stderr=subprocess.STDOUT)
 
     if system_logger:
-      output_fd = MergedInputStream([process.stdout,
-                                       system_logger.stdout]).Start()
+      output_stream = MergedInputStream([process.stdout,
+                                         system_logger.stdout]).Start()
     else:
-      output_fd = process.stdout.fileno()
+      output_stream = process.stdout
 
     # Run the log data through the symbolizer process.
     build_ids_paths = map(
         lambda package_path: os.path.join(
             os.path.dirname(package_path), 'ids.txt'),
         [package_path] + package_deps)
-    output_stream = SymbolizerFilter(output_fd, build_ids_paths)
+    output_stream = SymbolizerFilter(output_stream, build_ids_paths)
 
     for next_line in output_stream:
-      print next_line.rstrip()
+      print(next_line.rstrip())
 
     process.wait()
     if process.returncode == 0:

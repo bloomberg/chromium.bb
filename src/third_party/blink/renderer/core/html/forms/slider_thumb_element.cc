@@ -56,16 +56,10 @@ inline static bool HasVerticalAppearance(HTMLInputElement* input) {
   return input->ComputedStyleRef().Appearance() == kSliderVerticalPart;
 }
 
-inline SliderThumbElement::SliderThumbElement(Document& document)
+SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
   SetHasCustomStyleCallbacks();
-}
-
-SliderThumbElement* SliderThumbElement::Create(Document& document) {
-  SliderThumbElement* element =
-      MakeGarbageCollected<SliderThumbElement>(document);
-  element->setAttribute(kIdAttr, shadow_element_names::SliderThumb());
-  return element;
+  setAttribute(kIdAttr, shadow_element_names::SliderThumb());
 }
 
 void SliderThumbElement::SetPositionFromValue() {
@@ -109,48 +103,33 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   Element* track_element = input->UserAgentShadowRoot()->getElementById(
       shadow_element_names::SliderTrack());
 
-  if (!input->GetLayoutObject() || !GetLayoutBox() ||
-      !track_element->GetLayoutBox())
+  const LayoutObject* input_object = input->GetLayoutObject();
+  const LayoutBox* thumb_box = GetLayoutBox();
+  const LayoutBox* track_box = track_element->GetLayoutBox();
+  if (!input_object || !thumb_box || !track_box)
     return;
 
-  LayoutPoint offset = LayoutPoint(input->GetLayoutObject()->AbsoluteToLocal(
-      FloatPoint(point), kUseTransforms));
+  PhysicalOffset point_in_track =
+      track_box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(point));
   bool is_vertical = HasVerticalAppearance(input);
   bool is_left_to_right_direction =
-      GetLayoutBox()->Style()->IsLeftToRightDirection();
+      thumb_box->StyleRef().IsLeftToRightDirection();
   LayoutUnit track_size;
   LayoutUnit position;
   LayoutUnit current_position;
-  // We need to calculate currentPosition from absolute points becaue the
-  // layoutObject for this node is usually on a layer and layoutBox()->x() and
-  // y() are unusable.
-  // FIXME: This should probably respect transforms.
-  LayoutPoint absolute_thumb_origin =
-      GetLayoutBox()->AbsoluteBoundingBoxRectIgnoringTransforms().Location();
-  LayoutPoint absolute_slider_content_origin =
-      LayoutPoint(input->GetLayoutObject()->LocalToAbsolute());
-  IntRect track_bounding_box =
-      track_element->GetLayoutObject()
-          ->AbsoluteBoundingBoxRectIgnoringTransforms();
-  IntRect input_bounding_box =
-      input->GetLayoutObject()->AbsoluteBoundingBoxRectIgnoringTransforms();
+  PhysicalOffset thumb_offset = thumb_box->OffsetFromAncestor(input_object) -
+                                track_box->OffsetFromAncestor(input_object);
   if (is_vertical) {
-    track_size = track_element->GetLayoutBox()->ContentHeight() -
-                 GetLayoutBox()->Size().Height();
-    position = offset.Y() - GetLayoutBox()->Size().Height() / 2 -
-               track_bounding_box.Y() + input_bounding_box.Y() -
-               GetLayoutBox()->MarginBottom();
-    current_position =
-        absolute_thumb_origin.Y() - absolute_slider_content_origin.Y();
+    track_size = track_box->ContentHeight() - thumb_box->Size().Height();
+    position = point_in_track.top - thumb_box->Size().Height() / 2 -
+               thumb_box->MarginBottom();
+    current_position = thumb_offset.top;
   } else {
-    track_size = track_element->GetLayoutBox()->ContentWidth() -
-                 GetLayoutBox()->Size().Width();
-    position = offset.X() - GetLayoutBox()->Size().Width() / 2 -
-               track_bounding_box.X() + input_bounding_box.X();
-    position -= is_left_to_right_direction ? GetLayoutBox()->MarginLeft()
-                                           : GetLayoutBox()->MarginRight();
-    current_position =
-        absolute_thumb_origin.X() - absolute_slider_content_origin.X();
+    track_size = track_box->ContentWidth() - thumb_box->Size().Width();
+    position = point_in_track.left - thumb_box->Size().Width() / 2;
+    position -= is_left_to_right_direction ? thumb_box->MarginLeft()
+                                           : thumb_box->MarginRight();
+    current_position = thumb_offset.left;
   }
   position = std::min(position, track_size).ClampNegativeToZero();
   const Decimal ratio =
@@ -346,7 +325,7 @@ scoped_refptr<ComputedStyle> SliderThumbElement::CustomStyleForLayoutObject() {
 
 // --------------------------------
 
-inline SliderContainerElement::SliderContainerElement(Document& document)
+SliderContainerElement::SliderContainerElement(Document& document)
     : HTMLDivElement(document),
       has_touch_event_handler_(false),
       touch_started_(false),
@@ -354,8 +333,6 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
   UpdateTouchEventHandlerRegistry();
   SetHasCustomStyleCallbacks();
 }
-
-DEFINE_NODE_FACTORY(SliderContainerElement)
 
 HTMLInputElement* SliderContainerElement::HostInput() const {
   return ToHTMLInputElement(OwnerShadowHost());
@@ -394,7 +371,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
   }
 
   TouchList* touches = event->targetTouches();
-  SliderThumbElement* thumb = ToSliderThumbElement(
+  auto* thumb = To<SliderThumbElement>(
       GetTreeScope().getElementById(shadow_element_names::SliderThumb()));
   if (!thumb || !touches)
     return;

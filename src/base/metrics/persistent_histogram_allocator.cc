@@ -719,13 +719,12 @@ bool GlobalHistogramAllocator::CreateWithActiveFile(const FilePath& base_path,
   // Old "active" becomes "base".
   if (!base::ReplaceFile(active_path, base_path, nullptr))
     base::DeleteFile(base_path, /*recursive=*/false);
-  DCHECK(!base::PathExists(active_path));
+  if (base::PathExists(active_path))
+    return false;
 
   // Move any "spare" into "active". Okay to continue if file doesn't exist.
-  if (!spare_path.empty()) {
+  if (!spare_path.empty())
     base::ReplaceFile(spare_path, active_path, nullptr);
-    DCHECK(!base::PathExists(spare_path));
-  }
 
   return base::GlobalHistogramAllocator::CreateWithFile(active_path, size, id,
                                                         name);

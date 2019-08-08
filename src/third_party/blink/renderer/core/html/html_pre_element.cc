@@ -31,11 +31,9 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLPreElement::HTMLPreElement(const QualifiedName& tag_name,
-                                      Document& document)
+HTMLPreElement::HTMLPreElement(const QualifiedName& tag_name,
+                               Document& document)
     : HTMLElement(tag_name, document) {}
-
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLPreElement)
 
 bool HTMLPreElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == kWrapAttr)

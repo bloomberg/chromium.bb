@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/time/default_tick_clock.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/prefetch_url_loader.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -19,23 +21,32 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
 
 struct PrefetchURLLoaderService::BindContext {
   BindContext(int frame_tree_node_id,
-              scoped_refptr<network::SharedURLLoaderFactory> factory)
-      : frame_tree_node_id(frame_tree_node_id), factory(factory) {}
+              scoped_refptr<network::SharedURLLoaderFactory> factory,
+              scoped_refptr<PrefetchedSignedExchangeCache>
+                  prefetched_signed_exchange_cache)
+      : frame_tree_node_id(frame_tree_node_id),
+        factory(factory),
+        prefetched_signed_exchange_cache(
+            std::move(prefetched_signed_exchange_cache)) {}
 
   explicit BindContext(const std::unique_ptr<BindContext>& other)
       : frame_tree_node_id(other->frame_tree_node_id),
-        factory(other->factory) {}
+        factory(other->factory),
+        prefetched_signed_exchange_cache(
+            other->prefetched_signed_exchange_cache) {}
 
   ~BindContext() = default;
 
   const int frame_tree_node_id;
   scoped_refptr<network::SharedURLLoaderFactory> factory;
+  scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
 };
 
 PrefetchURLLoaderService::PrefetchURLLoaderService(
@@ -57,25 +68,31 @@ PrefetchURLLoaderService::PrefetchURLLoaderService(
 
 void PrefetchURLLoaderService::InitializeResourceContext(
     ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    ChromeBlobStorageContext* blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!resource_context_);
   DCHECK(!request_context_getter_);
   resource_context_ = resource_context;
   request_context_getter_ = request_context_getter;
+  blob_storage_context_ = blob_storage_context->context()->AsWeakPtr();
   preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 }
 
 void PrefetchURLLoaderService::GetFactory(
     network::mojom::URLLoaderFactoryRequest request,
     int frame_tree_node_id,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories) {
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories,
+    scoped_refptr<PrefetchedSignedExchangeCache>
+        prefetched_signed_exchange_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto factory_bundle =
       network::SharedURLLoaderFactory::Create(std::move(factories));
   loader_factory_bindings_.AddBinding(
       this, std::move(request),
-      std::make_unique<BindContext>(frame_tree_node_id, factory_bundle));
+      std::make_unique<BindContext>(
+          frame_tree_node_id, factory_bundle,
+          std::move(prefetched_signed_exchange_cache)));
 }
 
 void PrefetchURLLoaderService::CreateLoaderAndStart(
@@ -96,6 +113,13 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   if (prefetch_load_callback_for_testing_)
     prefetch_load_callback_for_testing_.Run();
 
+  scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
+  if (loader_factory_bindings_.dispatch_context()) {
+    prefetched_signed_exchange_cache =
+        loader_factory_bindings_.dispatch_context()
+            ->prefetched_signed_exchange_cache;
+  }
+
   // For now we strongly bind the loader to the request, while we can
   // also possibly make the new loader owned by the factory so that
   // they can live longer than the client (i.e. run in detached mode).
@@ -109,7 +133,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id_getter),
           resource_context_, request_context_getter_,
-          signed_exchange_prefetch_metric_recorder_, accept_langs_),
+          signed_exchange_prefetch_metric_recorder_,
+          std::move(prefetched_signed_exchange_cache), blob_storage_context_,
+          accept_langs_),
       std::move(request));
 }
 

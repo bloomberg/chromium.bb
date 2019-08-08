@@ -115,7 +115,8 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       queue_traits_(params.queue_traits),
       freeze_when_keep_active_(params.freeze_when_keep_active),
       main_thread_scheduler_(main_thread_scheduler),
-      frame_scheduler_(params.frame_scheduler) {
+      frame_scheduler_(params.frame_scheduler),
+      weak_ptr_factory_(this) {
   if (GetTaskQueueImpl() && spec.should_notify_observers) {
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to
@@ -140,13 +141,17 @@ void MainThreadTaskQueue::OnTaskStarted(
 
 void MainThreadTaskQueue::OnTaskCompleted(
     const base::sequence_manager::Task& task,
-    const TaskQueue::TaskTiming& task_timing) {
+    TaskQueue::TaskTiming* task_timing,
+    base::sequence_manager::LazyNow* lazy_now) {
   if (main_thread_scheduler_) {
-    main_thread_scheduler_->OnTaskCompleted(this, task, task_timing);
+    main_thread_scheduler_->OnTaskCompleted(weak_ptr_factory_.GetWeakPtr(),
+                                            task, task_timing, lazy_now);
   }
 }
 
 void MainThreadTaskQueue::DetachFromMainThreadScheduler() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   // Frame has already been detached.
   if (!main_thread_scheduler_)
     return;

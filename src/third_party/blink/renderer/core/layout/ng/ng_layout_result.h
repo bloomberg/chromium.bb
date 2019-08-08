@@ -12,9 +12,9 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -49,16 +49,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  base::Optional<LayoutUnit> bfc_block_offset);
   ~NGLayoutResult();
 
-  const NGPhysicalFragment* PhysicalFragment() const {
-    return physical_fragment_.get();
+  const NGPhysicalContainerFragment& PhysicalFragment() const {
+    DCHECK(physical_fragment_);
+    DCHECK_EQ(NGLayoutResultStatus::kSuccess, Status());
+    return *physical_fragment_;
   }
 
-  const Vector<NGOutOfFlowPositionedDescendant>&
-  OutOfFlowPositionedDescendants() const {
-    return oof_positioned_descendants_;
-  }
-
-  NGLogicalOffset OutOfFlowPositionedOffset() const {
+  LogicalOffset OutOfFlowPositionedOffset() const {
     return oof_positioned_offset_;
   }
 
@@ -99,6 +96,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Return true if the fragment broke because a forced break before a child.
   bool HasForcedBreak() const { return has_forced_break_; }
 
+  // Returns true if the fragment should be considered empty for margin
+  // collapsing purposes (e.g. margins "collapse through").
+  bool IsSelfCollapsing() const { return is_self_collapsing_; }
+
   // Return true if this fragment got its block offset increased by the presence
   // of floats.
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
@@ -113,18 +114,19 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // the block, and the block will fail to clear).
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
-  bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
-
-  // Returns true if we aren't able to re-use this layout result if the
-  // PercentageResolutionBlockSize changes.
-  bool DependsOnPercentageBlockSize() const {
-    return depends_on_percentage_block_size_;
+  // Returns true if the initial (pre-layout) block-size of this fragment was
+  // indefinite. (e.g. it has "height: auto").
+  bool IsInitialBlockSizeIndefinite() const {
+    return is_initial_block_size_indefinite_;
   }
 
-  // Returns true if we have a descendant within this formatting context, which
-  // is potentially above our block-start edge.
-  bool MayHaveDescendantAboveBlockStart() const {
-    return may_have_descendant_above_block_start_;
+  // Returns true if there is a descendant that depends on percentage
+  // resolution block-size changes.
+  // Some layout modes (flex-items, table-cells) have more complex child
+  // percentage sizing behaviour (typically when their parent layout forces a
+  // block-size on them).
+  bool HasDescendantThatDependsOnPercentageBlockSize() const {
+    return has_descendant_that_depends_on_percentage_block_size_;
   }
 
   // Returns true if the space stored with this layout result, is valid.
@@ -144,7 +146,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
    protected:
     friend class NGOutOfFlowLayoutPart;
 
-    void SetOutOfFlowPositionedOffset(const NGLogicalOffset& offset) {
+    void SetOutOfFlowPositionedOffset(const LogicalOffset& offset) {
       layout_result_->oof_positioned_offset_ = offset;
     }
 
@@ -160,17 +162,24 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return MutableForOutOfFlow(this);
   }
 
+#if DCHECK_IS_ON()
+  void CheckSameForSimplifiedLayout(const NGLayoutResult&,
+                                    bool check_same_block_size = true) const;
+#endif
+
  private:
   friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
   friend class MutableForOutOfFlow;
 
   // This constructor requires a non-null fragment and sets a success status.
-  NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
-                 NGBoxFragmentBuilder*);
+  NGLayoutResult(
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+      NGBoxFragmentBuilder*);
   // This constructor requires a non-null fragment and sets a success status.
-  NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
-                 NGLineBoxFragmentBuilder*);
+  NGLayoutResult(
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+      NGLineBoxFragmentBuilder*);
   // This constructor is for a non-success status.
   NGLayoutResult(NGLayoutResultStatus, NGBoxFragmentBuilder*);
 
@@ -179,9 +188,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(const NGLayoutResult&) = delete;
 
   // Delegate constructor that sets up what it can, based on the builder.
-  NGLayoutResult(NGContainerFragmentBuilder* builder, bool cache_space);
-
-  static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
+  NGLayoutResult(
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+      NGContainerFragmentBuilder* builder,
+      bool cache_space);
 
   static NGExclusionSpace MergeExclusionSpaces(
       const NGLayoutResult& other,
@@ -193,14 +203,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // as indicated by |has_valid_space_|.
   const NGConstraintSpace space_;
 
-  scoped_refptr<const NGPhysicalFragment> physical_fragment_;
-  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+  scoped_refptr<const NGPhysicalContainerFragment> physical_fragment_;
 
   // This is the final position of an OOF-positioned object in its parent's
   // writing-mode. This is set by the |NGOutOfFlowLayoutPart| while generating
   // this layout result.
   // This field is unused for other objects.
-  NGLogicalOffset oof_positioned_offset_;
+  LogicalOffset oof_positioned_offset_;
   NGUnpositionedListMarker unpositioned_list_marker_;
 
   const NGExclusionSpace exclusion_space_;
@@ -216,12 +225,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned has_valid_space_ : 1;
   unsigned has_forced_break_ : 1;
 
+  unsigned is_self_collapsing_ : 1;
   unsigned is_pushed_by_floats_ : 1;
-  unsigned adjoining_floats_ : 2;  // NGFloatTypes
+  unsigned adjoining_floats_ : 3;  // NGFloatTypes
 
-  unsigned has_orthogonal_flow_roots_ : 1;
-  unsigned may_have_descendant_above_block_start_ : 1;
-  unsigned depends_on_percentage_block_size_ : 1;
+  unsigned is_initial_block_size_indefinite_ : 1;
+  unsigned has_descendant_that_depends_on_percentage_block_size_ : 1;
 
   unsigned status_ : 1;
 };

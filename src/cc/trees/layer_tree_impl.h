@@ -183,7 +183,6 @@ class CC_EXPORT LayerTreeImpl {
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
   void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
-  void PushRegisteredElementIdsTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();
 
@@ -200,6 +199,8 @@ class CC_EXPORT LayerTreeImpl {
                            const gfx::Transform& transform);
   void SetOpacityMutated(ElementId element_id, float opacity);
   void SetFilterMutated(ElementId element_id, const FilterOperations& filters);
+  void SetBackdropFilterMutated(ElementId element_id,
+                                const FilterOperations& backdrop_filters);
 
   const std::unordered_map<ElementId, float, ElementIdHash>&
   element_id_to_opacity_animations_for_testing() const {
@@ -212,6 +213,10 @@ class CC_EXPORT LayerTreeImpl {
   const std::unordered_map<ElementId, FilterOperations, ElementIdHash>&
   element_id_to_filter_animations_for_testing() const {
     return element_id_to_filter_animations_;
+  }
+  const std::unordered_map<ElementId, FilterOperations, ElementIdHash>&
+  element_id_to_backdrop_filter_animations_for_testing() const {
+    return element_id_to_backdrop_filter_animations_;
   }
 
   int source_frame_number() const { return source_frame_number_; }
@@ -645,11 +650,6 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerTreeLifecycle& lifecycle() { return lifecycle_; }
 
-  const std::unordered_set<ElementId, ElementIdHash>&
-  elements_in_property_trees() {
-    return elements_in_property_trees_;
-  }
-
   std::string LayerListAsJson() const;
   // TODO(pdr): This should be removed because there is no longer a tree
   // of layers, only a list.
@@ -722,15 +722,14 @@ class CC_EXPORT LayerTreeImpl {
   // Set of layers that need to push properties.
   base::flat_set<LayerImpl*> layers_that_should_push_properties_;
 
-  // Set of ElementIds which are present in the |layer_list_|.
-  std::unordered_set<ElementId, ElementIdHash> elements_in_property_trees_;
-
   std::unordered_map<ElementId, float, ElementIdHash>
       element_id_to_opacity_animations_;
   std::unordered_map<ElementId, gfx::Transform, ElementIdHash>
       element_id_to_transform_animations_;
   std::unordered_map<ElementId, FilterOperations, ElementIdHash>
       element_id_to_filter_animations_;
+  std::unordered_map<ElementId, FilterOperations, ElementIdHash>
+      element_id_to_backdrop_filter_animations_;
 
   std::unordered_map<ElementId, LayerImpl*, ElementIdHash>
       element_id_to_scrollable_layer_;

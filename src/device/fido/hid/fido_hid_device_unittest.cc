@@ -344,7 +344,7 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
   auto& device = u2f_devices.front();
 
   // Keep alive message handling is only supported for CTAP HID device.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
+  device->set_supported_protocol(ProtocolVersion::kCtap2);
   TestDeviceCallbackReceiver cb;
   device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   cb.WaitForCallback();
@@ -390,7 +390,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
   auto& device = u2f_devices.front();
 
   // Keep alive message handling is only supported for CTAP HID device.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
+  device->set_supported_protocol(ProtocolVersion::kCtap2);
   TestDeviceCallbackReceiver cb;
   device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   cb.WaitForCallback();
@@ -435,7 +435,7 @@ TEST_F(FidoHidDeviceTest, TestCancel) {
   auto& device = u2f_devices.front();
 
   // Keep alive message handling is only supported for CTAP HID device.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
+  device->set_supported_protocol(ProtocolVersion::kCtap2);
   TestDeviceCallbackReceiver cb;
   auto token = device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   auto delay_before_cancel = base::TimeDelta::FromSeconds(1);
@@ -500,7 +500,7 @@ TEST_F(FidoHidDeviceTest, TestCancelWhileWriting) {
   device = u2f_devices.front().get();
 
   // Keep alive message handling is only supported for CTAP HID device.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
+  device->set_supported_protocol(ProtocolVersion::kCtap2);
   TestDeviceCallbackReceiver cb;
   // The size of |dummy_request| needs only to make the request need two USB
   // frames.
@@ -568,7 +568,7 @@ TEST_F(FidoHidDeviceTest, TestCancelAfterWriting) {
   device = u2f_devices.front().get();
 
   // Cancelation is only supported for CTAP HID device.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
+  device->set_supported_protocol(ProtocolVersion::kCtap2);
   TestDeviceCallbackReceiver cb;
   std::vector<uint8_t> dummy_request(1);
   token = device->DeviceTransact(std::move(dummy_request), cb.callback());
@@ -633,7 +633,7 @@ TEST_F(FidoHidDeviceTest, TestCancelAfterReading) {
   device = u2f_devices.front().get();
 
   // Cancelation is only supported for CTAP HID device.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
+  device->set_supported_protocol(ProtocolVersion::kCtap2);
   TestDeviceCallbackReceiver cb;
   std::vector<uint8_t> dummy_request(1);
   token = device->DeviceTransact(std::move(dummy_request), cb.callback());

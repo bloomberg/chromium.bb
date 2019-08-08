@@ -1127,6 +1127,20 @@ Error ValidateCreateContext(Display *display,
                 }
                 break;
 
+            case EGL_POWER_PREFERENCE_ANGLE:
+                if (!display->getExtensions().powerPreference)
+                {
+                    return EglBadAttribute() << "Attribute EGL_POWER_PREFERENCE_ANGLE "
+                                                "requires EGL_ANGLE_power_preference.";
+                }
+                if (value != EGL_LOW_POWER_ANGLE && value != EGL_HIGH_POWER_ANGLE)
+                {
+                    return EglBadAttribute()
+                           << "EGL_POWER_PREFERENCE_ANGLE must be "
+                              "either EGL_LOW_POWER_ANGLE or EGL_HIGH_POWER_ANGLE.";
+                }
+                break;
+
             default:
                 return EglBadAttribute() << "Unknown attribute.";
         }
@@ -1187,12 +1201,6 @@ Error ValidateCreateContext(Display *display,
         if (shareContext->isResetNotificationEnabled() != resetNotification)
         {
             return EglBadMatch();
-        }
-
-        if (shareContext->getClientMajorVersion() != clientMajorVersion ||
-            shareContext->getClientMinorVersion() != clientMinorVersion)
-        {
-            return EglBadContext();
         }
     }
 
@@ -3715,6 +3723,40 @@ Error ValidateGetFrameTimestampsANDROID(const Display *display,
         {
             return EglBadParameter() << "timestamp not supported by surface.";
         }
+    }
+
+    return NoError();
+}
+
+Error ValidateQueryStringiANGLE(const Display *display, EGLint name, EGLint index)
+{
+    ANGLE_TRY(ValidateDisplay(display));
+
+    if (!display->getExtensions().workaroundControlANGLE)
+    {
+        return EglBadDisplay() << "EGL_ANGLE_workaround_control extension is not available.";
+    }
+
+    if (index < 0)
+    {
+        return EglBadParameter() << "index is negative.";
+    }
+
+    switch (name)
+    {
+        case EGL_WORKAROUND_NAME_ANGLE:
+        case EGL_WORKAROUND_CATEGORY_ANGLE:
+        case EGL_WORKAROUND_DESCRIPTION_ANGLE:
+        case EGL_WORKAROUND_BUG_ANGLE:
+        case EGL_WORKAROUND_ENABLED_ANGLE:
+            break;
+        default:
+            return EglBadParameter() << "name is not valid.";
+    }
+
+    if (static_cast<size_t>(index) >= display->getFeatures().size())
+    {
+        return EglBadParameter() << "index is too big.";
     }
 
     return NoError();

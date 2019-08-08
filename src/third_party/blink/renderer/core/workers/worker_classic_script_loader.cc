@@ -102,8 +102,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
-    mojom::RequestContextType request_context,
-    mojom::IPAddressSpace creation_address_space) {
+    mojom::RequestContextType request_context) {
   DCHECK(fetch_client_settings_object_fetcher);
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
@@ -111,7 +110,9 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   ResourceRequest request(url);
   request.SetHttpMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
-      creation_address_space);
+      fetch_client_settings_object_fetcher_->GetProperties()
+          .GetFetchClientSettingsObject()
+          .GetAddressSpace());
   request.SetRequestContext(request_context);
 
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
@@ -134,7 +135,6 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     mojom::RequestContextType request_context,
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode fetch_credentials_mode,
-    mojom::IPAddressSpace creation_address_space,
     base::OnceClosure response_callback,
     base::OnceClosure finished_callback) {
   DCHECK(fetch_client_settings_object_fetcher);
@@ -145,12 +145,12 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   is_top_level_script_ = true;
 
-  is_worker_global_scope_ = execution_context.IsWorkerGlobalScope();
-
   ResourceRequest request(url);
   request.SetHttpMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
-      creation_address_space);
+      fetch_client_settings_object_fetcher_->GetProperties()
+          .GetFetchClientSettingsObject()
+          .GetAddressSpace());
   request.SetRequestContext(request_context);
   request.SetFetchRequestMode(fetch_request_mode);
   request.SetFetchCredentialsMode(fetch_credentials_mode);
@@ -181,8 +181,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
           &fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
           fetch_client_settings_object_fetcher_->GetProperties()
               .GetFetchClientSettingsObject()
-              .MimeTypeCheckForClassicWorkerScript(),
-          is_worker_global_scope_)) {
+              .MimeTypeCheckForClassicWorkerScript())) {
     NotifyError();
     return;
   }

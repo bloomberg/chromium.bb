@@ -17,6 +17,7 @@ struct App {
   Readiness readiness;
   string? name;
   string? short_name;
+  string? description;
   array<string> additional_search_terms;
   IconKey? icon_key;
   mojo_base.mojom.Time? last_launch_time;
@@ -30,7 +31,7 @@ struct App {
   array<Permission> permissions;
 
   // Whether the app was installed by sync, policy or as a default app.
-  OptionalBool installed_internally;
+  InstallSource install_source;
 
   // Whether the app is an extensions::Extensions where is_platform_app()
   // returns true.
@@ -38,6 +39,8 @@ struct App {
 
   // TODO(nigeltao): be more principled, instead of ad hoc show_in_xxx and
   // show_in_yyy fields?
+  OptionalBool recommendable;
+  OptionalBool searchable;
   OptionalBool show_in_launcher;
   OptionalBool show_in_search;
   OptionalBool show_in_management;
@@ -75,6 +78,17 @@ enum Readiness {
   kDisabledByUser,       // Disabled by explicit user action.
   kTerminated,           // Renderer process crashed.
   kUninstalledByUser,
+};
+
+// How the app was installed.
+enum InstallSource {
+  kUnknown = 0,
+  kSystem,     // Installed with the system and is considered a part of the OS.
+  kPolicy,     // Installed by policy.
+  kOem,        // Installed by an OEM.
+  kDefault,    // Preinstalled by default, but is not considered a system app.
+  kSync,       // Installed by sync.
+  kUser,       // Installed by user action.
 };
 
 // Augments a bool to include an 'unknown' value.
@@ -139,6 +153,7 @@ enum LaunchSource {
   kFromAppListQueryContextMenu,  // Query-dependent results; context menu.
   kFromAppListRecommendation,    // Query-less recommendations (smaller icons).
   kFromKioskNextHome,            // Kiosk Next Home app.
+  kFromParentalControls,         // Parental Controls Settings Section.
 };
 
 enum TriState {

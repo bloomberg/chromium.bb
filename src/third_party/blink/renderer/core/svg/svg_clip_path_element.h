@@ -34,8 +34,6 @@ class SVGClipPathElement final : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGClipPathElement);
-
   explicit SVGClipPathElement(Document&);
 
   SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() {

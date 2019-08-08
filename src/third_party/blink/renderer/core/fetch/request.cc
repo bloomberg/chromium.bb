@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -56,6 +55,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   DOMWrapperWorld& world = script_state->World();
   if (world.IsIsolatedWorld()) {
     request->SetOrigin(world.IsolatedWorldSecurityOrigin());
+    request->SetShouldAlsoUseFactoryBoundOriginForCors(true);
   } else {
     request->SetOrigin(
         ExecutionContext::From(script_state)->GetSecurityOrigin());
@@ -625,17 +625,12 @@ Request* Request::Create(ScriptState* script_state, FetchRequestData* request) {
   return MakeGarbageCollected<Request>(script_state, request);
 }
 
-Request* Request::Create(ScriptState* script_state,
-                         const WebServiceWorkerRequest& web_request) {
-  FetchRequestData* data = FetchRequestData::Create(script_state, web_request);
-  return MakeGarbageCollected<Request>(script_state, data);
-}
-
 Request* Request::Create(
     ScriptState* script_state,
-    const mojom::blink::FetchAPIRequest& fetch_api_request) {
-  FetchRequestData* data =
-      FetchRequestData::Create(script_state, fetch_api_request);
+    const mojom::blink::FetchAPIRequest& fetch_api_request,
+    ForServiceWorkerFetchEvent for_service_worker_fetch_event) {
+  FetchRequestData* data = FetchRequestData::Create(
+      script_state, fetch_api_request, for_service_worker_fetch_event);
   return MakeGarbageCollected<Request>(script_state, data);
 }
 
@@ -687,61 +682,7 @@ const KURL& Request::url() const {
 
 String Request::destination() const {
   // "The destination attribute’s getter must return request’s destination."
-  switch (request_->Context()) {
-    case mojom::RequestContextType::UNSPECIFIED:
-    case mojom::RequestContextType::BEACON:
-    case mojom::RequestContextType::DOWNLOAD:
-    case mojom::RequestContextType::EVENT_SOURCE:
-    case mojom::RequestContextType::FETCH:
-    case mojom::RequestContextType::PING:
-    case mojom::RequestContextType::XML_HTTP_REQUEST:
-    case mojom::RequestContextType::SUBRESOURCE:
-    case mojom::RequestContextType::PREFETCH:
-      return "";
-    case mojom::RequestContextType::CSP_REPORT:
-      return "report";
-    case mojom::RequestContextType::AUDIO:
-      return "audio";
-    case mojom::RequestContextType::EMBED:
-      return "embed";
-    case mojom::RequestContextType::FONT:
-      return "font";
-    case mojom::RequestContextType::FRAME:
-    case mojom::RequestContextType::HYPERLINK:
-    case mojom::RequestContextType::IFRAME:
-    case mojom::RequestContextType::LOCATION:
-    case mojom::RequestContextType::FORM:
-      return "document";
-    case mojom::RequestContextType::IMAGE:
-    case mojom::RequestContextType::FAVICON:
-    case mojom::RequestContextType::IMAGE_SET:
-      return "image";
-    case mojom::RequestContextType::MANIFEST:
-      return "manifest";
-    case mojom::RequestContextType::OBJECT:
-      return "object";
-    case mojom::RequestContextType::SCRIPT:
-      return "script";
-    case mojom::RequestContextType::SHARED_WORKER:
-      return "sharedworker";
-    case mojom::RequestContextType::STYLE:
-      return "style";
-    case mojom::RequestContextType::TRACK:
-      return "track";
-    case mojom::RequestContextType::VIDEO:
-      return "video";
-    case mojom::RequestContextType::WORKER:
-      return "worker";
-    case mojom::RequestContextType::XSLT:
-      return "xslt";
-    case mojom::RequestContextType::IMPORT:
-    case mojom::RequestContextType::INTERNAL:
-    case mojom::RequestContextType::PLUGIN:
-    case mojom::RequestContextType::SERVICE_WORKER:
-      return "unknown";
-  }
-  NOTREACHED();
-  return "";
+  return FetchUtils::GetDestinationFromContext(request_->Context());
 }
 
 String Request::referrer() const {

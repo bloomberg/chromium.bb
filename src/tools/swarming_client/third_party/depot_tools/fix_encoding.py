@@ -6,6 +6,8 @@
 multiple platforms with python.
 """
 
+from __future__ import print_function
+
 import codecs
 import locale
 import os
@@ -22,8 +24,9 @@ def complain(message):
   to our wrapper. So be paranoid about catching errors and reporting them
   to sys.__stderr__, so that the user has a higher chance to see them.
   """
-  print >> sys.__stderr__, (
-      isinstance(message, str) and message or repr(message))
+  print(
+      isinstance(message, str) and message or repr(message),
+      file=sys.__stderr__)
 
 
 def fix_default_encoding():
@@ -40,7 +43,7 @@ def fix_default_encoding():
   # Regenerate setdefaultencoding.
   reload(sys)
   # Module 'sys' has no 'setdefaultencoding' member
-  # pylint: disable=E1101
+  # pylint: disable=no-member
   sys.setdefaultencoding('utf-8')
   for attr in dir(locale):
     if attr[0:3] != 'LC_':
@@ -51,7 +54,7 @@ def fix_default_encoding():
     except locale.Error:
       continue
     try:
-      lang = locale.getlocale(aref)[0]
+      lang, _ = locale.getdefaultlocale()
     except (TypeError, ValueError):
       continue
     if lang:
@@ -82,7 +85,7 @@ def fix_win_sys_argv(encoding):
     return False
 
   # These types are available on linux but not Mac.
-  # pylint: disable=E0611,F0401
+  # pylint: disable=no-name-in-module,F0401
   from ctypes import byref, c_int, POINTER, windll, WINFUNCTYPE
   from ctypes.wintypes import LPCWSTR, LPWSTR
 
@@ -95,8 +98,8 @@ def fix_win_sys_argv(encoding):
   argc = c_int(0)
   argv_unicode = CommandLineToArgvW(GetCommandLineW(), byref(argc))
   argv = [
-      argv_unicode[i].encode(encoding, 'replace')
-      for i in xrange(0, argc.value)]
+      argv_unicode[i].encode(encoding, 'replace') for i in range(0, argc.value)
+  ]
 
   if not hasattr(sys, 'frozen'):
     # If this is an executable produced by py2exe or bbfreeze, then it
@@ -107,7 +110,7 @@ def fix_win_sys_argv(encoding):
     # Also skip option arguments to the Python interpreter.
     while len(argv) > 0:
       arg = argv[0]
-      if not arg.startswith(u'-') or arg == u'-':
+      if not arg.startswith(b'-') or arg == b'-':
         break
       argv = argv[1:]
       if arg == u'-m':
@@ -171,7 +174,7 @@ class WinUnicodeOutputBase(object):
     try:
       for line in lines:
         self.write(line)
-    except Exception, e:
+    except Exception as e:
       complain('%s.writelines: %r' % (self.name, e))
       raise
 
@@ -189,10 +192,10 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
 
     # Loads the necessary function.
     # These types are available on linux but not Mac.
-    # pylint: disable=E0611,F0401
+    # pylint: disable=no-name-in-module,F0401
     from ctypes import byref, GetLastError, POINTER, windll, WINFUNCTYPE
     from ctypes.wintypes import BOOL, DWORD, HANDLE, LPWSTR
-    from ctypes.wintypes import LPVOID  # pylint: disable=E0611
+    from ctypes.wintypes import LPVOID  # pylint: disable=no-name-in-module
 
     self._DWORD = DWORD
     self._byref = byref
@@ -230,7 +233,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
         if not remaining:
           break
         text = text[int(n.value):]
-    except Exception, e:
+    except Exception as e:
       complain('%s.write: %r' % (self.name, e))
       raise
 
@@ -253,7 +256,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
   def flush(self):
     try:
       self._stream.flush()
-    except Exception, e:
+    except Exception as e:
       complain('%s.flush: %r from %r' % (self.name, e, self._stream))
       raise
 
@@ -263,7 +266,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
         # Replace characters that cannot be printed instead of failing.
         text = text.encode(self.encoding, 'replace')
       self._stream.write(text)
-    except Exception, e:
+    except Exception as e:
       complain('%s.write: %r' % (self.name, e))
       raise
 
@@ -271,7 +274,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
 def win_handle_is_a_console(handle):
   """Returns True if a Windows file handle is a handle to a console."""
   # These types are available on linux but not Mac.
-  # pylint: disable=E0611,F0401
+  # pylint: disable=no-name-in-module,F0401
   from ctypes import byref, POINTER, windll, WINFUNCTYPE
   from ctypes.wintypes import BOOL, DWORD, HANDLE
 
@@ -304,7 +307,7 @@ def win_get_unicode_stream(stream, excepted_fileno, output_handle, encoding):
   old_fileno = getattr(stream, 'fileno', lambda: None)()
   if old_fileno == excepted_fileno:
     # These types are available on linux but not Mac.
-    # pylint: disable=E0611,F0401
+    # pylint: disable=no-name-in-module,F0401
     from ctypes import windll, WINFUNCTYPE
     from ctypes.wintypes import DWORD, HANDLE
 
@@ -348,7 +351,7 @@ def fix_win_console(encoding):
     # TODO(maruel): Do sys.stdin with ReadConsoleW(). Albeit the limitation is
     # "It doesn't appear to be possible to read Unicode characters in UTF-8
     # mode" and this appears to be a limitation of cmd.exe.
-  except Exception, e:
+  except Exception as e:
     complain('exception %r while fixing up sys.stdout and sys.stderr' % e)
   return True
 
@@ -356,7 +359,7 @@ def fix_win_console(encoding):
 def fix_encoding():
   """Fixes various encoding problems on all platforms.
 
-  Should be called at the very begining of the process.
+  Should be called at the very beginning of the process.
   """
   ret = True
   if sys.platform == 'win32':

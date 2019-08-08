@@ -19,6 +19,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -282,7 +283,7 @@ void NaClListener::OnAddPrefetchedResource(
   }
 }
 
-void NaClListener::OnStart(const nacl::NaClStartParams& params) {
+void NaClListener::OnStart(nacl::NaClStartParams params) {
   is_started_ = true;
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   int urandom_fd = HANDLE_EINTR(dup(base::GetUrandomFD()));
@@ -294,10 +295,13 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   struct NaClApp* nap = NULL;
   NaClChromeMainInit();
 
-  CHECK(base::SharedMemory::IsHandleValid(params.crash_info_shmem_handle));
-  crash_info_shmem_.reset(new base::SharedMemory(
-      params.crash_info_shmem_handle, false /* not readonly */));
-  CHECK(crash_info_shmem_->Map(nacl::kNaClCrashInfoShmemSize));
+  CHECK(params.crash_info_shmem_region.IsValid());
+  crash_info_shmem_mapping_ = params.crash_info_shmem_region.Map();
+  base::ReadOnlySharedMemoryRegion ro_shmem_region =
+      base::WritableSharedMemoryRegion::ConvertToReadOnly(
+          std::move(params.crash_info_shmem_region));
+  CHECK(crash_info_shmem_mapping_.IsValid());
+  CHECK(ro_shmem_region.IsValid());
   NaClSetFatalErrorCallback(&FatalLogHandler);
 
   nap = NaClAppCreate();
@@ -330,7 +334,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
           browser_handle, ppapi_renderer_handle,
           MakeRequest(&renderer_host).PassMessagePipe().release(),
-          manifest_service_handle)))
+          manifest_service_handle, ro_shmem_region)))
     LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   trusted_listener_ = std::make_unique<NaClTrustedListener>(

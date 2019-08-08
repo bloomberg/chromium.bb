@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_callbacks.h"
+#include "base/callback_forward.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {

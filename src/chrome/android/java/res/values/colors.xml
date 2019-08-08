@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Please see src/ui/android/java/res/values/colors.xml for the shared common colors. -->
 
     <!-- Text colors -->
@@ -57,7 +57,7 @@
     <color name="app_banner_install_button_bg">#0F9D58</color>
 
     <!-- App menu colors -->
-    <color name="update_menu_item_text_color">#DC5554</color>
+    <color name="update_menu_item_text_color">@color/default_red</color>
 
     <!-- URL Emphasizer colors -->
     <color name="url_emphasis_non_emphasized_text">#80333333</color>
@@ -106,7 +106,6 @@
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
     <color name="suggestions_modern_bg">@color/modern_primary_color</color>
-    <color name="suggestions_offline_badge_tint">@color/default_icon_color_blue</color>
     <color name="google_logo_tint">@android:color/transparent</color>
 
     <!-- Incognito NTP Colors. -->
@@ -182,8 +181,10 @@
     <color name="payments_section_edit_background">@color/modern_secondary_color</color>
     <color name="payments_section_chevron">#B2B2B2</color>
 
-    <!-- Translate Infobar colors -->
-    <color name="translate_overflow_menu_divider_color">@color/modern_grey_300</color>
+    <!-- History Navigation UI colors -->
+    <color name="navigation_bubble_stroke_color">@color/hairline_stroke_color</color>
+    <color name="navigation_bubble_background_color">@color/default_bg_color_elev_4</color>
+    <color name="navigation_bubble_ripple_color">@color/modern_grey_800</color>
 
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>
@@ -192,7 +193,8 @@
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="search_box_hint">@color/default_text_color_secondary</color>
-    <color name="thumbnail_placeholder_on_primary_bg">@color/modern_secondary_color</color>
+    <color name="thumbnail_placeholder_on_primary_bg" tools:ignore="UnusedResources">@color/modern_secondary_color</color>
     <color name="tab_layout_selected_tab_color">@color/default_text_color_blue</color>
+    <color name="drag_handlebar_color">#D9DBDF</color>
 
 </resources>

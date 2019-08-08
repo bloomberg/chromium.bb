@@ -54,7 +54,6 @@ cvox.OptionsPage.init = function() {
   cvox.OptionsPage.consoleTts =
       chrome.extension.getBackgroundPage().ConsoleTts.getInstance();
   cvox.OptionsPage.populateVoicesSelect();
-  cvox.OptionsPage.populateRichTextSelects();
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
     cvox.OptionsPage.brailleTables = tables;
@@ -68,7 +67,7 @@ cvox.OptionsPage.init = function() {
     $('virtual_braille_display_rows_input').value = items['virtualBrailleRows'];
   });
   chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
-    $('virtual_braille_display_columns_input').value =
+    $('virtual-braille-display-columns-input').value =
         items['virtualBrailleColumns'];
   });
   var changeToInterleave =
@@ -113,20 +112,9 @@ cvox.OptionsPage.init = function() {
       'enable-experimental-accessibility-chromevox-rich-text-indication',
       function(enabled) {
         if (!enabled) {
-          $('richTextIndicationOptions').style.display = 'none';
+          $('richTextIndicationOption').style.display = 'none';
         }
       });
-
-  if (localStorage['customizeRichTextIndication'] === 'false')
-    $('additionalRichTextIndicationOptions').style.display = 'none';
-
-  // Toggle visibility of additional rich text options.
-  $('customizeRichTextIndication').addEventListener('change', function(evt) {
-    if (!evt.target.checked)
-      $('additionalRichTextIndicationOptions').style.display = 'none';
-    else
-      $('additionalRichTextIndicationOptions').style.display = 'block';
-  });
 
   var registerEventStreamFiltersListener = function() {
     $('toggleEventStreamFilters').addEventListener('click', function(evt) {
@@ -140,28 +128,17 @@ cvox.OptionsPage.init = function() {
     });
   };
 
-  var toggleShowDeveloperOptions = function() {
-    $('developerSpeechLogging').hidden = !$('developerSpeechLogging').hidden;
-    $('developerEarconLogging').hidden = !$('developerEarconLogging').hidden;
-    $('developerBrailleLogging').hidden = !$('developerBrailleLogging').hidden;
-    $('developerEventStream').hidden = !$('developerEventStream').hidden;
-    $('showDeveloperLog').hidden = !$('showDeveloperLog').hidden;
-    $('chromeVoxDeveloperOptionsMore').hidden =
-        !($('chromeVoxDeveloperOptionsMore').hidden);
-    $('chromeVoxDeveloperOptionsLess').hidden =
-        !($('chromeVoxDeveloperOptionsLess').hidden);
-  };
-
-  $('chromeVoxDeveloperOptionsMore').addEventListener('click', function(evt) {
-    toggleShowDeveloperOptions();
-  });
-
-  $('chromeVoxDeveloperOptionsLess').addEventListener('click', function(evt) {
-    toggleShowDeveloperOptions();
+  $('chromeVoxDeveloperOptions').addEventListener('expanded-changed', () => {
+    const hidden = !$('chromeVoxDeveloperOptions').expanded;
+    $('developerSpeechLogging').hidden = hidden;
+    $('developerEarconLogging').hidden = hidden;
+    $('developerBrailleLogging').hidden = hidden;
+    $('developerEventStream').hidden = hidden;
+    $('showDeveloperLog').hidden = hidden;
   });
 
   $('openDeveloperLog').addEventListener('click', function(evt) {
-    let logPage = {url: 'cvox2/background/log.html'};
+    const logPage = {url: 'cvox2/background/log.html'};
     chrome.tabs.create(logPage);
   });
 
@@ -511,22 +488,3 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('beforeunload', function(e) {
   cvox.OptionsPage.bluetoothBrailleDisplayUI.detach();
 });
-
-/**
- * Populates rich text selects with options.
- */
-cvox.OptionsPage.populateRichTextSelects = function() {
-  var richTextSelects = [
-    $('indicateMisspell'), $('indicateBold'), $('indicateItalic'),
-    $('indicateUnderline')
-  ];
-  richTextSelects.forEach(function(select) {
-    select.value = localStorage[select.id];
-
-    select.addEventListener('change', function(evt) {
-      var id = evt.target.id;
-      var value = evt.target.options[evt.target.selectedIndex].value;
-      cvox.OptionsPage.prefs.setPref(id, value);
-    }, true);
-  });
-};

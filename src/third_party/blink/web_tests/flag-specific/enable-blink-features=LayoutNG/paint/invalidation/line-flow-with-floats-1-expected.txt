@@ -18,6 +18,26 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
           "object": "NGPhysicalTextFragment 'a ridge or furrow in the way wherever she wanted to send the'",
           "rect": [14, 240, 407, 139],
           "reason": "geometry"
@@ -50,26 +70,6 @@
         {
           "object": "NGPhysicalTextFragment 'soon came to the conclusion that it was a very '",
           "rect": [14, 240, 407, 139],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
-          "rect": [14, 520, 407, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
-          "rect": [14, 520, 407, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
-          "rect": [14, 520, 407, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
-          "rect": [14, 520, 407, 80],
           "reason": "geometry"
         },
         {
@@ -164,8 +164,8 @@
         },
         {
           "object": "LayoutNGBlockFlow (floating) DIV id='pinkFloat'",
-          "rect": [378, 18, 70, 150],
-          "reason": "geometry"
+          "rect": [378, 138, 70, 30],
+          "reason": "incremental"
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",

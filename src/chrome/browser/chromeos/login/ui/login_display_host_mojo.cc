@@ -7,18 +7,19 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_names.h"
@@ -35,7 +36,7 @@ constexpr char kAccelReset[] = "reset";
 
 LoginDisplayHostMojo::AuthState::AuthState(
     AccountId account_id,
-    AuthenticateUserWithPasswordOrPinCallback callback)
+    base::OnceCallback<void(bool)> callback)
     : account_id(account_id), callback(std::move(callback)) {}
 
 LoginDisplayHostMojo::AuthState::~AuthState() = default;
@@ -152,7 +153,7 @@ void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
+void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
   DCHECK(GetOobeUI());
 
   wizard_controller_ = std::make_unique<WizardController>();
@@ -190,7 +191,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     // If we already have a signin screen instance, just reset the state of the
     // oobe dialog.
     HideOobeDialog();
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(EmptyAccountId());
     return;
   }
 
@@ -231,9 +232,8 @@ void LoginDisplayHostMojo::OnBrowserCreated() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::ShowGaiaDialog(
-    bool can_close,
-    const base::Optional<AccountId>& prefilled_account) {
+void LoginDisplayHostMojo::ShowGaiaDialog(bool can_close,
+                                          const AccountId& prefilled_account) {
   DCHECK(GetOobeUI());
   can_close_dialog_ = can_close;
 
@@ -255,7 +255,7 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   // The dialog can not be hidden if there are no users on the login screen.
   // Reload it instead.
   if (!login_display_->IsSigninInProgress() && users_.empty()) {
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(EmptyAccountId());
     return;
   }
 
@@ -268,8 +268,7 @@ void LoginDisplayHostMojo::UpdateOobeDialogSize(int width, int height) {
     dialog_->UpdateSizeAndPosition(width, height);
 }
 
-void LoginDisplayHostMojo::UpdateOobeDialogState(
-    ash::mojom::OobeDialogState state) {
+void LoginDisplayHostMojo::UpdateOobeDialogState(ash::OobeDialogState state) {
   if (dialog_)
     dialog_->SetState(state);
 }
@@ -290,7 +289,7 @@ void LoginDisplayHostMojo::ShowResetScreen() {
 
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {
   DCHECK(GetOobeUI());
-  LoginScreenClient::Get()->login_screen()->SetAddUserButtonEnabled(
+  ash::LoginScreen::Get()->EnableAddUserButton(
       !GetOobeUI()->signin_screen_handler()->AllWhitelistedUsersPresent());
 }
 
@@ -302,7 +301,7 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserWithPasswordOrPinCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
 
@@ -344,13 +343,13 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
 
 void LoginDisplayHostMojo::HandleAuthenticateUserWithExternalBinary(
     const AccountId& account_id,
-    AuthenticateUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   // Authenticating with an external binary is not supported for login.
   std::move(callback).Run(false);
 }
 
 void LoginDisplayHostMojo::HandleEnrollUserWithExternalBinary(
-    EnrollUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   // Enroll in external binary auth system is not supported for login.
   std::move(callback).Run(false);
 }

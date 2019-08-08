@@ -6,10 +6,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -28,7 +30,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           params.between_icon_spacing));
   // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
 
   for (PageActionIconType type : params.types_enabled) {
     switch (type) {
@@ -42,6 +44,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         manage_passwords_icon_ = new ManagePasswordsIconViews(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(manage_passwords_icon_);
+        break;
+      case PageActionIconType::kIntentPicker:
+        intent_picker_view_ = new IntentPickerView(
+            params.browser, params.page_action_icon_delegate);
+        page_action_icons_.push_back(intent_picker_view_);
         break;
       case PageActionIconType::kPwaInstall:
         DCHECK(params.command_updater);
@@ -58,6 +65,12 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
       case PageActionIconType::kZoom:
         zoom_view_ = new ZoomView(params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
+        break;
+      case PageActionIconType::kSendTabToSelf:
+        send_tab_to_self_icon_view_ =
+            new send_tab_to_self::SendTabToSelfIconView(
+                params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(send_tab_to_self_icon_view_);
         break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
@@ -91,12 +104,16 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return find_bar_icon_;
     case PageActionIconType::kManagePasswords:
       return manage_passwords_icon_;
+    case PageActionIconType::kIntentPicker:
+      return intent_picker_view_;
     case PageActionIconType::kPwaInstall:
       return pwa_install_view_;
     case PageActionIconType::kTranslate:
       return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
+    case PageActionIconType::kSendTabToSelf:
+      return send_tab_to_self_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();
@@ -117,10 +134,17 @@ void OmniboxPageActionIconContainerView::UpdatePageActionIcon(
     icon->Update();
 }
 
+void OmniboxPageActionIconContainerView::ExecutePageActionIconForTesting(
+    PageActionIconType type) {
+  PageActionIconView* icon = GetPageActionIconView(type);
+  if (icon)
+    icon->ExecuteForTesting();
+}
+
 bool OmniboxPageActionIconContainerView::
     ActivateFirstInactiveBubbleForAccessibility() {
   for (PageActionIconView* icon : page_action_icons_) {
-    if (!icon->visible() || !icon->GetBubble())
+    if (!icon->GetVisible() || !icon->GetBubble())
       continue;
 
     views::Widget* widget = icon->GetBubble()->GetWidget();

@@ -10,8 +10,8 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
@@ -42,11 +42,16 @@ void ForFrameAndDescendents(FrameNodeImpl* frame_node,
 
 }  // namespace
 
-PageNodeImpl::PageNodeImpl(Graph* graph,
-                           const base::WeakPtr<WebContentsProxy>& weak_contents)
+PageNodeImplObserver::PageNodeImplObserver() = default;
+PageNodeImplObserver::~PageNodeImplObserver() = default;
+
+PageNodeImpl::PageNodeImpl(GraphImpl* graph,
+                           const WebContentsProxy& contents_proxy,
+                           bool is_visible)
     : TypedNodeBase(graph),
-      contents_proxy_(weak_contents),
-      visibility_change_time_(PerformanceManagerClock::NowTicks()) {
+      contents_proxy_(contents_proxy),
+      visibility_change_time_(PerformanceManagerClock::NowTicks()),
+      is_visible_(is_visible) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -54,7 +59,7 @@ PageNodeImpl::~PageNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-const base::WeakPtr<WebContentsProxy>& PageNodeImpl::contents_proxy() const {
+const WebContentsProxy& PageNodeImpl::contents_proxy() const {
   return contents_proxy_;
 }
 
@@ -62,7 +67,7 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
   DCHECK_EQ(this, frame_node->page_node());
-  DCHECK(NodeInGraph(frame_node));
+  DCHECK(graph()->NodeInGraph(frame_node));
 
   ++frame_node_count_;
   if (frame_node->parent_frame_node() == nullptr)
@@ -75,7 +80,7 @@ void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
   DCHECK_EQ(this, frame_node->page_node());
-  DCHECK(NodeInGraph(frame_node));
+  DCHECK(graph()->NodeInGraph(frame_node));
 
   --frame_node_count_;
   if (frame_node->parent_frame_node() == nullptr) {
@@ -177,11 +182,17 @@ std::vector<FrameNodeImpl*> PageNodeImpl::GetFrameNodes() const {
 
 FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Return an arbitrary node from the main frame nodes set.
-  // TODO(siggi): Make sure to preferentially return the active main frame node.
   if (main_frame_nodes_.empty())
     return nullptr;
 
+  // Return the current frame node if there is one. Iterating over this set is
+  // fine because it is almost always of length 1 or 2.
+  for (auto* frame : main_frame_nodes_) {
+    if (frame->is_current())
+      return frame;
+  }
+
+  // Otherwise, return any old main frame node.
   return *main_frame_nodes_.begin();
 }
 
@@ -429,5 +440,8 @@ void PageNodeImpl::ForAllFrameNodes(MapFunction map_function) const {
   for (auto* main_frame_node : main_frame_nodes_)
     ForFrameAndDescendents(main_frame_node, map_function);
 }
+
+PageNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+PageNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

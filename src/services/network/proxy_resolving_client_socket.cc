@@ -12,16 +12,19 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
+#include "net/base/privacy_mode.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
-#include "net/socket/client_socket_pool_manager.h"
+#include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace network {
@@ -269,14 +272,29 @@ int ProxyResolvingClientSocket::DoProxyResolveComplete(int result) {
 
 int ProxyResolvingClientSocket::DoInitConnection() {
   DCHECK(!socket_);
+  // QUIC proxies are currently not supported.
+  DCHECK(!proxy_info_.is_quic());
 
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  // Now that the proxy is resolved, create and start a ConnectJob.
-  connect_job_ = net::CreateConnectJobForRawConnect(
-      net::HostPortPair::FromURL(url_), use_tls_, common_connect_job_params_,
-      net::MAXIMUM_PRIORITY, proxy_info_, ssl_config_, ssl_config_, net_log_,
-      this);
+  base::Optional<net::NetworkTrafficAnnotationTag> proxy_annotation_tag =
+      proxy_info_.is_direct()
+          ? base::nullopt
+          : base::Optional<net::NetworkTrafficAnnotationTag>(
+                proxy_info_.traffic_annotation());
+
+  // Now that the proxy is resolved, create and start a ConnectJob. Using an
+  // empty NetworkIsolationKey means that tunnels over H2 or QUIC proxies will
+  // be shared, which may result in privacy leaks, depending on the nature of
+  // the consumer.
+  //
+  // TODO(mmenke): Investigate that.
+  connect_job_ = net::ConnectJob::CreateConnectJob(
+      use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_server(),
+      proxy_annotation_tag, &ssl_config_, &ssl_config_, true /* force_tunnel */,
+      net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
+      net::MAXIMUM_PRIORITY, net::SocketTag(), net::NetworkIsolationKey(),
+      common_connect_job_params_, this);
   return connect_job_->Connect();
 }
 

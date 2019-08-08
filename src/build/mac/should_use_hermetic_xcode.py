@@ -14,6 +14,8 @@ Usage:
   python should_use_hermetic_xcode.py <target_os>
 """
 
+from __future__ import print_function
+
 import os
 import sys
 
@@ -42,5 +44,5 @@ def main():
 
 
 if __name__ == '__main__':
-  print main()
+  print(main())
   sys.exit(0)

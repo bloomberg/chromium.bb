@@ -30,8 +30,7 @@
 
 namespace blink {
 
-inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
-    Document& document)
+SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFESpecularLightingTag,
                                            document),
       specular_constant_(MakeGarbageCollected<SVGAnimatedNumber>(
@@ -66,8 +65,6 @@ void SVGFESpecularLightingElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(in1_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFESpecularLightingElement)
 
 bool SVGFESpecularLightingElement::SetFilterEffectAttribute(
     FilterEffect* effect,

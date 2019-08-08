@@ -34,7 +34,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
 
   // The loader to use for loading the worker's main script and
   // importScripts().
-  associated network.mojom.URLLoaderFactory? script_loader_factory_ptr_info;
+  network.mojom.URLLoaderFactory? script_loader_factory_ptr_info;
 
   // |cache_storage| is an optional optimization so the service worker can use
   // the Cache Storage API immediately without using InterfaceProvider. May be

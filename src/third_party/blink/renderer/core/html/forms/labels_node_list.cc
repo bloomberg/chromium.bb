@@ -36,6 +36,11 @@ LabelsNodeList::LabelsNodeList(ContainerNode& owner_node)
                    kInvalidateForFormControls,
                    NodeListSearchRoot::kTreeScope) {}
 
+LabelsNodeList::LabelsNodeList(ContainerNode& owner_node, CollectionType type)
+    : LabelsNodeList(owner_node) {
+  DCHECK_EQ(type, kLabelsNodeListType);
+}
+
 LabelsNodeList::~LabelsNodeList() = default;
 
 bool LabelsNodeList::ElementMatches(const Element& element) const {

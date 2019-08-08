@@ -1,6 +1,12 @@
 set noparent
 
-evanhernandez@chromium.org
+andrewlamb@chromium.org
+dburger@chromium.org
 dhanyaganesh@chromium.org
-mikenichols@chromium.org
+evanhernandez@chromium.org
 jclinton@chromium.org
+mikenichols@chromium.org
+seanabraham@chromium.org
+
+per-file afdo.py=llozano@chromium.org
+per-file afdo_unittest.py=llozano@chromium.org

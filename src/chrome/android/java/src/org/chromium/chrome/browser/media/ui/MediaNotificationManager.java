@@ -40,7 +40,6 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
@@ -1095,15 +1094,13 @@ public class MediaNotificationManager {
 
     private void setMediaStyleLayoutForNotificationBuilder(ChromeNotificationBuilder builder) {
         setMediaStyleNotificationText(builder);
-        // Notifications in incognito shouldn't show an icon to avoid leaking information.
-        boolean hideUserData = mMediaNotificationInfo.isPrivate
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.HIDE_USER_DATA_FROM_INCOGNITO_NOTIFICATIONS);
         if (!mMediaNotificationInfo.supportsPlayPause()) {
             // Non-playback (Cast) notification will not use MediaStyle, so not
             // setting the large icon is fine.
             builder.setLargeIcon(null);
-        } else if (mMediaNotificationInfo.notificationLargeIcon != null && !hideUserData) {
+            // Notifications in incognito shouldn't show an icon to avoid leaking information.
+        } else if (mMediaNotificationInfo.notificationLargeIcon != null
+                && !mMediaNotificationInfo.isPrivate) {
             builder.setLargeIcon(mMediaNotificationInfo.notificationLargeIcon);
         } else if (!isRunningAtLeastN()) {
             if (mDefaultNotificationLargeIcon == null
@@ -1164,10 +1161,7 @@ public class MediaNotificationManager {
     }
 
     private void setMediaStyleNotificationText(ChromeNotificationBuilder builder) {
-        boolean hideUserData = mMediaNotificationInfo.isPrivate
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.HIDE_USER_DATA_FROM_INCOGNITO_NOTIFICATIONS);
-        if (hideUserData) {
+        if (mMediaNotificationInfo.isPrivate) {
             // Notifications in incognito shouldn't show what is playing to avoid leaking
             // information.
             if (isRunningAtLeastN()) {

@@ -256,7 +256,7 @@ public class ShortcutHelper {
                                             : TabThemeColorHelper.getColor(tab);
             addWebapp(id, url, getScopeFromUrl(url), userTitle, userTitle, userTitle, iconUrl, icon,
                     isIconAdaptive, WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT,
-                    source, themeColor, MANIFEST_COLOR_INVALID_OR_MISSING, "" /* splashScreenUrl */,
+                    source, themeColor, MANIFEST_COLOR_INVALID_OR_MISSING, "", 
                     0 /* callbackPointer */, true /* isShortcutAsWebapp */);
             return;
         }

@@ -20,11 +20,10 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
@@ -407,9 +406,8 @@ void FocusOmnibox() {
   }
 
   // Setup the bookmarks.
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 
   // Setup the server.
   self.testServer->RegisterRequestHandler(
@@ -417,7 +415,8 @@ void FocusOmnibox() {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Navigate to a page and check the bookmark button is not spotlighted.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
                                    grey_not(Spotlighted()), nil)];
@@ -429,19 +428,20 @@ void FocusOmnibox() {
       assertWithMatcher:Spotlighted()];
 
   // Navigate to a different page and check the button is not selected.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)]);
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
                                    grey_not(Spotlighted()), nil)];
 
   // Navigate back to the bookmarked page and check the button.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       assertWithMatcher:Spotlighted()];
 
   // Clean the bookmarks
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tests that tapping a button cancels the focus on the omnibox.
@@ -451,7 +451,7 @@ void FocusOmnibox() {
   }
 
   // Navigate to a page to enable the back button.
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
 
   FocusOmnibox();
 
@@ -466,7 +466,7 @@ void FocusOmnibox() {
 // different orientation than the default one.
 - (void)testFocusOmniboxFromOtherOrientation {
   // Load a page to have the toolbar visible (hidden on NTP).
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
 
   // Get the original trait collection.
   UIViewController* topViewController =
@@ -504,7 +504,7 @@ void FocusOmnibox() {
 // the default orientation.
 - (void)testFocusOmniboxFromPortrait {
   // Load a page to have the toolbar visible (hidden on NTP).
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
 
   FocusOmnibox();
 
@@ -556,7 +556,8 @@ void FocusOmnibox() {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Navigate to a page.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
 
   GREYAssert(AddInfobar(), @"Failed to add infobar.");
 
@@ -635,8 +636,10 @@ void FocusOmnibox() {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Loads two url and check the navigation buttons status.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       assertWithMatcher:grey_interactable()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -714,7 +717,7 @@ void FocusOmnibox() {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Navigate to another page and check that the share button is enabled.
-  [ChromeEarlGrey loadURL:pageURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   [[EarlGrey selectElementWithMatcher:ShareButton()]
       assertWithMatcher:grey_interactable()];
 
@@ -747,7 +750,7 @@ void FocusOmnibox() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdleWithTimeout:2];
 
   [[self class] closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   // Check that the bottom toolbar is visible.
   [[EarlGrey selectElementWithMatcher:SearchButton()]
@@ -757,7 +760,7 @@ void FocusOmnibox() {
 // Verifies the existence and state of toolbar UI elements.
 - (void)testToolbarUI {
   // Load a page to have the toolbar visible (hidden on NTP).
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
 
   // Get the original trait collection.
   UIViewController* topViewController =

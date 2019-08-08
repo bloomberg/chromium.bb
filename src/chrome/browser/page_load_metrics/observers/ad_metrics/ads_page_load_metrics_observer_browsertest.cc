@@ -36,9 +36,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -68,6 +70,9 @@ const char kAdFrameSizeInterventionMediaStatusHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "SizeIntervention.MediaStatus";
 
+const char kAggregateCpuPercentHistogramId[] =
+    "PageLoad.Clients.Ads.Cpu.FullPage.PercentUsage";
+
 }  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
@@ -91,7 +96,9 @@ class AdsPageLoadMetricsObserverBrowserTest
     SubresourceFilterBrowserTest::SetUpOnMainThread();
     SetRulesetWithRules(
         {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js"),
-         subresource_filter::testing::CreateSuffixRule("ad_script.js")});
+         subresource_filter::testing::CreateSuffixRule("ad_script.js"),
+         subresource_filter::testing::CreateSuffixRule(
+             "expensive_animation_frame.html*")});
   }
 
  private:
@@ -130,6 +137,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        OriginStatusMetricSame) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
       browser(),
@@ -140,6 +148,12 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
                                       FrameData::OriginStatus::kSame, 1);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_CrossOriginName,
+      static_cast<int>(FrameData::OriginStatus::kSame));
 }
 
 // Test that an ad with a different origin as the main page is cross origin.
@@ -147,6 +161,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        OriginStatusMetricCross) {
   // Note: Cannot navigate cross-origin without dynamically generating the URL.
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
 
   ui_test_utils::NavigateToURL(
@@ -166,11 +181,18 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
                                       FrameData::OriginStatus::kCross, 1);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_CrossOriginName,
+      static_cast<int>(FrameData::OriginStatus::kCross));
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        UserActivationSetOnFrame) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -202,6 +224,17 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   histogram_tester.ExpectBucketCount(
       kAdUserActivationHistogramId,
       FrameData::UserActivationStatus::kNoActivation, 1);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(2u, entries.size());
+
+  // Verify that one ad was reported to be activated and the other was not.
+  EXPECT_TRUE(*ukm_recorder.GetEntryMetric(
+                  entries.front(),
+                  ukm::builders::AdFrameLoad::kStatus_UserActivationName) !=
+              *ukm_recorder.GetEntryMetric(
+                  entries.back(),
+                  ukm::builders::AdFrameLoad::kStatus_UserActivationName));
 }
 
 // Test that a subframe that aborts (due to doc.write) doesn't cause a crash
@@ -232,6 +265,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        DocWriteAboutBlankAdframe) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(
@@ -246,12 +280,19 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       1, 1);
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0 /* < 1 KB */, 1);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  EXPECT_GT(*ukm_recorder.GetEntryMetric(
+                entries.front(),
+                ukm::builders::AdFrameLoad::kLoading_NetworkBytesName),
+            0);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        SubresourceFilter) {
   base::HistogramTester histogram_tester;
-
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   // cross_site_iframe_factory loads URLs like:
   // http://b.com:40919/cross_site_iframe_factory.html?b()
   SetRulesetToDisallowURLsWithPathSuffix("b()");
@@ -272,12 +313,41 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.FrameCounts.AnyParentFrame."
       "AdFrames",
       2, 1);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(2u, entries.size());
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FrameDepth) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  // cross_site_iframe_factory loads URLs like:
+  // http://b.com:40919/cross_site_iframe_factory.html?b()
+  SetRulesetToDisallowURLsWithPathSuffix("b()))");
+  const GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(b(b())))"));
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // One favicon resource and 2 resources for each frame.
+  waiter->AddMinimumCompleteResourcesExpectation(9);
+  waiter->Wait();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kFrameDepthName, 2);
 }
 
 // Test that a frame without display:none is reported as visible.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        VisibleAdframeRecorded) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(
@@ -291,11 +361,18 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.NonVisible.Bytes.AdFrames.PerFrame.Total", 0);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kVisibility_HiddenName,
+      false);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        DisplayNoneAdframeRecorded) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(
@@ -310,6 +387,12 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.Visible.Bytes.AdFrames.PerFrame.Total", 0);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kVisibility_HiddenName,
+      true);
 }
 
 // TODO(https://crbug.com/929136): Investigate why setting display: none on the
@@ -317,34 +400,43 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 // correct sizes for display: none iframes.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "/ads_observer/blank_with_adiframe_writer.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  std::map<std::pair<int, int>, int> expected_dimension_counts;
+  std::map<std::pair<int, int>, int> expected_bucketed_dimension_counts;
+  expected_dimension_counts[std::make_pair(100, 100)] = 1;
+  expected_dimension_counts[std::make_pair(0, 0)] = 1;
+  expected_dimension_counts[std::make_pair(10, 1000)] = 1;
 
-  // Create a 100x100 iframe.
-  ASSERT_TRUE(ExecJs(
-      web_contents,
-      "let frame = createAdIframe(); frame.width=100; frame.height = 100; "
-      "frame.src = '/ads_observer/pixel.png';"));
-
-  // Create a 0x0 iframe.
-  ASSERT_TRUE(ExecJs(
-      web_contents,
-      "frame = createAdIframe(); frame.width=0; frame.height = 0; frame.src = "
-      "'/ads_observer/pixel.png';"));
-
-  // Create a 10 x 1000 iframe.
-  ASSERT_TRUE(
-      ExecJs(web_contents,
-             "frame = createAdIframe(); frame.width=10; frame.height = 1000; "
-             "frame.src = '/ads_observer/pixel.png';"));
+  for (auto const& dimension_and_count : expected_dimension_counts) {
+    // Convert the expected dimensions into exponential buckets.
+    expected_bucketed_dimension_counts[std::make_pair(
+        ukm::GetExponentialBucketMinForCounts1000(
+            dimension_and_count.first.first),
+        ukm::GetExponentialBucketMinForCounts1000(
+            dimension_and_count.first.second))] = 1;
+    // Create an iframe with the given dimensions.
+    ASSERT_TRUE(
+        ExecJs(web_contents,
+               "let frame = createAdIframe(); frame.width=" +
+                   base::NumberToString(dimension_and_count.first.first) +
+                   "; frame.height = " +
+                   base::NumberToString(dimension_and_count.first.second) +
+                   "; "
+                   "frame.src = '/ads_observer/pixel.png';"));
+  }
 
   // Wait for each frames resource to load so that they will have non-zero
   // bytes.
   waiter->AddMinimumCompleteResourcesExpectation(6);
+  waiter->AddFrameSizeExpectation(gfx::Size(0, 0));
+  waiter->AddFrameSizeExpectation(gfx::Size(10, 1000));
+  waiter->AddFrameSizeExpectation(gfx::Size(100, 100));
   waiter->Wait();
 
   // Navigate away to force the histogram recording.
@@ -354,6 +446,19 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 0, 1);
   histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 10, 1);
   histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 100, 1);
+
+  // Verify each UKM entry has a corresponding, unique size.
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(3u, entries.size());
+  for (auto* const entry : entries) {
+    auto dimension = std::make_pair(
+        *ukm_recorder.GetEntryMetric(
+            entry, ukm::builders::AdFrameLoad::kVisibility_FrameWidthName),
+        *ukm_recorder.GetEntryMetric(
+            entry, ukm::builders::AdFrameLoad::kVisibility_FrameHeightName));
+    EXPECT_EQ(1u, expected_bucketed_dimension_counts.erase(dimension));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
@@ -376,6 +481,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Wait for each frames resource to load so that they will have non-zero
   // bytes.
   waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->AddFrameSizeExpectation(gfx::Size(4, 4));
   waiter->Wait();
 
   // Navigate away to force the histogram recording.
@@ -639,6 +745,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        IncompleteResourcesRecordedToFrameMetrics) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -693,11 +800,20 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network", 2, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 2, 1);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kLoading_NetworkBytesName,
+      ukm::GetExponentialBucketMinForBytes(2048));
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytesName, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        AdFrameSizeInterventionTriggered) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -747,6 +863,13 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
+      static_cast<int>(FrameData::MediaStatus::kNotPlayed));
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
@@ -812,11 +935,19 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
+      static_cast<int>(FrameData::MediaStatus::kPlayed));
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        AdFrameSizeInterventionNotActivatedOnFrameWithGesture) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -871,6 +1002,12 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kAdFrameSizeIntervention, 0);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_UserActivationName,
+      static_cast<int>(FrameData::UserActivationStatus::kReceivedActivation));
 }
 
 // Verify that UKM metrics are recorded correctly.
@@ -922,4 +1059,139 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   EXPECT_GT(*ukm_recorder.GetEntryMetric(
                 entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
             0);
+}
+
+void WaitForRAF(content::DOMMessageQueue* message_queue) {
+  std::string message;
+  while (message_queue->WaitForMessage(&message)) {
+    if (message == "\"RAF DONE\"")
+      break;
+  }
+  EXPECT_EQ("\"RAF DONE\"", message);
+}
+
+// Test that rAF events are measured as part of the cpu metrics.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       FrameRAFTriggersCpuUpdate) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
+  waiter->AddMinimumAggregateCpuTimeExpectation(
+      base::TimeDelta::FromMilliseconds(200));
+
+  // Navigate the iframe to a page with a delayed rAF, waiting for it to
+  // complete. Long enough to guarantee the frame client sees a cpu time
+  // update. (See: LocalFrame::AddTaskTime kTaskDurationSendThreshold).
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=200"));
+
+  // Wait until we've received the cpu update and navigate away.
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // The elapsed_time is an upper bound on the overall page time, as it runs
+  // from just before to just after activation.  The task itself is guaranteed
+  // to have run at least 200ms, so we can derive a minimum percent of cpu time
+  // that the task should have taken.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  EXPECT_GE(elapsed_time.InMilliseconds(), 200);
+
+  // Ensure that there is a single entry that is at least the percent specified.
+  int min_percent = 100 * 200 / elapsed_time.InMilliseconds();
+  auto samples =
+      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_EQ(1, samples.front().count);
+  EXPECT_LE(min_percent, samples.front().min);
+}
+
+// Test that rAF events are measured as part of the cpu metrics.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       TwoRAFFramesTriggerCpuUpdates) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  content::DOMMessageQueue message_queue(web_contents());
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/ads_observer/two_raf_frames.html"));
+
+  // Wait for both RAF calls to finish
+  WaitForRAF(&message_queue);
+  WaitForRAF(&message_queue);
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // The elapsed_time is an upper bound on the overall page time, as it runs
+  // from just before to just after activation.  The task itself is guaranteed
+  // to have run at least 200ms, so we can derive a minimum percent of cpu time
+  // that the task should have taken.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  EXPECT_GE(elapsed_time.InMilliseconds(), 200);
+
+  // Ensure that there is a single entry that is at least the percent specified.
+  int min_percent = 100 * 200 / elapsed_time.InMilliseconds();
+  auto samples =
+      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_EQ(1, samples.front().count);
+  EXPECT_LE(min_percent, samples.front().min);
+}
+
+// Test that cpu time aggregation across a subframe navigation is cumulative.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       CpuTimesCumulativeOverSubframeNavigate) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
+  waiter->AddMinimumAggregateCpuTimeExpectation(
+      base::TimeDelta::FromMilliseconds(100));
+
+  // Navigate twice to a page delaying 50ms.  The first and second navigations
+  // by themselves aren't enough to trigger a cpu update, but when combined an
+  // update fires. (See: LocalFrame::AddTaskTime kTaskDurationSendThreshold).
+  // Navigate the first time, waiting for it to complete so that the work is
+  // observed, then renavigate.
+  content::DOMMessageQueue message_queue(web_contents());
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=50"));
+  WaitForRAF(&message_queue);
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=50"));
+
+  // Wait until we've received the cpu update and navigate away.
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // The elapsed_time is an upper bound on the overall page time, as it runs
+  // from just before to just after activation.  The tasks themselves are
+  // guaranteed to have run at least 50+50=100ms, so we can derive a minimum
+  // percent of cpu time that the task should have taken.  Each event by itself
+  // would not be enough to trigger an update, but together, they should for the
+  // subframe.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  EXPECT_GE(elapsed_time.InMilliseconds(), 100);
+
+  // Ensure that there is a single entry that is at least the percent specified.
+  int min_percent = 100 * 100 / elapsed_time.InMilliseconds();
+  auto samples =
+      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_EQ(1, samples.front().count);
+  EXPECT_LE(min_percent, samples.front().min);
 }

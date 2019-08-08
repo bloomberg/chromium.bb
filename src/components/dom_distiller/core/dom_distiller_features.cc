@@ -13,7 +13,7 @@ namespace dom_distiller {
 
 bool IsEnableDomDistillerSet() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller);
+      switches::kEnableDomDistiller);
 }
 
 }  // namespace dom_distiller

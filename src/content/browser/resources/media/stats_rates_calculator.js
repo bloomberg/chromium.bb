@@ -189,7 +189,37 @@ class StatsRatesCalculator {
         names: [
           ['bytesSent', 'timestamp'],
           ['packetsSent', 'timestamp'],
+          [
+            'totalPacketSendDelay',
+            'packetsSent',
+            '[totalPacketSendDelay/packetsSent_in_ms]',
+            (value) => {
+              return value * 1000;  // s -> ms
+            },
+          ],
           ['framesEncoded', 'timestamp'],
+          [
+            'totalEncodedBytesTarget', 'framesEncoded',
+            '[targetEncodedBytes/s]',
+            (value, currentStats, previousStats) => {
+              if (!previousStats) {
+                return 0;
+              }
+              const deltaTime =
+                  currentStats.timestamp - previousStats.timestamp;
+              const deltaFrames =
+                  currentStats.framesEncoded - previousStats.framesEncoded;
+              const encodedFrameRate = deltaFrames / deltaTime;
+              return value * encodedFrameRate;
+            }
+          ],
+          [
+            'totalEncodeTime', 'framesEncoded',
+            '[totalEncodeTime/framesEncoded_in_ms]',
+            (value) => {
+              return value * 1000;  // s -> ms
+            }
+          ],
           ['qpSum', 'framesEncoded'],
         ],
       },
@@ -252,7 +282,8 @@ class StatsRatesCalculator {
                     let result = this.calculateAccumulativeMetricOverSamples_(
                         stats.id, accumulativeMetric, samplesMetric);
                     if (result && transformation) {
-                      result = transformation(result);
+                      const previousStats = this.previousReport.get(stats.id);
+                      result = transformation(result, stats, previousStats);
                     }
                     this.currentReport.setCalculatedMetric(
                         stats.id, accumulativeMetric, resultName, result);

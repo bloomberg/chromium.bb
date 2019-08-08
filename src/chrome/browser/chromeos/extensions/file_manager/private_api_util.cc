@@ -362,7 +362,7 @@ void VolumeToVolumeMetadata(
         break;
     }
     volume_metadata->device_path = std::make_unique<std::string>(
-        volume.system_path_prefix().AsUTF8Unsafe());
+        volume.storage_device_path().AsUTF8Unsafe());
     volume_metadata->is_parent_device =
         std::make_unique<bool>(volume.is_parent());
   } else {

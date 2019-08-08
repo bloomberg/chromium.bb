@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -34,8 +35,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -256,24 +255,6 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeadersBrowserTest);
 };
 
-class BlockingURLFetcherDelegate : public net::URLFetcherDelegate {
- public:
-  BlockingURLFetcherDelegate() = default;
-  ~BlockingURLFetcherDelegate() override = default;
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop_.QuitClosure());
-  }
-
-  void AwaitResponse() { run_loop_.Run(); }
-
- private:
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlockingURLFetcherDelegate);
-};
-
 std::unique_ptr<net::test_server::HttpResponse>
 VariationsHttpHeadersBrowserTest::RequestHandler(
     const net::test_server::HttpRequest& request) {
@@ -332,8 +313,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
 }
 
 // Verify in an integration that that the variations header (X-Client-Data) is
-// correctly attached and stripped from network requests that are triggered via
-// a URLFetcher.
+// correctly attached and stripped from network requests.
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromSubresourceRequest) {
   GURL url = server()->GetURL("/simple_page.html");
@@ -345,9 +325,17 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
+#if defined(OS_CHROMEOS)
+// See https://crbug.com/964338
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
+  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
+#else
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
+  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
+#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
+    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -376,9 +364,17 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
+#if defined(OS_CHROMEOS)
+// See https://crbug.com/964338
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
+  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
+#else
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
+  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
+#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
+    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();

@@ -21,10 +21,8 @@ class FramebufferRenderMipmapTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    virtual void SetUp()
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
         if (mProgram == 0)
         {
@@ -45,12 +43,7 @@ class FramebufferRenderMipmapTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    virtual void TearDown()
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram;
     GLint mColorLocation;
@@ -61,7 +54,7 @@ class FramebufferRenderMipmapTest : public ANGLETest
 TEST_P(FramebufferRenderMipmapTest, Validation)
 {
     bool renderToMipmapSupported =
-        extensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
+        IsGLExtensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
 
     GLuint tex = 0;
     glGenTextures(1, &tex);
@@ -105,7 +98,7 @@ TEST_P(FramebufferRenderMipmapTest, Validation)
 TEST_P(FramebufferRenderMipmapTest, RenderToMipmap)
 {
     bool renderToMipmapSupported =
-        extensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
+        IsGLExtensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
     ANGLE_SKIP_TEST_IF(!renderToMipmapSupported);
 
     const GLfloat levelColors[] = {

@@ -367,6 +367,8 @@ class FailingProofVerifierStub : public quic::ProofVerifier {
   quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
       const std::vector<std::string>& certs,
+      const std::string& ocsp_response,
+      const std::string& cert_sct,
       const quic::ProofVerifyContext* context,
       std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* details,
@@ -470,10 +472,13 @@ class ConnectedCryptoClientStream final : public quic::QuicCryptoClientStream {
         quic::QuicTime::Delta::FromSeconds(2 * quic::kMaximumIdleTimeoutSecs),
         quic::QuicTime::Delta::FromSeconds(quic::kMaximumIdleTimeoutSecs));
     config.SetBytesForConnectionIdToSend(quic::PACKET_8BYTE_CONNECTION_ID);
-    config.SetMaxIncomingDynamicStreamsToSend(
+    config.SetMaxIncomingBidirectionalStreamsToSend(
+        quic::kDefaultMaxStreamsPerConnection / 2);
+    config.SetMaxIncomingUnidirectionalStreamsToSend(
         quic::kDefaultMaxStreamsPerConnection / 2);
     quic::CryptoHandshakeMessage message;
-    config.ToHandshakeMessage(&message);
+    config.ToHandshakeMessage(&message,
+                              session()->connection()->transport_version());
     std::string error_details;
     session()->config()->ProcessPeerHello(message, quic::CLIENT,
                                           &error_details);
@@ -522,8 +527,7 @@ class ConnectedCryptoClientStreamFactory final
       quic::QuicSession* session,
       quic::QuicCryptoServerStream::Helper* helper) override {
     return std::make_unique<quic::QuicCryptoServerStream>(
-        crypto_config, compressed_certs_cache,
-        /*use_stateless_rejects_if_peer_supported=*/false, session, helper);
+        crypto_config, compressed_certs_cache, session, helper);
   }
 };
 
@@ -802,14 +806,14 @@ TEST_F(P2PQuicTransportTest, HandshakeConnectsPeersWithRemoteCertificates) {
 
   // Start the handshake with the remote fingerprints.
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> server_fingerprints;
-  server_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
-      "sha-256", server_peer()->certificate()->identity()));
+  server_fingerprints.push_back(rtc::SSLFingerprint::CreateUnique(
+      "sha-256", *server_peer()->certificate()->identity()));
   server_peer()->quic_transport()->Start(
       P2PQuicTransport::StartConfig(std::move(server_fingerprints)));
 
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> client_fingerprints;
-  client_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
-      "sha-256", client_peer()->certificate()->identity()));
+  client_fingerprints.push_back(rtc::SSLFingerprint::CreateUnique(
+      "sha-256", *client_peer()->certificate()->identity()));
   client_peer()->quic_transport()->Start(
       P2PQuicTransport::StartConfig(std::move(client_fingerprints)));
 
@@ -957,27 +961,6 @@ TEST_F(P2PQuicTransportTest, ServerConnectionFailureAfterConnected) {
   server_connection()->CloseConnection(
       quic::QuicErrorCode::QUIC_INTERNAL_ERROR, "internal error",
       quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  run_loop.RunUntilCallbacksFired();
-
-  ExpectTransportsClosed();
-}
-
-// Tests that closing the connection with no ACK frame does not make any
-// difference in the closing procedure.
-TEST_F(P2PQuicTransportTest, ConnectionFailureNoAckFrame) {
-  Initialize();
-  Connect();
-  CallbackRunLoop run_loop(runner());
-  EXPECT_CALL(*client_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-  EXPECT_CALL(*server_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-
-  client_connection()->CloseConnection(
-      quic::QuicErrorCode::QUIC_INTERNAL_ERROR, "internal error",
-      quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK);
   run_loop.RunUntilCallbacksFired();
 
   ExpectTransportsClosed();

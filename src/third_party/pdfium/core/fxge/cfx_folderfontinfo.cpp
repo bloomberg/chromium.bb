@@ -9,7 +9,9 @@
 #include <limits>
 #include <utility>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/fx_font.h"
@@ -158,7 +160,7 @@ void CFX_FolderFontInfo::ScanPath(const ByteString& path) {
     }
 
     ByteString fullpath = path;
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
     fullpath += "\\";
 #else
     fullpath += "/";

@@ -16,12 +16,14 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Named;
@@ -130,5 +132,15 @@ public class ChromeActivityCommonsModule {
     @Provides
     public TabCreatorManager provideTabCreatorManager() {
         return (TabCreatorManager) mActivity;
+    }
+
+    @Provides
+    public StatusBarColorController provideStatusBarColorController() {
+        return mActivity.getStatusBarColorController();
+    }
+
+    @Provides
+    public ScreenOrientationProvider provideScreenOrientationProvider() {
+        return ScreenOrientationProvider.getInstance();
     }
 }

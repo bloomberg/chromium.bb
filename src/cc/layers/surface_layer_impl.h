@@ -61,6 +61,9 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void SetHasPointerEventsNone(bool has_pointer_events_none);
   bool has_pointer_events_none() const { return has_pointer_events_none_; }
 
+  void SetIsReflection(bool is_reflection);
+  bool is_reflection() const { return is_reflection_; }
+
   // LayerImpl overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
@@ -75,10 +78,6 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id, UpdateSubmissionStateCB);
 
  private:
-  viz::SurfaceDrawQuad* CreateSurfaceDrawQuad(
-      viz::RenderPass* render_pass,
-      const viz::SurfaceRange& surface_range);
-
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
   void AppendRainbowDebugBorder(viz::RenderPass* render_pass);
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
@@ -91,6 +90,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   bool stretch_content_to_fill_bounds_ = false;
   bool surface_hit_testable_ = false;
   bool has_pointer_events_none_ = false;
+  bool is_reflection_ = false;
   bool will_draw_ = false;
 };
 

@@ -22,19 +22,14 @@ namespace trace_processor {
 StorageTable::StorageTable() = default;
 StorageTable::~StorageTable() = default;
 
-base::Optional<Table::Schema> StorageTable::Init(int, const char* const*) {
+util::Status StorageTable::Init(int, const char* const*, Schema* schema) {
   schema_ = CreateStorageSchema();
-  return schema_.ToTableSchema();
+  *schema = schema_.ToTableSchema();
+  return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> StorageTable::CreateCursor(
-    const QueryConstraints& qc,
-    sqlite3_value** argv) {
-  auto iterator = CreateBestRowIterator(qc, argv);
-  if (!iterator)
-    return nullptr;
-  return std::unique_ptr<Cursor>(
-      new Cursor(std::move(iterator), schema_.mutable_columns()));
+std::unique_ptr<Table::Cursor> StorageTable::CreateCursor() {
+  return std::unique_ptr<Cursor>(new Cursor(this));
 }
 
 std::unique_ptr<RowIterator> StorageTable::CreateBestRowIterator(
@@ -171,9 +166,17 @@ bool StorageTable::HasEqConstraint(const QueryConstraints& qc,
   return std::find_if(cs.begin(), cs.end(), fn) != cs.end();
 }
 
-StorageTable::Cursor::Cursor(std::unique_ptr<RowIterator> iterator,
-                             std::vector<std::unique_ptr<StorageColumn>>* cols)
-    : iterator_(std::move(iterator)), columns_(std::move(cols)) {}
+StorageTable::Cursor::Cursor(StorageTable* table)
+    : Table::Cursor(table), table_(table) {}
+
+int StorageTable::Cursor::Filter(const QueryConstraints& qc,
+                                 sqlite3_value** argv) {
+  iterator_ = table_->CreateBestRowIterator(qc, argv);
+  if (!iterator_)
+    return SQLITE_ERROR;
+  columns_ = table_->schema_.mutable_columns();
+  return SQLITE_OK;
+}
 
 int StorageTable::Cursor::Next() {
   iterator_->NextRow();

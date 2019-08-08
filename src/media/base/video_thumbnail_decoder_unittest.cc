@@ -35,7 +35,7 @@ class VideoThumbnailDecoderTest : public testing::Test {
     mock_video_decoder_ = mock_video_decoder.get();
     VideoDecoderConfig valid_config(
         kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420, VideoColorSpace(),
-        VIDEO_ROTATION_0, gfx::Size(1, 1), gfx::Rect(1, 1), gfx::Size(1, 1),
+        kNoTransformation, gfx::Size(1, 1), gfx::Rect(1, 1), gfx::Size(1, 1),
         EmptyExtraData(), Unencrypted());
 
     thumbnail_decoder_ = std::make_unique<VideoThumbnailDecoder>(
@@ -60,7 +60,7 @@ class VideoThumbnailDecoderTest : public testing::Test {
     return thumbnail_decoder_.get();
   }
   MockVideoDecoder* mock_video_decoder() { return mock_video_decoder_; }
-  const scoped_refptr<VideoFrame>& frame() { return frame_; }
+  scoped_refptr<VideoFrame> frame() { return frame_; }
 
  private:
   void OnFrameDecoded(scoped_refptr<VideoFrame> frame) {
@@ -82,11 +82,12 @@ class VideoThumbnailDecoderTest : public testing::Test {
 // the video frame.
 TEST_F(VideoThumbnailDecoderTest, Success) {
   auto expected_frame = CreateFrame();
-  EXPECT_CALL(*mock_video_decoder(), Initialize(_, _, _, _, _, _))
-      .WillOnce(DoAll(RunCallback<3>(true), RunCallback<4>(expected_frame)));
-  EXPECT_CALL(*mock_video_decoder(), Decode(_, _))
+  EXPECT_CALL(*mock_video_decoder(), Initialize_(_, _, _, _, _, _))
+      .WillOnce(
+          DoAll(RunOnceCallback<3>(true), RunCallback<4>(expected_frame)));
+  EXPECT_CALL(*mock_video_decoder(), Decode_(_, _))
       .Times(2)
-      .WillRepeatedly(RunCallback<1>(DecodeStatus::OK));
+      .WillRepeatedly(RunOnceCallback<1>(DecodeStatus::OK));
 
   Start();
   EXPECT_TRUE(frame());
@@ -95,8 +96,8 @@ TEST_F(VideoThumbnailDecoderTest, Success) {
 // No output video frame when decoder failed to initialize.
 TEST_F(VideoThumbnailDecoderTest, InitializationFailed) {
   auto expected_frame = CreateFrame();
-  EXPECT_CALL(*mock_video_decoder(), Initialize(_, _, _, _, _, _))
-      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*mock_video_decoder(), Initialize_(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<3>(false));
 
   Start();
   EXPECT_FALSE(frame());
@@ -105,10 +106,10 @@ TEST_F(VideoThumbnailDecoderTest, InitializationFailed) {
 // No output video frame when decoder failed to decode.
 TEST_F(VideoThumbnailDecoderTest, DecodingFailed) {
   auto expected_frame = CreateFrame();
-  EXPECT_CALL(*mock_video_decoder(), Initialize(_, _, _, _, _, _))
-      .WillOnce(RunCallback<3>(true));
-  EXPECT_CALL(*mock_video_decoder(), Decode(_, _))
-      .WillOnce(RunCallback<1>(DecodeStatus::DECODE_ERROR));
+  EXPECT_CALL(*mock_video_decoder(), Initialize_(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true));
+  EXPECT_CALL(*mock_video_decoder(), Decode_(_, _))
+      .WillOnce(RunOnceCallback<1>(DecodeStatus::DECODE_ERROR));
 
   Start();
   EXPECT_FALSE(frame());

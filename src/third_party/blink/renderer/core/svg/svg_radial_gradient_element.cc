@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
+SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(svg_names::kRadialGradientTag, document),
       // Spec: If the cx/cy/r attribute is not specified, the effect is as if a
       // value of "50%" were specified.
@@ -82,8 +82,6 @@ void SVGRadialGradientElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(fr_);
   SVGGradientElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGRadialGradientElement)
 
 void SVGRadialGradientElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {

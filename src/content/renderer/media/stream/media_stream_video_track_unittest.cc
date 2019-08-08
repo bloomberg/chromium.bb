@@ -49,13 +49,13 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
   void DeliverVideoFrameAndWaitForRenderer(
-      const scoped_refptr<media::VideoFrame>& frame,
+      scoped_refptr<media::VideoFrame> frame,
       MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*sink, OnVideoFrame())
         .WillOnce(RunClosure(std::move(quit_closure)));
-    mock_source()->DeliverVideoFrame(frame);
+    mock_source()->DeliverVideoFrame(std::move(frame));
     run_loop.Run();
   }
 
@@ -170,26 +170,23 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
 
 class CheckThreadHelper {
  public:
-  CheckThreadHelper(base::Closure callback, bool* correct)
-      : callback_(callback),
-        correct_(correct) {
-  }
+  CheckThreadHelper(base::OnceClosure callback, bool* correct)
+      : callback_(std::move(callback)), correct_(correct) {}
 
   ~CheckThreadHelper() {
     *correct_ = thread_checker_.CalledOnValidThread();
-    callback_.Run();
+    std::move(callback_).Run();
   }
 
  private:
-  base::Closure callback_;
+  base::OnceClosure callback_;
   bool* correct_;
   base::ThreadCheckerImpl thread_checker_;
 };
 
-void CheckThreadVideoFrameReceiver(
-    CheckThreadHelper* helper,
-    const scoped_refptr<media::VideoFrame>& frame,
-    base::TimeTicks estimated_capture_time) {
+void CheckThreadVideoFrameReceiver(CheckThreadHelper* helper,
+                                   scoped_refptr<media::VideoFrame> frame,
+                                   base::TimeTicks estimated_capture_time) {
   // Do nothing.
 }
 
@@ -361,16 +358,14 @@ TEST_F(MediaStreamVideoTrackTest, DeliverFramesAndGetSettings) {
       blink::MediaStreamVideoTrack::GetVideoTrack(track);
   blink::WebMediaStreamTrack::Settings settings;
 
-  const scoped_refptr<media::VideoFrame>& frame1 =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(600, 400));
-  DeliverVideoFrameAndWaitForRenderer(frame1, &sink);
+  auto frame1 = media::VideoFrame::CreateBlackFrame(gfx::Size(600, 400));
+  DeliverVideoFrameAndWaitForRenderer(std::move(frame1), &sink);
   native_track->GetSettings(settings);
   EXPECT_EQ(600, settings.width);
   EXPECT_EQ(400, settings.height);
 
-  const scoped_refptr<media::VideoFrame>& frame2 =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(200, 300));
-  DeliverVideoFrameAndWaitForRenderer(frame2, &sink);
+  auto frame2 = media::VideoFrame::CreateBlackFrame(gfx::Size(200, 300));
+  DeliverVideoFrameAndWaitForRenderer(std::move(frame2), &sink);
   native_track->GetSettings(settings);
   EXPECT_EQ(200, settings.width);
   EXPECT_EQ(300, settings.height);

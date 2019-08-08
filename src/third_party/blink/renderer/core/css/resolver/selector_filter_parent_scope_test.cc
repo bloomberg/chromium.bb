@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -38,8 +39,8 @@ TEST_F(SelectorFilterParentScopeTest, ParentScope) {
     SelectorFilterParentScope::EnsureParentStackIsPushed();
 
     CSSSelectorList selectors = CSSParser::ParseSelector(
-        CSSParserContext::Create(kHTMLStandardMode,
-                                 SecureContextMode::kInsecureContext),
+        MakeGarbageCollected<CSSParserContext>(
+            kHTMLStandardMode, SecureContextMode::kInsecureContext),
         nullptr, "html, body, .match, #myId");
 
     for (const CSSSelector* selector = selectors.First(); selector;
@@ -67,8 +68,8 @@ TEST_F(SelectorFilterParentScopeTest, AncestorScope) {
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
   CSSSelectorList selectors = CSSParser::ParseSelector(
-      CSSParserContext::Create(kHTMLStandardMode,
-                               SecureContextMode::kInsecureContext),
+      MakeGarbageCollected<CSSParserContext>(
+          kHTMLStandardMode, SecureContextMode::kInsecureContext),
       nullptr, "html, body, div, span, .x, #y");
 
   for (const CSSSelector* selector = selectors.First(); selector;

@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "sandbox/win/src/crosscall_client.h"
@@ -161,7 +161,7 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     // Avoid compiler optimizations across this point. Any value stored in
     // memory should be stored for real, and values previously read from memory
     // should be actually read.
-    base::subtle::MemoryBarrier();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
 
     min_declared_size =
         sizeof(CrossCallParams) + ((param_count + 1) * sizeof(ParamInfo));

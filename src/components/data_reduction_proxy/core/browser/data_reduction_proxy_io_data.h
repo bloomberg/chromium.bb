@@ -24,7 +24,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
-#include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -50,7 +49,6 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyServer;
 class DataReductionProxyService;
 class NetworkPropertiesManager;
-class DataReductionProxyThrottleManager;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
@@ -177,7 +175,7 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
     return proxy_delegate_.get();
   }
 
-  DataReductionProxyThrottleManager* GetThrottleManager();
+  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
 
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
     return io_task_runner_;
@@ -192,13 +190,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
 
   void set_lofi_decider(std::unique_ptr<LoFiDecider> lofi_decider) {
     lofi_decider_ = std::move(lofi_decider);
-  }
-
-  LoFiUIService* lofi_ui_service() const { return lofi_ui_service_.get(); }
-
-  // Takes ownership of |lofi_ui_service|.
-  void set_lofi_ui_service(std::unique_ptr<LoFiUIService> lofi_ui_service) {
-    lofi_ui_service_ = std::move(lofi_ui_service);
   }
 
   ResourceTypeProvider* resource_type_provider() const {
@@ -272,8 +263,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // config.
   void UpdateThrottleConfig();
 
-  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
-
   // The type of Data Reduction Proxy client.
   const Client client_;
 
@@ -282,9 +271,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
 
   // Handles getting if a request is in Lo-Fi mode.
   std::unique_ptr<LoFiDecider> lofi_decider_;
-
-  // Handles showing Lo-Fi UI when a Lo-Fi response is received.
-  std::unique_ptr<LoFiUIService> lofi_ui_service_;
 
   // Handles getting the content type of a request.
   std::unique_ptr<ResourceTypeProvider> resource_type_provider_;
@@ -335,8 +321,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // IO thread is still available at the time of destruction. If the IO thread
   // is unavailable, then the destruction will happen on the UI thread.
   std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
-
-  std::unique_ptr<DataReductionProxyThrottleManager> throttle_manager_;
 
   // Current estimate of the effective connection type.
   net::EffectiveConnectionType effective_connection_type_;

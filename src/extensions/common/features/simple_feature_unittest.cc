@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -890,10 +891,10 @@ TEST(SimpleFeatureUnitTest, TestChannelsWithoutExtension) {
   // Create a webui feature available on trunk.
   SimpleFeature feature;
   feature.set_contexts({Feature::WEBUI_CONTEXT});
-  feature.set_matches({"chrome://settings/*"});
+  feature.set_matches({content::GetWebUIURLString("settings/*").c_str()});
   feature.set_channel(version_info::Channel::UNKNOWN);
 
-  const GURL kAllowlistedUrl("chrome://settings/foo");
+  const GURL kAllowlistedUrl(content::GetWebUIURL("settings/foo"));
   const GURL kOtherUrl("https://example.com");
 
   {

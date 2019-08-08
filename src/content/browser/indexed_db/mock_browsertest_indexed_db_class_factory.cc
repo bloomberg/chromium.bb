@@ -51,20 +51,24 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
  public:
   IndexedDBTestDatabase(
       const base::string16& name,
-      scoped_refptr<IndexedDBBackingStore> backing_store,
-      scoped_refptr<IndexedDBFactory> factory,
+      IndexedDBBackingStore* backing_store,
+      IndexedDBFactory* factory,
+      ErrorCallback error_callback,
+      base::OnceClosure destroy_me,
       std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
-      const IndexedDBDatabase::Identifier& unique_identifier,
+      const Identifier& unique_identifier,
       ScopesLockManager* transaction_lock_manager)
       : IndexedDBDatabase(name,
                           backing_store,
                           factory,
+                          std::move(error_callback),
+                          std::move(destroy_me),
                           std::move(metadata_coding),
                           unique_identifier,
                           transaction_lock_manager) {}
+  ~IndexedDBTestDatabase() override {}
 
  protected:
-  ~IndexedDBTestDatabase() override {}
 
   size_t GetUsableMessageSizeInBytes() const override {
     return 10 * 1024 * 1024;  // 10MB
@@ -76,18 +80,19 @@ class IndexedDBTestTransaction : public IndexedDBTransaction {
   IndexedDBTestTransaction(
       int64_t id,
       IndexedDBConnection* connection,
+      ErrorCallback error_callback,
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction)
       : IndexedDBTransaction(id,
                              connection,
+                             std::move(error_callback),
                              scope,
                              mode,
                              backing_store_transaction) {}
-
- protected:
   ~IndexedDBTestTransaction() override {}
 
+ protected:
   // Browser tests run under memory/address sanitizers (etc) may trip the
   // default 60s timeout, so relax it during tests.
   base::TimeDelta GetInactivityTimeout() const override {
@@ -267,28 +272,33 @@ MockBrowserTestIndexedDBClassFactory::MockBrowserTestIndexedDBClassFactory()
 MockBrowserTestIndexedDBClassFactory::~MockBrowserTestIndexedDBClassFactory() {
 }
 
-scoped_refptr<IndexedDBDatabase>
+std::unique_ptr<IndexedDBDatabase>
 MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
-    scoped_refptr<IndexedDBBackingStore> backing_store,
-    scoped_refptr<IndexedDBFactory> factory,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBFactory* factory,
+    IndexedDBDatabase::ErrorCallback error_callback,
+    base::OnceClosure destroy_me,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
-  return new IndexedDBTestDatabase(name, backing_store, factory,
-                                   std::move(metadata_coding),
-                                   unique_identifier, transaction_lock_manager);
+  return std::make_unique<IndexedDBTestDatabase>(
+      name, backing_store, factory, std::move(error_callback),
+      std::move(destroy_me), std::move(metadata_coding), unique_identifier,
+      transaction_lock_manager);
 }
 
 std::unique_ptr<IndexedDBTransaction>
 MockBrowserTestIndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
+    ErrorCallback error_callback,
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  return std::unique_ptr<IndexedDBTransaction>(new IndexedDBTestTransaction(
-      id, connection, scope, mode, backing_store_transaction));
+  return std::make_unique<IndexedDBTestTransaction>(
+      id, connection, std::move(error_callback), scope, mode,
+      backing_store_transaction);
 }
 
 scoped_refptr<LevelDBTransaction>

@@ -143,6 +143,7 @@ bool StructTraits<display::mojom::DisplayDataView, display::Display>::Read(
   out->set_color_depth(data.color_depth());
   out->set_depth_per_component(data.depth_per_component());
   out->set_is_monochrome(data.is_monochrome());
+  out->set_display_frequency(data.display_frequency());
 
   return true;
 }

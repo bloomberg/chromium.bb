@@ -98,11 +98,11 @@ bool TouchSelectionMenuViews::IsMenuAvailable(
     const ui::TouchSelectionMenuClient* client) {
   DCHECK(client);
 
-  for (size_t i = 0; i < base::size(kMenuCommands); i++) {
-    if (client->IsCommandIdEnabled(kMenuCommands[i]))
-      return true;
-  }
-  return false;
+  const auto is_enabled = [client](int command) {
+    return client->IsCommandIdEnabled(command);
+  };
+  return std::any_of(std::cbegin(kMenuCommands), std::cend(kMenuCommands),
+                     is_enabled);
 }
 
 void TouchSelectionMenuViews::CloseMenu() {
@@ -116,8 +116,7 @@ void TouchSelectionMenuViews::CloseMenu() {
 TouchSelectionMenuViews::~TouchSelectionMenuViews() = default;
 
 void TouchSelectionMenuViews::CreateButtons() {
-  for (size_t i = 0; i < base::size(kMenuCommands); i++) {
-    int command_id = kMenuCommands[i];
+  for (int command_id : kMenuCommands) {
     if (!client_->IsCommandIdEnabled(command_id))
       continue;
 

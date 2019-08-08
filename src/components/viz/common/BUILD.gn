@@ -40,6 +40,37 @@ viz_component("resource_format_utils") {
   ]
 }
 
+if (is_mac) {
+  viz_component("metal_context_provider") {
+    output_name = "viz_metal_context_provider"
+
+    defines = [ "VIZ_METAL_CONTEXT_PROVIDER_IMPLEMENTATION" ]
+
+    sources = [
+      "gpu/metal_api_proxy.h",
+      "gpu/metal_api_proxy.mm",
+      "gpu/metal_context_provider.h",
+      "gpu/metal_context_provider.mm",
+      "viz_metal_context_provider_export.h",
+    ]
+
+    public_deps = [
+      "//skia",
+    ]
+
+    deps = [
+      "//base",
+      "//ui/gfx",
+      "//ui/gl",
+    ]
+
+    libs = [
+      "Metal.framework",
+      "Foundation.framework",
+    ]
+  }
+}
+
 if (enable_vulkan) {
   viz_component("vulkan_context_provider") {
     output_name = "viz_vulkan_context_provider"
@@ -116,6 +147,7 @@ viz_component("common") {
     "gpu/context_lost_reason.h",
     "gpu/context_provider.cc",
     "gpu/context_provider.h",
+    "gpu/gpu_vsync_callback.h",
     "gpu/raster_context_provider.cc",
     "gpu/raster_context_provider.h",
     "hit_test/aggregated_hit_test_region.h",
@@ -218,7 +250,9 @@ viz_component("common") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/client:raster_interface",
+    "//gpu/ipc/common:common",
     "//gpu/vulkan:buildflags",
+    "//mojo/public/cpp/base",
     "//mojo/public/cpp/system",
     "//third_party/libyuv",
     "//ui/gfx",
@@ -256,6 +290,9 @@ viz_component("common") {
   if (enable_vulkan) {
     public_deps += [ ":vulkan_context_provider" ]
   }
+  if (is_mac) {
+    public_deps += [ ":metal_context_provider" ]
+  }
 }
 
 viz_source_set("unit_tests") {
@@ -280,7 +317,6 @@ viz_source_set("unit_tests") {
     "gpu/context_cache_controller_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/render_pass_unittest.cc",
-    "resources/platform_color_unittest.cc",
     "resources/resource_sizes_unittest.cc",
     "surfaces/child_local_surface_id_allocator_unittest.cc",
     "surfaces/local_surface_id_unittest.cc",
@@ -325,6 +361,7 @@ viz_test("viz_benchmark") {
     "//base",
     "//base/test:test_support",
     "//components/test:run_all_unittests",
+    "//components/viz/test:test_support",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc:gl_in_process_context",

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -45,9 +46,6 @@ const base::Feature kPasswordProtectionForSignedInUsers{
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTelemetryForApkDownloads{
-    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -58,14 +56,14 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
 const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kInspectRarContentFeature{"InspectRarContent",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kForceUseAPDownloadProtection{
     "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
+    &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 
 namespace {
 // List of experimental features. Boolean value for each list member should be
@@ -77,11 +75,11 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kCaptureSafetyNetId, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
-    {&kTelemetryForApkDownloads, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kUseLocalBlacklistsV2, true},
@@ -110,6 +108,10 @@ base::ListValue GetFeatureStatusList() {
       AddFeatureAndAvailability(feature_status.feature, &param_list);
   }
   return param_list;
+}
+
+bool GetShouldFillOldPhishGuardProto() {
+  return kShouldFillOldPhishGuardProto.Get();
 }
 
 }  // namespace safe_browsing

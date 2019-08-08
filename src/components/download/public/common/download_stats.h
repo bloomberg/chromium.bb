@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_content.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
@@ -219,6 +220,21 @@ enum class ParallelDownloadCreationEvent {
   COUNT,
 };
 
+// Reason for download to restart during resumption. These enum values are
+// persisted to logs, and should therefore never be renumbered nor removed.
+enum class ResumptionRestartCountTypes {
+  // The download is restarted due to server response.
+  kRequestedByServerCount = 0,
+
+  // Strong validator changes.
+  kStrongValidatorChangesCount = 1,
+
+  // No strong validators are present.
+  kMissingStrongValidatorsCount = 2,
+
+  kMaxValue = kMissingStrongValidatorsCount
+};
+
 // Increment one of the above counts.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCount(DownloadCountTypes type);
 
@@ -231,7 +247,9 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCountWithSource(
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCompleted(
     int64_t download_len,
     bool is_parallelizable,
-    DownloadSource download_source);
+    DownloadSource download_source,
+    bool has_resumed,
+    bool has_strong_validators);
 
 // Record download deletion event.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadDeletion(
@@ -410,6 +428,30 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordInProgressDBCount(
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordDuplicateInProgressDownloadIdCount(
     int count);
+
+// Records the interrupt reason that causes download to restart.
+COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartReason(
+    DownloadInterruptReason reason);
+
+// Records the interrupt reason that causes download to restart.
+COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionStrongValidators(
+    DownloadInterruptReason reason);
+
+COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartCount(
+    ResumptionRestartCountTypes type);
+
+// Records that download was resumed.
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumed(
+    bool has_strong_validators);
+
+#if defined(OS_ANDROID)
+// Records the download interrupt reason for the first background download.
+// If |download_started| is true, this records the last interrupt reason
+// before download is started manually or by the task scheduler.
+COMPONENTS_DOWNLOAD_EXPORT void RecordFirstBackgroundDownloadInterruptReason(
+    DownloadInterruptReason reason,
+    bool download_started);
+#endif  // defined(OS_ANDROID)
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_

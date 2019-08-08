@@ -189,10 +189,6 @@ viz::ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat() const {
   return tile_format_;
 }
 
-bool OneCopyRasterBufferProvider::IsResourceSwizzleRequired() const {
-  return !viz::PlatformColor::SameComponentOrder(GetResourceFormat());
-}
-
 bool OneCopyRasterBufferProvider::IsResourcePremultiplied() const {
   // TODO(ericrk): Handle unpremultiply/dither in one-copy case as well.
   // https://crbug.com/789153

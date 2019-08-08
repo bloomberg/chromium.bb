@@ -112,7 +112,7 @@ void WaylandDataSource::OnCancel(void* data, wl_data_source* source) {
     self->connection_->FinishDragSession(self->dnd_action_,
                                          self->source_window_);
   } else {
-    self->connection_->DataSourceCancelled();
+    self->connection_->clipboard()->DataSourceCancelled();
   }
 }
 

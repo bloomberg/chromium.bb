@@ -43,7 +43,8 @@ size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
 }
 bool HasPointerEventListener(const EventHandlerRegistry& registry) {
   return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent) ||
-         registry.HasEventHandlers(EventHandlerRegistry::kPointerRawMoveEvent);
+         registry.HasEventHandlers(
+             EventHandlerRegistry::kPointerRawUpdateEvent);
 }
 
 const AtomicString& MouseEventNameForPointerEventInputType(
@@ -532,10 +533,10 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     const WebPointerEvent& event,
     const Vector<WebPointerEvent>& coalesced_events,
     const Vector<WebPointerEvent>& predicted_events) {
-  if (event.GetType() == WebInputEvent::Type::kPointerRawMove) {
-    if (!RuntimeEnabledFeatures::PointerRawMoveEnabled() ||
+  if (event.GetType() == WebInputEvent::Type::kPointerRawUpdate) {
+    if (!RuntimeEnabledFeatures::PointerRawUpdateEnabled() ||
         !frame_->GetEventHandlerRegistry().HasEventHandlers(
-            EventHandlerRegistry::kPointerRawMoveEvent))
+            EventHandlerRegistry::kPointerRawUpdateEvent))
       return WebInputEventResult::kHandledSystem;
 
     // If the page has pointer lock active and the event was from
@@ -619,7 +620,8 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
     const AtomicString& mouse_event_name,
     const WebMouseEvent& mouse_event,
     const Vector<WebMouseEvent>& coalesced_events,
-    const Vector<WebMouseEvent>& predicted_events) {
+    const Vector<WebMouseEvent>& predicted_events,
+    const String& canvas_region_id) {
   WebInputEvent::Type event_type;
   // TODO(crbug.com/665924): The following ifs skip the mouseover/leave cases,
   // we should fixed them when further merge the code path.
@@ -643,6 +645,10 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       web_pointer_event, pointer_coalesced_events, pointer_predicted_events,
       target->GetDocument().domWindow());
+
+  ProcessCaptureAndPositionOfPointerEvent(pointer_event, target,
+                                          canvas_region_id, &mouse_event);
+
   return DispatchPointerEvent(target, pointer_event);
 }
 
@@ -661,7 +667,8 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
       pointer_event_factory_.GetLastPointerPosition(
           PointerEventFactory::kMouseId, event);
   WebInputEventResult result = CreateAndDispatchPointerEvent(
-      target, mouse_event_type, event, coalesced_events, predicted_events);
+      target, mouse_event_type, event, coalesced_events, predicted_events,
+      canvas_region_id);
 
   result = event_handling_util::MergeEventResult(
       result, mouse_event_manager_->DispatchMouseEvent(
@@ -733,14 +740,14 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if ((event_type == WebInputEvent::kPointerDown ||
        event_type == WebInputEvent::kPointerUp) &&
       pointer_event->type() == event_type_names::kPointermove &&
-      RuntimeEnabledFeatures::PointerRawMoveEnabled() &&
+      RuntimeEnabledFeatures::PointerRawUpdateEnabled() &&
       frame_->GetEventHandlerRegistry().HasEventHandlers(
-          EventHandlerRegistry::kPointerRawMoveEvent)) {
+          EventHandlerRegistry::kPointerRawUpdateEvent)) {
     // This is a chorded button move event. We need to also send a
-    // pointerrawmove for it.
+    // pointerrawupdate for it.
     DispatchPointerEvent(
         effective_target,
-        pointer_event_factory_.CreatePointerRawMoveEvent(pointer_event));
+        pointer_event_factory_.CreatePointerRawUpdateEvent(pointer_event));
   }
   WebInputEventResult result =
       DispatchPointerEvent(effective_target, pointer_event);
@@ -906,15 +913,6 @@ void PointerEventManager::ProcessPendingPointerCapture(
   } else {
     pointer_capture_target_.erase(pointer_id);
   }
-}
-
-void PointerEventManager::ProcessPendingPointerCaptureForPointerLock(
-    const WebMouseEvent& mouse_event) {
-  PointerEvent* pointer_event = pointer_event_factory_.Create(
-      WebPointerEvent(WebInputEvent::kPointerMove, mouse_event),
-      Vector<WebPointerEvent>(), Vector<WebPointerEvent>(),
-      frame_->GetDocument()->domWindow());
-  ProcessPendingPointerCapture(pointer_event);
 }
 
 void PointerEventManager::RemoveTargetFromPointerCapturingMapping(

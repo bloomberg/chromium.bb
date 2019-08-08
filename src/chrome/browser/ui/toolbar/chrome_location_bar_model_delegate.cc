@@ -177,6 +177,22 @@ bool ChromeLocationBarModelDelegate::IsOfflinePage() const {
 #endif
 }
 
+bool ChromeLocationBarModelDelegate::IsInstantNTP() const {
+  return search::IsInstantNTP(GetActiveWebContents());
+}
+
+bool ChromeLocationBarModelDelegate::IsNewTabPage(const GURL& url) const {
+  return url.spec() == chrome::kChromeUINewTabURL;
+}
+
+bool ChromeLocationBarModelDelegate::IsHomePage(const GURL& url) const {
+  Profile* const profile = GetProfile();
+  if (!profile)
+    return false;
+
+  return url.spec() == profile->GetPrefs()->GetString(prefs::kHomePage);
+}
+
 content::NavigationController*
 ChromeLocationBarModelDelegate::GetNavigationController() const {
   // This |current_tab| can be null during the initialization of the toolbar

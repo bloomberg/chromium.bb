@@ -39,6 +39,10 @@ void LabelTrayView::SetMessage(const base::string16& message) {
   }
 }
 
+const char* LabelTrayView::GetClassName() const {
+  return "LabelTrayView";
+}
+
 views::View* LabelTrayView::CreateChildView(
     const base::string16& message) const {
   HoverHighlightView* child = new HoverHighlightView(click_listener_);

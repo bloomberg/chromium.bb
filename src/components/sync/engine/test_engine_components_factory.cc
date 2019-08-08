@@ -38,6 +38,8 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
     DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id,
+    const std::string& store_birthday,
+    const std::string& bag_of_chips,
     base::TimeDelta poll_interval) {
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
@@ -45,13 +47,14 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
       connection_manager, directory, monitor, empty_listeners,
       debug_info_getter, model_type_registry,
       switches_.encryption_method == ENCRYPTION_KEYSTORE, invalidator_client_id,
-      poll_interval));
+      store_birthday, bag_of_chips, poll_interval));
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>
 TestEngineComponentsFactory::BuildDirectoryBackingStore(
     StorageOption storage,
     const std::string& dir_name,
+    const base::RepeatingCallback<std::string()>& cache_guid_generator,
     const base::FilePath& backing_filepath) {
   if (storage_used_)
     *storage_used_ = storage;
@@ -59,11 +62,12 @@ TestEngineComponentsFactory::BuildDirectoryBackingStore(
   switch (storage_override_) {
     case STORAGE_IN_MEMORY:
       return std::unique_ptr<syncable::DirectoryBackingStore>(
-          new syncable::InMemoryDirectoryBackingStore(dir_name));
+          new syncable::InMemoryDirectoryBackingStore(dir_name,
+                                                      cache_guid_generator));
     case STORAGE_ON_DISK:
       return std::unique_ptr<syncable::DirectoryBackingStore>(
-          new syncable::OnDiskDirectoryBackingStore(dir_name,
-                                                    backing_filepath));
+          new syncable::OnDiskDirectoryBackingStore(
+              dir_name, cache_guid_generator, backing_filepath));
     case STORAGE_INVALID:
       return std::unique_ptr<syncable::DirectoryBackingStore>(
           new syncable::InvalidDirectoryBackingStore());

@@ -186,6 +186,13 @@ void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
   last_finished_load_url_ = render_frame()->GetWebFrame()->GetDocument().Url();
   classifier_page_text_.swap(*page_text);
   have_page_text_ = true;
+
+  GURL stripped_last_load_url(StripRef(last_finished_load_url_));
+  if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
+    DVLOG(2) << "Toplevel URL is unchanged, not starting classification.";
+    return;
+  }
+
   MaybeStartClassification();
 }
 
@@ -206,8 +213,6 @@ void PhishingClassifierDelegate::CancelPendingClassification(
 
 void PhishingClassifierDelegate::ClassificationDone(
     const ClientPhishingRequest& verdict) {
-  // We no longer need the page text.
-  classifier_page_text_.clear();
   DVLOG(2) << "Phishy verdict = " << verdict.is_phishing()
            << " score = " << verdict.client_score();
   if (verdict.client_score() != PhishingClassifier::kInvalidScore &&
@@ -248,16 +253,6 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   }
 
   GURL stripped_last_load_url(StripRef(last_finished_load_url_));
-  if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
-    // We've already classified this toplevel URL, so this was likely an
-    // same-document navigation or a subframe navigation.  The browser should
-    // not send a StartPhishingDetection IPC in this case.
-    DVLOG(2) << "Toplevel URL is unchanged, not starting classification.";
-    classifier_page_text_.clear();  // we won't need this.
-    have_page_text_ = false;
-    return;
-  }
-
   if (!have_page_text_) {
     DVLOG(2) << "Not starting classification, there is no page text ready.";
     return;

@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -59,9 +60,10 @@ class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
 class OffscreenFontSelector;
-class V8VoidFunction;
+class WorkerResourceTimingNotifier;
 class StringOrTrustedScriptURL;
 class TrustedTypePolicyFactory;
+class V8VoidFunction;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -121,12 +123,12 @@ class CORE_EXPORT WorkerGlobalScope
   const base::UnguessableToken& GetAgentClusterID() const final {
     return agent_cluster_id_;
   }
-
-  void InitializeURL(const KURL& url);
+  scheduler::WorkerScheduler* GetScheduler() final;
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
-  void AddConsoleMessage(ConsoleMessage*) final;
+  const SecurityContext& GetSecurityContext() const final { return *this; }
+  void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
 
@@ -138,6 +140,21 @@ class CORE_EXPORT WorkerGlobalScope
   ExecutionContext* GetExecutionContext() const final;
   bool IsWindowOrWorkerGlobalScope() const final { return true; }
 
+  // Initializes this global scope. This must be called after worker script
+  // fetch, and before initiali script evaluation.
+  //
+  // This corresponds to following specs:
+  // - For dedicated/shared workers, step 12.3-12.6 (a custom perform the fetch
+  //   hook) in https://html.spec.whatwg.org/C/#run-a-worker
+  // - For service workers, step 4.5-4.11 in
+  //   https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+  virtual void Initialize(
+      const KURL& response_url,
+      network::mojom::ReferrerPolicy response_referrer_policy,
+      mojom::IPAddressSpace response_address_space,
+      const Vector<CSPHeaderAndType>& response_csp_headers,
+      const Vector<String>* response_origin_trial_tokens) = 0;
+
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context
   // is paused.
@@ -146,16 +163,26 @@ class CORE_EXPORT WorkerGlobalScope
                              std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
 
+  // Should be called (in all successful cases) when the worker top-level
+  // script fetch is finished.
+  // At this time, WorkerGlobalScope::Initialize() should be already called.
+  // Spec: https://html.spec.whatwg.org/C/#run-a-worker Step 12 is completed,
+  // and it's ready to proceed to Step 23.
+  void WorkerScriptFetchFinished(Script&,
+                                 base::Optional<v8_inspector::V8StackTraceId>);
+
   // Fetches and evaluates the top-level classic script.
   virtual void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) = 0;
 
   // Fetches and evaluates the top-level module script.
   virtual void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::FetchCredentialsMode) = 0;
 
   void ReceiveMessage(BlinkTransferableMessage);
@@ -178,7 +205,10 @@ class CORE_EXPORT WorkerGlobalScope
     return animation_frame_provider_;
   }
 
-  TrustedTypePolicyFactory* trustedTypes();
+  TrustedTypePolicyFactory* GetTrustedTypes() const override;
+  TrustedTypePolicyFactory* trustedTypesWorkers() const {
+    return GetTrustedTypes();
+  }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -189,18 +219,20 @@ class CORE_EXPORT WorkerGlobalScope
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
 
-  // Evaluates the given top-level classic script.
-  virtual void EvaluateClassicScriptInternal(
-      const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<uint8_t>> cached_meta_data);
+  // Notifies that the top-level classic script is ready to evaluate.
+  // Worker top-level script is evaluated after it is fetched and
+  // ReadyToRunClassicScript() is called.
+  void ReadyToRunClassicScript();
+
+  void InitializeURL(const KURL& url);
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
-  GlobalScopeCSPApplyMode GetCSPApplyMode() const { return csp_apply_mode_; }
-
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
+
+  // https://html.spec.whatwg.org/C/#run-a-worker Step 24.
+  void RunWorkerScript();
 
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
@@ -220,7 +252,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   mutable Member<WorkerLocation> location_;
   mutable Member<WorkerNavigator> navigator_;
-  Member<TrustedTypePolicyFactory> trusted_types_;
+  mutable Member<TrustedTypePolicyFactory> trusted_types_;
 
   WorkerThread* thread_;
 
@@ -240,9 +272,23 @@ class CORE_EXPORT WorkerGlobalScope
 
   const base::UnguessableToken agent_cluster_id_;
 
-  HttpsState https_state_;
+  // State transition about worker-toplevel script evaluation.
+  enum class ScriptEvalState {
+    // Initial state: ReadyToRunClassicScript() is not yet called.
+    // Worker top-level script fetch might or might not completed, and even when
+    // the fetch completes in this state, script evaluation will be deferred to
+    // when ReadyToRunClassicScript() is called later.
+    kPauseAfterFetch,
+    // ReadyToRunClassicScript() is already called.
+    kReadyToEvaluate,
+    // The worker top-level script is evaluated.
+    kEvaluated,
+  };
+  ScriptEvalState script_eval_state_;
+  Member<Script> worker_script_;
+  base::Optional<v8_inspector::V8StackTraceId> stack_id_;
 
-  GlobalScopeCSPApplyMode csp_apply_mode_;
+  HttpsState https_state_;
 };
 
 template <>

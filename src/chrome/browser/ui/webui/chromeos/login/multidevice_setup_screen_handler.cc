@@ -11,6 +11,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId MultiDeviceSetupScreenView::kScreenId;
+
 MultiDeviceSetupScreenHandler::MultiDeviceSetupScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

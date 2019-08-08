@@ -46,17 +46,16 @@ void ProfilePolicyConnector::Init(
     SchemaRegistry* schema_registry,
     ConfigurationPolicyProvider* configuration_policy_provider,
     const CloudPolicyStore* policy_store,
+    policy::ChromeBrowserPolicyConnector* connector,
     bool force_immediate_load) {
   configuration_policy_provider_ = configuration_policy_provider;
   policy_store_ = policy_store;
 
 #if defined(OS_CHROMEOS)
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  auto* browser_policy_connector =
+      static_cast<BrowserPolicyConnectorChromeOS*>(connector);
 #else
   DCHECK_EQ(nullptr, user);
-  ChromeBrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
 #endif
 
   if (connector->GetPlatformProvider()) {
@@ -68,12 +67,13 @@ void ProfilePolicyConnector::Init(
   }
 
 #if defined(OS_CHROMEOS)
-  if (connector->GetDeviceCloudPolicyManager()) {
-    policy_providers_.push_back(connector->GetDeviceCloudPolicyManager());
-  }
-  if (connector->GetDeviceActiveDirectoryPolicyManager()) {
+  if (browser_policy_connector->GetDeviceCloudPolicyManager()) {
     policy_providers_.push_back(
-        connector->GetDeviceActiveDirectoryPolicyManager());
+        browser_policy_connector->GetDeviceCloudPolicyManager());
+  }
+  if (browser_policy_connector->GetDeviceActiveDirectoryPolicyManager()) {
+    policy_providers_.push_back(
+        browser_policy_connector->GetDeviceActiveDirectoryPolicyManager());
   }
 #else
   for (auto* provider : connector->GetPolicyProviders()) {
@@ -97,8 +97,8 @@ void ProfilePolicyConnector::Init(
   if (!user) {
     DCHECK(schema_registry);
     // This case occurs for the signin and the lock screen app profiles.
-    special_user_policy_provider_.reset(
-        new LoginProfilePolicyProvider(connector->GetPolicyService()));
+    special_user_policy_provider_.reset(new LoginProfilePolicyProvider(
+        browser_policy_connector->GetPolicyService()));
   } else {
     // |user| should never be nullptr except for the signin and the lock screen
     // app profile.
@@ -108,7 +108,8 @@ void ProfilePolicyConnector::Init(
     // the user supplied is not a device-local account user.
     special_user_policy_provider_ = DeviceLocalAccountPolicyProvider::Create(
         user->GetAccountId().GetUserEmail(),
-        connector->GetDeviceLocalAccountPolicyService(), force_immediate_load);
+        browser_policy_connector->GetDeviceLocalAccountPolicyService(),
+        force_immediate_load);
   }
   if (special_user_policy_provider_) {
     special_user_policy_provider_->Init(schema_registry);
@@ -121,9 +122,11 @@ void ProfilePolicyConnector::Init(
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {
     if (configuration_policy_provider)
-      connector->SetUserPolicyDelegate(configuration_policy_provider);
+      browser_policy_connector->SetUserPolicyDelegate(
+          configuration_policy_provider);
     else if (special_user_policy_provider_)
-      connector->SetUserPolicyDelegate(special_user_policy_provider_.get());
+      browser_policy_connector->SetUserPolicyDelegate(
+          special_user_policy_provider_.get());
   }
 #endif
 }

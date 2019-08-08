@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
@@ -16,6 +16,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+NSString* const kFormSuggestionsViewAccessibilityIdentifier =
+    @"kFormSuggestionsViewAccessibilityIdentifier";
 
 namespace {
 
@@ -131,6 +134,8 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   }
   self.stackView = stackView;
   [self createAndInsertArrangedSubviews];
+
+  self.accessibilityIdentifier = kFormSuggestionsViewAccessibilityIdentifier;
 }
 
 - (void)createAndInsertArrangedSubviews {

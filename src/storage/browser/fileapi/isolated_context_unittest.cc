@@ -125,56 +125,59 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   // Deref the current one and registering a new one.
   isolated_context()->RemoveReference(id_);
 
-  std::string id2 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(),
-      base::FilePath(DRIVE FPL("/foo")), nullptr);
+  IsolatedContext::ScopedFSHandle fs2 =
+      isolated_context()->RegisterFileSystemForPath(
+          kFileSystemTypeNativeLocal, std::string(),
+          base::FilePath(DRIVE FPL("/foo")), nullptr);
 
   // Make sure the GetDraggedFileInfo returns false for both ones.
-  ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id2, &toplevels));
+  ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(fs2.id(), &toplevels));
   ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id_, &toplevels));
 
   // Make sure the GetRegisteredPath returns true only for the new one.
   ASSERT_FALSE(isolated_context()->GetRegisteredPath(id_, &path));
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(fs2.id(), &path));
 
   // Try registering three more file systems for the same path as id2.
-  std::string id3 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(), path, nullptr);
-  std::string id4 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(), path, nullptr);
-  std::string id5 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, std::string(), path, nullptr);
+  IsolatedContext::ScopedFSHandle fs3 =
+      isolated_context()->RegisterFileSystemForPath(
+          kFileSystemTypeNativeLocal, std::string(), path, nullptr);
+  IsolatedContext::ScopedFSHandle fs4 =
+      isolated_context()->RegisterFileSystemForPath(
+          kFileSystemTypeNativeLocal, std::string(), path, nullptr);
+  IsolatedContext::ScopedFSHandle fs5 =
+      isolated_context()->RegisterFileSystemForPath(
+          kFileSystemTypeNativeLocal, std::string(), path, nullptr);
 
   // Remove file system for id4.
-  isolated_context()->AddReference(id4);
-  isolated_context()->RemoveReference(id4);
+  fs4 = IsolatedContext::ScopedFSHandle();
 
   // Only id4 should become invalid now.
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id3, &path));
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id4, &path));
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id5, &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(fs2.id(), &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(fs3.id(), &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs4.id(), &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(fs5.id(), &path));
 
   // Revoke file system id5, after adding multiple references.
-  isolated_context()->AddReference(id5);
-  isolated_context()->AddReference(id5);
-  isolated_context()->AddReference(id5);
-  isolated_context()->RevokeFileSystem(id5);
+  isolated_context()->AddReference(fs5.id());
+  isolated_context()->AddReference(fs5.id());
+  isolated_context()->AddReference(fs5.id());
+  isolated_context()->RevokeFileSystem(fs5.id());
 
   // No matter how many references we add id5 must be invalid now.
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id2, &path));
-  ASSERT_TRUE(isolated_context()->GetRegisteredPath(id3, &path));
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id4, &path));
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id5, &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(fs2.id(), &path));
+  ASSERT_TRUE(isolated_context()->GetRegisteredPath(fs3.id(), &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs4.id(), &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs5.id(), &path));
 
   // Revoke the file systems by path.
   isolated_context()->RevokeFileSystemByPath(path);
 
   // Now all the file systems associated to the path must be invalid.
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id2, &path));
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id3, &path));
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id4, &path));
-  ASSERT_FALSE(isolated_context()->GetRegisteredPath(id5, &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs2.id(), &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs3.id(), &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs4.id(), &path));
+  ASSERT_FALSE(isolated_context()->GetRegisteredPath(fs5.id(), &path));
 }
 
 TEST_F(IsolatedContextTest, CrackWithRelativePaths) {

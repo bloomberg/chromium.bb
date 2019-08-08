@@ -9,7 +9,7 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/battery_notification.h"
@@ -71,6 +71,10 @@ views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
 base::string16 PowerTrayView::GetTooltipText(const gfx::Point& p) const {
   return tooltip_;
+}
+
+const char* PowerTrayView::GetClassName() const {
+  return "PowerTrayView";
 }
 
 void PowerTrayView::OnPowerStatusChanged() {

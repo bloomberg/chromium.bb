@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace blink {
 
@@ -29,27 +28,31 @@ enum ManifestFetchResultType {
 
 }  // anonymous namespace
 
-void ManifestUmaUtil::ParseSucceeded(const Manifest& manifest) {
+void ManifestUmaUtil::ParseSucceeded(
+    const mojom::blink::ManifestPtr& manifest) {
   UMA_HISTOGRAM_BOOLEAN(kUMANameParseSuccess, true);
-  UMA_HISTOGRAM_BOOLEAN("Manifest.IsEmpty", manifest.IsEmpty());
-  if (manifest.IsEmpty())
+
+  auto empty_manifest = mojom::blink::Manifest::New();
+  UMA_HISTOGRAM_BOOLEAN("Manifest.IsEmpty", manifest == empty_manifest);
+  if (manifest == empty_manifest)
     return;
 
-  UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.name", !manifest.name.is_null());
+  UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.name", !manifest->name.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.short_name",
-                        !manifest.short_name.is_null());
+                        !manifest->short_name.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.start_url",
-                        !manifest.start_url.is_empty());
+                        !manifest->start_url.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.display",
-                        manifest.display != kWebDisplayModeUndefined);
+                        manifest->display != kWebDisplayModeUndefined);
   UMA_HISTOGRAM_BOOLEAN(
       "Manifest.HasProperty.orientation",
-      manifest.orientation != kWebScreenOrientationLockDefault);
-  UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.icons", !manifest.icons.empty());
+      manifest->orientation != kWebScreenOrientationLockDefault);
+  UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.icons",
+                        !manifest->icons.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.share_target",
-                        manifest.share_target.has_value());
+                        manifest->share_target.get());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.gcm_sender_id",
-                        !manifest.gcm_sender_id.is_null());
+                        !manifest->gcm_sender_id.IsEmpty());
 }
 
 void ManifestUmaUtil::ParseFailed() {

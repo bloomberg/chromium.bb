@@ -18,7 +18,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/web/public/url_data_source_ios.h"
+#include "ios/web/public/webui/url_data_source_ios.h"
 #include "net/base/escape.h"
 #include "third_party/brotli/include/brotli/decode.h"
 #include "ui/base/device_form_factor.h"

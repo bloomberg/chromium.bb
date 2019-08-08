@@ -5,12 +5,15 @@
 #include "sandbox/win/src/process_mitigations.h"
 
 #include <stddef.h>
+#include <windows.h>
+#include <wow64apiset.h>
 
 #include <algorithm>
 
 #include "base/files/file_path.h"
 #include "base/scoped_native_library.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_rand.h"
@@ -31,7 +34,7 @@ using GetProcessMitigationPolicyFunction =
 using SetThreadInformationFunction = decltype(&SetThreadInformation);
 
 // Returns a two-element array of mitigation flags supported on this machine.
-// - This function is only useful on >= base::win::VERSION_WIN8.
+// - This function is only useful on >= base::win::Version::WIN8.
 const ULONG64* GetSupportedMitigations() {
   static ULONG64 mitigations[2] = {};
 
@@ -45,7 +48,7 @@ const ULONG64* GetSupportedMitigations() {
       // RS2.
       //       If an earlier version, the second element will be left 0.
       size_t mits_size =
-          (base::win::GetVersion() >= base::win::VERSION_WIN10_RS2)
+          (base::win::GetVersion() >= base::win::Version::WIN10_RS2)
               ? (sizeof(mitigations[0]) * 2)
               : sizeof(mitigations[0]);
       if (!get_process_mitigation_policy(::GetCurrentProcess(),
@@ -57,6 +60,33 @@ const ULONG64* GetSupportedMitigations() {
   }
 
   return &mitigations[0];
+}
+
+// Returns true if this is 32-bit Chrome running on ARM64 with emulation.
+// Needed because ACG does not work with emulated code.
+// See
+// https://docs.microsoft.com/en-us/windows/uwp/porting/apps-on-arm-troubleshooting-x86.
+// See https://crbug.com/977723.
+// TODO(wfh): Move this code into base. See https://crbug.com/978257.
+bool IsRunning32bitEmulatedOnArm64() {
+#if defined(ARCH_CPU_X86)
+  using IsWow64Process2Function = decltype(&IsWow64Process2);
+
+  IsWow64Process2Function is_wow64_process2 =
+      reinterpret_cast<IsWow64Process2Function>(::GetProcAddress(
+          ::GetModuleHandleA("kernel32.dll"), "IsWow64Process2"));
+  if (!is_wow64_process2)
+    return false;
+  USHORT process_machine;
+  USHORT native_machine;
+  bool retval = is_wow64_process2(::GetCurrentProcess(), &process_machine,
+                                  &native_machine);
+  if (!retval)
+    return false;
+  if (native_machine == IMAGE_FILE_MACHINE_ARM64)
+    return true;
+#endif  // defined(ARCH_CPU_X86)
+  return false;
 }
 
 }  // namespace
@@ -129,7 +159,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 #endif
 
   // This is all we can do in Win7 and below.
-  if (version < base::win::VERSION_WIN8)
+  if (version < base::win::Version::WIN8)
     return true;
 
   SetProcessMitigationPolicyFunction set_process_mitigation_policy =
@@ -190,17 +220,18 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
   }
 
-  if (version < base::win::VERSION_WIN8_1)
+  if (version < base::win::Version::WIN8_1)
     return true;
 
   // Enable dynamic code policies.
-  if (flags & MITIGATION_DYNAMIC_CODE_DISABLE ||
-      flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT) {
+  if (!IsRunning32bitEmulatedOnArm64() &&
+      (flags & MITIGATION_DYNAMIC_CODE_DISABLE ||
+       flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT)) {
     PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
     policy.ProhibitDynamicCode = true;
 
     // Per-thread opt-out is only supported on >= Anniversary.
-    if (version >= base::win::VERSION_WIN10_RS1 &&
+    if (version >= base::win::Version::WIN10_RS1 &&
         flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT) {
       policy.AllowThreadOptOut = true;
     }
@@ -212,7 +243,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
   }
 
-  if (version < base::win::VERSION_WIN10)
+  if (version < base::win::Version::WIN10)
     return true;
 
   // Enable font policies.
@@ -227,7 +258,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
   }
 
-  if (version < base::win::VERSION_WIN10_TH2)
+  if (version < base::win::Version::WIN10_TH2)
     return true;
 
   // Enable binary signing policies.
@@ -256,7 +287,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     if (flags & MITIGATION_IMAGE_LOAD_NO_LOW_LABEL)
       policy.NoLowMandatoryLabelImages = true;
     // PreferSystem32 is only supported on >= Anniversary.
-    if (version >= base::win::VERSION_WIN10_RS1 &&
+    if (version >= base::win::Version::WIN10_RS1 &&
         flags & MITIGATION_IMAGE_LOAD_PREFER_SYS32) {
       policy.PreferSystem32Images = true;
     }
@@ -277,7 +308,7 @@ bool ApplyMitigationsToCurrentThread(MitigationFlags flags) {
 
   base::win::Version version = base::win::GetVersion();
 
-  if (version < base::win::VERSION_WIN10_RS1)
+  if (version < base::win::Version::WIN10_RS1)
     return true;
 
   // Enable dynamic code per-thread policies.
@@ -322,7 +353,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
   *size = sizeof(*policy_flags);
 #elif defined(_M_IX86)
   // A 64-bit flags attribute is illegal on 32-bit Win 7.
-  if (version < base::win::VERSION_WIN8)
+  if (version < base::win::Version::WIN8)
     *size = sizeof(DWORD);
   else
     *size = sizeof(*policy_flags);
@@ -344,7 +375,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 #endif
 
   // Win 7
-  if (version < base::win::VERSION_WIN8)
+  if (version < base::win::Version::WIN8)
     return;
 
   // Everything >= Win8, do not return before the end of the function where
@@ -353,7 +384,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Mitigations >= Win8:
   //----------------------------------------------------------------------------
-  if (version >= base::win::VERSION_WIN8) {
+  if (version >= base::win::Version::WIN8) {
     if (flags & MITIGATION_RELOCATE_IMAGE) {
       *policy_value_1 |=
           PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON;
@@ -396,7 +427,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Mitigations >= Win8.1:
   //----------------------------------------------------------------------------
-  if (version >= base::win::VERSION_WIN8_1) {
+  if (version >= base::win::Version::WIN8_1) {
     if (flags & MITIGATION_DYNAMIC_CODE_DISABLE) {
       *policy_value_1 |=
           PROCESS_CREATION_MITIGATION_POLICY_PROHIBIT_DYNAMIC_CODE_ALWAYS_ON;
@@ -405,7 +436,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Mitigations >= Win10:
   //----------------------------------------------------------------------------
-  if (version >= base::win::VERSION_WIN10) {
+  if (version >= base::win::Version::WIN10) {
     if (flags & MITIGATION_NONSYSTEM_FONT_DISABLE) {
       *policy_value_1 |=
           PROCESS_CREATION_MITIGATION_POLICY_FONT_DISABLE_ALWAYS_ON;
@@ -414,7 +445,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Mitigations >= Win10 TH2:
   //----------------------------------------------------------------------------
-  if (version >= base::win::VERSION_WIN10_TH2) {
+  if (version >= base::win::Version::WIN10_TH2) {
     if (flags & MITIGATION_FORCE_MS_SIGNED_BINS) {
       *policy_value_1 |=
           PROCESS_CREATION_MITIGATION_POLICY_BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON;
@@ -433,7 +464,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Mitigations >= Win10 RS1 ("Anniversary"):
   //----------------------------------------------------------------------------
-  if (version >= base::win::VERSION_WIN10_RS1) {
+  if (version >= base::win::Version::WIN10_RS1) {
     if (flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT) {
       *policy_value_1 |=
           PROCESS_CREATION_MITIGATION_POLICY_PROHIBIT_DYNAMIC_CODE_ALWAYS_ON_ALLOW_OPT_OUT;
@@ -447,7 +478,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Mitigations >= Win10 RS3 ("Fall Creator's"):
   //----------------------------------------------------------------------------
-  if (version >= base::win::VERSION_WIN10_RS3) {
+  if (version >= base::win::Version::WIN10_RS3) {
     // Note: This mitigation requires not only Win10 1709, but also the January
     //       2018 security updates and any applicable firmware updates from the
     //       OEM device manufacturer.
@@ -471,7 +502,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   // Only include the second element in |size| if it is non-zero.  Else,
   // UpdateProcThreadAttribute() will return a failure when setting policies.
-  if (*policy_value_2 && version >= base::win::VERSION_WIN10_RS2) {
+  if (*policy_value_2 && version >= base::win::Version::WIN10_RS2) {
     *size = sizeof(*policy_flags) * 2;
   }
 
@@ -482,7 +513,7 @@ MitigationFlags FilterPostStartupProcessMitigations(MitigationFlags flags) {
   base::win::Version version = base::win::GetVersion();
 
   // Windows 7.
-  if (version < base::win::VERSION_WIN8) {
+  if (version < base::win::Version::WIN8) {
     return flags & (MITIGATION_BOTTOM_UP_ASLR | MITIGATION_DLL_SEARCH_ORDER |
                     MITIGATION_HEAP_TERMINATE);
   }

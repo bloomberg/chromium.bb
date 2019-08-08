@@ -35,7 +35,6 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "ui/base/page_transition_types.h"
@@ -97,9 +96,9 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
                                          std::move(ack_callback));
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
     DCHECK(url_loader_client_.is_bound());
-    url_loader_client_->OnReceiveCachedMetadata(data);
+    url_loader_client_->OnReceiveCachedMetadata(std::move(data));
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
@@ -382,15 +381,17 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // preflight logic is implemented in Blink. So we return a "fallback required"
   // response to Blink.
   // TODO(falken): Remove this mechanism after OOB-CORS ships.
-  if ((resource_request_.fetch_request_mode ==
-           network::mojom::FetchRequestMode::kCors ||
-       resource_request_.fetch_request_mode ==
-           network::mojom::FetchRequestMode::kCorsWithForcedPreflight) &&
-      (!resource_request_.request_initiator.has_value() ||
-       !resource_request_.request_initiator->IsSameOriginWith(
-           url::Origin::Create(resource_request_.url)))) {
+  if (!network::features::ShouldEnableOutOfBlinkCors() &&
+      ((resource_request_.fetch_request_mode ==
+            network::mojom::FetchRequestMode::kCors ||
+        resource_request_.fetch_request_mode ==
+            network::mojom::FetchRequestMode::kCorsWithForcedPreflight) &&
+       (!resource_request_.request_initiator.has_value() ||
+        !resource_request_.request_initiator->IsSameOriginWith(
+            url::Origin::Create(resource_request_.url))))) {
     TRACE_EVENT_WITH_FLOW0(
-        "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback",
+        "ServiceWorker",
+        "ServiceWorkerSubresourceLoader::OnFallback - CORS workaround",
         TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
                             TRACE_ID_LOCAL(request_id_)),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -512,9 +513,20 @@ void ServiceWorkerSubresourceLoader::StartResponse(
       }
     }
 
-    body_as_blob_->ReadSideData(base::BindOnce(
-        &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
-        weak_factory_.GetWeakPtr(), std::move(data_pipe)));
+    // Read side data if necessary.
+    auto resource_type =
+        static_cast<content::ResourceType>(resource_request_.resource_type);
+    if (resource_type == content::ResourceType::kScript) {
+      body_as_blob_->ReadSideData(base::BindOnce(
+          &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
+          weak_factory_.GetWeakPtr(), std::move(data_pipe)));
+    } else {
+      // Bypass reading side data when the request isn't for script. Currently
+      // side data only exists for scripts (as cached metadata).
+      OnBlobSideDataReadingComplete(std::move(data_pipe),
+                                    base::Optional<mojo_base::BigBuffer>());
+    }
+
     return;
   }
 
@@ -717,7 +729,7 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
 
 void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
     mojo::ScopedDataPipeConsumerHandle data_pipe,
-    const base::Optional<std::vector<uint8_t>>& metadata) {
+    base::Optional<mojo_base::BigBuffer> metadata) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete",
@@ -731,7 +743,7 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
   side_data_reading_complete_ = true;
 
   if (metadata.has_value())
-    url_loader_client_->OnReceiveCachedMetadata(metadata.value());
+    url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
 
   // If parallel reading is disabled then we need to start reading the blob.
   if (!data_pipe.is_valid()) {

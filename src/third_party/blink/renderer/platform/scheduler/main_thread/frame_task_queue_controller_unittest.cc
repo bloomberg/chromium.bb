@@ -37,7 +37,7 @@ class FrameTaskQueueControllerTest : public testing::Test,
   FrameTaskQueueControllerTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         task_queue_created_count_(0) {}
 
   ~FrameTaskQueueControllerTest() override = default;

@@ -5,9 +5,9 @@
 ++[tree item] name='Checked illegal' checked selectable checkable:true
 ++[section] name='Current illegal' current:true
 ++[section] name='Disabled illegal'
-++[section] name='Dropeffect illegal' dropeffect:X-ILLEGAL
+++[section] name='Dropeffect illegal' dropeffect:none
 ++[tree item] name='Expanded illegal' expanded selectable
-++[section] name='Grabbed illegal' grabbed:X-ILLEGAL
+++[section] name='Grabbed illegal'
 ++[push button] name='Haspopup illegal' haspopup:menu
 ++[section] name='Invalid illegal' invalid-entry
 ++[log] name='Live illegal' atomic:false live:X-ILLEGAL relevant:additions text

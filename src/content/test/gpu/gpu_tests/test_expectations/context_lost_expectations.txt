@@ -34,7 +34,8 @@ crbug.com/609629 [ android ] ContextLost_WebGLContextLostFromGPUProcessExit [ Sk
 crbug.com/609629 [ android ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
 
 # Flaking on Nexus 5X
-crbug.com/879423 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ RetryOnFailure ]
+crbug.com/965268 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLBlockedAfterJSNavigation [ Skip ]
+crbug.com/965268 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ Skip ]
 crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash [ Failure ]
 crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash_OOPD [ Failure ]
 

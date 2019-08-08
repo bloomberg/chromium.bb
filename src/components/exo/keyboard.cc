@@ -4,9 +4,12 @@
 
 #include "components/exo/keyboard.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/exo/input_trace.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/seat.h"
@@ -19,8 +22,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {
@@ -230,6 +231,8 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   // Ignore synthetic key repeat events.
   if (event->is_repeat())
     return;
+
+  TRACE_EXO_INPUT_EVENT(event);
 
   // Process reserved accelerators before sending it to client.
   if (ProcessAcceleratorIfReserved(focus_, event)) {

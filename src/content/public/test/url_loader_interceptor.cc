@@ -465,8 +465,8 @@ void URLLoaderInterceptor::WriteResponse(
     network::mojom::URLLoaderClient* client,
     base::Optional<net::SSLInfo> ssl_info) {
   net::HttpResponseInfo info;
-  info.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+  info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   network::ResourceResponseHead response;
   response.headers = info.headers;
   response.headers->GetMimeType(&response.mime_type);

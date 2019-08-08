@@ -78,9 +78,9 @@ class CORE_EXPORT NGInlineBreakToken final : public NGBreakToken {
   void SetIgnoreFloats() { ignore_floats_ = true; }
   bool IgnoreFloats() const { return ignore_floats_; }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   String ToString() const override;
-#endif  // NDEBUG
+#endif
 
  private:
   NGInlineBreakToken(NGInlineNode node,

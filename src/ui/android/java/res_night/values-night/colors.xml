@@ -19,7 +19,8 @@
     <color name="default_icon_color_inverse">@color/default_icon_color_dark</color>
     <color name="default_icon_color_inverse_disabled">@color/default_icon_color_dark_disabled</color>
     <color name="default_icon_color_blue">@color/modern_blue_300</color>
-    <color name="hairline_stroke_color">@color/white_alpha_10</color>
+    <color name="default_icon_color_secondary">@color/default_icon_color_secondary_light</color>
+    <color name="hairline_stroke_color">@color/modern_grey_700</color>
 
     <!-- Common background and branding color. -->
     <color name="modern_primary_color">@color/default_bg_color_dark</color>
@@ -34,9 +35,10 @@
     <color name="ripple_color_blue">@color/modern_blue_300</color>
 
     <!-- Chip colors -->
-    <color name="chip_text_color_default">@color/default_text_color_dark_secondary</color>
+    <color name="chip_text_color_default">@color/default_text_color_light</color>
     <color name="chip_text_color_selected">@color/default_text_color_dark</color>
     <color name="chip_background_color_disabled">@color/modern_grey_300_alpha_38</color>
+    <color name="chip_ripple_color_default">@android:color/white</color>
 
     <!-- CircularProgressView colors -->
     <color name="circular_progress_inner_background_color_small">@color/modern_blue_300</color>

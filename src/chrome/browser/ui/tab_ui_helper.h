@@ -66,9 +66,8 @@ class TabUIHelper : public content::WebContentsObserver,
   // new tab is opened in the background and its initial navigation is delayed.
   bool ShouldUseFaviconFromHistory() const;
 
-  void FetchFaviconFromHistory(
-      const GURL& url,
-      const favicon_base::FaviconImageCallback& callback);
+  void FetchFaviconFromHistory(const GURL& url,
+                               favicon_base::FaviconImageCallback callback);
   void OnURLFaviconFetched(const favicon_base::FaviconImageResult& favicon);
   void OnHostFaviconFetched(const favicon_base::FaviconImageResult& favicon);
   void UpdateFavicon(const favicon_base::FaviconImageResult& favicon);

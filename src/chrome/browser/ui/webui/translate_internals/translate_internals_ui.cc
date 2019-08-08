@@ -31,7 +31,6 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   source->SetDefaultResource(IDR_TRANSLATE_INTERNALS_HTML);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("translate_internals.js", IDR_TRANSLATE_INTERNALS_JS);
-  source->UseGzip();
 
   base::DictionaryValue langs;
   translate::TranslateInternalsHandler::GetLanguages(&langs);

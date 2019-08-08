@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import base64
 import json
 import unittest
@@ -116,6 +120,15 @@ class UtilsTest(testing_common.TestCase):
         test_key,
         [('*/*/S/*', 1), ('*/*/*/To*al', 2), ('*/*/*/Foo', 3)])
     self.assertEqual(2, result)
+
+  def testMostSpecificMatchingPattern_Duplicate(self):
+    test_key = utils.TestKey('Does/Not/Match/Something')
+
+    result = utils.MostSpecificMatchingPattern(
+        test_key,
+        [('Does/Not/Match/*', 1), ('Does/Not/Match/*', 2)]
+    )
+    self.assertEqual(1, result)
 
   def _PutEntitiesAllExternal(self):
     """Puts entities (none internal-only) and returns the keys."""

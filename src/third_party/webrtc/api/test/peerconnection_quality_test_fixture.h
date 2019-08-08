@@ -10,8 +10,10 @@
 #ifndef API_TEST_PEERCONNECTION_QUALITY_TEST_FIXTURE_H_
 #define API_TEST_PEERCONNECTION_QUALITY_TEST_FIXTURE_H_
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/memory/memory.h"
@@ -30,6 +32,7 @@
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/video_encoder_factory.h"
 #include "logging/rtc_event_log/rtc_event_log_factory_interface.h"
+#include "media/base/media_constants.h"
 #include "rtc_base/network.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/ssl_certificate.h"
@@ -38,19 +41,72 @@
 namespace webrtc {
 namespace webrtc_pc_e2e {
 
+constexpr size_t kDefaultSlidesWidth = 1850;
+constexpr size_t kDefaultSlidesHeight = 1110;
+
 // API is in development. Can be changed/removed without notice.
 class PeerConnectionE2EQualityTestFixture {
  public:
+  // Contains parameters for screen share scrolling.
+  //
+  // If scrolling is enabled, then it will be done by putting sliding window
+  // on source video and moving this window from top left corner to the
+  // bottom right corner of the picture.
+  //
+  // In such case source dimensions must be greater or equal to the sliding
+  // window dimensions. So |source_width| and |source_height| are the dimensions
+  // of the source frame, while |VideoConfig::width| and |VideoConfig::height|
+  // are the dimensions of the sliding window.
+  //
+  // Because |source_width| and |source_height| are dimensions of the source
+  // frame, they have to be width and height of videos from
+  // |ScreenShareConfig::slides_yuv_file_names|.
+  //
+  // Because scrolling have to be done on single slide it also requires, that
+  // |duration| must be less or equal to
+  // |ScreenShareConfig::slide_change_interval|.
+  struct ScrollingParams {
+    ScrollingParams(TimeDelta duration,
+                    size_t source_width,
+                    size_t source_height)
+        : duration(duration),
+          source_width(source_width),
+          source_height(source_height) {
+      RTC_CHECK_GT(duration.ms(), 0);
+    }
+
+    // Duration of scrolling.
+    TimeDelta duration;
+    // Width of source slides video.
+    size_t source_width;
+    // Height of source slides video.
+    size_t source_height;
+  };
+
   // Contains screen share video stream properties.
   struct ScreenShareConfig {
-    // If true, slides will be generated programmatically.
-    bool generate_slides;
+    explicit ScreenShareConfig(TimeDelta slide_change_interval)
+        : slide_change_interval(slide_change_interval) {
+      RTC_CHECK_GT(slide_change_interval.ms(), 0);
+    }
+
     // Shows how long one slide should be presented on the screen during
     // slide generation.
     TimeDelta slide_change_interval;
-    // If equal to 0, no scrolling will be applied.
-    TimeDelta scroll_duration;
-    // If empty, default set of slides will be used.
+    // If true, slides will be generated programmatically. No scrolling params
+    // will be applied in such case.
+    bool generate_slides = false;
+    // If present scrolling will be applied. Please read extra requirement on
+    // |slides_yuv_file_names| for scrolling.
+    absl::optional<ScrollingParams> scrolling_params;
+    // Contains list of yuv files with slides.
+    //
+    // If empty, default set of slides will be used. In such case
+    // |VideoConfig::width| must be equal to |kDefaultSlidesWidth| and
+    // |VideoConfig::height| must be equal to |kDefaultSlidesHeight| or if
+    // |scrolling_params| are specified, then |ScrollingParams::source_width|
+    // must be equal to |kDefaultSlidesWidth| and
+    // |ScrollingParams::source_height| must be equal to |kDefaultSlidesHeight|.
     std::vector<std::string> slides_yuv_file_names;
   };
 
@@ -61,7 +117,9 @@ class PeerConnectionE2EQualityTestFixture {
     VideoConfig(size_t width, size_t height, int32_t fps)
         : width(width), height(height), fps(fps) {}
 
+    // Video stream width.
     const size_t width;
+    // Video stream height.
     const size_t height;
     const int32_t fps;
     // Have to be unique among all specified configs for all peers in the call.
@@ -172,6 +230,10 @@ class PeerConnectionE2EQualityTestFixture {
     virtual PeerConfigurer* SetAecDumpPath(std::string path) = 0;
     virtual PeerConfigurer* SetRTCConfiguration(
         PeerConnectionInterface::RTCConfiguration configuration) = 0;
+    // Set bitrate parameters on PeerConnection. This constraints will be
+    // applied to all summed RTP streams for this peer.
+    virtual PeerConfigurer* SetBitrateParameters(
+        PeerConnectionInterface::BitrateParameters bitrate_params) = 0;
   };
 
   // Contains parameters, that describe how long framework should run quality
@@ -184,6 +246,21 @@ class PeerConnectionE2EQualityTestFixture {
     // it will be shut downed.
     TimeDelta run_duration;
 
+    // Next two fields are used to specify concrete video codec, that should be
+    // used in the test. Video code will be negotiated in SDP during offer/
+    // answer exchange.
+    // Video codec name. You can find valid names in
+    // media/base/media_constants.h
+    std::string video_codec_name = cricket::kVp8CodecName;
+    // Map of parameters, that have to be specified on SDP codec. Each parameter
+    // is described by key and value. Codec parameters will match the specified
+    // map if and only if for each key from |video_codec_required_params| there
+    // will be a parameter with name equal to this key and parameter value will
+    // be equal to the value from |video_codec_required_params| for this key.
+    // If empty then only name will be used to match the codec.
+    std::map<std::string, std::string> video_codec_required_params;
+    bool use_ulp_fec = false;
+    bool use_flex_fec = false;
     // Specifies how much video encoder target bitrate should be different than
     // target bitrate, provided by WebRTC stack. Must be greater then 0. Can be
     // used to emulate overshooting of video encoders. This multiplier will
@@ -191,6 +268,20 @@ class PeerConnectionE2EQualityTestFixture {
     // estimated by WebRTC stack will be multiplied on this multiplier and then
     // provided into VideoEncoder::SetRates(...).
     double video_encoder_bitrate_multiplier = 1.0;
+  };
+
+  // Represent an entity that will report quality metrics after test.
+  class QualityMetricsReporter {
+   public:
+    virtual ~QualityMetricsReporter() = default;
+
+    // Invoked by framework after peer connection factory and peer connection
+    // itself will be created but before offer/answer exchange will be started.
+    virtual void Start(absl::string_view test_case_name) = 0;
+
+    // Invoked by framework after call is ended and peer connection factory and
+    // peer connection are destroyed.
+    virtual void StopAndReportResults() = 0;
   };
 
   virtual ~PeerConnectionE2EQualityTestFixture() = default;
@@ -209,6 +300,10 @@ class PeerConnectionE2EQualityTestFixture {
                             TimeDelta interval,
                             std::function<void(TimeDelta)> func) = 0;
 
+  // Add stats reporter entity to observe the test.
+  virtual void AddQualityMetricsReporter(
+      std::unique_ptr<QualityMetricsReporter> quality_metrics_reporter) = 0;
+
   // Add a new peer to the call and return an object through which caller
   // can configure peer's behavior.
   // |network_thread| will be used as network thread for peer's peer connection
@@ -219,6 +314,13 @@ class PeerConnectionE2EQualityTestFixture {
                        rtc::NetworkManager* network_manager,
                        rtc::FunctionView<void(PeerConfigurer*)> configurer) = 0;
   virtual void Run(RunParams run_params) = 0;
+
+  // Returns real test duration - the time of test execution measured during
+  // test. Client must call this method only after test is finished (after
+  // Run(...) method returned). Test execution time is time from end of call
+  // setup (offer/answer, ICE candidates exchange done and ICE connected) to
+  // start of call tear down (PeerConnection closed).
+  virtual TimeDelta GetRealTestDuration() const = 0;
 };
 
 }  // namespace webrtc_pc_e2e

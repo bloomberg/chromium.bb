@@ -450,7 +450,7 @@ void FlexLayoutInternal::DoLayout(const Layout& layout,
   for (const ChildLayout& child_layout : layout.child_layouts) {
     if (child_layout.excluded)
       continue;
-    if (child_layout.visible != child_layout.view->visible())
+    if (child_layout.visible != child_layout.view->GetVisible())
       layout_.SetViewVisibility(child_layout.view, child_layout.visible);
     if (child_layout.visible) {
       NormalizedRect actual = child_layout.actual_bounds;
@@ -607,13 +607,12 @@ void FlexLayoutInternal::AllocateFlexSpace(
     FlexOrderToViewIndexMap* expandable_views) const {
   // Step through each flex priority allocating as much remaining space as
   // possible to each flex view.
-  for (auto flex_it = order_to_index.begin(); flex_it != order_to_index.end();
-       ++flex_it) {
+  for (const auto& flex_elem : order_to_index) {
     // Check to see we haven't filled available space.
     int remaining = *bounds.main() - layout->total_size.main();
     if (remaining <= 0)
       break;
-    const int flex_order = flex_it->first;
+    const int flex_order = flex_elem.first;
 
     // The flex algorithm we're using works as follows:
     //  * For each child view at a particular flex order:
@@ -641,7 +640,7 @@ void FlexLayoutInternal::AllocateFlexSpace(
 
     // Flex children at this priority order.
     int flex_total = std::accumulate(
-        flex_it->second.begin(), flex_it->second.end(), 0,
+        flex_elem.second.begin(), flex_elem.second.end(), 0,
         [layout](int total, size_t index) {
           return total + layout->child_layouts[index].flex.weight();
         });
@@ -652,8 +651,8 @@ void FlexLayoutInternal::AllocateFlexSpace(
     // We currently consider this user error; if the behavior is not
     // desired, prioritize the child views' flex.
     bool dirty = false;
-    for (auto index_it = flex_it->second.begin();
-         remaining >= 0 && index_it != flex_it->second.end(); ++index_it) {
+    for (auto index_it = flex_elem.second.begin();
+         remaining >= 0 && index_it != flex_elem.second.end(); ++index_it) {
       const size_t view_index = *index_it;
 
       ChildLayout& child_layout = layout->child_layouts[view_index];
@@ -860,7 +859,7 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
 
     // Sanity check that a child's visibility hasn't been modified outside
     // the layout manager.
-    if (proposed_view_layout.visible != child->visible())
+    if (proposed_view_layout.visible != child->GetVisible())
       return false;
 
     if (proposed_view_layout.visible) {
@@ -1048,7 +1047,7 @@ void FlexLayout::Installed(View* host) {
   // there.
   for (View* child : host->children()) {
     internal::ChildLayoutParams child_layout_params;
-    child_layout_params.hidden_by_owner = !child->visible();
+    child_layout_params.hidden_by_owner = !child->GetVisible();
     child_params_.emplace(child, child_layout_params);
   }
 }
@@ -1056,7 +1055,7 @@ void FlexLayout::Installed(View* host) {
 void FlexLayout::ViewAdded(View* host, View* view) {
   DCHECK_EQ(host_, host);
   internal::ChildLayoutParams child_layout_params;
-  child_layout_params.hidden_by_owner = !view->visible();
+  child_layout_params.hidden_by_owner = !view->GetVisible();
   child_params_.emplace(view, child_layout_params);
   internal_->InvalidateLayout(true);
 }

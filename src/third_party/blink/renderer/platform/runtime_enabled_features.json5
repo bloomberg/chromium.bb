@@ -52,7 +52,7 @@
     // It is NOT supported. As a workaround, you can either specify the same
     // |origin_trial_feature_name| for the feature or add the OT feature to
     // the |implied_by| list.
-    // TODO(yashard): Add support for origin trial features in 'depends_on' list
+    // TODO(https://crbug.com/954679): Add support for origin trial features in 'depends_on' list
     depends_on: {
       default: [],
       valid_type: "list",
@@ -117,7 +117,7 @@
     },
     {
       name: "AsyncClipboard",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AudioOutputDevices",
@@ -127,6 +127,18 @@
     {
       name: "AudioVideoTracks",
       status: "experimental",
+    },
+    {
+      name: "AudioWorkletRealtimeThread",
+      status: "experimental",
+    },
+    {
+      name: "AutomaticLazyFrameLoading",
+      depends_on: ["LazyFrameLoading"],
+    },
+    {
+      name: "AutomaticLazyImageLoading",
+      depends_on: ["LazyImageLoading"],
     },
     {
       name: "AutomationControlled",
@@ -177,6 +189,12 @@
       name: "BloatedRendererDetectionSkipUptimeCheck",
     },
     {
+      // Adding simpler reading methods - stream(), text(), and arrayBuffer() -
+      // to the Blob interface. See: https://github.com/w3c/FileAPI/pull/117
+      name: "BlobReadMethods",
+      status: "stable"
+    },
+    {
       name: "BlockCredentialedSubresources",
       status: "stable",
     },
@@ -186,10 +204,7 @@
     },
     {
       name: "BlockingFocusWithoutUserActivation",
-    },
-    {
-      name: "BlockMetaSetCookie",
-      status: "stable"
+      status: "experimental",
     },
     {
       name: "BuiltInModuleAll",
@@ -212,10 +227,6 @@
     },
     {
       name: "CacheStorageAddAllRejectsDuplicates",
-      status: "stable",
-    },
-    {
-      name: "CallCaptureListenersAtCapturePhaseAtShadowHosts",
       status: "stable",
     },
     {
@@ -247,6 +258,10 @@
     },
     {
       name: "ClickRetargetting",
+      status: "experimental",
+    },
+    {
+      name: "ClientHintsFeaturePolicy",
       status: "experimental",
     },
     {
@@ -289,7 +304,7 @@
       status: "experimental",
     },
     {
-      name: "CSS3TextBreakSpaces",
+      name: "CSS3TextBreakAnywhere",
       status: "experimental",
     },
     {
@@ -303,11 +318,16 @@
     },
     {
       name: "CSSBackdropFilter",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSCalcAsInt",
       status: "test",
+    },
+    // Support for the CSS color-scheme property from the css-color-adjust spec.
+    // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
+    {
+      name: "CSSColorScheme",
     },
     {
       name: "CSSFocusVisible",
@@ -319,9 +339,6 @@
     {
       name: "CSSFontSizeAdjust",
       status: "experimental",
-    },
-    {
-      name: "CSSFragmentIdentifiers"
     },
     {
       // This needs to be kept as a runtime flag as long as we need to forcibly
@@ -419,14 +436,15 @@
     },
     {
       name: "CustomUserTiming",
+      status: "experimental",
     },
     {
       name: "Database",
       status: "stable",
     },
     {
-      name: "DecodeToYUV",
-      status: "experimental",
+      name: "DecodeLossyWebPImagesToYUV",
+      status: "test",
     },
     {
       name: "DesktopCaptureDisableLocalEchoControl",
@@ -481,6 +499,10 @@
       status: "test",
     },
     {
+      name: "EnterKeyHintAttribute",
+      status: "experimental",
+    },
+    {
       name: "EventTiming",
       origin_trial_feature_name: "EventTiming",
       status: "experimental",
@@ -504,6 +526,12 @@
       origin_trial_feature_name: "ExperimentalIsInputPending",
       status: "experimental"
     },
+    // Enables a DOM-exposed interface to profile client JS.
+    // https://github.com/WICG/js-self-profiling
+    {
+      name: "ExperimentalJSProfiler",
+      status: "experimental"
+    },
     // Enables a set of features intended to help improve web developer
     // productivity, by restricting the use of potentially problematic web-
     // platform behaviors, as well as adding new high-level APIs for common
@@ -524,6 +552,7 @@
     },
     {
       name: "FastBorderRadius",
+      status: "experimental",
     },
     {
       name: "FastFlatTreeTraversal",
@@ -532,6 +561,10 @@
     {
       name: "FastMobileScrolling",
       status: {"Android": "stable"},
+    },
+    {
+      name: "FeaturePolicyForClientHints",
+      status: "experimental",
     },
     {
       name: "FeaturePolicyForSandbox",
@@ -552,7 +585,7 @@
     },
     {
       name: "FetchMetadata",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "FetchMetadataDestination",
@@ -567,14 +600,11 @@
     // metric. See also: http://bit.ly/fcp_plus_plus
     {
       name: "FirstContentfulPaintPlusPlus",
+      status: "stable",
     },
     {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,
-    },
-    {
-      name: "FontCacheScaling",
-      status: "test",
     },
     {
       name: "FontSrcLocalMatching",
@@ -600,6 +630,11 @@
       name: "FormAssociatedCustomElements",
       status: "experimental",
     },
+    // This is to communicate features::FormControlsRefresh from ui (and can be
+    // removed when the feature launches).
+    {
+      name: "FormControlsRefresh",
+    },
     {
       name: "FormDataEvent",
       status: "experimental",
@@ -611,7 +646,7 @@
       name: "FractionalScrollOffsets",
     },
     {
-      name: "FramesTimingFunction",
+      name: "FreezeFramesOnVisibility",
       status: "experimental",
     },
     {
@@ -624,7 +659,6 @@
     },
     {
       name: "HeapCompaction",
-      status: "stable",
     },
     {
       name: "HeapConcurrentMarking",
@@ -635,6 +669,9 @@
     },
     {
       name: "HeapIncrementalMarkingStress"
+    },
+    {
+      name: "HeapUnifiedGCScheduling"
     },
     {
       name: "HrefTranslate",
@@ -663,7 +700,7 @@
     },
     {
       name: "IDBTransactionCommit",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IdleDetection",
@@ -714,15 +751,7 @@
       name: "IsolatedWorldCSP"
     },
     {
-      // Tracks "jank" from layout objects changing their visual location
-      // between animation frames (see crbug.com/581518).
-      name: "JankTracking",
-      implied_by: ["LayoutJankAPI", "JankTrackingSweepLine"],
-      origin_trial_feature_name: "LayoutJankAPI",
-      status: "stable",
-    },
-    {
-      // Modifies JankTracking to use O(n log n) sweep line algorithm for
+      // Modifies JankTracker to use O(n log n) sweep line algorithm for
       // computing the area of the jank region.
       name: "JankTrackingSweepLine",
       status: "experimental",
@@ -739,15 +768,21 @@
       status: "experimental",
     },
     {
-      // Exposes layout jank fractions to Javascript. See explainer:
+      // Exposes layout shift scores to Javascript. See explainer:
       // http://bit.ly/lsm-explainer.
-      name: "LayoutJankAPI",
+      name: "LayoutInstabilityAPI",
       origin_trial_feature_name: "LayoutJankAPI",
       status: "experimental",
     },
     {
+      // Modifies LayoutInstabilityAPI to include the maximum move distance in the
+      // jank fraction computation.
+      name: "LayoutInstabilityMoveDistance",
+    },
+    {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "EditingNG", "BidiCaretAffinity"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
+      status: "stable",
     },
     {
       name: "LayoutNGBlockFragmentation",
@@ -763,6 +798,9 @@
       implied_by: ["LayoutNG"],
     },
     {
+      name: "LayoutNGLineCache",
+    },
+    {
       name: "LazyFrameLoading",
     },
     {
@@ -770,6 +808,10 @@
     },
     {
       name: "LazyImageLoading",
+    },
+    {
+      name: "LazyImageLoadingMetadataFetch",
+      depends_on: ["LazyImageLoading"],
     },
     {
       name: "LazyImageVisibleLoadTimeMetrics",
@@ -827,6 +869,7 @@
     },
     {
       name: "MediaQueryPrefersColorScheme",
+      status: "stable",
     },
     {
       name: "MediaQueryShape",
@@ -851,10 +894,11 @@
     {
       name: "MergeBlockingNonBlockingPools",
     },
-    // Support for META tag for setting supported-color-schemes used for opting
-    // into dark UA theming and opting out of forced dark mode.
+    // Support for META tag for setting color-scheme used for opting into dark
+    // UA theming and opting out of forced dark mode.
+    // https://drafts.csswg.org/css-color-adjust/#color-scheme-meta
     {
-      name: "MetaSupportedColorSchemes",
+      name: "MetaColorScheme",
     },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
@@ -869,9 +913,6 @@
     {
 
       name: "MobileLayoutTheme",
-    },
-    {
-      name: "ModernMediaControls",
     },
     {
       name: "ModuleDedicatedWorker",
@@ -901,6 +942,10 @@
       status: "experimental",
     },
     {
+      // Enabled when blink::features::kNativeFileSystemAPI is enabled.
+      name: "NativeFileSystem",
+    },
+    {
       name: "NativeStreams",
     },
     {
@@ -910,6 +955,14 @@
     },
     {
       name: "NavigatorDeviceMemory",
+      status: "stable",
+    },
+    {
+      // Allows the navigator.language and navigator.languages APIs in insecure
+      // contexts, which https://github.com/WICG/lang-client-hint proposes that
+      // we deprecate.
+      name: "NavigatorLanguageInInsecureContext",
+      settable_from_internals: true,
       status: "stable",
     },
     {
@@ -952,16 +1005,8 @@
       name: "OffMainThreadCSSPaint",
     },
     {
-      name: "OffscreenCanvas",
-      status: "stable",
-    },
-    {
       name: "OffscreenCanvasCommit",
       status: "experimental",
-    },
-    {
-      name: "OffscreenCanvasText",
-      status: "stable",
     },
     {
       name: "OnDeviceChange",
@@ -1004,6 +1049,10 @@
       origin_trial_os: ["invalid"],
     },
     {
+      name: "OriginTrialsSampleAPINavigation",
+      origin_trial_feature_name: "FrobulateNavigation",
+    },
+    {
       name: "OutOfBlinkCors",
     },
     {
@@ -1017,12 +1066,6 @@
       name: "OverscrollCustomization",
       settable_from_internals: true,
       status: "experimental",
-    },
-    // This feature refers to the API that delivers notifications to pages on
-    // lifecycle state changes.
-    {
-      name: "PageLifecycle",
-      status: "stable",
     },
     // The following are developer opt-outs and opt-ins for PageLifecycle state
     // transitions. If neither is specified then heuristics will be applied to
@@ -1058,12 +1101,19 @@
       name: "PassPaintVisualRectToCompositor",
     },
     {
+      name: "PauseExecutionContextOnBackgroundFreeze",
+    },
+    {
       name: "PaymentApp",
       status: "experimental",
     },
     {
+      name: "PaymentHandlerChangePaymentMethod",
+      status: "stable",
+    },
+    {
       name: "PaymentMethodChangeEvent",
-      status: "experimental",
+      status: "stable",
     },
     // PaymentRequest is enabled by default on Android
     {
@@ -1093,6 +1143,10 @@
       status: "experimental",
     },
     {
+      name: "PeriodicBackgroundSync",
+      settable_from_internals: true,
+    },
+    {
       name: "PerMethodCanMakePaymentQuota",
       origin_trial_feature_name: "PerMethodCanMakePaymentQuota",
       status: "experimental",
@@ -1119,12 +1173,27 @@
       status: {"Android": "", "default": "stable"},
     },
     {
-      name: "PointerRawMove",
+      name: "PictureInPictureV2",
+      depends_on: ["PictureInPictureAPI"],
+      settable_from_internals: true,
+    },
+    // This is a reverse OT used for a phased deprecation.
+    // https://crbug.com/918374
+    {
+      name: "PNaCl",
+      origin_trial_feature_name: "PNaCl",
+    },
+    {
+      name: "PointerRawUpdate",
       status: "experimental",
     },
     {
       name: "Portals",
       status: "test",
+    },
+    {
+      name: "PostAnimationFrame",
+      status: "experimental",
     },
     {
       name: "PreciseMemoryInfo",
@@ -1185,14 +1254,12 @@
       status: "stable",
     },
     {
-      // Controlled through the base::Feature with the same name.
-      name: "RestrictDeviceSensorEventsToSecureContexts",
+      name: "RestrictAutomaticLazyFrameLoadingToDataSaver",
+      depends_on: ["AutomaticLazyFrameLoading"],
     },
     {
-      name: "RestrictLazyFrameLoadingToDataSaver",
-    },
-    {
-      name: "RestrictLazyImageLoadingToDataSaver",
+      name: "RestrictAutomaticLazyImageLoadingToDataSaver",
+      depends_on: ["AutomaticLazyImageLoading"],
     },
     {
       name: "RtcAudioJitterBufferMaxPackets",
@@ -1233,7 +1300,7 @@
     // Enables the use of the RTCSctpTransport object.
     {
       name: "RTCSctpTransport",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "RTCStatsRelativePacketArrivalDelay",
@@ -1350,6 +1417,10 @@
       status: "stable",
     },
     {
+      name: "SmsReceiver",
+      status: "experimental",
+    },
+    {
       name: "SpeechSynthesisEventCharLength",
       status: "experimental",
     },
@@ -1378,11 +1449,8 @@
     },
     {
       name: "TextFragmentIdentifiers",
+      origin_trial_feature_name: "TextFragmentIdentifiers",
       status: "experimental",
-    },
-    {
-      name: "TextUnderlinePositionLeftRight",
-      status: "stable",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",
@@ -1439,6 +1507,12 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
+      name: "UnsizedMediaPolicy",
+      status: "experimental",
+      origin_trial_feature_name: "UnsizedMediaPolicy",
+      implied_by: ["ExperimentalProductivityFeatures"]
+    },
+    {
       name: "UpdateHoverFromLayoutChangeAtBeginFrame",
       settable_from_internals: true,
     },
@@ -1489,10 +1563,6 @@
       status: "experimental",
     },
     {
-      name: "WakeLockNavigator",
-      status: "experimental",
-    },
-    {
       name: "WasmCodeCache",
       status: "experimental",
     },
@@ -1540,6 +1610,9 @@
     {
       name: "WebGLImageChromium",
     },
+    {
+      name: "WebGLSwapChain",
+    },
     // WebGPU adds a large attack surface area to the GPU process and allows
     // running arbitrary programs on the GPU (compute shaders), which may
     // perform arbitrary read/writes of GPU memory if not properly sandboxed.
@@ -1586,29 +1659,21 @@
     },
     {
       name: "WebXR",
-      origin_trial_feature_name: "WebXRDeviceM73",
+      origin_trial_feature_name: "WebXRDeviceM76",
       status: "experimental",
     },
     {
       name: "WebXRHitTest",
+      // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
       status: "experimental"
     },
     {
-      name: "WorkerNosniffBlock",
-      status: "stable",
-    },
-    {
-      name: "WorkerNosniffWarn",
-      status: "stable",
-      implied_by: ["WorkerNosniffBlock"],
+      name: "WebXRPlaneDetection",
+      // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
     },
     {
       name: "WorkerTaskQueue",
       status: "experimental"
-    },
-    {
-      name: "WritableFiles",
-      status: "experimental",
     },
     {
       name: "XSLT",

@@ -21,8 +21,6 @@ from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import hwtest_results
-from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib.buildstore import FakeBuildStore
 
 
@@ -48,8 +46,6 @@ class CommitQueueHandleChangesStageTests(
                      '_GetSlaveMappingAndCLActions',
                      return_value=(dict(), []))
     self.PatchObject(clactions, 'GetRelevantChangesForBuilds')
-    self.PatchObject(tree_status, 'WaitForTreeStatus',
-                     return_value=constants.TREE_OPEN)
     self.PatchObject(relevant_changes.RelevantChanges,
                      'GetPreviouslyPassedSlavesForChanges')
     self.mock_record_metrics = self.PatchObject(
@@ -62,11 +58,10 @@ class CommitQueueHandleChangesStageTests(
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()
 
-  def _MockSyncStage(self, tree_was_open=True):
+  def _MockSyncStage(self):
     sync_stage = sync_stages.CommitQueueSyncStage(self._run, self.buildstore)
     sync_stage.pool = mock.MagicMock()
     sync_stage.pool.applied = self.changes
-    sync_stage.pool.tree_was_open = tree_was_open
 
     sync_stage.pool.handle_failure_mock = self.PatchObject(
         sync_stage.pool, 'HandleValidationFailure')
@@ -106,46 +101,16 @@ class CommitQueueHandleChangesStageTests(
                      '_GetBuildsPassedSyncStage')
     stage.sync_stage.pool.SubmitPartialPool.return_value = self.changes
 
-  def testHandleCommitQueueFailureWithOpenTree(self):
+  def testHandleCommitQueueFailure(self):
     """Test _HandleCommitQueueFailure with open tree."""
     stage = self.ConstructStage()
     self._MockPartialSubmit(stage)
-    self.PatchObject(tree_status, 'WaitForTreeStatus',
-                     return_value=constants.TREE_OPEN)
     self.PatchObject(generic_stages.BuilderStage,
                      'GetScheduledSlaveBuildbucketIds', return_value=[])
 
     stage._HandleCommitQueueFailure(set(['test1']), set(), set(), False)
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=True, no_stat=set(), changes=self.changes,
-        failed_hwtests=None)
-
-  def testHandleCommitQueueFailureWithThrottledTree(self):
-    """Test _HandleCommitQueueFailure with throttled tree."""
-    stage = self.ConstructStage()
-    self._MockPartialSubmit(stage)
-    self.PatchObject(tree_status, 'WaitForTreeStatus',
-                     return_value=constants.TREE_THROTTLED)
-    self.PatchObject(generic_stages.BuilderStage,
-                     'GetScheduledSlaveBuildbucketIds', return_value=[])
-
-    stage._HandleCommitQueueFailure(set(['test1']), set(), set(), False)
-    stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=False, no_stat=set(), changes=self.changes,
-        failed_hwtests=None)
-
-  def testHandleCommitQueueFailureWithClosedTree(self):
-    """Test _HandleCommitQueueFailure with closed tree."""
-    stage = self.ConstructStage()
-    self._MockPartialSubmit(stage)
-    self.PatchObject(tree_status, 'WaitForTreeStatus',
-                     side_effect=timeout_util.TimeoutError())
-    self.PatchObject(generic_stages.BuilderStage,
-                     'GetScheduledSlaveBuildbucketIds', return_value=[])
-
-    stage._HandleCommitQueueFailure(set(['test1']), set(), set(), False)
-    stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=False, no_stat=set(), changes=self.changes,
+        mock.ANY, no_stat=set(), changes=self.changes,
         failed_hwtests=None)
 
   def testHandleCommitQueueFailureWithFailedHWtests(self):
@@ -162,19 +127,17 @@ class CommitQueueHandleChangesStageTests(
     mock_get_hwtests = self.PatchObject(
         hwtest_results.HWTestResultManager,
         'GetFailedHWTestsFromCIDB', return_value=mock_failed_hwtests)
-    self.PatchObject(tree_status, 'WaitForTreeStatus',
-                     return_value=constants.TREE_OPEN)
     self.PatchObject(generic_stages.BuilderStage,
                      'GetScheduledSlaveBuildbucketIds', return_value=['123'])
 
     stage._HandleCommitQueueFailure(set(['test1']), set(), set(), False)
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=True, no_stat=set(), changes=self.changes,
+        mock.ANY, no_stat=set(), changes=self.changes,
         failed_hwtests=mock_failed_hwtests)
     mock_get_hwtests.assert_called_once_with(db, [slave_build_id])
 
   def VerifyStage(self, failing, inflight, no_stat, handle_failure=False,
-                  handle_timeout=False, sane_tot=True, stage=None,
+                  handle_timeout=False, stage=None,
                   all_slaves=None, slave_stages=None, fatal=True,
                   self_destructed=False):
     """Runs and Verifies PerformStage.
@@ -185,7 +148,6 @@ class CommitQueueHandleChangesStageTests(
       no_stat: The names of the builders that had no status.
       handle_failure: If True, calls HandleValidationFailure.
       handle_timeout: If True, calls HandleValidationTimeout.
-      sane_tot: If not true, assumes TOT is not sane.
       stage: If set, use this constructed stage, otherwise create own.
       all_slaves: Optional set of all slave configs.
       slave_stages: Optional list of slave stages.
@@ -252,12 +214,12 @@ class CommitQueueHandleChangesStageTests(
 
     if handle_failure:
       stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-          mock.ANY, no_stat=set(no_stat), sanity=sane_tot,
+          mock.ANY, no_stat=set(no_stat),
           changes=self.other_changes, failed_hwtests=mock.ANY)
 
     if handle_timeout:
       stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
-          sanity=mock.ANY, changes=self.other_changes)
+          changes=self.other_changes)
 
   def testCompletionSuccess(self):
     """Verify stage when the completion_stage succeeded."""

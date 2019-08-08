@@ -33,7 +33,6 @@ import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -51,8 +50,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -66,8 +64,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCloseDialog()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCloseDialog() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
@@ -78,8 +75,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditAndCloseDialog()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testEditAndCloseDialog() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_secondary, mPaymentRequestTestRule.getReadyForInput());
@@ -92,8 +88,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditAndCancelDialog()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testEditAndCancelDialog() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_secondary, mPaymentRequestTestRule.getReadyForInput());
@@ -106,7 +101,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testPay() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -122,8 +117,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCancelUnmaskAndRetry()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCancelUnmaskAndRetry() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -143,8 +137,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testAddInvalidCardNumberAndCancel()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddInvalidCardNumberAndCancel() throws InterruptedException, TimeoutException {
         // Attempting to add an invalid card and cancelling out of the flow will result in the user
         // still being ready to pay with the previously selected credit card.
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
@@ -162,8 +155,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // crbug.com/678983
     @Feature({"Payments"})
-    public void testAddEmptyNameOnCardAndCancel()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddEmptyNameOnCardAndCancel() throws InterruptedException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         mPaymentRequestTestRule.clickInCardEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
@@ -178,8 +170,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testSaveNewCardAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testSaveNewCardAndPay() throws InterruptedException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         mPaymentRequestTestRule.clickInCardEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
@@ -197,8 +188,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testAddTemporaryCardAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testAddTemporaryCardAndPay() throws InterruptedException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
 
         // Uncheck the "Save this card on this device" checkbox, so the card is temporary.
@@ -218,7 +208,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     }
 
     private void fillNewCardForm(String cardNumber, String nameOnCard, int month, int year,
-            int billingAddress) throws InterruptedException, ExecutionException, TimeoutException {
+            int billingAddress) throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -236,7 +226,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testSaveNewCardAndNewBillingAddressAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -277,7 +267,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickAddCardAndCloseShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -308,7 +298,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickCloseAndAddCardShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -335,7 +325,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickAddCardAndCancelShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -366,7 +356,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickCancelAndAddCardShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -396,7 +386,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickDismissAndPayShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly dismiss and then press on "pay."
@@ -421,7 +411,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickDismissAndCloseShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly dismiss and then press on [X].
@@ -446,7 +436,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testQuickCloseAndDismissShouldNotCrash()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly press on [X] and then dismiss.
@@ -471,8 +461,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentRequestEventsMetric()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testPaymentRequestEventsMetric() throws InterruptedException, TimeoutException {
         // Start and cancel the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(

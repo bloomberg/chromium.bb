@@ -12,6 +12,8 @@
 #include "base/sequence_checker.h"
 #include "components/previews/content/previews_top_host_provider.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }
@@ -32,6 +34,10 @@ class PreviewsTopHostProviderImpl : public PreviewsTopHostProvider {
   // and the embedder should guarantee that it is non-null during the lifetime
   // of |this|.
   content::BrowserContext* browser_context_;
+
+  // |pref_service_| provides information about the current profile's
+  // settings. It is not owned and guaranteed to outlive |this|.
+  PrefService* pref_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

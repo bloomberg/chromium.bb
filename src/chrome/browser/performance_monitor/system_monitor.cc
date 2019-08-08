@@ -70,8 +70,40 @@ std::unique_ptr<SystemMonitor> SystemMonitor::Create() {
 }
 
 // static
+std::unique_ptr<SystemMonitor> SystemMonitor::CreateForTesting(
+    std::unique_ptr<MetricEvaluatorsHelper> helper) {
+  DCHECK(!g_system_metrics_monitor);
+  return base::WrapUnique(new SystemMonitor(std::move(helper)));
+}
+
+// static
 SystemMonitor* SystemMonitor::Get() {
   return g_system_metrics_monitor;
+}
+
+MetricRefreshFrequencies::Builder&
+MetricRefreshFrequencies::Builder::SetFreePhysMemoryMbFrequency(
+    SamplingFrequency freq) {
+  metrics_and_frequencies_.free_phys_memory_mb_frequency = freq;
+  return *this;
+}
+
+MetricRefreshFrequencies::Builder&
+MetricRefreshFrequencies::Builder::SetDiskIdleTimePercentFrequency(
+    SamplingFrequency freq) {
+  metrics_and_frequencies_.disk_idle_time_percent_frequency = freq;
+  return *this;
+}
+
+MetricRefreshFrequencies::Builder&
+MetricRefreshFrequencies::Builder::SetSystemMetricsSamplingFrequency(
+    SamplingFrequency freq) {
+  metrics_and_frequencies_.system_metrics_sampling_frequency = freq;
+  return *this;
+}
+
+MetricRefreshFrequencies MetricRefreshFrequencies::Builder::Build() {
+  return metrics_and_frequencies_;
 }
 
 SystemMonitor::SystemObserver::~SystemObserver() {

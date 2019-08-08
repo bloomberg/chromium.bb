@@ -66,7 +66,7 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
   // Check that the whitelisted types are correct.
   std::vector<std::string> expected_whitelist;
   expected_whitelist.push_back("chrome");
-  expected_whitelist.push_back("chrome-devtools");
+  expected_whitelist.push_back("devtools");
   EXPECT_EQ(expected_whitelist, info->whitelisted_schemes());
 
   // Check the other properties are populated correctly.
@@ -132,6 +132,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
   // disable features like popup blocking, download blocking or ad blocking.
   // They do not allow access to user data.
   const ContentSettingsType whitelist[] = {
+      CONTENT_SETTINGS_TYPE_PLUGINS,              //
       CONTENT_SETTINGS_TYPE_POPUPS,               //
       CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,  //
       CONTENT_SETTINGS_TYPE_ADS,                  //

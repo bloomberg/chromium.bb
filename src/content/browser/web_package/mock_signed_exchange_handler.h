@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "content/browser/web_package/signed_exchange_handler.h"
+#include "net/base/hash_value.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -18,12 +19,14 @@ class SignedExchangeCertFetcherFactory;
 class MockSignedExchangeHandlerParams {
  public:
   // |mime_type| and |response_headers| are ignored if |error| is not net::OK.
-  MockSignedExchangeHandlerParams(const GURL& outer_url,
-                                  SignedExchangeLoadResult result,
-                                  net::Error error,
-                                  const GURL& inner_url,
-                                  const std::string& mime_type,
-                                  std::vector<std::string> response_headers);
+  MockSignedExchangeHandlerParams(
+      const GURL& outer_url,
+      SignedExchangeLoadResult result,
+      net::Error error,
+      const GURL& inner_url,
+      const std::string& mime_type,
+      std::vector<std::string> response_headers,
+      base::Optional<net::SHA256HashValue> header_integrity);
   MockSignedExchangeHandlerParams(const MockSignedExchangeHandlerParams& other);
   ~MockSignedExchangeHandlerParams();
   const GURL outer_url;
@@ -32,6 +35,7 @@ class MockSignedExchangeHandlerParams {
   const GURL inner_url;
   const std::string mime_type;
   const std::vector<std::string> response_headers;
+  const base::Optional<net::SHA256HashValue> header_integrity;
 };
 
 class MockSignedExchangeHandler final : public SignedExchangeHandler {
@@ -39,9 +43,12 @@ class MockSignedExchangeHandler final : public SignedExchangeHandler {
   MockSignedExchangeHandler(const MockSignedExchangeHandlerParams& params,
                             std::unique_ptr<net::SourceStream> body,
                             ExchangeHeadersCallback headers_callback);
-  ~MockSignedExchangeHandler();
+  ~MockSignedExchangeHandler() override;
+  base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const override;
 
  private:
+  const base::Optional<net::SHA256HashValue> header_integrity_;
+
   DISALLOW_COPY_AND_ASSIGN(MockSignedExchangeHandler);
 };
 

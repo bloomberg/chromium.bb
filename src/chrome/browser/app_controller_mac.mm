@@ -179,7 +179,6 @@ void RecordLastRunAppBundlePath() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
   // Go up five levels from the versioned sub-directory of the framework, which
   // is at C.app/Contents/Frameworks/C.framework/Versions/V.
   base::FilePath app_bundle_path = chrome::GetFrameworkBundlePath()
@@ -188,10 +187,6 @@ void RecordLastRunAppBundlePath() {
                                        .DirName()
                                        .DirName()
                                        .DirName();
-#else
-  base::FilePath app_bundle_path =
-      chrome::GetVersionedDirectory().DirName().DirName().DirName();
-#endif
   base::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring(
       base::SysUTF8ToCFStringRef(app_bundle_path.value()));
   CFPreferencesSetAppValue(
@@ -776,10 +771,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::BindOnce(&RecordLastRunAppBundlePath));
+  if (base::mac::AmIBundled()) {
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                             base::BindOnce(&RecordLastRunAppBundlePath));
+  }
 
   // Makes "Services" menu items available.
   [self registerServicesMenuTypesTo:[notify object]];
@@ -1713,7 +1710,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Handoff is not allowed from an incognito profile. To err on the safe side,
   // also disallow Handoff from a guest profile.
-  if (profile->GetProfileType() != Profile::REGULAR_PROFILE)
+  if (!profile->IsRegularProfile())
     return GURL();
 
   if (!webContents)

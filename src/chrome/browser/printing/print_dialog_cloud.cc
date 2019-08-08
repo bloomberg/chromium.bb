@@ -28,12 +28,10 @@ namespace {
 
 class SignInObserver : public content::WebContentsObserver {
  public:
-  SignInObserver(content::WebContents* web_contents,
-                 const base::Closure& callback)
+  SignInObserver(content::WebContents* web_contents, base::OnceClosure callback)
       : WebContentsObserver(web_contents),
-        callback_(callback),
-        weak_ptr_factory_(this) {
-  }
+        callback_(std::move(callback)),
+        weak_ptr_factory_(this) {}
 
  private:
   // Overridden from content::WebContentsObserver:
@@ -54,13 +52,12 @@ class SignInObserver : public content::WebContentsObserver {
   void WebContentsDestroyed() override { delete this; }
 
   void OnSignIn() {
-    callback_.Run();
+    std::move(callback_).Run();
     if (web_contents())
       web_contents()->Close();
   }
 
-  GURL cloud_print_url_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   base::WeakPtrFactory<SignInObserver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignInObserver);
@@ -70,7 +67,7 @@ class SignInObserver : public content::WebContentsObserver {
 
 void CreateCloudPrintSigninTab(Browser* browser,
                                bool add_account,
-                               const base::Closure& callback) {
+                               base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(
           browser->profile())) {
@@ -88,7 +85,8 @@ void CreateCloudPrintSigninTab(Browser* browser,
                 url, g_browser_process->GetApplicationLocale()),
             content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
             ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-    new SignInObserver(web_contents, callback);
+    // This observer will delete itself after destroying the WebContents.
+    new SignInObserver(web_contents, std::move(callback));
   }
 }
 

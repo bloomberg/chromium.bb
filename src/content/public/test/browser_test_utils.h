@@ -306,6 +306,10 @@ void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
 // tap gesture to its RenderWidgetHostView.
 void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents);
 
+// Spins a run loop until effects of previously forwarded input are fully
+// realized.
+void RunUntilInputProcessed(RenderWidgetHost* host);
+
 // Holds down modifier keys for the duration of its lifetime and releases them
 // upon destruction. This allows simulating multiple input events without
 // simulating modifier key releases in between.
@@ -1372,6 +1376,10 @@ class TestNavigationManager : public WebContentsObserver {
   // Whether the navigation successfully committed.
   bool was_successful() const { return was_successful_; }
 
+  // Allows nestable tasks when running a message loop in the Wait* functions.
+  // This is useful for utilizing this class from within another message loop.
+  void AllowNestableTasks();
+
  protected:
   // Derived classes can override if they want to filter out navigations. This
   // is called from DidStartNavigation.
@@ -1413,6 +1421,7 @@ class TestNavigationManager : public WebContentsObserver {
   NavigationState desired_state_;
   bool was_successful_ = false;
   base::OnceClosure quit_closure_;
+  base::RunLoop::Type message_loop_type_ = base::RunLoop::Type::kDefault;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;
 
@@ -1445,13 +1454,16 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
 
   // WebContentsDelegate method:
   bool DidAddMessageToConsole(WebContents* source,
-                              int32_t level,
+                              blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
 
+  // Returns all the messages sent to the console.
+  std::vector<std::string> messages() { return messages_; }
+
   // Returns the most recent message sent to the console.
-  std::string message() { return message_; }
+  std::string message();
 
   // Waits for the next message captured by the filter to be sent to the
   // console.
@@ -1460,7 +1472,7 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
  private:
   WebContents* web_contents_;
   std::string filter_;
-  std::string message_;
+  std::vector<std::string> messages_;
 
   base::RunLoop run_loop_;
 

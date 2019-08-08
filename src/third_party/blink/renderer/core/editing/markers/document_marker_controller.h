@@ -149,7 +149,7 @@ class CORE_EXPORT DocumentMarkerController final
 
   void Trace(Visitor*) override;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowMarkers() const;
 #endif
 
@@ -195,7 +195,7 @@ class CORE_EXPORT DocumentMarkerController final
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void showDocumentMarkers(const blink::DocumentMarkerController*);
 #endif
 

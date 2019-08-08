@@ -36,9 +36,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--The polyfill is not needed for browser that have native API support,
         but is linked by these samples for wider compatibility.-->
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
+    <script src='js/xrray-polyfill.js' type='module'></script>
     <script src='js/webxr-polyfill.js'></script>
 
     <script src='js/webxr-button.js'></script>
+    <script>
+      var inlineSession = null
+      function updateFOV() {
+        var fov = document.getElementById("vertFOV").value;
+        inlineSession.updateRenderState({
+          inlineVerticalFieldOfView: fov
+        });
+      }
+    </script>
   </head>
   <body>
     <header>
@@ -48,7 +58,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           This sample demonstrates use of a non-immersive XRSession to present
           'Magic Window' content prior to entering XR presentation with an
           immersive session.
-          <a class="back" href="./">Back</a>
+        </p>
+        <p>
+          <a class="back" href="./index.html">Back</a>
+        </p>
+        <p>
+          You can also modify the vertical FOV.  The browser will clamp
+          the value between 0.01 and 3.13 inclusive.
+        </p>
+        <p>
+          <!-- Note: Not clamping the input box so we can validate 'bad' values -->
+          <label for="vertFOV">Vertical FOV (Radians): </label>
+          <input id="vertFOV" type="number" value="1.57">
+          <button onclick="updateFOV()">Update</button>
         </p>
       </details>
     </header>
@@ -102,44 +124,57 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
         });
       }
 
       function onSessionStarted(session) {
+        if (!session.mode) {
+          session.mode = 'inline';
+          inlineSession = session;
+        }
+
         session.addEventListener('end', onSessionEnded);
 
         if (!gl) {
           gl = createWebGLContext({
             xrCompatible: true
           });
+          document.body.appendChild(gl.canvas);
+
+          function onResize () {
+            gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+            gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+          }
+          window.addEventListener('resize', onResize);
+          onResize();
 
           renderer = new Renderer(gl);
 
           scene.setRenderer(renderer);
         }
 
-        // In order for a non-immersive session to be used we must provide
-        // an outputContext, which indicates the canvas that will contain
-        // results of the session's rendering.
-        let outputCanvas = document.createElement('canvas');
-
-        // Add the canvas to the document.
-        document.body.appendChild(outputCanvas);
-
+        // In order for an inline session to be used we must set the GL layer's
+        // compositionDisabled option to "true", which indicates that WebGL
+        // commands will draw to the canvas like normal.
         session.updateRenderState({
-          baseLayer: new XRWebGLLayer(session, gl),
-          outputContext: outputCanvas.getContext('xrpresent')
+          baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+        if (session.mode === 'inline')
+          updateFOV();
+
+        session.requestReferenceSpace('local').then((refSpace) => {
           return refSpace;
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
             // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace({ type: 'identity' });
+            return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }
@@ -164,11 +199,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
         }
-
-        // Remove the output canvas from the document.
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
-        }
       }
 
       // Called every time a XRSession requests that a new frame be drawn.
@@ -191,9 +221,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
 
           for (let view of pose.views) {
-            let viewport = session.renderState.baseLayer.getViewport(view);
-            gl.viewport(viewport.x, viewport.y,
-                        viewport.width, viewport.height);
+            // TODO(crbug.com/966077): This appears to be returning null for inline.
+            if (session.mode.startsWith('immersive')) {
+              let viewport = session.renderState.baseLayer.getViewport(view);
+              gl.viewport(viewport.x, viewport.y,
+                          viewport.width, viewport.height);
+            }
 
             scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }

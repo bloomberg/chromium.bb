@@ -964,7 +964,7 @@ void SimpleBackendImpl::DoomEntriesComplete(
 // static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
   // TODO(morlovich): Remove this, move everything over to disk_cache:: use.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 uint32_t SimpleBackendImpl::GetNewEntryPriority(

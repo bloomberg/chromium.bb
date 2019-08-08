@@ -11,11 +11,13 @@
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/test/test_blink_web_unit_test_support.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/blink.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/test/aura_test_suite_setup.h"
+#include "ui/aura/env.h"
 #endif
 
 #if defined(USE_X11)
@@ -28,7 +30,33 @@
 
 namespace content {
 
-UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
+namespace {
+
+// The global NetworkService object could be created in some tests due to
+// various StoragePartition calls. Since it has a mojo pipe that is bound using
+// the current thread, which goes away between tests, we need to destruct it to
+// avoid calls being dropped silently.
+class ResetNetworkServiceBetweenTests : public testing::EmptyTestEventListener {
+ public:
+  ResetNetworkServiceBetweenTests() = default;
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    // If the network::NetworkService object was instantiated during a unit test
+    // it will be deleted because network_service_instance.cc has it in a
+    // SequenceLocalStorageSlot. However we want to synchronously destruct the
+    // InterfacePtr pointing to it to avoid it getting the connection error
+    // later and have other tests use the InterfacePtr that is invalid.
+    ResetNetworkServiceForTesting();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResetNetworkServiceBetweenTests);
+};
+
+}  // namespace
+
+UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
+                                     const std::string& disabled_features)
     : test_suite_(test_suite) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string enabled =
@@ -36,10 +64,16 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
   std::string disabled =
       command_line->GetSwitchValueASCII(switches::kDisableFeatures);
 
-  // Unit tests don't currently work with the Network Service enabled.
+  ForceCreateNetworkServiceDirectlyForTesting();
+
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new ResetNetworkServiceBetweenTests);
+
   // base::TestSuite will reset the FeatureList, so modify the underlying
   // CommandLine object to disable the network service when it's parsed again.
-  disabled += ",NetworkService";
+  if (!disabled_features.empty())
+    disabled += "," + disabled_features;
   base::CommandLine new_command_line(command_line->GetProgram());
   base::CommandLine::SwitchMap switches = command_line->GetSwitches();
   switches.erase(switches::kDisableFeatures);
@@ -75,8 +109,7 @@ UnitTestTestSuite::~UnitTestTestSuite() = default;
 
 int UnitTestTestSuite::Run() {
 #if defined(USE_AURA)
-  // Must be initialized after test suites manipulate feature flags.
-  aura::AuraTestSuiteSetup aura_setup;
+  std::unique_ptr<aura::Env> aura_env = aura::Env::CreateInstance();
 #endif
 
   return test_suite_->Run();

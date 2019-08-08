@@ -6,12 +6,18 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
+#include "ash/wm/desks/desks_util.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -22,6 +28,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -85,8 +92,6 @@ class AutoclickTest : public AshTestBase {
   ~AutoclickTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalAccessibilityAutoclick);
     AshTestBase::SetUp();
     Shell::Get()->AddPreTargetHandler(&mouse_event_capturer_);
     GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
@@ -143,6 +148,12 @@ class AutoclickTest : public AshTestBase {
         ->menu_view_;
   }
 
+  views::Widget* GetAutoclickBubbleWidget() {
+    return GetAutoclickController()
+        ->GetMenuBubbleControllerForTesting()
+        ->bubble_widget_;
+  }
+
   views::View* GetMenuButton(AutoclickMenuView::ButtonId view_id) {
     AutoclickMenuView* menu_view = GetAutoclickMenuView();
     if (!menu_view)
@@ -173,7 +184,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
 
   // Enable autoclick, and we should see a mouse pressed and
   // a mouse released event, simulating a click.
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetEventGenerator()->MoveMouseTo(0, 0);
   EXPECT_TRUE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
@@ -195,7 +206,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
 
   // Disable autoclick, and we should see the original behaviour.
-  GetAutoclickController()->SetEnabled(false);
+  GetAutoclickController()->SetEnabled(false, false /* do not show dialog */);
   EXPECT_FALSE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
@@ -203,7 +214,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
 
 TEST_F(AutoclickTest, MouseMovement) {
   std::vector<ui::MouseEvent> events;
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   gfx::Point p1(0, 0);
   gfx::Point p2(20, 20);
@@ -252,7 +263,8 @@ TEST_F(AutoclickTest, MovementThreshold) {
     for (auto* root_window : root_windows) {
       gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
 
-      GetAutoclickController()->SetEnabled(true);
+      GetAutoclickController()->SetEnabled(true,
+                                           false /* do not show dialog */);
       GetEventGenerator()->MoveMouseTo(center);
       ClearMouseEvents();
       EXPECT_EQ(2u, WaitForMouseEvents().size());
@@ -311,7 +323,7 @@ TEST_F(AutoclickTest, MovementThreshold) {
 }
 
 TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->SetMovementThreshold(20);
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
@@ -359,7 +371,7 @@ TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
 }
 
 TEST_F(AutoclickTest, SingleKeyModifier) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   MoveMouseWithFlagsTo(20, 20, ui::EF_SHIFT_DOWN);
   std::vector<ui::MouseEvent> events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
@@ -368,7 +380,7 @@ TEST_F(AutoclickTest, SingleKeyModifier) {
 }
 
 TEST_F(AutoclickTest, MultipleKeyModifiers) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   ui::EventFlags modifier_flags = static_cast<ui::EventFlags>(
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
   MoveMouseWithFlagsTo(30, 30, modifier_flags);
@@ -379,7 +391,7 @@ TEST_F(AutoclickTest, MultipleKeyModifiers) {
 }
 
 TEST_F(AutoclickTest, KeyModifiersReleased) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   ui::EventFlags modifier_flags = static_cast<ui::EventFlags>(
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
@@ -400,7 +412,7 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
 }
 
 TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   std::vector<ui::MouseEvent> events;
 
   // Pressing a normal key should cancel the autoclick.
@@ -416,6 +428,12 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
   GetEventGenerator()->ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
+
+  // Mouse-wheel scroll events should cancel the autoclick.
+  GetEventGenerator()->MoveMouseTo(300, 300);
+  GetEventGenerator()->MoveMouseWheel(0, 20);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
 
   // Performing a gesture should cancel the autoclick.
   GetEventGenerator()->MoveMouseTo(200, 200);
@@ -450,7 +468,7 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
 }
 
 TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   std::vector<ui::MouseEvent> events;
   GetEventGenerator()->MoveMouseTo(100, 100);
   events = WaitForMouseEvents();
@@ -469,7 +487,7 @@ TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
 }
 
 TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kRightClick);
@@ -533,7 +551,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
 }
 
 TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kDragAndDrop);
@@ -565,7 +583,7 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
 }
 
 TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(true);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kRightClick);
@@ -626,7 +644,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
 TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   std::vector<ui::MouseEvent> events;
 
   // Start a dwell at (210, 210).
@@ -750,9 +768,11 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     EXPECT_EQ(0u, events.size());
 
     // If we move over the bubble but not over any button than no real click
-    // occurs.
+    // occurs. There is no button at the top of the bubble.
     button_location = gfx::ScaleToRoundedPoint(
-        GetAutoclickMenuView()->GetBoundsInScreen().CenterPoint(), test.scale);
+        GetAutoclickMenuView()->GetBoundsInScreen().top_center() +
+            gfx::Vector2d(0, 1),
+        test.scale);
     GetEventGenerator()->MoveMouseTo(button_location);
     events = WaitForMouseEvents();
     EXPECT_EQ(0u, events.size());
@@ -777,9 +797,6 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
               accessibility_controller->GetAutoclickEventType());
   }
-
-  // Reset state.
-  accessibility_controller->SetAutoclickEnabled(false);
 }
 
 TEST_F(AutoclickTest,
@@ -823,23 +840,16 @@ TEST_F(AutoclickTest,
   FastForwardBy(full_delay);
   events = GetMouseEvents();
   ASSERT_EQ(0u, events.size());
-
-  // Reset state.
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
 }
 
 // The autoclick tray shouldn't stop the shelf from auto-hiding.
 TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   Shelf* shelf = GetPrimaryShelf();
 
   // Create a visible window so auto-hide behavior is enforced.
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(0, 0, 200, 200);
-  params.context = CurrentContext();
-  views::Widget* widget = new views::Widget;
-  widget->Init(params);
-  widget->Show();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(0, 0, 200, 200), true /* show */);
 
   // Turn on auto-hide for the shelf.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -852,9 +862,237 @@ TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
   ASSERT_TRUE(menu);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
+TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
+  UpdateDisplay("800x600");
+  int screen_width = 800;
+  int screen_height = 600;
+
+  // Create a visible window so WMEvents occur.
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(0, 0, 200, 200), true /* show */);
+
+  // Set up autoclick and the shelf.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      mojom::AutoclickMenuPosition::kBottomRight);
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_EQ(shelf->GetVisibilityState(), SHELF_VISIBLE);
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
+
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  // The menu should be positioned above the shelf, not overlapping.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
+            screen_height - shelf->GetIdealBounds().height() -
+                kCollisionWindowWorkAreaInsetsDp);
+  // And all the way to the right.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
+            screen_width - kCollisionWindowWorkAreaInsetsDp);
+
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  // The menu should move to the bottom of the screen.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
+            screen_height - kCollisionWindowWorkAreaInsetsDp);
+  // Still be at the far right.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
+            screen_width - kCollisionWindowWorkAreaInsetsDp);
+
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  // The menu should stay at the bottom of the screen.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
+            screen_height - kCollisionWindowWorkAreaInsetsDp);
+  // And should be offset from the far right by the shelf width.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
+            screen_width - kCollisionWindowWorkAreaInsetsDp -
+                shelf->GetIdealBounds().width());
 
   // Reset state.
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+}
+
+TEST_F(AutoclickTest, AvoidsShelfBubble) {
+  const struct {
+    session_manager::SessionState session_state;
+  } kTestCases[]{
+      {session_manager::SessionState::OOBE},
+      {session_manager::SessionState::LOGIN_PRIMARY},
+      {session_manager::SessionState::ACTIVE},
+      {session_manager::SessionState::LOCKED},
+  };
+
+  for (auto test : kTestCases) {
+    GetSessionControllerClient()->SetSessionState(test.session_state);
+    // Set up autoclick and the shelf.
+    Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+    Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kBottomRight);
+    auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+    EXPECT_FALSE(unified_system_tray->IsBubbleShown());
+    AutoclickMenuView* menu = GetAutoclickMenuView();
+    ASSERT_TRUE(menu);
+    gfx::Rect menu_bounds = menu->GetBoundsInScreen();
+
+    unified_system_tray->ShowBubble(true /* show_by_click */);
+    gfx::Rect new_menu_bounds = menu->GetBoundsInScreen();
+    // Y is unchanged when the bubble shows.
+    EXPECT_TRUE(abs(menu_bounds.y() - new_menu_bounds.y()) < 5);
+    // X is pushed over by at least the bubble's bounds.
+    EXPECT_TRUE(menu_bounds.x() -
+                    unified_system_tray->GetBubbleBoundsInScreen().width() >
+                new_menu_bounds.x());
+
+    unified_system_tray->CloseBubble();
+    new_menu_bounds = menu->GetBoundsInScreen();
+    EXPECT_EQ(menu_bounds, new_menu_bounds);
+  }
+}
+
+TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
+  // Enable and disable with the AccessibilityController to get real use-case
+  // of the dialog.
+
+  // No dialog shown at start-up.
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+
+  // No dialog shown when enabling the feature.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+
+  // A dialog should be shown when disabling the feature.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  AccessibilityFeatureDisableDialog* dialog =
+      GetAutoclickController()->GetDisableDialogForTesting();
+  EXPECT_TRUE(dialog);
+
+  // Canceling the dialog will cause the feature to continue to be enabled.
+  dialog->GetDialogClientView()->CancelWindow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+  EXPECT_TRUE(Shell::Get()->accessibility_controller()->autoclick_enabled());
+  EXPECT_TRUE(GetAutoclickController()->IsEnabled());
+
+  // Try to disable it again, and this time accept the dialog to actually
+  // disable the feature.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  dialog = GetAutoclickController()->GetDisableDialogForTesting();
+  EXPECT_TRUE(dialog);
+  dialog->GetDialogClientView()->AcceptWindow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+  EXPECT_FALSE(Shell::Get()->accessibility_controller()->autoclick_enabled());
+  EXPECT_FALSE(GetAutoclickController()->IsEnabled());
+}
+
+TEST_F(AutoclickTest, HidesBubbleInFullscreenWhenCursorHides) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+
+  const struct {
+    const std::string display_spec;
+    gfx::Rect widget_position;
+  } kTestCases[] = {
+      {"800x600", gfx::Rect(0, 0, 200, 200)},
+      {"800x600,800x600", gfx::Rect(0, 0, 200, 200)},
+      {"800x600,800x600", gfx::Rect(1000, 0, 200, 200)},
+  };
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.display_spec);
+    UpdateDisplay(test.display_spec);
+
+    std::unique_ptr<views::Widget> widget =
+        CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                         test.widget_position, /*show=*/true);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Move the mouse over the widget, so it's on the same screen as the widget.
+    GetEventGenerator()->MoveMouseTo(test.widget_position.origin());
+
+    // When the widget is not fullscreen, hiding the cursor does not cause
+    // the bubble to be hidden.
+    cursor_manager->HideCursor();
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+    cursor_manager->ShowCursor();
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Bubble is visible in fullscreen mode because the mouse cursor is visible.
+    widget->SetFullscreen(true);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Bubble is hidden when the cursor is hidden in fullscreen mode, and shown
+    // when the cursor is shown.
+    cursor_manager->HideCursor();
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+    cursor_manager->ShowCursor();
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Changing the type to another visible type doesn't cause the bubble to
+    // hide.
+    cursor_manager->SetCursor(ui::CursorType::kHand);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Changing the type to an kNone causes the bubble to hide.
+    cursor_manager->SetCursor(ui::CursorType::kNone);
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Hiding and showing don't re-show the bubble because the type is still
+    // kNone.
+    cursor_manager->HideCursor();
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+    cursor_manager->ShowCursor();
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // The bubble is shown when the cursor is a visible type again.
+    cursor_manager->SetCursor(ui::CursorType::kPointer);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+  }
+}
+
+TEST_F(AutoclickTest, DoesNotHideBubbleWhenNotOverFullscreenWindow) {
+  UpdateDisplay("800x600,800x600");
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(1000, 0, 200, 200), true);
+
+  EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+  // Move the mouse over the other display.
+  GetEventGenerator()->MoveMouseTo(gfx::Point(10, 10));
+
+  // When the widget is fullscreen, hiding the cursor does not hide the bubble
+  // because the cursor is on a different display.
+  widget->SetFullscreen(true);
+  cursor_manager->HideCursor();
+  EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+}
+
+TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(0, 0, 200, 200), true);
+  GetEventGenerator()->MoveMouseTo(gfx::Point(10, 10));
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(widget->IsActive());
+  views::Widget* popup_widget = views::Widget::CreateWindowWithContextAndBounds(
+      nullptr, CurrentContext(), gfx::Rect(200, 200, 200, 200));
+  popup_widget->Show();
+
+  cursor_manager->HideCursor();
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_TRUE(popup_widget->IsActive());
+  EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
 }
 
 }  // namespace ash

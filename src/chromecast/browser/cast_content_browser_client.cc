@@ -174,11 +174,10 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-void CreateOriginId(
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
   // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
   // origin ID.
-  std::move(callback).Run(base::UnguessableToken::Create());
+  std::move(callback).Run(true, base::UnguessableToken::Create());
 }
 
 void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
@@ -223,7 +222,6 @@ CastContentBrowserClient::CastContentBrowserClient(
       std::make_unique<CastNetworkContexts>(url_request_context_factory_.get());
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession,
-    network::features::kNetworkService,
     features::kNetworkServiceInProcess,
 #if defined(OS_ANDROID)
         // TODO(awolter): Remove this once the feature is on by default.
@@ -234,11 +232,11 @@ CastContentBrowserClient::CastContentBrowserClient(
 #endif
   });
 
-  // TODO(mdellaquila): This feature has to be disabled because it causes
-  // significantly higher power consumption while flinging media files.
-  // Remove this after fixing the bug: b/111363899
-  cast_feature_list_creator_->SetExtraDisableFeatures(
-      {::media::kUseModernMediaControls});
+#if defined(OS_ANDROID)
+  cast_feature_list_creator_->SetExtraDisableFeatures({
+      ::media::kAudioFocusLossSuspendMediaSession,
+  });
+#endif
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {
@@ -264,6 +262,8 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
 media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
   return nullptr;
 }
+
+void CastContentBrowserClient::InitializeURLLoaderThrottleDelegate() {}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CastContentBrowserClient::GetMediaTaskRunner() {
@@ -415,17 +415,18 @@ std::vector<std::string> CastContentBrowserClient::GetStartupServices() {
   };
 }
 
-content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(!cast_browser_main_parts_);
+
   auto main_parts = CastBrowserMainParts::Create(
       parameters, url_request_context_factory_.get(), this);
+
   cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
 
-  // TODO(halliwell): would like to change CreateBrowserMainParts to return
-  // unique_ptr, then we don't have to release.
-  return main_parts.release();
+  return main_parts;
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
@@ -620,6 +621,12 @@ std::string CastContentBrowserClient::GetAcceptLangs(
   return CastHttpUserAgentSettings::AcceptLanguage();
 }
 
+network::mojom::NetworkContext*
+CastContentBrowserClient::GetSystemNetworkContext() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return cast_network_contexts_->GetSystemContext();
+}
+
 void CastContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
     content::WebPreferences* prefs) {
@@ -675,7 +682,7 @@ void CastContentBrowserClient::AllowCertificateError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    content::ResourceType resource_type,
+    bool is_main_frame_request,
     bool strict_enforcement,
     bool expired_previous_decision,
     const base::Callback<void(content::CertificateRequestResultType)>&
@@ -803,19 +810,29 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
-  std::string application_session_id =
-      CastNavigationUIData::GetSessionIdForWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host));
+  std::string application_session_id;
+  bool mixer_audio_enabled;
+  GetApplicationMediaInfo(&application_session_id, &mixer_audio_enabled,
+                          render_frame_host);
   registry->AddInterface(base::BindRepeating(
       &media::CreateApplicationMediaInfoManager, render_frame_host,
-      std::move(application_session_id), true));
+      std::move(application_session_id), mixer_audio_enabled));
 }
 
-void CastContentBrowserClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+void CastContentBrowserClient::GetApplicationMediaInfo(
+    std::string* application_session_id,
+    bool* mixer_audio_enabled,
+    content::RenderFrameHost* render_frame_host) {
+  *application_session_id = "";
+  *mixer_audio_enabled = true;
+}
+
+void CastContentBrowserClient::RunServiceInstance(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (service_name == ::media::mojom::kMediaServiceName) {
+  if (identity.name() == ::media::mojom::kMediaServiceName) {
+    service_manager::mojom::ServiceRequest request(std::move(*receiver));
     GetMediaTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&CreateMediaService, this, std::move(request)));
@@ -824,11 +841,23 @@ void CastContentBrowserClient::HandleServiceRequest(
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-  if (service_name == external_mojo::BrokerService::kServiceName) {
-    StartExternalMojoBrokerService(std::move(request));
+  if (identity.name() == external_mojo::BrokerService::kServiceName) {
+    StartExternalMojoBrokerService(std::move(*receiver));
     return;
   }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+}
+
+void CastContentBrowserClient::RunServiceInstanceOnIOThread(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
+#if !defined(OS_FUCHSIA)
+  if (identity.name() == heap_profiling::mojom::kServiceName) {
+    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
+        std::move(*receiver));
+    return;
+  }
+#endif  // !defined(OS_FUCHSIA)
 }
 
 base::Optional<service_manager::Manifest>
@@ -836,12 +865,17 @@ CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
   if (service_name == content::mojom::kBrowserServiceName)
     return GetCastContentBrowserOverlayManifest();
-  if (service_name == content::mojom::kPackagedServicesServiceName)
-    return GetCastContentPackagedServicesOverlayManifest();
   if (service_name == content::mojom::kRendererServiceName)
     return GetCastContentRendererOverlayManifest();
 
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+CastContentBrowserClient::GetExtraServiceManifests() {
+  // NOTE: This could be simplified and the list of manifests could be inlined.
+  // Not done yet since it would require touching downstream cast code.
+  return GetCastContentPackagedServicesOverlayManifest().packaged_services;
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
@@ -1053,15 +1087,6 @@ bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
 
 std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
-}
-
-void CastContentBrowserClient::RegisterIOThreadServiceHandlers(
-    content::ServiceManagerConnection* connection) {
-#if !defined(OS_FUCHSIA)
-  connection->AddServiceRequestHandler(
-      heap_profiling::mojom::kServiceName,
-      heap_profiling::HeapProfilingService::GetServiceFactory());
-#endif  // !defined(OS_FUCHSIA)
 }
 
 void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {

@@ -679,6 +679,13 @@ void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents) {
                                             blink::WebFloatPoint(1, 1));
 }
 
+void RunUntilInputProcessed(RenderWidgetHost* host) {
+  base::RunLoop run_loop;
+  RenderWidgetHostImpl::From(host)->WaitForInputProcessed(
+      run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
@@ -1796,6 +1803,8 @@ bool SetCookie(BrowserContext* browser_context,
       ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
   net::CookieOptions options;
   options.set_include_httponly();
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::Create(url, value, base::Time::Now(), options));
   DCHECK(cc.get());
@@ -2752,7 +2761,7 @@ bool TestNavigationManager::WaitForDesiredState() {
   // Wait for the desired state if needed.
   if (current_state_ < desired_state_) {
     DCHECK(!quit_closure_);
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(message_loop_type_);
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
@@ -2782,6 +2791,10 @@ bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
   if (current_state_ != NavigationState::INITIAL)
     return false;
   return true;
+}
+
+void TestNavigationManager::AllowNestableTasks() {
+  message_loop_type_ = base::RunLoop::Type::kNestableTasksAllowed;
 }
 
 NavigationHandleCommitObserver::NavigationHandleCommitObserver(
@@ -2814,7 +2827,7 @@ void ConsoleObserverDelegate::Wait() {
 
 bool ConsoleObserverDelegate::DidAddMessageToConsole(
     WebContents* source,
-    int32_t level,
+    blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
@@ -2822,10 +2835,16 @@ bool ConsoleObserverDelegate::DidAddMessageToConsole(
 
   std::string ascii_message = base::UTF16ToASCII(message);
   if (base::MatchPattern(ascii_message, filter_)) {
-    message_ = ascii_message;
+    messages_.push_back(ascii_message);
     run_loop_.Quit();
   }
   return false;
+}
+
+std::string ConsoleObserverDelegate::message() {
+  if (messages_.empty())
+    return std::string();
+  return messages_.back();
 }
 
 // static

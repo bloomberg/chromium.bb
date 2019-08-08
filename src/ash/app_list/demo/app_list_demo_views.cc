@@ -11,9 +11,9 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -73,8 +73,7 @@ void DemoAppListViewDelegate::DismissAppList() {
 }
 
 void DemoAppListViewDelegate::ViewClosing() {
-  base::MessageLoopCurrent message_loop = base::MessageLoopCurrentForUI::Get();
-  message_loop->task_runner()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 

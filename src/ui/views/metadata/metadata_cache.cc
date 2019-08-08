@@ -6,14 +6,15 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "ui/views/metadata/metadata_types.h"
 
 namespace views {
 namespace metadata {
 
-MetaDataCache::MetaDataCache() {}
-MetaDataCache::~MetaDataCache() {}
+MetaDataCache::MetaDataCache() = default;
+MetaDataCache::~MetaDataCache() = default;
 
 // static
 MetaDataCache* MetaDataCache::GetInstance() {

@@ -8,20 +8,27 @@
 
 namespace gpu {
 
-bool SubmitSignalVkSemaphore(VkQueue vk_queue,
-                             VkSemaphore vk_semaphore,
-                             VkFence vk_fence) {
+bool SubmitSignalVkSemaphores(VkQueue vk_queue,
+                              const base::span<VkSemaphore>& vk_semaphores,
+                              VkFence vk_fence) {
   // Structure specifying a queue submit operation.
   VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
-  submit_info.signalSemaphoreCount = 1;
-  submit_info.pSignalSemaphores = &vk_semaphore;
+  submit_info.signalSemaphoreCount = vk_semaphores.size();
+  submit_info.pSignalSemaphores = vk_semaphores.data();
   const unsigned int submit_count = 1;
   return vkQueueSubmit(vk_queue, submit_count, &submit_info, vk_fence) ==
          VK_SUCCESS;
 }
 
+bool SubmitSignalVkSemaphore(VkQueue vk_queue,
+                             VkSemaphore vk_semaphore,
+                             VkFence vk_fence) {
+  return SubmitSignalVkSemaphores(
+      vk_queue, base::span<VkSemaphore>(&vk_semaphore, 1), vk_fence);
+}
+
 bool SubmitWaitVkSemaphores(VkQueue vk_queue,
-                            const std::vector<VkSemaphore>& vk_semaphores,
+                            const base::span<VkSemaphore>& vk_semaphores,
                             VkFence vk_fence) {
   DCHECK(!vk_semaphores.empty());
   // Structure specifying a queue submit operation.
@@ -36,7 +43,8 @@ bool SubmitWaitVkSemaphores(VkQueue vk_queue,
 bool SubmitWaitVkSemaphore(VkQueue vk_queue,
                            VkSemaphore vk_semaphore,
                            VkFence vk_fence) {
-  return SubmitWaitVkSemaphores(vk_queue, {vk_semaphore}, vk_fence);
+  return SubmitWaitVkSemaphores(
+      vk_queue, base::span<VkSemaphore>(&vk_semaphore, 1), vk_fence);
 }
 
 VkSemaphore CreateExternalVkSemaphore(

@@ -150,7 +150,7 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
                                                        bool* out_installed) {
     PostCrossThreadTask(
         *worker_thread_->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             [](ServiceWorkerInstalledScriptsManager* installed_scripts_manager,
                const String& script_url, bool* out_installed,
                base::WaitableEvent* waiter) {
@@ -169,7 +169,7 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
       std::unique_ptr<RawScriptData>* out_data) {
     PostCrossThreadTask(
         *worker_thread_->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &ServiceWorkerInstalledScriptsManagerTest::CallGetRawScriptData,
             CrossThreadUnretained(this), script_url,
             CrossThreadUnretained(out_data),

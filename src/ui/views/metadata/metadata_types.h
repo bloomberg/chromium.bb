@@ -9,17 +9,24 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/views/metadata/type_conversion.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 namespace metadata {
 
+enum class PropertyFlags {
+  // By default, properties are read/write. This flag indicates that the given
+  // property metadata instance needs no special attention.
+  kEmpty = 0x00,
+  // Property metadata instance should be treated as read-only. Calling
+  // SetValueAsString() will trigger a NOTREACHED() error under debug.
+  kReadOnly = 0x01,
+};
+
 // Interface for classes that provide ClassMetaData (via macros in
-// metadata_macros.h).  GetClassMetaData() is automatically overridden and
+// metadata_header_macros.h). GetClassMetaData() is automatically overridden and
 // implemented in the relevant macros, so a class must merely have
 // MetaDataProvider somewhere in its ancestry.
 class MetaDataProvider {
@@ -30,10 +37,9 @@ class MetaDataProvider {
 class MemberMetaDataBase;
 
 // Represents the 'meta data' that describes a class. Using the appropriate
-// macros in ui/views/metadata/metadata_macros.h, a descendant of this class
-// is declared within the scope of the containing class. See information about
-// using the macros in the comment for the views::View class.
-// When instantiated
+// macros in ui/views/metadata/metadata_impl_macros.h, a descendant of this
+// class is declared within the scope of the containing class. See information
+// about using the macros in the comment for the views::View class.
 class VIEWS_EXPORT ClassMetaData {
  public:
   ClassMetaData();
@@ -112,7 +118,7 @@ class VIEWS_EXPORT ClassMetaData {
 // accessors to get/set the value of the member on an object.
 class VIEWS_EXPORT MemberMetaDataBase {
  public:
-  MemberMetaDataBase() {}
+  MemberMetaDataBase() = default;
   virtual ~MemberMetaDataBase() = default;
 
   // Access the value of this member and return it as a string.
@@ -123,7 +129,10 @@ class VIEWS_EXPORT MemberMetaDataBase {
   // Set the value of this member through a string on a specified object.
   // |obj| is the instance on which to set the value of the property this
   // metadata represents.
-  virtual void SetValueAsString(void* obj, const base::string16& new_value) = 0;
+  virtual void SetValueAsString(void* obj, const base::string16& new_value);
+
+  // Return various information flags about the property.
+  virtual PropertyFlags GetPropertyFlags() const = 0;
 
   void SetMemberName(const char* name) { member_name_ = name; }
   void SetMemberType(const char* type) { member_type_ = type; }
@@ -136,33 +145,6 @@ class VIEWS_EXPORT MemberMetaDataBase {
 
   DISALLOW_COPY_AND_ASSIGN(MemberMetaDataBase);
 };  // class MemberMetaDataBase
-
-// Represents meta data for a specific property member of class |TClass|, with
-// underlying type |TValue|, where the type of the actual member.
-// Allows for interaction with the property as if it were the underlying data
-// type (|TValue|), but still uses the Property's functionality under the hood
-// (so it will trigger things like property changed notifications).
-template <typename TClass,
-          typename TValue,
-          void (TClass::*Set)(const TValue value),
-          TValue (TClass::*Get)() const>
-class ClassPropertyMetaData : public MemberMetaDataBase {
- public:
-  ClassPropertyMetaData() {}
-  virtual ~ClassPropertyMetaData() = default;
-
-  base::string16 GetValueAsString(void* obj) const override {
-    return Convert<TValue, base::string16>((static_cast<TClass*>(obj)->*Get)());
-  }
-
-  void SetValueAsString(void* obj, const base::string16& new_value) override {
-    (static_cast<TClass*>(obj)->*Set)(
-        Convert<base::string16, TValue>(new_value));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClassPropertyMetaData);
-};
 
 }  // namespace metadata
 }  // namespace views

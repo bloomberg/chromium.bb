@@ -111,20 +111,18 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     [[configuration_ userContentController]
         addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
 
-    if (features::WebUISchemeHandlingEnabled()) {
-      if (!scheme_handler_) {
-        scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
-            browser_state_->GetSharedURLLoaderFactory();
-        scheme_handler_ = [[CRWWebUISchemeHandler alloc]
-            initWithURLLoaderFactory:shared_loader_factory];
-      }
-      WebClient::Schemes schemes;
-      GetWebClient()->AddAdditionalSchemes(&schemes);
-      GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
-      for (std::string scheme : schemes.standard_schemes) {
-        [configuration_ setURLSchemeHandler:scheme_handler_
-                               forURLScheme:base::SysUTF8ToNSString(scheme)];
-      }
+    if (!scheme_handler_) {
+      scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
+          browser_state_->GetSharedURLLoaderFactory();
+      scheme_handler_ = [[CRWWebUISchemeHandler alloc]
+          initWithURLLoaderFactory:shared_loader_factory];
+    }
+    WebClient::Schemes schemes;
+    GetWebClient()->AddAdditionalSchemes(&schemes);
+    GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
+    for (std::string scheme : schemes.standard_schemes) {
+      [configuration_ setURLSchemeHandler:scheme_handler_
+                             forURLScheme:base::SysUTF8ToNSString(scheme)];
     }
 
     for (auto& observer : observers_)

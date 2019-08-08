@@ -224,6 +224,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   int requestAnimationFrame(V8FrameRequestCallback*);
   int webkitRequestAnimationFrame(V8FrameRequestCallback*);
   void cancelAnimationFrame(int id);
+  int requestPostAnimationFrame(V8FrameRequestCallback*);
+  void cancelPostAnimationFrame(int id);
 
   // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
   void queueMicrotask(V8VoidFunction*);
@@ -281,7 +283,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
       MessageEvent* event,
       scoped_refptr<UserGestureToken> token,
       scoped_refptr<const SecurityOrigin> intended_target_origin,
-      std::unique_ptr<SourceLocation>);
+      std::unique_ptr<SourceLocation> location);
 
   void DispatchMessageEventWithOriginCheck(
       const SecurityOrigin* intended_target_origin,

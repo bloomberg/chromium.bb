@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import json
 import logging
 import os
@@ -134,7 +136,7 @@ class PerfTestInstance(test_instance.TestInstance):
     for i in xrange(len(persisted_outputs)):
       output_formatted += '\n\nOutput from run #%d:\n\n%s' % (
           i, persisted_outputs[i])
-    print output_formatted
+    print(output_formatted)
 
     if self.output_chartjson_data:
       with file(self.output_chartjson_data, 'w') as f:

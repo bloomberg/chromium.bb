@@ -122,7 +122,7 @@ void MediaDrmBridgeFactory::CreateMediaDrmBridge(const std::string& origin_id) {
     return;
   }
 
-  media_drm_bridge_->SetMediaCryptoReadyCB(base::BindRepeating(
+  media_drm_bridge_->SetMediaCryptoReadyCB(base::BindOnce(
       &MediaDrmBridgeFactory::OnMediaCryptoReady, weak_factory_.GetWeakPtr()));
 }
 

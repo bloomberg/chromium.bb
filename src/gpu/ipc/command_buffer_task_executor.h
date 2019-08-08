@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -66,14 +67,16 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
     virtual void ContinueTask(base::OnceClosure task) = 0;
   };
 
-  CommandBufferTaskExecutor(const GpuPreferences& gpu_preferences,
-                            const GpuFeatureInfo& gpu_feature_info,
-                            SyncPointManager* sync_point_manager,
-                            MailboxManager* mailbox_manager,
-                            scoped_refptr<gl::GLShareGroup> share_group,
-                            gl::GLSurfaceFormat share_group_surface_format,
-                            SharedImageManager* shared_image_manager,
-                            gles2::ProgramCache* program_cache);
+  CommandBufferTaskExecutor(
+      const GpuPreferences& gpu_preferences,
+      const GpuFeatureInfo& gpu_feature_info,
+      SyncPointManager* sync_point_manager,
+      MailboxManager* mailbox_manager,
+      scoped_refptr<gl::GLShareGroup> share_group,
+      gl::GLSurfaceFormat share_group_surface_format,
+      SharedImageManager* shared_image_manager,
+      gles2::ProgramCache* program_cache,
+      scoped_refptr<SharedContextState> shared_context_state);
   virtual ~CommandBufferTaskExecutor();
 
   // Always use virtualized GL contexts if this returns true.
@@ -119,6 +122,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
   }
   SharedImageManager* shared_image_manager() { return shared_image_manager_; }
 
+  scoped_refptr<SharedContextState> shared_context_state() {
+    return shared_context_state_;
+  }
+
   // These methods construct accessed fields if not already initialized.
   scoped_refptr<gl::GLShareGroup> share_group();
   gles2::Outputter* outputter();
@@ -140,6 +147,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
   gles2::ShaderTranslatorCache shader_translator_cache_;
   gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
   SharedImageManager* shared_image_manager_;
+  const scoped_refptr<SharedContextState> shared_context_state_;
 
   // No-op default initialization is used in in-process mode.
   GpuProcessActivityFlags activity_flags_;

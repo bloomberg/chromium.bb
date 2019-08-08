@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -14,7 +15,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/events/event.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace exo {
 
@@ -309,6 +309,14 @@ ukm::SourceId TextInput::GetClientSourceForMetrics() const {
 
 bool TextInput::ShouldDoLearning() {
   return should_do_learning_;
+}
+
+bool TextInput::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
 }
 
 void TextInput::OnKeyboardVisibilityStateChanged(bool is_visible) {

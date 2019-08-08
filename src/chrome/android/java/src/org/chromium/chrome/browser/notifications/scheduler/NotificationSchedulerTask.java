@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.notifications.scheduler;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.MainThread;
 
 import org.chromium.base.Callback;
@@ -23,6 +24,8 @@ import org.chromium.components.background_task_scheduler.TaskParameters;
  * notifications.
  */
 public class NotificationSchedulerTask extends NativeBackgroundTask {
+    public static final String EXTRA_SCHEDULER_TASK_TIME = "extra_scheduler_task_time";
+
     @Override
     public void reschedule(Context context) {}
 
@@ -62,19 +65,24 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
     /**
      * Schedules a notification scheduler background task to display scheduled notifications if
      * needed.
+     * @param schedulerTaskTime The time for the task to scheduling e.g. in the morning or evening.
      * @param windowStartMs The starting time of a time window to run the background job in
      *         milliseconds.
      * @param windowEndMs The end time of a time window to run the background job in milliseconds.
      */
     @MainThread
     @CalledByNative
-    public static void schedule(long windowStartMs, long windowEndMs) {
+    public static void schedule(
+            int /*@SchedulerTaskTime*/ schedulerTaskTime, long windowStartMs, long windowEndMs) {
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
+        Bundle bundle = new Bundle();
+        bundle.putInt(EXTRA_SCHEDULER_TASK_TIME, schedulerTaskTime);
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(TaskIds.NOTIFICATION_SCHEDULER_JOB_ID,
                                 NotificationSchedulerTask.class, windowStartMs, windowEndMs)
                         .setUpdateCurrent(true)
                         .setIsPersisted(true)
+                        .setExtras(bundle)
                         .build();
         scheduler.schedule(ContextUtils.getApplicationContext(), taskInfo);
     }

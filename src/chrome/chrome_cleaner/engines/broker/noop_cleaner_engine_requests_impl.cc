@@ -8,9 +8,9 @@
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 
 namespace chrome_cleaner {
+
 std::unique_ptr<chrome_cleaner::FileRemoverAPI>
 CreateFileRemoverWithDigestVerifier(
-    const std::vector<UwSId>& enabled_uws,
     std::unique_ptr<ZipArchiver> archiver,
     const base::RepeatingClosure& reboot_needed_callback) {
   return nullptr;

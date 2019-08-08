@@ -192,11 +192,10 @@ void FormDataEncoder::AddFilenameToMultiPartHeader(
   Append(buffer, '"');
 }
 
-void FormDataEncoder::AddContentTypeToMultiPartHeader(
-    Vector<char>& buffer,
-    const CString& mime_type) {
+void FormDataEncoder::AddContentTypeToMultiPartHeader(Vector<char>& buffer,
+                                                      const String& mime_type) {
   Append(buffer, "\r\nContent-Type: ");
-  Append(buffer, mime_type);
+  Append(buffer, mime_type.Utf8());
 }
 
 void FormDataEncoder::FinishMultiPartHeader(Vector<char>& buffer) {

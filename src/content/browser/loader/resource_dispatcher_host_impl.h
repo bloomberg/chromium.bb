@@ -105,7 +105,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // ResourceDispatcherHost implementation:
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
-  void SetAllowCrossOriginAuthPrompt(bool value) override;
   void RegisterInterceptor(const std::string& http_header,
                            const std::string& starts_with,
                            const InterceptorCallback& interceptor) override;
@@ -174,10 +173,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Cancels any blocked request for the specified route id.
   void CancelBlockedRequestsForRoute(
       const GlobalFrameRoutingId& global_routing_id);
-
-  // Indicates whether third-party sub-content can pop-up HTTP basic auth
-  // dialog boxes.
-  bool allow_cross_origin_auth_prompt();
 
   ResourceDispatcherHostDelegate* delegate() {
     return delegate_;
@@ -608,18 +603,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                              bool download,
                                              ResourceContext* context);
 
-  // Relationship of resource being authenticated with the top level page.
-  enum HttpAuthRelationType {
-    HTTP_AUTH_RELATION_TOP,            // Top-level page itself
-    HTTP_AUTH_RELATION_SAME_DOMAIN,    // Sub-content from same domain
-    HTTP_AUTH_RELATION_BLOCKED_CROSS,  // Blocked Sub-content from cross domain
-    HTTP_AUTH_RELATION_ALLOWED_CROSS,  // Allowed Sub-content per command line
-    HTTP_AUTH_RELATION_LAST
-  };
-
-  HttpAuthRelationType HttpAuthRelationTypeOf(const GURL& request_url,
-                                              const GURL& first_party);
-
   ResourceLoader* GetLoader(const GlobalRequestID& id) const;
   ResourceLoader* GetLoader(int child_id, int request_id) const;
 
@@ -722,8 +705,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   ResourceDispatcherHostDelegate* delegate_;
 
   LoaderDelegate* loader_delegate_;
-
-  bool allow_cross_origin_auth_prompt_;
 
   std::unique_ptr<network::ResourceScheduler> scheduler_;
 

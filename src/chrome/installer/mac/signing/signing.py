@@ -34,15 +34,20 @@ def get_parts(config):
     else:
         uncustomized_bundle_id = config.base_bundle_id
 
+    # Specify the components of HARDENED_RUNTIME that are also available on
+    # older macOS versions.
+    full_hardened_runtime_options = (
+        CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
+        CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
+
     parts = {
         'app':
             CodeSignedProduct(
                 '{.app_product}.app'.format(config),
                 config.base_bundle_id,
-                options=CodeSignOptions.RESTRICT,
+                options=full_hardened_runtime_options,
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
-                resource_rules='app_resource_rules.plist',
                 entitlements='app-entitlements.plist',
                 verify_options=VerifyOptions.DEEP + VerifyOptions.NO_STRICT),
         'framework':
@@ -57,32 +62,62 @@ def get_parts(config):
                 .format(config),
                 '{}.framework.AlertNotificationService'.format(
                     config.base_bundle_id),
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.LIBRARY_VALIDATION,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.DEEP),
         'crashpad':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/chrome_crashpad_handler'.format(
                     config),
                 'chrome_crashpad_handler',
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.LIBRARY_VALIDATION,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.DEEP),
         'helper-app':
             CodeSignedProduct(
-                ('{0.framework_dir}/Helpers/{0.product} Helper.app'
-                 if config.use_new_mac_bundle_structure else
-                 '{0.app_product}.app/Contents/Versions/{0.version}/{0.product} Helper.app'
-                ).format(config),
+                '{0.framework_dir}/Helpers/{0.product} Helper.app'.format(
+                    config),
                 '{}.helper'.format(uncustomized_bundle_id),
-                options=CodeSignOptions.RESTRICT,
+                options=full_hardened_runtime_options,
+                verify_options=VerifyOptions.DEEP),
+        'helper-renderer-app':
+            CodeSignedProduct(
+                '{0.framework_dir}/Helpers/{0.product} Helper (Renderer).app'
+                .format(config),
+                '{}.helper.renderer'.format(uncustomized_bundle_id),
+                # Do not use |full_hardened_runtime_options| because library
+                # validation is incompatible with the JIT entitlement.
+                options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
+                CodeSignOptions.HARDENED_RUNTIME,
+                entitlements='helper-renderer-entitlements.plist',
+                verify_options=VerifyOptions.DEEP),
+        'helper-gpu-app':
+            CodeSignedProduct(
+                '{0.framework_dir}/Helpers/{0.product} Helper (GPU).app'
+                .format(config),
+                '{}.helper.gpu'.format(uncustomized_bundle_id),
+                # Do not use |full_hardened_runtime_options| because library
+                # validation is incompatible with more permissive code signing
+                # entitlements.
+                options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
+                CodeSignOptions.HARDENED_RUNTIME,
+                entitlements='helper-gpu-entitlements.plist',
+                verify_options=VerifyOptions.DEEP),
+        'helper-plugin-app':
+            CodeSignedProduct(
+                '{0.framework_dir}/Helpers/{0.product} Helper (Plugin).app'
+                .format(config),
+                '{}.helper.plugin'.format(uncustomized_bundle_id),
+                # Do not use |full_hardened_runtime_options| because library
+                # validation is incompatible with the disable-library-validation
+                # entitlement.
+                options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
+                CodeSignOptions.HARDENED_RUNTIME,
+                entitlements='helper-plugin-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
         'app-mode-app':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/app_mode_loader'.format(config),
                 'app_mode_loader',
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.LIBRARY_VALIDATION,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.IGNORE_RESOURCES),
     }
 
@@ -124,7 +159,9 @@ def get_installer_tools(config):
         'xzdec',
     )
     for binary in binaries:
-        options = CodeSignOptions.RESTRICT + CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL
+        options = (
+            CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
+            CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
         tools[binary] = CodeSignedProduct(
             '{.packaging_dir}/{binary}'.format(config, binary=binary),
             binary.replace('.dylib', ''),
@@ -144,6 +181,10 @@ def sign_part(paths, config, part):
             be in |paths.work|.
     """
     command = ['codesign', '--sign', config.identity]
+    if config.notary_user:
+        # Assume if the config has notary authentication information that the
+        # products will be notarized, which requires a secure timestamp.
+        command.append('--timestamp')
     if part.sign_with_identifier:
         command.extend(['--identifier', part.identifier])
     reqs = part.requirements_string(config)
@@ -153,11 +194,6 @@ def sign_part(paths, config, part):
         command.extend(['--keychain', config.keychain])
     if part.options:
         command.extend(['--options', ','.join(part.options)])
-    if part.resource_rules:
-        command.extend([
-            '--resource-rules',
-            os.path.join(paths.packaging_dir(config), part.resource_rules)
-        ])
     if part.entitlements:
         command.extend(
             ['--entitlements',
@@ -200,7 +236,7 @@ def _validate_chrome(paths, config, app):
         commands.run_command(['spctl', '--assess', '-vv', app_path])
 
 
-def sign_chrome(paths, config):
+def sign_chrome(paths, config, sign_framework=False):
     """Code signs the Chrome application bundle and all of its internal nested
     code parts.
 
@@ -208,6 +244,9 @@ def sign_chrome(paths, config):
         paths: A |model.Paths| object.
         config: The |model.CodeSignConfig| object. The |app_product| binary and
             nested binaries must exist in |paths.work|.
+        sign_framework: True if the inner framework is to be signed in addition
+            to the outer application. False if only the outer application is to
+            be signed.
     """
     parts = get_parts(config)
 
@@ -221,18 +260,20 @@ def sign_chrome(paths, config):
 
     _sanity_check_version_keys(paths, parts)
 
-    # To sign an .app bundle that contains nested code, the nested components
-    # themselves must be signed. Each of these components is signed below. Note
-    # that unless a framework has multiple versions (which is discouraged),
-    # signing the entire framework is equivalent to signing the Current version.
-    # https://developer.apple.com/library/content/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG13
-    for name, part in parts.items():
-        if name in ('app', 'framework'):
-            continue
-        sign_part(paths, config, part)
+    if sign_framework:
+        # To sign an .app bundle that contains nested code, the nested
+        # components themselves must be signed. Each of these components is
+        # signed below. Note that unless a framework has multiple versions
+        # (which is discouraged), signing the entire framework is equivalent to
+        # signing the Current version.
+        # https://developer.apple.com/library/content/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG13
+        for name, part in parts.items():
+            if name in ('app', 'framework'):
+                continue
+            sign_part(paths, config, part)
 
-    # Sign the framework bundle.
-    sign_part(paths, config, parts['framework'])
+        # Sign the framework bundle.
+        sign_part(paths, config, parts['framework'])
 
     provisioning_profile_basename = config.provisioning_profile_basename
     if provisioning_profile_basename:

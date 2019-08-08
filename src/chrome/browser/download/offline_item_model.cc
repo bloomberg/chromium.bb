@@ -144,7 +144,7 @@ download::DownloadItem::DownloadState OfflineItemModel::GetState() const {
       return download::DownloadItem::COMPLETE;
     case OfflineItemState::CANCELLED:
       return download::DownloadItem::CANCELLED;
-    case OfflineItemState::MAX_DOWNLOAD_STATE:
+    case OfflineItemState::NUM_ENTRIES:
       NOTREACHED();
       return download::DownloadItem::CANCELLED;
   }
@@ -181,7 +181,7 @@ bool OfflineItemModel::IsDone() const {
       FALLTHROUGH;
     case OfflineItemState::CANCELLED:
       return true;
-    case OfflineItemState::MAX_DOWNLOAD_STATE:
+    case OfflineItemState::NUM_ENTRIES:
       NOTREACHED();
   }
   return false;

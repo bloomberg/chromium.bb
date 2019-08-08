@@ -11,7 +11,7 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
 IdentityManagerWrapper::IdentityManagerWrapper(
-    AccountTrackerService* account_tracker_service,
+    std::unique_ptr<AccountTrackerService> account_tracker_service,
     std::unique_ptr<ProfileOAuth2TokenService> token_service,
     std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
     std::unique_ptr<SigninManagerBase> signin_manager,
@@ -20,16 +20,12 @@ IdentityManagerWrapper::IdentityManagerWrapper(
     std::unique_ptr<identity::AccountsMutator> accounts_mutator,
     std::unique_ptr<identity::AccountsCookieMutator> accounts_cookie_mutator,
     std::unique_ptr<identity::DiagnosticsProvider> diagnostics_provider)
-    : identity::IdentityManager(std::move(token_service),
+    : identity::IdentityManager(std::move(account_tracker_service),
+                                std::move(token_service),
                                 std::move(gaia_cookie_manager_service),
                                 std::move(signin_manager),
                                 std::move(account_fetcher_service),
-                                account_tracker_service,
                                 std::move(primary_account_mutator),
                                 std::move(accounts_mutator),
                                 std::move(accounts_cookie_mutator),
                                 std::move(diagnostics_provider)) {}
-
-void IdentityManagerWrapper::Shutdown() {
-  IdentityManager::Shutdown();
-}

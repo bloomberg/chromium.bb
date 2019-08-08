@@ -31,7 +31,7 @@ source_set("unit_tests") {
     ":power",
     "//base/test:test_support",
     "//chromeos/dbus/power",
-    "//services/device/public/cpp/test:test_support",
+    "//services/device/public/cpp:test_support",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",

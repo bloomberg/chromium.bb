@@ -188,9 +188,7 @@ ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
 
 bool ChildProcessLauncherPriority::is_background() const {
   return !visible && !has_media_stream && !boost_for_pending_views &&
-         !(has_foreground_service_worker &&
-           base::FeatureList::IsEnabled(
-               features::kServiceWorkerForegroundPriority));
+         !has_foreground_service_worker;
 }
 
 bool ChildProcessLauncherPriority::operator==(

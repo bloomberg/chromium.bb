@@ -17,7 +17,7 @@ namespace secure_origin_whitelist {
 std::set<std::string> GetSchemesBypassingSecureContextCheck();
 
 // Register preferences for Secure Origin Whitelists.
-void RegisterProfilePrefs(PrefRegistrySimple*);
+void RegisterPrefs(PrefRegistrySimple* local_state);
 
 }  // namespace secure_origin_whitelist
 

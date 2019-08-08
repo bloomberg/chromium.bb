@@ -49,7 +49,7 @@ static void PostConcatSurfaceContentsScale(const EffectNode* effect_node,
     // doesn't set effect ids on clip nodes.
     return;
   }
-  DCHECK(effect_node->has_render_surface);
+  DCHECK(effect_node->HasRenderSurface());
   transform->matrix().postScale(effect_node->surface_contents_scale.x(),
                                 effect_node->surface_contents_scale.y(), 1.f);
 }
@@ -458,7 +458,7 @@ static inline bool LayerShouldBeSkippedInternal(
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
-  if (effect_node->has_render_surface && effect_node->subtree_has_copy_request)
+  if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
     return false;
 
   // If the layer transform is not invertible, it should be skipped. In case the
@@ -509,7 +509,7 @@ static void SetSurfaceDrawOpacity(const EffectTree& tree,
   // (included) and its target surface (excluded).
   const EffectNode* node = tree.Node(render_surface->EffectTreeIndex());
   float draw_opacity = tree.EffectiveOpacity(node);
-  for (node = tree.parent(node); node && !node->has_render_surface;
+  for (node = tree.parent(node); node && !node->HasRenderSurface();
        node = tree.parent(node)) {
     draw_opacity *= tree.EffectiveOpacity(node);
   }
@@ -656,7 +656,7 @@ static ConditionalClip LayerClipRect(PropertyTrees* property_trees,
   const EffectTree* effect_tree = &property_trees->effect_tree;
   const EffectNode* effect_node = effect_tree->Node(layer->effect_tree_index());
   const EffectNode* target_node =
-      effect_node->has_render_surface
+      effect_node->HasRenderSurface()
           ? effect_node
           : effect_tree->Node(effect_node->target_id);
   bool include_expanding_clips = false;
@@ -676,7 +676,7 @@ static std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
 
   // Return empty rrect if this node has a render surface but the function call
   // was made for a non render surface.
-  if (effect_node->has_render_surface && !for_render_surface)
+  if (effect_node->HasRenderSurface() && !for_render_surface)
     return kEmptyRoundedCornerInfo;
 
   // Traverse the parent chain up to the render target to find a node which has
@@ -691,7 +691,7 @@ static std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
 
     // Simply break if we reached a node that has a render surface or is the
     // render target.
-    if (node->has_render_surface || node->id == target_id)
+    if (node->HasRenderSurface() || node->id == target_id)
       break;
 
     node = effect_tree->parent(node);
@@ -723,7 +723,7 @@ static void UpdateRenderTarget(EffectTree* effect_tree) {
     if (i == EffectTree::kContentsRootNodeId) {
       // Render target of the node corresponding to root is itself.
       node->target_id = EffectTree::kContentsRootNodeId;
-    } else if (effect_tree->parent(node)->has_render_surface) {
+    } else if (effect_tree->parent(node)->HasRenderSurface()) {
       node->target_id = node->parent_id;
     } else {
       node->target_id = effect_tree->parent(node)->target_id;
@@ -765,7 +765,7 @@ static void ComputeClips(PropertyTrees* property_trees) {
 
 void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
                                        gfx::Transform* transform) {
-  DCHECK(effect_node->has_render_surface);
+  DCHECK(effect_node->HasRenderSurface());
   if (effect_node->surface_contents_scale.x() != 0.0 &&
       effect_node->surface_contents_scale.y() != 0.0)
     transform->Scale(1.0 / effect_node->surface_contents_scale.x(),

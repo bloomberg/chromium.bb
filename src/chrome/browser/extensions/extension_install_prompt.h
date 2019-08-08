@@ -326,6 +326,10 @@ class ExtensionInstallPrompt {
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
+  // If auto confirm is enabled then posts a task to proceed with or cancel the
+  // install and returns true. Otherwise returns false.
+  bool AutoConfirmPromptIfEnabled();
+
   Profile* profile_;
 
   base::ThreadChecker ui_thread_checker_;

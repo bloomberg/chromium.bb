@@ -25,7 +25,7 @@ namespace {
 const char kCompatibilityScript[] = "devtools_compatibility.js";
 const char kCompatibilityScriptSourceURL[] =
     "\n//# "
-    "sourceURL=chrome-devtools://devtools/bundled/devtools_compatibility.js";
+    "sourceURL=devtools://devtools/bundled/devtools_compatibility.js";
 }
 
 // static

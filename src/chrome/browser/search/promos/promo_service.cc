@@ -130,7 +130,7 @@ void PromoService::Refresh() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetApiUrl();
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->allow_credentials = false;
 
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
@@ -161,16 +161,16 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::BindRepeating(&PromoService::OnJsonParsed,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&PromoService::OnJsonParseFailed,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PromoService::OnJsonParsed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PromoService::OnJsonParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PromoService::OnJsonParsed(std::unique_ptr<base::Value> value) {
+void PromoService::OnJsonParsed(base::Value value) {
   const GURL google_base_url = GetGoogleBaseUrl();
   base::Optional<PromoData> result;
-  if (JsonToPromoData(*value, google_base_url, result)) {
+  if (JsonToPromoData(value, google_base_url, result)) {
     PromoDataLoaded(Status::OK_WITH_PROMO, result);
   } else {
     if (result.has_value()) {

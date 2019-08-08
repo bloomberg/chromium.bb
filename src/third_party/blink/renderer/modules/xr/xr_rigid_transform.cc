@@ -52,33 +52,6 @@ void XRRigidTransform::DecomposeMatrix() {
   }
 }
 
-// deep copy
-XRRigidTransform::XRRigidTransform(const XRRigidTransform& other) {
-  *this = other;
-}
-
-// deep copy
-XRRigidTransform& XRRigidTransform::operator=(const XRRigidTransform& other) {
-  if (&other == this)
-    return *this;
-
-  position_ =
-      DOMPointReadOnly::Create(other.position_->x(), other.position_->y(),
-                               other.position_->z(), other.position_->w());
-  orientation_ = DOMPointReadOnly::Create(
-      other.orientation_->x(), other.orientation_->y(), other.orientation_->z(),
-      other.orientation_->w());
-  if (other.matrix_) {
-    matrix_ = std::make_unique<TransformationMatrix>(*(other.matrix_.get()));
-  }
-  if (other.inv_matrix_) {
-    inv_matrix_ =
-        std::make_unique<TransformationMatrix>(*(other.inv_matrix_.get()));
-  }
-
-  return *this;
-}
-
 XRRigidTransform::XRRigidTransform(DOMPointInit* position,
                                    DOMPointInit* orientation) {
   if (position) {
@@ -106,24 +79,29 @@ XRRigidTransform* XRRigidTransform::Create(DOMPointInit* position,
 
 DOMFloat32Array* XRRigidTransform::matrix() {
   EnsureMatrix();
-  return transformationMatrixToDOMFloat32Array(*matrix_);
+  if (!matrix_array_) {
+    matrix_array_ = transformationMatrixToDOMFloat32Array(*matrix_);
+  }
+
+  if (!matrix_array_ || !matrix_array_->View() ||
+      !matrix_array_->View()->Data()) {
+    // A page may take the matrix_array_ value and detach it so matrix_array_ is
+    // a detached array buffer.  This breaks the inspector, so return null
+    // instead.
+    return nullptr;
+  }
+
+  return matrix_array_;
 }
 
 XRRigidTransform* XRRigidTransform::inverse() {
-  return MakeGarbageCollected<XRRigidTransform>(InverseTransformMatrix());
+  EnsureInverse();
+  return inverse_;
 }
 
 TransformationMatrix XRRigidTransform::InverseTransformMatrix() {
-  // Only compute inverse matrix when it's requested, but cache it once we do.
-  // matrix_ does not change once the XRRigidTransfrorm has been constructed, so
-  // the caching is safe.
-  if (!inv_matrix_) {
-    EnsureMatrix();
-    DCHECK(matrix_->IsInvertible());
-    inv_matrix_ = std::make_unique<TransformationMatrix>(matrix_->Inverse());
-  }
-
-  return *inv_matrix_;
+  EnsureInverse();
+  return inverse_->TransformMatrix();
 }
 
 TransformationMatrix XRRigidTransform::TransformMatrix() {
@@ -157,9 +135,23 @@ void XRRigidTransform::EnsureMatrix() {
   }
 }
 
+void XRRigidTransform::EnsureInverse() {
+  // Only compute inverse matrix when it's requested, but cache it once we do.
+  // matrix_ does not change once the XRRigidTransfrorm has been constructed, so
+  // the caching is safe.
+  if (!inverse_) {
+    EnsureMatrix();
+    DCHECK(matrix_->IsInvertible());
+    inverse_ = MakeGarbageCollected<XRRigidTransform>(matrix_->Inverse());
+    inverse_->inverse_ = this;
+  }
+}
+
 void XRRigidTransform::Trace(blink::Visitor* visitor) {
   visitor->Trace(position_);
   visitor->Trace(orientation_);
+  visitor->Trace(inverse_);
+  visitor->Trace(matrix_array_);
   ScriptWrappable::Trace(visitor);
 }
 

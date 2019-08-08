@@ -45,14 +45,18 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
   )HTML");
 
   EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
+  EXPECT_EQ(0.0, GetJankTracker().OverallMaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
   // 300 * (100 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
-  EXPECT_FLOAT_EQ(60.0, GetJankTracker().MaxDistance());
+  // ScoreWithMoveDistance should be scaled by the amount that the content moved
+  // (60px) relative to the max viewport dimension (width=800px).
+  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0),
+                  GetJankTracker().ScoreWithMoveDistance());
+  EXPECT_FLOAT_EQ(60.0, GetJankTracker().OverallMaxDistance());
 }
 
 TEST_F(JankTrackerTest, GranularitySnapping) {
@@ -101,7 +105,7 @@ TEST_F(JankTrackerTest, RtlDistance) {
   GetDocument().getElementById("j")->setAttribute(
       html_names::kStyleAttr, AtomicString("width: 70px; left: 10px"));
   UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(20.0, GetJankTracker().MaxDistance());
+  EXPECT_FLOAT_EQ(20.0, GetJankTracker().OverallMaxDistance());
 }
 
 TEST_F(JankTrackerTest, SmallMovementIgnored) {
@@ -143,6 +147,7 @@ TEST_F(JankTrackerTest, IgnoreAfterInput) {
   SimulateInput();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_TRUE(GetJankTracker().ObservedInputOrScroll());
 }
 
 TEST_F(JankTrackerTest, CompositedElementMovement) {
@@ -262,13 +267,129 @@ TEST_F(JankTrackerTest, JankWhileScrolled) {
 
   GetDocument().scrollingElement()->setScrollTop(100);
   EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
+  EXPECT_EQ(0.0, GetJankTracker().OverallMaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
   // 300 * (height 200 - scrollY 100 + movement 60) / (800 * 600 viewport)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, FullyClippedVisualRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #clip { width: 0px; height: 600px; overflow: hidden; }
+      #j { position: relative; width: 300px; height: 200px; }
+    </style>
+    <div id='clip'><div id='j'></div></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 200px"));
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, PartiallyClippedVisualRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #clip { width: 150px; height: 600px; overflow: hidden; }
+      #j { position: relative; width: 300px; height: 200px; }
+    </style>
+    <div id='clip'><div id='j'></div></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 200px"));
+  UpdateAllLifecyclePhases();
+  // (clipped width 150px) * (height 200 + movement 200) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.125, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, MultiClipVisualRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #outer { width: 200px; height: 600px; overflow: hidden; }
+      #inner { width: 300px; height: 150px; overflow: hidden; }
+      #j { position: relative; width: 300px; height: 600px; }
+    </style>
+    <div id='outer'><div id='inner'><div id='j'></div></div></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: -200px"));
+  UpdateAllLifecyclePhases();
+  // Note that, while the element moves up 200px, its visibility is
+  // clipped at 0px,150px height, so the additional 200px of vertical
+  // move distance is not included in the score.
+  // (clip width 200) * (clip height 150) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.0625, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(200.0, GetJankTracker().OverallMaxDistance());
+}
+
+TEST_F(JankTrackerTest, ShiftOutsideViewport) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #j { position: relative; width: 600px; height: 200px; top: 600px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 800px"));
+  UpdateAllLifecyclePhases();
+  // Since the element moves entirely outside of the viewport, it shouldn't
+  // generate a score.
+  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, ShiftInToViewport) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #j { position: relative; width: 600px; height: 200px; top: 600px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 400px"));
+  UpdateAllLifecyclePhases();
+  // The element moves from outside the viewport to within the viewport, which
+  // should generate jank.
+  // (width 600) * (height 0 + move 200) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, ClipWithoutPaintLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 200px; height: 500px; }
+      #space { height: 1000px; margin-bottom: -500px; }
+      #j { width: 150px; height: 150px; background: yellow; }
+    </style>
+    <div id='scroller'>
+      <div id='space'></div>
+      <div id='j'></div>
+    </div>
+  )HTML");
+
+  // Increase j's top margin by 100px. Since j is clipped by the scroller, this
+  // should not generate jank. However, due to the issue in crbug/971639, this
+  // case was erroneously reported as janking, before that bug was fixed. This
+  // test ensures we do not regress this behavior.
+  GetDocument().getElementById("j")->setAttribute(
+      html_names::kStyleAttr, AtomicString("margin-top: 100px"));
+
+  UpdateAllLifecyclePhases();
+  // Make sure no jank score is reported, since the element that moved is fully
+  // clipped by the scroller.
+  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
 }
 
 class JankTrackerSimTest : public SimTest {};
@@ -324,6 +445,155 @@ TEST_F(JankTrackerSimTest, SubframeWeighting) {
 
   EXPECT_FLOAT_EQ(0.8, jank_tracker.Score());
   EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
+}
+
+TEST_F(JankTrackerSimTest, ViewportSizeChange) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      body { margin: 0; }
+      .square {
+        display: inline-block;
+        position: relative;
+        width: 300px;
+        height: 300px;
+        background:yellow;
+      }
+    </style>
+    <div class='square'></div>
+    <div class='square'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Resize the viewport, making it 400px wide. This should cause the second div
+  // to change position during block layout flow. Since it was the result of a
+  // viewport size change, this position change should not affect the score.
+  WebView().MainFrameWidget()->Resize(WebSize(400, 600));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  JankTracker& jank_tracker = MainFrame().GetFrameView()->GetJankTracker();
+  EXPECT_FLOAT_EQ(0.0, jank_tracker.Score());
+}
+
+TEST_F(JankTrackerTest, StableCompositingChanges) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #outer {
+        margin-left: 50px;
+        margin-top: 50px;
+        width: 200px;
+        height: 200px;
+        background: #dde;
+      }
+      .tr {
+        will-change: transform;
+      }
+      .pl {
+        position: relative;
+        z-index: 0;
+        left: 0;
+        top: 0;
+      }
+      #inner {
+        display: inline-block;
+        width: 100px;
+        height: 100px;
+        background: #666;
+        margin-left: 50px;
+        margin-top: 50px;
+      }
+    </style>
+    <div id=outer><div id=inner></div></div>
+  )HTML");
+
+  Element* element = GetDocument().getElementById("outer");
+  size_t state = 0;
+  auto advance = [this, element, &state]() -> bool {
+    //
+    // Test each of the following transitions:
+    // - add/remove a PaintLayer
+    // - add/remove a cc::Layer when there is already a PaintLayer
+    // - add/remove a cc::Layer and a PaintLayer together
+
+    static const char* states[] = {"", "pl", "pl tr", "pl", "", "tr", ""};
+    element->setAttribute(html_names::kClassAttr, AtomicString(states[state]));
+    UpdateAllLifecyclePhases();
+    return ++state < sizeof states / sizeof *states;
+  };
+  while (advance()) {
+  }
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, CompositedOverflowExpansion) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+
+    html { will-change: transform; }
+    body { height: 2000px; margin: 0; }
+    #drop {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      left: -10000px;
+      top: -1000px;
+    }
+    .pl {
+      position: relative;
+      background: #ddd;
+      z-index: 0;
+      width: 290px;
+      height: 170px;
+      left: 25px;
+      top: 25px;
+    }
+    #comp {
+      position: relative;
+      width: 240px;
+      height: 120px;
+      background: #efe;
+      will-change: transform;
+      z-index: 0;
+      left: 25px;
+      top: 25px;
+    }
+    .sh {
+      top: 515px !important;
+    }
+
+    </style>
+    <div class="pl">
+      <div id="comp"></div>
+    </div>
+    <div id="drop" style="display: none"></div>
+  )HTML");
+
+  Element* drop = GetDocument().getElementById("drop");
+  drop->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhases();
+
+  drop->setAttribute(html_names::kStyleAttr, AtomicString("display: none"));
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+
+  Element* comp = GetDocument().getElementById("comp");
+  comp->setAttribute(html_names::kClassAttr, AtomicString("sh"));
+  drop->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhases();
+
+  // old rect (240 * 120) / (800 * 600) = 0.06
+  // new rect, 50% clipped by viewport (240 * 60) / (800 * 600) = 0.03
+  // final score 0.06 + 0.03 = 0.09
+  EXPECT_FLOAT_EQ(0.09, GetJankTracker().Score());
 }
 
 }  // namespace blink

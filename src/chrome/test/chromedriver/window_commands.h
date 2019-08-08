@@ -15,7 +15,7 @@
 namespace base {
 class DictionaryValue;
 class Value;
-}
+}  // namespace base
 
 struct Session;
 class Status;
@@ -26,7 +26,8 @@ typedef base::Callback<Status(Session* session,
                               WebView* web_view,
                               const base::DictionaryValue&,
                               std::unique_ptr<base::Value>*,
-                              Timeout*)> WindowCommand;
+                              Timeout*)>
+    WindowCommand;
 
 // Execute a Window Command on the target window.
 Status ExecuteWindowCommand(const WindowCommand& command,
@@ -426,7 +427,7 @@ Status ExecuteStopCasting(Session* session,
                           std::unique_ptr<base::Value>* value,
                           Timeout* timeout);
 
-// Returns a list of names of Cast sinks that are available.
+// Returns a list of Cast sinks that are available.
 Status ExecuteGetSinks(Session* session,
                        WebView* web_view,
                        const base::DictionaryValue& params,

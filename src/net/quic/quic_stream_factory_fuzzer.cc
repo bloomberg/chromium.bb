@@ -12,7 +12,8 @@
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
-#include "net/dns/fuzzed_context_host_resolver.h"
+#include "net/dns/context_host_resolver.h"
+#include "net/dns/fuzzed_host_resolver_util.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
@@ -83,9 +84,10 @@ static struct Env* env = new Env();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider data_provider(data, size);
 
-  FuzzedContextHostResolver host_resolver(HostResolver::Options(), nullptr,
-                                          &data_provider,
-                                          true /* enable_caching */);
+  std::unique_ptr<ContextHostResolver> host_resolver =
+      CreateFuzzedContextHostResolver(HostResolver::ManagerOptions(), nullptr,
+                                      &data_provider,
+                                      true /* enable_caching */);
   FuzzedSocketFactory socket_factory(&data_provider);
 
   // Initialize this on each loop since some options mutate this.
@@ -128,8 +130,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   std::unique_ptr<QuicStreamFactory> factory =
       std::make_unique<QuicStreamFactory>(
-          env->net_log.net_log(), &host_resolver, env->ssl_config_service.get(),
-          &socket_factory, &http_server_properties, env->cert_verifier.get(),
+          env->net_log.net_log(), host_resolver.get(),
+          env->ssl_config_service.get(), &socket_factory,
+          &http_server_properties, env->cert_verifier.get(),
           &env->ct_policy_enforcer, &env->transport_security_state,
           env->cert_transparency_verifier.get(), nullptr,
           &env->crypto_client_stream_factory, &env->random_generator,
@@ -151,7 +154,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           go_away_on_path_degrading, race_cert_verification,
           estimate_initial_rtt, headers_include_h2_stream_dependency,
           env->connection_options, env->client_connection_options,
-          enable_socket_recv_optimization);
+          enable_socket_recv_optimization, 0);
 
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;

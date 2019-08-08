@@ -5,52 +5,83 @@ instrumentation and junit tests.
 
 [TOC]
 
-## How EMMA coverage works
+## How Jacoco coverage works
 
-In order to use EMMA code coverage, we need to create build time **.em** files
-and runtime **.ec** files. Then we need to process them using the
-build/android/generate_emma_html.py script.
+In order to use Jacoco code coverage, we need to create build time pre-instrumented
+class files and runtime **.exec** files. Then we need to process them using the
+**build/android/generate_jacoco_report.py** script.
 
-## How to collect EMMA coverage data
+## How to collect coverage data
 
 1. Use the following GN build arguments:
 
-```gn
-target_os = "android"
-emma_coverage = true
-emma_filter = "org.chromium.chrome.browser.ntp.*,-*Test*,-*Fake*,-*Mock*"
-```
+  ```gn
+  target_os = "android"
+  jacoco_coverage = true
+  ```
 
-The filter syntax is as documented for the [EMMA coverage
-filters](http://emma.sourceforge.net/reference/ch02s06s02.html).
-
-Now when building, **.em** files will be created in the build directory.
+   Now when building, pre-instrumented files will be created in the build directory.
 
 2. Run tests, with option `--coverage-dir <directory>`, to specify where to save
-   the .ec file. For example, you can run chrome junit tests:
+   the .exec file. For example, you can run chrome junit tests:
    `out/Debug/bin/run_chrome_junit_tests --coverage-dir /tmp/coverage`.
 
-3. Turn off strict mode when running instrumentation tests by adding
-   `--strict-mode=off` because the EMMA code causes strict mode violations by
-   accessing disk.
-
-4. Use a pre-L Android OS (running Dalvik) because code coverage is not
-   supported in ART.
-
-5. The coverage results of junit and instrumentation tests will be merged
+3. The coverage results of junit and instrumentation tests will be merged
    automatically if they are in the same directory.
 
-6. Now we have both .em and .ec files. We can create a html report using
-   `generate_emma_html.py`, for example:
+## How to generate coverage report
 
-   ```shell
-   build/android/generate_emma_html.py \
-       --coverage-dir /tmp/coverage/ \
-       --metadata-dir out/Debug/ \
-       --output example.html
-   ```
-   Then an example.html containing coverage info will be created:
+1. Now we have generated .exec files already. We can create a Jacoco html/xml/csv
+   report using `generate_jacoco_report.py`, for example:
 
-   ```
-   EMMA: writing [html] report to [<your_current_directory>/example.html] ...
-   ```
+  ```shell
+  build/android/generate_jacoco_report.py \
+     --format html \
+     --output-dir tmp/coverage_report/ \
+     --coverage-dir /tmp/coverage/ \
+     --sources-json-dir out/Debug/ \
+  ```
+   Then an index.html containing coverage info will be created in output directory:
+
+  ```
+  [INFO] Loading execution data file /tmp/coverage/testTitle.exec.
+  [INFO] Loading execution data file /tmp/coverage/testSelected.exec.
+  [INFO] Loading execution data file /tmp/coverage/testClickToSelect.exec.
+  [INFO] Loading execution data file /tmp/coverage/testClickToClose.exec.
+  [INFO] Loading execution data file /tmp/coverage/testThumbnail.exec.
+  [INFO] Analyzing 58 classes.
+  ```
+
+   For xml and csv reports, we need to specify `--output-file` instead of `--output-dir` since
+   only one file will be generated as xml or csv report.
+  ```shell
+  build/android/generate_jacoco_report.py \
+    --format xml \
+    --output-file tmp/coverage_report/report.xml \
+    --coverage-dir /tmp/coverage/ \
+    --sources-json-dir out/Debug/ \
+  ```
+
+   or
+
+  ```shell
+  build/android/generate_jacoco_report.py \
+    --format csv \
+    --output-file tmp/coverage_report/report.csv \
+    --coverage-dir /tmp/coverage/ \
+    --sources-json-dir out/Debug/ \
+  ```
+
+2. We can also generate JSON format report for
+   [coverage tool](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/code_coverage.md)
+   created by Chrome Ops - CATS team.
+   In this case, we need to change `--format` to json, for example:
+
+  ```shell
+  build/android/generate_jacoco_report.py \
+    --format json \
+    --output-file tmp/coverage_report/coverage.json \
+    --coverage-dir /tmp/coverage/ \
+    --sources-json-dir out/Debug/ \
+  ```
+

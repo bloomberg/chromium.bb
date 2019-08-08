@@ -33,6 +33,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/events/event.h"
@@ -42,8 +43,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/metadata/metadata_macros.h"
-#include "ui/views/metadata/metadata_types.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
@@ -142,6 +142,9 @@ enum PropertyEffects {
   // Changes to the property should cause the container to schedule a painting
   // update.
   kPropertyEffectsPaint = 0x00000002,
+  // Changes to the property should cause the preferred size to change. This
+  // implies kPropertyEffectsLayout.
+  kPropertyEffectsPreferredSizeChanged = 0x00000004,
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -265,6 +268,7 @@ enum PropertyEffects {
 //   END_METADATA()
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
+                          public ui::LayerObserver,
                           public ui::LayerOwner,
                           public ui::AcceleratorTarget,
                           public ui::EventTarget,
@@ -436,21 +440,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
 
-  // TODO(https://crbug.com/940135): Remove child_count() and child_at() in
-  // favor of this.
   const Views& children() const { return children_; }
-
-  int child_count() const { return static_cast<int>(children_.size()); }
-
-  // Returns the child view at |index|.
-  const View* child_at(int index) const {
-    DCHECK_GE(index, 0);
-    DCHECK_LT(size_t{index}, children_.size());
-    return children_[index];
-  }
-  View* child_at(int index) {
-    return const_cast<View*>(const_cast<const View*>(this)->child_at(index));
-  }
 
   // Returns the parent view.
   const View* parent() const { return parent_; }
@@ -553,13 +543,20 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // GetPreferredSize().height().
   virtual int GetHeightForWidth(int w) const;
 
+  // The |Visible| property. See comment above for instructions on declaring and
+  // implementing a property.
+  //
   // Sets whether this view is visible. Painting is scheduled as needed. Also,
   // clears focus if the focused view or one of its ancestors is set to be
   // hidden.
   virtual void SetVisible(bool visible);
+  // Return whether a view is visible.
+  bool GetVisible() const;
 
-  // Return whether a view is visible
-  bool visible() const { return visible_; }
+  // Adds a callback subscription associated with the above Visible property.
+  // The callback will be invoked whenever the Visible property changes.
+  PropertyChangedSubscription AddVisibleChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // Returns true if this view is drawn on screen.
   virtual bool IsDrawn() const;
@@ -570,18 +567,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If |enabled| differs from the current value, SchedulePaint
   // is invoked. Also, clears focus if the focused view is disabled.
-  void SetEnabled(bool is_enabled);
+  void SetEnabled(bool enabled);
   // Returns whether the view is enabled.
-  bool GetEnabled() const { return enabled_; }
+  bool GetEnabled() const;
 
   // Adds a callback subscription associated with the above |Enabled| property.
   // The callback will be invoked whenever the property changes.
   PropertyChangedSubscription AddEnabledChangedCallback(
       PropertyChangedCallback callback) WARN_UNUSED_RESULT;
-
-  // NOTE: Deprecated. Please use GetEnabled() which is the getter for the
-  // |Enabled| property.
-  bool enabled() const { return enabled_; }
 
   // Returns the child views ordered in reverse z-order. That is, views later in
   // the returned vector have a higher z-order (are painted later) than those
@@ -604,6 +597,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Sets the transform to the supplied transform.
   void SetTransform(const gfx::Transform& transform);
 
+  // Accelerated painting ------------------------------------------------------
+
   // Sets whether this view paints to a layer. A view paints to a layer if
   // either of the following are true:
   // . the view has a non-identity transform.
@@ -620,6 +615,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // that this will not actually destroy the layer if the view paints to a layer
   // for another reason.
   void DestroyLayer();
+
+  // Add or remove layers below this view. This view does not take ownership of
+  // the layers. It is the caller's responsibility to keep track of this View's
+  // size and update their layer accordingly.
+  //
+  // In very rare cases, it may be necessary to override these. If any of this
+  // view's contents must be painted to the same layer as its parent, or can't
+  // handle being painted with transparency, overriding might be appropriate.
+  // One example is LabelButton, where the label must paint below any added
+  // layers for subpixel rendering reasons. Overrides should be made
+  // judiciously, and generally they should just forward the calls to a child
+  // view. They must be overridden together for correctness.
+  virtual void AddLayerBeneathView(ui::Layer* new_layer);
+  virtual void RemoveLayerBeneathView(ui::Layer* old_layer);
+
+  // ui::LayerObserver:
+  void LayerDestroyed(ui::Layer* layer) override;
 
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;
@@ -733,8 +745,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Gets and sets the ID for this view. ID should be unique within the subtree
   // that you intend to search for it. 0 is the default ID for views.
-  int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
+  int GetID() const { return id_; }
+  void SetID(int id);
+
+  // Adds a callback subscription associated with the above |ID| property.
+  // The callback will be invoked whenever the property changes.
+  PropertyChangedSubscription AddIDChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // A group id is used to tag views which are part of the same logical group.
   // Focus can be moved between views with the same group using the arrow keys.
@@ -743,6 +760,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetGroup(int gid);
   // Returns the group id of the view, or -1 if the id is not set yet.
   int GetGroup() const;
+
+  // Adds a callback subscription associated with the above |Group| property.
+  // The callback will be invoked whenever the property changes.
+  PropertyChangedSubscription AddGroupChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // If this returns true, the views from the same group can each be focused
   // when moving focus with the Tab/Shift-Tab key.  If this returns false,
@@ -843,7 +865,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // GetNativeTheme() on the Widget this View is in, or provides a default
   // theme if there's no widget, or returns |native_theme_| if that's
   // set. Warning: the default theme might not be correct; you should probably
-  // override OnNativeThemeChanged().
+  // override OnThemeChanged().
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
         const_cast<const View*>(this)->GetNativeTheme());
@@ -1104,8 +1126,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Gets/sets |focus_behavior|. SetFocusBehavior() advances focus if necessary.
-  FocusBehavior focus_behavior() const { return focus_behavior_; }
+  // Gets/sets |FocusBehavior|. SetFocusBehavior() advances focus if necessary.
+  FocusBehavior GetFocusBehavior() const;
   void SetFocusBehavior(FocusBehavior focus_behavior);
 
   // Returns true if this view is focusable, |enabled_| and drawn.
@@ -1386,10 +1408,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // its ancestors. This is used for clipping NativeViewHost.
   virtual void OnVisibleBoundsChanged();
 
-  // Override to be notified when the enabled state of this View has
-  // changed. The default implementation calls SchedulePaint() on this View.
-  virtual void OnEnabledChanged();
-
   bool needs_layout() const { return needs_layout_; }
 
   // Tree operations -----------------------------------------------------------
@@ -1522,9 +1540,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // System events -------------------------------------------------------------
 
-  // Called when the UI theme (not the NativeTheme) has changed, overriding
+  // Called when either the UI theme or the NativeTheme associated with this
+  // View changes. This is also called when the NativeTheme first becomes
+  // available (after the view is added to a widget hierarchy). Overriding
   // allows individual Views to do special cleanup and processing (such as
-  // dropping resource caches).  To dispatch a theme changed notification, call
+  // dropping resource caches). To dispatch a theme changed notification, call
   // Widget::ThemeChanged().
   virtual void OnThemeChanged() {}
 
@@ -1551,13 +1571,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // used by the public static method ExceededDragThreshold().
   static int GetHorizontalDragThreshold();
   static int GetVerticalDragThreshold();
-
-  // NativeTheme ---------------------------------------------------------------
-
-  // Invoked when the NativeTheme associated with this View changes, including
-  // when one first becomes available (after the view is added to a widget
-  // hierarchy).
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
   // Property Support ----------------------------------------------------------
 
@@ -1661,9 +1674,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |register_accelerators| true and calls ViewHierarchyChanged().
   void ViewHierarchyChangedImpl(bool register_accelerators,
                                 const ViewHierarchyChangedDetails& details);
-
-  // Invokes OnNativeThemeChanged() on this and all descendants.
-  void PropagateNativeThemeChanged(const ui::NativeTheme* theme);
 
   // Size and disposition ------------------------------------------------------
 
@@ -1809,8 +1819,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // System events -------------------------------------------------------------
 
-  // Used to propagate theme changed notifications from the root view to all
-  // views in the hierarchy.
+  // Used to propagate UI theme changed or NativeTheme changed notifications
+  // from the root view to all views in the hierarchy.
   void PropagateThemeChanged();
 
   // Used to propagate device scale factor changed notifications from the root
@@ -1963,6 +1973,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Whether we are painting to a layer because of a non-identity transform.
   bool paint_to_layer_for_transform_ = false;
+
+  // Set of layers that should be painted beneath this View's layer. These
+  // layers are maintained as siblings of this View's layer and are stacked
+  // beneath.
+  std::vector<ui::Layer*> layers_beneath_;
 
   // Accelerators --------------------------------------------------------------
 

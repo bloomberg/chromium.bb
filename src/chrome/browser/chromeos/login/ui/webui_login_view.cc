@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -490,7 +491,7 @@ void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
 }
 
 bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
-  LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
+  ash::LoginScreen::Get()->FocusLoginShelf(reverse);
   return true;
 }
 

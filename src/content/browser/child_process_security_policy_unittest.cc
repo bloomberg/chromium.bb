@@ -18,6 +18,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -274,22 +275,20 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   // Dangerous to request, commit, or set as origin header.
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("file:///etc/passwd")));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID,
-                                GURL("chrome://foo/bar")));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GetWebUIURL("foo/bar")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("view-source:http://www.google.com/")));
   EXPECT_TRUE(p->CanRedirectToURL(GURL("file:///etc/passwd")));
-  EXPECT_TRUE(p->CanRedirectToURL(GURL("chrome://foo/bar")));
+  EXPECT_TRUE(p->CanRedirectToURL(GetWebUIURL("foo/bar")));
   EXPECT_FALSE(p->CanRedirectToURL(GURL("view-source:http://www.google.com/")));
   EXPECT_FALSE(p->CanCommitURL(kRendererID,
                                 GURL("file:///etc/passwd")));
-  EXPECT_FALSE(p->CanCommitURL(kRendererID,
-                                GURL("chrome://foo/bar")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GetWebUIURL("foo/bar")));
   EXPECT_FALSE(
       p->CanCommitURL(kRendererID, GURL("view-source:http://www.google.com/")));
   EXPECT_FALSE(
       p->CanSetAsOriginHeader(kRendererID, GURL("file:///etc/passwd")));
-  EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID, GURL("chrome://foo/bar")));
+  EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID, GetWebUIURL("foo/bar")));
   EXPECT_FALSE(p->CanSetAsOriginHeader(
       kRendererID, GURL("view-source:http://www.google.com/")));
   EXPECT_FALSE(p->CanRedirectToURL(GURL(kUnreachableWebDataURL)));
@@ -926,8 +925,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  const GURL url("chrome://thumb/http://www.google.com/");
-  const GURL other_url("chrome://not-thumb/");
+  const GURL url(GetWebUIURL("thumb/http://www.google.com/"));
+  const GURL other_url(GetWebUIURL("not-thumb/"));
   const url::Origin origin = url::Origin::Create(url);
   {
     p->Add(kRendererID, browser_context());
@@ -1244,9 +1243,9 @@ TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
 
   p->Add(kRendererID, browser_context());
 
-  GURL url_foo1("chrome://foo/resource1");
-  GURL url_foo2("chrome://foo/resource2");
-  GURL url_bar("chrome://bar/resource3");
+  GURL url_foo1(GetWebUIURL("foo/resource1"));
+  GURL url_foo2(GetWebUIURL("foo/resource2"));
+  GURL url_bar(GetWebUIURL("bar/resource3"));
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url_foo1));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url_foo2));

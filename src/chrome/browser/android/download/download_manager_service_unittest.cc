@@ -7,12 +7,14 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,13 +22,6 @@
 #include "url/origin.h"
 
 using ::testing::_;
-
-namespace content {
-class BrowserContext;
-class ByteStreamReader;
-class DownloadManagerDelegate;
-struct DownloadCreateInfo;
-}
 
 class MockDownloadManagerService : public DownloadManagerService {
  public:
@@ -61,6 +56,7 @@ class DownloadManagerServiceTest : public testing::Test {
  public:
   DownloadManagerServiceTest()
       : service_(new MockDownloadManagerService()),
+        coordinator_(base::NullCallback()),
         finished_(false),
         success_(false) {}
 
@@ -80,7 +76,7 @@ class DownloadManagerServiceTest : public testing::Test {
             base::android::ConvertUTF8ToJavaString(env, download_guid).obj()),
         false, false);
     EXPECT_FALSE(success_);
-    service_->OnManagerInitialized();
+    service_->OnDownloadsInitialized(&coordinator_, false);
     while (!finished_)
       base::RunLoop().RunUntilIdle();
   }
@@ -88,6 +84,7 @@ class DownloadManagerServiceTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   MockDownloadManagerService* service_;
+  download::SimpleDownloadManagerCoordinator coordinator_;
   bool finished_;
   bool success_;
 

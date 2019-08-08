@@ -11,19 +11,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/worker_host/mock_shared_worker.h"
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/features.h"
@@ -42,10 +41,15 @@ class SharedWorkerHostTest : public testing::Test {
   }
 
   SharedWorkerHostTest()
-      : mock_render_process_host_(&browser_context_),
+      : default_mock_url_loader_factory_(
+            std::make_unique<NotImplementedNetworkURLLoaderFactory>()),
+        mock_render_process_host_(&browser_context_),
         service_(nullptr /* storage_partition */,
                  nullptr /* service_worker_context */,
-                 nullptr /* appcache_service */) {}
+                 nullptr /* appcache_service */) {
+    mock_render_process_host_.OverrideURLLoaderFactory(
+        default_mock_url_loader_factory_.get());
+  }
 
   base::WeakPtr<SharedWorkerHost> CreateHost() {
     GURL url("http://www.example.com/w.js");
@@ -73,8 +77,7 @@ class SharedWorkerHostTest : public testing::Test {
   void StartWorker(SharedWorkerHost* host,
                    blink::mojom::SharedWorkerFactoryPtr factory) {
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr provider_info = nullptr;
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory;
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory;
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params;
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories;
@@ -106,7 +109,7 @@ class SharedWorkerHostTest : public testing::Test {
           helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
           &provider_info);
 
-      mojo::MakeStrongAssociatedBinding(
+      mojo::MakeStrongBinding(
           std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
           mojo::MakeRequest(&main_script_loader_factory));
 
@@ -142,6 +145,8 @@ class SharedWorkerHostTest : public testing::Test {
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
   TestBrowserContext browser_context_;
+  std::unique_ptr<network::mojom::URLLoaderFactory>
+      default_mock_url_loader_factory_;
   MockRenderProcessHost mock_render_process_host_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 

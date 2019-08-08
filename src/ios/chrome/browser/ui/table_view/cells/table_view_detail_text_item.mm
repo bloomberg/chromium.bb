@@ -90,7 +90,7 @@
 
     _detailTextLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _detailTextLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [containerView addSubview:_detailTextLabel];

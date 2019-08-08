@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithDocTypeOnRenderer,
       base::Unretained(this), file_url));
 }
@@ -657,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithoutDocTypeOnRenderer,
       base::Unretained(this), file_url));
 }
@@ -686,7 +686,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeXMLDocWithBuiltInEntitiesOnRenderer,
       base::Unretained(this), xml_file_url, original_contents));
 }
@@ -711,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
       base::Unretained(this), file_url, original_contents, false));
 }
@@ -736,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::BindRepeating(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
       base::Unretained(this), file_url, original_contents, true));
 }
@@ -758,10 +758,10 @@ IN_PROC_BROWSER_TEST_F(
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-      base::Bind(&MAYBE_DomSerializerTests::
-                     SerializeHTMLDOMWithNoMetaCharsetInOriginalDocOnRenderer,
-                 base::Unretained(this), file_url));
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
+      &MAYBE_DomSerializerTests::
+          SerializeHTMLDOMWithNoMetaCharsetInOriginalDocOnRenderer,
+      base::Unretained(this), file_url));
 }
 
 // When serializing DOM, if the original document has multiple META charset
@@ -780,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::
           SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDocOnRenderer,
       base::Unretained(this), file_url));
@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // from non-file scheme.
   NavigateToURL(shell(), GetTestUrl(".", "simple_page.html"));
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithEntitiesInTextOnRenderer,
       base::Unretained(this)));
 }
@@ -810,9 +810,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   NavigateToURL(shell(), GetTestUrl(".", "simple_page.html"));
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&MAYBE_DomSerializerTests::
-                     SerializeHTMLDOMWithEntitiesInAttributeValueOnRenderer,
-                 base::Unretained(this)));
+      base::BindOnce(&MAYBE_DomSerializerTests::
+                         SerializeHTMLDOMWithEntitiesInAttributeValueOnRenderer,
+                     base::Unretained(this)));
 }
 
 // Test situation of non-standard HTML entities when serializing HTML DOM.
@@ -826,9 +826,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   NavigateToURL(shell(), file_url);
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&MAYBE_DomSerializerTests::
-                     SerializeHTMLDOMWithNonStandardEntitiesOnRenderer,
-                 base::Unretained(this), file_url));
+      base::BindOnce(&MAYBE_DomSerializerTests::
+                         SerializeHTMLDOMWithNonStandardEntitiesOnRenderer,
+                     base::Unretained(this), file_url));
 }
 
 // Test situation of BASE tag in original document when serializing HTML DOM.
@@ -851,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithBaseTagOnRenderer,
       base::Unretained(this), file_url, path_dir_url));
 }
@@ -864,7 +864,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   // from non-file scheme.
   NavigateToURL(shell(), GetTestUrl(".", "simple_page.html"));
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
+  PostTaskToInProcessRendererAndWait(base::BindOnce(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithEmptyHeadOnRenderer,
       base::Unretained(this)));
 }
@@ -877,9 +877,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   NavigateToURL(shell(), file_url);
 
   PostTaskToInProcessRendererAndWait(
-      base::Bind(&MAYBE_DomSerializerTests::
-                     SubResourceForElementsInNonHTMLNamespaceOnRenderer,
-                 base::Unretained(this), file_url));
+      base::BindOnce(&MAYBE_DomSerializerTests::
+                         SubResourceForElementsInNonHTMLNamespaceOnRenderer,
+                     base::Unretained(this), file_url));
 }
 
 }  // namespace content

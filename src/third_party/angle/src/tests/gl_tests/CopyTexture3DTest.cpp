@@ -26,10 +26,8 @@ class CopyTexture3DTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         const char *vertexShaderSource   = getVertexShaderSource();
         const char *fragmentShaderSource = getFragmentShaderSource();
 
@@ -53,11 +51,9 @@ class CopyTexture3DTest : public ANGLETest
                "}\n";
     }
 
-    void TearDown() override { ANGLETest::TearDown(); }
-
     bool checkExtensions() const
     {
-        if (!extensionEnabled("GL_ANGLE_copy_texture_3d"))
+        if (!IsGLExtensionEnabled("GL_ANGLE_copy_texture_3d"))
         {
             std::cout << "Test skipped because GL_ANGLE_copy_texture_3d is not available."
                       << std::endl;

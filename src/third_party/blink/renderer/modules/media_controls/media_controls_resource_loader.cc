@@ -31,17 +31,12 @@ MediaControlsResourceLoader::MediaControlsResourceLoader()
 MediaControlsResourceLoader::~MediaControlsResourceLoader() = default;
 
 String MediaControlsResourceLoader::GetMediaControlsCSS() const {
-  return UncompressResourceAsString(
-      RuntimeEnabledFeatures::ModernMediaControlsEnabled()
-          ? IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS
-          : IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS);
+  return UncompressResourceAsString(IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS);
 }
 
 String MediaControlsResourceLoader::GetMediaControlsAndroidCSS() const {
-  if (RuntimeEnabledFeatures::ModernMediaControlsEnabled())
-    return String();
   return UncompressResourceAsString(
-      IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS);
+      IDR_UASTYLE_MODERN_MEDIA_CONTROLS_ANDROID_CSS);
 }
 
 // static

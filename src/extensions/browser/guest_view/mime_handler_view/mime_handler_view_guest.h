@@ -88,6 +88,7 @@ class MimeHandlerViewGuest
   bool CanBeEmbeddedInsideCrossProcessFrames() override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
+  content::RenderFrameHost* GetEmbedderFrame() const override;
 
   void SetEmbedderFrame(int process_id, int routing_id);
 
@@ -99,7 +100,18 @@ class MimeHandlerViewGuest
   // Asks the plugin to do save.
   bool PluginDoSave();
 
-  content::RenderFrameHost* GetEmbedderFrame() const;
+  void set_original_resource_url(const GURL& url) {
+    original_resource_url_ = url;
+  }
+
+  // Returns true when the MHVG's embedder frame has a plugin element type of
+  // frame owner. In such a case there might be a MHVFC assigned to MHVG in the
+  // parent frame of the embedder frame (for post message).
+  bool maybe_has_frame_container() const { return maybe_has_frame_container_; }
+
+  const std::string& mime_type() const { return mime_type_; }
+
+  base::WeakPtr<MimeHandlerViewGuest> GetWeakPtr();
 
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
@@ -183,8 +195,15 @@ class MimeHandlerViewGuest
   bool is_guest_fullscreen_ = false;
   bool is_embedder_fullscreen_ = false;
   bool plugin_can_save_ = false;
+  GURL original_resource_url_;
+  std::string mime_type_;
 
+  // True when the MimeHandlerViewGeust might have a frame container in its
+  // embedder's parent frame to facilitate postMessage.
+  bool maybe_has_frame_container_ = false;
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
+
+  base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

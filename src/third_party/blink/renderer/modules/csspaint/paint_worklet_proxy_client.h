@@ -18,12 +18,14 @@ namespace blink {
 
 class WorkletGlobalScope;
 
-// Mediates between a worklet-thread bound PaintWorkletGlobalScope and its
-// associated dispatchers. A PaintWorkletProxyClient is associated with a single
-// global scope and one dispatcher to the compositor thread.
+// Mediates between the (multiple) PaintWorkletGlobalScopes on the worklet
+// thread and the (single) PaintWorkletPaintDispatcher on the non-worklet
+// threads. PaintWorkletProxyClient is responsible both for informing the
+// dispatcher about its existence once all global scopes are registered, as well
+// as choosing the global scope to use for any given paint request.
 //
-// This is constructed on the main thread but it is used in the worklet backing
-// thread.
+// This class is constructed on the main thread but it is used in the worklet
+// backing thread.
 class MODULES_EXPORT PaintWorkletProxyClient
     : public GarbageCollectedFinalized<PaintWorkletProxyClient>,
       public Supplement<WorkerClients>,
@@ -32,29 +34,58 @@ class MODULES_EXPORT PaintWorkletProxyClient
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletProxyClient);
 
  public:
+  // blink::Supplement hook to retrieve the PaintWorkletProxyClient for a given
+  // WorkerClients.
   static const char kSupplementName[];
+  static PaintWorkletProxyClient* From(WorkerClients*);
 
+  // Create the PaintWorkletProxyClient for a given PaintWorklet, represented by
+  // its unique |worklet_id|.
   static PaintWorkletProxyClient* Create(Document*, int worklet_id);
 
   PaintWorkletProxyClient(
       int worklet_id,
+      PaintWorklet*,
       scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
   ~PaintWorkletProxyClient() override = default;
 
-  void Trace(blink::Visitor*) override;
-
-  // PaintWorkletPainter implementation
+  // PaintWorkletPainter implementation.
   int GetWorkletId() const override { return worklet_id_; }
   sk_sp<PaintRecord> Paint(CompositorPaintWorkletInput*) override;
 
+  // Add a global scope to the PaintWorkletProxyClient.
   virtual void AddGlobalScope(WorkletGlobalScope*);
+
+  // Register a paint definition for this PaintWorklet.
+  // See https://drafts.css-houdini.org/css-paint-api-1/#paint-definition
+  void RegisterCSSPaintDefinition(const String& name,
+                                  CSSPaintDefinition*,
+                                  ExceptionState&);
+
+  // Dispose of the PaintWorkletProxyClient. Called when the worklet global
+  // scopes are being torn down. May be called once per global scope - calls
+  // after the first have no effect.
+  void Dispose();
+
+  void Trace(blink::Visitor*) override;
+
+  // Hooks for testing.
   const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>&
   GetGlobalScopesForTesting() const {
     return global_scopes_;
   }
-  void Dispose();
-
-  static PaintWorkletProxyClient* From(WorkerClients*);
+  const HeapHashMap<String, Member<DocumentPaintDefinition>>&
+  DocumentDefinitionMapForTesting() const {
+    return document_definition_map_;
+  }
+  scoped_refptr<base::SingleThreadTaskRunner> MainThreadTaskRunnerForTesting()
+      const {
+    return main_thread_runner_;
+  }
+  void SetMainThreadTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    main_thread_runner_ = runner;
+  }
 
  private:
   friend class PaintWorkletGlobalScopeTest;
@@ -62,10 +93,40 @@ class MODULES_EXPORT PaintWorkletProxyClient
   FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest,
                            PaintWorkletProxyClientConstruction);
 
-  scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee_;
+  // The |paint_dispatcher_| is shared between all PaintWorklets on the same
+  // Renderer process, and is responsible for dispatching paint calls from the
+  // non-worklet threads to the correct PaintWorkletProxyClient on its worklet
+  // thread. PaintWorkletProxyClient requires a reference to the dispatcher in
+  // order to register and unregister itself.
+  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+
+  // The unique id for the PaintWorklet that this class is a proxy client for.
   const int worklet_id_;
+
+  // The set of global scopes registered for this PaintWorklet. Multiple global
+  // scopes are used to enforce statelessness - paint instances may have their
+  // global scope changed at random which means they cannot easily store state.
   Vector<CrossThreadPersistent<PaintWorkletGlobalScope>> global_scopes_;
+
+  // The current state of the proxy client. PaintWorkletProxyClient is initially
+  // uninitialized. Once all global scopes are registered, it is considered
+  // working - unless it is disposed of before this happens in which case it
+  // stays in the disposed state.
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
+
+  // Stores the paint definitions as they are registered from the global scopes.
+  // For a given named paint definition, all global scopes must report the same
+  // DocumentPaintDefinition or the definition is invalid. Additionally we
+  // cannot tell the main thread about a paint definition until all global
+  // scopes have registered it.
+  HeapHashMap<String, Member<DocumentPaintDefinition>> document_definition_map_;
+
+  // The main thread needs to know about registered paint definitions so that it
+  // can invalidate any associated paint objects and correctly create the paint
+  // instance input state for the object, etc. We communicate with it via a
+  // handle to the PaintWorklet called via a stored task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+  CrossThreadWeakPersistent<PaintWorklet> paint_worklet_;
 };
 
 void MODULES_EXPORT ProvidePaintWorkletProxyClientTo(WorkerClients*,

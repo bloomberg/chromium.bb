@@ -16,9 +16,11 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -29,6 +31,13 @@ namespace {
 bool ShouldShowPlayPauseButton(const HTMLVideoElement& element) {
   return element.GetLoadType() != WebMediaPlayer::kLoadTypeMediaStream &&
          element.duration() != std::numeric_limits<double>::infinity();
+}
+
+bool IsVideoElement(const Element& element) {
+  if (!element.IsMediaElement())
+    return false;
+
+  return static_cast<const HTMLMediaElement&>(element).IsHTMLVideoElement();
 }
 
 }  // namespace
@@ -79,29 +88,47 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
 
 PictureInPictureController::Status
 PictureInPictureControllerImpl::IsElementAllowed(
-    const HTMLVideoElement& element) const {
+    const HTMLElement& element) const {
   PictureInPictureController::Status status = IsDocumentAllowed();
   if (status != Status::kEnabled)
     return status;
 
-  if (element.getReadyState() == HTMLMediaElement::kHaveNothing)
+  if (!IsVideoElement(element))
+    return Status::kEnabled;
+
+  const HTMLVideoElement* video_element =
+      static_cast<const HTMLVideoElement*>(&element);
+
+  if (video_element->getReadyState() == HTMLMediaElement::kHaveNothing)
     return Status::kMetadataNotLoaded;
 
-  if (!element.HasVideo())
+  if (!video_element->HasVideo())
     return Status::kVideoTrackNotAvailable;
 
-  if (element.FastHasAttribute(html_names::kDisablepictureinpictureAttr))
+  if (video_element->FastHasAttribute(html_names::kDisablepictureinpictureAttr))
     return Status::kDisabledByAttribute;
 
   return Status::kEnabled;
 }
 
 void PictureInPictureControllerImpl::EnterPictureInPicture(
-    HTMLVideoElement* element,
+    HTMLElement* element,
+    PictureInPictureOptions* options,
     ScriptPromiseResolver* resolver) {
-  DCHECK(element->GetWebMediaPlayer());
+  if (!IsVideoElement(*element)) {
+    // TODO(https://crbug.com/953957): Support element level pip.
+    if (resolver)
+      resolver->Resolve();
 
-  if (picture_in_picture_element_ == element) {
+    return;
+  }
+
+  HTMLVideoElement* video_element = static_cast<HTMLVideoElement*>(element);
+
+  DCHECK(video_element->GetWebMediaPlayer());
+  DCHECK(!options);
+
+  if (picture_in_picture_element_ == video_element) {
     if (resolver)
       resolver->Resolve(picture_in_picture_window_);
 
@@ -111,41 +138,52 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   if (!EnsureService())
     return;
 
-  if (element->DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
+  if (video_element->DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
     Fullscreen::ExitFullscreen(*GetSupplementable());
 
-  element->GetWebMediaPlayer()->OnRequestPictureInPicture();
+  video_element->GetWebMediaPlayer()->OnRequestPictureInPicture();
+
+  session_observer_binding_.Close();
+
+  mojom::blink::PictureInPictureSessionObserverPtr session_observer;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      element->GetDocument().GetTaskRunner(TaskType::kMediaElementEvent);
+  session_observer_binding_.Bind(
+      mojo::MakeRequest(&session_observer, task_runner), task_runner);
 
   picture_in_picture_service_->StartSession(
-      element->GetWebMediaPlayer()->GetDelegateId(),
-      element->GetWebMediaPlayer()->GetSurfaceId(),
-      element->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*element), ShouldShowMuteButton(*element),
+      video_element->GetWebMediaPlayer()->GetDelegateId(),
+      video_element->GetWebMediaPlayer()->GetSurfaceId(),
+      video_element->GetWebMediaPlayer()->NaturalSize(),
+      ShouldShowPlayPauseButton(*video_element),
+      ShouldShowMuteButton(*video_element), std::move(session_observer),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
-                WrapPersistent(this), WrapPersistent(element),
+                WrapPersistent(this), WrapPersistent(video_element),
                 WrapPersistent(resolver)));
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver,
+    mojom::blink::PictureInPictureSessionPtr session_ptr,
     const WebSize& picture_in_picture_window_size) {
+  picture_in_picture_session_ = std::move(session_ptr);
+
   if (IsElementAllowed(*element) != Status::kEnabled) {
     if (resolver) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError, ""));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError, ""));
     }
+
     ExitPictureInPicture(element, nullptr);
     return;
   }
 
+  if (picture_in_picture_element_)
+    OnExitedPictureInPicture(nullptr);
+
   picture_in_picture_element_ = element;
-
   picture_in_picture_element_->OnEnteredPictureInPicture();
-
-  // Closes the current Picture-in-Picture window if any.
-  if (picture_in_picture_window_)
-    picture_in_picture_window_->OnClose();
 
   picture_in_picture_window_ = MakeGarbageCollected<PictureInPictureWindow>(
       GetSupplementable(), picture_in_picture_window_size);
@@ -154,20 +192,6 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
       *EnterPictureInPictureEvent::Create(
           event_type_names::kEnterpictureinpicture,
           WrapPersistent(picture_in_picture_window_.Get())));
-
-  if (!EnsureService())
-    return;
-
-  if (delegate_binding_.is_bound())
-    delegate_binding_.Close();
-
-  mojom::blink::PictureInPictureDelegatePtr delegate;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      picture_in_picture_element_->GetDocument().GetTaskRunner(
-          TaskType::kMediaElementEvent);
-  delegate_binding_.Bind(mojo::MakeRequest(&delegate, task_runner),
-                         task_runner);
-  picture_in_picture_service_->SetDelegate(std::move(delegate));
 
   if (resolver)
     resolver->Resolve(picture_in_picture_window_);
@@ -179,10 +203,10 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
   if (!EnsureService())
     return;
 
-  picture_in_picture_service_->EndSession(
+  picture_in_picture_session_->Stop(
       WTF::Bind(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
                 WrapPersistent(this), WrapPersistent(resolver)));
-  delegate_binding_.Close();
+  session_observer_binding_.Close();
 }
 
 void PictureInPictureControllerImpl::OnExitedPictureInPicture(
@@ -225,15 +249,6 @@ bool PictureInPictureControllerImpl::IsPictureInPictureElement(
     const Element* element) const {
   DCHECK(element);
   return element == picture_in_picture_element_;
-}
-
-bool PictureInPictureControllerImpl::IsPictureInPictureShadowHost(
-    const Element& host) const {
-  if (!picture_in_picture_element_)
-    return false;
-
-  return host.GetTreeScope().AdjustedElement(*picture_in_picture_element_) ==
-         &host;
 }
 
 void PictureInPictureControllerImpl::AddToAutoPictureInPictureElementsList(
@@ -316,20 +331,21 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   // If page becomes hidden and entering Auto Picture-in-Picture is allowed,
   // enter Picture-in-Picture.
   if (GetSupplementable()->hidden() && IsEnterAutoPictureInPictureAllowed()) {
-    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr);
+    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr /* options */,
+                          nullptr /* promise */);
   }
 }
 
 void PictureInPictureControllerImpl::ContextDestroyed(Document*) {
   picture_in_picture_service_.reset();
-  delegate_binding_.Close();
+  session_observer_binding_.Close();
 }
 
 void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   DCHECK(picture_in_picture_element_);
   DCHECK(picture_in_picture_element_->GetWebMediaPlayer());
 
-  picture_in_picture_service_->UpdateSession(
+  picture_in_picture_session_->Update(
       picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
       picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
       picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
@@ -337,10 +353,14 @@ void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
       ShouldShowMuteButton(*picture_in_picture_element_));
 }
 
-void PictureInPictureControllerImpl::PictureInPictureWindowSizeChanged(
+void PictureInPictureControllerImpl::OnWindowSizeChanged(
     const blink::WebSize& size) {
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnResize(size);
+}
+
+void PictureInPictureControllerImpl::OnStopped() {
+  OnExitedPictureInPicture(nullptr);
 }
 
 bool PictureInPictureControllerImpl::ShouldShowMuteButton(
@@ -363,7 +383,7 @@ PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
-      delegate_binding_(this) {}
+      session_observer_binding_(this) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {
   if (picture_in_picture_service_)

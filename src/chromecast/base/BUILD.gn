@@ -193,15 +193,52 @@ if (build_for_android_things_n) {
   }
 }
 
-cast_source_set("cast_sys_info") {
+# Declares CreateSysInfo() without defining the implementation (see below).
+cast_source_set("cast_sys_info_util") {
+  public = [
+    "cast_sys_info_util.h",
+  ]
+}
+
+# Defines a CastSysInfoDummy suitable for use in tests, and public builds.
+cast_source_set("dummy_cast_sys_info") {
   sources = [
     "cast_sys_info_dummy.cc",
     "cast_sys_info_dummy.h",
-    "cast_sys_info_util.h",
   ]
+  deps = [
+    "//base",
+    "//chromecast/public",
+  ]
+}
 
-  if (is_android) {
-    sources += [
+# Links a CreateSysInfo() implementation that returns CastSysInfoDummy.
+cast_source_set("dummy_create_sys_info") {
+  sources = [
+    "cast_sys_info_util_simple.cc",
+  ]
+  deps = [
+    ":dummy_cast_sys_info",
+  ]
+  public_deps = [
+    ":cast_sys_info_util",
+  ]
+}
+
+# Links the default CreateSysInfo() implementation for Android.
+if (is_android) {
+  cast_source_set("android_create_sys_info") {
+    deps = [
+      ":cast_version",
+      "//base",
+      "//chromecast:chromecast_buildflags",
+      "//chromecast/browser:jni_headers",
+      "//chromecast/public",
+    ]
+    public_deps = [
+      ":cast_sys_info_util",
+    ]
+    sources = [
       "cast_sys_info_android.cc",
       "cast_sys_info_android.h",
       "cast_sys_info_android_factory.cc",
@@ -216,49 +253,52 @@ cast_source_set("cast_sys_info") {
       }
     }
   }
-
-  deps = [
-    "//base",
-    "//chromecast/public",
-  ]
-
-  if (is_android) {
-    deps += [
-      ":cast_version",
-      "//chromecast:chromecast_buildflags",
-      "//chromecast/browser:jni_headers",
+} else {  # !is_android
+  # Target for OEM partners to override sys_info shared library, i.e.
+  # libcast_sys_info_1.0.so.
+  cast_shared_library("libcast_sys_info_1.0") {
+    sources = [
+      "cast_sys_info_shlib.cc",
     ]
-  } else if (chromecast_branding == "public" || is_fuchsia) {
-    sources += [ "cast_sys_info_util_simple.cc" ]
+
+    deps = [
+      ":cast_sys_info_util",
+      ":dummy_cast_sys_info",
+      "//chromecast/public",
+    ]
   }
-}
 
-# Target for OEM partners to override sys_info shared library, i.e.
-# libcast_sys_info_1.0.so.
-cast_shared_library("libcast_sys_info_1.0") {
-  sources = [
-    "cast_sys_info_dummy.cc",
-    "cast_sys_info_dummy.h",
-    "cast_sys_info_shlib.cc",
-  ]
-
-  deps = [
-    "//chromecast/public",
-  ]
-}
-
-# Note: Android links //chromecast/base:cast_sys_info statically.
-cast_source_set("cast_sys_info_shlib") {
-  if (!is_android && !is_fuchsia) {
+  # Links a CreateSysInfo() that loads libcast_sys_info_1.0.so.
+  cast_source_set("shlib_create_sys_info") {
     sources = [
       "cast_sys_info_util_shlib.cc",
     ]
 
     deps = [
-      ":cast_sys_info",
       ":libcast_sys_info_1.0",
       "//base",
       "//chromecast/public",
+    ]
+
+    public_deps = [
+      ":cast_sys_info_util",
+    ]
+  }
+}  # is_android
+
+# Links the default CreateSysInfo() for this build configuration.
+group("default_create_sys_info") {
+  if (is_android) {
+    public_deps = [
+      ":android_create_sys_info",
+    ]
+  } else if (chromecast_branding == "public") {
+    public_deps = [
+      ":dummy_create_sys_info",
+    ]
+  } else {
+    public_deps = [
+      ":shlib_create_sys_info",
     ]
   }
 }

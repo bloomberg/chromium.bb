@@ -21,6 +21,7 @@
 #include "api/call/transport.h"
 #include "api/crypto/frame_encryptor_interface.h"
 #include "api/function_view.h"
+#include "api/media_transport_config.h"
 #include "audio/audio_state.h"
 #include "audio/channel_send.h"
 #include "audio/conversion.h"
@@ -104,7 +105,7 @@ AudioSendStream::AudioSendStream(
                       voe::CreateChannelSend(clock,
                                              task_queue_factory,
                                              module_process_thread,
-                                             config.media_transport,
+                                             config.media_transport_config,
                                              /*overhead_observer=*/this,
                                              config.send_transport,
                                              rtcp_rtt_stats,
@@ -127,8 +128,7 @@ AudioSendStream::AudioSendStream(
     std::unique_ptr<voe::ChannelSendInterface> channel_send)
     : clock_(clock),
       worker_queue_(rtp_transport->GetWorkerQueue()),
-      config_(Config(/*send_transport=*/nullptr,
-                     /*media_transport=*/nullptr)),
+      config_(Config(/*send_transport=*/nullptr, MediaTransportConfig())),
       audio_state_(audio_state),
       channel_send_(std::move(channel_send)),
       event_log_(event_log),
@@ -151,15 +151,15 @@ AudioSendStream::AudioSendStream(
   // time being, we can have either. When media transport is injected, there
   // should be no rtp_transport, and below check should be strengthened to XOR
   // (either rtp_transport or media_transport but not both).
-  RTC_DCHECK(rtp_transport || config.media_transport);
-  if (config.media_transport) {
+  RTC_DCHECK(rtp_transport || config.media_transport_config.media_transport);
+  if (config.media_transport_config.media_transport) {
     // TODO(sukhanov): Currently media transport audio overhead is considered
     // constant, we will not get overhead_observer calls when using
     // media_transport. In the future when we introduce RTP media transport we
     // should make audio overhead interface consistent and work for both RTP and
     // non-RTP implementations.
     audio_overhead_per_packet_bytes_ =
-        config.media_transport->GetAudioPacketOverhead();
+        config.media_transport_config.media_transport->GetAudioPacketOverhead();
   }
   rtp_rtcp_module_ = channel_send_->GetRtpRtcp();
   RTC_DCHECK(rtp_rtcp_module_);
@@ -284,7 +284,11 @@ void AudioSendStream::ConfigureStream(
       // send side congestion control, wich depends on feedback packets which
       // requires transport sequence numbers to be enabled.
       if (stream->rtp_transport_) {
-        stream->rtp_transport_->EnablePeriodicAlrProbing(true);
+        // Optionally request ALR probing but do not override any existing
+        // request from other streams.
+        if (stream->allocation_settings_.RequestAlrProbing()) {
+          stream->rtp_transport_->EnablePeriodicAlrProbing(true);
+        }
         bandwidth_observer = stream->rtp_transport_->GetBandwidthObserver();
       }
     }
@@ -430,6 +434,8 @@ webrtc::AudioSendStream::Stats AudioSendStream::GetStats(
   stats.apm_statistics =
       audio_state_->audio_processing()->GetStatistics(has_remote_tracks);
 
+  stats.report_block_datas = std::move(call_stats.report_block_datas);
+
   return stats;
 }
 
@@ -510,6 +516,9 @@ void AudioSendStream::OnOverheadChanged(
 
 void AudioSendStream::UpdateOverheadForEncoder() {
   const size_t overhead_per_packet_bytes = GetPerPacketOverheadBytes();
+  if (overhead_per_packet_bytes == 0) {
+    return;  // Overhead is not known yet, do not tell the encoder.
+  }
   channel_send_->CallEncoder([&](AudioEncoder* encoder) {
     encoder->OnReceivedOverhead(overhead_per_packet_bytes);
   });
@@ -619,7 +628,9 @@ bool AudioSendStream::SetupSendCodec(AudioSendStream* stream,
   // If overhead changes later, it will be updated in UpdateOverheadForEncoder.
   {
     rtc::CritScope cs(&stream->overhead_per_packet_lock_);
-    encoder->OnReceivedOverhead(stream->GetPerPacketOverheadBytes());
+    if (stream->GetPerPacketOverheadBytes() > 0) {
+      encoder->OnReceivedOverhead(stream->GetPerPacketOverheadBytes());
+    }
   }
 
   stream->StoreEncoderProperties(encoder->SampleRateHz(),
@@ -799,7 +810,9 @@ void AudioSendStream::ConfigureBitrateObserver() {
       MediaStreamAllocationConfig{
           constraints.min.bps<uint32_t>(), constraints.max.bps<uint32_t>(), 0,
           allocation_settings_.DefaultPriorityBitrate().bps(), true,
-          config_.track_id, config_.bitrate_priority});
+          config_.track_id,
+          allocation_settings_.BitratePriority().value_or(
+              config_.bitrate_priority)});
 }
 
 void AudioSendStream::RemoveBitrateObserver() {

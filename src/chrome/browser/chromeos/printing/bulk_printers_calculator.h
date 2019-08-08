@@ -12,9 +12,10 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
+
+class Printer;
 
 // Calculates a list of available printers from four policies: Data (json with
 // all printers), AccessMode (see below), Whitelist and Blacklist (lists with

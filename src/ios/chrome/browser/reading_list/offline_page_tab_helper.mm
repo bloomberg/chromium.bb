@@ -116,7 +116,8 @@ void OfflinePageTabHelper::LoadData(int offline_navigation,
                                     const GURL& url,
                                     const std::string& extension,
                                     const std::string& data) {
-  if (!web_state_) {
+  if (!web_state_ || !web_state_->GetNavigationManager() ||
+      !web_state_->GetNavigationManager()->GetLastCommittedItem()) {
     // It is possible that the web_state_ has been detached during the page
     // loading.
     return;

@@ -9,6 +9,7 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/base/histograms.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/ipc/test_gpu_thread_holder.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -24,13 +25,7 @@ void CCTestSuite::Initialize() {
   message_loop_ = std::make_unique<base::MessageLoop>();
 
   gl::GLSurfaceTestSupport::InitializeOneOff();
-
-  // Always enable gpu and oop raster, regardless of platform and blacklist.
-  auto* gpu_feature_info = gpu::GetTestGpuThreadHolder()->GetGpuFeatureInfo();
-  gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
-      gpu::kGpuFeatureStatusEnabled;
-  gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
-      gpu::kGpuFeatureStatusEnabled;
+  viz::TestGpuServiceHolder::DestroyInstanceAfterEachTest();
 
   viz::Paths::RegisterPathProvider();
 

@@ -12,8 +12,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -719,14 +717,6 @@ bool OverlayAgentViews::UpdateHighlight(
 #else
   gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
   root_layer = root->layer();
-#if defined(OS_CHROMEOS)
-  // Get the screen's display-root window; otherwise, if the window belongs to
-  // a window service client, |root| will only be a client-root window.
-  aura::Window* window = display::Screen::GetScreen()->GetWindowAtScreenPoint(
-      root->GetBoundsInScreen().origin());
-  if (window)  // May be null in unit tests.
-    root = window->GetRootWindow();
-#endif  // OS_CHROMEOS
   layer_for_highlighting_screen_offset_ =
       root->GetBoundsInScreen().OffsetFromOrigin();
 #endif  // defined(OS_MACOSX)

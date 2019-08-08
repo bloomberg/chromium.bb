@@ -1451,7 +1451,7 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   cookie_node->DeleteStoredObjects();
   CookieTreeNode* parent_node = cookie_node->parent();
   Remove(parent_node, cookie_node);
-  if (parent_node->empty())
+  if (parent_node->children().empty())
     DeleteCookieNode(parent_node);
 }
 

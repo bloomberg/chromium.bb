@@ -15,16 +15,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.init.BrowserParts;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
@@ -36,8 +42,12 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Class supports to build and to send update notification every three weeks if new Chrome version
@@ -45,6 +55,7 @@ import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
  * flow.
  * */
 public class UpdateNotificationController implements Destroyable {
+    private static final String TAG = "UpdateNotif";
     private static final String INLINE_UPDATE_NOTIFICATION_RECEIVED_EXTRA =
             "org.chromium.chrome.browser.omaha.inline_update_notification_received_extra";
     private static final String UPDATE_NOTIFICATION_STATE_EXTRA =
@@ -140,10 +151,6 @@ public class UpdateNotificationController implements Destroyable {
         Context context = ContextUtils.getApplicationContext();
         Intent clickIntent = new Intent(context, UpdateNotificationReceiver.class)
                                      .putExtra(UPDATE_NOTIFICATION_STATE_EXTRA, status.updateState);
-
-        if (status.updateState == UPDATE_AVAILABLE && !TextUtils.isEmpty(status.updateUrl)) {
-            clickIntent.setData(Uri.parse(status.updateUrl));
-        }
         PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(
                 context, 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         return contentIntent;
@@ -152,15 +159,13 @@ public class UpdateNotificationController implements Destroyable {
     private static boolean shouldPushNotification() {
         if (!isUpdateNotificationEnabled()) return false;
         long currentTime = System.currentTimeMillis();
-        SharedPreferences preferences =
-                OmahaBase.getSharedPreferences(ContextUtils.getApplicationContext());
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
         long lastPushedTimeStamp = preferences.getLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, 0);
         return currentTime - lastPushedTimeStamp >= getUpdateNotificationInterval();
     }
 
     private static void updateLastPushedTimeStamp() {
-        SharedPreferences preferences =
-                OmahaBase.getSharedPreferences(ContextUtils.getApplicationContext());
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, System.currentTimeMillis());
         editor.apply();
@@ -170,9 +175,52 @@ public class UpdateNotificationController implements Destroyable {
      * A receiver that try to build the intent to launch Chrome activity.
      */
     public static final class UpdateNotificationReceiver extends BroadcastReceiver {
+        /**
+         * Tracks various launch events when the user interacts with an update notification.
+         * Used in UMA, append values only and map to GoogleUpdateNotificationLaunchEvent in
+         * enums.xml.
+         */
+        @IntDef({LaunchEvent.START, LaunchEvent.START_ACTIVITY_FAILED})
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface LaunchEvent {
+            int START = 0;
+            int START_ACTIVITY_FAILED = 1;
+            int NUM_ENTRIES = 2;
+        }
+
         // BroadcastReceiver implementation.
         @Override
         public void onReceive(Context context, Intent intent) {
+            final BrowserParts parts = new EmptyBrowserParts() {
+                @Override
+                public void finishNativeInitialization() {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "GoogleUpdate.Notification.LaunchEvent", LaunchEvent.START,
+                            LaunchEvent.NUM_ENTRIES);
+                    try {
+                        handleUpdateIntent(context, intent);
+                    } catch (IllegalArgumentException e) {
+                        // If it takes too long to load native library, we may fail to start
+                        // activity.
+                        Log.e(TAG, "Failed to start activity in background.", e);
+                        RecordHistogram.recordEnumeratedHistogram(
+                                "GoogleUpdate.Notification.LaunchEvent",
+                                LaunchEvent.START_ACTIVITY_FAILED, LaunchEvent.NUM_ENTRIES);
+                    }
+                }
+            };
+
+            // Try to load native.
+            try {
+                ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+                ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
+            } catch (ProcessInitException e) {
+                Log.e(TAG, "Unable to load native library after clicking update notification.", e);
+                ChromeApplication.reportStartupErrorAndExit(e);
+            }
+        }
+
+        private void handleUpdateIntent(Context context, Intent intent) {
             @UpdateState
             int state = intent.getIntExtra(UPDATE_NOTIFICATION_STATE_EXTRA, UpdateState.NONE);
             switch (state) {
@@ -185,10 +233,15 @@ public class UpdateNotificationController implements Destroyable {
                     IntentHandler.startActivityForTrustedIntent(launchInlineUpdateIntent);
                     break;
                 case UPDATE_AVAILABLE:
-                    if (intent.getData() == null) return;
-                    Intent launchPlayStoreIntent = new Intent(Intent.ACTION_VIEW, intent.getData())
-                                                           .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(launchPlayStoreIntent);
+                    Callback<UpdateStatus> intentLauncher = new Callback<UpdateStatus>() {
+                        @Override
+                        public void onResult(UpdateStatus result) {
+                            UpdateStatusProvider.getInstance().startIntentUpdate(context,
+                                    UpdateInteractionSource.FROM_NOTIFICATION, true /* newTask */);
+                            UpdateStatusProvider.getInstance().removeObserver(this);
+                        }
+                    };
+                    UpdateStatusProvider.getInstance().addObserver(intentLauncher);
                     break;
                 default:
                     break;

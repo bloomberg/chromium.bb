@@ -30,8 +30,6 @@ TEST_F(PrefsTest, TestIndex) {
 
   EXPECT_EQ(prefs::kAllowDeletingBrowserHistory,
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));
-  EXPECT_EQ(contextual_suggestions::prefs::kContextualSuggestionsEnabled,
-            GetPrefName(CONTEXTUAL_SUGGESTIONS_ENABLED));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
 
@@ -64,6 +62,9 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(prefs::kUsageStatsEnabled, GetPrefName(USAGE_STATS_ENABLED));
   EXPECT_EQ(offline_pages::prefetch_prefs::kUserSettingEnabled,
             GetPrefName(OFFLINE_PREFETCH_USER_SETTING_ENABLED));
+  EXPECT_EQ(
+      offline_pages::prefetch_prefs::kContentSuggestionsNotificationsEnabled,
+      GetPrefName(CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
   EXPECT_EQ(prefs::kSafeBrowsingExtendedReportingOptInAllowed,
             GetPrefName(SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED));
 

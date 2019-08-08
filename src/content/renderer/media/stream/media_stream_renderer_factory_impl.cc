@@ -53,7 +53,6 @@ MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {
 scoped_refptr<blink::WebMediaStreamVideoRenderer>
 MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
-    const base::Closure& error_cb,
     const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
@@ -69,7 +68,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
     return nullptr;
   }
 
-  return new MediaStreamVideoRendererSink(video_tracks[0], error_cb, repaint_cb,
+  return new MediaStreamVideoRendererSink(video_tracks[0], repaint_cb,
                                           std::move(io_task_runner),
                                           std::move(main_render_task_runner));
 }

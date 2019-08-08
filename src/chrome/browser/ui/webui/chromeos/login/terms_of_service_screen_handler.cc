@@ -13,10 +13,11 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -31,6 +32,8 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
+
+constexpr StaticOobeScreenId TermsOfServiceScreenView::kScreenId;
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
     JSCallsContainer* js_calls_container,
@@ -68,7 +71,7 @@ void TermsOfServiceScreenHandler::DeclareLocalizedValues(
                IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON);
 }
 
-void TermsOfServiceScreenHandler::SetDelegate(Delegate* screen) {
+void TermsOfServiceScreenHandler::SetDelegate(TermsOfServiceScreen* screen) {
   screen_ = screen;
 }
 

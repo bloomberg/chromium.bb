@@ -313,15 +313,6 @@ NET_EXPORT OCSPRevocationStatus CheckOCSP(
     const base::TimeDelta& max_age,
     OCSPVerifyResult::ResponseStatus* response_details) WARN_UNUSED_RESULT;
 
-// Returns true if |response|, a valid OCSP response with a thisUpdate field and
-// potentially a nextUpdate field, is valid at |verify_time| and not older than
-// |max_age|. Expressed differently, returns true if |response.thisUpdate| <=
-// |verify_time| < response.nextUpdate, and |response.thisUpdate| >=
-// |verify_time| - |max_age|.
-NET_EXPORT_PRIVATE bool CheckOCSPDateValid(const OCSPSingleResponse& response,
-                                           const base::Time& verify_time,
-                                           const base::TimeDelta& max_age);
-
 // Creates a DER-encoded OCSPRequest for |cert|. The request is fairly basic:
 //  * No signature
 //  * No requestorName

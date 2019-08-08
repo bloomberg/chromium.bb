@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
 #include "chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.mojom.h"
@@ -19,13 +20,16 @@ const service_manager::Manifest& GetChromePrintingManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
         .WithServiceName(printing::mojom::kChromePrintingServiceName)
-        .WithDisplayName("Printing")
-        .WithOptions(service_manager::ManifestOptionsBuilder()
-                         .WithSandboxType("utility")
-                         .WithInstanceSharingPolicy(
-                             service_manager::Manifest::InstanceSharingPolicy::
-                                 kSharedAcrossGroups)
-                         .Build())
+        .WithDisplayName(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME)
+        .WithOptions(
+            service_manager::ManifestOptionsBuilder()
+                .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin)
+                .WithSandboxType("utility")
+                .WithInstanceSharingPolicy(
+                    service_manager::Manifest::InstanceSharingPolicy::
+                        kSharedAcrossGroups)
+                .Build())
         .ExposeCapability("converter",
                           service_manager::Manifest::InterfaceList<
 #if defined(OS_WIN)

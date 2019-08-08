@@ -507,9 +507,7 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
 
   resource_request->url = server_url;
 
-  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->allow_credentials = false;
 
   // Put API key in request's header if a key exists, and the endpoint is
   // trusted by Google.
@@ -682,7 +680,8 @@ void Annotator::ProcessResults(
     // Populate the result struct for this image and copy it into the cache if
     // necessary.
     if (result_lookup != results.end())
-      cached_results_.insert({request_key, result_lookup->second.Clone()});
+      cached_results_.insert(
+          std::make_pair(request_key, result_lookup->second.Clone()));
 
     // This should not happen, since only this method removes entries of
     // |request_infos_|, and this method should only execute once per request

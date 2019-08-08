@@ -89,7 +89,6 @@ class BrowsingDataRemover {
 
     // Other datatypes.
     DATA_TYPE_COOKIES = 1 << 8,
-    DATA_TYPE_CHANNEL_IDS = 1 << 9,
     DATA_TYPE_CACHE = 1 << 10,
     DATA_TYPE_DOWNLOADS = 1 << 11,
     DATA_TYPE_MEDIA_LICENSES = 1 << 12,
@@ -99,7 +98,7 @@ class BrowsingDataRemover {
     DATA_TYPE_NO_CHECKS = 1 << 13,
 
     // AVOID_CLOSING_CONNECTIONS is a pseudo-datatype indicating that when
-    // deleting COOKIES and CHANNEL IDs, BrowsingDataRemover should skip
+    // deleting COOKIES, BrowsingDataRemover should skip
     // storage backends whose deletion would cause closing network connections.
     // TODO(crbug.com/798760): Remove when fixed.
     DATA_TYPE_AVOID_CLOSING_CONNECTIONS = 1 << 15,

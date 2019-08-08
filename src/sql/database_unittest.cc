@@ -20,7 +20,6 @@
 #include "sql/database.h"
 #include "sql/database_memory_dump_provider.h"
 #include "sql/meta_table.h"
-#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "sql/test/database_test_peer.h"
 #include "sql/test/error_callback_support.h"
@@ -1233,24 +1232,6 @@ TEST_F(SQLDatabaseTest, CompileError) {
                  "SQL compile error no such column: x");
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
-}
-
-// Verify that Raze() can handle an empty file.  SQLite should treat
-// this as an empty database.
-TEST_F(SQLDatabaseTest, SqlTempMemoryFeatureFlagDefault) {
-  EXPECT_EQ("0", ExecuteWithResult(&db(), "PRAGMA temp_store"))
-      << "temp_store should not be set by default";
-}
-
-TEST_F(SQLDatabaseTest, SqlTempMemoryFeatureFlagEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kSqlTempStoreMemory);
-
-  db().Close();
-
-  ASSERT_TRUE(db().Open(db_path()));
-  EXPECT_EQ("2", ExecuteWithResult(&db(), "PRAGMA temp_store"))
-      << "temp_store should be set by the feature flag SqlTempStoreMemory";
 }
 
 }  // namespace sql

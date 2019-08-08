@@ -23,7 +23,7 @@ bool NGOutlineUtils::HasPaintedOutline(const ComputedStyle& style,
 
 bool NGOutlineUtils::IsInlineOutlineNonpaintingFragment(
     const NGPhysicalFragment& physical_fragment) {
-  LayoutObject* layout_object = physical_fragment.GetLayoutObject();
+  const LayoutObject* layout_object = physical_fragment.GetLayoutObject();
   if (!layout_object)
     return false;
   if (!layout_object->IsLayoutInline())
@@ -31,7 +31,7 @@ bool NGOutlineUtils::IsInlineOutlineNonpaintingFragment(
   if (layout_object->IsElementContinuation()) {
     // If continuation root did generate a fragment,
     // this fragment should not paint.
-    if (layout_object->GetNode()->GetLayoutObject()->FirstInlineFragment())
+    if (layout_object->ContinuationRoot()->FirstInlineFragment())
       return true;
   }
   if (!layout_object->FirstInlineFragment())

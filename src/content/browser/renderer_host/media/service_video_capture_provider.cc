@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -12,13 +14,16 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/delegate_to_browser_gpu_service_accelerator_factory.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
+
+#if defined(OS_CHROMEOS)
+#include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -30,11 +35,13 @@
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 std::unique_ptr<video_capture::mojom::AcceleratorFactory>
 CreateAcceleratorFactory() {
   return std::make_unique<
       content::DelegateToBrowserGpuServiceAcceleratorFactory>();
 }
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
 static const int kMaxRetriesForGetDeviceInfos = 1;
@@ -47,11 +54,19 @@ namespace content {
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     service_manager::Connector* connector,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
-    : ServiceVideoCaptureProvider(
-          base::BindRepeating(&CreateAcceleratorFactory),
-          connector,
-          std::move(emit_log_message_cb)) {}
+    : connector_(connector ? connector->Clone() : nullptr),
+      emit_log_message_cb_(std::move(emit_log_message_cb)),
+      launcher_has_connected_to_source_provider_(false),
+      service_listener_binding_(this),
+      weak_ptr_factory_(this) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          &ServiceVideoCaptureProvider::RegisterServiceListenerOnIOThread,
+          weak_ptr_factory_.GetWeakPtr()));
+}
 
+#if defined(OS_CHROMEOS)
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     CreateAcceleratorFactoryCallback create_accelerator_factory_cb,
     service_manager::Connector* connector,
@@ -68,6 +83,7 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
           &ServiceVideoCaptureProvider::RegisterServiceListenerOnIOThread,
           weak_ptr_factory_.GetWeakPtr()));
 }
+#endif  // defined(OS_CHROMEOS)
 
 ServiceVideoCaptureProvider::~ServiceVideoCaptureProvider() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -177,10 +193,6 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
   launcher_has_connected_to_source_provider_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
-  video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
-  mojo::MakeStrongBinding(create_accelerator_factory_cb_.Run(),
-                          mojo::MakeRequest(&accelerator_factory));
-
   DCHECK(connector_)
       << "Attempted to connect to the video capture service from "
          "a process that does not provide a "
@@ -189,8 +201,17 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
   connector_->BindInterface(video_capture::mojom::kServiceName,
                             &device_factory_provider);
 
+#if defined(OS_CHROMEOS)
+  video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
+  if (!create_accelerator_factory_cb_)
+    create_accelerator_factory_cb_ =
+        base::BindRepeating(&CreateAcceleratorFactory);
+  mojo::MakeStrongBinding(create_accelerator_factory_cb_.Run(),
+                          mojo::MakeRequest(&accelerator_factory));
   device_factory_provider->InjectGpuDependencies(
       std::move(accelerator_factory));
+#endif  // defined(OS_CHROMEOS)
+
   video_capture::mojom::VideoSourceProviderPtr source_provider;
   device_factory_provider->ConnectToVideoSourceProvider(
       mojo::MakeRequest(&source_provider));
@@ -265,7 +286,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
     }
   }
 #endif
-  base::ResetAndReturn(&result_callback).Run(infos);
+  std::move(result_callback).Run(infos);
 }
 
 void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
@@ -285,8 +306,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
                                SERVICE_DROPPED_DEVICE_INFOS_REQUEST_ON_RETRY);
   }
 #endif
-  base::ResetAndReturn(&result_callback)
-      .Run(std::vector<media::VideoCaptureDeviceInfo>());
+  std::move(result_callback).Run(std::vector<media::VideoCaptureDeviceInfo>());
 }
 
 void ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider() {

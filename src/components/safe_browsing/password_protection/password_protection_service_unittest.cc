@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -12,24 +13,30 @@
 #include "base/test/null_task_runner.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-forward.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::AnyNumber;
 using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::Return;
 
 namespace {
@@ -39,6 +46,7 @@ const char kPasswordFrameUrl[] = "https://password_frame.com/";
 const char kSavedDomain[] = "saved_domain.com";
 const char kSavedDomain2[] = "saved_domain2.com";
 const char kTargetUrl[] = "http://foo.com/";
+const char kUserName[] = "username";
 
 const unsigned int kMinute = 60;
 const unsigned int kDay = 24 * 60 * kMinute;
@@ -61,6 +69,30 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
+class TestPhishingDetector : public mojom::PhishingDetector {
+ public:
+  TestPhishingDetector() : binding_(this) {}
+  ~TestPhishingDetector() override {}
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(mojom::PhishingDetectorRequest(std::move(handle)));
+  }
+
+  void StartPhishingDetection(
+      const GURL& url,
+      StartPhishingDetectionCallback callback) override {
+    ClientPhishingRequest verdict;
+    verdict.set_is_phishing(false);
+    verdict.set_client_score(0.1);
+    std::move(callback).Run(verdict.SerializeAsString());
+  }
+
+ private:
+  mojo::Binding<mojom::PhishingDetector> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPhishingDetector);
+};
+
 class TestPasswordProtectionService : public MockPasswordProtectionService {
  public:
   TestPasswordProtectionService(
@@ -74,7 +106,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
 
   void RequestFinished(
       PasswordProtectionRequest* request,
-      bool already_cached_unused,
+      RequestOutcome outcome,
       std::unique_ptr<LoginReputationClientResponse> response) override {
     latest_request_ = request;
     latest_response_ = std::move(response);
@@ -95,10 +127,23 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
+  void GetPhishingDetector(
+      service_manager::InterfaceProvider* provider,
+      mojom::PhishingDetectorPtr* phishing_detector) override {
+    service_manager::InterfaceProvider::TestApi test_api(provider);
+    test_api.SetBinderForName(
+        mojom::PhishingDetector::Name_,
+        base::BindRepeating(&TestPhishingDetector::Bind,
+                            base::Unretained(&test_phishing_detector_)));
+    provider->GetInterface(phishing_detector);
+    test_api.ClearBinderForName(mojom::PhishingDetector::Name_);
+  }
+
  private:
   PasswordProtectionRequest* latest_request_;
   base::RunLoop run_loop_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
+  TestPhishingDetector test_phishing_detector_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -120,7 +165,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
   void SetUp() override {
     HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     content_setting_map_ = new HostContentSettingsMap(
-        &test_pref_service_, false /* incognito */, false /* guest_profile */,
+        &test_pref_service_, false /* is_off_the_record */,
         false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
     database_manager_ = new MockSafeBrowsingDatabaseManager();
@@ -159,7 +204,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 
     request_ = new PasswordProtectionRequest(
         web_contents, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
-        PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, {},
+        kUserName, PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, {},
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -177,9 +222,9 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
             Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
-        web_contents, target_url, GURL(), GURL(), type, matching_domains,
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT, true,
-        password_protection_service_.get(), timeout_in_ms);
+        web_contents, target_url, GURL(), GURL(), kUserName, type,
+        matching_domains, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        true, password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -935,16 +980,19 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
       .WillRepeatedly(Return(AsyncMatch::NO_MATCH));
   password_protection_service_->StartRequest(
       GetWebContents(), target_url, GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"), PasswordReuseEvent::SAVED_PASSWORD, {},
+      GURL("http://foo.com/frame"), "username",
+      PasswordReuseEvent::SAVED_PASSWORD, {},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();
   base::RunLoop().RunUntilIdle();
 
+  // We should not log on TearDown, since that can dispatch calls to pure
+  // virtual methods.
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
-      ElementsAre(base::Bucket(2 /* CANCELED */, 1)));
+      IsEmpty());
 }
 
 TEST_P(PasswordProtectionServiceTest, TestCleanUpExpiredVerdict) {
@@ -1327,7 +1375,7 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   test_url_loader_factory_.AddResponse(url_.spec(),
                                        expected_response.SerializeAsString());
   password_protection_service_->StartRequest(
-      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), "username",
       PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
@@ -1345,17 +1393,39 @@ TEST_P(PasswordProtectionServiceTest,
       .Times(AnyNumber())
       .WillOnce(Return(gfx::Size(1000, 1000)));
   password_protection_service_->StartRequest(
-      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
       PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
   bool is_sber = GetParam();
   if (is_sber) {
+    password_protection_service_->WaitForResponse();
     ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
     EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
                     ->has_visual_features());
   }
+}
+
+TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL("about:blank").host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  EXPECT_CALL(*password_protection_service_, GetCurrentContentAreaSize())
+      .Times(AnyNumber())
+      .WillOnce(Return(gfx::Size(1000, 1000)));
+  password_protection_service_->StartRequest(
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
+      PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  base::RunLoop().RunUntilIdle();
+
+  password_protection_service_->WaitForResponse();
+  ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
+  EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
+                  ->has_dom_features());
 }
 
 INSTANTIATE_TEST_SUITE_P(Regular,

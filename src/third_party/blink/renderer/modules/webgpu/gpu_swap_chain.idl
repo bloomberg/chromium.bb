@@ -7,4 +7,5 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPUSwapChain {
+    GPUTexture getCurrentTexture();
 };

@@ -185,8 +185,9 @@ public class SnippetArticle
     }
 
     /** @return whether a snippet is a contextual suggestion. */
+    // TODO(crbug.com/959307): Remove this function from the codebase.
     public boolean isContextual() {
-        return mCategory == KnownCategories.CONTEXTUAL;
+        return false;
     }
 
     @Override

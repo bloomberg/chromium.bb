@@ -19,6 +19,7 @@
 
 #include <functional>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "perfetto/base/optional.h"
@@ -65,10 +66,8 @@ class TraceProcessor {
     // even before calling |Next()|.
     uint32_t ColumnCount();
 
-    // Returns the error (if any) from the last call to next. If no error
-    // occurred, the returned value will be base::nullopt and implies that
-    // EOF was reached.
-    base::Optional<std::string> GetLastError();
+    // Returns the status of the iterator.
+    util::Status Status();
 
    private:
     std::unique_ptr<IteratorImpl> iterator_;
@@ -82,10 +81,11 @@ class TraceProcessor {
   // The entry point to push trace data into the processor. The trace format
   // will be automatically discovered on the first push call. It is possible
   // to make queries between two pushes.
-  // Returns true if parsing has been succeeding so far, false if some
-  // unrecoverable error happened. If this happens, the TraceProcessor will
-  // ignore the following Parse() requests and drop data on the floor.
-  virtual bool Parse(std::unique_ptr<uint8_t[]>, size_t) = 0;
+  // Returns the Ok status if parsing has been succeeding so far, and Error
+  // status if some unrecoverable error happened. If this happens, the
+  // TraceProcessor will ignore the following Parse() requests, drop data on the
+  // floor and return errors forever.
+  virtual util::Status Parse(std::unique_ptr<uint8_t[]>, size_t) = 0;
 
   // When parsing a bounded file (as opposite to streaming from a device) this
   // function should be called when the last chunk of the file has been passed
@@ -95,15 +95,25 @@ class TraceProcessor {
 
   // Executes a SQLite query on the loaded portion of the trace. The returned
   // iterator can be used to load rows from the result.
-  virtual Iterator ExecuteQuery(const std::string& sql) = 0;
+  virtual Iterator ExecuteQuery(const std::string& sql,
+                                int64_t time_queued = 0) = 0;
+
+  // Registers a metric at the given path which will run the specified SQL.
+  virtual util::Status RegisterMetric(const std::string& path,
+                                      const std::string& sql) = 0;
+
+  // Reads the FileDescriptorSet proto message given by |data| and |size| and
+  // adds any extensions to the metrics proto to allow them to be available as
+  // proto builder functions when computing metrics.
+  virtual util::Status ExtendMetricsProto(const uint8_t* data, size_t size) = 0;
 
   // Computes the given metrics on the loded portion of the trace. If
   // successful, the output argument |metrics_proto| will be filled with the
   // proto-encoded bytes for the message TraceMetrics in
-  // perfetto/metrics/metrics.proto. The return value will be 0 if no error
-  // occured or non-zero otherwise.
-  virtual int ComputeMetric(const std::vector<std::string>& metric_names,
-                            std::vector<uint8_t>* metrics_proto) = 0;
+  // perfetto/metrics/metrics.proto.
+  virtual util::Status ComputeMetric(
+      const std::vector<std::string>& metric_names,
+      std::vector<uint8_t>* metrics_proto) = 0;
 
   // Interrupts the current query. Typically used by Ctrl-C handler.
   virtual void InterruptQuery() = 0;

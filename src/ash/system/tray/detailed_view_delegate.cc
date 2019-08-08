@@ -21,6 +21,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -37,18 +38,18 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
                                                   gfx::Insets(),
                                                   kUnifiedTopShortcutSpacing);
       layout->set_main_axis_alignment(
-          views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+          views::BoxLayout::MainAxisAlignment::kCenter);
       layout->set_cross_axis_alignment(
-          views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+          views::BoxLayout::CrossAxisAlignment::kCenter);
       break;
     case TriView::Container::CENTER:
       tri_view->SetFlexForContainer(TriView::Container::CENTER, 1.f);
 
       layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
       layout->set_main_axis_alignment(
-          views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+          views::BoxLayout::MainAxisAlignment::kCenter);
       layout->set_cross_axis_alignment(
-          views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+          views::BoxLayout::CrossAxisAlignment::kStretch);
       break;
   }
 
@@ -63,12 +64,16 @@ class BackButton : public CustomShapeButton {
     gfx::ImageSkia image =
         gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon, kUnifiedMenuIconColor);
     SetImage(views::Button::STATE_NORMAL, image);
-    SetImageAlignment(HorizontalAlignment::ALIGN_RIGHT,
-                      VerticalAlignment::ALIGN_MIDDLE);
+    SetImageHorizontalAlignment(ALIGN_RIGHT);
+    SetImageVerticalAlignment(ALIGN_MIDDLE);
     SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets((kTrayItemSize - image.width()) / 2)));
+
+    auto path = std::make_unique<SkPath>(
+        CreateCustomShapePath(gfx::Rect(CalculatePreferredSize())));
+    SetProperty(views::kHighlightPathKey, path.release());
   }
 
   ~BackButton() override = default;

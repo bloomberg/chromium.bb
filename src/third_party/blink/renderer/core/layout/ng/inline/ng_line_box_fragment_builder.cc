@@ -16,7 +16,6 @@ namespace blink {
 
 void NGLineBoxFragmentBuilder::Reset() {
   children_.Shrink(0);
-  offsets_.Shrink(0);
   child_break_tokens_.Shrink(0);
   inline_break_tokens_.Shrink(0);
   oof_positioned_candidates_.Shrink(0);
@@ -28,7 +27,7 @@ void NGLineBoxFragmentBuilder::Reset() {
   has_last_resort_break_ = false;
   has_floating_descendants_ = false;
   has_orthogonal_flow_roots_ = false;
-  has_child_that_depends_on_percentage_block_size_ = false;
+  has_descendant_that_depends_on_percentage_block_size_ = false;
   has_block_fragmentation_ = false;
   may_have_descendant_above_block_start_ = false;
 }
@@ -57,6 +56,12 @@ NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
+    LayoutUnit delta) {
+  for (auto& child : children_)
+    child.offset.inline_offset += delta;
+}
+
+void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
     LayoutUnit delta,
     unsigned start,
     unsigned end) {
@@ -78,13 +83,12 @@ void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(LayoutUnit delta,
 }
 
 void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
-  offsets_.ReserveCapacity(children.size());
   children_.ReserveCapacity(children.size());
 
   for (auto& child : children) {
     if (child.layout_result) {
       DCHECK(!child.fragment);
-      AddChild(*child.layout_result, child.offset);
+      AddChild(child.layout_result->PhysicalFragment(), child.offset);
       child.layout_result.reset();
     } else if (child.fragment) {
       AddChild(std::move(child.fragment), child.offset);

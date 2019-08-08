@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_prefs.h"
@@ -92,6 +94,12 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 
   const extensions::Extension* extension = GetExtension(profile, extension_id);
   DCHECK(extension);
+
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+    chrome::ShowAppManagementPage(profile, extension_id);
+    return;
+  }
+
   if (extension->is_hosted_app() && extension->from_bookmark()) {
     chrome::ShowSiteSettings(
         profile, extensions::AppLaunchInfo::GetFullLaunchURL(extension));

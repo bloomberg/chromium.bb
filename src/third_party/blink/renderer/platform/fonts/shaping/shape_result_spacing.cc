@@ -84,12 +84,10 @@ void ShapeResultSpacing<TextContainerType>::ComputeExpansion(
   bool is_after_expansion = is_after_expansion_;
   if (text_.Is8Bit()) {
     expansion_opportunity_count_ = Character::ExpansionOpportunityCount(
-        text_.Characters8(), text_.length(), direction, is_after_expansion,
-        text_justify_);
+        text_.Span8(), direction, is_after_expansion, text_justify_);
   } else {
     expansion_opportunity_count_ = Character::ExpansionOpportunityCount(
-        text_.Characters16(), text_.length(), direction, is_after_expansion,
-        text_justify_);
+        text_.Span16(), direction, is_after_expansion, text_justify_);
   }
   if (is_after_expansion && !allows_trailing_expansion) {
     DCHECK_GT(expansion_opportunity_count_, 0u);

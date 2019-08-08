@@ -14,12 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_uninstaller.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 
 class GURL;
 class Profile;
@@ -48,6 +47,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   using TaskFactory =
       base::RepeatingCallback<std::unique_ptr<BookmarkAppInstallationTask>(
           Profile*,
+          web_app::AppRegistrar*,
           web_app::InstallFinalizer*,
           web_app::InstallOptions)>;
 
@@ -58,6 +58,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
+  void Shutdown() override;
   void Install(web_app::InstallOptions install_options,
                OnceInstallCallback callback) override;
   void InstallApps(std::vector<web_app::InstallOptions> install_options_list,
@@ -72,8 +73,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
       web_app::InstallSource install_source) const override;
 
   void SetTaskFactoryForTesting(TaskFactory task_factory);
-  void SetUninstallerForTesting(
-      std::unique_ptr<BookmarkAppUninstaller> uninstaller);
   void SetUrlLoaderForTesting(
       std::unique_ptr<web_app::WebAppUrlLoader> url_loader);
 
@@ -84,14 +83,15 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
 
   void MaybeStartNextInstallation();
 
-  bool UninstallPlaceholderIfNecessary(
-      const web_app::InstallOptions install_options);
-
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 
   void CreateWebContentsIfNecessary();
 
   void OnUrlLoaded(web_app::WebAppUrlLoader::Result result);
+
+  void UninstallPlaceholderIfNecessary();
+
+  void OnPlaceholderUninstalled(bool succeeded);
 
   void OnInstalled(BookmarkAppInstallationTask::Result result);
 
@@ -100,8 +100,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
   web_app::InstallFinalizer* install_finalizer_;
-  std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
-  web_app::ExtensionIdsMap extension_ids_map_;
+  web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   // unique_ptr so that it can be replaced in tests.
   std::unique_ptr<web_app::WebAppUrlLoader> url_loader_;
@@ -113,6 +112,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   std::unique_ptr<TaskAndCallback> current_task_and_callback_;
 
   std::deque<std::unique_ptr<TaskAndCallback>> pending_tasks_and_callbacks_;
+
+  bool shutting_down_ = false;
 
   base::WeakPtrFactory<PendingBookmarkAppManager> weak_ptr_factory_{this};
 

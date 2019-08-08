@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
@@ -676,8 +677,8 @@ TEST_F(PasswordGenerationAgentTest, EditingEventsTest) {
     SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
     fake_pw_client_.Flush();
     fake_driver_.Flush();
-    EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
-    EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
+    EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+              fake_driver_.last_focused_field_type());
     testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
   }
 
@@ -688,8 +689,8 @@ TEST_F(PasswordGenerationAgentTest, EditingEventsTest) {
   fake_pw_client_.Flush();
   // Last focused element shouldn't change while editing.
   fake_driver_.Flush();
-  EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
-  EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
+  EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+            fake_driver_.last_focused_field_type());
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
@@ -1430,9 +1431,9 @@ TEST_F(PasswordGenerationAgentTest, GenerationAvailableByRendererIds) {
 
   // Simulate that the browser informs about eligible for generation form.
   // Check that generation is available only on new password field of this form.
-  NewPasswordFormGenerationData generation_data = {
-      .new_password_renderer_id =
-          password_elements[0].UniqueRendererFormControlId()};
+  NewPasswordFormGenerationData generation_data;
+  generation_data.new_password_renderer_id =
+      password_elements[0].UniqueRendererFormControlId();
 
   password_generation_->FoundFormEligibleForGeneration(generation_data);
   ExpectAutomaticGenerationAvailable(kPasswordElementsIds[0], kAvailable);

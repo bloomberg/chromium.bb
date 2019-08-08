@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">suwak</translation>
 <translation id="1211441953136645838">przypis końcowy</translation>
 <translation id="1281252709823657822">okno dialogowe</translation>
-<translation id="1289247557029249093">Wyłącz tryb obrazu w obrazie</translation>
 <translation id="1335095011850992622">autorzy</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">baner</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2158401438286456825">lista stron</translation>
 <translation id="2226276347425096477">Skróć ten tekst do maksymalnie <ph name="MAX_CHARACTERS" /> znaków (w tej chwili korzystasz z <ph name="CURRENT_LENGTH" /> znaków).</translation>
+<translation id="2246498165605549352">Plik lokalny</translation>
 <translation id="2247351761944213033">Tydzień <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Utwór <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">pole wyboru</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Obraz bez etykiety</translation>
 <translation id="3706100364254443312">przełącznik</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Wyłącz tryb obrazu w obrazie</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">termin</translation>
 <translation id="3822383571486410024">Wydłuż ten tekst przynajmniej do <ph name="MIN_CHARACTERS" /> znaków (teraz używasz <ph name="CURRENT_LENGTH" /> znaków).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Część po znaku „<ph name="ATSIGN" />” nie może zawierać symbolu „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="4668956016107839909">dodatek</translation>
+<translation id="4718048029184481307">Odtwarzam w trybie obrazu w obrazie</translation>
 <translation id="4742539557769756338">okładka</translation>
 <translation id="4748357248530471599">przełącz z wycięcia w ekranie na tryb pełnoekranowy</translation>
 <translation id="4757246831282535685">panel karty</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">posłowie</translation>
 <translation id="6209276755895393898">Wygląda jak: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">słownik</translation>
-<translation id="628938136236500310">Odtwarzanie w trybie obrazu w obrazie</translation>
+<translation id="6310801910862476708">Wyłącz tryb obrazu w obrazie</translation>
 <translation id="6398862346408813489">Pokaż panel wyboru miesiąca</translation>
 <translation id="6404546809543547843">pasek czasu odtwarzania dźwięku</translation>
 <translation id="6443871981718447451">wyświetlanie menu napisów</translation>

@@ -41,8 +41,6 @@ class ClearButtonElement final : public HTMLDivElement {
     virtual void ClearValue() = 0;
   };
 
-  static ClearButtonElement* Create(Document&, ClearButtonOwner&);
-
   ClearButtonElement(Document&, ClearButtonOwner&);
 
   void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }
@@ -63,6 +61,13 @@ DEFINE_TYPE_CASTS(ClearButtonElement,
                   element,
                   element->IsClearButtonElement(),
                   element.IsClearButtonElement());
+
+template <>
+struct DowncastTraits<ClearButtonElement> {
+  static bool AllowFrom(const Element& element) {
+    return element.IsClearButtonElement();
+  }
+};
 
 }  // namespace blink
 

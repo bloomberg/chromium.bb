@@ -27,9 +27,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
@@ -55,6 +52,9 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #endif
 
@@ -313,6 +313,9 @@ void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
 }
 
 void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
+  // Note: Android uses different image fetching mechanism to avoid
+  // penalty of copying byte buffers from C++ to Java.
+#if !defined(OS_ANDROID)
   BitmapFetcherService* image_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
   DCHECK(image_service);
@@ -358,6 +361,7 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
         })");
 
   image_service->Prefetch(url, traffic_annotation);
+#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeAutocompleteProviderClient::StartServiceWorker(
@@ -401,8 +405,7 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
     active_tab = active_browser->tab_strip_model()->GetActiveWebContents();
   for (auto* browser : *BrowserList::GetInstance()) {
     // Only look at same profile (and anonymity level).
-    if (browser->profile()->IsSameProfile(profile_) &&
-        browser->profile()->GetProfileType() == profile_->GetProfileType()) {
+    if (browser->profile()->IsSameProfileAndType(profile_)) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         content::WebContents* web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);

@@ -17,6 +17,11 @@
 #include "base/sequence_checker.h"
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/prefs/pref_service.h"
+#include "components/previews/content/hint_update_data.h"
+
+class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -62,39 +67,39 @@ class HintCacheStore {
     kMaxValue = kFailed,
   };
 
-  // Abstract base class for storing hint component update data. The data itself
-  // is populated by moving component hints into it on a background thread; it
-  // is then used to update the store's component data on the UI thread.
-  class ComponentUpdateData {
-   public:
-    explicit ComponentUpdateData(const base::Version& version)
-        : version_(version) {
-      DCHECK(version_.IsValid());
-    }
-    explicit ComponentUpdateData(base::Time update_time)
-        : update_time_(update_time) {}
-    virtual ~ComponentUpdateData() = default;
-
-    const base::Version& version() const { return version_; }
-    base::Time update_time() const { return update_time_; }
-
-    // Pure virtual function for moving a hint into ComponentUpdateData. After
-    // MoveHintIntoUpdateData() is called, |hint| is no longer valid.
-    virtual void MoveHintIntoUpdateData(
-        optimization_guide::proto::Hint&& hint) = 0;
-
-   private:
-    // The component version of the update data.
-    base::Version version_;
-
-    // The time when hints in the update data need to be updated.
-    base::Time update_time_;
+  // Store entry types within the store appear at the start of the keys of
+  // entries. These values are converted into strings within the key: a key
+  // starting with "1_" signifies a metadata entry and one starting with "2_"
+  // signifies a component hint entry. Adding this to the start of the key
+  // allows the store to quickly perform operations on all entries of a specific
+  // key type. Given that store entry type comparisons may be performed many
+  // times, the entry type string is kept as small as possible.
+  //  Example metadata entry type key:
+  //   "[StoreEntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
+  //  Example component hint store entry type key:
+  //   "[StoreEntryType::kComponentHint]_[component_version]_[host]"
+  //     ==> "2_55_foo.com"
+  // NOTE: The order and value of the existing store entry types within the enum
+  // cannot be changed, but new types can be added to the end.
+  // StoreEntryType should remain synchronized with the
+  // HintCacheStoreEntryType in enums.xml.
+  // Also ensure to add to the OptimizationGuide.StoreEntryTypes histogram
+  // suffixes if adding a new one.
+  enum class StoreEntryType {
+    kEmpty = 0,
+    kMetadata = 1,
+    kComponentHint = 2,
+    kFetchedHint = 3,
+    kMaxValue = kFetchedHint
   };
 
-  HintCacheStore(const base::FilePath& database_dir,
+  HintCacheStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
+                 const base::FilePath& database_dir,
+                 PrefService* pref_service,
                  scoped_refptr<base::SequencedTaskRunner> store_task_runner);
-  HintCacheStore(const base::FilePath& database_dir,
-                 std::unique_ptr<StoreEntryProtoDatabase> database);
+  // For tests only.
+  HintCacheStore(std::unique_ptr<StoreEntryProtoDatabase> database,
+                 PrefService* pref_service);
   ~HintCacheStore();
 
   // Initializes the hint cache store. If |purge_existing_data| is set to true,
@@ -102,50 +107,53 @@ class HintCacheStore {
   // When initialization completes, the provided callback is run asynchronously.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
-  // Creates and returns a ComponentUpdateData object. This object is used to
-  // collect hints within a component in a format usable on a background
-  // thread and is later returned to the store in UpdateComponentData(). The
-  // ComponentUpdateData object is only created when the provided component
-  // version is newer than the store's version, indicating fresh hints. If the
-  // component's version is not newer than the store's version, then no
-  // ComponentUpdateData is created and nullptr is returned. This prevents
-  // unnecessary processing of the component's hints by the caller.
-  std::unique_ptr<ComponentUpdateData> MaybeCreateComponentUpdateData(
+  // Creates and returns a HintUpdateData object for component hints. This
+  // object is used to collect hints within a component in a format usable on a
+  // background thread and is later returned to the store in
+  // UpdateComponentHints(). The HintUpdateData object is only created when the
+  // provided component version is newer than the store's version, indicating
+  // fresh hints. If the component's version is not newer than the store's
+  // version, then no HintUpdateData is created and nullptr is returned. This
+  // prevents unnecessary processing of the component's hints by the caller.
+  std::unique_ptr<HintUpdateData> MaybeCreateUpdateDataForComponentHints(
       const base::Version& version) const;
 
-  // Creates and returns an UpdateData object for Fetched Hints.
+  // Creates and returns a HintsUpdateData object for Fetched Hints.
   // This object is used to collect a batch of hints in a format that is usable
   // to update the store on a background thread. This is always created when
   // hints have been successfully fetched from the remote Optimization Guide
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
-  std::unique_ptr<HintCacheStore::ComponentUpdateData>
-  CreateUpdateDataForFetchedHints(base::Time update_time) const;
+  std::unique_ptr<HintUpdateData> CreateUpdateDataForFetchedHints(
+      base::Time update_time,
+      base::Time expiry_time) const;
 
-  // Updates the component data (both version and hints) contained within the
-  // store. When this is called, all pre-existing component data within the
-  // store is purged and only the new data is retained. After the store is
-  // fully updated with the new component data, the callback is run
-  // asynchronously.
-  void UpdateComponentData(std::unique_ptr<ComponentUpdateData> component_data,
-                           base::OnceClosure callback);
+  // Updates the component hints and version contained within the store. When
+  // this is called, all pre-existing component hints within the store is purged
+  // and only the new hints are retained. After the store is fully updated with
+  // the new component hints, the callback is run asynchronously.
+  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
+                            base::OnceClosure callback);
 
-  // Updates the fetched hints data contained in the store, including the
+  // Updates the fetched hints contained in the store, including the
   // metadata entry. The callback is run asynchronously after the database
   // stores the hints.
   //
-  // TODO(mcrouse): When called, fetched hint data in the store that has expired
+  // TODO(mcrouse): When called, fetched hints in the store that have expired
   // specified by |expiry_time_secs| will be purged and only the new hints and
   // non-expired hints are retained.
+  void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_hints_data,
+                          base::OnceClosure callback);
 
-  void UpdateFetchedHintsData(
-      std::unique_ptr<ComponentUpdateData> fetched_hints_data,
-      base::OnceClosure callback);
+  // Removes fetched hint store entries from |this|. |hint_entry_keys_| is
+  // updated after the removing fetched hint entries are removed.
+  void ClearFetchedHintsFromDatabase();
 
-  // Finds a hint entry key associated with the specified host suffix. Returns
+  // Finds the most specific hint entry key for the specified host. Returns
   // true if a hint entry key is found, in which case |out_hint_entry_key| is
-  // populated with the key.
-  bool FindHintEntryKey(const std::string& host_suffix,
+  // populated with the key. All keys for kFetched hints are considered before
+  // kComponent hints as they are updated more frequently.
+  bool FindHintEntryKey(const std::string& host,
                         EntryKey* out_hint_entry_key) const;
 
   // Loads the hint specified by |hint_entry_key|.
@@ -170,72 +178,18 @@ class HintCacheStore {
       leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>::KeyEntryVector;
   using EntryMap = std::map<EntryKey, previews::proto::StoreEntry>;
 
-  // Entry types within the store appear at the start of the keys of entries.
-  // These values are converted into strings within the key: a key starting with
-  // "1_" signifies a metadata entry and one starting with "2_" signifies a
-  // component hint entry. Adding this to the start of the key allows the store
-  // to quickly perform operations on all entries of a specific key type. Given
-  // that entry type comparisons may be performed many times, the entry type
-  // string is kept as small as possible.
-  //  Example metadata entry type key:
-  //   "[EntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
-  //  Example component hint entry type key:
-  //   "[EntryType::kComponentHint]_[component_version]_[host]"
-  //     ==> "2_55_foo.com"
-  // NOTE: The order and value of the existing entry types within the enum
-  // cannot be changed, but new types can be added to the end.
-  enum class EntryType {
-    kMetadata = 1,
-    kComponentHint = 2,
-    kFetchedHint = 3,
-  };
-
   // Metadata types within the store. The metadata type appears at the end of
   // metadata entry keys. These values are converted into strings within the
   // key.
   //  Example metadata type keys:
-  //   "[EntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
-  //   "[EntryType::kMetadata]_[MetadataType::kComponent]" ==> "1_2"
+  //   "[StoreEntryType::kMetadata]_[MetadataType::kSchema]"    ==> "1_1"
+  //   "[StoreEntryType::kMetadata]_[MetadataType::kComponent]" ==> "1_2"
   // NOTE: The order and value of the existing metadata types within the enum
   // cannot be changed, but new types can be added to the end.
   enum class MetadataType {
     kSchema = 1,
     kComponent = 2,
     kFetched = 3,
-  };
-
-  // HintCacheStore's concrete implementation of ComponentUpdateData.
-  // LevelDBComponentUpdateData is private within HintCacheStore. All classes
-  // outside of HintCacheStore can only interact with the ComponentUpdateData
-  // base class. LevelDBComponentUpdateData is created by HintCacheStore when
-  // MaybeCreateComponentUpdateData() is called and used to update the store's
-  // component data during UpdateComponentData().
-  //
-  // TODO(mcrouse): Bug: 932707.
-  // This class should be refactored so that there is a single constructor and
-  // the base class removed. The class will also be moved out of |this|.
-  class LevelDBComponentUpdateData : public ComponentUpdateData {
-   public:
-    explicit LevelDBComponentUpdateData(const base::Version& version);
-    explicit LevelDBComponentUpdateData(base::Time update_time);
-    ~LevelDBComponentUpdateData() override;
-
-    // ComponentUpdateData overrides:
-    void MoveHintIntoUpdateData(
-        optimization_guide::proto::Hint&& hint) override;
-
-   private:
-    friend class HintCacheStore;
-
-    // The prefix to add to the key of every component hint entry. It is set
-    // during construction, using the provided component version.
-    const EntryKeyPrefix component_hint_entry_key_prefix_;
-
-    // The vector of entries to save. This contains both the metadata component
-    // entry, which is created during construction, using the provided component
-    // version, and the hint entries from the component, which are individually
-    // moved into |entries_to_save_| during calls to MoveHintIntoUpdateData().
-    std::unique_ptr<EntryVector> entries_to_save_;
   };
 
   // Current schema version of the hint cache store. When this is changed,
@@ -291,12 +245,21 @@ class HintCacheStore {
   // Returns the total hint entry keys contained within the store.
   size_t GetHintEntryKeyCount() const;
 
+  // Finds the most specific host suffix of the host name that the store has an
+  // hint with the provided prefix, |hint_entry_key_prefix|. |out_entry_key| is
+  // populated with the entry key for the corresponding hint. Returns true if a
+  // hint was successsfully found.
+  bool FindHintEntryKeyForHostWithPrefix(
+      const std::string& host,
+      EntryKey* out_entry_key,
+      const EntryKeyPrefix& hint_entry_key_prefix) const;
+
   // Callback that runs after the database finishes being initialized. If
   // |purge_existing_data| is true, then unconditionally purges the database;
   // otherwise, triggers loading of the metadata.
   void OnDatabaseInitialized(bool purge_existing_data,
                              base::OnceClosure callback,
-                             bool success);
+                             leveldb_proto::Enums::InitStatus status);
 
   // Callback that is run after the database finishes being destroyed.
   void OnDatabaseDestroyed(bool success);
@@ -312,10 +275,10 @@ class HintCacheStore {
   // Callback that runs after the database is purged during initialization.
   void OnPurgeDatabase(base::OnceClosure callback, bool success);
 
-  // Callback that runs after the component data within the store is fully
+  // Callback that runs after the hints data within the store is fully
   // updated. If the update was successful, it attempts to load all of the hint
   // entry keys contained within the database.
-  void OnUpdateComponentData(base::OnceClosure callback, bool success);
+  void OnUpdateHints(base::OnceClosure callback, bool success);
 
   // Callback that runs after the hint entry keys are fully loaded. If there's
   // currently an in-flight component update, then the hint entry keys will be
@@ -338,21 +301,22 @@ class HintCacheStore {
                   bool success,
                   std::unique_ptr<previews::proto::StoreEntry> entry);
 
-  // Path to the directory for the profile using this store.
-  const base::FilePath database_dir_;
-
   // Proto database used by the store.
-  const std::unique_ptr<StoreEntryProtoDatabase> database_;
+  std::unique_ptr<StoreEntryProtoDatabase> database_;
+
+  // A reference to the PrefService for this profile. Not owned.
+  PrefService* pref_service_;
 
   // The current status of the store. It should only be updated through
   // UpdateStatus(), which validates status transitions and triggers
   // accompanying logic.
-  Status status_;
+  Status status_ = Status::kUninitialized;
 
   // The current component version of the store. This should only be updated
   // via SetComponentVersion(), which ensures that both |component_version_|
   // and |component_hint_key_prefix_| are updated at the same time.
   base::Optional<base::Version> component_version_;
+
   // The current entry key prefix shared by all component hints containd within
   // the store. While this could be generated on the fly using
   // |component_version_|, it is retaind separately as an optimization, as it
@@ -361,7 +325,7 @@ class HintCacheStore {
 
   // If a component data update is in the middle of being processed; when this
   // is true, keys and hints will not be returned by the store.
-  bool component_data_update_in_flight_;
+  bool data_update_in_flight_ = false;
 
   // The next update time for the fetched hints that are currently in the
   // store.

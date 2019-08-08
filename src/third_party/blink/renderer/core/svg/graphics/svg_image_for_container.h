@@ -113,9 +113,7 @@ class SVGImageForContainer final : public Image {
   // filter should be applied based on the image's content and it's
   // visibility on a dark background.
   DarkModeClassification ClassifyImageForDarkMode(
-      const FloatRect& src_rect) override {
-    return DarkModeClassification::kApplyDarkModeFilter;
-  }
+      const FloatRect& src_rect) override;
 
   SVGImage* image_;
   const FloatSize container_size_;

@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "GrProcessorSet.h"
-#include "GrAppliedClip.h"
-#include "GrCaps.h"
-#include "GrUserStencilSettings.h"
-#include "GrXferProcessor.h"
-#include "SkBlendModePriv.h"
-#include "effects/GrPorterDuffXferProcessor.h"
+#include "src/core/SkBlendModePriv.h"
+#include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrProcessorSet.h"
+#include "src/gpu/GrUserStencilSettings.h"
+#include "src/gpu/GrXferProcessor.h"
+#include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 
 const GrProcessorSet& GrProcessorSet::EmptySet() {
     static GrProcessorSet gEmpty(GrProcessorSet::Empty::kEmpty);
@@ -174,8 +174,6 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
             fFragmentProcessors.get() + fFragmentProcessorOffset;
     GrColorFragmentProcessorAnalysis colorAnalysis(
             colorInput, unique_ptr_address_as_pointer_address(fps), fColorFragmentProcessorCnt);
-    analysis.fCompatibleWithCoverageAsAlpha &=
-            colorAnalysis.allProcessorsCompatibleWithCoverageAsAlpha();
     fps += fColorFragmentProcessorCnt;
     int n = this->numCoverageFragmentProcessors();
     bool hasCoverageFP = n > 0;
@@ -190,6 +188,7 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
         hasCoverageFP = hasCoverageFP || clip->numClipCoverageFragmentProcessors();
         for (int i = 0; i < clip->numClipCoverageFragmentProcessors(); ++i) {
             const GrFragmentProcessor* clipFP = clip->clipCoverageFragmentProcessor(i);
+            clipFP->markPendingExecution();
             analysis.fCompatibleWithCoverageAsAlpha &= clipFP->compatibleWithCoverageAsAlpha();
             coverageUsesLocalCoords |= clipFP->usesLocalCoords();
         }
@@ -225,6 +224,8 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
                 static_cast<Analysis::PackedInputColorType>(Analysis::kIgnored_InputColorType);
         analysis.fUsesLocalCoords = coverageUsesLocalCoords;
     } else {
+        analysis.fCompatibleWithCoverageAsAlpha &=
+            colorAnalysis.allProcessorsCompatibleWithCoverageAsAlpha();
         analysis.fUsesLocalCoords = coverageUsesLocalCoords | colorAnalysis.usesLocalCoords();
     }
     for (int i = 0; i < colorFPsToEliminate; ++i) {

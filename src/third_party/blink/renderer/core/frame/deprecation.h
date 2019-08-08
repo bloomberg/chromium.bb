@@ -5,21 +5,23 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_H_
 
+#include <bitset>
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 namespace mojom {
 enum class FeaturePolicyFeature;
 }  // namespace mojom
 
+class Document;
 class DocumentLoader;
+class ExecutionContext;
 class LocalFrame;
 
-class CORE_EXPORT Deprecation {
+class CORE_EXPORT Deprecation final {
   DISALLOW_NEW();
 
  public:
@@ -52,7 +54,7 @@ class CORE_EXPORT Deprecation {
   // Note: this is only public for tests.
   bool IsSuppressed(CSSPropertyID unresolved_property);
 
- protected:
+ private:
   void Suppress(CSSPropertyID unresolved_property);
   void SetReported(WebFeature feature);
   bool GetReported(WebFeature feature) const;
@@ -65,8 +67,9 @@ class CORE_EXPORT Deprecation {
 
   // To minimize the report/console spam from frames coming and going, report
   // each deprecation at most once per page load per renderer process.
-  BitVector features_deprecation_bits_;
-  BitVector css_property_deprecation_bits_;
+  std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
+      features_deprecation_bits_;
+  std::bitset<numCSSPropertyIDs> css_property_deprecation_bits_;
   unsigned mute_count_;
 
   DISALLOW_COPY_AND_ASSIGN(Deprecation);

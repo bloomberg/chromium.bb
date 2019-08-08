@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -156,7 +156,7 @@ void AppShortcutLauncherItemController::ItemSelected(
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event && event->type() == ui::ET_KEY_RELEASED && AdvanceToNextApp()) {
-    std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, {});
     return;
   }
 
@@ -175,45 +175,39 @@ void AppShortcutLauncherItemController::ItemSelected(
     }
 
     // LaunchApp may replace and destroy this item controller instance. Run the
-    // callback before |binding_| is destroyed and copy the id to avoid crashes.
-    std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
-                            base::nullopt);
+    // callback first and copy the id to avoid crashes.
+    std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
     ChromeLauncherController::instance()->LaunchApp(
         ash::ShelfID(shelf_id()), source, ui::EF_NONE, display_id);
     return;
   }
 
-  ash::MenuItemList items =
-      GetAppMenuItems(event ? event->flags() : ui::EF_NONE);
-
-  if (items.size() == 1) {
-    std::move(callback).Run(ActivateContent(content), base::nullopt);
+  if (GetRunningApplications().size() == 1) {
+    std::move(callback).Run(ActivateContent(content), {});
   } else {
     // Multiple items, a menu will be shown. No need to activate the most
     // recently active item.
-    std::move(callback).Run(ash::SHELF_ACTION_NONE, std::move(items));
+    std::move(callback).Run(
+        ash::SHELF_ACTION_NONE,
+        GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
   }
 }
 
-ash::MenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
-    int event_flags) {
-  ash::MenuItemList items;
+ash::ShelfItemDelegate::AppMenuItems
+AppShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
   app_menu_items_ = GetRunningApplications();
   ChromeLauncherController* controller = ChromeLauncherController::instance();
-  for (size_t i = 0; i < app_menu_items_.size(); i++) {
-    content::WebContents* tab = app_menu_items_[i];
-    ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
-    item->command_id = base::checked_cast<uint32_t>(i);
-    item->label = controller->GetAppListTitle(tab);
-    item->image = controller->GetAppListIcon(tab).AsImageSkia();
-    items.push_back(std::move(item));
+  AppMenuItems items;
+  for (content::WebContents* item : app_menu_items_) {
+    items.push_back({controller->GetAppListTitle(item),
+                     controller->GetAppListIcon(item).AsImageSkia()});
   }
   return items;
 }
 
 void AppShortcutLauncherItemController::GetContextMenu(
     int64_t display_id,
-    GetMenuModelCallback callback) {
+    GetContextMenuCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
   context_menu_ = LauncherContextMenu::Create(controller, item, display_id);

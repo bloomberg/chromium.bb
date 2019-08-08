@@ -47,7 +47,7 @@ bool CreateDirectory(filesystem::mojom::DirectoryPtr* output_dir,
                      const base::FilePath& path) {
   base::File::Error err = base::File::Error::FILE_OK;
   return (*output_dir)
-             ->OpenDirectory(PathToMojoString(path), nullptr,
+             ->OpenDirectory(PathToMojoString(path), mojo::NullReceiver(),
                              filesystem::mojom::kFlagOpenAlways, &err) &&
          err == base::File::Error::FILE_OK;
 }

@@ -67,7 +67,7 @@ source_set("shell") {
     "//ios/net",
     "//ios/web",
     "//ios/web/public",
-    "//ios/web/public/app",
+    "//ios/web/public/init",
     "//net",
     "//net:extras",
     "//services/service_manager/public/cpp",

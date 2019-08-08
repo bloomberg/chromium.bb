@@ -55,7 +55,7 @@ namespace {
 
 // PasswordForm values for tests.
 constexpr autofill::PasswordForm::Type kArbitraryType =
-    autofill::PasswordForm::TYPE_GENERATED;
+    autofill::PasswordForm::Type::kGenerated;
 constexpr char kIconUrl[] = "https://fb.com/Icon";
 constexpr char kDisplayName[] = "Agent Smith";
 constexpr char kFederationUrl[] = "https://fb.com/";
@@ -134,7 +134,8 @@ SyncData CreateSyncData(const std::string& signon_realm) {
   sync_pb::PasswordSpecificsData* password_specifics =
       password_data.mutable_password()->mutable_client_only_encrypted_data();
   password_specifics->set_signon_realm(signon_realm);
-  password_specifics->set_type(autofill::PasswordForm::TYPE_GENERATED);
+  password_specifics->set_type(
+      static_cast<int>(autofill::PasswordForm::Type::kGenerated));
   password_specifics->set_times_used(3);
   password_specifics->set_display_name("Mr. X");
   password_specifics->set_avatar_url("https://accounts.google.com/Icon");
@@ -178,8 +179,14 @@ class PasswordSyncableServiceWrapper {
     service_.reset(
         new PasswordSyncableService(password_store_->GetSyncInterface()));
 
-    ON_CALL(*password_store_, AddLoginImpl(HasDateSynced()))
-        .WillByDefault(Return(PasswordStoreChangeList()));
+    ON_CALL(*password_store_, AddLoginImpl(HasDateSynced(), _))
+        .WillByDefault([&](const autofill::PasswordForm& form,
+                           password_manager::AddLoginError* error) {
+          if (error) {
+            *error = AddLoginError::kNone;
+          }
+          return PasswordStoreChangeList();
+        });
     ON_CALL(*password_store_, RemoveLoginImpl(_))
         .WillByDefault(Return(PasswordStoreChangeList()));
     ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced()))
@@ -236,7 +243,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
-  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync), _));
   EXPECT_CALL(*processor_,
               ProcessSyncChanges(
                   _, ElementsAre(SyncChangeIs(SyncChange::ACTION_ADD, form))));
@@ -256,7 +263,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
-  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync), _));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
   service()->MergeDataAndStartSyncing(
@@ -393,7 +400,7 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
       CreateSyncChange(updated_form, syncer::SyncChange::ACTION_UPDATE));
   list.push_back(
       CreateSyncChange(deleted_form, syncer::SyncChange::ACTION_DELETE));
-  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync), _));
   EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(updated_form)));
   EXPECT_CALL(*password_store(), RemoveLoginImpl(PasswordIs(deleted_form)));
   service()->ProcessSyncChanges(FROM_HERE, list);
@@ -458,9 +465,9 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
   // passwords during the first read.
   EXPECT_CALL(*password_store(), DeleteUndecryptableLogins()).Times(0);
 
-  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(form2)));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(form2), _));
   EXPECT_CALL(*other_service_wrapper.password_store(),
-              AddLoginImpl(PasswordIs(form1)));
+              AddLoginImpl(PasswordIs(form1), _));
 
   syncer::SyncDataList other_service_data =
       other_service_wrapper.service()->GetAllSyncData(syncer::PASSWORDS);
@@ -718,7 +725,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyPasswordForm) {
 // Sync representation is matching the expectations.
 TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::SCHEME_USERNAME_ONLY;
+  form.scheme = autofill::PasswordForm::Scheme::kUsernameOnly;
   form.signon_realm = "http://google.com/";
   form.origin = GURL("https://google.com/origin");
   form.action = GURL("https://google.com/action");
@@ -729,7 +736,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   form.preferred = true;
   form.date_created = base::Time::FromInternalValue(100);
   form.blacklisted_by_user = true;
-  form.type = autofill::PasswordForm::TYPE_LAST;
+  form.type = autofill::PasswordForm::Type::kMaxValue;
   form.times_used = 11;
   form.display_name = base::ASCIIToUTF16("Great Peter");
   form.icon_url = GURL("https://google.com/icon");
@@ -738,7 +745,8 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   syncer::SyncData data = SyncDataFromPassword(form);
   const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);
   EXPECT_TRUE(specifics.has_scheme());
-  EXPECT_EQ(autofill::PasswordForm::SCHEME_USERNAME_ONLY, specifics.scheme());
+  EXPECT_EQ(static_cast<int>(autofill::PasswordForm::Scheme::kUsernameOnly),
+            specifics.scheme());
   EXPECT_TRUE(specifics.has_signon_realm());
   EXPECT_EQ("http://google.com/", specifics.signon_realm());
   EXPECT_TRUE(specifics.has_origin());
@@ -760,7 +768,8 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   EXPECT_TRUE(specifics.has_blacklisted());
   EXPECT_TRUE(specifics.blacklisted());
   EXPECT_TRUE(specifics.has_type());
-  EXPECT_EQ(autofill::PasswordForm::TYPE_LAST, specifics.type());
+  EXPECT_EQ(static_cast<int>(autofill::PasswordForm::Type::kMaxValue),
+            specifics.type());
   EXPECT_TRUE(specifics.has_times_used());
   EXPECT_EQ(11, specifics.times_used());
   EXPECT_TRUE(specifics.has_display_name());

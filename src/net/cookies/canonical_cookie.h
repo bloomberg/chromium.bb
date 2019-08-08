@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_constants.h"
@@ -21,8 +22,6 @@ class GURL;
 namespace net {
 
 class ParsedCookie;
-
-struct CookieWithStatus;
 
 class NET_EXPORT CanonicalCookie {
  public:
@@ -139,8 +138,8 @@ class NET_EXPORT CanonicalCookie {
   // having been canonicalized (in
   // GetCookieDomainWithString->CanonicalizeHost).
   bool IsEquivalent(const CanonicalCookie& ecc) const {
-    // It seems like it would make sense to take secure and httponly into
-    // account, but the RFC doesn't specify this.
+    // It seems like it would make sense to take secure, httponly, and samesite
+    // into account, but the RFC doesn't specify this.
     // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForHost().
     return (name_ == ecc.Name() && domain_ == ecc.Domain()
             && path_ == ecc.Path());
@@ -195,6 +194,14 @@ class NET_EXPORT CanonicalCookie {
   // method does not check whether a cookie is expired or not!
   CookieInclusionStatus IncludeForRequestURL(
       const GURL& url,
+      const CookieOptions& options) const;
+
+  // Returns if the cookie with given attributes can be set in context described
+  // by |options|, and if no, describes why.
+  // WARNING: this does not cover checking whether secure cookies are set in
+  // a secure schema, since whether the schema is secure isn't part of
+  // |options|.
+  CookieInclusionStatus IsSetPermittedInContext(
       const CookieOptions& options) const;
 
   std::string DebugString() const;
@@ -291,11 +298,25 @@ struct CookieWithStatus {
   CanonicalCookie::CookieInclusionStatus status;
 };
 
-// Just used for the next function to send the cookie string with it's status
-struct CookieLineWithStatus {
-  CookieLineWithStatus(std::string cookie_string,
-                       CanonicalCookie::CookieInclusionStatus status);
+// Used to pass excluded cookie information when it's possible that the
+// canonical cookie object may not be available.
+struct NET_EXPORT CookieAndLineWithStatus {
+  CookieAndLineWithStatus();
+  CookieAndLineWithStatus(base::Optional<CanonicalCookie> cookie,
+                          std::string cookie_string,
+                          CanonicalCookie::CookieInclusionStatus status);
+  CookieAndLineWithStatus(
+      const CookieAndLineWithStatus& cookie_and_line_with_status);
 
+  CookieAndLineWithStatus& operator=(
+      const CookieAndLineWithStatus& cookie_and_line_with_status);
+
+  CookieAndLineWithStatus(
+      CookieAndLineWithStatus&& cookie_and_line_with_status);
+
+  ~CookieAndLineWithStatus();
+
+  base::Optional<CanonicalCookie> cookie;
   std::string cookie_string;
   CanonicalCookie::CookieInclusionStatus status;
 };
@@ -303,6 +324,8 @@ struct CookieLineWithStatus {
 typedef std::vector<CanonicalCookie> CookieList;
 
 typedef std::vector<CookieWithStatus> CookieStatusList;
+
+typedef std::vector<CookieAndLineWithStatus> CookieAndLineStatusList;
 
 }  // namespace net
 

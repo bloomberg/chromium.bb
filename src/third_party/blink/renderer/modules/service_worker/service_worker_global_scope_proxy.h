@@ -46,14 +46,10 @@
 
 namespace blink {
 
-class FetchEvent;
 class ParentExecutionContextTaskRunners;
 class ServiceWorkerGlobalScope;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
-struct WebServiceWorkerError;
-class WebServiceWorkerRequest;
-class WebURLResponse;
 
 // This class is created and destructed on the main thread, but live most
 // of its time as a resident of the worker thread. All methods other than its
@@ -80,60 +76,9 @@ class ServiceWorkerGlobalScopeProxy final
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
-  void BindServiceWorkerHost(
-      mojo::ScopedInterfaceEndpointHandle service_worker_host) override;
-  void SetRegistration(WebServiceWorkerRegistrationObjectInfo info) override;
-  void SetFetchHandlerExistence(
-      FetchHandlerExistence fetch_handler_existence) override;
-  // Must be called after the above BindServiceWorkerHost() and
-  // SetRegistration() got called.
-  void ReadyToEvaluateScript() override;
-  void DispatchActivateEvent(int) override;
-  void DispatchBackgroundFetchAbortEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) override;
-  void DispatchBackgroundFetchClickEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) override;
-  void DispatchBackgroundFetchFailEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) override;
-  void DispatchBackgroundFetchSuccessEvent(
-      int event_id,
-      WebBackgroundFetchRegistration registration) override;
-  void DispatchCookieChangeEvent(
-      int event_id,
-      const WebCanonicalCookie& cookie,
-      network::mojom::CookieChangeCause change_cause) override;
-  void DispatchExtendableMessageEvent(
-      int event_id,
-      TransferableMessage,
-      const WebSecurityOrigin& source_origin,
-      const WebServiceWorkerClientInfo&) override;
-  void DispatchExtendableMessageEvent(int event_id,
-                                      TransferableMessage,
-                                      const WebSecurityOrigin& source_origin,
-                                      WebServiceWorkerObjectInfo) override;
-  void DispatchFetchEvent(int fetch_event_id,
-                          const WebServiceWorkerRequest&,
-                          bool navigation_preload_sent) override;
-  void DispatchInstallEvent(int) override;
-  void DispatchNotificationClickEvent(int,
-                                      const WebString& notification_id,
-                                      const WebNotificationData&,
-                                      int action_index,
-                                      const WebString& reply) override;
-  void DispatchNotificationCloseEvent(int,
-                                      const WebString& notification_id,
-                                      const WebNotificationData&) override;
-  void DispatchPushEvent(int, const WebString& data) override;
-  void DispatchSyncEvent(int, const WebString& tag, bool last_chance) override;
-  void DispatchAbortPaymentEvent(int) override;
-  void DispatchCanMakePaymentEvent(int,
-                                   const WebCanMakePaymentEventData&) override;
-  void DispatchPaymentRequestEvent(int,
-                                   const WebPaymentRequestEventData&) override;
-  bool HasFetchEventHandler() override;
+  void BindServiceWorker(mojo::ScopedMessagePipeHandle request) override;
+  void BindControllerServiceWorker(
+      mojo::ScopedMessagePipeHandle request) override;
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<WebURLResponse>,
@@ -160,10 +105,9 @@ class ServiceWorkerGlobalScopeProxy final
   void WillInitializeWorkerContext() override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidInitializeWorkerContext() override;
-  void DidFailToInitializeWorkerContext() override;
   void DidLoadClassicScript() override;
   void DidFailToLoadClassicScript() override;
-  void DidFetchScript() override;
+  void DidFetchScript(int64_t app_cache_id) override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;
   void WillEvaluateClassicScript(size_t script_size,
@@ -198,16 +142,6 @@ class ServiceWorkerGlobalScopeProxy final
 
   Member<ParentExecutionContextTaskRunners>
       parent_execution_context_task_runners_;
-
-  // The worker thread uses this map to track |FetchEvent|s created
-  // on the worker thread (heap.) But as the proxy object is created
-  // on the main thread & its heap, we must use a cross-heap reference
-  // to each |FetchEvent| so as to obey the "per-thread heap rule" that
-  // a heap should only have per-thread heap references. Keeping a
-  // cross-heap reference requires the use of a CrossThreadPersistent<>
-  // to remain safe and sound.
-  //
-  HashMap<int, CrossThreadPersistent<FetchEvent>> pending_preload_fetch_events_;
 
   WebServiceWorkerContextClient* client_;
 

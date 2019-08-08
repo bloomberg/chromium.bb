@@ -11,16 +11,21 @@
 
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/paint/text_element_timing.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+class LayoutBoxModelObject;
 class LayoutObject;
-class TracedValue;
 class LocalFrameView;
 class PropertyTreeState;
+class TextElementTiming;
+class TracedValue;
 
 class TextRecord : public base::SupportsWeakPtr<TextRecord> {
  public:
@@ -38,6 +43,7 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
 };
 
 class TextRecordsManager {
+  DISALLOW_NEW();
   using TextRecordSetComparator = bool (*)(const base::WeakPtr<TextRecord>&,
                                            const base::WeakPtr<TextRecord>&);
   using TextRecordSet =
@@ -48,7 +54,6 @@ class TextRecordsManager {
   TextRecordsManager();
   TextRecord* FindLargestPaintCandidate();
 
-  bool AreAllVisibleNodesDetached() const;
   void SetNodeDetachedIfNeeded(const DOMNodeId&);
   void MarkNodeReattachedIfNeeded(const DOMNodeId&);
 
@@ -57,7 +62,7 @@ class TextRecordsManager {
                          const uint64_t& visual_size,
                          const LayoutObject&);
   bool NeedMeausuringPaintTime() const {
-    return !texts_queued_for_paint_time_.empty();
+    return !texts_queued_for_paint_time_.IsEmpty();
   }
   void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
 
@@ -71,12 +76,26 @@ class TextRecordsManager {
     return visible_node_map_.Contains(node_id);
   }
 
+  void StopRecordingLargestTextPaint();
+  bool IsRecordingLargestTextPaint() const { return is_recording_ltp_; }
+
+  void SetTextElementTiming(TextElementTiming* text_element_timing) {
+    text_element_timing_ = text_element_timing;
+  }
+
+  void Trace(blink::Visitor*);
+
  private:
   void QueueToMeasurePaintTime(base::WeakPtr<TextRecord>);
   // This is used to cache the largest text paint result for better efficiency.
   // The result will be invalidated whenever any change is done to the variables
   // used in |FindLargestPaintCandidate|.
   bool is_result_invalidated_ = false;
+  // This is used to know whether |size_ordered_set_| should be populated or
+  // not, since this is used by Largest Text Paint but not by Text Element
+  // Timing.
+  bool is_recording_ltp_ =
+      RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled();
   HashMap<DOMNodeId, std::unique_ptr<TextRecord>> visible_node_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
   HashSet<DOMNodeId> detached_ids_;
@@ -84,13 +103,15 @@ class TextRecordsManager {
   // the largest node efficiently. Note that the entries in |size_ordered_set_|
   // and |visible_node_map_| should always be added/deleted together.
   TextRecordSet size_ordered_set_;
-  std::queue<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
+  Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
   TextRecord* cached_largest_paint_candidate_;
+  WeakMember<TextElementTiming> text_element_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
 };
 
-// TextPaintTimingDetector contains Largest Text Paint.
+// TextPaintTimingDetector contains Largest Text Paint and support for Text
+// Element Timing.
 //
 // Largest Text Paint timing measures when the largest text element gets painted
 // within viewport. Specifically, it:
@@ -108,34 +129,37 @@ class TextRecordsManager {
 class CORE_EXPORT TextPaintTimingDetector final
     : public GarbageCollectedFinalized<TextPaintTimingDetector> {
   using ReportTimeCallback =
-      WTF::CrossThreadFunction<void(WebWidgetClient::SwapResult,
-                                    base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                        base::TimeTicks)>;
   friend class TextPaintTimingDetectorTest;
 
  public:
   TextPaintTimingDetector(LocalFrameView* frame_view);
-  void RecordText(const LayoutObject& object, const PropertyTreeState&);
+  bool ShouldWalkObject(const LayoutBoxModelObject&) const;
+  void RecordAggregatedText(const LayoutBoxModelObject& aggregator,
+                            const IntRect& aggregated_visual_rect,
+                            const PropertyTreeState&);
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
-  void Dispose() { timer_.Stop(); }
   TextRecord* FindLargestPaintCandidate();
-  base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
-  uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
   void StopRecordEntries();
+  void StopRecordingLargestTextPaint();
   bool IsRecording() const { return is_recording_; }
+  bool FinishedReportingText() const {
+    return !is_recording_ && !need_update_timing_at_frame_end_;
+  }
   void Trace(blink::Visitor*);
 
  private:
-  void PopulateTraceValue(TracedValue& value,
-                          const TextRecord& first_text_paint,
-                          unsigned candidate_index) const;
+  void PopulateTraceValue(TracedValue&, const TextRecord& first_text_paint);
   void TimerFired(TimerBase*);
-  void Analyze();
+  void UpdateCandidate();
 
   void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
-  void OnLargestTextDetected(const TextRecord&);
+  void ReportCandidateToTrace(const TextRecord&);
+  void ReportNoCandidateToTrace();
 
   TextRecordsManager records_manager_;
 
@@ -143,11 +167,12 @@ class CORE_EXPORT TextPaintTimingDetector final
   bool awaiting_swap_promise_ = false;
   unsigned count_candidates_ = 0;
   bool is_recording_ = true;
+  bool is_recording_ltp_ =
+      RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled();
 
   bool has_records_changed_ = true;
+  bool need_update_timing_at_frame_end_ = false;
 
-  base::TimeTicks largest_text_paint_;
-  uint64_t largest_text_paint_size_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
 

@@ -8,12 +8,16 @@
 #import <UIKit/UIKit.h>
 
 @protocol AutocompleteSuggestion;
-@protocol ImageRetriever;
-@class OmniboxPopupRowCell;
 @protocol FaviconRetriever;
+@protocol ImageRetriever;
+@class OmniboxIconView;
+@class OmniboxPopupRowCell;
 
 namespace {
 NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
+// This mimimum height causes most of the rows to be the same height. Some have
+// multiline answers, so those heights may be taller than this minimum.
+const CGFloat kOmniboxPopupCellMinimumHeight = 58;
 }  // namespace
 
 // Protocol for informing delegate that the trailing button for this cell
@@ -43,6 +47,15 @@ NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
 // views in this cell should be updated to match this.
 @property(nonatomic, assign)
     UISemanticContentAttribute omniboxSemanticContentAttribute;
+
+// Whether the table row separator appears. This can't use the default
+// UITableView separators because the leading edge of the separator must be
+// aligned with the text, which is positioned using a layout guide, so the
+// tableView's separatorInsets can't be calculated.
+@property(nonatomic, assign) BOOL showsSeparator;
+
+// Image view for the leading image.
+@property(nonatomic, strong, readonly) OmniboxIconView* leadingIconView;
 
 @end
 

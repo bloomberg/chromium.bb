@@ -38,6 +38,7 @@
 namespace blink {
 
 const int kMaxFFTPow2Size = 24;
+const int kMinFFTPow2Size = 2;
 
 FFTSetup* FFTFrame::fft_setups_ = nullptr;
 
@@ -88,15 +89,18 @@ FFTFrame::FFTFrame(const FFTFrame& frame)
 FFTFrame::~FFTFrame() {}
 
 void FFTFrame::DoFFT(const float* data) {
-  AudioFloatArray scaled_data(fft_size_);
-  // veclib fft returns a result that is twice as large as would be expected.
-  // Compensate for that by scaling the input by half so the FFT has the
-  // correct scaling.
-  float scale = 0.5f;
-  vector_math::Vsmul(data, 1, &scale, scaled_data.Data(), 1, fft_size_);
-
-  vDSP_ctoz((DSPComplex*)scaled_data.Data(), 2, &frame_, 1, fft_size_ / 2);
+  vDSP_ctoz((DSPComplex*)data, 2, &frame_, 1, fft_size_ / 2);
   vDSP_fft_zrip(fft_setup_, &frame_, 1, log2fft_size_, FFT_FORWARD);
+
+  // vDSP_FFT_zrip returns a result that is twice as large as would be
+  // expected.  (See
+  // https://developer.apple.com/documentation/accelerate/1450150-vdsp_fft_zrip)
+  // Compensate for that by scaling the input by half so the FFT has
+  // the correct scaling.
+  float scale = 0.5f;
+
+  vector_math::Vsmul(frame_.realp, 1, &scale, frame_.realp, 1, fft_size_ / 2);
+  vector_math::Vsmul(frame_.imagp, 1, &scale, frame_.imagp, 1, fft_size_ / 2);
 }
 
 void FFTFrame::DoInverseFFT(float* data) {
@@ -122,7 +126,15 @@ FFTSetup FFTFrame::FftSetupForSize(unsigned fft_size) {
   return fft_setups_[pow2size];
 }
 
-void FFTFrame::Initialize() {}
+int FFTFrame::MinFFTSize() {
+  return 1 << kMinFFTPow2Size;
+}
+
+int FFTFrame::MaxFFTSize() {
+  return 1 << kMaxFFTPow2Size;
+}
+
+void FFTFrame::Initialize(float sample_rate) {}
 
 void FFTFrame::Cleanup() {
   if (!fft_setups_)

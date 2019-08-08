@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 from google.appengine.ext import ndb
 
 from dashboard import alerts
@@ -36,7 +40,7 @@ class Timeseries2Handler(api_request_handler.ApiRequestHandler):
         measurement=self.request.get('measurement'),
         bot=self.request.get('bot'),
         test_case=self.request.get('test_case'),
-        statistic=None,
+        statistic=self.request.get('statistic', None),
         build_type=self.request.get('build_type'))
     min_revision = self.request.get('min_revision')
     min_revision = int(min_revision) if min_revision else None
@@ -110,7 +114,7 @@ class TimeseriesQuery(object):
         'units': self._units,
         'improvement_direction': self._improvement_direction,
         'data': [[datum.get(col) for col in self._columns]
-                 for _, datum in sorted(self._data.iteritems())],
+                 for _, datum in sorted(self._data.items())],
     })
 
   def _ResolveTimestamps(self):
@@ -132,13 +136,16 @@ class TimeseriesQuery(object):
   def _CreateTestKeys(self):
     desc = self._descriptor.Clone()
 
+    self._statistic_columns = [
+        col for col in self._columns if col in descriptor.STATISTICS]
+    if desc.statistic and desc.statistic not in self._statistic_columns:
+      self._statistic_columns.append(desc.statistic)
+
     desc.statistic = None
     unsuffixed_test_paths = desc.ToTestPathsSync()
     self._unsuffixed_test_metadata_keys = [
         utils.TestMetadataKey(path) for path in unsuffixed_test_paths]
 
-    self._statistic_columns = [
-        col for col in self._columns if col in descriptor.STATISTICS]
     test_paths = []
     for statistic in self._statistic_columns:
       desc.statistic = statistic
@@ -260,11 +267,11 @@ class TimeseriesQuery(object):
           datum['timestamp'] = row.timestamp.isoformat()
         if 'revisions' in self._columns:
           datum['revisions'] = {
-              attr: value for attr, value in row.to_dict().iteritems()
+              attr: value for attr, value in row.to_dict().items()
               if attr.startswith('r_')}
         if 'annotations' in self._columns:
           datum['annotations'] = {
-              attr: value for attr, value in row.to_dict().iteritems()
+              attr: value for attr, value in row.to_dict().items()
               if attr.startswith('a_')}
 
     if 'histogram' in self._columns and test_desc.statistic == None:

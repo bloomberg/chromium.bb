@@ -84,7 +84,6 @@
   X("latency")                                                           \
   X("latencyInfo")                                                       \
   X("leveldb")                                                           \
-  X("loader")                                                            \
   X("loading")                                                           \
   X("login")                                                             \
   X("media")                                                             \
@@ -172,6 +171,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("file"))                                   \
   X(TRACE_DISABLED_BY_DEFAULT("fonts"))                                  \
   X(TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue"))                          \
+  X(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"))                               \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.debug"))                              \
   X(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.device"))                             \
@@ -197,6 +197,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("system_stats"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("thread_pool_diagnostics"))                \
   X(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"))                          \
+  X(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("v8.compile"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profiler"))                        \
   X(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profiler.hires"))                  \

@@ -269,6 +269,9 @@ class PaymentRequestBrowserTestBase
   // Wait for the event(s) passed to ResetEventWaiter*() to occur.
   void WaitForObservedEvent();
 
+  // Allows to skip UI into payment handler for "basic-card".
+  void EnableSkipUIForForBasicCard();
+
  private:
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;

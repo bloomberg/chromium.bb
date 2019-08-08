@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_info.h"
+#include "chrome/browser/download/mixed_content_download_blocking.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
@@ -44,6 +47,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -78,8 +82,12 @@ using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
 using ::testing::WithArg;
+using url::Origin;
 
 namespace {
+
+const Origin kSecureOrigin = Origin::Create(GURL("https://example.org/"));
+const Origin kInsecureOrigin = Origin::Create(GURL("http://example.org/"));
 
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
@@ -269,6 +277,13 @@ class ChromeDownloadManagerDelegateTest
   DownloadPrefs* download_prefs();
   PrefService* pref_service();
 
+  // Creates a mock download item as used by HTTP download blocking tests.
+  std::unique_ptr<download::MockDownloadItem>
+  PrepareDownloadItemForMixedContent(
+      const GURL& download_url,
+      const base::Optional<url::Origin>& request_initiator,
+      const base::Optional<GURL>& redirect_url);
+
   const std::vector<uint32_t>& download_ids() const { return download_ids_; }
   void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
 
@@ -322,6 +337,9 @@ std::unique_ptr<download::MockDownloadItem>
 ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
   std::unique_ptr<download::MockDownloadItem> item(
       new ::testing::NiceMock<download::MockDownloadItem>());
+  ON_CALL(*item, GetURL()).WillByDefault(ReturnRefOfCopy(GURL()));
+  ON_CALL(*item, GetUrlChain())
+      .WillByDefault(ReturnRefOfCopy(std::vector<GURL>()));
   ON_CALL(*item, GetDangerType())
       .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   ON_CALL(*item, GetForcedFilePath())
@@ -336,6 +354,8 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
       .WillByDefault(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
   ON_CALL(*item, GetReferrerUrl())
       .WillByDefault(ReturnRefOfCopy(GURL()));
+  ON_CALL(*item, GetRequestInitiator())
+      .WillByDefault(ReturnRefOfCopy(base::Optional<Origin>()));
   ON_CALL(*item, GetState())
       .WillByDefault(Return(DownloadItem::IN_PROGRESS));
   ON_CALL(*item, GetTargetFilePath())
@@ -431,6 +451,46 @@ DownloadPrefs* ChromeDownloadManagerDelegateTest::download_prefs() {
 
 PrefService* ChromeDownloadManagerDelegateTest::pref_service() {
   return pref_service_;
+}
+
+std::unique_ptr<download::MockDownloadItem>
+ChromeDownloadManagerDelegateTest::PrepareDownloadItemForMixedContent(
+    const GURL& download_url,
+    const base::Optional<Origin>& request_initiator,
+    const base::Optional<GURL>& redirect_url) {
+  std::vector<GURL> url_chain;
+  if (redirect_url.has_value())
+    url_chain.push_back(redirect_url.value());
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      CreateActiveDownloadItem(0);
+  ON_CALL(*download_item, GetURL())
+      .WillByDefault(ReturnRefOfCopy(download_url));
+  ON_CALL(*download_item, GetUrlChain())
+      .WillByDefault(ReturnRefOfCopy(url_chain));
+  ON_CALL(*download_item, GetRequestInitiator())
+      .WillByDefault(ReturnRefOfCopy(request_initiator));
+  return download_item;
+}
+
+void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
+                           const std::string& expected_histogram,
+                           base::HistogramTester& tester) {
+  static const char* const histograms[] = {
+      kInsecureDownloadHistogramInitiatorUnknownTargetSecure,
+      kInsecureDownloadHistogramInitiatorUnknownTargetInsecure,
+      kInsecureDownloadHistogramInitiatorSecureTargetSecure,
+      kInsecureDownloadHistogramInitiatorSecureTargetInsecure,
+      kInsecureDownloadHistogramInitiatorInsecureTargetSecure,
+      kInsecureDownloadHistogramInitiatorInsecureTargetInsecure,
+  };
+
+  for (auto* histogram : histograms) {
+    if (histogram == expected_histogram) {
+      tester.ExpectUniqueSample(expected_histogram, ext, 1);
+    } else {
+      tester.ExpectTotalCount(histogram, 0);
+    }
+  }
 }
 
 }  // namespace
@@ -709,6 +769,193 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByHttpPolicy_HttpChain) {
             result.interrupt_reason);
 }
 
+TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Blocked) {
+  // Tests blocking of unsafe active content downloads when the download target
+  // is over HTTP.
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+  const GURL kExeUrl("http://example.com/foo.exe");
+
+  std::unique_ptr<download::MockDownloadItem> exe_download_item =
+      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, base::nullopt);
+  DetermineDownloadTargetResult result;
+  base::HistogramTester histograms;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
+
+  DetermineDownloadTarget(exe_download_item.get(), &result);
+
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+            result.interrupt_reason);
+  histograms.ExpectUniqueSample(
+      kInsecureDownloadHistogramName,
+      InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
+                        kInsecureDownloadHistogramInitiatorSecureTargetInsecure,
+                        histograms);
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest,
+       BlockedAsActiveContent_HttpsTargetOk) {
+  // Active content download blocking ought not occur when the chain is secure.
+  const GURL kExeUrl("https://example.com/foo.exe");
+  const GURL kRedirectUrl("https://example.org/");
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, kRedirectUrl);
+  DetermineDownloadTargetResult result;
+  base::test::ScopedFeatureList feature_list;
+  base::HistogramTester histograms;
+
+  feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
+  DetermineDownloadTarget(download_item.get(), &result);
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, result.interrupt_reason);
+  histograms.ExpectUniqueSample(
+      kInsecureDownloadHistogramName,
+      InsecureDownloadSecurityStatus::kInitiatorSecureFileSecure, 1);
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
+                        kInsecureDownloadHistogramInitiatorSecureTargetSecure,
+                        histograms);
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpPageOk) {
+  // Active content download blocking ought not occur on HTTP pages.
+  const GURL kUrl("http://example.com/foo");
+
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      PrepareDownloadItemForMixedContent(kUrl, kInsecureOrigin, GURL());
+  DetermineDownloadTargetResult result;
+  base::test::ScopedFeatureList feature_list;
+  base::HistogramTester histograms;
+
+  feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
+  DetermineDownloadTarget(download_item.get(), &result);
+
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, result.interrupt_reason);
+  histograms.ExpectUniqueSample(
+      kInsecureDownloadHistogramName,
+      InsecureDownloadSecurityStatus::kInitiatorInsecureFileInsecure, 1);
+  ExpectExtensionOnlyIn(
+      InsecureDownloadExtensions::kNone,
+      kInsecureDownloadHistogramInitiatorInsecureTargetInsecure, histograms);
+}
+
+#if defined(OS_ANDROID)
+TEST_F(ChromeDownloadManagerDelegateTest, InterceptDownloadByOfflinePages) {
+  const GURL kUrl("http://example.com/foo");
+  std::string mime_type = "text/html";
+  bool should_intercept = delegate()->InterceptDownloadIfApplicable(
+      kUrl, "", "", mime_type, "", 10, false /*is_transient*/, nullptr);
+  EXPECT_TRUE(should_intercept);
+
+  should_intercept = delegate()->InterceptDownloadIfApplicable(
+      kUrl, "", "", mime_type, "", 10, true /*is_transient*/, nullptr);
+  EXPECT_FALSE(should_intercept);
+}
+#endif
+
+TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpChain) {
+  // Tests blocking unsafe active content downloads when a step in the referrer
+  // chain is HTTP, using the default mime-type matching policy.
+  const GURL kExeUrl("https://example.com/foo.exe");
+  const GURL kRedirectUrl("http://example.org/");
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, kRedirectUrl);
+  DetermineDownloadTargetResult result;
+  base::test::ScopedFeatureList feature_list;
+  base::HistogramTester histograms;
+
+  feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
+  DetermineDownloadTarget(download_item.get(), &result);
+
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+            result.interrupt_reason);
+  histograms.ExpectUniqueSample(
+      kInsecureDownloadHistogramName,
+      InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
+                        kInsecureDownloadHistogramInitiatorSecureTargetInsecure,
+                        histograms);
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest,
+       BlockedAsActiveContent_ExtensionControl) {
+  // Verifies proper file extension overriding for active content blocking.
+  const GURL kExeUrl("http://example.com/foo.exe");
+  const GURL kFooUrl("http://example.com/foo.foo");
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  std::unique_ptr<download::MockDownloadItem> exe_download_item =
+      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> foo_download_item =
+      PrepareDownloadItemForMixedContent(kFooUrl, kSecureOrigin, base::nullopt);
+  DetermineDownloadTargetResult result;
+
+  {
+    // Test benign extensions aren't blocked.
+    base::HistogramTester histograms;
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
+    DetermineDownloadTarget(foo_download_item.get(), &result);
+    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
+              result.interrupt_reason);
+    histograms.ExpectUniqueSample(
+        kInsecureDownloadHistogramName,
+        InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
+    ExpectExtensionOnlyIn(
+        InsecureDownloadExtensions::kUnknown,
+        kInsecureDownloadHistogramInitiatorSecureTargetInsecure, histograms);
+  }
+  {
+    // Test default extensions aren't still blocked when overridden.
+    base::HistogramTester histograms;
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kTreatUnsafeDownloadsAsActive, {{"ExtensionList", "foo"}});
+    DetermineDownloadTarget(exe_download_item.get(), &result);
+
+    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
+              result.interrupt_reason);
+    histograms.ExpectUniqueSample(
+        kInsecureDownloadHistogramName,
+        InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
+    ExpectExtensionOnlyIn(
+        InsecureDownloadExtensions::kMSExecutable,
+        kInsecureDownloadHistogramInitiatorSecureTargetInsecure, histograms);
+  }
+  {
+    // Test overridden extensions are respected.
+    base::HistogramTester histograms;
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kTreatUnsafeDownloadsAsActive, {{"ExtensionList", "foo"}});
+    DetermineDownloadTarget(foo_download_item.get(), &result);
+
+    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+              result.interrupt_reason);
+    histograms.ExpectUniqueSample(
+        kInsecureDownloadHistogramName,
+        InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
+    ExpectExtensionOnlyIn(
+        InsecureDownloadExtensions::kUnknown,
+        kInsecureDownloadHistogramInitiatorSecureTargetInsecure, histograms);
+  }
+}
+
 TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
   content::DownloadIdCallback id_callback = base::Bind(
       &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
@@ -743,7 +990,7 @@ void VerifyFilePickerConfirmation(DownloadConfirmationResult expected_result,
                                   DownloadConfirmationResult result,
                                   const base::FilePath& virtual_path) {
   ASSERT_EQ(result, expected_result);
-  base::ResetAndReturn(&completion_closure).Run();
+  std::move(completion_closure).Run();
 }
 }  // namespace
 

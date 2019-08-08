@@ -110,7 +110,7 @@ Polymer({
    */
   updateIcons_: function() {
     this.async(function() {
-      const icons = Polymer.dom(this.root).querySelectorAll('.website-icon');
+      const icons = this.shadowRoot.querySelectorAll('.website-icon');
 
       for (let i = 0; i < this.tabs.length; i++) {
         icons[i].style.backgroundImage = cr.icon.getFavicon(this.tabs[i].url);

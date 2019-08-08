@@ -316,7 +316,7 @@ LayoutPoint BackgroundImageGeometry::GetOffsetForCell(
            LayoutSize(border_spacing.Width(), LayoutUnit());
   }
 
-  LayoutRect sections_rect(LayoutPoint(), cell.Table()->Size());
+  PhysicalRect sections_rect(PhysicalOffset(), cell.Table()->Size());
   cell.Table()->SubtractCaptionRect(sections_rect);
   LayoutUnit height_of_captions =
       cell.Table()->Size().Height() - sections_rect.Height();
@@ -355,7 +355,7 @@ LayoutSize BackgroundImageGeometry::GetBackgroundObjectDimensions(
   }
 
   DCHECK(positioning_box.IsLayoutTableCol());
-  LayoutRect sections_rect(LayoutPoint(), cell.Table()->Size());
+  PhysicalRect sections_rect(PhysicalOffset(), cell.Table()->Size());
   cell.Table()->SubtractCaptionRect(sections_rect);
   LayoutUnit column_height = sections_rect.Height() -
                              cell.Table()->BorderBefore() -
@@ -389,6 +389,8 @@ bool ShouldUseFixedAttachment(const FillLayer& fill_layer) {
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
                                           const LayoutBoxModelObject* container,
                                           const GlobalPaintFlags flags) {
+  // TODO(crbug.com/966142): We should consider ancestor with transform as the
+  // fixed background container, instead of always the viewport.
   LocalFrameView* frame_view = obj.View()->GetFrameView();
   if (!frame_view)
     return LayoutRect();
@@ -417,8 +419,11 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
 
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
 
-  if (container)
-    rect.MoveBy(LayoutPoint(-container->LocalToAbsolute(FloatPoint())));
+  if (container) {
+    rect.MoveBy(
+        -container->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms)
+             .ToLayoutPoint());
+  }
 
   // By now we have converted the viewport rect to the border box space of
   // |container|, however |container| does not necessarily create a paint
@@ -431,7 +436,7 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   if (container) {
     DCHECK_GE(container->GetDocument().Lifecycle().GetState(),
               DocumentLifecycle::kPrePaintClean);
-    rect.MoveBy(container->FirstFragment().PaintOffset());
+    rect.MoveBy(container->FirstFragment().PaintOffset().ToLayoutPoint());
   }
 
   return rect;
@@ -872,7 +877,8 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
                                         PaintPhase paint_phase,
                                         GlobalPaintFlags flags,
                                         const FillLayer& fill_layer,
-                                        const LayoutRect& paint_rect) {
+                                        const PhysicalRect& paint_rect_arg) {
+  LayoutRect paint_rect = paint_rect_arg.ToLayoutRect();
   // Unsnapped positioning area is used to derive quantities
   // that reference source image maps and define non-integer values, such
   // as phase and position.

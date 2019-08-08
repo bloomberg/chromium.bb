@@ -21,8 +21,9 @@
 
 namespace device {
 
-class CtapGetAssertionRequest;
-class CtapMakeCredentialRequest;
+struct CtapGetAssertionRequest;
+struct CtapMakeCredentialRequest;
+struct EnumerateRPsResponse;
 class FidoDevice;
 class FidoTask;
 
@@ -70,6 +71,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       const CtapGetAssertionRequest& request,
       const FidoRequestHandlerBase::Observer* observer) override;
 
+  void GetCredentialsMetadata(base::span<const uint8_t> pin_token,
+                              GetCredentialsMetadataCallback callback) override;
+  void EnumerateCredentials(base::span<const uint8_t> pin_token,
+                            EnumerateCredentialsCallback callback) override;
+  void DeleteCredential(base::span<const uint8_t> pin_token,
+                        base::span<const uint8_t> credential_id,
+                        DeleteCredentialCallback callback) override;
+
+  void GetModality(GetBioEnrollmentInfoCallback callback) override;
+  void GetSensorInfo(GetBioEnrollmentInfoCallback callback) override;
+
   void Reset(ResetCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
@@ -97,6 +109,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 
  private:
   void InitializeAuthenticatorDone(base::OnceClosure callback);
+
+  struct EnumerateCredentialsState;
+  void OnEnumerateRPsDone(EnumerateCredentialsState state,
+                          CtapDeviceResponseCode status,
+                          base::Optional<EnumerateRPsResponse> response);
+  void OnEnumerateCredentialsDone(
+      EnumerateCredentialsState state,
+      CtapDeviceResponseCode status,
+      base::Optional<EnumerateCredentialsResponse> response);
 
   const std::unique_ptr<FidoDevice> device_;
   base::Optional<AuthenticatorSupportedOptions> options_;

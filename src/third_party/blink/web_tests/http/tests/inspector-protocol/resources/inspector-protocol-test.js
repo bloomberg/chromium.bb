@@ -135,6 +135,11 @@ var TestRunner = class {
     return eval(`${source}\n//# sourceURL=${url}`);
   };
 
+  async loadScriptAbsolute(url) {
+    var source = await this._fetch(url);
+    return eval(`${source}\n//# sourceURL=${url}`);
+  };
+
   browserP() {
     return this._browserSession.protocol;
   }
@@ -345,8 +350,9 @@ TestRunner.Session = class {
   async _navigate(url) {
     await this.protocol.Page.enable();
     await this.protocol.Page.setLifecycleEventsEnabled({enabled: true});
-    await this.protocol.Page.navigate({url: url});
-    await this.protocol.Page.onceLifecycleEvent(event => event.params.name === 'load');
+    const frameId = (await this.protocol.Page.navigate({url: url})).result.frameId;
+    await this.protocol.Page.onceLifecycleEvent(
+        event => event.params.name === 'load' && event.params.frameId === frameId);
   }
 
   _dispatchMessage(message) {

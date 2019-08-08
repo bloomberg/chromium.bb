@@ -274,7 +274,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         bookmark_utils_ios::FindFolderById(self.bookmarks, nodeID);
     DCHECK(node);
     // if node is an empty permanent node, stop.
-    if (node->empty() && IsPrimaryPermanentNode(node, self.bookmarks)) {
+    if (node->children().empty() &&
+        IsPrimaryPermanentNode(node, self.bookmarks)) {
       break;
     }
 
@@ -1226,7 +1227,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return [self
         hasItemsInSectionIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   } else {
-    return !self.sharedState.tableViewDisplayedRootNode->empty();
+    return !self.sharedState.tableViewDisplayedRootNode->children().empty();
   }
 }
 

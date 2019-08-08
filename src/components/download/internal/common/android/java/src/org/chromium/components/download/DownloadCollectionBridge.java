@@ -161,6 +161,15 @@ public class DownloadCollectionBridge {
     protected void refreshExpirationDate(final String intermediateUri) {}
 
     /**
+     * Gets the display name for a download.
+     * @param downloadUri Uri of the download.
+     * @return the display name of the download.
+     */
+    protected String getDisplayNameForUri(final String downloadUri) {
+        return null;
+    }
+
+    /**
      * Creates an intermediate URI for download to be written into. On completion, call
      * nativeOnCreateIntermediateUriResult() with |callbackId|.
      * @param fileName Name of the file.
@@ -285,6 +294,16 @@ public class DownloadCollectionBridge {
      */
     public static int getExpirationDurationInDays() {
         return nativeGetExpirationDurationInDays();
+    }
+
+    /**
+     * Gets the display name for a download.
+     * @param downloadUri Uri of the download.
+     * @return the display name of the download.
+     */
+    @CalledByNative
+    private static String getDisplayName(final String downloadUri) {
+        return getDownloadCollectionBridge().getDisplayNameForUri(downloadUri);
     }
 
     private static native int nativeGetExpirationDurationInDays();

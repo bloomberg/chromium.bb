@@ -498,7 +498,12 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     return;
 
   if (!extension) {
-    // Skip all of the UMA, quota, event page, activity logging stuff if there
+    if (function->source_context_type() == Feature::WEBUI_CONTEXT) {
+      base::UmaHistogramSparse("Extensions.Functions.WebUICalls",
+                               function->histogram_value());
+    }
+
+    // Skip the quota, event page, activity logging stuff if there
     // isn't an extension, e.g. if the function call was from WebUI.
     function->RunWithValidation()->Execute();
     return;
@@ -519,8 +524,18 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
     NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             browser_context_);
-    base::UmaHistogramSparse("Extensions.FunctionCalls",
-                             function->histogram_value());
+
+    // Note: Deliberately don't include external component extensions here -
+    // this lets us differentiate between "built-in" extension calls and
+    // external extension calls
+    if (extension->location() == Manifest::COMPONENT) {
+      base::UmaHistogramSparse("Extensions.Functions.ComponentExtensionCalls",
+                               function->histogram_value());
+    } else {
+      base::UmaHistogramSparse("Extensions.Functions.ExtensionCalls",
+                               function->histogram_value());
+    }
+
     base::ElapsedTimer timer;
     function->RunWithValidation()->Execute();
     // TODO(devlin): Once we have a baseline metric for how long functions take,

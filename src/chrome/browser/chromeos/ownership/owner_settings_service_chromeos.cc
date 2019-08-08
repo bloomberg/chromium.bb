@@ -124,10 +124,9 @@ void ContinueLoadPrivateKeyOnIOThread(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &LoadPrivateKeyByPublicKeyOnWorkerThread, owner_key_util,
-          base::Passed(crypto::GetPublicSlotForChromeOSUser(username_hash)),
-          base::Passed(std::move(private_slot)), callback));
+      base::BindOnce(&LoadPrivateKeyByPublicKeyOnWorkerThread, owner_key_util,
+                     crypto::GetPublicSlotForChromeOSUser(username_hash),
+                     std::move(private_slot), callback));
 }
 
 void LoadPrivateKeyOnIOThread(const scoped_refptr<OwnerKeyUtil>& owner_key_util,

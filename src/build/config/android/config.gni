@@ -57,7 +57,8 @@ if (is_android || is_chromeos) {
   } else {
     import("//build/config/android/sdk.gni")
     declare_args() {
-      # Android SDK release. Currently, only "o_mr1" is publicly supported.
+      # Android SDK release. Currently, only "o_mr1" and "p" are publicly
+      # supported.
       android_sdk_release = default_android_sdk_release
     }
   }
@@ -188,14 +189,9 @@ if (is_android || is_chromeos) {
     # Set to false to disable the Errorprone compiler
     use_errorprone_java_compiler = true
 
-    # Enables EMMA Java code coverage. Instruments classes during build to
-    # produce .ec files during runtime
-    emma_coverage = false
-
-    # EMMA filter string consisting of a list of inclusion/exclusion patterns
-    # separated with whitespace and/or comma. Only has effect if
-    # emma_coverage==true
-    emma_filter = ""
+    # Enables Jacoco Java code coverage. Instruments classes during build to
+    # produce .exec files during runtime
+    jacoco_coverage = false
 
     # Disables process isolation when building _incremental targets.
     # Required for Android M+ due to SELinux policies (stronger sandboxing).
@@ -213,10 +209,10 @@ if (is_android || is_chromeos) {
     # Turns off android lint. Useful for prototyping or for faster local builds.
     disable_android_lint = false
 
-    # Location of aapt2 binary used for app bundles. For now, a more recent version
+    # Location of aapt2 used for app bundles. For now, a more recent version
     # than the one distributed with the Android SDK is required.
-    android_sdk_tools_bundle_aapt2 =
-        "//third_party/android_build_tools/aapt2/aapt2"
+    android_sdk_tools_bundle_aapt2_dir =
+        "//third_party/android_build_tools/aapt2"
 
     # Use R8 for Java optimization rather than ProGuard for all targets. R8 is
     # already used as the default for public targets. This will evenutally be
@@ -232,6 +228,11 @@ if (is_android || is_chromeos) {
     # Move Trichrome assets to the shared library APK. This will be removed
     # once P builds are no longer supported. https://crbug.com/943637
     trichrome_shared_assets = android_sdk_release == "q"
+
+    # Whether Developer Tools should be split into a separate DFM.
+    # TODO(huangs): Move this flag to its own buildflags.gni file once we
+    # determine where the file should go.
+    dfmify_devtools = false
   }
 
   if (notouch_build && defined(extra_keymappings)) {
@@ -369,6 +370,8 @@ if (is_android || is_chromeos) {
   android_objcopy = "${android_tool_prefix}objcopy"
   android_gdbserver =
       "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
+
+  android_sdk_tools_bundle_aapt2 = "${android_sdk_tools_bundle_aapt2_dir}/aapt2"
 
   # Toolchain stuff ------------------------------------------------------------
 

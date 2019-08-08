@@ -11,9 +11,9 @@
 namespace net {
 
 // Stores Reporting reports, Reporting clients, and NEL policies.
-class NET_EXPORT PersistentReportingAndNELStore
+class NET_EXPORT PersistentReportingAndNelStore
     : public ReportingCache::PersistentReportingStore,
-      public NetworkErrorLoggingService::PersistentNELStore {};
+      public NetworkErrorLoggingService::PersistentNelStore {};
 
 }  // namespace net
 

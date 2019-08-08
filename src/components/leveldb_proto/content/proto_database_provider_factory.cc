@@ -25,6 +25,11 @@ ProtoDatabaseProvider* ProtoDatabaseProviderFactory::GetForKey(
       GetInstance()->GetServiceForKey(key, true));
 }
 
+// static
+void ProtoDatabaseProviderFactory::RemoveKeyForTesting(SimpleFactoryKey* key) {
+  GetInstance()->SimpleContextDestroyed(key);
+}
+
 ProtoDatabaseProviderFactory::ProtoDatabaseProviderFactory()
     : SimpleKeyedServiceFactory("leveldb_proto::ProtoDatabaseProvider",
                                 SimpleDependencyManager::GetInstance()) {}

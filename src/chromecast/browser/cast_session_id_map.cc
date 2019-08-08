@@ -100,8 +100,8 @@ void CastSessionIdMap::SetSessionIdInternal(
   DCHECK(GetSessionIdInternal(group_id.ToString()).empty());
   DCHECK(group_observer);
 
-  VLOG(1) << "Mapping session_id=" << session_id
-          << " to group_id=" << group_id.ToString();
+  DVLOG(1) << "Mapping session_id=" << session_id
+           << " to group_id=" << group_id.ToString();
   auto group_data = std::make_pair(session_id, std::move(group_observer));
   mapping_.emplace(group_id.ToString(), std::move(group_data));
 }
@@ -130,8 +130,8 @@ void CastSessionIdMap::RemoveGroupId(base::UnguessableToken group_id) {
 
   auto it = mapping_.find(group_id.ToString());
   if (it != mapping_.end()) {
-    VLOG(1) << "Removing mapping for session_id=" << it->second.first
-            << " to group_id=" << group_id.ToString();
+    DVLOG(1) << "Removing mapping for session_id=" << it->second.first
+             << " to group_id=" << group_id.ToString();
     mapping_.erase(it);
   }
 }

@@ -15,10 +15,10 @@ IppParser::IppParser(
 
 IppParser::~IppParser() = default;
 
-void IppParser::ParseIpp(const std::string& to_parse,
+void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
                          ParseIppCallback callback) {
   DVLOG(1) << "IppParser stubbed";
-  std::move(callback).Run(mojom::IppParserResult::FAILURE, nullptr);
+  std::move(callback).Run(nullptr);
 }
 
 }  // namespace chrome

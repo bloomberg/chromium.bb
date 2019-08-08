@@ -95,7 +95,6 @@ const char kWifiHexSsid[] = "WiFi.HexSSID";
 const char kWifiFrequency[] = "WiFi.Frequency";
 const char kWifiHiddenSsid[] = "WiFi.HiddenSSID";
 const char kWifiPhyMode[] = "WiFi.PhyMode";
-const char kWifiAuthMode[] = "WiFi.AuthMode";
 const char kWifiChannelProperty[] = "WiFi.Channel";
 const char kWifiPreferredDeviceProperty[] = "WiFi.PreferredDevice";
 const char kWifiRoamThresholdProperty[] = "WiFi.RoamThreshold";
@@ -328,9 +327,6 @@ const char kProviderOpenVpn[] = "openvpn";
 const char kProviderThirdPartyVpn[] = "thirdpartyvpn";
 const char kProviderArcVpn[] = "arcvpn";
 
-// Flimflam VPN service properties
-const char kVPNDomainProperty[] = "VPN.Domain";
-
 // Flimflam monitored properties
 const char kMonitorPropertyChanged[] = "PropertyChanged";
 
@@ -345,7 +341,6 @@ const char kTypePPPoE[] = "pppoe";
 
 // Flimflam mode options.
 const char kModeManaged[] = "managed";
-const char kModeAdhoc[] = "adhoc";
 
 // Flimflam security options.
 const char kSecurityWpa[] = "wpa";
@@ -551,7 +546,6 @@ const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
-const char kSetCarrierFunction[] = "SetCarrier";
 const char kSetPropertiesFunction[] = "SetProperties";
 const char kVerifyAndEncryptCredentialsFunction[] =
     "VerifyAndEncryptCredentials";
@@ -575,7 +569,6 @@ const char kProviderRequiresRoamingProperty[] =
 const char kPPPoEProperty[] = "Ethernet.PPPoE";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
-const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
 

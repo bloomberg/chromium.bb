@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -46,9 +47,8 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
                                           const std::string&);
 }
 
-// AccountTrackerService is a KeyedService that retrieves and caches GAIA
-// information about Google Accounts.
-class AccountTrackerService : public KeyedService {
+// Retrieves and caches GAIA information about Google Accounts.
+class AccountTrackerService {
  public:
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.
@@ -56,7 +56,6 @@ class AccountTrackerService : public KeyedService {
    public:
     virtual ~Observer() {}
     virtual void OnAccountUpdated(const AccountInfo& info) {}
-    virtual void OnAccountUpdateFailed(const std::string& account_id) {}
     virtual void OnAccountRemoved(const AccountInfo& info) {}
   };
 
@@ -72,13 +71,12 @@ class AccountTrackerService : public KeyedService {
   };
 
   AccountTrackerService();
-  ~AccountTrackerService() override;
+  ~AccountTrackerService();
 
   // Registers the preferences used by AccountTrackerService.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // KeyedService implementation.
-  void Shutdown() override;
+  void Shutdown();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -91,37 +89,38 @@ class AccountTrackerService : public KeyedService {
   // Returns the list of known accounts and for which gaia IDs
   // have been fetched.
   std::vector<AccountInfo> GetAccounts() const;
-  AccountInfo GetAccountInfo(const std::string& account_id) const;
+  AccountInfo GetAccountInfo(const CoreAccountId& account_id) const;
   AccountInfo FindAccountInfoByGaiaId(const std::string& gaia_id) const;
   AccountInfo FindAccountInfoByEmail(const std::string& email) const;
 
   // Picks the correct account_id for the specified account depending on the
   // migration state.
-  std::string PickAccountIdForAccount(const std::string& gaia,
-                                      const std::string& email) const;
-  static std::string PickAccountIdForAccount(const PrefService* pref_service,
-                                             const std::string& gaia,
-                                             const std::string& email);
+  CoreAccountId PickAccountIdForAccount(const std::string& gaia,
+                                        const std::string& email) const;
+  static CoreAccountId PickAccountIdForAccount(const PrefService* pref_service,
+                                               const std::string& gaia,
+                                               const std::string& email);
 
   // Seeds the account whose account_id is given by PickAccountIdForAccount()
   // with its corresponding gaia id and email address.  Returns the same
   // value PickAccountIdForAccount() when given the same arguments.
-  std::string SeedAccountInfo(const std::string& gaia,
-                              const std::string& email);
+  CoreAccountId SeedAccountInfo(const std::string& gaia,
+                                const std::string& email);
 
   // Seeds the account represented by |info|. If the account is already tracked
   // and compatible, the empty fields will be updated with values from |info|.
   // If after the update IsValid() is true, OnAccountUpdated will be fired.
-  std::string SeedAccountInfo(AccountInfo info);
+  CoreAccountId SeedAccountInfo(AccountInfo info);
 
   // Sets whether the account is a Unicorn account.
-  void SetIsChildAccount(const std::string& account_id, bool is_child_account);
+  void SetIsChildAccount(const CoreAccountId& account_id,
+                         bool is_child_account);
 
   // Sets whether the account is under advanced protection.
-  void SetIsAdvancedProtectionAccount(const std::string& account_id,
+  void SetIsAdvancedProtectionAccount(const CoreAccountId& account_id,
                                       bool is_under_advanced_protection);
 
-  void RemoveAccount(const std::string& account_id);
+  void RemoveAccount(const CoreAccountId& account_id);
 
   // Is migration of the account id from normalized email to gaia id supported
   // on the current platform?
@@ -137,12 +136,13 @@ class AccountTrackerService : public KeyedService {
 
  protected:
   // Available to be called in tests.
-  void SetAccountInfoFromUserInfo(const std::string& account_id,
+  void SetAccountInfoFromUserInfo(const CoreAccountId& account_id,
                                   const base::DictionaryValue* user_info);
 
   // Updates the account image. Does nothing if |account_id| does not exist in
   // |accounts_|.
-  void SetAccountImage(const std::string& account_id, const gfx::Image& image);
+  void SetAccountImage(const CoreAccountId& account_id,
+                       const gfx::Image& image);
 
  private:
   friend class AccountFetcherService;
@@ -158,11 +158,10 @@ class AccountTrackerService : public KeyedService {
       const std::string&);
 
   void NotifyAccountUpdated(const AccountInfo& account_info);
-  void NotifyAccountUpdateFailed(const std::string& account_id);
-  void NotifyAccountRemoved(const AccountInfo& accoint_info);
+  void NotifyAccountRemoved(const AccountInfo& account_info);
 
-  void StartTrackingAccount(const std::string& account_id);
-  void StopTrackingAccount(const std::string& account_id);
+  void StartTrackingAccount(const CoreAccountId& account_id);
+  void StopTrackingAccount(const CoreAccountId& account_id);
 
   // Load the current state of the account info from the preferences file.
   void LoadFromPrefs();
@@ -170,12 +169,12 @@ class AccountTrackerService : public KeyedService {
   void RemoveFromPrefs(const AccountInfo& account);
 
   // Used to load/save account images from/to disc.
-  base::FilePath GetImagePathFor(const std::string& account_id);
-  void OnAccountImageLoaded(const std::string& account_id, gfx::Image image);
+  base::FilePath GetImagePathFor(const CoreAccountId& account_id);
+  void OnAccountImageLoaded(const CoreAccountId& account_id, gfx::Image image);
   void LoadAccountImagesFromDisk();
-  void SaveAccountImageToDisk(const std::string& account_id,
+  void SaveAccountImageToDisk(const CoreAccountId& account_id,
                               const gfx::Image& image);
-  void RemoveAccountImageFromDisk(const std::string& account_id);
+  void RemoveAccountImageFromDisk(const CoreAccountId& account_id);
 
   // Migrate accounts to be keyed by gaia id instead of normalized email.
   // Requires that the migration state is set to MIGRATION_IN_PROGRESS.
@@ -198,7 +197,7 @@ class AccountTrackerService : public KeyedService {
       const PrefService* pref_service);
 
   PrefService* pref_service_ = nullptr;  // Not owned.
-  std::map<std::string, AccountInfo> accounts_;
+  std::map<CoreAccountId, AccountInfo> accounts_;
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::FilePath user_data_dir_;

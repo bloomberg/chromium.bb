@@ -19,23 +19,27 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/logging.h"
@@ -43,6 +47,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -70,6 +77,49 @@ void CloseAssistantUi(AssistantExitPoint exit_point) {
     Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
 }
 
+app_list::TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
+    HomeScreenDelegate::AnimationTrigger trigger,
+    bool launcher_should_show) {
+  switch (trigger) {
+    case HomeScreenDelegate::AnimationTrigger::kHideForWindow:
+      return app_list::TabletModeAnimationTransition::
+          kHideHomeLauncherForWindow;
+    case HomeScreenDelegate::AnimationTrigger::kLauncherButton:
+      return app_list::TabletModeAnimationTransition::kAppListButtonShow;
+    case HomeScreenDelegate::AnimationTrigger::kDragRelease:
+      return launcher_should_show
+                 ? app_list::TabletModeAnimationTransition::kDragReleaseShow
+                 : app_list::TabletModeAnimationTransition::kDragReleaseHide;
+    case HomeScreenDelegate::AnimationTrigger::kOverviewMode:
+      return launcher_should_show
+                 ? app_list::TabletModeAnimationTransition::kExitOverviewMode
+                 : app_list::TabletModeAnimationTransition::kEnterOverviewMode;
+  }
+}
+
+int GetAssistantPrivacyInfoShownCount() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetInteger(prefs::kAssistantPrivacyInfoShownInLauncher);
+}
+
+void SetAssistantPrivacyInfoShownCount(int count) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetInteger(prefs::kAssistantPrivacyInfoShownInLauncher, count);
+}
+
+bool IsAssistantPrivacyInfoDismissed() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetBoolean(prefs::kAssistantPrivacyInfoDismissedInLauncher);
+}
+
+void SetAssistantPrivacyInfoDismissed() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kAssistantPrivacyInfoDismissedInLauncher, true);
+}
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -77,7 +127,8 @@ AppListControllerImpl::AppListControllerImpl()
       presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)) {
   model_->AddObserver(this);
 
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   session_controller->AddObserver(this);
 
   // In case of crash-and-restart case where session state starts with ACTIVE
@@ -107,15 +158,21 @@ AppListControllerImpl::~AppListControllerImpl() {
   // remove this from objects it's observing.
   if (!is_shutdown_)
     Shutdown();
+
+  if (client_)
+    client_->OnAppListControllerDestroyed();
 }
 
-void AppListControllerImpl::SetClient(mojom::AppListClientPtr client_ptr) {
-  client_ = std::move(client_ptr);
+// static
+void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kAssistantPrivacyInfoShownInLauncher, 0);
+  registry->RegisterBooleanPref(
+      prefs::kAssistantPrivacyInfoDismissedInLauncher, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-void AppListControllerImpl::BindRequest(
-    mojom::AppListControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AppListControllerImpl::SetClient(app_list::AppListClient* client) {
+  client_ = client;
 }
 
 app_list::AppListModel* AppListControllerImpl::GetModel() {
@@ -126,7 +183,8 @@ app_list::SearchModel* AppListControllerImpl::GetSearchModel() {
   return &search_model_;
 }
 
-void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
+void AppListControllerImpl::AddItem(
+    std::unique_ptr<ash::AppListItemMetadata> item_data) {
   const std::string folder_id = item_data->folder_id;
   if (folder_id.empty())
     model_->AddItem(CreateAppListItem(std::move(item_data)));
@@ -134,8 +192,9 @@ void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
     AddItemToFolder(std::move(item_data), folder_id);
 }
 
-void AppListControllerImpl::AddItemToFolder(AppListItemMetadataPtr item_data,
-                                            const std::string& folder_id) {
+void AppListControllerImpl::AddItemToFolder(
+    std::unique_ptr<ash::AppListItemMetadata> item_data,
+    const std::string& folder_id) {
   // When we're setting a whole model of a profile, each item may have its
   // folder id set properly. However, |AppListModel::AddItemToFolder| requires
   // the item to add is not in the target folder yet, and sets its folder id
@@ -192,7 +251,7 @@ void AppListControllerImpl::UpdateSearchBox(const base::string16& text,
 }
 
 void AppListControllerImpl::PublishSearchResults(
-    std::vector<SearchResultMetadataPtr> results) {
+    std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) {
   std::vector<std::unique_ptr<app_list::SearchResult>> new_results;
   for (auto& result_metadata : results) {
     std::unique_ptr<app_list::SearchResult> result =
@@ -203,8 +262,9 @@ void AppListControllerImpl::PublishSearchResults(
   search_model_.PublishResults(std::move(new_results));
 }
 
-void AppListControllerImpl::SetItemMetadata(const std::string& id,
-                                            AppListItemMetadataPtr data) {
+void AppListControllerImpl::SetItemMetadata(
+    const std::string& id,
+    std::unique_ptr<ash::AppListItemMetadata> data) {
   app_list::AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
@@ -258,7 +318,7 @@ void AppListControllerImpl::SetItemPercentDownloaded(
 
 void AppListControllerImpl::SetModelData(
     int profile_id,
-    std::vector<AppListItemMetadataPtr> apps,
+    std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
     bool is_search_engine_google) {
   // Clear old model data.
   model_->DeleteAllItems();
@@ -283,7 +343,7 @@ void AppListControllerImpl::SetModelData(
 }
 
 void AppListControllerImpl::SetSearchResultMetadata(
-    SearchResultMetadataPtr metadata) {
+    std::unique_ptr<ash::SearchResultMetadata> metadata) {
   app_list::SearchResult* result = search_model_.FindSearchResult(metadata->id);
   if (result)
     result->SetMetadata(std::move(metadata));
@@ -338,7 +398,7 @@ void AppListControllerImpl::FindOrCreateOemFolder(
     model_->SetItemPosition(oem_folder, oem_position);
   }
   model_->SetItemName(oem_folder, oem_folder_name);
-  std::move(callback).Run(oem_folder->CloneMetadata());
+  std::move(callback).Run();
 }
 
 void AppListControllerImpl::ResolveOemFolderPosition(
@@ -346,7 +406,7 @@ void AppListControllerImpl::ResolveOemFolderPosition(
     ResolveOemFolderPositionCallback callback) {
   // In ash:
   app_list::AppListFolderItem* ash_oem_folder = FindFolderItem(kOemFolderId);
-  ash::mojom::AppListItemMetadataPtr metadata = nullptr;
+  std::unique_ptr<ash::AppListItemMetadata> metadata;
   if (ash_oem_folder) {
     const syncer::StringOrdinal& oem_folder_pos =
         preferred_oem_position.IsValid() ? preferred_oem_position
@@ -502,7 +562,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
 }
 
 void AppListControllerImpl::EndDragFromShelf(
-    ash::mojom::AppListViewState app_list_state) {
+    ash::AppListViewState app_list_state) {
   // Avoid dragging app list when homecher is enabled.
   if (IsHomeScreenAvailable())
     return;
@@ -527,12 +587,8 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
   return action;
 }
 
-ash::mojom::AppListViewState AppListControllerImpl::GetAppListViewState() {
+ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
-}
-
-void AppListControllerImpl::FlushForTesting() {
-  bindings_.FlushForTesting();
 }
 
 void AppListControllerImpl::OnShellDestroying() {
@@ -637,13 +693,8 @@ void AppListControllerImpl::OnUiVisibilityChanged(
              base::TimeTicks());
       }
 
-      if (!IsShowingEmbeddedAssistantUI()) {
-        if (presenter_.GetView()->app_list_state() ==
-            ash::mojom::AppListViewState::kPeeking) {
-          presenter_.GetView()->SetState(ash::mojom::AppListViewState::kHalf);
-        }
+      if (!IsShowingEmbeddedAssistantUI())
         presenter_.ShowEmbeddedAssistantUI(true);
-      }
       break;
     case AssistantVisibility::kHidden:
       NOTREACHED();
@@ -652,15 +703,21 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       if (!IsShowingEmbeddedAssistantUI())
         break;
 
-      // Reset model state.
-      presenter_.ShowEmbeddedAssistantUI(false);
+      // When Launcher is closing, we do not want to call
+      // |ShowEmbeddedAssistantUI(false)|, which will show previous state page
+      // in Launcher and make the UI flash.
       if (IsHomeScreenAvailable()) {
-        presenter_.GetView()->app_list_main_view()->ResetForShow();
-        presenter_.GetView()->SetState(
-            ash::mojom::AppListViewState::kFullscreenAllApps);
+        presenter_.ShowEmbeddedAssistantUI(false);
+
+        if (exit_point != AssistantExitPoint::kBackInLauncher) {
+          presenter_.GetView()
+              ->search_box_view()
+              ->ClearSearchAndDeactivateSearchBox();
+        }
       } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
         DismissAppList();
       }
+
       break;
   }
 }
@@ -761,11 +818,11 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   bool should_show = false;
 
   // Hide the expand arrow view when the home screen is available and there is
-  // no activatable window.
+  // no activatable window on the current active desk.
   if (IsHomeScreenAvailable()) {
     should_show = !ash::Shell::Get()
                        ->mru_window_tracker()
-                       ->BuildWindowForCycleList()
+                       ->BuildWindowForCycleList(kActiveDesk)
                        .empty();
   } else {
     should_show = true;
@@ -774,14 +831,13 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   presenter_.SetExpandArrowViewVisibility(should_show);
 }
 
-ash::mojom::AppListViewState
-AppListControllerImpl::CalculateStateAfterShelfDrag(
+ash::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
     const ui::GestureEvent& gesture_in_screen,
     float launcher_above_shelf_bottom_amount) const {
   if (presenter_.GetView())
     return presenter_.GetView()->CalculateStateAfterShelfDrag(
         gesture_in_screen, launcher_above_shelf_bottom_amount);
-  return ash::mojom::AppListViewState::kClosed;
+  return ash::AppListViewState::kClosed;
 }
 
 void AppListControllerImpl::SetAppListModelForTest(
@@ -797,10 +853,10 @@ void AppListControllerImpl::SetStateTransitionAnimationCallback(
 }
 
 void AppListControllerImpl::RecordShelfAppLaunched(
-    base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
+    base::Optional<AppListViewState> recorded_app_list_view_state,
     base::Optional<bool> recorded_home_launcher_shown) {
   app_list::RecordAppListAppLaunched(
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       recorded_app_list_view_state.value_or(GetAppListViewState()),
       IsTabletMode(),
       recorded_home_launcher_shown.value_or(presenter_.home_launcher_shown()));
@@ -824,7 +880,6 @@ void AppListControllerImpl::StartAssistant() {
 }
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
-  last_raw_query_ = raw_query;
   if (client_) {
     base::string16 query;
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
@@ -832,24 +887,23 @@ void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
   }
 }
 
-void AppListControllerImpl::OpenSearchResult(
-    const std::string& result_id,
-    int event_flags,
-    ash::mojom::AppListLaunchedFrom launched_from,
-    ash::mojom::AppListLaunchType launch_type,
-    int suggestion_index) {
+void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
+                                             int event_flags,
+                                             AppListLaunchedFrom launched_from,
+                                             AppListLaunchType launch_type,
+                                             int suggestion_index) {
   app_list::SearchResult* result = search_model_.FindSearchResult(result_id);
   if (!result)
     return;
 
-  if (launch_type == mojom::AppListLaunchType::kAppSearchResult) {
+  if (launch_type == AppListLaunchType::kAppSearchResult) {
     switch (launched_from) {
-      case mojom::AppListLaunchedFrom::kLaunchedFromSearchBox:
-      case mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+      case AppListLaunchedFrom::kLaunchedFromSearchBox:
+      case AppListLaunchedFrom::kLaunchedFromSuggestionChip:
         RecordAppLaunched(launched_from);
         break;
-      case mojom::AppListLaunchedFrom::kLaunchedFromGrid:
-      case mojom::AppListLaunchedFrom::kLaunchedFromShelf:
+      case AppListLaunchedFrom::kLaunchedFromGrid:
+      case AppListLaunchedFrom::kLaunchedFromShelf:
         break;
     }
   }
@@ -860,18 +914,17 @@ void AppListControllerImpl::OpenSearchResult(
 
   // Suggestion chips are not represented to the user as search results, so do
   // not record search result metrics for them.
-  if (launched_from !=
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
+  if (launched_from != AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
     base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
     UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
-                             last_raw_query_.size());
+                             GetLastQueryLength());
     if (IsTabletMode()) {
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInTablet,
-                               last_raw_query_.size());
+                               GetLastQueryLength());
     } else {
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInClamshell,
-                               last_raw_query_.size());
+                               GetLastQueryLength());
     }
 
     if (result->distance_from_origin() >= 0) {
@@ -885,13 +938,16 @@ void AppListControllerImpl::OpenSearchResult(
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
     // Record the assistant result. Other types of results are recorded in
     // |client_| where there is richer data on SearchResultType.
-    DCHECK_EQ(ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-              launched_from)
+    DCHECK_EQ(AppListLaunchedFrom::kLaunchedFromSearchBox, launched_from)
         << "Only log search results which are represented to the user as "
            "search results (ie. search results in the search result page) not "
            "chips.";
     app_list::RecordSearchResultOpenTypeHistogram(
-        app_list::ASSISTANT_OMNIBOX_RESULT, IsTabletMode());
+        launched_from, app_list::ASSISTANT_OMNIBOX_RESULT, IsTabletMode());
+    if (!GetLastQueryLength()) {
+      app_list::RecordZeroStateSuggestionOpenTypeHistogram(
+          app_list::ASSISTANT_OMNIBOX_RESULT);
+    }
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(
@@ -910,8 +966,7 @@ void AppListControllerImpl::LogResultLaunchHistogram(
     app_list::SearchResultLaunchLocation launch_location,
     int suggestion_index) {
   app_list::RecordSearchLaunchIndexAndQueryLength(
-      launch_location, static_cast<int>(last_raw_query_.size()),
-      suggestion_index);
+      launch_location, GetLastQueryLength(), suggestion_index);
 }
 
 void AppListControllerImpl::LogSearchAbandonHistogram() {
@@ -933,22 +988,6 @@ void AppListControllerImpl::GetSearchResultContextMenuModel(
     client_->GetSearchResultContextMenuModel(result_id, std::move(callback));
 }
 
-void AppListControllerImpl::SearchResultContextMenuItemSelected(
-    const std::string& result_id,
-    int command_id,
-    int event_flags,
-    mojom::AppListLaunchType launch_type) {
-  if (launch_type == mojom::AppListLaunchType::kAppSearchResult &&
-      app_list::IsCommandIdAnAppLaunch(command_id)) {
-    RecordAppLaunched(mojom::AppListLaunchedFrom::kLaunchedFromSearchBox);
-  }
-
-  if (client_) {
-    client_->SearchResultContextMenuItemSelected(result_id, command_id,
-                                                 event_flags);
-  }
-}
-
 void AppListControllerImpl::ViewShown(int64_t display_id) {
   if (app_list_features::IsEmbeddedAssistantUIEnabled() &&
       GetAssistantViewDelegate()->GetUiModel()->ui_mode() !=
@@ -965,9 +1004,6 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
 
 void AppListControllerImpl::ViewClosing() {
   if (presenter_.GetView()->search_box_view()->is_search_box_active()) {
-    // Close the search box if it is open when the app list is closing.
-    presenter_.HandleCloseOpenSearchBox();
-
     // Close the virtual keyboard before the app list view is dismissed.
     // Otherwise if the browser is behind the app list view, after the latter is
     // closed, IME is updated because of the changed focus. Consequently,
@@ -978,6 +1014,8 @@ void AppListControllerImpl::ViewClosing() {
   }
 
   CloseAssistantUi(AssistantExitPoint::kLauncherClose);
+  model_->SetState(AppListState::kInvalidState);
+
   if (client_)
     client_->ViewClosing();
 }
@@ -989,15 +1027,14 @@ void AppListControllerImpl::ViewClosed() {
     client_->StartSearch(base::string16());
 }
 
-void AppListControllerImpl::GetWallpaperProminentColors(
-    GetWallpaperProminentColorsCallback callback) {
-  Shell::Get()->wallpaper_controller()->GetWallpaperColors(std::move(callback));
+const std::vector<SkColor>&
+AppListControllerImpl::GetWallpaperProminentColors() {
+  return Shell::Get()->wallpaper_controller()->GetWallpaperColors();
 }
 
-void AppListControllerImpl::ActivateItem(
-    const std::string& id,
-    int event_flags,
-    mojom::AppListLaunchedFrom launched_from) {
+void AppListControllerImpl::ActivateItem(const std::string& id,
+                                         int event_flags,
+                                         AppListLaunchedFrom launched_from) {
   RecordAppLaunched(launched_from);
 
   if (client_)
@@ -1011,18 +1048,6 @@ void AppListControllerImpl::GetContextMenuModel(
     GetContextMenuModelCallback callback) {
   if (client_)
     client_->GetContextMenuModel(profile_id_, id, std::move(callback));
-}
-
-void AppListControllerImpl::ContextMenuItemSelected(
-    const std::string& id,
-    int command_id,
-    int event_flags,
-    mojom::AppListLaunchedFrom launched_from) {
-  if (app_list::IsCommandIdAnAppLaunch(command_id))
-    RecordAppLaunched(launched_from);
-
-  if (client_)
-    client_->ContextMenuItemSelected(profile_id_, id, command_id, event_flags);
 }
 
 void AppListControllerImpl::ShowWallpaperContextMenu(
@@ -1066,7 +1091,7 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   // will be ended after the app is opened.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   auto* split_view_controller = Shell::Get()->split_view_controller();
-  if ((overview_controller->IsSelecting() &&
+  if ((overview_controller->InOverviewSession() &&
        !split_view_controller->InClamshellSplitViewMode()) ||
       overview_controller->IsCompletingShutdownAnimations()) {
     return false;
@@ -1111,14 +1136,50 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
              mojom::VoiceInteractionState::NOT_READY;
 }
 
+bool AppListControllerImpl::ShouldShowAssistantPrivacyInfo() const {
+  if (!IsAssistantAllowedAndEnabled())
+    return false;
+
+  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+    return false;
+
+  const bool dismissed = IsAssistantPrivacyInfoDismissed();
+  if (dismissed)
+    return false;
+
+  const int count = GetAssistantPrivacyInfoShownCount();
+  constexpr int kThresholdToShow = 6;
+  return count >= 0 && count <= kThresholdToShow;
+}
+
+void AppListControllerImpl::MaybeIncreaseAssistantPrivacyInfoShownCount() {
+  const bool should_show = ShouldShowAssistantPrivacyInfo();
+  if (should_show) {
+    const int count = GetAssistantPrivacyInfoShownCount();
+    SetAssistantPrivacyInfoShownCount(count + 1);
+  }
+}
+
+void AppListControllerImpl::MarkAssistantPrivacyInfoDismissed() {
+  // User dismissed the privacy info view. Will not show the view again.
+  SetAssistantPrivacyInfoDismissed();
+}
+
 void AppListControllerImpl::OnStateTransitionAnimationCompleted(
-    ash::mojom::AppListViewState state) {
+    ash::AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
 }
 
+void AppListControllerImpl::GetAppLaunchedMetricParams(
+    app_list::AppLaunchedMetricParams* metric_params) {
+  metric_params->app_list_view_state = GetAppListViewState();
+  metric_params->is_tablet_mode = IsTabletMode();
+  metric_params->home_launcher_shown = presenter_.home_launcher_shown();
+}
+
 void AppListControllerImpl::RecordAppLaunched(
-    mojom::AppListLaunchedFrom launched_from) {
+    AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, GetAppListViewState(),
                                      IsTabletMode(),
                                      presenter_.home_launcher_shown());
@@ -1215,7 +1276,7 @@ syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
 }
 
 std::unique_ptr<app_list::AppListItem> AppListControllerImpl::CreateAppListItem(
-    AppListItemMetadataPtr metadata) {
+    std::unique_ptr<ash::AppListItemMetadata> metadata) {
   std::unique_ptr<app_list::AppListItem> app_list_item =
       metadata->is_folder
           ? std::make_unique<app_list::AppListFolderItem>(metadata->id)
@@ -1279,7 +1340,8 @@ void AppListControllerImpl::UpdateLauncherContainer() {
     parent_window->AddChild(window);
     bool is_showing_app_window = false;
     for (auto* app_window :
-         Shell::Get()->mru_window_tracker()->BuildWindowForCycleList()) {
+         Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
+             kActiveDesk)) {
       if (!parent_window->Contains(app_window) &&
           !wm::GetWindowState(app_window)->IsMinimized()) {
         is_showing_app_window = true;
@@ -1320,6 +1382,18 @@ void AppListControllerImpl::Shutdown() {
   shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
   model_->RemoveObserver(this);
+}
+
+void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
+    AnimationTrigger trigger,
+    bool launcher_will_show) {
+  // The AppListView may not exist if this is happening after tablet mode
+  // has started, but before the view is created.
+  if (!presenter_.GetView())
+    return;
+
+  presenter_.GetView()->OnTabletModeAnimationTransitionNotified(
+      CalculateAnimationTransitionForMetrics(trigger, launcher_will_show));
 }
 
 }  // namespace ash

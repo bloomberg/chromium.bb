@@ -142,7 +142,7 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
     gesture_handler_->HandleSideSwipe(CastSideSwipeEvent::BEGIN,
                                       side_swipe_origin, touch_location);
 
-    VLOG(1) << "side swipe gesture begin @ " << touch_location.ToString();
+    DVLOG(1) << "side swipe gesture begin @ " << touch_location.ToString();
     current_swipe_time_ = base::ElapsedTimer();
 
     // Stash a copy of the event should we decide to reconstitute it later if we
@@ -174,9 +174,9 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
   // The finger has lifted, which means the end of the gesture, or if the finger
   // hasn't travelled far enough, replay the original events.
   if (touch_event->type() == ui::ET_TOUCH_RELEASED) {
-    VLOG(1) << "gesture release; time since press: "
-            << current_swipe_time_.Elapsed().InMilliseconds() << "ms @ "
-            << touch_location.ToString();
+    DVLOG(1) << "gesture release; time since press: "
+             << current_swipe_time_.Elapsed().InMilliseconds() << "ms @ "
+             << touch_location.ToString();
     gesture_handler_->HandleSideSwipe(CastSideSwipeEvent::END, current_swipe_,
                                       touch_location);
     current_swipe_ = CastSideSwipeOrigin::NONE;
@@ -201,9 +201,9 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
   // The system gesture is ongoing...
   gesture_handler_->HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
                                     current_swipe_, touch_location);
-  VLOG(1) << "gesture continue; time since press: "
-          << current_swipe_time_.Elapsed().InMilliseconds() << "ms @ "
-          << touch_location.ToString();
+  DVLOG(1) << "gesture continue; time since press: "
+           << current_swipe_time_.Elapsed().InMilliseconds() << "ms @ "
+           << touch_location.ToString();
 
   return ui::EVENT_REWRITE_DISCARD;
 }

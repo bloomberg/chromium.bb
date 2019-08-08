@@ -90,15 +90,11 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
   AuraLinuxApplication() {
     data_.role = ax::mojom::Role::kApplication;
     platform_node_ = ui::AXPlatformNode::Create(this);
-    if (ViewsDelegate::GetInstance()) {
-      data_.AddStringAttribute(
-          ax::mojom::StringAttribute::kName,
-          ViewsDelegate::GetInstance()->GetApplicationName());
-    }
+    data_.AddStringAttribute(
+        ax::mojom::StringAttribute::kName,
+        ViewsDelegate::GetInstance()->GetApplicationName());
     ui::AXPlatformNodeAuraLinux::SetApplication(platform_node_);
-    if (ViewsDelegate::GetInstance()) {
-      ui::AXPlatformNodeAuraLinux::StaticInitialize();
-    }
+    ui::AXPlatformNodeAuraLinux::StaticInitialize();
   }
 
   ~AuraLinuxApplication() override {

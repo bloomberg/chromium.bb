@@ -49,10 +49,10 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/compositor/test/test_compositor_host.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/compositor/test/test_layers.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -152,21 +152,20 @@ class LayerWithRealCompositorTest : public testing::Test {
                          .Append(FILE_PATH_LITERAL("compositor"));
     ASSERT_TRUE(base::PathExists(test_data_dir_));
 
-    bool enable_pixel_output = true;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-    InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                     &context_factory_private);
+    const bool enable_pixel_output = true;
+    context_factories_ =
+        std::make_unique<TestContextFactories>(enable_pixel_output);
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
     compositor_host_.reset(TestCompositorHost::Create(
-        host_bounds, context_factory, context_factory_private));
+        host_bounds, context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate()));
     compositor_host_->Show();
   }
 
   void TearDown() override {
     ResetCompositor();
-    TerminateContextFactoryForTests();
+    context_factories_.reset();
   }
 
   Compositor* GetCompositor() { return compositor_host_->GetCompositor(); }
@@ -281,6 +280,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   };
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
 
   // The root directory for test files.
@@ -462,6 +462,17 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestCompositorAnimationObserver);
 };
 
+#if defined(OS_WIN)
+bool IsFontsSmoothingEnabled() {
+  BOOL antialiasing = TRUE;
+  BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+  if (result == FALSE) {
+    ADD_FAILURE() << "Failed to retrieve font aliasing configuration.";
+  }
+  return antialiasing;
+}
+#endif
+
 }  // namespace
 
 TEST_F(LayerWithRealCompositorTest, Draw) {
@@ -502,22 +513,20 @@ class LayerWithDelegateTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-
-    InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                     &context_factory_private);
+    const bool enable_pixel_output = false;
+    context_factories_ =
+        std::make_unique<TestContextFactories>(enable_pixel_output);
 
     const gfx::Rect host_bounds(1000, 1000);
     compositor_host_.reset(TestCompositorHost::Create(
-        host_bounds, context_factory, context_factory_private));
+        host_bounds, context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate()));
     compositor_host_->Show();
   }
 
   void TearDown() override {
     compositor_host_.reset();
-    TerminateContextFactoryForTests();
+    context_factories_.reset();
   }
 
   Compositor* compositor() { return compositor_host_->GetCompositor(); }
@@ -565,6 +574,7 @@ class LayerWithDelegateTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
@@ -577,8 +587,11 @@ void ReturnMailbox(bool* run, const gpu::SyncToken& sync_token, bool is_lost) {
 TEST(LayerStandaloneTest, ReleaseMailboxOnDestruction) {
   std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
   bool callback_run = false;
+
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   layer->SetTransferableResource(
       resource,
       viz::SingleReleaseCallback::Create(
@@ -862,14 +875,14 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
   DrawTreeLayerDelegate delegate(child->bounds());
   child->set_delegate(&delegate);
 
-  const auto mirror = child->Mirror();
+  const auto mirror1 = child->Mirror();
 
   // Bounds and visibility are preserved.
-  EXPECT_EQ(bounds, mirror->bounds());
-  EXPECT_TRUE(mirror->visible());
+  EXPECT_EQ(bounds, mirror1->bounds());
+  EXPECT_TRUE(mirror1->visible());
 
   root->Add(child.get());
-  root->Add(mirror.get());
+  root->Add(mirror1.get());
 
   DrawTree(root.get());
   EXPECT_TRUE(delegate.painted());
@@ -877,7 +890,7 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
 
   // Both layers should be clean.
   EXPECT_TRUE(child->damaged_region_for_testing().IsEmpty());
-  EXPECT_TRUE(mirror->damaged_region_for_testing().IsEmpty());
+  EXPECT_TRUE(mirror1->damaged_region_for_testing().IsEmpty());
 
   const gfx::Rect damaged_rect(10, 10, 20, 20);
   EXPECT_TRUE(child->SchedulePaint(damaged_rect));
@@ -888,35 +901,39 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
   delegate.Reset();
 
   // Damage should be propagated to the mirror.
-  EXPECT_EQ(damaged_rect, mirror->damaged_region_for_testing().bounds());
+  EXPECT_EQ(damaged_rect, mirror1->damaged_region_for_testing().bounds());
   EXPECT_TRUE(child->damaged_region_for_testing().IsEmpty());
 
   DrawTree(root.get());
   EXPECT_TRUE(delegate.painted());
 
   // Mirror should be clean.
-  EXPECT_TRUE(mirror->damaged_region_for_testing().IsEmpty());
+  EXPECT_TRUE(mirror1->damaged_region_for_testing().IsEmpty());
+
+  const auto mirror2 = child->Mirror();
+  root->Add(mirror2.get());
 
   // Bounds are not synchronized by default.
   const gfx::Rect new_bounds(10, 10, 10, 10);
   child->SetBounds(new_bounds);
-  EXPECT_EQ(bounds, mirror->bounds());
+  EXPECT_EQ(bounds, mirror1->bounds());
+  EXPECT_EQ(bounds, mirror2->bounds());
   child->SetBounds(bounds);
 
-  // Bounds should be synchronized if requested.
-  child->set_sync_bounds(true);
+  // Bounds should be synchronized only for the mirror layer that requested it.
+  mirror1->set_sync_bounds_with_source(true);
   child->SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds, mirror->bounds());
+  EXPECT_EQ(new_bounds, mirror1->bounds());
+  EXPECT_EQ(bounds, mirror2->bounds());
 
   // Check for rounded corner mirror behavior
-  constexpr std::array<uint32_t, 4> kEmptyCornerRadii = {0, 0, 0, 0};
-  EXPECT_EQ(mirror->rounded_corner_radii(), kEmptyCornerRadii);
-  EXPECT_FALSE(mirror->is_fast_rounded_corner());
-  constexpr std::array<uint32_t, 4> corner_radii = {2, 3, 4, 5};
-  child->SetRoundedCornerRadius(corner_radii);
+  EXPECT_TRUE(mirror1->rounded_corner_radii().IsEmpty());
+  EXPECT_FALSE(mirror1->is_fast_rounded_corner());
+  constexpr gfx::RoundedCornersF kCornerRadii(2, 3, 4, 5);
+  child->SetRoundedCornerRadius(kCornerRadii);
   child->SetIsFastRoundedCorner(true);
-  EXPECT_EQ(mirror->rounded_corner_radii(), corner_radii);
-  EXPECT_TRUE(mirror->is_fast_rounded_corner());
+  EXPECT_EQ(kCornerRadii, mirror1->rounded_corner_radii());
+  EXPECT_TRUE(mirror1->is_fast_rounded_corner());
 }
 
 // Tests for SurfaceLayer cloning and mirroring. This tests certain properties
@@ -1021,7 +1038,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   l1->SetVisible(false);
   l1->SetBounds(gfx::Rect(4, 5));
 
-  constexpr std::array<uint32_t, 4> kCornerRadii = {1, 2, 3, 4};
+  constexpr gfx::RoundedCornersF kCornerRadii(1, 2, 3, 4);
   l1->SetRoundedCornerRadius(kCornerRadii);
   l1->SetIsFastRoundedCorner(true);
 
@@ -1037,8 +1054,10 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   cc::Layer* before_layer = l1->cc_layer_for_testing();
 
   bool callback1_run = false;
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
                               viz::SingleReleaseCallback::Create(base::BindOnce(
                                   ReturnMailbox, &callback1_run)),
@@ -1058,7 +1077,8 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   bool callback2_run = false;
   resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
                               viz::SingleReleaseCallback::Create(base::BindOnce(
                                   ReturnMailbox, &callback2_run)),
@@ -1083,7 +1103,8 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   // Back to a texture, without changing the bounds of the layer or the texture.
   bool callback3_run = false;
   resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
                               viz::SingleReleaseCallback::Create(base::BindOnce(
                                   ReturnMailbox, &callback3_run)),
@@ -1261,8 +1282,7 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
 
 TEST_F(LayerWithDelegateTest, RoundedCorner) {
   gfx::Rect layer_bounds(10, 20, 100, 100);
-  const std::array<uint32_t, 4> radii = {5, 10, 15, 20};
-  const std::array<uint32_t, 4> kEmpty = {0, 0, 0, 0};
+  constexpr gfx::RoundedCornersF kRadii(5, 10, 15, 20);
   std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
 
   NullLayerDelegate delegate;
@@ -1274,12 +1294,12 @@ TEST_F(LayerWithDelegateTest, RoundedCorner) {
   compositor()->SetRootLayer(layer.get());
   Draw();
 
-  EXPECT_EQ(layer->rounded_corner_radii(), kEmpty);
+  EXPECT_TRUE(layer->rounded_corner_radii().IsEmpty());
 
   // Setting a rounded corner radius should set an rrect with bounds same as the
   // layer.
-  layer->SetRoundedCornerRadius(radii);
-  EXPECT_EQ(layer->rounded_corner_radii(), radii);
+  layer->SetRoundedCornerRadius(kRadii);
+  EXPECT_EQ(kRadii, layer->rounded_corner_radii());
 }
 
 // Checks that stacking-related methods behave as advertised.
@@ -1396,8 +1416,10 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
       base::Unretained(&run_loop));
 
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   root->SetTransferableResource(
       resource, viz::SingleReleaseCallback::Create(std::move(callback)),
       gfx::Size(10, 10));
@@ -1811,20 +1833,23 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
   base::FilePath ref_img2 = test_data_dir().AppendASCII("BackgroundBlur2.png");
   SkBitmap bitmap;
 
+  // 25% of image can have up to a difference of 3.
+  cc::FuzzyPixelComparator fuzzy_comparator(true, 25.f, 0.0f, 3.f, 3, 0);
+
   l0->Add(l1.get());
   l0->Add(l2.get());
   DrawTree(l0.get());
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img1, false);
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, fuzzy_comparator));
 
   l0->StackAtTop(l1.get());
   DrawTree(l0.get());
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img2, false);
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, fuzzy_comparator));
 }
 
 // Checks that background blur bounds rect gets properly updated when device
@@ -1853,6 +1878,9 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
       test_data_dir().AppendASCII("BackgroundBlur1_zoom.png");
   SkBitmap bitmap;
 
+  // 25% of image can have up to a difference of 3.
+  cc::FuzzyPixelComparator fuzzy_comparator(true, 25.f, 0.0f, 3.f, 3, 0);
+
   l0->Add(l1.get());
   l0->Add(l2.get());
   DrawTree(l0.get());
@@ -1860,7 +1888,7 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   ASSERT_FALSE(bitmap.empty());
   // See LayerWithRealCompositorTest.BackgroundBlur test to rewrite this
   // baseline.
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, fuzzy_comparator));
 
   allocator.GenerateId();
   // Now change the scale, and make sure the bounds are still correct.
@@ -1871,7 +1899,7 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img2, false);
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, fuzzy_comparator));
 }
 
 // It is really hard to write pixel test on text rendering,
@@ -1880,6 +1908,11 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
 // See https://codereview.chromium.org/1634103003/#msg41
 #if defined(OS_WIN)
 TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
+  ASSERT_TRUE(IsFontsSmoothingEnabled())
+      << "The test requires that fonts smoothing (anti-aliasing) is activated. "
+         "If this assert is failing you need to manually activate the flag in "
+         "your system fonts settings.";
+
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   gfx::Size size(50, 50);
@@ -1895,10 +1928,11 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   ASSERT_FALSE(bitmap.empty());
 
   std::string filename;
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
     filename = "string_faded_win7.png";
-  else
+  } else {
     filename = "string_faded_win10.png";
+  }
   base::FilePath ref_img = test_data_dir().AppendASCII(filename);
   // WritePNGFile(bitmap, ref_img, true);
 
@@ -2269,8 +2303,10 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
 TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
 
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   bool release_callback_run = false;
 
   layer->SetTransferableResource(
@@ -2300,7 +2336,8 @@ TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
   EXPECT_FALSE(mirror->has_external_content());
 
   resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   release_callback_run = false;
 
   // Setting a transferable resource on the source layer should set it on the

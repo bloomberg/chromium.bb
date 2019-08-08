@@ -18,15 +18,16 @@
 #import "ios/chrome/browser/ui/elements/chrome_activity_overlay_coordinator.h"
 #include "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
 #include "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,13 +35,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Separation space between sections.
-const CGFloat kSeparationSpaceBetweenSections = 9;
-const CGFloat kCellHightlightColorAlpha = 0.05;
-const int kCellHighlightColorRgb = 0x4285F4;
-}  // namespace
 
 @interface ClearBrowsingDataTableViewController () <
     TableViewTextLinkCellDelegate,
@@ -133,8 +127,7 @@ const int kCellHighlightColorRgb = 0x4285F4;
 - (void)viewDidLoad {
   [super viewDidLoad];
   if (IsNewClearBrowsingDataUIEnabled()) {
-    self.styler.cellHighlightColor =
-        UIColorFromRGB(kCellHighlightColorRgb, kCellHightlightColorAlpha);
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   }
   self.styler.tableViewBackgroundColor = UIColor.whiteColor;
   self.tableView.accessibilityIdentifier =
@@ -147,7 +140,6 @@ const int kCellHighlightColorRgb = 0x4285F4;
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
   self.tableView.tableFooterView = [[UIView alloc] init];
-  self.tableView.allowsMultipleSelection = YES;
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
   // Adds the "Done" button and hooks it up to |dismiss|.
@@ -171,23 +163,22 @@ const int kCellHighlightColorRgb = 0x4285F4;
   [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
 
   if (IsNewClearBrowsingDataUIEnabled()) {
-    // Select those cells correspond to a checked item.
-    NSArray* dataTypeItems = [self.tableViewModel
-        itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
-    for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
-      DCHECK(
-          [dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
-      if (dataTypeItem.checked) {
-        [self.tableView selectRowAtIndexPath:[self.tableViewModel
-                                                 indexPathForItem:dataTypeItem]
-                                    animated:NO
-                              scrollPosition:UITableViewScrollPositionNone];
-      }
-    }
-
+    [self updateToolbarButtons];
     // Showing toolbar here because parent class hides toolbar in
     // viewWillDisappear:.
     self.navigationController.toolbarHidden = NO;
+  }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  // Write data type cell selection states back to the browser state.
+  NSArray* dataTypeItems = [self.tableViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
+  for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
+    DCHECK([dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+    self.browserState->GetPrefs()->SetBoolean(dataTypeItem.prefName,
+                                              dataTypeItem.checked);
   }
 }
 
@@ -251,6 +242,12 @@ const int kCellHighlightColorRgb = 0x4285F4;
     case ItemTypeDataTypeCache:
     case ItemTypeDataTypeSavedPasswords:
     case ItemTypeDataTypeAutofill:
+      // For these cells the selection style application is specified in the
+      // corresponding item definition.
+      if (IsNewClearBrowsingDataUIEnabled()) {
+        cellToReturn.selectionStyle = UITableViewCellSelectionStyleNone;
+      }
+      break;
     default:
       break;
   }
@@ -258,6 +255,20 @@ const int kCellHighlightColorRgb = 0x4285F4;
 }
 
 #pragma mark - UITableViewDelegate
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  switch (sectionIdentifier) {
+    case SectionIdentifierGoogleAccount:
+    case SectionIdentifierClearSyncAndSavedSiteData:
+    case SectionIdentifierSavedSiteData:
+      return 5;
+    default:
+      return [super tableView:tableView heightForHeaderInSection:section];
+  }
+}
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -270,8 +281,7 @@ const int kCellHighlightColorRgb = 0x4285F4;
       case ItemTypeTimeRange: {
         UIViewController* controller =
             [[TimeRangeSelectorTableViewController alloc]
-                initWithPrefs:self.browserState->GetPrefs()
-                     delegate:self.dataManager];
+                initWithPrefs:self.browserState->GetPrefs()];
         [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
         [self.navigationController pushViewController:controller animated:YES];
         break;
@@ -281,12 +291,18 @@ const int kCellHighlightColorRgb = 0x4285F4;
       case ItemTypeDataTypeCache:
       case ItemTypeDataTypeSavedPasswords:
       case ItemTypeDataTypeAutofill: {
-        [self updateItemAndReconfigureCellFor:item setChecked:YES];
+        DCHECK([item isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+        TableViewClearBrowsingDataItem* clearBrowsingDataItem =
+            base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
+        clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
+        [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
+        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
         break;
       }
       default:
         break;
     }
+    [self updateToolbarButtons];
   }
 }
 
@@ -314,47 +330,6 @@ const int kCellHighlightColorRgb = 0x4285F4;
   }
 }
 
-- (void)tableView:(UITableView*)tableView
-    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (!IsNewClearBrowsingDataUIEnabled()) {
-    return;
-  }
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  DCHECK(item);
-  switch (item.type) {
-    case ItemTypeDataTypeBrowsingHistory:
-    case ItemTypeDataTypeCookiesSiteData:
-    case ItemTypeDataTypeCache:
-    case ItemTypeDataTypeSavedPasswords:
-    case ItemTypeDataTypeAutofill: {
-      [self updateItemAndReconfigureCellFor:item setChecked:NO];
-      break;
-    }
-    default:
-      break;
-  }
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForHeaderInSection:(NSInteger)section {
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      section == [self.tableViewModel
-                     sectionForSectionIdentifier:SectionIdentifierDataTypes]) {
-    return 0;
-  }
-  return kSeparationSpaceBetweenSections;
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForFooterInSection:(NSInteger)section {
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      section == [self.tableViewModel
-                     sectionForSectionIdentifier:SectionIdentifierTimeRange]) {
-    return 0;
-  }
-  return kSeparationSpaceBetweenSections;
-}
-
 #pragma mark - TableViewTextLinkCellDelegate
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
@@ -374,20 +349,6 @@ const int kCellHighlightColorRgb = 0x4285F4;
   // thus the cell height needs to adapt accordingly.
   [self reloadCellsForItems:@[ item ]
            withRowAnimation:UITableViewRowAnimationAutomatic];
-
-  // Restore a cell's seleted state potentially cleared by the above reload
-  // method.
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      [item isKindOfClass:[TableViewClearBrowsingDataItem class]]) {
-    TableViewClearBrowsingDataItem* dataTypeItem =
-        base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-    if (dataTypeItem.checked) {
-      [self.tableView selectRowAtIndexPath:[self.tableViewModel
-                                               indexPathForItem:dataTypeItem]
-                                  animated:NO
-                            scrollPosition:UITableViewScrollPositionNone];
-    }
-  }
 }
 
 - (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
@@ -496,21 +457,21 @@ const int kCellHighlightColorRgb = 0x4285F4;
   [self.actionSheetCoordinator start];
 }
 
-// Helper of |tableView:didSelectRowAtIndexPath:| and
-// |tableView:didDeselectRowAtIndexPath:| for browsing data items.
-// Sets |item|'s |checked| to |flag|, which depends on whether it's a selection
-// or a deselection, then performs updates accordingly.
-- (void)updateItemAndReconfigureCellFor:(TableViewItem*)item
-                             setChecked:(BOOL)flag {
-  if (![item isKindOfClass:[TableViewClearBrowsingDataItem class]]) {
-    return;
+- (void)updateToolbarButtons {
+  self.clearBrowsingDataBarButton.enabled = [self hasDataTypeItemsSelected];
+}
+
+- (BOOL)hasDataTypeItemsSelected {
+  // Returns YES iff at least 1 data type cell is selected.
+  NSArray* dataTypeItems = [self.tableViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
+  for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
+    DCHECK([dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+    if (dataTypeItem.checked) {
+      return YES;
+    }
   }
-  TableViewClearBrowsingDataItem* clearBrowsingDataItem =
-      base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-  clearBrowsingDataItem.checked = flag;
-  self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
-                                            clearBrowsingDataItem.checked);
-  [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
+  return NO;
 }
 
 @end

@@ -12,7 +12,7 @@
 
 class AvatarToolbarButton;
 class Browser;
-class CommandUpdater;
+class ManagePasswordsIconViews;
 
 namespace autofill {
 class LocalCardMigrationIconView;
@@ -25,8 +25,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
                                            public PageActionIconContainer,
                                            public PageActionIconView::Delegate {
  public:
-  ToolbarPageActionIconContainerView(CommandUpdater* command_updater,
-                                     Browser* browser);
+  explicit ToolbarPageActionIconContainerView(Browser* browser);
   ~ToolbarPageActionIconContainerView() override;
 
   PageActionIconView* GetIconView(PageActionIconType icon_type);
@@ -40,13 +39,14 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
 
   // PageActionIconContainer:
   void UpdatePageActionIcon(PageActionIconType icon_type) override;
+  void ExecutePageActionIconForTesting(PageActionIconType icon_type) override;
 
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
   // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() const {
     return local_card_migration_icon_view_;
@@ -54,6 +54,10 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
 
   autofill::SaveCardIconView* save_card_icon_view() const {
     return save_card_icon_view_;
+  }
+
+  ManagePasswordsIconViews* manage_passwords_icon_views() const {
+    return manage_passwords_icon_views_;
   }
 
   AvatarToolbarButton* avatar_button() { return avatar_; }
@@ -64,6 +68,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
   autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
+  ManagePasswordsIconViews* manage_passwords_icon_views_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
 
   std::vector<PageActionIconView*> page_action_icons_;

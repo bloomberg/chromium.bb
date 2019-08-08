@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/face_detector.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -17,6 +19,7 @@
 #include "third_party/blink/renderer/modules/shapedetection/face_detector_options.h"
 #include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 #include "third_party/blink/renderer/modules/shapedetection/shape_detection_type_converter.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -52,9 +55,9 @@ ScriptPromise FaceDetector::DoDetect(ScriptPromiseResolver* resolver,
                                      SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
   if (!face_service_) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "Face detection service unavailable."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError,
+        "Face detection service unavailable."));
     return promise;
   }
   face_service_requests_.insert(resolver);
@@ -102,8 +105,9 @@ void FaceDetector::OnDetectFaces(
 
 void FaceDetector::OnFaceServiceConnectionError() {
   for (const auto& request : face_service_requests_) {
-    request->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                         "Face Detection not implemented."));
+    request->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           "Face Detection not implemented."));
   }
   face_service_requests_.clear();
   face_service_.reset();

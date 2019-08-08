@@ -28,12 +28,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/device_info_sync_service.h"
-#include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_sync_service.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -502,8 +502,7 @@ void ProfileSyncServiceAndroid::TriggerRefresh(
     const base::android::JavaParamRef<jobject>& obj) {
   // Only allowed to trigger refresh/schedule nudges for protocol types, things
   // like PROXY_TABS are not allowed.
-  sync_service_->TriggerRefresh(syncer::Intersection(
-      sync_service_->GetActiveDataTypes(), syncer::ProtocolTypes()));
+  sync_service_->TriggerRefresh(syncer::ProtocolTypes());
 }
 
 static jlong JNI_ProfileSyncService_Init(JNIEnv* env,

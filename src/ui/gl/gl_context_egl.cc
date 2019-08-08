@@ -50,6 +50,11 @@
 #define EGL_ROBUST_RESOURCE_INITIALIZATION_ANGLE 0x3453
 #endif /* EGL_ANGLE_display_robust_resource_initialization */
 
+#ifndef EGL_ANGLE_create_context_backwards_compatible
+#define EGL_ANGLE_create_context_backwards_compatible 1
+#define EGL_CONTEXT_OPENGL_BACKWARDS_COMPATIBLE_ANGLE 0x3483
+#endif /* EGL_ANGLE_create_context_backwards_compatible */
+
 #ifndef EGL_CONTEXT_PRIORITY_LEVEL_IMG
 #define EGL_CONTEXT_PRIORITY_LEVEL_IMG 0x3100
 #define EGL_CONTEXT_PRIORITY_HIGH_IMG 0x3101
@@ -181,6 +186,14 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.robust_resource_initialization ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.robust_resource_initialization);
+  }
+
+  if (GLSurfaceEGL::HasEGLExtension(
+          "EGL_ANGLE_create_context_backwards_compatible")) {
+    // Request a specific context version. The Passthrough command decoder
+    // relies on the returned context being the exact version it requested.
+    context_attributes.push_back(EGL_CONTEXT_OPENGL_BACKWARDS_COMPATIBLE_ANGLE);
+    context_attributes.push_back(EGL_FALSE);
   }
 
   // Append final EGL_NONE to signal the context attributes are finished

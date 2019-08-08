@@ -170,11 +170,9 @@ class PrintBackendWin : public PrintBackend {
   bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override;
-  bool GetPrinterCapsAndDefaults(
-      const std::string& printer_name,
-      PrinterCapsAndDefaults* printer_info) override;
-  std::string GetPrinterDriverInfo(
-      const std::string& printer_name) override;
+  bool GetPrinterCapsAndDefaults(const std::string& printer_name,
+                                 PrinterCapsAndDefaults* printer_info) override;
+  std::string GetPrinterDriverInfo(const std::string& printer_name) override;
   bool IsValidPrinter(const std::string& printer_name) override;
 
  protected:
@@ -205,7 +203,7 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   for (DWORD index = 0; index < count_returned; index++) {
     ScopedPrinterHandle printer;
     PrinterBasicInfo info;
-    if (printer.OpenPrinter(printer_info[index].pPrinterName) &&
+    if (printer.OpenPrinterWithName(printer_info[index].pPrinterName) &&
         InitBasicPrinterInfo(printer.Get(), &info)) {
       info.is_default = (info.printer_name == default_printer);
       printer_list->push_back(info);
@@ -226,8 +224,10 @@ std::string PrintBackendWin::GetDefaultPrinterName() {
 bool PrintBackendWin::GetPrinterBasicInfo(const std::string& printer_name,
                                           PrinterBasicInfo* printer_info) {
   ScopedPrinterHandle printer_handle;
-  if (!printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str()))
+  if (!printer_handle.OpenPrinterWithName(
+          base::UTF8ToWide(printer_name).c_str())) {
     return false;
+  }
 
   if (!InitBasicPrinterInfo(printer_handle.Get(), printer_info))
     return false;
@@ -241,7 +241,8 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   ScopedPrinterHandle printer_handle;
-  if (!printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str())) {
+  if (!printer_handle.OpenPrinterWithName(
+          base::UTF8ToWide(printer_name).c_str())) {
     LOG(WARNING) << "Failed to open printer, error = " << GetLastError();
     return false;
   }
@@ -262,17 +263,17 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
 
     if (user_settings->dmFields & DM_DUPLEX) {
       switch (user_settings->dmDuplex) {
-      case DMDUP_SIMPLEX:
-        caps.duplex_default = SIMPLEX;
-        break;
-      case DMDUP_VERTICAL:
-        caps.duplex_default = LONG_EDGE;
-        break;
-      case DMDUP_HORIZONTAL:
-        caps.duplex_default = SHORT_EDGE;
-        break;
-      default:
-        NOTREACHED();
+        case DMDUP_SIMPLEX:
+          caps.duplex_default = SIMPLEX;
+          break;
+        case DMDUP_VERTICAL:
+          caps.duplex_default = LONG_EDGE;
+          break;
+        case DMDUP_HORIZONTAL:
+          caps.duplex_default = SHORT_EDGE;
+          break;
+        default:
+          NOTREACHED();
       }
     }
 
@@ -346,7 +347,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       printer_info->caps_mime_type = "text/xml";
     }
     ScopedPrinterHandle printer_handle;
-    if (printer_handle.OpenPrinter(printer_name_wide.c_str())) {
+    if (printer_handle.OpenPrinterWithName(printer_name_wide.c_str())) {
       std::unique_ptr<DEVMODE, base::FreeDeleter> devmode_out(
           CreateDevMode(printer_handle.Get(), nullptr));
       if (!devmode_out)
@@ -378,14 +379,15 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 std::string PrintBackendWin::GetPrinterDriverInfo(
     const std::string& printer_name) {
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(base::UTF8ToWide(printer_name).c_str()))
+  if (!printer.OpenPrinterWithName(base::UTF8ToWide(printer_name).c_str()))
     return std::string();
   return GetDriverInfo(printer.Get());
 }
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
   ScopedPrinterHandle printer_handle;
-  return printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str());
+  return printer_handle.OpenPrinterWithName(
+      base::UTF8ToWide(printer_name).c_str());
 }
 
 // static

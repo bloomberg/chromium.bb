@@ -9,19 +9,24 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/unicodestring.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/mime_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
@@ -30,8 +35,10 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -42,6 +49,7 @@
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
+using base::BindLambdaForTesting;
 using content::AsyncFileTestHelper;
 using network::mojom::URLLoaderFactory;
 using storage::FileSystemContext;
@@ -50,6 +58,8 @@ using storage::FileSystemURL;
 
 namespace content {
 namespace {
+
+enum class TestMode { kRegular, kIncognito, kRegularWithIncognitoEnabled };
 
 // We always use the TEMPORARY FileSystem in these tests.
 const char kFileSystemURLPrefix[] = "filesystem:http://remote/temporary/";
@@ -146,74 +156,101 @@ bool IsDirectoryListingTitle(const std::string& line) {
   return line.find("<script>start(\"") == 0;
 }
 
-void ShutdownFileSystemContextOnIOThread(
-    scoped_refptr<FileSystemContext> file_system_context) {
-  if (!file_system_context)
-    return;
-  file_system_context->Shutdown();
-  file_system_context = nullptr;
-}
-
 }  // namespace
 
-class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
+class FileSystemURLLoaderFactoryTest
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<TestMode> {
  protected:
-  FileSystemURLLoaderFactoryTest() {}
+  FileSystemURLLoaderFactoryTest() : file_util_(nullptr) {
+    std::vector<base::Feature> features;
+    features.push_back(network::features::kNetworkService);
+    if (GetParam() == TestMode::kIncognito ||
+        GetParam() == TestMode::kRegularWithIncognitoEnabled) {
+      features.push_back(storage::features::kEnableFilesystemInIncognito);
+    }
+    feature_list_.InitWithFeatures(features, std::vector<base::Feature>());
+  }
   ~FileSystemURLLoaderFactoryTest() override = default;
 
+  bool IsInMemoryFileSystemEnabled() {
+    return base::FeatureList::IsEnabled(
+        storage::features::kEnableFilesystemInIncognito);
+  }
+
+  bool IsIncognito() { return GetParam() == TestMode::kIncognito; }
+
   void SetUpOnMainThread() override {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    io_task_runner_ =
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    blocking_task_runner_ =
+        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
+
+    // Support multiple sites on the test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    ContentBrowserTest::SetUpOnMainThread();
 
     // We use a test FileSystemContext which runs on the main thread, so we
     // can work with it synchronously.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_system_context_ =
-        CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
-    base::RunLoop run_loop;
-    file_system_context_->OpenFileSystem(
-        GURL("http://remote/"), storage::kFileSystemTypeTemporary,
-        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::BindOnce(&FileSystemURLLoaderFactoryTest::OnOpenFileSystem,
-                       run_loop.QuitWhenIdleClosure()));
-    run_loop.Run();
+        CreateFileSystemContext(nullptr, temp_dir_.GetPath());
+    file_util_ = file_system_context_->sandbox_delegate()->sync_file_util();
 
-    ContentBrowserTest::SetUpOnMainThread();
+    // The filesystem must be opened on the IO sequence.
+    base::RunLoop loop;
+    io_task_runner_->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          file_system_context_->OpenFileSystem(
+              GURL("http://remote/"), storage::kFileSystemTypeTemporary,
+              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+              base::BindOnce(&FileSystemURLLoaderFactoryTest::OnOpenFileSystem,
+                             loop.QuitClosure()));
+        }));
+    loop.Run();
   }
 
   void TearDownOnMainThread() override {
     loader_.reset();
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&ShutdownFileSystemContextOnIOThread,
-                       std::move(file_system_context_)));
+    base::RunLoop loop;
+    io_task_runner_->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                if (file_system_context_) {
+                                  file_system_context_->Shutdown();
+                                  file_system_context_ = nullptr;
+                                }
+                                loop.Quit();
+                              }));
+    loop.Run();
     special_storage_policy_ = nullptr;
     // FileReader posts a task to close the file in destructor.
     base::RunLoop().RunUntilIdle();
     ContentBrowserTest::TearDownOnMainThread();
   }
 
-  void SetUpAutoMountContext(base::FilePath* mnt_point) {
-    *mnt_point = temp_dir_.GetPath().AppendASCII("auto_mount_dir");
-    ASSERT_TRUE(base::CreateDirectory(*mnt_point));
+  base::FilePath SetUpAutoMountContext() {
+    base::FilePath mnt_point =
+        temp_dir_.GetPath().AppendASCII("auto_mount_dir");
+    EXPECT_TRUE(base::CreateDirectory(mnt_point));
 
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers;
     additional_providers.push_back(std::make_unique<TestFileSystemBackend>(
-        base::ThreadTaskRunnerHandle::Get().get(), *mnt_point));
+        base::ThreadTaskRunnerHandle::Get().get(), mnt_point));
 
     std::vector<storage::URLRequestAutoMountHandler> handlers = {
         base::BindRepeating(&TestAutoMountForURLRequest)};
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        nullptr, std::move(additional_providers), handlers,
-        temp_dir_.GetPath());
+        io_task_runner_, blocking_task_runner_, nullptr,
+        std::move(additional_providers), handlers, temp_dir_.GetPath());
+    return mnt_point;
   }
 
-  void SetFileUpAutoMountContext() {
-    base::FilePath mnt_point;
-    SetUpAutoMountContext(&mnt_point);
+  void SetUpFileAutoMountContext() {
+    const base::FilePath mnt_point = SetUpAutoMountContext();
 
     ASSERT_EQ(static_cast<int>(sizeof(kTestFileData)) - 1,
               base::WriteFile(mnt_point.AppendASCII("foo"), kTestFileData,
@@ -226,38 +263,79 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
-    base::FilePath path = base::FilePath().AppendASCII(dir_name);
     std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(base::File::FILE_OK,
-              file_util()->CreateDirectory(context.get(), CreateURL(path),
-                                           false /* exclusive */,
-                                           false /* recursive */));
+    base::RunLoop loop;
+    blocking_task_runner_->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          base::FilePath path = base::FilePath().AppendASCII(dir_name);
+          ASSERT_EQ(base::File::FILE_OK,
+                    file_util_->CreateDirectory(context.get(), CreateURL(path),
+                                                /*exclusive=*/false,
+                                                /*recursive=*/false));
+          loop.Quit();
+        }));
+    loop.Run();
   }
 
   void WriteFile(const base::StringPiece& file_name,
                  const char* buf,
                  int buf_size) {
-    FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
+    FileSystemURL url;
+    url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"), storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
-    ASSERT_EQ(base::File::FILE_OK,
-              AsyncFileTestHelper::CreateFileWithData(
-                  file_system_context_.get(), url, buf, buf_size));
+
+    base::File::Error result = base::File::FILE_OK;
+    base::FilePath local_path;
+    base::ScopedTempDir dir;
+    if (!dir.CreateUniqueTempDir())
+      result = base::File::FILE_ERROR_FAILED;
+    local_path = dir.GetPath().AppendASCII("tmp");
+    if (buf_size != base::WriteFile(local_path, buf, buf_size))
+      result = base::File::FILE_ERROR_FAILED;
+    EXPECT_EQ(base::File::FILE_OK, result);
+
+    base::RunLoop loop;
+    io_task_runner_->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          file_system_context_->operation_runner()->CopyInForeignFile(
+              local_path, url, BindLambdaForTesting([&](base::File::Error err) {
+                result = err;
+                loop.Quit();
+              }));
+        }));
+    loop.Run();
+    EXPECT_EQ(base::File::FILE_OK, result);
   }
 
   void EnsureFileExists(const base::StringPiece file_name) {
-    base::FilePath path = base::FilePath().AppendASCII(file_name);
     std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(
-        base::File::FILE_OK,
-        file_util()->EnsureFileExists(context.get(), CreateURL(path), nullptr));
+
+    base::RunLoop loop;
+    blocking_task_runner_->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          base::FilePath path = base::FilePath().AppendASCII(file_name);
+          ASSERT_EQ(base::File::FILE_OK,
+                    file_util_->EnsureFileExists(context.get(), CreateURL(path),
+                                                 nullptr));
+          loop.Quit();
+        }));
+    loop.Run();
   }
 
   void TruncateFile(const base::StringPiece file_name, int64_t length) {
-    base::FilePath path = base::FilePath().AppendASCII(file_name);
     std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(base::File::FILE_OK,
-              file_util()->Truncate(context.get(), CreateURL(path), length));
+
+    base::RunLoop loop;
+    blocking_task_runner_->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          base::FilePath path = base::FilePath().AppendASCII(file_name);
+          ASSERT_EQ(
+              base::File::FILE_OK,
+              file_util_->Truncate(context.get(), CreateURL(path), length));
+          loop.Quit();
+        }));
+    loop.Run();
   }
 
   // If |size| is negative, the reported size is ignored.
@@ -305,15 +383,15 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
   }
 
   std::unique_ptr<network::TestURLLoaderClient> TestLoad(const GURL& url) {
-    auto client = TestLoadHelper(url, /*extra_headers=*/nullptr,
-                                 file_system_context_.get());
+    auto client =
+        TestLoadHelper(url, /*extra_headers=*/nullptr, file_system_context_);
     client->RunUntilComplete();
     return client;
   }
 
   std::unique_ptr<network::TestURLLoaderClient> TestLoadWithContext(
       const GURL& url,
-      FileSystemContext* file_system_context) {
+      scoped_refptr<storage::FileSystemContext> file_system_context) {
     auto client =
         TestLoadHelper(url, /*extra_headers=*/nullptr, file_system_context);
     client->RunUntilComplete();
@@ -323,15 +401,23 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
   std::unique_ptr<network::TestURLLoaderClient> TestLoadWithHeaders(
       const GURL& url,
       const net::HttpRequestHeaders* extra_headers) {
-    auto client =
-        TestLoadHelper(url, extra_headers, file_system_context_.get());
+    auto client = TestLoadHelper(url, extra_headers, file_system_context_);
     client->RunUntilComplete();
     return client;
   }
 
-  std::unique_ptr<network::TestURLLoaderClient> TestLoadNoRun(const GURL& url) {
-    return TestLoadHelper(url, /*extra_headers=*/nullptr,
-                          file_system_context_.get());
+  std::unique_ptr<network::TestURLLoaderClient> TestLoadNoRun(
+      const GURL& url,
+      const net::HttpRequestHeaders* extra_headers = nullptr) {
+    return TestLoadHelper(url, extra_headers, file_system_context_);
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
+    return io_task_runner_;
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner() {
+    return blocking_task_runner_;
   }
 
   // |temp_dir_| must be deleted last.
@@ -347,8 +433,22 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
     std::move(done_closure).Run();
   }
 
-  storage::FileSystemFileUtil* file_util() {
-    return file_system_context_->sandbox_delegate()->sync_file_util();
+  storage::FileSystemContext* CreateFileSystemContext(
+      storage::QuotaManagerProxy* quota_manager_proxy,
+      const base::FilePath& base_path) {
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers;
+    additional_providers.push_back(std::make_unique<TestFileSystemBackend>(
+        blocking_task_runner_.get(), base_path));
+    if (IsIncognito()) {
+      return CreateIncognitoFileSystemContextWithAdditionalProvidersForTesting(
+          io_task_runner_, blocking_task_runner_, quota_manager_proxy,
+          std::move(additional_providers), base_path);
+    } else {
+      return CreateFileSystemContextWithAdditionalProvidersForTesting(
+          io_task_runner_, blocking_task_runner_, quota_manager_proxy,
+          std::move(additional_providers), base_path);
+    }
   }
 
   FileSystemOperationContext* NewOperationContext() {
@@ -362,28 +462,10 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
     return shell()->web_contents()->GetMainFrame();
   }
 
-  // Starts |request| using |loader_factory| and sets |out_loader| and
-  // |out_loader_client| to the resulting URLLoader and its URLLoaderClient. The
-  // caller can then use functions like client.RunUntilComplete() to wait for
-  // completion.
-  void StartRequest(
-      URLLoaderFactory* loader_factory,
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderPtr* out_loader,
-      std::unique_ptr<network::TestURLLoaderClient>* out_loader_client) {
-    *out_loader_client = std::make_unique<network::TestURLLoaderClient>();
-    loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(out_loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, (*out_loader_client)->CreateInterfacePtr(),
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  }
-
-  content::WebContents* GetWebContents() { return shell()->web_contents(); }
-
   std::unique_ptr<network::TestURLLoaderClient> TestLoadHelper(
       const GURL& url,
       const net::HttpRequestHeaders* extra_headers,
-      FileSystemContext* file_system_context) {
+      scoped_refptr<storage::FileSystemContext> file_system_context) {
     network::ResourceRequest request;
     request.url = url;
     if (extra_headers)
@@ -393,19 +475,35 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
     auto factory = content::CreateFileSystemURLLoaderFactory(
         render_frame_host(), /*is_navigation=*/false, file_system_context,
         storage_domain);
-    std::unique_ptr<network::TestURLLoaderClient> client;
-    StartRequest(factory.get(), request, &loader_, &client);
+
+    auto client = std::make_unique<network::TestURLLoaderClient>();
+    factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader_), 0, 0, network::mojom::kURLLoadOptionNone,
+        request, client->CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
     return client;
   }
 
   base::test::ScopedFeatureList feature_list_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_refptr<FileSystemContext> file_system_context_;
+  // Owned by |file_system_context_| and only usable on |blocking_task_runner_|.
+  storage::FileSystemFileUtil* file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLLoaderFactoryTest);
 };
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, DirectoryListing) {
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    FileSystemURLLoaderFactoryTest,
+    testing::Values(TestMode::kRegular,
+                    TestMode::kIncognito,
+                    TestMode::kRegularWithIncognitoEnabled));
+
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, DirectoryListing) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   CreateDirectory("foo");
   CreateDirectory("foo/bar");
@@ -448,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, DirectoryListing) {
   VerifyListingEntry(listing_entries[1], "hoge", "hoge", false, 10);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, InvalidURL) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, InvalidURL) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   auto client = TestLoad(GURL("filesystem:/foo/bar/baz"));
   ASSERT_FALSE(client->has_received_response());
@@ -456,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, InvalidURL) {
   EXPECT_EQ(net::ERR_INVALID_URL, client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, NoSuchRoot) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, NoSuchRoot) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   auto client = TestLoad(GURL("filesystem:http://remote/persistent/somedir/"));
   ASSERT_FALSE(client->has_received_response());
@@ -464,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, NoSuchRoot) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, NoSuchDirectory) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, NoSuchDirectory) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   auto client = TestLoad(CreateFileSystemURL("somedir/"));
   ASSERT_FALSE(client->has_received_response());
@@ -472,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, NoSuchDirectory) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, Cancel) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, Cancel) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   CreateDirectory("foo");
   auto client = TestLoadNoRun(CreateFileSystemURL("foo/"));
@@ -485,31 +583,41 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, Cancel) {
   // If we get here, success! we didn't crash!
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, Incognito) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, Incognito) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   CreateDirectory("foo");
 
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
+      CreateIncognitoFileSystemContextForTesting(io_task_runner(),
+                                                 blocking_task_runner(),
+                                                 nullptr, temp_dir_.GetPath());
 
   auto client =
       TestLoadWithContext(CreateFileSystemURL("/"), file_system_context.get());
-  ASSERT_TRUE(client->has_received_response());
-  ASSERT_TRUE(client->has_received_completion());
+  if (IsInMemoryFileSystemEnabled()) {
+    // When in-memory file system is enabled, the request fails as the requested
+    // directory does not exist in in-memory obfuscated file system.
+    ASSERT_FALSE(client->has_received_response());
+    ASSERT_TRUE(client->has_received_completion());
+    EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
+  } else {
+    ASSERT_TRUE(client->has_received_response());
+    ASSERT_TRUE(client->has_received_completion());
 
-  std::string response_text = ReadDataPipe(client->response_body_release());
-  EXPECT_GT(response_text.size(), 0ul);
+    std::string response_text = ReadDataPipe(client->response_body_release());
+    EXPECT_GT(response_text.size(), 0ul);
 
-  std::istringstream in(response_text);
+    std::istringstream in(response_text);
 
-  int num_entries = 0;
-  std::string line;
-  while (!!std::getline(in, line)) {
-    if (IsDirectoryListingLine(line))
-      num_entries++;
+    int num_entries = 0;
+    std::string line;
+    while (!!std::getline(in, line)) {
+      if (IsDirectoryListingLine(line))
+        num_entries++;
+    }
+
+    EXPECT_EQ(0, num_entries);
   }
-
-  EXPECT_EQ(0, num_entries);
 
   client = TestLoadWithContext(CreateFileSystemURL("foo"),
                                file_system_context.get());
@@ -518,11 +626,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, Incognito) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
                        AutoMountDirectoryListing) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath mnt_point;
-  SetUpAutoMountContext(&mnt_point);
+  base::FilePath mnt_point = SetUpAutoMountContext();
   EXPECT_TRUE(base::CreateDirectory(mnt_point));
   EXPECT_TRUE(base::CreateDirectory(mnt_point.AppendASCII("foo")));
   EXPECT_EQ(10,
@@ -558,10 +665,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
           kValidExternalMountPoint));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, AutoMountInvalidRoot) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, AutoMountInvalidRoot) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath mnt_point;
-  SetUpAutoMountContext(&mnt_point);
+  base::FilePath mnt_point = SetUpAutoMountContext();
   auto client = TestLoad(GURL("filesystem:http://automount/external/invalid"));
 
   EXPECT_FALSE(client->has_received_response());
@@ -573,10 +679,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, AutoMountInvalidRoot) {
           "invalid"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, AutoMountNoHandler) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, AutoMountNoHandler) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath mnt_point;
-  SetUpAutoMountContext(&mnt_point);
+  base::FilePath mnt_point = SetUpAutoMountContext();
   auto client = TestLoad(GURL("filesystem:http://noauto/external/mnt_name"));
 
   EXPECT_FALSE(client->has_received_response());
@@ -588,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, AutoMountNoHandler) {
           kValidExternalMountPoint));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileTest) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileTest) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   WriteFile("file1.dat", kTestFileData, base::size(kTestFileData) - 1);
   auto client = TestLoad(CreateFileSystemURL("file1.dat"));
@@ -605,10 +710,37 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileTest) {
   EXPECT_EQ("no-cache", cache_control);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
+// Verify that when site isolation is enabled, a renderer process for one
+// origin can't request filesystem: URLs belonging to another origin.  See
+// https://crbug.com/964245.
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, CrossOriginFileBlocked) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  WriteFile("file1.dat", kTestFileData, base::size(kTestFileData) - 1);
+
+  // Navigate main frame to foo.com.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(
+      NavigateToURL(shell()->web_contents(),
+                    embedded_test_server()->GetURL("foo.com", "/title1.html")));
+
+  // Try requesting filesystem:http://remote/temporary/file1.dat from that
+  // frame.  This should be blocked, as foo.com isn't allowed to request a
+  // filesystem URL for the http://remote origin.
+  auto client = TestLoad(CreateFileSystemURL("file1.dat"));
+  EXPECT_FALSE(client->has_received_response());
+  ASSERT_TRUE(client->has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_URL, client->completion_status().error_code);
+}
+
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
                        FileTestFullSpecifiedRange) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  const size_t buffer_size = 4000;
+  // Size should be larger than kDefaultFileSystemUrlPipeSize to test
+  // that large files are properly read in chunks and not entirely into
+  // memory.
+  const size_t buffer_size = 180'000;
   std::unique_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
   WriteFile("bigfile", buffer.get(), buffer_size);
@@ -623,15 +755,16 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
       net::HttpRequestHeaders::kRange,
       net::HttpByteRange::Bounded(first_byte_position, last_byte_position)
           .GetHeaderValue());
-  auto client = TestLoadWithHeaders(CreateFileSystemURL("bigfile"), &headers);
-
+  auto client = TestLoadNoRun(CreateFileSystemURL("bigfile"), &headers);
+  client->RunUntilResponseBodyArrived();
   ASSERT_TRUE(client->has_received_response());
-  EXPECT_TRUE(client->has_received_completion());
   std::string response_text = ReadDataPipe(client->response_body_release());
+  client->RunUntilComplete();
+  EXPECT_TRUE(client->has_received_completion());
   EXPECT_TRUE(partial_buffer_string == response_text);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
                        FileTestHalfSpecifiedRange) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   const size_t buffer_size = 4000;
@@ -655,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
   EXPECT_TRUE(partial_buffer_string == response_text);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
                        FileTestMultipleRangesNotSupported) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   WriteFile("file1.dat", kTestFileData, base::size(kTestFileData) - 1);
@@ -669,7 +802,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
             client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileRangeOutOfBounds) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileRangeOutOfBounds) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   WriteFile("file1.dat", kTestFileData, base::size(kTestFileData) - 1);
   net::HttpRequestHeaders headers;
@@ -683,7 +816,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileRangeOutOfBounds) {
             client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileDirRedirect) {
+// This test times out: http://crbug.com/944647.
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
+                       DISABLED_FileDirRedirect) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   CreateDirectory("dir");
   auto client = TestLoad(CreateFileSystemURL("dir"));
@@ -695,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileDirRedirect) {
   EXPECT_EQ(CreateFileSystemURL("dir/"), client->redirect_info().new_url);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileNoSuchRoot) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileNoSuchRoot) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   auto client = TestLoad(GURL("filesystem:http://remote/persistent/somefile"));
   EXPECT_FALSE(client->has_received_response());
@@ -703,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileNoSuchRoot) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, NoSuchFile) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, NoSuchFile) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   auto client = TestLoad(CreateFileSystemURL("somefile"));
   EXPECT_FALSE(client->has_received_response());
@@ -711,7 +846,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, NoSuchFile) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, client->completion_status().error_code);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileCancel) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileCancel) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   WriteFile("file1.dat", kTestFileData, base::size(kTestFileData) - 1);
   auto client = TestLoadNoRun(CreateFileSystemURL("file1.dat"));
@@ -721,7 +856,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileCancel) {
   // If we get here, success! we didn't crash!
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileGetMimeType) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileGetMimeType) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string file_data =
       "<!DOCTYPE HTML><html><head>test</head>"
@@ -745,13 +880,15 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileGetMimeType) {
   EXPECT_TRUE(client->response_head().did_mime_sniff);
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileIncognito) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileIncognito) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   WriteFile("file", kTestFileData, base::size(kTestFileData) - 1);
 
   // Creates a new filesystem context for incognito mode.
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
+      CreateIncognitoFileSystemContextForTesting(io_task_runner(),
+                                                 blocking_task_runner(),
+                                                 nullptr, temp_dir_.GetPath());
 
   // The request should return NOT_FOUND error if it's in incognito mode.
   auto client = TestLoadWithContext(CreateFileSystemURL("file"),
@@ -769,9 +906,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileIncognito) {
   EXPECT_EQ(200, client->response_head().headers->response_code());
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileAutoMountFileTest) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileAutoMountFileTest) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  SetFileUpAutoMountContext();
+  SetUpFileAutoMountContext();
   auto client =
       TestLoad(GURL("filesystem:http://automount/external/mnt_name/foo"));
 
@@ -791,10 +928,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileAutoMountFileTest) {
           kValidExternalMountPoint));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
                        FileAutoMountInvalidRoot) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  SetFileUpAutoMountContext();
+  SetUpFileAutoMountContext();
   auto client =
       TestLoad(GURL("filesystem:http://automount/external/invalid/foo"));
 
@@ -807,9 +944,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest,
           "invalid"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileAutoMountNoHandler) {
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileAutoMountNoHandler) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  SetFileUpAutoMountContext();
+  SetUpFileAutoMountContext();
   auto client =
       TestLoad(GURL("filesystem:http://noauto/external/mnt_name/foo"));
 

@@ -51,6 +51,10 @@ void PageWidgetDelegate::Animate(Page& page,
   page.Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
 }
 
+void PageWidgetDelegate::PostAnimate(Page& page) {
+  page.Animator().RunPostAnimationFrameCallbacks();
+}
+
 void PageWidgetDelegate::UpdateLifecycle(
     Page& page,
     LocalFrame& root,
@@ -69,6 +73,8 @@ void PageWidgetDelegate::UpdateLifecycle(
 void PageWidgetDelegate::DidBeginFrame(LocalFrame& root) {
   if (LocalFrameView* frame_view = root.View())
     frame_view->RunPostLifecycleSteps();
+  if (Page* page = root.GetPage())
+    PostAnimate(*page);
 }
 
 WebInputEventResult PageWidgetDelegate::HandleInputEvent(
@@ -79,11 +85,8 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
   if (root) {
     Document* document = root->GetDocument();
     DCHECK(document);
-
-    if (RuntimeEnabledFeatures::JankTrackingEnabled(document)) {
-      if (LocalFrameView* view = document->View())
-        view->GetJankTracker().NotifyInput(event);
-    }
+    if (LocalFrameView* view = document->View())
+      view->GetJankTracker().NotifyInput(event);
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&
@@ -171,7 +174,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     case WebInputEvent::kPointerDown:
     case WebInputEvent::kPointerUp:
     case WebInputEvent::kPointerMove:
-    case WebInputEvent::kPointerRawMove:
+    case WebInputEvent::kPointerRawUpdate:
     case WebInputEvent::kPointerCancel:
     case WebInputEvent::kPointerCausedUaAction:
       if (!root || !root->View())

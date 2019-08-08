@@ -20,6 +20,8 @@
 
 namespace device {
 
+class FidoDiscoveryFactory;
+
 // Handles receiving response form potentially multiple connected authenticators
 // and relaying response to the relying party.
 //
@@ -36,9 +38,12 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
   // supported by the client and allowed by the relying party.
   FidoRequestHandler(
       service_manager::Connector* connector,
+      FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& available_transports,
       CompletionCallback completion_callback)
-      : FidoRequestHandlerBase(connector, available_transports),
+      : FidoRequestHandlerBase(connector,
+                               fido_discovery_factory,
+                               available_transports),
         completion_callback_(std::move(completion_callback)) {}
 
   ~FidoRequestHandler() override {
@@ -86,6 +91,9 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       // return it e.g. after the user fails fingerprint verification.
       case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
         return FidoReturnCode::kUserConsentDenied;
+
+      case CtapDeviceResponseCode::kCtap2ErrKeyStoreFull:
+        return FidoReturnCode::kStorageFull;
 
       // This error is returned by some authenticators (e.g. the "Yubico FIDO
       // 2" CTAP2 USB keys) during GetAssertion **before the user interacted

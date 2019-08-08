@@ -13,11 +13,12 @@
 #include "biod/dbus-constants.h"
 #include "cecservice/dbus-constants.h"
 #include "cros-disks/dbus-constants.h"
+#include "cros_healthd/dbus-constants.h"
 #include "cryptohome/dbus-constants.h"
 #include "debugd/dbus-constants.h"
-#include "diagnosticsd/dbus-constants.h"
 #include "drivefs/dbus-constants.h"
 #include "hammerd/dbus-constants.h"
+#include "hermes/dbus-constants.h"
 #include "login_manager/dbus-constants.h"
 #include "lorgnette/dbus-constants.h"
 #include "oobe_config/dbus-constants.h"
@@ -32,6 +33,7 @@
 #include "vm_cicerone/dbus-constants.h"
 #include "vm_concierge/dbus-constants.h"
 #include "vm_plugin_dispatcher/dbus-constants.h"
+#include "wilco_dtc_supportd/dbus-constants.h"
 
 namespace dbus {
 const char kDBusInterface[] = "org.freedesktop.DBus";
@@ -85,15 +87,6 @@ const char kTerminaComponentName[] = "cros-termina";
 const char kSlotNameA[] = "Dlc-A";
 const char kSlotNameB[] = "Dlc-B";
 }  // namespace imageloader
-
-namespace dlcservice {
-const char kDlcServiceInterface[] = "org.chromium.DlcServiceInterface";
-const char kDlcServiceName[] = "org.chromium.DlcService";
-const char kDlcServicePath[] = "/org/chromium/DlcService";
-// Methods
-const char kInstallMethod[] = "Install";
-const char kUninstallMethod[] = "Uninstall";
-}  // namespace dlcservice
 
 namespace speech_synthesis {
 const char kSpeechSynthesizerInterface[] =
@@ -212,8 +205,8 @@ const char kPluginVmServiceName[] = "org.chromium.PluginVmService";
 const char kPluginVmServicePath[] = "/org/chromium/PluginVmService";
 const char kPluginVmServiceInterface[] =
     "org.chromium.PluginVmServiceInterface";
-const char kPluginVmServiceGetLicenseDataMethod[] =
-    "GetLicenseData";
+const char kPluginVmServiceGetLicenseDataMethod[] = "GetLicenseData";
+const char kPluginVmServiceShowSettingsPage[] = "ShowSettingsPage";
 
 const char kGesturePropertiesServiceName[] =
     "org.chromium.GesturePropertiesService";
@@ -227,24 +220,6 @@ const char kGesturePropertiesServiceGetPropertyMethod[] = "GetProperty";
 const char kGesturePropertiesServiceSetPropertyMethod[] = "SetProperty";
 
 }  // namespace chromeos
-
-namespace cromo {
-// cromo D-Bus service identifiers
-const char kCromoServiceName[] = "org.chromium.ModemManager";
-const char kCromoServicePath[] = "/org/chromium/ModemManager";
-
-// cromo D-Bus interfaces
-const char kModemInterface[] = "org.freedesktop.ModemManager.Modem";
-const char kModemSimpleInterface[] =
-    "org.freedesktop.ModemManager.Modem.Simple";
-const char kModemCdmaInterface[] = "org.freedesktop.ModemManager.Modem.Cdma";
-const char kModemGsmInterface[] = "org.freedesktop.ModemManager.Modem.Gsm";
-const char kModemGsmCardInterface[] =
-    "org.freedesktop.ModemManager.Modem.Gsm.Card";
-const char kModemGsmNetworkInterface[] =
-    "org.freedesktop.ModemManager.Modem.Gsm.Network";
-const char kModemGobiInterface[] = "org.chromium.ModemManager.Modem.Gobi";
-}  // namespace cromo
 
 namespace media_perception {
 
@@ -285,33 +260,6 @@ const char kModemManager1SmsInterface[] =
     "org.freedesktop.ModemManager1.Sms";
 const char kSMSAddedSignal[] = "Added";
 }  // namespace modemmanager
-
-namespace wimax_manager {
-// WiMaxManager D-Bus service identifiers
-const char kWiMaxManagerServiceName[] = "org.chromium.WiMaxManager";
-const char kWiMaxManagerServicePath[] = "/org/chromium/WiMaxManager";
-const char kWiMaxManagerServiceError[] = "org.chromium.WiMaxManager.Error";
-const char kWiMaxManagerInterface[] = "org.chromium.WiMaxManager";
-const char kWiMaxManagerDeviceInterface[] = "org.chromium.WiMaxManager.Device";
-const char kWiMaxManagerNetworkInterface[] =
-    "org.chromium.WiMaxManager.Network";
-const char kDeviceObjectPathPrefix[] = "/org/chromium/WiMaxManager/Device/";
-const char kNetworkObjectPathPrefix[] = "/org/chromium/WiMaxManager/Network/";
-const char kDevicesProperty[] = "Devices";
-const char kNetworksProperty[] = "Networks";
-const char kEAPAnonymousIdentity[] = "EAPAnonymousIdentity";
-const char kEAPUserIdentity[] = "EAPUserIdentity";
-const char kEAPUserPassword[] = "EAPUserPassword";
-
-enum DeviceStatus {
-  kDeviceStatusUninitialized,
-  kDeviceStatusDisabled,
-  kDeviceStatusReady,
-  kDeviceStatusScanning,
-  kDeviceStatusConnecting,
-  kDeviceStatusConnected
-};
-}  // namespace wimax_manager
 
 namespace bluetooth_plugin {
 // Service identifiers for the plugin interface added to the /org/bluez object.
@@ -884,6 +832,7 @@ const char kGetDefaultOutputBufferSize[] = "GetDefaultOutputBufferSize";
 const char kGetNodes[] = "GetNodes";
 const char kSetActiveOutputNode[] = "SetActiveOutputNode";
 const char kSetActiveInputNode[] = "SetActiveInputNode";
+const char kSetHotwordModel[] = "SetHotwordModel";
 const char kAddActiveOutputNode[] = "AddActiveOutputNode";
 const char kAddActiveInputNode[] = "AddActiveInputNode";
 const char kRemoveActiveOutputNode[] = "RemoveActiveOutputNode";

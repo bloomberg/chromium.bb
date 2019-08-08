@@ -1413,6 +1413,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "none";
     case ax::mojom::IntAttribute::kDefaultActionVerb:
       return "defaultActionVerb";
+    case ax::mojom::IntAttribute::kDropeffect:
+      return "dropeffect";
     case ax::mojom::IntAttribute::kScrollX:
       return "scrollX";
     case ax::mojom::IntAttribute::kScrollXMin:
@@ -1479,6 +1481,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "memberOfId";
     case ax::mojom::IntAttribute::kNextOnLineId:
       return "nextOnLineId";
+    case ax::mojom::IntAttribute::kPopupForId:
+      return "popupForId";
     case ax::mojom::IntAttribute::kPreviousOnLineId:
       return "previousOnLineId";
     case ax::mojom::IntAttribute::kRestriction:
@@ -1531,6 +1535,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kNone;
   if (0 == strcmp(int_attribute, "defaultActionVerb"))
     return ax::mojom::IntAttribute::kDefaultActionVerb;
+  if (0 == strcmp(int_attribute, "dropeffect"))
+    return ax::mojom::IntAttribute::kDropeffect;
   if (0 == strcmp(int_attribute, "scrollX"))
     return ax::mojom::IntAttribute::kScrollX;
   if (0 == strcmp(int_attribute, "scrollXMin"))
@@ -1597,6 +1603,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kMemberOfId;
   if (0 == strcmp(int_attribute, "nextOnLineId"))
     return ax::mojom::IntAttribute::kNextOnLineId;
+  if (0 == strcmp(int_attribute, "popupForId"))
+    return ax::mojom::IntAttribute::kPopupForId;
   if (0 == strcmp(int_attribute, "previousOnLineId"))
     return ax::mojom::IntAttribute::kPreviousOnLineId;
   if (0 == strcmp(int_attribute, "restriction"))
@@ -1693,6 +1701,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "containerLiveAtomic";
     case ax::mojom::BoolAttribute::kContainerLiveBusy:
       return "containerLiveBusy";
+    case ax::mojom::BoolAttribute::kGrabbed:
+      return "grabbed";
     case ax::mojom::BoolAttribute::kLiveAtomic:
       return "liveAtomic";
     case ax::mojom::BoolAttribute::kModal:
@@ -1727,6 +1737,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kContainerLiveAtomic;
   if (0 == strcmp(bool_attribute, "containerLiveBusy"))
     return ax::mojom::BoolAttribute::kContainerLiveBusy;
+  if (0 == strcmp(bool_attribute, "grabbed"))
+    return ax::mojom::BoolAttribute::kGrabbed;
   if (0 == strcmp(bool_attribute, "liveAtomic"))
     return ax::mojom::BoolAttribute::kLiveAtomic;
   if (0 == strcmp(bool_attribute, "modal"))
@@ -2608,10 +2620,14 @@ const char* ToString(ax::mojom::ImageAnnotationStatus status) {
   switch (status) {
     case ax::mojom::ImageAnnotationStatus::kNone:
       return "none";
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
+      return "kWillNotAnnotateDueToScheme";
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
       return "ineligibleForAnnotation";
     case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
       return "eligibleForAnnotation";
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
+      return "silentlyEligibleForAnnotation";
     case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
       return "annotationPending";
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
@@ -2631,10 +2647,14 @@ ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
     const char* status) {
   if (0 == strcmp(status, "none"))
     return ax::mojom::ImageAnnotationStatus::kNone;
+  if (0 == strcmp(status, "kWillNotAnnotateDueToScheme"))
+    return ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme;
   if (0 == strcmp(status, "ineligibleForAnnotation"))
     return ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation;
   if (0 == strcmp(status, "eligibleForAnnotation"))
     return ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation;
+  if (0 == strcmp(status, "silentlyEligibleForAnnotation"))
+    return ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation;
   if (0 == strcmp(status, "annotationPending"))
     return ax::mojom::ImageAnnotationStatus::kAnnotationPending;
   if (0 == strcmp(status, "annotationSucceeded"))
@@ -2647,6 +2667,39 @@ ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
     return ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed;
 
   return ax::mojom::ImageAnnotationStatus::kNone;
+}
+
+ax::mojom::Dropeffect ParseDropeffect(const char* dropeffect) {
+  if (0 == strcmp(dropeffect, "copy"))
+    return ax::mojom::Dropeffect::kCopy;
+  if (0 == strcmp(dropeffect, "execute"))
+    return ax::mojom::Dropeffect::kExecute;
+  if (0 == strcmp(dropeffect, "link"))
+    return ax::mojom::Dropeffect::kLink;
+  if (0 == strcmp(dropeffect, "move"))
+    return ax::mojom::Dropeffect::kMove;
+  if (0 == strcmp(dropeffect, "popup"))
+    return ax::mojom::Dropeffect::kPopup;
+  return ax::mojom::Dropeffect::kNone;
+}
+
+const char* ToString(ax::mojom::Dropeffect dropeffect) {
+  switch (dropeffect) {
+    case ax::mojom::Dropeffect::kCopy:
+      return "copy";
+    case ax::mojom::Dropeffect::kExecute:
+      return "execute";
+    case ax::mojom::Dropeffect::kLink:
+      return "link";
+    case ax::mojom::Dropeffect::kMove:
+      return "move";
+    case ax::mojom::Dropeffect::kPopup:
+      return "popup";
+    case ax::mojom::Dropeffect::kNone:
+      return "none";
+  }
+
+  return "";
 }
 
 }  // namespace ui

@@ -4,10 +4,10 @@
 
 module web.mojom;
 
-// The default service name the browser identifies as when connecting to
-// the Service Manager.
-const string kBrowserServiceName = "web_browser";
+// The service name the browser identifies as when connecting to the Service
+// Manager for its privileged global singleton instance.
+const string kSystemServiceName = "web_system";
 
-// The service name used to identify the browser process's singleton service
-// instance which packages other browser-wide services.
-const string kPackagedServicesServiceName = "web_packaged_services";
+// The service name the browser identifies as when connecting to the Service
+// Manager for each BrowserState instance.
+const string kBrowserServiceName = "web_browser";

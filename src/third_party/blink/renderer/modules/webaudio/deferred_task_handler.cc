@@ -69,11 +69,6 @@ void DeferredTaskHandler::OfflineLock() {
   context_graph_mutex_.lock();
 }
 
-void DeferredTaskHandler::AddDeferredBreakConnection(AudioHandler& node) {
-  DCHECK(IsAudioThread());
-  deferred_break_connection_list_.push_back(&node);
-}
-
 void DeferredTaskHandler::BreakConnections() {
   DCHECK(IsAudioThread());
   AssertGraphOwner();
@@ -88,10 +83,6 @@ void DeferredTaskHandler::BreakConnections() {
     }
     finished_source_handlers_.clear();
   }
-
-  for (unsigned i = 0; i < deferred_break_connection_list_.size(); ++i)
-    deferred_break_connection_list_[i]->BreakConnectionWithLock();
-  deferred_break_connection_list_.clear();
 }
 
 void DeferredTaskHandler::MarkSummingJunctionDirty(
@@ -346,8 +337,8 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   rendering_orphan_handlers_.clear();
   PostCrossThreadTask(
       *task_runner_, FROM_HERE,
-      CrossThreadBind(&DeferredTaskHandler::DeleteHandlersOnMainThread,
-                      scoped_refptr<DeferredTaskHandler>(this)));
+      CrossThreadBindOnce(&DeferredTaskHandler::DeleteHandlersOnMainThread,
+                          scoped_refptr<DeferredTaskHandler>(this)));
 }
 
 void DeferredTaskHandler::DeleteHandlersOnMainThread() {

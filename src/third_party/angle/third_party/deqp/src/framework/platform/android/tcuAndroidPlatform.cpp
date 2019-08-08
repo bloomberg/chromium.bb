@@ -49,6 +49,8 @@ using namespace eglw;
 
 static const eglu::NativeDisplay::Capability	DISPLAY_CAPABILITIES	= eglu::NativeDisplay::CAPABILITY_GET_DISPLAY_LEGACY;
 static const eglu::NativeWindow::Capability		WINDOW_CAPABILITIES		= (eglu::NativeWindow::Capability)(eglu::NativeWindow::CAPABILITY_CREATE_SURFACE_LEGACY |
+																										   eglu::NativeWindow::CAPABILITY_CREATE_SURFACE_PLATFORM |
+																										   eglu::NativeWindow::CAPABILITY_CREATE_SURFACE_PLATFORM_EXTENSION |
 																										   eglu::NativeWindow::CAPABILITY_SET_SURFACE_SIZE |
 																										   eglu::NativeWindow::CAPABILITY_GET_SCREEN_SIZE);
 
@@ -81,6 +83,8 @@ public:
 	virtual							~NativeWindow			(void);
 
 	virtual EGLNativeWindowType		getLegacyNative			(void)			{ return m_window->getNativeWindow();	}
+	virtual EGLNativeWindowType		getPlatformExtension	(void)			{ return m_window->getNativeWindow();	}
+	virtual EGLNativeWindowType		getPlatformNative		(void)			{ return m_window->getNativeWindow();	}
 	IVec2							getScreenSize			(void) const	{ return m_window->getSize();			}
 
 	void							setSurfaceSize			(IVec2 size);
@@ -345,6 +349,14 @@ vk::wsi::Display* Platform::createWsiDisplay (vk::wsi::Type wsiType) const
 		return new VulkanDisplay(const_cast<WindowRegistry&>(m_windowRegistry));
 	else
 		TCU_THROW(NotSupportedError, "WSI type not supported on Android");
+}
+
+bool Platform::hasDisplay (vk::wsi::Type wsiType) const
+{
+	if (wsiType == vk::wsi::TYPE_ANDROID)
+		return true;
+
+	return false;
 }
 
 } // Android

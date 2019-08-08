@@ -4,14 +4,13 @@
 
 #include "net/third_party/quiche/src/quic/quartc/test/quartc_peer.h"
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_endpoint.h"
 #include "net/third_party/quiche/src/quic/quartc/simulated_packet_transport.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
 
@@ -33,15 +32,20 @@ class QuartcPeerTest : public QuicTest {
         client_server_link_(&client_transport_,
                             &server_transport_,
                             QuicBandwidth::FromKBitsPerSecond(512),
-                            QuicTime::Delta::FromMilliseconds(100)) {}
+                            QuicTime::Delta::FromMilliseconds(100)) {
+    SetQuicReloadableFlag(quic_default_to_bbr, true);
+    simulator_.set_random_generator(&rng_);
+  }
 
   void CreatePeers(const std::vector<QuartcDataSource::Config>& configs) {
     client_peer_ = QuicMakeUnique<QuartcPeer>(
         simulator_.GetClock(), simulator_.GetAlarmFactory(),
-        simulator_.GetRandomGenerator(), configs);
+        simulator_.GetRandomGenerator(),
+        simulator_.GetStreamSendBufferAllocator(), configs);
     server_peer_ = QuicMakeUnique<QuartcPeer>(
         simulator_.GetClock(), simulator_.GetAlarmFactory(),
-        simulator_.GetRandomGenerator(), configs);
+        simulator_.GetRandomGenerator(),
+        simulator_.GetStreamSendBufferAllocator(), configs);
   }
 
   void Connect() {
@@ -49,16 +53,19 @@ class QuartcPeerTest : public QuicTest {
     DCHECK(server_peer_);
 
     server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
-        simulator_.GetAlarmFactory(), simulator_.GetClock(), server_peer_.get(),
+        simulator_.GetAlarmFactory(), simulator_.GetClock(),
+        simulator_.GetRandomGenerator(), server_peer_.get(),
         QuartcSessionConfig());
     client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
-        simulator_.GetAlarmFactory(), simulator_.GetClock(), client_peer_.get(),
+        simulator_.GetAlarmFactory(), simulator_.GetClock(),
+        simulator_.GetRandomGenerator(), client_peer_.get(),
         QuartcSessionConfig(), server_endpoint_->server_crypto_config());
 
     server_endpoint_->Connect(&server_transport_);
     client_endpoint_->Connect(&client_transport_);
   }
 
+  SimpleRandom rng_;
   simulator::Simulator simulator_;
   simulator::SimulatedQuartcPacketTransport client_transport_;
   simulator::SimulatedQuartcPacketTransport server_transport_;
@@ -124,7 +131,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeUnset) {
   Connect();
 
   // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   // The peers generate frames that fit in one packet.
   EXPECT_LT(client_peer_->received_messages().back().frame.size,
@@ -143,7 +150,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeLargerThanPacketSize) {
   Connect();
 
   // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   // The peers generate frames that fit in one packet.
   EXPECT_LT(client_peer_->received_messages().back().frame.size,
@@ -164,13 +171,10 @@ TEST_F(QuartcPeerTest, MaxFrameSizeSmallerThanPacketSize) {
   Connect();
 
   // Run long enough for the bandwidth estimate to ramp up.
-  // Note that the ramp-up time is longer for this test because of the long
-  // frame_interval.  This seems especially true when QUIC enables all flags for
-  // testing.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(30));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
-  EXPECT_EQ(client_peer_->received_messages().back().frame.size, 100);
-  EXPECT_EQ(server_peer_->received_messages().back().frame.size, 100);
+  EXPECT_EQ(client_peer_->received_messages().back().frame.size, 100u);
+  EXPECT_EQ(server_peer_->received_messages().back().frame.size, 100u);
 }
 
 TEST_F(QuartcPeerTest, MaxFrameSizeSmallerThanFrameHeader) {
@@ -182,7 +186,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeSmallerThanFrameHeader) {
   Connect();
 
   // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   // Max frame sizes smaller than the header are ignored, and the frame size is
   // limited by packet size.
@@ -232,8 +236,8 @@ TEST_F(QuartcPeerTest, SendReceiveMultipleSources) {
   std::vector<ReceivedMessage> client_messages =
       client_peer_->received_messages();
   std::sort(client_messages.begin(), client_messages.end(), order);
-  for (int i = 0; i < client_messages.size(); ++i) {
-    EXPECT_EQ(client_messages[i].frame.source_id, i + 1);
+  for (size_t i = 0; i < client_messages.size(); ++i) {
+    EXPECT_EQ(client_messages[i].frame.source_id, static_cast<int32_t>(i + 1));
     EXPECT_EQ(client_messages[i].frame.sequence_number, 0);
     EXPECT_GE(client_messages[i].frame.send_time, start_time);
     EXPECT_LE(client_messages[i].receive_time, end_time);
@@ -242,8 +246,8 @@ TEST_F(QuartcPeerTest, SendReceiveMultipleSources) {
   std::vector<ReceivedMessage> server_messages =
       server_peer_->received_messages();
   std::sort(server_messages.begin(), server_messages.end(), order);
-  for (int i = 0; i < server_messages.size(); ++i) {
-    EXPECT_EQ(server_messages[i].frame.source_id, i + 1);
+  for (size_t i = 0; i < server_messages.size(); ++i) {
+    EXPECT_EQ(server_messages[i].frame.source_id, static_cast<int32_t>(i + 1u));
     EXPECT_EQ(server_messages[i].frame.sequence_number, 0);
     EXPECT_GE(server_messages[i].frame.send_time, start_time);
     EXPECT_LE(server_messages[i].receive_time, end_time);
@@ -271,7 +275,7 @@ TEST_F(QuartcPeerTest, BandwidthAllocationWithEnoughAvailable) {
 
   // Run for long enough that bandwidth ramps up and meets the requirements of
   // all three sources.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   // The last message from each source should be the size allowed by that
   // source's maximum bandwidth and frame interval.
@@ -323,7 +327,7 @@ TEST_F(QuartcPeerTest, BandwidthAllocationWithoutEnoughAvailable) {
   Connect();
 
   // Run for long enough that bandwidth ramps up to link capacity.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   const std::vector<ReceivedMessage>& client_messages =
       client_peer_->received_messages();
@@ -371,7 +375,7 @@ TEST_F(QuartcPeerTest, DisableAndDrainMessages) {
   CreatePeers({config});
   Connect();
 
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   // After these calls, we should observe no new messages.
   server_peer_->SetEnabled(false);
@@ -382,7 +386,7 @@ TEST_F(QuartcPeerTest, DisableAndDrainMessages) {
   std::map<int32_t, int64_t> last_sent_by_server =
       server_peer_->GetLastSequenceNumbers();
 
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(15));
+  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   ASSERT_FALSE(client_peer_->received_messages().empty());
   EXPECT_EQ(client_peer_->received_messages().back().frame.sequence_number,

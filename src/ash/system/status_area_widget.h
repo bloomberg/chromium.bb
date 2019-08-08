@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_H_
 
 #include "ash/ash_export.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
@@ -17,7 +18,6 @@ class Window;
 }
 
 namespace ash {
-class FlagWarningTray;
 class ImeMenuTray;
 class LogoutButtonTray;
 class OverviewButtonTray;
@@ -35,7 +35,8 @@ class VirtualKeyboardTray;
 // so that it can be shown in cases where the rest of the shelf is hidden (e.g.
 // on secondary monitors at the login screen).
 class ASH_EXPORT StatusAreaWidget : public views::Widget,
-                                    public ShelfBackgroundAnimatorObserver {
+                                    public ShelfBackgroundAnimatorObserver,
+                                    public KioskNextShellObserver {
  public:
   StatusAreaWidget(aura::Window* status_container, Shelf* shelf);
   ~StatusAreaWidget() override;
@@ -100,15 +101,15 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   const ui::NativeTheme* GetNativeTheme() const override;
   bool OnNativeWidgetActivationChanged(bool active) override;
 
+  // KioskNextShellObserver:
+  void OnKioskNextEnabled() override;
+
   // TODO(jamescook): Introduce a test API instead of these methods.
   LogoutButtonTray* logout_button_tray_for_testing() {
     return logout_button_tray_.get();
   }
   VirtualKeyboardTray* virtual_keyboard_tray_for_testing() {
     return virtual_keyboard_tray_.get();
-  }
-  FlagWarningTray* flag_warning_tray_for_testing() {
-    return flag_warning_tray_.get();
   }
 
  private:
@@ -128,7 +129,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
-  std::unique_ptr<FlagWarningTray> flag_warning_tray_;
 
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 

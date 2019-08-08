@@ -18,6 +18,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.safe_browsing.FileTypePolicies;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content_public.browser.WebContents;
@@ -65,9 +66,9 @@ public class ShareServiceImpl implements ShareService {
     // clang-format off
     private static final Set<String> PERMITTED_EXTENSIONS =
             Collections.unmodifiableSet(CollectionUtil.newHashSet(
-                    "bmp", // image/bmp
+                    "bmp", // image/bmp / image/x-ms-bmp
                     "css", // text/css
-                    "csv", // text/csv
+                    "csv", // text/csv / text/comma-separated-values
                     "ehtml", // text/html
                     "flac", // audio/flac
                     "gif", // image/gif
@@ -122,7 +123,9 @@ public class ShareServiceImpl implements ShareService {
                      "image/tiff",
                      "image/webp",
                      "image/x-icon",
+                     "image/x-ms-bmp",
                      "image/x-xbitmap",
+                     "text/comma-separated-values",
                      "text/css",
                      "text/csv",
                      "text/html",
@@ -136,10 +139,6 @@ public class ShareServiceImpl implements ShareService {
 
     private static final TaskRunner TASK_RUNNER =
             PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
-
-    static {
-        TASK_RUNNER.disableLifetimeCheck();
-    }
 
     public ShareServiceImpl(@Nullable WebContents webContents) {
         mActivity = activityFromWebContents(webContents);
@@ -195,7 +194,15 @@ public class ShareServiceImpl implements ShareService {
         }
 
         for (SharedFile file : files) {
+            RecordHistogram.recordSparseHistogram(
+                    "WebShare.Unverified", FileTypePolicies.umaValueForFile(file.name));
+        }
+
+        for (SharedFile file : files) {
             if (isDangerousFilename(file.name) || isDangerousMimeType(file.blob.contentType)) {
+                Log.i(TAG,
+                        "Cannot share potentially dangerous \"" + file.blob.contentType
+                                + "\" file \"" + file.name + "\".");
                 callback.call(ShareError.PERMISSION_DENIED);
                 return;
             }

@@ -335,6 +335,27 @@ static const char* GetIceConnectionStateString(
   }
 }
 
+static const char* GetConnectionStateString(
+    webrtc::PeerConnectionInterface::PeerConnectionState state) {
+  switch (state) {
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kNew:
+      return "new";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kConnecting:
+      return "connecting";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kConnected:
+      return "connected";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kDisconnected:
+      return "disconnected";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kFailed:
+      return "failed";
+    case webrtc::PeerConnectionInterface::PeerConnectionState::kClosed:
+      return "closed";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 static const char* GetIceGatheringStateString(
     webrtc::PeerConnectionInterface::IceGatheringState state) {
   switch (state) {
@@ -923,6 +944,17 @@ void PeerConnectionTracker::TrackSignalingStateChange(
       id, "signalingStateChange", GetSignalingStateString(state));
 }
 
+void PeerConnectionTracker::TrackLegacyIceConnectionStateChange(
+    RTCPeerConnectionHandler* pc_handler,
+    webrtc::PeerConnectionInterface::IceConnectionState state) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  int id = GetLocalIDForHandler(pc_handler);
+  if (id == -1)
+    return;
+  SendPeerConnectionUpdate(id, "legacyIceConnectionStateChange",
+                           GetIceConnectionStateString(state));
+}
+
 void PeerConnectionTracker::TrackIceConnectionStateChange(
     RTCPeerConnectionHandler* pc_handler,
     webrtc::PeerConnectionInterface::IceConnectionState state) {
@@ -933,6 +965,17 @@ void PeerConnectionTracker::TrackIceConnectionStateChange(
   SendPeerConnectionUpdate(
       id, "iceConnectionStateChange",
       GetIceConnectionStateString(state));
+}
+
+void PeerConnectionTracker::TrackConnectionStateChange(
+    RTCPeerConnectionHandler* pc_handler,
+    webrtc::PeerConnectionInterface::PeerConnectionState state) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  int id = GetLocalIDForHandler(pc_handler);
+  if (id == -1)
+    return;
+  SendPeerConnectionUpdate(id, "connectionStateChange",
+                           GetConnectionStateString(state));
 }
 
 void PeerConnectionTracker::TrackIceGatheringStateChange(

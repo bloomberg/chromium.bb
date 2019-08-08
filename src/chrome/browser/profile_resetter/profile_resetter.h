@@ -49,11 +49,12 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
     PINNED_TABS = 1 << 6,
     SHORTCUTS = 1 << 7,
     NTP_CUSTOMIZATIONS = 1 << 8,
+    LANGUAGES = 1 << 9,
     // Update ALL if you add new values and check whether the type of
     // ResettableFlags needs to be enlarged.
     ALL = DEFAULT_SEARCH_ENGINE | HOMEPAGE | CONTENT_SETTINGS |
           COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGES | PINNED_TABS |
-          SHORTCUTS | NTP_CUSTOMIZATIONS
+          SHORTCUTS | NTP_CUSTOMIZATIONS | LANGUAGES
   };
 
   // Bit vector for Resettable enum.
@@ -90,6 +91,7 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   void ResetPinnedTabs();
   void ResetShortcuts();
   void ResetNtpCustomizations();
+  void ResetLanguages();
 
   // BrowsingDataRemover::Observer:
   void OnBrowsingDataRemoverDone() override;

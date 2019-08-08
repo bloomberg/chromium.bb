@@ -1166,9 +1166,8 @@ void EventLogAnalyzer::CreateGoogCcSimulationGraph(Plot* plot) {
   TimeSeries probe_results("Logged probe success", LineStyle::kNone,
                            PointStyle::kHighlight);
 
-  RtcEventLogNullImpl null_event_log;
   LogBasedNetworkControllerSimulation simulation(
-      absl::make_unique<GoogCcNetworkControllerFactory>(&null_event_log),
+      absl::make_unique<GoogCcNetworkControllerFactory>(),
       [&](const NetworkControlUpdate& update, Timestamp at_time) {
         if (update.target_rate) {
           target_rates.points.emplace_back(
@@ -1222,13 +1221,14 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
   PacketRouter packet_router;
   PacedSender pacer(&clock, &packet_router, &null_event_log);
   TransportFeedbackAdapter transport_feedback;
-  auto factory = GoogCcNetworkControllerFactory(&null_event_log);
+  auto factory = GoogCcNetworkControllerFactory();
   TimeDelta process_interval = factory.GetProcessInterval();
   // TODO(holmer): Log the call config and use that here instead.
   static const uint32_t kDefaultStartBitrateBps = 300000;
   NetworkControllerConfig cc_config;
   cc_config.constraints.at_time = Timestamp::us(clock.TimeInMicroseconds());
   cc_config.constraints.starting_rate = DataRate::bps(kDefaultStartBitrateBps);
+  cc_config.event_log = &null_event_log;
   auto goog_cc = factory.Create(cc_config);
 
   TimeSeries time_series("Delay-based estimate", LineStyle::kStep,
@@ -1286,10 +1286,16 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
       const RtpPacketType& rtp_packet = *rtp_iterator->second;
       if (rtp_packet.rtp.header.extension.hasTransportSequenceNumber) {
         RTC_DCHECK(rtp_packet.rtp.header.extension.hasTransportSequenceNumber);
+        RtpPacketSendInfo packet_info;
+        packet_info.ssrc = rtp_packet.rtp.header.ssrc;
+        packet_info.transport_sequence_number =
+            rtp_packet.rtp.header.extension.transportSequenceNumber;
+        packet_info.rtp_sequence_number = rtp_packet.rtp.header.sequenceNumber;
+        packet_info.has_rtp_sequence_number = true;
+        packet_info.length = rtp_packet.rtp.total_length;
         transport_feedback.AddPacket(
-            rtp_packet.rtp.header.ssrc,
-            rtp_packet.rtp.header.extension.transportSequenceNumber,
-            rtp_packet.rtp.total_length, PacedPacketInfo(),
+            packet_info,
+            0u,  // Per packet overhead bytes.
             Timestamp::us(rtp_packet.rtp.log_time_us()));
         rtc::SentPacket sent_packet(
             rtp_packet.rtp.header.extension.transportSequenceNumber,

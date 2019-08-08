@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.vr.util;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
-import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
@@ -50,7 +50,7 @@ public class VrTransitionUtils {
         CriteriaHelper.pollUiThread(
                 ()
                         -> { return !TestVrShellDelegate.getInstance().isBlackOverlayVisible(); },
-                "Black overlay did not disappear in allotted time", POLL_TIMEOUT_SHORT_MS,
+                "Black overlay did not disappear in allotted time", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

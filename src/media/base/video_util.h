@@ -133,7 +133,7 @@ MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8_t* source,
 
 // Converts a frame with YV12A format into I420 by dropping alpha channel.
 MEDIA_EXPORT scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
-    const scoped_refptr<VideoFrame>& frame);
+    scoped_refptr<VideoFrame> frame);
 
 // Copy I420 video frame to match the required coded size and pad the region
 // outside the visible rect repeatly with the last column / row up to the coded

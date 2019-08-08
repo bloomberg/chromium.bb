@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("android")
 public class SceneLayer {
+    public static final int INVALID_RESOURCE_ID = -1;
     private long mNativePtr;
 
     /**

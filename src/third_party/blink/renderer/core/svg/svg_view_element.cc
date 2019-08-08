@@ -25,12 +25,10 @@
 
 namespace blink {
 
-inline SVGViewElement::SVGViewElement(Document& document)
+SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(svg_names::kViewTag, document), SVGFitToViewBox(this) {
   UseCounter::Count(document, WebFeature::kSVGViewElement);
 }
-
-DEFINE_NODE_FACTORY(SVGViewElement)
 
 void SVGViewElement::Trace(blink::Visitor* visitor) {
   SVGElement::Trace(visitor);

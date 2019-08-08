@@ -45,7 +45,7 @@ class XRRay final : public ScriptWrappable {
 
   Member<DOMPointReadOnly> origin_;
   Member<DOMPointReadOnly> direction_;
-  std::unique_ptr<TransformationMatrix> matrix_;
+  Member<DOMFloat32Array> matrix_;
 };
 
 }  // namespace blink

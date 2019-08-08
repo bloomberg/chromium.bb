@@ -4,8 +4,10 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import json
 import multiprocessing
+import os
 import sys
 import textwrap
 
@@ -47,11 +49,12 @@ def GetParser():
             'when they need to fix the timing data to debug sharding '
             'generation.'),
       default=False)
-  parser_update.add_argument(
+  builder_selection = parser_update.add_mutually_exclusive_group()
+  builder_selection.add_argument(
       '--builders', '-b', action='append',
       help=('The builder names to reshard.'), default=[],
       choices=bot_platforms.ALL_PLATFORM_NAMES)
-  parser_update.add_argument(
+  builder_selection.add_argument(
       '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
       help=('The name of waterfall whose builders to be resharded. If not '
             'specified, use all perf builders by default'))
@@ -79,7 +82,27 @@ def GetParser():
       '--output-path', default='new_shard_map.json',
       help='Output file path for the shard map, default is `%(default)s`')
   parser_create.set_defaults(func=_CreateShardMapForBenchmark)
+
+  parser_deschedule = subparsers.add_parser(
+      'deschedule',
+      help=('After you deschedule one or more '
+            'benchmarks by deleting from tools/perf/benchmarks or by editing '
+            'bot_platforms.py, use this script to deschedule the '
+            'benchmark(s) without impacting the sharding for other benchmarks.'))
+  parser_deschedule.set_defaults(func=_DescheduleBenchmark)
+
+  parser_validate = subparsers.add_parser(
+      'validate',
+      help=('Validate that the shard maps match up with the benchmarks and '
+            'bot_platforms.py.'))
+  parser_validate.set_defaults(func=_ValidateShardMaps)
+
   return parser
+
+
+def _DumpJson(data, output_path):
+  with open(output_path, 'w') as output_file:
+    json.dump(data, output_file, indent=4, separators=(',', ': '))
 
 
 def _GenerateBenchmarksToShardsList(benchmarks):
@@ -118,8 +141,7 @@ def _LoadTimingData(args):
   builder_name, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStortyTimingData(
       configurations=[builder_name], num_last_days=5)
-  with open(timing_file_path, 'w') as output_file:
-    json.dump(data, output_file, indent=4, separators=(',', ': '))
+  _DumpJson(data, timing_file_path)
   print 'Finish retrieve story timing data for %s' % repr(builder_name)
 
 
@@ -135,8 +157,7 @@ def _GenerateShardMap(
   sharding_map = sharding_map_generator.generate_sharding_map(
       benchmarks_to_shard, timing_data, num_shards=num_of_shards,
       debug=debug)
-  with open(output_path, 'w') as output_file:
-    json.dump(sharding_map, output_file, indent=4, separators=(',', ': '))
+  _DumpJson(sharding_map, output_path)
 
 
 def _PromptWarning():
@@ -206,14 +227,99 @@ def _CreateShardMapForBenchmark(args):
       builder, args.shards_num, args.output_path, args.debug, args.benchmark)
 
 
+def _DescheduleBenchmark(args):
+  """Remove benchmarks from the shard maps without re-sharding."""
+  del args
+  builders = bot_platforms.ALL_PLATFORMS
+  for b in builders:
+    benchmarks_to_keep = set(
+        benchmark.Name() for benchmark in b.benchmarks_to_run)
+    with open(b.shards_map_file_path, 'r') as f:
+      if not os.path.exists(b.shards_map_file_path):
+        continue
+      shards_map = json.load(f, object_pairs_hook=collections.OrderedDict)
+      for shard, shard_map in shards_map.items():
+        if shard == 'extra_infos':
+          break
+        benchmarks = shard_map['benchmarks']
+        for benchmark in benchmarks.keys():
+          if benchmark not in benchmarks_to_keep:
+            del benchmarks[benchmark]
+    os.remove(b.shards_map_file_path)
+    _DumpJson(shards_map, b.shards_map_file_path)
+  print 'done.'
+
+
+def _ParseBenchmarks(shard_map_path):
+  if not os.path.exists(shard_map_path):
+    raise RuntimeError(
+        'Platform does not have a shard map at %s.' % shard_map_path)
+  all_benchmarks = set()
+  with open(shard_map_path) as f:
+    shard_map = json.load(f)
+  for shard, benchmarks_in_shard in shard_map.iteritems():
+    if "extra_infos" in shard:
+      continue
+    for benchmark, _ in benchmarks_in_shard['benchmarks'].iteritems():
+      all_benchmarks.add(benchmark)
+  return frozenset(all_benchmarks)
+
+
+def _ValidateShardMaps(args):
+  """Validate that the shard maps are consistent with the state of the repo."""
+  del args
+  errors = []
+
+  # Check that bot_platforms.py matches the actual shard maps
+  for platform in bot_platforms.ALL_PLATFORMS:
+    platform_benchmark_names = set(
+        b.Name() for b in platform.benchmarks_to_run)
+    shard_map_benchmark_names = _ParseBenchmarks(platform.shards_map_file_path)
+    for benchmark in platform_benchmark_names - shard_map_benchmark_names:
+      errors.append(
+          'Benchmark {benchmark} is supposed to be scheduled on platform '
+          '{platform} according to '
+          'bot_platforms.py, but it is not yet scheduled. If this is a new '
+          'benchmark, please rename it to UNSCHEDULED_{benchmark}, and then '
+          'contact '
+          'Telemetry and Chrome Client Infra team to schedule the benchmark. '
+          'You can email chrome-benchmarking-request@ to get started.'.format(
+              benchmark=benchmark, platform=platform.name))
+    for benchmark in shard_map_benchmark_names - platform_benchmark_names:
+      errors.append(
+          'Benchmark {benchmark} is scheduled on shard map {path}, but '
+          'bot_platforms.py '
+          'says that it should not be on that shard map. This could be because '
+          'the benchmark was deleted. If that is the case, you can use '
+          '`generate_perf_sharding deschedule` to deschedule the benchmark '
+          'from the shard map.'.format(
+              benchmark=benchmark, path=platform.shards_map_file_path))
+
+  # Check that every official benchmark is scheduled on some shard map.
+  # TODO(crbug.com/963614): Note that this check can be deleted if we
+  # find some way other than naming the benchmark with prefix "UNSCHEDULED_"
+  # to make it clear that a benchmark is not running.
+  scheduled_benchmarks = set()
+  for platform in bot_platforms.ALL_PLATFORMS:
+    scheduled_benchmarks = scheduled_benchmarks | _ParseBenchmarks(
+        platform.shards_map_file_path)
+  for benchmark in (
+      bot_platforms.OFFICIAL_BENCHMARK_NAMES - scheduled_benchmarks):
+    errors.append('Benchmark {benchmark} is an official benchmark, but it is not '
+                  'scheduled to run anywhere. please rename it to '
+                  'UNSCHEDULED_{benchmark}'.format(benchmark=benchmark))
+
+  for error in errors:
+    print >> sys.stderr, '*', textwrap.fill(error, 70), '\n'
+  if errors:
+    return 1
+  return 0
+
+
 def main():
   parser = GetParser()
   options = parser.parse_args()
-  if options.builders and options.waterfall:
-    parser.error('Cannot specify both --builders and --waterfall '
-                 'at the same time')
-
-  options.func(options)
+  return options.func(options)
 
 if __name__ == '__main__':
   sys.exit(main())

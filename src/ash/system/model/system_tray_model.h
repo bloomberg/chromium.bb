@@ -7,9 +7,12 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/system_tray.mojom.h"
+#include "ash/public/cpp/system_tray.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace ash {
 
@@ -18,21 +21,20 @@ class ClockModel;
 class EnterpriseDomainModel;
 class LocaleModel;
 class SessionLengthLimitModel;
+class SystemTrayClient;
 class TracingModel;
+class TrayNetworkStateModel;
 class UpdateModel;
 class VirtualKeyboardModel;
 
 // Top level model of SystemTray.
-class SystemTrayModel : public mojom::SystemTray {
+class SystemTrayModel : public SystemTray {
  public:
-  SystemTrayModel();
+  explicit SystemTrayModel(service_manager::Connector* connector);
   ~SystemTrayModel() override;
 
-  // Binds the mojom::SystemTray interface to this object.
-  void BindRequest(mojom::SystemTrayRequest request);
-
-  // mojom::SystemTray:
-  void SetClient(mojom::SystemTrayClientPtr client) override;
+  // SystemTray:
+  void SetClient(SystemTrayClient* client) override;
   void SetPrimaryTrayEnabled(bool enabled) override;
   void SetPrimaryTrayVisible(bool visible) override;
   void SetUse24HourClock(bool use_24_hour) override;
@@ -63,11 +65,13 @@ class SystemTrayModel : public mojom::SystemTray {
   TracingModel* tracing() { return tracing_.get(); }
   UpdateModel* update_model() { return update_model_.get(); }
   VirtualKeyboardModel* virtual_keyboard() { return virtual_keyboard_.get(); }
+  TrayNetworkStateModel* network_state_model() {
+    return network_state_model_.get();
+  }
   ActiveNetworkIcon* active_network_icon() {
     return active_network_icon_.get();
   }
-
-  const mojom::SystemTrayClientPtr& client_ptr() { return client_ptr_; }
+  SystemTrayClient* client() { return client_; }
 
  private:
   std::unique_ptr<ClockModel> clock_;
@@ -77,16 +81,14 @@ class SystemTrayModel : public mojom::SystemTray {
   std::unique_ptr<TracingModel> tracing_;
   std::unique_ptr<UpdateModel> update_model_;
   std::unique_ptr<VirtualKeyboardModel> virtual_keyboard_;
+  std::unique_ptr<TrayNetworkStateModel> network_state_model_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel
 
-  // Bindings for users of the mojo interface.
-  mojo::BindingSet<mojom::SystemTray> bindings_;
-
   // Client interface in chrome browser. May be null in tests.
-  mojom::SystemTrayClientPtr client_ptr_;
+  SystemTrayClient* client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayModel);
 };

@@ -155,6 +155,8 @@ static_library("common") {
     "evaluate_capability.h",
     "forward_process_stats_agent.cc",
     "forward_process_stats_agent.h",
+    "ftl_host_change_notification_listener.cc",
+    "ftl_host_change_notification_listener.h",
     "ftl_signaling_connector.cc",
     "ftl_signaling_connector.h",
     "gcd_rest_client.cc",
@@ -169,6 +171,8 @@ static_library("common") {
     "host_change_notification_listener.h",
     "host_config.cc",
     "host_config.h",
+    "host_config_upgrader.cc",
+    "host_config_upgrader.h",
     "host_details.cc",
     "host_details.h",
     "host_event_logger.h",
@@ -245,10 +249,11 @@ static_library("common") {
     "process_stats_agent.h",
     "process_stats_sender.cc",
     "process_stats_sender.h",
-    "register_support_host_request.cc",
     "register_support_host_request.h",
     "remote_input_filter.cc",
     "remote_input_filter.h",
+    "remoting_register_support_host_request.cc",
+    "remoting_register_support_host_request.h",
     "resizing_host_observer.cc",
     "resizing_host_observer.h",
     "resources.h",
@@ -291,6 +296,10 @@ static_library("common") {
     "usage_stats_consent_win.cc",
     "username.cc",
     "username.h",
+    "xmpp_heartbeat_sender.cc",
+    "xmpp_heartbeat_sender.h",
+    "xmpp_register_support_host_request.cc",
+    "xmpp_register_support_host_request.h",
   ]
 
   libs = []
@@ -310,9 +319,12 @@ static_library("common") {
     "//media",
     "//remoting/base",
     "//remoting/base:authorization",
+    "//remoting/base/grpc_support",
     "//remoting/host/file_transfer:common",
     "//remoting/host/input_monitor",
     "//remoting/host/security_key",
+    "//remoting/proto/remoting/v1:directory_grpc_library",
+    "//remoting/proto/remoting/v1:remote_support_host_grpc_library",
     "//remoting/protocol",
     "//remoting/resources",
     "//services/network:network_service",
@@ -473,6 +485,7 @@ source_set("unit_tests") {
     "desktop_display_info_unittest.cc",
     "desktop_process_unittest.cc",
     "desktop_session_agent_unittest.cc",
+    "ftl_host_change_notification_listener_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
     "heartbeat_sender_unittest.cc",
@@ -497,8 +510,8 @@ source_set("unit_tests") {
     "pin_hash_unittest.cc",
     "policy_watcher_unittest.cc",
     "process_stats_sender_unittest.cc",
-    "register_support_host_request_unittest.cc",
     "remote_input_filter_unittest.cc",
+    "remoting_register_support_host_request_unittest.cc",
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",
     "screen_resolution_unittest.cc",
@@ -509,6 +522,8 @@ source_set("unit_tests") {
     "token_validator_base_unittest.cc",
     "token_validator_factory_impl_unittest.cc",
     "touch_injector_win_unittest.cc",
+    "xmpp_heartbeat_sender_unittest.cc",
+    "xmpp_register_support_host_request_unittest.cc",
   ]
 
   if (use_ozone || is_chromeos) {
@@ -530,6 +545,7 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/grpc:grpcpp",
   ]
 
   if (is_linux && !is_chromeos) {
@@ -767,6 +783,7 @@ if (enable_me2me_host) {
         "host_main.h",
       ]
       deps = [
+        "//base",
         "//base:debugging_buildflags",
       ]
     }
@@ -787,6 +804,7 @@ if (enable_me2me_host) {
 
         deps = [
           ":remoting_me2me_host_static",
+          "//base",
           "//remoting/base:breakpad",
           "//remoting/host/installer:credits",
           "//remoting/resources",

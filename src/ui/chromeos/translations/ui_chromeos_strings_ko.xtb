@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">음역(vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">슬라이드 보기</translation>
 <translation id="1045157690796831147">음역(namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">일본어 입력(미국 키보드용)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />개 항목 삭제 중...</translation>
 <translation id="1049926623896334335">Word 문서</translation>
 <translation id="1062407476771304334">바꾸기</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351692861129622852">파일 <ph name="FILE_COUNT" />개를 가져오는 중...</translation>
 <translation id="1352103415082130575">태국어 키보드(Pattachote)</translation>
-<translation id="1358032944105037487">일본어 키보드</translation>
 <translation id="1358735829858566124">파일 또는 디렉터리를 사용할 수 없습니다.</translation>
 <translation id="1363028406613469049">트랙</translation>
 <translation id="1378727793141957596">Google 드라이브에 오신 것을 환영합니다.</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">사진 <ph name="FILE_COUNT" />장을 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업</translation>
 <translation id="3470502288861289375">복사 중...</translation>
 <translation id="3475447146579922140">Google 스프레드시트</translation>
-<translation id="3494768541638400973">Google 일본어 입력기(일본어 키보드용)</translation>
 <translation id="3495304270784461826">오류가 <ph name="COUNT" />개 있습니다.</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3549797760399244642">drive.google.com 사이트로 이동...</translation>
 <translation id="357479282490346887">리투아니아어</translation>
+<translation id="3583509704582854624">영숫자 입력(일본어 키보드용)</translation>
 <translation id="3603385196401704894">프랑스어(캐나다)</translation>
 <translation id="3606220979431771195">터키어-F</translation>
 <translation id="3609785682760573515">동기화 중...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">이 파일에 액세스하려면 온라인 상태여야 합니다.</translation>
 <translation id="4212740939091998969">이름이 '<ph name="FOLDER_NAME" />'인 폴더가 이미 존재합니다. 다른 이름을 선택하세요.</translation>
 <translation id="4215448920900139318">파일 <ph name="FILE_COUNT" />개 백업 중</translation>
+<translation id="4242533952199664413">설정 열기</translation>
 <translation id="426015154560005552">아랍어 키보드</translation>
 <translation id="4261901459838235729">Google 프레젠테이션</translation>
 <translation id="4290535918735525311">폴더 1개가 Linux와 공유됨</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 파일</translation>
 <translation id="457386861538956877">더보기...</translation>
 <translation id="4582497162516204941">Linux(베타)로 설치</translation>
-<translation id="4584780943629874245">플러그인 VM으로 공유</translation>
 <translation id="4631887759990505102">아티스트</translation>
 <translation id="4656293982926141856">이 컴퓨터</translation>
 <translation id="4669606053856530811">이 항목을 '<ph name="SOURCE_NAME" />'의 멤버와 공유하지 않으면 이 팀의 멤버가 항목에 더 이상 액세스할 수 없게 됩니다.</translation>
 <translation id="4690246192099372265">스웨덴어</translation>
 <translation id="4693155481716051732">초밥</translation>
 <translation id="4694604912444486114">원숭이</translation>
+<translation id="4697043402264950621">파일 목록이 <ph name="COLUMN_NAME" /> 기준 오름차순으로 정렬되어 있습니다.</translation>
 <translation id="4711094779914110278">터키어</translation>
 <translation id="4713544552769165154">이 파일은 Macintosh 소프트웨어를 사용하는 컴퓨터용으로 설계되었으며 Chrome OS를 실행하는 기기와 호환될 수 없습니다. 적합한 대체 앱을 찾으려면 <ph name="BEGIN_LINK" />Chrome 웹 스토어<ph name="END_LINK" />를 검색하세요. <ph name="BEGIN_LINK_HELP" />자세히 알아보기<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">사진 <ph name="FILE_COUNT" />장을 백업했습니다.</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" />개의 항목이 선택됨</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="485316830061041779">독일어</translation>
+<translation id="4867079195717347957">열을 내림차순으로 정렬하려면 클릭하세요.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" />바이트</translation>
 <translation id="4880214202172289027">볼륨 슬라이더</translation>
 <translation id="4880520557730313061">자동 보정</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">네덜란드 키보드</translation>
 <translation id="5170477580121653719">Google 드라이브에 남은 공간: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">미리보기 이미지 보기</translation>
+<translation id="5194713942430106590">열을 오름차순으로 정렬하려면 클릭하세요.</translation>
 <translation id="5218183485292899140">프랑스어(스위스)</translation>
 <translation id="5234764350956374838">숨기기</translation>
 <translation id="5241298539944515331">베트남어 키보드(VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">한국어</translation>
 <translation id="5819442873484330149">한글 세벌식(최종)</translation>
 <translation id="5833610766403489739">파일이 어디론가 사라졌습니다. 다운로드 위치 설정을 확인하고 다시 시도해 주세요.</translation>
+<translation id="5838051104334203064">Play 스토어 애플리케이션에서 이 기기에 액세스할 수 없음</translation>
 <translation id="5838825566232597749">미국 워크맨(국제)</translation>
 <translation id="5850516540536751549">이 파일 형식은 지원되지 않습니다. 이 파일 형식을 열 수 있는 앱을 찾으려면 <ph name="BEGIN_LINK" />Chrome 웹 스토어<ph name="END_LINK" />를 방문하세요.
     <ph name="BEGIN_LINK_HELP" />자세히 알아보기<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">프랑스어 BÉPO 키보드</translation>
 <translation id="5911887972742538906">Linux 애플리케이션을 설치하는 중에 오류가 발생했습니다.</translation>
 <translation id="5913638992615760742">복사 작업에 실패했습니다. 예상치 않은 오류: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">일본어 입력(일본어 키보드용)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux 앱에 Google 드라이브의 파일을 수정할 수 있는 권한을 부여합니다. 변경사항이 다른 기기에 동기화됩니다.</translation>
 <translation id="5982621672636444458">정렬 옵션</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     파일 <ph name="FILE_COUNT" />개 있음</translation>
 <translation id="6935521024859866267">180도 회전</translation>
-<translation id="6937152069980083337">Google 일본어 입력기(미국 키보드용)</translation>
 <translation id="6939777852457331078">미국 워크맨 키보드</translation>
 <translation id="696203921837389374">모바일 데이터를 이용한 동기화 사용 설정</translation>
 <translation id="6965382102122355670">확인</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">새 창</translation>
 <translation id="7348749398828259943">미국 워크맨(국제) 키보드</translation>
 <translation id="7359359531237882347">항목 <ph name="NUMBER_OF_ITEMS" />개 복사 중...</translation>
-<translation id="7379734276381389090">플러그인 VM으로 폴더 <ph name="NUMBER_OF_ITEMS" />개가 공유되었습니다.</translation>
+<translation id="7375951387215729722">파일 목록이 <ph name="COLUMN_NAME" /> 기준 내림차순으로 정렬되어 있습니다.</translation>
 <translation id="7389722738210761877">태국어 키보드(TIS 820-2531)</translation>
 <translation id="7396038720194014279">힌디어 키보드(음역 방식)</translation>
 <translation id="7417453074306512035">에티오피아어 키보드</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">슬로베니아어</translation>
 <translation id="7982283708762922719">높이</translation>
 <translation id="7987485481246785146">소라니 쿠르드어 아랍어 기반 키보드</translation>
-<translation id="7990715602172183602">플러그인 VM으로 폴더 1개가 공유되었습니다.</translation>
 <translation id="799547531016638432">바로가기 삭제</translation>
 <translation id="799923393800005025">보기 가능</translation>
 <translation id="8008366997883261463">개</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">같은 이름을 가진 파일 또는 디렉터리가 이미 존재합니다.</translation>
 <translation id="8391950649760071442">음역(emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">크기</translation>
-<translation id="8400874747056634633">플러그인 VM 공유 관리</translation>
 <translation id="8412586565681117057">빠른 입력 방법</translation>
 <translation id="8418113698656761985">루마니아어 키보드</translation>
 <translation id="8432745813735585631">영어(미국식) 콜맥 키보드</translation>

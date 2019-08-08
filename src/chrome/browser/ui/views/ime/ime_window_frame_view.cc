@@ -41,8 +41,8 @@ void ImeWindowFrameView::Init() {
                           rb.GetImageSkiaNamed(IDR_IME_WINDOW_CLOSE_H));
   close_button_->SetImage(views::Button::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_IME_WINDOW_CLOSE_C));
-  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                   views::ImageButton::ALIGN_MIDDLE);
+  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
@@ -94,7 +94,7 @@ int ImeWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (client_component != HTNOWHERE)
     return client_component;
 
-  if (close_button_ && close_button_->visible() &&
+  if (close_button_ && close_button_->GetVisible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 

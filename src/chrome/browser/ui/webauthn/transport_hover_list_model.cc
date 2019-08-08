@@ -24,8 +24,8 @@ base::string16 TransportHoverListModel::GetPlaceholderText() const {
   return base::string16();
 }
 
-const gfx::VectorIcon& TransportHoverListModel::GetPlaceholderIcon() const {
-  return gfx::kNoneIcon;
+const gfx::VectorIcon* TransportHoverListModel::GetPlaceholderIcon() const {
+  return &gfx::kNoneIcon;
 }
 
 std::vector<int> TransportHoverListModel::GetItemTags() const {
@@ -42,7 +42,11 @@ base::string16 TransportHoverListModel::GetItemText(int item_tag) const {
       TransportSelectionContext::kTransportSelectionSheet);
 }
 
-const gfx::VectorIcon& TransportHoverListModel::GetItemIcon(
+base::string16 TransportHoverListModel::GetDescriptionText(int item_tag) const {
+  return base::string16();
+}
+
+const gfx::VectorIcon* TransportHoverListModel::GetItemIcon(
     int item_tag) const {
   return GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));
 }
@@ -54,4 +58,8 @@ void TransportHoverListModel::OnListItemSelected(int item_tag) {
 
 size_t TransportHoverListModel::GetPreferredItemCount() const {
   return transport_list_.size();
+}
+
+bool TransportHoverListModel::StyleForTwoLines() const {
+  return false;
 }

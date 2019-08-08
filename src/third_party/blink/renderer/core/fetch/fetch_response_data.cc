@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -20,16 +19,6 @@ using ResponseSource = network::mojom::FetchResponseSource;
 namespace blink {
 
 namespace {
-
-WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
-  // Can't just pass *headers to the WebVector constructor because HashSet
-  // iterators are not stl iterator compatible.
-  WebVector<WebString> result(static_cast<size_t>(headers.size()));
-  int idx = 0;
-  for (const auto& header : headers)
-    result[idx++] = WebString::FromASCII(header);
-  return result;
-}
 
 Vector<String> HeaderSetToVector(const WebHTTPHeaderSet& headers) {
   Vector<String> result;
@@ -238,30 +227,6 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
       break;
   }
   return new_response;
-}
-
-void FetchResponseData::PopulateWebServiceWorkerResponse(
-    WebServiceWorkerResponse& response) {
-  if (internal_response_) {
-    internal_response_->PopulateWebServiceWorkerResponse(response);
-    response.SetResponseType(type_);
-    response.SetResponseSource(response_source_);
-    response.SetCorsExposedHeaderNames(
-        HeaderSetToWebVector(cors_exposed_header_names_));
-    return;
-  }
-  response.SetURLList(url_list_);
-  response.SetStatus(Status());
-  response.SetStatusText(StatusMessage());
-  response.SetResponseType(type_);
-  response.SetResponseSource(response_source_);
-  response.SetResponseTime(ResponseTime());
-  response.SetCacheStorageCacheName(CacheStorageCacheName());
-  response.SetCorsExposedHeaderNames(
-      HeaderSetToWebVector(cors_exposed_header_names_));
-  for (const auto& header : HeaderList()->List()) {
-    response.AppendHeader(header.first, header.second);
-  }
 }
 
 mojom::blink::FetchAPIResponsePtr

@@ -17,8 +17,9 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
  public:
   QuicMemSliceSpanImpl(const scoped_refptr<net::IOBuffer>* buffers,
-                       const int* lengths,
+                       const size_t* lengths,
                        size_t num_buffers);
+  explicit QuicMemSliceSpanImpl(QuicMemSliceImpl* slice);
 
   QuicMemSliceSpanImpl(const QuicMemSliceSpanImpl& other);
   QuicMemSliceSpanImpl& operator=(const QuicMemSliceSpanImpl& other);
@@ -54,7 +55,7 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
 
  private:
   const scoped_refptr<net::IOBuffer>* buffers_;
-  const int* lengths_;
+  const size_t* lengths_;
   // Not const so that the move operator can work properly.
   size_t num_buffers_;
 };

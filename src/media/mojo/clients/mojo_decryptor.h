@@ -56,7 +56,8 @@ class MojoDecryptor : public Decryptor {
  private:
   // These are once callbacks corresponding to repeating callbacks DecryptCB,
   // DecoderInitCB, AudioDecodeCB and VideoDecodeCB. They are needed so that we
-  // can use ScopedCallbackRunner to make sure callbacks always run.
+  // can use WrapCallbackWithDefaultInvokeIfNotRun to make sure callbacks always
+  // run.
   // TODO(xhwang): Update Decryptor to use OnceCallback. The change is easy,
   // but updating tests is hard given gmock doesn't support move-only types.
   // See http://crbug.com/751838

@@ -747,8 +747,8 @@ TEST_F(StructTraitsTest, RenderPass) {
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(4.f));
   backdrop_filters.Append(cc::FilterOperation::CreateZoomFilter(2.0f, 1));
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(2.f));
-  gfx::RRectF backdrop_filter_bounds =
-      gfx::RRectF(10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8);
+  base::Optional<gfx::RRectF> backdrop_filter_bounds(
+      {10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8});
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
   const bool cache_render_pass = true;
@@ -900,8 +900,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const bool generate_mipmap = false;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
-                cc::FilterOperations(), cc::FilterOperations(), gfx::RRectF(),
-                color_space, has_transparent_background, cache_render_pass,
+                cc::FilterOperations(), cc::FilterOperations(),
+                base::Optional<gfx::RRectF>(), color_space,
+                has_transparent_background, cache_render_pass,
                 has_damage_from_contributing_content, generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to
@@ -1143,7 +1144,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
-  const DrawQuad::Material material = DrawQuad::YUV_VIDEO_CONTENT;
+  const DrawQuad::Material material = DrawQuad::Material::kYuvVideoContent;
   const gfx::Rect rect(1234, 4321, 1357, 7531);
   const gfx::Rect visible_rect(1337, 7331, 561, 293);
   const bool needs_blending = true;
@@ -1196,7 +1197,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   EXPECT_EQ(protected_video_type, out_quad->protected_video_type);
 }
 
-TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
+TEST_F(StructTraitsTest, CopyOutputResult_EmptyBitmap) {
   auto input = std::make_unique<CopyOutputResult>(
       CopyOutputResult::Format::RGBA_BITMAP, gfx::Rect());
   std::unique_ptr<CopyOutputResult> output;
@@ -1206,6 +1207,22 @@ TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
   EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_BITMAP);
   EXPECT_TRUE(output->rect().IsEmpty());
   EXPECT_FALSE(output->AsSkBitmap().readyToDraw());
+  EXPECT_EQ(output->GetTextureResult(), nullptr);
+}
+
+TEST_F(StructTraitsTest, CopyOutputResult_EmptyTexture) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
+  auto input = std::make_unique<CopyOutputResult>(
+      CopyOutputResult::Format::RGBA_TEXTURE, gfx::Rect());
+  EXPECT_TRUE(input->IsEmpty());
+
+  std::unique_ptr<CopyOutputResult> output;
+  mojo::test::SerializeAndDeserialize<mojom::CopyOutputResult>(&input, &output);
+
+  EXPECT_TRUE(output->IsEmpty());
+  EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_TEXTURE);
+  EXPECT_TRUE(output->rect().IsEmpty());
   EXPECT_EQ(output->GetTextureResult(), nullptr);
 }
 

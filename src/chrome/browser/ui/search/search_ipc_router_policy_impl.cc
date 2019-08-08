@@ -78,14 +78,6 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessPasteIntoOmnibox(
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldProcessChromeIdentityCheck() {
-  return !is_incognito_ && search::IsInstantNTP(web_contents_);
-}
-
-bool SearchIPCRouterPolicyImpl::ShouldProcessHistorySyncCheck() {
-  return !is_incognito_ && search::IsInstantNTP(web_contents_);
-}
-
 bool SearchIPCRouterPolicyImpl::ShouldSendSetInputInProgress(
     bool is_active_tab) {
   return is_active_tab && !is_incognito_;
@@ -104,10 +96,6 @@ bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessSelectLocalBackgroundImage() {
-  return !is_incognito_ && search::IsInstantNTP(web_contents_);
-}
-
-bool SearchIPCRouterPolicyImpl::ShouldProcessSetCustomBackgroundURL() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 

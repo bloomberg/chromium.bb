@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/mutator_client.h"
@@ -81,6 +82,10 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
     return weak_factory_.GetWeakPtr();
   }
 
+  void SetClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
+    tick_clock_.reset(tick_clock.release());
+  }
+
  private:
   class OutputVectorRef;
   struct AsyncMutationRequest;
@@ -96,14 +101,29 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // Dispatches mutation update requests. The callback is triggered once all
   // mutation updates have been computed and it runs on the animation worklet
   // thread associated with the last mutation to complete.
-  void RequestMutations(WTF::CrossThreadClosure done_callback);
+  void RequestMutations(CrossThreadOnceClosure done_callback);
 
-  void MutateAsynchronouslyInternal(AsyncMutationCompleteCallback);
+  // Dispatches mutation update requests. The request time includes time
+  // in the queue. In the event that a queued request is replaced, the
+  // replacement uses the original request time.
+  // |done_callback| is called on the impl thread on completion of the mutation
+  // cycle.
+  void MutateAsynchronouslyInternal(
+      base::TimeTicks request_time,
+      AsyncMutationCompleteCallback done_callback);
 
-  void AsyncMutationsDone(int async_mutation_id);
+  // Called when the asynchronous mutation cycle is complete. The mutation id
+  // is used for asynchronous task monitoring and request time is used for
+  // collecting UMA stats of the total time between mutation request and
+  // completion.
+  void AsyncMutationsDone(int async_mutation_id, base::TimeTicks request_time);
 
   // Returns true if any updates were applied.
   bool ApplyMutationsOnHostThread();
+
+  // Timing function used for UMA metrics. Uses a tick clock that may be
+  // overridden for testing purposes.
+  base::TimeTicks NowTicks() const;
 
   // The AnimationWorkletProxyClients are also owned by the WorkerClients
   // dictionary.
@@ -147,6 +167,8 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // entry cannot, as each priority request is required to run.
   std::unique_ptr<AsyncMutationRequest> queued_priority_request;
   std::unique_ptr<AsyncMutationRequest> queued_replaceable_request;
+
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
 

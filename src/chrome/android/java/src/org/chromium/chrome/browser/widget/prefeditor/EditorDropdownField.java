@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -37,6 +38,8 @@ class EditorDropdownField implements EditorFieldView {
     private final View mLayout;
     private final TextView mLabel;
     private final Spinner mDropdown;
+    private final View mUnderline;
+    private final TextView mErrorLabel;
     private int mSelectedIndex;
     private ArrayAdapter<CharSequence> mAdapter;
     @Nullable
@@ -65,6 +68,10 @@ class EditorDropdownField implements EditorFieldView {
         mLabel.setText(mFieldModel.isRequired()
                         ? mFieldModel.getLabel() + EditorDialog.REQUIRED_FIELD_INDICATOR
                         : mFieldModel.getLabel());
+
+        mUnderline = mLayout.findViewById(R.id.spinner_underline);
+
+        mErrorLabel = mLayout.findViewById(R.id.spinner_error);
 
         final List<DropdownKeyValue> dropdownKeyValues = mFieldModel.getDropdownKeyValues();
         final List<CharSequence> dropdownValues = getDropdownValues(dropdownKeyValues);
@@ -121,6 +128,8 @@ class EditorDropdownField implements EditorFieldView {
                     }
                     mSelectedIndex = position;
                     mFieldModel.setDropdownKey(key, changedCallback);
+                    mFieldModel.setCustomErrorMessage(null);
+                    updateDisplayedError(false);
                 }
                 if (mObserverForTest != null) {
                     mObserverForTest.onEditorTextUpdate();
@@ -176,8 +185,16 @@ class EditorDropdownField implements EditorFieldView {
                 drawable.setBounds(
                         0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                 ((TextView) view).setError(mFieldModel.getErrorMessage(), drawable);
+                mUnderline.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                        mContext.getResources(), R.color.error_text_color));
+                mErrorLabel.setText(mFieldModel.getErrorMessage());
+                mErrorLabel.setVisibility(View.VISIBLE);
             } else {
                 ((TextView) view).setError(null);
+                mUnderline.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                        mContext.getResources(), R.color.modern_grey_600));
+                mErrorLabel.setText(null);
+                mErrorLabel.setVisibility(View.GONE);
             }
         }
     }

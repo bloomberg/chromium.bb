@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_LEGACY_RENDER_WIDGET_HOST_WIN_H_
 #define CONTENT_BROWSER_RENDERER_HOST_LEGACY_RENDER_WIDGET_HOST_WIN_H_
 
+// Must be included before <atlapp.h>.
+#include "base/win/atl.h"   // NOLINT(build/include_order)
+
+#include <atlapp.h>
 #include <atlcrack.h>
 #include <oleacc.h>
 #include <wrl/client.h>
@@ -12,7 +16,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/win/atl.h"
 #include "content/common/content_export.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"

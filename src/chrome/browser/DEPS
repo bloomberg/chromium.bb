@@ -10,6 +10,7 @@ include_rules = [
   "+chrome/notification_helper/notification_helper_constants.h",
   "+chrome/services/app_service/public/mojom",
   "+chrome/services/cups_ipp_parser/public",
+  "+chrome/services/cups_proxy",
   "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
@@ -18,9 +19,6 @@ include_rules = [
   "+chrome/services/removable_storage_writer/public",
   "+chrome/services/util_win/public",
   "+chrome/services/wifi_util_win/public",
-  "+chrome_elf/blacklist",
-  "+chrome_elf/chrome_elf_constants.h",
-  "+chrome_elf/dll_hash",
   "+chromeos",
   "+components",
   # Use identity_manager.h instead of the below files;
@@ -35,7 +33,6 @@ include_rules = [
   "+device/bluetooth",
   "+device/fido",
   "+device/gamepad/public/cpp",
-  "+device/usb",
   "+device/vr/buildflags/buildflags.h",
   "+device/vr/public",
   "+extensions/browser",
@@ -92,10 +89,10 @@ include_rules = [
   "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/mojom",
   "+services/shape_detection/public/mojom",
+  "+services/strings",
   "+services/video_capture/public",
   "+services/viz/privileged",
   "+services/viz/public/interfaces",
-  "+services/ws/common",
   "+services/ws/public",
   "+skia/ext",
   "+third_party/boringssl/src/include",
@@ -109,18 +106,15 @@ include_rules = [
   # interfaces in //ash/public/interfaces. See //ash/README.md.
   "-ash",
   "+ash/public",
-  "+ash/components/shortcut_viewer/public/mojom",
-  "+ash/components/tap_visualizer/public/mojom",
+  "+ash/keyboard/ui/public",
+  "+ash/keyboard/ui/grit",
+  "+ash/keyboard/ui/public",
+  "+ash/keyboard/ui/resources",
+  "+ash/components/shortcut_viewer",
 
   # The message center may not exist, or may run out of process (in mash).
   "-ui/message_center",
   "+ui/message_center/public",
-
-  # KeyboardController and related classes are part of Ash.
-  "-ui/keyboard",
-  "+ui/keyboard/grit",
-  "+ui/keyboard/public",
-  "+ui/keyboard/resources",
 
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this
@@ -137,6 +131,7 @@ include_rules = [
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h",
+  "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux_x11.h",
   "+chrome/browser/ui/views/extensions/request_file_system_dialog_view.h",
   "+chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h",
 
@@ -221,11 +216,6 @@ include_rules = [
 
 specific_include_rules = {
   "ash_service_registry\.cc": [
-    # The following are needed for classic mode to create the WindowService.
-    # Once Ash runs out of process no longer needed.
-    "+ash/shell.h",
-
-    # Needed for classic mode.
     "+ash/ash_service.h",
   ],
   "platform_util_mac.mm": [
@@ -250,5 +240,8 @@ specific_include_rules = {
   # To share values of UMA enums between product code and tests.
   "translate_manager_browsertest.cc": [
     "+services/network/initiator_lock_compatibility.h",
+  ],
+  "input_method_manager_impl.cc": [
+    "+ash/keyboard/ui/keyboard_controller.h",
   ],
 }

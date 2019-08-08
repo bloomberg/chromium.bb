@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -19,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -29,7 +31,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
@@ -95,7 +96,7 @@ class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
     ++update_image_count_;
     if (update_image_count_ == expected_update_image_count_ &&
         !icon_updated_callback_.is_null()) {
-      base::ResetAndReturn(&icon_updated_callback_).Run();
+      std::move(icon_updated_callback_).Run();
     }
   }
 
@@ -644,17 +645,17 @@ class ArcDefaultAppTest : public ArcAppModelBuilderRecreate {
   DISALLOW_COPY_AND_ASSIGN(ArcDefaultAppTest);
 };
 
-class ArcAppLauncherForDefaulAppTest : public ArcDefaultAppTest {
+class ArcAppLauncherForDefaultAppTest : public ArcDefaultAppTest {
  public:
-  ArcAppLauncherForDefaulAppTest() = default;
-  ~ArcAppLauncherForDefaulAppTest() override = default;
+  ArcAppLauncherForDefaultAppTest() = default;
+  ~ArcAppLauncherForDefaultAppTest() override = default;
 
  protected:
   // ArcDefaultAppTest:
   bool IsWaitDefaultAppsNeeded() const override { return false; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherForDefaulAppTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherForDefaultAppTest);
 };
 
 class ArcPlayStoreAppTest : public ArcDefaultAppTest {
@@ -721,7 +722,7 @@ class ArcDefaultAppForManagedUserTest : public ArcPlayStoreAppTest {
   // ArcPlayStoreAppTest:
   void OnBeforeArcTestSetup() override {
     policy::ProfilePolicyConnector* const connector =
-        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
+        profile()->GetProfilePolicyConnector();
     connector->OverrideIsManagedForTesting(true);
     profile()->GetTestingPrefService()->SetManagedPref(
         arc::prefs::kArcEnabled,
@@ -966,6 +967,26 @@ TEST_P(ArcAppModelBuilderTest, IsUnknownAfterUninstall) {
   EXPECT_FALSE(prefs->IsUnknownPackage(fake_packages()[0]->package_name));
   app_instance()->UninstallPackage(fake_packages()[0]->package_name);
   EXPECT_TRUE(prefs->IsUnknownPackage(fake_packages()[0]->package_name));
+}
+
+TEST_P(ArcAppModelBuilderTest, MetricsIncremented) {
+  const std::string package_name = "com.fakepackage.name";
+  const std::string install_histogram = "Arc.AppInstalledReason";
+  const std::string uninstall_histogram = "Arc.AppUninstallReason";
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  base::HistogramTester histogram_tester;
+  app_instance()->SendInstallationStarted(package_name);
+  histogram_tester.ExpectTotalCount(install_histogram, 0);
+
+  app_instance()->SendInstallationFinished(package_name, true /* success */);
+  histogram_tester.ExpectTotalCount(install_histogram, 1);
+
+  // Uninstalls checked similarly.
+  histogram_tester.ExpectTotalCount(uninstall_histogram, 0);
+  app_instance()->SendPackageUninstalled(package_name);
+  histogram_tester.ExpectTotalCount(uninstall_histogram, 1);
 }
 
 TEST_P(ArcAppModelBuilderTest, RestartPreserveShortcuts) {
@@ -2534,7 +2555,7 @@ TEST_P(ArcDefaultAppTest, DisableDefaultApps) {
   EXPECT_FALSE(prefs->GetApp(app_id));
 }
 
-TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
+TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2589,7 +2610,7 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
 
 // Validates that default app icon can be loaded for non-default dips, that do
 // not exist in Chrome image.
-TEST_P(ArcAppLauncherForDefaulAppTest, AppIconNonDefaultDip) {
+TEST_P(ArcAppLauncherForDefaultAppTest, AppIconNonDefaultDip) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2609,7 +2630,7 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconNonDefaultDip) {
   icon_loader.reset();
 }
 
-TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
+TEST_P(ArcAppLauncherForDefaultAppTest, AppLauncherForDefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2762,7 +2783,7 @@ INSTANTIATE_TEST_SUITE_P(,
                          ArcDefaultAppTest,
                          ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_SUITE_P(,
-                         ArcAppLauncherForDefaulAppTest,
+                         ArcAppLauncherForDefaultAppTest,
                          ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_SUITE_P(,
                          ArcDefaultAppForManagedUserTest,

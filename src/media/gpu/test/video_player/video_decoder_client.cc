@@ -35,6 +35,14 @@ VideoDecoderClient::VideoDecoderClient(
       video_(video),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
+
+  // Video frame processors are currently only supported in import mode, as
+  // wrapping texture-backed video frames is not supported (See
+  // http://crbug/362521).
+  LOG_ASSERT(config.allocation_mode == AllocationMode::kImport ||
+             frame_processors.size() == 0)
+      << "Video frame processors are only supported when using import mode";
+
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
@@ -44,8 +52,10 @@ VideoDecoderClient::~VideoDecoderClient() {
   DestroyDecoder();
   decoder_client_thread_.Stop();
 
-  // Wait until the frame processors are done, before destroying them. As the
-  // decoder has been destroyed no new frames will be sent to the processors.
+  // Wait until the renderer and frame processors are done before destroying
+  // them. This needs to be done after |decoder_client_thread_| is stopped so no
+  // new frames will be queued while waiting.
+  WaitForRenderer();
   WaitForFrameProcessors();
 }
 
@@ -111,6 +121,11 @@ bool VideoDecoderClient::WaitForFrameProcessors() {
   return success;
 }
 
+void VideoDecoderClient::WaitForRenderer() {
+  LOG_ASSERT(frame_renderer_);
+  frame_renderer_->WaitUntilRenderingDone();
+}
+
 FrameRenderer* VideoDecoderClient::GetFrameRenderer() const {
   return frame_renderer_.get();
 }
@@ -143,11 +158,11 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
 
   VideoDecoderConfig config(
       video_->Codec(), video_->Profile(), PIXEL_FORMAT_I420, VideoColorSpace(),
-      VIDEO_ROTATION_0, video_->Resolution(), gfx::Rect(video_->Resolution()),
+      kNoTransformation, video_->Resolution(), gfx::Rect(video_->Resolution()),
       video_->Resolution(), std::vector<uint8_t>(0), EncryptionScheme());
 
-  VideoDecoder::InitCB init_cb = BindToCurrentLoop(base::BindRepeating(
-      &VideoDecoderClient::DecoderInitializedTask, weak_this_));
+  VideoDecoder::InitCB init_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::DecoderInitializedTask, weak_this_));
   VideoDecoder::OutputCB output_cb = BindToCurrentLoop(
       base::BindRepeating(&VideoDecoderClient::FrameReadyTask, weak_this_));
   WaitingCB waiting_cb =
@@ -160,10 +175,10 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
     // The video decoder client expects decoders to use the VD interface. We can
     // use the TestVDAVideoDecoder wrapper here to test VDA-based video
     // decoders.
-    decoder_ = base::WrapUnique(
-        new TestVDAVideoDecoder(decoder_client_config_.allocation_mode,
-                                gfx::ColorSpace(), frame_renderer_.get()));
-    decoder_->Initialize(config, false, nullptr, init_cb, output_cb,
+    decoder_ = std::make_unique<TestVDAVideoDecoder>(
+        decoder_client_config_.allocation_mode, gfx::ColorSpace(),
+        frame_renderer_.get());
+    decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
                          waiting_cb);
   }
 
@@ -235,10 +250,11 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
   scoped_refptr<DecoderBuffer> bitstream_buffer = DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(fragment_bytes.data()), fragment_size);
   bitstream_buffer->set_timestamp(base::TimeTicks::Now().since_origin());
-  VideoDecoder::DecodeCB decode_cb = BindToCurrentLoop(
-      base::BindRepeating(&VideoDecoderClient::DecodeDoneTask, weak_this_));
 
-  decoder_->Decode(std::move(bitstream_buffer), decode_cb);
+  VideoDecoder::DecodeCB decode_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::DecodeDoneTask, weak_this_));
+  decoder_->Decode(std::move(bitstream_buffer), std::move(decode_cb));
+
   num_outstanding_decode_requests_++;
 
   // Throw event when we encounter a config info in a H.264 stream.
@@ -255,10 +271,11 @@ void VideoDecoderClient::FlushTask() {
 
   // Changing the state to flushing will abort any pending decodes.
   decoder_client_state_ = VideoDecoderClientState::kFlushing;
-  VideoDecoder::DecodeCB flush_done_cb = BindToCurrentLoop(
-      base::BindRepeating(&VideoDecoderClient::FlushDoneTask, weak_this_));
 
-  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), flush_done_cb);
+  VideoDecoder::DecodeCB flush_done_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::FlushDoneTask, weak_this_));
+  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), std::move(flush_done_cb));
+
   FireEvent(VideoPlayerEvent::kFlushing);
 }
 
@@ -303,8 +320,7 @@ void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
       base::BindOnce(&VideoDecoderClient::DecodeNextFragmentTask, weak_this_));
 }
 
-void VideoDecoderClient::FrameReadyTask(
-    const scoped_refptr<VideoFrame>& video_frame) {
+void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
 
   // When using allocate mode the frame will be reused after this function, so
@@ -330,6 +346,9 @@ void VideoDecoderClient::FlushDoneTask(media::DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
+  // Send an EOS frame to the renderer, so it can reset any internal state it
+  // might keep in preparation of the next stream of video frames.
+  frame_renderer_->RenderFrame(VideoFrame::CreateEOSFrame());
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   FireEvent(VideoPlayerEvent::kFlushDone);
 }
@@ -343,6 +362,7 @@ void VideoDecoderClient::ResetDoneTask() {
   // is supported, so we can set the frame index to zero here.
   current_frame_index_ = 0;
 
+  frame_renderer_->RenderFrame(VideoFrame::CreateEOSFrame());
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   FireEvent(VideoPlayerEvent::kResetDone);
 }

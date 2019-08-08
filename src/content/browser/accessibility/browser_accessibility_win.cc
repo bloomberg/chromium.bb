@@ -49,7 +49,11 @@ void BrowserAccessibilityWin::OnLocationChanged() {
 }
 
 base::string16 BrowserAccessibilityWin::GetText() const {
-  return GetCOM()->AXPlatformNodeWin::GetText();
+  return GetHypertext();
+}
+
+base::string16 BrowserAccessibilityWin::GetHypertext() const {
+  return GetCOM()->AXPlatformNodeWin::GetHypertext();
 }
 
 gfx::NativeViewAccessible BrowserAccessibilityWin::GetNativeViewAccessible() {

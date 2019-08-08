@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">स्लायडर</translation>
 <translation id="1211441953136645838">तळटीप</translation>
 <translation id="1281252709823657822">डायलॉग</translation>
-<translation id="1289247557029249093">चित्रात-चित्र मोडमधून बाहेर पडा</translation>
 <translation id="1335095011850992622">श्रेय</translation>
 <translation id="1342835525016946179">लेख</translation>
 <translation id="1359897965706325498">बॅनर</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">आज</translation>
 <translation id="2158401438286456825">पेज सूची</translation>
 <translation id="2226276347425096477">कृपया हा मजकूर <ph name="MAX_CHARACTERS" /> वर्ण लहान किंवा कमी करा (तुम्ही सध्या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
+<translation id="2246498165605549352">स्थानिक फाइल</translation>
 <translation id="2247351761944213033">आठवडा <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ट्रॅक <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">चेकबॉक्‍स</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">लेबल न केलेली इमेज</translation>
 <translation id="3706100364254443312">स्विच करा</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">संज्ञा</translation>
 <translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' चे फॉलो करणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
 <translation id="4668956016107839909">परिशिष्ट</translation>
+<translation id="4718048029184481307">चित्रात-चित्र मध्ये प्ले करत आहे</translation>
 <translation id="4742539557769756338">कव्हर</translation>
 <translation id="4748357248530471599">डिस्प्ले कटआउट फुलस्क्रीन टॉगल करा</translation>
 <translation id="4757246831282535685">टॅब पॅनेल</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">अंतिम शब्द</translation>
 <translation id="6209276755895393898">असे असल्याचे दिसत आहे: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
-<translation id="628938136236500310">चित्रात-चित्र मोडमध्ये प्ले करत आहे</translation>
+<translation id="6310801910862476708">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="6398862346408813489">महिना निवड पॅनेल दाखवा</translation>
 <translation id="6404546809543547843">ऑडिओ वेळ स्क्रबर</translation>
 <translation id="6443871981718447451">सबटायटल मेनू दाखवा</translation>

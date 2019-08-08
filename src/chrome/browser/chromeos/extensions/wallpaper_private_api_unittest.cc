@@ -71,7 +71,7 @@ TEST_F(WallpaperPrivateApiUnittest, ResetWallpaper) {
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   WallpaperControllerClient client;
   TestWallpaperController test_controller;
-  client.InitForTesting(test_controller.CreateInterfacePtr());
+  client.InitForTesting(&test_controller);
   fake_user_manager()->AddUser(AccountId::FromUserEmail(kTestAccount));
 
   {
@@ -81,7 +81,6 @@ TEST_F(WallpaperPrivateApiUnittest, ResetWallpaper) {
         extensions::api_test_utils::RunFunction(function.get(), "[]", nullptr));
   }
 
-  client.FlushForTesting();
   // Expect SetDefaultWallpaper() to be called exactly once.
   EXPECT_EQ(1, test_controller.set_default_wallpaper_count());
 }

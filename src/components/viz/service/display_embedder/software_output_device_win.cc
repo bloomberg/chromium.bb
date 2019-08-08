@@ -170,62 +170,6 @@ void SoftwareOutputDeviceWinDirect::EndPaintDelegated(
   ::ReleaseDC(hwnd(), hdc);
 }
 
-// SoftwareOutputDevice implementation that uses layered window API to draw to
-// the provided HWND.
-class SoftwareOutputDeviceWinLayered : public SoftwareOutputDeviceWinBase {
- public:
-  explicit SoftwareOutputDeviceWinLayered(HWND hwnd)
-      : SoftwareOutputDeviceWinBase(hwnd) {}
-  ~SoftwareOutputDeviceWinLayered() override = default;
-
-  // SoftwareOutputDeviceWinBase implementation.
-  void ResizeDelegated() override;
-  SkCanvas* BeginPaintDelegated() override;
-  void EndPaintDelegated(const gfx::Rect& damage_rect) override;
-
- private:
-  std::unique_ptr<SkCanvas> canvas_;
-
-  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWinLayered);
-};
-
-void SoftwareOutputDeviceWinLayered::ResizeDelegated() {
-  canvas_.reset();
-}
-
-SkCanvas* SoftwareOutputDeviceWinLayered::BeginPaintDelegated() {
-  if (!canvas_) {
-    // Layered windows can't share a pixel backing.
-    canvas_ = skia::CreatePlatformCanvasWithSharedSection(
-        viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
-        nullptr, skia::CRASH_ON_FAILURE);
-  }
-  return canvas_.get();
-}
-
-void SoftwareOutputDeviceWinLayered::EndPaintDelegated(
-    const gfx::Rect& damage_rect) {
-  if (!canvas_)
-    return;
-
-  // Set WS_EX_LAYERED extended window style if not already set.
-  DWORD style = GetWindowLong(hwnd(), GWL_EXSTYLE);
-  DCHECK(!(style & WS_EX_COMPOSITED));
-  if (!(style & WS_EX_LAYERED))
-    SetWindowLong(hwnd(), GWL_EXSTYLE, style | WS_EX_LAYERED);
-
-  RECT wr;
-  GetWindowRect(hwnd(), &wr);
-  SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
-  POINT position = {wr.left, wr.top};
-  POINT zero = {0, 0};
-  BLENDFUNCTION blend = {AC_SRC_OVER, 0x00, 0xFF, AC_SRC_ALPHA};
-
-  HDC dib_dc = skia::GetNativeDrawingContext(canvas_.get());
-  UpdateLayeredWindow(hwnd(), nullptr, &position, &size, dib_dc, &zero,
-                      RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-}
-
 // SoftwareOutputDevice implementation that uses layered window API to draw
 // indirectly. Since UpdateLayeredWindow() is blocked by the GPU sandbox an
 // implementation of mojom::LayeredWindowUpdater in the browser process handles
@@ -239,7 +183,7 @@ class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
   ~SoftwareOutputDeviceWinProxy() override = default;
 
   // SoftwareOutputDevice implementation.
-  void OnSwapBuffers(base::OnceClosure swap_ack_callback) override;
+  void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
 
   // SoftwareOutputDeviceWinBase implementation.
   void ResizeDelegated() override;
@@ -268,16 +212,19 @@ SoftwareOutputDeviceWinProxy::SoftwareOutputDeviceWinProxy(
 }
 
 void SoftwareOutputDeviceWinProxy::OnSwapBuffers(
-    base::OnceClosure swap_ack_callback) {
+    SwapBuffersCallback swap_ack_callback) {
   DCHECK(swap_ack_callback_.is_null());
 
   // We aren't waiting on DrawAck() and can immediately run the callback.
   if (!waiting_on_draw_ack_) {
-    task_runner_->PostTask(FROM_HERE, std::move(swap_ack_callback));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(swap_ack_callback), viewport_pixel_size_));
     return;
   }
 
-  swap_ack_callback_ = std::move(swap_ack_callback);
+  swap_ack_callback_ =
+      base::BindOnce(std::move(swap_ack_callback), viewport_pixel_size_);
 }
 
 void SoftwareOutputDeviceWinProxy::ResizeDelegated() {
@@ -340,16 +287,7 @@ void SoftwareOutputDeviceWinProxy::DrawAck() {
 
 }  // namespace
 
-std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinBrowser(
-    HWND hwnd,
-    OutputDeviceBacking* backing) {
-  if (NeedsToUseLayerWindow(hwnd))
-    return std::make_unique<SoftwareOutputDeviceWinLayered>(hwnd);
-
-  return std::make_unique<SoftwareOutputDeviceWinDirect>(hwnd, backing);
-}
-
-std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinGpu(
+std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWin(
     HWND hwnd,
     OutputDeviceBacking* backing,
     mojom::DisplayClient* display_client) {

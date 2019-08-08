@@ -170,7 +170,7 @@ void AddCmaKeySystems(
       encryption_schemes,                // Encryption schemes.
       codecs,                            // Hardware secure codecs.
       encryption_schemes,                // Hardware secure encryption schemes.
-      Robustness::HW_SECURE_ALL,         // Max audio robustness.
+      Robustness::HW_SECURE_CRYPTO,      // Max audio robustness.
       Robustness::HW_SECURE_ALL,         // Max video robustness.
       EmeSessionTypeSupport::SUPPORTED,  // persistent-license.
       EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.

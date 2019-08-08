@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/payment_request.h"
@@ -58,7 +59,7 @@ class Controller : public ScriptExecutorDelegate,
   bool NeedsUI() const;
 
   // Called when autofill assistant can start executing scripts.
-  void Start(const GURL& initial_url,
+  void Start(const GURL& deeplink_url,
              std::unique_ptr<TriggerContext> trigger_context);
 
   // Lets the controller know it's about to be deleted. This is normally called
@@ -66,7 +67,9 @@ class Controller : public ScriptExecutorDelegate,
   void WillShutdown(Metrics::DropOutReason reason);
 
   // Overrides ScriptExecutorDelegate:
+  const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
+  const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
   UiController* GetUiController() override;
   WebController* GetWebController() override;
@@ -85,6 +88,9 @@ class Controller : public ScriptExecutorDelegate,
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void SetResizeViewport(bool resize_viewport) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  bool SetForm(std::unique_ptr<FormProto> form,
+               base::RepeatingCallback<void(const FormProto::Result*)> callback)
+      override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
@@ -107,7 +113,9 @@ class Controller : public ScriptExecutorDelegate,
   void SelectSuggestion(int index) override;
   const std::vector<Chip>& GetActions() const override;
   void SelectAction(int index) override;
+  std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
+  const PaymentInformation* GetPaymentRequestInformation() const override;
   void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) override;
   void SetBillingAddress(
@@ -119,10 +127,17 @@ class Controller : public ScriptExecutorDelegate,
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
+  void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
   bool GetResizeViewport() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  void GetOverlayColors(OverlayColors* colors) const override;
+  const FormProto* GetForm() const override;
+  void SetCounterValue(int input_index, int counter_index, int value) override;
+  void SetChoiceSelected(int input_index,
+                         int choice_index,
+                         bool selected) override;
 
  private:
   friend ControllerTest;
@@ -166,7 +181,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnGetCookie(bool has_cookie);
   void OnSetCookie(bool result);
   void FinishStart();
-  void MaybeSetInitialDetails();
+  void InitFromParameters();
 
   // Called when a script is selected.
   void OnScriptSelected(const std::string& script_path);
@@ -192,9 +207,11 @@ class Controller : public ScriptExecutorDelegate,
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
 
-  void OnTouchableAreaChanged(const std::vector<RectF>& areas);
+  void OnTouchableAreaChanged(const RectF& visual_viewport,
+                              const std::vector<RectF>& areas);
 
   void SelectChip(std::vector<Chip>* chips, int chip_index);
+  void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
   void ReportNavigationStateChanged();
 
   // Clear out visible state and enter the stopped state.
@@ -203,6 +220,7 @@ class Controller : public ScriptExecutorDelegate,
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
 
+  ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
 
@@ -221,7 +239,9 @@ class Controller : public ScriptExecutorDelegate,
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
 
   // The URL passed to Start(). Used only as long as there's no committed URL.
-  GURL initial_url_;
+  // Note that this is the deeplink passed by a caller and reported to the
+  // backend in an initial get action request.
+  GURL deeplink_url_;
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
@@ -278,6 +298,8 @@ class Controller : public ScriptExecutorDelegate,
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
 
+  std::unique_ptr<OverlayColors> overlay_colors_;
+
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;
 
@@ -286,6 +308,11 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
   std::unique_ptr<PaymentInformation> payment_request_info_;
+
+  std::unique_ptr<FormProto> form_;
+  std::unique_ptr<FormProto::Result> form_result_;
+  base::RepeatingCallback<void(const FormProto::Result*)> form_callback_ =
+      base::DoNothing();
 
   // Value for ScriptExecutorDelegate::IsNavigatingToNewDocument()
   bool navigating_to_new_document_ = false;

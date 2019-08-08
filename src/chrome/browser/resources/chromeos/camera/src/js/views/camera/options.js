@@ -21,10 +21,25 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the options of Camera view.
+ * @param {cca.views.camera.PhotoResolPreferrer} photoResolPreferrer
+ * @param {cca.views.camera.VideoResolPreferrer} videoResolPreferrer
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
-cca.views.camera.Options = function(doSwitchDevice) {
+cca.views.camera.Options = function(
+    photoResolPreferrer, videoResolPreferrer, doSwitchDevice) {
+  /**
+   * @type {cca.views.camera.PhotoResolPreferrer}
+   * @private
+   */
+  this.photoResolPreferrer_ = photoResolPreferrer;
+
+  /**
+   * @type {cca.views.camera.VideoResolPreferrer}
+   * @private
+   */
+  this.videoResolPreferrer_ = videoResolPreferrer;
+
   /**
    * @type {function()}
    * @private
@@ -65,6 +80,26 @@ cca.views.camera.Options = function(doSwitchDevice) {
   this.videoDevices_ = null;
 
   /**
+   * MediaDeviceInfo and additional information queried from private mojo api of
+   * all available video device. The additional fields in the array entry
+   * represent camera facing, supported photo resolutions, supported video
+   * resolutions. On HALv1 device, the promise will throw exception for its
+   * incapability of building mojo api connection.
+   * @type {Promise<!Array<[MediaDeviceInfo, cros.mojom.CameraFacing, ResolList,
+   *     ResolList]>>}
+   * @private
+   */
+  this.devicePrivateInfo_ = null;
+
+  /**
+   * Whether the current device is HALv1 and lacks facing configuration.
+   * get facing information.
+   * @type {?boolean}
+   * private
+   */
+  this.isV1NoFacingConfig_ = null;
+
+  /**
    * Mirroring set per device.
    * @type {Object}
    * @private
@@ -98,9 +133,10 @@ cca.views.camera.Options = function(doSwitchDevice) {
   // Remove the deprecated values.
   chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
 
-  // TODO(yuli): Replace with devicechanged event.
   this.maybeRefreshVideoDeviceIds_();
-  setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
+  navigator.mediaDevices.addEventListener('devicechange', () => {
+    this.maybeRefreshVideoDeviceIds_();
+  });
 };
 
 /**
@@ -146,13 +182,23 @@ cca.views.camera.Options.prototype.animatePreviewGrid_ = function() {
  * Updates the options' values for the current constraints and stream.
  * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
- * @return {string} Facing-mode in use.
+ * @return {?string} Facing-mode in use.
  */
-cca.views.camera.Options.prototype.updateValues = function(
-    constraints, stream) {
+cca.views.camera.Options.prototype.updateValues =
+    async function(constraints, stream) {
   var track = stream.getVideoTracks()[0];
   var trackSettings = track.getSettings && track.getSettings();
-  var facingMode = trackSettings && trackSettings.facingMode;
+  let facingMode = trackSettings && trackSettings.facingMode;
+  if (this.isV1NoFacingConfig_ === null) {
+    // Because the facing mode of external camera will be set to undefined on
+    // all devices, to distinguish HALv1 device without facing configuration,
+    // assume the first opened camera is built-in camera. Device without facing
+    // configuration won't set facing of built-in cameras. Also if HALv1 device
+    // with facing configuration opened external camera first after CCA launched
+    // the logic here may misjudge it as this category.
+    this.isV1NoFacingConfig_ = facingMode === undefined;
+  }
+  facingMode = this.isV1NoFacingConfig_ ? null : facingMode || 'external';
   this.updateVideoDeviceId_(constraints, trackSettings);
   this.updateMirroring_(facingMode);
   this.audioTrack_ = stream.getAudioTracks()[0];
@@ -240,32 +286,117 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     cca.state.set('multi-camera', multi);
     this.refreshingVideoDeviceIds_ = false;
   });
+
+  this.devicePrivateInfo_ =
+      this.videoDevices_
+          .then((devices) => {
+            return Promise.all(devices.map((d) => Promise.all([
+              d,
+              cca.mojo.getCameraFacing(d.deviceId),
+              cca.mojo.getPhotoResolutions(d.deviceId),
+              cca.mojo.getVideoConfigs(d.deviceId)
+                  .then(
+                      (v) => v.filter(([, , fps]) => fps >= 24)
+                                 .map(([w, h]) => [w, h])),
+            ])));
+          })
+          .catch((e) => {
+            cca.state.set('no-resolution-settings', true);
+            throw e;
+          });
+
+  (async () => {
+    try {
+      var devicePrivateInfo = await this.devicePrivateInfo_;
+    } catch (e) {
+      return;
+    }
+    let frontSetting = null;
+    let backSetting = null;
+    let externalSettings = [];
+    devicePrivateInfo.forEach(([{deviceId}, facing, photoRs, videoRs]) => {
+      const setting = [deviceId, photoRs, videoRs];
+      switch (facing) {
+        case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
+          frontSetting = setting;
+          break;
+        case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
+          backSetting = setting;
+          break;
+        case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
+          externalSettings.push(setting);
+          break;
+        default:
+          console.error(`Ignore device of unknown facing: ${facing}`);
+      }
+    });
+    this.photoResolPreferrer_.updateResolutions(
+        frontSetting && [frontSetting[0], frontSetting[1]],
+        backSetting && [backSetting[0], backSetting[1]],
+        externalSettings.map(([deviceId, photoRs]) => [deviceId, photoRs]));
+    this.videoResolPreferrer_.updateResolutions(
+        frontSetting && [frontSetting[0], frontSetting[2]],
+        backSetting && [backSetting[0], backSetting[2]],
+        externalSettings.map(([deviceId, , videoRs]) => [deviceId, videoRs]));
+  })();
 };
 
 /**
  * Gets the video device ids sorted by preference.
- * @return {!Promise<!Array<string>>}
+ * @async
+ * @return {Array<?string>} May contain null for user facing camera on HALv1
+ *     devices.
+ * @throws {Error} Throws exception for no available video devices.
  */
-cca.views.camera.Options.prototype.videoDeviceIds = function() {
-  return this.videoDevices_.then((devices) => {
-    if (devices.length == 0) {
-      throw new Error('Device list empty.');
+cca.views.camera.Options.prototype.videoDeviceIds = async function() {
+  const devices = await this.videoDevices_;
+  if (devices.length == 0) {
+    throw new Error('Device list empty.');
+  }
+  try {
+    var facings = (await this.devicePrivateInfo_)
+                      .reduce(
+                          (facings, [d, facing]) =>
+                              Object.assign(facings, {[d.deviceId]: facing}),
+                          {});
+    this.isV1NoFacingConfig_ = false;
+  } catch (e) {
+    facings = null;
+  }
+  // Put the selected video device id first.
+  var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
+    if (a == b) {
+      return 0;
     }
-    // Put the selected video device id first.
-    var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
-      if (a == b) {
-        return 0;
-      }
-      if (a == this.videoDeviceId_) {
-        return -1;
-      }
-      return 1;
-    });
-    // Prepended 'null' deviceId means the system default camera. Add it only
-    // when the app is launched (no video-device-id set).
-    if (this.videoDeviceId_ == null) {
-      sorted.unshift(null);
+    if (this.videoDeviceId_ ?
+            a === this.videoDeviceId_ :
+            (facings &&
+             facings[a] === cros.mojom.CameraFacing.CAMERA_FACING_FRONT)) {
+      return -1;
     }
-    return sorted;
+    return 1;
   });
+  // Prepended 'null' deviceId means the system default camera on HALv1
+  // device. Add it only when the app is launched (no video-device-id set).
+  if (!facings && this.videoDeviceId_ === null) {
+    sorted.unshift(null);
+  }
+  return sorted;
+};
+
+/**
+ * Gets supported photo and video resolutions for specified video device.
+ * @async
+ * @param {string} deviceId Device id of the video device.
+ * @return {[ResolList, ResolList]} Supported photo and video resolutions.
+ * @throws {Error} May fail on HALv1 device without capability of querying
+ *     supported resolutions.
+ */
+cca.views.camera.Options.prototype.getDeviceResolutions =
+    async function(deviceId) {
+  // HALv1 device will thrown from here.
+  const devicePrivateInfo = await this.devicePrivateInfo_;
+  const [, , photoRs, videoRs] =
+      devicePrivateInfo.find(([d]) => d.deviceId === deviceId);
+  return [photoRs, videoRs];
 };

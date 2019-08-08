@@ -26,8 +26,7 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   }
 
   // ash::mojom::KeyboardController:
-  void KeyboardContentsLoaded(const base::UnguessableToken& token,
-                              const gfx::Size& size) override {}
+  void KeyboardContentsLoaded(const gfx::Size& size) override {}
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override {
     std::move(callback).Run(
         keyboard::mojom::KeyboardConfig::New(keyboard_config_));

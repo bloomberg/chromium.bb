@@ -87,7 +87,7 @@ gfx::Size DialogPlate::CalculatePreferredSize() const {
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  OnButtonPressed(static_cast<ash::AssistantButtonId>(sender->id()));
+  OnButtonPressed(static_cast<ash::AssistantButtonId>(sender->GetID()));
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
@@ -259,7 +259,7 @@ void DialogPlate::InitLayout() {
                       kPaddingHorizontalDip)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
   molecule_icon_ = ash::LogoView::Create();
@@ -300,7 +300,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
               gfx::Insets(0, kLeftPaddingDip, 0, 0)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   gfx::FontList font_list =
       ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
@@ -344,7 +344,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
           views::BoxLayout::Orientation::kHorizontal));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Offset.
   // To make the |animated_voice_input_toggle_| horizontally centered in the

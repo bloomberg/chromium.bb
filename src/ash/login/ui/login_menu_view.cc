@@ -34,7 +34,7 @@ constexpr SkColor kMenuBackgroundColor = SkColorSetRGB(0x3C, 0x40, 0x43);
 class MenuItemView : public views::Button, public views::ButtonListener {
  public:
   MenuItemView(const LoginMenuView::Item& item,
-               const LoginMenuView::OnHighLight& on_highlight)
+               const LoginMenuView::OnHighlight& on_highlight)
       : views::Button(this), item_(item), on_highlight_(on_highlight) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetLayoutManager(
@@ -94,7 +94,7 @@ class MenuItemView : public views::Button, public views::ButtonListener {
 
  private:
   const LoginMenuView::Item item_;
-  const LoginMenuView::OnHighLight on_highlight_;
+  const LoginMenuView::OnHighlight on_highlight_;
   std::unique_ptr<HoverNotifier> hover_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
@@ -149,13 +149,12 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->SetDefaultFlex(1);
   layout->set_minimum_cross_axis_size(kMenuItemWidthDp);
-  layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
 
   for (size_t i = 0; i < items.size(); i++) {
     const Item& item = items[i];
     contents->AddChildView(new MenuItemView(
-        item, base::BindRepeating(&LoginMenuView::OnHighLightChange,
+        item, base::BindRepeating(&LoginMenuView::OnHighlightChange,
                                   base::Unretained(this), i)));
 
     if (item.selected)
@@ -167,9 +166,9 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
 
 LoginMenuView::~LoginMenuView() = default;
 
-void LoginMenuView::OnHighLightChange(int item_index, bool by_selection) {
+void LoginMenuView::OnHighlightChange(size_t item_index, bool by_selection) {
   selected_index_ = item_index;
-  views::View* highlight_item = contents_->child_at(item_index);
+  views::View* highlight_item = contents_->children()[item_index];
   for (views::View* child : contents_->GetChildrenInZOrder()) {
     child->SetBackground(views::CreateSolidBackground(
         child == highlight_item ? SK_ColorGRAY : SK_ColorTRANSPARENT));
@@ -189,7 +188,7 @@ LoginButton* LoginMenuView::GetBubbleOpener() const {
 
 void LoginMenuView::OnFocus() {
   // Forward the focus to the selected child view.
-  contents_->child_at(selected_index_)->RequestFocus();
+  contents_->children()[selected_index_]->RequestFocus();
 }
 
 bool LoginMenuView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -204,7 +203,7 @@ bool LoginMenuView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void LoginMenuView::VisibilityChanged(View* starting_from, bool is_visible) {
   if (is_visible)
-    contents_->child_at(selected_index_)->RequestFocus();
+    contents_->children()[selected_index_]->RequestFocus();
 }
 
 views::View* LoginMenuView::FindNextItem(bool reverse) {

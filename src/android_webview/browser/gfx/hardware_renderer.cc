@@ -57,7 +57,7 @@ HardwareRenderer::~HardwareRenderer() {
   // Reset draw constraints.
   render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
       ParentCompositorDrawConstraints(), compositor_id_,
-      viz::PresentationFeedbackMap());
+      viz::PresentationFeedbackMap(), 0u);
   for (auto& child_frame : child_frame_queue_) {
     child_frame->WaitOnFutureIfNeeded();
     ReturnChildFrame(std::move(child_frame));
@@ -112,6 +112,7 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
   }
 
   bool submitted_new_frame = false;
+  uint32_t frame_token = 0u;
   // SurfaceFactory::SubmitCompositorFrame might call glFlush. So calling it
   // during "kModeSync" stage (which does not allow GL) might result in extra
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
@@ -143,6 +144,7 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
       device_scale_factor_ = device_scale_factor;
     }
 
+    frame_token = child_compositor_frame->metadata.frame_token;
     support_->SubmitCompositorFrame(child_id_,
                                     std::move(*child_compositor_frame));
     submitted_new_frame = true;
@@ -164,7 +166,7 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
   // presentation feedback to return as well.
   if (need_to_update_draw_constraints && !submitted_new_frame) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        draw_constraints, compositor_id_, viz::PresentationFeedbackMap());
+        draw_constraints, compositor_id_, viz::PresentationFeedbackMap(), 0u);
   }
 
   if (!child_id_.is_valid())
@@ -184,10 +186,9 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
                          device_scale_factor_, params->color_space);
   viz::PresentationFeedbackMap feedbacks =
       support_->TakePresentationFeedbacks();
-  if (submitted_new_frame &&
-      (need_to_update_draw_constraints || !feedbacks.empty())) {
+  if (submitted_new_frame) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        draw_constraints, compositor_id_, std::move(feedbacks));
+        draw_constraints, compositor_id_, std::move(feedbacks), frame_token);
   }
 }
 

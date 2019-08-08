@@ -17,20 +17,25 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
-inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
-                                Page& page,
-                                FrameOwner* owner)
+RemoteFrame::RemoteFrame(RemoteFrameClient* client,
+                         Page& page,
+                         FrameOwner* owner)
     : Frame(client,
             page,
             owner,
@@ -39,14 +44,8 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
-}
 
-RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
-                                 Page& page,
-                                 FrameOwner* owner) {
-  RemoteFrame* frame = MakeGarbageCollected<RemoteFrame>(client, page, owner);
-  frame->Initialize();
-  return frame;
+  Initialize();
 }
 
 RemoteFrame::~RemoteFrame() {
@@ -59,27 +58,15 @@ void RemoteFrame::Trace(blink::Visitor* visitor) {
   Frame::Trace(visitor);
 }
 
-void RemoteFrame::ScheduleNavigation(Document& origin_document,
-                                     const KURL& url,
-                                     WebFrameLoadType frame_load_type,
-                                     UserGestureStatus user_gesture_status) {
-  FrameLoadRequest frame_request(&origin_document, ResourceRequest(url));
-  frame_request.GetResourceRequest().SetHasUserGesture(
-      user_gesture_status == UserGestureStatus::kActive);
-  frame_request.SetFrameType(
-      IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                    : network::mojom::RequestContextFrameType::kNested);
-  frame_request.SetClientRedirectReason(
-      ClientNavigationReason::kFrameNavigation);
-  Navigate(frame_request, frame_load_type);
-}
-
 void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
                            WebFrameLoadType frame_load_type) {
   if (!navigation_rate_limiter().CanProceed())
     return;
 
   FrameLoadRequest frame_request(passed_request);
+  frame_request.SetFrameType(
+      IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
+                    : network::mojom::RequestContextFrameType::kNested);
 
   const KURL& url = frame_request.GetResourceRequest().Url();
   if (frame_request.OriginDocument() &&
@@ -92,12 +79,18 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
   }
 
   // The process where this frame actually lives won't have sufficient
-  // information to determine correct referrer and upgrade the url, since it
-  // won't have access to the originDocument. Do it now.
-  FrameLoader::SetReferrerForFrameRequest(frame_request);
-  FrameLoader::UpgradeInsecureRequest(frame_request.GetResourceRequest(),
-                                      frame_request.OriginDocument(),
-                                      frame_request.GetFrameType());
+  // information to upgrade the url, since it won't have access to the
+  // originDocument. Do it now.
+  const FetchClientSettingsObject* fetch_client_settings_object = nullptr;
+  if (frame_request.OriginDocument()) {
+    fetch_client_settings_object = &frame_request.OriginDocument()
+                                        ->Fetcher()
+                                        ->GetProperties()
+                                        .GetFetchClientSettingsObject();
+  }
+  MixedContentChecker::UpgradeInsecureRequest(
+      frame_request.GetResourceRequest(), fetch_client_settings_object,
+      frame_request.OriginDocument(), frame_request.GetFrameType());
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
@@ -173,12 +166,10 @@ bool RemoteFrame::ShouldClose() {
 }
 
 void RemoteFrame::DidFreeze() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   // TODO(fmeawad): Add support for remote frames.
 }
 
 void RemoteFrame::DidResume() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   // TODO(fmeawad): Add support for remote frames.
 }
 
@@ -218,7 +209,7 @@ void RemoteFrame::CreateView() {
 
   DCHECK(!DeprecatedLocalOwner()->OwnedEmbeddedContentView());
 
-  SetView(RemoteFrameView::Create(this));
+  SetView(MakeGarbageCollected<RemoteFrameView>(this));
 
   if (OwnerLayoutObject())
     DeprecatedLocalOwner()->SetEmbeddedContentView(view_);

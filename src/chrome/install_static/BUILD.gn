@@ -17,7 +17,7 @@ static_library("install_static_util") {
   ]
 
   public_deps = [
-    "//chrome_elf:nt_registry",
+    "//chrome/chrome_elf:nt_registry",
   ]
 
   sources = [

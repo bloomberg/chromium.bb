@@ -228,9 +228,9 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
       // TODO(wjmaclean): This is updating when the size of the *child frame*
       // have changed which are completely independent of the WebView, and in an
       // OOPIF where the main frame is remote, are these limits even useful?
-      Client()->SetPageScaleFactorAndLimits(1.f,
-                                            View()->MinimumPageScaleFactor(),
-                                            View()->MaximumPageScaleFactor());
+      Client()->SetPageScaleStateAndLimits(
+          1.f, false /* is_pinch_gesture_active */,
+          View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
     }
   }
 }
@@ -664,7 +664,7 @@ void WebFrameWidgetImpl::UpdateRenderThrottlingStatus(bool is_throttled,
   DCHECK(LocalRootImpl()->Parent());
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
   LocalRootImpl()->GetFrameView()->UpdateRenderThrottlingStatus(
-      is_throttled, subtree_throttled);
+      is_throttled, subtree_throttled, true);
 }
 
 WebURL WebFrameWidgetImpl::GetURLForDebugTrace() {
@@ -705,10 +705,10 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
             location));
     result.SetToShadowHostIfInRestrictedShadowRoot();
     Node* hit_node = result.InnerNode();
+    auto* html_element = DynamicTo<HTMLElement>(hit_node);
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
-        hit_node->GetLayoutObject()->IsEmbeddedObject() &&
-        hit_node->IsHTMLElement() &&
-        ToHTMLElement(hit_node)->IsPluginElement()) {
+        hit_node->GetLayoutObject()->IsEmbeddedObject() && html_element &&
+        html_element->IsPluginElement()) {
       mouse_capture_element_ = ToHTMLPlugInElement(hit_node);
       TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
     }
@@ -1037,8 +1037,9 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
   // Pass the limits even though this is for subframes, as the limits will
   // be needed in setting the raster scale.
-  Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
-                                        View()->MaximumPageScaleFactor());
+  Client()->SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
+                                       View()->MinimumPageScaleFactor(),
+                                       View()->MaximumPageScaleFactor());
 
   // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
   // This is okay because it is only necessarily to set the trigger to false

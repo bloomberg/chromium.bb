@@ -11,13 +11,11 @@ AuthChallengeInfo::AuthChallengeInfo() : is_proxy(false) {
 
 AuthChallengeInfo::AuthChallengeInfo(const AuthChallengeInfo& other) = default;
 
-bool AuthChallengeInfo::operator==(const AuthChallengeInfo& that) const {
-  return (is_proxy == that.is_proxy && challenger == that.challenger &&
-          scheme == that.scheme && realm == that.realm);
-}
-
-bool AuthChallengeInfo::operator!=(const AuthChallengeInfo& that) const {
-  return !(*this == that);
+bool AuthChallengeInfo::MatchesExceptPath(
+    const AuthChallengeInfo& other) const {
+  return (is_proxy == other.is_proxy && challenger == other.challenger &&
+          scheme == other.scheme && realm == other.realm &&
+          challenge == other.challenge);
 }
 
 AuthChallengeInfo::~AuthChallengeInfo() = default;

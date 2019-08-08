@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -24,8 +25,11 @@ class TestBlinkWebUnitTestSupport;
 // it here ensures attempts to do so within an individual test will fail.
 class UnitTestTestSuite {
  public:
-   // Takes ownership of |test_suite|.
-  explicit UnitTestTestSuite(base::TestSuite* test_suite);
+  // Takes ownership of |test_suite|.
+  // |disabled_features| is an optional comma-separated list of features to
+  // disable.
+  UnitTestTestSuite(base::TestSuite* test_suite,
+                    const std::string& disabled_features = std::string());
   ~UnitTestTestSuite();
 
   int Run();

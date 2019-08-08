@@ -20,7 +20,7 @@
 #include "media/base/ranges.h"
 #include "media/base/text_track.h"
 #include "media/base/video_decoder_config.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -45,7 +45,7 @@ class MEDIA_EXPORT Pipeline {
     // Executed when the content duration, container video size, start time,
     // and whether the content has audio and/or video in supported formats are
     // known.
-    virtual void OnMetadata(PipelineMetadata metadata) = 0;
+    virtual void OnMetadata(const PipelineMetadata& metadata) = 0;
 
     // Executed whenever there are changes in the buffering state of the
     // pipeline.

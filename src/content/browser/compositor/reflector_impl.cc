@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -24,6 +25,7 @@ ReflectorImpl::ReflectorImpl(ui::Compositor* mirrored_compositor,
                              ui::Layer* mirroring_layer)
     : mirrored_compositor_(mirrored_compositor),
       flip_texture_(false),
+      overlay_validator_(nullptr),
       output_surface_(nullptr) {
   if (mirroring_layer)
     AddMirroringLayer(mirroring_layer);
@@ -41,15 +43,19 @@ void ReflectorImpl::Shutdown() {
 void ReflectorImpl::DetachFromOutputSurface() {
   DCHECK(output_surface_);
   output_surface_->SetReflector(nullptr);
+  if (overlay_validator_)
+    overlay_validator_->SetSoftwareMirrorMode(false);
   DCHECK(mailbox_);
   mailbox_.reset();
   output_surface_ = nullptr;
+  overlay_validator_ = nullptr;
   for (const auto& layer_data : mirroring_layers_)
     layer_data->layer->SetShowSolidColorContent();
 }
 
 void ReflectorImpl::OnSourceSurfaceReady(
-    BrowserCompositorOutputSurface* output_surface) {
+    BrowserCompositorOutputSurface* output_surface,
+    viz::OverlayCandidateValidator* overlay_validator) {
   if (mirroring_layers_.empty())
     return;  // Was already Shutdown().
   if (output_surface == output_surface_)
@@ -58,10 +64,13 @@ void ReflectorImpl::OnSourceSurfaceReady(
     DetachFromOutputSurface();
 
   output_surface_ = output_surface;
+  overlay_validator_ = overlay_validator;
 
   flip_texture_ = !output_surface->capabilities().flipped_output_surface;
 
   output_surface_->SetReflector(this);
+  if (overlay_validator_)
+    overlay_validator_->SetSoftwareMirrorMode(true);
 }
 
 void ReflectorImpl::OnMirroringCompositorResized() {
@@ -151,9 +160,10 @@ void ReflectorImpl::UpdateTexture(ReflectorImpl::LayerData* layer_data,
                                   const gfx::Rect& redraw_rect) {
   if (layer_data->needs_set_mailbox) {
     layer_data->layer->SetTransferableResource(
-        viz::TransferableResource::MakeGL(mailbox_->holder().mailbox, GL_LINEAR,
-                                          mailbox_->holder().texture_target,
-                                          mailbox_->holder().sync_token),
+        viz::TransferableResource::MakeGL(
+            mailbox_->holder().mailbox, GL_LINEAR,
+            mailbox_->holder().texture_target, mailbox_->holder().sync_token,
+            source_size, false /* is_overlay_candidate */),
         mailbox_->GetSingleReleaseCallback(), source_size);
     layer_data->needs_set_mailbox = false;
   } else {

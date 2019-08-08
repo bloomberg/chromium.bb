@@ -5,13 +5,16 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCaptionControl;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabTitleControl;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -29,11 +32,17 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     /** The conversion multiple from dp to px. */
     private final float mDpToPx;
 
+    private final int mFaviconSizePx;
+
+    private String mCachedUrl;
+
     /**
      * @param dpToPx The conversion multiple from dp to px for the device.
+     * @param faviconSizeDp Preferred size of the favicon to fetch.
      */
-    public EphemeralTabSceneLayer(float dpToPx) {
+    public EphemeralTabSceneLayer(float dpToPx, int faviconSizeDp) {
         mDpToPx = dpToPx;
+        mFaviconSizePx = (int) (faviconSizeDp * dpToPx);
     }
 
     /**
@@ -51,11 +60,17 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
         if (resourceManager == null || !panel.isShowing()) return;
         if (!mIsInitialized) {
             nativeCreateEphemeralTabLayer(mNativePtr, resourceManager);
-
-            // TODO(jinsukkim): Find the right icon/background resource for the tab bar.
+            int openInTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                          && panel.canPromoteToNewTab())
+                    ? R.drawable.open_in_new_tab
+                    : INVALID_RESOURCE_ID;
+            int dragHandlebarId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                    ? R.drawable.drag_handlebar
+                    : INVALID_RESOURCE_ID;
             nativeSetResourceIds(mNativePtr, title.getViewId(),
                     R.drawable.contextual_search_bar_background, R.drawable.modern_toolbar_shadow,
-                    R.drawable.infobar_chrome, R.drawable.btn_close);
+                    R.drawable.infobar_chrome, dragHandlebarId, openInTabIconId,
+                    R.drawable.btn_close);
             mIsInitialized = true;
         }
 
@@ -81,10 +96,17 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 panel.getOffsetX() * mDpToPx, panel.getOffsetY() * mDpToPx,
                 panel.getWidth() * mDpToPx, panel.getHeight() * mDpToPx,
                 panel.getBarBackgroundColor(), panel.getBarMarginSide() * mDpToPx,
-                panel.getBarHeight() * mDpToPx, panel.isBarBorderVisible(),
-                panel.getBarBorderHeight() * mDpToPx, panel.getBarShadowVisible(),
-                panel.getBarShadowOpacity(), panel.getIconColor(), isProgressBarVisible,
-                progressBarHeight * mDpToPx, progressBarOpacity, progressBarCompletion);
+                panel.getBarMarginTop() * mDpToPx, panel.getBarHeight() * mDpToPx,
+                panel.isBarBorderVisible(), panel.getBarBorderHeight() * mDpToPx,
+                panel.getBarShadowVisible(), panel.getBarShadowOpacity(), panel.getIconColor(),
+                panel.getDragHandlebarColor(), isProgressBarVisible, progressBarHeight * mDpToPx,
+                progressBarOpacity, progressBarCompletion);
+
+        String url = panel.getUrl();
+        if (!TextUtils.equals(mCachedUrl, url)) {
+            nativeGetFavicon(mNativePtr, Profile.getLastUsedProfile(), url, mFaviconSizePx);
+            mCachedUrl = url;
+        }
     }
 
     @Override
@@ -98,6 +120,7 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     public void hideTree() {
         if (!mIsInitialized) return;
         nativeHideTree(mNativePtr);
+        mCachedUrl = null;
     }
 
     @Override
@@ -126,15 +149,18 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     private native void nativeHideTree(long nativeEphemeralTabSceneLayer);
     private native void nativeSetResourceIds(long nativeEphemeralTabSceneLayer,
             int barTextResourceId, int barBackgroundResourceId, int barShadowResourceId,
-            int panelIconResourceId, int closeIconResourceId);
+            int panelIconResourceId, int dragHandlebarResourceId, int openTabIconResourceId,
+            int closeIconResourceId);
+    private native void nativeGetFavicon(
+            long nativeEphemeralTabSceneLayer, Profile profile, String url, int size);
     private native void nativeUpdate(long nativeEphemeralTabSceneLayer, int titleViewId,
             int captionViewId, float captionAnimationPercentage, float textLayerMinHeight,
             float titleCaptionSpacing, boolean captionVisible, int progressBarBackgroundResourceId,
             int progressBarResourceId, float dpToPx, float basePageBrightness,
             float basePageYOffset, WebContents webContents, float panelX, float panelY,
             float panelWidth, float panelHeight, int barBackgroundColor, float barMarginSide,
-            float barHeight, boolean barBorderVisible, float barBorderHeight,
-            boolean barShadowVisible, float barShadowOpacity, int iconColor,
+            float barMarginTop, float barHeight, boolean barBorderVisible, float barBorderHeight,
+            boolean barShadowVisible, float barShadowOpacity, int iconColor, int dragHandlebarColor,
             boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
             int progressBarCompletion);
 }

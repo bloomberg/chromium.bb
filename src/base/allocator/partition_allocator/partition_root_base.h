@@ -82,6 +82,9 @@ struct BASE_EXPORT PartitionRootBase {
   ALWAYS_INLINE void DecommitSystemPages(void* address, size_t length);
   ALWAYS_INLINE void RecommitSystemPages(void* address, size_t length);
 
+  // Frees memory from this partition, if possible, by decommitting pages.
+  // |flags| is an OR of base::PartitionPurgeFlags.
+  virtual void PurgeMemory(int flags) = 0;
   void DecommitEmptyPages();
 };
 

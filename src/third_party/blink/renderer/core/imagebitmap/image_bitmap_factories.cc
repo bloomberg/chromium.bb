@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_factories.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/location.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -198,7 +199,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
       bitmap_source->BitmapSourceSize().Height() == 0) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             String::Format("The source image %s is 0.",
                            bitmap_source->BitmapSourceSize().Width()
@@ -273,14 +274,14 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
     ImageBitmapRejectionReason reason) {
   switch (reason) {
     case kUndecodableImageBitmapRejectionReason:
-      resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The source image could not be decoded."));
+      resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The source image could not be decoded."));
       break;
     case kAllocationFailureImageBitmapRejectionReason:
-      resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The ImageBitmap could not be allocated."));
+      resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The ImageBitmap could not be allocated."));
       break;
     default:
       NOTREACHED();
@@ -316,7 +317,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
       Thread::Current()->GetTaskRunner();
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,
           WrapCrossThreadPersistent(this), std::move(task_runner),
           WrapCrossThreadPersistent(array_buffer), options_->premultiplyAlpha(),
@@ -348,9 +349,9 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
   }
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::
-                          ResolvePromiseOnOriginalThread,
-                      WrapCrossThreadPersistent(this), std::move(frame)));
+      CrossThreadBindOnce(&ImageBitmapFactories::ImageBitmapLoader::
+                              ResolvePromiseOnOriginalThread,
+                          WrapCrossThreadPersistent(this), std::move(frame)));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(

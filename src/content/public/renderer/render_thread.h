@@ -81,6 +81,9 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) = 0;
 
+  // DEPRECATED: Use mojo::Create*SharedMemoryRegion (see
+  // mojo/public/cpp/base/shared_memory_utils.h) instead.
+  //
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory allocated by the host is returned back.
   virtual std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
@@ -90,7 +93,8 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void RegisterExtension(std::unique_ptr<v8::Extension> extension) = 0;
 
   // Post task to all worker threads. Returns number of workers.
-  virtual int PostTaskToAllWebWorkers(const base::Closure& closure) = 0;
+  virtual int PostTaskToAllWebWorkers(
+      const base::RepeatingClosure& closure) = 0;
 
   // Resolve the proxy servers to use for a given url. On success true is
   // returned and |proxy_list| is set to a PAC string containing a list of

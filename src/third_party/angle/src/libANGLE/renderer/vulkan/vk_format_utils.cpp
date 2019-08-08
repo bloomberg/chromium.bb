@@ -18,19 +18,6 @@ namespace rx
 {
 namespace
 {
-void AddSampleCounts(VkSampleCountFlags sampleCounts, gl::SupportedSampleSet *outSet)
-{
-    // The possible bits are VK_SAMPLE_COUNT_n_BIT = n, with n = 1 << b.  At the time of this
-    // writing, b is in [0, 6], however, we test all 32 bits in case the enum is extended.
-    for (unsigned int i = 0; i < 32; ++i)
-    {
-        if ((sampleCounts & (1 << i)) != 0)
-        {
-            outSet->insert(1 << i);
-        }
-    }
-}
-
 void FillTextureFormatCaps(RendererVk *renderer, VkFormat format, gl::TextureCaps *outTextureCaps)
 {
     const VkPhysicalDeviceLimits &physicalDeviceLimits =
@@ -52,15 +39,15 @@ void FillTextureFormatCaps(RendererVk *renderer, VkFormat format, gl::TextureCap
     {
         if (hasColorAttachmentFeatureBit)
         {
-            AddSampleCounts(physicalDeviceLimits.framebufferColorSampleCounts,
-                            &outTextureCaps->sampleCounts);
+            vk_gl::AddSampleCounts(physicalDeviceLimits.framebufferColorSampleCounts,
+                                   &outTextureCaps->sampleCounts);
         }
         if (hasDepthAttachmentFeatureBit)
         {
-            AddSampleCounts(physicalDeviceLimits.framebufferDepthSampleCounts,
-                            &outTextureCaps->sampleCounts);
-            AddSampleCounts(physicalDeviceLimits.framebufferStencilSampleCounts,
-                            &outTextureCaps->sampleCounts);
+            vk_gl::AddSampleCounts(physicalDeviceLimits.framebufferDepthSampleCounts,
+                                   &outTextureCaps->sampleCounts);
+            vk_gl::AddSampleCounts(physicalDeviceLimits.framebufferStencilSampleCounts,
+                                   &outTextureCaps->sampleCounts);
         }
     }
 }
@@ -118,7 +105,7 @@ Format::Format()
 
 void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *info, int numInfo)
 {
-    size_t skip = renderer->getFeatures().forceFallbackFormat ? 1 : 0;
+    size_t skip = renderer->getFeatures().forceFallbackFormat.enabled ? 1 : 0;
     int i = FindSupportedFormat(renderer, info + skip, numInfo - skip, HasFullTextureFormatSupport);
     i += skip;
 
@@ -129,7 +116,7 @@ void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *
 
 void Format::initBufferFallback(RendererVk *renderer, const BufferFormatInitInfo *info, int numInfo)
 {
-    size_t skip = renderer->getFeatures().forceFallbackFormat ? 1 : 0;
+    size_t skip = renderer->getFeatures().forceFallbackFormat.enabled ? 1 : 0;
     int i = FindSupportedFormat(renderer, info + skip, numInfo - skip, HasFullBufferFormatSupport);
     i += skip;
 
@@ -240,6 +227,32 @@ void FormatTable::initialize(RendererVk *renderer,
         }
     }
 }
+
+VkImageUsageFlags GetMaximalImageUsageFlags(RendererVk *renderer, VkFormat format)
+{
+    constexpr VkFormatFeatureFlags kImageUsageFeatureBits =
+        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT |
+        VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT |
+        VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+    VkFormatFeatureFlags featureBits =
+        renderer->getImageFormatFeatureBits(format, kImageUsageFeatureBits);
+    VkImageUsageFlags imageUsageFlags = 0;
+    if (featureBits & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
+        imageUsageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    if (featureBits & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)
+        imageUsageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
+    if (featureBits & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)
+        imageUsageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    if (featureBits & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        imageUsageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    if (featureBits & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT)
+        imageUsageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    if (featureBits & VK_FORMAT_FEATURE_TRANSFER_DST_BIT)
+        imageUsageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    imageUsageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    return imageUsageFlags;
+}
+
 }  // namespace vk
 
 bool HasFullTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
@@ -295,15 +308,28 @@ void MapSwizzleState(const vk::Format &format,
             swizzleStateOut->swizzleAlpha = swizzleState.swizzleRed;
             break;
         default:
-            // Set any missing channel to default in case the emulated format has that channel.
-            swizzleStateOut->swizzleRed =
-                angleFormat.redBits > 0 ? swizzleState.swizzleRed : GL_ZERO;
-            swizzleStateOut->swizzleGreen =
-                angleFormat.greenBits > 0 ? swizzleState.swizzleGreen : GL_ZERO;
-            swizzleStateOut->swizzleBlue =
-                angleFormat.blueBits > 0 ? swizzleState.swizzleBlue : GL_ZERO;
-            swizzleStateOut->swizzleAlpha =
-                angleFormat.alphaBits > 0 ? swizzleState.swizzleAlpha : GL_ONE;
+            if (angleFormat.hasDepthOrStencilBits())
+            {
+                swizzleStateOut->swizzleRed =
+                    angleFormat.depthBits > 0 ? swizzleState.swizzleRed : GL_ZERO;
+                swizzleStateOut->swizzleGreen =
+                    angleFormat.depthBits > 0 ? swizzleState.swizzleRed : GL_ZERO;
+                swizzleStateOut->swizzleBlue =
+                    angleFormat.depthBits > 0 ? swizzleState.swizzleRed : GL_ZERO;
+                swizzleStateOut->swizzleAlpha = GL_ONE;
+            }
+            else
+            {
+                // Set any missing channel to default in case the emulated format has that channel.
+                swizzleStateOut->swizzleRed =
+                    angleFormat.redBits > 0 ? swizzleState.swizzleRed : GL_ZERO;
+                swizzleStateOut->swizzleGreen =
+                    angleFormat.greenBits > 0 ? swizzleState.swizzleGreen : GL_ZERO;
+                swizzleStateOut->swizzleBlue =
+                    angleFormat.blueBits > 0 ? swizzleState.swizzleBlue : GL_ZERO;
+                swizzleStateOut->swizzleAlpha =
+                    angleFormat.alphaBits > 0 ? swizzleState.swizzleAlpha : GL_ONE;
+            }
             break;
     }
 }

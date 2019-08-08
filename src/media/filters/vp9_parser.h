@@ -260,6 +260,10 @@ struct MEDIA_EXPORT Vp9FrameHeader {
   Vp9FrameContext initial_frame_context;
   // Current frame entropy context after header parsing.
   Vp9FrameContext frame_context;
+
+  // Segmentation and loop filter params from uncompressed header
+  Vp9SegmentationParams segmentation;
+  Vp9LoopFilterParams loop_filter;
 };
 
 // A parser for VP9 bitstream.

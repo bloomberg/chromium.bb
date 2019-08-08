@@ -33,7 +33,6 @@
 #error "This file requires ARC support."
 #endif
 
-using favicon::PostReply;
 using testing::_;
 
 const char kDummyIconUrl[] = "http://www.example.com/touch_icon.png";
@@ -73,7 +72,13 @@ class SpotlightManagerTest : public PlatformTest {
 
     EXPECT_CALL(mock_favicon_service_,
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))
-        .WillRepeatedly(PostReply<5>(CreateTestBitmap(24, 24)));
+        .WillRepeatedly([](auto, auto, auto,
+                           favicon_base::FaviconRawBitmapCallback callback,
+                           base::CancelableTaskTracker* tracker) {
+          return tracker->PostTask(
+              base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+              base::BindOnce(std::move(callback), CreateTestBitmap(24, 24)));
+        });
   }
 
   ~SpotlightManagerTest() override { [bookmarksSpotlightManager_ shutdown]; }

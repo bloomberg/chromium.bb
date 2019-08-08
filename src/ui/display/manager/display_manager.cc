@@ -2097,7 +2097,7 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
-  new_display.set_color_space(display_info.color_space());
+  new_display.SetColorSpaceAndDepth(display_info.color_space());
 
   if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {
     new_display.set_accelerometer_support(
@@ -2156,7 +2156,7 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 void DisplayManager::CreateMirrorWindowIfAny() {
   if (software_mirroring_display_list_.empty() || !delegate_) {
     if (!created_mirror_window_.is_null())
-      base::ResetAndReturn(&created_mirror_window_).Run();
+      std::move(created_mirror_window_).Run();
     return;
   }
   DisplayInfoList list;
@@ -2164,7 +2164,7 @@ void DisplayManager::CreateMirrorWindowIfAny() {
     list.push_back(GetDisplayInfo(display.id()));
   delegate_->CreateOrUpdateMirroringDisplay(list);
   if (!created_mirror_window_.is_null())
-    base::ResetAndReturn(&created_mirror_window_).Run();
+    std::move(created_mirror_window_).Run();
 }
 
 void DisplayManager::ApplyDisplayLayout(DisplayLayout* layout,

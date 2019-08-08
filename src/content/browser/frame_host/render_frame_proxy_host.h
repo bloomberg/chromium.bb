@@ -67,8 +67,6 @@ class RenderFrameProxyHost
     : public IPC::Listener,
       public IPC::Sender {
  public:
-  using DestructionCallback = base::OnceClosure;
-
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
@@ -135,7 +133,7 @@ class RenderFrameProxyHost
   // Continues to bubble a logical scroll from the frame's process. Bubbling
   // continues from the frame owner element in the parent process.
   void BubbleLogicalScroll(blink::WebScrollDirection direction,
-                           blink::WebScrollGranularity granularity);
+                           ui::input_types::ScrollGranularity granularity);
 
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;
@@ -143,9 +141,6 @@ class RenderFrameProxyHost
 
   // Returns if the RenderFrameProxy for this host is alive.
   bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
-
-  // Sets a callback that is run when this is destroyed.
-  void SetDestructionCallback(DestructionCallback destruction_callback);
 
  private:
   // IPC Message handlers.
@@ -186,8 +181,6 @@ class RenderFrameProxyHost
   // kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
   // are associated with it.
   RenderViewHostImpl* render_view_host_;
-
-  DestructionCallback destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

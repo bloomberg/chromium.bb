@@ -78,55 +78,51 @@ const int kCertVerifyPending = 1;
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
-std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
-    uint16_t algorithm,
-    SSLPrivateKey* key,
-    NetLogCaptureMode mode) {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetString("algorithm", SSL_get_signature_algorithm_name(
-                                    algorithm, 0 /* exclude curve */));
-  value->SetString("provider", key->GetProviderName());
+base::Value NetLogPrivateKeyOperationCallback(uint16_t algorithm,
+                                              SSLPrivateKey* key,
+                                              NetLogCaptureMode mode) {
+  base::DictionaryValue value;
+  value.SetString("algorithm", SSL_get_signature_algorithm_name(
+                                   algorithm, 0 /* exclude curve */));
+  value.SetString("provider", key->GetProviderName());
   return std::move(value);
 }
 
-std::unique_ptr<base::Value> NetLogSSLInfoCallback(
-    SSLClientSocketImpl* socket,
-    NetLogCaptureMode capture_mode) {
+base::Value NetLogSSLInfoCallback(SSLClientSocketImpl* socket,
+                                  NetLogCaptureMode capture_mode) {
   SSLInfo ssl_info;
   if (!socket->GetSSLInfo(&ssl_info))
-    return nullptr;
+    return base::Value();
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
   const char* version_str;
   SSLVersionToString(&version_str,
                      SSLConnectionStatusToVersion(ssl_info.connection_status));
-  dict->SetString("version", version_str);
-  dict->SetBoolean("is_resumed",
-                   ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
-  dict->SetInteger("cipher_suite", SSLConnectionStatusToCipherSuite(
-                                       ssl_info.connection_status));
+  dict.SetString("version", version_str);
+  dict.SetBoolean("is_resumed",
+                  ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
+  dict.SetInteger("cipher_suite",
+                  SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
 
-  dict->SetString("next_proto",
-                  NextProtoToString(socket->GetNegotiatedProtocol()));
+  dict.SetString("next_proto",
+                 NextProtoToString(socket->GetNegotiatedProtocol()));
 
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSSLAlertCallback(
-    const void* bytes,
-    size_t len,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetKey("bytes", NetLogBinaryValue(bytes, len));
+base::Value NetLogSSLAlertCallback(const void* bytes,
+                                   size_t len,
+                                   NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSSLMessageCallback(
-    bool is_write,
-    const void* bytes,
-    size_t len,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+base::Value NetLogSSLMessageCallback(bool is_write,
+                                     const void* bytes,
+                                     size_t len,
+                                     NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
   if (len == 0) {
     NOTREACHED();
     return std::move(dict);
@@ -135,7 +131,7 @@ std::unique_ptr<base::Value> NetLogSSLMessageCallback(
   // The handshake message type is the first byte. Include it so elided messages
   // still report their type.
   uint8_t type = reinterpret_cast<const uint8_t*>(bytes)[0];
-  dict->SetInteger("type", type);
+  dict.SetInteger("type", type);
 
   // Elide client certificate messages unless logging socket bytes. The client
   // certificate does not contain information needed to impersonate the user
@@ -143,7 +139,7 @@ std::unique_ptr<base::Value> NetLogSSLMessageCallback(
   // information on the user's identity.
   if (!is_write || type != SSL3_MT_CERTIFICATE ||
       capture_mode.include_socket_bytes()) {
-    dict->SetKey("bytes", NetLogBinaryValue(bytes, len));
+    dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
   }
 
   return std::move(dict);
@@ -964,11 +960,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     return OK;
   }
 
-  if (ssl_config_.version_interference_probe) {
-    DCHECK_LT(ssl_config_.version_max, TLS1_3_VERSION);
-    return ERR_SSL_VERSION_INTERFERENCE;
-  }
-
   if (IsCachingEnabled()) {
     ssl_client_session_cache_->ResetLookupCount(GetSessionCacheKey());
   }
@@ -1147,10 +1138,16 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   base::StringPiece ocsp_response(
       reinterpret_cast<const char*>(ocsp_response_raw), ocsp_response_len);
 
+  const uint8_t* sct_list_raw;
+  size_t sct_list_len;
+  SSL_get0_signed_cert_timestamp_list(ssl_.get(), &sct_list_raw, &sct_list_len);
+  base::StringPiece sct_list(reinterpret_cast<const char*>(sct_list_raw),
+                             sct_list_len);
+
   cert_verification_result_ = cert_verifier_->Verify(
-      CertVerifier::RequestParams(server_cert_, host_and_port_.host(),
-                                  ssl_config_.GetCertVerifyFlags(),
-                                  ocsp_response.as_string()),
+      CertVerifier::RequestParams(
+          server_cert_, host_and_port_.host(), ssl_config_.GetCertVerifyFlags(),
+          ocsp_response.as_string(), sct_list.as_string()),
       &server_cert_verify_result_,
       base::BindOnce(&SSLClientSocketImpl::OnVerifyComplete,
                      base::Unretained(this)),
@@ -1625,11 +1622,7 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 }
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
-  std::string result = host_and_port_.ToString();
-
-  result.push_back('/');
-  result.push_back(ssl_config_.version_interference_probe ? '1' : '0');
-  return result;
+  return host_and_port_.ToString();
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {

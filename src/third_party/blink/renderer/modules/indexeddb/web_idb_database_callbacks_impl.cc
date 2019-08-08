@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -62,8 +63,8 @@ void WebIDBDatabaseCallbacksImpl::OnAbort(int64_t transaction_id,
   if (callbacks_) {
     callbacks_->OnAbort(
         transaction_id,
-        DOMException::Create(static_cast<DOMExceptionCode>(error.Code()),
-                             error.Message()));
+        MakeGarbageCollected<DOMException>(
+            static_cast<DOMExceptionCode>(error.Code()), error.Message()));
   }
 }
 

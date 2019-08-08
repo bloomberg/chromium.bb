@@ -240,7 +240,7 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = api_url_;
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->allow_credentials = true;
   SetRequestHeaders(resource_request.get());
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
@@ -336,14 +336,14 @@ void OneGoogleBarLoaderImpl::LoadDone(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::BindRepeating(&OneGoogleBarLoaderImpl::JsonParsed,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&OneGoogleBarLoaderImpl::JsonParseFailed,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&OneGoogleBarLoaderImpl::JsonParsed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&OneGoogleBarLoaderImpl::JsonParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OneGoogleBarLoaderImpl::JsonParsed(std::unique_ptr<base::Value> value) {
-  base::Optional<OneGoogleBarData> result = JsonToOGBData(*value);
+void OneGoogleBarLoaderImpl::JsonParsed(base::Value value) {
+  base::Optional<OneGoogleBarData> result = JsonToOGBData(value);
   Respond(result.has_value() ? Status::OK : Status::FATAL_ERROR, result);
 }
 

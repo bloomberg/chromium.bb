@@ -114,7 +114,8 @@ void ScrollSnapTest::ScrollUpdate(double x,
   event.data.scroll_update.delta_x = delta_x;
   event.data.scroll_update.delta_y = delta_y;
   if (is_in_inertial_phase) {
-    event.data.scroll_update.inertial_phase = WebGestureEvent::kMomentumPhase;
+    event.data.scroll_update.inertial_phase =
+        WebGestureEvent::InertialPhaseState::kMomentum;
     event.SetTimeStamp(Compositor().LastFrameTime());
   }
   event.SetFrameScale(1);
@@ -128,8 +129,8 @@ void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
   event.data.scroll_end.inertial_phase =
-      is_in_inertial_phase ? WebGestureEvent::kMomentumPhase
-                           : WebGestureEvent::kNonMomentumPhase;
+      is_in_inertial_phase ? WebGestureEvent::InertialPhaseState::kMomentum
+                           : WebGestureEvent::InertialPhaseState::kNonMomentum;
   GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(event);
 }
 

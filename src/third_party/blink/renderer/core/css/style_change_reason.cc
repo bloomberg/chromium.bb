@@ -37,6 +37,7 @@ const char kInvisibleChange[] = "InvisibleChange";
 const char kLazyReattach[] = "LazyReattach";
 const char kLinkColorChange[] = "LinkColorChange";
 const char kPlatformColorChange[] = "PlatformColorChange";
+const char kPluginChanged[] = "Plugin Changed";
 const char kPolicyViolation[] = "Feature Policy Violation";
 const char kPropertyRegistration[] = "PropertyRegistration";
 const char kPropertyUnregistration[] = "PropertyUnregistration";

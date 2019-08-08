@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import subprocess
 import json
@@ -40,7 +42,7 @@ def SaveConfig(config):
 def ShowMessage(countdown):
     whitelisted = '\n'.join(['  * %s' % config for config in
                              ninjalog_uploader.WHITELISTED_CONFIGS])
-    print """
+    print("""
 Your ninjalog will be uploaded to build stats server. The uploaded log will be
 used to analyze user side build performance.
 
@@ -67,7 +69,7 @@ You can find a more detailed explanation in
 %s
 
 """ % (whitelisted, countdown, __file__, __file__,
-       os.path.abspath(os.path.join(THIS_DIR, "ninjalog.README.md")))
+       os.path.abspath(os.path.join(THIS_DIR, "ninjalog.README.md"))))
 
 
 def main():

@@ -74,7 +74,9 @@ class IncludeFinderPPCallbacks : public clang::PPCallbacks {
                                   const string& relative_path) const;
 
   clang::SourceManager* const source_manager_;
+#if !defined(NDEBUG)
   string* const main_source_file_;
+#endif
   set<string>* const source_file_paths_;
   set<string> system_header_prefixes_;
   // The path of the file that was last referenced by an inclusion directive,
@@ -89,9 +91,11 @@ IncludeFinderPPCallbacks::IncludeFinderPPCallbacks(
     string* main_source_file,
     set<string>* source_file_paths,
     const HeaderSearchOptions* header_search_options)
-      : source_manager_(source_manager),
-        main_source_file_(main_source_file),
-        source_file_paths_(source_file_paths) {
+    : source_manager_(source_manager),
+#if !defined(NDEBUG)
+      main_source_file_(main_source_file),
+#endif
+      source_file_paths_(source_file_paths) {
   // In practice this list seems to be empty, but add it anyway just in case.
   for (const auto& prefix : header_search_options->SystemHeaderPrefixes) {
     system_header_prefixes_.insert(prefix.Prefix);

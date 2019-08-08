@@ -244,6 +244,10 @@ class SuggestionAnswer {
   // For new answers, replace old answer text types with appropriate new types.
   void InterpretTextTypes();
 
+  // Some types of matches (answers for dictionary definitions, e.g.) do not
+  // follow the common rules for reversing lines.
+  bool IsExceptedFromLineReversal() const;
+
   // Logs which answer type was used (if any) at the time a user used the
   // omnibox to go somewhere.
   static void LogAnswerUsed(const base::Optional<SuggestionAnswer>& answer);
@@ -253,12 +257,15 @@ class SuggestionAnswer {
 #endif
 
  private:
+  static const char kAnswerUsedUmaHistogramName[];
+
   GURL image_url_;
   ImageLine first_line_;
   ImageLine second_line_;
   int type_ = -1;
 
   FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, LogAnswerUsed);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_SUGGESTION_ANSWER_H_

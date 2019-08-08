@@ -12,6 +12,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 assert(enable_extensions)
 
 jumbo_static_library("extensions") {
@@ -58,10 +62,8 @@ jumbo_static_library("extensions") {
     "api/autofill_private/autofill_private_event_router_factory.h",
     "api/autofill_private/autofill_util.cc",
     "api/autofill_private/autofill_util.h",
-    "api/automation_internal/automation_event_router.cc",
-    "api/automation_internal/automation_event_router.h",
-    "api/automation_internal/automation_internal_api.cc",
-    "api/automation_internal/automation_internal_api.h",
+    "api/automation_internal/chrome_automation_internal_api_delegate.cc",
+    "api/automation_internal/chrome_automation_internal_api_delegate.h",
     "api/bookmark_manager_private/bookmark_manager_private_api.cc",
     "api/bookmark_manager_private/bookmark_manager_private_api.h",
     "api/bookmarks/bookmark_api_constants.cc",
@@ -362,6 +364,7 @@ jumbo_static_library("extensions") {
     "api/storage/syncable_settings_storage.h",
     "api/streams_private/streams_private_api.cc",
     "api/streams_private/streams_private_api.h",
+    "api/system_indicator/system_indicator_api.cc",
     "api/system_indicator/system_indicator_api.h",
     "api/system_indicator/system_indicator_manager.cc",
     "api/system_indicator/system_indicator_manager.h",
@@ -568,10 +571,6 @@ jumbo_static_library("extensions") {
     "extension_service.h",
     "extension_special_storage_policy.cc",
     "extension_special_storage_policy.h",
-    "extension_storage_monitor.cc",
-    "extension_storage_monitor.h",
-    "extension_storage_monitor_factory.cc",
-    "extension_storage_monitor_factory.h",
     "extension_sync_data.cc",
     "extension_sync_data.h",
     "extension_sync_service.cc",
@@ -682,10 +681,6 @@ jumbo_static_library("extensions") {
     "settings_api_helpers.h",
     "shared_module_service.cc",
     "shared_module_service.h",
-    "signin/gaia_auth_extension_loader.cc",
-    "signin/gaia_auth_extension_loader.h",
-    "signin/scoped_gaia_auth_extension.cc",
-    "signin/scoped_gaia_auth_extension.h",
     "standard_management_policy_provider.cc",
     "standard_management_policy_provider.h",
     "startup_helper.cc",
@@ -974,8 +969,9 @@ jumbo_static_library("extensions") {
       configs += [ "//build/config/linux/dbus" ]
     }
     deps += [
+      "//ash",
+      "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
-      "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
       "//chromeos",
       "//chromeos/attestation",
@@ -1009,11 +1005,16 @@ jumbo_static_library("extensions") {
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",
-      "//ui/keyboard",
-      "//ui/keyboard:resources",
       "//ui/ozone",
       "//ui/views",
     ]
+    if (enable_kiosk_next) {
+      defines += [ "KIOSK_NEXT" ]
+      deps += [ "//chrome/browser/chromeos/kiosk_next_home/mojom" ]
+      if (is_chrome_branded) {
+        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
+      }
+    }
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
     }
@@ -1107,6 +1108,7 @@ jumbo_static_library("extensions") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
+    libs = [ "setupapi.lib" ]
   } else if (use_aura && !is_chromeos) {
     sources += [
       "system_display/display_info_provider_aura.cc",

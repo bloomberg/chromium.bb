@@ -79,15 +79,11 @@ public class WebappDataStorage {
     static final String KEY_PENDING_UPDATE_FILE_PATH = "pending_update_file_path";
 
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
-    public static final long UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS * 3;
+    public static final long UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS;
 
     // Number of milliseconds between checks of updates for a WebAPK that is expected to check
     // updates less frequently. crbug.com/680128.
     public static final long RELAXED_UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS * 30;
-
-    // Number of milliseconds to wait before re-requesting an updated WebAPK from the WebAPK
-    // server if the previous update attempt failed.
-    public static final long RETRY_UPDATE_DURATION = DateUtils.DAY_IN_MILLIS;
 
     // The default shell Apk version of WebAPKs.
     static final int DEFAULT_SHELL_APK_VERSION = 1;
@@ -569,11 +565,7 @@ public class WebappDataStorage {
                 shouldRelaxUpdates() ? RELAXED_UPDATE_INTERVAL : UPDATE_INTERVAL;
         long now = sClock.currentTimeMillis();
         long sinceLastCheckDurationMs = now - getLastCheckForWebManifestUpdateTimeMs();
-        if (sinceLastCheckDurationMs >= checkUpdatesInterval) return true;
-
-        long sinceLastUpdateRequestDurationMs = now - getLastWebApkUpdateRequestCompletionTimeMs();
-        return sinceLastUpdateRequestDurationMs >= RETRY_UPDATE_DURATION
-                && !didPreviousUpdateSucceed();
+        return sinceLastCheckDurationMs >= checkUpdatesInterval;
     }
 
     protected WebappDataStorage(String webappId) {

@@ -166,6 +166,13 @@ config("chromium_sqlite3_compile_options") {
 
     # Uses isnan() in the C99 standard library.
     "SQLITE_HAVE_ISNAN",
+
+    # Forces SQLite to only store temporary data in memory.
+    #
+    # This is the only supported setting on Android. Using it everywhere removes
+    # a source of cross-platform variation, and saves us from having to reason
+    # about SQLite storing data in the operating system's temporary directory.
+    "SQLITE_TEMP_STORE=3",
   ]
 
   # On OSX, SQLite has extra logic for detecting the use of network
@@ -279,14 +286,11 @@ component("chromium_sqlite3") {
   visibility = [ ":*" ]
 
   public = [
-    "patched/src/recover.h",
     "sqlite3.h",
   ]
 
   sources = [
     "amalgamation/sqlite3.h",
-    "patched/src/recover.c",
-    "patched/src/recover_varint.c",
     "sqlite3_shim.c",
   ]
 
@@ -351,7 +355,6 @@ component("chromium_sqlite3") {
     defines += [
       "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
       "SQLITE_DEFAULT_AUTOVACUUM=1",
-      "SQLITE_TEMP_STORE=3",
     ]
   }
 
@@ -381,28 +384,21 @@ group("sqlite") {
 if (is_win || is_mac || is_linux) {
   executable("sqlite_shell") {
     include_dirs = [
-      # shell.c contains an '#include "sqlite3.h", which we want to be
-      # resolved to //third_party/sqlite/shell.h.
+      # SQLite's shell.c contains an '#include "sqlite3.h", which we want to be
+      # resolved to //third_party/sqlite/sqlite3.h.
       ".",
     ]
 
     sources = [
-      "amalgamation/shell/shell.c",
-
-      # Include a dummy c++ file to force linking of libstdc++.
-      "build_as_cpp.cc",
+      "sqlite_shell_icu_helper.cc",
+      "sqlite_shell_icu_helper.h",
+      "sqlite_shell_shim.c",
     ]
-
-    if (is_linux) {
-      sources += [ "patched/src/shell_icu_linux.c" ]
-    }
-
-    if (is_win) {
-      sources += [ "patched/src/shell_icu_win.c" ]
-    }
 
     deps = [
       ":sqlite",
+      "//base",
+      "//base:i18n",
       "//third_party/icu",
     ]
 

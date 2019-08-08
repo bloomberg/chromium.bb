@@ -35,6 +35,9 @@ class WebStateList;
 // The SigninPresenter delegate for this Mediator.
 @property(nonatomic, weak) id<SigninPresenter> signinPresenter;
 
+// Stops observing all objects.
+- (void)disconnect;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONTAINER_MEDIATOR_H_

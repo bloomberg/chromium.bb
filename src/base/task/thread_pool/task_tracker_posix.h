@@ -41,7 +41,7 @@ class BASE_EXPORT TaskTrackerPosix : public TaskTracker {
  protected:
   // TaskTracker:
   void RunOrSkipTask(Task task,
-                     Sequence* sequence,
+                     TaskSource* task_source,
                      const TaskTraits& traits,
                      bool can_run_task) override;
 

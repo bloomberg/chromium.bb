@@ -40,10 +40,6 @@ namespace blink {
 HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
     : document_(document) {}
 
-HTMLResourcePreloader* HTMLResourcePreloader::Create(Document& document) {
-  return MakeGarbageCollected<HTMLResourcePreloader>(document);
-}
-
 void HTMLResourcePreloader::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }

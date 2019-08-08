@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_FINGERPRINT_SETUP_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
@@ -15,12 +14,32 @@ namespace chromeos {
 
 class FingerprintSetupScreen;
 
+// Interface for dependency injection between FingerprintSetupScreen and its
+// WebUI representation.
+class FingerprintSetupScreenView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"fingerprint-setup"};
+
+  virtual ~FingerprintSetupScreenView() = default;
+
+  // Sets screen this view belongs to.
+  virtual void Bind(FingerprintSetupScreen* screen) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+};
+
 // The sole implementation of the FingerprintSetupScreenView, using WebUI.
 class FingerprintSetupScreenHandler
     : public BaseScreenHandler,
       public FingerprintSetupScreenView,
       public device::mojom::FingerprintObserver {
  public:
+  using TView = FingerprintSetupScreenView;
+
   explicit FingerprintSetupScreenHandler(JSCallsContainer* js_calls_container);
   ~FingerprintSetupScreenHandler() override;
 

@@ -46,8 +46,6 @@ using namespace html_names;
 HTMLMetaElement::HTMLMetaElement(Document& document)
     : HTMLElement(kMetaTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLMetaElement)
-
 static bool IsInvalidSeparator(UChar c) {
   return c == ';';
 }
@@ -70,7 +68,7 @@ void HTMLMetaElement::ParseContentAttribute(
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
 
-  String buffer = content.DeprecatedLower();
+  String buffer = content.LowerASCII();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length; /* no increment here */) {
     // skip to first non-separator, but don't skip past the end of the string
@@ -187,9 +185,9 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
   // 3) device-width and device-height are used as keywords.
   // 4) Other keywords and unknown values translate to auto.
 
-  if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
+  if (EqualIgnoringASCIICase(value_string, "device-width"))
     return Length::DeviceWidth();
-  if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
+  if (EqualIgnoringASCIICase(value_string, "device-height"))
     return Length::DeviceHeight();
 
   bool ok;
@@ -224,13 +222,13 @@ float HTMLMetaElement::ParseViewportValueAsZoom(
   // 5) no and unknown values are translated to 0.0
 
   computed_value_matches_parsed_value = false;
-  if (DeprecatedEqualIgnoringCase(value_string, "yes"))
+  if (EqualIgnoringASCIICase(value_string, "yes"))
     return 1;
-  if (DeprecatedEqualIgnoringCase(value_string, "no"))
+  if (EqualIgnoringASCIICase(value_string, "no"))
     return 0;
-  if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
+  if (EqualIgnoringASCIICase(value_string, "device-width"))
     return 10;
-  if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
+  if (EqualIgnoringASCIICase(value_string, "device-height"))
     return 10;
 
   float value =
@@ -265,17 +263,17 @@ bool HTMLMetaElement::ParseViewportValueAsUserZoom(
   // Numbers in the range <-1, 1>, and unknown values, are mapped to no.
 
   computed_value_matches_parsed_value = false;
-  if (DeprecatedEqualIgnoringCase(value_string, "yes")) {
+  if (EqualIgnoringASCIICase(value_string, "yes")) {
     computed_value_matches_parsed_value = true;
     return true;
   }
-  if (DeprecatedEqualIgnoringCase(value_string, "no")) {
+  if (EqualIgnoringASCIICase(value_string, "no")) {
     computed_value_matches_parsed_value = true;
     return false;
   }
-  if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
+  if (EqualIgnoringASCIICase(value_string, "device-width"))
     return true;
-  if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
+  if (EqualIgnoringASCIICase(value_string, "device-height"))
     return true;
 
   float value =
@@ -290,13 +288,13 @@ float HTMLMetaElement::ParseViewportValueAsDPI(Document* document,
                                                bool report_warnings,
                                                const String& key_string,
                                                const String& value_string) {
-  if (DeprecatedEqualIgnoringCase(value_string, "device-dpi"))
+  if (EqualIgnoringASCIICase(value_string, "device-dpi"))
     return ViewportDescription::kValueDeviceDPI;
-  if (DeprecatedEqualIgnoringCase(value_string, "low-dpi"))
+  if (EqualIgnoringASCIICase(value_string, "low-dpi"))
     return ViewportDescription::kValueLowDPI;
-  if (DeprecatedEqualIgnoringCase(value_string, "medium-dpi"))
+  if (EqualIgnoringASCIICase(value_string, "medium-dpi"))
     return ViewportDescription::kValueMediumDPI;
-  if (DeprecatedEqualIgnoringCase(value_string, "high-dpi"))
+  if (EqualIgnoringASCIICase(value_string, "high-dpi"))
     return ViewportDescription::kValueHighDPI;
 
   bool ok;
@@ -311,11 +309,11 @@ float HTMLMetaElement::ParseViewportValueAsDPI(Document* document,
 blink::mojom::ViewportFit HTMLMetaElement::ParseViewportFitValueAsEnum(
     bool& unknown_value,
     const String& value_string) {
-  if (DeprecatedEqualIgnoringCase(value_string, "auto"))
+  if (EqualIgnoringASCIICase(value_string, "auto"))
     return mojom::ViewportFit::kAuto;
-  if (DeprecatedEqualIgnoringCase(value_string, "contain"))
+  if (EqualIgnoringASCIICase(value_string, "contain"))
     return mojom::ViewportFit::kContain;
-  if (DeprecatedEqualIgnoringCase(value_string, "cover"))
+  if (EqualIgnoringASCIICase(value_string, "cover"))
     return mojom::ViewportFit::kCover;
 
   unknown_value = true;
@@ -477,34 +475,32 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
   viewport_data.SetViewportDescription(description_from_legacy_tag);
 }
 
-void HTMLMetaElement::ProcessSupportedColorSchemes(
-    const AtomicString& content) {
-  if (!RuntimeEnabledFeatures::MetaSupportedColorSchemesEnabled())
+void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
+  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  if (content_value.IsNull())
     return;
-
-  SpaceSplitString supported_schemes_strings(content.LowerASCII());
-  size_t count = supported_schemes_strings.size();
-  ColorSchemeSet supported_schemes;
-  for (size_t i = 0; i < count; i++) {
-    auto color_scheme = supported_schemes_strings[i];
-    if (color_scheme == "light") {
-      supported_schemes.Set(ColorScheme::kLight);
-    } else if (color_scheme == "dark") {
-      supported_schemes.Set(ColorScheme::kDark);
-    }
+  if (EqualIgnoringASCIICase(name_value, "theme-color") &&
+      GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+  } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
+    GetDocument().ColorSchemeMetaChanged();
   }
-  GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
 }
 
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kHttpEquivAttr || params.name == kContentAttr) {
-    Process();
-    return;
-  }
-
-  if (params.name != kNameAttr)
+  if (params.name == kNameAttr) {
+    if (IsInDocumentTree())
+      NameRemoved(params.old_value);
+    ProcessContent();
+  } else if (params.name == kContentAttr) {
+    ProcessContent();
+    ProcessHttpEquiv();
+  } else if (params.name == kHttpEquivAttr) {
+    ProcessHttpEquiv();
+  } else {
     HTMLElement::ParseAttribute(params);
+  }
 }
 
 Node::InsertionNotificationRequest HTMLMetaElement::InsertedInto(
@@ -514,7 +510,17 @@ Node::InsertionNotificationRequest HTMLMetaElement::InsertedInto(
 }
 
 void HTMLMetaElement::DidNotifySubtreeInsertionsToDocument() {
-  Process();
+  ProcessContent();
+  ProcessHttpEquiv();
+}
+
+void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
+  HTMLElement::RemovedFrom(insertion_point);
+  if (!insertion_point.IsInDocumentTree())
+    return;
+  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  if (!name_value.IsEmpty())
+    NameRemoved(name_value);
 }
 
 static bool InDocumentHead(HTMLMetaElement* element) {
@@ -524,49 +530,58 @@ static bool InDocumentHead(HTMLMetaElement* element) {
   return Traversal<HTMLHeadElement>::FirstAncestor(*element);
 }
 
-void HTMLMetaElement::Process() {
+void HTMLMetaElement::ProcessHttpEquiv() {
   if (!IsInDocumentTree())
     return;
-
-  // All below situations require a content attribute (which can be the empty
-  // string).
   const AtomicString& content_value = FastGetAttribute(kContentAttr);
   if (content_value.IsNull())
     return;
-
-  const AtomicString& name_value = FastGetAttribute(kNameAttr);
-  if (!name_value.IsEmpty()) {
-    if (DeprecatedEqualIgnoringCase(name_value, "viewport"))
-      ProcessViewportContentAttribute(content_value,
-                                      ViewportDescription::kViewportMeta);
-    else if (DeprecatedEqualIgnoringCase(name_value, "referrer"))
-      GetDocument().ParseAndSetReferrerPolicy(
-          content_value, true /* support legacy keywords */);
-    else if (DeprecatedEqualIgnoringCase(name_value, "handheldfriendly") &&
-             DeprecatedEqualIgnoringCase(content_value, "true"))
-      ProcessViewportContentAttribute(
-          "width=device-width", ViewportDescription::kHandheldFriendlyMeta);
-    else if (DeprecatedEqualIgnoringCase(name_value, "mobileoptimized"))
-      ProcessViewportContentAttribute(
-          "width=device-width, initial-scale=1",
-          ViewportDescription::kMobileOptimizedMeta);
-    else if (DeprecatedEqualIgnoringCase(name_value, "theme-color") &&
-             GetDocument().GetFrame())
-      GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
-    else if (EqualIgnoringASCIICase(name_value, "supported-color-schemes"))
-      ProcessSupportedColorSchemes(content_value);
-  }
-
-  // Get the document to process the tag, but only if we're actually part of DOM
-  // tree (changing a meta tag while it's not in the tree shouldn't have any
-  // effect on the document).
-
   const AtomicString& http_equiv_value = FastGetAttribute(kHttpEquivAttr);
   if (http_equiv_value.IsEmpty())
     return;
-
   HttpEquiv::Process(GetDocument(), http_equiv_value, content_value,
                      InDocumentHead(this), this);
+}
+
+void HTMLMetaElement::ProcessContent() {
+  if (!IsInDocumentTree())
+    return;
+
+  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  if (name_value.IsEmpty())
+    return;
+
+  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+
+  if (EqualIgnoringASCIICase(name_value, "theme-color") &&
+      GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    return;
+  }
+  if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
+    GetDocument().ColorSchemeMetaChanged();
+    return;
+  }
+
+  // All situations below require a content attribute (which can be the empty
+  // string).
+  if (content_value.IsNull())
+    return;
+
+  if (EqualIgnoringASCIICase(name_value, "viewport")) {
+    ProcessViewportContentAttribute(content_value,
+                                    ViewportDescription::kViewportMeta);
+  } else if (EqualIgnoringASCIICase(name_value, "referrer")) {
+    GetDocument().ParseAndSetReferrerPolicy(content_value,
+                                            true /* support legacy keywords */);
+  } else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&
+             EqualIgnoringASCIICase(content_value, "true")) {
+    ProcessViewportContentAttribute("width=device-width",
+                                    ViewportDescription::kHandheldFriendlyMeta);
+  } else if (EqualIgnoringASCIICase(name_value, "mobileoptimized")) {
+    ProcessViewportContentAttribute("width=device-width, initial-scale=1",
+                                    ViewportDescription::kMobileOptimizedMeta);
+  }
 }
 
 WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {

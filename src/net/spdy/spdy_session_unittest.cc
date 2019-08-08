@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -20,6 +21,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -93,6 +95,22 @@ class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
                CTRequirementLevel(const std::string& host,
                                   const X509Certificate* chain,
                                   const HashValueVector& hashes));
+};
+
+// SpdySessionRequest::Delegate implementation that does nothing. The test it's
+// used in need to create a session request to trigger the creation of a session
+// alias, but doesn't care about when or if OnSpdySessionAvailable() is invoked.
+class SpdySessionRequestDelegate
+    : public SpdySessionPool::SpdySessionRequest::Delegate {
+ public:
+  SpdySessionRequestDelegate() = default;
+  ~SpdySessionRequestDelegate() override = default;
+
+  void OnSpdySessionAvailable(
+      base::WeakPtr<SpdySession> spdy_session) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdySessionRequestDelegate);
 };
 
 }  // namespace
@@ -3531,20 +3549,17 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      connection2->Init(
-          ClientSocketPool::GroupId(host_port2,
-                                    ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              params2),
-          DEFAULT_PRIORITY, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(
+                ClientSocketPool::GroupId(host_port2,
+                                          ClientSocketPool::SocketType::kHttp,
+                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3572,14 +3587,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   AddSSLSocketData();
 
-  session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.host_resolver->rules()->AddIPLiteralRule(
       "www.example.org", "192.168.0.2", std::string());
-  session_deps_.host_resolver->rules()->AddIPLiteralRule(
-      "mail.example.org", "192.168.0.2", std::string());
-  // Not strictly needed.
-  session_deps_.host_resolver->rules()->AddIPLiteralRule("3.com", "192.168.0.3",
-                                                         std::string());
 
   CreateNetworkSession();
 
@@ -3598,17 +3607,28 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
-  // Pre-populate the DNS cache, since a cached entry is required in order to
-  // create the alias.
-  int rv = session_deps_.host_resolver->LoadIntoCache(key2.host_port_pair(),
-                                                      base::nullopt);
-  EXPECT_THAT(rv, IsOk());
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> request;
+  bool is_blocking_request_for_session = false;
+  SpdySessionRequestDelegate request_delegate;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      key2, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ false, NetLogWithSource(),
+      /* on_blocking_request_destroyed_callback = */ base::RepeatingClosure(),
+      &request_delegate, &request, &is_blocking_request_for_session));
+  EXPECT_TRUE(request);
+
+  // Simulate DNS resolution completing, which should set up an alias.
+  EXPECT_EQ(OnHostResolutionCallbackResult::kMayBeDeletedAsync,
+            spdy_session_pool_->OnHostResolutionComplete(
+                key2, /* is_websocket = */ false,
+                AddressList(IPEndPoint(IPAddress(192, 168, 0, 2), 80))));
 
   // Get a session for |key2|, which should return the session created earlier.
   base::WeakPtr<SpdySession> session2 =
       spdy_session_pool_->FindAvailableSession(
           key2, /* enable_ip_based_pooling = */ true,
           /* is_websocket = */ false, NetLogWithSource());
+  EXPECT_TRUE(session2);
   ASSERT_EQ(session1.get(), session2.get());
   EXPECT_FALSE(pool->IsStalled());
 
@@ -3616,20 +3636,17 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
-  scoped_refptr<TransportSocketParams> params3(
-      new TransportSocketParams(host_port3, OnHostResolutionCallback()));
   auto connection3 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      connection3->Init(
-          ClientSocketPool::GroupId(host_port3,
-                                    ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              params3),
-          DEFAULT_PRIORITY, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
-          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection3->Init(
+                ClientSocketPool::GroupId(host_port3,
+                                          ClientSocketPool::SocketType::kHttp,
+                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                callback3.callback(), ClientSocketPool::ProxyAuthCallback(),
+                pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3699,20 +3716,17 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      connection2->Init(
-          ClientSocketPool::GroupId(host_port2,
-                                    ClientSocketPool::SocketType::kHttp,
-                                    false /* privacy_mode */),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              params2),
-          DEFAULT_PRIORITY, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(
+                ClientSocketPool::GroupId(host_port2,
+                                          ClientSocketPool::SocketType::kHttp,
+                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // Running the message loop should cause the socket pool to ask the SPDY
@@ -6095,12 +6109,10 @@ TEST_F(SpdySessionTest, GreaseFrameType) {
 }
 
 enum ReadIfReadySupport {
-  // ReadIfReady() field trial is enabled, and ReadIfReady() is implemented.
-  READ_IF_READY_ENABLED_SUPPORTED,
-  // ReadIfReady() field trial is enabled, but ReadIfReady() is unimplemented.
-  READ_IF_READY_ENABLED_NOT_SUPPORTED,
-  // ReadIfReady() field trial is disabled.
-  READ_IF_READY_DISABLED,
+  // ReadIfReady() is implemented by the underlying transport.
+  READ_IF_READY_SUPPORTED,
+  // ReadIfReady() is unimplemented by the underlying transport.
+  READ_IF_READY_NOT_SUPPORTED,
 };
 
 class SpdySessionReadIfReadyTest
@@ -6108,24 +6120,17 @@ class SpdySessionReadIfReadyTest
       public testing::WithParamInterface<ReadIfReadySupport> {
  public:
   void SetUp() override {
-    if (GetParam() == READ_IF_READY_DISABLED) {
-      scoped_feature_list_.InitAndDisableFeature(
-          Socket::kReadIfReadyExperiment);
-    } else if (GetParam() == READ_IF_READY_ENABLED_SUPPORTED) {
+    if (GetParam() == READ_IF_READY_SUPPORTED) {
       session_deps_.socket_factory->set_enable_read_if_ready(true);
     }
     SpdySessionTest::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SpdySessionReadIfReadyTest,
-                         testing::Values(READ_IF_READY_ENABLED_SUPPORTED,
-                                         READ_IF_READY_ENABLED_NOT_SUPPORTED,
-                                         READ_IF_READY_DISABLED));
+                         testing::Values(READ_IF_READY_SUPPORTED,
+                                         READ_IF_READY_NOT_SUPPORTED));
 
 // Tests basic functionality of ReadIfReady() when it is enabled or disabled.
 TEST_P(SpdySessionReadIfReadyTest, ReadIfReady) {

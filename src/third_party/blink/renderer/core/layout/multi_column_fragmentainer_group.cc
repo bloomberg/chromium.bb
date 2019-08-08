@@ -169,13 +169,13 @@ LayoutSize MultiColumnFragmentainerGroup::FlowThreadTranslationAtOffset(
           : ColumnIndexAtOffset(offset_in_flow_thread, rule);
 
   LayoutRect portion_rect(FlowThreadPortionRectAt(column_index));
-  flow_thread->FlipForWritingMode(portion_rect);
-  portion_rect.MoveBy(flow_thread->PhysicalLocation());
+  flow_thread->DeprecatedFlipForWritingMode(portion_rect);
+  portion_rect.MoveBy(flow_thread->PhysicalLocation().ToLayoutPoint());
 
   LayoutRect column_rect(ColumnRectAt(column_index));
   column_rect.Move(OffsetFromColumnSet());
-  column_set_.FlipForWritingMode(column_rect);
-  column_rect.MoveBy(column_set_.PhysicalLocation());
+  column_set_.DeprecatedFlipForWritingMode(column_rect);
+  column_rect.MoveBy(column_set_.PhysicalLocation().ToLayoutPoint());
 
   LayoutSize translation_relative_to_flow_thread =
       column_rect.Location() - portion_rect.Location();
@@ -262,7 +262,8 @@ LayoutRect MultiColumnFragmentainerGroup::FragmentsBoundingBox(
   // Find the start and end column intersected by the bounding box.
   LayoutRect flipped_bounding_box_in_flow_thread(bounding_box_in_flow_thread);
   LayoutFlowThread* flow_thread = column_set_.FlowThread();
-  flow_thread->FlipForWritingMode(flipped_bounding_box_in_flow_thread);
+  flow_thread->DeprecatedFlipForWritingMode(
+      flipped_bounding_box_in_flow_thread);
   bool is_horizontal_writing_mode = column_set_.IsHorizontalWritingMode();
   LayoutUnit bounding_box_logical_top =
       is_horizontal_writing_mode ? flipped_bounding_box_in_flow_thread.Y()
@@ -283,7 +284,8 @@ LayoutRect MultiColumnFragmentainerGroup::FragmentsBoundingBox(
 
   LayoutRect start_column_flow_thread_overflow_portion =
       FlowThreadPortionOverflowRectAt(start_column);
-  flow_thread->FlipForWritingMode(start_column_flow_thread_overflow_portion);
+  flow_thread->DeprecatedFlipForWritingMode(
+      start_column_flow_thread_overflow_portion);
   LayoutRect start_column_rect(bounding_box_in_flow_thread);
   start_column_rect.Intersect(start_column_flow_thread_overflow_portion);
   start_column_rect.Move(
@@ -295,7 +297,8 @@ LayoutRect MultiColumnFragmentainerGroup::FragmentsBoundingBox(
 
   LayoutRect end_column_flow_thread_overflow_portion =
       FlowThreadPortionOverflowRectAt(end_column);
-  flow_thread->FlipForWritingMode(end_column_flow_thread_overflow_portion);
+  flow_thread->DeprecatedFlipForWritingMode(
+      end_column_flow_thread_overflow_portion);
   LayoutRect end_column_rect(bounding_box_in_flow_thread);
   end_column_rect.Intersect(end_column_flow_thread_overflow_portion);
   end_column_rect.Move(FlowThreadTranslationAtOffset(

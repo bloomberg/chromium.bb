@@ -114,6 +114,15 @@ bool RemoteFontFaceSource::IsValid() const {
 }
 
 void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
+  ExecutionContext* execution_context = font_selector_->GetExecutionContext();
+  if (!execution_context)
+    return;
+  // Prevent promise rejection while shutting down the document.
+  // See crbug.com/960290
+  if (execution_context->IsDocument() &&
+      To<Document>(execution_context)->IsDetached())
+    return;
+
   FontResource* font = ToFontResource(resource);
   histograms_.RecordRemoteFont(font);
 
@@ -122,17 +131,15 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   // FIXME: Provide more useful message such as OTS rejection reason.
   // See crbug.com/97467
   if (font->GetStatus() == ResourceStatus::kDecodeError) {
-    font_selector_->GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kOther,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Failed to decode downloaded font: " + font->Url().ElidedString()));
+    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
+        "Failed to decode downloaded font: " + font->Url().ElidedString()));
     if (font->OtsParsingMessage().length() > 1) {
-      font_selector_->GetExecutionContext()->AddConsoleMessage(
-          ConsoleMessage::Create(
-              mojom::ConsoleMessageSource::kOther,
-              mojom::ConsoleMessageLevel::kWarning,
-              "OTS parsing error: " + font->OtsParsingMessage()));
+      execution_context->AddConsoleMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kOther,
+          mojom::ConsoleMessageLevel::kWarning,
+          "OTS parsing error: " + font->OtsParsingMessage()));
     }
   }
 
@@ -145,9 +152,8 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
     const scoped_refptr<FontCustomPlatformData> customFontData =
         font->GetCustomFontData();
     if (customFontData) {
-      probe::FontsUpdated(font_selector_->GetExecutionContext(),
-                          face_->GetFontFace(), resource->Url().GetString(),
-                          customFontData.get());
+      probe::FontsUpdated(execution_context, face_->GetFontFace(),
+                          resource->Url().GetString(), customFontData.get());
     }
   }
 }

@@ -134,7 +134,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {
   GURL manifest1("chrome-extension://abcdefghijklmnopqrstuvwxyz/manifest.xml");
-  GURL manifest2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/manifest.xml");
+  GURL manifest2("devtools://abcdefghijklmnopqrstuvwxyz/manifest.xml");
 
   auto helper = CreateHelper();
 

@@ -5,7 +5,7 @@
 #include "ash/events/keyboard_driven_event_rewriter.h"
 
 #include "ash/keyboard/keyboard_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/events/event.h"

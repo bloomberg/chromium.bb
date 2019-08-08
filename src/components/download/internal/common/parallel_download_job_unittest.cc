@@ -69,6 +69,7 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
                             std::move(request_handle),
                             create_info,
                             nullptr,
+                            nullptr,
                             nullptr),
         request_count_(request_count),
         min_slice_size_(min_slice_size),
@@ -114,9 +115,9 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
 class ParallelDownloadJobTest : public testing::Test {
  public:
   ParallelDownloadJobTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+      : task_environment_(base::test::ScopedTaskEnvironment::MainThreadType::UI,
+                          base::test::ScopedTaskEnvironment::
+                              ThreadPoolExecutionMode::QUEUED) {}
 
   void CreateParallelJob(int64_t initial_request_offset,
                          int64_t content_length,

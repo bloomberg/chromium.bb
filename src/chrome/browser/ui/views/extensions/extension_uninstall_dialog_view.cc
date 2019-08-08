@@ -51,7 +51,8 @@ ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
     return nullptr;
   ToolbarActionView* const reference_view =
       browser_actions_container->GetViewForId(extension_id);
-  return reference_view && reference_view->visible() ? reference_view : nullptr;
+  return reference_view && reference_view->GetVisible() ? reference_view
+                                                        : nullptr;
 }
 
 class ExtensionUninstallDialogDelegateView;
@@ -259,7 +260,7 @@ base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
 
 bool ExtensionUninstallDialogDelegateView::Accept() {
   if (dialog_)
-    dialog_->DialogAccepted(checkbox_ && checkbox_->checked());
+    dialog_->DialogAccepted(checkbox_ && checkbox_->GetChecked());
   return true;
 }
 

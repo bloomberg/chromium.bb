@@ -4,9 +4,9 @@
 
 module blink.mojom;
 
-import "device/usb/public/mojom/device.mojom";
-import "device/usb/public/mojom/device_enumeration_options.mojom";
-import "device/usb/public/mojom/device_manager_client.mojom";
+import "services/device/public/mojom/usb_device.mojom";
+import "services/device/public/mojom/usb_enumeration_options.mojom";
+import "services/device/public/mojom/usb_manager_client.mojom";
 
 // This is a parallel interface with UsbDeviceManager aimed to handle extra work
 // such as permission checking, chooser showing, etc. in browser.

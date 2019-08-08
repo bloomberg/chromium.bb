@@ -96,8 +96,6 @@ class CORE_EXPORT PointerEventManager
   // |m_touchIdsForCanceledPointerdowns|.
   bool PrimaryPointerdownCanceled(uint32_t unique_touch_event_id);
 
-  void ProcessPendingPointerCaptureForPointerLock(const WebMouseEvent&);
-
   void RemoveLastMousePosition();
 
   Element* GetMouseCaptureTarget();
@@ -170,7 +168,8 @@ class CORE_EXPORT PointerEventManager
       const AtomicString& mouse_event_name,
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events,
-      const Vector<WebMouseEvent>& predicted_events);
+      const Vector<WebMouseEvent>& predicted_events,
+      const String& canvas_region_id);
 
   // Returns PointerEventTarget for a WebTouchPoint, hit-testing as necessary.
   event_handling_util::PointerEventTarget ComputePointerEventTarget(

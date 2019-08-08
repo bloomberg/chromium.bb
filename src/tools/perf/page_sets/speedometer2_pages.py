@@ -6,7 +6,7 @@
 """
 import re
 
-from telemetry.value import list_of_scalar_values
+from tracing.value import histogram as histogram_module
 
 from page_sets import press_story
 
@@ -103,22 +103,25 @@ class Speedometer2Story(press_story.PressStory):
 
   def ParseTestResults(self, action_runner):
     if not self._should_filter_suites:
-      self.AddJavascriptMetricValue(list_of_scalar_values.ListOfScalarValues(
-          self, 'Total', 'ms',
-          action_runner.EvaluateJavaScript(
-              'suiteValues.map(each => each.total)'),
-          important=True))
-      self.AddJavascriptMetricValue(list_of_scalar_values.ListOfScalarValues(
-          self, 'RunsPerMinute', 'score',
-          action_runner.EvaluateJavaScript(
-              'suiteValues.map(each => each.score)'),
-          important=True))
+      total_hg = histogram_module.Histogram("Total", "ms_smallerIsBetter")
+      total_samples = action_runner.EvaluateJavaScript(
+          'suiteValues.map(each => each.total)')
+      for s in total_samples:
+        total_hg.AddSample(s)
+      self.AddJavascriptMetricHistogram(total_hg)
+
+      runs_hg = histogram_module.Histogram("RunsPerMinute",
+                                           "unitless_biggerIsBetter")
+      runs_samples = action_runner.EvaluateJavaScript(
+          'suiteValues.map(each => each.score)')
+      for s in runs_samples:
+        runs_hg.AddSample(s)
+      self.AddJavascriptMetricHistogram(runs_hg)
 
     # Extract the timings for each suite
     for suite_name in self._enabled_suites:
-      self.AddJavascriptMetricValue(list_of_scalar_values.ListOfScalarValues(
-          self, suite_name, 'ms',
-          action_runner.EvaluateJavaScript("""
+      suite_hg = histogram_module.Histogram(suite_name, "ms_smallerIsBetter")
+      samples = action_runner.EvaluateJavaScript("""
               var suite_times = [];
               for(var i = 0; i < iterationCount; i++) {
                 suite_times.push(
@@ -126,5 +129,7 @@ class Speedometer2Story(press_story.PressStory):
               };
               suite_times;
               """,
-              key=suite_name), important=False))
-
+              key=suite_name)
+      for s in samples:
+        suite_hg.AddSample(s)
+      self.AddJavascriptMetricHistogram(suite_hg)

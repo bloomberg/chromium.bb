@@ -35,15 +35,15 @@ bool IsUnwantedInElementID(char c) {
 SavePasswordProgressLogger::StringID FormSchemeToStringID(
     PasswordForm::Scheme scheme) {
   switch (scheme) {
-    case PasswordForm::SCHEME_HTML:
+    case PasswordForm::Scheme::kHtml:
       return SavePasswordProgressLogger::STRING_SCHEME_HTML;
-    case PasswordForm::SCHEME_BASIC:
+    case PasswordForm::Scheme::kBasic:
       return SavePasswordProgressLogger::STRING_SCHEME_BASIC;
-    case PasswordForm::SCHEME_DIGEST:
+    case PasswordForm::Scheme::kDigest:
       return SavePasswordProgressLogger::STRING_SCHEME_DIGEST;
-    case PasswordForm::SCHEME_OTHER:
+    case PasswordForm::Scheme::kOther:
       return SavePasswordProgressLogger::STRING_OTHER;
-    case PasswordForm::SCHEME_USERNAME_ONLY:
+    case PasswordForm::Scheme::kUsernameOnly:
       return SavePasswordProgressLogger::STRING_SCHEME_USERNAME_ONLY;
   }
   NOTREACHED();
@@ -96,7 +96,7 @@ void SavePasswordProgressLogger::LogPasswordForm(
     }
   }
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
-                 form.type == PasswordForm::TYPE_GENERATED);
+                 form.type == PasswordForm::Type::kGenerated);
   log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
   log.SetBoolean(GetStringFromID(STRING_PSL_MATCH),
                  form.is_public_suffix_match);
@@ -272,6 +272,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "|frame| is not the main frame";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME:
       return "provisionally_saved_forms_[form_frame]";
+    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_FORM_METHOD:
+      return "PasswordManager::ProvisionallySaveForm";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD:
       return "PasswordManager::ProvisionallySavePassword";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
@@ -331,8 +333,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordManager::ShowInitialPasswordAccountSuggestions";
     case SavePasswordProgressLogger::STRING_WAIT_FOR_USERNAME:
       return "wait_for_username";
-    case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:
-      return "Instances of LoginModelObserver may be present";
     case SavePasswordProgressLogger::
         STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD:
       return "ChromePasswordManagerClient::WasLastNavigationHTTPError";
@@ -470,6 +470,17 @@ std::string SavePasswordProgressLogger::GetStringFromID(
              "exists whose username matches the prefilled value";
     case STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME:
       return "Failed to fill: No credential matching found";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_OBSERVER_PRESENT:
+      return "Instances of HttpAuthObserver are present";
+    case SavePasswordProgressLogger::
+        STRING_HTTPAUTH_ON_ASK_USER_OR_SAVE_PASSWORD:
+      return "HttpAuthManager::AskUserOrSavePassword";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_PROMPT_USER:
+      return "HttpAuthManager::PromptUser";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_SET_OBSERVER:
+      return "HttpAuthManager::SetObserver";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_DETACH_OBSERVER:
+      return "HttpAuthManager::DetachObserver";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

@@ -20,9 +20,9 @@
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/device_sync_type_converters.h"
-#include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/device_classifier_util.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
@@ -47,7 +47,7 @@ void RegisterDeviceSyncPrefs(PrefRegistrySimple* registry) {
           chromeos::features::kCryptAuthV2Enrollment)) {
     CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(registry);
     CryptAuthKeyRegistryImpl::RegisterPrefs(registry);
-    PersistentEnrollmentScheduler::RegisterPrefs(registry);
+    CryptAuthSchedulerImpl::RegisterPrefs(registry);
   } else {
     CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
   }
@@ -344,7 +344,7 @@ void DeviceSyncImpl::ForceEnrollmentNow(ForceEnrollmentNowCallback callback) {
   }
 
   cryptauth_enrollment_manager_->ForceEnrollmentNow(
-      cryptauth::INVOCATION_REASON_MANUAL);
+      cryptauth::INVOCATION_REASON_MANUAL, base::nullopt /* session_id */);
   std::move(callback).Run(true /* success */);
   RecordForceEnrollmentNowResult(
       ForceCryptAuthOperationResult::kSuccess /* result */);
@@ -507,6 +507,7 @@ void DeviceSyncImpl::Shutdown() {
   remote_device_provider_.reset();
   cryptauth_device_manager_.reset();
   cryptauth_enrollment_manager_.reset();
+  cryptauth_scheduler_.reset();
   cryptauth_key_registry_.reset();
   cryptauth_client_factory_.reset();
   cryptauth_gcm_manager_.reset();
@@ -598,11 +599,15 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
         CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(
             pref_service_.get());
 
+    cryptauth_scheduler_ =
+        CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(
+            pref_service_.get());
+
     cryptauth_enrollment_manager_ =
         CryptAuthV2EnrollmentManagerImpl::Factory::Get()->BuildInstance(
             client_app_metadata_provider_, cryptauth_key_registry_.get(),
             cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
-            pref_service_.get(), clock_);
+            cryptauth_scheduler_.get(), pref_service_.get(), clock_);
   } else {
     cryptauth_enrollment_manager_ =
         CryptAuthEnrollmentManagerImpl::Factory::NewInstance(

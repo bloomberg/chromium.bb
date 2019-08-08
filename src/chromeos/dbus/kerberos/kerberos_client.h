@@ -26,6 +26,10 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
       base::OnceCallback<void(const kerberos::AddAccountResponse& response)>;
   using RemoveAccountCallback =
       base::OnceCallback<void(const kerberos::RemoveAccountResponse& response)>;
+  using ClearAccountsCallback =
+      base::OnceCallback<void(const kerberos::ClearAccountsResponse& response)>;
+  using ListAccountsCallback =
+      base::OnceCallback<void(const kerberos::ListAccountsResponse& response)>;
   using SetConfigCallback =
       base::OnceCallback<void(const kerberos::SetConfigResponse& response)>;
   using AcquireKerberosTgtCallback = base::OnceCallback<void(
@@ -66,6 +70,12 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
   virtual void RemoveAccount(const kerberos::RemoveAccountRequest& request,
                              RemoveAccountCallback callback) = 0;
 
+  virtual void ClearAccounts(const kerberos::ClearAccountsRequest& request,
+                             ClearAccountsCallback callback) = 0;
+
+  virtual void ListAccounts(const kerberos::ListAccountsRequest& request,
+                            ListAccountsCallback callback) = 0;
+
   virtual void SetConfig(const kerberos::SetConfigRequest& request,
                          SetConfigCallback callback) = 0;
 
@@ -80,8 +90,6 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
 
   virtual void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) = 0;
-
-  virtual TestInterface* GetTestInterface() = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

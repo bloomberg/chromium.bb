@@ -266,8 +266,7 @@ TEST_F(FindBufferTest, FindBetweenPositionsSkippedNodes) {
 }
 
 TEST_F(FindBufferTest, FindMatchInRange) {
-  SetBodyContent(
-      "<div id='div' invisible>foo<a id='a'>foof</a><b id='b'>oo</b></div>");
+  SetBodyContent("<div id='div'>foo<a id='a'>foof</a><b id='b'>oo</b></div>");
   Element* div = GetElementById("div");
   Element* a = GetElementById("a");
   Element* b = GetElementById("b");

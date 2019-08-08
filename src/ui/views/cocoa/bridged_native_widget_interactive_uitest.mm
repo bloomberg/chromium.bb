@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 
 #import <Cocoa/Cocoa.h>
 

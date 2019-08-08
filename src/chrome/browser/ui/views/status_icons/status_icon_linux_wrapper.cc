@@ -4,11 +4,23 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
+#if defined(USE_DBUS)
+#include "chrome/browser/ui/views/status_icons/status_icon_linux_dbus.h"
+#endif
+
+#if defined(USE_X11)
+#include "chrome/browser/ui/views/status_icons/status_icon_linux_x11.h"
+#endif
+
 namespace {
+
+constexpr base::Feature kEnableDbusAndX11StatusIcons{
+    "EnableDbusAndX11StatusIcons", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
@@ -58,6 +70,15 @@ std::unique_ptr<StatusIconLinuxWrapper>
 StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
+  if (base::FeatureList::IsEnabled(kEnableDbusAndX11StatusIcons)) {
+#if defined(USE_DBUS)
+    return base::WrapUnique(new StatusIconLinuxWrapper(
+        std::make_unique<StatusIconLinuxDbus>(image, tool_tip)));
+#endif
+    // TODO(thomasanderson): Set up a mechanism for replacing |status_icon_|
+    // with a StatusIconLinuxX11 in case the system doesn't support DBus status
+    // icons, which we can only discover asynchronously.
+  }
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
     auto status_icon =
@@ -72,7 +93,7 @@ StatusIconLinuxWrapper::CreateWrappedStatusIcon(
 
 void StatusIconLinuxWrapper::UpdatePlatformContextMenu(
     StatusIconMenuModel* model) {
-  // If a menu already exists, remove ourself from its oberver list.
+  // If a menu already exists, remove ourself from its observer list.
   if (menu_model_)
     menu_model_->RemoveObserver(this);
 

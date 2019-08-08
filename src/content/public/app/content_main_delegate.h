@@ -134,8 +134,13 @@ class CONTENT_EXPORT ContentMainDelegate {
   // list initialization is complete.
   virtual void PostFieldTrialInitialization() {}
 
+  // Allows the embedder to perform its own initialization after the
+  // TaskScheduler is started.
+  virtual void PostTaskSchedulerStart() {}
+
  protected:
   friend class ContentClientInitializer;
+  friend class BrowserTestBase;
 
   // Called once per relevant process type to allow the embedder to customize
   // content. If an embedder wants the default (empty) implementation, don't

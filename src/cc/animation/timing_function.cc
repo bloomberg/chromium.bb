@@ -85,7 +85,7 @@ TimingFunction::Type StepsTimingFunction::GetType() const {
 }
 
 double StepsTimingFunction::GetValue(double t) const {
-  return GetPreciseValue(t);
+  return GetPreciseValue(t, TimingFunction::LimitDirection::RIGHT);
 }
 
 std::unique_ptr<TimingFunction> StepsTimingFunction::Clone() const {
@@ -96,9 +96,15 @@ double StepsTimingFunction::Velocity(double x) const {
   return 0;
 }
 
-double StepsTimingFunction::GetPreciseValue(double t) const {
+double StepsTimingFunction::GetPreciseValue(double t,
+                                            LimitDirection direction) const {
   const double steps = static_cast<double>(steps_);
   double current_step = std::floor((steps * t) + GetStepsStartOffset());
+  // Adjust step if using a left limit at a discontinuous step boundary.
+  if (direction == LimitDirection::LEFT &&
+      steps * t - std::floor(steps * t) == 0) {
+    current_step -= 1;
+  }
   if (t >= 0 && current_step < 0)
     current_step = 0;
   if (t <= 1 && current_step > steps)
@@ -116,38 +122,6 @@ float StepsTimingFunction::GetStepsStartOffset() const {
       NOTREACHED();
       return 1;
   }
-}
-
-std::unique_ptr<FramesTimingFunction> FramesTimingFunction::Create(int frames) {
-  return base::WrapUnique(new FramesTimingFunction(frames));
-}
-
-FramesTimingFunction::FramesTimingFunction(int frames) : frames_(frames) {}
-
-FramesTimingFunction::~FramesTimingFunction() = default;
-
-TimingFunction::Type FramesTimingFunction::GetType() const {
-  return Type::FRAMES;
-}
-
-double FramesTimingFunction::GetValue(double t) const {
-  return GetPreciseValue(t);
-}
-
-std::unique_ptr<TimingFunction> FramesTimingFunction::Clone() const {
-  return base::WrapUnique(new FramesTimingFunction(*this));
-}
-
-double FramesTimingFunction::Velocity(double x) const {
-  return 0;
-}
-
-double FramesTimingFunction::GetPreciseValue(double t) const {
-  const double frames = static_cast<double>(frames_);
-  double output_progress = std::floor(frames * t) / (frames - 1);
-  if (t <= 1 && output_progress > 1)
-    output_progress = 1;
-  return output_progress;
 }
 
 }  // namespace cc

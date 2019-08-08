@@ -21,7 +21,7 @@
 #include "url/origin.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 class SerialChooserContext : public ChooserContextBase {
@@ -30,18 +30,20 @@ class SerialChooserContext : public ChooserContextBase {
   ~SerialChooserContext() override;
 
   // ChooserContextBase implementation.
-  bool IsValidObject(const base::DictionaryValue& object) override;
-  std::string GetObjectName(const base::DictionaryValue& object) override;
+  bool IsValidObject(const base::Value& object) override;
+
+  // Returns the human readable string representing the given object.
+  static std::string GetObjectName(const base::Value& object);
 
   // In addition these methods from ChooserContextBase are overridden in order
   // to expose ephemeral devices through the public interface.
   std::vector<std::unique_ptr<Object>> GetGrantedObjects(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) override;
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin) override;
   std::vector<std::unique_ptr<Object>> GetAllGrantedObjects() override;
-  void RevokeObjectPermission(const GURL& requesting_origin,
-                              const GURL& embedding_origin,
-                              const base::DictionaryValue& object) override;
+  void RevokeObjectPermission(const url::Origin& requesting_origin,
+                              const url::Origin& embedding_origin,
+                              const base::Value& object) override;
 
   // Serial-specific interface for granting and checking permissions.
   void GrantPortPermission(const url::Origin& requesting_origin,

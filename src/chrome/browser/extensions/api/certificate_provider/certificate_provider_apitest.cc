@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
       service->pin_dialog_manager()->active_view_for_testing();
 
   // The textfield has to be disabled, as extension does not allow input now.
-  EXPECT_EQ(view->textfield_for_testing()->enabled(), false);
+  EXPECT_EQ(view->textfield_for_testing()->GetEnabled(), false);
 
   // Close the dialog.
   ExtensionTestMessageListener listener("No attempt left", false);

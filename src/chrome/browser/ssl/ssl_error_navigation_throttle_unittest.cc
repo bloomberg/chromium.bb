@@ -143,7 +143,7 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
-  handle_->set_net_error_code(net::ERR_CERT_INVALID);
+  handle_->set_net_error_code(net::ERR_CERT_COMMON_NAME_INVALID);
   handle_->set_ssl_info(ssl_info);
   content::NavigationThrottle::ThrottleCheckResult synchronous_result =
       throttle_->WillFailRequest();

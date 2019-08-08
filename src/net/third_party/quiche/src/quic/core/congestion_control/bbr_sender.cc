@@ -30,7 +30,7 @@ const float kDefaultHighGain = 2.885f;
 // The newly derived gain for STARTUP, equal to 4 * ln(2)
 const float kDerivedHighGain = 2.773f;
 // The newly derived CWND gain for STARTUP, 2.
-const float kDerivedHighCWNDGain = 2.773f;
+const float kDerivedHighCWNDGain = 2.0f;
 // The gain used in STARTUP after loss has been detected.
 // 1.5 is enough to allow for 25% exogenous loss and still observe a 25% growth
 // in measured bandwidth.
@@ -329,11 +329,6 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
     QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 3, 4);
     enable_ack_aggregation_during_startup_ = true;
   }
-  if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
-      config.HasClientRequestedIndependentOption(kBBQ4, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 4, 4);
-    set_drain_gain(kModerateProbeRttMultiplier);
-  }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup4) &&
       config.HasClientRequestedIndependentOption(kBBQ5, perspective)) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_bbr_slower_startup4);
@@ -345,12 +340,42 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
 }
 
 void BbrSender::AdjustNetworkParameters(QuicBandwidth bandwidth,
-                                        QuicTime::Delta rtt) {
+                                        QuicTime::Delta rtt,
+                                        bool allow_cwnd_to_decrease) {
   if (!bandwidth.IsZero()) {
     max_bandwidth_.Update(bandwidth, round_trip_count_);
   }
   if (!rtt.IsZero() && (min_rtt_ > rtt || min_rtt_.IsZero())) {
     min_rtt_ = rtt;
+  }
+  if (GetQuicReloadableFlag(quic_fix_bbr_cwnd_in_bandwidth_resumption) &&
+      mode_ == STARTUP) {
+    if (bandwidth.IsZero()) {
+      // Ignore bad bandwidth samples.
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_bbr_cwnd_in_bandwidth_resumption, 3,
+                                   3);
+      return;
+    }
+    const QuicByteCount new_cwnd =
+        std::max(kMinInitialCongestionWindow * kDefaultTCPMSS,
+                 std::min(kMaxInitialCongestionWindow * kDefaultTCPMSS,
+                          bandwidth * rtt_stats_->SmoothedOrInitialRtt()));
+    if (new_cwnd > congestion_window_) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_bbr_cwnd_in_bandwidth_resumption, 1,
+                                   3);
+    } else {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_bbr_cwnd_in_bandwidth_resumption, 2,
+                                   3);
+    }
+    if (new_cwnd < congestion_window_ && !allow_cwnd_to_decrease) {
+      // Only decrease cwnd if allow_cwnd_to_decrease is true.
+      return;
+    }
+    // Decreases cwnd gain and pacing gain. Please note, if pacing_rate_ has
+    // been calculated, it cannot decrease in STARTUP phase.
+    set_high_gain(kDerivedHighCWNDGain);
+    set_high_cwnd_gain(kDerivedHighCWNDGain);
+    congestion_window_ = new_cwnd;
   }
 }
 

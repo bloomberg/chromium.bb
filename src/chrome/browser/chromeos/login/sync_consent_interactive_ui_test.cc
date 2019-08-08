@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
@@ -133,7 +133,7 @@ class SyncConsentTest : public OobeBaseTest {
     WaitForGaiaPageEvent("ready");
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
                                   FakeGaiaMixin::kFakeUserPassword,
                                   FakeGaiaMixin::kEmptyUserServices);
@@ -147,7 +147,7 @@ class SyncConsentTest : public OobeBaseTest {
       const std::string expected_consent_confirmation_string) {
     SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
         WizardController::default_controller()->GetScreen(
-            OobeScreen::SCREEN_SYNC_CONSENT));
+            SyncConsentScreenView::kScreenId));
     ConsentRecordedWaiter consent_recorded_waiter;
     screen->SetDelegateForTesting(&consent_recorded_waiter);
 
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
 
   SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
       WizardController::default_controller()->GetScreen(
-          OobeScreen::SCREEN_SYNC_CONSENT));
+          SyncConsentScreenView::kScreenId));
 
   screen->SetProfileSyncDisabledByPolicyForTesting(true);
   screen->SetProfileSyncEngineInitializedForTesting(GetParam());

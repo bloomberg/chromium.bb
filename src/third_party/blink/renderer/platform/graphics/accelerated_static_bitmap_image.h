@@ -16,6 +16,10 @@
 
 class GrContext;
 
+namespace viz {
+class SingleReleaseCallback;
+}  // namespace viz
+
 namespace blink {
 class WebGraphicsContext3DProviderWrapper;
 class TextureHolder;
@@ -23,8 +27,6 @@ class TextureHolder;
 class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     : public StaticBitmapImage {
  public:
-  enum class MailboxType { kSharedImageId, kDeprecatedMailbox };
-
   ~AcceleratedStaticBitmapImage() override;
   // SkImage with a texture backing.
   static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromSkImage(
@@ -32,10 +34,13 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
 
   // Can specify the GrContext that created the texture backing. Ideally all
-  // callers would use this option. The |mailbox| is a name for the texture
-  // backing, allowing other contexts to use the same backing. |mailbox_type|
-  // indicates whether |mailbox| is a SharedImage identifier or a deprecated
-  // mailbox (generated via ProduceTextureDirectCHROMIUM).
+  // callers would use this option.
+  // The |mailbox| is a name for the texture backing, allowing other contexts to
+  // use the same backing.
+  // |mailbox_type| indicates whether |mailbox| is a SharedImage identifier or a
+  // deprecated mailbox (generated via ProduceTextureDirectCHROMIUM).
+  // |release_callback| is an optional callback to be invoked when this image
+  // is destroyed. It can be invoked on any thread.
   static scoped_refptr<AcceleratedStaticBitmapImage>
   CreateFromWebGLContextImage(
       const gpu::Mailbox&,
@@ -43,7 +48,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size,
-      MailboxType mailbox_type = MailboxType::kDeprecatedMailbox);
+      bool is_origin_top_left,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback = nullptr);
 
   bool CurrentFrameKnownToBeOpaque() override;
   IntSize Size() const override;
@@ -107,7 +113,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size,
-      MailboxType mailbox_type);
+      bool is_origin_top_left,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();
   void WaitSyncTokenIfNeeded();
@@ -124,7 +131,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;
 
-  const MailboxType mailbox_type_;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 };
 
 }  // namespace blink

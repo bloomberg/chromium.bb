@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import tempfile
 
@@ -68,7 +69,8 @@ def env_extras(**kwargs):
 
 
 def run_info_extras(**kwargs):
-    rv = {"e10s": False,
+    package = kwargs["package_name"]
+    rv = {"e10s": True if package is not None and "geckoview" in package else False,
           "headless": False,
           "sw-e10s": False}
     rv.update(run_info_browser_version(kwargs["binary"]))
@@ -100,6 +102,7 @@ def write_hosts_file(config, device):
 
 class FennecBrowser(FirefoxBrowser):
     used_ports = set()
+    used_ports_lock = multiprocessing.Lock()
     init_timeout = 300
     shutdown_timeout = 60
 
@@ -110,6 +113,7 @@ class FennecBrowser(FirefoxBrowser):
         self.device_serial = device_serial
         self.tests_root = kwargs["tests_root"]
         self.install_fonts = kwargs["install_fonts"]
+        self.stackwalk_binary = kwargs["stackwalk_binary"]
 
     @property
     def package_name(self):
@@ -125,8 +129,9 @@ class FennecBrowser(FirefoxBrowser):
 
     def start(self, **kwargs):
         if self.marionette_port is None:
-            self.marionette_port = get_free_port(2828, exclude=self.used_ports)
-            self.used_ports.add(self.marionette_port)
+            with FennecBrowser.used_ports_lock:
+                self.marionette_port = get_free_port(2828, exclude=self.used_ports)
+                self.used_ports.add(self.marionette_port)
 
         env = {}
         env["MOZ_CRASHREPORTER"] = "1"
@@ -220,3 +225,8 @@ class FennecBrowser(FirefoxBrowser):
             # browser to shut down. This allows the leak log to be written
             self.runner.stop()
         self.logger.debug("stopped")
+
+    def check_crash(self, process, test):
+        if not os.environ.get("MINIDUMP_STACKWALK", "") and self.stackwalk_binary:
+            os.environ["MINIDUMP_STACKWALK"] = self.stackwalk_binary
+        return self.runner.check_for_crashes()

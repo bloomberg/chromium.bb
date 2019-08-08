@@ -54,8 +54,12 @@ class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
   void CreateGpuMemoryBufferFactory(
       ws::mojom::GpuMemoryBufferFactoryRequest request) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
+
+#if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override;
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
+      override;
+#endif  // defined(OS_CHROMEOS)
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
       override;

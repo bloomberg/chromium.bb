@@ -1,5 +1,6 @@
 <!doctype html>
 <meta charset=utf-8>
+<meta name="timeout" content="long">
 <title>RTCDataChannel.prototype.send</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
@@ -299,6 +300,7 @@
 
 promise_test(async t => {
   let pc1 = new RTCPeerConnection();
+  t.add_cleanup(() => pc1.close());
   let [channel1, channel2] = await createDataChannelPair(pc1);
   let message = 'hello888'; // 8 bytes
   while (message.length <= pc1.sctp.maxMessageSize) {

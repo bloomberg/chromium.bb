@@ -228,6 +228,10 @@ void Label::SetMaximumWidth(int max_width) {
   SizeToPreferredSize();
 }
 
+size_t Label::GetRequiredLines() const {
+  return full_text_->GetNumLines();
+}
+
 base::string16 Label::GetDisplayTextForTesting() {
   ClearDisplayText();
   MaybeBuildDisplayText();
@@ -298,7 +302,7 @@ gfx::Size Label::CalculatePreferredSize() const {
   // TODO(munjal): This logic probably belongs to the View class. But for now,
   // put it here since putting it in View class means all inheriting classes
   // need to respect the |collapse_when_hidden_| flag.
-  if (!visible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_)
     return gfx::Size();
 
   if (multi_line() && fixed_width_ != 0 && !text().empty())
@@ -317,7 +321,7 @@ gfx::Size Label::CalculatePreferredSize() const {
 }
 
 gfx::Size Label::GetMinimumSize() const {
-  if (!visible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_)
     return gfx::Size();
 
   gfx::Size size(0, font_list().GetHeight());
@@ -344,7 +348,7 @@ gfx::Size Label::GetMinimumSize() const {
 }
 
 int Label::GetHeightForWidth(int w) const {
-  if (!visible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_)
     return 0;
 
   w -= GetInsets().width();
@@ -480,7 +484,7 @@ void Label::PaintText(gfx::Canvas* canvas) {
 
     if (view->layer() && view->layer()->fills_bounds_opaquely()) {
       DLOG(WARNING) << "Ancestor view has a non-opaque layer: "
-                    << view->GetClassName() << " with ID " << view->id();
+                    << view->GetClassName() << " with ID " << view->GetID();
       break;
     }
   }
@@ -499,8 +503,8 @@ void Label::OnPaint(gfx::Canvas* canvas) {
     PaintFocusRing(canvas);
 }
 
-void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateColorsFromTheme(theme);
+void Label::OnThemeChanged() {
+  UpdateColorsFromTheme();
 }
 
 gfx::NativeCursor Label::GetCursor(const ui::MouseEvent& event) {
@@ -813,7 +817,7 @@ void Label::Init(const base::string16& text,
   auto_color_readability_ = true;
   multi_line_ = false;
   max_lines_ = 0;
-  UpdateColorsFromTheme(GetNativeTheme());
+  UpdateColorsFromTheme();
   handles_tooltips_ = true;
   collapse_when_hidden_ = false;
   fixed_width_ = 0;
@@ -873,7 +877,7 @@ gfx::Size Label::GetTextSize() const {
 SkColor Label::GetForegroundColor(SkColor foreground,
                                   SkColor background) const {
   return (auto_color_readability_ && IsOpaque(background))
-             ? color_utils::GetColorWithMinimumContrast(foreground, background)
+             ? color_utils::BlendForMinContrast(foreground, background).color
              : foreground;
 }
 
@@ -905,7 +909,8 @@ void Label::ApplyTextColors() const {
   display_text_->set_subpixel_rendering_suppressed(!subpixel_rendering_enabled);
 }
 
-void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+void Label::UpdateColorsFromTheme() {
+  ui::NativeTheme* theme = GetNativeTheme();
   if (!enabled_color_set_) {
     requested_enabled_color_ =
         style::GetColor(*this, text_context_, style::STYLE_PRIMARY);

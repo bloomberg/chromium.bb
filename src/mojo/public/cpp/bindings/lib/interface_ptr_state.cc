@@ -18,12 +18,12 @@ InterfacePtrStateBase::~InterfacePtrStateBase() {
 }
 
 void InterfacePtrStateBase::QueryVersion(
-    const base::Callback<void(uint32_t)>& callback) {
+    base::OnceCallback<void(uint32_t)> callback) {
   // It is safe to capture |this| because the callback won't be run after this
   // object goes away.
   endpoint_client_->QueryVersion(
-      base::Bind(&InterfacePtrStateBase::OnQueryVersion, base::Unretained(this),
-                 callback));
+      base::BindRepeating(&InterfacePtrStateBase::OnQueryVersion,
+                          base::Unretained(this), base::Passed(&callback)));
 }
 
 void InterfacePtrStateBase::RequireVersion(uint32_t version) {
@@ -60,16 +60,17 @@ void InterfacePtrStateBase::Bind(
 }
 
 void InterfacePtrStateBase::OnQueryVersion(
-    const base::Callback<void(uint32_t)>& callback,
+    base::OnceCallback<void(uint32_t)> callback,
     uint32_t version) {
   version_ = version;
-  callback.Run(version);
+  std::move(callback).Run(version);
 }
 
 bool InterfacePtrStateBase::InitializeEndpointClient(
     bool passes_associated_kinds,
     bool has_sync_methods,
-    std::unique_ptr<MessageReceiver> payload_validator) {
+    std::unique_ptr<MessageReceiver> payload_validator,
+    const char* interface_name) {
   // The object hasn't been bound.
   if (!handle_.is_valid())
     return false;
@@ -87,7 +88,7 @@ bool InterfacePtrStateBase::InitializeEndpointClient(
       std::move(payload_validator), false, std::move(runner_),
       // The version is only queried from the client so the value passed here
       // will not be used.
-      0u));
+      0u, interface_name));
   return true;
 }
 

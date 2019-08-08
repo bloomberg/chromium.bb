@@ -179,10 +179,12 @@ void ReceiveStatisticsProxy::UpdateHistograms() {
         (clock_->TimeInMilliseconds() - *first_decoded_frame_time_ms_);
     if (elapsed_ms >=
         metrics::kMinRunTimeInSeconds * rtc::kNumMillisecsPerSec) {
-      RTC_HISTOGRAM_COUNTS_100(
-          "WebRTC.Video.DecodedFramesPerSecond",
-          static_cast<int>((stats_.frames_decoded * 1000.0f / elapsed_ms) +
-                           0.5f));
+      int decoded_fps = static_cast<int>(
+          (stats_.frames_decoded * 1000.0f / elapsed_ms) + 0.5f);
+      RTC_HISTOGRAM_COUNTS_100("WebRTC.Video.DecodedFramesPerSecond",
+                               decoded_fps);
+      log_stream << "WebRTC.Video.DecodedFramesPerSecond " << decoded_fps
+                 << '\n';
 
       const uint32_t frames_rendered = stats_.frames_rendered;
       if (frames_rendered > 0) {
@@ -202,8 +204,10 @@ void ReceiveStatisticsProxy::UpdateHistograms() {
   const int kMinRequiredSamples = 200;
   int samples = static_cast<int>(render_fps_tracker_.TotalSampleCount());
   if (samples >= kMinRequiredSamples) {
+    int rendered_fps = round(render_fps_tracker_.ComputeTotalRate());
     RTC_HISTOGRAM_COUNTS_100("WebRTC.Video.RenderFramesPerSecond",
-                             round(render_fps_tracker_.ComputeTotalRate()));
+                             rendered_fps);
+    log_stream << "WebRTC.Video.RenderFramesPerSecond " << rendered_fps << '\n';
     RTC_HISTOGRAM_COUNTS_100000(
         "WebRTC.Video.RenderSqrtPixelsPerSecond",
         round(render_pixel_tracker_.ComputeTotalRate()));
@@ -592,6 +596,10 @@ VideoReceiveStream::Stats ReceiveStatisticsProxy::GetStats() const {
       video_quality_observer_->SumSquaredFrameDurationsSec();
   stats_.content_type = last_content_type_;
   stats_.timing_frame_info = timing_frame_info_counter_.Max(now_ms);
+  stats_.jitter_buffer_delay_seconds =
+      static_cast<double>(current_delay_counter_.Sum(1).value_or(0)) /
+      rtc::kNumMillisecsPerSec;
+  stats_.jitter_buffer_emitted_count = current_delay_counter_.NumSamples();
   return stats_;
 }
 

@@ -157,17 +157,26 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
                                         cache_request_.Get(),
                                         uia_event_handler_.Get());
 
-  // Subscribe to all automation events (except structure-change events, which
-  // are handled above.
+  // Subscribe to all automation events (except structure-change events and
+  // live-region events, which are handled elsewhere).
   static const EVENTID kMinEvent = UIA_ToolTipOpenedEventId;
   static const EVENTID kMaxEvent = UIA_NotificationEventId;
   for (EVENTID event_id = kMinEvent; event_id <= kMaxEvent; ++event_id) {
-    if (event_id != UIA_StructureChangedEventId) {
+    if (event_id != UIA_StructureChangedEventId &&
+        event_id != UIA_LiveRegionChangedEventId) {
       uia_->AddAutomationEventHandler(
           event_id, root_.Get(), TreeScope::TreeScope_Subtree,
           cache_request_.Get(), uia_event_handler_.Get());
     }
   }
+
+  // Subscribe to live-region change events.  This must be the last event we
+  // subscribe to, because |AXFragmentRootWin| will fire events when advised of
+  // the subscription, and this can hang the test-process (on Windows 19H1+) if
+  // we're simultaneously trying to subscribe to other events.
+  uia_->AddAutomationEventHandler(
+      UIA_LiveRegionChangedEventId, root_.Get(), TreeScope::TreeScope_Subtree,
+      cache_request_.Get(), uia_event_handler_.Get());
 
   // Signal that initialization is complete; this will wake the main thread to
   // start executing the test.

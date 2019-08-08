@@ -14,6 +14,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -100,7 +101,6 @@ class FakeWebURLLoader final : public WebURLLoader {
     // Don't handle other requests intentionally to emulate ongoing load.
   }
 
-  void Cancel() override {}
   void SetDefersLoading(bool defers) override {}
   void DidChangePriority(WebURLRequest::Priority, int) override {}
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
@@ -159,10 +159,35 @@ class MockServiceWorkerContextClient final
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
                             scoped_refptr<base::SequencedTaskRunner>) override {
-    // In production code, ReadyToEvaluateScript() is called when
-    // ServiceWorkerContextClient receives the InitializeGlobalScope() IPC
-    // message.
-    proxy->ReadyToEvaluateScript();
+    mojom::blink::ServiceWorkerHostAssociatedPtrInfo host_ptr_info;
+    auto host_request = mojo::MakeRequest(&host_ptr_info);
+
+    mojom::blink::ServiceWorkerRegistrationObjectHostAssociatedPtrInfo
+        registration_object_host_ptr_info;
+    auto registration_object_host_request =
+        mojo::MakeRequest(&registration_object_host_ptr_info);
+    mojom::blink::ServiceWorkerRegistrationObjectAssociatedPtrInfo
+        registration_object_ptr_info;
+
+    // Simulates calling blink.mojom.ServiceWorker.InitializeGlobalScope() to
+    // unblock the service worker script evaluation.
+    mojom::blink::ServiceWorkerPtr service_worker;
+    proxy->BindServiceWorker(
+        mojo::MakeRequest(&service_worker).PassMessagePipe());
+    service_worker->InitializeGlobalScope(
+        std::move(host_ptr_info),
+        mojom::blink::ServiceWorkerRegistrationObjectInfo::New(
+            2 /* registration_id */, KURL("https://example.com"),
+            mojom::blink::ServiceWorkerUpdateViaCache::kImports,
+            std::move(registration_object_host_ptr_info),
+            mojo::MakeRequest(&registration_object_ptr_info), nullptr, nullptr,
+            nullptr),
+        mojom::blink::FetchHandlerExistence::EXISTS);
+
+    // To make the other side callable.
+    mojo::AssociateWithDisconnectedPipe(host_request.PassHandle());
+    mojo::AssociateWithDisconnectedPipe(
+        registration_object_host_request.PassHandle());
   }
 
   void FailedToLoadClassicScript() override {

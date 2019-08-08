@@ -80,8 +80,7 @@ class CheckClientDownloadRequest : public download::DownloadItem::Observer {
   void OnUrlWhitelistCheckDone(bool is_whitelisted);
   void OnCertificateWhitelistCheckDone(bool is_whitelisted);
   void GetTabRedirects();
-  void OnGotTabRedirects(const GURL& url,
-                         const history::RedirectList* redirect_list);
+  void OnGotTabRedirects(const GURL& url, history::RedirectList redirect_list);
   bool IsDownloadManuallyBlacklisted(const ClientDownloadRequest& request);
   std::string SanitizeUrl(const GURL& url) const;
   void SendRequest();

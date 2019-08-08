@@ -39,8 +39,11 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   void UpdateAfterLoginStatusChange();
   void UpdateAfterShelfAlignmentChange();
 
+  void UpdateVisibility();
+
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -53,13 +56,12 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
  private:
   void UpdateShowLogoutButtonInTray();
   void UpdateLogoutDialogDuration();
-  void UpdateVisibility();
   void UpdateButtonTextAndImage();
 
   Shelf* const shelf_;
-  TrayContainer* const container_;
-  views::MdTextButton* const button_;
-  bool show_logout_button_in_tray_;
+  TrayContainer* container_;
+  views::MdTextButton* button_;
+  bool show_logout_button_in_tray_ = false;
   base::TimeDelta dialog_duration_;
 
   // Observes user profile prefs.

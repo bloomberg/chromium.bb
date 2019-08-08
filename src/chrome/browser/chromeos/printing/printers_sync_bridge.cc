@@ -4,20 +4,16 @@
 
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 
-#include <memory>
 #include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/model_type_change_processor.h"
-#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -158,7 +154,7 @@ PrintersSyncBridge::PrintersSyncBridge(
       store_delegate_(std::make_unique<StoreProxy>(this, std::move(callback))),
       observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
-PrintersSyncBridge::~PrintersSyncBridge() {}
+PrintersSyncBridge::~PrintersSyncBridge() = default;
 
 std::unique_ptr<MetadataChangeList>
 PrintersSyncBridge::CreateMetadataChangeList() {
@@ -289,7 +285,7 @@ ConflictResolution PrintersSyncBridge::ResolveConflict(
   // If the local printer doesn't exist, it must have been deleted. In this
   // case, use the remote one.
   if (iter == all_data_.end()) {
-    return ConflictResolution::UseRemote();
+    return ConflictResolution::kUseRemote;
   }
   const sync_pb::PrinterSpecifics& local_printer = *iter->second;
 
@@ -297,10 +293,10 @@ ConflictResolution PrintersSyncBridge::ResolveConflict(
       remote_data.specifics.printer();
 
   if (local_printer.updated_timestamp() > remote_printer.updated_timestamp()) {
-    return ConflictResolution::UseLocal();
+    return ConflictResolution::kUseLocal;
   }
 
-  return ConflictResolution::UseRemote();
+  return ConflictResolution::kUseRemote;
 }
 
 void PrintersSyncBridge::AddPrinter(

@@ -14,7 +14,5 @@ public_deps = [
 ]
 type_mappings = [
   "gpu.mojom.GpuFeatureStatus=gpu::GpuFeatureStatus",
-  "gpu.mojom.AntialiasingMode=gpu::AntialiasingMode",
-  "gpu.mojom.WebglPreferences=gpu::WebglPreferences",
   "gpu.mojom.GpuFeatureInfo=gpu::GpuFeatureInfo",
 ]

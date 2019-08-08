@@ -48,8 +48,14 @@ class ReadingListMediatorTest
     model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr, &clock_);
     EXPECT_CALL(mock_favicon_service_,
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))
-        .WillRepeatedly(
-            favicon::PostReply<5>(favicon_base::FaviconRawBitmapResult()));
+        .WillRepeatedly([](auto, auto, auto,
+                           favicon_base::FaviconRawBitmapCallback callback,
+                           base::CancelableTaskTracker* tracker) {
+          return tracker->PostTask(
+              base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+              base::BindOnce(std::move(callback),
+                             favicon_base::FaviconRawBitmapResult()));
+        });
 
     no_title_entry_url_ = GURL("http://chromium.org/unread3");
     // The first 3 have the same update time on purpose.

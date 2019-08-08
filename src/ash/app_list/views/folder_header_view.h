@@ -39,8 +39,9 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   bool is_tablet_mode() const { return is_tablet_mode_; }
   void set_tablet_mode(bool started) { is_tablet_mode_ = started; }
 
-  // Overridden from views::View:
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
   views::View* GetFolderNameViewForTest() const;
 
@@ -66,7 +67,7 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   // Returns elided folder name from |folder_name|.
   base::string16 GetElidedFolderName(const base::string16& folder_name) const;
 
-  // views::View overrides:
+  // views::View:
   void Layout() override;
 
   // views::TextfieldController overrides:

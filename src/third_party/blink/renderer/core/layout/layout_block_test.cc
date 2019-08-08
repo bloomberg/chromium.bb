@@ -75,26 +75,33 @@ TEST_F(LayoutBlockTest, OverflowWithTransformAndPerspective) {
 }
 
 TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
-  // Only exercises legacy code.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
   SetBodyInnerHTML(R"HTML(
-    <label style="font-size: 0px">
-      <input type="radio" style="margin-left: -15px">
-    </label>
+    <div id="target" style="width: 0; height: 0">
+      <span style="font-size: 10px/10px">
+        <img style="margin-left: -15px; width: 40px; height: 40px">
+      </span>
+    </div>
   )HTML");
-  auto* body = To<LayoutBlockFlow>(GetDocument().body()->GetLayoutObject());
-  RootInlineBox* box = body->FirstRootBox();
-#if defined(OS_MACOSX)
-  EXPECT_EQ(LayoutRect(-17, 0, 16, 19),
-            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
-#elif defined(OS_ANDROID)
-  EXPECT_EQ(LayoutRect(-15, 3, 19, 16),
-            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
-#else
-  EXPECT_EQ(LayoutRect(-15, 3, 16, 13),
-            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
-#endif
+
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_EQ(LayoutRect(-15, 0, 40, 40), target->VisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-15, 0, 40, 40), target->PhysicalVisualOverflowRect());
+}
+
+TEST_F(LayoutBlockTest, NestedInlineVisualOverflowVerticalRL) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="width: 100px; writing-mode: vertical-rl">
+      <div id="target" style="width: 0; height: 0">
+        <span style="font-size: 10px/10px">
+          <img style="margin-right: -15px; width: 40px; height: 40px">
+        </span>
+      </div>
+    </div>
+  )HTML");
+
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_EQ(LayoutRect(-15, 0, 40, 40), target->VisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-25, 0, 40, 40), target->PhysicalVisualOverflowRect());
 }
 
 TEST_F(LayoutBlockTest, ContainmentStyleChange) {
@@ -113,8 +120,7 @@ TEST_F(LayoutBlockTest, ContainmentStyleChange) {
   )HTML");
 
   Element* target_element = GetDocument().getElementById("target");
-  LayoutBlockFlow* target =
-      ToLayoutBlockFlow(target_element->GetLayoutObject());
+  auto* target = To<LayoutBlockFlow>(target_element->GetLayoutObject());
   LayoutBox* contained = ToLayoutBox(GetLayoutObjectByElementId("contained"));
   EXPECT_TRUE(target->PositionedObjects()->Contains(contained));
 

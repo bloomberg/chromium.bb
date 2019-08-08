@@ -10,16 +10,18 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_operation.h"
 
 namespace content {
 
 CacheStorageScheduler::CacheStorageScheduler(
-    CacheStorageSchedulerClient client_type)
-    : client_type_(client_type), weak_ptr_factory_(this) {}
+    CacheStorageSchedulerClient client_type,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)),
+      client_type_(client_type),
+      weak_ptr_factory_(this) {}
 
 CacheStorageScheduler::~CacheStorageScheduler() {}
 
@@ -30,8 +32,7 @@ void CacheStorageScheduler::ScheduleOperation(CacheStorageSchedulerOp op_type,
                                  pending_operations_.size());
 
   pending_operations_.push_back(std::make_unique<CacheStorageOperation>(
-      std::move(closure), client_type_, op_type,
-      base::ThreadTaskRunnerHandle::Get()));
+      std::move(closure), client_type_, op_type, task_runner_));
   RunOperationIfIdle();
 }
 
@@ -46,6 +47,10 @@ bool CacheStorageScheduler::ScheduledOperations() const {
   return running_operation_ || !pending_operations_.empty();
 }
 
+void CacheStorageScheduler::DispatchOperationTask(base::OnceClosure task) {
+  task_runner_->PostTask(FROM_HERE, std::move(task));
+}
+
 void CacheStorageScheduler::RunOperationIfIdle() {
   if (!running_operation_ && !pending_operations_.empty()) {
     // TODO(jkarlin): Run multiple operations in parallel where allowed.
@@ -57,9 +62,8 @@ void CacheStorageScheduler::RunOperationIfIdle() {
         running_operation_->op_type(),
         base::TimeTicks::Now() - running_operation_->creation_ticks());
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&CacheStorageOperation::Run,
-                                  running_operation_->AsWeakPtr()));
+    DispatchOperationTask(base::BindOnce(&CacheStorageOperation::Run,
+                                         running_operation_->AsWeakPtr()));
   }
 }
 

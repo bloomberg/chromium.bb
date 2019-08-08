@@ -128,19 +128,12 @@ bool IsUrlIncrementedByOne(const HTMLAnchorElement& anchor_element) {
 // Returns the bounding box rect of a layout object, including visual
 // overflows.
 IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
-  Vector<LayoutRect> rects;
-  layout_object->AddOutlineRects(rects, LayoutPoint(),
-                                 NGOutlineType::kIncludeBlockVisualOverflow);
-  return layout_object
-      ->LocalToAbsoluteQuad(FloatQuad(FloatRect(UnionRect(rects))))
-      .EnclosingBoundingBox();
+  Vector<PhysicalRect> rects = layout_object->OutlineRects(
+      PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
+  return EnclosingIntRect(layout_object->LocalToAbsoluteRect(UnionRect(rects)));
 }
 
 }  // anonymous namespace
-
-// Webpage with more than |kMaxAnchorElementMetricsSize| anchor element metrics
-// to report will be ignored, so it should be large enough to cover most pages.
-const int AnchorElementMetrics::kMaxAnchorElementMetricsSize = 40;
 
 // static
 base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
@@ -303,8 +296,10 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
 
     anchor_elements_metrics.push_back(anchor_metric.value().CreateMetricsPtr());
 
-    if (anchor_elements_metrics.size() > kMaxAnchorElementMetricsSize)
-      return;
+    // Webpages with more than 40 anchors will stop processing at the 40th
+    // anchor element.
+    if (anchor_elements_metrics.size() >= 40)
+      break;
   }
 
   if (anchor_elements_metrics.IsEmpty())

@@ -294,22 +294,6 @@ TEST_F(NetworkDeviceHandlerTest, RequestRefreshIPConfigs) {
   // refresh calls.
 }
 
-TEST_F(NetworkDeviceHandlerTest, SetCarrier) {
-  const char kCarrier[] = "carrier";
-
-  // Test that the success callback gets called.
-  network_device_handler_->SetCarrier(
-      kDefaultCellularDevicePath, kCarrier, success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-
-  // Test that the shill error propagates to the error callback.
-  network_device_handler_->SetCarrier(
-      kUnknownCellularDevicePath, kCarrier, success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
-}
-
 TEST_F(NetworkDeviceHandlerTest, RequirePin) {
   // Test that the success callback gets called.
   network_device_handler_->RequirePin(kDefaultCellularDevicePath,

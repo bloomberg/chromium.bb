@@ -39,9 +39,6 @@ namespace safe_browsing {
 
 constexpr char kSRTPromptTrial[] = "SRTPromptFieldTrial";
 
-const base::Feature kRebootPromptDialogFeature{
-    "RebootPromptDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -103,19 +100,6 @@ std::string GetIncomingSRTSeed() {
 
 std::string GetSRTFieldTrialGroupName() {
   return base::FieldTrialList::FindFullName(kSRTPromptTrial);
-}
-
-RebootPromptType GetRebootPromptType() {
-  constexpr char kIsModalParam[] = "modal_reboot_prompt";
-  if (!base::FeatureList::IsEnabled(kRebootPromptDialogFeature))
-    return REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE;
-  if (base::GetFieldTrialParamByFeatureAsBool(kRebootPromptDialogFeature,
-                                              kIsModalParam,
-                                              /*default_value=*/true)) {
-    return REBOOT_PROMPT_TYPE_SHOW_MODAL_DIALOG;
-  } else {
-    return REBOOT_PROMPT_TYPE_SHOW_NON_MODAL_DIALOG;
-  }
 }
 
 void RecordPromptShownWithTypeHistogram(PromptTypeHistogramValue value) {

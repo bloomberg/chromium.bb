@@ -12,7 +12,6 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,11 +22,9 @@
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 class AppIconLoader;
 class AppSyncUIState;
@@ -56,13 +53,17 @@ namespace ui {
 class BaseWindow;
 }
 
+namespace chromeos {
+FORWARD_DECLARE_TEST(SpokenFeedbackTest, ShelfIconFocusForward);
+FORWARD_DECLARE_TEST(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem);
+}
+
 // ChromeLauncherController helps manage Ash's shelf for Chrome prefs and apps.
 // It helps synchronize shelf state with profile preferences and app content.
 // NOTE: Launcher is an old name for the shelf, this class should be renamed.
 class ChromeLauncherController
     : public LauncherAppUpdater::Delegate,
       public AppIconLoaderDelegate,
-      private ash::mojom::ShelfObserver,
       private ash::ShelfModelObserver,
       private AppSyncUIStateObserver,
       private app_list::AppListSyncableService::Observer,
@@ -165,13 +166,14 @@ class ChromeLauncherController
                                                     bool allow_minimize);
 
   // Called when the active user has changed.
-  void ActiveUserChanged(const std::string& user_email);
+  void ActiveUserChanged(const AccountId& account_id);
 
   // Called when a user got added to the session.
   void AdditionalUserAddedToSession(Profile* profile);
 
   // Get the list of all running incarnations of this item.
-  ash::MenuItemList GetAppMenuItemsForTesting(const ash::ShelfItem& item);
+  ash::ShelfItemDelegate::AppMenuItems GetAppMenuItemsForTesting(
+      const ash::ShelfItem& item);
 
   // Get the list of all tabs which belong to a certain application type.
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
@@ -231,9 +233,6 @@ class ChromeLauncherController
 
   void SetProfileForTest(Profile* profile);
 
-  // Flush responses to ash::mojom::ShelfObserver messages.
-  void FlushForTesting();
-
   // Helpers that call through to corresponding ShelfModel functions.
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
@@ -249,22 +248,24 @@ class ChromeLauncherController
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
 
- protected:
-  // Connects or reconnects to the mojom::ShelfController interface in ash.
-  // Returns true if connected; virtual for unit tests.
-  virtual bool ConnectToShelfController();
-
  private:
   friend class ChromeLauncherControllerTest;
   friend class LauncherPlatformAppBrowserTest;
   friend class ShelfAppBrowserTest;
   friend class TestChromeLauncherController;
 
+  FRIEND_TEST_ALL_PREFIXES(chromeos::SpokenFeedbackTest, ShelfIconFocusForward);
+  FRIEND_TEST_ALL_PREFIXES(chromeos::SpokenFeedbackTest,
+                           SpeakingTextUnderMouseForShelfItem);
+
   using WebContentsToAppIDMap = std::map<content::WebContents*, std::string>;
 
   // Creates a new app shortcut item and controller on the shelf at |index|.
   ash::ShelfID CreateAppShortcutLauncherItem(const ash::ShelfID& shelf_id,
                                              int index);
+  ash::ShelfID CreateAppShortcutLauncherItem(const ash::ShelfID& shelf_id,
+                                             int index,
+                                             const base::string16& title);
 
   // Remembers / restores list of running applications.
   // Note that this order will neither be stored in the preference nor will it
@@ -329,23 +330,11 @@ class ChromeLauncherController
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
 
-  // ash::mojom::ShelfObserver:
-  void OnShelfItemAdded(int32_t index, const ash::ShelfItem& item) override;
-  void OnShelfItemRemoved(const ash::ShelfID& id) override;
-  void OnShelfItemMoved(const ash::ShelfID& id, int32_t index) override;
-  void OnShelfItemUpdated(const ash::ShelfItem& item) override;
-  void OnShelfItemDelegateChanged(
-      const ash::ShelfID& id,
-      ash::mojom::ShelfItemDelegatePtr delegate) override;
-
   // ash::ShelfModelObserver:
   void ShelfItemAdded(int index) override;
   void ShelfItemRemoved(int index, const ash::ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
-  void ShelfItemDelegateChanged(const ash::ShelfID& id,
-                                ash::ShelfItemDelegate* old_delegate,
-                                ash::ShelfItemDelegate* delegate) override;
 
   // AppSyncUIStateObserver:
   void OnAppSyncUIStatusChanged() override;
@@ -373,24 +362,12 @@ class ChromeLauncherController
   // multi-profile use cases this might change over time.
   Profile* profile_ = nullptr;
 
-  // In classic Ash, this the ShelfModel owned by ash::Shell's ShelfController.
-  // In the mash config, this is a separate ShelfModel instance, owned by
-  // ChromeBrowserMainExtraPartsAsh, and synchronized with Ash's ShelfModel.
+  // The ShelfModel instance owned by ash::Shell's ShelfController.
   ash::ShelfModel* model_;
 
   // The shelf controller for Crostini apps.
   CrostiniAppWindowShelfController* crostini_app_window_shelf_controller_ =
       nullptr;
-
-  // Ash's mojom::ShelfController used to change shelf state.
-  ash::mojom::ShelfControllerPtr shelf_controller_;
-
-  // The binding this instance uses to implment mojom::ShelfObserver
-  mojo::AssociatedBinding<ash::mojom::ShelfObserver> observer_binding_;
-
-  // True when applying changes from the remote ShelfModel owned by Ash.
-  // Changes to the local ShelfModel should not be reported during this time.
-  bool applying_remote_shelf_model_changes_ = false;
 
   // When true, changes to pinned shelf items should update the sync model.
   bool should_sync_pin_changes_ = true;

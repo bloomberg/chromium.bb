@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
 class Profile;
@@ -29,6 +30,9 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
+  void UninstallExternalWebApp(
+      const GURL& app_url,
+      UninstallExternalWebAppCallback callback) override;
   bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const web_app::AppId& app_id,
                          bool add_to_desktop,
@@ -41,6 +45,9 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const web_app::AppId& app_id) override;
+  bool CanSkipAppUpdateForSync(
+      const web_app::AppId& app_id,
+      const WebApplicationInfo& web_app_info) const override;
 
   using CrxInstallerFactory =
       base::RepeatingCallback<scoped_refptr<CrxInstaller>(Profile*)>;
@@ -50,6 +57,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
  private:
   CrxInstallerFactory crx_installer_factory_;
   Profile* profile_;
+  web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallFinalizer);
 };

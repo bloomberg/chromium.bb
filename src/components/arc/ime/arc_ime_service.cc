@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
@@ -24,9 +25,9 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/range/range.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 
 namespace arc {
 
@@ -332,7 +333,7 @@ void ArcImeService::RequestHideIme() {
 // Overridden from keyboard::KeyboardControllerObserver
 void ArcImeService::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
-  gfx::Rect new_bounds = state.occluded_bounds;
+  gfx::Rect new_bounds = state.occluded_bounds_in_screen;
   // Multiply by the scale factor. To convert from DIP to physical pixels.
   // The default scale factor is always used in Android side regardless of
   // dynamic scale factor in Chrome side because Chrome sends only the default
@@ -451,6 +452,13 @@ bool ArcImeService::GetTextFromRange(const gfx::Range& range,
   return true;
 }
 
+void ArcImeService::EnsureCaretNotInRect(const gfx::Rect& rect_in_screen) {
+  if (focused_arc_window_ == nullptr)
+    return;
+  aura::Window* top_level_window = focused_arc_window_->GetToplevelWindow();
+  wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
+}
+
 ui::TextInputMode ArcImeService::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
@@ -518,6 +526,14 @@ ukm::SourceId ArcImeService::GetClientSourceForMetrics() const {
 
 bool ArcImeService::ShouldDoLearning() {
   return is_personalized_learning_allowed_;
+}
+
+bool ArcImeService::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
 }
 
 // static

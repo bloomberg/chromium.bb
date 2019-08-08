@@ -17,7 +17,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/validation.h"
@@ -61,14 +61,22 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
 }
 
 views::View* SaveCardOfferBubbleViews::CreateExtraView() {
-  if (controller()->GetSyncState() !=
-      AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+  // Only show the (i) info icon for upload saves using implicit sync.
+  // GetLegalMessageLines() being empty denotes a local save.
+  if (controller()->GetLegalMessageLines().empty() ||
+      controller()->GetSyncState() !=
+          AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
     return nullptr;
   }
 
+  // CreateMainContentView() must happen prior to this so that |prefilled_name|
+  // gets populated.
   auto* upload_explanation_tooltip =
       new views::TooltipIcon(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+          (cardholder_name_textfield_ &&
+           !cardholder_name_textfield_->text().empty())
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
   upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
   upload_explanation_tooltip->set_anchor_point_arrow(
       views::BubbleBorder::Arrow::TOP_RIGHT);
@@ -92,10 +100,10 @@ bool SaveCardOfferBubbleViews::Accept() {
         {cardholder_name_textfield_ ? cardholder_name_textfield_->text()
                                     : base::string16(),
          month_input_dropdown_ ? month_input_dropdown_->model()->GetItemAt(
-                                     month_input_dropdown_->selected_index())
+                                     month_input_dropdown_->GetSelectedIndex())
                                : base::string16(),
          year_input_dropdown_ ? year_input_dropdown_->model()->GetItemAt(
-                                    year_input_dropdown_->selected_index())
+                                    year_input_dropdown_->GetSelectedIndex())
                               : base::string16()});
   }
   return true;
@@ -106,13 +114,6 @@ int SaveCardOfferBubbleViews::GetDialogButtons() const {
              features::kAutofillSaveCardImprovedUserConsent)
              ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
              : ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 SaveCardOfferBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                       : IDS_NO_THANKS);
 }
 
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
@@ -139,10 +140,10 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
     DCHECK(!cardholder_name_textfield_);
     int month_value = 0, year_value = 0;
     if (!base::StringToInt(month_input_dropdown_->model()->GetItemAt(
-                               month_input_dropdown_->selected_index()),
+                               month_input_dropdown_->GetSelectedIndex()),
                            &month_value) ||
         !base::StringToInt(year_input_dropdown_->model()->GetItemAt(
-                               year_input_dropdown_->selected_index()),
+                               year_input_dropdown_->GetSelectedIndex()),
                            &year_value)) {
       return false;
     }
@@ -181,9 +182,9 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
   std::unique_ptr<views::View> view =
       SaveCardBubbleViews::CreateMainContentView();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  view->set_id(controller()->IsUploadSave()
-                   ? DialogViewId::MAIN_CONTENT_VIEW_UPLOAD
-                   : DialogViewId::MAIN_CONTENT_VIEW_LOCAL);
+  view->SetID(controller()->IsUploadSave()
+                  ? DialogViewId::MAIN_CONTENT_VIEW_UPLOAD
+                  : DialogViewId::MAIN_CONTENT_VIEW_LOCAL);
 
   // If necessary, add the cardholder name label and textfield to the upload
   // save dialog.
@@ -217,8 +218,12 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     }
 
     // Set up cardholder name label tooltip ONLY if the cardholder name
-    // textfield will be prefilled.
-    if (!prefilled_name.empty()) {
+    // textfield will be prefilled and sync transport for Wallet data is not
+    // active. Otherwise, this tooltip's info will appear in CreateExtraView()'s
+    // tooltip.
+    if (!prefilled_name.empty() &&
+        controller()->GetSyncState() !=
+            AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
       std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
           std::make_unique<views::TooltipIcon>(
               l10n_util::GetStringUTF16(
@@ -226,7 +231,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
               kTooltipIconSize);
       cardholder_name_tooltip->set_anchor_point_arrow(
           views::BubbleBorder::Arrow::TOP_LEFT);
-      cardholder_name_tooltip->set_id(DialogViewId::CARDHOLDER_NAME_TOOLTIP);
+      cardholder_name_tooltip->SetID(DialogViewId::CARDHOLDER_NAME_TOOLTIP);
       cardholder_name_label_row->AddChildView(
           cardholder_name_tooltip.release());
     }
@@ -235,7 +240,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     DCHECK(!cardholder_name_textfield_);
     cardholder_name_textfield_ = new views::Textfield();
     cardholder_name_textfield_->set_controller(this);
-    cardholder_name_textfield_->set_id(DialogViewId::CARDHOLDER_NAME_TEXTFIELD);
+    cardholder_name_textfield_->SetID(DialogViewId::CARDHOLDER_NAME_TEXTFIELD);
     cardholder_name_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME));
     cardholder_name_textfield_->SetTextInputType(
@@ -268,14 +273,14 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  expiration_date_view->set_id(DialogViewId::EXPIRATION_DATE_VIEW);
+  expiration_date_view->SetID(DialogViewId::EXPIRATION_DATE_VIEW);
 
   // Set up the month and year comboboxes.
   month_input_dropdown_ = new views::Combobox(&month_combobox_model_);
   month_input_dropdown_->set_listener(this);
   month_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
-  month_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
+  month_input_dropdown_->SetID(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
 
   const CreditCard& card = controller()->GetCard();
   // Pre-populate expiration date month if it is detected.
@@ -289,7 +294,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   year_input_dropdown_->set_listener(this);
   year_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
-  year_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
+  year_input_dropdown_->SetID(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
 
   // Pre-populate expiration date year if it is not passed.
   if (IsValidCreditCardExpirationYear(card.expiration_year(),

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -127,6 +126,13 @@ Page* Frame::GetPage() const {
 
 bool Frame::IsMainFrame() const {
   return !Tree().Parent();
+}
+
+bool Frame::IsCrossOriginSubframe() const {
+  const SecurityOrigin* security_origin =
+      GetSecurityContext()->GetSecurityOrigin();
+  return !security_origin->CanAccess(
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin());
 }
 
 HTMLFrameOwnerElement* Frame::DeprecatedLocalOwner() const {

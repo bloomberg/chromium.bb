@@ -6,23 +6,24 @@
 
 #include "base/bind.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
 
 namespace chromeos {
 
 namespace {
+
+KerberosCredentialsManager* g_instance = nullptr;
 
 // Default encryption with strong encryption.
 constexpr char kDefaultKerberosConfigFmt[] = R"(
@@ -32,19 +33,6 @@ constexpr char kDefaultKerberosConfigFmt[] = R"(
   permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   default_realm = %s
 )";
-
-AccountManager* GetAccountManager(Profile* profile) {
-  DCHECK(profile);
-  AccountManagerFactory* factory =
-      g_browser_process->platform_part()->GetAccountManagerFactory();
-  return factory->GetAccountManager(profile->GetPath().value());
-}
-
-AccountManager::AccountKey GetAccountKey(const std::string& principal_name) {
-  return AccountManager::AccountKey{
-      principal_name,
-      account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
-}
 
 // If |principal_name| is "UsEr@realm.com", sets |principal_name| to
 // "user@REALM.COM". Returns false if the given name has no @ or one of the
@@ -120,25 +108,10 @@ class KerberosAddAccountRunner {
         normalized_principal_(normalized_principal),
         password_(password),
         callback_(std::move(callback)) {
-    StartKerberosDaemon();
+    AddAccount();
   }
 
  private:
-  // Make sure the Kerberos daemon is running.
-  void StartKerberosDaemon() {
-    UpstartClient::Get()->StartKerberosService(
-        base::BindOnce(&KerberosAddAccountRunner::OnStartKerberosService,
-                       weak_factory_.GetWeakPtr()));
-  }
-
-  // Gets called when the daemon has been started or failed to start.
-  void OnStartKerberosService(bool success) {
-    if (success)
-      AddAccount();
-    else
-      Done(kerberos::ERROR_DBUS_FAILURE);
-  }
-
   // Adds the |normalized_principal_| account to the Kerberos daemon.
   void AddAccount() {
     kerberos::AddAccountRequest request;
@@ -253,18 +226,75 @@ class KerberosAddAccountRunner {
   DISALLOW_COPY_AND_ASSIGN(KerberosAddAccountRunner);
 };
 
-KerberosCredentialsManager::KerberosCredentialsManager(Profile* profile)
-    : profile_(profile),
+KerberosCredentialsManager::Observer::Observer() = default;
+
+KerberosCredentialsManager::Observer::~Observer() = default;
+
+KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state)
+    : local_state_(local_state),
       kerberos_files_handler_(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
                               base::Unretained(this))) {
+  DCHECK(!g_instance);
+  g_instance = this;
+
   // Connect to a signal that indicates when Kerberos files change.
+  // TODO(https://crbug.com/963824): Make sure no code inside this constructor
+  // causes the daemon to start.
   KerberosClient::Get()->ConnectToKerberosFileChangedSignal(
       base::BindRepeating(&KerberosCredentialsManager::OnKerberosFilesChanged,
                           weak_factory_.GetWeakPtr()));
+
+  // Listen to pref changes.
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(local_state);
+  pref_change_registrar_->Add(
+      prefs::kKerberosEnabled,
+      base::BindRepeating(&KerberosCredentialsManager::UpdateEnabledFromPref,
+                          weak_factory_.GetWeakPtr()));
+  pref_change_registrar_->Add(
+      prefs::kKerberosRememberPasswordEnabled,
+      base::BindRepeating(
+          &KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref,
+          weak_factory_.GetWeakPtr()));
+  pref_change_registrar_->Add(
+      prefs::kKerberosAddAccountsAllowed,
+      base::BindRepeating(
+          &KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref,
+          weak_factory_.GetWeakPtr()));
+  pref_change_registrar_->Add(
+      prefs::kKerberosAccounts,
+      base::BindRepeating(&KerberosCredentialsManager::UpdateAccountsFromPref,
+                          weak_factory_.GetWeakPtr()));
 }
 
-KerberosCredentialsManager::~KerberosCredentialsManager() = default;
+KerberosCredentialsManager::~KerberosCredentialsManager() {
+  DCHECK(g_instance);
+  g_instance = nullptr;
+}
+
+// static
+KerberosCredentialsManager& KerberosCredentialsManager::Get() {
+  DCHECK(g_instance);
+  return *g_instance;
+}
+
+// static
+void KerberosCredentialsManager::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kKerberosEnabled, false);
+  registry->RegisterBooleanPref(prefs::kKerberosRememberPasswordEnabled, true);
+  registry->RegisterBooleanPref(prefs::kKerberosAddAccountsAllowed, true);
+  registry->RegisterDictionaryPref(prefs::kKerberosAccounts);
+}
+
+void KerberosCredentialsManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void KerberosCredentialsManager::RemoveObserver(const Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 void KerberosCredentialsManager::AddAccountAndAuthenticate(
     std::string principal_name,
@@ -298,17 +328,15 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
 
   LogError("AddAccountAndAuthenticate", error);
   if (Succeeded(error)) {
-    // Add it to the account manager if it's not already there.
-    GetAccountManager(profile_)->UpsertAccount(
-        GetAccountKey(normalized_principal), normalized_principal,
-        AccountManager::kActiveDirectoryDummyToken);
-
     // Set active account.
     // TODO(https://crbug.com/948121): Wait until the files have been saved.
     // This is important when this code is triggered directly through a page
     // that requires Kerberos auth.
     active_principal_name_ = normalized_principal;
     GetKerberosFiles();
+
+    // Bring the merry news to the observers.
+    NotifyAccountsChanged();
   }
 
   std::move(callback).Run(error);
@@ -339,11 +367,48 @@ void KerberosCredentialsManager::OnRemoveAccount(
       active_principal_name_.clear();
     }
 
-    // Remove from account manager.
-    GetAccountManager(profile_)->RemoveAccount(GetAccountKey(principal_name));
+    // Express our condolence to the observers.
+    NotifyAccountsChanged();
   }
 
   std::move(callback).Run(response.error());
+}
+
+void KerberosCredentialsManager::ClearAccounts(ResultCallback callback) {
+  kerberos::ClearAccountsRequest request;
+  KerberosClient::Get()->ClearAccounts(
+      request, base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void KerberosCredentialsManager::OnClearAccounts(
+    ResultCallback callback,
+    const kerberos::ClearAccountsResponse& response) {
+  LogError("ClearAccounts", response.error());
+  if (Succeeded(response.error())) {
+    // Clear out active credentials.
+    kerberos_files_handler_.DeleteFiles();
+    active_principal_name_.clear();
+
+    // Tattle on the lost accounts to the observers.
+    NotifyAccountsChanged();
+  }
+
+  std::move(callback).Run(response.error());
+}
+
+void KerberosCredentialsManager::ListAccounts(ListAccountsCallback callback) {
+  kerberos::ListAccountsRequest request;
+  KerberosClient::Get()->ListAccounts(
+      request, base::BindOnce(&KerberosCredentialsManager::OnListAccounts,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void KerberosCredentialsManager::OnListAccounts(
+    ListAccountsCallback callback,
+    const kerberos::ListAccountsResponse& response) {
+  LogError("ListAccounts", response.error());
+  std::move(callback).Run(response);
 }
 
 kerberos::ErrorType KerberosCredentialsManager::SetActiveAccount(
@@ -437,6 +502,31 @@ void KerberosCredentialsManager::OnKerberosFilesChanged(
   // Only listen to the active account.
   if (principal_name == active_principal_name_)
     GetKerberosFiles();
+}
+
+void KerberosCredentialsManager::NotifyAccountsChanged() {
+  for (auto& observer : observers_)
+    observer.OnAccountsChanged();
+}
+
+void KerberosCredentialsManager::UpdateEnabledFromPref() {
+  const bool enabled = local_state_->GetBoolean(prefs::kKerberosEnabled);
+  if (!enabled) {
+    // Note that ClearAccounts logs an error if the operation fails.
+    ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
+  }
+}
+
+void KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref() {
+  // TODO(https://crbug.com/952239): Implement
+}
+
+void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
+  // TODO(https://crbug.com/952239): Implement
+}
+
+void KerberosCredentialsManager::UpdateAccountsFromPref() {
+  // TODO(https://crbug.com/952239): Implement
 }
 
 }  // namespace chromeos

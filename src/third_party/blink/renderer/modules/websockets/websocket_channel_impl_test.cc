@@ -96,7 +96,7 @@ class MockWebSocketHandle : public WebSocketHandle {
   MOCK_METHOD4(
       Send,
       void(bool, WebSocketHandle::MessageType, const char*, wtf_size_t));
-  MOCK_METHOD1(FlowControl, void(int64_t));
+  MOCK_METHOD1(AddReceiveFlowControlQuota, void(int64_t));
   MOCK_METHOD2(Close, void(uint16_t, const String&));
 };
 
@@ -160,7 +160,7 @@ class WebSocketChannelImplTest : public PageTestBase {
       InSequence s;
       EXPECT_CALL(*Handle(),
                   Connect(KURL("ws://localhost/"), _, _, _, HandleClient()));
-      EXPECT_CALL(*Handle(), FlowControl(65536));
+      EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(65536));
       EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
     }
     EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
@@ -206,7 +206,7 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
                         KURLEq("http://example.com/"), _, HandleClient()))
         .WillOnce(SaveArg<1>(&protocols));
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*Handle(), FlowControl(65536));
+    EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(65536));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
@@ -216,13 +216,12 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
   Document& document = GetDocument();
   document.SetURL(page_url);
   // Make sure that firstPartyForCookies() is set to the given value.
-  EXPECT_STREQ("http://example.com/",
-               document.SiteForCookies().GetString().Utf8().data());
+  EXPECT_EQ("http://example.com/", document.SiteForCookies().GetString());
 
   EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
 
   EXPECT_EQ(1U, protocols.size());
-  EXPECT_STREQ("x", protocols[0].Utf8().data());
+  EXPECT_EQ("x", protocols[0]);
 
   checkpoint.Call(1);
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
@@ -831,7 +830,7 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, ThrottleSucceedsFirst) {
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handshake_throttle_, Destructor());
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*Handle(), FlowControl(_));
+    EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(_));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
   Channel()->Connect(url(), "");
@@ -849,7 +848,7 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, HandshakeSucceedsFirst) {
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*handshake_throttle_, Destructor());
-    EXPECT_CALL(*Handle(), FlowControl(_));
+    EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(_));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
   Channel()->Connect(url(), "");

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -110,7 +111,8 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   GetDocument()->GetSettings()->SetPictureInPictureEnabled(true);
 
   // Setup video element.
-  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
@@ -166,7 +168,8 @@ TEST_F(ContextMenuControllerTest, VideoWithAudioOnly) {
   GetDocument()->GetSettings()->SetPictureInPictureEnabled(true);
 
   // Setup video element.
-  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
@@ -226,7 +229,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
   const char video_url[] = "https://example.com/foo.webm";
 
   // Setup video element.
-  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
@@ -282,7 +286,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
   const char video_url[] = "https://example.com/foo.webm";
 
   // Setup video element.
-  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
@@ -337,7 +342,8 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
   HitTestResult hit_test_result;
 
   // Setup video element.
-  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   blink::WebMediaStream web_media_stream;
   blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
   web_media_stream.Initialize(dummy_tracks, dummy_tracks);
@@ -395,7 +401,8 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
   const char video_url[] = "https://example.com/foo.webm";
 
   // Setup video element.
-  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();

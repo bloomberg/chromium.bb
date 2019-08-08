@@ -9,33 +9,35 @@ import socket
 import time
 import traceback
 
+from telemetry.core import exceptions
 from telemetry import decorators
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
 from tracing.trace_data import trace_data as trace_data_module
 
 
-class TracingUnsupportedException(Exception):
+class TracingUnsupportedException(exceptions.Error):
   pass
 
 
-class TracingTimeoutException(Exception):
+class TracingTimeoutException(exceptions.Error):
   pass
 
 
-class TracingUnrecoverableException(Exception):
+class TracingUnrecoverableException(exceptions.AppCrashException):
+  # An unrecoverable exception is a possible sign of an app crash.
   pass
 
 
-class TracingHasNotRunException(Exception):
+class TracingHasNotRunException(exceptions.Error):
   pass
 
 
-class TracingUnexpectedResponseException(Exception):
+class TracingUnexpectedResponseException(exceptions.Error):
   pass
 
 
-class ClockSyncResponseException(Exception):
+class ClockSyncResponseException(exceptions.Error):
   pass
 
 
@@ -99,8 +101,7 @@ class TracingBackend(object):
 
   _TRACING_DOMAIN = 'Tracing'
 
-  def __init__(self, inspector_socket, is_tracing_running=False,
-               support_modern_devtools_tracing_start_api=False):
+  def __init__(self, inspector_socket, is_tracing_running=False):
     self._inspector_websocket = inspector_socket
     self._inspector_websocket.RegisterDomain(
         self._TRACING_DOMAIN, self._NotificationHandler)
@@ -108,16 +109,13 @@ class TracingBackend(object):
     self._start_issued = False
     self._can_collect_data = False
     self._has_received_all_tracing_data = False
-    # pylint: disable=invalid-name
-    self._support_modern_devtools_tracing_start_api = (
-        support_modern_devtools_tracing_start_api)
     self._trace_data_builder = None
 
   @property
   def is_tracing_running(self):
     return self._is_tracing_running
 
-  def StartTracing(self, chrome_trace_config, timeout=10):
+  def StartTracing(self, chrome_trace_config, timeout=20):
     """When first called, starts tracing, and returns True.
 
     If called during tracing, tracing is unchanged, and it returns False.
@@ -135,19 +133,9 @@ class TracingBackend(object):
     # websocket. This reduces the time waiting for all data to be received,
     # especially when the test is running on an android device. Using
     # compression can save upto 10 seconds (or more) for each story.
-    params = {'transferMode': 'ReturnAsStream', 'streamCompression': 'gzip'}
-    if self._support_modern_devtools_tracing_start_api:
-      params['traceConfig'] = (
-          chrome_trace_config.GetChromeTraceConfigForDevTools())
-    else:
-      if chrome_trace_config.requires_modern_devtools_tracing_start_api:
-        raise TracingUnsupportedException(
-            'Trace options require modern Tracing.start DevTools API, '
-            'which is NOT supported by the browser')
-      params['categories'], params['options'] = (
-          chrome_trace_config.GetChromeTraceCategoriesAndOptionsForDevTools())
-
-    req = {'method': 'Tracing.start', 'params': params}
+    req = {'method': 'Tracing.start', 'params': {
+        'transferMode': 'ReturnAsStream', 'streamCompression': 'gzip',
+        'traceConfig': chrome_trace_config.GetChromeTraceConfigForDevTools()}}
     logging.info('Start Tracing Request: %r', req)
     response = self._inspector_websocket.SyncRequest(req, timeout)
 
@@ -191,7 +179,11 @@ class TracingBackend(object):
         self._inspector_websocket.SendAndIgnoreResponse(req)
 
       req = {'method': 'Tracing.end'}
-      self._inspector_websocket.SendAndIgnoreResponse(req)
+      response = self._inspector_websocket.SyncRequest(req, timeout=2)
+      if 'error' in response:
+        raise TracingUnexpectedResponseException(
+            'Inspector returned unexpected response for '
+            'Tracing.end:\n' + json.dumps(response, indent=2))
 
     self._is_tracing_running = False
     self._start_issued = False

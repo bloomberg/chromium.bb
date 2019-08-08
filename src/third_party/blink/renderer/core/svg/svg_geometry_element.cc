@@ -43,10 +43,6 @@ namespace blink {
 
 class SVGAnimatedPathLength final : public SVGAnimatedNumber {
  public:
-  static SVGAnimatedPathLength* Create(SVGGeometryElement* context_element) {
-    return MakeGarbageCollected<SVGAnimatedPathLength>(context_element);
-  }
-
   explicit SVGAnimatedPathLength(SVGGeometryElement* context_element)
       : SVGAnimatedNumber(context_element,
                           svg_names::kPathLengthAttr,

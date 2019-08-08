@@ -33,7 +33,12 @@
 #include "ui/accessibility/platform/ax_platform_atk_hyperlink.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
+#include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 10, 0)
+#define ATK_210
+#endif
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 12, 0)
 #define ATK_212
@@ -54,6 +59,10 @@
 namespace ui {
 
 namespace {
+
+// When accepting input from clients calling the API, an ATK character offset
+// of -1 can often represent the length of the string.
+static const int kStringLengthOffset = -1;
 
 // We must forward declare this because it is used by the traditional GObject
 // type manipulation macros.
@@ -97,6 +106,12 @@ AXPlatformNode* g_root_application = nullptr;
 // The last AtkObject with keyboard focus. Tracking this is required to emit the
 // ATK_STATE_FOCUSED change to false.
 AtkObject* g_current_focused = nullptr;
+
+// The last AtkObject which was the active descendant in the currently-focused
+// object (example: The highlighted option within a focused select element).
+// As with g_current_focused, we track this to emit events when this object is
+// no longer the active descendant.
+AtkObject* g_current_active_descendant = nullptr;
 
 // The last object which was selected. Tracking this is required because
 // widgets in the browser UI only emit notifications upon becoming selected,
@@ -150,6 +165,29 @@ bool LoadTableCellMethods() {
   return cell_get_type;
 }
 
+AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
+    AXPlatformNodeAuraLinuxObject* atk_object) {
+  if (!atk_object)
+    return nullptr;
+
+  return atk_object->m_object;
+}
+
+AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
+    AtkObject* atk_object) {
+  if (!atk_object)
+    return nullptr;
+
+  if (IS_AX_PLATFORM_NODE_AURALINUX(atk_object))
+    return ToAXPlatformNodeAuraLinux(AX_PLATFORM_NODE_AURALINUX(atk_object));
+
+  return nullptr;
+}
+
+bool SupportsAtkComponentScrollingInterface() {
+  return dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point");
+}
+
 AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   while (atk_object) {
     if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
@@ -157,6 +195,49 @@ AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
     atk_object = atk_object_get_parent(atk_object);
   }
   return nullptr;
+}
+
+bool EmitsAtkTextEvents(AtkObject* atk_object) {
+  // If this node is not a static text node, it supports the full AtkText
+  // interface.
+  AtkRole role = atk_object_get_role(atk_object);
+  if (role != ATK_ROLE_TEXT)
+    return true;
+
+  // If this node is not a static text leaf node, it supports the full AtkText
+  // interface.
+  if (atk_object_get_n_accessible_children(atk_object))
+    return true;
+
+  // If this node is an anonymous block that is a static text leaf node, it
+  // should also emit events. The heuristic that Orca uses for this is to check
+  // whether or not it has any non-static-text siblings. We duplicate that here
+  // to maintain compatibility.
+  AtkObject* parent = atk_object_get_parent(atk_object);
+  if (!parent)
+    return false;
+
+  int num_siblings = atk_object_get_n_accessible_children(parent);
+  for (int i = 0; i < num_siblings; i++) {
+    AtkObject* sibling = atk_object_ref_accessible_child(parent, i);
+    AtkRole role = atk_object_get_role(sibling);
+    g_object_unref(sibling);
+    if (role != ATK_ROLE_TEXT)
+      return true;
+  }
+
+  return false;
+}
+
+AtkObject* FindFirstAncestorThatEmitsAtkTextEvents(AtkObject* atk_object) {
+  if (!atk_object)
+    return nullptr;
+
+  if (EmitsAtkTextEvents(atk_object))
+    return atk_object;
+
+  return FindFirstAncestorThatEmitsAtkTextEvents(
+      atk_object_get_parent(atk_object));
 }
 
 bool IsFrameAncestorOfAtkObject(AtkObject* frame, AtkObject* atk_object) {
@@ -223,12 +304,12 @@ AXCoordinateSystem AtkCoordTypeToAXCoordinateSystem(
       return AXCoordinateSystem::kScreen;
     case ATK_XY_WINDOW:
       return AXCoordinateSystem::kRootFrame;
-#ifdef ATK_230
+#if defined(ATK_230)
     case ATK_XY_PARENT:
       // AXCoordinateSystem does not support parent coordinates.
       NOTIMPLEMENTED();
       return AXCoordinateSystem::kFrame;
-#endif  // ATK_230
+#endif
     default:
       return AXCoordinateSystem::kScreen;
   }
@@ -286,25 +367,6 @@ AtkAttributeSet* PrependAtkAttributeToAtkAttributeSet(
   attribute->name = g_strdup(name);
   attribute->value = g_strdup(value);
   return g_slist_prepend(attribute_set, attribute);
-}
-
-AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
-    AXPlatformNodeAuraLinuxObject* atk_object) {
-  if (!atk_object)
-    return nullptr;
-
-  return atk_object->m_object;
-}
-
-AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
-    AtkObject* atk_object) {
-  if (!atk_object)
-    return nullptr;
-
-  if (IS_AX_PLATFORM_NODE_AURALINUX(atk_object))
-    return ToAXPlatformNodeAuraLinux(AX_PLATFORM_NODE_AURALINUX(atk_object));
-
-  return nullptr;
 }
 
 // TODO(aleventhal) Remove this and use atk_role_get_name() once the following
@@ -539,12 +601,50 @@ gboolean GrabFocus(AtkComponent* atk_component) {
   return obj->GrabFocus();
 }
 
+#if defined(ATK_230)
+gboolean ScrollTo(AtkComponent* component, AtkScrollType scroll_type) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(component));
+  if (!obj)
+    return FALSE;
+
+  base::Optional<gfx::Point> scroll_to_point =
+      obj->CalculateScrollToPoint(scroll_type);
+  if (!scroll_to_point.has_value()) {
+    obj->ScrollToNode(AXPlatformNodeBase::ScrollType::TopLeft);
+    return TRUE;
+  }
+
+  obj->ScrollToPoint(ATK_XY_SCREEN, scroll_to_point->x(), scroll_to_point->y());
+  return TRUE;
+}
+
+gboolean ScrollToPoint(AtkComponent* component,
+                       AtkCoordType atk_coord_type,
+                       gint x,
+                       gint y) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(component));
+  if (!obj)
+    return FALSE;
+
+  obj->ScrollToPoint(atk_coord_type, x, y);
+  return TRUE;
+}
+#endif
+
 void Init(AtkComponentIface* iface) {
   iface->get_extents = GetExtents;
   iface->get_position = GetPosition;
   iface->get_size = GetSize;
   iface->ref_accessible_at_point = RefAccesibleAtPoint;
   iface->grab_focus = GrabFocus;
+#if defined(ATK_230)
+  if (SupportsAtkComponentScrollingInterface()) {
+    iface->scroll_to = ScrollTo;
+    iface->scroll_to_point = ScrollToPoint;
+  }
+#endif
 }
 
 const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
@@ -801,7 +901,7 @@ AtkHyperlink* GetLink(AtkHypertext* hypertext, int index) {
   if (!obj)
     return nullptr;
 
-  const AXHypertext& ax_hypertext = obj->GetHypertext();
+  const AXHypertext& ax_hypertext = obj->GetAXHypertext();
   if (index > static_cast<int>(ax_hypertext.hyperlinks.size()) || index < 0)
     return nullptr;
 
@@ -827,7 +927,7 @@ int GetNLinks(AtkHypertext* hypertext) {
   g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
-  return obj ? obj->GetHypertext().hyperlinks.size() : 0;
+  return obj ? obj->GetAXHypertext().hyperlinks.size() : 0;
 }
 
 int GetLinkIndex(AtkHypertext* hypertext, int char_index) {
@@ -835,8 +935,8 @@ int GetLinkIndex(AtkHypertext* hypertext, int char_index) {
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
 
-  auto it = obj->GetHypertext().hyperlink_offset_to_index.find(char_index);
-  if (it == obj->GetHypertext().hyperlink_offset_to_index.end())
+  auto it = obj->GetAXHypertext().hyperlink_offset_to_index.find(char_index);
+  if (it == obj->GetAXHypertext().hyperlink_offset_to_index.end())
     return -1;
   return it->second;
 }
@@ -860,12 +960,12 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
   if (!obj)
     return nullptr;
 
+  base::string16 text = obj->GetHypertext();
+
+  start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
   if (start_offset < 0)
     return nullptr;
 
-  base::string16 text = obj->GetText();
-
-  start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
   if (end_offset < 0) {
     end_offset = text.size();
   } else {
@@ -888,7 +988,7 @@ gint GetCharacterCount(AtkText* atk_text) {
   if (!obj)
     return 0;
 
-  return obj->UTF16ToUnicodeOffsetInText(obj->GetText().length());
+  return obj->UTF16ToUnicodeOffsetInText(obj->GetHypertext().length());
 }
 
 AtkAttributeSet* GetRunAttributes(AtkText* atk_text,
@@ -915,7 +1015,7 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   if (!obj)
     return 0;
 
-  base::string16 text = obj->GetText();
+  base::string16 text = obj->GetHypertext();
   int32_t text_length = text.length();
 
   offset = obj->UnicodeToUTF16OffsetInText(offset);
@@ -955,7 +1055,7 @@ char* GetCharacter(AtkText* atk_text,
 
 char* GetTextWithBoundaryType(AtkText* atk_text,
                               int offset,
-                              TextBoundaryType boundary_type,
+                              AXTextBoundary boundary,
                               int* start_offset_ptr,
                               int* end_offset_ptr) {
   AtkObject* atk_object = ATK_OBJECT(atk_text);
@@ -972,9 +1072,10 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
   int start_offset =
-      obj->FindTextBoundary(boundary_type, offset, BACKWARDS_DIRECTION);
-  int end_offset =
-      obj->FindTextBoundary(boundary_type, offset, FORWARDS_DIRECTION);
+      obj->FindTextBoundary(boundary, offset, BACKWARDS_DIRECTION);
+  int end_offset = obj->FindTextBoundary(boundary, offset, FORWARDS_DIRECTION);
+  if (start_offset < 0 || end_offset < 0)
+    return nullptr;
 
   DCHECK_LE(start_offset, end_offset)
       << "Start offset should be less than or equal the end offset.";
@@ -984,100 +1085,61 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(start_offset);
   *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(end_offset);
 
-  base::string16 text = obj->GetText();
+  base::string16 text = obj->GetHypertext();
   DCHECK_LE(end_offset, static_cast<int>(text.size()));
 
   base::string16 substr = text.substr(start_offset, end_offset - start_offset);
   return g_strdup(base::UTF16ToUTF8(substr).c_str());
 }
 
-base::Optional<TextBoundaryType> AtkTextBoundaryToTextBoundary(
-    AtkTextBoundary atk_boundary) {
-  // These are listed in order of their definition in the ATK header.
-  switch (atk_boundary) {
-    case ATK_TEXT_BOUNDARY_CHAR:
-      return CHAR_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_WORD_START:
-      return WORD_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_WORD_END:
-      return base::nullopt;
-    case ATK_TEXT_BOUNDARY_SENTENCE_START:
-      return SENTENCE_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_SENTENCE_END:
-      return base::nullopt;
-    case ATK_TEXT_BOUNDARY_LINE_START:
-      return LINE_BOUNDARY;
-    case ATK_TEXT_BOUNDARY_LINE_END:
-      return base::nullopt;
-  }
-  NOTREACHED();
-  return base::nullopt;
-}
-
-base::Optional<TextBoundaryType> AtkTextGranularityToTextBoundary(
-    AtkTextGranularity granularity) {
-  // These are listed in order of their definition in the ATK header.
-  switch (granularity) {
-    case ATK_TEXT_GRANULARITY_CHAR:
-      return CHAR_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_WORD:
-      return WORD_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_SENTENCE:
-      return SENTENCE_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_LINE:
-      return LINE_BOUNDARY;
-    case ATK_TEXT_GRANULARITY_PARAGRAPH:
-      return PARAGRAPH_BOUNDARY;
-  }
-
-  return base::nullopt;
-}
-
 char* GetTextAtOffset(AtkText* atk_text,
                       int offset,
-                      AtkTextBoundary atk_boundary_type,
+                      AtkTextBoundary atk_boundary,
                       int* start_offset,
                       int* end_offset) {
-  if (atk_boundary_type == ATK_TEXT_BOUNDARY_CHAR) {
+  if (atk_boundary == ATK_TEXT_BOUNDARY_CHAR) {
     return GetCharacter(atk_text, offset, start_offset, end_offset);
   }
 
-  base::Optional<TextBoundaryType> boundary_type =
-      AtkTextBoundaryToTextBoundary(atk_boundary_type);
-  if (boundary_type.has_value()) {
-    return GetTextWithBoundaryType(atk_text, offset, *boundary_type,
-                                   start_offset, end_offset);
-  }
-
-  *start_offset = -1;
-  *end_offset = -1;
-  return nullptr;
+  AXTextBoundary boundary = FromAtkTextBoundary(atk_boundary);
+  return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
+                                 end_offset);
 }
 
 char* GetTextAfterOffset(AtkText* atk_text,
                          int offset,
-                         AtkTextBoundary boundary_type,
+                         AtkTextBoundary boundary,
                          int* start_offset,
                          int* end_offset) {
-  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+  if (boundary != ATK_TEXT_BOUNDARY_CHAR) {
     *start_offset = -1;
     *end_offset = -1;
     return nullptr;
   }
+
+  // ATK does not offer support for the special negative index and we don't
+  // want to do arithmetic on that value below.
+  if (offset == kStringLengthOffset)
+    return nullptr;
 
   return GetCharacter(atk_text, offset + 1, start_offset, end_offset);
 }
 
 char* GetTextBeforeOffset(AtkText* atk_text,
                           int offset,
-                          AtkTextBoundary boundary_type,
+                          AtkTextBoundary boundary,
                           int* start_offset,
                           int* end_offset) {
-  if (boundary_type != ATK_TEXT_BOUNDARY_CHAR) {
+  if (boundary != ATK_TEXT_BOUNDARY_CHAR) {
     *start_offset = -1;
     *end_offset = -1;
     return nullptr;
   }
+
+  // ATK does not offer support for the special negative index and we don't
+  // want to do arithmetic on that value below.
+  if (offset == kStringLengthOffset)
+    return nullptr;
 
   return GetCharacter(atk_text, offset - 1, start_offset, end_offset);
 }
@@ -1095,7 +1157,19 @@ gboolean SetCaretOffset(AtkText* atk_text, gint offset) {
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (!obj)
     return FALSE;
-  return obj->SetCaretOffset(offset);
+  if (!obj->SetCaretOffset(offset))
+    return FALSE;
+
+  // Orca expects atk_text_set_caret_offset to scroll to the target element.
+  obj->ScrollToNode(AXPlatformNodeBase::ScrollType::Anywhere);
+
+  // Orca expects atk_text_set_caret_offset to either focus the target element
+  // or set the sequential focus navigation starting point there.
+  int utf16_offset = obj->UnicodeToUTF16OffsetInText(offset);
+  obj->GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(
+      utf16_offset);
+
+  return TRUE;
 }
 
 int GetNSelections(AtkText* atk_text) {
@@ -1119,7 +1193,7 @@ gchar* GetSelection(AtkText* atk_text,
   if (selection_num != 0)
     return nullptr;
 
-  return obj->GetSelection(start_offset, end_offset);
+  return obj->GetSelectionWithText(start_offset, end_offset);
 }
 
 gboolean RemoveSelection(AtkText* atk_text, int selection_num) {
@@ -1158,7 +1232,7 @@ gboolean AddSelection(AtkText* atk_text, int start_offset, int end_offset) {
   return SetSelection(atk_text, 0, start_offset, end_offset);
 }
 
-#if ATK_CHECK_VERSION(2, 10, 0)
+#if defined(ATK_210)
 char* GetStringAtOffset(AtkText* atk_text,
                         int offset,
                         AtkTextGranularity atk_granularity,
@@ -1171,20 +1245,13 @@ char* GetStringAtOffset(AtkText* atk_text,
     return GetCharacter(atk_text, offset, start_offset, end_offset);
   }
 
-  base::Optional<TextBoundaryType> granularity =
-      AtkTextGranularityToTextBoundary(atk_granularity);
-  if (granularity.has_value()) {
-    return GetTextWithBoundaryType(atk_text, offset, *granularity, start_offset,
-                                   end_offset);
-  }
-
-  *start_offset = -1;
-  *end_offset = -1;
-  return nullptr;
+  AXTextBoundary boundary = FromAtkTextGranularity(atk_granularity);
+  return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
+                                 end_offset);
 }
 #endif
 
-gfx::Rect GetUnclippedParentRangeBoundsRect(
+gfx::Rect GetUnclippedParentHypertextRangeBoundsRect(
     AXPlatformNodeDelegate* ax_platform_node_delegate,
     const int start_offset,
     const int end_offset) {
@@ -1195,7 +1262,7 @@ gfx::Rect GetUnclippedParentRangeBoundsRect(
     const AXPlatformNodeDelegate* parent_ax_platform_node_delegate =
         parent_platform_node->GetDelegate();
     if (parent_ax_platform_node_delegate) {
-      return ax_platform_node_delegate->GetRangeBoundsRect(
+      return ax_platform_node_delegate->GetHypertextRangeBoundsRect(
                  start_offset, end_offset, AXCoordinateSystem::kRootFrame,
                  AXClippingBehavior::kUnclipped) -
              parent_ax_platform_node_delegate
@@ -1220,14 +1287,14 @@ void GetCharacterExtents(AtkText* atk_text,
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (obj) {
     switch (coordinate_type) {
-#ifdef ATK_230
+#if defined(ATK_230)
       case ATK_XY_PARENT:
-        rect = GetUnclippedParentRangeBoundsRect(obj->GetDelegate(), offset,
-                                                 offset + 1);
+        rect = GetUnclippedParentHypertextRangeBoundsRect(obj->GetDelegate(),
+                                                          offset, offset + 1);
         break;
 #endif
       default:
-        rect = obj->GetDelegate()->GetRangeBoundsRect(
+        rect = obj->GetDelegate()->GetHypertextRangeBoundsRect(
             obj->UnicodeToUTF16OffsetInText(offset),
             obj->UnicodeToUTF16OffsetInText(offset + 1),
             AtkCoordTypeToAXCoordinateSystem(coordinate_type),
@@ -1259,14 +1326,14 @@ void GetRangeExtents(AtkText* atk_text,
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (obj) {
     switch (coordinate_type) {
-#ifdef ATK_230
+#if defined(ATK_230)
       case ATK_XY_PARENT:
-        rect = GetUnclippedParentRangeBoundsRect(obj->GetDelegate(),
-                                                 start_offset, end_offset);
+        rect = GetUnclippedParentHypertextRangeBoundsRect(
+            obj->GetDelegate(), start_offset, end_offset);
         break;
 #endif
       default:
-        rect = obj->GetDelegate()->GetRangeBoundsRect(
+        rect = obj->GetDelegate()->GetHypertextRangeBoundsRect(
             obj->UnicodeToUTF16OffsetInText(start_offset),
             obj->UnicodeToUTF16OffsetInText(end_offset),
             AtkCoordTypeToAXCoordinateSystem(coordinate_type),
@@ -1299,7 +1366,7 @@ void Init(AtkTextIface* iface) {
   iface->remove_selection = RemoveSelection;
   iface->set_selection = SetSelection;
 
-#if ATK_CHECK_VERSION(2, 10, 0)
+#if defined(ATK_210)
   iface->get_string_at_offset = GetStringAtOffset;
 #endif
 }
@@ -1760,7 +1827,7 @@ const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
 
 }  // namespace atk_table_cell
 
-#endif  // ifdef ATK_212
+#endif  // ATK_212
 
 namespace atk_object {
 
@@ -2082,6 +2149,8 @@ void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
   if (atk_object_) {
     if (atk_object_ == g_current_focused)
       g_current_focused = nullptr;
+    if (atk_object_ == g_current_active_descendant)
+      SetWeakGPtrToAtkObject(&g_current_active_descendant, nullptr);
     atk_object::Detach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
 
     g_object_unref(atk_object_);
@@ -2497,6 +2566,19 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
   }
 }
 
+static AtkObject* GetActiveDescendantOfCurrentFocused() {
+  if (!g_current_focused)
+    return nullptr;
+
+  auto* node = AtkObjectToAXPlatformNodeAuraLinux(g_current_focused);
+  int32_t id =
+      node->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId);
+  if (auto* descendant = node->GetDelegate()->GetFromNodeID(id))
+    return descendant->GetNativeViewAccessible();
+
+  return nullptr;
+}
+
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   AXNodeData data = GetData();
 
@@ -2596,6 +2678,14 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
 
   if (delegate_->GetFocus() == GetNativeViewAccessible())
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
+
+  // It is insufficient to compare with g_current_activedescendant due to both
+  // timing and event ordering for objects which implement AtkSelection and also
+  // have an active descendant. For instance, if we check the state set of a
+  // selectable child, it will only have ATK_STATE_FOCUSED if we've processed
+  // the activedescendant change.
+  if (GetActiveDescendantOfCurrentFocused() == GetNativeViewAccessible())
+    atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 }
 
 struct AtkIntRelation {
@@ -2606,6 +2696,8 @@ struct AtkIntRelation {
 
 static AtkIntRelation kIntRelations[] = {
     {ax::mojom::IntAttribute::kMemberOfId, ATK_RELATION_MEMBER_OF,
+     base::nullopt},
+    {ax::mojom::IntAttribute::kPopupForId, ATK_RELATION_POPUP_FOR,
      base::nullopt},
 #if defined(ATK_226)
     {ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
@@ -2928,6 +3020,43 @@ gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {
   return atk_object_;
 }
 
+void AXPlatformNodeAuraLinux::OnActiveDescendantChanged() {
+  DCHECK(atk_object_);
+
+  // Active-descendant-changed notifications are typically only relevant when
+  // the change is within the focused widget.
+  if (atk_object_ != g_current_focused)
+    return;
+
+  AtkObject* descendant = GetActiveDescendantOfCurrentFocused();
+  if (descendant == g_current_active_descendant)
+    return;
+
+  // If selection and focus are the same, when the active descendant changes
+  // as a result of selection, a focus event will be emitted. We don't want to
+  // emit duplicate notifications.
+  auto* node = AtkObjectToAXPlatformNodeAuraLinux(descendant);
+  if (node->SelectionAndFocusAreTheSame())
+    return;
+
+  // While there is an ATK active-descendant-changed event, it is meant for
+  // objects which manage their descendants (and claim to do so). The Core-AAM
+  // specification states that focus events should be emitted when the active
+  // descendant changes. This behavior is also consistent with Gecko.
+  if (g_current_active_descendant) {
+    g_signal_emit_by_name(g_current_active_descendant, "focus-event", false);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_active_descendant),
+                                   ATK_STATE_FOCUSED, false);
+  }
+
+  SetWeakGPtrToAtkObject(&g_current_active_descendant, descendant);
+  if (g_current_active_descendant) {
+    g_signal_emit_by_name(g_current_active_descendant, "focus-event", true);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_active_descendant),
+                                   ATK_STATE_FOCUSED, true);
+  }
+}
+
 void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
   DCHECK(atk_object_);
 
@@ -3137,11 +3266,16 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
 }
 
 void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
+  AtkObject* object = FindFirstAncestorThatEmitsAtkTextEvents(atk_object_);
+  if (!object)
+    return;
+
+  DCHECK(ATK_IS_TEXT(object));
   if (HasCaret()) {
-    g_signal_emit_by_name(atk_object_, "text-caret-moved",
-                          atk_text_get_caret_offset(ATK_TEXT(atk_object_)));
+    g_signal_emit_by_name(object, "text-caret-moved",
+                          atk_text_get_caret_offset(ATK_TEXT(object)));
   }
-  g_signal_emit_by_name(atk_object_, "text-selection-changed");
+  g_signal_emit_by_name(object, "text-selection-changed");
 }
 
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
@@ -3208,6 +3342,25 @@ void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
   window->OnNameChanged();
 }
 
+void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
+  DCHECK(atk_object_);
+  // We might not have a parent, in that case we don't need to send the event.
+  if (!GetParent())
+    return;
+  g_signal_emit_by_name(GetParent(), "children-changed::add",
+                        GetIndexInParent(), atk_object_);
+}
+
+void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
+  DCHECK(atk_object_);
+  // There is a chance there won't be a parent as we're in the deletion process.
+  if (!GetParent())
+    return;
+
+  g_signal_emit_by_name(GetParent(), "children-changed::remove",
+                        GetIndexInParent(), atk_object_);
+}
+
 void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
   DCHECK(atk_object_);
   atk_object_notify_state_change(
@@ -3232,6 +3385,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kMenuPopupStart:
       OnMenuPopupStart();
+      break;
+    case ax::mojom::Event::kActiveDescendantChanged:
+      OnActiveDescendantChanged();
       break;
     case ax::mojom::Event::kCheckedStateChanged:
       OnCheckedStateChanged();
@@ -3303,6 +3459,9 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   DCHECK(atk_object_);
   DCHECK(ATK_IS_TEXT(atk_object_));
 
+  if (!EmitsAtkTextEvents(atk_object_))
+    return;
+
   if (old_len > 0) {
     base::string16 removed_substring =
         old_hypertext.hypertext.substr(shared_prefix, old_len);
@@ -3333,7 +3492,7 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   }
 }
 
-const AXHypertext& AXPlatformNodeAuraLinux::GetHypertext() {
+const AXHypertext& AXPlatformNodeAuraLinux::GetAXHypertext() {
   return hypertext_;
 }
 
@@ -3344,7 +3503,7 @@ AXPlatformNodeAuraLinux::GetHypertextAdjustments() {
 
   text_unicode_adjustments_.emplace();
 
-  base::string16 text = GetText();
+  base::string16 text = GetHypertext();
   int32_t text_length = text.size();
   for (int32_t i = 0; i < text_length; i++) {
     uint32_t code_point;
@@ -3368,8 +3527,10 @@ size_t AXPlatformNodeAuraLinux::UTF16ToUnicodeOffsetInText(
   return unicode_offset;
 }
 
-size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(
-    size_t unicode_offset) {
+size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(int unicode_offset) {
+  if (unicode_offset == kStringLengthOffset)
+    return GetHypertext().size();
+
   size_t utf16_offset = unicode_offset;
   base::OffsetAdjuster::UnadjustOffset(GetHypertextAdjustments(),
                                        &utf16_offset);
@@ -3383,11 +3544,52 @@ int AXPlatformNodeAuraLinux::GetIndexInParent() {
   return delegate_->GetIndexInParent();
 }
 
-void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
-    gint* x, gint* y, gint* width, gint* height, AtkCoordType coord_type) {
+gfx::Vector2d AXPlatformNodeAuraLinux::GetParentOriginInScreenCoordinates()
+    const {
+  AtkObject* parent = GetParent();
+  if (!parent)
+    return gfx::Vector2d();
+
+  const AXPlatformNode* parent_node =
+      AXPlatformNode::FromNativeViewAccessible(parent);
+  return parent_node->GetDelegate()
+      ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                      AXClippingBehavior::kUnclipped)
+      .OffsetFromOrigin();
+}
+
+gfx::Vector2d AXPlatformNodeAuraLinux::GetParentFrameOriginInScreenCoordinates()
+    const {
+  AtkObject* frame = FindAtkObjectParentFrame(atk_object_);
+  if (!frame)
+    return gfx::Vector2d();
+
+  const AXPlatformNode* frame_node =
+      AXPlatformNode::FromNativeViewAccessible(frame);
+  return frame_node->GetDelegate()
+      ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                      AXClippingBehavior::kUnclipped)
+      .OffsetFromOrigin();
+}
+
+gfx::Rect AXPlatformNodeAuraLinux::GetExtentsRelativeToAtkCoordinateType(
+    AtkCoordType coord_type) const {
   gfx::Rect extents = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
                                                AXClippingBehavior::kUnclipped);
+  if (coord_type == ATK_XY_WINDOW) {
+    gfx::Vector2d frame_origin = -GetParentOriginInScreenCoordinates();
+    extents.Offset(frame_origin);
+  }
 
+  return extents;
+}
+
+void AXPlatformNodeAuraLinux::GetExtents(gint* x,
+                                         gint* y,
+                                         gint* width,
+                                         gint* height,
+                                         AtkCoordType coord_type) {
+  gfx::Rect extents = GetExtentsRelativeToAtkCoordinateType(coord_type);
   if (x)
     *x = extents.x();
   if (y)
@@ -3396,31 +3598,15 @@ void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
     *width = extents.width();
   if (height)
     *height = extents.height();
-
-  if (coord_type == ATK_XY_WINDOW) {
-    if (AtkObject* atk_object = GetParent()) {
-      gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-      if (x)
-        *x -= window_coords.x();
-      if (y)
-        *y -= window_coords.y();
-    }
-  }
-}
-
-void AXPlatformNodeAuraLinux::GetExtents(gint* x, gint* y,
-                                         gint* width, gint* height,
-                                         AtkCoordType coord_type) {
-  SetExtentsRelativeToAtkCoordinateType(x, y,
-                                        width, height,
-                                        coord_type);
 }
 
 void AXPlatformNodeAuraLinux::GetPosition(gint* x, gint* y,
                                           AtkCoordType coord_type) {
-  SetExtentsRelativeToAtkCoordinateType(x, y,
-                                        nullptr, nullptr,
-                                        coord_type);
+  gfx::Rect extents = GetExtentsRelativeToAtkCoordinateType(coord_type);
+  if (x)
+    *x = extents.x();
+  if (y)
+    *y = extents.y();
 }
 
 void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
@@ -3447,6 +3633,62 @@ AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
 bool AXPlatformNodeAuraLinux::GrabFocus() {
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kFocus;
+  return delegate_->AccessibilityPerformAction(action_data);
+}
+
+bool AXPlatformNodeAuraLinux::
+    GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset) {
+  int child_count = delegate_->GetChildCount();
+  if (IsPlainTextField() || child_count == 0)
+    return GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+
+  // When this node has children, we walk through them to figure out what child
+  // node should get focus. We are essentially repeating the process used when
+  // building the hypertext here.
+  int current_offset = 0;
+  for (int i = 0; i < child_count; ++i) {
+    auto* child =
+        AtkObjectToAXPlatformNodeAuraLinux(delegate_->ChildAtIndex(i));
+
+    if (child->IsTextOnlyObject()) {
+      current_offset +=
+          child->GetString16Attribute(ax::mojom::StringAttribute::kName).size();
+    } else {
+      // Add an offset for the embedded character.
+      current_offset += 1;
+    }
+
+    // If the offset is larger than our size, try to work with the last child,
+    // which is also the behavior of SetCaretOffset.
+    if (offset <= current_offset || i == child_count - 1) {
+      // When deciding to do this on the parent or the child we want to err
+      // toward doing it on a focusable node. If neither node is focusable, we
+      // should call GrabFocusOrSetSequentialFocusNavigationStartingPoint on
+      // the child.
+      bool can_focus_node = GetData().HasState(ax::mojom::State::kFocusable);
+      bool can_focus_child =
+          child->GetData().HasState(ax::mojom::State::kFocusable);
+      if (can_focus_node && !can_focus_child)
+        return GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+      else
+        return child->GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+    }
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool AXPlatformNodeAuraLinux::
+    GrabFocusOrSetSequentialFocusNavigationStartingPoint() {
+  if (GetData().HasState(ax::mojom::State::kFocusable) ||
+      SelectionAndFocusAreTheSame()) {
+    return GrabFocus();
+  }
+
+  AXActionData action_data;
+  action_data.action =
+      ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
   return delegate_->AccessibilityPerformAction(action_data);
 }
 
@@ -3559,13 +3801,15 @@ void AXPlatformNodeAuraLinux::SetEmbeddingWindow(
   SetWeakGPtrToAtkObject(&embedding_window_, new_embedding_window);
 }
 
-base::string16 AXPlatformNodeAuraLinux::GetText() const {
+base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
   // Special case allows us to get text even in non-HTML case, e.g. browser UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
 
+  // Hypertext of platform leaves, which internally are composite objects, are
+  // represented with the inner text of the composite object.
   if (IsChildOfLeaf())
-    return AXPlatformNodeBase::GetText();
+    return GetInnerText();
 
   return hypertext_.hypertext;
 }
@@ -3584,8 +3828,13 @@ bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
   if (offset < 0 || offset > character_count)
     offset = character_count;
 
+  // Even if we don't change anything, we still want to act like we
+  // were successful.
+  if (offset == GetCaretOffset() && !HasSelection())
+    return true;
+
   offset = UnicodeToUTF16OffsetInText(offset);
-  if (!SetTextSelection(offset, offset))
+  if (!SetHypertextSelection(offset, offset))
     return false;
 
   OnTextSelectionChanged();
@@ -3597,16 +3846,29 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
   start_offset = UnicodeToUTF16OffsetInText(start_offset);
   end_offset = UnicodeToUTF16OffsetInText(end_offset);
 
-  base::string16 text = GetText();
-  if (start_offset < 0 || start_offset > static_cast<int>(text.length()))
+  base::string16 text = GetHypertext();
+  if (start_offset < 0 || start_offset > int{text.length()})
     return false;
-  if (end_offset < 0 || end_offset > static_cast<int>(text.length()))
+  if (end_offset < 0 || end_offset > int{text.length()})
     return false;
 
-  bool result = SetTextSelection(start_offset, end_offset);
-  if (result)
-    OnTextSelectionChanged();
-  return result;
+  // We must put these in the correct order so that we can do
+  // a comparison with the existing start and end below.
+  if (end_offset < start_offset)
+    std::swap(start_offset, end_offset);
+
+  // Even if we don't change anything, we still want to act like we
+  // were successful.
+  int old_start_offset, old_end_offset;
+  GetSelectionExtents(&old_start_offset, &old_end_offset);
+  if (old_start_offset == start_offset && old_end_offset == end_offset)
+    return true;
+
+  if (!SetHypertextSelection(start_offset, end_offset))
+    return false;
+
+  OnTextSelectionChanged();
+  return true;
 }
 
 bool AXPlatformNodeAuraLinux::HasSelection() {
@@ -3616,10 +3878,8 @@ bool AXPlatformNodeAuraLinux::HasSelection() {
          selection_start != selection_end;
 }
 
-// Since this method doesn't return a static gchar*, we expect the caller of
-// atk_text_get_selection to free the return value.
-gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
-                                             int* end_offset) {
+void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,
+                                                  int* end_offset) {
   if (start_offset)
     *start_offset = 0;
   if (end_offset)
@@ -3629,7 +3889,7 @@ gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
   GetSelectionOffsets(&selection_start, &selection_end);
   if (selection_start < 0 || selection_end < 0 ||
       selection_start == selection_end)
-    return nullptr;
+    return;
 
   // We should ignore the direction of the selection when exposing start and
   // end offsets. According to the ATK documentation the end offset is always
@@ -3645,6 +3905,22 @@ gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
     *start_offset = selection_start;
   if (end_offset)
     *end_offset = selection_end;
+}
+
+// Since this method doesn't return a static gchar*, we expect the caller of
+// atk_text_get_selection to free the return value.
+gchar* AXPlatformNodeAuraLinux::GetSelectionWithText(int* start_offset,
+                                                     int* end_offset) {
+  int selection_start, selection_end;
+  GetSelectionExtents(&selection_start, &selection_end);
+  if (start_offset)
+    *start_offset = selection_start;
+  if (end_offset)
+    *end_offset = selection_end;
+
+  if (selection_start < 0 || selection_end < 0 ||
+      selection_start == selection_end)
+    return nullptr;
 
   return atk_text::GetText(ATK_TEXT(atk_object_), selection_start,
                            selection_end);
@@ -3654,5 +3930,76 @@ bool AXPlatformNodeAuraLinux::IsInLiveRegion() {
   return GetData().HasStringAttribute(
       ax::mojom::StringAttribute::kContainerLiveStatus);
 }
+
+void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
+                                            int x,
+                                            int y) {
+  gfx::Point scroll_to(x, y);
+  switch (atk_coord_type) {
+    case ATK_XY_SCREEN:
+      break;
+    case ATK_XY_WINDOW:
+      scroll_to += GetParentFrameOriginInScreenCoordinates();
+      break;
+#if defined(ATK_230)
+    case ATK_XY_PARENT:
+      scroll_to += GetParentOriginInScreenCoordinates();
+      break;
+#endif
+  }
+
+  ui::AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ax::mojom::Action::kScrollToPoint;
+  action_data.target_point = scroll_to;
+  GetDelegate()->AccessibilityPerformAction(action_data);
+}
+
+AXPlatformNodeAuraLinux*
+AXPlatformNodeAuraLinux::FindTopmostDocumentAncestor() {
+  AXPlatformNodeAuraLinux* document = nullptr;
+  AXPlatformNodeAuraLinux* current = this;
+  while (current) {
+    if (current->IsDocument())
+      document = current;
+    current = AtkObjectToAXPlatformNodeAuraLinux(current->GetParent());
+  }
+  return document;
+}
+
+#if defined(ATK_230)
+base::Optional<gfx::Point> AXPlatformNodeAuraLinux::CalculateScrollToPoint(
+    AtkScrollType scroll_type) {
+  AXPlatformNodeAuraLinux* document = FindTopmostDocumentAncestor();
+  if (!document)
+    return base::nullopt;
+
+  gfx::Rect document_rect = document->GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+  gfx::Rect node_rect = GetExtentsRelativeToAtkCoordinateType(ATK_XY_SCREEN);
+
+  switch (scroll_type) {
+    case ATK_SCROLL_ANYWHERE:
+    case ATK_SCROLL_TOP_LEFT:
+      return document_rect.origin();
+    case ATK_SCROLL_BOTTOM_RIGHT:
+      return gfx::Point(document_rect.right() - node_rect.width(),
+                        document_rect.bottom() - node_rect.height());
+    case ATK_SCROLL_TOP_EDGE:
+      return gfx::Point(node_rect.x(), document_rect.y());
+    case ATK_SCROLL_BOTTOM_EDGE:
+      return gfx::Point(node_rect.x(),
+                        document_rect.bottom() - node_rect.height());
+    case ATK_SCROLL_LEFT_EDGE:
+      return gfx::Point(document_rect.x(), node_rect.y());
+    case ATK_SCROLL_RIGHT_EDGE:
+      return gfx::Point(document_rect.right() - node_rect.width(),
+                        node_rect.y());
+  }
+
+  NOTREACHED();
+  return base::nullopt;
+}
+#endif
 
 }  // namespace ui

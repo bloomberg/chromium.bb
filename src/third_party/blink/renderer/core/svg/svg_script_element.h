@@ -39,8 +39,6 @@ class SVGScriptElement final : public SVGElement,
   USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 
  public:
-  static SVGScriptElement* Create(Document&, const CreateElementFlags);
-
   SVGScriptElement(Document&, const CreateElementFlags);
 
   ScriptLoader* Loader() const final { return loader_.Get(); }

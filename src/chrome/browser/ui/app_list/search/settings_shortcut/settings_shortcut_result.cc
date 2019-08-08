@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_metadata.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 

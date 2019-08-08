@@ -82,7 +82,7 @@ bool SigninErrorController::UpdateSecondaryAccountErrors(
   // account id, use that error. Otherwise, just take the first actionable
   // error we find.
   bool error_changed = false;
-  for (const AccountInfo& account_info :
+  for (const CoreAccountInfo& account_info :
        identity_manager_->GetAccountsWithRefreshTokens()) {
     std::string account_id = account_info.account_id;
 

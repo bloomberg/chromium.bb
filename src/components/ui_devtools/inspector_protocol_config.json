@@ -13,5 +13,10 @@
         "string_header": "components/ui_devtools/base_string_adapter.h",
         "export_macro": "UI_DEVTOOLS_EXPORT",
         "export_header": "components/ui_devtools/devtools_export.h"
+    },
+
+    "encoding_lib": {
+        "header": "third_party/inspector_protocol/encoding/encoding.h",
+        "namespace": ["inspector_protocol_encoding"]
     }
 }

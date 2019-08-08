@@ -40,7 +40,7 @@ void CallSortManagerServices() {
   ShillManagerClient::Get()->GetTestInterface()->SortManagerServices(true);
 }
 
-int GetInteractiveDelay() {
+base::TimeDelta GetInteractiveDelay() {
   return ShillManagerClient::Get()->GetTestInterface()->GetInteractiveDelay();
 }
 
@@ -187,7 +187,7 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
       FROM_HERE,
       base::BindOnce(&FakeShillServiceClient::ContinueConnect,
                      weak_ptr_factory_.GetWeakPtr(), service_path.value()),
-      base::TimeDelta::FromSeconds(GetInteractiveDelay()));
+      GetInteractiveDelay());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
@@ -207,7 +207,7 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
                      shill::kStateProperty, base::Value(shill::kStateIdle),
                      base::DoNothing(), error_callback),
-      base::TimeDelta::FromSeconds(GetInteractiveDelay()));
+      GetInteractiveDelay());
   callback.Run();
 }
 
@@ -236,7 +236,7 @@ void FakeShillServiceClient::ActivateCellularModem(
       base::BindOnce(&FakeShillServiceClient::SetCellularActivated,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
                      error_callback),
-      base::TimeDelta::FromSeconds(GetInteractiveDelay()));
+      GetInteractiveDelay());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }

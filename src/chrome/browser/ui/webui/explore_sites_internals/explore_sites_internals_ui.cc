@@ -28,7 +28,6 @@ ExploreSitesInternalsUI::ExploreSitesInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("explore_sites_internals.mojom-lite.js",
                           IDR_EXPLORE_SITES_INTERNALS_MOJO_JS);
   source->SetDefaultResource(IDR_EXPLORE_SITES_INTERNALS_HTML);
-  source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   explore_sites_service_ =

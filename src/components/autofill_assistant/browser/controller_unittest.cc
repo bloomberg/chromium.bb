@@ -568,9 +568,9 @@ TEST_F(ControllerTest, CookieExperimentEnabled) {
 
 TEST_F(ControllerTest, ProgressIncreasesAtStart) {
   EXPECT_EQ(0, controller_->GetProgress());
-  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(10));
+  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(5));
   Start();
-  EXPECT_EQ(10, controller_->GetProgress());
+  EXPECT_EQ(5, controller_->GetProgress());
 }
 
 TEST_F(ControllerTest, SetProgress) {
@@ -932,6 +932,18 @@ TEST_F(ControllerTest, WaitForNavigationActionStartWithinTimeout) {
   ASSERT_THAT(processed_actions_capture, SizeIs(2));
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+}
+
+TEST_F(ControllerTest, InitialDataUrlDoesNotChange) {
+  const std::string deeplink_url("http://initialurl.com/path");
+  Start(deeplink_url);
+  EXPECT_THAT(controller_->GetDeeplinkURL(), deeplink_url);
+  EXPECT_THAT(controller_->GetCurrentURL(), deeplink_url);
+
+  const std::string navigate_url("http://navigateurl.com/path");
+  SimulateNavigateToUrl(GURL(navigate_url));
+  EXPECT_THAT(controller_->GetDeeplinkURL().spec(), deeplink_url);
+  EXPECT_THAT(controller_->GetCurrentURL().spec(), navigate_url);
 }
 
 }  // namespace autofill_assistant

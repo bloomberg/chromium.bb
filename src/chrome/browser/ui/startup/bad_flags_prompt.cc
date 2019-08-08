@@ -14,9 +14,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
@@ -45,6 +43,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#else
+#include "chrome/browser/ui/browser.h"
 #endif  // OS_ANDROID
 
 namespace chrome {

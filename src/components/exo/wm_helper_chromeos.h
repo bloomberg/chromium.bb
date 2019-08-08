@@ -10,17 +10,16 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 
 namespace ash {
 class TabletModeObserver;
 }
 
 namespace aura {
-class env;
 class Window;
 namespace client {
 class CursorClient;
@@ -49,9 +48,9 @@ namespace exo {
 
 // A ChromeOS-specific helper class for accessing WindowManager related
 // features.
-class WMHelperChromeOS : public WMHelper {
+class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
  public:
-  explicit WMHelperChromeOS(aura::Env* env);
+  WMHelperChromeOS();
   ~WMHelperChromeOS() override;
   static WMHelperChromeOS* GetInstance();
   void AddTabletModeObserver(ash::TabletModeObserver* observer);
@@ -62,7 +61,6 @@ class WMHelperChromeOS : public WMHelper {
       ash::WindowTreeHostManager::Observer* observer);
 
   // Overridden from WMHelper
-  aura::Env* env() override;
   void AddActivationObserver(wm::ActivationChangeObserver* observer) override;
   void RemoveActivationObserver(
       wm::ActivationChangeObserver* observer) override;
@@ -73,10 +71,7 @@ class WMHelperChromeOS : public WMHelper {
   void RemoveDragDropObserver(DragDropObserver* observer) override;
   void SetDragDropDelegate(aura::Window*) override;
   void ResetDragDropDelegate(aura::Window*) override;
-  void AddVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) override;
-  void RemoveVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) override;
+  VSyncTimingManager& GetVSyncTimingManager() override;
 
   const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const override;
@@ -105,11 +100,14 @@ class WMHelperChromeOS : public WMHelper {
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
+  // Overridden from VSyncTimingManager::Delegate:
+  void AddVSyncParameterObserver(
+      viz::mojom::VSyncParameterObserverPtr observer) override;
+
  private:
   base::ObserverList<DragDropObserver>::Unchecked drag_drop_observers_;
-  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
-  aura::Env* const env_;
   LifetimeManager lifetime_manager_;
+  VSyncTimingManager vsync_timing_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperChromeOS);
 };

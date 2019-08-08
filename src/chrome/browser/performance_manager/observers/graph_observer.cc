@@ -10,4 +10,17 @@ GraphObserver::GraphObserver() = default;
 
 GraphObserver::~GraphObserver() = default;
 
+GraphObserverDefaultImpl::GraphObserverDefaultImpl() = default;
+
+GraphObserverDefaultImpl::~GraphObserverDefaultImpl() {
+  // This observer should have left the graph before being destroyed.
+  DCHECK(!graph_);
+}
+
+void GraphObserverDefaultImpl::SetGraph(GraphImpl* graph) {
+  // We can only be going from null to non-null, and vice-versa.
+  DCHECK(!graph || !graph_);
+  graph_ = graph;
+}
+
 }  // namespace performance_manager

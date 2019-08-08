@@ -221,14 +221,7 @@ class AudioProcessingImpl : public AudioProcessing {
   // that the capture thread blocks the render thread.
   // The struct is modified in a single-threaded manner by holding both the
   // render and capture locks.
-  int MaybeInitialize(const ProcessingConfig& config, bool force_initialization)
-      RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_);
-
   int MaybeInitializeRender(const ProcessingConfig& processing_config)
-      RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_);
-
-  int MaybeInitializeCapture(const ProcessingConfig& processing_config,
-                             bool force_initialization)
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_);
 
   // Method for updating the state keeping track of the active submodules.
@@ -246,7 +239,8 @@ class AudioProcessingImpl : public AudioProcessing {
   void InitializeResidualEchoDetector()
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_, crit_capture_);
   void InitializeLowCutFilter() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
-  void InitializeEchoController() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
+  void InitializeEchoController()
+      RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_, crit_capture_);
   void InitializeGainController2() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
   void InitializePreAmplifier() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
   void InitializePostProcessor() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
@@ -276,7 +270,6 @@ class AudioProcessingImpl : public AudioProcessing {
   // Capture-side exclusive methods possibly running APM in a multi-threaded
   // manner that are called with the render lock already acquired.
   int ProcessCaptureStreamLocked() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
-  void MaybeUpdateHistograms() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
 
   // Render-side exclusive methods possibly running APM in a multi-threaded
   // manner that are called with the render lock already acquired.
@@ -384,12 +377,8 @@ class AudioProcessingImpl : public AudioProcessing {
   struct ApmCaptureState {
     ApmCaptureState(bool transient_suppressor_enabled);
     ~ApmCaptureState();
-    int aec_system_delay_jumps;
     int delay_offset_ms;
     bool was_stream_delay_set;
-    int last_stream_delay_ms;
-    int last_aec_system_delay_ms;
-    int stream_delay_jumps;
     bool output_will_be_muted;
     bool key_pressed;
     bool transient_suppressor_enabled;
@@ -402,6 +391,8 @@ class AudioProcessingImpl : public AudioProcessing {
     bool echo_path_gain_change;
     int prev_analog_mic_level;
     float prev_pre_amp_gain;
+    int playout_volume;
+    int prev_playout_volume;
     AudioProcessingStats stats;
   } capture_ RTC_GUARDED_BY(crit_capture_);
 
@@ -417,6 +408,9 @@ class AudioProcessingImpl : public AudioProcessing {
     int split_rate;
     int stream_delay_ms;
     bool echo_controller_enabled = false;
+    bool use_aec2_extended_filter = false;
+    bool use_aec2_delay_agnostic = false;
+    bool use_aec2_refined_adaptive_filter = false;
   } capture_nonlocked_;
 
   struct ApmRenderState {
@@ -426,13 +420,9 @@ class AudioProcessingImpl : public AudioProcessing {
     std::unique_ptr<AudioBuffer> render_audio;
   } render_ RTC_GUARDED_BY(crit_render_);
 
-  size_t aec_render_queue_element_max_size_ RTC_GUARDED_BY(crit_render_)
-      RTC_GUARDED_BY(crit_capture_) = 0;
   std::vector<float> aec_render_queue_buffer_ RTC_GUARDED_BY(crit_render_);
   std::vector<float> aec_capture_queue_buffer_ RTC_GUARDED_BY(crit_capture_);
 
-  size_t aecm_render_queue_element_max_size_ RTC_GUARDED_BY(crit_render_)
-      RTC_GUARDED_BY(crit_capture_) = 0;
   std::vector<int16_t> aecm_render_queue_buffer_ RTC_GUARDED_BY(crit_render_);
   std::vector<int16_t> aecm_capture_queue_buffer_ RTC_GUARDED_BY(crit_capture_);
 

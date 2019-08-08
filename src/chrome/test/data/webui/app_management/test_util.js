@@ -67,3 +67,15 @@ function replaceBody(element) {
 
   document.body.appendChild(element);
 }
+
+/** @return {String} */
+function getCurrentUrlSuffix() {
+  return window.location.href.slice(window.location.origin.length);
+}
+
+/** @param {String} route  */
+async function navigateTo(route) {
+  window.history.replaceState({}, '', route);
+  window.dispatchEvent(new CustomEvent('location-changed'));
+  await PolymerTest.flushTasks();
+}

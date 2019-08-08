@@ -70,13 +70,19 @@ std::string GetStringValue(const base::Value& dict, const char* key) {
   return value ? value->GetString() : std::string();
 }
 
+bool IsPortalledState(const std::string& state) {
+  return state == shill::kStatePortal || state == shill::kStateNoConnectivity ||
+         state == shill::kStateRedirectFound ||
+         state == shill::kStatePortalSuspected;
+}
+
 int GetStateOrder(const base::Value& dict) {
   std::string state = GetStringValue(dict, shill::kStateProperty);
   if (state == shill::kStateOnline)
     return 1;
   if (state == shill::kStateReady)
     return 2;
-  if (state == shill::kStatePortal)
+  if (IsPortalledState(state))
     return 3;
   if (state == shill::kStateAssociation || state == shill::kStateConfiguration)
     return 4;
@@ -180,13 +186,14 @@ void LogErrorCallback(const std::string& error_name,
 }
 
 bool IsConnectedState(const std::string& state) {
-  return state == shill::kStateOnline || state == shill::kStatePortal ||
+  return state == shill::kStateOnline || IsPortalledState(state) ||
          state == shill::kStateReady;
 }
 
 void UpdatePortaledWifiState(const std::string& service_path) {
   ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
-      service_path, shill::kStateProperty, base::Value(shill::kStatePortal));
+      service_path, shill::kStateProperty,
+      base::Value(shill::kStateNoConnectivity));
 }
 
 bool IsCellularTechnology(const std::string& type) {
@@ -224,10 +231,7 @@ const char kRoamingRequired[] = "required";
 const char FakeShillManagerClient::kFakeEthernetNetworkGuid[] = "eth1_guid";
 
 FakeShillManagerClient::FakeShillManagerClient()
-    : interactive_delay_(0),
-      cellular_carrier_(shill::kCarrierSprint),
-      cellular_technology_(shill::kNetworkTechnologyGsm),
-      weak_ptr_factory_(this) {
+    : cellular_technology_(shill::kNetworkTechnologyGsm) {
   ParseCommandLineSwitch();
 }
 
@@ -286,11 +290,13 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
     if (device_type == shill::kTypeCellular)
       device_client->AddCellularFoundNetwork(device_path);
   }
+  // Trigger |callback| immediately to indicate that the scan started.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::ScanCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), device_path, callback),
-      base::TimeDelta::FromSeconds(interactive_delay_));
+                     weak_ptr_factory_.GetWeakPtr(), device_path),
+      interactive_delay_);
 }
 
 void FakeShillManagerClient::EnableTechnology(
@@ -310,7 +316,7 @@ void FakeShillManagerClient::EnableTechnology(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::SetTechnologyEnabled,
                      weak_ptr_factory_.GetWeakPtr(), type, callback, true),
-      base::TimeDelta::FromSeconds(interactive_delay_));
+      interactive_delay_);
 }
 
 void FakeShillManagerClient::DisableTechnology(
@@ -329,7 +335,7 @@ void FakeShillManagerClient::DisableTechnology(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::SetTechnologyEnabled,
                      weak_ptr_factory_.GetWeakPtr(), type, callback, false),
-      base::TimeDelta::FromSeconds(interactive_delay_));
+      interactive_delay_);
 }
 
 void FakeShillManagerClient::ConfigureService(
@@ -629,8 +635,12 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   }
 }
 
-int FakeShillManagerClient::GetInteractiveDelay() const {
+base::TimeDelta FakeShillManagerClient::GetInteractiveDelay() const {
   return interactive_delay_;
+}
+
+void FakeShillManagerClient::SetInteractiveDelay(base::TimeDelta delay) {
+  interactive_delay_ = delay;
 }
 
 void FakeShillManagerClient::SetBestServiceToConnect(
@@ -732,7 +742,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   state = GetInitialStateForType(shill::kTypeWifi, &enabled);
   if (state != kTechnologyUnavailable) {
     bool portaled = false;
-    if (state == shill::kStatePortal) {
+    if (IsPortalledState(state)) {
       portaled = true;
       state = shill::kStateIdle;
     }
@@ -845,13 +855,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     AddTechnology(shill::kTypeCellular, enabled);
     devices->AddDevice("/device/cellular1", shill::kTypeCellular,
                        "stub_cellular_device1");
-    SetInitialDeviceProperty("/device/cellular1", shill::kCarrierProperty,
-                             base::Value(cellular_carrier_));
-    base::ListValue carrier_list;
-    carrier_list.AppendString(cellular_carrier_);
-    carrier_list.AppendString(shill::kCarrierGenericUMTS);
-    SetInitialDeviceProperty("/device/cellular1",
-                             shill::kSupportedCarriersProperty, carrier_list);
     if (roaming_state_ == kRoamingRequired) {
       SetInitialDeviceProperty("/device/cellular1",
                                shill::kProviderRequiresRoamingProperty,
@@ -1099,16 +1102,14 @@ std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
   return new_service_list;
 }
 
-void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
-                                           const base::Closure& callback) {
+void FakeShillManagerClient::ScanCompleted(const std::string& device_path) {
+  VLOG(1) << "ScanCompleted: " << device_path;
   if (!device_path.empty()) {
     ShillDeviceClient::Get()->GetTestInterface()->SetDeviceProperty(
         device_path, shill::kScanningProperty, base::Value(false),
         /*notify_changed=*/true);
   }
-  VLOG(1) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 void FakeShillManagerClient::ParseCommandLineSwitch() {
@@ -1144,7 +1145,7 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
     int seconds = 3;
     if (!arg1.empty())
       base::StringToInt(arg1, &seconds);
-    interactive_delay_ = seconds;
+    interactive_delay_ = base::TimeDelta::FromSeconds(seconds);
     return true;
   } else if (arg0 == "sim_lock") {
     bool locked = (arg1 == "1");
@@ -1178,9 +1179,6 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
       base::StringToInt(arg1, &s_tdls_busy_count);
     else
       s_tdls_busy_count = 1;
-    return true;
-  } else if (arg0 == "carrier") {
-    cellular_carrier_ = arg1;
     return true;
   } else if (arg0 == "olp") {
     cellular_olp_ = arg1;
@@ -1227,7 +1225,7 @@ bool FakeShillManagerClient::SetInitialNetworkState(
     state = kTechnologyInitializing;
   } else if (state_arg == "portal") {
     // Technology is enabled, a service is connected and in Portal state.
-    state = shill::kStatePortal;
+    state = shill::kStateNoConnectivity;
   } else if (state_arg == "active" || state_arg == "activated") {
     // Technology is enabled, a service is connected and Activated.
     state = kNetworkActivated;
@@ -1288,7 +1286,7 @@ std::string FakeShillManagerClient::GetInitialStateForType(
       *enabled = true;
       result = state;
     }
-    if ((state == shill::kStatePortal && type != shill::kTypeWifi) ||
+    if ((IsPortalledState(state) && type != shill::kTypeWifi) ||
         (state == kNetworkActivated && type != shill::kTypeCellular)) {
       LOG(WARNING) << "Invalid state: " << state << " for " << type;
       result = shill::kStateIdle;

@@ -281,6 +281,9 @@ def WriteLsbRelease(sysroot, fields):
     content = osutils.ReadFile(path) + content
 
   osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
+  cros_build_lib.SudoRunCommand([
+      'setfattr', '-n', 'security.selinux', '-v',
+      'u:object_r:cros_conf_file:s0', path])
 
 
 def GetLatestImageLink(board, force_chroot=False):

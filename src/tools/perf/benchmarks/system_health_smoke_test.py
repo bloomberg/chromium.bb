@@ -137,6 +137,26 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/937006
   'system_health.memory_mobile/browse:news:toi',
+
+  # The following tests are disabled because they are disabled on the perf
+  # waterfall (using tools/perf/expectations.config) on one platform or another.
+  # They may run fine on the CQ, but it isn't worth the bot time to run them.
+  # [
+  # crbug.com/799106
+  'system_health.memory_desktop/browse:media:flickr_infinite_scroll'
+  # crbug.com/836407
+  'system_health.memory_desktop/browse:tools:maps'
+  # crbug.com/924330
+  'system_health.memory_desktop/browse:media:pinterest:2018'
+  # crbug.com/899887
+  'system_health.memory_desktop/browse:social:facebook_infinite_scroll:2018'
+  # crbug.com/649392
+  'system_health.memory_desktop/play:media:google_play_music'
+  # crbug.com/934885
+  'system_health.memory_desktop/load_accessibility:media:wikipedia:2018'
+  # crbug.com/942952
+  'system_health.memory_desktop/browse:news:hackernews:2018'
+  # ]
 })
 
 
@@ -198,8 +218,10 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
     with open(path_util.GetExpectationsPath()) as fp:
       single_page_benchmark.AugmentExpectationsWithParser(fp.read())
 
-    self.assertEqual(0, single_page_benchmark.Run(options),
-                     msg='Failed: %s' % benchmark_class)
+    return_code = single_page_benchmark.Run(options)
+    if return_code == -1:
+      self.skipTest('The benchmark was not run.')
+    self.assertEqual(0, return_code, msg='Failed: %s' % benchmark_class)
 
   # We attach the test method to SystemHealthBenchmarkSmokeTest dynamically
   # so that we can set the test method name to include

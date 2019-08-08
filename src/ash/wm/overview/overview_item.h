@@ -11,7 +11,9 @@
 #include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,13 +29,15 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+class DragWindowController;
 class OverviewGrid;
 class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
                                 public aura::WindowObserver,
-                                public ui::ImplicitAnimationObserver {
+                                public ui::ImplicitAnimationObserver,
+                                public views::ButtonListener {
  public:
   OverviewItem(aura::Window* window,
                OverviewSession* overview,
@@ -41,11 +45,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   ~OverviewItem() override;
 
   aura::Window* GetWindow();
-
-  // Returns the native window of the |transformed_window_|'s minimized widget
-  // if the original window is in minimized state, or the original window
-  // otherwise.
-  aura::Window* GetWindowForStacking();
 
   // Returns the root window on which this item is shown.
   aura::Window* root_window() { return root_window_; }
@@ -120,7 +119,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // when a drag is started, and reshows it when a drag is finished.
   // Additionally hides the title and window icon if |item| is this.
   void OnSelectorItemDragStarted(OverviewItem* item);
-  void OnSelectorItemDragEnded();
+  void OnSelectorItemDragEnded(bool snap);
 
   ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
@@ -138,8 +137,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // Increases the bounds of the dragged item.
   void ScaleUpSelectedItem(OverviewAnimationType animation_type);
-
-  const gfx::RectF& target_bounds() const { return target_bounds_; }
 
   // Shift the window item up and then animates it to its original spot. Used
   // to transition from the home launcher.
@@ -165,6 +162,12 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // to its original stacking order so that the order of windows is the same as
   // when entering overview.
   void OnDragAnimationCompleted();
+
+  // Updates |phantoms_for_dragging_|. If |phantoms_for_dragging_| is null, then
+  // a new object is created for it.
+  void UpdatePhantomsForDragging(const gfx::PointF& location_in_screen);
+
+  void DestroyPhantomsForDragging();
 
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
@@ -194,8 +197,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
                              float velocity_y) override;
   void HandleTapEvent() override;
   void HandleGestureEndEvent() override;
-  void HandleCloseButtonClicked() override;
   bool ShouldIgnoreGestureEvents() override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
@@ -207,6 +212,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
+
+  const gfx::RectF& target_bounds() const { return target_bounds_; }
+
+  views::Widget* item_widget() { return item_widget_.get(); }
 
   OverviewGrid* overview_grid() { return overview_grid_; }
 
@@ -233,15 +242,21 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   void set_disable_mask(bool disable) { disable_mask_ = disable; }
 
+  views::ImageButton* GetCloseButtonForTesting();
   float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
   RoundedLabelWidget* cannot_snap_widget_for_testing() {
     return cannot_snap_widget_.get();
   }
+  void set_target_bounds_for_testing(const gfx::RectF& target_bounds) {
+    target_bounds_ = target_bounds;
+  }
 
  private:
+  friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
+  class OverviewCloseButton;
   class WindowSurfaceCacheObserver;
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
@@ -270,6 +285,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // it visible while dragging around.
   void StartDrag();
 
+  // Returns the list of windows that we want to slide up or down when swiping
+  // on the shelf in tablet mode.
+  aura::Window::Windows GetWindowsForHomeGesture();
+
   // The root window this item is being displayed on.
   aura::Window* root_window_;
 
@@ -297,9 +316,15 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // maybe a backdrop. Forwards certain events to |this|.
   CaptionContainerView* caption_container_view_ = nullptr;
 
+  OverviewCloseButton* close_button_ = nullptr;
+
   // A widget with text that may show up on top of |transform_window_| to notify
   // users this window cannot be snapped.
   std::unique_ptr<RoundedLabelWidget> cannot_snap_widget_;
+
+  // Responsible for phantoms that look like the window on all displays during
+  // dragging.
+  std::unique_ptr<DragWindowController> phantoms_for_dragging_;
 
   // Pointer to the Overview that owns the OverviewGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.
@@ -329,6 +354,11 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // True to always disable mask regardless of the state.
   bool disable_mask_ = false;
+
+  // Stores the last translations of the windows affected by SetBounds. Used for
+  // ease of calculations when swiping away overview mode using home launcher
+  // gesture.
+  base::flat_map<aura::Window*, int> translation_y_map_;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

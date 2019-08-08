@@ -46,12 +46,11 @@ import java.util.List;
 
 /**
  * Shows a popup of menuitems anchored to a host view. When a item is selected we call
- * Activity.onOptionsItemSelected with the appropriate MenuItem.
+ * AppMenuHandlerImpl.AppMenuDelegate.onOptionsItemSelected with the appropriate MenuItem.
  *   - Only visible MenuItems are shown.
  *   - Disabled items are grayed out.
  */
-public class AppMenu implements OnItemClickListener, OnKeyListener {
-
+class AppMenu implements OnItemClickListener, OnKeyListener {
     private static final float LAST_ITEM_SHOW_FRACTION = 0.5f;
 
     private final Menu mMenu;
@@ -65,7 +64,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private PopupWindow mPopup;
     private ListView mListView;
     private AppMenuAdapter mAdapter;
-    private AppMenuHandler mHandler;
+    private AppMenuHandlerImpl mHandler;
     private View mFooterView;
     private int mCurrentScreenRotation = -1;
     private boolean mIsByPermanentButton;
@@ -79,10 +78,10 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      * @param menu Original menu created by the framework.
      * @param itemRowHeight Desired height for each app menu row.
      * @param itemDividerHeight Desired height for the divider between app menu items.
-     * @param handler AppMenuHandler receives callbacks from AppMenu.
+     * @param handler AppMenuHandlerImpl receives callbacks from AppMenu.
      * @param res Resources object used to get dimensions and style attributes.
      */
-    AppMenu(Menu menu, int itemRowHeight, int itemDividerHeight, AppMenuHandler handler,
+    AppMenu(Menu menu, int itemRowHeight, int itemDividerHeight, AppMenuHandlerImpl handler,
             Resources res) {
         mMenu = menu;
 

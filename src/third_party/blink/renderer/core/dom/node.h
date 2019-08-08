@@ -165,8 +165,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Override operator new to allocate Node subtype objects onto
   // a dedicated heap.
-  GC_PLUGIN_IGNORE("crbug.com/443854")
-  void* operator new(size_t size) { return AllocateObject(size, false); }
   static void* AllocateObject(size_t size, bool is_eager) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<Node>::kAffinity>::GetState();
@@ -641,7 +639,10 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool IsDescendantOf(const Node*) const;
   bool contains(const Node*) const;
-  bool IsShadowIncludingInclusiveAncestorOf(const Node*) const;
+  // https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
+  bool IsShadowIncludingInclusiveAncestorOf(const Node&) const;
+  // https://dom.spec.whatwg.org/#concept-shadow-including-ancestor
+  bool IsShadowIncludingAncestorOf(const Node&) const;
   bool ContainsIncludingHostElements(const Node&) const;
   Node* CommonAncestor(const Node&,
                        ContainerNode* (*parent)(const Node&)) const;
@@ -674,6 +675,8 @@ class CORE_EXPORT Node : public EventTarget {
     // we don't need to backtrack past display:none/contents and out of flow
     // objects when we need to do whitespace re-attachment.
     LayoutObject* previous_in_flow = nullptr;
+    // Set to true if the Attach/DetachLayoutTree is done as part of the
+    // RebuildLayoutTree pass.
     bool performing_reattach = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
@@ -699,11 +702,6 @@ class CORE_EXPORT Node : public EventTarget {
     ReattachLayoutTree(context);
   }
   void ReattachLayoutTree(AttachContext&);
-
-  // TODO(futhark): Get rid of this method by replacing it with
-  // SetForceReattachLayoutTree + SetNeedsStyleRecalc, or DetachLayoutTree as
-  // appropriate.
-  void LazyReattachIfAttached();
 
   // ---------------------------------------------------------------------------
   // Inline ComputedStyle accessors
@@ -767,7 +765,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   String ToString() const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   String ToTreeStringForThis() const;
   String ToFlatTreeStringForThis() const;
   void PrintNodePathTo(std::ostream&) const;
@@ -1087,17 +1085,13 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
   DEFINE_TYPE_CASTS(thisType, Node, node, Is##thisType(*node), \
                     Is##thisType(node))
 
-#define DECLARE_NODE_FACTORY(T) static T* Create(Document&)
-#define DEFINE_NODE_FACTORY(T) \
-  T* T::Create(Document& document) { return MakeGarbageCollected<T>(document); }
-
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node*);
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from gdb.
 void showNode(const blink::Node*);
 void showTree(const blink::Node*);
 void showNodePath(const blink::Node*);

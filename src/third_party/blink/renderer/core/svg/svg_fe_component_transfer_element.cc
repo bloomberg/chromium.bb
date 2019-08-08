@@ -32,8 +32,7 @@
 
 namespace blink {
 
-inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(
-    Document& document)
+SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEComponentTransferTag,
                                            document),
       in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
@@ -44,8 +43,6 @@ void SVGFEComponentTransferElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(in1_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEComponentTransferElement)
 
 void SVGFEComponentTransferElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {

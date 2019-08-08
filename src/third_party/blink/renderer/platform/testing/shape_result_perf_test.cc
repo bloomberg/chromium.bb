@@ -41,9 +41,10 @@ class ShapeResultPerfTest {
   TextRun SetupFont(FontName font_name, const String& text, bool ltr) {
     FontDescription::VariantLigatures ligatures(
         FontDescription::kEnabledLigaturesState);
-    font = CreateTestFont("TestFont",
-                          test::PlatformTestDataPath(font_path[font_name]), 100,
-                          &ligatures);
+    font = CreateTestFont(
+        "TestFont",
+        test::PlatformTestDataPath(font_path.find(font_name)->value), 100,
+        &ligatures);
 
     return TextRun(
         text, /* xpos */ 0, /* expansion */ 0,
@@ -53,7 +54,7 @@ class ShapeResultPerfTest {
 
   Font font;
 
-  std::map<FontName, String> font_path = {
+  HashMap<FontName, String, WTF::IntHash<FontName>> font_path = {
       {ahem, "Ahem.woff"},
       {amiri, "third_party/Amiri/amiri_arabic.woff2"},
       {megalopolis, "third_party/MEgalopolis/MEgalopolisExtra.woff"},

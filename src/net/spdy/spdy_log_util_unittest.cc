@@ -37,29 +37,29 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
   headers["foo"] = "bar";
   headers["cookie"] = "name=value";
 
-  std::unique_ptr<base::ListValue> list =
+  base::ListValue list =
       ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::Default());
 
-  ASSERT_TRUE(list);
-  ASSERT_EQ(2u, list->GetList().size());
+  ASSERT_FALSE(list.is_none());
+  ASSERT_EQ(2u, list.GetList().size());
 
-  ASSERT_TRUE(list->GetList()[0].is_string());
-  EXPECT_EQ("foo: bar", list->GetList()[0].GetString());
+  ASSERT_TRUE(list.GetList()[0].is_string());
+  EXPECT_EQ("foo: bar", list.GetList()[0].GetString());
 
-  ASSERT_TRUE(list->GetList()[1].is_string());
-  EXPECT_EQ("cookie: [10 bytes were stripped]", list->GetList()[1].GetString());
+  ASSERT_TRUE(list.GetList()[1].is_string());
+  EXPECT_EQ("cookie: [10 bytes were stripped]", list.GetList()[1].GetString());
 
   list = ElideSpdyHeaderBlockForNetLog(
       headers, NetLogCaptureMode::IncludeCookiesAndCredentials());
 
-  ASSERT_TRUE(list);
-  ASSERT_EQ(2u, list->GetList().size());
+  ASSERT_FALSE(list.is_none());
+  ASSERT_EQ(2u, list.GetList().size());
 
-  ASSERT_TRUE(list->GetList()[0].is_string());
-  EXPECT_EQ("foo: bar", list->GetList()[0].GetString());
+  ASSERT_TRUE(list.GetList()[0].is_string());
+  EXPECT_EQ("foo: bar", list.GetList()[0].GetString());
 
-  ASSERT_TRUE(list->GetList()[1].is_string());
-  EXPECT_EQ("cookie: name=value", list->GetList()[1].GetString());
+  ASSERT_TRUE(list.GetList()[1].is_string());
+  EXPECT_EQ("cookie: name=value", list.GetList()[1].GetString());
 }
 
 TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
@@ -67,8 +67,8 @@ TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
   headers["foo"] = "bar";
   headers["cookie"] = "name=value";
 
-  std::unique_ptr<base::Value> dict =
-      SpdyHeaderBlockNetLogCallback(&headers, NetLogCaptureMode::Default());
+  std::unique_ptr<base::Value> dict = base::Value::ToUniquePtrValue(
+      SpdyHeaderBlockNetLogCallback(&headers, NetLogCaptureMode::Default()));
 
   ASSERT_TRUE(dict);
   ASSERT_TRUE(dict->is_dict());
@@ -86,8 +86,8 @@ TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
   EXPECT_EQ("cookie: [10 bytes were stripped]",
             header_list->GetList()[1].GetString());
 
-  dict = SpdyHeaderBlockNetLogCallback(
-      &headers, NetLogCaptureMode::IncludeCookiesAndCredentials());
+  dict = base::Value::ToUniquePtrValue(SpdyHeaderBlockNetLogCallback(
+      &headers, NetLogCaptureMode::IncludeCookiesAndCredentials()));
 
   ASSERT_TRUE(dict);
   ASSERT_TRUE(dict->is_dict());
@@ -112,16 +112,16 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLogWithNonUTF8Characters) {
   headers["O\xe2"] = "bar";
   headers["\xde\xad"] = "\xbe\xef";
 
-  std::unique_ptr<base::ListValue> list =
+  base::ListValue list =
       ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::Default());
 
-  ASSERT_EQ(3u, list->GetSize());
+  ASSERT_EQ(3u, list.GetSize());
   std::string field;
-  EXPECT_TRUE(list->GetString(0, &field));
+  EXPECT_TRUE(list.GetString(0, &field));
   EXPECT_EQ("%ESCAPED:\xE2\x80\x8B foo: bar%81", field);
-  EXPECT_TRUE(list->GetString(1, &field));
+  EXPECT_TRUE(list.GetString(1, &field));
   EXPECT_EQ("%ESCAPED:\xE2\x80\x8B O%E2: bar", field);
-  EXPECT_TRUE(list->GetString(2, &field));
+  EXPECT_TRUE(list.GetString(2, &field));
   EXPECT_EQ("%ESCAPED:\xE2\x80\x8B %DE%AD: %BE%EF", field);
 }
 

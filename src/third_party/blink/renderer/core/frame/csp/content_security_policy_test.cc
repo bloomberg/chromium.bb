@@ -69,15 +69,14 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
 
-    Document* document = Document::CreateForTest();
+    auto* document = MakeGarbageCollected<Document>();
     document->SetSecurityOrigin(secure_origin);
     document->SetURL(secure_url);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy, document->GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
-    EXPECT_EQ(expect_upgrade,
-              document->InsecureNavigationsToUpgrade()->Contains(
-                  document->Url().Host().Impl()->GetHash()));
+    EXPECT_EQ(expect_upgrade, document->InsecureNavigationsToUpgrade().Contains(
+                                  document->Url().Host().Impl()->GetHash()));
   }
 
   // Report-Only
@@ -94,7 +93,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(kLeaveInsecureRequestsAlone,
               execution_context->GetInsecureRequestPolicy());
-    EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade()->Contains(
+    EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade().Contains(
         secure_origin->Host().Impl()->GetHash()));
   }
 }
@@ -721,7 +720,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   WTF::OrdinalNumber context_line;
 
   // We need document for HTMLScriptElement tests.
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   document->SetSecurityOrigin(secure_origin);
 
   for (const auto& test : cases) {
@@ -1519,7 +1518,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   const KURL example_url("http://example.com");
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   String source;
   String context_url;
   String nonce;

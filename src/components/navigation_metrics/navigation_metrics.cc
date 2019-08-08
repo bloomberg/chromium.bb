@@ -4,10 +4,12 @@
 
 #include "components/navigation_metrics/navigation_metrics.h"
 
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/url_formatter/url_formatter.h"
 #include "url/gurl.h"
 
 namespace navigation_metrics {
@@ -29,7 +31,7 @@ const char* const kSchemeNames[] = {
     "chrome-native",
     "chrome-search",
     dom_distiller::kDomDistillerScheme,
-    "chrome-devtools",
+    "devtools",
     "chrome-extension",
     "view-source",
     "externalfile",
@@ -58,7 +60,14 @@ void RecordMainFrameNavigation(const GURL& url,
   if (!is_same_document) {
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPage", scheme,
                               Scheme::COUNT);
+    UMA_HISTOGRAM_BOOLEAN("Navigation.MainFrameHasRTLDomainDifferentPage",
+                          base::i18n::StringContainsStrongRTLChars(
+                              url_formatter::IDNToUnicode(url.host())));
   }
+
+  UMA_HISTOGRAM_BOOLEAN("Navigation.MainFrameHasRTLDomain",
+                        base::i18n::StringContainsStrongRTLChars(
+                            url_formatter::IDNToUnicode(url.host())));
 
   if (is_off_the_record) {
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeOTR", scheme,

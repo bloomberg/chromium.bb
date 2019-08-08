@@ -44,7 +44,9 @@ cr.define('app_management', function() {
    * @return {AppMap}
    */
   AppState.removeApp = function(apps, action) {
-    assert(apps[action.id]);
+    if (!apps.hasOwnProperty(action.id)) {
+      return apps;
+    }
 
     delete apps[action.id];
     return Object.assign({}, apps);
@@ -137,12 +139,22 @@ cr.define('app_management', function() {
    * @return {SearchState}
    */
   SearchState.startSearch = function(apps, search, action) {
+    if (action.term === search.term) {
+      return search;
+    }
+
     const results = [];
+
     for (const app of Object.values(apps)) {
-      if (app.title.includes(action.term)) {
+      if (app.title.toLowerCase().includes(action.term.toLowerCase())) {
         results.push(app);
       }
     }
+
+    results.sort(
+        (a, b) => app_management.util.alphabeticalSort(
+            assert(a.title), assert(b.title)));
+
     return /** @type {SearchState} */ (Object.assign({}, search, {
       term: action.term,
       results: results,
@@ -168,6 +180,7 @@ cr.define('app_management', function() {
       case 'start-search':
         return SearchState.startSearch(apps, search, action);
       case 'clear-search':
+      case 'change-page':
         return SearchState.clearSearch();
       default:
         return search;

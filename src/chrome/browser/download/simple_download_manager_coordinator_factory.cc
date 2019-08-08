@@ -6,9 +6,30 @@
 
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_manager.h"
+
+namespace {
+void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> parameters,
+                 Profile* profile) {
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(profile);
+  DCHECK(manager);
+  manager->DownloadUrl(std::move(parameters));
+}
+
+void DownloadUrlWithDownloadManager(
+    SimpleFactoryKey* key,
+    std::unique_ptr<download::DownloadUrlParameters> parameters) {
+  FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
+      key, base::BindOnce(&DownloadUrl, std::move(parameters)));
+}
+}  // namespace
 
 // static
 SimpleDownloadManagerCoordinatorFactory*
@@ -35,5 +56,13 @@ SimpleDownloadManagerCoordinatorFactory::
 std::unique_ptr<KeyedService>
 SimpleDownloadManagerCoordinatorFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
-  return std::make_unique<download::SimpleDownloadManagerCoordinator>();
+  // Use unretained is safe as the key is associated with the callback.
+  return std::make_unique<download::SimpleDownloadManagerCoordinator>(
+      base::BindRepeating(&DownloadUrlWithDownloadManager,
+                          base::Unretained(key)));
+}
+
+SimpleFactoryKey* SimpleDownloadManagerCoordinatorFactory::GetKeyToUse(
+    SimpleFactoryKey* key) const {
+  return key;
 }

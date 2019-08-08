@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
@@ -84,6 +85,39 @@ class UnitTestPlatformDelegate {
 
  protected:
   ~UnitTestPlatformDelegate() = default;
+};
+
+// This default implementation uses gtest_util to get all
+// compiled gtests into the binary.
+// The delegate will relaunch test in parallel,
+// but only use single test per launch.
+class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
+ public:
+  DefaultUnitTestPlatformDelegate();
+
+ private:
+  // UnitTestPlatformDelegate:
+
+  bool GetTests(std::vector<TestIdentifier>* output) override;
+
+  bool CreateResultsFile(base::FilePath* path) override;
+
+  bool CreateTemporaryFile(base::FilePath* path) override;
+
+  CommandLine GetCommandLineForChildGTestProcess(
+      const std::vector<std::string>& test_names,
+      const base::FilePath& output_file,
+      const base::FilePath& flag_file) override;
+
+  std::string GetWrapperForChildGTestProcess() override;
+
+  void RelaunchTests(TestLauncher* test_launcher,
+                     const std::vector<std::string>& test_names,
+                     int launch_flags) override;
+
+  ScopedTempDir temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
 };
 
 // Runs tests serially, each in its own process.

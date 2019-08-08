@@ -11,12 +11,13 @@
       CLEAR FORM
     </message>
   </if>
-  <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card." formatter_data="android_java">
-    Clear copy
-  </message>
-  <message name="IDS_AUTOFILL_WARNING_PAYMENT_DISABLED" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection. This warning text is shown below a separate warning indicating that the form is not secure, so this message indicates just that payment autofilling has been disabled (not why).">
-    Payment autofilling disabled
-  </message>
+
+  <if expr="is_android or is_ios">
+    <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card." formatter_data="android_java">
+      Clear copy
+    </message>
+  </if>
+
   <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
     Automatic credit card filling is disabled because this form does not use a secure connection.
   </message>
@@ -178,9 +179,6 @@
     <ph name="EXPIRATION_MONTH">$1<ex>06</ex></ph>/<ph name="EXPIRATION_YEAR">$2<ex>17</ex></ph>
   </message>
 
-  <message name="IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_LABEL_AND_ABBR" desc="Text displayed in the Autofill Credit Card popup before the credit card expiration date and the abbreviated expiration date.">
-    , exp <ph name="EXPIRATION_DATE_ABBR">$1<ex>06/17</ex></ph>
-  </message>
   <message name="IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_NAME" desc="Second line label for the autofill credit card popup when the name is selected. This text will appear below the cardholder name. [CHAR-LIMIT=32]">
     <ph name="CREDIT_CARD">$1<ex>Visa - ****5679</ex></ph>, expires on <ph name="EXPIRATION_DATE_ABBR">$2<ex>06/17</ex></ph>
   </message>
@@ -190,9 +188,6 @@
 
   <message name="IDS_AUTOFILL_LOADING_REGIONS" desc="The string to display in the regions combobox while loading the region data.">
     Loading...
-  </message>
-  <message name="IDS_AUTOFILL_FAILED_LOADING_REGIONS" desc="The string to display in the regions combo box when loading the region data failed.">
-    Failed loading regions data
   </message>
   <message name="IDS_AUTOFILL_SELECT" desc="The string to display in comboboxes when nothing got selected yet.">
     Select
@@ -218,12 +213,6 @@
       </message>
       <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Also used as the title for the Autofill settings page that allows user to manage their list of saved payment methods and Autofill preferences for payment methods. Sentence-Cased." formatter_data="android_java">
         Payment methods
-      </message>
-      <message name="IDS_AUTOFILL_LOCAL_PAYMENT_METHODS" desc="Title for the list of saved local payment methods that can be used to fill in forms. Sentence-Cased.">
-        On this device
-      </message>
-      <message name="IDS_AUTOFILL_SERVER_PAYMENT_METHODS" desc="Title for the list of saved server payment methods that can be used to fill in forms. Sentence-Cased.">
-        In your Google Account
       </message>
       <message name="IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them. Sentence-Cased." formatter_data="android_java">
         Save and fill addresses
@@ -260,6 +249,22 @@
         Payment Methods and Addresses Using Google Pay
       </message>
     </else>
+  </if>
+
+  <!-- Manual filling (keyboard accessory) strings -->
+  <if expr="is_android">
+    <message name="IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE" desc="Title shown at the top of a sheet where users can select indiviual data pieces (e.g., the cardholder name) related to their stored payment methods (e.g., credit cards) to fill that data piece into the focused form field. Sentence-cased.">
+      Payment methods
+    </message>
+    <message name="IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_ALL_ADDRESSES_LINK" desc="The text of the link in the address sheet that opens the address management section.">
+      Manage payment methods
+    </message>
+    <message name="IDS_AUTOFILL_ADDRESS_SHEET_EMPTY_MESSAGE" desc="Message indicating that no addresses are available for filling.">
+      No saved addresses
+    </message>
+    <message name="IDS_AUTOFILL_ADDRESS_SHEET_ALL_ADDRESSES_LINK" desc="The text of the link in the address sheet that opens the address management section.">
+      Manage addresses
+    </message>
   </if>
 
 </grit-part>

@@ -64,29 +64,6 @@ const int64_t kFrameRateAvergingWindowSizeMs = (1000 / 30) * 90;
 
 const size_t kDefaultPayloadSize = 1440;
 
-// Initial limits for BALANCED degradation preference.
-int MinFps(int pixels) {
-  if (pixels <= 320 * 240) {
-    return 7;
-  } else if (pixels <= 480 * 270) {
-    return 10;
-  } else if (pixels <= 640 * 480) {
-    return 15;
-  } else {
-    return std::numeric_limits<int>::max();
-  }
-}
-
-int MaxFps(int pixels) {
-  if (pixels <= 320 * 240) {
-    return 10;
-  } else if (pixels <= 480 * 270) {
-    return 15;
-  } else {
-    return std::numeric_limits<int>::max();
-  }
-}
-
 uint32_t abs_diff(uint32_t a, uint32_t b) {
   return (a < b) ? b - a : a - b;
 }
@@ -513,14 +490,18 @@ VideoStreamEncoder::VideoStreamEncoder(
       input_framerate_(kFrameRateAvergingWindowSizeMs, 1000),
       pending_frame_drops_(0),
       next_frame_types_(1, VideoFrameType::kVideoFrameDelta),
-      frame_encoder_timer_(this),
+      frame_encode_metadata_writer_(this),
       experiment_groups_(GetExperimentGroups()),
+      next_frame_id_(0),
       encoder_queue_(task_queue_factory->CreateTaskQueue(
           "EncoderQueue",
           TaskQueueFactory::Priority::NORMAL)) {
   RTC_DCHECK(encoder_stats_observer);
   RTC_DCHECK(overuse_detector_);
   RTC_DCHECK_GE(number_of_cores, 1);
+
+  for (auto& state : encoder_buffer_state_)
+    state.fill(std::numeric_limits<int64_t>::max());
 }
 
 VideoStreamEncoder::~VideoStreamEncoder() {
@@ -730,9 +711,7 @@ void VideoStreamEncoder::ReconfigureEncoder() {
   }
 
   // Reset (release existing encoder) if one exists and anything except
-  // start bitrate or max framerate has changed. Don't call Release() if
-  // |pending_encoder_creation_| as that means this is a new encoder
-  // that has not yet been initialized.
+  // start bitrate or max framerate has changed.
   const bool reset_required = RequiresEncoderReset(codec, send_codec_);
   send_codec_ = codec;
 
@@ -766,10 +745,11 @@ void VideoStreamEncoder::ReconfigureEncoder() {
     } else {
       encoder_initialized_ = true;
       encoder_->RegisterEncodeCompleteCallback(this);
-      frame_encoder_timer_.OnEncoderInit(send_codec_, HasInternalSource());
+      frame_encode_metadata_writer_.OnEncoderInit(send_codec_,
+                                                  HasInternalSource());
     }
 
-    frame_encoder_timer_.Reset();
+    frame_encode_metadata_writer_.Reset();
     last_encode_info_ms_ = absl::nullopt;
   }
 
@@ -1095,7 +1075,7 @@ void VideoStreamEncoder::SetEncoderRates(
 
   if (settings_changes) {
     encoder_->SetRates(rate_settings);
-    frame_encoder_timer_.OnSetRates(
+    frame_encode_metadata_writer_.OnSetRates(
         rate_settings.bitrate,
         static_cast<uint32_t>(rate_settings.framerate_fps + 0.5));
   }
@@ -1332,14 +1312,15 @@ void VideoStreamEncoder::EncodeVideoFrame(const VideoFrame& video_frame,
       return;
     }
 
-    // UpdatedRect is reset to full update if it's not empty, because buffer was
-    // converted, therefore we can't guarantee that pixels outside of UpdateRect
-    // didn't change comparing to the previous frame.
-    VideoFrame::UpdateRect update_rect =
-        out_frame.update_rect().IsEmpty()
-            ? out_frame.update_rect()
-            : VideoFrame::UpdateRect{0, 0, out_frame.width(),
-                                     out_frame.height()};
+    VideoFrame::UpdateRect update_rect = out_frame.update_rect();
+    if (!update_rect.IsEmpty() &&
+        out_frame.video_frame_buffer()->GetI420() == nullptr) {
+      // UpdatedRect is reset to full update if it's not empty, and buffer was
+      // converted, therefore we can't guarantee that pixels outside of
+      // UpdateRect didn't change comparing to the previous frame.
+      update_rect =
+          VideoFrame::UpdateRect{0, 0, out_frame.width(), out_frame.height()};
+    }
 
     out_frame = VideoFrame::Builder()
                     .set_video_frame_buffer(converted_buffer)
@@ -1354,8 +1335,7 @@ void VideoStreamEncoder::EncodeVideoFrame(const VideoFrame& video_frame,
   TRACE_EVENT1("webrtc", "VCMGenericEncoder::Encode", "timestamp",
                out_frame.timestamp());
 
-  frame_encoder_timer_.OnEncodeStarted(out_frame.timestamp(),
-                                       out_frame.render_time_ms());
+  frame_encode_metadata_writer_.OnEncodeStarted(out_frame);
 
   const int32_t encode_status = encoder_->Encode(out_frame, &next_frame_types_);
 
@@ -1378,7 +1358,11 @@ void VideoStreamEncoder::SendKeyFrame() {
   RTC_DCHECK_RUN_ON(&encoder_queue_);
   TRACE_EVENT0("webrtc", "OnKeyFrameRequest");
   RTC_DCHECK(!next_frame_types_.empty());
-  next_frame_types_[0] = VideoFrameType::kVideoFrameKey;
+
+  // TODO(webrtc:10615): Map keyframe request to spatial layer.
+  std::fill(next_frame_types_.begin(), next_frame_types_.end(),
+            VideoFrameType::kVideoFrameKey);
+
   if (HasInternalSource()) {
     // Try to request the frame if we have an external encoder with
     // internal source since AddVideoFrame never will be called.
@@ -1397,7 +1381,8 @@ void VideoStreamEncoder::SendKeyFrame() {
                              .build(),
                          &next_frame_types_) == WEBRTC_VIDEO_CODEC_OK) {
       // Try to remove just-performed keyframe request, if stream still exists.
-      next_frame_types_[0] = VideoFrameType::kVideoFrameDelta;
+      std::fill(next_frame_types_.begin(), next_frame_types_.end(),
+                VideoFrameType::kVideoFrameDelta);
     }
   }
 }
@@ -1425,9 +1410,11 @@ EncodedImageCallback::Result VideoStreamEncoder::OnEncodedImage(
   const size_t spatial_idx = encoded_image.SpatialIndex().value_or(0);
   EncodedImage image_copy(encoded_image);
 
-  frame_encoder_timer_.FillTimingInfo(
-      spatial_idx, &image_copy,
-      rtc::TimeMicros() / rtc::kNumMicrosecsPerMillisec);
+  frame_encode_metadata_writer_.FillTimingInfo(spatial_idx, &image_copy);
+
+  std::unique_ptr<RTPFragmentationHeader> fragmentation_copy =
+      frame_encode_metadata_writer_.UpdateBitstream(codec_specific_info,
+                                                    fragmentation, &image_copy);
 
   // Piggyback ALR experiment group id and simulcast id into the content type.
   const uint8_t experiment_id =
@@ -1450,8 +1437,61 @@ EncodedImageCallback::Result VideoStreamEncoder::OnEncodedImage(
   // running in parallel on different threads.
   encoder_stats_observer_->OnSendEncodedImage(image_copy, codec_specific_info);
 
-  EncodedImageCallback::Result result =
-      sink_->OnEncodedImage(image_copy, codec_specific_info, fragmentation);
+  // The simulcast id is signaled in the SpatialIndex. This makes it impossible
+  // to do simulcast for codecs that actually support spatial layers since we
+  // can't distinguish between an actual spatial layer and a simulcast stream.
+  // TODO(bugs.webrtc.org/10520): Signal the simulcast id explicitly.
+  int simulcast_id = 0;
+  if (codec_specific_info &&
+      (codec_specific_info->codecType == kVideoCodecVP8 ||
+       codec_specific_info->codecType == kVideoCodecH264 ||
+       codec_specific_info->codecType == kVideoCodecGeneric)) {
+    simulcast_id = encoded_image.SpatialIndex().value_or(0);
+  }
+
+  std::unique_ptr<CodecSpecificInfo> codec_info_copy;
+  {
+    rtc::CritScope cs(&encoded_image_lock_);
+
+    if (codec_specific_info && codec_specific_info->generic_frame_info) {
+      codec_info_copy =
+          absl::make_unique<CodecSpecificInfo>(*codec_specific_info);
+      GenericFrameInfo& generic_info = *codec_info_copy->generic_frame_info;
+      generic_info.frame_id = next_frame_id_++;
+
+      if (encoder_buffer_state_.size() <= static_cast<size_t>(simulcast_id)) {
+        RTC_LOG(LS_ERROR) << "At most " << encoder_buffer_state_.size()
+                          << " simulcast streams supported.";
+      } else {
+        std::array<int64_t, kMaxEncoderBuffers>& state =
+            encoder_buffer_state_[simulcast_id];
+        for (const CodecBufferUsage& buffer : generic_info.encoder_buffers) {
+          if (state.size() <= static_cast<size_t>(buffer.id)) {
+            RTC_LOG(LS_ERROR)
+                << "At most " << state.size() << " encoder buffers supported.";
+            break;
+          }
+
+          if (buffer.referenced) {
+            int64_t diff = generic_info.frame_id - state[buffer.id];
+            if (diff <= 0) {
+              RTC_LOG(LS_ERROR) << "Invalid frame diff: " << diff << ".";
+            } else if (absl::c_find(generic_info.frame_diffs, diff) ==
+                       generic_info.frame_diffs.end()) {
+              generic_info.frame_diffs.push_back(diff);
+            }
+          }
+
+          if (buffer.updated)
+            state[buffer.id] = generic_info.frame_id;
+        }
+      }
+    }
+  }
+
+  EncodedImageCallback::Result result = sink_->OnEncodedImage(
+      image_copy, codec_info_copy ? codec_info_copy.get() : codec_specific_info,
+      fragmentation_copy ? fragmentation_copy.get() : fragmentation);
 
   // We are only interested in propagating the meta-data about the image, not
   // encoded data itself, to the post encode function. Since we cannot be sure
@@ -1633,7 +1673,7 @@ void VideoStreamEncoder::AdaptDown(AdaptReason reason) {
   switch (degradation_preference_) {
     case DegradationPreference::BALANCED: {
       // Try scale down framerate, if lower.
-      int fps = MinFps(last_frame_info_->pixel_count());
+      int fps = balanced_settings_.MinFps(last_frame_info_->pixel_count());
       if (source_proxy_->RestrictFramerate(fps)) {
         GetAdaptCounter().IncrementFramerate(reason);
         break;
@@ -1709,7 +1749,7 @@ void VideoStreamEncoder::AdaptUp(AdaptReason reason) {
   switch (degradation_preference_) {
     case DegradationPreference::BALANCED: {
       // Try scale up framerate, if higher.
-      int fps = MaxFps(last_frame_info_->pixel_count());
+      int fps = balanced_settings_.MaxFps(last_frame_info_->pixel_count());
       if (source_proxy_->IncreaseFramerate(fps)) {
         GetAdaptCounter().DecrementFramerate(reason, fps);
         // Reset framerate in case of fewer fps steps down than up.

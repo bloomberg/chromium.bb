@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/xml/xpath_predicate.h"  // Number, StringExpression
 #include "third_party/blink/renderer/core/xml/xpath_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"  // HeapVector, Member, etc.
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #include <cmath>
@@ -23,7 +24,8 @@ class XPathContext {
   STACK_ALLOCATED();
 
  public:
-  XPathContext() : document_(Document::CreateForTest()), context_(*document_) {}
+  XPathContext()
+      : document_(MakeGarbageCollected<Document>()), context_(*document_) {}
 
   xpath::EvaluationContext& Context() { return context_; }
   Document& GetDocument() { return *document_; }

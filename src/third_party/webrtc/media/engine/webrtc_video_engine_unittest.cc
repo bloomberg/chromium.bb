@@ -10,12 +10,14 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/match.h"
+#include "api/media_transport_config.h"
 #include "api/rtp_parameters.h"
 #include "api/test/fake_media_transport.h"
 #include "api/test/mock_video_bitrate_allocator.h"
@@ -89,7 +91,11 @@ cricket::VideoCodec RemoveFeedbackParams(cricket::VideoCodec&& codec) {
   return std::move(codec);
 }
 
-void VerifyCodecHasDefaultFeedbackParams(const cricket::VideoCodec& codec) {
+void VerifyCodecHasDefaultFeedbackParams(const cricket::VideoCodec& codec,
+                                         bool lntf_expected) {
+  EXPECT_EQ(lntf_expected,
+            codec.HasFeedbackParam(cricket::FeedbackParam(
+                cricket::kRtcpFbParamLntf, cricket::kParamValueEmpty)));
   EXPECT_TRUE(codec.HasFeedbackParam(cricket::FeedbackParam(
       cricket::kRtcpFbParamNack, cricket::kParamValueEmpty)));
   EXPECT_TRUE(codec.HasFeedbackParam(cricket::FeedbackParam(
@@ -212,8 +218,12 @@ namespace cricket {
 class WebRtcVideoEngineTest : public ::testing::Test {
  public:
   WebRtcVideoEngineTest() : WebRtcVideoEngineTest("") {}
-  explicit WebRtcVideoEngineTest(const char* field_trials)
-      : override_field_trials_(field_trials),
+  explicit WebRtcVideoEngineTest(const std::string& field_trials)
+      : override_field_trials_(
+            field_trials.empty()
+                ? nullptr
+                : absl::make_unique<webrtc::test::ScopedFieldTrials>(
+                      field_trials)),
         call_(webrtc::Call::Create(webrtc::Call::Config(&event_log_))),
         encoder_factory_(new cricket::FakeWebRtcVideoEncoderFactory),
         decoder_factory_(new cricket::FakeWebRtcVideoDecoderFactory),
@@ -250,7 +260,7 @@ class WebRtcVideoEngineTest : public ::testing::Test {
   // Has to be the first one, so it is initialized before the call or there is a
   // race condition in the clock access.
   rtc::ScopedFakeClock fake_clock_;
-  webrtc::test::ScopedFieldTrials override_field_trials_;
+  std::unique_ptr<webrtc::test::ScopedFieldTrials> override_field_trials_;
   webrtc::RtcEventLogNullImpl event_log_;
   // Used in WebRtcVideoEngineVoiceTest, but defined here so it's properly
   // initialized when the constructor is called.
@@ -865,7 +875,8 @@ TEST_F(WebRtcVideoEngineTest,
 }
 
 TEST_F(WebRtcVideoEngineTest, SimulcastEnabledForH264BehindFieldTrial) {
-  webrtc::test::ScopedFieldTrials override_field_trials_(
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-H264Simulcast/Enabled/");
   encoder_factory_->AddSupportedVideoCodecType("H264");
 
@@ -910,7 +921,8 @@ TEST_F(WebRtcVideoEngineTest,
   EXPECT_THAT(engine_.codecs(), Not(Contains(flexfec)));
 
   // FlexFEC is active with field trial.
-  webrtc::test::ScopedFieldTrials override_field_trials_(
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-FlexFEC-03-Advertised/Enabled/");
   EXPECT_THAT(engine_.codecs(), Contains(flexfec));
 }
@@ -1096,7 +1108,8 @@ TEST(WebRtcVideoEngineNewVideoCodecFactoryTest, Vp8) {
       cricket::kCodecParamAssociatedPayloadType, &associated_payload_type));
   EXPECT_EQ(engine_codecs.at(0).id, associated_payload_type);
   // Verify default parameters has been added to the VP8 codec.
-  VerifyCodecHasDefaultFeedbackParams(engine_codecs.at(0));
+  VerifyCodecHasDefaultFeedbackParams(engine_codecs.at(0),
+                                      /*lntf_expected=*/false);
 
   // Mock encoder creation. |engine| take ownership of the encoder.
   webrtc::VideoEncoderFactory::CodecInfo codec_info;
@@ -1292,7 +1305,7 @@ class WebRtcVideoChannelBaseTest : public ::testing::Test {
     channel_->OnReadyToSend(true);
     EXPECT_TRUE(channel_.get() != NULL);
     network_interface_.SetDestination(channel_.get());
-    channel_->SetInterface(&network_interface_, /*media_transport=*/nullptr);
+    channel_->SetInterface(&network_interface_, webrtc::MediaTransportConfig());
     cricket::VideoRecvParameters parameters;
     parameters.codecs = engine_.codecs();
     channel_->SetRecvParameters(parameters);
@@ -2254,6 +2267,26 @@ class WebRtcVideoChannelTest : public WebRtcVideoEngineTest {
     EXPECT_EQ(ext_uri, recv_stream->GetConfig().rtp.extensions[0].uri);
   }
 
+  void TestLossNotificationState(bool expect_lntf_enabled) {
+    AssignDefaultCodec();
+    VerifyCodecHasDefaultFeedbackParams(default_codec_, expect_lntf_enabled);
+
+    cricket::VideoSendParameters parameters;
+    parameters.codecs = engine_.codecs();
+    EXPECT_TRUE(channel_->SetSendParameters(parameters));
+    EXPECT_TRUE(channel_->SetSend(true));
+
+    // Send side.
+    FakeVideoSendStream* send_stream =
+        AddSendStream(cricket::StreamParams::CreateLegacy(1));
+    EXPECT_EQ(send_stream->GetConfig().rtp.lntf.enabled, expect_lntf_enabled);
+
+    // Receiver side.
+    FakeVideoReceiveStream* recv_stream =
+        AddRecvStream(cricket::StreamParams::CreateLegacy(1));
+    EXPECT_EQ(recv_stream->GetConfig().rtp.lntf.enabled, expect_lntf_enabled);
+  }
+
   void TestExtensionFilter(const std::vector<std::string>& extensions,
                            const std::string& expected_extension) {
     cricket::VideoSendParameters parameters = send_parameters_;
@@ -2726,9 +2759,64 @@ TEST_F(WebRtcVideoChannelTest, TransportCcCanBeEnabledAndDisabled) {
   EXPECT_TRUE(stream->GetConfig().rtp.transport_cc);
 }
 
+TEST_F(WebRtcVideoChannelTest, LossNotificationIsDisabledByDefault) {
+  TestLossNotificationState(false);
+}
+
+TEST_F(WebRtcVideoChannelTest, LossNotificationIsEnabledByFieldTrial) {
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
+      "WebRTC-RtcpLossNotification/Enabled/");
+  SetUp();
+  TestLossNotificationState(true);
+}
+
+TEST_F(WebRtcVideoChannelTest, LossNotificationCanBeEnabledAndDisabled) {
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
+      "WebRTC-RtcpLossNotification/Enabled/");
+  SetUp();
+
+  AssignDefaultCodec();
+  VerifyCodecHasDefaultFeedbackParams(default_codec_, true);
+
+  {
+    cricket::VideoSendParameters parameters;
+    parameters.codecs = engine_.codecs();
+    EXPECT_TRUE(channel_->SetSendParameters(parameters));
+    EXPECT_TRUE(channel_->SetSend(true));
+  }
+
+  // Start with LNTF enabled.
+  FakeVideoSendStream* send_stream =
+      AddSendStream(cricket::StreamParams::CreateLegacy(1));
+  ASSERT_TRUE(send_stream->GetConfig().rtp.lntf.enabled);
+  FakeVideoReceiveStream* recv_stream =
+      AddRecvStream(cricket::StreamParams::CreateLegacy(1));
+  ASSERT_TRUE(recv_stream->GetConfig().rtp.lntf.enabled);
+
+  // Verify that LNTF is turned off when send(!) codecs without LNTF are set.
+  cricket::VideoSendParameters parameters;
+  parameters.codecs.push_back(RemoveFeedbackParams(GetEngineCodec("VP8")));
+  EXPECT_TRUE(parameters.codecs[0].feedback_params.params().empty());
+  EXPECT_TRUE(channel_->SetSendParameters(parameters));
+  recv_stream = fake_call_->GetVideoReceiveStreams()[0];
+  EXPECT_FALSE(recv_stream->GetConfig().rtp.lntf.enabled);
+  send_stream = fake_call_->GetVideoSendStreams()[0];
+  EXPECT_FALSE(send_stream->GetConfig().rtp.lntf.enabled);
+
+  // Setting the default codecs again, including VP8, turns LNTF back on.
+  parameters.codecs = engine_.codecs();
+  EXPECT_TRUE(channel_->SetSendParameters(parameters));
+  recv_stream = fake_call_->GetVideoReceiveStreams()[0];
+  EXPECT_TRUE(recv_stream->GetConfig().rtp.lntf.enabled);
+  send_stream = fake_call_->GetVideoSendStreams()[0];
+  EXPECT_TRUE(send_stream->GetConfig().rtp.lntf.enabled);
+}
+
 TEST_F(WebRtcVideoChannelTest, NackIsEnabledByDefault) {
   AssignDefaultCodec();
-  VerifyCodecHasDefaultFeedbackParams(default_codec_);
+  VerifyCodecHasDefaultFeedbackParams(default_codec_, false);
 
   cricket::VideoSendParameters parameters;
   parameters.codecs = engine_.codecs();
@@ -3215,7 +3303,7 @@ class Vp9SettingsTestWithFieldTrial
       : Vp9SettingsTest(::testing::get<0>(GetParam())),
         num_spatial_layers_(::testing::get<1>(GetParam())),
         num_temporal_layers_(::testing::get<2>(GetParam())),
-        inter_layer_pred_(::testing::get<3>(GetParam())) {}
+        inter_layer_pred_mode_(::testing::get<3>(GetParam())) {}
 
   void VerifySettings(int num_spatial_layers,
                       int num_temporal_layers,
@@ -3236,18 +3324,19 @@ class Vp9SettingsTestWithFieldTrial
     ASSERT_TRUE(stream->GetVp9Settings(&vp9_settings)) << "No VP9 config set.";
     EXPECT_EQ(num_spatial_layers, vp9_settings.numberOfSpatialLayers);
     EXPECT_EQ(num_temporal_layers, vp9_settings.numberOfTemporalLayers);
-    EXPECT_EQ(inter_layer_pred_, vp9_settings.interLayerPred);
+    EXPECT_EQ(inter_layer_pred_mode_, vp9_settings.interLayerPred);
 
     EXPECT_TRUE(channel_->SetVideoSend(last_ssrc_, nullptr, nullptr));
   }
 
   const uint8_t num_spatial_layers_;
   const uint8_t num_temporal_layers_;
-  const webrtc::InterLayerPredMode inter_layer_pred_;
+  const webrtc::InterLayerPredMode inter_layer_pred_mode_;
 };
 
 TEST_P(Vp9SettingsTestWithFieldTrial, VerifyCodecSettings) {
-  VerifySettings(num_spatial_layers_, num_temporal_layers_, inter_layer_pred_);
+  VerifySettings(num_spatial_layers_, num_temporal_layers_,
+                 inter_layer_pred_mode_);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -3263,18 +3352,29 @@ INSTANTIATE_TEST_SUITE_P(
                         2,
                         3,
                         webrtc::InterLayerPredMode::kOnKeyPic),
-        std::make_tuple("WebRTC-Vp9InterLayerPred/0/",
+        std::make_tuple("WebRTC-Vp9InterLayerPred/Default/",
                         1,
                         1,
-                        webrtc::InterLayerPredMode::kOff),
-        std::make_tuple("WebRTC-Vp9InterLayerPred/1/",
+                        webrtc::InterLayerPredMode::kOnKeyPic),
+        std::make_tuple("WebRTC-Vp9InterLayerPred/Disabled/",
                         1,
                         1,
-                        webrtc::InterLayerPredMode::kOn),
-        std::make_tuple("WebRTC-Vp9InterLayerPred/2/",
-                        1,
-                        1,
-                        webrtc::InterLayerPredMode::kOnKeyPic)));
+                        webrtc::InterLayerPredMode::kOnKeyPic),
+        std::make_tuple(
+            "WebRTC-Vp9InterLayerPred/Enabled,inter_layer_pred_mode:off/",
+            1,
+            1,
+            webrtc::InterLayerPredMode::kOff),
+        std::make_tuple(
+            "WebRTC-Vp9InterLayerPred/Enabled,inter_layer_pred_mode:on/",
+            1,
+            1,
+            webrtc::InterLayerPredMode::kOn),
+        std::make_tuple(
+            "WebRTC-Vp9InterLayerPred/Enabled,inter_layer_pred_mode:onkeypic/",
+            1,
+            1,
+            webrtc::InterLayerPredMode::kOnKeyPic)));
 
 TEST_F(WebRtcVideoChannelTest, VerifyMinBitrate) {
   std::vector<webrtc::VideoStream> streams = AddSendStream()->GetVideoStreams();
@@ -3283,7 +3383,8 @@ TEST_F(WebRtcVideoChannelTest, VerifyMinBitrate) {
 }
 
 TEST_F(WebRtcVideoChannelTest, VerifyMinBitrateWithForcedFallbackFieldTrial) {
-  webrtc::test::ScopedFieldTrials override_field_trials_(
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-VP8-Forced-Fallback-Encoder-v2/Enabled-1,2,34567/");
   std::vector<webrtc::VideoStream> streams = AddSendStream()->GetVideoStreams();
   ASSERT_EQ(1u, streams.size());
@@ -3292,7 +3393,8 @@ TEST_F(WebRtcVideoChannelTest, VerifyMinBitrateWithForcedFallbackFieldTrial) {
 
 TEST_F(WebRtcVideoChannelTest,
        BalancedDegradationPreferenceNotSupportedWithoutFieldtrial) {
-  webrtc::test::ScopedFieldTrials override_field_trials_(
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-Video-BalancedDegradation/Disabled/");
   const bool kResolutionScalingEnabled = true;
   const bool kFpsScalingEnabled = false;
@@ -3301,7 +3403,8 @@ TEST_F(WebRtcVideoChannelTest,
 
 TEST_F(WebRtcVideoChannelTest,
        BalancedDegradationPreferenceSupportedBehindFieldtrial) {
-  webrtc::test::ScopedFieldTrials override_field_trials_(
+  RTC_DCHECK(!override_field_trials_);
+  override_field_trials_ = absl::make_unique<webrtc::test::ScopedFieldTrials>(
       "WebRTC-Video-BalancedDegradation/Enabled/");
   const bool kResolutionScalingEnabled = true;
   const bool kFpsScalingEnabled = true;
@@ -4005,7 +4108,8 @@ TEST_F(WebRtcVideoChannelTest,
   webrtc::FakeMediaTransport fake_media_transport(settings);
   std::unique_ptr<cricket::FakeNetworkInterface> network_interface(
       new cricket::FakeNetworkInterface);
-  channel_->SetInterface(network_interface.get(), &fake_media_transport);
+  channel_->SetInterface(network_interface.get(),
+                         webrtc::MediaTransportConfig(&fake_media_transport));
 
   send_parameters_.codecs[0].params[kCodecParamMinBitrate] = "100";
   send_parameters_.codecs[0].params[kCodecParamStartBitrate] = "200";
@@ -4612,7 +4716,8 @@ TEST_F(WebRtcVideoChannelTest, TestSetDscpOptions) {
       static_cast<cricket::WebRtcVideoChannel*>(engine_.CreateMediaChannel(
           call_.get(), config, VideoOptions(), webrtc::CryptoOptions(),
           video_bitrate_allocator_factory_.get())));
-  channel->SetInterface(network_interface.get(), /*media_transport=*/nullptr);
+  channel->SetInterface(network_interface.get(),
+                        webrtc::MediaTransportConfig());
   // Default value when DSCP is disabled should be DSCP_DEFAULT.
   EXPECT_EQ(rtc::DSCP_DEFAULT, network_interface->dscp());
 
@@ -4623,7 +4728,8 @@ TEST_F(WebRtcVideoChannelTest, TestSetDscpOptions) {
       static_cast<cricket::WebRtcVideoChannel*>(engine_.CreateMediaChannel(
           call_.get(), config, VideoOptions(), webrtc::CryptoOptions(),
           video_bitrate_allocator_factory_.get())));
-  channel->SetInterface(network_interface.get(), /*media_transport=*/nullptr);
+  channel->SetInterface(network_interface.get(),
+                        webrtc::MediaTransportConfig());
   EXPECT_EQ(rtc::DSCP_DEFAULT, network_interface->dscp());
 
   // Create a send stream to configure
@@ -4657,7 +4763,8 @@ TEST_F(WebRtcVideoChannelTest, TestSetDscpOptions) {
       static_cast<cricket::WebRtcVideoChannel*>(engine_.CreateMediaChannel(
           call_.get(), config, VideoOptions(), webrtc::CryptoOptions(),
           video_bitrate_allocator_factory_.get())));
-  channel->SetInterface(network_interface.get(), /*media_transport=*/nullptr);
+  channel->SetInterface(network_interface.get(),
+                        webrtc::MediaTransportConfig());
   EXPECT_EQ(rtc::DSCP_DEFAULT, network_interface->dscp());
 }
 
@@ -4893,6 +5000,8 @@ TEST_F(WebRtcVideoChannelTest, GetStatsTranslatesDecodeStatsCorrectly) {
   stats.current_delay_ms = 4;
   stats.target_delay_ms = 5;
   stats.jitter_buffer_ms = 6;
+  stats.jitter_buffer_delay_seconds = 60;
+  stats.jitter_buffer_emitted_count = 6;
   stats.min_playout_delay_ms = 7;
   stats.render_delay_ms = 8;
   stats.width = 9;
@@ -4913,6 +5022,10 @@ TEST_F(WebRtcVideoChannelTest, GetStatsTranslatesDecodeStatsCorrectly) {
   EXPECT_EQ(stats.current_delay_ms, info.receivers[0].current_delay_ms);
   EXPECT_EQ(stats.target_delay_ms, info.receivers[0].target_delay_ms);
   EXPECT_EQ(stats.jitter_buffer_ms, info.receivers[0].jitter_buffer_ms);
+  EXPECT_EQ(stats.jitter_buffer_delay_seconds,
+            info.receivers[0].jitter_buffer_delay_seconds);
+  EXPECT_EQ(stats.jitter_buffer_emitted_count,
+            info.receivers[0].jitter_buffer_emitted_count);
   EXPECT_EQ(stats.min_playout_delay_ms, info.receivers[0].min_playout_delay_ms);
   EXPECT_EQ(stats.render_delay_ms, info.receivers[0].render_delay_ms);
   EXPECT_EQ(stats.width, info.receivers[0].frame_width);

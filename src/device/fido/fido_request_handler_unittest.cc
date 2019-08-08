@@ -55,8 +55,10 @@ enum class FakeTaskResponse : uint8_t {
 // DispatchRequest().
 class EmptyRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
-  EmptyRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols)
+  EmptyRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
+                      test::FakeFidoDiscoveryFactory* fake_discovery_factory)
       : FidoRequestHandler(nullptr /* connector */,
+                           fake_discovery_factory,
                            protocols,
                            CompletionCallback()) {
     Start();
@@ -205,21 +207,27 @@ class FakeFidoTask : public FidoTask {
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
   FakeFidoRequestHandler(service_manager::Connector* connector,
+                         test::FakeFidoDiscoveryFactory* fake_discovery_factory,
                          const base::flat_set<FidoTransportProtocol>& protocols,
                          CompletionCallback callback)
-      : FidoRequestHandler(connector, protocols, std::move(callback)),
+      : FidoRequestHandler(connector,
+                           fake_discovery_factory,
+                           protocols,
+                           std::move(callback)),
         weak_factory_(this) {
     Start();
   }
-  FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
+  FakeFidoRequestHandler(test::FakeFidoDiscoveryFactory* fake_discovery_factory,
+                         const base::flat_set<FidoTransportProtocol>& protocols,
                          CompletionCallback callback)
       : FakeFidoRequestHandler(nullptr /* connector */,
+                               fake_discovery_factory,
                                protocols,
                                std::move(callback)) {}
   ~FakeFidoRequestHandler() override = default;
 
   void DispatchRequest(FidoAuthenticator* authenticator) override {
-    // FidoRequestHandlerTest uses ScopedFakeDiscovery to inject mock devices
+    // FidoRequestHandlerTest uses FakeDiscovery to inject mock devices
     // that get wrapped in a FidoDeviceAuthenticator, so we can safely cast
     // here.
     auto* device_authenticator =
@@ -283,13 +291,14 @@ class FidoRequestHandlerTest : public ::testing::Test {
   }
 
   void ForgeNextHidDiscovery() {
-    discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
-    ble_discovery_ = scoped_fake_discovery_factory_.ForgeNextBleDiscovery();
+    discovery_ = fake_discovery_factory_.ForgeNextHidDiscovery();
+    ble_discovery_ = fake_discovery_factory_.ForgeNextBleDiscovery();
   }
 
   std::unique_ptr<FakeFidoRequestHandler> CreateFakeHandler() {
     ForgeNextHidDiscovery();
     auto handler = std::make_unique<FakeFidoRequestHandler>(
+        &fake_discovery_factory_,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice,
              FidoTransportProtocol::kBluetoothLowEnergy}),
@@ -315,7 +324,7 @@ class FidoRequestHandlerTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
-  test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
+  test::FakeFidoDiscoveryFactory fake_discovery_factory_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
@@ -571,6 +580,7 @@ TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
 
   TestObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      &fake_discovery_factory_,
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
   request_handler->set_observer(&observer);
@@ -607,6 +617,7 @@ TEST_F(FidoRequestHandlerTest,
 
   TestObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      &fake_discovery_factory_,
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
   request_handler->set_observer(&observer);
@@ -625,6 +636,7 @@ TEST_F(FidoRequestHandlerTest,
 TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {
   TestObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      &fake_discovery_factory_,
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
   request_handler->set_observer(&observer);
@@ -695,7 +707,8 @@ TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
   TestObserver observer;
   ForgeNextHidDiscovery();
   EmptyRequestHandler request_handler(
-      {FidoTransportProtocol::kUsbHumanInterfaceDevice});
+      {FidoTransportProtocol::kUsbHumanInterfaceDevice},
+      &fake_discovery_factory_);
   request_handler.SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
   request_handler.set_observer(&observer);
   scoped_task_environment_.FastForwardUntilNoTasksRemain();

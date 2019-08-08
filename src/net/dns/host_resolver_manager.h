@@ -14,11 +14,15 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/prioritized_dispatcher.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_cache.h"
@@ -83,9 +87,10 @@ class NET_EXPORT HostResolverManager
       public NetworkChangeNotifier::DNSObserver {
  public:
   using MdnsListener = HostResolver::MdnsListener;
-  using Options = HostResolver::Options;
   using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
+  using DnsClientFactory =
+      base::RepeatingCallback<std::unique_ptr<DnsClient>(NetLog*)>;
 
   class CancellableRequest : public ResolveHostRequest {
    public:
@@ -106,19 +111,22 @@ class NET_EXPORT HostResolverManager
   // outstanding DNS transactions (not counting retransmissions and retries).
   //
   // |net_log| must remain valid for the life of the HostResolverManager.
-  HostResolverManager(const Options& options, NetLog* net_log);
+  //
+  // |dns_client_factory_for_testing| may be used to inject a factory to be used
+  // for ManagerOptions::dns_client_enabled and SetDnsClientEnabled(). If not
+  // set, standard DnsClient::CreateClient() will be used.
+  HostResolverManager(
+      const HostResolver::ManagerOptions& options,
+      NetLog* net_log,
+      DnsClientFactory dns_client_factory_for_testing = base::NullCallback());
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
   // be called.
   ~HostResolverManager() override;
 
-  // Set the DnsClient to be used for resolution. In case of failure, the
-  // HostResolverProc from ProcTaskParams will be queried. If the DnsClient is
-  // not pre-configured with a valid DnsConfig, a new config is fetched from
-  // NetworkChangeNotifier.
-  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
-
+  // If |host_cache| is non-null, its HostCache::Invalidator must have already
+  // been added (via AddHostCacheInvalidator()).
   std::unique_ptr<CancellableRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
@@ -127,33 +135,47 @@ class NET_EXPORT HostResolverManager
       HostCache* host_cache);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
-  void SetDnsClientEnabled(bool enabled);
 
-  HostCache* GetHostCache();
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out,
-                 bool* secure_out) const;
+  // Enables or disables the built-in asynchronous DnsClient. If enabled, by
+  // default (when no |ResolveHostParameters::source| is specified), the
+  // DnsClient will be used for resolves and, in case of failure, resolution
+  // will fallback to the system resolver (HostResolverProc from
+  // ProcTaskParams). If the DnsClient is not pre-configured with a valid
+  // DnsConfig, a new config is fetched from NetworkChangeNotifier.
+  //
+  // Setting to |true| has no effect if |ENABLE_BUILT_IN_DNS| not defined.
+  virtual void SetDnsClientEnabled(bool enabled);
 
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
-  // Returns the number of host cache entries that were restored, or 0 if there
-  // is no cache.
-  size_t LastRestoredCacheSize() const;
-  // Returns the number of entries in the host cache, or 0 if there is no cache.
-  size_t CacheSize() const;
-
-  void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
-  bool GetNoIPv6OnWifi();
-
+  // Sets overriding configuration that will replace or add to configuration
+  // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
 
+  // Support for invalidating HostCaches on changes to network or DNS
+  // configuration. HostCaches should register/deregister invalidators here
+  // rather than attempting to listen for relevant network change signals
+  // themselves because HostResolverManager needs to coordinate invalidations
+  // with in-progress resolves and because some invalidations are triggered by
+  // changes to manager properties/configuration rather than pure network
+  // changes.
+  //
+  // Note: Invalidation handling must not call back into HostResolverManager as
+  // the invalidation is expected to be handled atomically with other clearing
+  // and aborting actions.
+  void AddHostCacheInvalidator(HostCache::Invalidator* invalidator);
+  void RemoveHostCacheInvalidator(const HostCache::Invalidator* invalidator);
+
+  // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
+  // DNS over HTTPS is not enabled.
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const;
 
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
   }
+
+  void InvalidateCachesForTesting() { InvalidateCaches(); }
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
@@ -167,6 +189,10 @@ class NET_EXPORT HostResolverManager
 
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
 
+  // Similar to SetDnsClientEnabled(true) except allows setting |dns_client|
+  // as the instance to be used.
+  void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
+
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
   // slots.
@@ -175,6 +201,8 @@ class NET_EXPORT HostResolverManager
   }
 
   size_t num_jobs_for_testing() const { return jobs_.size(); }
+
+  bool check_ipv6_on_wifi_for_testing() const { return check_ipv6_on_wifi_; }
 
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
@@ -240,6 +268,7 @@ class NET_EXPORT HostResolverManager
       HostResolverFlags flags,
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
+      HostCache* cache,
       DnsQueryType* out_effective_query_type,
       HostResolverFlags* out_effective_host_resolver_flags,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
@@ -264,6 +293,7 @@ class NET_EXPORT HostResolverManager
   //
   // If |allow_stale| is true, then stale cache entries can be returned.
   base::Optional<HostCache::Entry> ServeFromCache(
+      HostCache* cache,
       const HostCache::Key& key,
       bool allow_stale,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
@@ -304,7 +334,8 @@ class NET_EXPORT HostResolverManager
   virtual void RunLoopbackProbeJob();
 
   // Records the result in cache if cache is present.
-  void CacheResult(const HostCache::Key& key,
+  void CacheResult(HostCache* cache,
+                   const HostCache::Key& key,
                    const HostCache::Entry& entry,
                    base::TimeDelta ttl);
 
@@ -319,6 +350,8 @@ class NET_EXPORT HostResolverManager
   // Aborts all in progress jobs with ERR_NETWORK_CHANGED and notifies their
   // requests. Might start new jobs.
   void AbortAllInProgressJobs();
+
+  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 
   // Aborts all in progress DnsTasks. In-progress jobs will fall back to
   // ProcTasks if able and otherwise abort with |error|. Might start new jobs,
@@ -362,9 +395,7 @@ class NET_EXPORT HostResolverManager
   // is the current DNS config and is only used if !HaveDnsConfig().
   void UpdateModeForHistogram(const DnsConfig& dns_config);
 
-  // Cache of host resolution results.
-  // TODO(crbug.com/934402): Remove the manager-wide HostCache.
-  std::unique_ptr<HostCache> cache_;
+  void InvalidateCaches();
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().
@@ -385,6 +416,9 @@ class NET_EXPORT HostResolverManager
 
   NetLog* net_log_;
 
+  // If set, used for construction of DnsClients for SetDnsClientEnabled().
+  const DnsClientFactory dns_client_factory_for_testing_;
+
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;
 
@@ -404,9 +438,9 @@ class NET_EXPORT HostResolverManager
   // Number of consecutive failures of DnsTask, counted when fallback succeeds.
   unsigned num_dns_failures_;
 
-  // True if IPv6 should not be attempted when on a WiFi connection. See
-  // https://crbug.com/696569 for further context.
-  bool assume_ipv6_failure_on_wifi_;
+  // False if IPv6 should not be attempted and assumed unreachable when on a
+  // WiFi connection. See https://crbug.com/696569 for further context.
+  bool check_ipv6_on_wifi_;
 
   // True if DnsConfigService detected that system configuration depends on
   // local IPv6 connectivity. Disables probing.
@@ -436,6 +470,13 @@ class NET_EXPORT HostResolverManager
 
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;
+
+  // For HostCache invalidation notifications.
+  base::ObserverList<HostCache::Invalidator,
+                     true /* check_empty */,
+                     false /* allow_reentrancy */>
+      host_cache_invalidators_;
+  bool invalidation_in_progress_;
 
   THREAD_CHECKER(thread_checker_);
 

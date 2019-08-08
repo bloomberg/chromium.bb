@@ -33,8 +33,6 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -53,6 +51,8 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -87,14 +87,16 @@ const char kBlacklistURL[] =
 const char kBlacklistFilename[] = "su-blacklist.bin";
 
 const char* const kCustodianInfoPrefs[] = {
-  prefs::kSupervisedUserCustodianName,
-  prefs::kSupervisedUserCustodianEmail,
-  prefs::kSupervisedUserCustodianProfileImageURL,
-  prefs::kSupervisedUserCustodianProfileURL,
-  prefs::kSupervisedUserSecondCustodianName,
-  prefs::kSupervisedUserSecondCustodianEmail,
-  prefs::kSupervisedUserSecondCustodianProfileImageURL,
-  prefs::kSupervisedUserSecondCustodianProfileURL,
+    prefs::kSupervisedUserCustodianName,
+    prefs::kSupervisedUserCustodianEmail,
+    prefs::kSupervisedUserCustodianObfuscatedGaiaId,
+    prefs::kSupervisedUserCustodianProfileImageURL,
+    prefs::kSupervisedUserCustodianProfileURL,
+    prefs::kSupervisedUserSecondCustodianName,
+    prefs::kSupervisedUserSecondCustodianEmail,
+    prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
+    prefs::kSupervisedUserSecondCustodianProfileImageURL,
+    prefs::kSupervisedUserSecondCustodianProfileURL,
 };
 
 void CreateURLAccessRequest(const GURL& url,
@@ -207,14 +209,6 @@ void SupervisedUserService::AddURLAccessRequest(const GURL& url,
       std::move(callback), 0);
 }
 
-void SupervisedUserService::ReportURL(const GURL& url,
-                                      SuccessCallback callback) {
-  if (url_reporter_)
-    url_reporter_->ReportUrl(url, std::move(callback));
-  else
-    std::move(callback).Run(false);
-}
-
 void SupervisedUserService::AddExtensionInstallRequest(
     const std::string& extension_id,
     const base::Version& version,
@@ -276,6 +270,11 @@ std::string SupervisedUserService::GetCustodianEmailAddress() const {
   return email;
 }
 
+std::string SupervisedUserService::GetCustodianObfuscatedGaiaId() const {
+  return profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserCustodianObfuscatedGaiaId);
+}
+
 std::string SupervisedUserService::GetCustodianName() const {
   std::string name = profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianName);
@@ -297,6 +296,11 @@ std::string SupervisedUserService::GetCustodianName() const {
 std::string SupervisedUserService::GetSecondCustodianEmailAddress() const {
   return profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserSecondCustodianEmail);
+}
+
+std::string SupervisedUserService::GetSecondCustodianObfuscatedGaiaId() const {
+  return profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId);
 }
 
 std::string SupervisedUserService::GetSecondCustodianName() const {
@@ -331,11 +335,6 @@ void SupervisedUserService::RemoveObserver(
 void SupervisedUserService::AddPermissionRequestCreator(
     std::unique_ptr<PermissionRequestCreator> creator) {
   permissions_creators_.push_back(std::move(creator));
-}
-
-void SupervisedUserService::SetSafeSearchURLReporter(
-    std::unique_ptr<SafeSearchURLReporter> reporter) {
-  url_reporter_ = std::move(reporter);
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
@@ -443,7 +442,6 @@ void SupervisedUserService::SetActive(bool active) {
 #endif
   } else {
     permissions_creators_.clear();
-    url_reporter_.reset();
 
     pref_change_registrar_.Remove(
         prefs::kDefaultSupervisedUserFilteringBehavior);

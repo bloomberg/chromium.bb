@@ -103,7 +103,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
                std::move(untrack_closure))));
 
   *is_canceled_cb =
-      Bind(&IsCanceled, RetainedRef(flag), std::move(untrack_runner));
+      BindRepeating(&IsCanceled, RetainedRef(flag), std::move(untrack_runner));
 
   Track(id, std::move(flag));
   return id;

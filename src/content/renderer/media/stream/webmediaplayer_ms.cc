@@ -24,7 +24,7 @@
 #include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/base/video_types.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
@@ -150,7 +150,7 @@ class WebMediaPlayerMS::FrameDeliverer {
         FROM_HERE,
         base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
-            base::Unretained(gpu_memory_buffer_pool_.get()), frame,
+            base::Unretained(gpu_memory_buffer_pool_.get()), std::move(frame),
             media::BindToCurrentLoop(
                 base::BindOnce(&FrameDeliverer::EnqueueFrame,
                                weak_factory_for_pool_.GetWeakPtr()))));
@@ -169,7 +169,7 @@ class WebMediaPlayerMS::FrameDeliverer {
  private:
   friend class WebMediaPlayerMS;
 
-  void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame) {
+  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
     {
@@ -187,7 +187,7 @@ class WebMediaPlayerMS::FrameDeliverer {
       }
     }
 
-    enqueue_frame_cb_.Run(frame);
+    enqueue_frame_cb_.Run(std::move(frame));
   }
 
   void DropCurrentPoolTasks() {
@@ -250,7 +250,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       delegate_(delegate),
       delegate_id_(0),
       paused_(true),
-      video_rotation_(media::VIDEO_ROTATION_0),
+      video_transformation_(media::kNoTransformation),
       media_log_(std::move(media_log)),
       renderer_factory_(std::move(factory)),
       main_render_task_runner_(std::move(main_render_task_runner)),
@@ -265,10 +265,12 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
       submitter_(std::move(submitter)),
-      surface_layer_mode_(surface_layer_mode) {
+      surface_layer_mode_(surface_layer_mode),
+      weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(delegate_);
+  weak_this_ = weak_factory_.GetWeakPtr();
   delegate_id_ = delegate_->AddObserver(this);
 
   media_log_->AddEvent(
@@ -325,7 +327,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   compositor_ = new WebMediaPlayerMSCompositor(
       compositor_task_runner_, io_task_runner_, web_stream_,
-      std::move(submitter_), surface_layer_mode_, AsWeakPtr());
+      std::move(submitter_), surface_layer_mode_, weak_this_);
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -334,14 +336,12 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   media_log_->AddEvent(media_log_->CreateLoadEvent(stream_id));
 
   frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
-      AsWeakPtr(),
+      weak_this_,
       base::BindRepeating(&WebMediaPlayerMSCompositor::EnqueueFrame,
                           compositor_),
       media_task_runner_, worker_task_runner_, gpu_factories_));
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream_,
-      media::BindToCurrentLoop(
-          base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
       frame_deliverer_->GetRepaintCallback(), io_task_runner_,
       main_render_task_runner_);
 
@@ -468,6 +468,10 @@ base::Optional<viz::SurfaceId> WebMediaPlayerMS::GetSurfaceId() {
   return base::nullopt;
 }
 
+base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerMS::AsWeakPtr() {
+  return weak_this_;
+}
+
 void WebMediaPlayerMS::Reload() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (web_stream_.IsNull())
@@ -502,8 +506,6 @@ void WebMediaPlayerMS::ReloadVideo() {
       SetNetworkState(kNetworkStateLoading);
       video_frame_provider_ = renderer_factory_->GetVideoRenderer(
           web_stream_,
-          media::BindToCurrentLoop(
-              base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
           frame_deliverer_->GetRepaintCallback(), io_task_runner_,
           main_render_task_runner_);
       DCHECK(video_frame_provider_);
@@ -689,8 +691,8 @@ blink::WebSize WebMediaPlayerMS::NaturalSize() const {
   if (!video_frame_provider_)
     return blink::WebSize();
 
-  if (video_rotation_ == media::VIDEO_ROTATION_90 ||
-      video_rotation_ == media::VideoRotation::VIDEO_ROTATION_270) {
+  if (video_transformation_.rotation == media::VIDEO_ROTATION_90 ||
+      video_transformation_.rotation == media::VIDEO_ROTATION_270) {
     const gfx::Size& current_size = compositor_->GetCurrentSize();
     return blink::WebSize(current_size.height(), current_size.width());
   }
@@ -699,14 +701,13 @@ blink::WebSize WebMediaPlayerMS::NaturalSize() const {
 
 blink::WebSize WebMediaPlayerMS::VisibleRect() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
   if (!video_frame)
     return blink::WebSize();
 
   const gfx::Rect& visible_rect = video_frame->visible_rect();
-  if (video_rotation_ == media::VIDEO_ROTATION_90 ||
-      video_rotation_ == media::VideoRotation::VIDEO_ROTATION_270) {
+  if (video_transformation_.rotation == media::VIDEO_ROTATION_90 ||
+      video_transformation_.rotation == media::VIDEO_ROTATION_270) {
     return blink::WebSize(visible_rect.height(), visible_rect.width());
   }
   return blink::WebSize(visible_rect.width(), visible_rect.height());
@@ -781,23 +782,19 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const scoped_refptr<media::VideoFrame> frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
 
-  media::Context3D context_3d;
-  gpu::ContextSupport* context_support = nullptr;
+  viz::ContextProvider* provider = nullptr;
   if (frame && frame->HasTextures()) {
-    auto* provider =
+    provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     // GPU Process crashed.
     if (!provider)
       return;
-    context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-    context_support = provider->ContextSupport();
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(frame, canvas, dest_rect, flags, video_rotation_,
-                        context_3d, context_support);
+  video_renderer_.Paint(frame, canvas, dest_rect, flags, video_transformation_,
+                        provider);
 }
 
 bool WebMediaPlayerMS::WouldTaintOrigin() const {
@@ -930,15 +927,6 @@ void WebMediaPlayerMS::OnBecamePersistentVideo(bool value) {
   get_client()->OnBecamePersistentVideo(value);
 }
 
-void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
-  // It is possible for this method to be called when the player is no longer in
-  // Picture-in-Picture mode.
-  if (!client_ || !IsInPictureInPicture())
-    return;
-
-  client_->PictureInPictureStopped();
-}
-
 bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned target,
@@ -954,24 +942,20 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoTextureToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
   if (!video_frame.get() || !video_frame->HasTextures())
     return false;
 
-  media::Context3D context_3d;
   auto* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   // GPU Process crashed.
   if (!provider)
     return false;
-  context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-  DCHECK(context_3d.gl);
 
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, provider->ContextSupport(), gl, video_frame.get(), target,
-      texture, internal_format, format, type, level, premultiply_alpha, flip_y);
+      provider, gl, video_frame.get(), target, texture, internal_format, format,
+      type, level, premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
@@ -989,26 +973,22 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoYUVDataToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
   if (!video_frame)
     return false;
   if (video_frame->HasTextures())
     return false;
 
-  media::Context3D context_3d;
   auto* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   // GPU Process crashed.
   if (!provider)
     return false;
-  context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-  DCHECK(context_3d.gl);
 
   return video_renderer_.CopyVideoFrameYUVDataToGLTexture(
-      context_3d, gl, video_frame.get(), target, texture, internal_format,
-      format, type, level, premultiply_alpha, flip_y);
+      provider, gl, *video_frame, target, texture, internal_format, format,
+      type, level, premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
@@ -1028,7 +1008,7 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+      compositor_->GetCurrentFrame();
   if (!video_frame || !video_frame->IsMappable() ||
       video_frame->HasTextures() ||
       video_frame->format() != media::PIXEL_FORMAT_Y16) {
@@ -1071,7 +1051,7 @@ void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
       FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::EnableSubmission,
                                 compositor_, bridge_->GetSurfaceId(),
                                 bridge_->GetLocalSurfaceIdAllocationTime(),
-                                video_rotation_, IsInPictureInPicture()));
+                                video_transformation_, IsInPictureInPicture()));
 
   // If the element is already in Picture-in-Picture mode, it means that it
   // was set in this mode prior to this load, with a different
@@ -1127,7 +1107,7 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
 void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  video_rotation_ = video_rotation;
+  video_transformation_ = {video_rotation, 0};
 
   if (!bridge_) {
     // Keep the old |video_layer_| alive until SetCcLayer() is called with a new
@@ -1150,12 +1130,6 @@ void WebMediaPlayerMS::RepaintInternal() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   get_client()->Repaint();
-}
-
-void WebMediaPlayerMS::OnSourceError() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
-  RepaintInternal();
 }
 
 void WebMediaPlayerMS::SetNetworkState(WebMediaPlayer::NetworkState state) {

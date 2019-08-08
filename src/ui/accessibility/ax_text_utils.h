@@ -12,24 +12,9 @@
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_text_boundary.h"
 
 namespace ui {
-
-// Boundaries that can be passed to FindAccessibleTextBoundary,
-// representing various visual boundaries in (potentially multi-line)
-// text. This is used by assistive technology in order to, for example,
-// retrieve the nearest word to the cursor, or retrieve all of the
-// text from the current cursor position to the end of the line.
-// These should be self-explanatory; "line" here refers to the visual
-// line as currently displayed (possibly affected by wrapping).
-enum TextBoundaryType {
-  CHAR_BOUNDARY,
-  WORD_BOUNDARY,
-  LINE_BOUNDARY,
-  SENTENCE_BOUNDARY,
-  PARAGRAPH_BOUNDARY,
-  ALL_BOUNDARY
-};
 
 // A direction when searching for the next boundary.
 enum TextBoundaryDirection {
@@ -46,7 +31,7 @@ enum TextBoundaryDirection {
 // using the vector of line break character offsets in |line_breaks|.
 size_t AX_EXPORT FindAccessibleTextBoundary(const base::string16& text,
                                             const std::vector<int>& line_breaks,
-                                            TextBoundaryType boundary,
+                                            AXTextBoundary boundary,
                                             size_t start_offset,
                                             TextBoundaryDirection direction,
                                             ax::mojom::TextAffinity affinity);

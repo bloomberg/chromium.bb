@@ -138,14 +138,14 @@ class HistoryService : public KeyedService {
 
   // Callback for value asynchronously returned by
   // GetCountsAndLastVisitForOrigins().
-  typedef base::Callback<void(const OriginCountAndLastVisitMap&)>
-      GetCountsAndLastVisitForOriginsCallback;
+  using GetCountsAndLastVisitForOriginsCallback =
+      base::OnceCallback<void(OriginCountAndLastVisitMap)>;
 
   // Gets the counts and most recent visit date of URLs that belong to |origins|
   // in the history database.
   void GetCountsAndLastVisitForOriginsForTesting(
       const std::set<GURL>& origins,
-      const GetCountsAndLastVisitForOriginsCallback& callback) const;
+      GetCountsAndLastVisitForOriginsCallback callback) const;
 
   // Navigation ----------------------------------------------------------------
 
@@ -217,11 +217,7 @@ class HistoryService : public KeyedService {
   // empty.
   //
   // If success is false, neither the row nor the vector will be valid.
-  typedef base::OnceCallback<void(
-      bool,  // Success flag, when false, nothing else is valid.
-      const URLRow&,
-      const VisitVector&)>
-      QueryURLCallback;
+  using QueryURLCallback = base::OnceCallback<void(QueryURLResult)>;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),
@@ -236,7 +232,7 @@ class HistoryService : public KeyedService {
   // Provides the result of a query. See QueryResults in history_types.h.
   // The common use will be to use QueryResults.Swap to suck the contents of
   // the results out of the passed in parameter and take ownership of them.
-  typedef base::Callback<void(QueryResults*)> QueryHistoryCallback;
+  using QueryHistoryCallback = base::OnceCallback<void(QueryResults)>;
 
   // Queries all history with the given options (see QueryOptions in
   // history_types.h).  If empty, all results matching the given options
@@ -244,7 +240,7 @@ class HistoryService : public KeyedService {
   base::CancelableTaskTracker::TaskId QueryHistory(
       const base::string16& text_query,
       const QueryOptions& options,
-      const QueryHistoryCallback& callback,
+      QueryHistoryCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Called when the results of QueryRedirectsFrom are available.
@@ -258,21 +254,21 @@ class HistoryService : public KeyedService {
   // If there is no such URL in the database or the most recent visit has no
   // redirect, the vector will be empty. If the given page has redirected to
   // multiple destinations, this will pick a random one.
-  typedef base::Callback<void(const RedirectList*)> QueryRedirectsCallback;
+  using QueryRedirectsCallback = base::OnceCallback<void(RedirectList)>;
 
   // Schedules a query for the most recent redirect coming out of the given
   // URL. See the RedirectQuerySource above, which is guaranteed to be called
   // if the request is not canceled.
   base::CancelableTaskTracker::TaskId QueryRedirectsFrom(
       const GURL& from_url,
-      const QueryRedirectsCallback& callback,
+      QueryRedirectsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Schedules a query to get the most recent redirects ending at the given
   // URL.
   base::CancelableTaskTracker::TaskId QueryRedirectsTo(
       const GURL& to_url,
-      const QueryRedirectsCallback& callback,
+      QueryRedirectsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Requests the number of user-visible visits (i.e. no redirects or subframes)
@@ -529,6 +525,10 @@ class HistoryService : public KeyedService {
     backend_task_runner_ = std::move(task_runner);
   }
 
+  void set_origin_queried_closure_for_testing(base::OnceClosure closure) {
+    origin_queried_closure_for_testing_ = std::move(closure);
+  }
+
  protected:
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.
@@ -575,7 +575,7 @@ class HistoryService : public KeyedService {
   // will be called back on the internal history thread with the history
   // database so it can query. See history_url_provider.h for a diagram.
   void ScheduleAutocomplete(
-      const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
+      base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback);
 
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
@@ -638,7 +638,7 @@ class HistoryService : public KeyedService {
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get favicons mapped to |page_url| for
@@ -658,7 +658,7 @@ class HistoryService : public KeyedService {
       const favicon_base::IconTypeSet& icon_types,
       const std::vector<int>& desired_sizes,
       bool fallback_to_host,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by FaviconService to find the first favicon bitmap whose width and
@@ -676,7 +676,7 @@ class HistoryService : public KeyedService {
       const GURL& page_url,
       const std::vector<favicon_base::IconTypeSet>& icon_types,
       int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
+      favicon_base::FaviconRawBitmapCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
@@ -686,7 +686,7 @@ class HistoryService : public KeyedService {
   base::CancelableTaskTracker::TaskId GetFaviconForID(
       favicon_base::FaviconID favicon_id,
       int desired_size,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Maps |page_urls| to the favicon at |icon_url| if there is an entry in the
@@ -700,7 +700,7 @@ class HistoryService : public KeyedService {
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Deletes favicon mappings for each URL in |page_urls| and their redirects.
@@ -865,6 +865,8 @@ class HistoryService : public KeyedService {
       favicon_changed_callback_list_;
 
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;
+
+  base::OnceClosure origin_queried_closure_for_testing_;
 
   // All vended weak pointers are invalidated in Cleanup().
   base::WeakPtrFactory<HistoryService> weak_ptr_factory_;

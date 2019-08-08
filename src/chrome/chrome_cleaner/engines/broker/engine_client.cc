@@ -33,7 +33,6 @@
 #include "chrome/chrome_cleaner/zip_archiver/sandboxed_zip_archiver.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "sandbox/win/src/sandbox_factory.h"
 
 using base::WaitableEvent;
 
@@ -58,7 +57,8 @@ using ResultCallback = base::OnceCallback<void(uint32_t)>;
 // example when this is used to wrap SaveResultCallback it must be destroyed on
 // the Mojo thread. The easiest way to ensure this is to call
 // CallbackWithErrorHandling from the Mojo thread and never use base::Passed on
-// the resulting ScopedCallbackRunner to pass it another sequence.
+// the resulting WrapCallbackWithDefaultInvokeIfNotRun to pass it another
+// sequence.
 ResultCallback CallbackWithErrorHandling(ResultCallback callback) {
   return mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), EngineResultCode::kSandboxUnavailable);
@@ -133,8 +133,7 @@ void EngineClient::InitializeReadOnlyCallbacks() {
       interface_metadata_observer_.get());
 }
 
-bool EngineClient::InitializeCleaningCallbacks(
-    const std::vector<UwSId>& enabled_uws) {
+bool EngineClient::InitializeCleaningCallbacks() {
   std::unique_ptr<ZipArchiver> archiver = nullptr;
   if (archiver_for_testing_) {
     archiver = std::move(archiver_for_testing_);
@@ -145,7 +144,7 @@ bool EngineClient::InitializeCleaningCallbacks(
 
   std::unique_ptr<chrome_cleaner::FileRemoverAPI> file_remover =
       CreateFileRemoverWithDigestVerifier(
-          enabled_uws, std::move(archiver),
+          std::move(archiver),
           base::BindRepeating(&EngineClient::SetRebootRequired,
                               base::Unretained(this)));
   sandbox_cleaner_requests_ = std::make_unique<CleanerEngineRequestsImpl>(
@@ -379,7 +378,7 @@ uint32_t EngineClient::StartCleanup(const std::vector<UwSId>& enabled_uws,
     return EngineResultCode::kWrongState;
   }
 
-  if (!InitializeCleaningCallbacks(enabled_uws)) {
+  if (!InitializeCleaningCallbacks()) {
     LOG(ERROR) << "Failed to initialize cleaning callbacks.";
     return EngineResultCode::kCleanupInitializationFailed;
   }

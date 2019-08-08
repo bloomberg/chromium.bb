@@ -56,11 +56,11 @@ TextOffset ToTextOffset(const PositionTemplate<Strategy>& position) {
   if (position.IsNull())
     return TextOffset();
 
-  if (!position.ComputeContainerNode()->IsTextNode())
+  auto* text_node = DynamicTo<Text>(position.ComputeContainerNode());
+  if (!text_node)
     return TextOffset();
 
-  return TextOffset(ToText(position.ComputeContainerNode()),
-                    position.OffsetInContainerNode());
+  return TextOffset(text_node, position.OffsetInContainerNode());
 }
 
 template <typename EditingStrategy>
@@ -300,7 +300,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
     }
   } else if (should_append_parent_tag) {
     EditingStyle* style = traverser.CreateInlineStyleIfNeeded(*last_closed_);
-    traverser.WrapWithNode(*ToContainerNode(last_closed_), style);
+    traverser.WrapWithNode(To<ContainerNode>(*last_closed_), style);
   }
 
   // FIXME: The interchange newline should be placed in the block that it's in,
@@ -386,7 +386,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
             AppendEndMarkup(*next);
             last_closed = next;
           } else {
-            ancestors_to_close.push_back(ToContainerNode(n));
+            ancestors_to_close.push_back(To<ContainerNode>(n));
           }
           continue;
         }
@@ -496,7 +496,7 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
     return;
   switch (node.getNodeType()) {
     case Node::kTextNode: {
-      Text& text = ToText(node);
+      auto& text = To<Text>(node);
       if (text.parentElement() && IsHTMLTextAreaElement(text.parentElement())) {
         accumulator_->AppendText(text);
         break;
@@ -564,8 +564,10 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyle(
   if (element.IsStyledElement() && element.InlineStyle())
     inline_style->OverrideWithStyle(element.InlineStyle());
 
-  if (element.IsHTMLElement() && ShouldAnnotate())
-    inline_style->MergeStyleFromRulesForSerialization(&ToHTMLElement(element));
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  if (html_element && ShouldAnnotate()) {
+    inline_style->MergeStyleFromRulesForSerialization(html_element);
+  }
 
   return inline_style;
 }

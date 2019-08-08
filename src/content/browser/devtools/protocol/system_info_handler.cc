@@ -94,10 +94,6 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
   void EndImageDecodeAcceleratorSupportedProfile() override {}
 
-  void BeginOverlayCapability() override {}
-
-  void EndOverlayCapability() override {}
-
   void BeginDx12VulkanVersionInfo() override {}
 
   void EndDx12VulkanVersionInfo() override {}
@@ -121,6 +117,8 @@ std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
                             .SetDeviceId(device.device_id)
                             .SetVendorString(device.vendor_string)
                             .SetDeviceString(device.device_string)
+                            .SetDriverVendor(device.driver_vendor)
+                            .SetDriverVersion(device.driver_version)
                             .Build();
 }
 

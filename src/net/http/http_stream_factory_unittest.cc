@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -268,12 +269,6 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                          SSLCertRequestInfo* cert_info) override {}
 
-  void OnHttpsProxyTunnelResponseRedirect(
-      const HttpResponseInfo& response_info,
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<HttpStream> stream) override {}
-
   void OnQuicBroken() override {}
 
   void WaitForStream() {
@@ -392,11 +387,11 @@ ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
   if (test.ssl) {
     return ClientSocketPool::GroupId(HostPortPair("www.google.com", 443),
                                      ClientSocketPool::SocketType::kSsl,
-                                     false /* privacy_mode */);
+                                     PrivacyMode::PRIVACY_MODE_DISABLED);
   }
   return ClientSocketPool::GroupId(HostPortPair("www.google.com", 80),
                                    ClientSocketPool::SocketType::kHttp,
-                                   false /* privacy_mode */);
+                                   PrivacyMode::PRIVACY_MODE_DISABLED);
 }
 
 class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
@@ -406,6 +401,8 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
       : TransportClientSocketPool(0,
                                   0,
                                   base::TimeDelta(),
+                                  ProxyServer::Direct(),
+                                  false /* is_for_websockets */,
                                   common_connect_job_params,
                                   nullptr /* ssl_config_service */),
         last_num_streams_(-1) {}
@@ -420,14 +417,14 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     last_num_streams_ = -1;
     // Group ID that shouldn't match much.
     last_group_id_ = ClientSocketPool::GroupId(
-        HostPortPair(),
-        ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
-        true /* privacy_mode */);
+        HostPortPair(), ClientSocketPool::SocketType::kSsl,
+        PrivacyMode::PRIVACY_MODE_ENABLED);
   }
 
   int RequestSocket(
       const ClientSocketPool::GroupId& group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       RequestPriority priority,
       const SocketTag& socket_tag,
       ClientSocketPool::RespectLimits respect_limits,
@@ -442,6 +439,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   void RequestSockets(
       const ClientSocketPool::GroupId& group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       int num_sockets,
       const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
@@ -449,7 +447,8 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   }
 
   void CancelRequest(const ClientSocketPool::GroupId& group_id,
-                     ClientSocketHandle* handle) override {
+                     ClientSocketHandle* handle,
+                     bool cancel_connect_job) override {
     ADD_FAILURE();
   }
   void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
@@ -1998,22 +1997,18 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
   // Create some HTTP/2 sockets.
   std::vector<std::unique_ptr<ClientSocketHandle>> handles;
   for (size_t i = 0; i < kNumIdleSockets; i++) {
-    scoped_refptr<TransportSocketParams> transport_params(
-        new TransportSocketParams(host_port_pair, OnHostResolutionCallback()));
-
     auto connection = std::make_unique<ClientSocketHandle>();
     TestCompletionCallback callback;
 
-    SSLConfig ssl_config;
-    scoped_refptr<SSLSocketParams> ssl_params(
-        new SSLSocketParams(transport_params, nullptr, nullptr, host_port_pair,
-                            ssl_config, PRIVACY_MODE_DISABLED));
+    scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+        base::MakeRefCounted<ClientSocketPool::SocketParams>(
+            std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+            nullptr /* ssl_config_for_proxy */);
     ClientSocketPool::GroupId group_id(host_port_pair,
                                        ClientSocketPool::SocketType::kSsl,
-                                       false /* privacy_mode */);
+                                       PrivacyMode::PRIVACY_MODE_DISABLED);
     int rv = connection->Init(
-        group_id,
-        ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),
+        group_id, socket_params, base::nullopt /* proxy_annotation_tag */,
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),
         session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
@@ -2178,7 +2173,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 class HttpStreamFactoryBidirectionalQuicTest
     : public TestWithScopedTaskEnvironment,
       public ::testing::WithParamInterface<
-          std::tuple<quic::QuicTransportVersion, bool>> {
+          std::tuple<quic::ParsedQuicVersion, bool>> {
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : default_url_(kDefaultUrl),
@@ -2214,8 +2209,7 @@ class HttpStreamFactoryBidirectionalQuicTest
 
   void Initialize() {
     params_.enable_quic = true;
-    params_.quic_supported_versions =
-        quic::test::SupportedTransportVersions(version_);
+    params_.quic_supported_versions = quic::test::SupportedVersions(version_);
     params_.quic_headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 
@@ -2270,11 +2264,12 @@ class HttpStreamFactoryBidirectionalQuicTest
   const GURL default_url_;
 
   quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
-    return quic::test::GetNthClientInitiatedBidirectionalStreamId(version_, n);
+    return quic::test::GetNthClientInitiatedBidirectionalStreamId(
+        version_.transport_version, n);
   }
 
  private:
-  const quic::QuicTransportVersion version_;
+  const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   quic::MockClock clock_;
   quic::test::MockRandom random_generator_;
@@ -2298,9 +2293,8 @@ class HttpStreamFactoryBidirectionalQuicTest
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     HttpStreamFactoryBidirectionalQuicTest,
-    ::testing::Combine(
-        ::testing::ValuesIn(quic::AllSupportedTransportVersions()),
-        ::testing::Bool()));
+    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
+                       ::testing::Bool()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
@@ -2993,6 +2987,7 @@ TEST_F(HttpStreamFactoryTest, ChangeSocketTag) {
   waiter3.stream()->Close(/* not_reusable = */ true);
 }
 
+// Regression test for https://crbug.com/954503.
 TEST_F(HttpStreamFactoryTest, ChangeSocketTagAvoidOverwrite) {
   SpdySessionDependencies session_deps;
   MockTaggingClientSocketFactory* socket_factory =

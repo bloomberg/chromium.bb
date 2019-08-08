@@ -18,10 +18,10 @@
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_connection_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -86,7 +86,8 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
-    return connector_ ? connector_.get() : gpu_platform_support_host_.get();
+    return buffer_manager_connector_ ? buffer_manager_connector_.get()
+                                     : gpu_platform_support_host_.get();
   }
 
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
@@ -126,7 +127,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   PlatformClipboard* GetPlatformClipboard() override {
     DCHECK(connection_);
-    return connection_->GetPlatformClipboard();
+    return connection_->clipboard();
   }
 
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
@@ -154,23 +155,25 @@ class OzonePlatformWayland : public OzonePlatform {
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         std::make_unique<StubKeyboardLayoutEngine>());
 #endif
-    connection_.reset(new WaylandConnection);
+    connection_ = std::make_unique<WaylandConnection>();
     if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
-    connector_.reset(new WaylandConnectionConnector(connection_.get()));
-    cursor_factory_.reset(new BitmapCursorFactoryOzone);
-    overlay_manager_.reset(new StubOverlayManager);
+    buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
+        connection_->buffer_manager_host());
+    cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
+    overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
     supported_buffer_formats_ = connection_->GetSupportedBufferFormats();
   }
 
   void InitializeGPU(const InitParams& args) override {
-    surface_factory_ = std::make_unique<WaylandSurfaceFactory>();
-    proxy_ = std::make_unique<WaylandConnectionProxy>(connection_.get(),
-                                                      surface_factory_.get());
-    surface_factory_->SetProxy(proxy_.get());
+    surface_factory_ =
+        std::make_unique<WaylandSurfaceFactory>(connection_.get());
+    buffer_manager_ =
+        std::make_unique<WaylandBufferManagerGpu>(surface_factory_.get());
+    surface_factory_->SetBufferManager(buffer_manager_.get());
 #if defined(WAYLAND_GBM)
     const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
     if (drm_node_path.empty()) {
@@ -183,7 +186,7 @@ class OzonePlatformWayland : public OzonePlatform {
         auto gbm = CreateGbmDevice(handle.PassFD().release());
         if (!gbm)
           LOG(WARNING) << "Failed to initialize gbm device.";
-        proxy_->set_gbm_device(std::move(gbm));
+        buffer_manager_->set_gbm_device(std::move(gbm));
       }
     }
 #endif
@@ -194,15 +197,15 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void AddInterfaces(service_manager::BinderRegistry* registry) override {
-    registry->AddInterface<ozone::mojom::WaylandConnectionClient>(
+    registry->AddInterface<ozone::mojom::WaylandBufferManagerGpu>(
         base::BindRepeating(
-            &OzonePlatformWayland::CreateWaylandConnectionClientBinding,
+            &OzonePlatformWayland::CreateWaylandBufferManagerGpuBinding,
             base::Unretained(this)));
   }
 
-  void CreateWaylandConnectionClientBinding(
-      ozone::mojom::WaylandConnectionClientRequest request) {
-    proxy_->AddBindingWaylandConnectionClient(std::move(request));
+  void CreateWaylandBufferManagerGpuBinding(
+      ozone::mojom::WaylandBufferManagerGpuRequest request) {
+    buffer_manager_->AddBindingWaylandBufferManagerGpu(std::move(request));
   }
 
  private:
@@ -214,14 +217,16 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<WaylandInputMethodContextFactory>
       wayland_input_method_context_factory_;
+  std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
 
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
 #endif
 
-  std::unique_ptr<WaylandConnectionProxy> proxy_;
-  std::unique_ptr<WaylandConnectionConnector> connector_;
+  // Objects, which solely live in the GPU process.
+  std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_;
 
+  // Provides supported buffer formats for native gpu memory buffers framework.
   std::vector<gfx::BufferFormat> supported_buffer_formats_;
 
   // This is used both in the gpu and browser processes to find out if a drm

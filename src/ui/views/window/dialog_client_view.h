@@ -61,7 +61,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // ButtonListener implementation:
   void ButtonPressed(Button* sender, const ui::Event& event) override;

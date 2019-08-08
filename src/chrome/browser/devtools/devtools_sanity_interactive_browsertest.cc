@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
@@ -51,7 +53,7 @@ class CheckWaiter {
 
     // Quit the run_loop to end the wait.
     if (!quit_.is_null())
-      base::ResetAndReturn(&quit_).Run();
+      std::move(quit_).Run();
     return true;
   }
 

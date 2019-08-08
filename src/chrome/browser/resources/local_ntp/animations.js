@@ -6,7 +6,7 @@
 /**
  * Contains common animations used in the main NTP page and its iframes.
  */
-let animations = {};
+const animations = {};
 
 
 /**
@@ -43,8 +43,8 @@ animations.RIPPLE_MAX_RADIUS_PX = 300;
  * element must have position relative or absolute.
  */
 animations.addRippleAnimations = function() {
-  let ripple = (event) => {
-    let target = event.target;
+  const ripple = (event) => {
+    const target = event.target;
     const rect = target.getBoundingClientRect();
     const x = Math.round(event.clientX - rect.left);
     const y = Math.round(event.clientY - rect.top);
@@ -56,20 +56,20 @@ animations.addRippleAnimations = function() {
       {x: 0, y: rect.height},
       {x: rect.width, y: rect.height},
     ];
-    let distance = (x1, y1, x2, y2) => {
-      var xDelta = x1 - x2;
-      var yDelta = y1 - y2;
+    const distance = (x1, y1, x2, y2) => {
+      const xDelta = x1 - x2;
+      const yDelta = y1 - y2;
       return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
     };
-    let cornerDistances = corners.map(function(corner) {
+    const cornerDistances = corners.map(function(corner) {
       return Math.round(distance(x, y, corner.x, corner.y));
     });
     const radius = Math.min(
         animations.RIPPLE_MAX_RADIUS_PX, Math.max.apply(Math, cornerDistances));
 
-    let ripple = document.createElement('div');
-    let rippleMask = document.createElement('div');
-    let rippleContainer = document.createElement('div');
+    const ripple = document.createElement('div');
+    const rippleMask = document.createElement('div');
+    const rippleContainer = document.createElement('div');
     ripple.classList.add(animations.CLASSES.RIPPLE_EFFECT);
     rippleMask.classList.add(animations.CLASSES.RIPPLE_EFFECT_MASK);
     rippleContainer.classList.add(animations.CLASSES.RIPPLE_CONTAINER);
@@ -99,7 +99,7 @@ animations.addRippleAnimations = function() {
     }, animations.RIPPLE_DURATION_MS);
   };
 
-  let rippleElements =
+  const rippleElements =
       document.querySelectorAll('.' + animations.CLASSES.RIPPLE);
   for (let i = 0; i < rippleElements.length; i++) {
     rippleElements[i].addEventListener('mousedown', ripple);

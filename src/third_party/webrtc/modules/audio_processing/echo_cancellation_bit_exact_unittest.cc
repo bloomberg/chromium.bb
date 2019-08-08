@@ -26,14 +26,13 @@ void SetupComponent(int sample_rate_hz,
                     bool drift_compensation_enabled,
                     EchoCancellationImpl* echo_canceller) {
   echo_canceller->Initialize(sample_rate_hz, 1, 1, 1);
-  echo_canceller->Enable(true);
   echo_canceller->set_suppression_level(suppression_level);
   echo_canceller->enable_drift_compensation(drift_compensation_enabled);
 
   Config config;
   config.Set<DelayAgnostic>(new DelayAgnostic(true));
   config.Set<ExtendedFilter>(new ExtendedFilter(true));
-  echo_canceller->SetExtraOptions(config);
+  echo_canceller->SetExtraOptions(true, true, false);
 }
 
 void ProcessOneFrame(int sample_rate_hz,

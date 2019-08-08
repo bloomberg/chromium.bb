@@ -20,6 +20,7 @@ using network::mojom::DnsOverHttpsServerDataView;
 using network::mojom::DnsOverHttpsServerPtr;
 using network::mojom::DnsQueryType;
 using network::mojom::MdnsListenClient;
+using network::mojom::OptionalSecureDnsMode;
 using network::mojom::ResolveHostParameters;
 
 namespace {
@@ -108,7 +109,35 @@ bool ReadDnsOverHttpsServerData(
   return true;
 }
 
+OptionalSecureDnsMode ToOptionalSecureDnsMode(
+    base::Optional<net::DnsConfig::SecureDnsMode> optional) {
+  if (!optional)
+    return OptionalSecureDnsMode::NO_OVERRIDE;
+  switch (optional.value()) {
+    case net::DnsConfig::SecureDnsMode::OFF:
+      return OptionalSecureDnsMode::OFF;
+    case net::DnsConfig::SecureDnsMode::AUTOMATIC:
+      return OptionalSecureDnsMode::AUTOMATIC;
+    case net::DnsConfig::SecureDnsMode::SECURE:
+      return OptionalSecureDnsMode::SECURE;
+  }
+}
+
 }  // namespace
+
+base::Optional<net::DnsConfig::SecureDnsMode> FromOptionalSecureDnsMode(
+    OptionalSecureDnsMode mode) {
+  switch (mode) {
+    case OptionalSecureDnsMode::NO_OVERRIDE:
+      return base::nullopt;
+    case OptionalSecureDnsMode::OFF:
+      return net::DnsConfig::SecureDnsMode::OFF;
+    case OptionalSecureDnsMode::AUTOMATIC:
+      return net::DnsConfig::SecureDnsMode::AUTOMATIC;
+    case OptionalSecureDnsMode::SECURE:
+      return net::DnsConfig::SecureDnsMode::SECURE;
+  }
+}
 
 // static
 base::Optional<std::vector<DnsHostPtr>>
@@ -171,6 +200,13 @@ StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
 }
 
 // static
+OptionalSecureDnsMode
+StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
+    secure_dns_mode(const net::DnsConfigOverrides& overrides) {
+  return ToOptionalSecureDnsMode(overrides.secure_dns_mode);
+}
+
+// static
 bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
     DnsConfigOverridesDataView data,
     net::DnsConfigOverrides* out) {
@@ -212,6 +248,8 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
                                   &out->dns_over_https_servers)) {
     return false;
   }
+
+  out->secure_dns_mode = FromOptionalSecureDnsMode(data.secure_dns_mode());
 
   return true;
 }

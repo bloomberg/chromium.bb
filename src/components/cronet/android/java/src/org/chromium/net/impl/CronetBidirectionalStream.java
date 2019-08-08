@@ -679,7 +679,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
             }
             final RequestFinishedInfo requestFinishedInfo = new RequestFinishedInfoImpl(mInitialUrl,
                     mRequestAnnotations, mMetrics, finishedReason, mResponseInfo, mException);
-            mRequestContext.reportFinished(requestFinishedInfo);
+            mRequestContext.reportRequestFinished(requestFinishedInfo);
         }
     }
 

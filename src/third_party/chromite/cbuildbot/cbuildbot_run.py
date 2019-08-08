@@ -45,7 +45,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
-from chromite.lib import tree_status
+from chromite.lib import uri_lib
 
 
 class RunAttributesError(Exception):
@@ -675,9 +675,9 @@ class _BuilderRunBase(object):
       The fully formed URL
     """
     if stage:
-      return tree_status.ConstructLogDogURL(self.options.buildnumber, stage)
+      return uri_lib.ConstructLogDogUri(self.options.buildnumber, stage)
     else:
-      return tree_status.ConstructLegolandBuildURL(self.options.buildbucket_id)
+      return uri_lib.ConstructMiloBuildUri(self.options.buildbucket_id)
 
   def ShouldBuildAutotest(self):
     """Return True if this run should build autotest and artifacts."""

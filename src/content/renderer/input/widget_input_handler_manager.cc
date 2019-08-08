@@ -257,16 +257,8 @@ void WidgetInputHandlerManager::DidStartScrollingViewport() {
 void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
     const blink::WebGestureEvent& update_event) {
   DCHECK_EQ(update_event.GetType(), blink::WebInputEvent::kGestureScrollUpdate);
-  blink::WebGestureEvent scroll_begin(update_event);
-  scroll_begin.SetType(blink::WebInputEvent::kGestureScrollBegin);
-  scroll_begin.data.scroll_begin.inertial_phase =
-      update_event.data.scroll_update.inertial_phase;
-  scroll_begin.data.scroll_begin.delta_x_hint =
-      update_event.data.scroll_update.delta_x;
-  scroll_begin.data.scroll_begin.delta_y_hint =
-      update_event.data.scroll_update.delta_y;
-  scroll_begin.data.scroll_begin.delta_hint_units =
-      update_event.data.scroll_update.delta_units;
+  blink::WebGestureEvent scroll_begin =
+      ui::ScrollBeginFromScrollUpdate(update_event);
 
   DispatchNonBlockingEventToMainThread(
       ui::WebInputEventTraits::Clone(scroll_begin), ui::LatencyInfo());

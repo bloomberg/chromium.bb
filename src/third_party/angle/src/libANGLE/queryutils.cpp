@@ -494,7 +494,7 @@ void SetSamplerParameterBase(Context *context,
             break;
     }
 
-    sampler->onStateChange(context, angle::SubjectMessage::CONTENTS_CHANGED);
+    sampler->onStateChange(context, angle::SubjectMessage::ContentsChanged);
 }
 
 // Warning: you should ensure binding really matches attrib.bindingIndex before using this function.
@@ -1121,7 +1121,7 @@ void QueryBufferPointerv(const Buffer *buffer, GLenum pname, void **params)
 
 void QueryProgramiv(Context *context, const Program *program, GLenum pname, GLint *params)
 {
-    ASSERT(program != nullptr);
+    ASSERT(program != nullptr || pname == GL_COMPLETION_STATUS_KHR);
 
     switch (pname)
     {
@@ -1132,7 +1132,14 @@ void QueryProgramiv(Context *context, const Program *program, GLenum pname, GLin
             *params = program->isLinked();
             return;
         case GL_COMPLETION_STATUS_KHR:
-            *params = program->isLinking() ? GL_FALSE : GL_TRUE;
+            if (context->isContextLost())
+            {
+                *params = GL_TRUE;
+            }
+            else
+            {
+                *params = program->isLinking() ? GL_FALSE : GL_TRUE;
+            }
             return;
         case GL_VALIDATE_STATUS:
             *params = program->isValidated();
@@ -1267,9 +1274,9 @@ void QueryRenderbufferiv(const Context *context,
     }
 }
 
-void QueryShaderiv(Shader *shader, GLenum pname, GLint *params)
+void QueryShaderiv(const Context *context, Shader *shader, GLenum pname, GLint *params)
 {
-    ASSERT(shader != nullptr);
+    ASSERT(shader != nullptr || pname == GL_COMPLETION_STATUS_KHR);
 
     switch (pname)
     {
@@ -1283,7 +1290,14 @@ void QueryShaderiv(Shader *shader, GLenum pname, GLint *params)
             *params = shader->isCompiled() ? GL_TRUE : GL_FALSE;
             return;
         case GL_COMPLETION_STATUS_KHR:
-            *params = shader->isCompleted() ? GL_TRUE : GL_FALSE;
+            if (context->isContextLost())
+            {
+                *params = GL_TRUE;
+            }
+            else
+            {
+                *params = shader->isCompleted() ? GL_TRUE : GL_FALSE;
+            }
             return;
         case GL_INFO_LOG_LENGTH:
             *params = shader->getInfoLogLength();
@@ -1364,7 +1378,7 @@ void QueryVertexAttribfv(const VertexAttribute &attrib,
                          GLenum pname,
                          GLfloat *params)
 {
-    QueryVertexAttribBase(attrib, binding, currentValueData.FloatValues, pname, params);
+    QueryVertexAttribBase(attrib, binding, currentValueData.Values.FloatValues, pname, params);
 }
 
 void QueryVertexAttribiv(const VertexAttribute &attrib,
@@ -1373,7 +1387,7 @@ void QueryVertexAttribiv(const VertexAttribute &attrib,
                          GLenum pname,
                          GLint *params)
 {
-    QueryVertexAttribBase(attrib, binding, currentValueData.FloatValues, pname, params);
+    QueryVertexAttribBase(attrib, binding, currentValueData.Values.FloatValues, pname, params);
 }
 
 void QueryVertexAttribPointerv(const VertexAttribute &attrib, GLenum pname, void **pointer)
@@ -1396,7 +1410,7 @@ void QueryVertexAttribIiv(const VertexAttribute &attrib,
                           GLenum pname,
                           GLint *params)
 {
-    QueryVertexAttribBase(attrib, binding, currentValueData.IntValues, pname, params);
+    QueryVertexAttribBase(attrib, binding, currentValueData.Values.IntValues, pname, params);
 }
 
 void QueryVertexAttribIuiv(const VertexAttribute &attrib,
@@ -1405,7 +1419,8 @@ void QueryVertexAttribIuiv(const VertexAttribute &attrib,
                            GLenum pname,
                            GLuint *params)
 {
-    QueryVertexAttribBase(attrib, binding, currentValueData.UnsignedIntValues, pname, params);
+    QueryVertexAttribBase(attrib, binding, currentValueData.Values.UnsignedIntValues, pname,
+                          params);
 }
 
 void QueryActiveUniformBlockiv(const Program *program,
@@ -1480,7 +1495,7 @@ angle::Result QuerySynciv(const Context *context,
                           GLsizei *length,
                           GLint *values)
 {
-    ASSERT(sync);
+    ASSERT(sync != nullptr || pname == GL_SYNC_STATUS);
 
     // All queries return one value, exit early if the buffer can't fit anything.
     if (bufSize < 1)
@@ -1504,7 +1519,14 @@ angle::Result QuerySynciv(const Context *context,
             *values = clampCast<GLint>(sync->getFlags());
             break;
         case GL_SYNC_STATUS:
-            ANGLE_TRY(sync->getStatus(context, values));
+            if (context->isContextLost())
+            {
+                *values = GL_SIGNALED;
+            }
+            else
+            {
+                ANGLE_TRY(sync->getStatus(context, values));
+            }
             break;
 
         default:

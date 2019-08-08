@@ -1885,7 +1885,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   // Initialization posts a task to start watching kioslaverc file. Ensure that
   // registration has happened before modifying it or the file change won't be
   // observed.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 
   WriteFile(kioslaverc_,
             "[Proxy Settings]\nProxyType=2\n"

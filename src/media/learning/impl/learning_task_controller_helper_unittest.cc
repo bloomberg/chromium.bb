@@ -47,6 +47,13 @@ class LearningTaskControllerHelperTest : public testing::Test {
     id_ = base::UnguessableToken::Create();
   }
 
+  ~LearningTaskControllerHelperTest() override {
+    // To prevent a memory leak, reset the helper.  This will post destruction
+    // of other objects, so RunUntilIdle().
+    helper_.reset();
+    scoped_task_environment_.RunUntilIdle();
+  }
+
   void CreateClient(bool include_fp) {
     // Create the fake feature provider, and get a pointer to it.
     base::SequenceBound<FakeFeatureProvider> sb_fp;
@@ -65,8 +72,9 @@ class LearningTaskControllerHelperTest : public testing::Test {
         std::move(sb_fp));
   }
 
-  void OnLabelledExample(LabelledExample example) {
+  void OnLabelledExample(LabelledExample example, ukm::SourceId source_id) {
     most_recent_example_ = std::move(example);
+    most_recent_source_id_ = source_id;
   }
 
   // Since we're friends but the tests aren't.
@@ -86,6 +94,7 @@ class LearningTaskControllerHelperTest : public testing::Test {
 
   // Most recently added example via OnLabelledExample, if any.
   base::Optional<LabelledExample> most_recent_example_;
+  ukm::SourceId most_recent_source_id_;
 
   LearningTask task_;
 
@@ -98,13 +107,16 @@ TEST_F(LearningTaskControllerHelperTest, AddingAnExampleWithoutFPWorks) {
   // A helper that doesn't use a FeatureProvider should forward examples as soon
   // as they're done.
   CreateClient(false);
+  ukm::SourceId source_id = 2;
   helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
   helper_->CompleteObservation(
-      id_, ObservationCompletion(example_.target_value, example_.weight));
+      id_,
+      ObservationCompletion(example_.target_value, example_.weight, source_id));
   EXPECT_TRUE(most_recent_example_);
   EXPECT_EQ(*most_recent_example_, example_);
   EXPECT_EQ(most_recent_example_->weight, example_.weight);
+  EXPECT_EQ(most_recent_source_id_, source_id);
   EXPECT_EQ(pending_example_count(), 0u);
 }
 

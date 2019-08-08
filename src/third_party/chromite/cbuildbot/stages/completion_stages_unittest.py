@@ -29,7 +29,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import portage_util
-from chromite.lib import tree_status
 from chromite.lib.buildstore import FakeBuildStore
 
 # pylint: disable=protected-access
@@ -786,7 +785,7 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
   def testSendInfraAlertIfNeededWithAlerts(self):
     """Test SendInfraAlertIfNeeded which sends alerts."""
-    mock_send_alert = self.PatchObject(tree_status, 'SendHealthAlert')
+    mock_send_alert = self.PatchObject(alerts, 'SendHealthAlert')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetInfraFailMessages', return_value=['failure_message'])
     self.PatchObject(builder_status_lib,
@@ -803,7 +802,7 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
   def testSendInfraAlertIfNeededWithoutAlerts(self):
     """Test SendInfraAlertIfNeeded which doesn't send alerts."""
-    mock_send_alert = self.PatchObject(tree_status, 'SendHealthAlert')
+    mock_send_alert = self.PatchObject(alerts, 'SendHealthAlert')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetInfraFailMessages', return_value=[])
     self.PatchObject(builder_status_lib,

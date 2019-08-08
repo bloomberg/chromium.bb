@@ -254,7 +254,6 @@ CronetPrefsManager::CronetPrefsManager(
   }
 
   {
-    SCOPED_UMA_HISTOGRAM_TIMER("Net.Cronet.PrefsInitTime");
     base::ScopedAllowBlocking allow_blocking;
     pref_service_ = factory.Create(registry.get());
   }

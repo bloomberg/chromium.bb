@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -77,8 +78,10 @@ DummyPageHolder::DummyPageHolder(
   if (!local_frame_client_)
     local_frame_client_ = MakeGarbageCollected<DummyLocalFrameClient>();
 
-  frame_ = LocalFrame::Create(local_frame_client_.Get(), *page_, nullptr);
-  frame_->SetView(LocalFrameView::Create(*frame_, initial_view_size));
+  frame_ = MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), *page_,
+                                            nullptr);
+  frame_->SetView(
+      MakeGarbageCollected<LocalFrameView>(*frame_, initial_view_size));
   frame_->View()->GetPage()->GetVisualViewport().SetSize(initial_view_size);
   frame_->Init();
 

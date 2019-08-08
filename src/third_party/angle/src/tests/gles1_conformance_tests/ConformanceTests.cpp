@@ -128,11 +128,7 @@ class GLES1ConformanceTest : public ANGLETest
         setConfigStencilBits(8);
     }
 
-    void SetUp() override
-    {
-        ANGLETest::SetUp();
-        ExtTestDriverSetup();
-    }
+    void testSetUp() override { ExtTestDriverSetup(); }
 };
 
 TEST_P(GLES1ConformanceTest, AmbLight)
@@ -479,7 +475,7 @@ TEST_P(GLES1ConformanceTest, ZBFunc)
 
 TEST_P(GLES1ConformanceTest, DrawTex)
 {
-    ASSERT_TRUE(extensionEnabled("GL_OES_draw_texture"));
+    ASSERT_TRUE(IsGLExtensionEnabled("GL_OES_draw_texture"));
     ASSERT_NE(CONFORMANCE_TEST_ERROR, DrawTexExec());
 }
 

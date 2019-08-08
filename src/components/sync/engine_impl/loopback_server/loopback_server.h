@@ -73,6 +73,10 @@ class LoopbackServer {
     }
   }
 
+  const std::vector<std::string>& GetKeystoreKeysForTesting() const {
+    return keystore_keys_;
+  }
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;
@@ -89,6 +93,7 @@ class LoopbackServer {
 
   // Processes a GetUpdates call.
   bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
+                               const std::string& store_birthday,
                                sync_pb::GetUpdatesResponse* response,
                                std::vector<ModelType>* datatypes_to_migrate);
 

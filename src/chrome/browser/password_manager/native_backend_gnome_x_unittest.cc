@@ -368,7 +368,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.password_value = UTF8ToUTF16("seekrit");
     form_google_.submit_element = UTF8ToUTF16("submit");
     form_google_.signon_realm = "http://www.google.com/";
-    form_google_.type = PasswordForm::TYPE_GENERATED;
+    form_google_.type = PasswordForm::Type::kGenerated;
     form_google_.date_created = base::Time::Now();
     form_google_.date_synced = base::Time::Now();
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");
@@ -376,7 +376,8 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.federation_origin =
         url::Origin::Create(GURL("http://www.google.com/"));
     form_google_.skip_zero_click = true;
-    form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
+    form_google_.generation_upload_status =
+        PasswordForm::GenerationUploadStatus::kPositiveSignalSent;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
@@ -394,7 +395,8 @@ class NativeBackendGnomeTest : public testing::Test {
     form_facebook_.federation_origin =
         url::Origin::Create(GURL("http://www.facebook.com/"));
     form_facebook_.skip_zero_click = true;
-    form_facebook_.generation_upload_status = PasswordForm::NO_SIGNAL_SENT;
+    form_facebook_.generation_upload_status =
+        PasswordForm::GenerationUploadStatus::kNoSignalSent;
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -459,9 +461,9 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckUint32Attribute(item, "preferred", form.preferred);
     // We don't check the date created. It varies.
     CheckUint32Attribute(item, "blacklisted_by_user", form.blacklisted_by_user);
-    CheckUint32Attribute(item, "type", form.type);
+    CheckUint32Attribute(item, "type", static_cast<uint32_t>(form.type));
     CheckUint32Attribute(item, "times_used", form.times_used);
-    CheckUint32Attribute(item, "scheme", form.scheme);
+    CheckUint32Attribute(item, "scheme", static_cast<uint32_t>(form.scheme));
     CheckStringAttribute(
         item, "date_synced",
         base::NumberToString(form.date_synced.ToInternalValue()));
@@ -475,7 +477,7 @@ class NativeBackendGnomeTest : public testing::Test {
                              : form.federation_origin.Serialize());
     CheckUint32Attribute(item, "should_skip_zero_click", form.skip_zero_click);
     CheckUint32Attribute(item, "generation_upload_status",
-                         form.generation_upload_status);
+                         static_cast<uint32_t>(form.generation_upload_status));
     CheckStringAttribute(item, "application", app_string);
     autofill::FormData actual;
     DeserializeFormDataFromBase64String(
@@ -500,7 +502,7 @@ class NativeBackendGnomeTest : public testing::Test {
                        base::Unretained(&backend), credentials));
 
     PasswordStore::FormDigest target_form = {scheme, url.spec(), url};
-    if (scheme != PasswordForm::SCHEME_HTML) {
+    if (scheme != PasswordForm::Scheme::kHtml) {
       // For non-HTML forms, the realm used for authentication
       // (http://tools.ietf.org/html/rfc1945#section-10.2) is appended to the
       // signon_realm. Just use a default value for now.
@@ -550,7 +552,7 @@ class NativeBackendGnomeTest : public testing::Test {
     // Get the PSL-matched copy of the saved login for m.facebook.
     const GURL kMobileURL("http://m.facebook.com/");
     PasswordStore::FormDigest m_facebook_lookup = {
-        PasswordForm::SCHEME_HTML, kMobileURL.spec(), kMobileURL};
+        PasswordForm::Scheme::kHtml, kMobileURL.spec(), kMobileURL};
     std::vector<std::unique_ptr<PasswordForm>> form_list;
     base::PostTaskAndReplyWithResult(
         backend.GetBackgroundTaskRunner().get(), FROM_HERE,
@@ -656,9 +658,9 @@ class NativeBackendGnomeTest : public testing::Test {
     other_auth_.scheme = scheme;
 
     // Don't match a non-HTML form with an HTML form.
-    EXPECT_FALSE(CheckCredentialAvailability(
-        other_auth_, GURL("http://www.example.com"),
-        PasswordForm::SCHEME_HTML, nullptr));
+    EXPECT_FALSE(
+        CheckCredentialAvailability(other_auth_, GURL("http://www.example.com"),
+                                    PasswordForm::Scheme::kHtml, nullptr));
     // Don't match an HTML form with non-HTML auth form.
     EXPECT_FALSE(CheckCredentialAvailability(
         form_google_, GURL("http://www.google.com/"), scheme, nullptr));
@@ -795,7 +797,7 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
   PasswordForm result;
   const GURL kMobileURL("http://m.facebook.com/");
   EXPECT_TRUE(CheckCredentialAvailability(
-      form_facebook_, kMobileURL, PasswordForm::SCHEME_HTML, &result));
+      form_facebook_, kMobileURL, PasswordForm::Scheme::kHtml, &result));
   EXPECT_EQ(form_facebook_.origin, result.origin);
   EXPECT_EQ(form_facebook_.signon_realm, result.signon_realm);
 }
@@ -805,21 +807,21 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
 TEST_F(NativeBackendGnomeTest, PSLMatchingNegativeDomainMismatch) {
   EXPECT_FALSE(CheckCredentialAvailability(
       form_facebook_, GURL("http://m-facebook.com/"),
-      PasswordForm::SCHEME_HTML, nullptr));
+      PasswordForm::Scheme::kHtml, nullptr));
 }
 
 // Test PSL matching is off for domains excluded from it.
 TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
-  EXPECT_FALSE(CheckCredentialAvailability(
-      form_google_, GURL("http://one.google.com/"),
-      PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_FALSE(
+      CheckCredentialAvailability(form_google_, GURL("http://one.google.com/"),
+                                  PasswordForm::Scheme::kHtml, nullptr));
 }
 
 // Make sure PSL matches aren't available for non-HTML forms.
 TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledForNonHTMLForms) {
-  CheckMatchingWithScheme(PasswordForm::SCHEME_BASIC);
-  CheckMatchingWithScheme(PasswordForm::SCHEME_DIGEST);
-  CheckMatchingWithScheme(PasswordForm::SCHEME_OTHER);
+  CheckMatchingWithScheme(PasswordForm::Scheme::kBasic);
+  CheckMatchingWithScheme(PasswordForm::Scheme::kDigest);
+  CheckMatchingWithScheme(PasswordForm::Scheme::kOther);
 }
 
 TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictUpdateLogin) {
@@ -835,9 +837,9 @@ TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnHTTPS) {
   other_auth_.origin = GURL("https://www.example.com/");
   other_auth_.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
-  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
-                                          GURL("https://www.example.com/"),
-                                          PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_TRUE(
+      CheckCredentialAvailability(other_auth_, GURL("https://www.example.com/"),
+                                  PasswordForm::Scheme::kHtml, nullptr));
 }
 
 TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnLocalhost) {
@@ -845,9 +847,9 @@ TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnLocalhost) {
   other_auth_.origin = GURL("http://localhost:8080/");
   other_auth_.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
-  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
-                                          GURL("http://localhost:8080/"),
-                                          PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_TRUE(
+      CheckCredentialAvailability(other_auth_, GURL("http://localhost:8080/"),
+                                  PasswordForm::Scheme::kHtml, nullptr));
 }
 
 TEST_F(NativeBackendGnomeTest, DontFetchFederatedCredentialOnHTTP) {
@@ -855,9 +857,9 @@ TEST_F(NativeBackendGnomeTest, DontFetchFederatedCredentialOnHTTP) {
   other_auth_.origin = GURL("https://www.example.com/");
   other_auth_.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
-  EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
-                                           GURL("http://www.example.com/"),
-                                           PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_FALSE(
+      CheckCredentialAvailability(other_auth_, GURL("http://www.example.com/"),
+                                  PasswordForm::Scheme::kHtml, nullptr));
 }
 
 TEST_F(NativeBackendGnomeTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
@@ -865,9 +867,9 @@ TEST_F(NativeBackendGnomeTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
   other_auth_.origin = GURL("https://www.sub.example.com/");
   other_auth_.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
-  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
-                                          GURL("https://www.example.com/"),
-                                          PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_TRUE(
+      CheckCredentialAvailability(other_auth_, GURL("https://www.example.com/"),
+                                  PasswordForm::Scheme::kHtml, nullptr));
 }
 
 TEST_F(NativeBackendGnomeTest, DontFetchPSLMatchedFederatedCredentialOnHTTP) {
@@ -875,9 +877,9 @@ TEST_F(NativeBackendGnomeTest, DontFetchPSLMatchedFederatedCredentialOnHTTP) {
   other_auth_.origin = GURL("https://www.sub.example.com/");
   other_auth_.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
-  EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
-                                           GURL("http://www.example.com/"),
-                                           PasswordForm::SCHEME_HTML, nullptr));
+  EXPECT_FALSE(
+      CheckCredentialAvailability(other_auth_, GURL("http://www.example.com/"),
+                                  PasswordForm::Scheme::kHtml, nullptr));
 }
 
 TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
@@ -1125,7 +1127,7 @@ TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
   backend.Init();
 
   PasswordForm saved_android_form;
-  saved_android_form.scheme = PasswordForm::SCHEME_HTML;
+  saved_android_form.scheme = PasswordForm::Scheme::kHtml;
   saved_android_form.signon_realm =
       "android://7x7IDboo8u9YKraUsbmVkuf1-@net.rateflix.app/";
   saved_android_form.username_value = base::UTF8ToUTF16("randomusername");

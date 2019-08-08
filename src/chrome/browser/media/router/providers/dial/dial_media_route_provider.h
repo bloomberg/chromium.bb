@@ -153,7 +153,7 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
                              const std::vector<url::Origin>& origins);
 
   void HandleParsedRouteMessage(const MediaRoute::Id& route_id,
-                                std::unique_ptr<base::Value> message);
+                                base::Value message);
   void HandleClientConnect(const DialActivity& activity,
                            const MediaSinkInternal& sink);
   void SendCustomDialLaunchMessage(const MediaRoute::Id& route_id,

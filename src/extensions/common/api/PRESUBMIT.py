@@ -22,10 +22,11 @@ def _CheckExterns(input_api, output_api):
 
   join = input_api.os_path.join
   api_root = input_api.PresubmitLocalPath()
-  externs_root = join(api_root, '..', '..', '..', 'third_party',
-      'closure_compiler', 'externs')
+  externs_root = input_api.os_path.abspath(join(
+      api_root, '..', '..', '..', 'third_party', 'closure_compiler', 'externs'))
 
   api_pairs = {
+    join(api_root, 'automation.idl'): join(externs_root, 'automation.js'),
     join(api_root, 'bluetooth.idl'): join(externs_root, 'bluetooth.js'),
     join(api_root, 'metrics_private.json'):
         join(externs_root, 'metrics_private.js'),

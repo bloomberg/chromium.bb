@@ -15,6 +15,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+namespace viz {
+class VulkanContextProvider;
+}  // namespace viz
+
 namespace gpu {
 
 class ImageFactory;
@@ -25,7 +29,8 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactory {
 
   // Creates a new factory instance for native GPU memory buffers. Returns null
   // if native buffers are not supported.
-  static std::unique_ptr<GpuMemoryBufferFactory> CreateNativeType();
+  static std::unique_ptr<GpuMemoryBufferFactory> CreateNativeType(
+      viz::VulkanContextProvider* vulkan_context_provider);
 
   // Creates a new GPU memory buffer instance. A valid handle is returned on
   // success. It can be called on any thread.

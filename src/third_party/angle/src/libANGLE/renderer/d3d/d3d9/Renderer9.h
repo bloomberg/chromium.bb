@@ -109,11 +109,11 @@ class Renderer9 : public RendererD3D
     void freeEventQuery(IDirect3DQuery9 *query);
 
     // resource creation
-    angle::Result createVertexShader(Context9 *context9,
+    angle::Result createVertexShader(d3d::Context *context,
                                      const DWORD *function,
                                      size_t length,
                                      IDirect3DVertexShader9 **outShader);
-    angle::Result createPixelShader(Context9 *context9,
+    angle::Result createPixelShader(d3d::Context *context,
                                     const DWORD *function,
                                     size_t length,
                                     IDirect3DPixelShader9 **outShader);
@@ -438,7 +438,7 @@ class Renderer9 : public RendererD3D
                       gl::Extensions *outExtensions,
                       gl::Limitations *outLimitations) const override;
 
-    angle::WorkaroundsD3D generateWorkarounds() const override;
+    void generateWorkarounds(angle::WorkaroundsD3D *workarounds) const override;
 
     angle::Result setBlendDepthRasterStates(const gl::Context *context, gl::PrimitiveMode drawMode);
 

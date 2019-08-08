@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -134,8 +134,7 @@ std::vector<std::string> PopulateExpectedPolicy(
 
   // Populate expected status.
   if (unknown)
-    expected_policy.push_back(
-        l10n_util::GetStringUTF8(IDS_POLICY_HEADER_WARNING));
+    expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_LABEL_ERROR));
   else if (!policy_map_entry)
     expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_UNSET));
   else
@@ -149,6 +148,8 @@ void SetExpectedPolicy(base::DictionaryValue* expected,
                        const std::string& scope,
                        const std::string& source,
                        const std::string& error,
+                       const std::string& warning,
+                       bool ignored,
                        const base::Value& value) {
   const char prefix[] = "chromePolicies";
   expected->SetPath({prefix, name.c_str(), "level"}, base::Value(level));
@@ -156,6 +157,10 @@ void SetExpectedPolicy(base::DictionaryValue* expected,
   expected->SetPath({prefix, name.c_str(), "source"}, base::Value(source));
   if (!error.empty())
     expected->SetPath({prefix, name.c_str(), "error"}, base::Value(error));
+  if (!warning.empty())
+    expected->SetPath({prefix, name.c_str(), "warning"}, base::Value(warning));
+  if (ignored)
+    expected->SetPath({prefix, name.c_str(), "ignored"}, base::Value(ignored));
   expected->SetPath({prefix, name.c_str(), "value"}, value.Clone());
 }
 
@@ -242,8 +247,7 @@ void PolicyUITest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-  policy::ProfilePolicyConnectorFactory::GetInstance()->PushProviderForTesting(
-      &provider_);
+  policy::PushProfilePolicyConnectorProviderForTesting(&provider_);
 
   // Create a directory for testing exporting policies.
   ASSERT_TRUE(export_policies_test_dir.CreateUniqueTempDir());
@@ -325,7 +329,7 @@ void PolicyUITest::VerifyExportingPolicies(
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(contents, javascript));
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   // Open the created file.
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string file_contents;
@@ -358,14 +362,14 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              popups_blocked_for_urls.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kPopupsBlockedForUrls,
                     "mandatory", "machine", "sourcePlatform", std::string(),
-                    popups_blocked_for_urls);
+                    std::string(), false, popups_blocked_for_urls);
 
   values.Set(policy::key::kDefaultImagesSetting, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
              std::make_unique<base::Value>(2), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kDefaultImagesSetting,
                     "mandatory", "machine", "sourceCloud", std::string(),
-                    base::Value(2));
+                    std::string(), false, base::Value(2));
 
   // This also checks that we save complex policies correctly.
   base::DictionaryValue unknown_policy;
@@ -380,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              unknown_policy.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, kUnknownPolicy, "recommended", "user",
                     "sourceCloud", l10n_util::GetStringUTF8(IDS_POLICY_UNKNOWN),
-                    unknown_policy);
+                    std::string(), false, unknown_policy);
 
   // Set the extension policies to an empty dictionary as we haven't added any
   // such policies.
@@ -412,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              std::make_unique<base::Value>(false), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kAllowFileSelectionDialogs,
                     "mandatory", "machine", "sourcePlatform", std::string(),
-                    base::Value(false));
+                    std::string(), false, base::Value(false));
 #endif
 
   popups_blocked_for_urls.AppendString("ddd");
@@ -421,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              popups_blocked_for_urls.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kPopupsBlockedForUrls,
                     "mandatory", "machine", "sourcePlatform", std::string(),
-                    popups_blocked_for_urls);
+                    std::string(), false, popups_blocked_for_urls);
 
   provider_.UpdateChromePolicy(values);
 

@@ -33,6 +33,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
  public:
   struct COMPONENT_EXPORT(DEVICE_FIDO) Config {
     Config();
+    Config(const Config&);
+    Config& operator=(const Config&);
+    ~Config();
 
     // u2f_support, if true, makes this device a dual-protocol (i.e. CTAP2 and
     // U2F) device.
@@ -40,6 +43,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     bool pin_support = false;
     bool internal_uv_support = false;
     bool resident_key_support = false;
+    bool credential_management_support = false;
+    bool bio_enrollment_support = false;
+    bool cred_protect_support = false;
     // resident_credential_storage is the number of resident credentials that
     // the device will store before returning KEY_STORE_FULL.
     size_t resident_credential_storage = 3;
@@ -59,6 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // reject_silent_authenticator_requests causes the authenticator to return
     // an error if a up=false assertion request is received.
     bool reject_silent_authentication_requests = false;
+    bool is_platform_authenticator = false;
   };
 
   VirtualCtap2Device();
@@ -83,9 +90,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
                                             std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,
                                       std::vector<uint8_t>* response);
-
+  CtapDeviceResponseCode OnCredentialManagement(
+      base::span<const uint8_t> request,
+      std::vector<uint8_t>* response);
+  CtapDeviceResponseCode OnBioEnrollment(base::span<const uint8_t> request,
+                                         std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnAuthenticatorGetInfo(
       std::vector<uint8_t>* response) const;
+
+  void InitPendingRPs();
+  void GetNextRP(cbor::Value::MapValue* response_map);
+  void InitPendingRegistrations(base::span<const uint8_t> rp_id_hash);
 
   AttestedCredentialData ConstructAttestedCredentialData(
       std::vector<uint8_t> u2f_data,
@@ -111,7 +126,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::pair<CtapMakeCredentialRequest,
                          CtapMakeCredentialRequest::ClientDataHash>>
-ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes);
+ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map);
 
 // Decodes a CBOR-encoded CTAP2 authenticatorGetAssertion request message. The
 // request's client_data_json() value will be empty, and the hashed client data
@@ -119,7 +134,7 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes);
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<
     std::pair<CtapGetAssertionRequest, CtapGetAssertionRequest::ClientDataHash>>
-ParseCtapGetAssertionRequest(base::span<const uint8_t> request_bytes);
+ParseCtapGetAssertionRequest(const cbor::Value::MapValue& request_map);
 
 }  // namespace device
 

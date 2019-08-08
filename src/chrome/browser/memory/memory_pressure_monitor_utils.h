@@ -37,7 +37,7 @@ class ObservationWindow {
   void OnSample(const T sample);
 
   // Returns the number of samples in this window.
-  size_t SampleCount() { return observations_.size(); }
+  size_t SampleCount() const { return observations_.size(); }
 
  protected:
   using Observation = std::pair<const base::TimeTicks, const T>;
@@ -109,8 +109,10 @@ class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
   ~FreeMemoryObservationWindow() override;
 
   // Check if the memory is under one of the limits.
-  bool MemoryIsUnderEarlyLimit();
-  bool MemoryIsUnderCriticalLimit();
+  bool MemoryIsUnderEarlyLimit() const;
+  bool MemoryIsUnderCriticalLimit() const;
+
+  const Config& config_for_testing() const { return config_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ObservationWindowTest, FreeMemoryObservationWindow);
@@ -119,7 +121,7 @@ class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
   void OnSampleAdded(const int& sample) override;
   void OnSampleRemoved(const int& sample) override;
 
-  bool MemoryIsUnderLimitImpl(size_t sample_under_limit_cnt);
+  bool MemoryIsUnderLimitImpl(size_t sample_under_limit_cnt) const;
 
   // The current number of samples that are below each threshold.
   size_t sample_below_early_limit_count_ = 0;
@@ -151,7 +153,7 @@ class DiskIdleTimeObservationWindow
   ~DiskIdleTimeObservationWindow() override;
 
   // Check if the disk idle time was low over the observation period.
-  bool DiskIdleTimeIsLow();
+  bool DiskIdleTimeIsLow() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ObservationWindowTest,

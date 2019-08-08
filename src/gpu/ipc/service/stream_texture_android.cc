@@ -223,6 +223,30 @@ void StreamTexture::OnForwardForSurfaceRequest(
                                              surface_owner_.get());
 }
 
+void StreamTexture::OnSetSize(const gfx::Size& size) {
+  size_ = size;
+  if (!owner_stub_ || !surface_owner_.get())
+    return;
+
+  gles2::ContextGroup* context_group =
+      owner_stub_->decoder_context()->GetContextGroup();
+  DCHECK(context_group);
+  TextureManager* texture_manager = context_group->texture_manager();
+  gles2::Texture* texture =
+      texture_manager->GetTextureForServiceId(texture_id_);
+  if (texture) {
+    // SetLevelInfo will reset the image / stream texture image, which may be
+    // the last reference to |this|, so keep a reference around, and make sure
+    // to reset the stream texture image.
+    scoped_refptr<StreamTexture> self(this);
+    texture->SetLevelInfo(GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA, size.width(),
+                          size.height(), 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                          gfx::Rect(size));
+    texture->SetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
+                                        gles2::Texture::UNBOUND, 0);
+  }
+}
+
 StreamTexture::BindOrCopy StreamTexture::ShouldBindOrCopy() {
   return COPY;
 }

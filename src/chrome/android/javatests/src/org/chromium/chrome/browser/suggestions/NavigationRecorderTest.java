@@ -57,7 +57,10 @@ public class NavigationRecorderTest {
 
     @After
     public void tearDown() {
-        mTestServer.stopAndDestroyServer();
+        // If setUp() fails, tearDown() still needs to be able to execute without exceptions.
+        if (mTestServer != null) {
+            mTestServer.stopAndDestroyServer();
+        }
     }
 
     @Test

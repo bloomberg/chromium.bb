@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1289966288285062467">Chromium 隱私權聲明</translation>
 <translation id="1472013873724362412">無法使用您的帳戶登入 Chromium，請洽詢您的網域管理員或使用一般 Google 帳戶登入。</translation>
+<translation id="1507010443238049608">協助改善 Chromium 的功能與效能</translation>
 <translation id="1617663976202781617">來自 Chromium Sync 的資料</translation>
 <translation id="1736662517232558588">已清除 Chromium 資料</translation>
 <translation id="1838412507805038478">Chromium 已驗證這個網站的憑證是由「<ph name="ISSUER" />」所核發。</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">部分外掛程式造成 Chromium 當機，請解除安裝這些外掛程式：</translation>
 <translation id="2178608107313874732">Chromium 目前無法使用你的相機</translation>
 <translation id="2195025571279539885">下次造訪這個網站時，需要 Chromium 為您翻譯其中的<ph name="LANGUAGE_NAME" />網頁嗎？</translation>
-<translation id="2517624234762908348">同步處理你的 Chromium 資料</translation>
+<translation id="2590893390871230428">同步處理你的 Chromium 資料</translation>
 <translation id="2647554856022461007">Chromium 可能會使用網路服務改善你的瀏覽體驗。不過，你可以選擇停用這些服務。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">另一個應用程式正在使用你的相機，因此 Chromium 無法使用</translation>
 <translation id="2915596697727466327">Chromium 會使用 Face ID 來確保只有經過授權的使用者才能存取你的密碼。</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">如要在所有裝置上存取你的分頁，請登入 Chromium。</translation>
 <translation id="4157467675761413638">Chromium 提示。如需更多分頁選項，請按住工具列 (位於畫面底部或頂端) 中的 [顯示分頁] 按鈕。</translation>
 <translation id="4241912885070669028">你即將登出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 所管理的帳戶。系統會將你的 Chromium 資料從這個裝置上刪除，但繼續保留在你的 Google 帳戶中。</translation>
-<translation id="4272892696084633551">協助改善 Chromium 的功能與效能</translation>
 <translation id="4555020257205549924">開啟這項功能後，Chromium 會使用 Google 翻譯來翻譯其他語言的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">你在其他裝置上透過 Chromium 開啟的分頁會顯示在這裡。</translation>
 <translation id="495292094137889840">開始使用 Chromium QR 掃描器</translation>

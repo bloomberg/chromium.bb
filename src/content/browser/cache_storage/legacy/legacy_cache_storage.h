@@ -29,9 +29,9 @@ class BlobStorageContext;
 
 namespace content {
 class CacheStorageIndex;
-class CacheStorageManager;
 class CacheStorageScheduler;
 enum class CacheStorageOwner;
+class LegacyCacheStorageManager;
 
 namespace cache_storage_manager_unittest {
 class CacheStorageManagerTest;
@@ -54,9 +54,10 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
-      CacheStorageManager* cache_storage_manager,
+      LegacyCacheStorageManager* cache_storage_manager,
       const url::Origin& origin,
       CacheStorageOwner owner);
 
@@ -296,7 +297,7 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
 
   // The manager that owns this cache storage. Only set to null by
   // RemoveManager() when this cache storage is being deleted.
-  CacheStorageManager* cache_storage_manager_;
+  LegacyCacheStorageManager* cache_storage_manager_;
 
   base::CancelableOnceClosure index_write_task_;
   size_t handle_ref_count_ = 0;

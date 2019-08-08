@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sequence_id.h"
@@ -66,6 +67,11 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   void OnUpdateSharedImage(const Mailbox& mailbox, uint32_t release_id);
   void OnDestroySharedImage(const Mailbox& mailbox);
   void OnRegisterSharedImageUploadBuffer(base::ReadOnlySharedMemoryRegion shm);
+#if defined(OS_WIN)
+  void OnCreateSwapChain(const GpuChannelMsg_CreateSwapChain_Params& params);
+  void OnPresentSwapChain(const Mailbox& mailbox, uint32_t release_id);
+#endif  // OS_WIN
+
   bool MakeContextCurrent();
   ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();

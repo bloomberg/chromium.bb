@@ -112,9 +112,11 @@ BigBufferView::BigBufferView(base::span<const uint8_t> bytes) {
     if (buffer.is_valid()) {
       storage_type_ = BigBuffer::StorageType::kSharedMemory;
       shared_memory_.emplace(std::move(buffer), bytes.size());
-      std::copy(bytes.begin(), bytes.end(),
-                static_cast<uint8_t*>(shared_memory_->buffer_mapping_.get()));
-      return;
+      if (shared_memory_->buffer_mapping_) {
+        std::copy(bytes.begin(), bytes.end(),
+                  static_cast<uint8_t*>(shared_memory_->buffer_mapping_.get()));
+        return;
+      }
     }
 
     if (bytes.size() > kMaxFallbackInlineBytes) {

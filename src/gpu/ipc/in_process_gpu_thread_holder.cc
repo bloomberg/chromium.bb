@@ -27,8 +27,8 @@ InProcessGpuThreadHolder::InProcessGpuThreadHolder()
 
   gpu::GPUInfo gpu_info;
   gpu::CollectGraphicsInfoForTesting(&gpu_info);
-  gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-      gpu_info, gpu_preferences_, command_line, nullptr);
+  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info, gpu_preferences_,
+                                                 command_line, nullptr);
 
   Start();
 }
@@ -73,7 +73,7 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   task_executor_ = std::make_unique<GpuInProcessThreadService>(
       task_runner(), scheduler_.get(), sync_point_manager_.get(),
       mailbox_manager_.get(), nullptr, gl::GLSurfaceFormat(), gpu_feature_info_,
-      gpu_preferences_, shared_image_manager_.get(), nullptr);
+      gpu_preferences_, shared_image_manager_.get(), nullptr, nullptr);
 
   completion->Signal();
 }

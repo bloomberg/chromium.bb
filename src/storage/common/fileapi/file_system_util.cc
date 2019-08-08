@@ -176,8 +176,7 @@ bool ParseFileSystemSchemeURL(const GURL& url,
   if (file_system_type == kFileSystemTypeUnknown)
     return false;
 
-  std::string path;
-  net::UnescapeBinaryURLComponent(url.path(), &path);
+  std::string path = net::UnescapeBinaryURLComponent(url.path_piece());
 
   // Ensure the path is relative.
   while (!path.empty() && path[0] == '/')

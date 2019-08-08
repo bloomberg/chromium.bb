@@ -50,11 +50,11 @@ BookmarkEditorView::BookmarkEditorView(
     const EditDetails& details,
     BookmarkEditor::Configuration configuration)
     : profile_(profile),
-      tree_view_(NULL),
-      url_label_(NULL),
-      url_tf_(NULL),
-      title_label_(NULL),
-      title_tf_(NULL),
+      tree_view_(nullptr),
+      url_label_(nullptr),
+      url_tf_(nullptr),
+      title_label_(nullptr),
+      title_tf_(nullptr),
       parent_(parent),
       details_(details),
       bb_model_(BookmarkModelFactory::GetForBrowserContext(profile)),
@@ -73,7 +73,7 @@ BookmarkEditorView::~BookmarkEditorView() {
   // The tree model is deleted before the view. Reset the model otherwise the
   // tree will reference a deleted model.
   if (tree_view_)
-    tree_view_->SetModel(NULL);
+    tree_view_->SetModel(nullptr);
   bb_model_->RemoveObserver(this);
 }
 
@@ -204,9 +204,9 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
     if (node->value != 0) {
       const BookmarkNode* b_node =
           bookmarks::GetBookmarkNodeByID(bb_model_, node->value);
-      if (!b_node->empty() &&
+      if (!b_node->children().empty() &&
           !chrome::ConfirmDeleteBookmarkNode(b_node,
-            GetWidget()->GetNativeWindow())) {
+                                             GetWidget()->GetNativeWindow())) {
         // The folder is not empty and the user didn't confirm.
         return;
       }
@@ -247,7 +247,7 @@ void BookmarkEditorView::ShowContextMenuForViewImpl(
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 
   context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                                  NULL, gfx::Rect(point, gfx::Size()),
+                                  nullptr, gfx::Rect(point, gfx::Size()),
                                   views::MenuAnchorPosition::kTopRight,
                                   source_type);
 }
@@ -327,9 +327,8 @@ void BookmarkEditorView::Init() {
     tree_view->SetRootShown(false);
     tree_view->set_context_menu_controller(this);
 
-    new_folder_button_.reset(views::MdTextButton::CreateSecondaryUiButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
+    new_folder_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
     new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }
@@ -424,7 +423,7 @@ void BookmarkEditorView::Reset() {
 
   // Do this first, otherwise when we invoke SetModel with the real one
   // tree_view will try to invoke something on the model we just deleted.
-  tree_view_->SetModel(NULL);
+  tree_view_->SetModel(nullptr);
 
   tree_model_.reset(new EditorTreeModel(CreateRootNode()));
 
@@ -534,7 +533,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 void BookmarkEditorView::ApplyEdits() {
@@ -543,8 +542,8 @@ void BookmarkEditorView::ApplyEdits() {
   if (tree_view_)
     tree_view_->CommitEdit();
 
-  EditorNode* parent = show_tree_ ?
-      tree_model_->AsNode(tree_view_->GetSelectedNode()) : NULL;
+  EditorNode* parent =
+      show_tree_ ? tree_model_->AsNode(tree_view_->GetSelectedNode()) : nullptr;
   if (show_tree_ && !parent) {
     NOTREACHED();
     return;
@@ -570,7 +569,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   }
 
   // Create the new folders and update the titles.
-  const BookmarkNode* new_parent = NULL;
+  const BookmarkNode* new_parent = nullptr;
   ApplyNameChangesAndCreateNewFolders(
       bb_model_->root_node(), tree_model_->GetRoot(), parent, &new_parent);
 
@@ -595,7 +594,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     *parent_bb_node = bb_node;
   for (int i = 0; i < b_node->child_count(); ++i) {
     EditorNode* child_b_node = b_node->GetChild(i);
-    const BookmarkNode* child_bb_node = NULL;
+    const BookmarkNode* child_bb_node = nullptr;
     if (child_b_node->value == 0) {
       // New folder.
       child_bb_node = bb_model_->AddFolder(bb_node,

@@ -156,8 +156,7 @@ void RunOnUIThread(base::OnceClosure task) {
 // static
 jlong JNI_AwQuotaManagerBridge_GetDefaultNativeAwQuotaManagerBridge(
     JNIEnv* env) {
-  AwBrowserContext* browser_context =
-      AwContentBrowserClient::GetAwBrowserContext();
+  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
 
   AwQuotaManagerBridge* bridge = static_cast<AwQuotaManagerBridge*>(
       browser_context->GetQuotaManagerBridge());

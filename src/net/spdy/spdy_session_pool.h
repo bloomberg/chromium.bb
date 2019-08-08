@@ -28,6 +28,7 @@
 #include "net/cert/cert_database.h"
 #include "net/log/net_log_source.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "net/socket/connect_job.h"
 #include "net/spdy/http2_push_promise_index.h"
 #include "net/spdy/server_push_delegate.h"
 #include "net/spdy/spdy_session_key.h"
@@ -70,22 +71,19 @@ class NET_EXPORT SpdySessionPool
     std::string payload;
   };
 
-  // A request for a SpdySession with a particular SpdySessionKey. These are
-  // created by calling CreateRequestForSpdySession(). The Delegate's
+  // A request for a SpdySession with a particular SpdySessionKey. The
+  // SpdySessionPool's RequestSession() creates these. The Delegate's
   // OnSpdySessionAvailable() method will be invoked when a matching SpdySession
-  // is added to the pool, if the consumer that inserts the SpdySession also
-  // calls OnNewSpdySessionReady. The Delegate's OnSpdySessionAvailable() method
-  // will be invoked at most once for a single SpdySessionRequest.
+  // is added to the pool. The Delegate's OnSpdySessionAvailable() method will
+  // be invoked at most once for a single SpdySessionRequest.
   //
   // Destroying the request will stop watching the pool for such a session. The
   // request must be destroyed before the SpdySessionPool is.
-  //
-  // TODO(mmenke): Remove the dependency on OnNewSpdySessionReady.
-  class SpdySessionRequest {
+  class NET_EXPORT_PRIVATE SpdySessionRequest {
    public:
     // Interface for watching for when a SpdySession with a provided key is
     // created.
-    class Delegate {
+    class NET_EXPORT_PRIVATE Delegate {
      public:
       Delegate();
       virtual ~Delegate();
@@ -102,6 +100,7 @@ class NET_EXPORT SpdySessionPool
     SpdySessionRequest(const SpdySessionKey& key,
                        bool enable_ip_based_pooling,
                        bool is_websocket,
+                       bool is_blocking_request_for_session,
                        Delegate* delegate,
                        SpdySessionPool* spdy_session_pool);
 
@@ -114,6 +113,9 @@ class NET_EXPORT SpdySessionPool
     const SpdySessionKey& key() const { return key_; }
     bool enable_ip_based_pooling() const { return enable_ip_based_pooling_; }
     bool is_websocket() const { return is_websocket_; }
+    bool is_blocking_request_for_session() const {
+      return is_blocking_request_for_session_;
+    }
     Delegate* delegate() { return delegate_; }
 
     // The associated SpdySessionPool, or nullptr if OnRemovedFromPool() has
@@ -124,25 +126,25 @@ class NET_EXPORT SpdySessionPool
     const SpdySessionKey key_;
     const bool enable_ip_based_pooling_;
     const bool is_websocket_;
+    const bool is_blocking_request_for_session_;
     Delegate* const delegate_;
     SpdySessionPool* spdy_session_pool_;
 
     DISALLOW_COPY_AND_ASSIGN(SpdySessionRequest);
   };
 
-  SpdySessionPool(
-      HostResolver* host_resolver,
-      SSLConfigService* ssl_config_service,
-      HttpServerProperties* http_server_properties,
-      TransportSecurityState* transport_security_state,
-      const quic::QuicTransportVersionVector& quic_supported_versions,
-      bool enable_ping_based_connection_checking,
-      bool support_ietf_format_quic_altsvc,
-      size_t session_max_recv_window_size,
-      const spdy::SettingsMap& initial_settings,
-      const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
-      SpdySessionPool::TimeFunc time_func,
-      NetworkQualityEstimator* network_quality_estimator);
+  SpdySessionPool(HostResolver* host_resolver,
+                  SSLConfigService* ssl_config_service,
+                  HttpServerProperties* http_server_properties,
+                  TransportSecurityState* transport_security_state,
+                  const quic::ParsedQuicVersionVector& quic_supported_versions,
+                  bool enable_ping_based_connection_checking,
+                  bool support_ietf_format_quic_altsvc,
+                  size_t session_max_recv_window_size,
+                  const spdy::SettingsMap& initial_settings,
+                  const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
+                  SpdySessionPool::TimeFunc time_func,
+                  NetworkQualityEstimator* network_quality_estimator);
   ~SpdySessionPool() override;
 
   // In the functions below, a session is "available" if this pool has
@@ -201,28 +203,41 @@ class NET_EXPORT SpdySessionPool
   // available through the creation of a new SpdySession (as opposed to by
   // creating an alias for an existing session with a new host).
   //
-  // |is_first_request_for_session| will be set to |true| if this is the first
-  // request for the session. If |on_request_destroyed_callback| is non-null and
-  // there is already at least one pending request for the session (i.e.,
-  // |is_first_request_for_session| is set to false), it will be invoked
-  // asynchronously whenever any matching |spdy_session_request| is destroyed or
-  // a matching SpdySession is created.
+  // |is_blocking_request_for_session| will be set to |true| if there is not
+  // another "blocking" request already pending. For example, the first request
+  // created will be considered "blocking", but subsequent requests will not as
+  // long as the "blocking" request is not destroyed.  Once the "blocking"
+  // request is destroyed, the next created request will be marked "blocking".
   //
-  // |delegate|, |spdy_session_request|, and |is_first_request_for_session| must
-  // all be non-null.
+  // If a request is created, that request is not the "blocking" request, and
+  // |on_blocking_request_destroyed_callback| is non-null, then
+  // |on_blocking_request_destroyed_callback| will be invoked asynchronously
+  // when the "blocking" request is destroyed. The callback associated with the
+  // "blocking" request is never invoked.
+  //
+  // |delegate|, |spdy_session_request|, and |is_blocking_request_for_session|
+  // must all be non-null.
   //
   // TODO(mmenke): Merge this into FindAvailableSession().
-  // TODO(mmenke): Don't invoke |on_request_destroyed_callback| when all
-  // requests for a session have been successfully responded to.
+  // TODO(mmenke): Don't invoke |on_blocking_request_destroyed_callback| when
+  // all requests for a session have been successfully responded to.
   base::WeakPtr<SpdySession> RequestSession(
       const SpdySessionKey& key,
       bool enable_ip_based_pooling,
       bool is_websocket,
       const NetLogWithSource& net_log,
-      base::RepeatingClosure on_request_destroyed_callback,
+      base::RepeatingClosure on_blocking_request_destroyed_callback,
       SpdySessionRequest::Delegate* delegate,
       std::unique_ptr<SpdySessionRequest>* spdy_session_request,
-      bool* is_first_request_for_session);
+      bool* is_blocking_request_for_session);
+
+  // Invoked when a host resolution completes. Returns
+  // OnHostResolutionCallbackResult::kMayBeDeletedAsync if there's a SPDY
+  // session that's a suitable alias for |key|, setting up the alias if needed.
+  OnHostResolutionCallbackResult OnHostResolutionComplete(
+      const SpdySessionKey& key,
+      bool is_websocket,
+      const AddressList& addresses);
 
   // Remove all mappings and aliases for the given session, which must
   // still be available. Except for in tests, this must be called by
@@ -296,13 +311,28 @@ class NET_EXPORT SpdySessionPool
  private:
   friend class SpdySessionPoolPeer;  // For testing.
 
-  typedef std::set<SpdySessionRequest*> RequestSet;
-  typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
   typedef std::set<SpdySession*> SessionSet;
   typedef std::vector<base::WeakPtr<SpdySession> > WeakSessionList;
-  typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
+  typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession>>
       AvailableSessionMap;
   typedef std::multimap<IPEndPoint, SpdySessionKey> AliasMap;
+
+  typedef std::set<SpdySessionRequest*> RequestSet;
+  struct RequestInfoForKey {
+    RequestInfoForKey();
+    ~RequestInfoForKey();
+
+    // Whether one of the requests in |RequestSet| has its
+    // is_blocking_request_for_session() bit set.
+    bool has_blocking_request = false;
+
+    RequestSet request_set;
+
+    // Set of callbacks watching for the blocking request to be destroyed.
+    std::list<base::RepeatingClosure> deferred_callbacks;
+  };
+
+  typedef std::map<SpdySessionKey, RequestInfoForKey> SpdySessionRequestMap;
 
   // Removes |request| from |spdy_session_request_map_|.
   void RemoveRequestForSpdySession(SpdySessionRequest* request);
@@ -388,7 +418,7 @@ class NET_EXPORT SpdySessionPool
   HostResolver* const resolver_;
 
   // Versions of QUIC which may be used.
-  const quic::QuicTransportVersionVector quic_supported_versions_;
+  const quic::ParsedQuicVersionVector quic_supported_versions_;
 
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
   bool enable_sending_initial_data_;
@@ -410,11 +440,7 @@ class NET_EXPORT SpdySessionPool
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<GreasedHttp2Frame> greased_http2_frame_;
 
-  // TODO(xunjieli): Merge these two.
   SpdySessionRequestMap spdy_session_request_map_;
-  typedef std::map<SpdySessionKey, std::list<base::RepeatingClosure>>
-      SpdySessionPendingRequestMap;
-  SpdySessionPendingRequestMap spdy_session_pending_request_map_;
 
   TimeFunc time_func_;
   ServerPushDelegate* push_delegate_;

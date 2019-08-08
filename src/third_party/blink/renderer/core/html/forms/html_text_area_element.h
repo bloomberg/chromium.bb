@@ -36,8 +36,6 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLTextAreaElement* Create(Document&);
-
   explicit HTMLTextAreaElement(Document&);
 
   unsigned cols() const { return cols_; }
@@ -80,7 +78,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) const;
   static String SanitizeUserInputValue(const String&, unsigned max_length);
   void UpdateValue();
-  void SetNonDirtyValue(const String&);
+  void SetNonDirtyValue(const String&, TextControlSetValueSelection);
   void SetValueCommon(const String&,
                       TextFieldEventBehavior,
                       TextControlSetValueSelection);

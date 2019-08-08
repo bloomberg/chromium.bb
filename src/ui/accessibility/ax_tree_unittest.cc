@@ -79,15 +79,21 @@ class TestAXTreeObserver : public AXTreeObserver {
     subtree_deleted_ids_.push_back(node->id());
   }
 
-  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {}
+  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {
+    node_will_be_reparented_ids_.push_back(node->id());
+  }
 
-  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {}
+  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {
+    subtree_will_be_reparented_ids_.push_back(node->id());
+  }
 
   void OnNodeCreated(AXTree* tree, AXNode* node) override {
     created_ids_.push_back(node->id());
   }
 
-  void OnNodeReparented(AXTree* tree, AXNode* node) override {}
+  void OnNodeReparented(AXTree* tree, AXNode* node) override {
+    node_reparented_ids_.push_back(node->id());
+  }
 
   void OnNodeChanged(AXTree* tree, AXNode* node) override {
     changed_ids_.push_back(node->id());
@@ -204,6 +210,15 @@ class TestAXTreeObserver : public AXTreeObserver {
   const std::vector<int32_t>& node_reparented_finished_ids() {
     return node_reparented_finished_ids_;
   }
+  const std::vector<int32_t>& subtree_will_be_reparented_ids() {
+    return subtree_will_be_reparented_ids_;
+  }
+  const std::vector<int32_t>& node_will_be_reparented_ids() {
+    return node_will_be_reparented_ids_;
+  }
+  const std::vector<int32_t>& node_reparented_ids() {
+    return node_reparented_ids_;
+  }
   const std::vector<int32_t>& subtree_reparented_finished_ids() {
     return subtree_reparented_finished_ids_;
   }
@@ -228,8 +243,11 @@ class TestAXTreeObserver : public AXTreeObserver {
   std::vector<int32_t> subtree_deleted_ids_;
   std::vector<int32_t> created_ids_;
   std::vector<int32_t> changed_ids_;
+  std::vector<int32_t> subtree_will_be_reparented_ids_;
+  std::vector<int32_t> node_will_be_reparented_ids_;
   std::vector<int32_t> node_creation_finished_ids_;
   std::vector<int32_t> subtree_creation_finished_ids_;
+  std::vector<int32_t> node_reparented_ids_;
   std::vector<int32_t> node_reparented_finished_ids_;
   std::vector<int32_t> subtree_reparented_finished_ids_;
   std::vector<int32_t> change_finished_ids_;
@@ -281,13 +299,13 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   EXPECT_EQ(root.id, root_node->id());
   EXPECT_EQ(root.role, root_node->data().role);
 
-  ASSERT_EQ(2, root_node->child_count());
+  ASSERT_EQ(2u, root_node->children().size());
 
-  const AXNode* button_node = root_node->ChildAtIndex(0);
+  const AXNode* button_node = root_node->children()[0];
   EXPECT_EQ(button.id, button_node->id());
   EXPECT_EQ(button.role, button_node->data().role);
 
-  const AXNode* checkbox_node = root_node->ChildAtIndex(1);
+  const AXNode* checkbox_node = root_node->children()[1];
   EXPECT_EQ(checkbox.id, checkbox_node->id());
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
 
@@ -460,6 +478,50 @@ TEST(AXTreeTest, NoReparentingOfRootIfNoNewRoot) {
 
   ASSERT_EQ(1U, test_observer.change_finished_ids().size());
   EXPECT_EQ(root.id, test_observer.change_finished_ids()[0]);
+
+  EXPECT_FALSE(test_observer.root_changed());
+  EXPECT_FALSE(test_observer.tree_data_changed());
+}
+
+TEST(AXTreeTest, NoReparentingIfOnlyRemovedAndChangedNotReAdded) {
+  AXNodeData root;
+  root.id = 1;
+  AXNodeData child1;
+  child1.id = 2;
+  AXNodeData child2;
+  child2.id = 3;
+
+  root.child_ids = {child1.id};
+  child1.child_ids = {child2.id};
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = root.id;
+  initial_state.nodes = {root, child1, child2};
+
+  AXTree tree(initial_state);
+
+  // Change existing attributes.
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0].id = 2;
+  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                                  3);
+  update.nodes[1].id = 1;
+
+  TestAXTreeObserver test_observer(&tree);
+  EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
+
+  EXPECT_EQ(2U, test_observer.deleted_ids().size());
+  EXPECT_EQ(2U, test_observer.subtree_deleted_ids().size());
+  EXPECT_EQ(0U, test_observer.created_ids().size());
+
+  EXPECT_EQ(0U, test_observer.node_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_will_be_reparented_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_will_be_reparented_ids().size());
+  EXPECT_EQ(0U, test_observer.node_reparented_ids().size());
+  EXPECT_EQ(0U, test_observer.node_reparented_finished_ids().size());
+  ASSERT_EQ(0U, test_observer.subtree_reparented_finished_ids().size());
 
   EXPECT_FALSE(test_observer.root_changed());
   EXPECT_FALSE(test_observer.tree_data_changed());
@@ -1388,17 +1450,17 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
 
   AXTree tree(tree_update);
   AXNode* root = tree.root();
-  ASSERT_EQ(2, root->child_count());
-  ASSERT_EQ(2, root->ChildAtIndex(0)->id());
-  ASSERT_EQ(3, root->ChildAtIndex(1)->id());
+  ASSERT_EQ(2u, root->children().size());
+  ASSERT_EQ(2, root->children()[0]->id());
+  ASSERT_EQ(3, root->children()[1]->id());
 
-  EXPECT_EQ(3, root->GetUnignoredChildCount());
+  EXPECT_EQ(3u, root->GetUnignoredChildCount());
   EXPECT_EQ(4, root->GetUnignoredChildAtIndex(0)->id());
   EXPECT_EQ(5, root->GetUnignoredChildAtIndex(1)->id());
   EXPECT_EQ(3, root->GetUnignoredChildAtIndex(2)->id());
-  EXPECT_EQ(0, root->GetUnignoredChildAtIndex(0)->GetUnignoredIndexInParent());
-  EXPECT_EQ(1, root->GetUnignoredChildAtIndex(1)->GetUnignoredIndexInParent());
-  EXPECT_EQ(2, root->GetUnignoredChildAtIndex(2)->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, root->GetUnignoredChildAtIndex(0)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1u, root->GetUnignoredChildAtIndex(1)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2u, root->GetUnignoredChildAtIndex(2)->GetUnignoredIndexInParent());
 
   EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
 }
@@ -1421,11 +1483,11 @@ TEST(AXTreeTest, TestRecursionUnignoredChildCount) {
   AXTree tree(tree_update);
 
   AXNode* root = tree.root();
-  EXPECT_EQ(2, root->child_count());
-  EXPECT_EQ(1, root->GetUnignoredChildCount());
+  EXPECT_EQ(2u, root->children().size());
+  EXPECT_EQ(1u, root->GetUnignoredChildCount());
   EXPECT_EQ(5, root->GetUnignoredChildAtIndex(0)->id());
   AXNode* unignored = tree.GetFromId(5);
-  EXPECT_EQ(0, unignored->GetUnignoredChildCount());
+  EXPECT_EQ(0u, unignored->GetUnignoredChildCount());
 }
 
 TEST(AXTreeTest, NullUnignoredChildren) {
@@ -1441,8 +1503,8 @@ TEST(AXTreeTest, NullUnignoredChildren) {
   AXTree tree(tree_update);
 
   AXNode* root = tree.root();
-  EXPECT_EQ(2, root->child_count());
-  EXPECT_EQ(0, root->GetUnignoredChildCount());
+  EXPECT_EQ(2u, root->children().size());
+  EXPECT_EQ(0u, root->GetUnignoredChildCount());
   EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(0));
   EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(1));
 }

@@ -59,14 +59,5 @@ bool CSSStepsTimingFunctionValue::Equals(
   return steps_ == other.steps_ && step_position_ == other.step_position_;
 }
 
-String CSSFramesTimingFunctionValue::CustomCSSText() const {
-  return "frames(" + String::Number(frames_) + ")";
-}
-
-bool CSSFramesTimingFunctionValue::Equals(
-    const CSSFramesTimingFunctionValue& other) const {
-  return frames_ == other.frames_;
-}
-
 }  // namespace cssvalue
 }  // namespace blink

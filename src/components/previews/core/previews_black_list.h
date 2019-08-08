@@ -75,6 +75,8 @@ enum class PreviewsEligibilityReason {
   // Optimization hints needed to be checked for this preview type, but were not
   // available. Common on first navigations.
   OPTIMIZATION_HINTS_NOT_AVAILABLE = 17,
+  // The navigation URL has a media suffix which is excluded from previews.
+  EXCLUDED_BY_MEDIA_SUFFIX = 18,
   LAST,
 };
 

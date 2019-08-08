@@ -246,6 +246,11 @@ class PLATFORM_EXPORT FontCache {
   ~FontCache() = default;
 
  private:
+  // BCP47 list used when requesting fallback font for a character.
+  // inlineCapacity is set to 4: the array vector not need to hold more than 4
+  // elements.
+  using Bcp47Vector = WTF::Vector<const char*, 4>;
+
   scoped_refptr<SimpleFontData> PlatformFallbackFontForCharacter(
       const FontDescription&,
       UChar32,
@@ -254,6 +259,10 @@ class PLATFORM_EXPORT FontCache {
   sk_sp<SkTypeface> CreateTypefaceFromUniqueName(
       const FontFaceCreationParams& creation_params,
       CString& name);
+
+  static Bcp47Vector GetBcp47LocaleForRequest(
+      const FontDescription& font_description,
+      FontFallbackPriority fallback_priority);
 
   friend class FontGlobalContext;
   FontCache();
@@ -292,15 +301,16 @@ class PLATFORM_EXPORT FontCache {
                                    const FontFaceCreationParams&,
                                    CString& name);
 
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
   static AtomicString GetFamilyNameForCharacter(SkFontMgr*,
                                                 UChar32,
                                                 const FontDescription&,
                                                 FontFallbackPriority);
-#endif  // defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_FUCHSIA)
+#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
 
-  scoped_refptr<SimpleFontData> FallbackOnStandardFontStyle(const FontDescription&,
-                                                     UChar32);
+  scoped_refptr<SimpleFontData> FallbackOnStandardFontStyle(
+      const FontDescription&,
+      UChar32);
 
   // Don't purge if this count is > 0;
   int purge_prevent_count_;

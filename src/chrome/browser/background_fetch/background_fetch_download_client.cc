@@ -70,7 +70,7 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
 
     if (download.paused) {
       // We need to resurface the notification in a paused state.
-      content::BrowserThread::PostAfterStartupTask(
+      content::BrowserThread::PostBestEffortTask(
           FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
           base::BindOnce(&BackgroundFetchDelegateImpl::RestartPausedDownload,
                          GetDelegate()->GetWeakPtr(), download.guid));
@@ -89,17 +89,15 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
 
 void BackgroundFetchDownloadClient::OnServiceUnavailable() {}
 
-download::Client::ShouldDownload
-BackgroundFetchDownloadClient::OnDownloadStarted(
+void BackgroundFetchDownloadClient::OnDownloadStarted(
     const std::string& guid,
     const std::vector<GURL>& url_chain,
     const scoped_refptr<const net::HttpResponseHeaders>& headers) {
+  // TODO(crbug.com/884672): Validate the chain/headers and cancel the download
+  // if invalid.
   auto response =
       std::make_unique<content::BackgroundFetchResponse>(url_chain, headers);
   GetDelegate()->OnDownloadStarted(guid, std::move(response));
-
-  // TODO(crbug.com/884672): Validate the chain/headers before continuing.
-  return download::Client::ShouldDownload::CONTINUE;
 }
 
 void BackgroundFetchDownloadClient::OnDownloadUpdated(

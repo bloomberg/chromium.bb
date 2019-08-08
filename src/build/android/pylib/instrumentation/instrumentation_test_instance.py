@@ -834,10 +834,15 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   #override
   def GetPreferredAbis(self):
-    ret = self._test_apk.GetAbis()
-    if not ret and self._apk_under_test:
-      ret = self._apk_under_test.GetAbis()
-    return ret
+    # We could alternatively take the intersection of what they all support,
+    # but it should never be the case that they support different things.
+    apks = [self._test_apk, self._apk_under_test] + self._additional_apks
+    for apk in apks:
+      if apk:
+        ret = apk.GetAbis()
+        if ret:
+          return ret
+    return []
 
   #override
   def SetUp(self):

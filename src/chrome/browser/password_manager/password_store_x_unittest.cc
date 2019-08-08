@@ -161,7 +161,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   bool UpdateLogin(const PasswordForm& form,
                    PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
-      if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
+      if (ArePasswordFormUniqueKeysEqual(all_forms_[i], form)) {
         all_forms_[i] = form;
         changes->push_back(
             PasswordStoreChange(PasswordStoreChange::UPDATE, form));
@@ -173,7 +173,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   bool RemoveLogin(const PasswordForm& form,
                    PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
-      if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
+      if (ArePasswordFormUniqueKeysEqual(all_forms_[i], form)) {
         changes->push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, form));
         erase(i--);
@@ -296,7 +296,7 @@ void InitExpectedForms(bool autofillable,
     std::string action =
         base::StringPrintf("http://%zu.%s.com/action", i, domain);
     password_manager::PasswordFormData data = {
-        PasswordForm::SCHEME_HTML,
+        PasswordForm::Scheme::kHtml,
         realm.c_str(),
         origin.c_str(),
         action.c_str(),
@@ -478,7 +478,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   password_manager::PasswordFormData form_data = {
-      PasswordForm::SCHEME_HTML,
+      PasswordForm::Scheme::kHtml,
       "http://bar.example.com",
       "http://bar.example.com/origin",
       "http://bar.example.com/action",
@@ -655,7 +655,7 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption) {
   // verify where the store serves from. The migration is triggered
   // opportunistically during access to the store.
   const auto new_form = password_manager::FillPasswordFormWithData(
-      {PasswordForm::SCHEME_HTML, "https://www.fakebook.com",
+      {PasswordForm::Scheme::kHtml, "https://www.fakebook.com",
        "https://www.fakebook.com/li", "https://www.fakebook.com/a",
        L"submit_element", L"username_element", L"password_element",
        L"username_value", L"password_value", true, 1.0});

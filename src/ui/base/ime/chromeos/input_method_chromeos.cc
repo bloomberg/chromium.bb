@@ -19,15 +19,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "chromeos/system/devicemode.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,68 +57,6 @@ CreateResultCallbackFromAckCallback(InputMethodChromeOS::AckCallback callback) {
 
 }  // namespace
 
-// The helper to make the InputMethodChromeOS as a ime::mojom::ImeEngineClient.
-// It forwards the ime::mojom::ImeEngineClient method calls toi methods of
-// ui::IMEInputContextHandlerInterface methods.
-// Due to the method naming conflict, InputMethodChromeOS cannot directly
-// inherit from ime::mojom::ImeEngineClient.
-class InputMethodChromeOS::MojoHelper : public ime::mojom::ImeEngineClient {
- public:
-  explicit MojoHelper(InputMethodChromeOS* im) : im_(im), binding_(this) {}
-  ~MojoHelper() override = default;
-
-  ime::mojom::ImeEngineProxy* ime_engine() { return ime_engine_.get(); }
-
-  bool connected() const { return connected_; }
-
-  void Connect() {
-    ime::mojom::ImeEngineClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    connected_ = im_->delegate()->ConnectToImeEngine(
-        mojo::MakeRequest(&ime_engine_), std::move(client_ptr));
-  }
-
-  void Reset() {
-    binding_.Close();
-    ime_engine_.reset();
-    connected_ = false;
-  }
-
- private:
-  // ime::mojom::ImeEngineClient:
-  void CommitText(const std::string& text) override { im_->CommitText(text); }
-  void UpdateCompositionText(const ui::CompositionText& composition_text,
-                             uint32_t cursor_pos,
-                             bool visible) override {
-    im_->UpdateCompositionText(composition_text, cursor_pos, visible);
-  }
-  void DeleteSurroundingText(int32_t offset, uint32_t length) override {
-    im_->DeleteSurroundingText(offset, length);
-  }
-  void SendKeyEvent(std::unique_ptr<ui::Event> key_event) override {
-    im_->SendKeyEvent(key_event->AsKeyEvent());
-  }
-  void Reconnect() override {
-    // Don't reconnect when the |ime_engine_| has been reset, which means the
-    // InputMethodChromeOS is not focused.
-    if (ime_engine_) {
-      Reset();
-      Connect();
-    }
-  }
-
-  InputMethodChromeOS* im_;
-  // Whether the mojo connection is enabled.
-  // If true, |InputMethodChromeOS| works with ime::mojom::ImeEngine.
-  // If false, |InputMethodChromeOS| works with ui::IMEEngineHandlerInterface.
-  bool connected_ = false;
-
-  mojo::Binding<ime::mojom::ImeEngineClient> binding_;
-  ime::mojom::ImeEnginePtr ime_engine_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoHelper);
-};
-
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
@@ -129,7 +64,6 @@ InputMethodChromeOS::InputMethodChromeOS(
       composing_text_(false),
       composition_changed_(false),
       handling_key_event_(false),
-      mojo_helper_(std::make_unique<MojoHelper>(this)),
       weak_ptr_factory_(this) {
   ResetContext();
 }
@@ -144,6 +78,17 @@ InputMethodChromeOS::~InputMethodChromeOS() {
     ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
   }
 }
+
+InputMethodChromeOS::PendingSetCompositionRange::PendingSetCompositionRange(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& text_spans)
+    : range(range), text_spans(text_spans) {}
+
+InputMethodChromeOS::PendingSetCompositionRange::PendingSetCompositionRange(
+    const PendingSetCompositionRange& other) = default;
+
+InputMethodChromeOS::PendingSetCompositionRange::~PendingSetCompositionRange() =
+    default;
 
 void InputMethodChromeOS::DispatchKeyEventAsync(ui::KeyEvent* event,
                                                 AckCallback ack_callback) {
@@ -214,8 +159,7 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEventInternal(
   // normal input field (not a password field).
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
-  const bool has_engine = GetEngine() || mojo_helper_->connected();
-  if (!IsNonPasswordInputFieldFocused() || !has_engine) {
+  if (!IsNonPasswordInputFieldFocused() || !GetEngine()) {
     if (event->type() == ET_KEY_PRESSED) {
       if (ExecuteCharacterComposer(*event)) {
         // Treating as PostIME event if character composer handles key event and
@@ -230,26 +174,13 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEventInternal(
   }
 
   handling_key_event_ = true;
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->ProcessKeyEvent(
-        ui::Event::Clone(*event),
-        base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       // Pass the ownership of the new copied event.
-                       base::Owned(new ui::KeyEvent(*event)),
-                       std::move(result_callback)));
-    return ui::EventDispatchDetails();
-  }
-  if (GetEngine()->IsInterestedInKeyEvent()) {
-    GetEngine()->ProcessKeyEvent(
-        *event, base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               // Pass the ownership of the new copied event.
-                               base::Owned(new ui::KeyEvent(*event)),
-                               std::move(result_callback)));
-    return ui::EventDispatchDetails();
-  }
-  return ProcessKeyEventDone(event, std::move(result_callback), false);
+  GetEngine()->ProcessKeyEvent(
+      *event, base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             // Pass the ownership of the new copied event.
+                             base::Owned(new ui::KeyEvent(*event)),
+                             std::move(result_callback)));
+  return ui::EventDispatchDetails();
 }
 
 void InputMethodChromeOS::KeyEventDoneCallback(ui::KeyEvent* event,
@@ -301,23 +232,16 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
 
   UpdateContextFocusState();
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->FinishInput();
-    mojo_helper_->ime_engine()->StartInput(ime::mojom::EditorInfo::New(
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-        GetClientFocusReason(), GetClientShouldDoLearning()));
-  } else {
-    ui::IMEEngineHandlerInterface* engine = GetEngine();
-    if (engine) {
-      ui::IMEEngineHandlerInterface::InputContext context(
-          GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-          GetClientFocusReason(), GetClientShouldDoLearning());
-      // When focused input client is not changed, a text input type change
-      // should cause blur/focus events to engine. The focus in to or out from
-      // password field should also notify engine.
-      engine->FocusOut();
-      engine->FocusIn(context);
-    }
+        GetClientFocusReason(), GetClientShouldDoLearning());
+    // When focused input client is not changed, a text input type change
+    // should cause blur/focus events to engine. The focus in to or out from
+    // password field should also notify engine.
+    engine->FocusOut();
+    engine->FocusIn(context);
   }
 
   OnCaretBoundsChanged(client);
@@ -338,12 +262,8 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   DCHECK(client == GetTextInputClient());
   DCHECK(!IsTextInputTypeNone());
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->UpdateCompositionBounds(
-        GetCompositionBounds(client));
-  } else if (GetEngine()) {
+  if (GetEngine())
     GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
-  }
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
@@ -390,12 +310,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   // Here SetSurroundingText accepts relative position of |surrounding_text|, so
   // we have to convert |selection_range| from node coordinates to
   // |surrounding_text| coordinates.
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->UpdateSurroundingInfo(
-        base::UTF16ToUTF8(surrounding_text),
-        selection_range.start() - text_range.start(),
-        selection_range.end() - text_range.start(), text_range.start());
-  } else if (GetEngine()) {
+  if (GetEngine()) {
     GetEngine()->SetSurroundingText(
         base::UTF16ToUTF8(surrounding_text),
         selection_range.start() - text_range.start(),
@@ -424,26 +339,13 @@ InputMethodChromeOS::GetInputMethodKeyboardController() {
   return InputMethodBase::GetInputMethodKeyboardController();
 }
 
-void InputMethodChromeOS::OnFocus() {
-  InputMethodBase::OnFocus();
-  mojo_helper_->Connect();
-}
-
-void InputMethodChromeOS::OnBlur() {
-  InputMethodBase::OnBlur();
-  mojo_helper_->Reset();
-}
-
 void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   ConfirmCompositionText();
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->FinishInput();
-  } else if (GetEngine()) {
+  if (GetEngine())
     GetEngine()->FocusOut();
-  }
 }
 
 void InputMethodChromeOS::OnDidChangeFocusedClient(
@@ -454,11 +356,7 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   // focus and after it acquires focus again are the same.
   UpdateContextFocusState();
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->StartInput(ime::mojom::EditorInfo::New(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-        GetClientFocusReason(), GetClientShouldDoLearning()));
-  } else if (GetEngine()) {
+  if (GetEngine()) {
     ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
         GetClientFocusReason(), GetClientShouldDoLearning());
@@ -466,6 +364,34 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   }
 
   OnCaretBoundsChanged(GetTextInputClient());
+}
+
+bool InputMethodChromeOS::SetCompositionRange(
+    uint32_t before,
+    uint32_t after,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  if (IsTextInputTypeNone())
+    return false;
+
+  // The given range and spans are relative to the current selection.
+  gfx::Range range;
+  if (!GetTextInputClient()->GetEditableSelectionRange(&range))
+    return false;
+
+  const gfx::Range composition_range(range.start() - before,
+                                     range.end() + after);
+
+  // If we have pending key events, then delay the operation until
+  // |ProcessKeyEventPostIME|. Otherwise, process it immediately.
+  if (handling_key_event_) {
+    composition_changed_ = true;
+    pending_composition_range_ =
+        PendingSetCompositionRange{composition_range, text_spans};
+    return true;
+  } else {
+    return GetTextInputClient()->SetCompositionFromExistingText(
+        composition_range, text_spans);
+  }
 }
 
 void InputMethodChromeOS::ConfirmCompositionText() {
@@ -485,13 +411,7 @@ void InputMethodChromeOS::ResetContext() {
   composing_text_ = false;
   composition_changed_ = false;
 
-  // This function runs asynchronously.
-  // Note: some input method engines may not support reset method, such as
-  // ibus-anthy. But as we control all input method engines by ourselves, we can
-  // make sure that all of the engines we are using support it correctly.
-  if (mojo_helper_->connected())
-    mojo_helper_->ime_engine()->CancelInput();
-  else if (GetEngine())
+  if (GetEngine())
     GetEngine()->Reset();
 
   character_composer_.Reset();
@@ -675,13 +595,22 @@ void InputMethodChromeOS::ProcessInputMethodResult(ui::KeyEvent* event,
     }
   }
 
+  // TODO(https://crbug.com/952757): Refactor this code to be clearer and less
+  // error-prone.
   if (composition_changed_ && !IsTextInputTypeNone()) {
+    if (pending_composition_range_) {
+      client->SetCompositionFromExistingText(
+          pending_composition_range_->range,
+          pending_composition_range_->text_spans);
+    }
     if (composition_.text.length()) {
       composing_text_ = true;
       client->SetCompositionText(composition_);
-    } else if (result_text_.empty()) {
+    } else if (result_text_.empty() && !pending_composition_range_) {
       client->ClearCompositionText();
     }
+
+    pending_composition_range_.reset();
   }
 
   // We should not clear composition text here, as it may belong to the next
@@ -778,7 +707,7 @@ void InputMethodChromeOS::UpdateCompositionText(const CompositionText& text,
 }
 
 void InputMethodChromeOS::HidePreeditText() {
-  if (composition_.text.empty() || IsTextInputTypeNone())
+  if (IsTextInputTypeNone())
     return;
 
   // Intentionally leaves |composing_text_| unchanged.

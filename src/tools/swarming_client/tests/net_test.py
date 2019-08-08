@@ -3,26 +3,23 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-# pylint: disable=R0201,W0613
-
 import StringIO
 import __builtin__
 import contextlib
-import logging
 import math
 import os
-import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
+
+import net_utils
+
 from utils import authenticators
 from utils import net
-import net_utils
 
 
 class RetryLoopMockedTest(auto_stub.TestCase):
@@ -289,6 +286,7 @@ class HttpServiceTest(RetryLoopMockedTest):
       return net_utils.make_fake_response(response, request.get_full_url())
 
     def mock_authorize(request):
+      self.assertTrue(request)
       calls.append('authorize')
 
     def mock_login(allow_user_interaction):
@@ -398,8 +396,4 @@ class TestNetFunctions(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  logging.basicConfig(
-      level=(logging.DEBUG if '-v' in sys.argv else logging.FATAL))
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  unittest.main()
+  test_env.main()

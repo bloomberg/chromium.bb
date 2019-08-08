@@ -351,7 +351,8 @@ class CONTENT_EXPORT MediaStreamManager
   // |DeviceRequests| is a list to ensure requests are processed in the order
   // they arrive. The first member of the pair is the label of the
   // |DeviceRequest|.
-  using LabeledDeviceRequest = std::pair<std::string, DeviceRequest*>;
+  using LabeledDeviceRequest =
+      std::pair<std::string, std::unique_ptr<DeviceRequest>>;
   using DeviceRequests = std::list<LabeledDeviceRequest>;
 
   void InitializeMaybeAsync(
@@ -386,7 +387,7 @@ class CONTENT_EXPORT MediaStreamManager
   bool RequestDone(const DeviceRequest& request) const;
   MediaStreamProvider* GetDeviceManager(blink::MediaStreamType stream_type);
   void StartEnumeration(DeviceRequest* request, const std::string& label);
-  std::string AddRequest(DeviceRequest* request);
+  std::string AddRequest(std::unique_ptr<DeviceRequest> request);
   DeviceRequest* FindRequest(const std::string& label) const;
   void DeleteRequest(const std::string& label);
   // Prepare the request with label |label| by starting device enumeration if

@@ -27,6 +27,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -55,14 +56,15 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->current_path, in_progress_info->target_path,
       in_progress_info->url_chain, in_progress_info->referrer_url,
       in_progress_info->site_url, in_progress_info->tab_url,
-      in_progress_info->tab_referrer_url, in_progress_info->mime_type,
-      in_progress_info->original_mime_type, in_progress_info->start_time,
-      in_progress_info->end_time, in_progress_info->etag,
-      in_progress_info->last_modified, in_progress_info->received_bytes,
-      in_progress_info->total_bytes, in_progress_info->auto_resume_count,
-      in_progress_info->hash, in_progress_info->state,
-      in_progress_info->danger_type, in_progress_info->interrupt_reason,
-      in_progress_info->paused, in_progress_info->metered, false, base::Time(),
+      in_progress_info->tab_referrer_url, base::nullopt,
+      in_progress_info->mime_type, in_progress_info->original_mime_type,
+      in_progress_info->start_time, in_progress_info->end_time,
+      in_progress_info->etag, in_progress_info->last_modified,
+      in_progress_info->received_bytes, in_progress_info->total_bytes,
+      in_progress_info->auto_resume_count, in_progress_info->hash,
+      in_progress_info->state, in_progress_info->danger_type,
+      in_progress_info->interrupt_reason, in_progress_info->paused,
+      in_progress_info->metered, false, base::Time(),
       in_progress_info->transient, in_progress_info->received_slices);
 }
 
@@ -86,13 +88,15 @@ void BeginResourceDownload(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
+    std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
           std::move(url_loader_factory_getter), url_security_policy, site_url,
-          tab_url, tab_referrer_url, is_new_download, false, main_task_runner)
+          tab_url, tab_referrer_url, is_new_download, false,
+          std::move(connector), main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -114,6 +118,7 @@ void CreateDownloadHandlerForNavigation(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
     const URLSecurityPolicy& url_security_policy,
+    std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
@@ -123,7 +128,7 @@ void CreateDownloadHandlerForNavigation(
           std::move(url_chain), std::move(response), std::move(cert_status),
           std::move(url_loader_client_endpoints),
           std::move(url_loader_factory_getter), url_security_policy,
-          main_task_runner)
+          std::move(connector), main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -143,17 +148,35 @@ void OnDownloadDisplayNamesReturned(
 #endif
 }  // namespace
 
+bool InProgressDownloadManager::Delegate::InterceptDownload(
+    const DownloadCreateInfo& download_create_info) {
+  return false;
+}
+
+base::FilePath
+InProgressDownloadManager::Delegate::GetDefaultDownloadDirectory() {
+  return base::FilePath();
+}
+
+net::URLRequestContextGetter*
+InProgressDownloadManager::Delegate::GetURLRequestContextGetter(
+    const DownloadCreateInfo& download_create_info) {
+  return nullptr;
+}
+
 InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
     const base::FilePath& in_progress_db_dir,
     const IsOriginSecureCallback& is_origin_secure_cb,
-    const URLSecurityPolicy& url_security_policy)
+    const URLSecurityPolicy& url_security_policy,
+    service_manager::Connector* connector)
     : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
       use_empty_db_(in_progress_db_dir.empty()),
+      connector_(connector),
       weak_factory_(this) {
   Initialize(in_progress_db_dir);
 }
@@ -186,10 +209,21 @@ void InProgressDownloadManager::OnUrlDownloadHandlerCreated(
     url_download_handlers_.push_back(std::move(downloader));
 }
 
-bool InProgressDownloadManager::DownloadUrl(
+void InProgressDownloadManager::DownloadUrl(
     std::unique_ptr<DownloadUrlParameters> params) {
-  DCHECK(!delegate_);
-  DCHECK(params->is_transient());
+  if (!CanDownload(params.get()))
+    return;
+
+  // Start the new download, the download should be saved to the file path
+  // specifcied in the |params|.
+  BeginDownload(std::move(params), url_loader_factory_getter_,
+                true /* is_new_download */, GURL() /* site_url */,
+                GURL() /* tab_url */, GURL() /* tab_referral_url */);
+}
+
+bool InProgressDownloadManager::CanDownload(DownloadUrlParameters* params) {
+  if (!params->is_transient())
+    return false;
 
   if (!url_loader_factory_getter_)
     return false;
@@ -200,11 +234,6 @@ bool InProgressDownloadManager::DownloadUrl(
   if (params->file_path().empty())
     return false;
 
-  // Start the new download, the download should be saved to the file path
-  // specifcied in the |params|.
-  BeginDownload(std::move(params), url_loader_factory_getter_,
-                true /* is_new_download */, GURL() /* site_url */,
-                GURL() /* tab_url */, GURL() /* tab_referral_url */);
   return true;
 }
 
@@ -234,11 +263,12 @@ void InProgressDownloadManager::BeginDownload(
       CreateResourceRequest(params.get());
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&BeginResourceDownload, std::move(params),
-                     std::move(request), std::move(url_loader_factory_getter),
-                     url_security_policy_, is_new_download,
-                     weak_factory_.GetWeakPtr(), site_url, tab_url,
-                     tab_referrer_url, base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(
+          &BeginResourceDownload, std::move(params), std::move(request),
+          std::move(url_loader_factory_getter), url_security_policy_,
+          is_new_download, weak_factory_.GetWeakPtr(), site_url, tab_url,
+          tab_referrer_url, connector_ ? connector_->Clone() : nullptr,
+          base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::InterceptDownloadFromNavigation(
@@ -262,6 +292,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
                      std::move(response), std::move(cert_status),
                      std::move(url_loader_client_endpoints),
                      std::move(url_loader_factory_getter), url_security_policy_,
+                     connector_ ? connector_->Clone() : nullptr,
                      base::ThreadTaskRunnerHandle::Get()));
 }
 
@@ -284,17 +315,26 @@ void InProgressDownloadManager::ShutDown() {
 void InProgressDownloadManager::DetermineDownloadTarget(
     DownloadItemImpl* download,
     const DownloadTargetCallback& callback) {
-  // TODO(http://crbug.com/851581): handle the case that |target_path| and
-  // |intermediate_path| are empty.
   base::FilePath target_path = download->GetTargetFilePath().empty()
                                    ? download->GetForcedFilePath()
                                    : download->GetTargetFilePath();
   base::FilePath intermediate_path = download->GetFullPath().empty()
                                          ? download->GetForcedFilePath()
                                          : download->GetFullPath();
+#if defined(OS_ANDROID)
+  // If final target is a content URI, the intermediate path should
+  // be identical to it.
+  if (target_path.IsContentUri())
+    intermediate_path = target_path;
+#endif
+  if (!target_path.empty() && intermediate_path.empty()) {
+    if (intermediate_path_cb_)
+      intermediate_path = intermediate_path_cb_.Run(target_path);
+  }
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download->GetDangerType(), intermediate_path,
-               DOWNLOAD_INTERRUPT_REASON_NONE);
+               intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
+                                         : DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void InProgressDownloadManager::ResumeInterruptedDownload(
@@ -366,7 +406,9 @@ void InProgressDownloadManager::StartDownload(
                                       info->mime_type, is_origin_secure_cb_);
   }
 
-  if (delegate_) {
+  // If the download cannot be found locally, ask |delegate_| to provide the
+  // DownloadItem.
+  if (delegate_ && !GetDownloadByGuid(info->guid)) {
     delegate_->StartDownloadItem(
         std::move(info), on_started,
         base::BindOnce(&InProgressDownloadManager::StartDownloadWithItem,
@@ -511,6 +553,7 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
   if (num_duplicates > 0)
     RecordDuplicateInProgressDownloadIdCount(num_duplicates);
   OnInitialized();
+  OnDownloadsInitialized();
 }
 
 std::vector<std::unique_ptr<download::DownloadItemImpl>>
@@ -533,6 +576,26 @@ base::FilePath InProgressDownloadManager::GetDownloadDisplayName(
 void InProgressDownloadManager::OnAllInprogressDownloadsLoaded() {
   download_entries_.clear();
   display_names_.reset();
+}
+
+void InProgressDownloadManager::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+  if (initialized_)
+    OnDownloadsInitialized();
+}
+
+void InProgressDownloadManager::OnDownloadsInitialized() {
+  if (delegate_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&InProgressDownloadManager::NotifyDownloadsInitialized,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void InProgressDownloadManager::NotifyDownloadsInitialized() {
+  if (delegate_)
+    delegate_->OnDownloadsInitialized();
 }
 
 void InProgressDownloadManager::AddInProgressDownloadForTest(

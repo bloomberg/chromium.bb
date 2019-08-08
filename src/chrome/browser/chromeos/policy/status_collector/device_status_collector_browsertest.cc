@@ -94,12 +94,6 @@ namespace em = enterprise_management;
 
 namespace {
 
-// Time delta representing midnight 00:00.
-constexpr TimeDelta kMidnight;
-
-// Time delta representing 06:00AM.
-constexpr TimeDelta kSixAm = TimeDelta::FromHours(6);
-
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
 
@@ -139,7 +133,6 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
           emmc_lifetime_fetcher,
-      TimeDelta activity_day_start,
       bool is_enterprise_device)
       : policy::DeviceStatusCollector(pref_service,
                                       provider,
@@ -149,11 +142,10 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       android_status_fetcher,
                                       tpm_status_fetcher,
                                       emmc_lifetime_fetcher,
-                                      activity_day_start,
                                       is_enterprise_device) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
-    SetBaselineTime(Time::Now().LocalMidnight() + activity_day_start + kHour);
+    SetBaselineTime(Time::Now().LocalMidnight() + kHour);
   }
 
   void UpdateUsageTime() { UpdateChildUsageTime(); }
@@ -194,7 +186,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     return app_id;
   }
 
-  std::string GetDMTokenForProfile(Profile* profile) override {
+  std::string GetDMTokenForProfile(Profile* profile) const override {
     // Return the profile user name (passed to CreateTestingProfile) to make it
     // easy to confirm that the correct profile's DMToken was requested.
     return profile->GetProfileUserName();
@@ -515,14 +507,12 @@ class DeviceStatusCollectorTest : public testing::Test {
           android_status_fetcher,
       const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
-          emmc_lifetime_fetcher,
-      const TimeDelta activity_day_start = kMidnight) {
+          emmc_lifetime_fetcher) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
-        emmc_lifetime_fetcher, activity_day_start,
-        true /* is_enterprise_device */);
+        emmc_lifetime_fetcher, true /* is_enterprise_device */);
   }
 
   void GetStatus() {
@@ -1963,6 +1953,7 @@ struct FakeNetworkState {
   int expected_state;
   const char* address;
   const char* gateway;
+  bool visible;
 };
 
 // List of fake networks - primarily used to make sure that signal strength
@@ -1970,261 +1961,38 @@ struct FakeNetworkState {
 // by convention shill will not report a signal strength of 0 for a visible
 // network, so we use 1 below.
 static const FakeNetworkState kFakeNetworks[] = {
-  { "offline", "/device/wifi", shill::kTypeWifi, 35, -85,
-    shill::kStateOffline, em::NetworkState::OFFLINE, "", "" },
-  { "ethernet", "/device/ethernet", shill::kTypeEthernet, 0, 0,
-    shill::kStateOnline, em::NetworkState::ONLINE,
-    "192.168.0.1", "8.8.8.8" },
-  { "wifi", "/device/wifi", shill::kTypeWifi, 23, -97, shill::kStatePortal,
-    em::NetworkState::PORTAL, "", "" },
-  { "idle", "/device/cellular1", shill::kTypeCellular, 0, 0, shill::kStateIdle,
-    em::NetworkState::IDLE, "", "" },
-  { "carrier", "/device/cellular1", shill::kTypeCellular, 0, 0,
-    shill::kStateCarrier, em::NetworkState::CARRIER, "", "" },
-  { "association", "/device/cellular1", shill::kTypeCellular, 0, 0,
-    shill::kStateAssociation, em::NetworkState::ASSOCIATION, "", "" },
-  { "config", "/device/cellular1", shill::kTypeCellular, 0, 0,
-    shill::kStateConfiguration, em::NetworkState::CONFIGURATION, "", "" },
-  // Set signal strength for this network to -20, but expected strength to 0
-  // to test that we only report signal_strength for wifi connections.
-  { "ready", "/device/cellular1", shill::kTypeCellular, -20, 0,
-    shill::kStateReady, em::NetworkState::READY, "", "" },
-  { "disconnect", "/device/wifi", shill::kTypeWifi, 1, -119,
-    shill::kStateDisconnect, em::NetworkState::DISCONNECT, "", "" },
-  { "failure", "/device/wifi", shill::kTypeWifi, 1, -119, shill::kStateFailure,
-    em::NetworkState::FAILURE, "", "" },
-  { "activation-failure", "/device/cellular1", shill::kTypeCellular, 0, 0,
-    shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE,
-    "", "" },
-  { "unknown", "", shill::kTypeWifi, 1, -119, "unknown",
-    em::NetworkState::UNKNOWN, "", "" },
+    {"offline", "/device/wifi", shill::kTypeWifi, 35, -85, shill::kStateOffline,
+     em::NetworkState::OFFLINE, "", "", true},
+    {"ethernet", "/device/ethernet", shill::kTypeEthernet, 0, 0,
+     shill::kStateOnline, em::NetworkState::ONLINE, "192.168.0.1", "8.8.8.8",
+     true},
+    {"wifi", "/device/wifi", shill::kTypeWifi, 23, -97,
+     shill::kStateNoConnectivity, em::NetworkState::PORTAL, "", "", true},
+    {"idle", "/device/cellular1", shill::kTypeCellular, 0, 0, shill::kStateIdle,
+     em::NetworkState::IDLE, "", "", true},
+    {"not_visible", "/device/wifi", shill::kTypeWifi, 0, 0, shill::kStateIdle,
+     em::NetworkState::IDLE, "", "", false},
+    {"association", "/device/cellular1", shill::kTypeCellular, 0, 0,
+     shill::kStateAssociation, em::NetworkState::ASSOCIATION, "", "", true},
+    {"config", "/device/cellular1", shill::kTypeCellular, 0, 0,
+     shill::kStateConfiguration, em::NetworkState::CONFIGURATION, "", "", true},
+    // Set signal strength for this network to -20, but expected strength to 0
+    // to test that we only report signal_strength for wifi connections.
+    {"ready", "/device/cellular1", shill::kTypeCellular, -20, 0,
+     shill::kStateReady, em::NetworkState::READY, "", "", true},
+    {"failure", "/device/wifi", shill::kTypeWifi, 1, -119, shill::kStateFailure,
+     em::NetworkState::FAILURE, "", "", true},
+    {"activation-failure", "/device/cellular1", shill::kTypeCellular, 0, 0,
+     shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE, "",
+     "", true},
+    {"unknown", "", shill::kTypeWifi, 1, -119, shill::kStateIdle,
+     em::NetworkState::IDLE, "", "", true},
 };
 
 static const FakeNetworkState kUnconfiguredNetwork = {
   "unconfigured", "/device/unconfigured", shill::kTypeWifi, 35, -85,
   shill::kStateOffline, em::NetworkState::OFFLINE, "", ""
 };
-
-// Tests activity reporting day start correctness.
-class DeviceStatusCollectorDayStartTest : public DeviceStatusCollectorTest {
- protected:
-  DeviceStatusCollectorDayStartTest() = default;
-  ~DeviceStatusCollectorDayStartTest() override = default;
-
-  void SetUp() override {
-    DeviceStatusCollectorTest::SetUp();
-    scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        chromeos::kReportDeviceActivityTimes, true);
-  }
-
-  // Restarts device status collector for activity reporting tests with given
-  // |activity_day_start|.
-  void RestartStatusCollectorWithDayStart(TimeDelta activity_day_start) {
-    status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
-        &local_state_, &fake_statistics_provider_,
-        base::BindRepeating(&GetEmptyVolumeInfo),
-        base::BindRepeating(&GetEmptyCPUStatistics),
-        base::BindRepeating(&GetEmptyCPUTempInfo),
-        base::BindRepeating(&GetEmptyAndroidStatus),
-        base::BindRepeating(&GetEmptyTpmStatus),
-        base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-        activity_day_start, true /* is_enterprise_reporting */);
-  }
-
-  // Sets current test time to |time_since_midnight|.
-  void SetCurrentTime(TimeDelta time_since_midnight) {
-    status_collector_->SetBaselineTime(Time::Now().LocalMidnight() +
-                                       time_since_midnight);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollectorDayStartTest);
-};
-
-TEST_F(DeviceStatusCollectorDayStartTest, ArbitraryActivityDayStart) {
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
-                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE};
-  const TimeDelta kNoon = TimeDelta::FromHours(12);
-  RestartStatusCollectorWithDayStart(kNoon);
-
-  // Test a single active sample.
-  status_collector_->Simulate(test_states, 1);
-  GetStatus();
-  EXPECT_EQ(1, device_status_.active_periods_size());
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  device_status_.clear_active_periods();  // Clear the result protobuf.
-  // Test multiple consecutive active samples.
-  status_collector_->Simulate(test_states, 4);
-  GetStatus();
-  EXPECT_EQ(1, device_status_.active_periods_size());
-  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-}
-
-TEST_F(DeviceStatusCollectorDayStartTest, ActivityCrossingDayStart) {
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE};
-
-  const TimeDelta kDayStart = TimeDelta::FromHours(6);
-  RestartStatusCollectorWithDayStart(kDayStart);
-  // Set time to 10 seconds after day start.
-  SetCurrentTime(kDayStart + TimeDelta::FromSeconds(10));
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(2, device_status_.active_periods_size());
-
-  em::ActiveTimePeriod period0 = device_status_.active_periods(0);
-  em::ActiveTimePeriod period1 = device_status_.active_periods(1);
-  EXPECT_EQ(ActivePeriodMilliseconds() - 10000, period0.active_duration());
-  EXPECT_EQ(10000, period1.active_duration());
-
-  em::TimePeriod time_period0 = period0.time_period();
-  em::TimePeriod time_period1 = period1.time_period();
-  EXPECT_EQ(time_period0.end_timestamp(), time_period1.start_timestamp());
-  // Ensure that the start and end times for the period are a day apart.
-  EXPECT_EQ(time_period0.end_timestamp() - time_period0.start_timestamp(),
-            kMillisecondsPerDay);
-  EXPECT_EQ(time_period1.end_timestamp() - time_period1.start_timestamp(),
-            kMillisecondsPerDay);
-}
-
-TEST_F(DeviceStatusCollectorDayStartTest, ActivityDayStartChangesToLater) {
-  ui::IdleState test_states[] = {
-      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-  };
-
-  const TimeDelta kDayStart; /* Midnight */
-  RestartStatusCollectorWithDayStart(kDayStart);
-  // Set clock to 1h after day start and report 2 activities.
-  SetCurrentTime(kDayStart + kHour);
-  status_collector_->Simulate(test_states, 2);
-
-  // Move day starts to later hour.
-  const TimeDelta kLaterDayStart = kDayStart + TimeDelta::FromHours(6);
-  RestartStatusCollectorWithDayStart(kLaterDayStart);
-  // Set clock before day start and report 1 activity.
-  SetCurrentTime(kLaterDayStart - kHour);
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(2, device_status_.active_periods_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(0).active_duration());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(1).active_duration());
-
-  // Set clock after day start and report 1 activity.
-  SetCurrentTime(kLaterDayStart + kHour);
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(3, device_status_.active_periods_size());
-  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(0).active_duration());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(1).active_duration());
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(2).active_duration());
-}
-
-TEST_F(DeviceStatusCollectorDayStartTest, ActivityDayStartChangesToEarlier) {
-  ui::IdleState test_states[] = {
-      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-  };
-
-  const TimeDelta kDayStart = TimeDelta::FromHours(6);
-  RestartStatusCollectorWithDayStart(kDayStart);
-  // Set clock after day start and report 2 activities.
-  SetCurrentTime(kDayStart + kHour);
-  status_collector_->Simulate(test_states, 2);
-
-  // Move day starts to earlier hour.
-  const TimeDelta kEarlierDayStart = kDayStart - TimeDelta::FromHours(3);
-  RestartStatusCollectorWithDayStart(kEarlierDayStart);
-  // Set clock before day start and report 1 activity.
-  SetCurrentTime(kEarlierDayStart - kHour);
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(2, device_status_.active_periods_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(0).active_duration());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(1).active_duration());
-
-  // Set clock after day start and report 1 activity.
-  SetCurrentTime(kEarlierDayStart + kHour);
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(3, device_status_.active_periods_size());
-  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(0).active_duration());
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(1).active_duration());
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(2).active_duration());
-}
-
-TEST_F(DeviceStatusCollectorDayStartTest,
-       ActivityDayStartGetsBackToTheSameValue) {
-  ui::IdleState test_states[] = {
-      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-  };
-
-  const TimeDelta kDayStart = TimeDelta::FromHours(0);
-  RestartStatusCollectorWithDayStart(kDayStart);
-  // Set clock after day start report 2 activities.
-  SetCurrentTime(kDayStart + kHour);
-  status_collector_->Simulate(test_states, 2);
-
-  // Move day starts to later hour.
-  const TimeDelta kLaterDayStart = kDayStart + TimeDelta::FromHours(6);
-  RestartStatusCollectorWithDayStart(kLaterDayStart);
-  // Set clock after day start and report 1 activity.
-  SetCurrentTime(kLaterDayStart + kHour);
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(2, device_status_.active_periods_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(2 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(0).active_duration());
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(1).active_duration());
-
-  // Move day start back.
-  RestartStatusCollectorWithDayStart(kDayStart);
-  // Progress clock from the previous report.
-  SetCurrentTime(kLaterDayStart + 2 * kHour);
-  status_collector_->Simulate(test_states, 1);
-
-  GetStatus();
-
-  ASSERT_EQ(2, device_status_.active_periods_size());
-  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(0).active_duration());
-  EXPECT_EQ(1 * ActivePeriodMilliseconds(),
-            device_status_.active_periods(1).active_duration());
-}
 
 class DeviceStatusCollectorNetworkInterfacesTest
     : public DeviceStatusCollectorTest {
@@ -2280,8 +2048,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
     // Now add services for every fake network.
     for (const FakeNetworkState& fake_network : kFakeNetworks) {
       // Shill forces non-visible networks to report a disconnected state.
-      bool is_visible =
-          fake_network.connection_status != shill::kStateDisconnect;
+      bool is_visible = fake_network.connection_status != shill::kStateIdle;
       service_client->AddService(fake_network.name /* service_path */,
                                  fake_network.name /* guid */,
                                  fake_network.name, fake_network.type,
@@ -2454,474 +2221,6 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
       chromeos::kReportDeviceNetworkInterfaces, true);
   GetStatus();
   VerifyNetworkReporting();
-}
-
-// Tests collecting device status for registered consumer device.
-class ConsumerDeviceStatusCollectorTimeLimitDisabledTest
-    : public DeviceStatusCollectorTest {
- public:
-  ConsumerDeviceStatusCollectorTimeLimitDisabledTest() {
-    user_account_id_ = AccountId::FromUserEmail("user0@gmail.com");
-    MockChildUser(user_account_id_);
-    scoped_feature_list_.InitAndDisableFeature(features::kUsageTimeLimitPolicy);
-  }
-
-  ~ConsumerDeviceStatusCollectorTimeLimitDisabledTest() override = default;
-
- protected:
-  void RestartStatusCollector(
-      const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
-      const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
-      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
-      const policy::DeviceStatusCollector::AndroidStatusFetcher&
-          android_status_fetcher,
-      const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
-      const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
-          emmc_lifetime_fetcher,
-      const TimeDelta activity_day_start = kMidnight) override {
-    status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
-        &profile_pref_service_, &fake_statistics_provider_, volume_info,
-        cpu_stats, cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
-        emmc_lifetime_fetcher, activity_day_start,
-        false /* is_enterprise_reporting */);
-  }
-
-  void ExpectChildScreenTimeMilliseconds(int64_t duration) {
-    profile_pref_service_.CommitPendingWrite(
-        base::OnceClosure(),
-        base::BindOnce(
-            [](int64_t duration,
-               TestingPrefServiceSimple* profile_pref_service_) {
-              EXPECT_EQ(duration, profile_pref_service_->GetInteger(
-                                      prefs::kChildScreenTimeMilliseconds));
-            },
-            duration, &profile_pref_service_));
-  }
-
-  void ExpectLastChildScreenTimeReset(Time time) {
-    profile_pref_service_.CommitPendingWrite(
-        base::OnceClosure(),
-        base::BindOnce(
-            [](Time time, TestingPrefServiceSimple* profile_pref_service_) {
-              EXPECT_EQ(time, profile_pref_service_->GetTime(
-                                  prefs::kLastChildScreenTimeReset));
-            },
-            time, &profile_pref_service_));
-  }
-
-  AccountId user_account_id_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingBootMode) {
-  fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kDevSwitchBootKey,
-      chromeos::system::kDevSwitchBootValueVerified);
-
-  GetStatus();
-
-  EXPECT_TRUE(device_status_.has_boot_mode());
-  EXPECT_EQ("Verified", device_status_.boot_mode());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
-       NotReportingWriteProtectSwitch) {
-  fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectBootKey,
-      chromeos::system::kFirmwareWriteProtectBootValueOn);
-
-  GetStatus();
-
-  EXPECT_FALSE(device_status_.has_write_protect_switch());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingArcStatus) {
-  RestartStatusCollector(
-      base::BindRepeating(&GetEmptyVolumeInfo),
-      base::BindRepeating(&GetEmptyCPUStatistics),
-      base::BindRepeating(&GetEmptyCPUTempInfo),
-      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
-      base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
-
-  testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
-                                           true);
-
-  GetStatus();
-
-  EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
-  EXPECT_EQ(kDroidGuardInfo,
-            session_status_.android_status().droid_guard_info());
-  // In tests, GetUserDMToken returns the e-mail for easy verification.
-  EXPECT_EQ(user_account_id_.GetUserEmail(), session_status_.user_dm_token());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
-       ReportingPartialVersionInfo) {
-  GetStatus();
-
-  // Should only report OS version.
-  EXPECT_TRUE(device_status_.has_os_version());
-  EXPECT_FALSE(device_status_.has_browser_version());
-  EXPECT_FALSE(device_status_.has_channel());
-  EXPECT_FALSE(device_status_.has_firmware_version());
-  EXPECT_FALSE(device_status_.has_tpm_version_info());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
-       NotReportingVolumeInfo) {
-  std::vector<std::string> expected_mount_points;
-  std::vector<em::VolumeInfo> expected_volume_info;
-  for (const auto& mount_info :
-       DiskMountManager::GetInstance()->mount_points()) {
-    expected_mount_points.push_back(mount_info.first);
-  }
-  expected_mount_points.push_back(kExternalMountPoint);
-
-  for (const std::string& mount_point : expected_mount_points) {
-    em::VolumeInfo info;
-    info.set_volume_id(mount_point);
-    info.set_storage_total(12345678);
-    info.set_storage_free(1234567);
-    expected_volume_info.push_back(info);
-  }
-  EXPECT_FALSE(expected_volume_info.empty());
-
-  RestartStatusCollector(
-      base::BindRepeating(&GetFakeVolumeInfo, expected_volume_info),
-      base::BindRepeating(&GetEmptyCPUStatistics),
-      base::BindRepeating(&GetEmptyCPUTempInfo),
-      base::BindRepeating(&GetEmptyAndroidStatus),
-      base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
-  content::RunAllTasksUntilIdle();
-
-  GetStatus();
-
-  EXPECT_EQ(0, device_status_.volume_infos_size());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, NotReportingUsers) {
-  const AccountId account_id0(AccountId::FromUserEmail("user0@gmail.com"));
-  const AccountId account_id1(AccountId::FromUserEmail("user1@gmail.com"));
-  user_manager_->AddUserWithAffiliationAndType(account_id0, true,
-                                               user_manager::USER_TYPE_REGULAR);
-  user_manager_->AddUserWithAffiliationAndType(account_id1, true,
-                                               user_manager::USER_TYPE_CHILD);
-
-  GetStatus();
-
-  EXPECT_EQ(0, device_status_.users_size());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
-       NotReportingOSUpdateStatus) {
-  MockPlatformVersion("1234.0.0");
-  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
-
-  GetStatus();
-
-  EXPECT_FALSE(device_status_.has_os_update_status());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
-       NotReportingDeviceHardwareStatus) {
-  const std::string full_cpu_usage("cpu  500 0 500 0");
-
-  std::vector<em::CPUTempInfo> expected_temp_info;
-  for (int i = 0; i < 5; ++i) {
-    em::CPUTempInfo info;
-    info.set_cpu_temp(100);
-    info.set_cpu_label("Core");
-    expected_temp_info.push_back(info);
-  }
-
-  status_collector_->RefreshSampleResourceUsage();
-
-  RestartStatusCollector(
-      base::BindRepeating(&GetEmptyVolumeInfo),
-      base::BindRepeating(&GetFakeCPUStatistics, full_cpu_usage),
-      base::BindRepeating(&GetFakeCPUTempInfo, expected_temp_info),
-      base::BindRepeating(&GetEmptyAndroidStatus),
-      base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
-  content::RunAllTasksUntilIdle();
-
-  GetStatus();
-
-  EXPECT_FALSE(device_status_.has_sound_volume());
-  EXPECT_EQ(0, device_status_.cpu_utilization_pct_samples().size());
-  EXPECT_EQ(0, device_status_.cpu_temp_infos_size());
-  EXPECT_EQ(0, device_status_.system_ram_free_samples().size());
-  EXPECT_FALSE(device_status_.has_system_ram_total());
-  EXPECT_FALSE(device_status_.has_tpm_status_info());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, TimeZoneReporting) {
-  const std::string timezone =
-      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                            ->GetCurrentTimezoneID());
-
-  GetStatus();
-
-  EXPECT_TRUE(session_status_.has_time_zone());
-  EXPECT_EQ(timezone, session_status_.time_zone());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
-       ActivityTimesFeatureDisable) {
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceActivityTimes, true);
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceUsers, true);
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_ACTIVE};
-  status_collector_->Simulate(test_states, 3);
-
-  GetStatus();
-  EXPECT_EQ(0, device_status_.active_periods_size());
-}
-
-// Tests collecting device status for registered consumer device when time
-// limit feature is enabled.
-class ConsumerDeviceStatusCollectorTimeLimitEnabledTest
-    : public ConsumerDeviceStatusCollectorTimeLimitDisabledTest {
- public:
-  ConsumerDeviceStatusCollectorTimeLimitEnabledTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kUsageTimeLimitPolicy);
-  }
-  ~ConsumerDeviceStatusCollectorTimeLimitEnabledTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesSessionTransistions) {
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-
-  GetStatus();
-
-  ASSERT_EQ(1, device_status_.active_periods_size());
-  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
-  EXPECT_EQ(user_account_id_.GetUserEmail(),
-            device_status_.active_periods(0).user_email());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesSleepTransistions) {
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kEnterSleep,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kLeaveSleep,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kEnterSleep,
-      DeviceStateTransitions::kLeaveSleep,
-      DeviceStateTransitions::kPeriodicCheckTriggered};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-
-  GetStatus();
-
-  ASSERT_EQ(1, device_status_.active_periods_size());
-  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  ExpectChildScreenTimeMilliseconds(4 * ActivePeriodMilliseconds());
-  EXPECT_EQ(user_account_id_.GetUserEmail(),
-            device_status_.active_periods(0).user_email());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesIdleTransitions) {
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kEnterIdleState,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kLeaveIdleState,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-
-  GetStatus();
-
-  ASSERT_EQ(1, device_status_.active_periods_size());
-  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
-  EXPECT_EQ(user_account_id_.GetUserEmail(),
-            device_status_.active_periods(0).user_email());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
-  EXPECT_TRUE(
-      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
-  base::Time initial_time = base::Time::Now() + kHour;
-  status_collector_->SetBaselineTime(initial_time);
-
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kLeaveSessionActive};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-  EXPECT_FALSE(
-      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
-
-  // Process the list a second time after restarting the collector. It should be
-  // able to count the active periods found by the original collector, because
-  // the results are stored in a pref.
-  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
-                         base::BindRepeating(&GetEmptyCPUStatistics),
-                         base::BindRepeating(&GetEmptyCPUTempInfo),
-                         base::BindRepeating(&GetEmptyAndroidStatus),
-                         base::BindRepeating(&GetEmptyTpmStatus),
-                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
-  status_collector_->SetBaselineTime(initial_time);
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-
-  GetStatus();
-  EXPECT_EQ(12 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  ExpectChildScreenTimeMilliseconds(12 * ActivePeriodMilliseconds());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ActivityNotWrittenToLocalState) {
-  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
-
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-  GetStatus();
-  EXPECT_EQ(1, device_status_.active_periods_size());
-  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
-  // Nothing should be written to local state, because it is only used for
-  // enterprise reporting.
-  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, BeforeDayStart) {
-  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
-                         base::BindRepeating(&GetEmptyCPUStatistics),
-                         base::BindRepeating(&GetEmptyCPUTempInfo),
-                         base::BindRepeating(&GetEmptyAndroidStatus),
-                         base::BindRepeating(&GetEmptyTpmStatus),
-                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-                         kSixAm);
-  // 04:00 AM
-  Time initial_time = Time::Now().LocalMidnight() + TimeDelta::FromHours(4);
-  status_collector_->SetBaselineTime(initial_time);
-  EXPECT_TRUE(
-      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
-
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-  GetStatus();
-  // 4 is the number of states yielding an active period with duration of
-  // ActivePeriodMilliseconds
-  EXPECT_EQ(4 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  ExpectChildScreenTimeMilliseconds(4 * ActivePeriodMilliseconds());
-  ExpectLastChildScreenTimeReset(initial_time);
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ActivityCrossingMidnight) {
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kLeaveSessionActive};
-
-  // Set the baseline time to 15 seconds before midnight, so the activity is
-  // split between two days.
-  status_collector_->SetBaselineTime(Time::Now().LocalMidnight() -
-                                     TimeDelta::FromSeconds(15));
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-  GetStatus();
-  ASSERT_EQ(2, device_status_.active_periods_size());
-
-  em::ActiveTimePeriod period0 = device_status_.active_periods(0);
-  em::ActiveTimePeriod period1 = device_status_.active_periods(1);
-  EXPECT_EQ(ActivePeriodMilliseconds() - 15000, period0.active_duration());
-  EXPECT_EQ(15000, period1.active_duration());
-
-  em::TimePeriod time_period0 = period0.time_period();
-  em::TimePeriod time_period1 = period1.time_period();
-
-  EXPECT_EQ(time_period0.end_timestamp(), time_period1.start_timestamp());
-
-  // Ensure that the start and end times for the period are a day apart.
-  EXPECT_EQ(time_period0.end_timestamp() - time_period0.start_timestamp(),
-            kMillisecondsPerDay);
-  EXPECT_EQ(time_period1.end_timestamp() - time_period1.start_timestamp(),
-            kMillisecondsPerDay);
-  ExpectChildScreenTimeMilliseconds(0.5 * ActivePeriodMilliseconds());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ClockChanged) {
-  DeviceStateTransitions test_states[1] = {
-      DeviceStateTransitions::kEnterSessionActive};
-  base::Time initial_time =
-      Time::Now().LocalMidnight() + base::TimeDelta::FromHours(1);
-  status_collector_->SetBaselineTime(initial_time);
-  SimulateStateChanges(test_states, 1);
-
-  // Simulate clock change.
-  status_collector_->SetBaselineTime(initial_time - TimeDelta::FromMinutes(30));
-  test_states[0] = DeviceStateTransitions::kLeaveSessionActive;
-  SimulateStateChanges(test_states, 1);
-
-  GetStatus();
-  ASSERT_EQ(1, device_status_.active_periods_size());
-  ExpectChildScreenTimeMilliseconds(ActivePeriodMilliseconds());
 }
 
 }  // namespace policy

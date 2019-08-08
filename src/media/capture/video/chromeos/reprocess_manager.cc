@@ -44,10 +44,10 @@ int ReprocessManager::GetReprocessReturnCode(
   return kReprocessSuccess;
 }
 
-ReprocessManager::ReprocessManager()
+ReprocessManager::ReprocessManager(UpdateCameraInfoCallback callback)
     : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE})),
-      impl(new ReprocessManager::ReprocessManagerImpl) {}
+      impl(new ReprocessManager::ReprocessManagerImpl(std::move(callback))) {}
 
 ReprocessManager::~ReprocessManager() {
   sequenced_task_runner_->DeleteSoon(FROM_HERE, std::move(impl));
@@ -86,27 +86,28 @@ void ReprocessManager::FlushReprocessOptions(const std::string& device_id) {
           base::Unretained(impl.get()), device_id));
 }
 
-void ReprocessManager::GetSupportedEffects(
-    const std::string& device_id,
-    GetSupportedEffectsCallback callback) {
+void ReprocessManager::GetCameraInfo(const std::string& device_id,
+                                     GetCameraInfoCallback callback) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &ReprocessManager::ReprocessManagerImpl::GetSupportedEffects,
-          base::Unretained(impl.get()), device_id, std::move(callback)));
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::GetCameraInfo,
+                     base::Unretained(impl.get()), device_id,
+                     std::move(callback)));
 }
 
-void ReprocessManager::UpdateSupportedEffects(
+void ReprocessManager::UpdateCameraInfo(
     const std::string& device_id,
-    const cros::mojom::CameraMetadataPtr& metadata) {
+    const cros::mojom::CameraInfoPtr& camera_info) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &ReprocessManager::ReprocessManagerImpl::UpdateSupportedEffects,
-          base::Unretained(impl.get()), device_id, metadata.Clone()));
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::UpdateCameraInfo,
+                     base::Unretained(impl.get()), device_id,
+                     camera_info.Clone()));
 }
 
-ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl() {}
+ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl(
+    UpdateCameraInfoCallback callback)
+    : update_camera_info_callback_(std::move(callback)) {}
 
 ReprocessManager::ReprocessManagerImpl::~ReprocessManagerImpl() = default;
 
@@ -161,25 +162,26 @@ void ReprocessManager::ReprocessManagerImpl::FlushReprocessOptions(
   reprocess_task_queue_map_[device_id].swap(empty_queue);
 }
 
-void ReprocessManager::ReprocessManagerImpl::GetSupportedEffects(
+void ReprocessManager::ReprocessManagerImpl::GetCameraInfo(
     const std::string& device_id,
-    GetSupportedEffectsCallback callback) {
-  std::move(callback).Run(
-      base::flat_set<cros::mojom::Effect>(supported_effects_map_[device_id]));
+    GetCameraInfoCallback callback) {
+  if (camera_info_map_[device_id]) {
+    std::move(callback).Run(camera_info_map_[device_id].Clone());
+  } else {
+    get_camera_info_callback_queue_map_[device_id].push(std::move(callback));
+    update_camera_info_callback_.Run(device_id);
+  }
 }
 
-void ReprocessManager::ReprocessManagerImpl::UpdateSupportedEffects(
+void ReprocessManager::ReprocessManagerImpl::UpdateCameraInfo(
     const std::string& device_id,
-    const cros::mojom::CameraMetadataPtr metadata) {
-  const cros::mojom::CameraMetadataEntryPtr* portrait_mode =
-      media::GetMetadataEntry(
-          metadata,
-          static_cast<cros::mojom::CameraMetadataTag>(kPortraitModeVendorKey));
-  supported_effects_map_[device_id].clear();
-  supported_effects_map_[device_id].insert(cros::mojom::Effect::NO_EFFECT);
-  if (portrait_mode) {
-    supported_effects_map_[device_id].insert(
-        cros::mojom::Effect::PORTRAIT_MODE);
+    cros::mojom::CameraInfoPtr camera_info) {
+  camera_info_map_[device_id] = std::move(camera_info);
+
+  auto& callback_queue = get_camera_info_callback_queue_map_[device_id];
+  while (!callback_queue.empty()) {
+    std::move(callback_queue.front()).Run(camera_info_map_[device_id].Clone());
+    callback_queue.pop();
   }
 }
 

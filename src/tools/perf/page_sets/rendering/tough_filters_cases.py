@@ -42,6 +42,8 @@ class PirateMarkPage(rendering_story.RenderingStory):
   URL = ('http://web.archive.org/web/20150502135732/'
          'http://ie.microsoft.com/testdrive/Performance/'
          'Pirates/Default.html')
+  TAGS = rendering_story.RenderingStory.TAGS + [
+    story_tags.REPRESENTATIVE_MOBILE]
 
   def __init__(self,
                page_set,

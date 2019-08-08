@@ -185,8 +185,6 @@ bool LayoutMultiColumnSet::NewFragmentainerGroupsAllowed() const {
 LayoutUnit LayoutMultiColumnSet::NextLogicalTopForUnbreakableContent(
     LayoutUnit flow_thread_offset,
     LayoutUnit content_logical_height) const {
-  DCHECK(flow_thread_offset.MightBeSaturated() ||
-         PageLogicalTopForOffset(flow_thread_offset) == flow_thread_offset);
   if (!MultiColumnFlowThread()->EnclosingFragmentationContext()) {
     // If there's no enclosing fragmentation context, there'll ever be only one
     // row, and all columns there will have the same height.
@@ -506,8 +504,9 @@ unsigned LayoutMultiColumnSet::ActualColumnCount() const {
   return FirstFragmentainerGroup().ActualColumnCount();
 }
 
-void LayoutMultiColumnSet::PaintObject(const PaintInfo& paint_info,
-                                       const LayoutPoint& paint_offset) const {
+void LayoutMultiColumnSet::PaintObject(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) const {
   MultiColumnSetPainter(*this).PaintObject(paint_info, paint_offset);
 }
 
@@ -663,16 +662,17 @@ bool LayoutMultiColumnSet::ComputeColumnRuleBounds(
   return true;
 }
 
-LayoutRect LayoutMultiColumnSet::LocalVisualRectIgnoringVisibility() const {
-  LayoutRect block_flow_bounds =
+PhysicalRect LayoutMultiColumnSet::LocalVisualRectIgnoringVisibility() const {
+  PhysicalRect block_flow_bounds =
       LayoutBlockFlow::LocalVisualRectIgnoringVisibility();
 
   // Now add in column rule bounds, if present.
   Vector<LayoutRect> column_rule_bounds;
   if (ComputeColumnRuleBounds(LayoutPoint(), column_rule_bounds)) {
-    for (auto& bound : column_rule_bounds)
-      block_flow_bounds.Unite(bound);
+    block_flow_bounds.Unite(
+        PhysicalRectToBeNoop(UnionRect(column_rule_bounds)));
   }
+
   return block_flow_bounds;
 }
 

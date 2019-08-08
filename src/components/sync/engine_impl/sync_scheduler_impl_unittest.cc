@@ -97,7 +97,7 @@ class SyncSchedulerImplTest : public testing::Test {
   SyncSchedulerImplTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
         syncer_(nullptr),
@@ -143,7 +143,7 @@ class SyncSchedulerImplTest : public testing::Test {
         std::vector<SyncEngineEventListener*>(), nullptr,
         model_type_registry_.get(),
         true,  // enable keystore encryption
-        "fake_invalidator_client_id",
+        "fake_invalidator_client_id", "fake_birthday", "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");

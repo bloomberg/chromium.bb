@@ -174,7 +174,7 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       new InvalidatorStorage(profile->GetPrefs())));
 
   return new ProfileInvalidationProvider(std::move(service),
-                                         std::move(identity_provider));
+                                         std::move(identity_provider), {});
 #endif
 }
 

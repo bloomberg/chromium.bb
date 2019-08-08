@@ -17,5 +17,5 @@
     <item android:alpha="@dimen/default_focused_alpha"
         android:color="@color/modern_grey_800"
         android:state_focused="true" />
-    <item android:color="@color/default_bg_color_light" />
+    <item android:color="@android:color/transparent" />
 </selector>

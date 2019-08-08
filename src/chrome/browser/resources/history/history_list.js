@@ -385,6 +385,13 @@ Polymer({
       if (index == undefined) {
         return;
       }
+      setTimeout(() => {
+        this.$['infinite-list'].focusItem(index);
+        const item = getDeepActiveElement();
+        if (item) {
+          item.focusOnMenuButton();
+        }
+      });
 
       const browserService = history.BrowserService.getInstance();
       browserService.recordHistogram(

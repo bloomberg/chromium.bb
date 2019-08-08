@@ -23,7 +23,6 @@ class NetworkManager;
 
 namespace remoting {
 
-class OAuthTokenGetter;
 class SignalStrategy;
 class UrlRequestFactory;
 
@@ -58,16 +57,6 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   void set_turn_ice_config(const IceConfig& ice_config) {
     ice_config_[TURN] = ice_config;
-  }
-
-  // Sets URL to fetch ICE config. If |oauth_token_getter| is not nullptr then
-  // it's used to get OAuth token for the ICE config request, otherwise the
-  // request is not authenticated.
-  void set_ice_config_url(const std::string& ice_config_url,
-                          OAuthTokenGetter* oauth_token_getter) {
-    DCHECK(!ice_config_url.empty());
-    ice_config_url_ = ice_config_url;
-    oauth_token_getter_ = oauth_token_getter;
   }
 
   // Sets relay mode for all future calls of GetIceConfig(). Doesn't affect
@@ -119,9 +108,6 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   std::unique_ptr<UrlRequestFactory> url_request_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
-
-  std::string ice_config_url_;
-  OAuthTokenGetter* oauth_token_getter_ = nullptr;
 
   RelayMode relay_mode_ = RelayMode::GTURN;
 

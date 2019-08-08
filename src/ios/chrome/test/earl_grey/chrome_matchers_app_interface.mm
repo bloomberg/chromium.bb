@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
@@ -24,7 +26,9 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
@@ -345,7 +349,7 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton {
-  int labelID = base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)
+  int labelID = unified_consent::IsUnifiedConsentFeatureEnabled()
                     ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON
                     : IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(labelID)];
@@ -388,6 +392,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kSettingsDoneButtonId);
 }
 
++ (id<GREYMatcher>)syncSettingsConfirmButton {
+  return grey_accessibilityID(kSyncSettingsConfirmButtonId);
+}
+
 + (id<GREYMatcher>)toolsMenuView {
   return grey_accessibilityID(kPopupMenuToolsMenuTableViewId);
 }
@@ -418,6 +426,14 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)settingsImportDataKeepSeparateButton {
   return grey_accessibilityID(kImportDataKeepSeparateCellId);
+}
+
++ (id<GREYMatcher>)settingsImportDataContinueButton {
+  return grey_accessibilityID(kImportDataContinueButtonId);
+}
+
++ (id<GREYMatcher>)settingsPrivacyTableView {
+  return grey_accessibilityID(kPrivacyTableViewId);
 }
 
 + (id<GREYMatcher>)settingsSyncManageSyncedDataButton {
@@ -550,8 +566,20 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       grey_minimumVisiblePercent(0.2), nil);
 }
 
++ (id<GREYMatcher>)fakeOmnibox {
+  return grey_accessibilityID(ntp_home::FakeOmniboxAccessibilityID());
+}
+
 + (id<GREYMatcher>)webViewMatcher {
   return web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+}
+
++ (id<GREYMatcher>)webStateScrollViewMatcher {
+  return web::WebViewScrollView(chrome_test_util::GetCurrentWebState());
+}
+
++ (id<GREYMatcher>)historyClearBrowsingDataButton {
+  return grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier);
 }
 
 @end

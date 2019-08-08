@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/locks/lock_manager.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -24,7 +26,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/network/restricted_cookie_manager.h"
@@ -34,8 +39,10 @@
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
@@ -163,6 +170,25 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)->BindFileSystemManager(
             std::move(request));
       }));
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    parameterized_binder_registry_.AddInterface(base::BindRepeating(
+        [](blink::mojom::NativeFileSystemManagerRequest request,
+           RenderProcessHost* host, const url::Origin& origin) {
+          auto* manager =
+              static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+                  ->GetNativeFileSystemManager();
+          // This code path is only for workers, hence always pass in
+          // MSG_ROUTING_NONE as frame ID. Frames themselves go through
+          // RenderFrameHostImpl instead.
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::IO},
+              base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
+                             base::Unretained(manager),
+                             NativeFileSystemManagerImpl::BindingContext(
+                                 origin, host->GetID(), MSG_ROUTING_NONE),
+                             std::move(request)));
+        }));
+  }
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::PermissionServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {
@@ -177,13 +203,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetLockManager()
             ->CreateService(std::move(request), origin);
       }));
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::IdleManagerRequest request, RenderProcessHost* host,
-         const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetIdleManager()
-            ->CreateService(std::move(request), origin);
-      }));
+
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::NotificationServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {
@@ -203,6 +223,12 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetCookieStoreContext()
             ->CreateService(std::move(request), origin);
+      }));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](media::mojom::VideoDecodePerfHistoryRequest request,
+         RenderProcessHost* host, const url::Origin& origin) {
+        host->GetBrowserContext()->GetVideoDecodePerfHistory()->BindRequest(
+            std::move(request));
       }));
 }
 

@@ -14,29 +14,26 @@
 class Profile;
 
 namespace base {
-class CommandLine;
-class FilePath;
 class DictionaryValue;
 }
 
-namespace policy {
+namespace chromeos {
+class LocalPolicyTestServerMixin;
+}
 
-class LocalPolicyTestServer;
+namespace policy {
 
 // This class can be used to apply a user policy to the profile in a
 // BrowserTest.
 class UserPolicyTestHelper {
  public:
-  explicit UserPolicyTestHelper(const std::string& account_id);
+  UserPolicyTestHelper(
+      const std::string& account_id,
+      chromeos::LocalPolicyTestServerMixin* local_policy_server);
   virtual ~UserPolicyTestHelper();
 
-  // Must be called after construction to start the policy test server.
-  void Init(const base::DictionaryValue& mandatory_policy,
-            const base::DictionaryValue& recommended_policy);
-
-  // Must be used during BrowserTestBase::SetUpCommandLine to direct Chrome to
-  // the policy test server.
-  void UpdateCommandLine(base::CommandLine* command_line) const;
+  void SetPolicy(const base::DictionaryValue& mandatory,
+                 const base::DictionaryValue& recommended);
 
   // Can be optionally used to wait for the initial policy to be applied to the
   // profile. Alternatively, a login can be simulated, which makes it
@@ -45,20 +42,13 @@ class UserPolicyTestHelper {
 
   // Update the policy test server with the given policy. Then refresh and wait
   // for the new policy being applied to |profile|.
-  void UpdatePolicy(const base::DictionaryValue& mandatory_policy,
-                    const base::DictionaryValue& recommended_policy,
-                    Profile* profile);
-
-  void DeletePolicyFile();
+  void SetPolicyAndWait(const base::DictionaryValue& mandatory_policy,
+                        const base::DictionaryValue& recommended_policy,
+                        Profile* profile);
 
  private:
-  void WritePolicyFile(const base::DictionaryValue& mandatory,
-                       const base::DictionaryValue& recommended);
-  base::FilePath PolicyFilePath() const;
-
   const std::string account_id_;
-  base::ScopedTempDir temp_dir_;
-  std::unique_ptr<LocalPolicyTestServer> test_server_;
+  chromeos::LocalPolicyTestServerMixin* local_policy_server_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyTestHelper);
 };

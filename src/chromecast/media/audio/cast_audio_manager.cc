@@ -298,5 +298,16 @@ CastAudioManager::GetMixerServiceConnectionFactoryForOutputStream(
     return &mixer_service_connection_factory_;
 }
 
+#if defined(OS_ANDROID)
+::media::AudioOutputStream* CastAudioManager::MakeAudioOutputStreamProxy(
+    const ::media::AudioParameters& params,
+    const std::string& device_id) {
+  // Override to use MakeAudioOutputStream to prevent the audio output stream
+  // from closing during pause/stop.
+  return MakeAudioOutputStream(params, device_id,
+                               /*log_callback, not used*/ base::DoNothing());
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace media
 }  // namespace chromecast

@@ -143,6 +143,7 @@ class MockClientGpuControl : public GpuControl {
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
                        callback) override {}
+  MOCK_METHOD1(SetDisplayTransform, void(gfx::OverlayTransform));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

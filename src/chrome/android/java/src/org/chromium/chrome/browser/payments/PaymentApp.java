@@ -42,10 +42,13 @@ public interface PaymentApp {
          * interaction until updateWith() or noUpdatedPaymentDetails().
          * https://w3c.github.io/payment-request/#paymentmethodchangeevent-interface
          *
-         * @param methodName         Method name. For example, "https://google.com/pay".
-         * @param stringifiedDetails JSON-serialzied object. For example, {"type": "debit"}.
+         * @param methodName         Method name. For example, "https://google.com/pay". Should not
+         *                           be null or empty.
+         * @param stringifiedDetails JSON-serialized object. For example, {"type": "debit"}. Should
+         *                           not be null.
+         * @return Whether the payment state was valid.
          */
-        void onPaymentMethodChange(String methodName, String stringifiedDetails);
+        boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails);
     }
 
     /**

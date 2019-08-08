@@ -58,8 +58,8 @@ void WilcoDtcSupportdClientImpl::BootstrapMojoConnection(
     base::ScopedFD fd,
     VoidDBusMethodCallback callback) {
   dbus::MethodCall method_call(
-      ::diagnostics::kDiagnosticsdServiceInterface,
-      ::diagnostics::kDiagnosticsdBootstrapMojoConnectionMethod);
+      ::diagnostics::kWilcoDtcSupportdServiceInterface,
+      ::diagnostics::kWilcoDtcSupportdBootstrapMojoConnectionMethod);
   dbus::MessageWriter writer(&method_call);
   writer.AppendFileDescriptor(fd.get());
   wilco_dtc_supportd_proxy_->CallMethod(
@@ -69,8 +69,8 @@ void WilcoDtcSupportdClientImpl::BootstrapMojoConnection(
 
 void WilcoDtcSupportdClientImpl::Init(dbus::Bus* bus) {
   wilco_dtc_supportd_proxy_ = bus->GetObjectProxy(
-      ::diagnostics::kDiagnosticsdServiceName,
-      dbus::ObjectPath(::diagnostics::kDiagnosticsdServicePath));
+      ::diagnostics::kWilcoDtcSupportdServiceName,
+      dbus::ObjectPath(::diagnostics::kWilcoDtcSupportdServicePath));
 }
 
 }  // namespace

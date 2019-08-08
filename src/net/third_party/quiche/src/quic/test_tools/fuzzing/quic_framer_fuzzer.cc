@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/commandlineflags.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
@@ -11,8 +10,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  SetQuicFlag(&FLAGS_minloglevel, 3);
-
   quic::QuicFramer framer(quic::AllSupportedVersions(), quic::QuicTime::Zero(),
                           quic::Perspective::IS_SERVER,
                           quic::kQuicDefaultConnectionIdLength);

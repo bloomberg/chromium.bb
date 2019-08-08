@@ -461,7 +461,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return nullptr;
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowLineTreeAndMark(const InlineBox* = nullptr,
                            const char* = nullptr,
                            const InlineBox* = nullptr,
@@ -483,8 +483,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
                                              LayoutBox&);
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const override;
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
   void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
@@ -520,8 +518,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void SetLogicalTopForChild(LayoutBox& child, LayoutUnit logical_top);
   void DetermineLogicalLeftPositionForChild(LayoutBox& child);
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
@@ -533,7 +531,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                        const LayoutPoint& accumulated_offset,
                        HitTestAction) override;
 
-  LayoutSize AccumulateInFlowPositionOffsets() const override;
+  PhysicalOffset AccumulateInFlowPositionOffsets() const override;
 
  private:
   void ResetLayout();
@@ -640,7 +638,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void ReparentSubsequentFloatingOrOutOfFlowSiblings();
   void ReparentPrecedingFloatingOrOutOfFlowSiblings();
 
-  bool NeedsAnonymousInlineWrapper() const;
   void MakeChildrenInlineIfPossible();
 
   void MakeChildrenNonInline(LayoutObject* insertion_point = nullptr);
@@ -775,7 +772,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     DISALLOW_COPY_AND_ASSIGN(LayoutBlockFlowRareData);
   };
 
-  void ClearOffsetMapping();
+  void ClearOffsetMappingIfNeeded();
   const NGOffsetMapping* GetOffsetMapping() const;
   void SetOffsetMapping(std::unique_ptr<NGOffsetMapping>);
 
@@ -1029,8 +1026,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   // END METHODS DEFINED IN LayoutBlockFlowLine
 };
-
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlockFlow, IsLayoutBlockFlow());
 
 template <>
 struct DowncastTraits<LayoutBlockFlow> {

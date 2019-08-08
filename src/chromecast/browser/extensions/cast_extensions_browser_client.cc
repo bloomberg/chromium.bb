@@ -119,7 +119,7 @@ CastExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
 base::FilePath CastExtensionsBrowserClient::GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
-    ComponentExtensionResourceInfo* resource_info) const {
+    int* resource_id) const {
   return base::FilePath();
 }
 
@@ -127,7 +127,7 @@ void CastExtensionsBrowserClient::LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderRequest loader,
     const base::FilePath& resource_relative_path,
-    const ComponentExtensionResourceInfo& resource_info,
+    int resource_id,
     const std::string& content_security_policy,
     network::mojom::URLLoaderClientPtr client,
     bool send_cors_header) {
@@ -161,7 +161,7 @@ PrefService* CastExtensionsBrowserClient::GetPrefServiceForContext(
 
 void CastExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
-    std::vector<ExtensionPrefsObserver*>* observers) const {}
+    std::vector<EarlyExtensionPrefsObserver*>* observers) const {}
 
 ProcessManagerDelegate* CastExtensionsBrowserClient::GetProcessManagerDelegate()
     const {
@@ -240,10 +240,6 @@ void CastExtensionsBrowserClient::BroadcastEventToRenderers(
   std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(args)));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
-}
-
-net::NetLog* CastExtensionsBrowserClient::GetNetLog() {
-  return nullptr;
 }
 
 ExtensionCache* CastExtensionsBrowserClient::GetExtensionCache() {

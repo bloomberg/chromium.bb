@@ -54,6 +54,6 @@ interface BackgroundSyncService {
   Register(SyncRegistrationOptions options, int64 service_worker_registration_id)
       => (BackgroundSyncError err, SyncRegistrationOptions options);
   DidResolveRegistration(BackgroundSyncRegistrationInfo registration_info);
-  GetRegistrations(int64 service_worker_registration_id)
+  GetOneShotSyncRegistrations(int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistrationOptions> registrations);
 };

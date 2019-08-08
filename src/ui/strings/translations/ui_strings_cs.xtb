@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1028699632127661925">Odesílání na zařízení <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Nastavení oznámení</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Před 1 dnem}few{Před # dny}many{Před # dne}other{Před # dny}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{před minutou}few{před # minutami}many{před # minuty}other{před # minutami}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1409544243779336081">Doporučení aplikace</translation>
-<translation id="1413622004203049571">Deaktivovat oznámení ze služby <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
 <translation id="1643823602425662293">Oznámení</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">teď</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuta}few{# minuty}many{# minuty}other{# minut}}</translation>
-<translation id="1756116796893109054">Odesílání karty...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Tečka</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 měsíc}few{# měsíce}many{# měsíce}other{# měsíců}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Klávesa Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Rozšířit na všechny aplikace</translation>
+<translation id="6165508094623778733">Další informace</translation>
 <translation id="6264365405983206840">Vybr&amp;at vše</translation>
 <translation id="6351032674660237738">NÁVRHY APLIKACÍ</translation>
 <translation id="6364916375976753737">Posuv doleva</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Víc než 1 nepřečtené oznámení}few{Víc než # nepřečtená oznámení}many{Víc než # nepřečteného oznámení}other{Víc než # nepřečtených oznámení}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{za 1 min}few{za # min}many{za # min}other{za # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Spustit hlasový dotaz Asistenta Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Před 1 hodinou}few{Před # hodinami}many{Před # hodiny}other{Před # hodinami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Zbývá 1 s}few{Zbývají # s}many{Zbývá # s}other{Zbývá # s}}</translation>
+<translation id="8144660977431427332">Pro vaše vyhledávání se používá technologie Asistenta Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatické doplnění</translation>
 <translation id="815598010540052116">Posuv dolů</translation>
 <translation id="8170087467028567933">Pokud tento návrh odstraníte, bude ve vašem účtu skryt na všech vašich zařízeních.</translation>

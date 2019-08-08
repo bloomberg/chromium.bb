@@ -23,11 +23,13 @@
  * DAMAGE.
  */
 
+#include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_database.h"
-#include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -81,7 +83,19 @@ size_t HRTFPanner::FftSizeForSampleRate(float sample_rate) {
   double sample_rate_ratio = sample_rate / 44100;
   double resampled_length = truncated_impulse_length * sample_rate_ratio;
 
-  return 2 * (1 << static_cast<unsigned>(log2(resampled_length)));
+  // This is the size used for analysis frames in the HRTF kernel.  The
+  // convolvers used by the kernel are twice this size.
+  int analysis_fft_size = 1 << static_cast<unsigned>(log2(resampled_length));
+
+  // Don't let the analysis size be smaller than the supported size
+  analysis_fft_size = std::max(analysis_fft_size, FFTFrame::MinFFTSize());
+
+  int convolver_fft_size = 2 * analysis_fft_size;
+
+  // Make sure this size of convolver is supported.
+  DCHECK_LE(convolver_fft_size, FFTFrame::MaxFFTSize());
+
+  return convolver_fft_size;
 }
 
 void HRTFPanner::Reset() {

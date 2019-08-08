@@ -12,14 +12,16 @@
 
 #include <va/va.h>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "media/base/video_types.h"
-#include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "media/parsers/jpeg_parser.h"
 
 namespace media {
 
@@ -223,9 +225,8 @@ bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
   return true;
 }
 
-std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
+scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
     base::span<const uint8_t> encoded_image,
-    uint32_t preferred_image_fourcc,
     VaapiJpegDecodeStatus* status) {
   if (!vaapi_wrapper_) {
     VLOGF(1) << "VaapiJpegDecoder has not been initialized";
@@ -332,7 +333,21 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
     return nullptr;
   }
 
-  // Get the decode output as a ScopedVAImage.
+  *status = VaapiJpegDecodeStatus::kSuccess;
+  return base::MakeRefCounted<VASurface>(va_surface_id_, coded_size_,
+                                         va_rt_format_,
+                                         base::DoNothing() /* release_cb */);
+}
+
+std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
+    uint32_t preferred_image_fourcc,
+    VaapiJpegDecodeStatus* status) {
+  if (va_surface_id_ == VA_INVALID_ID) {
+    VLOGF(1) << "No decoded JPEG available";
+    *status = VaapiJpegDecodeStatus::kInvalidState;
+    return nullptr;
+  }
+
   uint32_t image_fourcc;
   if (!VaapiWrapper::GetJpegDecodeSuitableImageFourCC(
           va_rt_format_, preferred_image_fourcc, &image_fourcc)) {
@@ -352,13 +367,6 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
 
   *status = VaapiJpegDecodeStatus::kSuccess;
   return scoped_image;
-}
-
-std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
-    base::span<const uint8_t> encoded_image,
-    VaapiJpegDecodeStatus* status) {
-  return DoDecode(encoded_image, VA_FOURCC_I420 /* preferred_image_fourcc */,
-                  status);
 }
 
 }  // namespace media

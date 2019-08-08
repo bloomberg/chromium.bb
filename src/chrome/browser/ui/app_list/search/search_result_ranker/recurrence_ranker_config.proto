@@ -20,26 +20,40 @@ message RecurrenceRankerConfigProto {
 
   required uint32 min_seconds_between_saves = 3;
 
+  required uint32 target_limit = 4;
+  required float target_decay = 5;
+  required uint32 condition_limit = 6;
+  required float condition_decay = 7;
+
   // Config for a fake predictor, used for testing.
   message FakePredictorConfig {}
 
+  // Config for a default predictor, which uses the scores of the frecency store
+  // as its ranks. As a result, it has no configuration of its own.
+  message DefaultPredictorConfig {}
+
   // Config for a frecency predictor.
   message ZeroStateFrecencyPredictorConfig {
-    // The soft-maximum number of targets that are stored within the predictor.
-    required uint32 target_limit = 201;
+    // Field 201 (target_limit) has been deleted.
+    reserved 201;
     // The frecency parameter used to control the frequency-recency tradeoff
     // that determines when targets are removed. Must be in [0.5, 1.0], with 0.5
     // meaning only-recency and 1.0 meaning only-frequency.
     required float decay_coeff = 202;
   }
 
+  message ZeroStateHourBinPredictorConfig {
+    // The decay coeffficient number that control the decay rate. The decay is
+    // once a week.
+    required float weekly_decay_coeff = 301;
+    map<int32, float> bin_weights_map = 302;
+  }
+
   // The choice of which kind of predictor to use, and its configuration.
   oneof predictor_config {
     FakePredictorConfig fake_predictor = 10001;
     ZeroStateFrecencyPredictorConfig zero_state_frecency_predictor = 10002;
+    DefaultPredictorConfig default_predictor = 10003;
+    ZeroStateHourBinPredictorConfig zero_state_hour_bin_predictor = 10004;
   }
-
-  // Configuration for a frecency predictor used as a fallback if the user is
-  // ephemeral.
-  required ZeroStateFrecencyPredictorConfig fallback_predictor = 11000;
 }

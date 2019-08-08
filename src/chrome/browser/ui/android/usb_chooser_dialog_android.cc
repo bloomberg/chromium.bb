@@ -133,7 +133,7 @@ void UsbChooserDialogAndroid::OnItemSelected(
   auto it = std::find(item_id_map_.begin(), item_id_map_.end(), item_id);
   DCHECK(it != item_id_map_.end());
   controller_->Select({std::distance(item_id_map_.begin(), it)});
-  base::ResetAndReturn(&on_close_).Run();
+  std::move(on_close_).Run();
 }
 
 void UsbChooserDialogAndroid::OnDialogCancelled(
@@ -151,5 +151,5 @@ void UsbChooserDialogAndroid::LoadUsbHelpPage(
 
 void UsbChooserDialogAndroid::Cancel() {
   controller_->Cancel();
-  base::ResetAndReturn(&on_close_).Run();
+  std::move(on_close_).Run();
 }

@@ -653,6 +653,9 @@ Framebuffer::Framebuffer(const Context *context, egl::Surface *surface)
                           FramebufferAttachment::kDefaultBaseViewIndex, false);
     }
     SetComponentTypeMask(getDrawbufferWriteType(0), 0, &mState.mDrawBufferTypeMask);
+
+    // Ensure the backend has a chance to synchronize its content for a new backbuffer.
+    mDirtyBits.set(DIRTY_BIT_COLOR_BUFFER_CONTENTS_0);
 }
 
 Framebuffer::Framebuffer(rx::GLImplFactory *factory)
@@ -955,8 +958,8 @@ void Framebuffer::invalidateCompletenessCache(const Context *context)
     if (mState.mId != 0)
     {
         mCachedStatus.reset();
-        onStateChange(context, angle::SubjectMessage::CONTENTS_CHANGED);
     }
+    onStateChange(context, angle::SubjectMessage::DirtyBitsFlagged);
 }
 
 GLenum Framebuffer::checkStatusImpl(const Context *context)
@@ -968,11 +971,16 @@ GLenum Framebuffer::checkStatusImpl(const Context *context)
 
     if (mCachedStatus.value() == GL_FRAMEBUFFER_COMPLETE)
     {
-        angle::Result err = syncState(context);
-        if (err != angle::Result::Continue)
+        // We can skip syncState on several back-ends.
+        if (mImpl->shouldSyncStateBeforeCheckStatus())
         {
-            return 0;
+            angle::Result err = syncState(context);
+            if (err != angle::Result::Continue)
+            {
+                return 0;
+            }
         }
+
         if (!mImpl->checkStatus(context))
         {
             mCachedStatus = GL_FRAMEBUFFER_UNSUPPORTED;
@@ -1494,7 +1502,6 @@ angle::Result Framebuffer::readPixels(const Context *context,
                                       GLenum type,
                                       void *pixels)
 {
-    ANGLE_TRY(ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
     ANGLE_TRY(mImpl->readPixels(context, area, format, type, pixels));
 
     Buffer *unpackBuffer = context->getState().getTargetBuffer(BufferBinding::PixelUnpack);
@@ -1536,12 +1543,6 @@ angle::Result Framebuffer::blit(const Context *context,
         return angle::Result::Continue;
     }
 
-    auto *sourceFBO = context->getState().getReadFramebuffer();
-    ANGLE_TRY(sourceFBO->ensureReadAttachmentInitialized(context, blitMask));
-
-    // TODO(jmadill): Only clear if not the full FBO dimensions, and only specified bitmask.
-    ANGLE_TRY(ensureDrawAttachmentsInitialized(context));
-
     return mImpl->blit(context, sourceArea, destArea, blitMask, filter);
 }
 
@@ -1555,7 +1556,7 @@ int Framebuffer::getSamples(const Context *context)
     return (isComplete(context) ? getCachedSamples(context) : 0);
 }
 
-int Framebuffer::getCachedSamples(const Context *context)
+int Framebuffer::getCachedSamples(const Context *context) const
 {
     ASSERT(mCachedStatus.valid() && mCachedStatus.value() == GL_FRAMEBUFFER_COMPLETE);
 
@@ -1853,16 +1854,23 @@ void Framebuffer::onSubjectStateChange(const Context *context,
                                        angle::SubjectIndex index,
                                        angle::SubjectMessage message)
 {
-    if (message != angle::SubjectMessage::STORAGE_CHANGED)
+    if (message != angle::SubjectMessage::SubjectChanged)
     {
+        // This can be triggered by SubImage calls for Textures.
+        if (message == angle::SubjectMessage::ContentsChanged)
+        {
+            mDirtyBits.set(DIRTY_BIT_COLOR_BUFFER_CONTENTS_0 + index);
+            onStateChange(context, angle::SubjectMessage::DirtyBitsFlagged);
+            return;
+        }
+
         // This can be triggered by the GL back-end TextureGL class.
-        ASSERT(message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+        ASSERT(message == angle::SubjectMessage::DirtyBitsFlagged);
         return;
     }
 
     ASSERT(!mDirtyBitsGuard.valid() || mDirtyBitsGuard.value().test(index));
     mDirtyBits.set(index);
-    onStateChange(context, angle::SubjectMessage::STORAGE_CHANGED);
 
     invalidateCompletenessCache(context);
 
@@ -2153,15 +2161,16 @@ angle::Result Framebuffer::ensureDrawAttachmentsInitialized(const Context *conte
     return angle::Result::Continue;
 }
 
-angle::Result Framebuffer::ensureReadAttachmentInitialized(const Context *context,
-                                                           GLbitfield blitMask)
+angle::Result Framebuffer::ensureReadAttachmentsInitialized(const Context *context)
 {
-    if (!context->isRobustResourceInitEnabled() || mState.mResourceNeedsInit.none())
+    ASSERT(context->isRobustResourceInitEnabled());
+
+    if (mState.mResourceNeedsInit.none())
     {
         return angle::Result::Continue;
     }
 
-    if ((blitMask & GL_COLOR_BUFFER_BIT) != 0 && mState.mReadBufferState != GL_NONE)
+    if (mState.mReadBufferState != GL_NONE)
     {
         size_t readIndex = mState.getReadIndex();
         if (mState.mResourceNeedsInit[readIndex])
@@ -2171,7 +2180,8 @@ angle::Result Framebuffer::ensureReadAttachmentInitialized(const Context *contex
         }
     }
 
-    if ((blitMask & GL_DEPTH_BUFFER_BIT) != 0 && hasDepth())
+    // Conservatively init depth since it can be read by BlitFramebuffer.
+    if (hasDepth())
     {
         if (mState.mResourceNeedsInit[DIRTY_BIT_DEPTH_ATTACHMENT])
         {
@@ -2180,7 +2190,8 @@ angle::Result Framebuffer::ensureReadAttachmentInitialized(const Context *contex
         }
     }
 
-    if ((blitMask & GL_STENCIL_BUFFER_BIT) != 0 && hasStencil())
+    // Conservatively init stencil since it can be read by BlitFramebuffer.
+    if (hasStencil())
     {
         if (mState.mResourceNeedsInit[DIRTY_BIT_STENCIL_ATTACHMENT])
         {

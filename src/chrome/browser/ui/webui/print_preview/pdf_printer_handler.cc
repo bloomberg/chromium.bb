@@ -113,7 +113,7 @@ base::Value GetPdfCapabilities(const std::string& locale) {
 }
 
 // Callback that stores a PDF file on disk.
-void PrintToPdfCallback(const scoped_refptr<base::RefCountedMemory>& data,
+void PrintToPdfCallback(scoped_refptr<base::RefCountedMemory> data,
                         const base::FilePath& path,
                         const base::Closure& pdf_file_saved_closure) {
   base::File file(path,

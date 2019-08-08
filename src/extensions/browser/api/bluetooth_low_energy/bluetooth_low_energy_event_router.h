@@ -68,15 +68,15 @@ class BluetoothLowEnergyEventRouter
    public:
     enum RequestType { ATTRIBUTE_READ_REQUEST, ATTRIBUTE_WRITE_REQUEST };
 
-    AttributeValueRequest(const Delegate::ValueCallback& value_callback,
-                          const Delegate::ErrorCallback& error_callback);
-    AttributeValueRequest(const base::Closure& success_callback,
-                          const Delegate::ErrorCallback& error_callback);
+    AttributeValueRequest(Delegate::ValueCallback value_callback,
+                          Delegate::ErrorCallback error_callback);
+    AttributeValueRequest(base::OnceClosure success_callback,
+                          Delegate::ErrorCallback error_callback);
     ~AttributeValueRequest();
 
     RequestType type;
     Delegate::ValueCallback value_callback;
-    base::Closure success_callback;
+    base::OnceClosure success_callback;
     Delegate::ErrorCallback error_callback;
 
    private:
@@ -310,36 +310,36 @@ class BluetoothLowEnergyEventRouter
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       int offset,
-      const Delegate::ValueCallback& value_callback,
-      const Delegate::ErrorCallback& error_callback) override;
+      Delegate::ValueCallback value_callback,
+      Delegate::ErrorCallback error_callback) override;
   void OnCharacteristicWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value,
       int offset,
-      const base::Closure& callback,
-      const Delegate::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      Delegate::ErrorCallback error_callback) override;
   void OnCharacteristicPrepareWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value,
       int offset,
       bool has_subsequent_request,
-      const base::Closure& callback,
-      const Delegate::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      Delegate::ErrorCallback error_callback) override;
   void OnDescriptorReadRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       int offset,
-      const Delegate::ValueCallback& value_callback,
-      const Delegate::ErrorCallback& error_callback) override;
+      Delegate::ValueCallback value_callback,
+      Delegate::ErrorCallback error_callback) override;
   void OnDescriptorWriteRequest(
       const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       const std::vector<uint8_t>& value,
       int offset,
-      const base::Closure& callback,
-      const Delegate::ErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      Delegate::ErrorCallback error_callback) override;
   void OnNotificationsStart(
       const device::BluetoothDevice* device,
       device::BluetoothGattCharacteristic::NotificationType notification_type,

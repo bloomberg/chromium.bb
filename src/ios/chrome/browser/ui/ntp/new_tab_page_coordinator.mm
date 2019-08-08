@@ -94,13 +94,6 @@
 
 - (void)dismissModals {
   [self.contentSuggestionsCoordinator dismissModals];
-  [self.incognitoViewController dismissModals];
-}
-
-#pragma mark - NewTabPageOwning
-
-- (UIView*)view {
-  return self.viewController.view;
 }
 
 - (UIEdgeInsets)contentInset {

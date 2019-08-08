@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "GrDefaultPathRenderer.h"
+#include "src/gpu/ops/GrDefaultPathRenderer.h"
 
-#include "GrCaps.h"
-#include "GrDefaultGeoProcFactory.h"
-#include "GrDrawOpTest.h"
-#include "GrFillRectOp.h"
-#include "GrFixedClip.h"
-#include "GrMesh.h"
-#include "GrOpFlushState.h"
-#include "GrPathUtils.h"
-#include "GrShape.h"
-#include "GrSimpleMeshDrawOpHelper.h"
-#include "GrStyle.h"
-#include "GrSurfaceContextPriv.h"
-#include "SkGeometry.h"
-#include "SkString.h"
-#include "SkStrokeRec.h"
-#include "SkTLazy.h"
-#include "SkTraceEvent.h"
-#include "ops/GrMeshDrawOp.h"
+#include "include/core/SkString.h"
+#include "include/core/SkStrokeRec.h"
+#include "src/core/SkGeometry.h"
+#include "src/core/SkTLazy.h"
+#include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrDefaultGeoProcFactory.h"
+#include "src/gpu/GrDrawOpTest.h"
+#include "src/gpu/GrFixedClip.h"
+#include "src/gpu/GrMesh.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrPathUtils.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrShape.h"
+#include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceContextPriv.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 GrDefaultPathRenderer::GrDefaultPathRenderer() {
 }
@@ -352,7 +352,7 @@ public:
 
     const char* name() const override { return "DefaultPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
+    void visitProxies(const VisitProxyFunc& func) const override {
         fHelper.visitProxies(func);
     }
 
@@ -613,10 +613,8 @@ bool GrDefaultPathRenderer::internalDrawPath(GrRenderTargetContext* renderTarget
                                                                                viewMatrix;
             // This is a non-coverage aa rect op since we assert aaType != kCoverage at the start
             assert_alive(paint);
-            renderTargetContext->addDrawOp(
-                    clip,
-                    GrFillRectOp::MakeWithLocalMatrix(context, std::move(paint), aaType, viewM,
-                                                      localMatrix, bounds, passes[p]));
+            renderTargetContext->priv().stencilRect(clip, passes[p], std::move(paint),
+                    GrAA(aaType == GrAAType::kMSAA), viewM, bounds, &localMatrix);
         } else {
             bool stencilPass = stencilOnly || passCount > 1;
             std::unique_ptr<GrDrawOp> op;

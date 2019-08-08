@@ -45,17 +45,15 @@ TEST_F(ContentRecordTaskIDTest, TaskIDTest) {
       test_data::kChildrenTaskIds,
       ContextRecordTaskId::Get(navigation_entry_.get())->children_task_ids());
 
-  ContextRecordTaskId* cloned_context_record_task_id =
-      static_cast<ContextRecordTaskId*>(
-          context_record_task_id->Clone().release());
+  ContextRecordTaskId cloned_context_record_task_id(*context_record_task_id);
 
-  EXPECT_EQ(test_data::kTaskId, cloned_context_record_task_id->task_id());
+  EXPECT_EQ(test_data::kTaskId, cloned_context_record_task_id.task_id());
   EXPECT_EQ(test_data::kParentTaskId,
-            cloned_context_record_task_id->parent_task_id());
+            cloned_context_record_task_id.parent_task_id());
   EXPECT_EQ(test_data::kRootTaskId,
-            cloned_context_record_task_id->root_task_id());
+            cloned_context_record_task_id.root_task_id());
   EXPECT_EQ(test_data::kChildrenTaskIds,
-            cloned_context_record_task_id->children_task_ids());
+            cloned_context_record_task_id.children_task_ids());
 }
 
 }  // namespace sessions

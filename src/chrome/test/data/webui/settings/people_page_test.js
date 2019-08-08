@@ -44,6 +44,7 @@ cr.define('settings_people_page', function() {
 
       PolymerTest.clearBody();
       peoplePage = document.createElement('settings-people-page');
+      peoplePage.pageVisibility = settings.pageVisibility;
       document.body.appendChild(peoplePage);
 
       return Promise
@@ -110,6 +111,7 @@ cr.define('settings_people_page', function() {
 
         PolymerTest.clearBody();
         peoplePage = document.createElement('settings-people-page');
+        peoplePage.pageVisibility = settings.pageVisibility;
         document.body.appendChild(peoplePage);
       });
 
@@ -405,6 +407,7 @@ cr.define('settings_people_page', function() {
 
         PolymerTest.clearBody();
         peoplePage = document.createElement('settings-people-page');
+        peoplePage.pageVisibility = settings.pageVisibility;
         document.body.appendChild(peoplePage);
 
         Polymer.dom.flush();
@@ -555,6 +558,7 @@ cr.define('settings_people_page', function() {
 
       PolymerTest.clearBody();
       peoplePage = document.createElement('settings-people-page');
+      peoplePage.pageVisibility = settings.pageVisibility;
       document.body.appendChild(peoplePage);
 
       Polymer.dom.flush();

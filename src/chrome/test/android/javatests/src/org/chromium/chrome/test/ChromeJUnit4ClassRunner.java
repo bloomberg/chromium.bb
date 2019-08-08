@@ -11,8 +11,6 @@ import android.text.TextUtils;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.vr.ndk.base.DaydreamApi;
-import com.google.vr.ndk.base.GvrApi;
 
 import org.junit.rules.TestRule;
 import org.junit.runners.model.InitializationError;
@@ -31,6 +29,8 @@ import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -68,35 +68,78 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
             super(targetContext);
         }
 
+        private Class getDaydreamApiClass() {
+            Class daydreamApiClass;
+            try {
+                daydreamApiClass = Class.forName("com.google.vr.ndk.base.DaydreamApi");
+            } catch (ClassNotFoundException e) {
+                daydreamApiClass = null;
+            }
+            return daydreamApiClass;
+        }
+
+        @SuppressWarnings("unchecked")
         private boolean isDaydreamReady() {
             // We normally check things like this through VrShellDelegate. However, with the
             // introduction of Dynamic Feature Modules (DFMs), we have tests that expect the VR
             // DFM to not be loaded. Using the normal approach (VrModuleProvider.getDelegate())
             // causes the DFM to be loaded, which we don't want done before the test starts. So,
-            // access the Daydream API directly.
-            return DaydreamApi.isDaydreamReadyPlatform(ContextUtils.getApplicationContext());
+            // access the Daydream API directly. VR is likely, but not guaranteed, to be compiled
+            // into the test binary, so use reflection.
+            Class daydreamApiClass = getDaydreamApiClass();
+            if (daydreamApiClass == null) {
+                return false;
+            }
+            try {
+                Method isDaydreamMethod =
+                        daydreamApiClass.getMethod("isDaydreamReadyPlatform", Context.class);
+                Boolean isDaydream = (Boolean) isDaydreamMethod.invoke(
+                        null, ContextUtils.getApplicationContext());
+                return isDaydream;
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException e) {
+                return false;
+            }
         }
 
+        @SuppressWarnings("unchecked")
         private boolean isDaydreamViewPaired() {
             if (!isDaydreamReady()) {
                 return false;
             }
-            // We need to ensure that the DaydreamApi instance is created on the main thread.
-            DaydreamApi daydreamApi;
-            try {
-                daydreamApi = TestThreadUtils.runOnUiThreadBlocking(
-                        () -> { return DaydreamApi.create(ContextUtils.getApplicationContext()); });
-            } catch (ExecutionException e) {
+
+            Class daydreamApiClass = getDaydreamApiClass();
+            if (daydreamApiClass == null) {
                 return false;
             }
-            int viewerType;
-            // Getting the current viewer type may result in a disk write in VrCore, so allow that
-            // to prevent StrictMode errors.
-            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
-                viewerType = daydreamApi.getCurrentViewerType();
+
+            try {
+                Method createMethod = daydreamApiClass.getMethod("create", Context.class);
+                // We need to ensure that the DaydreamApi instance is created on the main thread.
+                Object daydreamApiInstance = TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    return createMethod.invoke(null, ContextUtils.getApplicationContext());
+                });
+                if (daydreamApiInstance == null) {
+                    return false;
+                }
+
+                Method currentViewerMethod = daydreamApiClass.getMethod("getCurrentViewerType");
+                // Getting the current viewer type may result in a disk write in VrCore, so allow
+                // that to prevent StrictMode errors.
+                Integer viewerType;
+                try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+                    viewerType = (Integer) currentViewerMethod.invoke(daydreamApiInstance);
+                }
+                Method closeMethod = daydreamApiClass.getMethod("close");
+                closeMethod.invoke(daydreamApiInstance);
+                // 1 is the viewer type constant for Daydream headsets. We could use reflection to
+                // check against com.google.vr.ndk.base.GvrApi.ViewerType.DAYDREAM, but the
+                // constants have never changed, so check this way to be simpler.
+                return viewerType == 1;
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                    | ExecutionException e) {
+                return false;
             }
-            daydreamApi.close();
-            return viewerType == GvrApi.ViewerType.DAYDREAM;
         }
 
         private boolean isOnStandaloneVrDevice() {

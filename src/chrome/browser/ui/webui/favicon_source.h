@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -91,12 +91,6 @@ class FaviconSource : public content::URLDataSource {
     favicon::FaviconRequestOrigin icon_request_origin;
   };
 
-  // Called when the favicon data is missing to perform additional checks to
-  // locate the resource.
-  // |request| contains information for the failed request.
-  // Returns true if the missing resource is found.
-  virtual bool HandleMissingResource(const IconRequest& request);
-
   // Exposed for testing.
   virtual ui::NativeTheme* GetNativeTheme();
   virtual base::RefCountedMemory* LoadIconBytes(const IconRequest& request,
@@ -126,6 +120,7 @@ class FaviconSource : public content::URLDataSource {
   void SendDefaultResponse(const IconRequest& request);
 
   base::CancelableTaskTracker cancelable_task_tracker_;
+  favicon::FaviconRequestHandler favicon_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSource);
 };

@@ -25,12 +25,6 @@
 
 namespace base {
 
-namespace {
-
-MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = nullptr;
-
-}  // namespace
-
 // Unfortunately since we're not on C++17 we're required to provide an out of
 // line definition.
 constexpr MessageLoop::Type MessageLoop::TYPE_DEFAULT;
@@ -79,49 +73,6 @@ MessageLoop::~MessageLoop() {
 #endif  // !defined(OS_IOS)
 }
 
-// static
-bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
-  if (message_pump_for_ui_factory_)
-    return false;
-
-  message_pump_for_ui_factory_ = factory;
-  return true;
-}
-
-// static
-std::unique_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
-  if (type == MessageLoop::TYPE_UI) {
-    if (message_pump_for_ui_factory_)
-      return message_pump_for_ui_factory_();
-#if defined(OS_IOS) || defined(OS_MACOSX)
-    return MessagePumpMac::Create();
-#elif defined(OS_NACL) || defined(OS_AIX)
-    // Currently NaCl and AIX don't have a UI MessageLoop.
-    // TODO(abarth): Figure out if we need this.
-    NOTREACHED();
-    return nullptr;
-#else
-    return std::make_unique<MessagePumpForUI>();
-#endif
-  }
-
-  if (type == MessageLoop::TYPE_IO)
-    return std::make_unique<MessagePumpForIO>();
-
-#if defined(OS_ANDROID)
-  if (type == MessageLoop::TYPE_JAVA)
-    return std::make_unique<MessagePumpForUI>();
-#endif
-
-  DCHECK_EQ(MessageLoop::TYPE_DEFAULT, type);
-#if defined(OS_IOS)
-  // On iOS, a native runloop is always required to pump system work.
-  return std::make_unique<MessagePumpCFRunLoop>();
-#else
-  return std::make_unique<MessagePumpDefault>();
-#endif
-}
-
 bool MessageLoop::IsType(Type type) const {
   return type_ == type;
 }
@@ -163,7 +114,9 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
     : sequence_manager_(
           sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
-              sequence_manager::SequenceManager::Settings{type})),
+              sequence_manager::SequenceManager::Settings::Builder()
+                  .SetMessagePumpType(type)
+                  .Build())),
       default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
       custom_pump_(std::move(custom_pump)) {
@@ -198,16 +151,12 @@ std::unique_ptr<MessagePump> MessageLoop::CreateMessagePump() {
   if (custom_pump_) {
     return std::move(custom_pump_);
   } else {
-    return CreateMessagePumpForType(type_);
+    return MessagePump::Create(type_);
   }
 }
 
 void MessageLoop::SetTimerSlack(TimerSlack timer_slack) {
   sequence_manager_->SetTimerSlack(timer_slack);
-}
-
-std::string MessageLoop::GetThreadName() const {
-  return sequence_manager_->GetThreadName();
 }
 
 scoped_refptr<SingleThreadTaskRunner> MessageLoop::task_runner() const {

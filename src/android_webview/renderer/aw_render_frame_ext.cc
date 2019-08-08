@@ -256,20 +256,18 @@ void AwRenderFrameExt::OnDocumentHasImagesRequest(uint32_t id) {
                                                    has_images));
 }
 
-void AwRenderFrameExt::FocusedNodeChanged(const blink::WebNode& node) {
-  if (node.IsNull() || !node.IsElementNode() || !render_frame() ||
-      !render_frame()->GetRenderView())
+void AwRenderFrameExt::FocusedElementChanged(const blink::WebElement& element) {
+  if (element.IsNull() || !render_frame() || !render_frame()->GetRenderView())
     return;
 
-  const blink::WebElement element = node.ToConst<blink::WebElement>();
   AwHitTestData data;
 
   data.href = GetHref(element);
   data.anchor_text = element.TextContent().Utf16();
 
   GURL absolute_link_url;
-  if (node.IsLink())
-    absolute_link_url = GetAbsoluteUrl(node, data.href);
+  if (element.IsLink())
+    absolute_link_url = GetAbsoluteUrl(element, data.href);
 
   GURL absolute_image_url = GetChildImageUrlFromElement(element);
 
@@ -368,10 +366,9 @@ blink::WebView* AwRenderFrameExt::GetWebView() {
 }
 
 blink::WebFrameWidget* AwRenderFrameExt::GetWebFrameWidget() {
-  if (!render_frame() || !render_frame()->GetRenderView())
-    return nullptr;
-
-  return render_frame()->GetRenderView()->GetWebFrameWidget();
+  return render_frame()
+             ? render_frame()->GetWebFrame()->LocalRoot()->FrameWidget()
+             : nullptr;
 }
 
 void AwRenderFrameExt::OnDestruct() {

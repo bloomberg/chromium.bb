@@ -24,8 +24,6 @@ uint8_t ExtractBits(uint8_t flags, uint8_t num_bits, uint8_t offset) {
   return (flags >> offset) & GetMaskFromNumBits(num_bits);
 }
 
-// Length of the type field of HTTP/3 frames.
-static const QuicByteCount kFrameTypeLength = 1;
 // Length of the weight field of a priority frame.
 static const size_t kPriorityWeightLength = 1;
 // Length of a priority frame's first byte.
@@ -35,12 +33,14 @@ static const size_t kPriorityFirstByteLength = 1;
 
 HttpDecoder::HttpDecoder()
     : visitor_(nullptr),
-      state_(STATE_READING_FRAME_LENGTH),
+      state_(STATE_READING_FRAME_TYPE),
       current_frame_type_(0),
-      current_length_field_size_(0),
+      current_length_field_length_(0),
       remaining_length_field_length_(0),
       current_frame_length_(0),
       remaining_frame_length_(0),
+      current_type_field_length_(0),
+      remaining_type_field_length_(0),
       error_(QUIC_NO_ERROR),
       error_detail_("") {}
 
@@ -51,11 +51,11 @@ QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
   while (error_ == QUIC_NO_ERROR &&
          (reader.BytesRemaining() != 0 || state_ == STATE_FINISH_PARSING)) {
     switch (state_) {
-      case STATE_READING_FRAME_LENGTH:
-        ReadFrameLength(&reader);
-        break;
       case STATE_READING_FRAME_TYPE:
         ReadFrameType(&reader);
+        break;
+      case STATE_READING_FRAME_LENGTH:
+        ReadFrameLength(&reader);
         break;
       case STATE_READING_FRAME_PAYLOAD:
         ReadFramePayload(&reader);
@@ -77,29 +77,83 @@ QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
   return len - reader.BytesRemaining();
 }
 
-void HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
-  DCHECK_NE(0u, reader->BytesRemaining());
-  BufferFrameLength(reader);
-  if (remaining_length_field_length_ != 0) {
-    return;
-  }
-  QuicDataReader length_reader(length_buffer_.data(),
-                               current_length_field_size_);
-  if (!length_reader.ReadVarInt62(&current_frame_length_)) {
-    RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame length");
-    visitor_->OnError(this);
-    return;
-  }
-
-  state_ = STATE_READING_FRAME_TYPE;
-  remaining_frame_length_ = current_frame_length_;
-}
-
 void HttpDecoder::ReadFrameType(QuicDataReader* reader) {
   DCHECK_NE(0u, reader->BytesRemaining());
-  if (!reader->ReadUInt8(&current_frame_type_)) {
-    RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame type");
-    return;
+  if (current_type_field_length_ == 0) {
+    // A new frame is coming.
+    current_type_field_length_ = reader->PeekVarInt62Length();
+    if (current_type_field_length_ == 0) {
+      RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame type length");
+      visitor_->OnError(this);
+      return;
+    }
+    if (current_type_field_length_ <= reader->BytesRemaining()) {
+      // The reader has all type data needed, so no need to buffer.
+      if (!reader->ReadVarInt62(&current_frame_type_)) {
+        RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame type");
+        return;
+      }
+    } else {
+      // Buffer a new type field.
+      remaining_type_field_length_ = current_type_field_length_;
+      BufferFrameType(reader);
+      return;
+    }
+  } else {
+    // Buffer the existing type field.
+    BufferFrameType(reader);
+    // The frame is still not buffered completely.
+    if (remaining_type_field_length_ != 0) {
+      return;
+    }
+    QuicDataReader type_reader(type_buffer_.data(), current_type_field_length_);
+    if (!type_reader.ReadVarInt62(&current_frame_type_)) {
+      RaiseError(QUIC_INTERNAL_ERROR, "Unable to read buffered frame type");
+      visitor_->OnError(this);
+      return;
+    }
+  }
+
+  state_ = STATE_READING_FRAME_LENGTH;
+}
+
+void HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
+  DCHECK_NE(0u, reader->BytesRemaining());
+  if (current_length_field_length_ == 0) {
+    // A new frame is coming.
+    current_length_field_length_ = reader->PeekVarInt62Length();
+    if (current_length_field_length_ == 0) {
+      RaiseError(QUIC_INTERNAL_ERROR,
+                 "Unable to read the length of frame length");
+      visitor_->OnError(this);
+      return;
+    }
+    if (current_length_field_length_ <= reader->BytesRemaining()) {
+      // The reader has all length data needed, so no need to buffer.
+      if (!reader->ReadVarInt62(&current_frame_length_)) {
+        RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame length");
+        return;
+      }
+    } else {
+      // Buffer a new length field.
+      remaining_length_field_length_ = current_length_field_length_;
+      BufferFrameLength(reader);
+      return;
+    }
+  } else {
+    // Buffer the existing length field.
+    BufferFrameLength(reader);
+    // The frame is still not buffered completely.
+    if (remaining_length_field_length_ != 0) {
+      return;
+    }
+    QuicDataReader length_reader(length_buffer_.data(),
+                                 current_length_field_length_);
+    if (!length_reader.ReadVarInt62(&current_frame_length_)) {
+      RaiseError(QUIC_INTERNAL_ERROR, "Unable to read buffered frame length");
+      visitor_->OnError(this);
+      return;
+    }
   }
 
   if (current_frame_length_ > MaxFrameLength(current_frame_type_)) {
@@ -112,15 +166,19 @@ void HttpDecoder::ReadFrameType(QuicDataReader* reader) {
   // frame payload.
   if (current_frame_type_ == 0x0) {
     visitor_->OnDataFrameStart(Http3FrameLengths(
-        current_length_field_size_ + kFrameTypeLength, current_frame_length_));
+        current_length_field_length_ + current_type_field_length_,
+        current_frame_length_));
   } else if (current_frame_type_ == 0x1) {
     visitor_->OnHeadersFrameStart(Http3FrameLengths(
-        current_length_field_size_ + kFrameTypeLength, current_frame_length_));
+        current_length_field_length_ + current_type_field_length_,
+        current_frame_length_));
   } else if (current_frame_type_ == 0x4) {
     visitor_->OnSettingsFrameStart(Http3FrameLengths(
-        current_length_field_size_ + kFrameTypeLength, current_frame_length_));
+        current_length_field_length_ + current_type_field_length_,
+        current_frame_length_));
   }
 
+  remaining_frame_length_ = current_frame_length_;
   state_ = (remaining_frame_length_ == 0) ? STATE_FINISH_PARSING
                                           : STATE_READING_FRAME_PAYLOAD;
 }
@@ -233,6 +291,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       QUIC_FALLTHROUGH_INTENDED;
     default:
       DiscardFramePayload(reader);
+      return;
   }
 
   if (remaining_frame_length_ == 0) {
@@ -274,10 +333,6 @@ void HttpDecoder::FinishParsing() {
       break;
     }
     case 0x4: {  // SETTINGS
-      // TODO(rch): Handle overly large SETTINGS frames. Either:
-      // 1. Impose a limit on SETTINGS frame size, and close the connection if
-      //    exceeded
-      // 2. Implement a streaming parsing mode.
       SettingsFrame frame;
       QuicDataReader reader(buffer_.data(), current_frame_length_);
       if (!ParseSettingsFrame(&reader, &frame)) {
@@ -330,8 +385,9 @@ void HttpDecoder::FinishParsing() {
     }
   }
 
-  current_length_field_size_ = 0;
-  state_ = STATE_READING_FRAME_LENGTH;
+  current_length_field_length_ = 0;
+  current_type_field_length_ = 0;
+  state_ = STATE_READING_FRAME_TYPE;
 }
 
 void HttpDecoder::DiscardFramePayload(QuicDataReader* reader) {
@@ -344,8 +400,9 @@ void HttpDecoder::DiscardFramePayload(QuicDataReader* reader) {
   }
   remaining_frame_length_ -= payload.length();
   if (remaining_frame_length_ == 0) {
-    state_ = STATE_READING_FRAME_LENGTH;
-    current_length_field_size_ = 0;
+    state_ = STATE_READING_FRAME_TYPE;
+    current_length_field_length_ = 0;
+    current_type_field_length_ = 0;
   }
 }
 
@@ -366,29 +423,35 @@ void HttpDecoder::BufferFramePayload(QuicDataReader* reader) {
 }
 
 void HttpDecoder::BufferFrameLength(QuicDataReader* reader) {
-  if (current_length_field_size_ == 0) {
-    current_length_field_size_ = reader->PeekVarInt62Length();
-    if (current_length_field_size_ == 0) {
-      RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame length");
-      visitor_->OnError(this);
-      return;
-    }
-    remaining_length_field_length_ = current_length_field_size_;
-  }
-  if (current_length_field_size_ == remaining_length_field_length_) {
-    length_buffer_.erase(length_buffer_.size());
-    length_buffer_.reserve(current_length_field_size_);
+  if (current_length_field_length_ == remaining_length_field_length_) {
+    length_buffer_.fill(0);
   }
   QuicByteCount bytes_to_read = std::min<QuicByteCount>(
       remaining_length_field_length_, reader->BytesRemaining());
-  if (!reader->ReadBytes(&(length_buffer_[0]) + current_length_field_size_ -
+  if (!reader->ReadBytes(length_buffer_.data() + current_length_field_length_ -
                              remaining_length_field_length_,
                          bytes_to_read)) {
-    RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame length");
+    RaiseError(QUIC_INTERNAL_ERROR, "Unable to buffer frame length bytes.");
     visitor_->OnError(this);
     return;
   }
   remaining_length_field_length_ -= bytes_to_read;
+}
+
+void HttpDecoder::BufferFrameType(QuicDataReader* reader) {
+  if (current_type_field_length_ == remaining_type_field_length_) {
+    type_buffer_.fill(0);
+  }
+  QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+      remaining_type_field_length_, reader->BytesRemaining());
+  if (!reader->ReadBytes(type_buffer_.data() + current_type_field_length_ -
+                             remaining_type_field_length_,
+                         bytes_to_read)) {
+    RaiseError(QUIC_INTERNAL_ERROR, "Unable to buffer frame type bytes.");
+    visitor_->OnError(this);
+    return;
+  }
+  remaining_type_field_length_ -= bytes_to_read;
 }
 
 void HttpDecoder::RaiseError(QuicErrorCode error, std::string error_detail) {
@@ -428,8 +491,8 @@ bool HttpDecoder::ParsePriorityFrame(QuicDataReader* reader,
 bool HttpDecoder::ParseSettingsFrame(QuicDataReader* reader,
                                      SettingsFrame* frame) {
   while (!reader->IsDoneReading()) {
-    uint16_t id;
-    if (!reader->ReadUInt16(&id)) {
+    uint64_t id;
+    if (!reader->ReadVarInt62(&id)) {
       RaiseError(QUIC_INTERNAL_ERROR,
                  "Unable to read settings frame identifier");
       return false;

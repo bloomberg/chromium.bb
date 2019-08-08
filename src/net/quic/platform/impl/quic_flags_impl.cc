@@ -201,6 +201,11 @@ std::vector<std::string> QuicParseCommandLineFlagsImpl(
   if (result.exit_status.has_value()) {
     exit(*result.exit_status);
   }
+
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  CHECK(logging::InitLogging(settings));
+
   return result.non_flag_args;
 }
 

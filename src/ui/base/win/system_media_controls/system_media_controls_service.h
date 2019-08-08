@@ -8,6 +8,8 @@
 #include <windows.media.control.h>
 
 #include "base/component_export.h"
+#include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace system_media_controls {
 
@@ -29,6 +31,9 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsService {
   virtual void AddObserver(SystemMediaControlsServiceObserver* observer) = 0;
   virtual void RemoveObserver(SystemMediaControlsServiceObserver* observer) = 0;
 
+  // Enables/disables the service.
+  virtual void SetEnabled(bool enabled) = 0;
+
   // TODO(steimel): Add other controls.
   // Enable or disable specific controls.
   virtual void SetIsNextEnabled(bool value) = 0;
@@ -40,6 +45,14 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsService {
   // Setters for metadata.
   virtual void SetPlaybackStatus(
       ABI::Windows::Media::MediaPlaybackStatus status) = 0;
+  virtual void SetTitle(const base::string16& title) = 0;
+  virtual void SetArtist(const base::string16& artist) = 0;
+  virtual void SetThumbnail(const SkBitmap& bitmap) = 0;
+
+  // Helpers for metadata.
+  virtual void ClearThumbnail() = 0;
+  virtual void ClearMetadata() = 0;
+  virtual void UpdateDisplay() = 0;
 
  protected:
   virtual ~SystemMediaControlsService();

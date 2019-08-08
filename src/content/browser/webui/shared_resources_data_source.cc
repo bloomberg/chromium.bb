@@ -15,6 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/grit/content_resources.h"
+#include "content/grit/content_resources_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -41,11 +43,7 @@ namespace content {
 
 namespace {
 
-struct IdrGzipped {
-  int idr;
-  bool gzipped;
-};
-using ResourcesMap = std::unordered_map<std::string, IdrGzipped>;
+using ResourcesMap = std::unordered_map<std::string, int>;
 
 #if defined(OS_CHROMEOS)
 const char kPolymerHtml[] = "polymer/v1_0/polymer/polymer.html";
@@ -58,8 +56,7 @@ const char kHtmlImportsV0Js[] =
 
 // Utility for determining if both Polymer 1 and Polymer 2 are needed.
 bool UsingMultiplePolymerVersions() {
-  return base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-         base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
+  return base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -69,6 +66,8 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   std::map<std::string, std::string> aliases = {
       {"../../../third_party/polymer/v1_0/components-chromium/",
        "polymer/v1_0/"},
+      {"../../../third_party/polymer/v3_0/components-chromium/",
+       "polymer/v3_0/"},
       {"../../../third_party/web-animations-js/sources/",
        "polymer/v1_0/web-animations-js/"},
       {"../../views/resources/default_100_percent/common/", "images/apps/"},
@@ -83,26 +82,48 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2)) {
-    aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
-        "polymer/v1_0/polymer/";
-  } else {
-    aliases
-        ["../../../third_party/polymer/v1_0/components-chromium/"
-         "html-imports-v0/"] = "polymer/v1_0/html-imports/";
-  }
+  aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
+      "polymer/v1_0/polymer/";
 #endif  // !defined(OS_ANDROID)
   return aliases;
 }
 
+const std::map<int, std::string> CreateContentResourceIdToAliasMap() {
+  return std::map<int, std::string>{
+      {IDR_ORIGIN_MOJO_HTML, "mojo/url/mojom/origin.mojom.html"},
+      {IDR_ORIGIN_MOJO_JS, "mojo/url/mojom/origin.mojom-lite.js"},
+      {IDR_UNGUESSABLE_TOKEN_MOJO_HTML,
+       "mojo/mojo/public/mojom/base/unguessable_token.mojom.html"},
+      {IDR_UNGUESSABLE_TOKEN_MOJO_JS,
+       "mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"},
+      {IDR_URL_MOJO_HTML, "mojo/url/mojom/url.mojom.html"},
+      {IDR_URL_MOJO_JS, "mojo/url/mojom/url.mojom-lite.js"},
+  };
+}
+
 const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
   return std::map<int, std::string> {
-    {IDR_MOJO_MOJO_BINDINGS_LITE_JS, "js/mojo_bindings_lite.js"},
-        {IDR_MOJO_BIG_BUFFER_MOJOM_LITE_JS, "js/big_buffer.mojom-lite.js"},
-        {IDR_MOJO_FILE_MOJOM_LITE_JS, "js/file.mojom-lite.js"},
-        {IDR_MOJO_STRING16_MOJOM_LITE_JS, "js/string16.mojom-lite.js"},
+    {IDR_MOJO_MOJO_BINDINGS_LITE_HTML,
+     "mojo/mojo/public/js/mojo_bindings_lite.html"},
+        {IDR_MOJO_MOJO_BINDINGS_LITE_JS,
+         "mojo/mojo/public/js/mojo_bindings_lite.js"},
+        {IDR_MOJO_BIG_BUFFER_MOJOM_HTML,
+         "mojo/mojo/public/mojom/base/big_buffer.mojom.html"},
+        {IDR_MOJO_BIG_BUFFER_MOJOM_LITE_JS,
+         "mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js"},
+        {IDR_MOJO_FILE_MOJOM_HTML,
+         "mojo/mojo/public/mojom/base/file.mojom.html"},
+        {IDR_MOJO_FILE_MOJOM_LITE_JS,
+         "mojo/mojo/public/mojom/base/file.mojom-lite.js"},
+        {IDR_MOJO_STRING16_MOJOM_HTML,
+         "mojo/mojo/public/mojom/base/string16.mojom.html"},
+        {IDR_MOJO_STRING16_MOJOM_LITE_JS,
+         "mojo/mojo/public/mojom/base/string16.mojom-lite.js"},
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-        {IDR_MOJO_TIME_MOJOM_LITE_JS, "js/time.mojom-lite.js"},
+        {IDR_MOJO_TIME_MOJOM_HTML,
+         "mojo/mojo/public/mojom/base/time.mojom.html"},
+        {IDR_MOJO_TIME_MOJOM_LITE_JS,
+         "mojo/mojo/public/mojom/base/time.mojom-lite.js"},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   };
 }
@@ -110,14 +131,36 @@ const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
 #if defined(OS_CHROMEOS)
 const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
   return std::map<int, std::string>{
+      {IDR_CELLULAR_SETUP_MOJOM_HTML,
+       "mojo/chromeos/services/cellular_setup/public/mojom/"
+       "cellular_setup.mojom.html"},
+      {IDR_CELLULAR_SETUP_MOJOM_LITE_JS,
+       "mojo/chromeos/services/cellular_setup/public/mojom/"
+       "cellular_setup.mojom-lite.js"},
+      {IDR_MULTIDEVICE_DEVICE_SYNC_MOJOM_HTML,
+       "mojo/chromeos/services/device_sync/public/mojom/"
+       "device_sync.mojom.html"},
       {IDR_MULTIDEVICE_DEVICE_SYNC_MOJOM_LITE_JS,
-       "js/chromeos/device_sync.mojom-lite.js"},
+       "mojo/chromeos/services/device_sync/public/mojom/"
+       "device_sync.mojom-lite.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_MOJOM_HTML,
+       "mojo/chromeos/services/multidevice_setup/public/mojom/"
+       "multidevice_setup.mojom.html"},
       {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_MOJOM_LITE_JS,
-       "js/chromeos/multidevice_setup.mojom-lite.js"},
+       "mojo/chromeos/services/multidevice_setup/public/mojom/"
+       "multidevice_setup.mojom-lite.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_HTML,
+       "mojo/chromeos/services/multidevice_setup/public/mojom/"
+       "constants.mojom.html"},
       {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_LITE_JS,
-       "js/chromeos/multidevice_setup_constants.mojom-lite.js"},
+       "mojo/chromeos/services/multidevice_setup/public/mojom/"
+       "constants.mojom-lite.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_HTML,
+       "mojo/chromeos/components/multidevice/mojom/"
+       "multidevice_types.mojom.html"},
       {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_LITE_JS,
-       "js/chromeos/multidevice_types.mojom-lite.js"},
+       "mojo/chromeos/components/multidevice/mojom/"
+       "multidevice_types.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -129,27 +172,14 @@ bool ShouldIgnore(std::string resource) {
     return false;
 #endif  // defined(OS_CHROMEOS)
 
-  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-      (base::StartsWith(
-           resource,
-           "../../../third_party/polymer/v1_0/components-chromium/polymer/",
-           base::CompareCase::SENSITIVE) ||
-       base::StartsWith(resource,
-                        "../../../third_party/polymer/v1_0/components-chromium/"
-                        "html-imports-v0/",
-                        base::CompareCase::SENSITIVE))) {
-    return true;
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-      (base::StartsWith(
-           resource,
-           "../../../third_party/polymer/v1_0/components-chromium/polymer2/",
-           base::CompareCase::SENSITIVE) ||
-       base::StartsWith(resource,
-                        "../../../third_party/polymer/v1_0/components-chromium/"
-                        "html-imports/",
-                        base::CompareCase::SENSITIVE))) {
+  if (base::StartsWith(
+          resource,
+          "../../../third_party/polymer/v1_0/components-chromium/polymer/",
+          base::CompareCase::SENSITIVE) ||
+      base::StartsWith(resource,
+                       "../../../third_party/polymer/v1_0/components-chromium/"
+                       "html-imports-v0/",
+                       base::CompareCase::SENSITIVE)) {
     return true;
   }
 
@@ -159,10 +189,8 @@ bool ShouldIgnore(std::string resource) {
 
 void AddResource(const std::string& path,
                  int resource_id,
-                 bool gzipped,
                  ResourcesMap* resources_map) {
-  IdrGzipped idr_gzipped = {resource_id, gzipped};
-  if (!resources_map->insert(std::make_pair(path, idr_gzipped)).second)
+  if (!resources_map->insert(std::make_pair(path, resource_id)).second)
     NOTREACHED() << "Redefinition of '" << path << "'";
 }
 
@@ -178,14 +206,14 @@ void AddResourcesToMap(ResourcesMap* resources_map) {
       continue;
 #endif  // !defined(OS_ANDROID)
 
-    AddResource(resource.name, resource.value, resource.gzipped, resources_map);
+    AddResource(resource.name, resource.value, resources_map);
 
     for (auto it = aliases.begin(); it != aliases.end(); ++it) {
       if (base::StartsWith(resource.name, it->first,
                            base::CompareCase::SENSITIVE)) {
         std::string resource_name(resource.name);
         AddResource(it->second + resource_name.substr(it->first.length()),
-                    resource.value, resource.gzipped, resources_map);
+                    resource.value, resources_map);
       }
     }
   }
@@ -196,7 +224,7 @@ void AddResourcesToMap(ResourcesMap* resources_map) {
 // alias. Note that resources which do not have an alias will not be added.
 void AddAliasedResourcesToMap(
     const std::map<int, std::string>& resource_aliases,
-    const GzippedGritResourceMap resources[],
+    const GritResourceMap resources[],
     size_t resources_size,
     ResourcesMap* resources_map) {
   for (size_t i = 0; i < resources_size; ++i) {
@@ -206,13 +234,15 @@ void AddAliasedResourcesToMap(
     if (it == resource_aliases.end())
       continue;
 
-    AddResource(it->second, resource.value, resource.gzipped, resources_map);
+    AddResource(it->second, resource.value, resources_map);
   }
 }
 
 const ResourcesMap* CreateResourcesMap() {
   ResourcesMap* result = new ResourcesMap();
   AddResourcesToMap(result);
+  AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
+                           kContentResources, kContentResourcesSize, result);
   AddAliasedResourcesToMap(CreateMojoResourceIdToAliasMap(),
                            kMojoBindingsResources, kMojoBindingsResourcesSize,
                            result);
@@ -232,7 +262,7 @@ const ResourcesMap& GetResourcesMap() {
 int GetIdrForPath(const std::string& path) {
   const ResourcesMap& resources_map = GetResourcesMap();
   auto it = resources_map.find(path);
-  return it != resources_map.end() ? it->second.idr : -1;
+  return it != resources_map.end() ? it->second : -1;
 }
 
 }  // namespace
@@ -375,9 +405,7 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
 }
 
 bool SharedResourcesDataSource::IsGzipped(const std::string& path) const {
-  auto it = GetResourcesMap().find(path);
-  DCHECK(it != GetResourcesMap().end()) << "missing shared resource: " << path;
-  return it != GetResourcesMap().end() ? it->second.gzipped : false;
+  return GetContentClient()->IsDataResourceGzipped(GetIdrForPath(path));
 }
 
 #if defined(OS_CHROMEOS)

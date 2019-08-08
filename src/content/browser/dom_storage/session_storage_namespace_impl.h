@@ -52,9 +52,9 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
   DOMStorageContextWrapper* context() const { return context_wrapper_.get(); }
 
   // SessionStorageNamespace implementation.
-  const std::string& id() const override;
+  const std::string& id() override;
   void SetShouldPersist(bool should_persist) override;
-  bool should_persist() const override;
+  bool should_persist() override;
 
   bool IsMojoSessionStorage() { return context_.get(); }
 

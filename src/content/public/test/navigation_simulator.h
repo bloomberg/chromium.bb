@@ -19,6 +19,7 @@ class GURL;
 namespace net {
 class IPEndPoint;
 class HttpResponseHeaders;
+class SSLInfo;
 }  // namespace net
 
 namespace content {
@@ -244,6 +245,9 @@ class NavigationSimulator {
   // Sets whether this navigation originated as the result of a form submission.
   virtual void SetIsFormSubmission(bool is_form_submission) = 0;
 
+  // Sets whether this navigation originated as the result of a link click.
+  virtual void SetWasInitiatedByLinkClick(bool was_initiated_by_link_click) = 0;
+
   // The following parameters can change during redirects. They should be
   // specified before calling |Start| if they need to apply to the navigation to
   // the original url. Otherwise, they should be specified before calling
@@ -283,6 +287,10 @@ class NavigationSimulator {
   // If the test sets this to false, it should follow up any calls that result
   // in throttles deferring the navigation with a call to Wait().
   virtual void SetAutoAdvance(bool auto_advance) = 0;
+
+  // Sets the SSLInfo to be set on the response. This should be called before
+  // Commit().
+  virtual void SetSSLInfo(const net::SSLInfo& ssl_info) = 0;
 
   // --------------------------------------------------------------------------
 

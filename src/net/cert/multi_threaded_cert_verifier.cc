@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
 #include "base/memory/ptr_util.h"
@@ -84,28 +83,27 @@ class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
 
 namespace {
 
-std::unique_ptr<base::Value> CertVerifyResultCallback(
-    const CertVerifyResult& verify_result,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetBoolean("has_md5", verify_result.has_md5);
-  results->SetBoolean("has_md2", verify_result.has_md2);
-  results->SetBoolean("has_md4", verify_result.has_md4);
-  results->SetBoolean("is_issued_by_known_root",
-                      verify_result.is_issued_by_known_root);
-  results->SetBoolean("is_issued_by_additional_trust_anchor",
-                      verify_result.is_issued_by_additional_trust_anchor);
-  results->SetInteger("cert_status", verify_result.cert_status);
-  results->Set("verified_cert",
-               NetLogX509CertificateCallback(verify_result.verified_cert.get(),
-                                             capture_mode));
+base::Value CertVerifyResultCallback(const CertVerifyResult& verify_result,
+                                     NetLogCaptureMode capture_mode) {
+  base::DictionaryValue results;
+  results.SetBoolean("has_md5", verify_result.has_md5);
+  results.SetBoolean("has_md2", verify_result.has_md2);
+  results.SetBoolean("has_md4", verify_result.has_md4);
+  results.SetBoolean("is_issued_by_known_root",
+                     verify_result.is_issued_by_known_root);
+  results.SetBoolean("is_issued_by_additional_trust_anchor",
+                     verify_result.is_issued_by_additional_trust_anchor);
+  results.SetInteger("cert_status", verify_result.cert_status);
+  results.SetKey("verified_cert",
+                 NetLogX509CertificateCallback(
+                     verify_result.verified_cert.get(), capture_mode));
 
   std::unique_ptr<base::ListValue> hashes(new base::ListValue());
   for (auto it = verify_result.public_key_hashes.begin();
        it != verify_result.public_key_hashes.end(); ++it) {
     hashes->AppendString(it->ToString());
   }
-  results->Set("public_key_hashes", std::move(hashes));
+  results.Set("public_key_hashes", std::move(hashes));
 
   return std::move(results);
 }
@@ -174,7 +172,7 @@ class CertVerifierRequest : public base::LinkNode<CertVerifierRequest>,
     net_log_.EndEvent(NetLogEventType::CERT_VERIFIER_REQUEST);
     *verify_result_ = verify_result.result;
 
-    base::ResetAndReturn(&callback_).Run(verify_result.error);
+    std::move(callback_).Run(verify_result.error);
   }
 
   void OnJobCancelled() {
@@ -198,6 +196,7 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
     const scoped_refptr<X509Certificate>& cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     const scoped_refptr<CRLSet>& crl_set,
     const CertificateList& additional_trust_anchors) {
@@ -206,7 +205,7 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
   MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
       allow_base_sync_primitives;
   verify_result->error = verify_proc->Verify(
-      cert.get(), hostname, ocsp_response, flags, crl_set.get(),
+      cert.get(), hostname, ocsp_response, sct_list, flags, crl_set.get(),
       additional_trust_anchors, &verify_result->result);
   return verify_result;
 }
@@ -250,8 +249,8 @@ class CertVerifierJob {
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, key_.certificate(),
-                       key_.hostname(), key_.ocsp_response(), flags,
-                       config.crl_set, config.additional_trust_anchors),
+                       key_.hostname(), key_.ocsp_response(), key_.sct_list(),
+                       flags, config.crl_set, config.additional_trust_anchors),
         base::BindOnce(&CertVerifierJob::OnJobCompleted,
                        weak_ptr_factory_.GetWeakPtr(), config_id));
   }

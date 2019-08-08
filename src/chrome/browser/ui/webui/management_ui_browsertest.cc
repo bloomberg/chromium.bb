@@ -6,7 +6,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/management_ui.h"
@@ -44,8 +43,7 @@ class ManagementUITest : public InProcessBrowserTest {
   policy::MockConfigurationPolicyProvider* provider() { return &provider_; }
 
   policy::ProfilePolicyConnector* profile_policy_connector() {
-    return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-        browser()->profile());
+    return browser()->profile()->GetProfilePolicyConnector();
   }
 
  private:

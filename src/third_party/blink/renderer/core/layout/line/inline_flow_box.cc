@@ -1700,7 +1700,7 @@ const char* InlineFlowBox::BoxName() const {
   return "InlineFlowBox";
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void InlineFlowBox::DumpLineTreeAndMark(StringBuilder& string_builder,
                                         const InlineBox* marked_box1,

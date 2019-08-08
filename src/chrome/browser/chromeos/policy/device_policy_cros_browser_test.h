@@ -46,13 +46,6 @@ class DevicePolicyCrosBrowserTest
   DevicePolicyCrosBrowserTest();
   ~DevicePolicyCrosBrowserTest() override;
 
-  // MixinBasedInProcessBrowserTest:
-  void SetUp() override;
-  void SetUpInProcessBrowserTestFixture() override;
-
-  // Writes the owner key to disk. To be called before installing a policy.
-  void InstallOwnerKey();
-
   // Reinstalls |device_policy_| as the policy (to be used when it was
   // recently changed).
   void RefreshDevicePolicy();

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ThreadUtils;
@@ -20,12 +19,11 @@ public class MarketURLGetter {
         private static final MarketURLGetter INSTANCE = new MarketURLGetter();
     }
 
-    /** See {@link #getMarketUrl(Context)} */
-    static String getMarketUrl(Context context) {
+    static String getMarketUrl() {
         assert !ThreadUtils.runningOnUiThread();
         MarketURLGetter instance =
                 sInstanceForTests == null ? LazyHolder.INSTANCE : sInstanceForTests;
-        return instance.getMarketUrlInternal(context);
+        return instance.getMarketUrlInternal();
     }
 
     @VisibleForTesting
@@ -38,9 +36,9 @@ public class MarketURLGetter {
     protected MarketURLGetter() { }
 
     /** Returns the Play Store URL that points to Chrome. */
-    protected String getMarketUrlInternal(Context context) {
+    protected String getMarketUrlInternal() {
         assert !ThreadUtils.runningOnUiThread();
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(context);
+        SharedPreferences prefs = OmahaBase.getSharedPreferences();
         return prefs.getString(OmahaBase.PREF_MARKET_URL, "");
     }
 }

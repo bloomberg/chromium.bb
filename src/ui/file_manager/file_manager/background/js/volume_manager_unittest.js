@@ -67,7 +67,6 @@ function setUp() {
         callback(mockChrome.fileManagerPrivate.volumeMetadataList_);
       },
       resolveIsolatedEntries: function(entries, callback) {
-        console.log('*** RESOLVE ISOLATED');
         callback(entries);
       },
       set driveConnectionState(state) {
@@ -179,58 +178,55 @@ function testGetDriveConnectionState(callback) {
 }
 
 function testMountArchiveAndUnmount(callback) {
-  // Set states of mock fileManagerPrivate APIs.
-  const mountSourcePath = '/usr/local/home/test/Downloads/foobar.zip';
-  chrome.fileManagerPrivate.mountSourcePath_ = mountSourcePath;
-  chrome.fileManagerPrivate.fileSystemMap_['archive:foobar.zip'] =
-      new MockFileSystem('archive:foobar.zip');
+  const test = async () => {
+    // Set states of mock fileManagerPrivate APIs.
+    const mountSourcePath = '/usr/local/home/test/Downloads/foobar.zip';
+    chrome.fileManagerPrivate.mountSourcePath_ = mountSourcePath;
+    chrome.fileManagerPrivate.fileSystemMap_['archive:foobar.zip'] =
+        new MockFileSystem('archive:foobar.zip');
 
-  reportPromise(
-      volumeManagerFactory.getInstance().then(volumeManager => {
-        const numberOfVolumes = volumeManager.volumeInfoList.length;
+    const volumeManager = await volumeManagerFactory.getInstance();
+    const numberOfVolumes = volumeManager.volumeInfoList.length;
 
-        return new Promise((resolve, reject) => {
-                 // Mount an archieve
-                 volumeManager.mountArchive(
-                     'filesystem:chrome-extension://extensionid/external/' +
-                         'Downloads-test/foobar.zip',
-                     resolve, reject);
+    // Mount an archive
+    const mounted = new Promise(
+        (resolve, reject) => volumeManager.mountArchive(
+            'filesystem:chrome-extension://extensionid/external/' +
+                'Downloads-test/foobar.zip',
+            resolve, reject));
 
-                 mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-                   eventType: 'mount',
-                   status: 'success',
-                   volumeMetadata: {
-                     volumeId: 'archive:foobar.zip',
-                     volumeLabel: 'foobar.zip',
-                     volumeType: VolumeManagerCommon.VolumeType.ARCHIVE,
-                     isReadOnly: true,
-                     sourcePath: mountSourcePath,
-                     profile: getMockProfile(),
-                     configurable: false,
-                     watchable: true,
-                     source: VolumeManagerCommon.Source.FILE
-                   }
-                 });
-               })
-            .then(result => {
-              assertEquals(
-                  numberOfVolumes + 1, volumeManager.volumeInfoList.length);
+    mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+      eventType: 'mount',
+      status: 'success',
+      volumeMetadata: {
+        volumeId: 'archive:foobar.zip',
+        volumeLabel: 'foobar.zip',
+        volumeType: VolumeManagerCommon.VolumeType.ARCHIVE,
+        isReadOnly: true,
+        sourcePath: mountSourcePath,
+        profile: getMockProfile(),
+        configurable: false,
+        watchable: true,
+        source: VolumeManagerCommon.Source.FILE,
+      },
+    });
 
-              return new Promise((resolve, reject) => {
-                // Unmount the mounted archievea
-                volumeManager.volumeInfoList.addEventListener('splice', () => {
-                  assertEquals(
-                      numberOfVolumes, volumeManager.volumeInfoList.length);
-                  resolve(true);
-                });
-                const entry = new MockFileEntry(
-                    new MockFileSystem('archive:foobar.zip'), '/foo.txt');
-                const volumeInfo = volumeManager.getVolumeInfo(entry);
-                volumeManager.unmount(volumeInfo);
-              });
-            });
-      }),
-      callback);
+    await mounted;
+
+    assertEquals(numberOfVolumes + 1, volumeManager.volumeInfoList.length);
+
+    // Unmount the mounted archive
+    const entry =
+        new MockFileEntry(new MockFileSystem('archive:foobar.zip'), '/foo.txt');
+    const volumeInfo = volumeManager.getVolumeInfo(entry);
+    await new Promise(
+        (resolve, reject) =>
+            volumeManager.unmount(volumeInfo, resolve, reject));
+
+    assertEquals(numberOfVolumes, volumeManager.volumeInfoList.length);
+  };
+
+  reportPromise(test(), callback);
 }
 
 function testGetCurrentProfileVolumeInfo(callback) {
@@ -392,33 +388,48 @@ function testWhenReady(callback) {
 }
 
 function testDriveMountedDuringInitialization(callback) {
-  let sendMetadataListCallback;
-  chrome.fileManagerPrivate.getVolumeMetadataList = callback => {
-    sendMetadataListCallback = callback;
+  const test = async () => {
+    const sendVolumeMetadataListPromise = new Promise(resolve => {
+      chrome.fileManagerPrivate.getVolumeMetadataList = resolve;
+    });
+
+    // Start volume manager initialization.
+    const volumeManagerPromise = volumeManagerFactory.getInstance();
+
+    // Drive is mounted during initialization.
+    mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+      eventType: 'mount',
+      status: 'success',
+      volumeMetadata: {
+        volumeId: 'drive:drive-foobar%40chromium.org-hash',
+        volumeType: VolumeManagerCommon.VolumeType.DRIVE,
+        sourcePath: '/drive',
+        profile: getMockProfile()
+      }
+    });
+
+    // Wait until volume manager initialization calls getVolumeMetadataList().
+    const sendVolumeMetadataList = await sendVolumeMetadataListPromise;
+
+    // Inject the callback value for getVolumeMetadataList(), making the
+    // initialization continue and finish.
+    sendVolumeMetadataList([]);
+
+    // Wait for volume manager to finish initializing.
+    const volumeManager = await volumeManagerPromise;
+
+    // Check volume manager.
+    assertTrue(!!volumeManager.getCurrentProfileVolumeInfo(
+        VolumeManagerCommon.VolumeType.DRIVE));
   };
 
-  // Start initialization.
-  const instancePromise = volumeManagerFactory.getInstance();
+  reportPromise(test(), callback);
+}
 
-  // Drive is mounted during initialization.
-  mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-    eventType: 'mount',
-    status: 'success',
-    volumeMetadata: {
-      volumeId: 'drive:drive-foobar%40chromium.org-hash',
-      volumeType: VolumeManagerCommon.VolumeType.DRIVE,
-      sourcePath: '/drive',
-      profile: getMockProfile()
-    }
-  });
+function testErrorPropagatedDuringInitialization(done) {
+  chrome.fileManagerPrivate.getVolumeMetadataList = () => {
+    throw new Error('Dummy error for test purpose');
+  };
 
-  // Complete initialization.
-  sendMetadataListCallback([]);
-
-  reportPromise(
-      instancePromise.then(volumeManager => {
-        assertTrue(!!volumeManager.getCurrentProfileVolumeInfo(
-            VolumeManagerCommon.VolumeType.DRIVE));
-      }),
-      callback);
+  reportPromise(assertRejected(volumeManagerFactory.getInstance()), done);
 }

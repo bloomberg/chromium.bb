@@ -45,7 +45,7 @@ static inline const AtomicString& LinkAttribute(const Element& element) {
   if (element.IsHTMLElement())
     return element.FastGetAttribute(html_names::kHrefAttr);
   DCHECK(element.IsSVGElement());
-  return SVGURIReference::LegacyHrefString(ToSVGElement(element));
+  return SVGURIReference::LegacyHrefString(To<SVGElement>(element));
 }
 
 static inline LinkHash LinkHashForElement(

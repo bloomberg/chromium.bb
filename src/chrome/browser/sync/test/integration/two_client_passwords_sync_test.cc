@@ -287,8 +287,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_Delete) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-// Flaky on TSAN: crbug.com/915219
 #if defined(THREAD_SANITIZER)
+// Flaky on TSAN: crbug.com/915219
 #define MAYBE_SetPassphraseAndThenSetupSync \
   DISABLED_SetPassphraseAndThenSetupSync
 #else
@@ -302,6 +302,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(
       kValidPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
+  // Wait for the client to commit the updates.
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   // When client 1 hits a passphrase required state, we can infer that
   // client 0's passphrase has been committed. to the server.

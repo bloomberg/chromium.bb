@@ -106,7 +106,7 @@ PasswordForm CreateHTMLForm(const char* origin_url,
                             const char* username_value,
                             const char* password_value) {
   PasswordForm form;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   form.origin = GURL(origin_url);
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
@@ -178,7 +178,7 @@ ACTION_P(GetAndAssignWeakPtr, ptr) {
 class FormFetcherImplTest : public testing::Test {
  public:
   FormFetcherImplTest()
-      : form_digest_(PasswordForm::SCHEME_HTML,
+      : form_digest_(PasswordForm::Scheme::kHtml,
                      kTestHttpURL,
                      GURL(kTestHttpURL)) {
     mock_store_ = new MockPasswordStore;
@@ -442,7 +442,7 @@ TEST_F(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
   http_rep.SetSchemeStr(url::kHttpScheme);
   const GURL http_origin = form_digest_.origin.ReplaceComponents(http_rep);
   form_digest_ = PasswordStore::FormDigest(
-      PasswordForm::SCHEME_HTML, http_origin.GetOrigin().spec(), http_origin);
+      PasswordForm::Scheme::kHtml, http_origin.GetOrigin().spec(), http_origin);
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
@@ -489,8 +489,9 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   GURL::Replacements https_rep;
   https_rep.SetSchemeStr(url::kHttpsScheme);
   const GURL https_origin = form_digest_.origin.ReplaceComponents(https_rep);
-  form_digest_ = PasswordStore::FormDigest(
-      PasswordForm::SCHEME_HTML, https_origin.GetOrigin().spec(), https_origin);
+  form_digest_ =
+      PasswordStore::FormDigest(PasswordForm::Scheme::kHtml,
+                                https_origin.GetOrigin().spec(), https_origin);
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
@@ -516,7 +517,7 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   const GURL form_digest_http_origin =
       form_digest_.origin.ReplaceComponents(http_rep);
   PasswordStore::FormDigest http_form_digest(
-      PasswordForm::SCHEME_HTML, form_digest_http_origin.GetOrigin().spec(),
+      PasswordForm::Scheme::kHtml, form_digest_http_origin.GetOrigin().spec(),
       form_digest_http_origin);
   Fetch();
   base::WeakPtr<PasswordStoreConsumer> migrator_ptr;
@@ -564,8 +565,9 @@ TEST_F(FormFetcherImplTest, StateIsWaitingDuringMigration) {
   GURL::Replacements https_rep;
   https_rep.SetSchemeStr(url::kHttpsScheme);
   const GURL https_origin = form_digest_.origin.ReplaceComponents(https_rep);
-  form_digest_ = PasswordStore::FormDigest(
-      PasswordForm::SCHEME_HTML, https_origin.GetOrigin().spec(), https_origin);
+  form_digest_ =
+      PasswordStore::FormDigest(PasswordForm::Scheme::kHtml,
+                                https_origin.GetOrigin().spec(), https_origin);
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
@@ -589,7 +591,7 @@ TEST_F(FormFetcherImplTest, StateIsWaitingDuringMigration) {
   const GURL form_digest_http_origin =
       form_digest_.origin.ReplaceComponents(http_rep);
   PasswordStore::FormDigest http_form_digest(
-      PasswordForm::SCHEME_HTML, form_digest_http_origin.GetOrigin().spec(),
+      PasswordForm::Scheme::kHtml, form_digest_http_origin.GetOrigin().spec(),
       form_digest_http_origin);
   Fetch();
   // First the FormFetcher is waiting for the initial response from

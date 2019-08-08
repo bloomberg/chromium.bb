@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
@@ -61,11 +62,6 @@ class FrameImpl : public fuchsia::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, NoNavigationObserverAttached);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
-  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, DelayedNavigationEventAck);
-  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, NavigationObserverDisconnected);
-  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, NoNavigationObserverAttached);
-  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, ReloadFrame);
-  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, Stop);
 
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
@@ -118,7 +114,7 @@ class FrameImpl : public fuchsia::web::Frame,
 
   // Processes the most recent changes to the browser's navigation state and
   // triggers the publishing of change events.
-  void OnNavigationEntryChanged(content::NavigationEntry* entry);
+  void OnNavigationEntryChanged();
 
   // Sends |pending_navigation_event_| to the observer if there are any changes
   // to be reported.
@@ -149,33 +145,36 @@ class FrameImpl : public fuchsia::web::Frame,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
   bool DidAddMessageToConsole(content::WebContents* source,
-                              int32_t level,
+                              blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
 
   // content::WebContentsObserver implementation.
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void TitleWasSet(content::NavigationEntry* entry) override;
+  void TitleWasSet(content::NavigationEntry*) override;
+  void DocumentAvailableInMainFrame() override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
-  std::unique_ptr<content::WebContents> web_contents_;
+  const std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<wm::FocusController> focus_controller_;
+  ContextImpl* const context_;
 
   DiscardingEventFilter discarding_event_filter_;
   fuchsia::web::NavigationEventListenerPtr navigation_listener_;
-  fuchsia::web::NavigationState cached_navigation_state_;
+  fuchsia::web::NavigationState previous_navigation_state_;
   fuchsia::web::NavigationState pending_navigation_event_;
   bool waiting_for_navigation_event_ack_;
-  bool pending_navigation_event_is_dirty_;
   logging::LogSeverity log_level_;
   std::map<uint64_t, OriginScopedScript> before_load_scripts_;
   std::vector<uint64_t> before_load_scripts_order_;
-  ContextImpl* context_ = nullptr;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
+  bool is_main_document_loaded_ = false;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
   fidl::BindingSet<fuchsia::web::NavigationController> controller_bindings_;
@@ -184,5 +183,12 @@ class FrameImpl : public fuchsia::web::Frame,
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };
+
+// Computes the differences from old_entry to new_entry and stores the result in
+// |difference|.
+WEB_ENGINE_EXPORT void DiffNavigationEntries(
+    const fuchsia::web::NavigationState& old_entry,
+    const fuchsia::web::NavigationState& new_entry,
+    fuchsia::web::NavigationState* difference);
 
 #endif  // FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_

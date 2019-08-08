@@ -13,8 +13,6 @@
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
-class BrowserContextKeyedBaseFactory;
-
 namespace base {
 template <typename T>
 class NoDestructor;
@@ -29,7 +27,7 @@ class PrefRegistrySyncable;
 }
 
 // A singleton that listens for context destruction notifications and
-// rebroadcasts them to each BrowserContextKeyedBaseFactory in a safe order
+// rebroadcasts them to each BrowserContextKeyedServiceFactory in a safe order
 // based on the stated dependencies by each service.
 class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
     : public DependencyManager {
@@ -44,14 +42,14 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // Called by each BrowserContext to alert us of its creation. Several
   // services want to be started when a context is created. If you want your
   // KeyedService to be started with the BrowserContext, override
-  // BrowserContextKeyedBaseFactory::ServiceIsCreatedWithBrowserContext() to
+  // BrowserContextKeyedServiceFactory::ServiceIsCreatedWithBrowserContext() to
   // return true. This method also registers any service-related preferences
   // for non-incognito profiles.
   void CreateBrowserContextServices(content::BrowserContext* context);
 
   // Similar to CreateBrowserContextServices(), except this is used for creating
   // test BrowserContexts - these contexts will not create services for any
-  // BrowserContextKeyedBaseFactories that return true from
+  // BrowserContextKeyedServiceFactory that returns true from
   // ServiceIsNULLWhileTesting().
   void CreateBrowserContextServicesForTest(content::BrowserContext* context);
 

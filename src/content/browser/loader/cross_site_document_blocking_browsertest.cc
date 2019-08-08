@@ -54,10 +54,9 @@ namespace content {
 using testing::Not;
 using testing::HasSubstr;
 using Action = network::CrossOriginReadBlocking::Action;
+using CorbMimeType = network::CrossOriginReadBlocking::MimeType;
 using RequestInitiatorOriginLockCompatibility =
     network::InitiatorLockCompatibility;
-using CorbVsInitiatorLock =
-    network::CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility;
 
 namespace {
 
@@ -116,50 +115,33 @@ void InspectHistograms(
     histograms.ExpectUniqueSample(
         "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
         expected_lock_compatibility, 1);
-
-    if (0 != (expectations & kShouldBeBlocked)) {
-      auto benign_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBenignBlocking), 1);
-      auto compatible_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenCompatibleLock),
-          1);
-      auto other_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenOtherLock), 1);
-
-      ::testing::Matcher<std::vector<base::Bucket>> expected_buckets;
-      if (special_request_initiator_origin_lock_check_for_appcache) {
-        expected_buckets = ::testing::ElementsAre(other_blocking);
-      } else {
-        // Important part of the verification is that we never expect to
-        // encounted kBlockingWhenIncorrectLock (outside of HTML Import
-        // scenarios covered by separate, explicit tests below).
-        expected_buckets =
-            ::testing::AnyOf(::testing::ElementsAre(benign_blocking),
-                             ::testing::ElementsAre(compatible_blocking));
-      }
-
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          expected_buckets);
-    } else {  // ~kAllowed
-      histograms.ExpectUniqueSample(
-          "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility",
-          CorbVsInitiatorLock::kNoBlocking, 1);
-    }
   }
 
   std::string bucket;
+  CorbMimeType expected_mime_type = CorbMimeType::kInvalidMimeType;
   if (base::MatchPattern(resource_name, "*.html")) {
     bucket = "HTML";
+    expected_mime_type = CorbMimeType::kHtml;
   } else if (base::MatchPattern(resource_name, "*.xml")) {
     bucket = "XML";
+    expected_mime_type = CorbMimeType::kXml;
   } else if (base::MatchPattern(resource_name, "*.json")) {
     bucket = "JSON";
+    expected_mime_type = CorbMimeType::kJson;
   } else if (base::MatchPattern(resource_name, "*.txt")) {
     bucket = "Plain";
+    expected_mime_type = CorbMimeType::kPlain;
+  } else if (base::MatchPattern(resource_name, "*.zip") ||
+             base::MatchPattern(resource_name, "*.pdf")) {
+    // SiteIsolation.XSD.Browser.Blocked* histograms are only logged from the
+    // pre-kNetworkService code.  Because of this we did not add
+    // SiteIsolation.XSD.Browser.Blocked.NonSniffed histogram.  An empty
+    // |bucket| value indicates that the test should not expect a histogram.
+    bucket = "";
+    expected_mime_type = CorbMimeType::kNeverSniffed;
   } else {
     bucket = "Others";
+    expected_mime_type = CorbMimeType::kOthers;
   }
 
   // Determine the appropriate histograms, including a start and end action
@@ -176,9 +158,11 @@ void InspectHistograms(
     expected_counts[base + ".BytesReadForSniffing"] = 1;
   if (0 != (expectations & kShouldBeBlocked && !is_restricted_uma_expected)) {
     expected_counts[base + ".Blocked"] = 1;
-    expected_counts[base + ".Blocked." + bucket] = 1;
+    if (!bucket.empty())
+      expected_counts[base + ".Blocked." + bucket] = 1;
   }
   if (0 != (expectations & kShouldBeBlocked)) {
+    expected_counts[base + ".Blocked.CanonicalMimeType"] = 1;
     expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
     bool should_have_content_length =
         0 != (expectations & kShouldLogContentLengthUma);
@@ -197,15 +181,23 @@ void InspectHistograms(
       << ", expectations=" << expectations;
 
   // Determine if the bucket for the resource type (XHR) was incremented.
-  if (0 != (expectations & kShouldBeBlocked) && !is_restricted_uma_expected) {
-    EXPECT_THAT(
-        histograms.GetAllSamples(base + ".Blocked"),
-        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
-        << "The wrong Blocked bucket was incremented.";
-    EXPECT_THAT(
-        histograms.GetAllSamples(base + ".Blocked." + bucket),
-        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
-        << "The wrong Blocked bucket was incremented.";
+  if (0 != (expectations & kShouldBeBlocked)) {
+    EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked.CanonicalMimeType"),
+                testing::ElementsAre(
+                    base::Bucket(static_cast<int>(expected_mime_type), 1)))
+        << "The wrong CorbMimeType bucket was incremented.";
+    if (!is_restricted_uma_expected) {
+      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
+                  testing::ElementsAre(
+                      base::Bucket(static_cast<int>(resource_type), 1)))
+          << "The wrong Blocked bucket was incremented.";
+      if (!bucket.empty()) {
+        EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
+                    testing::ElementsAre(
+                        base::Bucket(static_cast<int>(resource_type), 1)))
+            << "The wrong Blocked bucket was incremented.";
+      }
+    }
   }
 
   // SiteIsolation.XSD.Browser.Action should always include kResponseStarted.
@@ -319,6 +311,10 @@ class RequestInterceptor {
     request_initiator_to_inject_ = request_initiator;
   }
 
+  void InjectFetchMode(network::mojom::FetchRequestMode fetch_mode) {
+    fetch_mode_to_inject_ = fetch_mode;
+  }
+
  private:
   void ReadBody(base::OnceClosure completion_callback) {
     char buffer[128];
@@ -375,6 +371,8 @@ class RequestInterceptor {
     // Modify |params| if requested.
     if (request_initiator_to_inject_.has_value())
       params->url_request.request_initiator = request_initiator_to_inject_;
+    if (fetch_mode_to_inject_.has_value())
+      params->url_request.fetch_request_mode = fetch_mode_to_inject_.value();
 
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
@@ -441,6 +439,7 @@ class RequestInterceptor {
   URLLoaderInterceptor interceptor_;
 
   base::Optional<url::Origin> request_initiator_to_inject_;
+  base::Optional<network::mojom::FetchRequestMode> fetch_mode_to_inject_;
 
   // |test_client_ptr_info_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
@@ -592,8 +591,14 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
 
   // These files should be disallowed without sniffing.
   //   nosniff.*   - Won't sniff correctly, but blocked because of nosniff.
-  const char* nosniff_blocked_resources[] = {"nosniff.html", "nosniff.xml",
-                                             "nosniff.json", "nosniff.txt"};
+  //
+  // TODO(lukasza): https://crbug.com/944162: Once
+  // kMimeHandlerViewInCrossProcessFrame feature ships cover "fake.pdf" below
+  // (this can't be tested in content_browsertests, because covering of
+  // application/pdf is handled by //chrome-layer
+  // ChromeContentBrowserClient::OnNetworkServiceCreated.
+  const char* nosniff_blocked_resources[] = {
+      "nosniff.html", "nosniff.xml", "nosniff.json", "nosniff.txt", "fake.zip"};
   for (const char* resource : nosniff_blocked_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     VerifyImgRequest(resource, kShouldBeBlockedWithoutSniffing);
@@ -731,6 +736,11 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 // Regression test for https://crbug.com/958421.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
   embedded_test_server()->StartAcceptingConnections();
+
+  // TODO(lukasza, nasko): https://crbug.com/888079: Re-enable the test once
+  // initiator origin is stored and reused for history navigations.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
 
   // Prepare to verify results of a fetch.
   GURL resource_url("http://foo.com/title2.html");
@@ -1098,10 +1108,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   if (!AreAllSitesIsolatedForTesting())
     return;
 
-  // Prepare to intercept the network request at the IPC layer.
-  // in a way, that injects |spoofed_initiator| (simulating a compromised
-  // renderer that pretends to be making the request on behalf of another
-  // origin).
+  // Prepare to intercept the network request at the IPC layer in a way, that
+  // injects |spoofed_initiator| (simulating a compromised renderer that
+  // pretends to be making the request on behalf of another origin).
   //
   // Note that RequestInterceptor has to be constructed before the
   // RenderFrameHostImpl is created.
@@ -1139,6 +1148,64 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
       document.body.appendChild(img); )";
   EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, cross_site_url)));
   EXPECT_EQ("APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR",
+            bad_message_observer.WaitForBadMessage());
+}
+
+// Tests that renderer will be terminated if it asks AppCache to initiate a
+// cross-origin request with network::mojom::FetchRequestMode::kNavigate.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       AppCache_NoNavigationsEnforcement) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Verification of |request_initiator| is only done in the NetworkService code
+  // path.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  // No kills are expected unless the fetch requesting process is locked to a
+  // specific site URL.  Therefore, the test should be skipped unless the full
+  // Site Isolation is enabled.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  // Prepare to intercept the network request at the IPC layer in a way, that
+  // injects a spoofed fetch mode (simulating a compromised renderer that
+  // attempts to bypass CORB by using a fetch mode other than no-cors).
+  //
+  // Note that RequestInterceptor has to be constructed before the
+  // RenderFrameHostImpl is created.
+  GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
+  RequestInterceptor interceptor(cross_site_url);
+  interceptor.InjectFetchMode(network::mojom::FetchRequestMode::kNavigate);
+
+  // Load the main page twice. The second navigation should have AppCache
+  // initialized for the page.
+  GURL main_url = embedded_test_server()->GetURL(
+      "/appcache/simple_page_with_manifest.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Trigger an AppCache request with an incorrect |request_initiator| and
+  // verify that this will terminate the renderer process.
+  //
+  // Note that during the test, no renderer processes will be actually
+  // terminated, because the malicious/invalid message originates from within
+  // the test process (i.e. from URLLoaderInterceptor::Interceptor's
+  // CreateLoaderAndStart method which forwards the
+  // InjectFetchMode-modified request into
+  // AppCacheSubresourceURLFactory).  This necessitates testing via
+  // mojo::test::BadMessageObserver rather than via RenderProcessHostWatcher or
+  // RenderProcessHostKillWaiter.
+  mojo::test::BadMessageObserver bad_message_observer;
+  const char kScriptTemplate[] = R"(
+      var img = document.createElement('img');
+      img.src = $1;
+      document.body.appendChild(img); )";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, cross_site_url)));
+  EXPECT_EQ("APPCACHE_SUBRESOURCE_URL_FACTORY_NAVIGATE",
             bad_message_observer.WaitForBadMessage());
 }
 
@@ -1306,28 +1373,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
       // which means that legitimate fetches from HTML Imported scripts may get
       // incorrectly blocked.
       interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing);
-
-      // The main purpose of the test is not verifying the incorrect behavior
-      // above, but making sure that the UMA that records the incorrect behavior
-      // is logged.  Hopefully the incorrect behavior will rarely occur in
-      // practice.
-      FetchHistogramsFromChildProcesses();
-      auto incorrect_lock_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenIncorrectLock), 1);
-
-      // ExecuteScriptAsync covers 2 fetches:
-      // - Fetching cross_site_document_blocking/html_import.html
-      // - Fetching site_isolation/nosniff.json (via <script src=...>
-      //   from html_import.html)
-      // The second one is done with kIncorrectLock, but the assertion below
-      // needs to also cover the first one:
-      auto no_blocking =
-          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 1);
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          ::testing::UnorderedElementsAre(no_blocking,
-                                          incorrect_lock_blocking));
     } else {
       // Without |request_initiator_site_lock| no CORB blocking is expected.
       interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
@@ -1398,22 +1443,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
-
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      FetchHistogramsFromChildProcesses();
-
-      // ExecuteScriptAsync covers 3 fetches:
-      // - Fetching cross_site_document_blocking/html_import.html
-      // - Fetching cross_site_document_blocking/fetch_nosniff_json.js
-      // - Fetching site_isolation/nosniff.json
-      // All of them should result in no CORB blocking.
-      auto no_blocking =
-          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 3);
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          ::testing::UnorderedElementsAre(no_blocking));
-    }
   }
 }
 
@@ -1480,25 +1509,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
-
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // The main purpose of the test is not verifying the incorrect behavior
-      // above, but making sure that the UMA that records the incorrect behavior
-      // is logged.  Hopefully the incorrect behavior will rarely occur in
-      // practice.
-      FetchHistogramsFromChildProcesses();
-
-      // ExecuteScriptAsync covers 3 fetches:
-      // - Fetching cross_site_document_blocking/html_import.html
-      // - Fetching site_isolation/nosniff.json
-      // All of them should result in no CORB blocking.
-      auto no_blocking =
-          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 2);
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          ::testing::UnorderedElementsAre(no_blocking));
-    }
   }
 }
 

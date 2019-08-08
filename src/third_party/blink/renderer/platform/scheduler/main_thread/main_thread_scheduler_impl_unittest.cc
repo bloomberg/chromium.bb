@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
+#include "third_party/blink/renderer/platform/scheduler/test/recording_task_time_observer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -293,9 +294,15 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return expected_queueing_times_;
   }
 
+  void PerformMicrotaskCheckpoint() override {
+    if (on_microtask_checkpoint_)
+      std::move(on_microtask_checkpoint_).Run();
+  }
+
   int update_policy_count_;
   std::vector<std::string> use_cases_;
   std::vector<base::TimeDelta> expected_queueing_times_;
+  base::OnceClosure on_microtask_checkpoint_;
 };
 
 // Lets gtest print human readable Policy values.
@@ -654,8 +661,9 @@ class MainThreadSchedulerImplTest : public testing::Test {
                               FakeTaskTiming(start, base::TimeTicks()));
     std::move(task).Run();
     base::TimeTicks end = Now();
-    scheduler_->OnTaskCompleted(fake_queue.get(), FakeTask(),
-                                FakeTaskTiming(start, end));
+    FakeTaskTiming task_timing(start, end);
+    scheduler_->OnTaskCompleted(fake_queue->weak_ptr_factory_.GetWeakPtr(),
+                                FakeTask(), &task_timing, nullptr);
   }
 
   void RunSlowCompositorTask() {
@@ -2087,8 +2095,9 @@ class MainThreadSchedulerImplWithMessageLoopTest
     clock_.Advance(base::TimeDelta::FromMilliseconds(5));
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
-            base::sequence_manager::SequenceManager::Settings{.clock =
-                                                                  &clock_}),
+            base::sequence_manager::SequenceManager::Settings::Builder()
+                .SetTickClock(&clock_)
+                .Build()),
         base::nullopt));
   }
 
@@ -3183,6 +3192,52 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   EXPECT_GT(after, before);
 }
 
+TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
+  // This test ensures that we do not do anything strange like stopping
+  // processing task queues after we encountered one task queue with
+  // DoNotUseVirtualTime trait.
+  scheduler_->EnableVirtualTime(
+      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  scheduler_->SetVirtualTimePolicy(
+      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+
+  WebScopedVirtualTimePauser pauser =
+      scheduler_->CreateWebScopedVirtualTimePauser(
+          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+
+  // Test will pass if the queue without virtual is the last one in the
+  // iteration order. Create 100 of them and ensure that it is created in the
+  // middle.
+  std::vector<scoped_refptr<MainThreadTaskQueue>> task_queues;
+  constexpr int kTaskQueueCount = 100;
+
+  for (size_t i = 0; i < kTaskQueueCount; ++i) {
+    task_queues.push_back(scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::kFrameThrottleable)
+            .SetShouldUseVirtualTime(i != 42)));
+  }
+
+  // This should install a fence on all queues with virtual time.
+  pauser.PauseVirtualTime();
+
+  int counter = 0;
+
+  for (const auto& task_queue : task_queues) {
+    task_queue->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce([](int* counter) { ++*counter; }, &counter));
+  }
+
+  // Only the queue without virtual time should run, all others should be
+  // blocked by their fences.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(counter, 1);
+
+  pauser.UnpauseVirtualTime();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(counter, kTaskQueueCount);
+}
+
 TEST_F(MainThreadSchedulerImplTest, Tracing) {
   // This test sets renderer scheduler to some non-trivial state
   // (by posting tasks, creating child schedulers, etc) and converts it into a
@@ -3536,6 +3591,110 @@ TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
   // nothing should change for queue1 because it was shut down.
   EXPECT_EQ(queue1->GetTimeDomain(), scheduler_->real_time_domain());
   EXPECT_EQ(queue2->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+}
+
+TEST_F(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
+  base::RunLoop().RunUntilIdle();
+
+  base::TimeTicks start_time = Now();
+  RecordingTaskTimeObserver observer;
+
+  const base::TimeDelta kTaskTime = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kMicrotaskTime = base::TimeDelta::FromMilliseconds(200);
+  default_task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
+                           base::Unretained(this), kTaskTime));
+  scheduler_->on_microtask_checkpoint_ =
+      WTF::Bind(&MainThreadSchedulerImplTest::AdvanceMockTickClockBy,
+                base::Unretained(this), kMicrotaskTime);
+
+  scheduler_->AddTaskTimeObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+  scheduler_->RemoveTaskTimeObserver(&observer);
+
+  // Expect that the duration of microtask is counted as a part of the preceding
+  // task.
+  ASSERT_EQ(1u, observer.result().size());
+  EXPECT_EQ(start_time, observer.result().front().first);
+  EXPECT_EQ(start_time + kTaskTime + kMicrotaskTime,
+            observer.result().front().second);
+}
+
+class VeryHighPriorityForCompositingAlwaysExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAlwaysExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAlways},
+                                    {}) {}
+};
+
+TEST_F(VeryHighPriorityForCompositingAlwaysExperimentTest,
+       TestCompositorPolicy) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("C1"),
+                                   std::string("C2"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingWhenFastExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingWhenFastExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingWhenFast},
+                                    {}) {}
+};
+
+TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+       TestCompositorPolicy_FastCompositing) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("C1"),
+                                   std::string("C2"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+       TestCompositorPolicy_SlowCompositing) {
+  RunSlowCompositorTask();
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+       TestCompositorPolicy_CompositingStaysAtHighest) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 P1 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
+                                 blink::WebInputEvent::kGestureScrollBegin);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("P1"),
+                                   std::string("C2"), std::string("L1"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
+  EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 }
 
 }  // namespace main_thread_scheduler_impl_unittest

@@ -376,8 +376,8 @@ static_library("test_support") {
   if (is_win) {
     deps += [
       "//chrome:chrome_initial",
+      "//chrome/chrome_elf:test_stubs",
       "//chrome/install_static:install_static_util",
-      "//chrome_elf:test_stubs",
       "//sandbox/win:sandbox",
     ]
   }
@@ -400,7 +400,7 @@ static_library("test_support") {
     deps += [ "//services/ws/public/mojom:constants" ]
   }
 
-  if (enable_gwp_asan) {
+  if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
     deps += [ "//components/gwp_asan/client" ]
   }
 }
@@ -437,13 +437,13 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/rappor/public/interfaces",
     "//components/safe_browsing/common:interfaces",
     "//components/services/heap_profiling/public/mojom",
+    "//components/services/quarantine/public/mojom",
     "//components/translate/content/common",
     "//extensions/buildflags",
     "//services/identity/public/cpp:manifest",
     "//services/image_annotation/public/cpp:manifest",
     "//services/preferences/public/cpp:manifest",
     "//services/service_manager/public/cpp",
-    "//services/ws/common",
     "//third_party/blink/public/common",
   ]
 
@@ -456,19 +456,20 @@ source_set("chrome_content_browser_overlay_manifest") {
 
   if (is_chromeos) {
     deps += [
-      "//ash/components/shortcut_viewer/public/cpp:manifest",
-      "//ash/components/shortcut_viewer/public/mojom",
-      "//ash/components/tap_visualizer/public/cpp:manifest",
-      "//ash/components/tap_visualizer/public/mojom",
       "//chrome/browser/chromeos/kiosk_next_home/mojom",
+      "//chrome/browser/chromeos/supervision/mojom",
+      "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
+      "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
+      "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/assistant:buildflags",
+      "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/device_sync/public/cpp:manifest",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
+      "//chromeos/services/network_config/public/mojom",
       "//media/capture/video/chromeos/mojo:cros_camera",
-      "//ui/accessibility/mojom",
     ]
 
     if (enable_cros_assistant) {
@@ -477,10 +478,8 @@ source_set("chrome_content_browser_overlay_manifest") {
   }
 
   if (is_android) {
-    deps += [
-      "//chrome/browser/ui/webui/eoc_internals:mojo_bindings",
-      "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
-    ]
+    deps +=
+        [ "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings" ]
   } else {
     deps += [
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
@@ -561,10 +560,10 @@ source_set("chrome_content_utility_overlay_manifest") {
   ]
 }
 
-source_set("chrome_packaged_service_manifests") {
+source_set("builtin_service_manifests") {
   sources = [
-    "chrome_packaged_service_manifests.cc",
-    "chrome_packaged_service_manifests.h",
+    "builtin_service_manifests.cc",
+    "builtin_service_manifests.h",
   ]
 
   deps = [
@@ -574,6 +573,8 @@ source_set("chrome_packaged_service_manifests") {
     "//chrome/services/file_util/public/cpp:manifest",
     "//chrome/services/noop/public/cpp:manifest",
     "//components/services/patch/public/cpp:manifest",
+    "//components/services/quarantine",
+    "//components/services/quarantine/public/cpp:manifest",
     "//components/services/unzip/public/cpp:manifest",
     "//components/spellcheck/common:interfaces",
     "//components/startup_metric_utils/common:interfaces",
@@ -619,16 +620,14 @@ source_set("chrome_packaged_service_manifests") {
 
   if (is_chromeos) {
     deps += [
-      "//ash/components/shortcut_viewer/public/cpp:manifest",
-      "//ash/components/tap_visualizer/public/cpp:manifest",
       "//ash/public/cpp:manifest",
-      "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
+      "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
+      "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
       "//services/ws/public/mojom/input_devices",
-      "//ui/accessibility:ax_host_manifest",
     ]
   }
 
@@ -657,11 +656,11 @@ source_set("chrome_renderer_manifest") {
 
 source_set("chrome_service_manifests") {
   public_deps = [
+    ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
     ":chrome_content_gpu_overlay_manifest",
     ":chrome_content_renderer_overlay_manifest",
     ":chrome_content_utility_overlay_manifest",
-    ":chrome_packaged_service_manifests",
     ":chrome_renderer_manifest",
   ]
 }

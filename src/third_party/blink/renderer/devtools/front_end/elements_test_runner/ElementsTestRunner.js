@@ -533,7 +533,6 @@ ElementsTestRunner.showComputedStyles = function() {
   return ElementsTestRunner.computedStyleWidget().doUpdate();
 };
 
-
 ElementsTestRunner.expandAndDumpSelectedElementEventListeners = function(callback, force) {
   ElementsTestRunner.expandAndDumpEventListeners(
       ElementsTestRunner.eventListenersWidget()._eventListenersView, callback, force);
@@ -1122,6 +1121,23 @@ ElementsTestRunner.dumpInspectorHighlightJSON = function(idValue, callback) {
   async function nodeResolved(node) {
     const result = await TestRunner.OverlayAgent.getHighlightObjectForTest(node.id);
     TestRunner.addResult(idValue + JSON.stringify(result, null, 2));
+    callback();
+  }
+};
+
+ElementsTestRunner.dumpInspectorDistanceJSON = function(idValue, callback) {
+  ElementsTestRunner.nodeWithId(idValue, nodeResolved);
+
+  async function nodeResolved(node) {
+    const result = await TestRunner.OverlayAgent.getHighlightObjectForTest(node.id, true);
+    const info = result['distanceInfo'];
+    if (!info) {
+      TestRunner.addResult(`${idValue}: No distance info`);
+    } else {
+      if (info['style'])
+        info['style'] = '<style data>';
+      TestRunner.addResult(idValue + JSON.stringify(info, null, 2));
+    }
     callback();
   }
 };

@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -48,6 +49,8 @@ NSString* const kMemoryWarningInProgress = @"memory_warning_in_progress";
 NSString* const kMemoryWarningCount = @"memory_warning_count";
 NSString* const kUptimeAtRestoreInMs = @"uptime_at_restore_in_ms";
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
+NSString* const kBVCPresentingActiveViewController =
+    @"bvc_presenting_active_vc";
 
 // Multiple state information are combined into one CrachReportMultiParameter
 // to save limited and finite number of ReportParameters.
@@ -112,6 +115,11 @@ bool FatalMessageHandler(int severity,
   return false;
 }
 
+// Called after Breakpad finishes uploading each report.
+void UploadResultHandler(NSString* report_id, NSError* error) {
+  base::UmaHistogramSparse("CrashReport.BreakpadIOSUploadOutcome", error.code);
+}
+
 }  // namespace
 
 void Start(const std::string& channel_name) {
@@ -153,6 +161,13 @@ void SetEnabled(bool enabled) {
 void SetBreakpadUploadingEnabled(bool enabled) {
   if (!g_crash_reporter_enabled)
     return;
+  if (enabled) {
+    static dispatch_once_t once_token;
+    dispatch_once(&once_token, ^{
+      [[BreakpadController sharedInstance]
+          setUploadCallback:UploadResultHandler];
+    });
+  }
   [[BreakpadController sharedInstance] setUploadingEnabled:enabled];
 }
 
@@ -324,6 +339,20 @@ void SetDestroyingAndRebuildingIncognitoBrowserState(bool in_progress) {
     [[CrashReportUserApplicationState sharedInstance]
         removeValue:kDestroyingAndRebuildingIncognitoBrowserState];
   }
+}
+
+void SetBVCPresentingActiveViewController(NSString* active_view_controller,
+                                          NSString* presenting_view_controller,
+                                          NSString* parent_view_controller) {
+  NSString* formatted_value = [NSString
+      stringWithFormat:@"{activeVC:%@, presentingVC:%@, parentVC:%@}",
+                       active_view_controller, presenting_view_controller,
+                       parent_view_controller];
+  AddReportParameter(kBVCPresentingActiveViewController, formatted_value, true);
+}
+
+void RemoveBVCPresentingActiveViewController() {
+  RemoveReportParameter(kBVCPresentingActiveViewController);
 }
 
 void MediaStreamPlaybackDidStart() {

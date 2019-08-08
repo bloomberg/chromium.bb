@@ -81,7 +81,6 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
-#include "components/download/quarantine/test_support.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -91,7 +90,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/safe_browsing_service_interface.h"
 #include "components/security_state/core/security_state.h"
+#include "components/services/quarantine/test_support.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -105,6 +106,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -121,6 +123,10 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -220,7 +226,7 @@ class OnCanDownloadDecidedObserver {
     // It is possible this is called before Wait(), so the result needs to
     // be stored in that case.
     if (!completion_closure_.is_null()) {
-      base::ResetAndReturn(&completion_closure_).Run();
+      std::move(completion_closure_).Run();
       EXPECT_EQ(allow, expectation_);
     } else {
       on_decided_called_ = true;
@@ -1161,7 +1167,8 @@ class TestSafeBrowsingServiceFactory
   TestSafeBrowsingServiceFactory() : fake_safe_browsing_service_(nullptr) {}
   ~TestSafeBrowsingServiceFactory() override {}
 
-  safe_browsing::SafeBrowsingService* CreateSafeBrowsingService() override {
+  safe_browsing::SafeBrowsingServiceInterface* CreateSafeBrowsingService()
+      override {
     DCHECK(!fake_safe_browsing_service_);
     fake_safe_browsing_service_ = new FakeSafeBrowsingService();
     return fake_safe_browsing_service_.get();
@@ -1181,18 +1188,52 @@ class DownloadTestWithFakeSafeBrowsing : public DownloadTest {
       : test_safe_browsing_factory_(new TestSafeBrowsingServiceFactory()) {}
 
   void SetUp() override {
-    safe_browsing::SafeBrowsingService::RegisterFactory(
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(
         test_safe_browsing_factory_.get());
     DownloadTest::SetUp();
   }
 
   void TearDown() override {
-    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(nullptr);
     DownloadTest::TearDown();
   }
 
  protected:
   std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
+};
+
+class DownloadWakeLockTest : public DownloadTest {
+ public:
+  DownloadWakeLockTest() = default;
+
+  void Initialize() {
+    auto* connection = content::ServiceManagerConnection::GetForProcess();
+    auto* connector = connection->GetConnector();
+    connector_ = connector->Clone();
+    connector_->BindInterface(device::mojom::kServiceName,
+                              &wake_lock_provider_);
+  }
+
+  // Returns the number of active wake locks of type |type|.
+  int GetActiveWakeLocks(device::mojom::WakeLockType type) {
+    base::RunLoop run_loop;
+    int result_count = 0;
+    wake_lock_provider_->GetActiveWakeLocksForTests(
+        type,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, int* result_count, int32_t count) {
+              *result_count = count;
+              run_loop->Quit();
+            },
+            &run_loop, &result_count));
+    run_loop.Run();
+    return result_count;
+  }
+
+ protected:
+  device::mojom::WakeLockProviderPtr wake_lock_provider_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadWakeLockTest);
 };
 
 }  // namespace
@@ -1240,7 +1281,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Quarantine_DependsOnLocalConfig) {
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   base::FilePath downloaded_file(DestinationFile(browser(), file));
   base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_TRUE(download::IsFileQuarantined(downloaded_file, url, GURL()));
+  EXPECT_TRUE(quarantine::IsFileQuarantined(downloaded_file, url, GURL()));
   CheckDownload(browser(), file, file);
 }
 
@@ -1263,7 +1304,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckLocalhostZone_DependsOnLocalConfig) {
   DownloadAndWait(browser(), url);
   base::FilePath file(FILE_PATH_LITERAL("a_zip_file.zip"));
   base::FilePath downloaded_file(DestinationFile(browser(), file));
-  EXPECT_FALSE(download::IsFileQuarantined(downloaded_file, GURL(), GURL()));
+  EXPECT_FALSE(quarantine::IsFileQuarantined(downloaded_file, GURL(), GURL()));
 }
 
 // Same as the test above, but uses a file:// URL to a local file.
@@ -1276,7 +1317,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckLocalFileZone_DependsOnLocalConfig) {
   DownloadAndWait(browser(), url);
   base::FilePath file(FILE_PATH_LITERAL("a_zip_file.zip"));
   base::FilePath downloaded_file(DestinationFile(browser(), file));
-  EXPECT_FALSE(download::IsFileQuarantined(downloaded_file, GURL(), GURL()));
+  EXPECT_FALSE(quarantine::IsFileQuarantined(downloaded_file, GURL(), GURL()));
 }
 #endif
 
@@ -2520,7 +2561,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
 }
 
 // Times out often on debug ChromeOS because test is slow.
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(MEMORY_SANITIZER))
 #define MAYBE_SaveLargeImage DISABLED_SaveLargeImage
 #else
 #define MAYBE_SaveLargeImage SaveLargeImage
@@ -3705,6 +3746,20 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrossOriginDownloadNavigatesIframe) {
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_three.ShutdownAndWaitUntilComplete());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadWakeLockTest, WakeLockAcquireAndCancel) {
+  Initialize();
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
+  DownloadItem* download_item = CreateSlowTestDownload();
+  ASSERT_TRUE(download_item);
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
+  download_item->Cancel(true);
+  EXPECT_EQ(DownloadItem::CANCELLED, download_item->GetState());
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
 #if defined(FULL_SAFE_BROWSING)

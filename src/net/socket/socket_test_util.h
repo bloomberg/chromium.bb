@@ -45,7 +45,6 @@
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -56,6 +55,7 @@ namespace net {
 
 struct CommonConnectJobParams;
 class NetLog;
+struct NetworkTrafficAnnotationTag;
 class X509Certificate;
 
 const NetworkChangeNotifier::NetworkHandle kDefaultNetworkForTests = 1;
@@ -482,6 +482,7 @@ struct SSLSocketDataProvider {
   uint16_t expected_ssl_version_max;
   base::Optional<bool> expected_send_client_cert;
   scoped_refptr<X509Certificate> expected_client_cert;
+  base::Optional<bool> expected_false_start_enabled;
 
   bool is_connect_data_consumed = false;
   bool is_confirm_data_consumed = false;
@@ -662,7 +663,6 @@ class MockClientSocketFactory : public ClientSocketFactory {
       bool using_spdy,
       NextProto negotiated_protocol,
       ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
   const std::vector<uint16_t>& udp_client_socket_ports() const {
     return udp_client_socket_ports_;
@@ -1140,9 +1140,9 @@ class ClientSocketPoolTest {
         new TestSocketRequest(&request_order_, &completion_count_));
     requests_.push_back(base::WrapUnique(request));
     int rv = request->handle()->Init(
-        group_id, socket_params, priority, SocketTag(), respect_limits,
-        request->callback(), ClientSocketPool::ProxyAuthCallback(), socket_pool,
-        NetLogWithSource());
+        group_id, socket_params, base::nullopt /* proxy_annotation_tag */,
+        priority, SocketTag(), respect_limits, request->callback(),
+        ClientSocketPool::ProxyAuthCallback(), socket_pool, NetLogWithSource());
     if (rv != ERR_IO_PENDING)
       request_order_.push_back(request);
     return rv;
@@ -1238,20 +1238,23 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   int cancel_count() const { return cancel_count_; }
 
   // TransportClientSocketPool implementation.
-  int RequestSocket(const GroupId& group_id,
-                    scoped_refptr<ClientSocketPool::SocketParams> socket_params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const ProxyAuthCallback& on_auth_callback,
-                    const NetLogWithSource& net_log) override;
+  int RequestSocket(
+      const GroupId& group_id,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ProxyAuthCallback& on_auth_callback,
+      const NetLogWithSource& net_log) override;
   void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
   void CancelRequest(const GroupId& group_id,
-                     ClientSocketHandle* handle) override;
+                     ClientSocketHandle* handle,
+                     bool cancel_connect_job) override;
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int64_t generation) override;

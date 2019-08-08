@@ -82,7 +82,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
             std::make_unique<ClientTagBasedModelTypeProcessor>(
                 model_type,
                 /*dump_stack=*/base::RepeatingClosure(),
-                commit_only)) {
+                commit_only)),
+        model_type_(model_type) {
     supports_incremental_updates_ = supports_incremental_updates;
   }
 
@@ -114,6 +115,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   void SetInitialSyncDone(bool is_done) {
     ModelTypeState model_type_state(db().model_type_state());
     model_type_state.set_initial_sync_done(is_done);
+    model_type_state.mutable_progress_marker()->set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(model_type_));
     db_->set_model_type_state(model_type_state);
   }
 
@@ -168,6 +171,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     data_callback_ = base::BindOnce(std::move(callback), std::move(data));
   }
 
+  const ModelType model_type_;
   bool supports_incremental_updates_;
 
   // The number of times MergeSyncData has been called.
@@ -393,6 +397,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 
@@ -419,6 +425,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_cache_guid("PersistedCacheGuid");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 
@@ -1346,7 +1354,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   InitializeToReadyState();
   // WriteAndAck entity to get id from the server.
   WriteItemAndAck(kKey1, kValue1);
-  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  bridge()->SetConflictResolution(ConflictResolution::kUseLocal);
 
   // Change value locally and at the same time simulate conflicting update from
   // server.
@@ -1375,7 +1383,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   // The update from the server should be mostly ignored because local wins, but
   // the server ID should be updated.
-  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  bridge()->SetConflictResolution(ConflictResolution::kUseLocal);
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3));
   OnCommitDataLoaded();
   // In this test setup, the processor's nudge for commit immediately pulls
@@ -1480,7 +1488,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteVersion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
-  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  bridge()->SetConflictResolution(ConflictResolution::kUseRemote);
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
 
   // Updated client data and metadata; no new commit request.
@@ -1495,7 +1503,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteDeletion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
-  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  bridge()->SetConflictResolution(ConflictResolution::kUseRemote);
   worker()->TombstoneFromServer(kHash1);
 
   // Updated client data and metadata; no new commit request.
@@ -1503,23 +1511,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0U, db()->metadata_count());
   EXPECT_EQ(2U, db()->data_change_count());
   EXPECT_EQ(2U, db()->metadata_change_count());
-}
-
-TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldResolveConflictToNewVersion) {
-  InitializeToReadyState();
-  bridge()->WriteItem(kKey1, kValue1);
-  bridge()->SetConflictResolution(
-      ConflictResolution::UseNew(GenerateEntityData(kKey1, kValue3)));
-
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
-  EXPECT_EQ(2U, db()->data_change_count());
-  EXPECT_EQ(kValue3, db()->GetValue(kKey1));
-  EXPECT_EQ(2U, db()->metadata_change_count());
-  EXPECT_EQ(1, db()->GetMetadata(kKey1).server_version());
-  worker()->VerifyPendingCommits({{kHash1}, {kHash1}});
-  worker()->VerifyNthPendingCommit(1, {kHash1},
-                                   {GenerateSpecifics(kKey1, kValue3)});
 }
 
 // Test proper handling of disconnect and reconnect.
@@ -1710,7 +1701,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReencryptUpdatesWithNewKey) {
   worker()->VerifyPendingCommits({{kHash1, kHash2}, {kHash4}});
 }
 
-// Test that re-encrypting enqueues the right data for USE_LOCAL conflicts.
+// Test that re-encrypting enqueues the right data for kUseLocal conflicts.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToLocalDuringReencryption) {
   InitializeToReadyState();
@@ -1722,7 +1713,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EntitySpecifics specifics = bridge()->WriteItem(kKey1, kValue2);
   worker()->VerifyPendingCommits({{kHash1}, {kHash1}});
 
-  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  bridge()->SetConflictResolution(ConflictResolution::kUseLocal);
   // Unencrypted update needs to be re-commited with key k1.
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3), 1, "");
   OnCommitDataLoaded();
@@ -1733,14 +1724,14 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(kValue2, db()->GetValue(kKey1));
 }
 
-// Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.
+// Test that re-encrypting enqueues the right data for kUseRemote conflicts.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteDuringReencryption) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
   bridge()->WriteItem(kKey1, kValue1);
 
-  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  bridge()->SetConflictResolution(ConflictResolution::kUseRemote);
   // Unencrypted update needs to be re-commited with key k1.
   EntitySpecifics specifics = GenerateSpecifics(kKey1, kValue2);
   worker()->UpdateFromServer(kHash1, specifics, 1, "");
@@ -1750,25 +1741,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->VerifyNthPendingCommit(1, {kHash1}, {specifics});
   EXPECT_EQ(kValue2, db()->GetValue(kKey1));
-}
-
-// Test that re-encrypting enqueues the right data for USE_NEW conflicts.
-TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldResolveConflictToNewDuringReencryption) {
-  InitializeToReadyState();
-  worker()->UpdateWithEncryptionKey("k1");
-  bridge()->WriteItem(kKey1, kValue1);
-
-  bridge()->SetConflictResolution(
-      ConflictResolution::UseNew(GenerateEntityData(kKey1, kValue3)));
-  // Unencrypted update needs to be re-commited with key k1.
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2), 1, "");
-
-  // Ensure the re-commit has the correct value.
-  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
-  worker()->VerifyNthPendingCommit(1, {kHash1},
-                                   {GenerateSpecifics(kKey1, kValue3)});
-  EXPECT_EQ(kValue3, db()->GetValue(kKey1));
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
@@ -2249,47 +2221,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 }
 
-// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by item
-// limit. Create 3 entries, one is 15-days-old, one is 10-days-old, another is
-// 5-days-old. Check if sync will delete 15-days-old entry when server set
-// limited item is 2 days.
-TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldApplyGarbageCollectionByItemLimit) {
-  InitializeToReadyState();
-
-  // Create 3 entries, one is 15-days-old, one is 10-days-old, another is
-  // 5-days-old.
-  std::unique_ptr<EntityData> entity_data =
-      bridge()->GenerateEntityData(kKey1, kValue1);
-  entity_data->modification_time =
-      base::Time::Now() - base::TimeDelta::FromDays(15);
-  WriteItemAndAck(kKey1, std::move(entity_data));
-  entity_data = bridge()->GenerateEntityData(kKey2, kValue2);
-  entity_data->modification_time =
-      base::Time::Now() - base::TimeDelta::FromDays(5);
-  WriteItemAndAck(kKey2, std::move(entity_data));
-  entity_data = bridge()->GenerateEntityData(kKey3, kValue3);
-  entity_data->modification_time =
-      base::Time::Now() - base::TimeDelta::FromDays(10);
-  WriteItemAndAck(kKey3, std::move(entity_data));
-
-  // Verify entries are created correctly.
-  EXPECT_EQ(3U, ProcessorEntityCount());
-  EXPECT_EQ(3U, db()->metadata_count());
-  EXPECT_EQ(3U, db()->data_count());
-  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
-
-  // Expired the entries which are older than 10 days.
-  sync_pb::GarbageCollectionDirective garbage_collection_directive;
-  garbage_collection_directive.set_max_number_of_items(2);
-  worker()->UpdateWithGarbageCollection(garbage_collection_directive);
-
-  EXPECT_EQ(2U, ProcessorEntityCount());
-  EXPECT_EQ(2U, db()->metadata_count());
-  EXPECT_EQ(3U, db()->data_count());
-  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
-}
-
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldDeleteMetadataWhenCacheGuidMismatch) {
   // Commit item.
@@ -2304,6 +2235,38 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_cache_guid("WRONG_CACHE_GUID");
+  metadata_batch->SetModelTypeState(model_type_state);
+
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+  ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
+
+  OnSyncStarting();
+
+  // Model should still be ready to sync.
+  ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
+  // OnSyncStarting() should have completed.
+  EXPECT_NE(nullptr, worker());
+  // Upon a mismatch, metadata should have been cleared.
+  EXPECT_EQ(0U, db()->metadata_count());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldDeleteMetadataWhenDataTypeIdMismatch) {
+  // Commit item.
+  InitializeToReadyState();
+  WriteItemAndAck(kKey1, kValue1);
+  // Reset the processor to simulate a restart.
+  ResetState(/*keep_db=*/true);
+
+  // A new processor loads the metadata after changing the data type id.
+  bridge()->SetInitialSyncDone(true);
+
+  std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  // This processor is supposed to process Preferences. Mark the model type
+  // state to be for sessions to simulate a data type id mismatch.
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(SESSIONS));
   metadata_batch->SetModelTypeState(model_type_state);
 
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
@@ -2523,6 +2486,8 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 
@@ -2549,6 +2514,8 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 

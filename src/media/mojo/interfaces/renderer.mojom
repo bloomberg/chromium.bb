@@ -81,10 +81,4 @@ interface RendererClient {
   // Called when the remote renderering service is waiting for |reason|,
   // e.g. waiting for decryption key.
   OnWaiting(WaitingReason reason);
-
-  // Executed whenever a renderer receives notification of a status change that
-  // was not originated by its owner.
-  // Only used with the FlingingRenderer (when external devices play/pause the
-  // video playing remotely).
-  OnRemotePlayStateChange(MediaStatusState state);
 };

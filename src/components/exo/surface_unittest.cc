@@ -12,7 +12,6 @@
 #include "components/exo/sub_surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
-#include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -117,8 +116,7 @@ TEST_P(SurfaceTest, Attach) {
 
 const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
   viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
-  viz::SurfaceManager* surface_manager = WMHelper::GetInstance()
-                                             ->env()
+  viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
                                              ->context_factory_private()
                                              ->GetFrameSinkManager()
                                              ->surface_manager();
@@ -788,7 +786,7 @@ TEST_P(SurfaceTest, OverlayCandidate) {
   ASSERT_EQ(1u, frame.render_pass_list.size());
   ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
   viz::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
-  ASSERT_EQ(viz::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
+  ASSERT_EQ(viz::DrawQuad::Material::kTextureContent, draw_quad->material);
 
   const viz::TextureDrawQuad* texture_quad =
       viz::TextureDrawQuad::MaterialCast(draw_quad);

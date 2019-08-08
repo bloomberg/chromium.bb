@@ -6,6 +6,7 @@
 (() => {
   /**
    * Tests that the directory tree area can be horizontally scrolled.
+   * TODO(crbug.com/966807) add a vertical scroll case.
    */
   testcase.navigationScrollsWhenClipped = async () => {
     // Open FilesApp with the Downloads folder visible.
@@ -14,7 +15,7 @@
     await expandRoot(appId, TREEITEM_DOWNLOADS);
 
     // Get the navigationList width property and make sure it has non-zero size.
-    const navigationList = '.dialog-navigation-list-contents';
+    const navigationList = '.dialog-navigation-list';
     let list =
         await remoteCall.waitForElementStyles(appId, navigationList, ['width']);
     const originalWidth = Number(list.styles['width'].match(/[0-9]*/));

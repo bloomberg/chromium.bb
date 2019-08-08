@@ -229,6 +229,8 @@ component("printing") {
       "printed_document_chromeos.cc",
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",
+      "printing_features_chromeos.cc",
+      "printing_features_chromeos.h",
     ]
   } else if (is_android) {
     sources += [
@@ -318,6 +320,12 @@ test("printing_unittests") {
       sources += [ "backend/cups_ipp_util_unittest.cc" ]
     } else {
       sources += [ "backend/cups_helper_unittest.cc" ]
+      if (is_linux) {
+        sources += [ "backend/print_backend_cups_linux_unittest.cc" ]
+      }
+      if (is_mac) {
+        sources += [ "backend/print_backend_cups_mac_unittest.cc" ]
+      }
     }
   }
 }

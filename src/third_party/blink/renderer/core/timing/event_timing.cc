@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 
+#include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -12,6 +13,15 @@
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+
+namespace {
+const base::TickClock* g_clock_for_testing = nullptr;
+
+static base::TimeTicks Now() {
+  return g_clock_for_testing ? g_clock_for_testing->NowTicks()
+                             : CurrentTimeTicks();
+}
+}  // namespace
 
 namespace blink {
 
@@ -32,16 +42,17 @@ bool IsEventTypeForEventTiming(const Event& event) {
 }
 
 bool ShouldReportForEventTiming(WindowPerformance* performance) {
+  if (!performance->FirstInputDetected())
+    return true;
+
   if (!RuntimeEnabledFeatures::EventTimingEnabled(
           performance->GetExecutionContext()))
     return false;
 
+  if (performance->HasObserverFor(PerformanceEntry::kEvent))
+    return true;
   if (performance->ShouldBufferEntries() &&
       !performance->IsEventTimingBufferFull()) {
-    return true;
-  }
-  if (performance->HasObserverFor(PerformanceEntry::kEvent) ||
-      !performance->FirstInputDetected()) {
     return true;
   }
 
@@ -68,11 +79,11 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
   if (!should_report_for_event_timing && !should_log_event)
     return nullptr;
 
-  TimeTicks processing_start = CurrentTimeTicks();
   TimeTicks event_timestamp =
       event.IsPointerEvent() ? ToPointerEvent(&event)->OldestPlatformTimeStamp()
                              : event.PlatformTimeStamp();
 
+  base::TimeTicks processing_start = Now();
   if (should_log_event) {
     Document* document =
         DynamicTo<Document>(performance->GetExecutionContext());
@@ -91,11 +102,14 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 }
 
 void EventTiming::DidDispatchEvent(const Event& event) {
-  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(
-      performance_->GetExecutionContext()));
   performance_->RegisterEventTiming(event.type(), event_timestamp_,
-                                    processing_start_, CurrentTimeTicks(),
+                                    processing_start_, Now(),
                                     event.cancelable());
+}
+
+// static
+void EventTiming::SetTickClockForTesting(const base::TickClock* clock) {
+  g_clock_for_testing = clock;
 }
 
 }  // namespace blink

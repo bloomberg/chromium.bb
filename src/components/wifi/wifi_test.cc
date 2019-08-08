@@ -258,7 +258,8 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 int main(int argc, const char* argv[]) {
   base::CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
   wifi::WiFiTest wifi_test;

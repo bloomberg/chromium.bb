@@ -21,12 +21,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.BackgroundShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -34,6 +36,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,12 +51,20 @@ public final class JourneyManagerTest {
     private static final int LAST_ENGAGEMENT_ELAPSED_S = 5;
     private static final int TAB_ID = 123;
     private static final long BASE_TIME_MS = 1000000L;
+    private static final long NO_TIME_MS = 0L;
+    private static final long DEFER_TIME_MS = 10L;
 
     @Mock
     private TabModel mTabModel;
 
     @Mock
     private TabModelSelector mTabModelSelector;
+
+    @Mock
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
+    @Mock
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     @Mock
     private Tab mTab;
@@ -85,9 +97,11 @@ public final class JourneyManagerTest {
                 JourneyManager.PREFS_FILE, Context.MODE_PRIVATE);
         mSharedPreferences.edit().clear().commit();
 
-        mJourneyManager = new JourneyManager(mTabModelSelector, mDispatcher, mEngagementTimeUtil);
+        mJourneyManager = new JourneyManager(
+                mTabModelSelector, mDispatcher, mOverviewModeBehavior, mEngagementTimeUtil);
         mTabModelSelectorTabObserver = mJourneyManager.getTabModelSelectorTabObserver();
         mTabModelSelectorTabModelObserver = mJourneyManager.getTabModelSelectorTabModelObserver();
+        mOverviewModeObserver = mJourneyManager.getOverviewModeObserver();
 
         verify(mDispatcher).register(mJourneyManager);
 
@@ -103,6 +117,7 @@ public final class JourneyManagerTest {
         doReturn(0).when(mTabList).getCount();
 
         doReturn(BASE_TIME_MS).when(mEngagementTimeUtil).currentTime();
+        doReturn(NO_TIME_MS).when(mEngagementTimeUtil).tabClobberThresholdMillis();
     }
 
     @Test
@@ -110,6 +125,47 @@ public final class JourneyManagerTest {
         mTabModelSelectorTabObserver.onShown(mTab, TabSelectionType.FROM_USER);
 
         assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        JourneyManager.TAB_REVISIT_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
+    }
+
+    @Test
+    public void didFirstVisuallyNonEmptyPaint_previousEngagementExists_firstLoad() {
+        mSharedPreferences.edit().putLong(String.valueOf(mTab.getId()), BASE_TIME_MS).apply();
+        flushAsyncPrefs();
+
+        // Move time forward.
+        doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
+                .when(mEngagementTimeUtil)
+                .timeSinceLastEngagement(anyLong(), anyLong());
+
+        // Paint to set did paint flag and record metric.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+
+        assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        JourneyManager.TAB_REVISIT_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
+    }
+
+    @Test
+    public void didFirstVisuallyNonEmptyPaint_previousEngagementExists_notFirstLoad() {
+        mSharedPreferences.edit().putLong(String.valueOf(mTab.getId()), BASE_TIME_MS).apply();
+        flushAsyncPrefs();
+
+        // Move time forward.
+        doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
+                .when(mEngagementTimeUtil)
+                .timeSinceLastEngagement(anyLong(), anyLong());
+
+        // Paint to set did paint flag and record first metric.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+        flushAsyncPrefs();
+
+        // Paint again.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+
+        // Should still only record once.
+        assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         JourneyManager.TAB_REVISIT_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
     }
@@ -123,7 +179,7 @@ public final class JourneyManagerTest {
         // Move time forward.
         doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
                 .when(mEngagementTimeUtil)
-                .timeSinceLastEngagement(anyLong());
+                .timeSinceLastEngagement(anyLong(), anyLong());
 
         mTabModelSelectorTabObserver.onShown(mTab, TabSelectionType.FROM_USER);
 
@@ -178,6 +234,29 @@ public final class JourneyManagerTest {
 
         assertEquals(BASE_TIME_MS + LAST_ENGAGEMENT_ELAPSED_MS,
                 mSharedPreferences.getLong(String.valueOf(mTab.getId()), -1));
+    }
+
+    @Test
+    public void onTabHidden_shouldRemovePendingTasks() {
+        // Paint to set did paint flag.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+        flushAsyncPrefs();
+
+        doReturn(DEFER_TIME_MS).when(mEngagementTimeUtil).tabClobberThresholdMillis();
+
+        // Move time forward.
+        doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
+                .when(mEngagementTimeUtil)
+                .timeSinceLastEngagement(anyLong(), anyLong());
+
+        mTabModelSelectorTabObserver.onShown(mTab, TabSelectionType.FROM_USER);
+        mTabModelSelectorTabObserver.onHidden(mTab, TabSelectionType.FROM_USER);
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        JourneyManager.TAB_REVISIT_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
     }
 
     @Test
@@ -254,9 +333,104 @@ public final class JourneyManagerTest {
     }
 
     @Test
+    public void onLoadUrl_notFromAddressBar() {
+        // Paint to set did paint flag.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+        flushAsyncPrefs();
+
+        // Set up a pending view metric.
+        doReturn(DEFER_TIME_MS).when(mEngagementTimeUtil).tabClobberThresholdMillis();
+
+        // Move time forward.
+        doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
+                .when(mEngagementTimeUtil)
+                .timeSinceLastEngagementFromTimeTicksMs(anyLong(), anyLong());
+
+        mTabModelSelectorTabObserver.onShown(mTab, TabSelectionType.FROM_USER);
+
+        LoadUrlParams params = new LoadUrlParams("http://google.com", PageTransition.FORWARD_BACK);
+
+        mTabModelSelectorTabObserver.onLoadUrl(mTab, params, 0);
+
+        assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        JourneyManager.TAB_CLOBBER_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
+    }
+
+    @Test
+    public void onLoadUrl_fromAddressBar_withinThreshold() {
+        // Paint to set did paint flag.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+        flushAsyncPrefs();
+
+        // Set up a pending view metric.
+        doReturn(DEFER_TIME_MS).when(mEngagementTimeUtil).tabClobberThresholdMillis();
+
+        // Move time forward.
+        doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
+                .when(mEngagementTimeUtil)
+                .timeSinceLastEngagementFromTimeTicksMs(anyLong(), anyLong());
+
+        mTabModelSelectorTabObserver.onShown(mTab, TabSelectionType.FROM_USER);
+
+        LoadUrlParams params = new LoadUrlParams(
+                "http://google.com", PageTransition.FROM_ADDRESS_BAR | PageTransition.TYPED);
+
+        mTabModelSelectorTabObserver.onLoadUrl(mTab, params, 0);
+
+        assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        JourneyManager.TAB_CLOBBER_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
+    }
+
+    @Test
+    public void onLoadUrl_fromAddressBar_afterThreshold() {
+        // Paint to set did paint flag.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+        flushAsyncPrefs();
+
+        // Set up a pending view metric.
+        doReturn(NO_TIME_MS).when(mEngagementTimeUtil).tabClobberThresholdMillis();
+
+        // Move time forward.
+        doReturn((long) LAST_ENGAGEMENT_ELAPSED_MS)
+                .when(mEngagementTimeUtil)
+                .timeSinceLastEngagementFromTimeTicksMs(anyLong(), anyLong());
+
+        mTabModelSelectorTabObserver.onShown(mTab, TabSelectionType.FROM_USER);
+
+        LoadUrlParams params = new LoadUrlParams(
+                "http://google.com", PageTransition.FROM_ADDRESS_BAR | PageTransition.TYPED);
+
+        mTabModelSelectorTabObserver.onLoadUrl(mTab, params, 0);
+
+        assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        JourneyManager.TAB_CLOBBER_METRIC, LAST_ENGAGEMENT_ELAPSED_S));
+    }
+
+    @Test
+    public void onOverviewModeStartedShowing_storesLastEngagement() {
+        // Set did paint flag.
+        mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(mTab);
+
+        flushAsyncPrefs();
+
+        // Advance time.
+        doReturn(BASE_TIME_MS + LAST_ENGAGEMENT_ELAPSED_MS).when(mEngagementTimeUtil).currentTime();
+
+        mOverviewModeObserver.onOverviewModeStartedShowing(true);
+        flushAsyncPrefs();
+
+        assertEquals(BASE_TIME_MS + LAST_ENGAGEMENT_ELAPSED_MS,
+                mSharedPreferences.getLong(String.valueOf(mTab.getId()), -1));
+    }
+
+    @Test
     public void destroy_unregistersLifecycleObserver() {
         mJourneyManager.destroy();
         verify(mDispatcher).unregister(mJourneyManager);
+        verify(mOverviewModeBehavior).removeOverviewModeObserver(mOverviewModeObserver);
     }
 
     private void flushAsyncPrefs() {

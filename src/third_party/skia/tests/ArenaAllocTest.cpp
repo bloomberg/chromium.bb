@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "SkArenaAlloc.h"
-#include "SkRefCnt.h"
-#include "SkTypes.h"
-#include "Test.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkTypes.h"
+#include "src/core/SkArenaAlloc.h"
+#include "tests/Test.h"
 
 #include <memory>
 #include <new>

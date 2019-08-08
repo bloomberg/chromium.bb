@@ -12,6 +12,9 @@
 
 namespace content {
 
+ScopesLocksHolder::ScopesLocksHolder() = default;
+ScopesLocksHolder::~ScopesLocksHolder() = default;
+
 ScopesLockManager::ScopesLockManager() : weak_factory_(this) {}
 ScopesLockManager::~ScopesLockManager() = default;
 

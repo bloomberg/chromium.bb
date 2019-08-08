@@ -9,40 +9,20 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/command_line.h"
-#include "base/location.h"
-#include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/tpm/stub_install_attributes.h"
-#include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 
@@ -66,15 +46,9 @@ class LoginUserTest : public InProcessBrowserTest {
   }
 };
 
-class LoginGuestTest : public InProcessBrowserTest {
+class LoginGuestTest : public MixinBasedInProcessBrowserTest {
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kGuestSession);
-    command_line->AppendSwitch(::switches::kIncognito);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "hash");
-    command_line->AppendSwitchASCII(
-        switches::kLoginUser, user_manager::GuestAccountId().GetUserEmail());
-  }
+  GuestSessionMixin guest_session_{&mixin_host_};
 };
 
 class LoginCursorTest : public InProcessBrowserTest {
@@ -96,77 +70,18 @@ class LoginSigninTest : public InProcessBrowserTest {
   }
 };
 
-class LoginTest : public LoginManagerTest {
+class LoginTest : public MixinBasedInProcessBrowserTest {
  public:
-  LoginTest() : LoginManagerTest(true, true) {}
+  LoginTest() = default;
   ~LoginTest() override {}
 
-  void StartGaiaAuthOffline() {
-    content::DOMMessageQueue message_queue;
-    // clang-format off
-    const std::string js = "(function() {"
-      "var authenticator = $('gaia-signin').gaiaAuthHost_;"
-      "authenticator.addEventListener('ready',"
-        "function f() {"
-          "authenticator.removeEventListener('ready', f);"
-          "window.domAutomationController.send('offlineLoaded');"
-        "});"
-      "$('error-offline-login-link').onclick();"
-    "})();";
-    // clang-format on
-    test::ExecuteOobeJS(js);
-
-    std::string message;
-    do {
-      ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    } while (message != "\"offlineLoaded\"");
-  }
-
-  void SubmitGaiaAuthOfflineForm(const std::string& user_email,
-                                 const std::string& password) {
-    const std::string animated_pages =
-        "document.querySelector('#offline-gaia /deep/ "
-        "#animatedPages')";
-
-    content::DOMMessageQueue message_queue;
-    test::OobeJS().ExpectVisible("offline-gaia");
-    test::OobeJS().ExpectHidden("signin-frame");
-    const std::string js =
-        animated_pages +
-        ".addEventListener('neon-animation-finish',"
-        "function() {"
-        "window.domAutomationController.send('switchToPassword');"
-        "})";
-    test::ExecuteOobeJS(js);
-    test::OobeJS().TypeIntoPath(user_email, {"offline-gaia", "emailInput"});
-    test::OobeJS().TapOnPath({"offline-gaia", "emailSection", "button"});
-    std::string message;
-    do {
-      ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    } while (message != "\"switchToPassword\"");
-
-    test::OobeJS().TypeIntoPath(password, {"offline-gaia", "passwordInput"});
-    test::OobeJS().TapOnPath({"offline-gaia", "passwordSection", "button"});
-  }
-
-  void PrepareOfflineLogin() {
-    bool show_user;
-    ASSERT_TRUE(CrosSettings::Get()->GetBoolean(
-        kAccountsPrefShowUserNamesOnSignIn, &show_user));
-    ASSERT_FALSE(show_user);
-
-    StartGaiaAuthOffline();
-
-    UserContext user_context(
-        user_manager::UserType::USER_TYPE_REGULAR,
-        AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId));
-    user_context.SetKey(Key(kPassword));
-    SetExpectedCredentials(user_context);
-  }
-
  protected:
-  ScopedCrosSettingsTestHelper settings_helper_{
-      /* create_settings_service= */ false};
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId),
+      user_manager::USER_TYPE_REGULAR};
+
+  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+  OfflineGaiaTestMixin offline_gaia_test_mixin_{&mixin_host_};
 };
 
 // Used to make sure that the system tray is visible and within the screen
@@ -179,7 +94,7 @@ void TestSystemTrayIsVisible(bool otr) {
   SCOPED_TRACE(testing::Message()
                << "ShelfVisibilityState=" << shelf->GetVisibilityState()
                << " ShelfAutoHideBehavior=" << shelf->auto_hide_behavior());
-  EXPECT_TRUE(tray->visible());
+  EXPECT_TRUE(tray->GetVisible());
 
   // This check flakes for LoginGuestTest: https://crbug.com/693106.
   // This check is suppressed for Mash since the warning button of Mash changes
@@ -239,20 +154,12 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
-  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId));
-  StartupUtils::MarkOobeCompleted();
-  settings_helper_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, false);
+  offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
 }
 
-// Flaky, see http://crbug/692364.
-IN_PROC_BROWSER_TEST_F(LoginTest, DISABLED_GaiaAuthOffline) {
-  PrepareOfflineLogin();
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-  SubmitGaiaAuthOfflineForm(kTestUser, kPassword);
-  session_start_waiter.Wait();
-
+IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+  offline_gaia_test_mixin_.GoOffline();
+  offline_gaia_test_mixin_.SignIn(test_user_.account_id, kPassword);
   TestSystemTrayIsVisible(false);
 }
 

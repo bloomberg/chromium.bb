@@ -174,6 +174,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Returns whether the element is a username or password textfield.
   bool IsUsernameOrPasswordField(const blink::WebInputElement& element);
 
+  // Returns whether the agent has fill data stored for |control_element|.
+  bool HasFillData(const blink::WebFormControlElement& control_element) const;
+
   // Shows an Autofill popup with username suggestions for |element|. If
   // |show_all| is |true|, will show all possible suggestions for that element,
   // otherwise shows suggestions based on current value of |element|.
@@ -285,12 +288,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
     explicit FocusStateNotifier(PasswordAutofillAgent* agent);
     ~FocusStateNotifier();
 
-    void FocusedInputChanged(bool is_fillable, bool is_password_field);
+    void FocusedInputChanged(mojom::FocusedFieldType focused_field_type);
 
    private:
-    bool was_fillable_;
-    bool was_password_field_;
-    PasswordAutofillAgent* agent_;
+    mojom::FocusedFieldType focused_field_type_ =
+        mojom::FocusedFieldType::kUnknown;
+    PasswordAutofillAgent* agent_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(FocusStateNotifier);
   };

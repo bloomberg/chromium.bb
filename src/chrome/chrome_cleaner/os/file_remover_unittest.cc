@@ -100,6 +100,17 @@ class FileRemoverTest : public ::testing::Test {
   bool reboot_required_ = false;
 };
 
+bool CreateNetworkedFile(const base::FilePath& path) {
+  chrome_cleaner::CreateEmptyFile(path);
+
+  // Fake an attribute that would be present on a networked file.
+  // FILE_ATTRIBUTE_OFFLINE was chosen as FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS
+  // and FILE_ATTRIBUTE_RECALL_ON_OPEN do not seem to be user-settable.
+  const DWORD attr = ::GetFileAttributes(path.value().c_str());
+  return ::SetFileAttributesW(path.value().c_str(),
+                              attr | FILE_ATTRIBUTE_OFFLINE);
+}
+
 }  // namespace
 
 TEST_F(FileRemoverTest, RemoveNowValidFile) {
@@ -200,24 +211,33 @@ TEST_F(FileRemoverTest, CanRemoveAbsolutePath) {
 }
 
 TEST_F(FileRemoverTest, NoRelativePathRemoval) {
-  EXPECT_EQ(ValidationStatus::FORBIDDEN,
+  EXPECT_EQ(ValidationStatus::UNSAFE,
             default_file_remover_.CanRemove(base::FilePath(L"bar.txt")));
 }
 
 TEST_F(FileRemoverTest, NoDriveRemoval) {
-  EXPECT_EQ(ValidationStatus::FORBIDDEN,
+  EXPECT_EQ(ValidationStatus::UNSAFE,
             default_file_remover_.CanRemove(base::FilePath(L"C:")));
   EXPECT_EQ(ValidationStatus::FORBIDDEN,
             default_file_remover_.CanRemove(base::FilePath(L"C:\\")));
+}
+
+TEST_F(FileRemoverTest, NoNetworkedRemoval) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath path = temp.GetPath().Append(kRemoveFile1);
+  CreateNetworkedFile(path);
+
+  EXPECT_EQ(ValidationStatus::FORBIDDEN, default_file_remover_.CanRemove(path));
 }
 
 TEST_F(FileRemoverTest, NoPathTraversal) {
   EXPECT_EQ(
       ValidationStatus::FORBIDDEN,
       default_file_remover_.CanRemove(base::FilePath(L"C:\\foo\\..\\bar")));
-  EXPECT_EQ(
-      ValidationStatus::FORBIDDEN,
-      default_file_remover_.CanRemove(base::FilePath(L"..\\foo\\bar.dll")));
+  EXPECT_EQ(ValidationStatus::UNSAFE, default_file_remover_.CanRemove(
+                                          base::FilePath(L"..\\foo\\bar.dll")));
 }
 
 TEST_F(FileRemoverTest, CorrectPathTraversalDetection) {
@@ -566,6 +586,20 @@ TEST_P(FileRemoverQuarantineTest, DoNotQuarantineNonDefaultFileStream) {
   EXPECT_EQ(QUARANTINE_STATUS_SKIPPED,
             FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(
                 stream_path));
+}
+
+TEST_P(FileRemoverQuarantineTest, LongFileName) {
+  base::string16 long_filename;
+  for (int i = 0; i < 20; ++i)
+    long_filename += L"0123456789";
+  long_filename += L".exe";
+
+  const base::FilePath path = temp_dir_.GetPath().Append(long_filename);
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  DoAndExpectCorrespondingRemoval(path);
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

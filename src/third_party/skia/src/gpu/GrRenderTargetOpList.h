@@ -8,20 +8,20 @@
 #ifndef GrRenderTargetOpList_DEFINED
 #define GrRenderTargetOpList_DEFINED
 
-#include "GrAppliedClip.h"
-#include "GrOpList.h"
-#include "GrPathRendering.h"
-#include "GrPrimitiveProcessor.h"
-#include "ops/GrOp.h"
-#include "ops/GrDrawOp.h"
-#include "SkArenaAlloc.h"
-#include "SkClipStack.h"
-#include "SkMatrix.h"
-#include "SkStringUtils.h"
-#include "SkStrokeRec.h"
-#include "SkTArray.h"
-#include "SkTLazy.h"
-#include "SkTypes.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkStrokeRec.h"
+#include "include/core/SkTypes.h"
+#include "include/private/GrOpList.h"
+#include "include/private/SkTArray.h"
+#include "src/core/SkArenaAlloc.h"
+#include "src/core/SkClipStack.h"
+#include "src/core/SkStringUtils.h"
+#include "src/core/SkTLazy.h"
+#include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrPathRendering.h"
+#include "src/gpu/GrPrimitiveProcessor.h"
+#include "src/gpu/ops/GrDrawOp.h"
+#include "src/gpu/ops/GrOp.h"
 
 class GrAuditTrail;
 class GrClearOp;
@@ -33,8 +33,7 @@ private:
     using DstProxy = GrXferProcessor::DstProxy;
 
 public:
-    GrRenderTargetOpList(GrResourceProvider*, sk_sp<GrOpMemoryPool>,
-                         sk_sp<GrRenderTargetProxy>, GrAuditTrail*);
+    GrRenderTargetOpList(sk_sp<GrOpMemoryPool>, sk_sp<GrRenderTargetProxy>, GrAuditTrail*);
 
     ~GrRenderTargetOpList() override;
 
@@ -63,7 +62,7 @@ public:
     bool onExecute(GrOpFlushState* flushState) override;
 
     void addOp(std::unique_ptr<GrOp> op, const GrCaps& caps) {
-        auto addDependency = [ &caps, this ] (GrSurfaceProxy* p) {
+        auto addDependency = [ &caps, this ] (GrSurfaceProxy* p, GrMipMapped) {
             this->addDependency(p, caps);
         };
 
@@ -79,14 +78,14 @@ public:
 
     void addDrawOp(std::unique_ptr<GrDrawOp> op, const GrProcessorSet::Analysis& processorAnalysis,
                    GrAppliedClip&& clip, const DstProxy& dstProxy, const GrCaps& caps) {
-        auto addDependency = [ &caps, this ] (GrSurfaceProxy* p) {
+        auto addDependency = [ &caps, this ] (GrSurfaceProxy* p, GrMipMapped) {
             this->addDependency(p, caps);
         };
 
         op->visitProxies(addDependency);
         clip.visitProxies(addDependency);
         if (dstProxy.proxy()) {
-            addDependency(dstProxy.proxy());
+            addDependency(dstProxy.proxy(), GrMipMapped::kNo);
         }
 
         this->recordOp(std::move(op), processorAnalysis, clip.doesClip() ? &clip : nullptr,
@@ -156,7 +155,7 @@ private:
             SkASSERT(fList.empty());
         }
 
-        void visitProxies(const GrOp::VisitProxyFunc&, GrOp::VisitorType) const;
+        void visitProxies(const GrOp::VisitProxyFunc&) const;
 
         GrOp* head() const { return fList.head(); }
 

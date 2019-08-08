@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <cstdint>
 
+#include "base/component_export.h"
+#include "base/strings/string16.h"
+
 namespace device {
 
 #pragma pack(push, 4)
@@ -90,17 +93,10 @@ class GamepadPose {
 
 enum class GamepadHand { kNone = 0, kLeft = 1, kRight = 2 };
 
-// UTF-16 character type
-#if defined(WIN32)
-using UChar = wchar_t;
-#else
-using UChar = unsigned short;
-#endif
-
 // This structure is intentionally POD and fixed size so that it can be shared
 // memory between hardware polling threads and the rest of the browser. See
 // also gamepads.h.
-class Gamepad {
+class COMPONENT_EXPORT(GAMEPAD_PUBLIC) Gamepad {
  public:
   static constexpr size_t kIdLengthCap = 128;
   static constexpr size_t kMappingLengthCap = 16;
@@ -114,7 +110,7 @@ class Gamepad {
   bool connected;
 
   // Device identifier (based on manufacturer, model, etc.).
-  UChar id[kIdLengthCap];
+  base::char16 id[kIdLengthCap];
 
   // Time value representing the last time the data for this gamepad was
   // updated. Measured as TimeTicks::Now().since_origin().InMicroseconds().
@@ -135,7 +131,7 @@ class Gamepad {
   GamepadHapticActuator vibration_actuator;
 
   // Mapping type (for example "standard")
-  UChar mapping[kMappingLengthCap];
+  base::char16 mapping[kMappingLengthCap];
 
   GamepadPose pose;
 

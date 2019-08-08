@@ -26,9 +26,13 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   // SharedImageRepresentationSkia implementation.
   sk_sp<SkSurface> BeginWriteAccess(
       int final_msaa_count,
-      const SkSurfaceProps& surface_props) override;
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess() override;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndReadAccess() override;
 
  private:
@@ -67,12 +71,12 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
     return static_cast<ExternalVkImageBacking*>(backing());
   }
 
-  sk_sp<SkPromiseImageTexture> BeginAccess(bool readonly);
-  void EndAccess(bool readonly);
+  sk_sp<SkPromiseImageTexture> BeginAccess(
+      bool readonly,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
 
-  // Functions used in error cases - immediately clean up semaphores.
-  void DestroySemaphoresImmediate(std::vector<VkSemaphore> semaphores);
-  void DestroySemaphoreImmediate(VkSemaphore semaphores);
+  void EndAccess(bool readonly);
 
   enum AccessMode {
     kNone = 0,
@@ -81,6 +85,7 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   };
   AccessMode access_mode_ = kNone;
   sk_sp<SkSurface> surface_;
+  VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
 };
 
 }  // namespace gpu

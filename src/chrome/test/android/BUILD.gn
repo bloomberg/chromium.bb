@@ -4,9 +4,49 @@
 
 import("//build/config/android/rules.gni")
 
+android_library("chrome_java_test_pagecontroller") {
+  testonly = true
+  java_files = [
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorIndexUi2Locator.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorUi2Locator.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/ChildIndexUi2Locator.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/IUi2Locator.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/PathUi2Locator.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/Ui2Locators.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/UiLocationException.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/Utils.java",
+  ]
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
+  ]
+}
+
+junit_binary("chrome_java_test_pagecontroller_unit_tests") {
+  testonly = true
+  java_files = [
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorIndexUi2LocatorTest.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorUi2LocatorTest.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/ChildIndexUi2LocatorTest.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/PathUi2LocatorTest.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/TestUtils.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/Ui2LocatorsTest.java",
+  ]
+  deps = [
+    ":chrome_java_test_pagecontroller",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
+  ]
+}
+
 android_library("chrome_java_test_support") {
   testonly = true
   java_files = [
+    "javatests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteCoordinatorTestUtils.java",
     "javatests/src/org/chromium/chrome/test/BottomSheetTestRule.java",
     "javatests/src/org/chromium/chrome/test/ChromeActivityTestRule.java",
     "javatests/src/org/chromium/chrome/test/ChromeJUnit4ClassRunner.java",
@@ -21,7 +61,6 @@ android_library("chrome_java_test_support") {
     "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsProvider.java",
     "javatests/src/org/chromium/chrome/test/TestContentProvider.java",
     "javatests/src/org/chromium/chrome/test/util/ActivityUtils.java",
-    "javatests/src/org/chromium/chrome/test/util/ApplicationData.java",
     "javatests/src/org/chromium/chrome/test/util/ApplicationTestUtils.java",
     "javatests/src/org/chromium/chrome/test/util/BookmarkTestUtil.java",
     "javatests/src/org/chromium/chrome/test/util/browser/compositor/layouts/DisableChromeAnimations.java",
@@ -40,10 +79,6 @@ android_library("chrome_java_test_support") {
     "javatests/src/org/chromium/chrome/test/util/browser/sync/SyncTestUtil.java",
     "javatests/src/org/chromium/chrome/test/util/browser/RecyclerViewTestUtils.java",
     "javatests/src/org/chromium/chrome/test/util/browser/TabLoadObserver.java",
-    "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/document/MockActivityDelegate.java",
-    "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/document/MockDocumentTabCreatorManager.java",
-    "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/document/MockStorageDelegate.java",
-    "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/document/MockTabDelegate.java",
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabModel.java",
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabModelSelector.java",
     "javatests/src/org/chromium/chrome/test/util/browser/TabTitleObserver.java",
@@ -97,7 +132,6 @@ android_library("chrome_java_test_support") {
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/gvr-android-sdk:gvr_common_java",
     "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",

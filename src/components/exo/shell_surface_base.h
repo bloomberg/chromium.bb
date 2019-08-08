@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -231,6 +230,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Install custom window targeter. Used to restore window targeter.
   void InstallCustomWindowTargeter();
 
+  // Creates a NonClientFrameView for shell surface.
+  views::NonClientFrameView* CreateNonClientFrameViewInternal(
+      views::Widget* widget,
+      bool client_controlled);
+
   views::Widget* widget_ = nullptr;
   aura::Window* parent_ = nullptr;
   bool movement_disabled_ = false;
@@ -245,9 +249,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   base::Optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;
   base::string16 title_;
-  // TODO(oshima): Remove this once the transition to new drag/resize
-  // complete. https://crbug.com/801666.
-  bool client_controlled_move_resize_ = true;
   SurfaceFrameType frame_type_ = SurfaceFrameType::NONE;
   bool is_popup_ = false;
   bool has_grab_ = false;

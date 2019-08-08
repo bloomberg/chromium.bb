@@ -173,7 +173,7 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
 
 bool BrowserFrame::ShouldUseTheme() const {
   // Browser windows are always themed (including popups).
-  if (!WebAppBrowserController::IsForExperimentalWebAppBrowser(
+  if (!web_app::AppBrowserController::IsForWebAppBrowser(
           browser_view_->browser())) {
     return true;
   }
@@ -216,8 +216,7 @@ const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
 
 const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  if (browser_view_->browser()->profile()->GetProfileType() ==
-          Profile::INCOGNITO_PROFILE &&
+  if (browser_view_->browser()->profile()->IsIncognitoProfile() &&
       ThemeServiceFactory::GetForProfile(browser_view_->browser()->profile())
           ->UsingDefaultTheme()) {
     return ui::NativeThemeDarkAura::instance();
@@ -235,9 +234,11 @@ void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   Widget::OnNativeWidgetWorkspaceChanged();
 }
 
-void BrowserFrame::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  views::Widget::OnNativeThemeUpdated(observed_theme);
-  browser_view_->NativeThemeUpdated(observed_theme);
+void BrowserFrame::PropagateNativeThemeChanged() {
+  // Instead of immediately propagating the native theme change to the root
+  // view, use BrowserView's custom handling, which may regenerate the frame
+  // first, then propgate the theme change to the root view automatically.
+  browser_view_->UserChangedTheme(BrowserThemeChangeType::kNativeTheme);
 }
 
 void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,

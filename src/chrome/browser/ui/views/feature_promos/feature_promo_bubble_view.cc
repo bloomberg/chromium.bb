@@ -89,9 +89,9 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   auto box_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kBubbleContentsInsets, 0);
   box_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   SetLayoutManager(std::move(box_layout));
 
   auto* label = new views::Label(body_text);
@@ -111,7 +111,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
 
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+  GetBubbleFrameView()->SetCornerRadius(
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH));
 
   widget->Show();

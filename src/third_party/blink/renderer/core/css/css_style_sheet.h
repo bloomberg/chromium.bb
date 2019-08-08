@@ -54,14 +54,10 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
  public:
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
 
-  static CSSStyleSheet* Create(Document&, ExceptionState&);
   static CSSStyleSheet* Create(Document&,
                                const CSSStyleSheetInit*,
                                ExceptionState&);
 
-  static CSSStyleSheet* Create(StyleSheetContents*,
-                               CSSImportRule* owner_rule = nullptr);
-  static CSSStyleSheet* Create(StyleSheetContents*, Node& owner_node);
   static CSSStyleSheet* CreateInline(
       Node&,
       const KURL&,
@@ -72,11 +68,13 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       Node& owner_node,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
-  CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);
-  CSSStyleSheet(StyleSheetContents*,
-                Node& owner_node,
-                bool is_inline_stylesheet,
-                const TextPosition& start_position);
+  explicit CSSStyleSheet(StyleSheetContents*,
+                         CSSImportRule* owner_rule = nullptr);
+  CSSStyleSheet(
+      StyleSheetContents*,
+      Node& owner_node,
+      bool is_inline_stylesheet = false,
+      const TextPosition& start_position = TextPosition::MinimumPosition());
   ~CSSStyleSheet() override;
 
   CSSStyleSheet* parentStyleSheet() const override;
@@ -196,7 +194,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetText(const String&, bool allow_import_rules, ExceptionState&);
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
-  bool IsAlternate() const;
   bool CanBeActivated(const String& current_preferrable_name) const;
 
   void SetIsConstructed(bool is_constructed) {
@@ -208,6 +205,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void Trace(blink::Visitor*) override;
 
  private:
+  bool IsAlternate() const;
   bool IsCSSStyleSheet() const override { return true; }
   String type() const override { return "text/css"; }
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,6 +26,10 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state/login_state.h"
@@ -144,32 +147,11 @@ void UpdateProfileName(Profile* profile,
                           base::UTF16ToUTF8(new_profile_name));
 }
 
-std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
-    Profile* profile) {
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  std::vector<AccountInfo> accounts =
-      identity_manager->GetAccountsWithRefreshTokens();
-
-  // The vector returned by GetAccountsWithRefreshTokens() contains
-  // the primary account too, so we need to remove it from the list.
-  DCHECK(identity_manager->HasPrimaryAccount());
-  CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
-
-  auto primary_index = std::find_if(
-      accounts.begin(), accounts.end(),
-      [&primary_account](const AccountInfo& account_info) {
-        return account_info.account_id == primary_account.account_id;
-      });
-  DCHECK(primary_index != accounts.end());
-  accounts.erase(primary_index);
-
-  return accounts;
-}
 #endif  // !defined(OS_CHROMEOS)
 
 bool IsRegularOrGuestSession(Browser* browser) {
   Profile* profile = browser->profile();
-  return profile->IsGuestSession() || !profile->IsOffTheRecord();
+  return profile->IsRegularProfile() || profile->IsGuestSession();
 }
 
 bool IsProfileLocked(const base::FilePath& profile_path) {

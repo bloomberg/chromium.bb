@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_position.h"
+#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -81,6 +82,19 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
+  // Returns the text of this node and represent the text of descendant nodes
+  // with a special character in place of every embedded object. This represents
+  // the concept of text in ATK and IA2 APIs.
+  virtual base::string16 GetHypertext() const = 0;
+
+  // Set the selection in the hypertext of this node. Depending on the
+  // implementation, this may mean the new selection will span multiple nodes.
+  virtual bool SetHypertextSelection(int start_offset, int end_offset) = 0;
+
+  // Returns the text of this node and all descendant nodes; including text
+  // found in embedded objects.
+  virtual base::string16 GetInnerText() const = 0;
+
   // Return the bounds of this node in the coordinate system indicated. If the
   // clipping behavior is set to clipped, clipping is applied. If an offscreen
   // result address is provided, it will be populated depending on whether the
@@ -90,14 +104,24 @@ class AX_EXPORT AXPlatformNodeDelegate {
       const AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  // Return the bounds of the text range given by text offsets in the coordinate
-  // system indicated. When determining the text offset of a node, the text of
-  // this node is included while descendant text may be accounted for with a
-  // single special character. If the clipping behavior is set to clipped,
-  // clipping is applied. If an offscreen result address is provided, it will be
-  // populated depending on whether the returned bounding box is onscreen or
-  // offscreen.
-  virtual gfx::Rect GetRangeBoundsRect(
+  // Return the bounds of the text range given by text offsets relative to
+  // GetHypertext in the coordinate system indicated. If the clipping behavior
+  // is set to clipped, clipping is applied. If an offscreen result address is
+  // provided, it will be populated depending on whether the returned bounding
+  // box is onscreen or offscreen.
+  virtual gfx::Rect GetHypertextRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
+
+  // Return the bounds of the text range given by text offsets relative to
+  // GetInnerText in the coordinate system indicated. If the clipping behavior
+  // is set to clipped, clipping is applied. If an offscreen result address is
+  // provided, it will be populated depending on whether the returned bounding
+  // box is onscreen or offscreen.
+  virtual gfx::Rect GetInnerTextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
       const AXCoordinateSystem coordinate_system,
@@ -117,8 +141,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Platforms with touch accessibility use a different asynchronous interface.
   virtual gfx::NativeViewAccessible HitTestSync(int x, int y) = 0;
 
-  // Return the node within this node's subtree (inclusive) that currently
-  // has focus.
+  // Return the node within this node's subtree (inclusive) that currently has
+  // focus, or return nullptr if this subtree is not connected to the top
+  // document through its ancestry chain.
   virtual gfx::NativeViewAccessible GetFocus() = 0;
 
   // Get whether this node is offscreen.
@@ -153,6 +178,13 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual std::set<AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntListAttribute attr) = 0;
 
+  // Return the string representation of the unique ID assigned by the author,
+  // otherwise return an empty string. The author ID must be persistent across
+  // any instance of the application, regardless of locale. The author ID should
+  // be unique among sibling accessibility nodes and is best if unique across
+  // the application, however, not meeting this requirement is non-fatal.
+  virtual base::string16 GetAuthorUniqueId() const = 0;
+
   virtual const AXUniqueId& GetUniqueId() const = 0;
 
   // This method finds text boundaries in the text used for platform text APIs.
@@ -162,7 +194,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // this value and it is the responsibility of the AXPlatformNode itself to
   // to calculate it.
   virtual base::Optional<int> FindTextBoundary(
-      TextBoundaryType boundary_type,
+      AXTextBoundary boundary,
       int offset,
       TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const = 0;

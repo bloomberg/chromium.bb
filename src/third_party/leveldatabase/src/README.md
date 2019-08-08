@@ -44,20 +44,20 @@ cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
 
 First generate the Visual Studio 2017 project/solution files:
 
-```bash
+```cmd
 mkdir build
 cd build
 cmake -G "Visual Studio 15" ..
 ```
 The default default will build for x86. For 64-bit run:
 
-```bash
+```cmd
 cmake -G "Visual Studio 15 Win64" ..
 ```
 
 To compile the Windows solution from the command-line:
 
-```bash
+```cmd
 devenv /build Debug leveldb.sln
 ```
 
@@ -85,6 +85,14 @@ Contribution requirements:
 
 3. **Tests**: All changes must be accompanied by a new (or changed) test, or
    a sufficient explanation as to why a new (or changed) test is not required.
+
+4. **Consistent Style**: This project conforms to the
+   [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+   To ensure your changes are properly formatted please run:
+
+   ```
+   clang-format -i --style=file <file>
+   ```
 
 ## Submitting a Pull Request
 

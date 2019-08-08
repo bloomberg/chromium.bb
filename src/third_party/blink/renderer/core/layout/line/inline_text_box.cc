@@ -695,7 +695,7 @@ String InlineTextBox::GetText() const {
   return GetLineLayoutItem().GetText().Substring(Start(), Len());
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void InlineTextBox::DumpBox(StringBuilder& string_inlinetextbox) const {
   String value = GetText();

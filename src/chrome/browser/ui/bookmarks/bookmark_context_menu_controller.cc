@@ -38,12 +38,63 @@ using base::UserMetricsAction;
 using bookmarks::BookmarkNode;
 using content::PageNavigator;
 
+namespace {
+
+constexpr UserMetricsAction kBookmarkBarNewBackgroundTab(
+    "BookmarkBar_ContextMenu_OpenAll");
+constexpr UserMetricsAction kBookmarkBarNewWindow(
+    "BookmarkBar_ContextMenu_OpenAllInNewWindow");
+constexpr UserMetricsAction kBookmarkBarIncognito(
+    "BookmarkBar_ContextMenu_OpenAllIncognito");
+constexpr UserMetricsAction kAppMenuBookmarksNewBackgroundTab(
+    "WrenchMenu_Bookmarks_ContextMenu_OpenAll");
+constexpr UserMetricsAction kAppMenuBookmarksNewWindow(
+    "WrenchMenu_Bookmarks_ContextMenu_OpenAllInNewWindow");
+constexpr UserMetricsAction kAppMenuBookmarksIncognito(
+    "WrenchMenu_Bookmarks_ContextMenu_OpenAllIncognito");
+
+const UserMetricsAction* GetActionForLocationAndDisposition(
+    BookmarkLaunchLocation location,
+    WindowOpenDisposition disposition) {
+  switch (location) {
+    case BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR:
+    case BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR:
+      switch (disposition) {
+        case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+          return &kBookmarkBarNewBackgroundTab;
+        case WindowOpenDisposition::NEW_WINDOW:
+          return &kBookmarkBarNewWindow;
+        case WindowOpenDisposition::OFF_THE_RECORD:
+          return &kBookmarkBarIncognito;
+        default:
+          return nullptr;
+      }
+      break;
+    case BOOKMARK_LAUNCH_LOCATION_APP_MENU:
+      switch (disposition) {
+        case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+          return &kAppMenuBookmarksNewBackgroundTab;
+        case WindowOpenDisposition::NEW_WINDOW:
+          return &kAppMenuBookmarksNewWindow;
+        case WindowOpenDisposition::OFF_THE_RECORD:
+          return &kAppMenuBookmarksIncognito;
+        default:
+          return nullptr;
+      }
+    default:
+      return nullptr;
+  }
+}
+
+}  // namespace
+
 BookmarkContextMenuController::BookmarkContextMenuController(
     gfx::NativeWindow parent_window,
     BookmarkContextMenuControllerDelegate* delegate,
     Browser* browser,
     Profile* profile,
     PageNavigator* navigator,
+    BookmarkLaunchLocation opened_from,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection)
     : parent_window_(parent_window),
@@ -51,6 +102,7 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       browser_(browser),
       profile_(profile),
       navigator_(navigator),
+      opened_from_(opened_from),
       parent_(parent),
       selection_(selection),
       model_(BookmarkModelFactory::GetForBrowserContext(profile)),
@@ -158,17 +210,15 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
       WindowOpenDisposition initial_disposition;
       if (id == IDC_BOOKMARK_BAR_OPEN_ALL) {
         initial_disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
-        base::RecordAction(
-            UserMetricsAction("BookmarkBar_ContextMenu_OpenAll"));
       } else if (id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW) {
         initial_disposition = WindowOpenDisposition::NEW_WINDOW;
-        base::RecordAction(
-            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllInNewWindow"));
       } else {
         initial_disposition = WindowOpenDisposition::OFF_THE_RECORD;
-        base::RecordAction(
-            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
       }
+      const UserMetricsAction* const action =
+          GetActionForLocationAndDisposition(opened_from_, initial_disposition);
+      if (action)
+        base::RecordAction(*action);
       chrome::OpenAll(parent_window_, navigator_, selection_,
                       initial_disposition, profile_);
       break;
@@ -432,7 +482,7 @@ bool BookmarkContextMenuController::IsCommandIdVisible(int command_id) const {
     // there are any managed bookmarks configured at all.
     bookmarks::ManagedBookmarkService* managed =
         ManagedBookmarkServiceFactory::GetForProfile(profile_);
-    return !managed->managed_node()->empty();
+    return !managed->managed_node()->children().empty();
   }
 
   return true;

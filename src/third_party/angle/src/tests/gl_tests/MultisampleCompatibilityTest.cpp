@@ -32,10 +32,8 @@ class EXTMultisampleCompatibilityTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
 
         GLuint position_loc = glGetAttribLocation(mProgram, essl1_shaders::PositionAttrib());
@@ -52,12 +50,10 @@ class EXTMultisampleCompatibilityTest : public ANGLETest
         glVertexAttribPointer(position_loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mVBO);
         glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
     }
 
     void prepareForDraw()
@@ -133,9 +129,9 @@ class EXTMultisampleCompatibilityTest : public ANGLETest
 
     bool isApplicable() const
     {
-        return extensionEnabled("GL_EXT_multisample_compatibility") &&
-               extensionEnabled("GL_ANGLE_framebuffer_multisample") &&
-               extensionEnabled("GL_OES_rgb8_rgba8") && !IsAMD();
+        return IsGLExtensionEnabled("GL_EXT_multisample_compatibility") &&
+               IsGLExtensionEnabled("GL_ANGLE_framebuffer_multisample") &&
+               IsGLExtensionEnabled("GL_OES_rgb8_rgba8") && !IsAMD();
     }
     GLuint mSampleFBO;
     GLuint mResolveFBO;
@@ -359,8 +355,8 @@ class MultisampleCompatibilityTest : public ANGLETest
 
     bool isApplicable() const
     {
-        return extensionEnabled("GL_ANGLE_framebuffer_multisample") &&
-               extensionEnabled("GL_OES_rgb8_rgba8");
+        return IsGLExtensionEnabled("GL_ANGLE_framebuffer_multisample") &&
+               IsGLExtensionEnabled("GL_OES_rgb8_rgba8");
     }
 
     GLuint mSampleFBO;
@@ -409,4 +405,5 @@ ANGLE_INSTANTIATE_TEST(MultisampleCompatibilityTest,
                        ES3_D3D11(),
                        ES3_OPENGL(),
                        ES3_OPENGLES(),
-                       ES2_VULKAN());
+                       ES2_VULKAN(),
+                       ES3_VULKAN());

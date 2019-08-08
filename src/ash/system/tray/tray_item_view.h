@@ -62,6 +62,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   void SetVisible(bool visible) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
+  const char* GetClassName() const override;
 
  protected:
   // The default animation duration is 200ms. But each view can customize this.

@@ -868,17 +868,13 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   base::SharedMemory shm;
   LOG_ASSERT(shm.CreateAndMapAnonymous(next_fragment_size));
   memcpy(shm.memory(), next_fragment_bytes.data(), next_fragment_size);
-  base::SharedMemoryHandle dup_handle = shm.handle().Duplicate();
-  LOG_ASSERT(dup_handle.IsValid());
 
-  // TODO(erikchen): This may leak the SharedMemoryHandle.
-  // https://crbug.com/640840.
-  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_, dup_handle,
-                                   next_fragment_size);
+  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_, shm.handle(),
+                                   false /* read_only */, next_fragment_size);
   decode_start_time_[next_bitstream_buffer_id_] = base::TimeTicks::Now();
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
-  decoder_->Decode(bitstream_buffer);
+  decoder_->Decode(std::move(bitstream_buffer));
   ++outstanding_decodes_;
   if (IsLastPlayThrough() &&
       -config_.delete_decoder_state == next_bitstream_buffer_id_) {
@@ -1756,7 +1752,8 @@ int main(int argc, char** argv) {
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   LOG_ASSERT(logging::InitLogging(settings));
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();

@@ -273,10 +273,6 @@ bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
   return true;
 }
 
-bool ImageTransportSurfaceOverlayMac::SupportsPresentationCallback() {
-  return true;
-}
-
 bool ImageTransportSurfaceOverlayMac::Resize(const gfx::Size& pixel_size,
                                              float scale_factor,
                                              ColorSpace color_space,

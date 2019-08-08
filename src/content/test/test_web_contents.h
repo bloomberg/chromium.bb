@@ -68,7 +68,11 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // WebContentsTester implementation.
   void CommitPendingNavigation() override;
   TestRenderFrameHost* GetPendingMainFrame() override;
-  void NavigateAndCommit(const GURL& url) override;
+
+  void NavigateAndCommit(
+      const GURL& url,
+      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK) override;
+
   void NavigateAndFail(
       const GURL& url,
       int error_code,

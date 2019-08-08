@@ -26,7 +26,7 @@ config("chromium_quic_config") {
 
   include_dirs = [
     "//third_party/chromium_quic/src",
-    "//third_party/chromium_quic/src/third_party/boringssl/src/include",
+    "../boringssl/src/include",
     "//third_party/chromium_quic/src/third_party/protobuf/src",
     "$root_gen_dir/third_party/chromium_quic/src",
     "build/",
@@ -219,7 +219,7 @@ source_set("core") {
     # ":http",
     ":platform",
     ":proto",
-    "src/third_party/boringssl",
+    "../boringssl",
   ]
 }
 

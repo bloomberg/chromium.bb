@@ -175,7 +175,7 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
 
 HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
   DCHECK(inner_node_);
-  HTMLImageElement* image_element = ToHTMLImageElementOrNull(inner_node_);
+  HTMLImageElement* image_element = ToHTMLImageElementOrNull(inner_node_.Get());
   if (!image_element && inner_node_->IsInShadowTree()) {
     if (inner_node_->ContainingShadowRoot()->IsUserAgent()) {
       image_element = ToHTMLImageElementOrNull(inner_node_->OwnerShadowHost());
@@ -202,8 +202,8 @@ void HitTestResult::SetInnerNode(Node* n) {
     return;
   }
   inner_possibly_pseudo_node_ = n;
-  if (n->IsPseudoElement())
-    n = ToPseudoElement(n)->InnerNodeForHitTesting();
+  if (auto* pseudo_element = DynamicTo<PseudoElement>(n))
+    n = pseudo_element->InnerNodeForHitTesting();
   inner_node_ = n;
   if (HTMLAreaElement* area = ImageAreaForImage()) {
     inner_node_ = area;
@@ -491,15 +491,21 @@ Node* HitTestResult::InnerNodeOrImageMapImage() const {
     return nullptr;
 
   HTMLImageElement* image_map_image_element = nullptr;
-  if (auto* area = ToHTMLAreaElementOrNull(inner_node_))
+  if (auto* area = ToHTMLAreaElementOrNull(inner_node_.Get()))
     image_map_image_element = area->ImageElement();
-  else if (auto* map = ToHTMLMapElementOrNull(inner_node_))
+  else if (auto* map = ToHTMLMapElementOrNull(inner_node_.Get()))
     image_map_image_element = map->ImageElement();
 
   if (!image_map_image_element)
     return inner_node_.Get();
 
   return image_map_image_element;
+}
+
+void HitTestResult::SetNodeAndPosition(Node* node, const PhysicalOffset& p) {
+  SetNodeAndPosition(node, node && node->GetLayoutObject()
+                               ? node->GetLayoutObject()->FlipForWritingMode(p)
+                               : p.ToLayoutPoint());
 }
 
 }  // namespace blink

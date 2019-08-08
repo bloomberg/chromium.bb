@@ -86,10 +86,13 @@ void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
 
     DCHECK(MediaElement().IsHTMLVideoElement());
     HTMLVideoElement* video_element = &ToHTMLVideoElement(MediaElement());
-    if (PictureInPictureController::IsElementInPictureInPicture(video_element))
+    if (PictureInPictureController::IsElementInPictureInPicture(
+            video_element)) {
       controller.ExitPictureInPicture(video_element, nullptr);
-    else
-      controller.EnterPictureInPicture(video_element, nullptr);
+    } else {
+      controller.EnterPictureInPicture(video_element, nullptr /* options */,
+                                       nullptr /* promise */);
+    }
   }
 
   MediaControlInputElement::DefaultEventHandler(event);

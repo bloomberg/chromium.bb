@@ -30,8 +30,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -86,7 +85,7 @@ enum class ResourceType : uint8_t {
   kVideo,
   kManifest,
   kMock,  // Only for testing
-  kLast = kMock
+  kMaxValue = kMock
 };
 
 // A resource that is held in the cache. Classes who want to use this object

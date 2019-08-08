@@ -15,6 +15,8 @@
 typedef DescribeToBlock GREYDescribeToBlock;
 typedef MatchesBlock GREYMatchesBlock;
 
+id<GREYMatcher> grey_kindOfClassName(NSString* name);
+
 #elif defined(CHROME_EARL_GREY_2)
 
 #import "ios/third_party/earl_grey2/src/TestLib/EarlGreyImpl/EarlGrey.h"  // nogncheck

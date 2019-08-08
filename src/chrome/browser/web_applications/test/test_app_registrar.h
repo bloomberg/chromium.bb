@@ -14,7 +14,7 @@ namespace web_app {
 
 class TestAppRegistrar : public AppRegistrar {
  public:
-  TestAppRegistrar();
+  explicit TestAppRegistrar(Profile* profile);
   ~TestAppRegistrar() override;
 
   // Adds |app_id| to the map of installed apps.
@@ -28,6 +28,7 @@ class TestAppRegistrar : public AppRegistrar {
 
   // AppRegistrar
   void Init(base::OnceClosure callback) override;
+  bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool HasScopeUrl(const AppId& app_id) const override;

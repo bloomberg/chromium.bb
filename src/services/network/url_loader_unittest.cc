@@ -22,8 +22,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
@@ -35,6 +33,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -758,6 +757,30 @@ TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
   GURL url = https_server.GetURL("/simple_page.html");
   EXPECT_EQ(net::OK, Load(url));
   ASSERT_FALSE(!!ssl_info());
+}
+
+// Tests that auth challenge info is present on the response when a request
+// receives an authentication challenge.
+TEST_F(URLLoaderTest, AuthChallengeInfo) {
+  GURL url = test_server()->GetURL("/auth-basic");
+  EXPECT_EQ(net::OK, Load(url));
+  ASSERT_TRUE(client()->response_head().auth_challenge_info.has_value());
+  EXPECT_FALSE(client()->response_head().auth_challenge_info->is_proxy);
+  EXPECT_EQ(url::Origin::Create(url),
+            client()->response_head().auth_challenge_info->challenger);
+  EXPECT_EQ("basic", client()->response_head().auth_challenge_info->scheme);
+  EXPECT_EQ("testrealm", client()->response_head().auth_challenge_info->realm);
+  EXPECT_EQ("Basic realm=\"testrealm\"",
+            client()->response_head().auth_challenge_info->challenge);
+  EXPECT_EQ("/auth-basic", client()->response_head().auth_challenge_info->path);
+}
+
+// Tests that no auth challenge info is present on the response when a request
+// does not receive an authentication challenge.
+TEST_F(URLLoaderTest, NoAuthChallengeInfo) {
+  GURL url = test_server()->GetURL("/");
+  EXPECT_EQ(net::OK, Load(url));
+  EXPECT_FALSE(client()->response_head().auth_challenge_info.has_value());
 }
 
 // Test decoded_body_length / encoded_body_length when they're different.
@@ -1818,6 +1841,40 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   EXPECT_EQ("Value3", request_headers2.find("Header3")->second);
 }
 
+// Make sure requests are failed when the consumer tries to modify the host
+// header.
+TEST_F(URLLoaderTest, RedirectFailsOnModifyHostHeader) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  client()->RunUntilRedirectReceived();
+
+  net::HttpRequestHeaders redirect_headers;
+  redirect_headers.SetHeader(net::HttpRequestHeaders::kHost, "foo.test");
+  loader->FollowRedirect({}, redirect_headers, base::nullopt);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_TRUE(client()->has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            client()->completion_status().error_code);
+}
+
 // Test the client can remove headers during a redirect.
 TEST_F(URLLoaderTest, RedirectRemoveHeader) {
   ResourceRequest request = CreateResourceRequest(
@@ -2058,163 +2115,6 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
   delete_run_loop.Run();
 }
 
-// Test power monitor source that can simulate entering suspend mode. Can't use
-// the one in base/ because it insists on bringing its own MessageLoop.
-class TestPowerMonitorSource : public base::PowerMonitorSource {
- public:
-  TestPowerMonitorSource() = default;
-  ~TestPowerMonitorSource() override = default;
-
-  void Shutdown() override {}
-
-  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
-
-  void Resume() { ProcessPowerEvent(RESUME_EVENT); }
-
-  bool IsOnBatteryPowerImpl() override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
-};
-
-// This tests the case where suspend mode is entered when there's a loader that
-// has received response headers but has no pending read. URLRequestJob will
-// cancel the request and call OnReadCompleted despite there being no pending
-// read, which is a bit weird, and can cause crashes if not handled properly.
-TEST_F(URLLoaderTest, EnterSuspendModeWhileNoPendingRead) {
-  AddEternalSyncReadsInterceptor();
-
-  std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-      std::make_unique<TestPowerMonitorSource>();
-  TestPowerMonitorSource* unowned_power_monitor_source =
-      power_monitor_source.get();
-  base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-  ResourceRequest request = CreateResourceRequest(
-      "GET", EternalSyncReadsInterceptor::GetFillBufferURL());
-
-  base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
-  std::unique_ptr<URLLoader> url_loader;
-  mojom::URLLoaderFactoryParams params;
-  params.process_id = mojom::kBrowserProcessId;
-  params.is_corb_enabled = false;
-  url_loader = std::make_unique<URLLoader>(
-      context(), nullptr /* network_service_client */,
-      DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-      0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
-
-  // This will spin the run loop until the Mojo read buffer is full. The
-  // URLLoader will end up waiting for Mojo to give it more read buffer space.
-  base::RunLoop().RunUntilIdle();
-
-  unowned_power_monitor_source->Suspend();
-
-  client()->RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client()->completion_status().error_code);
-  delete_run_loop.Run();
-
-  unowned_power_monitor_source->Resume();
-}
-
-// This tests the case where suspend mode is entered when a job is trying to do
-// mime detection, but is paused and therefore does not have a pending read to
-// provide partial data.
-TEST_F(URLLoaderTest, EnterSuspendModePaused) {
-  GURL url("http://www.example.com");
-  scoped_refptr<net::IOBuffer> simulated_cache_dest;
-  // Using SimulatedCacheInterceptor here since it marks the read pending,
-  // which avoids races between various events.
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::make_unique<SimulatedCacheInterceptor>(
-               &simulated_cache_dest, true /* use_text_plain */));
-
-  std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-      std::make_unique<TestPowerMonitorSource>();
-  TestPowerMonitorSource* unowned_power_monitor_source =
-      power_monitor_source.get();
-  base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-  ResourceRequest request = CreateResourceRequest("GET", url);
-
-  base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
-  std::unique_ptr<URLLoader> url_loader;
-  mojom::URLLoaderFactoryParams params;
-  params.process_id = mojom::kBrowserProcessId;
-  params.is_corb_enabled = false;
-  url_loader = std::make_unique<URLLoader>(
-      context(), nullptr /* network_service_client */,
-      DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionSniffMimeType, request,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-      0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
-
-  url_loader->PauseReadingBodyFromNet();
-  base::RunLoop().RunUntilIdle();
-
-  unowned_power_monitor_source->Suspend();
-
-  client()->RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client()->completion_status().error_code);
-  delete_run_loop.Run();
-
-  unowned_power_monitor_source->Resume();
-}
-
-TEST_F(URLLoaderTest, EnterSuspendDiskCacheWriteQueued) {
-  // Test to make sure that fetch abort on suspend doesn't yank out the backing
-  // for IOBuffer for an issued disk_cache Write.
-
-  GURL url("http://www.example.com");
-  scoped_refptr<net::IOBuffer> simulated_cache_dest;
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::make_unique<SimulatedCacheInterceptor>(
-               &simulated_cache_dest, false /* use_text_plain */));
-
-  std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-      std::make_unique<TestPowerMonitorSource>();
-  TestPowerMonitorSource* unowned_power_monitor_source =
-      power_monitor_source.get();
-  base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-  ResourceRequest request = CreateResourceRequest("GET", url);
-
-  base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
-  std::unique_ptr<URLLoader> url_loader;
-  mojom::URLLoaderFactoryParams params;
-  params.process_id = mojom::kBrowserProcessId;
-  params.is_corb_enabled = false;
-  url_loader = std::make_unique<URLLoader>(
-      context(), nullptr /* network_service_client */,
-      DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-      0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
-
-  // Spin until the job has produced a (simulated) cache write.
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(simulated_cache_dest);
-
-  unowned_power_monitor_source->Suspend();
-
-  client()->RunUntilComplete();
-
-  EXPECT_EQ(net::ERR_ABORTED, client()->completion_status().error_code);
-  delete_run_loop.Run();
-
-  unowned_power_monitor_source->Resume();
-
-  // The "cache write" should still have data available.
-  EXPECT_EQ('a', simulated_cache_dest->data()[0]);
-}
-
 class FakeSSLPrivateKeyImpl : public network::mojom::SSLPrivateKey {
  public:
   explicit FakeSSLPrivateKeyImpl(
@@ -2248,7 +2148,7 @@ class FakeSSLPrivateKeyImpl : public network::mojom::SSLPrivateKey {
 // A mock NetworkServiceClient that does the following:
 // 1. Responds auth challenges with previously set credentials.
 // 2. Responds certificate request with previously set responses.
-class MockNetworkServiceClient : public mojom::NetworkServiceClient {
+class MockNetworkServiceClient : public TestNetworkServiceClient {
  public:
   MockNetworkServiceClient() = default;
   ~MockNetworkServiceClient() override = default;
@@ -2266,6 +2166,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
     NULL_CERTIFICATE,
     VALID_CERTIFICATE_SIGNATURE,
     INVALID_CERTIFICATE_SIGNATURE,
+    DESTROY_CLIENT_CERT_RESPONDER,
   };
 
   // mojom::NetworkServiceClient:
@@ -2274,12 +2175,12 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
       uint32_t routing_id,
       uint32_t request_id,
       const GURL& url,
-      const GURL& site_for_cookies,
       bool first_auth_attempt,
       const net::AuthChallengeInfo& auth_info,
-      int32_t resource_type,
       const base::Optional<network::ResourceResponseHead>& head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
+    if (head)
+      EXPECT_TRUE(head->auth_challenge_info.has_value());
     switch (credentials_response_) {
       case CredentialsResponse::NO_CREDENTIALS:
         auth_credentials_ = base::nullopt;
@@ -2305,8 +2206,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
-      override {
+      mojom::ClientCertificateResponderPtr client_cert_responder) override {
     switch (certificate_response_) {
       case CertificateResponse::INVALID:
         NOTREACHED();
@@ -2316,94 +2216,23 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
         url_loader_ptr_->reset();
         break;
       case CertificateResponse::CANCEL_CERTIFICATE_SELECTION:
-        std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
-                                nullptr,
-                                true /* cancel_certificate_selection */);
+        client_cert_responder->CancelRequest();
         break;
       case CertificateResponse::NULL_CERTIFICATE:
-        std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
-                                nullptr,
-                                false /* cancel_certificate_selection */);
+        client_cert_responder->ContinueWithoutCertificate();
         break;
       case CertificateResponse::VALID_CERTIFICATE_SIGNATURE:
       case CertificateResponse::INVALID_CERTIFICATE_SIGNATURE:
-        std::move(callback).Run(std::move(certificate_), provider_name_,
-                                algorithm_preferences_,
-                                std::move(ssl_private_key_ptr_),
-                                false /* cancel_certificate_selection */);
+        client_cert_responder->ContinueWithCertificate(
+            std::move(certificate_), provider_name_, algorithm_preferences_,
+            std::move(ssl_private_key_ptr_));
+        break;
+      case CertificateResponse::DESTROY_CLIENT_CERT_RESPONDER:
+        // Send no response and let the local variable be destroyed.
         break;
     }
     ++on_certificate_requested_counter_;
   }
-
-  void OnSSLCertificateError(uint32_t process_id,
-                             uint32_t routing_id,
-                             uint32_t request_id,
-                             int32_t resource_type,
-                             const GURL& url,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal,
-                             OnSSLCertificateErrorCallback response) override {
-    NOTREACHED();
-  }
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-
-#if defined(OS_CHROMEOS)
-  void OnTrustAnchorUsed(const std::string& username_hash) override {
-    NOTREACHED();
-  }
-#endif
-
-  void OnFileUploadRequested(uint32_t process_id,
-                             bool async,
-                             const std::vector<base::FilePath>& file_paths,
-                             OnFileUploadRequestedCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
-                            OnLoadingStateUpdateCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnClearSiteData(int process_id,
-                       int routing_id,
-                       const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
-                       int64_t recv_bytes,
-                       int64_t sent_bytes) override {}
-
-#if defined(OS_ANDROID)
-  void OnGenerateHttpNegotiateAuthToken(
-      const std::string& server_auth_token,
-      bool can_delegate,
-      const std::string& auth_negotiate_android_account_type,
-      const std::string& spn,
-      OnGenerateHttpNegotiateAuthTokenCallback callback) override {
-    NOTREACHED();
-  }
-#endif
 
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
@@ -2497,6 +2326,7 @@ TEST_F(URLLoaderTest, SetAuth) {
   EXPECT_EQ(200, headers->response_code());
   EXPECT_EQ(1, network_service_client.on_auth_required_call_counter());
   ASSERT_FALSE(url_loader);
+  EXPECT_FALSE(client()->response_head().auth_challenge_info.has_value());
 }
 
 TEST_F(URLLoaderTest, CancelAuth) {
@@ -2672,12 +2502,12 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
   request.resource_type = kResourceType;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+  request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
@@ -2695,7 +2525,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
 
   // Blocked because this is a cross-origin request made with a CORS request
   // header, but without a valid CORS response header.
-  // params.corb_excluded_resource_type does not apply in that case.
+  // request.corb_excluded does not apply in that case.
   ASSERT_EQ(std::string(), body);
 }
 
@@ -2708,12 +2538,12 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   request.resource_type = kResourceType;
   request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+  request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
   params.process_id = 123;
   CrossOriginReadBlocking::AddExceptionForPlugin(123);
   url_loader = std::make_unique<URLLoader>(
@@ -2748,12 +2578,12 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
   request.resource_type = kResourceType;
   request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+  request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
   params.process_id = 234;
   // No call to CrossOriginReadBlocking::AddExceptionForPlugin(123) - this is
   // what we primarily want to cover in this test.
@@ -2844,6 +2674,119 @@ class TestSSLPrivateKey : public net::SSLPrivateKey {
 };
 
 #if !defined(OS_IOS)
+TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
+  // This tests that one URLLoader can handle two client cert requests.
+
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+
+  net::EmbeddedTestServer test_server_1(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_1.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server_1.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server_1.Start());
+
+  net::EmbeddedTestServer test_server_2(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_2.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server_2.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server_2.Start());
+
+  std::unique_ptr<net::FakeClientCertIdentity> identity =
+      net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+  scoped_refptr<TestSSLPrivateKey> private_key =
+      base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
+
+  MockNetworkServiceClient network_service_client;
+  network_service_client.set_certificate_response(
+      MockNetworkServiceClient::CertificateResponse::
+          VALID_CERTIFICATE_SIGNATURE);
+  network_service_client.set_private_key(private_key);
+  network_service_client.set_certificate(identity->certificate());
+
+  // Create a request to server_1 that will redirect to server_2
+  ResourceRequest request = CreateResourceRequest(
+      "GET",
+      test_server_1.GetURL("/server-redirect-307?" +
+                           net::EscapeQueryParamValue(
+                               test_server_2.GetURL("/echo").spec(), true)));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_EQ(0, network_service_client.on_certificate_requested_counter());
+  EXPECT_EQ(0, private_key->sign_count());
+
+  client()->RunUntilRedirectReceived();
+  loader->FollowRedirect({}, {}, base::nullopt);
+  // MockNetworkServiceClient gives away the private key when it invokes
+  // ContinueWithCertificate, so we have to give it the key again.
+  network_service_client.set_private_key(private_key);
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(2, network_service_client.on_certificate_requested_counter());
+  EXPECT_EQ(2, private_key->sign_count());
+}
+
+TEST_F(URLLoaderTest, ClientAuthDestroyResponder) {
+  // When URLLoader receives no message from the ClientCertificateResponder and
+  // its connection errors out, we expect the request to be canceled rather than
+  // just hang.
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  MockNetworkServiceClient network_service_client;
+  network_service_client.set_certificate_response(
+      MockNetworkServiceClient::CertificateResponse::
+          DESTROY_CLIENT_CERT_RESPONDER);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, client()->CreateInterfacePtr(),
+      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
+      resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+  network_service_client.set_url_loader_ptr(&loader);
+
+  RunUntilIdle();
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED,
+            client()->completion_status().error_code);
+}
+
 TEST_F(URLLoaderTest, ClientAuthCancelConnection) {
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;

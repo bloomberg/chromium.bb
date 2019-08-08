@@ -10,27 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/titled_url_node.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/url_formatter/url_formatter.h"
-
-namespace {
-
-TermMatches OffsetsToTermMatches(const std::vector<size_t> offsets) {
-  TermMatches term_matches;
-  for (auto offset_iter = offsets.begin(); offset_iter != offsets.end();
-       ++offset_iter) {
-    const size_t begin = *offset_iter;
-    ++offset_iter;
-    const size_t end = *offset_iter;
-    if ((begin != base::string16::npos) && (end != base::string16::npos))
-      term_matches.emplace_back(0, begin, end - begin);
-  }
-  return term_matches;
-}
-
-}  // namespace
 
 namespace bookmarks {
 
@@ -43,16 +27,12 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
     const AutocompleteInput& input,
     const base::string16& fixed_up_input_text) {
   const GURL& url = titled_url_match.node->GetTitledUrlNodeUrl();
-  base::string16 title = titled_url_match.node->GetTitledUrlNodeTitle();
 
   // The AutocompleteMatch we construct is non-deletable because the only way to
   // support this would be to delete the underlying object that created the
   // titled_url_match. E.g., for the bookmark provider this would mean deleting
   // the underlying bookmark, which is unlikely to be what the user intends.
   AutocompleteMatch match(provider, relevance, false, type);
-  TitledUrlMatch::MatchPositions new_title_match_positions =
-      titled_url_match.title_match_positions;
-  CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
   const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
   match.destination_url = url;
 
@@ -64,13 +44,24 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   auto format_types = AutocompleteMatch::GetFormatTypes(
       input.parts().scheme.len > 0 || match_in_scheme, match_in_subdomain);
 
-  std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
-      titled_url_match.url_match_positions);
-  match.contents = url_formatter::FormatUrlWithOffsets(
-      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
-  TermMatches url_term_matches = OffsetsToTermMatches(offsets);
-  match.contents_class = HistoryProvider::SpansFromTermMatch(
-      url_term_matches, match.contents.size(), true);
+  match.contents = url_formatter::FormatUrl(
+      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+  // Bookmark classification diverges from relevance scoring. Specifically,
+  // 1) All occurrences of the input contribute to relevance; e.g. for the input
+  // 'pre', the bookmark 'pre prefix' will be scored higher than 'pre suffix'.
+  // For classification though, if the input is a prefix of the suggestion text,
+  // only the prefix will be bolded; e.g. the 1st bookmark will display '[pre]
+  // prefix' as opposed to '[pre] [pre]fix'. This divergence allows consistency
+  // with other providers' and google.com's bolding.
+  // 2) Non-complete-word matches less than 3 characters long do not contribute
+  // to relevance; e.g. for the input 'a pr', the bookmark 'a pr prefix' will be
+  // scored the same as 'a pr suffix'. For classification though, both
+  // occurrences will be bolded, 'a [pr] [pr]efix'.
+  auto contents_terms = FindTermMatches(input.text(), match.contents);
+  match.contents_class = ClassifyTermMatches(
+      contents_terms, match.contents.length(),
+      ACMatchClassification::MATCH | ACMatchClassification::URL,
+      ACMatchClassification::URL);
 
   // The inline_autocomplete_offset should be adjusted based on the formatting
   // applied to |fill_into_edit|.
@@ -93,29 +84,15 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
         match.inline_autocompletion.empty() ||
         !HistoryProvider::PreventInlineAutocomplete(input);
   }
-  match.description = title;
-  offsets =
-      TitledUrlMatch::OffsetsFromMatchPositions(new_title_match_positions);
-  TermMatches title_term_matches = OffsetsToTermMatches(offsets);
-  match.description_class = HistoryProvider::SpansFromTermMatch(
-      title_term_matches, match.description.size(), false);
+  match.description = titled_url_match.node->GetTitledUrlNodeTitle();
+  base::TrimWhitespace(match.description, base::TRIM_LEADING,
+                       &match.description);
+  auto description_terms = FindTermMatches(input.text(), match.description);
+  match.description_class = ClassifyTermMatches(
+      description_terms, match.description.length(),
+      ACMatchClassification::MATCH, ACMatchClassification::NONE);
 
   return match;
-}
-
-void CorrectTitleAndMatchPositions(
-    base::string16* title,
-    TitledUrlMatch::MatchPositions* title_match_positions) {
-  size_t leading_whitespace_chars = title->length();
-  base::TrimWhitespace(*title, base::TRIM_LEADING, title);
-  leading_whitespace_chars -= title->length();
-  if (leading_whitespace_chars == 0)
-    return;
-  for (auto it = title_match_positions->begin();
-       it != title_match_positions->end(); ++it) {
-    it->first -= leading_whitespace_chars;
-    it->second -= leading_whitespace_chars;
-  }
 }
 
 }  // namespace bookmarks

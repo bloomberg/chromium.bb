@@ -9,8 +9,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/work_id_provider.h"
+#include "base/no_destructor.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -28,12 +29,6 @@ using CallStackProfileParams = metrics::CallStackProfileParams;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 namespace {
-
-// The profiler object is stored in a SequenceLocalStorageSlot on child threads
-// to give it the same lifetime as the threads.
-base::LazyInstance<
-    base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>>::Leaky
-    g_child_thread_profiler_sequence_local_storage = LAZY_INSTANCE_INITIALIZER;
 
 // Run continuous profiling 2% of the time.
 constexpr const double kFractionOfExecutionTimeToSample = 0.02;
@@ -158,24 +153,30 @@ void ThreadProfiler::SetMainThreadTaskRunner(
   ScheduleNextPeriodicCollection();
 }
 
-void ThreadProfiler::AddAuxUnwinder(std::unique_ptr<base::Unwinder> unwinder) {
+void ThreadProfiler::SetAuxUnwinderFactory(
+    const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>& factory) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  aux_unwinder_ = std::move(unwinder);
-  startup_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+  aux_unwinder_factory_ = factory;
+  startup_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
   if (periodic_profiler_)
-    periodic_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+    periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 }
 
 // static
 void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
+  // The profiler object is stored in a SequenceLocalStorageSlot on child
+  // threads to give it the same lifetime as the threads.
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>>
+      child_thread_profiler_sequence_local_storage;
+
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  auto profiler = std::unique_ptr<ThreadProfiler>(
+  child_thread_profiler_sequence_local_storage->emplace(
       new ThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get()));
-  g_child_thread_profiler_sequence_local_storage.Get().Set(std::move(profiler));
 }
 
 // static
@@ -194,7 +195,7 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
   DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS, GetProcess());
 
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
-  connector->BindInterface(content::mojom::kBrowserServiceName,
+  connector->BindInterface(content::mojom::kSystemServiceName,
                            &browser_interface);
   CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(browser_interface));
@@ -234,9 +235,7 @@ ThreadProfiler::ThreadProfiler(
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
-          work_id_recorder_.get(),
-          &metrics::CallStackProfileBuilder::
-              GetStackSamplingProfilerMetadataRecorder()));
+          work_id_recorder_.get(), base::GetSampleMetadataRecorder()));
 
   startup_profiler_->Start();
 
@@ -282,14 +281,12 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
-          work_id_recorder_.get(),
-          &metrics::CallStackProfileBuilder::
-              GetStackSamplingProfilerMetadataRecorder(),
+          work_id_recorder_.get(), base::GetSampleMetadataRecorder(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));
-  if (aux_unwinder_)
-    periodic_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+  if (aux_unwinder_factory_)
+    periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 
   periodic_profiler_->Start();
 }

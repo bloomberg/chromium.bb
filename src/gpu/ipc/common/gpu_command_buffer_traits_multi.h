@@ -26,7 +26,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     gpu::CommandBufferNamespace,
     gpu::CommandBufferNamespace::INVALID,
     gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES - 1)
-IPC_ENUM_TRAITS_MAX_VALUE(gl::GpuPreference, gl::GpuPreferenceLast)
+IPC_ENUM_TRAITS_MAX_VALUE(gl::GpuPreference, gl::GpuPreference::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::ContextType, gpu::CONTEXT_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::ColorSpace, gpu::COLOR_SPACE_LAST)
 
@@ -139,6 +139,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(dc_layers)
   IPC_STRUCT_TRAITS_MEMBER(use_dc_overlays_for_video)
   IPC_STRUCT_TRAITS_MEMBER(protected_video_swap_chain)
+  IPC_STRUCT_TRAITS_MEMBER(gpu_vsync)
   IPC_STRUCT_TRAITS_MEMBER(disable_non_empty_post_sub_buffers)
   IPC_STRUCT_TRAITS_MEMBER(avoid_stencil_buffers)
   IPC_STRUCT_TRAITS_MEMBER(disable_2d_canvas_copy_on_write)
@@ -195,7 +196,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::ContextCreationAttribs)
   IPC_STRUCT_TRAITS_MEMBER(enable_raster_interface)
   IPC_STRUCT_TRAITS_MEMBER(enable_oop_rasterization)
   IPC_STRUCT_TRAITS_MEMBER(enable_swap_timestamps_if_supported)
-  IPC_STRUCT_TRAITS_MEMBER(backed_by_surface_texture)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::GpuMemoryBufferFormatSet)

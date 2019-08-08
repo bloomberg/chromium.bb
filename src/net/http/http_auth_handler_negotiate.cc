@@ -4,9 +4,10 @@
 
 #include "net/http/http_auth_handler_negotiate.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -31,16 +32,16 @@ using DelegationType = HttpAuth::DelegationType;
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogParameterChannelBindings(
+base::Value NetLogParameterChannelBindings(
     const std::string& channel_binding_token,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict;
+  base::DictionaryValue dict;
   if (!capture_mode.include_socket_bytes())
     return std::move(dict);
 
-  dict.reset(new base::DictionaryValue());
-  dict->SetString("token", base::HexEncode(channel_binding_token.data(),
-                                           channel_binding_token.size()));
+  dict.Clear();
+  dict.SetString("token", base::HexEncode(channel_binding_token.data(),
+                                          channel_binding_token.size()));
   return std::move(dict);
 }
 
@@ -122,8 +123,14 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
       CreateAuthSystem(http_auth_preferences(), negotiate_auth_system_factory_),
       http_auth_preferences(), host_resolver));
 #elif defined(OS_POSIX)
-  if (is_unsupported_ || !allow_gssapi_library_load_)
+  if (is_unsupported_)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
+#if defined(OS_CHROMEOS)
+  // Note: Don't set is_unsupported_ = true here. AllowGssapiLibraryLoad()
+  // might change to true during a session.
+  if (!http_auth_preferences()->AllowGssapiLibraryLoad())
+    return ERR_UNSUPPORTED_AUTH_SCHEME;
+#endif
   if (!auth_library_->Init()) {
     is_unsupported_ = true;
     return ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -155,11 +162,6 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
       http_auth_preferences_(prefs) {}
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() = default;
-
-HttpAuth::AuthorizationResult HttpAuthHandlerNegotiate::HandleAnotherChallenge(
-    HttpAuthChallengeTokenizer* challenge) {
-  return auth_system_->ParseChallenge(challenge);
-}
 
 // Require identity on first pass instead of second.
 bool HttpAuthHandlerNegotiate::NeedsIdentity() {
@@ -209,7 +211,7 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
     x509_util::GetTLSServerEndPointChannelBinding(*ssl_info.cert,
                                                   &channel_bindings_);
   if (!channel_bindings_.empty())
-    net_log_.AddEvent(
+    net_log().AddEvent(
         NetLogEventType::AUTH_CHANNEL_BINDINGS,
         base::Bind(&NetLogParameterChannelBindings, channel_bindings_));
   return true;
@@ -239,6 +241,12 @@ int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
   if (rv == ERR_IO_PENDING)
     callback_ = std::move(callback);
   return rv;
+}
+
+HttpAuth::AuthorizationResult
+HttpAuthHandlerNegotiate::HandleAnotherChallengeImpl(
+    HttpAuthChallengeTokenizer* challenge) {
+  return auth_system_->ParseChallenge(challenge);
 }
 
 std::string HttpAuthHandlerNegotiate::CreateSPN(const std::string& server,
@@ -297,7 +305,7 @@ void HttpAuthHandlerNegotiate::OnIOComplete(int result) {
 void HttpAuthHandlerNegotiate::DoCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!callback_.is_null());
-  base::ResetAndReturn(&callback_).Run(rv);
+  std::move(callback_).Run(rv);
 }
 
 int HttpAuthHandlerNegotiate::DoLoop(int result) {
@@ -343,7 +351,7 @@ int HttpAuthHandlerNegotiate::DoResolveCanonicalName() {
   HostResolver::ResolveHostParameters parameters;
   parameters.include_canonical_name = true;
   resolve_host_request_ = resolver_->CreateRequest(
-      HostPortPair(origin_.host(), 0), net_log_, parameters);
+      HostPortPair(origin_.host(), 0), net_log(), parameters);
   return resolve_host_request_->Start(base::BindOnce(
       &HttpAuthHandlerNegotiate::OnIOComplete, base::Unretained(this)));
 }

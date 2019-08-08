@@ -4,20 +4,16 @@
 
 #include "ash/wm/overview/caption_container_view.h"
 
-#include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/wm/overview/overview_constants.h"
+#include <memory>
+
+#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/overview/rounded_rect_view.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/window_preview_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/strings/grit/ui_strings.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -37,22 +33,31 @@ constexpr int kHorizontalLabelPaddingDp = 12;
 // title.
 constexpr gfx::Size kIconSize{24, 24};
 
-constexpr int kCloseButtonInkDropInsetDp = 2;
-
-constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
-
-// The colors of the close button ripple.
-constexpr SkColor kCloseButtonInkDropRippleColor =
-    SkColorSetA(kCloseButtonColor, 0x0F);
-constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
-    SkColorSetA(kCloseButtonColor, 0x14);
-
-// The font delta of the overview window title.
+// The font delta of the window title.
 constexpr int kLabelFontDelta = 2;
 
 // Values of the backdrop.
 constexpr int kBackdropRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
+
+constexpr int kHeaderPreferredHeightDp = 40;
+constexpr int kMarginDp = 10;
+
+// Duration of the show/hide animation of the header.
+constexpr base::TimeDelta kHeaderFadeDuration =
+    base::TimeDelta::FromMilliseconds(167);
+
+// Delay before the show animation of the header.
+constexpr base::TimeDelta kHeaderFadeInDelay =
+    base::TimeDelta::FromMilliseconds(83);
+
+// Duration of the slow show animation of the close button.
+constexpr base::TimeDelta kCloseButtonSlowFadeInDuration =
+    base::TimeDelta::FromMilliseconds(300);
+
+// Delay before the slow show animation of the close button.
+constexpr base::TimeDelta kCloseButtonSlowFadeInDelay =
+    base::TimeDelta::FromMilliseconds(750);
 
 void AddChildWithLayer(views::View* parent, views::View* child) {
   child->SetPaintToLayer();
@@ -66,74 +71,39 @@ gfx::PointF ConvertToScreen(views::View* view, const gfx::Point& location) {
   return gfx::PointF(location_copy);
 }
 
+// Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
+// otherwise. The tween type differs for |visible| and if |visible| is true
+// there is a slight delay before the animation begins. Does not animate if
+// opacity matches |visible|.
+void AnimateLayerOpacity(ui::Layer* layer, bool visible) {
+  float target_opacity = visible ? 1.f : 0.f;
+  if (layer->GetTargetOpacity() == target_opacity)
+    return;
+
+  layer->SetOpacity(1.f - target_opacity);
+  gfx::Tween::Type tween =
+      visible ? gfx::Tween::LINEAR_OUT_SLOW_IN : gfx::Tween::FAST_OUT_LINEAR_IN;
+  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+  settings.SetTransitionDuration(kHeaderFadeDuration);
+  settings.SetTweenType(tween);
+  settings.SetPreemptionStrategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  if (visible) {
+    layer->GetAnimator()->SchedulePauseForProperties(
+        kHeaderFadeInDelay, ui::LayerAnimationElement::OPACITY);
+  }
+  layer->SetOpacity(target_opacity);
+}
+
 }  // namespace
 
-// The close button for the caption container view. It has a custom ink drop.
-class CaptionContainerView::OverviewCloseButton : public views::ImageButton {
- public:
-  explicit OverviewCloseButton(
-      CaptionContainerView::EventDelegate* event_delegate)
-      : views::ImageButton(nullptr), event_delegate_(event_delegate) {
-    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-    SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kCloseButtonColor));
-    SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                      views::ImageButton::ALIGN_MIDDLE);
-    SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
-    SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
-    SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
-  }
-
-  ~OverviewCloseButton() override = default;
-
-  // Resets the listener so that the listener can go out of scope.
-  void ResetEventDelegate() { event_delegate_ = nullptr; }
-
- protected:
-  // views::Button:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
-    ink_drop->SetAutoHighlightMode(
-        views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-    ink_drop->SetShowHighlightOnHover(true);
-    return ink_drop;
-  }
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
-        kCloseButtonInkDropRippleColor, /*visible_opacity=*/1.f);
-  }
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return std::make_unique<views::InkDropHighlight>(
-        gfx::PointF(GetLocalBounds().CenterPoint()),
-        std::make_unique<views::CircleLayerDelegate>(
-            kCloseButtonInkDropRippleHighlightColor, GetInkDropRadius()));
-  }
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
-  }
-  void NotifyClick(const ui::Event& event) override {
-    if (event_delegate_)
-      event_delegate_->HandleCloseButtonClicked();
-  }
-
- private:
-  int GetInkDropRadius() const {
-    return std::min(size().width(), size().height()) / 2 -
-           kCloseButtonInkDropInsetDp;
-  }
-
-  CaptionContainerView::EventDelegate* event_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
-};
-
 CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
-                                           aura::Window* window)
-    : Button(nullptr), event_delegate_(event_delegate) {
+                                           aura::Window* window,
+                                           bool show_preview,
+                                           views::ImageButton* close_button)
+    : views::Button(nullptr),
+      event_delegate_(event_delegate),
+      window_(window),
+      close_button_(close_button) {
   // This should not be focusable. It's also to avoid accessibility error when
   // |window->GetTitle()| is empty.
   SetFocusBehavior(FocusBehavior::NEVER);
@@ -146,11 +116,8 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
           kHorizontalLabelPaddingDp));
   AddChildWithLayer(this, header_view_);
 
-  // Prefer kAppIconSmallKey (set by the client in Mash), then kAppIconKey and
-  // kWindowIconKey (set for client windows in classic Ash but not Mash).
-  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconSmallKey);
-  if (!icon || icon->size().IsEmpty())
-    icon = window->GetProperty(aura::client::kAppIconKey);
+  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
+  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
   if (!icon || icon->size().IsEmpty())
     icon = window->GetProperty(aura::client::kWindowIconKey);
   if (icon && !icon->size().IsEmpty()) {
@@ -171,14 +138,21 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
   header_view_->AddChildView(title_label_);
   layout->SetFlexForView(title_label_, 1);
 
-  close_button_ = new OverviewCloseButton(event_delegate);
-  AddChildWithLayer(header_view_, close_button_);
+  if (close_button)
+    AddChildWithLayer(header_view_, close_button);
+
+  // Call this last as it calls |Layout()| which relies on the some of the other
+  // elements existing.
+  SetShowPreview(show_preview);
+  if (show_preview) {
+    header_view_->layer()->SetOpacity(0.f);
+    current_header_visibility_ = HeaderVisibility::kInvisible;
+  }
 }
 
 CaptionContainerView::~CaptionContainerView() = default;
 
 void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
-  DCHECK(close_button_->layer());
   DCHECK(header_view_->layer());
   if (visibility == current_header_visibility_)
     return;
@@ -190,7 +164,7 @@ void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
 
   // If |header_view_| is fading out, we are done. Depending on if the close
   // button was visible, it will fade out with |header_view_| or stay hidden.
-  if (all_invisible)
+  if (all_invisible || !close_button_)
     return;
 
   const bool close_button_visible = visibility == HeaderVisibility::kVisible;
@@ -203,6 +177,22 @@ void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
   }
 
   AnimateLayerOpacity(close_button_->layer(), close_button_visible);
+}
+
+void CaptionContainerView::HideCloseInstantlyAndThenShowItSlowly() {
+  DCHECK(close_button_);
+  DCHECK_NE(HeaderVisibility::kInvisible, current_header_visibility_);
+  ui::Layer* layer = close_button_->layer();
+  DCHECK(layer);
+  current_header_visibility_ = HeaderVisibility::kVisible;
+  layer->SetOpacity(0.f);
+  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+  settings.SetTransitionDuration(kCloseButtonSlowFadeInDuration);
+  settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+  settings.SetPreemptionStrategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  layer->GetAnimator()->SchedulePauseForProperties(
+      kCloseButtonSlowFadeInDelay, ui::LayerAnimationElement::OPACITY);
+  layer->SetOpacity(1.f);
 }
 
 void CaptionContainerView::SetBackdropVisibility(bool visible) {
@@ -220,7 +210,6 @@ void CaptionContainerView::SetBackdropVisibility(bool visible) {
 
 void CaptionContainerView::ResetEventDelegate() {
   event_delegate_ = nullptr;
-  close_button_->ResetEventDelegate();
 }
 
 void CaptionContainerView::SetTitle(const base::string16& title) {
@@ -228,25 +217,60 @@ void CaptionContainerView::SetTitle(const base::string16& title) {
   SetAccessibleName(title);
 }
 
-views::ImageButton* CaptionContainerView::GetCloseButton() {
-  return close_button_;
+void CaptionContainerView::SetShowPreview(bool show) {
+  if (show == !!preview_view_)
+    return;
+
+  if (!show) {
+    RemoveChildView(preview_view_);
+    preview_view_ = nullptr;
+    return;
+  }
+
+  preview_view_ = new wm::WindowPreviewView(window_, false);
+  AddChildWithLayer(this, preview_view_);
+  Layout();
+}
+
+void CaptionContainerView::UpdatePreviewRoundedCorners(bool show,
+                                                       float rounding) {
+  if (!preview_view_ || !ash::features::ShouldUseShaderRoundedCorner())
+    return;
+
+  const float scale = preview_view_->layer()->transform().Scale2d().x();
+  const gfx::RoundedCornersF radii(show ? rounding / scale : 0.0f);
+  preview_view_->layer()->SetRoundedCornerRadius(radii);
+  preview_view_->layer()->SetIsFastRoundedCorner(true);
+}
+
+void CaptionContainerView::UpdatePreviewView() {
+  if (!preview_view_)
+    return;
+
+  preview_view_->RecreatePreviews();
+  Layout();
 }
 
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(kOverviewMargin, kOverviewMargin);
+  bounds.Inset(kMarginDp, kMarginDp);
 
-  const int visible_height = close_button_->GetPreferredSize().height();
   if (backdrop_view_) {
     gfx::Rect backdrop_bounds = bounds;
-    backdrop_bounds.Inset(0, visible_height, 0, 0);
+    backdrop_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
     backdrop_view_->SetBoundsRect(backdrop_bounds);
   }
 
+  if (preview_view_) {
+    gfx::Rect preview_bounds = bounds;
+    preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    preview_view_->SetBoundsRect(preview_bounds);
+  }
+
   // Position the header at the top.
-  const gfx::Rect header_bounds(kOverviewMargin, kOverviewMargin,
-                                GetLocalBounds().width() - kOverviewMargin,
-                                visible_height);
+  const gfx::Rect header_bounds(kMarginDp, kMarginDp,
+                                GetLocalBounds().width() - kMarginDp,
+                                kHeaderPreferredHeightDp);
   header_view_->SetBoundsRect(header_bounds);
 }
 
@@ -324,25 +348,12 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
   if (event.IsLocatedEvent() &&
       base::ContainsValue(press_types, event.type())) {
     gfx::Rect inset_bounds = GetLocalBounds();
-    inset_bounds.Inset(gfx::Insets(kOverviewMargin));
+    inset_bounds.Inset(gfx::Insets(kMarginDp));
     if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))
       accept_events = false;
   }
 
   return accept_events && Button::CanAcceptEvent(event);
-}
-
-void CaptionContainerView::AnimateLayerOpacity(ui::Layer* layer, bool visible) {
-  float target_opacity = visible ? 1.f : 0.f;
-  if (layer->GetTargetOpacity() == target_opacity)
-    return;
-
-  layer->SetOpacity(1.f - target_opacity);
-  ScopedOverviewAnimationSettings settings(
-      visible ? OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN
-              : OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT,
-      layer->GetAnimator());
-  layer->SetOpacity(target_opacity);
 }
 
 }  // namespace ash

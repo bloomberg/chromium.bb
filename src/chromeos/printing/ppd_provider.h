@@ -149,14 +149,16 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   using ResolvePrintersCallback =
       base::OnceCallback<void(CallbackResultCode, const ResolvedPrintersList&)>;
 
-  // Result of a ResolvePpdReference call.  If the result code is
-  // SUCCESS, then the second argument contains the a PpdReference
-  // that we have high confidence can be used to obtain a driver for
-  // the printer.  NOT_FOUND means we couldn't confidently figure out
-  // a driver for the printer.
+  // Result of a ResolvePpdReference call.  If the result code is SUCCESS, then
+  // the second argument contains the a PpdReference that we have high
+  // confidence can be used to obtain a driver for the printer.  NOT_FOUND means
+  // we couldn't confidently figure out a driver for the printer.  If we got
+  // NOT_FOUND from a USB printer, we may have been able to determine the
+  // manufacturer name which is the third argument.
   using ResolvePpdReferenceCallback =
       base::OnceCallback<void(CallbackResultCode,
-                              const Printer::PpdReference&)>;
+                              const Printer::PpdReference& ref,
+                              const std::string& manufacturer)>;
 
   // Result of a ReverseLookup call.  If the result code is SUCCESS, then
   // |manufactuer| and |model| contain the strings that could have generated

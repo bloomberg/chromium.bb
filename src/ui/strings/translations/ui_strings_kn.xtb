@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="111910763555783249">ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ದಿನದ ಹಿಂದೆ}one{# ದಿನಗಳ ಹಿಂದೆ}other{# ದಿನಗಳ ಹಿಂದೆ}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 ನಿಮಿಷದ ಹಿಂದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
 <translation id="1409544243779336081">ಆ್ಯಪ್ ಶಿಫಾರಸು</translation>
-<translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> ಅವರ ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ನಿಮಿಷ ಮತ್ತು }one{# ನಿಮಿಷಗಳು ಮತ್ತು }other{# ನಿಮಿಷಗಳು ಮತ್ತು }}</translation>
 <translation id="1643823602425662293">ಅಧಿಸೂಚನೆ</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">ಈಗ</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 ನಿಮಿಷ}one{# ನಿಮಿಷಗಳು}other{# ನಿಮಿಷಗಳು}}</translation>
-<translation id="1756116796893109054">ಟ್ಯಾಬ್ ಅನ್ನು ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">ಅವಧಿ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ತಿಂಗಳು}one{# ತಿಂಗಳುಗಳು}other{# ತಿಂಗಳುಗಳು}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ವಿಸ್ತೃತಗೊಳಿಸಿ</translation>
+<translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="6264365405983206840">&amp;ಎಲ್ಲ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="6351032674660237738">ಅಪ್ಲಿಕೇಶನ್ ಸಲಹೆಗಳು</translation>
 <translation id="6364916375976753737">ಎಡಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿ</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 ಕ್ಕಿಂತ ಹೆಚ್ಚು ಓದದಿರುವ ಅಧಿಸೂಚನೆ}one{# ಕ್ಕಿಂತ ಹೆಚ್ಚು ಓದದಿರುವ ಅಧಿಸೂಚನೆಗಳು}other{# ಕ್ಕಿಂತ ಹೆಚ್ಚು ಓದದಿರುವ ಅಧಿಸೂಚನೆಗಳು}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1ನಿ ದಲ್ಲಿ}one{#ನಿ ಗಳಲ್ಲಿ}other{#ನಿ ಗಳಲ್ಲಿ}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google ಅಸಿಸ್ಟೆಂಟ್‌ನಲ್ಲಿ ಧ್ವನಿ ಮೂಲಕ ಪ್ರಶ್ನೆ ಕೇಳಲು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ಗಂಟೆ ಹಿಂದೆ}one{# ಗಂಟೆಗಳ ಹಿಂದೆ}other{# ಗಂಟೆಗಳ ಹಿಂದೆ}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
+<translation id="8144660977431427332">ನಿಮ್ಮ ಹುಡುಕಾಟಗಳು Google ಅಸಿಸ್ಟೆಂಟ್‌ನಿಂದ ಪ್ರಾಯೋಜಿತವಾಗಿವೆ. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆ</translation>
 <translation id="815598010540052116">ಕೆಳಗೆ ಸ್ಕ್ರೋಲ್ ಮಾಡು</translation>
 <translation id="8170087467028567933">ಈ ಸಲಹೆಯನ್ನು ತೆಗೆದುಹಾಕಿದರೆ, ಅದನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಾದ್ಯಂತ ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಮರೆಮಾಡಲಾಗುತ್ತದೆ.</translation>

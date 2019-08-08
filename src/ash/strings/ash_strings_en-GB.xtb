@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Collapse menu</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1419738280318246476">Unlock device to perform the notification action</translation>
+<translation id="1426410128494586442">Yes</translation>
 <translation id="1455242230282523554">Show language settings</translation>
 <translation id="1467432559032391204">Left</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">Toggle Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Access all your activity in this session</translation>
 <translation id="1608626060424371292">Remove this user</translation>
-<translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start a voice query</translation>
 <translation id="1658406695958299976">Sorry, your password still couldn't be verified. Note: If you changed your password recently, your new password will be applied once you sign out. Please use the old password here.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update</translation>
 <translation id="1995660704900986789">Power off</translation>
-<translation id="1999763610967697511">Drag and drop</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Type a message</translation>
 <translation id="2050339315714019657">Portrait</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">Toggle Do not disturb</translation>
 <translation id="2412593942846481727">Update available</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Connected to <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Left click</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2653659639078652383">Submit</translation>
+<translation id="2658778018866295321">Click and drag</translation>
 <translation id="2700493154570097719">Set your keyboard</translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Reconnecting to <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">To unlock, enter your password</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
-<translation id="3019353588588144572">Time remaining until battery is fully charged, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Your supervised user profile will be removed soon. Sign in to find out more.</translation>
 <translation id="3055162170959710888">You used this device for <ph name="USED_TIME" /> today</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
+<translation id="3576141592585647168">Change timezone</translation>
 <translation id="3595596368722241419">Battery full</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="3621202678540785336">Input</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">Audio settings</translation>
 <translation id="3962859241508114581">Previous track</translation>
 <translation id="397105322502079400">Calculating...</translation>
+<translation id="3977512764614765090">Battery at <ph name="PERCENTAGE" />% and charging.</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4042660782729322247">You're sharing your screen</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">The admin of this device has the ability to:</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4281007048406351813">Add 1 min to timer</translation>
-<translation id="4292681942966152062">Activating <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Clear all <ph name="COUNT" /> notifications</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">You pressed the keyboard shortcut for high contrast. Do you want to turn it on?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">Next track</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Unpaired devices</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Connecting...</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> until full</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">Unlock device with parent code</translation>
 <translation id="4731797938093519117">Parent access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">The device admin may monitor your browsing activity.</translation>
 <translation id="4774338217796918551">Come back tomorrow at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">The Google Assistant is not available in a demo session.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Disconnect</translation>
+<translation id="4831034276697007977">Are you sure that you want to turn off automatic clicks?</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
 <translation id="485592688953820832">No action (pause)</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">Capture screen</translation>
 <translation id="6542521951477560771">Casting to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Ask administrator</translation>
-<translation id="6574601967010742428">The device administrator may be able to monitor your activity.</translation>
 <translation id="6585808820553845416">Session ends in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
+<translation id="6637729079642709226">Change time</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665545700722362599">Grant websites, apps and extensions permission to use location services, the device’s microphone, camera or other features</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">No mobile devices found.</translation>
 <translation id="6723839937902243910">Power</translation>
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
-<translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="6820676911989879663">Take a break!</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
 <translation id="735745346212279324">VPN disconnected</translation>
 <translation id="7377169924702866686">Caps Lock is on.</translation>
+<translation id="7378594059915113390">Media controls</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Switched network connection</translation>
 <translation id="7405710164030118432">To unlock the device, enter your Family Link parent access code</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> doesn't support <ph name="SPECIFIED_RESOLUTION" />. The resolution was changed to <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji palette</translation>
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
+<translation id="7568294522609223312">Turn off automatic clicks</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> and <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Strong signal</translation>
 <translation id="7837740436429729974">Time's up</translation>
-<translation id="7842211907556571265">Connecting to <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Warning: Experimental feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7868900307798234037">Unlocking with fingerprint</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">Set a reminder</translation>
 <translation id="8878886163241303700">Extending screen</translation>
 <translation id="890616557918890486">Change source</translation>
+<translation id="8909138438987180327">Battery at <ph name="PERCENTAGE" /> per cent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">The Google Assistant doesn’t speak this language.</translation>
 <translation id="8938800817013097409">USB-C device (right port in the back)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590">Using <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Unlock device as <ph name="LOGIN_ID" /> to perform the notification action</translation>
 <translation id="8995603266996330174">Managed by <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Enter Family Link parent access code.</translation>
 <translation id="9029474291399787231">Adobe Flash Player update available</translation>
 <translation id="9056839673611986238">Device will be rolled back</translation>
 <translation id="9070640332319875144">Assistant settings</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> until battery is empty.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microphone is in use.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">This feature allows you to quickly access any signed-in user without requiring a password. Only use this feature with accounts that you trust.</translation>
 <translation id="9193626018745640770">Casting on an unknown receiver</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
-<translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> remaining until battery is fully charged.</translation>
 <translation id="9215934040295798075">Set wallpaper</translation>
 <translation id="921989828232331238">Your parent locked your device for the day</translation>
 <translation id="923686485342484400">Press Control Shift Q twice to sign out.</translation>

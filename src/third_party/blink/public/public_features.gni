@@ -15,7 +15,5 @@ declare_args() {
 # Unhandled Tap enable means Contextual Search aka Tap to Search.
 enable_unhandled_tap = is_android
 
-use_default_render_theme = use_aura
-
 # Use Minikin hyphenation engine.
 use_minikin_hyphenation = is_android

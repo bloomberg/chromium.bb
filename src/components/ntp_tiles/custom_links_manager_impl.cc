@@ -10,17 +10,12 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
 namespace ntp_tiles {
-
-namespace {
-
-const int kMaxNumLinks = 10;
-
-}  // namespace
 
 CustomLinksManagerImpl::CustomLinksManagerImpl(
     PrefService* prefs,
@@ -80,7 +75,7 @@ const std::vector<CustomLinksManager::Link>& CustomLinksManagerImpl::GetLinks()
 bool CustomLinksManagerImpl::AddLink(const GURL& url,
                                      const base::string16& title) {
   if (!IsInitialized() || !url.is_valid() ||
-      current_links_.size() == kMaxNumLinks) {
+      current_links_.size() == ntp_tiles::kMaxNumCustomLinks) {
     return false;
   }
 

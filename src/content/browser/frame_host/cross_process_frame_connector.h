@@ -111,10 +111,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool IsHidden() const override;
   bool IsThrottled() const override;
   bool IsSubtreeThrottled() const override;
-#if defined(USE_AURA)
-  void EmbedRendererWindowTreeClientInParent(
-      ws::mojom::WindowTreeClientPtr window_tree_client) override;
-#endif
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
 

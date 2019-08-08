@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 namespace user_manager {
 class User;
@@ -23,12 +22,16 @@ class CloudPolicyStore;
 class ConfigurationPolicyProvider;
 class PolicyService;
 class SchemaRegistry;
+class ChromeBrowserPolicyConnector;
 
-// A KeyedService that creates and manages the per-Profile policy components.
-class ProfilePolicyConnector : public KeyedService {
+// The ProfilePolicyConnector creates and manages the per-Profile policy
+// components. Since the ProfilePolicyConnector instance is accessed from
+// Profile, not from a KeyedServiceFactory anymore, the ProfilePolicyConnector
+// no longer needs to be a KeyedService.
+class ProfilePolicyConnector final {
  public:
   ProfilePolicyConnector();
-  ~ProfilePolicyConnector() override;
+  ~ProfilePolicyConnector();
 
   // |user| is only used in Chrome OS builds and should be set to nullptr
   // otherwise.  |configuration_policy_provider| and |policy_store| are nullptr
@@ -39,13 +42,13 @@ class ProfilePolicyConnector : public KeyedService {
             SchemaRegistry* schema_registry,
             ConfigurationPolicyProvider* configuration_policy_provider,
             const CloudPolicyStore* policy_store,
+            policy::ChromeBrowserPolicyConnector* browser_policy_connector,
             bool force_immediate_load);
 
   void InitForTesting(std::unique_ptr<PolicyService> service);
   void OverrideIsManagedForTesting(bool is_managed);
 
-  // KeyedService:
-  void Shutdown() override;
+  void Shutdown();
 
   // This is never NULL.
   PolicyService* policy_service() const { return policy_service_.get(); }

@@ -57,6 +57,7 @@ import "typed_url_specifics.proto";
 import "unique_position.proto";
 import "user_consent_specifics.proto";
 import "user_event_specifics.proto";
+import "wifi_configuration_specifics.proto";
 import "wifi_credential_specifics.proto";
 
 // Used for inspecting how long we spent performing operations in different
@@ -149,6 +150,7 @@ message EntitySpecifics {
     MountainShareSpecifics mountain_share = 545005;
     SendTabToSelfSpecifics send_tab_to_self = 601980;
     SecurityEventSpecifics security_event = 600372;
+    WifiConfigurationSpecifics wifi_configuration = 662827;
   }
 }
 
@@ -539,7 +541,7 @@ message GarbageCollectionDirective {
     UNKNOWN = 0;
     VERSION_WATERMARK = 1;
     AGE_WATERMARK = 2;
-    MAX_ITEM_COUNT = 3;
+    DEPRECATED_MAX_ITEM_COUNT = 3 [deprecated = true];
   }
 
   optional Type type = 1 [default = UNKNOWN];
@@ -561,7 +563,8 @@ message GarbageCollectionDirective {
   // This field specifies the max number of items that the client should keep
   // for a specific datatype.  If the number of items exceeds this limit, the
   // client should purge the extra sync entities based on the LRU rule.
-  optional int32 max_number_of_items = 4;
+  // Deprecated in M76.
+  optional int32 deprecated_max_number_of_items = 4 [deprecated = true];
 }
 
 message DataTypeProgressMarker {

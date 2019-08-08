@@ -25,6 +25,7 @@ class RoundedLabelButton : public views::LabelButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  const char* GetClassName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RoundedLabelButton);
@@ -37,6 +38,9 @@ class SignOutButton : public RoundedLabelButton {
  public:
   explicit SignOutButton(views::ButtonListener* listener);
   ~SignOutButton() override;
+
+  // views::RoundedLabelButton:
+  const char* GetClassName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignOutButton);

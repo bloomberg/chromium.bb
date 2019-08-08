@@ -4,7 +4,6 @@
 
 #include "chromecast/media/cma/backend/video/task_runner_lifetime_handler.h"
 
-#include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13,7 +12,6 @@
 namespace chromecast {
 namespace media {
 
-base::AtExitManager g_at_exit_manager;
 std::unique_ptr<base::ThreadTaskRunnerHandle> g_thread_task_runner_handle;
 
 // static

@@ -26,14 +26,19 @@ source_set("public") {
     "notification_params.cc",
     "notification_params.h",
     "notification_schedule_service.h",
+    "notification_scheduler_client.h",
+    "notification_scheduler_client_registrar.cc",
+    "notification_scheduler_client_registrar.h",
     "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",
+    "user_action_handler.h",
   ]
 
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//skia",
   ]
 }
 
@@ -44,10 +49,12 @@ source_set("factory") {
     "schedule_service_factory_helper.h",
   ]
 
+  # This target should not depend on anything in //chrome/* except the proto library.
   deps = [
     ":lib",
     ":public",
     "//base",
+    "//chrome/browser/notifications/proto",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
   ]
@@ -63,6 +70,8 @@ source_set("lib") {
   ]
 
   sources = [
+    "background_task_coordinator.cc",
+    "background_task_coordinator.h",
     "collection_store.h",
     "display_decider.cc",
     "display_decider.h",
@@ -80,7 +89,6 @@ source_set("lib") {
     "impression_types.h",
     "init_aware_scheduler.cc",
     "init_aware_scheduler.h",
-    "internal_types.h",
     "notification_entry.cc",
     "notification_entry.h",
     "notification_schedule_service_impl.cc",
@@ -89,6 +97,8 @@ source_set("lib") {
     "notification_scheduler.h",
     "notification_scheduler_context.cc",
     "notification_scheduler_context.h",
+    "notification_store.cc",
+    "notification_store.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "scheduled_notification_manager.cc",
@@ -106,18 +116,21 @@ source_set("lib") {
     "//chrome/browser/notifications/proto",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
+    "//skia",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "background_task_coordinator_unittest.cc",
     "display_decider_unittest.cc",
     "distribution_policy_unittest.cc",
     "icon_store_unittest.cc",
     "impression_history_tracker_unittest.cc",
     "impression_store_unittest.cc",
     "init_aware_scheduler_unittest.cc",
+    "notification_store_unittests.cc",
     "proto_conversion_unittest.cc",
     "scheduled_notification_manager_unittest.cc",
     "scheduler_utils_unittest.cc",
@@ -132,4 +145,12 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("jni_enums") {
+    sources = [
+      "notification_scheduler_types.h",
+    ]
+  }
 }

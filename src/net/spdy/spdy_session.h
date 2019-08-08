@@ -315,7 +315,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               HttpServerProperties* http_server_properties,
               TransportSecurityState* transport_security_state,
               SSLConfigService* ssl_config_service,
-              const quic::QuicTransportVersionVector& quic_supported_versions,
+              const quic::ParsedQuicVersionVector& quic_supported_versions,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
               bool support_ietf_format_quic_altsvc,
@@ -498,7 +498,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Retrieves information on the current state of the SPDY session as a
   // Value.
-  std::unique_ptr<base::Value> GetInfoAsValue() const;
+  base::Value GetInfoAsValue() const;
 
   // Indicates whether the session is being reused after having successfully
   // used to send/receive data in the past or if the underlying socket was idle
@@ -1156,7 +1156,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   NetLogWithSource net_log_;
 
   // Versions of QUIC which may be used.
-  const quic::QuicTransportVersionVector quic_supported_versions_;
+  const quic::ParsedQuicVersionVector quic_supported_versions_;
 
   // Outside of tests, these should always be true.
   const bool enable_sending_initial_data_;

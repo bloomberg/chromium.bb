@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_menu/app_menu_model_adapter.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -36,43 +36,32 @@ class APP_LIST_EXPORT AppListMenuModelAdapter
     APP_LIST_APP_TYPE_LAST
   };
 
-  // A delegate class of the menu with implementation of menu behaviors,
-  // which should be the view showing this menu.
-  class Delegate {
-   public:
-    virtual void ExecuteCommand(int command_id, int event_flags) {}
-  };
-
   AppListMenuModelAdapter(const std::string& app_id,
+                          std::unique_ptr<ui::SimpleMenuModel> menu_model,
                           views::Widget* widget_owner,
                           ui::MenuSourceType source_type,
-                          Delegate* delegate,
+                          const AppLaunchedMetricParams& metric_params,
                           AppListViewAppType type,
                           base::OnceClosure on_menu_closed_callback,
                           bool is_tablet_mode);
   ~AppListMenuModelAdapter() override;
 
-  // Builds the menu model from |items|.
-  void Build(std::vector<ash::mojom::MenuItemPtr> items);
-
   // Overridden from AppMenuModelAdapter:
   void RecordHistogramOnMenuClosed() override;
 
   // Overridden from views::MenuModelAdapter:
-  bool IsItemChecked(int id) const override;
   bool IsCommandEnabled(int id) const override;
   void ExecuteCommand(int id, int mouse_event_flags) override;
 
  private:
-  // The delegate, usually the owning view, which is used to execute commands.
-  Delegate* const delegate_;
+  // Calls RecordAppListAppLaunched() to record app launch related metrics if
+  // conditions are met.
+  void MaybeRecordAppLaunched(int command_id);
+
+  const AppLaunchedMetricParams metric_params_;
 
   // The type of app which is using this object to show a menu.
   const AppListViewAppType type_;
-
-  // The mojo version of the model of items which are shown in a menu.
-  std::vector<ash::mojom::MenuItemPtr> menu_items_;
-  std::vector<std::unique_ptr<ui::MenuModel>> submenu_models_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListMenuModelAdapter);
 };

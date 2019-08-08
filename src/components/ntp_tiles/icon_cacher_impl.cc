@@ -18,7 +18,7 @@
 #include "components/favicon_base/favicon_util.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
-#include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/features.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
@@ -270,7 +270,8 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
               page_url,
               GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer(),
               GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer()),
-          /*may_page_url_be_private=*/true, traffic_annotation,
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          traffic_annotation,
           base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), page_url));
 }

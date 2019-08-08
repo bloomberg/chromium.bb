@@ -243,14 +243,5 @@ void CryptotokenPrivateCanAppIdGetAttestationFunction::Complete(bool result) {
   Respond(OneArgument(std::make_unique<base::Value>(result)));
 }
 
-CryptotokenPrivateCanProxyToWebAuthnFunction::
-    CryptotokenPrivateCanProxyToWebAuthnFunction() {}
-
-ExtensionFunction::ResponseAction
-CryptotokenPrivateCanProxyToWebAuthnFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))));
-}
-
 }  // namespace api
 }  // namespace extensions

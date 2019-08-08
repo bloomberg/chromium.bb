@@ -36,6 +36,10 @@ bool Writer::EncodeCBOR(const Value& node, int max_nesting_level) {
       return true;
     }
 
+    case Value::Type::INVALID_UTF8:
+      NOTREACHED() << constants::kUnsupportedMajorType;
+      return false;
+
     // Represents unsigned integers.
     case Value::Type::UNSIGNED: {
       int64_t value = node.GetUnsigned();

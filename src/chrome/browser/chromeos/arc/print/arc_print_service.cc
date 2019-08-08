@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -50,6 +51,14 @@ namespace {
 
 class PrintJobHostImpl;
 class PrinterDiscoverySessionHostImpl;
+
+using chromeos::PrinterClass;
+
+constexpr PrinterClass kClassesToFetch[] = {
+    PrinterClass::kEnterprise,
+    PrinterClass::kSaved,
+    PrinterClass::kAutomatic,
+};
 
 class ArcPrintServiceImpl : public ArcPrintService,
                             public chromeos::CupsPrintJobManager::Observer,
@@ -218,13 +227,14 @@ class PrinterDiscoverySessionHostImpl
   void StartPrinterDiscovery(
       const std::vector<std::string>& printer_ids) override {
     std::vector<mojom::PrinterInfoPtr> arc_printers;
-    for (size_t i = 0; i < chromeos::CupsPrintersManager::kNumPrinterClasses;
-         i++) {
-      std::vector<chromeos::Printer> printers = printers_manager_->GetPrinters(
-          static_cast<chromeos::CupsPrintersManager::PrinterClass>(i));
+
+    for (size_t i = 0; i < base::size(kClassesToFetch); ++i) {
+      auto printer_class = kClassesToFetch[i];
+      const auto& printers = printers_manager_->GetPrinters(printer_class);
       for (const auto& printer : printers)
-        arc_printers.emplace_back(ToArcPrinter(printer, nullptr));
+        arc_printers.push_back(ToArcPrinter(printer, nullptr));
     }
+
     if (!arc_printers.empty())
       instance_->AddPrinters(std::move(arc_printers));
   }
@@ -245,7 +255,7 @@ class PrinterDiscoverySessionHostImpl
       return;
     }
     if (printers_manager_->IsPrinterInstalled(*printer)) {
-      PrinterInstalled(*printer, chromeos::kSuccess);
+      FetchCapabilities(*printer);
       return;
     }
     configurer_->SetUpPrinter(
@@ -262,7 +272,7 @@ class PrinterDiscoverySessionHostImpl
 
   // chromeos::CupsPrintersManager::Observer:
   void OnPrintersChanged(
-      chromeos::CupsPrintersManager::PrinterClass printer_class,
+      PrinterClass printer_class,
       const std::vector<chromeos::Printer>& printers) override {
     // TODO(vkuzkokov) remove missing printers and only add new ones.
     std::vector<mojom::PrinterInfoPtr> arc_printers;
@@ -287,10 +297,13 @@ class PrinterDiscoverySessionHostImpl
       return;
     }
     printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
-    const std::string& printer_id = printer.id();
+    FetchCapabilities(printer);
+  }
+
+  void FetchCapabilities(const chromeos::Printer& printer) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer_id),
+        base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id()),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
                        weak_ptr_factory_.GetWeakPtr(), printer));
   }

@@ -106,7 +106,7 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
          i != host->children().rend() && consumed_height < host->height();
          ++i) {
       View* child = *i;
-      if (!child->visible())
+      if (!child->GetVisible())
         continue;
       gfx::Size size = child->GetPreferredSize();
       child->SetBounds(0, host->height() - consumed_height - size.height(),
@@ -145,14 +145,14 @@ TrayBubbleView::InitParams::InitParams() = default;
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 
 TrayBubbleView::RerouteEventHandler::RerouteEventHandler(
-    TrayBubbleView* tray_bubble_view,
-    aura::Env* aura_env)
-    : tray_bubble_view_(tray_bubble_view), aura_env_(aura_env) {
-  aura_env_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+    TrayBubbleView* tray_bubble_view)
+    : tray_bubble_view_(tray_bubble_view) {
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 }
 
 TrayBubbleView::RerouteEventHandler::~RerouteEventHandler() {
-  aura_env_->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
@@ -235,7 +235,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   if (!ash::features::ShouldUseShaderRoundedCorner()) {
     bubble_content_mask_ = views::Painter::CreatePaintedLayer(
         views::Painter::CreateSolidRoundRectPainter(
-            SK_ColorBLACK, bubble_border_->GetBorderCornerRadius()));
+            SK_ColorBLACK, bubble_border_->corner_radius()));
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
@@ -266,7 +266,7 @@ bool TrayBubbleView::IsATrayBubbleOpen() {
 
 void TrayBubbleView::InitializeAndShowBubble() {
   if (ash::features::ShouldUseShaderRoundedCorner()) {
-    int radius = bubble_border_->GetBorderCornerRadius();
+    int radius = bubble_border_->corner_radius();
     layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
     layer()->parent()->SetIsFastRoundedCorner(true);
   } else {
@@ -283,10 +283,8 @@ void TrayBubbleView::InitializeAndShowBubble() {
   // If TrayBubbleView cannot be activated and is shown by clicking on the
   // corresponding tray view, register pre target event handler to reroute key
   // events to the widget for activating the view or closing it.
-  if (!CanActivate() && params_.show_by_click) {
-    reroute_event_handler_ = std::make_unique<RerouteEventHandler>(
-        this, GetWidget()->GetNativeWindow()->env());
-  }
+  if (!CanActivate() && params_.show_by_click)
+    reroute_event_handler_ = std::make_unique<RerouteEventHandler>(this);
 }
 
 void TrayBubbleView::UpdateBubble() {
@@ -427,7 +425,7 @@ gfx::Size TrayBubbleView::CalculatePreferredSize() const {
 int TrayBubbleView::GetHeightForWidth(int width) const {
   width = std::max(width - GetInsets().width(), 0);
   const auto visible_height = [width](int height, const views::View* child) {
-    return height + (child->visible() ? child->GetHeightForWidth(width) : 0);
+    return height + (child->GetVisible() ? child->GetHeightForWidth(width) : 0);
   };
   const int height = std::accumulate(children().cbegin(), children().cend(),
                                      GetInsets().height(), visible_height);
@@ -464,6 +462,10 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->role = ax::mojom::Role::kWindow;
     node_data->SetName(delegate_->GetAccessibleNameForBubble());
   }
+}
+
+const char* TrayBubbleView::GetClassName() const {
+  return "TrayBubbleView";
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {

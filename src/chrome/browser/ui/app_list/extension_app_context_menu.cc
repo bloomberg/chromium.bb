@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
@@ -106,6 +107,12 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         base::string16(),
         &index,
         false);  // is_action_menu
+
+    const int appended_count = index - ash::USE_LAUNCH_TYPE_COMMAND_END;
+    AddMenuItemIconsForSystemApps(app_id(), menu_model,
+                                  menu_model->GetItemCount() - appended_count,
+                                  appended_count);
+
     if (!is_platform_app_)
       AddContextMenuOption(menu_model, ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
 

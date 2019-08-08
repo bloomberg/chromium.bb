@@ -59,6 +59,9 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
                           std::unique_ptr<SourceLocation>,
                           int exception_id);
 
+  void Freeze();
+  void Resume();
+
   DedicatedWorkerObjectProxy& WorkerObjectProxy() {
     return *worker_object_proxy_.get();
   }

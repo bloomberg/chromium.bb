@@ -12,20 +12,20 @@
 
 namespace viz {
 
-class CompositorOverlayCandidateValidatorWin;
+class OverlayCandidateValidatorWin;
 
 class GLOutputSurfaceWin : public GLOutputSurface {
  public:
   GLOutputSurfaceWin(scoped_refptr<VizProcessContextProvider> context_provider,
-                     UpdateVSyncParametersCallback update_vsync_callback,
                      bool use_overlays);
   ~GLOutputSurfaceWin() override;
 
   // GLOutputSurface implementation:
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
 
  private:
-  std::unique_ptr<CompositorOverlayCandidateValidatorWin> overlay_validator_;
+  std::unique_ptr<OverlayCandidateValidatorWin> overlay_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceWin);
 };

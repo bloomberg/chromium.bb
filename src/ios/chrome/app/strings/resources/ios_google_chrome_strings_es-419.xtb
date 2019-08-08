@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1282031177488366470">Ayuda a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
+<translation id="1682483655351012182">Sincronizar tus datos de Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Aviso de privacidad de Google Chrome</translation>
 <translation id="1863312987075920112">Al usar esta app, aceptas las <ph name="BEGIN_LINK_TOS" />Condiciones del servicio<ph name="END_LINK_TOS" /> y la <ph name="BEGIN_LINK_PRIVACY" />Política de Privacidad<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
-<translation id="1984705450038014246">Sincroniza tus datos de Chrome</translation>
 <translation id="2147651015520127414">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="2199719347983604670">Datos de Sincronización de Chrome</translation>
 <translation id="2342981853652716282">Accede a tu cuenta en Chrome para obtener tus favoritos, contraseñas y mucho más desde todos tus dispositivos.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="415767770115540173">Obtén una mejor experiencia de Google en Chrome según tu ubicación.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
-<translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="4523886039239821078">Algunos complementos causan bloqueos en Chrome. Desinstala:</translation>
 <translation id="4615174829807303908">Estás saliendo de una cuenta administrada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Esta acción borrará tus datos de Chrome en este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
 <translation id="5389212809648216794">Google Chrome no puede utilizar tu cámara porque la está usando otra aplicación</translation>

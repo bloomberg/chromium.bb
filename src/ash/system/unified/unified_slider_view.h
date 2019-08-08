@@ -35,6 +35,7 @@ class ReadOnlySlider : public views::Slider {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  const char* GetClassName() const override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -58,6 +59,9 @@ class UnifiedSliderButton : public TopShortcutButton {
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+
+  // views::Button:
+  const char* GetClassName() const override;
 
   // views::ImageButton:
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
@@ -90,6 +94,9 @@ class UnifiedSliderView : public views::View {
   // Sets a slider value. If |by_user| is false, accessibility events will not
   // be triggered.
   void SetSliderValue(float value, bool by_user);
+
+  // views::View:
+  const char* GetClassName() const override;
 
  private:
   // Unowned. Owned by views hierarchy.

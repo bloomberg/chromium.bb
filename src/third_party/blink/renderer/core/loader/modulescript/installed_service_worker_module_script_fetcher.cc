@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
@@ -27,10 +28,10 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
   DCHECK(installed_scripts_manager);
   DCHECK(installed_scripts_manager->IsScriptInstalled(fetch_params.Url()));
 
-  std::unique_ptr<InstalledScriptsManager::ScriptData> script =
+  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
       installed_scripts_manager->GetScriptData(fetch_params.Url());
 
-  if (!script) {
+  if (!script_data) {
     HeapVector<Member<ConsoleMessage>> error_messages;
     error_messages.push_back(ConsoleMessage::CreateForRequest(
         mojom::ConsoleMessageSource::kJavaScript,
@@ -41,8 +42,35 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     return;
   }
 
+  if (level == ModuleGraphLevel::kTopLevelModuleFetch) {
+    // |fetch_params.Url()| is always equal to the response URL because service
+    // worker script fetch disallows redirect.
+    // https://w3c.github.io/ServiceWorker/#ref-for-concept-request-redirect-mode
+    KURL response_url = fetch_params.Url();
+
+    auto response_referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+    if (!script_data->GetReferrerPolicy().IsNull()) {
+      SecurityPolicy::ReferrerPolicyFromHeaderValue(
+          script_data->GetReferrerPolicy(),
+          kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
+    }
+
+    // Construct a ContentSecurityPolicy object to convert
+    // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
+    // TODO(nhiroki): Find an efficient way to do this.
+    auto* response_content_security_policy =
+        MakeGarbageCollected<ContentSecurityPolicy>();
+    response_content_security_policy->DidReceiveHeaders(
+        script_data->GetContentSecurityPolicyResponseHeaders());
+
+    global_scope_->Initialize(response_url, response_referrer_policy,
+                              script_data->GetResponseAddressSpace(),
+                              response_content_security_policy->Headers(),
+                              script_data->CreateOriginTrialTokens().get());
+  }
+
   ModuleScriptCreationParams params(
-      fetch_params.Url(), ParkableString(script->TakeSourceText().Impl()),
+      fetch_params.Url(), ParkableString(script_data->TakeSourceText().Impl()),
       nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());

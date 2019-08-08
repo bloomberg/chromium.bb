@@ -7,8 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+
 // View controller to related to AdvancedSigninSettingsCoordinator.
-@interface AdvancedSigninSettingsNavigationController : UINavigationController
+@interface AdvancedSigninSettingsNavigationController
+    : SettingsNavigationController
 
 @end
 

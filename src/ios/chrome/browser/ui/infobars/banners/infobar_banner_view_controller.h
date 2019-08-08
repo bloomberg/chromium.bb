@@ -7,13 +7,20 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_interaction_delegate.h"
+
 @protocol InfobarBannerDelegate;
 
 // ViewController that manages an InfobarBanner. It consists of a leading icon,
 // a title and optional subtitle, and a trailing button.
-@interface InfobarBannerViewController : UIViewController
+@interface InfobarBannerViewController
+    : UIViewController <InfobarBannerInteractable>
 
+// Designated Initializer. |delegate| handles InfobarBannerVC actions, and
+// |infobarType| is used to know which Coordinator presented this VC.
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
+                            type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -32,6 +39,10 @@
 
 // The button text displayed by this InfobarBanner.
 @property(nonatomic, copy) NSString* buttonText;
+
+// Optional A11y label. If set it will be used as the Banner A11y label instead
+// of the default combination of Title and Subtitle texts.
+@property(nonatomic, copy) NSString* optionalAccessibilityLabel;
 
 // - If no interaction is occuring, the InfobarBanner will be dismissed.
 // - If there's some interaction occuring the InfobarBanner will be dismissed

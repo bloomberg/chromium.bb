@@ -190,10 +190,10 @@ void RecordStartupMetrics() {
 #if defined(OS_WIN)
   const base::win::OSInfo& os_info = *base::win::OSInfo::GetInstance();
   UMA_HISTOGRAM_ENUMERATION("Windows.GetVersionExVersion", os_info.version(),
-                            base::win::VERSION_WIN_LAST);
+                            base::win::Version::WIN_LAST);
   UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
                             os_info.Kernel32Version(),
-                            base::win::VERSION_WIN_LAST);
+                            base::win::Version::WIN_LAST);
   UMA_HISTOGRAM_BOOLEAN("Windows.InCompatibilityMode",
                         os_info.version() != os_info.Kernel32Version());
 
@@ -201,13 +201,7 @@ void RecordStartupMetrics() {
                         base::TimeTicks::IsHighResolution());
 #endif  // defined(OS_WIN)
 
-  // TODO(kenrb): Reporting Bluetooth availability is disabled on Windows
-  // because initializing the Bluetooth adapter causes too much jank.
-  // Re-enable when that is resolved.
-  // See https://crbug.com/929375.
-#if !defined(OS_WIN)
   bluetooth_utility::ReportBluetoothAvailability();
-#endif
 
   // Record whether Chrome is the default browser or not.
   shell_integration::DefaultWebClientState default_state =

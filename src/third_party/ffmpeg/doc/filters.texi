@@ -390,6 +390,10 @@ The filter accepts the following options:
 @item level_in
 Set input gain. Default is 1. Range is between 0.015625 and 64.
 
+@item mode
+Set mode of compressor operation. Can be @code{upward} or @code{downward}.
+Default is @code{downward}.
+
 @item threshold
 If a signal of stream rises above this level it will affect the gain
 reduction.
@@ -1304,9 +1308,16 @@ Shorter signals than the chosen attack time will be left untouched.
 Set input level before filtering.
 Default is 1. Allowed range is from 0.015625 to 64.
 
+@item mode
+Set the mode of operation. Can be @code{upward} or @code{downward}.
+Default is @code{downward}. If set to @code{upward} mode, higher parts of signal
+will be amplified, expanding dynamic range in upward direction.
+Otherwise, in case of @code{downward} lower parts of signal will be reduced.
+
 @item range
 Set the level of gain reduction when the signal is below the threshold.
 Default is 0.06125. Allowed range is from 0 to 1.
+Setting this to 0 disables reduction and then filter behaves like expander.
 
 @item threshold
 If a signal rises above this level the gain reduction is released.
@@ -4247,6 +4258,10 @@ The filter accepts the following options:
 @item level_in
 Set input gain. Default is 1. Range is between 0.015625 and 64.
 
+@item mode
+Set mode of compressor operation. Can be @code{upward} or @code{downward}.
+Default is @code{downward}.
+
 @item threshold
 If a signal of second stream raises above this level it will affect the gain
 reduction of first stream.
@@ -4323,9 +4338,16 @@ The filter accepts the following options:
 Set input level before filtering.
 Default is 1. Allowed range is from 0.015625 to 64.
 
+@item mode
+Set the mode of operation. Can be @code{upward} or @code{downward}.
+Default is @code{downward}. If set to @code{upward} mode, higher parts of signal
+will be amplified, expanding dynamic range in upward direction.
+Otherwise, in case of @code{downward} lower parts of signal will be reduced.
+
 @item range
 Set the level of gain reduction when the signal is below the threshold.
 Default is 0.06125. Allowed range is from 0 to 1.
+Setting this to 0 disables reduction and then filter behaves like expander.
 
 @item threshold
 If a signal rises above this level the gain reduction is released.
@@ -4849,6 +4871,12 @@ Set LFE low cut off frequency. By default, this is @var{128} Hz.
 @item lfe_high
 Set LFE high cut off frequency. By default, this is @var{256} Hz.
 
+@item lfe_mode
+Set LFE mode, can be @var{add} or @var{sub}. Default is @var{add}.
+In @var{add} mode, LFE channel is created from input audio and added to output.
+In @var{sub} mode, LFE channel is created from input audio and added to output but
+also all non-LFE output channels are subtracted with output LFE channel.
+
 @item fc_in
 Set front center input volume. By default, this is @var{1}.
 
@@ -4860,6 +4888,50 @@ Set LFE input volume. By default, this is @var{1}.
 
 @item lfe_out
 Set LFE output volume. By default, this is @var{1}.
+
+@item allx
+Set spread usage of stereo image across X axis for all channels.
+
+@item ally
+Set spread usage of stereo image across Y axis for all channels.
+
+@item fcx, flx, frx, blx, brx, slx, srx, bcx
+Set spread usage of stereo image across X axis for each channel.
+
+@item fcy, fly, fry, bly, bry, sly, sry, bcy
+Set spread usage of stereo image across Y axis for each channel.
+
+@item win_func
+Set window function.
+
+It accepts the following values:
+@table @samp
+@item rect
+@item bartlett
+@item hann, hanning
+@item hamming
+@item blackman
+@item welch
+@item flattop
+@item bharris
+@item bnuttall
+@item bhann
+@item sine
+@item nuttall
+@item lanczos
+@item gauss
+@item tukey
+@item dolph
+@item cauchy
+@item parzen
+@item poisson
+@item bohman
+@end table
+Default is @code{hann}.
+
+@item overlap
+Set window overlap. If set to 1, the recommended overlap for selected
+window function will be picked. Default is @code{0.5}.
 @end table
 
 @section treble, highshelf
@@ -11302,6 +11374,21 @@ kerndeint=map=1
 @end example
 @end itemize
 
+@section lagfun
+
+Slowly update darker pixels.
+
+This filter makes short flashes of light appear longer.
+This filter accepts the following options:
+
+@table @option
+@item decay
+Set factor for decaying. Default is .95. Allowed range is from 0 to 1.
+
+@item planes
+Set which planes to filter. Default is all. Allowed range is from 0 to 15.
+@end table
+
 @section lenscorrection
 
 Correct radial lens distortion
@@ -11617,6 +11704,8 @@ Currently supported formats:
 @table @samp
 @item cube
 Iridas
+@item csp
+cineSpace
 @end table
 
 @item interp
@@ -11659,6 +11748,8 @@ Iridas
 DaVinci
 @item m3d
 Pandora
+@item csp
+cineSpace
 @end table
 @item interp
 Select interpolation mode.
@@ -19027,6 +19118,39 @@ Flags to local 3x3 coordinates region centered on @code{x}:
 Apply erosion filter with threshold0 set to 30, threshold1 set 40, threshold2 set to 50 and coordinates set to 231, setting each pixel of the output to the local minimum between pixels: 1, 2, 3, 6, 7, 8 of the 3x3 region centered on it in the input. If the difference between input pixel and local minimum is more then threshold of the corresponding plane, output pixel will be set to input pixel - threshold of corresponding plane.
 @example
 -i INPUT -vf "hwupload, erosion_opencl=30:40:50:coordinates=231, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section colorkey_opencl
+RGB colorspace color keying.
+
+The filter accepts the following options:
+
+@table @option
+@item color
+The color which will be replaced with transparency.
+
+@item similarity
+Similarity percentage with the key color.
+
+0.01 matches only the exact key color, while 1.0 matches everything.
+
+@item blend
+Blend percentage.
+
+0.0 makes pixels either fully transparent, or not transparent at all.
+
+Higher values result in semi-transparent pixels, with a higher transparency
+the more similar the pixels color is to the key color.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Make every semi-green pixel in the input transparent with some slight blending:
+@example
+-i INPUT -vf "hwupload, colorkey_opencl=green:0.3:0.1, hwdownload" OUTPUT
 @end example
 @end itemize
 

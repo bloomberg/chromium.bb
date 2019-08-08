@@ -81,6 +81,13 @@ interface Assistant {
 
   // Send Assistant feedback to Assistant server.
   SendAssistantFeedback(AssistantFeedback feedback);
+
+  // ===== Alarm/Timer management methods =====
+  // Stops timer or alarm ringing.
+  StopAlarmTimerRinging();
+
+  // Create timer with |duration|.
+  CreateTimer(mojo_base.mojom.TimeDelta duration);
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven
@@ -180,6 +187,15 @@ interface DeviceActions {
   // Launch Android intent. The intent is encoded as a URI string.
   // See Intent.toUri().
   LaunchAndroidIntent(string intent);
+
+  // Register App list event subscriber.
+  AddAppListEventSubscriber(AppListEventSubscriber subscriber);
+};
+
+// Subscribes to App list events.
+interface AppListEventSubscriber {
+  // Called when the android app list changed.
+  OnAndroidAppListRefreshed(array<AndroidAppInfo> apps_info);
 };
 
 // Enumeration of possible completions for an Assistant interaction.

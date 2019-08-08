@@ -172,11 +172,6 @@ class CC_EXPORT LayerTreeSettings {
   // go away and CC should send Blink fractional values:
   // https://crbug.com/414283.
   bool commit_fractional_scroll_deltas = false;
-
-  // If true, LayerTreeHostImpl automatically allocates LocalSurfaceIds as
-  // necessary. If false, it is clients generate LocalSurfaceIds as necessary.
-  // TODO(sky): remove this once https://crbug.com/921129 is fixed.
-  bool automatically_allocate_surface_ids = true;
 };
 
 }  // namespace cc

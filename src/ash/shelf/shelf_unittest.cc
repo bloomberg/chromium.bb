@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
@@ -109,7 +109,7 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
   ShelfItem item;
   item.type = TYPE_APP;
   item.status = STATUS_RUNNING;
-  while (!shelf_view()->GetOverflowButton()->visible()) {
+  while (!shelf_view()->GetOverflowButton()->GetVisible()) {
     item.id = ShelfID(base::NumberToString(shelf_model()->item_count()));
     shelf_model()->Add(item);
     ASSERT_LT(shelf_model()->item_count(), 10000);

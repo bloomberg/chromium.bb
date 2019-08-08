@@ -87,18 +87,19 @@ class UpdateWprTest(unittest.TestCase):
   @mock.patch('core.cli_helpers.Ask', return_value=True)
   def testCleanupAutomatic(self, ask, rmtree):
     del ask  # Unused.
+    self.wpr_updater.created_branch = 'foo'
     self.wpr_updater.Cleanup()
     rmtree.assert_called_once_with('/tmp/dir', ignore_errors=True)
 
   def testGetBranchName(self):
-    self._check_output.return_value = 'master'
+    self._check_output.return_value = 'master\n'
     self.assertEqual(update_wpr._GetBranchName(), 'master')
     self._check_output.assert_called_once_with(
         ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
 
   def testCreateBranch(self):
     self.wpr_updater._CreateBranch()
-    self._check_call.assert_called_once_with(
+    self._run.assert_called_once_with(
         ['git', 'new-branch', 'update-wpr--story--1234'])
 
   def testSendCLForReview(self):
@@ -165,11 +166,11 @@ class UpdateWprTest(unittest.TestCase):
 
   @mock.patch(WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
               return_value='<out-file>')
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   def testLiveRun(self, print_run_info, run_benchmark):
     self.wpr_updater.LiveRun()
     run_benchmark.assert_called_once_with(log_name='live', live=True)
-    print_run_info.assert_called_once_with('<out-file>')
+    print_run_info.assert_called_once_with('<out-file>', chrome_log_file=True)
 
   @mock.patch('os.rename')
   def testRunBenchmark(self, rename):
@@ -220,21 +221,40 @@ class UpdateWprTest(unittest.TestCase):
       mock.call('    [console:error:security]: bar')
     ])
 
+  def testCountLogLines(self):
+    self._open.return_value.__enter__.return_value = [
+        'foo yy', 'xx foobar', 'baz']
+    self.assertEqual(update_wpr._CountLogLines('<out-file>', 'foo.*'), 2)
+    self._open.assert_called_once_with('<out-file>')
+
+  def testExtractMissingURLsFromLog(self):
+    self._open.return_value.__enter__.return_value = [
+      'some-timestamp [network]: Failed to load resource: the server responded '
+      'with a status of 404 () http://www.google.com/1\n',
+      '[network]: Failed to load resource: the server responded with a status '
+      'of 404 () https://www.google.com/2 foobar\n',
+      'foobar',
+    ]
+    self.assertListEqual(
+        update_wpr._ExtractMissingURLsFromLog('<log-file>'),
+        ['http://www.google.com/1', 'https://www.google.com/2'])
+    self._open.assert_called_once_with('<log-file>')
+
   @mock.patch(WPR_UPDATER + '_PrintResultsHTMLInfo', side_effect=[Exception()])
-  def testPrintRunInfo(self, print_results):
+  @mock.patch(WPR_UPDATER + '_CountLogLines', return_value=0)
+  def testPrintRunInfo(self, count_log_lines, print_results):
+    del count_log_lines  # Unused.
     self._check_output.return_value = '0\n'
-    self.wpr_updater._PrintRunInfo('<outfile>', True)
+    update_wpr._PrintRunInfo(
+        '<outfile>', chrome_log_file=True, results_details=True)
     print_results.assert_called_once_with('<outfile>')
     self.assertListEqual(self._info.mock_calls, [
       mock.call('Stdout/Stderr Log: <outfile>'),
       mock.call('Chrome Log: <outfile>.chrome.log'),
       mock.call('    Total output:   0'),
       mock.call('    Total Console:  0'),
-      mock.call('    [security]:     0         grep "DevTools console '
-                '.security." "<outfile>" | wc -l'),
-      mock.call('    [network]:      0         grep "DevTools console '
-                '.network." "<outfile>" | cut -d " " -f 20- | sort | uniq -c '
-                '| sort -nr'),
+      mock.call('    [security]:     0'),
+      mock.call('    [network]:      0'),
     ])
 
 
@@ -263,20 +283,34 @@ class UpdateWprTest(unittest.TestCase):
     self.wpr_updater._DeleteExistingWpr()
     os_remove.assert_not_called()
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_ExtractMissingURLsFromLog',
+              return_value=['foo', 'bar'])
+  @mock.patch(WPR_UPDATER + 'WprUpdater._ExistingWpr', return_value='<archive>')
+  @mock.patch('py_utils.binary_manager.BinaryManager', autospec=True)
+  def testAddMissingURLsToArchive(self, bmanager, existing_wpr, extract_mock):
+    del existing_wpr   # Unused.
+    bmanager.return_value.FetchPath.return_value = '<wpr-go-bin>'
+    self.wpr_updater._AddMissingURLsToArchive('<replay-log>')
+    extract_mock.assert_called_once_with('<replay-log>')
+    self._check_call.assert_called_once_with(
+        ['<wpr-go-bin>', 'add', '<archive>', 'foo', 'bar'])
+
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
   def testRecordWprDesktop(self, delete_existing_wpr, print_run_info):
-    del delete_existing_wpr, print_run_info  # Unused.
+    del delete_existing_wpr  # Unused.
     self.wpr_updater.RecordWpr()
     self._check_log.assert_called_once_with([
       '.../record_wpr', '--story-filter=^\\<story\\>$',
       '--browser=system', 'desktop_system_health_story_set'
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
+    print_run_info.assert_called_once_with(
+        '/tmp/dir/record_<tstamp>', chrome_log_file=True, results_details=False)
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
   def testRecordWprMobile(self, delete_existing_wpr, print_run_info):
-    del delete_existing_wpr, print_run_info  # Unused.
+    del delete_existing_wpr  # Unused.
     self.wpr_updater.device_id = '<serial>'
     self.wpr_updater.RecordWpr()
     self._check_log.assert_called_once_with([
@@ -284,14 +318,17 @@ class UpdateWprTest(unittest.TestCase):
       '--browser=android-system-chrome', '--device=<serial>',
       'mobile_system_health_story_set'
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
+    print_run_info.assert_called_once_with(
+        '/tmp/dir/record_<tstamp>', chrome_log_file=False,
+        results_details=False)
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
               return_value='<out-file>')
   def testReplayWpr(self, run_benchmark, print_run_info):
     self.wpr_updater.ReplayWpr()
     run_benchmark.assert_called_once_with(log_name='replay', live=False)
-    print_run_info.assert_called_once_with('<out-file>')
+    print_run_info.assert_called_once_with('<out-file>', chrome_log_file=True)
 
   @mock.patch(WPR_UPDATER + 'WprUpdater._ExistingWpr',
               return_value=('<archive>', False))

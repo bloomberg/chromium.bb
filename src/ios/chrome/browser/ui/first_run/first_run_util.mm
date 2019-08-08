@@ -163,7 +163,7 @@ void FinishFirstRun(ios::ChromeBrowserState* browserState,
                                         config.hasSSOAccount);
 
   // Display the sync errors infobar.
-  DisplaySyncErrors(browserState, tab, presenter);
+  DisplaySyncErrors(browserState, tab.webState, presenter);
 }
 
 void RecordProductTourTimingMetrics(NSString* timer_name,

@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -217,7 +218,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   // ServiceWorker is enabled by default (https://crbug.com/824647).
   if (options->type() == "module" &&
       !RuntimeEnabledFeatures::ModuleServiceWorkerEnabled()) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "type 'module' in RegistrationOptions is not implemented yet."
         "See https://crbug.com/824647 for details."));
@@ -303,10 +304,11 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   if (!provider_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                          "Failed to register a ServiceWorker: "
-                                          "The document is in an invalid "
-                                          "state."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "Failed to register a ServiceWorker: "
+        "The document is in an invalid "
+        "state."));
     return promise;
   }
   WebString web_error_message;
@@ -360,7 +362,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSecurityError,
         "Failed to get a ServiceWorkerRegistration: The URL protocol of the "
         "current origin ('" +
@@ -373,21 +375,22 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   if (!document_origin->CanRequest(completed_url)) {
     scoped_refptr<const SecurityOrigin> document_url_origin =
         SecurityOrigin::Create(completed_url);
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kSecurityError,
-                             "Failed to get a ServiceWorkerRegistration: The "
-                             "origin of the provided documentURL ('" +
-                                 document_url_origin->ToString() +
-                                 "') does not match the current origin ('" +
-                                 document_origin->ToString() + "')."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError,
+        "Failed to get a ServiceWorkerRegistration: The "
+        "origin of the provided documentURL ('" +
+            document_url_origin->ToString() +
+            "') does not match the current origin ('" +
+            document_origin->ToString() + "')."));
     return promise;
   }
 
   if (!provider_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                          "Failed to get a "
-                                          "ServiceWorkerRegistration: The "
-                                          "document is in an invalid state."));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
+                                           "Failed to get a "
+                                           "ServiceWorkerRegistration: The "
+                                           "document is in an invalid state."));
     return promise;
   }
   provider_->GetRegistration(
@@ -402,10 +405,10 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   ScriptPromise promise = resolver->Promise();
 
   if (!provider_) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Failed to get ServiceWorkerRegistration objects: "
-                             "The document is in an invalid state."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "Failed to get ServiceWorkerRegistration objects: "
+        "The document is in an invalid state."));
     return promise;
   }
 
@@ -420,7 +423,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSecurityError,
         "Failed to get ServiceWorkerRegistration objects: The URL protocol of "
         "the current origin ('" +
@@ -450,9 +453,9 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
     // FIXME: Support .ready from isolated worlds when
     // ScriptPromiseProperty can vend Promises in isolated worlds.
     return ScriptPromise::RejectWithDOMException(
-        caller_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "'ready' is only supported in pages."));
+        caller_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError,
+                          "'ready' is only supported in pages."));
   }
 
   if (!ready_) {
@@ -578,8 +581,7 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
-    worker = MakeGarbageCollected<ServiceWorker>(GetSupplementable(),
-                                                 std::move(info));
+    worker = ServiceWorker::Create(GetSupplementable(), std::move(info));
     service_worker_objects_.Set(info.version_id, worker);
   }
   return worker;

@@ -36,10 +36,8 @@ class ProvokingVertexTest : public ANGLETest
         setConfigDepthBits(24);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] =
             "#version 300 es\n"
             "in int intAttrib;\n"
@@ -78,7 +76,7 @@ class ProvokingVertexTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mProgram != 0)
         {
@@ -109,8 +107,6 @@ class ProvokingVertexTest : public ANGLETest
             glDeleteBuffers(1, &mBuffer);
             mBuffer = 0;
         }
-
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram;
@@ -330,7 +326,7 @@ TEST_P(ProvokingVertexTest, ANGLEProvokingVertex)
 
     fnExpectId(2);
 
-    const bool hasExt = extensionEnabled("GL_ANGLE_provoking_vertex");
+    const bool hasExt = IsGLExtensionEnabled("GL_ANGLE_provoking_vertex");
     if (IsD3D11())
     {
         EXPECT_TRUE(hasExt);

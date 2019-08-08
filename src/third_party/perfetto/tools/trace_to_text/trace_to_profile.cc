@@ -85,7 +85,8 @@ enum Strings : int64_t {
   kCount,
   kSpace,
   kAllocSpace,
-  kBytes
+  kBytes,
+  kIdleSpace,
 };
 
 void DumpProfilePacket(std::vector<ProfilePacket>& packet_fragments,
@@ -118,6 +119,7 @@ void DumpProfilePacket(std::vector<ProfilePacket>& packet_fragments,
   string_table["space"] = kSpace;
   string_table["alloc_space"] = kAllocSpace;
   string_table["bytes"] = kBytes;
+  string_table["idle_space"] = kIdleSpace;
 
   GProfile profile;
   GValueType* value_type = profile.add_sample_type();
@@ -127,6 +129,10 @@ void DumpProfilePacket(std::vector<ProfilePacket>& packet_fragments,
   value_type = profile.add_sample_type();
   value_type->set_type(kAllocObjects);
   value_type->set_unit(kCount);
+
+  value_type = profile.add_sample_type();
+  value_type->set_type(kIdleSpace);
+  value_type->set_unit(kBytes);
 
   value_type = profile.add_sample_type();
   value_type->set_type(kAllocSpace);
@@ -227,6 +233,11 @@ void DumpProfilePacket(std::vector<ProfilePacket>& packet_fragments,
     GProfile cur_profile = profile;
     uint64_t pid = p.first;
     for (const ProfilePacket::ProcessHeapSamples* samples : p.second) {
+      if (samples->rejected_concurrent()) {
+        PERFETTO_ELOG("WARNING: The profile for %" PRIu64
+                      " was rejected due to a concurrent profile.",
+                      pid);
+      }
       if (samples->buffer_overran()) {
         PERFETTO_ELOG("WARNING: The profile for %" PRIu64
                       " ended early due to a buffer overrun.",
@@ -253,6 +264,7 @@ void DumpProfilePacket(std::vector<ProfilePacket>& packet_fragments,
         gsample->add_value(
             static_cast<int64_t>(sample.alloc_count() - sample.free_count()));
         gsample->add_value(static_cast<int64_t>(sample.alloc_count()));
+        gsample->add_value(static_cast<int64_t>(sample.self_idle()));
         gsample->add_value(static_cast<int64_t>(sample.self_allocated()));
         gsample->add_value(static_cast<int64_t>(sample.self_allocated() -
                                                 sample.self_freed()));

@@ -16,20 +16,22 @@ import org.chromium.base.task.AsyncTask;
  * A worker task to scale bitmaps in the background.
  */
 class BitmapScalerTask extends AsyncTask<Bitmap> {
-    private final LruCache<String, Bitmap> mCache;
+    private final LruCache<String, PickerCategoryView.Thumbnail> mCache;
     private final String mFilePath;
     private final int mSize;
     private final Bitmap mBitmap;
+    private final String mVideoDuration;
 
     /**
      * A BitmapScalerTask constructor.
      */
-    public BitmapScalerTask(
-            LruCache<String, Bitmap> cache, String filePath, int size, Bitmap bitmap) {
+    public BitmapScalerTask(LruCache<String, PickerCategoryView.Thumbnail> cache, Bitmap bitmap,
+            String filePath, String videoDuration, int size) {
         mCache = cache;
         mFilePath = filePath;
         mSize = size;
         mBitmap = bitmap;
+        mVideoDuration = videoDuration;
     }
 
     /**
@@ -60,6 +62,6 @@ class BitmapScalerTask extends AsyncTask<Bitmap> {
             return;
         }
 
-        mCache.put(mFilePath, result);
+        mCache.put(mFilePath, new PickerCategoryView.Thumbnail(result, mVideoDuration));
     }
 }

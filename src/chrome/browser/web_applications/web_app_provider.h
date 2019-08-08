@@ -72,7 +72,10 @@ class WebAppProvider : public WebAppProviderBase,
   WebAppPolicyManager* policy_manager() override;
   WebAppUiDelegate& ui_delegate() override;
 
-  const SystemWebAppManager& system_web_app_manager() {
+  // KeyedService:
+  void Shutdown() override;
+
+  SystemWebAppManager& system_web_app_manager() {
     return *system_web_app_manager_;
   }
 
@@ -106,9 +109,11 @@ class WebAppProvider : public WebAppProviderBase,
 
   void OnRegistryReady();
 
-  void Reset();
-
   void OnScanForExternalWebApps(std::vector<InstallOptions>);
+
+  // Called just before profile destruction. All WebContents must be destroyed
+  // by the end of this method.
+  void ProfileDestroyed();
 
   // New extension-independent subsystems:
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;

@@ -212,7 +212,7 @@ public class UmaUtils {
      */
     public static void recordItemsShared(Collection<OfflineItem> items) {
         for (OfflineItem item : items) {
-            if (item.filter == OfflineItemFilter.FILTER_PAGE) {
+            if (item.filter == OfflineItemFilter.PAGE) {
                 RecordUserAction.record("OfflinePages.Sharing.SharePageFromDownloadHome");
             }
 

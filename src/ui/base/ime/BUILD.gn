@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 
 source_set("text_input_types") {
   sources = [
+    "text_input_action.h",
     "text_input_flags.h",
     "text_input_mode.h",
     "text_input_type.h",

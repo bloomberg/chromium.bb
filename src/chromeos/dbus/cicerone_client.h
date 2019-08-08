@@ -78,6 +78,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnImportLxdContainerProgress(
         const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal) = 0;
 
+    // OnPendingAppListUpdates is signalled from Cicerone when the number of
+    // pending app list updates changes.
+    virtual void OnPendingAppListUpdates(
+        const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -127,6 +132,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
 
   // This should be true prior to calling ImportLxdContainer.
   virtual bool IsImportLxdContainerProgressSignalConnected() = 0;
+
+  // This should be true before expecting to recieve
+  // PendingAppListUpdatesSignal.
+  virtual bool IsPendingAppListUpdatesSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.

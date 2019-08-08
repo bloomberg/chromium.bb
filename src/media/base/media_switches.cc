@@ -199,9 +199,10 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-// Only decode preload=metadata elements upon visibility?
+// Only decode preload=metadata elements upon visibility.
+// TODO(crbug.com/879406): Remove this after M76 ships to stable
 const base::Feature kPreloadMetadataLazyLoad{"PreloadMetadataLazyLoad",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.
@@ -231,10 +232,6 @@ const base::Feature kUseAndroidOverlay{"UseAndroidOverlay",
 const base::Feature kUseAndroidOverlayAggressively{
     "UseAndroidOverlayAggressively", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Let video track be unselected when video is playing in the background.
-const base::Feature kBackgroundSrcVideoTrackOptimization{
-    "BackgroundSrcVideoTrackOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Let video without audio be paused when it is playing in the background.
 const base::Feature kBackgroundVideoPauseOptimization{
     "BackgroundVideoPauseOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -245,12 +242,7 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable MojoVideoDecoder, replacing GpuVideoDecoder.
-const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable The D3D11 Video decoder. Must also enable MojoVideoDecoder for
-// this to have any effect.
+// Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -267,20 +259,12 @@ const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
 const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
-const base::Feature kMseBufferByPts{"MseBufferByPts",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the
 // new estimator.
 const base::Feature kNewEncodeCpuLoadEstimator{
     "NewEncodeCpuLoadEstimator", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
-const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
@@ -326,12 +310,26 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 const base::Feature kExternalClearKeyForTesting{
     "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prevents UrlProvisionFetcher from making a provisioning request. If
+// specified, any provisioning request made will not be sent to the provisioning
+// server, and the response will indicate a failure to communicate with the
+// provisioning server.
+const base::Feature kFailUrlProvisionFetcherForTesting{
+    "FailUrlProvisionFetcherForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables hardware secure decryption if supported by hardware and CDM.
 // TODO(xhwang): Currently this is only used for development of new features.
 // Apply this to Android and ChromeOS as well where hardware secure decryption
 // is already available.
 const base::Feature kHardwareSecureDecryption{
     "HardwareSecureDecryption", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables encrypted AV1 support in EME requestMediaKeySystemAccess() query by
+// Widevine key system if it is also supported by the underlying Widevine CDM.
+// This feature does not affect the actual playback of encrypted AV1 if it's
+// served by the player regardless of the query result.
+const base::Feature kWidevineAv1{"WidevineAv1",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling{
@@ -397,6 +395,15 @@ const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
 const base::Feature kDisableSurfaceLayerForVideo{
     "DisableSurfaceLayerForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables CanPlayType() (and other queries) for HLS MIME types. Note that
+// disabling this also causes navigation to .m3u8 files to trigger downloading
+// instead of playback.
+const base::Feature kCanPlayHls{"CanPlayHls", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the use of MediaPlayerRenderer for HLS playback. When disabled,
+// HLS manifests will fail to load (triggering source fallback or load error).
+const base::Feature kHlsPlayer{"HlsPlayer", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -442,11 +449,6 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 const base::Feature kOverflowIconsForMediaControls{
     "OverflowIconsForMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the new redesigned media controls.
-// TODO(steimel): Remove this.
-const base::Feature kUseModernMediaControls{"UseModernMediaControls",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Media Engagement Index recording. This data will be used to determine
 // when to bypass autoplay policies. This is recorded on all platforms.
 const base::Feature kRecordMediaEngagementScores{
@@ -475,6 +477,9 @@ const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kMediaEngagementHTTPSOnly{
+    "MediaEngagementHTTPSOnly", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables experimental local learning for media.  Adds reporting only; does not
 // change media behavior.
 const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
@@ -490,6 +495,13 @@ const base::Feature kAudioFocusDuckFlash {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Only affects Android. Suspends a media session when audio focus is lost; when
+// this setting is disabled, an Android media session will not be suspended when
+// Audio focus is lost. This is used by Cast which sometimes needs to drive
+// multiple media sessions.
+const base::Feature kAudioFocusLossSuspendMediaSession{
+    "AudioFocusMediaSession", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the internal Media Session logic without enabling the Media Session
 // service.

@@ -115,7 +115,7 @@ bool ScrollbarTest::IsScrollbarVisible(
   content::RunAllTasksUntilIdle();
 
   // Check if the vertical scrollbar is visible.
-  return dialog->scroll_view()->vertical_scroll_bar()->visible();
+  return dialog->scroll_view()->vertical_scroll_bar()->GetVisible();
 }
 
 // Tests that a scrollbar _is_ shown for an excessively long extension
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
   views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
 
   // Check that dialog is visible.
-  EXPECT_TRUE(delegate_view->visible());
+  EXPECT_TRUE(delegate_view->GetVisible());
 
   // Check initial button states.
   EXPECT_FALSE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));

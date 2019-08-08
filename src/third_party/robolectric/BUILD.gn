@@ -20,14 +20,9 @@ java_group("robolectric_all_java") {
   ]
 }
 
-java_prebuilt("android-all-4.1.2_r1-robolectric-r1_java") {
+java_prebuilt("android-all-4.4_r1-robolectric-r2_java") {
   testonly = true
-  jar_path = "lib/android-all-4.1.2_r1-robolectric-r1.jar"
-}
-
-java_prebuilt("android-all-4.3_r2-robolectric-r1_java") {
-  testonly = true
-  jar_path = "lib/android-all-4.3_r2-robolectric-r1.jar"
+  jar_path = "lib/android-all-4.4_r1-robolectric-r2.jar"
 }
 
 java_prebuilt("android-all-5.0.2_r3-robolectric-r0_java") {
@@ -45,9 +40,9 @@ java_prebuilt("android-all-8.0.0_r4-robolectric-r1_java") {
   jar_path = "lib/android-all-8.0.0_r4-robolectric-r1.jar"
 }
 
-java_prebuilt("android-all-8.1.0-robolectric-r4402310_java") {
+java_prebuilt("android-all-8.1.0-robolectric-4611349_java") {
   testonly = true
-  jar_path = "lib/android-all-8.1.0-robolectric-r4402310.jar"
+  jar_path = "lib/android-all-8.1.0-robolectric-4611349.jar"
 }
 
 java_prebuilt("android-all-9-robolectric-4913185-2_java") {
@@ -80,11 +75,11 @@ java_library("robolectric_java") {
     "//third_party/xstream:xstream_java",
   ]
   data_deps = [
-    ":android-all-4.1.2_r1-robolectric-r1_java",
-    ":android-all-4.3_r2-robolectric-r1_java",
+    ":android-all-4.4_r1-robolectric-r2_java",
     ":android-all-5.0.2_r3-robolectric-r0_java",
     ":android-all-7.1.0_r7-robolectric-r1_java",
     ":android-all-8.0.0_r4-robolectric-r1_java",
+    ":android-all-8.1.0-robolectric-4611349_java",
     ":android-all-9-robolectric-4913185-2_java",
   ]
   java_files = [
@@ -219,12 +214,11 @@ group("sdk_list_txt") {
   # directory. Format is chosen as easliy importable by both python and bash.
   CR = "$0x0A"
   _data = ""
-  _data += rebase_path("lib/android-all-4.1.2_r1-robolectric-r1.jar") + CR
-  _data += rebase_path("lib/android-all-4.3_r2-robolectric-r1.jar") + CR
+  _data += rebase_path("lib/android-all-4.4_r1-robolectric-r2.jar") + CR
   _data += rebase_path("lib/android-all-5.0.2_r3-robolectric-r0.jar") + CR
   _data += rebase_path("lib/android-all-7.1.0_r7-robolectric-r1.jar") + CR
   _data += rebase_path("lib/android-all-8.0.0_r4-robolectric-r1.jar") + CR
-  _data += rebase_path("lib/android-all-8.1.0-robolectric-r4402310.jar") + CR
+  _data += rebase_path("lib/android-all-8.1.0-robolectric-4611349.jar") + CR
   _data += rebase_path("lib/android-all-9-robolectric-4913185-2.jar") + CR
   write_file(sdk_target_dir, _data)
 }

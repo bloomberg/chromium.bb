@@ -116,11 +116,33 @@ Polymer({
   },
 
   /**
+   * @param {boolean} unmigrated
+   * @private
+   */
+  getAccountManagerSignedOutName_: function(unmigrated) {
+    return this.i18n(unmigrated ? 'accountManagerUnmigratedAccountName'
+                                : 'accountManagerSignedOutAccountName');
+  },
+
+  /**
+   * @param {boolean} unmigrated
+   * @private
+   */
+  getAccountManagerSignedOutLabel_: function(unmigrated) {
+    return this.i18n(unmigrated ? 'accountManagerMigrationLabel'
+                                : 'accountManagerReauthenticationLabel');
+  },
+
+  /**
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */
   onReauthenticationTap_: function(event) {
-    this.browserProxy_.reauthenticateAccount(event.model.item.email);
+    if (event.model.item.unmigrated) {
+      this.browserProxy_.migrateAccount(event.model.item.email);
+    } else {
+      this.browserProxy_.reauthenticateAccount(event.model.item.email);
+    }
   },
 
   /**

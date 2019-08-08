@@ -239,6 +239,9 @@
       <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
         Close
       </message>
+      <message name="IDS_CLEAR" desc="A generic term for Clearing input fields.">
+        Clear
+      </message>
       <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
         Done
       </message>
@@ -250,6 +253,9 @@
       </message>
       <message name="IDS_ADD" desc="Used for Add on buttons">
         Add
+      </message>
+      <message name="IDS_REMOVE" desc="Used for Remove on buttons">
+        Remove
       </message>
       <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
         Save
@@ -280,6 +286,16 @@
       <if expr="use_titlecase">
         <message name="IDS_NOT_NOW" desc="In Title Case: Used on a button that avoids taking a suggested action.  The action will likely be suggested again or automatically taken later.">
           Not Now
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_TURN_OFF" desc="Used on a button that turns off a function.">
+          Turn off
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_TURN_OFF" desc="In Title Case: Used on a button that turns off a function.">
+          Turn Off
         </message>
       </if>
 
@@ -346,6 +362,9 @@
       <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the editable-text portion of the omnibox.">
         Address and search bar
       </message>
+      <message name="IDS_ACCNAME_PARTICLE_DISC" desc="The accessible name for the Account Consistency Disc on New Tab Page">
+        Google Account
+      </message>
 
       <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
         JSON Parser
@@ -362,6 +381,13 @@
       <!-- Advanced Section Titles -->
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">
         Privacy
+      </message>
+
+      <message name="IDS_PATCH_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process used for patching file operations.">
+        Patch Service
+      </message>
+      <message name="IDS_UNZIP_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process used for unzipping files.">
+        Unzip Service
       </message>
     </messages>
   </release>

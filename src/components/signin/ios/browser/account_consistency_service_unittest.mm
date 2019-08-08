@@ -130,13 +130,13 @@ class AccountConsistencyServiceTest : public PlatformTest {
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
 
     web_view_load_expection_count_ = 0;
-    signin_client_.reset(new TestSigninClient(&prefs_));
+    signin_client_.reset(
+        new TestSigninClient(&prefs_, &test_url_loader_factory_));
     identity_test_env_.reset(new identity::IdentityTestEnvironment(
-        &test_url_loader_factory_, &prefs_,
+        /*test_url_loader_factory=*/nullptr, &prefs_,
         signin::AccountConsistencyMethod::kDisabled, signin_client_.get()));
     settings_map_ = new HostContentSettingsMap(
-        &prefs_, false /* incognito_profile */, false /* guest_profile */,
-        false /* store_last_modified */,
+        &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
     cookie_settings_ =
         new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");

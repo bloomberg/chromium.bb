@@ -25,15 +25,32 @@ class TestNavigationListener : public fuchsia::web::NavigationEventListener {
   TestNavigationListener();
   ~TestNavigationListener() final;
 
-  // Spins a RunLoop until the page navigates to |expected_url| and the page's
-  // title is |expected_title| (if set).
-  void RunUntilNavigationEquals(
-      const GURL& expected_url,
-      const base::Optional<std::string>& expected_title);
+  // Spins a RunLoop until the navigation state of the page matches the fields
+  // of |expected_state| that have been set.
+  void RunUntilNavigationStateMatches(
+      const fuchsia::web::NavigationState& expected_state);
+
+  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // |expected_url|.
+  void RunUntilUrlEquals(const GURL& expected_url);
+
+  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // |expected_url| and |expected_title|.
+  void RunUntilUrlAndTitleEquals(const GURL& expected_url,
+                                 base::StringPiece expected_title);
+
+  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // all the expected fields.
+  void RunUntilUrlTitleBackForwardEquals(const GURL& expected_url,
+                                         base::StringPiece expected_title,
+                                         bool expected_can_go_back,
+                                         bool expected_can_go_forward);
 
   // Register a callback which intercepts the execution of the event
   // acknowledgement callback. |before_ack| takes ownership of the
   // acknowledgement callback and the responsibility for executing it.
+  // The default behavior can be restored by providing an unbound callback for
+  // |before_ack|.
   void SetBeforeAckHook(BeforeAckCallback before_ack);
 
  private:
@@ -42,14 +59,12 @@ class TestNavigationListener : public fuchsia::web::NavigationEventListener {
       fuchsia::web::NavigationState change,
       OnNavigationStateChangedCallback callback) final;
 
-  GURL current_url_;
-  std::string current_title_;
+  fuchsia::web::NavigationState current_state_;
 
   BeforeAckCallback before_ack_;
 
-  // Returns |true| if the most recently received URL and title match the
-  // expectations set by WaitForNavigation.
-  bool IsFulfilled();
+  // Compare the current state with all fields of |expected| that have been set.
+  bool AllFieldsMatch(const fuchsia::web::NavigationState& expected);
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationListener);
 };

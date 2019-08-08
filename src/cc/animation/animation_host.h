@@ -90,12 +90,16 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       bool supports_impl_scrolling) const override;
   void ClearMutators() override;
 
+  // Processes the current |element_to_animations_map_|, registering animations
+  // which can now be animated and unregistering those that can't based on the
+  // elements in the |changed_list|.
+  void UpdateRegisteredElementIds(ElementListType changed_list) override;
   void InitClientAnimationState() override;
 
-  void RegisterElement(ElementId element_id,
-                       ElementListType list_type) override;
-  void UnregisterElement(ElementId element_id,
+  void RegisterElementId(ElementId element_id,
                          ElementListType list_type) override;
+  void UnregisterElementId(ElementId element_id,
+                           ElementListType list_type) override;
 
   void SetMutatorHostClient(MutatorHostClient* client) override;
 
@@ -107,7 +111,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void SetScrollAnimationDurationForTesting(base::TimeDelta duration) override;
   bool NeedsTickAnimations() const override;
 
-  bool ActivateAnimations() override;
+  bool ActivateAnimations(MutatorEvents* events) override;
   bool TickAnimations(base::TimeTicks monotonic_time,
                       const ScrollTree& scroll_tree,
                       bool is_active_tree) override;
@@ -125,12 +129,18 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   bool IsAnimatingFilterProperty(ElementId element_id,
                                  ElementListType list_type) const override;
+  bool IsAnimatingBackdropFilterProperty(
+      ElementId element_id,
+      ElementListType list_type) const override;
   bool IsAnimatingOpacityProperty(ElementId element_id,
                                   ElementListType list_type) const override;
   bool IsAnimatingTransformProperty(ElementId element_id,
                                     ElementListType list_type) const override;
 
   bool HasPotentiallyRunningFilterAnimation(
+      ElementId element_id,
+      ElementListType list_type) const override;
+  bool HasPotentiallyRunningBackdropFilterAnimation(
       ElementId element_id,
       ElementListType list_type) const override;
   bool HasPotentiallyRunningOpacityAnimation(
@@ -144,14 +154,12 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       ElementId element_id,
       TargetProperty::Type property) const override;
 
-  bool HasOnlyTranslationTransforms(ElementId element_id,
-                                    ElementListType list_type) const override;
   bool AnimationsPreserveAxisAlignment(ElementId element_id) const override;
 
-  float MaximumTargetScale(ElementId element_id,
-                           ElementListType list_type) const override;
-  float AnimationStartScale(ElementId element_id,
-                            ElementListType list_type) const override;
+  void GetAnimationScales(ElementId element_id,
+                          ElementListType list_type,
+                          float* maximum_scale,
+                          float* starting_scale) const override;
 
   bool IsElementAnimating(ElementId element_id) const override;
   bool HasTickingKeyframeModelForTesting(ElementId element_id) const override;

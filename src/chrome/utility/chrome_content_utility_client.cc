@@ -21,8 +21,8 @@
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
-#include "components/services/heap_profiling/heap_profiling_service.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
+#include "components/services/patch/patch_service.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/common/content_features.h"
@@ -40,8 +40,6 @@
 #if !defined(OS_ANDROID)
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "chrome/utility/importer/profile_import_service.h"
-#include "components/services/patch/patch_service.h"  // nogncheck
-#include "components/services/patch/public/interfaces/constants.mojom.h"  // nogncheck
 #include "services/network/url_request_context_builder_mojo.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"  // nogncheck
@@ -50,6 +48,9 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
+#include "components/services/quarantine/quarantine_service.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
@@ -71,7 +72,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/utility/mash_service_factory.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
@@ -129,19 +129,12 @@ void RunServiceAsyncThenTerminateProcess(
       base::BindOnce([] { content::UtilityThread::Get()->ReleaseProcess(); }));
 }
 
-std::unique_ptr<service_manager::Service> CreateHeapProfilingService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<heap_profiling::HeapProfilingService>(
-      std::move(request));
-}
-
 #if !defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateProxyResolverService(
     service_manager::mojom::ServiceRequest request) {
   return std::make_unique<proxy_resolver::ProxyResolverService>(
       std::move(request));
 }
-#endif
 
 using ServiceFactory =
     base::OnceCallback<std::unique_ptr<service_manager::Service>()>;
@@ -159,6 +152,7 @@ void RunServiceOnIOThread(ServiceFactory factory) {
           },
           std::move(factory), std::move(terminate_process)));
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -166,10 +160,6 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
   printing_handler_ = std::make_unique<printing::PrintingHandler>();
-#endif
-
-#if defined(OS_CHROMEOS)
-  mash_service_factory_ = std::make_unique<MashServiceFactory>();
 #endif
 }
 
@@ -234,12 +224,6 @@ bool ChromeContentUtilityClient::HandleServiceRequest(
     return false;
   }
 
-  if (service_name == heap_profiling::mojom::kServiceName) {
-    RunServiceOnIOThread(
-        base::BindOnce(&CreateHeapProfilingService, std::move(request)));
-    return true;
-  }
-
 #if !defined(OS_ANDROID)
   if (service_name == proxy_resolver::mojom::kProxyResolverServiceName) {
     RunServiceOnIOThread(
@@ -264,6 +248,9 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   if (service_name == unzip::mojom::kServiceName)
     return std::make_unique<unzip::UnzipService>(std::move(request));
 
+  if (service_name == patch::mojom::kServiceName)
+    return std::make_unique<patch::PatchService>(std::move(request));
+
   if (service_name == chrome::mojom::kNoopServiceName &&
       chrome::IsNoopServiceEnabled()) {
     return std::make_unique<chrome::NoopService>(std::move(request));
@@ -285,10 +272,14 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
     return std::make_unique<printing::PrintingService>(std::move(request));
 #endif
 
-#if !defined(OS_ANDROID)
-  if (service_name == patch::mojom::kServiceName)
-    return std::make_unique<patch::PatchService>(std::move(request));
+#if defined(OS_WIN)
+  if (service_name == quarantine::mojom::kServiceName &&
+      base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
+    return std::make_unique<quarantine::QuarantineService>(std::move(request));
+  }
+#endif  // OS_WIN
 
+#if !defined(OS_ANDROID)
   if (service_name == chrome::mojom::kProfileImportServiceName)
     return std::make_unique<ProfileImportService>(std::move(request));
 
@@ -346,11 +337,8 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   }
 #endif
 
-  return mash_service_factory_->HandleServiceRequest(service_name,
-                                                     std::move(request));
-#else   // defined(OS_CHROMEOS)
-  return nullptr;
 #endif  // defined(OS_CHROMEOS)
+  return nullptr;
 }
 
 std::unique_ptr<service_manager::Service>

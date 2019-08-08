@@ -14,15 +14,11 @@
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_graphstatedata.h"
 
-class CCodec_ModuleMgr;
 class CFX_DIBBase;
-class CFX_FaceCache;
+class CFX_GlyphCache;
 class CFX_Font;
-class CFX_FontCache;
-class CFX_Matrix;
 class CFX_PathData;
 class CPSFont;
 class TextCharPos;
@@ -30,7 +26,7 @@ struct FXDIB_ResampleOptions;
 
 class CFX_PSRenderer {
  public:
-  explicit CFX_PSRenderer(CCodec_ModuleMgr* pModuleMgr);
+  CFX_PSRenderer();
   ~CFX_PSRenderer();
 
   void Init(const RetainPtr<IFX_RetainableWriteStream>& stream,
@@ -82,7 +78,7 @@ class CFX_PSRenderer {
                   const CFX_Matrix* pObject2Device);
   void SetGraphState(const CFX_GraphStateData* pGraphState);
   void SetColor(uint32_t color);
-  void FindPSFontGlyph(CFX_FaceCache* pFaceCache,
+  void FindPSFontGlyph(CFX_GlyphCache* pGlyphCache,
                        CFX_Font* pFont,
                        const TextCharPos& charpos,
                        int* ps_fontnum,
@@ -98,7 +94,6 @@ class CFX_PSRenderer {
   uint32_t m_LastColor = 0;
   FX_RECT m_ClipBox;
   CFX_GraphStateData m_CurGraphState;
-  UnownedPtr<CCodec_ModuleMgr> m_pModuleMgr;
   RetainPtr<IFX_RetainableWriteStream> m_pStream;
   std::vector<std::unique_ptr<CPSFont>> m_PSFontList;
   std::vector<FX_RECT> m_ClipBoxStack;

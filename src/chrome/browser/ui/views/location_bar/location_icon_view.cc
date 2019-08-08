@@ -31,7 +31,7 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    Delegate* delegate)
     : IconLabelBubbleView(font_list), delegate_(delegate) {
   label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
-  set_id(VIEW_ID_LOCATION_ICON);
+  SetID(VIEW_ID_LOCATION_ICON);
   Update(true);
   SetUpForInOutAnimation();
 
@@ -191,7 +191,7 @@ void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
     AnimateOut();
 
   // The label text color may have changed.
-  OnNativeThemeChanged(GetNativeTheme());
+  OnThemeChanged();
 }
 
 void LocationIconView::UpdateIcon() {

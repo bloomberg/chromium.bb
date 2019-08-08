@@ -13,8 +13,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/autofill/core/browser/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -53,13 +53,13 @@ autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
 
 autofill::AutocompleteHistoryManager*
 AwAutofillClient::GetAutocompleteHistoryManager() {
-  return AwContentBrowserClient::GetAwBrowserContext()
+  return AwBrowserContext::FromWebContents(web_contents_)
       ->GetAutocompleteHistoryManager();
 }
 
 PrefService* AwAutofillClient::GetPrefs() {
   return user_prefs::UserPrefs::Get(
-      AwContentBrowserClient::GetAwBrowserContext());
+      AwBrowserContext::FromWebContents(web_contents_));
 }
 
 syncer::SyncService* AwAutofillClient::GetSyncService() {
@@ -75,10 +75,6 @@ autofill::FormDataImporter* AwAutofillClient::GetFormDataImporter() {
 }
 
 autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
-  return nullptr;
-}
-
-autofill::LegacyStrikeDatabase* AwAutofillClient::GetLegacyStrikeDatabase() {
   return nullptr;
 }
 
@@ -196,6 +192,7 @@ void AwAutofillClient::ShowAutofillPopup(
     base::i18n::TextDirection text_direction,
     const std::vector<autofill::Suggestion>& suggestions,
     bool /*unused_autoselect_first_suggestion*/,
+    autofill::PopupType popup_type,
     base::WeakPtr<autofill::AutofillPopupDelegate> delegate) {
   suggestions_ = suggestions;
   delegate_ = delegate;

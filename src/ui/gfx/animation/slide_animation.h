@@ -50,16 +50,15 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   explicit SlideAnimation(AnimationDelegate* target);
   ~SlideAnimation() override;
 
-  // Set the animation back to the 0 state.
-  virtual void Reset();
-  virtual void Reset(double value);
+  // Set the animation to some state.
+  virtual void Reset(double value = 0);
 
   // Begin a showing animation or reverse a hiding animation in progress.
-  // Animates |GetCurrentValue()| towards 1.
+  // Animates GetCurrentValue() towards 1.
   virtual void Show();
 
   // Begin a hiding animation or reverse a showing animation in progress.
-  // Animates |GetCurrentValue()| towards 0.
+  // Animates GetCurrentValue() towards 0.
   virtual void Hide();
 
   // Sets the time a slide will take. Note that this isn't actually
@@ -88,28 +87,31 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   // is showing or hiding.
   base::TimeDelta GetDuration();
 
+  // Implementation of Show() and Hide().
+  void BeginAnimating(bool showing);
+
   // Overridden from Animation.
   void AnimateToState(double state) override;
 
   AnimationDelegate* target_;
 
-  Tween::Type tween_type_;
+  Tween::Type tween_type_ = Tween::EASE_OUT;
 
   // Used to determine which way the animation is going.
-  bool showing_;
+  bool showing_ = false;
 
   // Animation values. These are a layer on top of Animation::state_ to
   // provide the reversability.
-  double value_start_;
-  double value_end_;
-  double value_current_;
+  double value_start_ = 0;
+  double value_end_ = 0;
+  double value_current_ = 0;
 
-  // How long a hover in/out animation will last for. This defaults to
-  // kHoverFadeDurationMS, but can be overridden with SetDuration.
-  int slide_duration_;
+  // How long a hover in/out animation will last for, in ms. This can be
+  // overridden with SetDuration.
+  int slide_duration_ = 120;
 
   // Dampens the reduction in duration for animations which start partway.
-  double dampening_value_;
+  double dampening_value_ = 1.0;
 
   DISALLOW_COPY_AND_ASSIGN(SlideAnimation);
 };

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1600 tests; 1474 PASS, 126 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1594 tests; 1474 PASS, 120 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS SVGElement interface: existence and properties of interface object
@@ -460,12 +460,6 @@ PASS SVGElement interface: objects.g must inherit property "ownerSVGElement" wit
 PASS SVGElement interface: objects.g must inherit property "viewportElement" with the proper type
 FAIL SVGElement interface: objects.g must inherit property "correspondingElement" with the proper type assert_inherits: property "correspondingElement" not found in prototype chain
 FAIL SVGElement interface: objects.g must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
-FAIL SVGUnknownElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface object length assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface object name assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
 PASS SVGDefsElement interface: existence and properties of interface object
 PASS SVGDefsElement interface object length
 PASS SVGDefsElement interface object name

@@ -16,12 +16,14 @@ import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
@@ -188,6 +190,7 @@ public class TileGroup implements MostVisitedSites.Observer {
     private String mPendingInsertionUrl;
 
     private boolean mHasReceivedData;
+    private boolean mExploreSitesLoaded;
 
     // TODO(dgn): Attempt to avoid cycling dependencies with TileRenderer. Is there a better way?
     private final TileSetupDelegate mTileSetupDelegate = new TileSetupDelegate() {
@@ -243,6 +246,15 @@ public class TileGroup implements MostVisitedSites.Observer {
             if (suggestion.sectionType != TileSectionType.PERSONALIZED) continue;
             if (suggestion.url.equals(mPendingRemovalUrl)) removalCompleted = false;
             if (suggestion.url.equals(mPendingInsertionUrl)) insertionCompleted = true;
+            if (suggestion.source == TileSource.EXPLORE && !mExploreSitesLoaded) {
+                mExploreSitesLoaded = true;
+                ExploreSitesBridge.getEspCatalog(Profile.getLastUsedProfile(), (catalog) -> {
+                    if (catalog == null || catalog.isEmpty()) {
+                        ExploreSitesBridge.updateCatalogFromNetwork(
+                                Profile.getLastUsedProfile(), true, (finished) -> {});
+                    }
+                });
+            }
         }
 
         boolean expectedChangeCompleted = false;
@@ -548,11 +560,15 @@ public class TileGroup implements MostVisitedSites.Observer {
         @Override
         public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
             switch (menuItemId) {
-                // Personalized tiles are the only tiles that can be removed.
+                // Personalized tiles are the only tiles that can be removed.  Additionally, the
+                // Explore tile counts as a personalized tile but cannot be removed.
                 case ContextMenuItemId.REMOVE:
-                    return mSuggestion.sectionType == TileSectionType.PERSONALIZED;
+                    return mSuggestion.sectionType == TileSectionType.PERSONALIZED
+                            && mSuggestion.source != TileSource.EXPLORE;
                 case ContextMenuItemId.LEARN_MORE:
                     return SuggestionsConfig.scrollToLoad();
+                case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
+                    return mSuggestion.source != TileSource.EXPLORE;
                 default:
                     return true;
             }

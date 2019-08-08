@@ -44,6 +44,9 @@ public class SelectionClientManager {
      */
     SelectionClientManager(WebContents webContents) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SMART_SELECTION)
+                // TODO(donnd): revert this line when crbug.com/956277 is fixed.
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
                 && Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             assert webContents != null;
             mOptionalSelectionClient = SelectionClient.createSmartSelectionClient(webContents);

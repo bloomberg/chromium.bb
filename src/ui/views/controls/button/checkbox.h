@@ -24,6 +24,8 @@ namespace views {
 // platform specific objects to replicate the native platforms looks and feel.
 class VIEWS_EXPORT Checkbox : public LabelButton {
  public:
+  METADATA_HEADER(Checkbox);
+
   static const char kViewClassName[];
 
   // |force_md| forces MD even when --secondary-ui-md flag is not set.
@@ -33,9 +35,10 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
   // Sets/Gets whether or not the checkbox is checked.
   virtual void SetChecked(bool checked);
-  bool checked() const { return checked_; }
+  bool GetChecked() const;
 
   void SetMultiLine(bool multi_line);
+  bool GetMultiLine() const;
 
   // If the accessible name should be the same as the labelling view's text,
   // use this. It will set the accessible label relationship and copy the
@@ -49,7 +52,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  protected:
   // LabelButton:
   const char* GetClassName() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropMask> CreateInkDropMask() const override;

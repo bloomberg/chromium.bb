@@ -8,14 +8,14 @@
 #ifndef GrQuadPerEdgeAA_DEFINED
 #define GrQuadPerEdgeAA_DEFINED
 
-#include "GrColor.h"
-#include "GrGeometryProcessor.h"
-#include "GrMeshDrawOp.h"
-#include "GrQuad.h"
-#include "GrSamplerState.h"
-#include "GrTypesPriv.h"
-#include "SkPoint.h"
-#include "SkPoint3.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkPoint3.h"
+#include "include/gpu/GrSamplerState.h"
+#include "include/private/GrColor.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrQuad.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
 
 class GrCaps;
 class GrColorSpaceXform;
@@ -90,6 +90,9 @@ namespace GrQuadPerEdgeAA {
     // local coords, vertex color, domain, and edge coefficients will be written and/or computed
     // based on the configuration in the vertex spec; if that attribute is disabled in the spec,
     // then its corresponding function argument is ignored.
+    //
+    // Tessellation is based on the quad type of the vertex spec, not the provided GrPerspQuad's
+    // so that all quads in a batch are tessellated the same.
     //
     // Returns the advanced pointer in vertices.
     void* Tessellate(void* vertices, const VertexSpec& spec, const GrPerspQuad& deviceQuad,

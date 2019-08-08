@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "ash/app_list/views/search_result_container_view.h"
+#include "ash/app_list/views/search_result_tile_item_view.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 
 namespace views {
 class Textfield;
@@ -19,7 +21,6 @@ namespace app_list {
 
 class AppListViewDelegate;
 class SearchResultPageView;
-class SearchResultTileItemView;
 
 // Displays a list of SearchResultTileItemView.
 class APP_LIST_EXPORT SearchResultTileItemListView
@@ -31,6 +32,7 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
+  SearchResultTileItemView* GetResultViewAt(size_t index) override;
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
   SearchResultBaseView* GetFirstResultView() override;
@@ -56,6 +58,10 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   std::vector<SearchResult*> GetDisplayResults();
 
+  base::string16 GetUserTypedQuery();
+
+  void OnPlayStoreImpressionTimer();
+
   std::vector<SearchResultTileItemView*> tile_views_;
 
   std::vector<views::Separator*> separator_views_;
@@ -64,9 +70,14 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   SearchResultPageView* const search_result_page_view_;
   views::Textfield* search_box_;
 
+  base::string16 recent_playstore_query_;
+
+  base::OneShotTimer playstore_impression_timer_;
   const bool is_play_store_app_search_enabled_;
 
   const bool is_app_reinstall_recommendation_enabled_;
+
+  const size_t max_search_result_tiles_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };

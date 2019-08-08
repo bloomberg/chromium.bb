@@ -72,7 +72,9 @@ CIDB_PROD_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
 CIDB_DEBUG_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
                                     'debug_cidb_bot')
 
-
+# Crash Server upload API key.
+CRASH_API_KEY = os.path.join('/', 'creds', 'api_keys',
+                             'api_key-chromeos-crash-uploader')
 
 # Buildbucket build status
 BUILDBUCKET_BUILDER_STATUS_SCHEDULED = 'SCHEDULED'
@@ -143,7 +145,6 @@ CHANGE_SOURCE_EXTERNAL = 'external'
 FAILURE_CATEGORY_BAD_CL = 'bad_cl'
 FAILURE_CATEGORY_BUG_IN_TOT = 'bug_in_tot'
 FAILURE_CATEGORY_MERGE_CONFLICT = 'merge_conflict'
-FAILURE_CATEGORY_TREE_CLOSED = 'tree_closed'
 FAILURE_CATEGORY_SCHEDULED_ABORT = 'scheduled_abort'
 FAILURE_CATEGORY_CL_NOT_READY = 'cl_not_ready'
 FAILURE_CATEGORY_BAD_CHROME = 'bad_chrome'
@@ -160,7 +161,6 @@ FAILURE_CATEGORY_ALL_CATEGORIES = (
     FAILURE_CATEGORY_BAD_CL,
     FAILURE_CATEGORY_BUG_IN_TOT,
     FAILURE_CATEGORY_MERGE_CONFLICT,
-    FAILURE_CATEGORY_TREE_CLOSED,
     FAILURE_CATEGORY_SCHEDULED_ABORT,
     FAILURE_CATEGORY_CL_NOT_READY,
     FAILURE_CATEGORY_BAD_CHROME,
@@ -348,6 +348,7 @@ ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
+ANDROID_QT_BUILD_BRANCH = 'git_qt-arc-dev'
 ANDROID_VMPI_BUILD_BRANCH = 'git_pi-arcvm-dev'
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
@@ -398,6 +399,14 @@ ANDROID_PI_BUILD_TARGETS = {
                                  r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_cheets_x86_64-userdebug',
                                     r'\.zip$'),
+}
+ANDROID_QT_BUILD_TARGETS = {
+    'ARM_USERDEBUG': ('linux-cheets_arm-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_VMPI_BUILD_TARGETS = {
     'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
@@ -517,8 +526,9 @@ TARGET_OS_FACTORY_PKG = 'virtual/target-os-factory'
 CHROMEOS_BASE = 'chromeos-base'
 
 # Portage category and package name for Chrome.
+CHROME_CN = CHROMEOS_BASE
 CHROME_PN = 'chromeos-chrome'
-CHROME_CP = 'chromeos-base/%s' % CHROME_PN
+CHROME_CP = '%s/%s' % (CHROME_CN, CHROME_PN)
 
 # Other packages to uprev while uprevving Chrome.
 OTHER_CHROME_PACKAGES = ['chromeos-base/chromium-source']
@@ -638,8 +648,7 @@ VALID_BUILD_TYPES = (
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
-    # betty-arcnext is disabled pending https://crbug.com/945016
-    # 'betty-arcnext-pre-cq',           # vm board    arcnext
+    'betty-arcnext-pre-cq',           # vm board    arcnext
     'betty-pre-cq',                   # vm board    vmtest
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
@@ -812,6 +821,9 @@ MESSAGE_SUBTYPE_SELF_DESTRUCTION = 'self_destruction'
 JOB_KEYVAL_DATASTORE_PARENT_KEY = 'datastore_parent_key'
 JOB_KEYVAL_CIDB_BUILD_ID = 'cidb_build_id'
 JOB_KEYVAL_CIDB_BUILD_STAGE_ID = 'cidb_build_stage_id'
+JOB_KEYVAL_BUILD_CONFIG = 'build_config'
+JOB_KEYVAL_MASTER_BUILD_CONFIG = 'master_build_config'
+JOB_KEYVAL_BRANCH = 'branch'
 
 
 # How many total test retries should be done for a suite.
@@ -861,15 +873,6 @@ INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
 PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
-# Tree status strings
-TREE_OPEN = 'open'
-TREE_THROTTLED = 'throttled'
-TREE_CLOSED = 'closed'
-TREE_MAINTENANCE = 'maintenance'
-# The statuses are listed in the order of increasing severity.
-VALID_TREE_STATUSES = (TREE_OPEN, TREE_THROTTLED, TREE_CLOSED, TREE_MAINTENANCE)
-
-
 # Common parts of query used for CQ, THROTTLED_CQ, and PRECQ.
 # "NOT is:draft" in this query doesn't work, it finds any non-draft revision.
 # We want to match drafts anyway, so we can comment on them.
@@ -893,22 +896,21 @@ _QUERIES = {
 
 # Default gerrit query used to find changes for CQ.
 CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=2 AND '
-    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=2' % _QUERIES,
     lambda change: change.IsMergeable())
 
 # The PreCQ does not require the CQ+2 bit to be set if it's a recent CL, or if
 # the Commit-Queue +1 flag has been set.
 PRECQ_READY_QUERY = (
     '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1) AND '
-    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
+    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1)' % _QUERIES,
     lambda change: not change.IsBeingMerged())
 
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
+    'Legacy-Commit-Queue': 'LCQ',
 }
 
 # Actions that a CQ run can take on a CL
@@ -1186,6 +1188,7 @@ MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
 VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'
+QT_ANDROID_PFQ_MASTER = 'master-qt-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 
 

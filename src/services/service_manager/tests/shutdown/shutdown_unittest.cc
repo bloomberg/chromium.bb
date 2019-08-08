@@ -31,6 +31,11 @@ const std::vector<Manifest>& GetTestManifests() {
   static base::NoDestructor<std::vector<Manifest>> manifests{
       {ManifestBuilder()
            .WithServiceName(kShutdownClientName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(
                kClientControllerCapability,
                Manifest::InterfaceList<mojom::ShutdownTestClientController>())
@@ -40,6 +45,11 @@ const std::vector<Manifest>& GetTestManifests() {
            .Build(),
        ManifestBuilder()
            .WithServiceName(kShutdownServiceName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(
                kShutdownServiceCapability,
                Manifest::InterfaceList<mojom::ShutdownTestService>())

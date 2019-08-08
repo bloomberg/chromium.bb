@@ -36,6 +36,7 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityDictationEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
+ASH_PUBLIC_EXPORT extern const char kKioskNextShellEligible[];
 ASH_PUBLIC_EXPORT extern const char kKioskNextShellEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];
@@ -109,6 +110,7 @@ ASH_PUBLIC_EXPORT extern const char
     kPowerForceNonzeroBrightnessForUserActivity[];
 ASH_PUBLIC_EXPORT extern const char kPowerFastSuspendWhenBacklightsForcedOff[];
 ASH_PUBLIC_EXPORT extern const char kPowerSmartDimEnabled[];
+ASH_PUBLIC_EXPORT extern const char kPowerAlsLoggingEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kShelfAlignment[];
 ASH_PUBLIC_EXPORT extern const char kShelfAlignmentLocal[];
@@ -153,6 +155,9 @@ ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStartCharging[];
 ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStopCharging[];
 
 ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
+
+ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoShownInLauncher[];
+ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
 
 }  // namespace prefs
 

@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -23,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -40,6 +42,7 @@ constexpr char XrBrowserTestBase::kVrConfigPathVal[];
 constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrLogPathVal[];
 constexpr char XrBrowserTestBase::kTestFileDir[];
+constexpr char XrBrowserTestBase::kSwitchIgnoreRuntimeRequirements[];
 const std::vector<std::string> XrBrowserTestBase::kRequiredTestSwitches{
     "enable-gpu", "enable-pixel-output-in-tests",
     "run-through-xr-wrapper-script"};
@@ -47,7 +50,9 @@ const std::vector<std::pair<std::string, std::string>>
     XrBrowserTestBase::kRequiredTestSwitchesWithValues{
         std::pair<std::string, std::string>("test-launcher-jobs", "1")};
 
-XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {}
+XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {
+  enable_features_.push_back(features::kLogJsConsoleMessages);
+}
 
 XrBrowserTestBase::~XrBrowserTestBase() = default;
 
@@ -103,6 +108,22 @@ void XrBrowserTestBase::SetUp() {
         << ", but not required value " << req_switch_pair.second;
   }
 
+  // Get the set of runtime requirements to ignore.
+  if (cmd_line->HasSwitch(kSwitchIgnoreRuntimeRequirements)) {
+    auto reqs = cmd_line->GetSwitchValueASCII(kSwitchIgnoreRuntimeRequirements);
+    if (reqs != "") {
+      for (auto req : base::SplitString(
+               reqs, ",", base::WhitespaceHandling::TRIM_WHITESPACE,
+               base::SplitResult::SPLIT_WANT_NONEMPTY)) {
+        ignored_requirements_.insert(req);
+      }
+    }
+  }
+
+  // Check whether we meet all runtime requirements for this test.
+  XR_CONDITIONAL_SKIP_PRETEST(runtime_requirements_, ignored_requirements_,
+                              &test_skipped_at_startup_)
+
   // Set the environment variable to use the mock OpenVR client.
   ASSERT_TRUE(
       env_->SetVar(kVrOverrideEnvVar, MakeExecutableRelative(kVrOverrideVal)))
@@ -122,6 +143,45 @@ void XrBrowserTestBase::SetUp() {
   scoped_feature_list_.InitWithFeatures(enable_features_, disable_features_);
 
   InProcessBrowserTest::SetUp();
+}
+
+void XrBrowserTestBase::TearDown() {
+  if (test_skipped_at_startup_) {
+    // Since we didn't complete startup, no need to do teardown, either. Doing
+    // so can result in hitting a DCHECK.
+    return;
+  }
+  InProcessBrowserTest::TearDown();
+}
+
+XrBrowserTestBase::RuntimeType XrBrowserTestBase::GetRuntimeType() const {
+  return XrBrowserTestBase::RuntimeType::RUNTIME_NONE;
+}
+
+device::XrAxisType XrBrowserTestBase::GetPrimaryAxisType() const {
+  auto runtime = GetRuntimeType();
+  switch (runtime) {
+    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR:
+      return device::XrAxisType::kTrackpad;
+    case XrBrowserTestBase::RuntimeType::RUNTIME_WMR:
+      return device::XrAxisType::kJoystick;
+    case XrBrowserTestBase::RuntimeType::RUNTIME_NONE:
+      return device::XrAxisType::kNone;
+  }
+  NOTREACHED();
+}
+
+device::XrAxisType XrBrowserTestBase::GetSecondaryAxisType() const {
+  auto runtime = GetRuntimeType();
+  switch (runtime) {
+    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR:
+      return device::XrAxisType::kJoystick;
+    case XrBrowserTestBase::RuntimeType::RUNTIME_WMR:
+      return device::XrAxisType::kTrackpad;
+    case XrBrowserTestBase::RuntimeType::RUNTIME_NONE:
+      return device::XrAxisType::kNone;
+  }
+  NOTREACHED();
 }
 
 GURL XrBrowserTestBase::GetFileUrlForHtmlTestFile(
@@ -165,6 +225,11 @@ void XrBrowserTestBase::LoadUrlAndAwaitInitialization(const GURL& url) {
 void XrBrowserTestBase::RunJavaScriptOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
+  if (javascript_failed_) {
+    LogJavaScriptFailure();
+    return;
+  }
+
   ASSERT_TRUE(content::ExecuteScript(web_contents, js_expression))
       << "Failed to run given JavaScript: " << js_expression;
 }
@@ -172,6 +237,11 @@ void XrBrowserTestBase::RunJavaScriptOrFail(
 bool XrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
+  if (javascript_failed_) {
+    LogJavaScriptFailure();
+    return false;
+  }
+
   bool result;
   DLOG(ERROR) << "Run JavaScript: " << js_expression;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -184,6 +254,11 @@ bool XrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
 std::string XrBrowserTestBase::RunJavaScriptAndExtractStringOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
+  if (javascript_failed_) {
+    LogJavaScriptFailure();
+    return "";
+  }
+
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
@@ -302,6 +377,18 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
       reason +=
           " JavaScript testharness reported failure reason: " + result_string;
     }
+    // Store that we've failed waiting for a JavaScript step so we can abort
+    // further attempts to run JavaScript, which has the potential to do weird
+    // things and produce non-useful output due to JavaScript code continuing
+    // to run when it's in a known bad state.
+    // This is a workaround for the fact that FAIL() and other gtest macros that
+    // cause test failures only abort the current function. Thus, a failure here
+    // will show up as a test failure, but there's nothing that actually stops
+    // the test from continuing to run since FAIL() is not being called in the
+    // main test body.
+    javascript_failed_ = true;
+    // Newlines to help the failure reason stick out.
+    LOG(ERROR) << "\n\n\nvvvvvvvvvvvvvvvvv Useful Stack vvvvvvvvvvvvvvvvv\n\n";
     FAIL() << reason;
   }
 
@@ -400,6 +487,12 @@ void XrBrowserTestBase::EndTest() {
 
 void XrBrowserTestBase::AssertNoJavaScriptErrors() {
   AssertNoJavaScriptErrors(GetCurrentWebContents());
+}
+
+void XrBrowserTestBase::LogJavaScriptFailure() {
+  LOG(ERROR) << "HEY! LISTEN! Not running requested JavaScript due to previous "
+                "failure. Failures below this are likely garbage. Look for the "
+                "useful stack above.";
 }
 
 }  // namespace vr

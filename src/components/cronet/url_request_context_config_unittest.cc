@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
@@ -272,7 +273,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       config.preloaded_nel_headers[0].value));
 
   // Check IPv6 is disabled when on wifi.
-  EXPECT_TRUE(context->host_resolver()->GetNoIPv6OnWifi());
+  EXPECT_FALSE(context->host_resolver()
+                   ->GetManagerForTesting()
+                   ->check_ipv6_on_wifi_for_testing());
 
   // All host resolution expected to be mapped to an immediately-resolvable IP.
   std::unique_ptr<net::HostResolver::ResolveHostRequest> resolve_request =
@@ -334,7 +337,9 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
   EXPECT_EQ(params->quic_supported_versions.size(), 1u);
-  EXPECT_EQ(params->quic_supported_versions[0], quic::QUIC_VERSION_44);
+  EXPECT_EQ(params->quic_supported_versions[0],
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                    quic::QUIC_VERSION_44));
 }
 
 TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
@@ -385,7 +390,9 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
   EXPECT_EQ(params->quic_supported_versions.size(), 1u);
-  EXPECT_EQ(params->quic_supported_versions[0], quic::QUIC_VERSION_43);
+  EXPECT_EQ(params->quic_supported_versions[0],
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                    quic::QUIC_VERSION_46));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {

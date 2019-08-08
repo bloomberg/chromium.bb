@@ -17,35 +17,8 @@ namespace blink {
 
 namespace {
 
-constexpr char kCssFragmentIdentifierPrefix[] = "targetElement=";
-constexpr size_t kCssFragmentIdentifierPrefixLength =
-    base::size(kCssFragmentIdentifierPrefix);
-
-bool ParseCSSFragmentIdentifier(const String& fragment, String* selector) {
-  size_t pos = fragment.Find(kCssFragmentIdentifierPrefix);
-  if (pos == 0) {
-    *selector = fragment.Substring(kCssFragmentIdentifierPrefixLength - 1);
-    return true;
-  }
-
-  return false;
-}
-
-Element* FindCSSFragmentAnchor(const AtomicString& selector,
-                               Document& document) {
-  DummyExceptionStateForTesting exception_state;
-  return document.QuerySelector(selector, exception_state);
-}
-
 Node* FindAnchorFromFragment(const String& fragment, Document& doc) {
-  Element* anchor_node;
-  String selector;
-  if (RuntimeEnabledFeatures::CSSFragmentIdentifiersEnabled() &&
-      ParseCSSFragmentIdentifier(fragment, &selector)) {
-    anchor_node = FindCSSFragmentAnchor(AtomicString(selector), doc);
-  } else {
-    anchor_node = doc.FindAnchor(fragment);
-  }
+  Element* anchor_node = doc.FindAnchor(fragment);
 
   // Implement the rule that "" and "top" both mean top of page as in other
   // browsers.

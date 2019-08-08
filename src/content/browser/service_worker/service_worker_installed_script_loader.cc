@@ -85,10 +85,12 @@ void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
         *info);
   }
 
-  ServiceWorkerUtils::SendHttpResponseInfoToClient(
+  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
       info, options_, request_start_, base::TimeTicks::Now(),
-      http_info->response_data_size, client_.get());
-
+      http_info->response_data_size);
+  client_->OnReceiveResponse(std::move(response.head));
+  if (!response.metadata.empty())
+    client_->OnReceiveCachedMetadata(std::move(response.metadata));
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().
 }

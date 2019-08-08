@@ -584,6 +584,7 @@ class MicrosoftPerformancePage(ToughAnimationPage):
   """Why: Login page is slow because of ineffecient transform operations."""
   BASE_NAME = 'microsoft_performance'
   URL = 'http://ie.microsoft.com/testdrive/performance/robohornetpro/'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
   NEED_MEASUREMENT_READY = False
 
 

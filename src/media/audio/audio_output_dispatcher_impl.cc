@@ -131,6 +131,10 @@ void AudioOutputDispatcherImpl::CloseStream(AudioOutputProxy* stream_proxy) {
   close_timer_.Reset();
 }
 
+// There is nothing to flush since the phsyical stream is removed during
+// StopStream().
+void AudioOutputDispatcherImpl::FlushStream(AudioOutputProxy* stream_proxy) {}
+
 bool AudioOutputDispatcherImpl::HasOutputProxies() const {
   DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
   return idle_proxies_ || !proxy_to_physical_map_.empty();

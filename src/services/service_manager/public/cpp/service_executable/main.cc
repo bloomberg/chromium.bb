@@ -70,7 +70,8 @@ int main(int argc, char** argv) {
 #endif
 
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
   // To view log output with IDs and timestamps use "adb logcat -v threadtime".
   logging::SetLogItems(true,   // Process ID
@@ -94,7 +95,7 @@ int main(int argc, char** argv) {
   WaitForDebuggerIfNecessary();
   service_manager::ServiceExecutableEnvironment environment;
   ServiceMain(environment.TakeServiceRequestFromCommandLine());
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

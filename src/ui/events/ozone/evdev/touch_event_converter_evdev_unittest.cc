@@ -168,7 +168,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   void DispatchGamepadEvent(const GamepadEvent& event) override {}
 
   void DispatchGamepadDevicesUpdated(
-      const std::vector<InputDevice>& devices) override {}
+      const std::vector<GamepadDevice>& devices) override {}
 
  private:
   base::RepeatingCallback<void(const GenericEventParams& params)> callback_;

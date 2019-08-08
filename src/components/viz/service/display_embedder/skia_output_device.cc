@@ -12,13 +12,16 @@
 namespace viz {
 
 SkiaOutputDevice::SkiaOutputDevice(
+    bool need_swap_semaphore,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback) {}
+    : need_swap_semaphore_(need_swap_semaphore),
+      did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback) {}
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 
 gfx::SwapResponse SkiaOutputDevice::PostSubBuffer(
     const gfx::Rect& rect,
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   NOTREACHED();
   StartSwapBuffers(std::move(feedback));

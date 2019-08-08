@@ -55,6 +55,7 @@ std::unique_ptr<TextResourceDecoder> DecodedDataDocumentParser::TakeDecoder() {
 }
 
 void DecodedDataDocumentParser::AppendBytes(const char* data, size_t length) {
+  TRACE_EVENT0("loading", "DecodedDataDocumentParser::AppendBytes");
   if (!length)
     return;
 

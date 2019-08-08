@@ -47,8 +47,6 @@ class SVGSVGElement final : public SVGGraphicsElement,
   USING_GARBAGE_COLLECTED_MIXIN(SVGSVGElement);
 
  public:
-  DECLARE_NODE_FACTORY(SVGSVGElement);
-
   explicit SVGSVGElement(Document&);
 
   float IntrinsicWidth() const;

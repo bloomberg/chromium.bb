@@ -1,6 +1,28 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+/**
+ * Select My files in directory tree and wait for load.
+ *
+ * @param {string} appId ID of the app window.
+ */
+async function selectMyFiles(appId) {
+  // Select My Files folder.
+  const myFilesQuery = '#directory-tree [entry-label="My files"]';
+  const isDriveQuery = false;
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]));
+
+  // Wait for file list to display Downloads and Crostini.
+  const downloadsRow = ['Downloads', '--', 'Folder'];
+  const playFilesRow = ['Play files', '--', 'Folder'];
+  const crostiniRow = ['Linux files', '--', 'Folder'];
+  await remoteCall.waitForFiles(
+      appId, [downloadsRow, playFilesRow, crostiniRow],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+}
+
 /**
  * Tests if MyFiles is displayed when flag is true.
  */
@@ -72,11 +94,8 @@ testcase.hideSearchButton = async () => {
   chrome.test.assertEq(1, buttonElements.length);
   chrome.test.assertFalse(buttonElements[0].hidden);
 
-  // Select My Files folder.
-  const myFilesQuery = '#directory-tree [entry-label="My files"]';
-  const isDriveQuery = false;
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]));
+  // Select My files in directory tree.
+  await selectMyFiles(appId);
 
   // Get the search button element.
   buttonElements = await remoteCall.callRemoteTestUtil(
@@ -122,19 +141,8 @@ testcase.myFilesDisplaysAndOpensEntries = async () => {
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
-  // Select My Files folder.
-  const myFilesQuery = '#directory-tree [entry-label="My files"]';
-  const isDriveQuery = false;
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]));
-
-  // Wait for file list to display Downloads and Crostini.
-  const downloadsRow = ['Downloads', '--', 'Folder'];
-  const playFilesRow = ['Play files', '--', 'Folder'];
-  const crostiniRow = ['Linux files', '--', 'Folder'];
-  await remoteCall.waitForFiles(
-      appId, [downloadsRow, playFilesRow, crostiniRow],
-      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+  // Select My files in directory tree.
+  await selectMyFiles(appId);
 
   // Double click on Download on file list.
   const downloadsFileListQuery = '#file-list [file-name="Downloads"]';
@@ -228,23 +236,8 @@ testcase.myFilesFolderRename = async () => {
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
-  // Select "My files" folder via directory tree.
-  const myFilesQuery = '#directory-tree [entry-label="My files"]';
-  const isDriveQuery = false;
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]),
-      'selectInDirectoryTree failed');
-
-  // Wait for Downloads to load.
-  const expectedRows = [
-    ['Downloads', '--', 'Folder'],
-    ['Play files', '--', 'Folder'],
-    ['Linux files', '--', 'Folder'],
-  ];
-  await remoteCall.waitForFiles(
-      appId, expectedRows,
-      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+  // Select My files in directory tree.
+  await selectMyFiles(appId);
 
   // Select Downloads via file list.
   const downloads = ['Downloads'];
@@ -385,4 +378,44 @@ testcase.myFilesUpdatesWhenAndroidVolumeMounts = async () => {
   // Check: Play files should disappear from directory tree.
   chrome.test.assertTrue(
       !!await remoteCall.waitForElementLost(appId, playFilesTreeItem));
+};
+
+/**
+ * Tests that toolbar delete is not shown for Downloads, or Linux files.
+ */
+testcase.myFilesToolbarDelete = async () => {
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Select My files in directory tree.
+  await selectMyFiles(appId);
+
+  // Select Downloads folder in list.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('selectFile', appId, ['Downloads']));
+
+  // Test that the delete button isn't visible.
+  const hiddenDeleteButton = '#delete-button[hidden]';
+  await remoteCall.waitForElement(appId, hiddenDeleteButton);
+
+  // Select fake entry Linux files folder in list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, ['Linux files']));
+
+  // Test that the delete button isn't visible.
+  await remoteCall.waitForElement(appId, hiddenDeleteButton);
+
+  // Mount crostini and test real root entry.
+  await mountCrostini(appId);
+
+  // Select My files in directory tree.
+  await selectMyFiles(appId);
+
+  // Select real Linux files folder in list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, ['Linux files']));
+
+  // Test that the delete button isn't visible.
+  await remoteCall.waitForElement(appId, hiddenDeleteButton);
 };

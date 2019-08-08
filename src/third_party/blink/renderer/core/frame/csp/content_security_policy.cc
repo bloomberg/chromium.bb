@@ -136,7 +136,8 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
   return nonceable;
 }
 
-static WebFeature GetUseCounterType(ContentSecurityPolicyHeaderType type) {
+static WebFeature GetUseCounterHelperType(
+    ContentSecurityPolicyHeaderType type) {
   switch (type) {
     case kContentSecurityPolicyHeaderTypeEnforce:
       return WebFeature::kContentSecurityPolicy;
@@ -208,7 +209,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   console_messages_.clear();
 
   for (const auto& policy : policies_) {
-    Count(GetUseCounterType(policy->HeaderType()));
+    Count(GetUseCounterHelperType(policy->HeaderType()));
     if (policy->AllowDynamic(
             ContentSecurityPolicy::DirectiveType::kScriptSrcAttr) ||
         policy->AllowDynamic(

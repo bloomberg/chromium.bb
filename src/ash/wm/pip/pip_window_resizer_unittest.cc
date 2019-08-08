@@ -8,7 +8,10 @@
 #include <tuple>
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/metrics/pip_uma.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -24,9 +27,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -38,7 +38,7 @@ namespace {
 // WindowState based on a given initial state. Records the last resize bounds.
 class FakeWindowState : public wm::WindowState::State {
  public:
-  explicit FakeWindowState(mojom::WindowStateType initial_state_type)
+  explicit FakeWindowState(WindowStateType initial_state_type)
       : state_type_(initial_state_type) {}
   ~FakeWindowState() override = default;
 
@@ -54,7 +54,7 @@ class FakeWindowState : public wm::WindowState::State {
       }
     }
   }
-  mojom::WindowStateType GetType() const override { return state_type_; }
+  WindowStateType GetType() const override { return state_type_; }
   void AttachState(wm::WindowState* window_state,
                    wm::WindowState::State* previous_state) override {}
   void DetachState(wm::WindowState* window_state) override {}
@@ -63,7 +63,7 @@ class FakeWindowState : public wm::WindowState::State {
   wm::WindowState* last_window_state() { return last_window_state_; }
 
  private:
-  mojom::WindowStateType state_type_;
+  WindowStateType state_type_;
   gfx::Rect last_bounds_;
   wm::WindowState* last_window_state_ = nullptr;
 
@@ -169,7 +169,7 @@ class PipWindowResizerTest : public AshTestBase,
   void PreparePipWindow(const gfx::Rect& bounds) {
     widget_ = CreateWidgetForTest(bounds);
     window_ = widget_->GetNativeWindow();
-    test_state_ = new FakeWindowState(mojom::WindowStateType::PIP);
+    test_state_ = new FakeWindowState(WindowStateType::kPip);
     wm::GetWindowState(window_)->SetStateObject(
         std::unique_ptr<wm::WindowState::State>(test_state_));
   }

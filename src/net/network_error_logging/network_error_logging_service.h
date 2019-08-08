@@ -41,13 +41,13 @@ namespace net {
 
 class NET_EXPORT NetworkErrorLoggingService {
  public:
-  class PersistentNELStore;
+  class PersistentNelStore;
 
   // NEL policy set by an origin.
-  struct NET_EXPORT NELPolicy {
-    NELPolicy();
-    NELPolicy(const NELPolicy& other);
-    ~NELPolicy();
+  struct NET_EXPORT NelPolicy {
+    NelPolicy();
+    NelPolicy(const NelPolicy& other);
+    ~NelPolicy();
 
     url::Origin origin;
     IPAddress received_ip_address = IPAddress();
@@ -201,7 +201,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   // NEL policies are persisted to disk if |store| is not null.
   // The store, if given, should outlive |*this|.
   static std::unique_ptr<NetworkErrorLoggingService> Create(
-      PersistentNELStore* store);
+      PersistentNelStore* store);
 
   virtual ~NetworkErrorLoggingService();
 
@@ -227,7 +227,7 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   // Queues a Signed Exchange report.
   virtual void QueueSignedExchangeReport(
-      const SignedExchangeReportDetails& details) = 0;
+      SignedExchangeReportDetails details) = 0;
 
   // Removes browsing data (origin policies) associated with any origin for
   // which |origin_filter| returns true.
@@ -241,10 +241,12 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Sets the ReportingService that will be used to queue network error reports.
   // If |nullptr| is passed, reports will be queued locally or discarded.
   // |reporting_service| must outlive the NetworkErrorLoggingService.
+  // Should not be called again if previously called with a non-null pointer.
   void SetReportingService(ReportingService* reporting_service);
 
-  // Shuts down the NEL service so that no more requests or headers are
-  // processed and no more reports are queued.
+  // Shuts down the NEL service, so that no more requests or headers can be
+  // processed, no more reports are queued, and browsing data can no longer be
+  // cleared.
   void OnShutdown();
 
   // Sets a base::Clock (used to track policy expiration) for tests.
@@ -272,32 +274,32 @@ class NET_EXPORT NetworkErrorLoggingService {
 };
 
 // Persistent storage for NEL policies.
-class NET_EXPORT NetworkErrorLoggingService::PersistentNELStore {
+class NET_EXPORT NetworkErrorLoggingService::PersistentNelStore {
  public:
-  using NELPoliciesLoadedCallback =
-      base::OnceCallback<void(std::vector<NELPolicy>)>;
+  using NelPoliciesLoadedCallback =
+      base::OnceCallback<void(std::vector<NelPolicy>)>;
 
-  PersistentNELStore() = default;
-  virtual ~PersistentNELStore() = default;
+  PersistentNelStore() = default;
+  virtual ~PersistentNelStore() = default;
 
   // Initializes the store and retrieves stored NEL policies. This will be
   // called only once at startup.
-  virtual void LoadNELPolicies(NELPoliciesLoadedCallback loaded_callback) = 0;
+  virtual void LoadNelPolicies(NelPoliciesLoadedCallback loaded_callback) = 0;
 
   // Adds a NEL policy to the store.
-  virtual void AddNELPolicy(const NELPolicy& policy) = 0;
+  virtual void AddNelPolicy(const NelPolicy& policy) = 0;
 
   // Updates the access time of the NEL policy in the store.
-  virtual void UpdateNELPolicyAccessTime(const NELPolicy& policy) = 0;
+  virtual void UpdateNelPolicyAccessTime(const NelPolicy& policy) = 0;
 
   // Deletes a NEL policy from the store.
-  virtual void DeleteNELPolicy(const NELPolicy& policy) = 0;
+  virtual void DeleteNelPolicy(const NelPolicy& policy) = 0;
 
   // Flushes the store.
   virtual void Flush() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PersistentNELStore);
+  DISALLOW_COPY_AND_ASSIGN(PersistentNelStore);
 };
 
 }  // namespace net

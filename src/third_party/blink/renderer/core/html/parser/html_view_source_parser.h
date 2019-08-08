@@ -40,11 +40,6 @@ namespace blink {
 class CORE_EXPORT HTMLViewSourceParser final
     : public DecodedDataDocumentParser {
  public:
-  static HTMLViewSourceParser* Create(HTMLViewSourceDocument& document,
-                                      const String& mime_type) {
-    return MakeGarbageCollected<HTMLViewSourceParser>(document, mime_type);
-  }
-
   HTMLViewSourceParser(HTMLViewSourceDocument&, const String& mime_type);
   ~HTMLViewSourceParser() override = default;
 

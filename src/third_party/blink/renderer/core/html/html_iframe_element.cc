@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -49,8 +50,6 @@ HTMLIFrameElement::HTMLIFrameElement(Document& document)
       collapsed_by_client_(false),
       sandbox_(MakeGarbageCollected<HTMLIFrameElementSandbox>(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
-
-DEFINE_NODE_FACTORY(HTMLIFrameElement)
 
 void HTMLIFrameElement::Trace(Visitor* visitor) {
   visitor->Trace(sandbox_);
@@ -259,7 +258,7 @@ void HTMLIFrameElement::ParseAttribute(
     // To avoid polluting the console, this is being recorded only once per
     // page.
     if (name == "gesture" && value == "media" && GetDocument().Loader() &&
-        !GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+        !GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
             WebFeature::kHTMLIFrameElementGestureMedia)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLIFrameElementGestureMedia);
@@ -284,7 +283,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
       GetDocument().GetSecurityOrigin();
 
   // Start with the allow attribute
-  ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
+  ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
       allow_, self_origin, src_origin, messages, &GetDocument());
 
   // Next, process sandbox flags. These all only take effect if a corresponding
@@ -292,16 +291,17 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
-    // TODO(ekaramad): Add similar messages for all the converted sandbox flags.
     if (messages && (sandbox_flags_converted_to_feature_policies_ &
                      WebSandboxFlags::kNavigation) != WebSandboxFlags::kNone) {
-      if ((sandbox_flags_converted_to_feature_policies_ &
-           WebSandboxFlags::kForms) == WebSandboxFlags::kNone &&
-          IsFeatureDeclared(mojom::FeaturePolicyFeature::kFormSubmission,
-                            container_policy)) {
-        messages->push_back(
-            "Allow and Sandbox attributes both mention forms. Allow will take "
-            "precedence.");
+      for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
+        if ((sandbox_flags_converted_to_feature_policies_ & pair.first) !=
+                WebSandboxFlags::kNone &&
+            IsFeatureDeclared(pair.second, container_policy)) {
+          messages->push_back(String::Format(
+              "Allow and Sandbox attributes both mention '%s'. Allow will take "
+              "precedence.",
+              GetNameForFeature(pair.second).Utf8().data()));
+        }
       }
     }
     ApplySandboxFlagsToParsedFeaturePolicy(

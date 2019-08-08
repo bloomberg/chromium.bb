@@ -8,7 +8,7 @@
 #include "src/snapshot/partial-serializer.h"
 #include "src/snapshot/startup-serializer.h"
 
-#include "src/utils.h"
+#include "src/utils/utils.h"
 
 namespace v8 {
 namespace internal {
@@ -86,11 +86,12 @@ class Snapshot : public AllStatic {
   static bool SnapshotIsValid(const v8::StartupData* snapshot_blob);
 #endif  // DEBUG
 
+  static bool ExtractRehashability(const v8::StartupData* data);
+
  private:
   static uint32_t ExtractNumContexts(const v8::StartupData* data);
   static uint32_t ExtractContextOffset(const v8::StartupData* data,
                                        uint32_t index);
-  static bool ExtractRehashability(const v8::StartupData* data);
   static Vector<const byte> ExtractStartupData(const v8::StartupData* data);
   static Vector<const byte> ExtractReadOnlyData(const v8::StartupData* data);
   static Vector<const byte> ExtractContextData(const v8::StartupData* data,
@@ -161,7 +162,12 @@ class Snapshot : public AllStatic {
 // mksnapshot.
 V8_EXPORT_PRIVATE v8::StartupData CreateSnapshotDataBlobInternal(
     v8::SnapshotCreator::FunctionCodeHandling function_code_handling,
-    const char* embedded_source);
+    const char* embedded_source, v8::Isolate* isolate = nullptr);
+
+// Convenience wrapper around snapshot data blob warmup used e.g. by tests and
+// mksnapshot.
+V8_EXPORT_PRIVATE v8::StartupData WarmUpSnapshotDataBlobInternal(
+    v8::StartupData cold_snapshot_blob, const char* warmup_source);
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 void SetSnapshotFromFile(StartupData* snapshot_blob);

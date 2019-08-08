@@ -157,6 +157,8 @@ class WebThemeEngine {
     ScrollbarThumbExtraParams scrollbar_thumb;
   };
 
+  virtual ~WebThemeEngine() {}
+
   // Gets the size of the given theme part. For variable sized items
   // like vertical scrollbar thumbs, the width will be the required width of
   // the track while the height will be the minimum height.

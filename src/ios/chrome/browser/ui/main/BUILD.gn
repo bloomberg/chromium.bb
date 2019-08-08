@@ -5,17 +5,13 @@
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "browser_coordinator.h",
-    "browser_coordinator.mm",
     "browser_interface_provider.h",
     "browser_view_wrangler.h",
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
-    "view_controller_swapping.h",
   ]
   deps = [
-    ":tab_switcher",
     "//base",
     "//components/translate/core/browser",
     "//ios/chrome/app/resources:launchscreen_xib",
@@ -61,20 +57,6 @@ source_set("main") {
   libs = [ "UIKit.framework" ]
 }
 
-source_set("tab_switcher") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "tab_switcher.h",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/commands",
-    "//ui/base",
-    "//url",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -83,7 +65,6 @@ source_set("unit_tests") {
   ]
   deps = [
     ":main",
-    ":tab_switcher",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",

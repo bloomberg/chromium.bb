@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
@@ -51,7 +52,7 @@ SyncedPrintersManagerFactory::SyncedPrintersManagerFactory()
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
 }
 
-SyncedPrintersManagerFactory::~SyncedPrintersManagerFactory() {}
+SyncedPrintersManagerFactory::~SyncedPrintersManagerFactory() = default;
 
 SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {

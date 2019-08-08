@@ -4,9 +4,10 @@
 
 #include "components/mirroring/service/remoting_sender.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -67,7 +68,7 @@ class FakeTransport : public media::cast::CastTransport {
                                media::cast::FrameId frame_id) final {
     kickstarted_frame_id_ = frame_id;
     if (!kickstarted_callback_.is_null())
-      base::ResetAndReturn(&kickstarted_callback_).Run();
+      std::move(kickstarted_callback_).Run();
   }
 
   // The rest of the interface is not used for these tests.

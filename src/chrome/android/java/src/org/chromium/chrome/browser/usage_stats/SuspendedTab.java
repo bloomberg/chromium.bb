@@ -20,6 +20,8 @@ import org.chromium.base.Log;
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -35,6 +37,12 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
             "org.chromium.chrome.browser.usage_stats.extra.FULLY_QUALIFIED_DOMAIN_NAME";
     private static final String TAG = "SuspendedTab";
     private static final Class<SuspendedTab> USER_DATA_KEY = SuspendedTab.class;
+
+    public static boolean isShowing(Tab tab) {
+        if (tab == null || !tab.isInitialized()) return false;
+        SuspendedTab suspendedTab = get(tab);
+        return suspendedTab != null && suspendedTab.isShowing();
+    }
 
     public static SuspendedTab from(Tab tab) {
         SuspendedTab suspendedTab = get(tab);
@@ -71,10 +79,25 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
             webContents.onHide();
         }
 
+        InfoBarContainer infoBarContainer = InfoBarContainer.get(mTab);
+        if (infoBarContainer != null) {
+            infoBarContainer.setHidden(true);
+        }
+
         if (isViewAttached()) {
             updateFqdnText();
         } else {
             attachView();
+        }
+
+        TabContentManager tabContentManager = mTab.getActivity().getTabContentManager();
+        if (tabContentManager != null) {
+            // We have to wait for the view to layout to cache a new thumbnail for it; otherwise,
+            // its width and height won't be available yet.
+            mView.post(() -> {
+                tabContentManager.removeTabThumbnail(mTab.getId());
+                tabContentManager.cacheTabThumbnail(mTab);
+            });
         }
     }
 

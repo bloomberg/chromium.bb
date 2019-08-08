@@ -17,8 +17,8 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
 
@@ -68,6 +68,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
+  base::Time GetKeystoreMigrationTime() const override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
@@ -92,7 +93,6 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   ModelTypeSet GetEncryptedTypesUnsafe();
 
   bool MigratedToKeystore();
-  base::Time migration_time() const;
   base::Time custom_passphrase_time() const;
 
   // Restore a saved nigori obtained from OnLocalSetPassphraseEncryption.
@@ -366,7 +366,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   int nigori_overwrite_count_;
 
   // The time the nigori was migrated to support keystore encryption.
-  base::Time migration_time_;
+  base::Time keystore_migration_time_;
 
   // The time the custom passphrase was set for this account. Not valid
   // if there is no custom passphrase or the custom passphrase was set

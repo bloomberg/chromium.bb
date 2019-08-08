@@ -13,6 +13,7 @@ import re
 import sys
 import time
 
+from devil import base_error
 from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
@@ -427,8 +428,9 @@ class LocalDeviceInstrumentationTestRun(
     flags_to_add = []
     test_timeout_scale = None
     if self._test_instance.coverage_directory:
-      coverage_basename = '%s.ec' % ('%s_group' % test[0]['method']
-          if isinstance(test, list) else test['method'])
+      coverage_basename = '%s.exec' % ('%s_group' % test[0]['method']
+                                       if isinstance(test, list) else
+                                       test['method'])
       extras['coverage'] = 'true'
       coverage_directory = os.path.join(
           device.GetExternalStoragePath(), 'chrome', 'test', 'coverage')
@@ -534,8 +536,8 @@ class LocalDeviceInstrumentationTestRun(
               device.adb,
               filter_specs=local_device_environment.LOGCAT_FILTERS,
               output_file=logcat_file.name,
-              transform_func=self._test_instance.MaybeDeobfuscateLines
-              ) as logmon:
+              transform_func=self._test_instance.MaybeDeobfuscateLines,
+              check_error=False) as logmon:
             with _LogTestEndpoints(device, test_name):
               with contextlib_ext.Optional(
                   trace_event.trace(test_name),
@@ -576,11 +578,15 @@ class LocalDeviceInstrumentationTestRun(
 
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
-          device.PullFile(coverage_directory,
-              self._test_instance.coverage_directory)
-          device.RunShellCommand(
-              'rm -f %s' % posixpath.join(coverage_directory, '*'),
-              check_return=True, shell=True)
+          try:
+            device.PullFile(coverage_directory,
+                            self._test_instance.coverage_directory)
+            device.RunShellCommand(
+                'rm -f %s' % posixpath.join(coverage_directory, '*'),
+                check_return=True,
+                shell=True)
+          except base_error.BaseError as e:
+            logging.warning('Failed to handle coverage data after tests: %s', e)
 
       def handle_render_test_data():
         if _IsRenderTest(test):

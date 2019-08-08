@@ -42,7 +42,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/ipc/host/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -50,6 +49,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/wm/core/wm_core_switches.h"
@@ -84,7 +84,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kBlinkSettings,
     ::switches::kDisable2dCanvasImageChromium,
     ::switches::kDisableAccelerated2dCanvas,
-    ::switches::kDisableAcceleratedJpegDecoding,
     ::switches::kDisableAcceleratedMjpegDecode,
     ::switches::kDisableAcceleratedVideoDecode,
     ::switches::kDisableAcceleratedVideoEncode,
@@ -105,6 +104,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableRGBA4444Textures,
     ::switches::kDisableThreadedScrolling,
     ::switches::kDisableTouchDragDrop,
+    ::switches::kDisableYUVImageDecoding,
     ::switches::kDisableZeroCopy,
     ::switches::kEnableBlinkFeatures,
     ::switches::kEnableGpuMemoryBufferVideoFrames,
@@ -348,7 +348,7 @@ void RestartChrome(const base::CommandLine& command_line) {
   }
   restart_requested = true;
 
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
+  if (!SessionManagerClient::Get()->SupportsBrowserRestart()) {
     // Do nothing when running as test on bots or a dev box.
     const base::CommandLine* current_command_line =
         base::CommandLine::ForCurrentProcess();

@@ -490,6 +490,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   const media::VideoCaptureFormat captureFormat(
       gfx::Size(dimensions.width, dimensions.height), frameRate_,
       FourCCToChromiumPixelFormat(fourcc));
+  gfx::ColorSpace colorSpace;
 
   // We have certain format expectation for capture output:
   // For MJPEG, |sampleBuffer| is expected to always be a CVBlockBuffer.
@@ -510,6 +511,11 @@ void ExtractBaseAddressAndLength(char** base_address,
       baseAddress = static_cast<char*>(CVPixelBufferGetBaseAddress(videoFrame));
       frameSize = CVPixelBufferGetHeight(videoFrame) *
                   CVPixelBufferGetBytesPerRow(videoFrame);
+
+      // TODO(julien.isorce): move GetImageBufferColorSpace(CVImageBufferRef)
+      // from media::VTVideoDecodeAccelerator to media/base/mac and call it
+      // here to get the color space. See https://crbug.com/959962.
+      // colorSpace = media::GetImageBufferColorSpace(videoFrame);
     } else {
       videoFrame = nil;
     }
@@ -531,7 +537,8 @@ void ExtractBaseAddressAndLength(char** base_address,
 
     if (frameReceiver_ && baseAddress) {
       frameReceiver_->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress),
-                                   frameSize, captureFormat, 0, 0, timestamp);
+                                   frameSize, captureFormat, colorSpace, 0, 0,
+                                   timestamp);
     }
   }
 

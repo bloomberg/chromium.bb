@@ -12,7 +12,7 @@ public interface OverviewModeBehavior {
     /**
      * An observer that is notified when the overview mode state changes.
      */
-    public interface OverviewModeObserver {
+    interface OverviewModeObserver {
         /**
          * Called when overview mode starts showing.
          * @param showToolbar Whether or not to show the normal toolbar when animating into overview

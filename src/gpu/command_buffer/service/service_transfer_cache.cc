@@ -40,6 +40,10 @@ void DumpMemoryForImageTransferCacheEntry(
 
   // Alias the image entry to its skia counterpart, taking ownership of the
   // memory and preventing double counting.
+  //
+  // TODO(andrescj): if entry->image() is backed by multiple textures,
+  // getBackendTexture() would end up flattening them which is undesirable:
+  // figure out how to report memory usage for those cases.
   DCHECK(entry->image());
   GrBackendTexture image_backend_texture =
       entry->image()->getBackendTexture(false /* flushPendingGrContextIO */);
@@ -207,14 +211,13 @@ void ServiceTransferCache::DeleteAllEntriesForDecoder(int decoder_id) {
   }
 }
 
-bool ServiceTransferCache::CreateLockedImageEntry(
+bool ServiceTransferCache::CreateLockedHardwareDecodedImageEntry(
     int decoder_id,
     uint32_t entry_id,
     ServiceDiscardableHandle handle,
     GrContext* context,
-    base::span<const uint8_t> decoded_image,
-    size_t row_bytes,
-    const SkImageInfo& image_info,
+    std::vector<sk_sp<SkImage>> plane_images,
+    size_t buffer_byte_size,
     bool needs_mips,
     sk_sp<SkColorSpace> target_color_space) {
   EntryKey key(decoder_id, cc::TransferCacheEntryType::kImage, entry_id);
@@ -222,12 +225,11 @@ bool ServiceTransferCache::CreateLockedImageEntry(
   if (found != entries_.end())
     return false;
 
-  // Create the service-side image transfer cache entry. Note that this involves
-  // uploading the image if it fits in GPU memory.
+  // Create the service-side image transfer cache entry.
   auto entry = std::make_unique<cc::ServiceImageTransferCacheEntry>();
-  if (!entry->BuildFromDecodedData(context, decoded_image, row_bytes,
-                                   image_info, needs_mips,
-                                   target_color_space)) {
+  if (!entry->BuildFromHardwareDecodedImage(context, std::move(plane_images),
+                                            buffer_byte_size, needs_mips,
+                                            std::move(target_color_space))) {
     return false;
   }
 

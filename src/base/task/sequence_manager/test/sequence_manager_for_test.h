@@ -29,15 +29,18 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
       const TickClock* clock,
       // Since most test calls are in Blink, randomised sampling is enabled
       // by default in the test SequenceManager, as opposed to production code.
-      SequenceManager::Settings settings = SequenceManager::Settings{
-          .randomised_sampling_enabled = true});
+      SequenceManager::Settings settings =
+          SequenceManager::Settings::Builder()
+              .SetRandomisedSamplingEnabled(true)
+              .Build());
 
   // Creates SequenceManagerForTest using the provided ThreadController.
   static std::unique_ptr<SequenceManagerForTest> Create(
       std::unique_ptr<internal::ThreadController> thread_controller,
-      SequenceManager::Settings settings = SequenceManager::Settings{
-          base::MessageLoop::TYPE_DEFAULT,
-          /*randomised_sampling_enabled=*/true});
+      SequenceManager::Settings settings =
+          SequenceManager::Settings::Builder()
+              .SetRandomisedSamplingEnabled(true)
+              .Build());
 
   static std::unique_ptr<SequenceManagerForTest> CreateOnCurrentThread(
       SequenceManager::Settings);

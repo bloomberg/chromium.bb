@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/content_input_delegate.h"
 
-#include "base/callback_helpers.h"
+#include <utility>
+
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_input_handler.h"
 
@@ -79,7 +80,7 @@ void ContentInputDelegate::OnWebInputIndicesChanged(
       i.selection_end == selection_end &&
       i.composition_start == composition_start &&
       i.composition_end == composition_end) {
-    base::ResetAndReturn(&callback).Run(i);
+    std::move(callback).Run(i);
     return;
   }
 
@@ -134,7 +135,7 @@ void ContentInputDelegate::OnWebInputTextChanged(const base::string16& text) {
   pending_text_request_state_ = kResponseReceived;
   auto update_state_callback = std::move(update_state_callbacks_.front());
   update_state_callbacks_.pop();
-  base::ResetAndReturn(&update_state_callback).Run(pending_text_input_info_);
+  std::move(update_state_callback).Run(pending_text_input_info_);
 }
 
 }  // namespace vr

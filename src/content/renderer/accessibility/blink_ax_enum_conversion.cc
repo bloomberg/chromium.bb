@@ -31,6 +31,11 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   if (o.IsDefault())
     dst->AddState(ax::mojom::State::kDefault);
 
+  // aria-grabbed is deprecated in WAI-ARIA 1.1.
+  if (o.IsGrabbed() != blink::kWebAXGrabbedStateUndefined)
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kGrabbed,
+                          o.IsGrabbed() == blink::kWebAXGrabbedStateTrue);
+
   if (o.IsHovered())
     dst->AddState(ax::mojom::State::kHovered);
 

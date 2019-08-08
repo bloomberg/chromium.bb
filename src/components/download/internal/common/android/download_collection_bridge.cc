@@ -154,10 +154,7 @@ void DownloadCollectionBridge::GetDisplayNamesForDownloads(
     std::move(cb).Run(std::move(result));
     return;
   }
-  jsize count = env->GetArrayLength(jdisplay_infos.obj());
-  for (jsize i = 0; i < count; ++i) {
-    base::android::ScopedJavaLocalRef<jobject> jdisplay_info(
-        env, env->GetObjectArrayElement(jdisplay_infos.obj(), i));
+  for (auto jdisplay_info : jdisplay_infos.ReadElements<jobject>()) {
     ScopedJavaLocalRef<jstring> juri =
         Java_DisplayNameInfo_getDownloadUri(env, jdisplay_info);
     ScopedJavaLocalRef<jstring> jdisplay_name =
@@ -175,6 +172,21 @@ void DownloadCollectionBridge::GetDisplayNamesForDownloads(
 bool DownloadCollectionBridge::NeedToRetrieveDisplayNames() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_DownloadCollectionBridge_needToRetrieveDisplayNames(env);
+}
+
+// static
+base::FilePath DownloadCollectionBridge::GetDisplayName(
+    const base::FilePath& download_uri) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jdownload_uri =
+      ConvertUTF8ToJavaString(env, download_uri.value());
+  ScopedJavaLocalRef<jstring> jdisplay_name =
+      Java_DownloadCollectionBridge_getDisplayName(env, jdownload_uri);
+  if (jdisplay_name) {
+    std::string display_name = ConvertJavaStringToUTF8(env, jdisplay_name);
+    return base::FilePath(display_name);
+  }
+  return base::FilePath();
 }
 
 jint JNI_DownloadCollectionBridge_GetExpirationDurationInDays(JNIEnv* env) {

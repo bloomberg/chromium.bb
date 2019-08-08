@@ -8,18 +8,27 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "components/arc/common/storage_manager.mojom.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
 
 class Profile;
+
+namespace content {
+class WebUIDataSource;
+}  // namespace content
 
 namespace crostini {
 enum class CrostiniResult;
@@ -28,7 +37,10 @@ enum class CrostiniResult;
 namespace chromeos {
 namespace settings {
 
-class StorageHandler : public ::settings::SettingsPageUIHandler {
+class StorageHandler
+    : public ::settings::SettingsPageUIHandler,
+      public arc::ConnectionObserver<arc::mojom::StorageManagerInstance>,
+      public arc::ArcSessionManager::Observer {
  public:
   // Enumeration for device state about remaining space. These values must be
   // kept in sync with settings.StorageSpaceState in JS code.
@@ -38,16 +50,24 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
     STORAGE_SPACE_CRITICALLY_LOW = 2,
   };
 
-  explicit StorageHandler(Profile* profile);
+  StorageHandler(Profile* profile, content::WebUIDataSource* html_source);
   ~StorageHandler() override;
 
-  // SettingsPageUIHandler implementation.
+  // ::settings::SettingsPageUIHandler:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
+  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
+
+  // arc::ConnectionObserver<arc::mojom::StorageManagerInstance>:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
+
+  // arc::ArcSessionManager::Observer:
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
  private:
   // Handlers of JS messages.
+  void HandleUpdateAndroidEnabled(const base::ListValue* unused_args);
   void HandleUpdateStorageInfo(const base::ListValue* unused_args);
   void HandleOpenDownloads(const base::ListValue* unused_args);
   void HandleOpenArcStorage(const base::ListValue* unused_args);
@@ -82,6 +102,9 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
 
   // Callback to update the UI about the size of browsing data.
   void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
+
+  // Requests updating the flag that hides the Android size UI.
+  void UpdateAndroidRunning();
 
   // Requests updating the space size used by Android apps and cache.
   void UpdateAndroidSize();
@@ -132,7 +155,15 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   bool updating_crostini_size_;
   bool updating_other_users_size_;
 
+  // A flag for keeping track of the mojo connection status to the ARC
+  // container.
+  bool is_android_running_;
+
   Profile* const profile_;
+  const std::string source_name_;
+  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
+      arc_observer_;
+
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageHandler);

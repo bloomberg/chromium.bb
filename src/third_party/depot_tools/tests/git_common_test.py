@@ -5,6 +5,8 @@
 
 """Unit tests for git_common.py"""
 
+from __future__ import print_function
+
 import binascii
 import collections
 import datetime
@@ -807,12 +809,12 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
   def testAll(self):
     def inner():
       with open('some/files/file2', 'a') as f2:
-        print >> f2, 'cool appended line'
+        print('cool appended line', file=f2)
       os.mkdir('some/other_files')
       with open('some/other_files/subdir_file', 'w') as f3:
-        print >> f3, 'new file!'
+        print('new file!', file=f3)
       with open('some/files/file5', 'w') as f5:
-        print >> f5, 'New file!1!one!'
+        print('New file!1!one!', file=f5)
 
       STATUS_1 = '\n'.join((
         ' M some/files/file2',
@@ -829,7 +831,7 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
 
       # Freeze group 2
       with open('some/files/file2', 'a') as f2:
-        print >> f2, 'new! appended line!'
+        print('new! appended line!', file=f2)
       self.assertEquals(self.repo.git('status', '--porcelain').stdout,
                         ' M some/files/file2\n')
       self.assertIsNone(self.gc.freeze())

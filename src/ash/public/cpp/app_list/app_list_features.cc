@@ -25,20 +25,22 @@ const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableAdaptiveResultRanker{
-    "EnableAdaptiveResultRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableQueryBasedAppsRanker{
     "EnableQueryBasedAppsRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateAppsRanker{
     "EnableZeroStateAppsRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableQueryBasedMixedTypesRanker{
     "EnableQueryBasedMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableZeroStateMixedTypesRanker{
+    "EnableZeroStateMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableEmbeddedAssistantUI{
     "EnableEmbeddedAssistantUI", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppListLaunchRecording{
+    "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -72,10 +74,6 @@ bool IsAppListSearchAutocompleteEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppListSearchAutocomplete);
 }
 
-bool IsAdaptiveResultRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAdaptiveResultRanker);
-}
-
 bool IsQueryBasedAppsRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableQueryBasedAppsRanker);
 }
@@ -84,8 +82,12 @@ bool IsZeroStateAppsRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableZeroStateAppsRanker);
 }
 
-bool IsQueryBasedMixedTypesEnabled() {
+bool IsQueryBasedMixedTypesRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableQueryBasedMixedTypesRanker);
+}
+
+bool IsZeroStateMixedTypesRankerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableZeroStateMixedTypesRanker);
 }
 
 bool IsAppReinstallZeroStateEnabled() {
@@ -120,6 +122,10 @@ std::string AppSearchResultRankerPredictorName() {
   if (!predictor_name.empty())
     return predictor_name;
   return std::string("MrfuAppLaunchPredictor");
+}
+
+bool IsAppListLaunchRecordingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppListLaunchRecording);
 }
 
 }  // namespace app_list_features

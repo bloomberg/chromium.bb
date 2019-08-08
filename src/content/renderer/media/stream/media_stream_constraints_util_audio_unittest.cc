@@ -116,8 +116,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
     device.input.set_effects(effects);
 
     return std::make_unique<ProcessedLocalAudioSource>(
-        -1, device, disable_local_echo, properties,
-        blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
+        -1, device, disable_local_echo, properties, base::NullCallback(),
         &pc_factory_, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
@@ -202,10 +201,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
       CheckGoogExperimentalEchoCancellationDefault(properties, true);
     }
     if (!Contains(exclude_audio_properties,
-                  &AudioProcessingProperties::goog_typing_noise_detection)) {
-      EXPECT_TRUE(properties.goog_typing_noise_detection);
-    }
-    if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_noise_suppression)) {
       EXPECT_TRUE(properties.goog_noise_suppression);
     }
@@ -252,10 +247,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
             exclude_audio_properties,
             &AudioProcessingProperties::goog_experimental_echo_cancellation)) {
       EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-    }
-    if (!Contains(exclude_audio_properties,
-                  &AudioProcessingProperties::goog_typing_noise_detection)) {
-      EXPECT_FALSE(properties.goog_typing_noise_detection);
     }
     if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_noise_suppression)) {
@@ -349,8 +340,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
     CheckGoogExperimentalEchoCancellationDefault(
         properties, enable_webrtc_audio_processing);
     EXPECT_EQ(enable_webrtc_audio_processing,
-              properties.goog_typing_noise_detection);
-    EXPECT_EQ(enable_webrtc_audio_processing,
               properties.goog_noise_suppression);
     EXPECT_EQ(enable_webrtc_audio_processing,
               properties.goog_experimental_noise_suppression);
@@ -383,7 +372,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
               properties.echo_cancellation_type);
     EXPECT_TRUE(properties.goog_auto_gain_control);
     CheckGoogExperimentalEchoCancellationDefault(properties, true);
-    EXPECT_TRUE(properties.goog_typing_noise_detection);
     EXPECT_TRUE(properties.goog_noise_suppression);
     EXPECT_TRUE(properties.goog_experimental_noise_suppression);
     EXPECT_TRUE(properties.goog_highpass_filter);
@@ -631,7 +619,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
       &AudioProcessingProperties::goog_audio_mirroring,
       &AudioProcessingProperties::goog_auto_gain_control,
       &AudioProcessingProperties::goog_experimental_echo_cancellation,
-      &AudioProcessingProperties::goog_typing_noise_detection,
       &AudioProcessingProperties::goog_noise_suppression,
       &AudioProcessingProperties::goog_experimental_noise_suppression,
       &AudioProcessingProperties::goog_highpass_filter,
@@ -644,7 +631,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
           &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_echo_cancellation,
-          &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection,
           &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_noise_suppression,
@@ -1306,8 +1292,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithWebRtc) {
         CheckGoogExperimentalEchoCancellationDefault(
             properties, enable_webrtc_audio_processing);
         EXPECT_EQ(enable_webrtc_audio_processing,
-                  properties.goog_typing_noise_detection);
-        EXPECT_EQ(enable_webrtc_audio_processing,
                   properties.goog_noise_suppression);
         EXPECT_EQ(enable_webrtc_audio_processing,
                   properties.goog_experimental_noise_suppression);
@@ -1370,7 +1354,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithSystem) {
                   properties.echo_cancellation_type);
         EXPECT_EQ(value, properties.goog_auto_gain_control);
         CheckGoogExperimentalEchoCancellationDefault(properties, value);
-        EXPECT_EQ(value, properties.goog_typing_noise_detection);
         EXPECT_EQ(value, properties.goog_noise_suppression);
         EXPECT_EQ(value, properties.goog_experimental_noise_suppression);
         EXPECT_EQ(value, properties.goog_highpass_filter);
@@ -1622,7 +1605,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
           }
           EXPECT_EQ(ec_value, properties.goog_auto_gain_control);
           CheckGoogExperimentalEchoCancellationDefault(properties, ec_value);
-          EXPECT_EQ(ec_value, properties.goog_typing_noise_detection);
           EXPECT_EQ(ec_value, properties.goog_noise_suppression);
           EXPECT_EQ(ec_value, properties.goog_experimental_noise_suppression);
           EXPECT_EQ(ec_value, properties.goog_highpass_filter);
@@ -1680,7 +1662,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
       &AudioProcessingProperties::goog_audio_mirroring,
       &AudioProcessingProperties::goog_auto_gain_control,
       &AudioProcessingProperties::goog_experimental_echo_cancellation,
-      &AudioProcessingProperties::goog_typing_noise_detection,
       &AudioProcessingProperties::goog_noise_suppression,
       &AudioProcessingProperties::goog_experimental_noise_suppression,
       &AudioProcessingProperties::goog_highpass_filter,
@@ -1693,7 +1674,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
           &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_echo_cancellation,
-          &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection,
           &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_noise_suppression,
@@ -1907,8 +1887,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
       properties.goog_auto_gain_control = !properties.goog_auto_gain_control;
       properties.goog_experimental_echo_cancellation =
           !properties.goog_experimental_echo_cancellation;
-      properties.goog_typing_noise_detection =
-          !properties.goog_typing_noise_detection;
       properties.goog_noise_suppression = !properties.goog_noise_suppression;
       properties.goog_experimental_noise_suppression =
           !properties.goog_experimental_noise_suppression;
@@ -1928,7 +1906,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
             &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
             &blink::WebMediaTrackConstraintSet::
                 goog_experimental_echo_cancellation,
-            &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection,
             &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
             &blink::WebMediaTrackConstraintSet::
                 goog_experimental_noise_suppression,
@@ -1940,7 +1917,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
         &AudioProcessingProperties::goog_audio_mirroring,
         &AudioProcessingProperties::goog_auto_gain_control,
         &AudioProcessingProperties::goog_experimental_echo_cancellation,
-        &AudioProcessingProperties::goog_typing_noise_detection,
         &AudioProcessingProperties::goog_noise_suppression,
         &AudioProcessingProperties::goog_experimental_noise_suppression,
         &AudioProcessingProperties::goog_highpass_filter,

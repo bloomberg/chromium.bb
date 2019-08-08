@@ -19,11 +19,6 @@
 #include "ui/base/cursor/cursor.h"
 #endif
 
-namespace base {
-class Pickle;
-class PickleIterator;
-}
-
 namespace content {
 
 // This class encapsulates a cross-platform description of a cursor.  Platform
@@ -40,9 +35,8 @@ class CONTENT_EXPORT WebCursor {
 
   const CursorInfo& info() const { return info_; }
 
-  // Serialization / De-serialization
-  bool Deserialize(const base::Pickle* m, base::PickleIterator* iter);
-  void Serialize(base::Pickle* pickle) const;
+  // Sets the cursor |info|; returns whether the struct has reasonable values.
+  bool SetInfo(const CursorInfo& info);
 
   // Equality operator; performs bitmap content comparison as needed.
   bool operator==(const WebCursor& other) const;
@@ -62,8 +56,6 @@ class CONTENT_EXPORT WebCursor {
                                                   float* scale);
 #endif
 
-  void set_info_for_testing(const CursorInfo& info) { info_ = info; }
-
  private:
   // Returns true if this cursor's platform data matches that of |other|.
   bool IsPlatformDataEqual(const WebCursor& other) const;
@@ -76,9 +68,6 @@ class CONTENT_EXPORT WebCursor {
 
   // Platform specific cleanup.
   void CleanupPlatformData();
-
-  // Clamp the hotspot to the custom image's bounds, if this is a custom cursor.
-  void ClampHotspot();
 
   float GetCursorScaleFactor(SkBitmap* bitmap);
 

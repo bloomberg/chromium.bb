@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
+      const base::Optional<url::Origin>& factory_bound_origin_,
       const OriginAccessList* origin_access_list,
       const OriginAccessList* factory_bound_origin_access_list,
       PreflightController* preflight_controller);
@@ -72,7 +73,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -165,6 +166,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // Holds timing info if a preflight was made.
   std::vector<PreflightTimingInfo> preflight_timing_info_;
+
+  const base::Optional<url::Origin> factory_bound_origin_;
 
   // Outlives |this|.
   const OriginAccessList* const origin_access_list_;

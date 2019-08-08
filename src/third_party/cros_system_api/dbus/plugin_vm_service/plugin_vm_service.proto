@@ -14,3 +14,8 @@ message GetLicenseDataResponse {
   string license_key = 1; // The PluginVm license key for the OU.
   string device_id = 2; // The current directory API ID.
 }
+
+// Show the specified PluginVm settings subpage.
+message ShowSettingsPageRequest {
+  string subpage_path = 1; // The subpage path.
+}

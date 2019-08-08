@@ -79,7 +79,6 @@ class TestLauncherDelegate {
   virtual size_t RetryTests(TestLauncher* test_launcher,
                             const std::vector<std::string>& test_names) = 0;
 
- protected:
   virtual ~TestLauncherDelegate();
 };
 
@@ -88,12 +87,6 @@ class TestLauncherDelegate {
 class ProcessLifetimeObserver {
  public:
   virtual ~ProcessLifetimeObserver() = default;
-
-  // Invoked once the child process is started. |handle| is a handle to the
-  // child process and |id| is its pid. NOTE: this method is invoked on the
-  // thread the process is launched on immediately after it is launched. The
-  // caller owns the ProcessHandle.
-  virtual void OnLaunched(ProcessHandle handle, ProcessId id) {}
 
   // Invoked when a test process exceeds its runtime, immediately before it is
   // terminated. |command_line| is the command line used to launch the process.
@@ -132,6 +125,9 @@ class TestLauncher {
     ALLOW_BREAKAWAY_FROM_JOB = (1 << 1),
   };
 
+  // Enum for subprocess stdio redirect.
+  enum StdioRedirect { AUTO, ALWAYS, NEVER };
+
   struct LaunchOptions {
     LaunchOptions();
     LaunchOptions(const LaunchOptions& other);
@@ -151,17 +147,21 @@ class TestLauncher {
   // Constructor. |parallel_jobs| is the limit of simultaneous parallel test
   // jobs.
   TestLauncher(TestLauncherDelegate* launcher_delegate, size_t parallel_jobs);
-  ~TestLauncher();
+  // virtual to mock in testing.
+  virtual ~TestLauncher();
 
   // Runs the launcher. Must be called at most once.
-  bool Run() WARN_UNUSED_RESULT;
+  // command_line is null by default.
+  // if null, uses command line for current process.
+  bool Run(CommandLine* command_line = nullptr) WARN_UNUSED_RESULT;
 
   // Launches a child process (assumed to be gtest-based binary) using
   // |command_line|. If |wrapper| is not empty, it is prepended to the final
   // command line. |observer|, if not null, is used to convey process lifetime
   // events to the caller. |observer| is destroyed after its OnCompleted
   // method is invoked.
-  void LaunchChildGTestProcess(
+  // virtual to mock in testing.
+  virtual void LaunchChildGTestProcess(
       const CommandLine& command_line,
       const std::string& wrapper,
       TimeDelta timeout,
@@ -172,15 +172,29 @@ class TestLauncher {
   void OnTestFinished(const TestResult& result);
 
  private:
-  bool Init() WARN_UNUSED_RESULT;
+  bool Init(CommandLine* command_line) WARN_UNUSED_RESULT;
+
+  // Gets tests from the delegate, and converts to TestInfo objects.
+  // Returns false if delegate fails to return tests.
+  bool InitTests();
+
+  // Validate tests names. This includes no name conflict between tests
+  // without DISABLED_ prefix, and orphaned PRE_ tests.
+  // Returns false if any violation is found.
+  bool ValidateTests();
 
   // Runs all tests in current iteration.
   void RunTests();
 
+  // Retry to run tests that failed during RunTests.
+  // Returns false if retry still fails or unable to start.
+  bool RunRetryTests();
+
   void CombinePositiveTestFilters(std::vector<std::string> filter_a,
                                   std::vector<std::string> filter_b);
 
-  void RunTestIteration();
+  // Rest counters, retry tests list, and test result tracker.
+  void OnTestIterationStart();
 
 #if defined(OS_POSIX)
   void OnShutdownPipeReadable();
@@ -194,6 +208,11 @@ class TestLauncher {
 
   // Called by the delay timer when no output was made for a while.
   void OnOutputTimeout();
+
+  // Creates and starts a ThreadPoolInstance with |num_parallel_jobs| dedicated
+  // to foreground blocking tasks (corresponds to the traits used to launch and
+  // wait for child processes). virtual to mock in testing.
+  virtual void CreateAndStartThreadPool(int num_parallel_jobs);
 
   // Make sure we don't accidentally call the wrong methods e.g. on the worker
   // pool thread.  Should be the first member so that it's destroyed last: when
@@ -214,11 +233,14 @@ class TestLauncher {
   std::vector<std::string> positive_test_filter_;
   std::vector<std::string> negative_test_filter_;
 
-  // Tests to use (cached result of TestLauncherDelegate::GetTests).
-  std::vector<TestIdentifier> tests_;
+  // Class to encapsulate gtest information.
+  class TestInfo;
 
-  // Number of tests found in this binary.
-  size_t test_found_count_;
+  // Tests to use (cached result of TestLauncherDelegate::GetTests).
+  std::vector<TestInfo> tests_;
+
+  // Threshold for number of broken tests.
+  size_t broken_threshold_;
 
   // Number of tests started in this iteration.
   size_t test_started_count_;
@@ -233,9 +255,6 @@ class TestLauncher {
   // likely indicating a more systemic problem if widespread.
   size_t test_broken_count_;
 
-  // Number of retries in this iteration.
-  size_t retry_count_;
-
   // Maximum number of retries per iteration.
   size_t retry_limit_;
 
@@ -245,9 +264,6 @@ class TestLauncher {
 
   // Tests to retry in this iteration.
   std::set<std::string> tests_to_retry_;
-
-  // Result to be returned from Run.
-  bool run_result_;
 
   // Support for test shuffling, just like gtest does.
   bool shuffle_;
@@ -260,6 +276,24 @@ class TestLauncher {
 
   // Number of jobs to run in parallel.
   size_t parallel_jobs_;
+
+  // Switch to control tests stdio :{auto, always, never}
+  StdioRedirect print_test_stdio_;
+
+  // Skip disabled tests unless explicitly requested.
+  bool skip_diabled_tests_;
+
+  // Stop test iterations due to failure.
+  bool stop_on_failure_;
+
+  // Path to JSON summary result file.
+  FilePath summary_path_;
+
+  // Path to trace file.
+  FilePath trace_path_;
+
+  // redirect stdio of subprocess
+  bool redirect_stdio_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncher);
 };

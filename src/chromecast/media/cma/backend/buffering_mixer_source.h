@@ -45,7 +45,8 @@ class BufferingMixerSource : public MixerInput::Source,
     using MixerError = MixerInput::Source::MixerError;
 
     // Called when the last data passed to WritePcm() has been successfully
-    // added to the buffer.
+    // added to the buffer. |delay| (if valid) indicates the expected playout
+    // time of the next pushed buffer.
     virtual void OnWritePcmCompletion(RenderingDelay delay) = 0;
 
     // Called when a mixer error occurs.
@@ -106,6 +107,9 @@ class BufferingMixerSource : public MixerInput::Source,
   // be removed from the mixer once it has faded out appropriately.
   void Remove();
 
+  // Sets the current media playback rate (typically ranges between 0.5 - 2.0).
+  void SetMediaPlaybackRate(double rate);
+
   // This allows for very small changes in the rate of audio playback that are
   // (supposedly) imperceptible.
   float SetAvSyncPlaybackRate(float rate);
@@ -134,26 +138,33 @@ class BufferingMixerSource : public MixerInput::Source,
       Members(BufferingMixerSource* source,
               int input_samples_per_second,
               int num_channels,
-              int64_t playback_start_timestamp);
+              int64_t playback_start_timestamp,
+              int64_t playback_start_pts);
       ~Members();
 
-      State state_;
-      bool paused_;
-      bool mixer_error_;
+      State state_ = State::kUninitialized;
+      bool paused_ = false;
+      bool mixer_error_ = false;
       scoped_refptr<DecoderBufferBase> pending_data_;
       base::circular_deque<scoped_refptr<DecoderBufferBase>> queue_;
-      int queued_frames_;
+      int queued_frames_ = 0;
       RenderingDelay mixer_rendering_delay_;
-      int extra_delay_frames_;
-      int current_buffer_offset_;
+      int extra_delay_frames_ = 0;
+      int current_buffer_offset_ = 0;
       AudioFader fader_;
-      bool zero_fader_frames_;
-      bool started_;
+      bool zero_fader_frames_ = false;
+      bool started_ = false;
+      double playback_rate_ = 1.0;
       // The absolute timestamp relative to clock monotonic (raw) at which the
       // playback should start. INT64_MIN indicates playback should start ASAP.
       // INT64_MAX indicates playback should start at a specified timestamp,
       // but we don't know what that timestamp is.
-      int64_t playback_start_timestamp_;
+      int64_t playback_start_timestamp_ = INT64_MIN;
+      // The PTS the playback should start at. We will drop audio pushed to us
+      // with PTS values below this value. If the audio doesn't have a starting
+      // PTS, then this value can be INT64_MIN, to play whatever audio is sent
+      // to us.
+      int64_t playback_start_pts_ = INT64_MIN;
       AudioResampler audio_resampler_;
 
      private:
@@ -184,7 +195,8 @@ class BufferingMixerSource : public MixerInput::Source,
     LockedMembers(BufferingMixerSource* source,
                   int input_samples_per_second,
                   int num_channels,
-                  int64_t playback_start_timestamp);
+                  int64_t playback_start_timestamp,
+                  int64_t playback_start_pts);
     ~LockedMembers();
 
     AcquiredLock Lock();
@@ -228,7 +240,6 @@ class BufferingMixerSource : public MixerInput::Source,
   void PostError(MixerError error);
   void PostAudioReadyForPlayback();
   void DropAudio(int64_t frames);
-  bool CanDropFrames(int64_t frames_to_drop);
   int64_t DataToFrames(int64_t size);
   void CheckAndStartPlaybackIfNecessary(int num_frames,
                                         int64_t playback_absolute_timestamp);
@@ -245,12 +256,6 @@ class BufferingMixerSource : public MixerInput::Source,
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;
   bool audio_ready_for_playback_fired_ = false;
-
-  // The PTS the playback should start at. We will drop audio pushed to us
-  // with PTS values below this value. If the audio doesn't have a starting
-  // PTS, then this value can be INT64_MIN, to play whatever audio is sent
-  // to us.
-  int64_t playback_start_pts_;
 
   LockedMembers locked_members_;
 

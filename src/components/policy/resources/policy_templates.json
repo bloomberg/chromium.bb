@@ -187,6 +187,17 @@
 #   values will be masked with '********' in the chrome://policy UI and policy
 #   exports. 'sensitiveValue' can be applied to all schema types.
 #
+#   For some policies which have complicated schema we add either
+#   'description_schema' which describes some but not necessarily all properties
+#   of the policy or 'url_schema' which contains the link to the expanded
+#   documentation.
+#   Note that 'description_schema' is used for documentation purposes only, but
+#   not for schema validation. It can be used in cases where validation is not
+#   desired, e.g. if the schema does not describe all properties (see
+#   ArcPolicy).
+#
+#   TODO(crbug.com/960274): Add translations of the schemas.
+#
 # IDs:
 #   Since a Protocol Buffer definition is generated from this file, unique and
 #   persistent IDs for all fields (but not for groups!) are needed. These are
@@ -239,6 +250,14 @@
 #   document a differing default value for devices enrolled into enterprise
 #   management. This is for documentation only - the enrollment-dependent
 #   handling must be manually implemented.
+#
+# Atomic Policy Group:
+#   An atomic policy group is a group of policies that logically belong together and influence
+#   a certain aspect of the browser only when considered together and should be treated as a single policy
+#   when merging policies from multiple sources. They all have to be set in the same
+#   source to take effect. In case members of a policy group are set at different sources,
+#   only the policies from the source with the highest priority will be used.
+#
 
   'risk_tag_definitions' : [
     # All following tags are ordered by severity of their impact.
@@ -399,6 +418,18 @@
         'AuthAndroidNegotiateAccountType',
         'AllowCrossOriginAuthPrompt',
         'NtlmV2Enabled',
+      ],
+    },
+    {
+      'name': 'Kerberos',
+      'type': 'group',
+      'caption': '''Kerberos''',
+      'desc': '''Policies related to Kerberos authentication.''',
+      'policies': [
+        'KerberosEnabled',
+        'KerberosRememberPasswordEnabled',
+        'KerberosAddAccountsAllowed',
+        'KerberosAccounts',
       ],
     },
     {
@@ -585,6 +616,8 @@
         'SpokenFeedbackEnabled',
         'HighContrastEnabled',
         'VirtualKeyboardEnabled',
+        'StickyKeysEnabled',
+        'DockedMagnifierEnabled',
         'KeyboardDefaultToFunctionKeys',
         'ScreenMagnifierType',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
@@ -713,6 +746,7 @@
         'BrowserSwitcherDelay',
         'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
+        'BrowserSwitcherExternalGreylistUrl',
         'BrowserSwitcherKeepLastChromeTab',
         'BrowserSwitcherUrlList',
         'BrowserSwitcherUrlGreylist',
@@ -945,7 +979,8 @@
         'ArcGoogleLocationServicesEnabled',
         'ArcCertificatesSyncMode',
         'ArcBackupRestoreEnabled',
-        'ArcLocationServiceEnabled'
+        'ArcLocationServiceEnabled',
+        'AppRecommendationZeroStateEnabled',
       ]
     },
     {
@@ -3249,7 +3284,6 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
-      'supported_chrome_os_management': ['active_directory'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -3269,7 +3303,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
-      'supported_chrome_os_management': ['active_directory'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -3289,7 +3322,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:9-','chrome_os:62-'],
-      'supported_chrome_os_management': ['active_directory'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -3309,7 +3341,6 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:9-','android:46-','webview_android:49-','chrome_os:62-'],
-      'supported_chrome_os_management': ['active_directory'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -3329,7 +3360,6 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
-      'supported_chrome_os_management': ['active_directory'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -3404,7 +3434,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:13-','chrome_os:62-'],
-      'supported_chrome_os_management': ['active_directory'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -3701,6 +3730,7 @@
           },
         },
       },
+      'url_schema': 'https://www.chromium.org/administrators/policy-list-3/extension-settings-full',
       'supported_on': ['chrome.*:62-', 'chrome_os:62-'],
       'features': {
         'dynamic_refresh': True,
@@ -3756,8 +3786,6 @@
           This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>.
 
           For Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
-          For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           ''',
     },
     {
@@ -5635,6 +5663,29 @@
       This setting has been removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 29 and higher versions.''',
     },
     {
+      'name': 'AppRecommendationZeroStateEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': True
+      },
+      'example_value': True,
+      'id': 563,
+      'caption': '''Enable App Recommendations in Zero State of Search Box''',
+      'tags': [],
+      'desc': '''Enable App Recommendation in Zero State of search box in launcher.
+
+          If this policy is set to true, App recommendations may appear in the zero state search.
+
+          If this policy is set to false, App recommendations will not appear in the zero state search.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the default is False for managed devices.'''
+    },
+    {
       'name': 'TranslateEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -6118,9 +6169,77 @@
       'label': '''Allow merging list policies from different sources''',
     },
     {
+      'name': 'PolicyDictionaryMultipleSourceMergeList',
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [ 'ContentPackManualBehaviorURLs', 'ExtensionSettings', 'DeviceLoginScreenPowerManagement', 'KeyPermissions', 'PowerManagementIdleSettings', 'ScreenBrightnessPercent', 'ScreenLockDelays' ],
+        }
+      },
+      'items': [
+        {
+          'name': 'ContentPackManualBehaviorURLs',
+          'value': 'ContentPackManualBehaviorURLs',
+          'caption': '''Managed user manual exception URLs''',
+        },
+        {
+          'name': 'DeviceLoginScreenPowerManagement',
+          'value': 'DeviceLoginScreenPowerManagement',
+          'caption': '''Power management on the login screen''',
+        },
+        {
+          'name': 'ExtensionSettings',
+          'value': 'ExtensionSettings',
+          'caption': '''Extension management settings''',
+        },
+        {
+          'name': 'KeyPermissions',
+          'value': 'KeyPermissions',
+          'caption': '''Key Permissions''',
+        },
+        {
+          'name': 'PowerManagementIdleSettings',
+          'value': 'PowerManagementIdleSettings',
+          'caption': '''Power management settings when the user becomes idle''',
+        },
+        {
+          'name': 'ScreenBrightnessPercent',
+          'value': 'ScreenBrightnessPercent',
+          'caption': '''Screen brightness percent''',
+        },
+        {
+          'name': 'ScreenLockDelays',
+          'value': 'ScreenLockDelays',
+          'caption': '''Screen lock delays''',
+        },
+      ],
+      'supported_on': ['chrome.*:76-', 'chrome_os:76-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['ExtensionSettings'],
+      'id': 565,
+      'caption': '''Allow merging dictionary policies from different sources''',
+      'tags': [],
+      'desc': '''Allows the selected policies to be merged when they come from different sources, with the same scopes and level.
+
+        The merging consists in merging the first level keys of the dictionary from each source. In case of conflict between keys, the key coming from the highest priority source will be applied.
+
+        If a policy is in the list, in case there is conflict between two sources, given that they have the same scopes and level, the values will be merged into a new policy dictionary.
+
+        If a policy is in the list, in case there is conflict between two sources but also between different scopes and/or level, the policy with the highest priority will be applied.
+
+        If a policy is not in the list, in case there is any conflict between sources, scopes and/or level, the policy with the highest priority will be applied.''',
+      'label': '''Allow merging dictionary policies from different sources''',
+    },
+    {
       'name': 'OpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
+      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/master/components/onc/docs/onc_spec.md',
       'supported_on': ['chrome_os:16-'],
       'features': {
         'dynamic_refresh': True,
@@ -6130,13 +6249,14 @@
       'id': 107,
       'caption': '''User-level network configuration''',
       'tags': ['full-admin-access'],
-      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format.''',
       'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
     },
     {
       'name': 'DeviceOpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
+      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/master/components/onc/docs/onc_spec.md',
       'supported_on': ['chrome_os:16-'],
       'device_only': True,
       'features': {
@@ -6146,7 +6266,7 @@
       'id': 108,
       'caption': '''Device-level network configuration''',
       'tags': ['full-admin-access'],
-      'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format.''',
       'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
     },
     {
@@ -6473,26 +6593,6 @@
       When this policy is set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will attempt to find a printer matching all of the specified attributes, and select it as default printer. The first printer found matching the policy is selected, in case of non-unique match any matching printer can be selected, depending on the order printers are discovered.
 
       If this policy is not set or matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
-
-      The value is parsed as JSON object, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
 
       Printers connected to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> are considered <ph name="PRINTER_TYPE_CLOUD">"cloud"</ph>, the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL">"local"</ph>.
       Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
@@ -7401,7 +7501,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 1, 2, 3, 4 ],
+        'enum': [ 1, 2, 3 ],
       },
       'items': [
         {
@@ -7418,13 +7518,7 @@
           'name': 'RollbackAndRestoreIfPossible',
           'value': 3,
           'caption': '''Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
-        },
-        {
-          'name': 'RollbackOnlyIfRestorePossible',
-          'value': 4,
-          'caption': '''Roll back and stay on target version if OS version is newer than target and it's possible to carry over device-level configuration (including network credentials) through rollback, also skipping OOBE after rollback. Don't do or abort rollback if that's not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
+          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 75 and higher. For older clients, this value means that rollback is disabled.''',
         },
       ],
       'supported_on': ['chrome_os:67-'],
@@ -9188,6 +9282,54 @@
           If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'StickyKeysEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:76-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 561,
+      'caption': '''Enable sticky keys''',
+      'tags': [],
+      'desc': '''Enable the sticky keys accessibility feature.
+
+          If this policy is set to true, the sticky keys will always be enabled.
+
+          If this policy is set to false, the sticky keys will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
+      'name': 'DockedMagnifierEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:76-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 562,
+      'caption': '''Enable docked magnifier''',
+      'tags': [],
+      'desc': '''Enable the docked magnifier accessibility feature.
+
+          If this policy is set to true, the docked magnifier will always be enabled.
+
+          If this policy is set to false, the docked magnifier will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -9830,8 +9972,14 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'url': { "type": "string" },
-          'hash': { "type": "string" }
+          'url': {
+            'description': 'The URL from which the avatar image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the avatar image.',
+            'type': 'string'
+          }
         },
       },
       'supported_on': ['chrome_os:34-'],
@@ -9848,21 +9996,6 @@
 
       The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
-      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "The URL from which the avatar image can be downloaded.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "The SHA-256 hash of the avatar image.",
-            "type": "string"
-          }
-        }
-      }
-
       If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download and use the avatar image.
 
       If you set this policy, users cannot change or override it.
@@ -9875,8 +10008,14 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'url': { "type": "string" },
-          'hash': { "type": "string" }
+          'url': {
+            'description': 'The URL from which the wallpaper image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the wallpaper image.',
+            'type': 'string'
+          }
         },
       },
       'supported_on': ['chrome_os:35-'],
@@ -9892,21 +10031,6 @@
       'desc': '''This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication.
 
       The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "The URL from which the wallpaper image can be downloaded.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "The SHA-256 hash of the wallpaper image.",
-            "type": "string"
-          }
-        }
-      }
 
       If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download and use the wallpaper image.
 
@@ -10697,21 +10821,7 @@
       'name': 'ArcPolicy',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:50-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': '{"applications":[{"packageName":"com.google.android.gm","installType":"FORCE_INSTALLED"},{"packageName":"com.google.android.apps.docs","installType":"PRELOAD"}]}',
-      'id': 318,
-      'caption': '''Configure ARC''',
-      'tags': [],
-      'desc':
-      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
-
-      This policy can be used to configure which Android apps are automatically installed on the device:
-
-      {
+      'description_schema': {
         "type": "object",
         "properties": {
           "applications": {
@@ -10751,7 +10861,20 @@
             }
           }
         }
-      }
+      },
+      'supported_on': ['chrome_os:50-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': '{"applications":[{"packageName":"com.google.android.gm","installType":"FORCE_INSTALLED","defaultPermissionPolicy":"PROMPT","managedConfiguration":{}},{"packageName":"com.google.android.apps.docs","installType":"PRELOAD","defaultPermissionPolicy":"PROMPT","managedConfiguration":{}}]}',
+      'id': 318,
+      'caption': '''Configure ARC''',
+      'tags': [],
+      'desc':
+      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
+
+      This policy can be used to configure which Android apps are automatically installed on the device.
 
       To pin apps to the launcher, see PinnedLauncherApps.'''
     },
@@ -11441,6 +11564,8 @@
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
+      # TODO(nikitapodguzov): Move the ppd_resource properties description to
+      # the schema after adding display of schemas in the HTML page.
       'name': 'NativePrinters',
       'type': 'list',
       'schema': {
@@ -11463,7 +11588,8 @@
               'type': 'object',
               'id': 'PpdResource',
               'properties': {
-                'effective_model': { 'type': 'string' }
+                'effective_model': { 'type': 'string' },
+                'autoconf': { 'type': 'boolean' }
               }
             }
           }
@@ -11485,7 +11611,7 @@
         '"model": "Color Laser 2004", '
         '"uri": "ipps://print-server.intranet.example.com:443/ipp/cl2k4", '
         '"uuid": "1c395fdb-5d93-4904-b246-b2c046e79d12", '
-        '"ppd_resource": { "effective_model": "Printer Manufacturer ColorLaser2k4" } '
+        '"ppd_resource": { "effective_model": "Printer Manufacturer ColorLaser2k4", "autoconf": false } '
         '}'
       ],
       'id': 350,
@@ -11499,6 +11625,10 @@
       <ph name="PRINTER_DISPLAY_NAME">display_name</ph> and <ph name="PRINTER_DESCRIPTION">description</ph> are free-form strings that can be customized for ease of printer selection. <ph name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph name="PRINTER_MODEL">model</ph> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI">uri</ph> should be an address reachable from a client computer including the <ph name="URI_SCHEME">scheme</ph>, <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>. <ph name="PRINTER_UUID">uuid</ph> is optional. If provided, it is used to help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
 
       <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> must match one of the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF">autoconf</ph> is a boolean flag indicating whether IPP Everywhere should be used to setup the printer. This flag is supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and higher.
+
+      Either <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> should contain the name of the printer or <ph name="PRINTER_AUTOCONF">autoconf</ph> should be set to true. The printers with both or without any properties will be ignored.
 
       Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
 
@@ -11883,9 +12013,9 @@
           'caption': '''Password entry is required every twelve hours''',
         },
         {
-          'name': 'Day',
+          'name': 'TwoDays',
           'value': 2,
-          'caption': '''Password entry is required every day (24 hours)''',
+          'caption': '''Password entry is required every two days (48 hours)''',
         },
         {
           'name': 'Week',
@@ -11970,8 +12100,14 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'url': { "type": "string" },
-          'hash': { "type": "string" }
+          'url': {
+            'description': 'The URL from which the wallpaper image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the wallpaper image.',
+            'type': 'string'
+          }
         },
       },
       'supported_on': ['chrome_os:61-'],
@@ -11979,18 +12115,12 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': { "url": "https://example.com/device_wallpaper.jpg", "hash": "examplewallpaperexamplewallpaperexamplewallpaperexamplewallpaper" },
+      'example_value': { "url": "https://example.com/device_wallpaper.jpg", "hash": "1337c0ded00d84b1dbadf00dd15ea5eb000deaddeaddeaddeaddeaddeaddead0" },
       'max_size': 16777216,
       'id': 357,
       'caption': '''Device wallpaper image''',
       'tags': [],
       'desc': '''Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      The policy should be speicified as a string that expresses the URL and hash in JSON format, e.g.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
 
       If the device wallpaper policy is set, the Chrome OS device will download and use the wallpaper image on the login screen if no user has yet signed in to the device. Once the user logs in, the user's wallpaper policy kicks in.
 
@@ -12538,9 +12668,7 @@
       origins named by subdomains; e.g. specifying https://example.com/ will
       also cause https://foo.example.com/ to be isolated as part of the
       https://example.com/ site.
-      If the policy is disabled, then both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flags.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME">DeviceLoginScreenIsolateOrigins</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      If the policy is not configured or disabled, the user will be able to change this setting.
 
       NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
       ''',
@@ -12560,10 +12688,10 @@
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
       'desc': '''
-      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites you want to isolate. This setting, SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, then both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable SitePerProcess manually, via command line flags.
-      If the policy is not configured, the user will be able to change this setting.
+      This setting, SitePerProcess, may be used to disallow users from opting out of the default behavior of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
+      If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
+      If the policy is not configured or disabled, the user will be able to opt out of site isolation
+      (e.g. using "Disable site isolation" entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
       On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
 
       NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
@@ -12584,10 +12712,9 @@
       'caption': '''Enable Site Isolation for specified origins''',
       'tags': ['system-security'],
       'desc': '''
-      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> policy which applies to the user session.
       If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
-      If the policy is disabled, both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flags.
-      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      If the policy is not configured or disabled, the platform default site isolation settings will be used for the sign-in screen.
       ''',
     },
     {
@@ -12606,10 +12733,9 @@
       'tags': ['system-security'],
       'desc': '''
       This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites you want to isolate. This setting, SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable SitePerProcess manually, via command line flags.
-      If the policy is not configured, the user will be able to change this setting.
+      This setting, DeviceLoginScreenSitePerProcess, may be used to disallow users from opting out of the default behavior of isolating all sites. Note that the DeviceLoginScreenIsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
+      If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
+      If the policy is not configured or disabled, the user will be able to change this setting (e.g. using "Disable site isolation" entry in chrome://flags).
       ''',
     },
     {
@@ -12700,7 +12826,7 @@
       'supported_on': ['chrome.*:65-'],
       'features': {
         'dynamic_refresh': False,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': ['http://testserver.example.com/','*.example.org'],
       'id': 400,
@@ -12818,15 +12944,15 @@
       'id': 405,
       'caption': '''Force enable spellcheck languages''',
       'tags': [],
-      'desc': '''Force-enables spellcheck languages. Unrecognized languages in that list will be ignored.
+      'desc': '''Force-enables spellcheck languages. Unrecognized languages in the list will be ignored.
 
       If you enable this policy, spellcheck will be enabled for the languages specified, in addition to the languages for which the user has enabled spellcheck.
 
       If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
 
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+      If the <ph name="SPELLCHECK_ENABLED_POLICY_NAME">SpellcheckEnabled</ph> policy is set to false, this policy will have no effect.
 
-      If a language is included in both this policy and the SpellcheckLanguageBlacklist policy, this policy is prioritized and the spellcheck language is enabled.
+      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME">SpellcheckLanguageBlacklist</ph> policy, this policy is prioritized and the spellcheck language is enabled.
 
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
@@ -12854,9 +12980,9 @@
 
       If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
 
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+      If the <ph name="SPELLCHECK_ENABLED_POLICY_NAME">SpellcheckEnabled</ph> policy is set to false, this policy will have no effect.
 
-      If a language is included in both this policy and the SpellcheckLanguage policy, the SpellcheckLanguage policy is prioritized and the spellcheck language will be enabled.
+      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> policy, the latter is prioritized and the spellcheck language will be enabled.
 
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
@@ -12873,7 +12999,9 @@
       'id': 407,
       'caption': '''Enable third party software injection blocking''',
       'tags': [],
-      'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.''',
+      'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.
+
+      Regardless of the value of this policy, the browser will not currently block third party software from injecting executable code into its processes on a machine that is joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
     {
       'name': 'SpellcheckEnabled',
@@ -12889,9 +13017,11 @@
       'id': 408,
       'caption': '''Enable spellcheck''',
       'tags': [],
-      'desc': '''If this policy is not set or enabled, the user is allowed to use spellcheck.
+      'desc': '''If this policy is not set, the user can enable or disable spellcheck in the language settings.
 
-      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage and SpellcheckLanguageBlacklist policies will also be ignored when this policy is disabled.
+      If this policy is set to true, spellcheck is enabled and the user cannot disable it. On <ph name="MS_WIN_NAME">Microsoft® Windows</ph>, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and <ph name="LINUX_OS_NAME">Linux</ph>, spellcheck languages can be individually toggled on or off, so the user can still effectively disable spellcheck by toggling off every spellcheck language. To avoid that, the <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> policy can be used to force specific spellcheck languages to be enabled.
+
+      If this policy is set to false, spellcheck is disabled and the user cannot enable it. The <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> and <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME">SpellcheckLanguageBlacklist</ph> policies have no effect when this policy is set to false.
       '''
     },
     {
@@ -13045,9 +13175,27 @@
       'example_value': 604800000,
       'desc': '''Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched or that a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device must be restarted to apply a pending update.
 
-      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices, a restart notification appears in the system tray when an upgrade is detected. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes color once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy follow this same schedule.
+      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices, a restart notification appears in the system tray according to the <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME">RelaunchHeadsUpPeriod</ph> policy. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes color once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy follow this same schedule.
 
       If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'id': 567,
+      'name': 'RelaunchHeadsUpPeriod',
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome_os:76-'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 3600000 },
+      'caption': '''Set the time of the first user relaunch notification''',
+      'label': '''Time period (milliseconds)''',
+      'example_value': 86400000,
+      'desc': '''Allows you to set the time period, in milliseconds, between the first notification that a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device must be restarted to apply a pending update and the end of the time period specified by the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy.
+
+      If not set, the default period of 86400000 milliseconds (one day) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.''',
     },
     {
       'name': 'VirtualMachinesAllowed',
@@ -13965,7 +14113,7 @@
       'supported_on': ['chrome.*:69-', 'chrome_os:69-', 'android:69-'],
       'features': {
         'dynamic_refresh': False,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': ['http://testserver.example.com/','*.example.org'],
       'id': 457,
@@ -14681,7 +14829,7 @@
       'tags': [],
       'desc': '''This policy controls the list of websites that will never cause a browser switch.
 
-      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph> policies.
+      Note that elements can also be added to this list through the <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph> policy.
 
       When this policy is left unset, no websites are added to the list.
 
@@ -14696,7 +14844,7 @@
       'schema': { 'type': 'boolean' },
       'example_value': True,
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'supported_on': ['chrome.win:71-'],
@@ -14717,7 +14865,7 @@
       'schema': { 'type': 'string' },
       'example_value': 'http://example.com/sitelist.xml',
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'supported_on': ['chrome.*:72-'],
@@ -14728,6 +14876,29 @@
       When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use it as a source of rules for switching browsers.
 
       When this policy is set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
+
+      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
+    },
+    {
+      'id': 564,
+      'name': 'BrowserSwitcherExternalGreylistUrl',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'example_value': 'http://example.com/greylist.xml',
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:77-'],
+      'caption': '''URL of an XML file that contains URLs that should never trigger a browser switch.''',
+      'tags': [],
+      'desc': '''This policy is a URL, that points to an XML file in the same format as Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
+
+      The rules in this XML file apply in the same way as <ph name="GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>. That is, these rules prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from opening the alternative browser, and also prevent the alternative browser from opening <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use it as a source of rules that don't trigger a browser switch.
+
+      When this policy is set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph> policy.
 
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
     },
@@ -15059,16 +15230,17 @@
       'device_only': True,
       'example_value': 2,
       'features': {
-        'dynamic_refresh': True,
+        'dynamic_refresh': False,
         'per_profile': False,
       },
-      'supported_on': ['chrome_os:74-'],
+      'supported_on': ['chrome_os:76-'],
       'caption': '''Force device reboot when user sign out''',
       'tags': ['system-security'],
       'desc': '''
       This policy, when set to ArcSession, forces the device to reboot when a user sign out if Android has started.
       When set to Always, it forces the device to reboot on every user sign out.
       If left unset, it has no effect and no reboot is forced on user sign out. The same applies if set to Never.
+      This policy has effect only for unaffiliated users.
       ''',
     },
     {
@@ -15404,6 +15576,7 @@
         'type': 'string',
       },
       'supported_on': ['chrome_os:75-'],
+      'device_only': True,
       'tags': [],
       'features': {
         'dynamic_refresh': True,
@@ -15411,7 +15584,7 @@
       },
       'example_value': 'sometoken',
       'id': 543,
-      'caption': '''Provide users with Quick Fix Build.''',
+      'caption': '''Provide users with Quick Fix Build''',
       'desc': '''This policy controls whether or not the device should be updated to a Quick Fix Build.
 
       If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
@@ -15431,7 +15604,7 @@
       },
       'example_value': True,
       'id': 545,
-      'caption': '''Enables a page for in-session change of password for SAML users.''',
+      'caption': '''Enables a page for in-session change of password for SAML users''',
       'desc': '''Enables a page at chrome://password-change that lets SAML users change their SAML passwords while in-session, which ensures that the SAML password and the device lockscreen password are kept in-sync.
 
       This policy also enables notifications that warn SAML users if their SAML passwords are soon to expire so that they can deal with this immediately by doing an in-session password change.
@@ -15712,6 +15885,181 @@
       'caption': '''Set custom schedule to check for updates''',
       'desc': '''Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.'''
     },
+    {
+      'name': 'KerberosEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': True,
+      'id': 557,
+      'caption': '''Enable Kerberos functionality''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether the Kerberos functionality is enabled. Kerberos is an authentication protocol that can be used to authenticate to web apps and file shares.
+
+          If this policy is enabled, Kerberos functionality is enabled. Kerberos accounts can be added either through the 'Configure Kerberos accounts' policy or through the Kerberos Accounts settings in the People settings page.
+
+          If this policy disabled or not set, the Kerberos Accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, all stored passwords are deleted.''',
+    },
+    {
+      'name': 'KerberosRememberPasswordEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': True,
+      'id': 558,
+      'caption': '''Enable 'Remember password' feature''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether the 'Remember password' feature is enabled in the Kerberos authentication dialog. Passwords are stored encryped on disk, only accessible to the Kerberos system daemon and during a user session.
+
+          If this policy is enabled or not set, users can decide whether Kerberos passwords are remembered, so that they do not have to be entered again. Kerberos tickets are automatically fetched unless additional authentication is required (two-factor authentication).
+
+          If this policy is disabled, passwords are never remembered and all previously stored passwords are removed. Users have to enter their password every time they need to authenticate with the Kerberos system. Depending on server settings, this usually happens between every 8 hours to several months.''',
+    },
+    {
+      'name': 'KerberosAddAccountsAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': True,
+      'id': 559,
+      'caption': '''Users can add Kerberos accounts''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether users may add Kerberos accounts.
+
+          If this policy is enabled or not set, users may add Kerberos accounts via the Kerberos Accounts settings in the People settings page. Users have full control over accounts they added and may modify or remove them.
+
+          If this policy is disabled, users may not add Kerberos accounts. Accounts can only be added via the 'Configure Kerberos accounts' policy. This is an effective way to lock down accounts.''',
+    },
+    {
+      'name': 'KerberosAccounts',
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'principal': {
+              'description': '''User principal 'user@realm'. The placeholder ${{LOGIN_ID}} is replaced by the username 'user'. The placeholder ${{LOGIN_EMAIL}} is replaced by the full principal 'user@realm'.''',
+              'type': 'string',
+            },
+            'password': {
+              'description': '''Kerberos password. The placeholder ${{PASSWORD}} is replaced by the login password.''',
+              'type': 'string',
+            },
+            'remember_password': {
+              'description': '''Whether to remember the Kerberos password. Ignored if the password is specified.''',
+              'type': 'boolean',
+            },
+            'krb5conf': {
+              'description': '''Kerberos configuration (one line per array item), see https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.''',
+              'type': 'array',
+              'items': {
+                'type': 'string',
+              },
+            },
+          },
+        },
+      },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': [
+        {
+          "principal":"${{LOGIN_EMAIL}}",
+          "password":"${{PASSWORD}}"
+        },
+        {
+          "principal":"user1@REALM.COM",
+          "remember_password": True
+        },
+        {
+          "principal":"user2@REALM.COM",
+          "password":"p4zzw0rd!",
+          "krb5conf":[
+            "[libdefaults]",
+            "  default_tgs_enctypes = aes256-cts-hmac-sha1-96",
+            "  default_tkt_enctypes = aes256-cts-hmac-sha1-96",
+            "  permitted_enctypes = aes256-cts-hmac-sha1-96",
+            "  default_realm = REALM.COM",
+            "",
+            "[realms]",
+            "  REALM.COM = {",
+            "    kdc = us-west.realm.com",
+            "    master_kdc = us-west.realm.com",
+            "    kpasswd_server = us-west.realm.com",
+            "  }"
+          ]
+        }
+      ],
+      'id': 560,
+      'caption': '''Configure Kerberos accounts''',
+      'tags': ['website-sharing'],
+      'desc': '''Adds prefilled Kerberos accounts. If the Kerberos credentials match the login credentials, an account can be configured to reuse the login credentials by specifying '${{LOGIN_EMAIL}}' and '${{PASSWORD}}' for principal and password, respectively, so that the Kerberos ticket can be retrieved automatically unless two-factor authentication is configured. Users cannot modify accounts added via this policy.
+
+          If this policy is enabled, the list of accounts defined by the policy is added to the Kerberos Accounts settings.
+
+          If this policy is disabled or not set, no accounts are added to the Kerberos Accounts settings and all accounts previously added with this policy are removed. Users may still add accounts manually if the 'Users can add Kerberos accounts' policy is enabled.''',
+    },
+    {
+      'name': 'CommandLineFlagSecurityWarningsEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:76-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 566,
+      'caption': '''Enable security warnings for command-line flags''',
+      'tags': ['system-security'],
+      'desc': '''If disabled, prevents security warnings from appearing when Chrome is launched with some potentially dangerous command-line flags.
+
+          If enabled or unset, security warnings are displayed when some command-line flags are used to launch Chrome.
+
+          On Windows, this policy is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that are enrolled for device management.''',
+    },
+    {
+      'name': 'StartupBrowserWindowLaunchSuppressed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:76-'],
+      'tags': [],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 568,
+      'caption': '''Suppress launching of browser window''',
+      'desc': '''This policy controls whether the browser window should be launched at the start of the session.
+
+          If this policy is enabled, the browser window will not be launched.
+
+          If this policy is disabled or not set, the browser window is allowed to launch. Note that the browser window might not launch due to other policies or command-line flags.''',
+    },
   ],
 
   'messages': {
@@ -15771,6 +16119,14 @@
     'doc_arc_support': {
       'desc': '''Caption text of the field in the generated documentation that describes how a policy affects Android applications on Chrome OS''',
       'text': '''Note for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices supporting Android apps:'''
+    },
+    'doc_schema': {
+      'desc': '''Caption text of the 'schema' in the summary chart of a policy in the generated documentation''',
+      'text': '''Schema:'''
+    },
+    'doc_url_schema': {
+      'desc': '''Caption text of the field with the link to expanded schema description in the summary chart of a policy in the generated documentation''',
+      'text': '''Expanded schema description:'''
     },
     'doc_example_value': {
       'desc': '''Caption text of the field 'example value' in the summary chart of a policy in the generated documentation''',
@@ -15862,6 +16218,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'desc': '''Caption text of the field 'maximum' in the summary chart of a policy in the generated documentation. Present only if policy has a maximum range restriction.''',
       'text': '''Maximum:'''
     },
+    'doc_schema_description_link': {
+      'desc': '''Text pointing the user to the expanded documentation page for this policy, containing the information about schema and formatting.''',
+      'text': '''See <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph> for more information about schema and formatting.'''
+    },
     'deprecated_policy_group_caption': {
       'desc': '''Localized name for the deprecated policies folder, for Microsoft's Group Policy Editor.''',
       'text': '''Deprecated policies''',
@@ -15875,7 +16235,564 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'text': '''This policy is deprecated. Its usage is discouraged. Read more at https://support.google.com/chrome/a/answer/7643500'''
     },
   },
+  # Legacy device policies that don't have a 1:1 mapping between template and
+  # chrome_device_policy.proto or where the types don't map the same way as for
+  # user policy, so that code is not (easily) generatable. Do not add new device
+  # policies here, make sure the proto is set up the same way as the (generated)
+  # user policy proto.
+  # Add deprecated policies here, though, if the proto field got deleted.
+  'legacy_device_policy_proto_map': [
+    # Deprecated device policies where the proto field got deleted.
+    ['DeviceStartUpUrls', ''],
+    ['DeviceIdleLogoutTimeout', ''],
+    ['DeviceIdleLogoutWarningDuration', ''],
+    ['DeviceLoginScreenSaverId', ''],
+    ['DeviceLoginScreenSaverTimeout', ''],
+    ['DeviceAppPack', ''],
+    # Proto fields with unknown policy.
+    ['', 'device_reporting.report_os_update_status'],
+    ['', 'device_reporting.report_running_kiosk_app'],
+    ['', 'camera_enabled.camera_enabled'],
+    # Not an actual policy.
+    ['', 'auto_update_settings.target_version_display_name'],
+    # TPMFirmwareUpdateSettings is one-to-many and uses a strongly typed proto.
+    ['TPMFirmwareUpdateSettings', 'tpm_firmware_update_settings.auto_update_mode'],
+    ['TPMFirmwareUpdateSettings', 'tpm_firmware_update_settings.allow_user_initiated_powerwash'],
+    ['TPMFirmwareUpdateSettings', 'tpm_firmware_update_settings.allow_user_initiated_preserve_device_state'],
+    # DeviceOffHours is one-to-many and uses a strongly typed proto.
+    ['DeviceOffHours', 'device_off_hours.intervals'],
+    ['DeviceOffHours', 'device_off_hours.timezone'],
+    ['DeviceOffHours', 'device_off_hours.ignored_policy_proto_tags'],
+    # UsbDetachableWhitelist is a strongly typed proto.
+    ['UsbDetachableWhitelist', 'usb_detachable_whitelist.id'],
+    # DeviceUpdateAllowedConnectionTypes is not generatable since the proto
+    # uses enums, whereas the schema uses strings.
+    ['DeviceUpdateAllowedConnectionTypes', 'auto_update_settings.allowed_connection_types'],
+  ],
+  # Mapping between device policies and fields in chrome_device_policy.proto.
+  # Code for these policies can be generated. Add new device policies here!
+  'device_policy_proto_map': {
+    'DeviceGuestModeEnabled': 'guest_mode_enabled.guest_mode_enabled',
+    'DeviceRebootOnShutdown': 'reboot_on_shutdown.reboot_on_shutdown',
+    'DeviceShowUserNamesOnSignin': 'show_user_names.show_user_names',
+    'DeviceAllowNewUsers': 'allow_new_users.allow_new_users',
+    'DeviceUserWhitelist': 'user_whitelist.user_whitelist',
+    'DeviceEphemeralUsersEnabled': 'ephemeral_users_enabled.ephemeral_users_enabled',
+    'LoginAuthenticationBehavior': 'login_authentication_behavior.login_authentication_behavior',
+    'DeviceAllowBluetooth': 'allow_bluetooth.allow_bluetooth',
+    'DeviceLoginScreenExtensions': 'device_login_screen_app_install_list.device_login_screen_extensions',
+    'DeviceLoginScreenDomainAutoComplete': 'login_screen_domain_auto_complete.login_screen_domain_auto_complete',
+    'DeviceLoginScreenLocales': 'login_screen_locales.login_screen_locales',
+    'DeviceLoginScreenInputMethods': 'login_screen_input_methods.login_screen_input_methods',
+    'DeviceSamlLoginAuthenticationType': 'saml_login_authentication_type.saml_login_authentication_type',
+    'DeviceDataRoamingEnabled': 'data_roaming_enabled.data_roaming_enabled',
+    'AllowKioskAppControlChromeVersion': 'allow_kiosk_app_control_chrome_version.allow_kiosk_app_control_chrome_version',
+    'DevicePolicyRefreshRate': 'device_policy_refresh_rate.device_policy_refresh_rate',
+    'DeviceMetricsReportingEnabled': 'metrics_enabled.metrics_enabled',
+    'SystemUse24HourClock': 'use_24hour_clock.use_24hour_clock',
+    'UptimeLimit': 'uptime_limit.uptime_limit',
+    'DeviceAllowRedeemChromeOsRegistrationOffers': 'allow_redeem_offers.allow_redeem_offers',
+    'ExtensionCacheSize': 'extension_cache_size.extension_cache_size',
+    'DisplayRotationDefault': 'display_rotation_default.display_rotation_default',
+    'DeviceQuirksDownloadEnabled': 'quirks_download_enabled.quirks_download_enabled',
+    'UnaffiliatedArcAllowed': 'unaffiliated_arc_allowed.unaffiliated_arc_allowed',
+    'VirtualMachinesAllowed': 'virtual_machines_allowed.virtual_machines_allowed',
+    'DeviceUnaffiliatedCrostiniAllowed': 'device_unaffiliated_crostini_allowed.device_unaffiliated_crostini_allowed',
+    'PluginVmAllowed': 'plugin_vm_allowed.plugin_vm_allowed',
+    'DeviceLoginScreenAutoSelectCertificateForUrls': 'device_login_screen_auto_select_certificate_for_urls.login_screen_auto_select_certificate_rules',
+    'DeviceWiFiFastTransitionEnabled': 'device_wifi_fast_transition_enabled.enabled',
+    'DeviceTransferSAMLCookies': 'saml_settings.transfer_saml_cookies',
+    'LoginVideoCaptureAllowedUrls': 'login_video_capture_allowed_urls.urls',
+    'DeviceHostnameTemplate': 'network_hostname.device_hostname_template',
+    'DeviceKerberosEncryptionTypes': 'device_kerberos_encryption_types.types',
+    'LogUploadEnabled': 'device_log_upload_settings.system_log_upload_enabled',
+    'DeviceVariationsRestrictParameter': 'variations_parameter.parameter',
+    'DeviceBlockDevmode': 'system_settings.block_devmode',
+    'DeviceSecondFactorAuthentication': 'device_second_factor_authentication.mode',
+    'CastReceiverName': 'cast_receiver_name.name',
+    'DeviceNativePrintersAccessMode': 'native_device_printers_access_mode.access_mode',
+    'MinimumRequiredChromeVersion': 'minimum_required_version.chrome_version',
+    'DeviceUserPolicyLoopbackProcessingMode': 'device_user_policy_loopback_processing_mode.mode',
+    'DeviceLoginScreenIsolateOrigins': 'device_login_screen_isolate_origins.isolate_origins',
+    'DeviceLoginScreenSitePerProcess': 'device_login_screen_site_per_process.site_per_process',
+    'DeviceMachinePasswordChangeRate': 'device_machine_password_change_rate.rate_days',
+    'DeviceNativePrintersBlacklist': 'native_device_printers_blacklist.blacklist',
+    'DeviceNativePrintersWhitelist': 'native_device_printers_whitelist.whitelist',
+    'HeartbeatEnabled': 'device_heartbeat_settings.heartbeat_enabled',
+    'HeartbeatFrequency': 'device_heartbeat_settings.heartbeat_frequency',
+    'ChromeOsReleaseChannel': 'release_channel.release_channel',
+    'ChromeOsReleaseChannelDelegated': 'release_channel.release_channel_delegated',
+    'DeviceAutoUpdateDisabled': 'auto_update_settings.update_disabled',
+    'DeviceTargetVersionPrefix': 'auto_update_settings.target_version_prefix',
+    'DeviceRollbackToTargetVersion': 'auto_update_settings.rollback_to_target_version',
+    'DeviceRollbackAllowedMilestones': 'auto_update_settings.rollback_allowed_milestones',
+    'DeviceUpdateScatterFactor': 'auto_update_settings.scatter_factor_in_seconds',
+    'DeviceUpdateHttpDownloadsEnabled': 'auto_update_settings.http_downloads_enabled',
+    'RebootAfterUpdate': 'auto_update_settings.reboot_after_update',
+    'DeviceAutoUpdateP2PEnabled': 'auto_update_settings.p2p_enabled',
+    'DeviceLoginScreenDefaultLargeCursorEnabled': 'accessibility_settings.login_screen_default_large_cursor_enabled',
+    'DeviceLoginScreenDefaultSpokenFeedbackEnabled': 'accessibility_settings.login_screen_default_spoken_feedback_enabled',
+    'DeviceLoginScreenDefaultHighContrastEnabled': 'accessibility_settings.login_screen_default_high_contrast_enabled',
+    'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
+    'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
+    'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
+    'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
+    'SystemTimezone': 'system_timezone.timezone',
+    'SystemTimezoneAutomaticDetection': 'system_timezone.timezone_detection_type',
+    'ReportDeviceActivityTimes': 'device_reporting.report_activity_times',
+    'ReportDeviceBootMode': 'device_reporting.report_boot_mode',
+    'ReportDeviceLocation': 'device_reporting.report_location',
+    'ReportDeviceNetworkInterfaces': 'device_reporting.report_network_interfaces',
+    'ReportDeviceUsers': 'device_reporting.report_users',
+    'ReportDeviceHardwareStatus': 'device_reporting.report_hardware_status',
+    'ReportDeviceSessionStatus': 'device_reporting.report_session_status',
+    'ReportDeviceVersionInfo': 'device_reporting.report_version_info',
+    'ReportUploadFrequency': 'device_reporting.device_status_frequency',
+    'NetworkThrottlingEnabled': 'network_throttling.enabled',
+    'NetworkThrottlingEnabled': 'network_throttling.upload_rate_kbits',
+    'NetworkThrottlingEnabled': 'network_throttling.download_rate_kbits',
+    'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
+    'DeviceDisplayResolution': 'device_display_resolution.device_display_resolution',
+    'DeviceWallpaperImage': 'device_wallpaper_image.device_wallpaper_image',
+    'DeviceNativePrinters': 'native_device_printers.external_policy',
+    'DeviceAutoUpdateTimeRestrictions': 'auto_update_settings.disallowed_time_intervals',
+    'DeviceUpdateStagingSchedule': 'auto_update_settings.staging_schedule',
+    'DeviceLocalAccounts': 'device_local_accounts.account',
+    'DeviceLocalAccountAutoLoginId': 'device_local_accounts.auto_login_id',
+    'DeviceLocalAccountAutoLoginDelay': 'device_local_accounts.auto_login_delay',
+    'DeviceLocalAccountAutoLoginBailoutEnabled': 'device_local_accounts.enable_auto_login_bailout',
+    'DeviceLocalAccountPromptForNetworkWhenOffline': 'device_local_accounts.prompt_for_network_when_offline',
+    'DevicePowerPeakShiftEnabled': 'device_power_peak_shift.enabled',
+    'DevicePowerPeakShiftBatteryThreshold': 'device_power_peak_shift.battery_threshold',
+    'DevicePowerPeakShiftDayConfig': 'device_power_peak_shift.day_configs',
+    'DeviceWilcoDtcAllowed': 'device_wilco_dtc_allowed.device_wilco_dtc_allowed',
+    'DeviceWilcoDtcConfiguration': 'device_wilco_dtc_configuration.device_wilco_dtc_configuration',
+    'PluginVmLicenseKey': 'plugin_vm_license_key.plugin_vm_license_key',
+    'DeviceAuthDataCacheLifetime': 'device_auth_data_cache_lifetime.lifetime_hours',
+    'DeviceGpoCacheLifetime': 'device_gpo_cache_lifetime.lifetime_hours',
+    'DeviceRebootOnUserSignout': 'device_reboot_on_user_signout.reboot_on_signout_mode',
+    'DeviceEcryptfsMigrationStrategy': 'device_ecryptfs_migration_strategy.migration_strategy',
+    'DeviceWiFiFastTransitionEnabled': 'device_wifi_fast_transition_enabled.device_wifi_fast_transition_enabled',
+    'DeviceWiFiAllowed': 'device_wifi_allowed.device_wifi_allowed',
+    'AutoCleanUpStrategy': 'auto_clean_up_settings.clean_up_strategy',
+    'SupervisedUsersEnabled': 'supervised_users_settings.supervised_users_enabled',
+    'DeviceStartUpFlags': 'start_up_flags.flags',
+    'ReportDeviceBoardStatus': 'device_reporting.report_board_status',
+    'ReportDeviceStorageStatus': 'device_reporting.report_storage_status',
+    'ReportDevicePowerStatus': 'device_reporting.report_power_status',
+    'DeviceOpenNetworkConfiguration': 'open_network_configuration.open_network_configuration',
+    'DeviceBootOnAcEnabled': 'device_boot_on_ac.enabled',
+    'DeviceQuickFixBuildToken': 'auto_update_settings.device_quick_fix_build_token',
+    'DeviceDockMacAddressSource': 'device_dock_mac_address_source.source',
+    'DeviceUsbPowerShareEnabled': 'device_usb_power_share.enabled',
+    'DeviceAdvancedBatteryChargeModeEnabled': 'device_advanced_battery_charge_mode.enabled',
+    'DeviceAdvancedBatteryChargeModeDayConfig': 'device_advanced_battery_charge_mode.day_config',
+    'DeviceBatteryChargeMode': 'device_battery_charge_mode.battery_charge_mode',
+    'DeviceBatteryChargeCustomStartCharging': 'device_battery_charge_mode.custom_charge_start',
+    'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
+    'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings'
+  },
+  'policy_atomic_group_definitions': [
+    {
+      'id': 1,
+      'name': 'Homepage',
+      'policies': [
+        'HomepageLocation',
+        'HomepageIsNewTabPage',
+        'NewTabPageLocation',
+        'ShowHomeButton',
+      ],
+    },
+    {
+      'id': 2,
+      'name': 'RemoteAccess',
+      'policies': [
+        'RemoteAccessClientFirewallTraversal',
+        'RemoteAccessHostClientDomain',
+        'RemoteAccessHostClientDomainList',
+        'RemoteAccessHostFirewallTraversal',
+        'RemoteAccessHostDomain',
+        'RemoteAccessHostDomainList',
+        'RemoteAccessHostRequireTwoFactor',
+        'RemoteAccessHostTalkGadgetPrefix',
+        'RemoteAccessHostRequireCurtain',
+        'RemoteAccessHostAllowClientPairing',
+        'RemoteAccessHostAllowGnubbyAuth',
+        'RemoteAccessHostAllowRelayedConnection',
+        'RemoteAccessHostUdpPortRange',
+        'RemoteAccessHostMatchUsername',
+        'RemoteAccessHostTokenUrl',
+        'RemoteAccessHostTokenValidationUrl',
+        'RemoteAccessHostTokenValidationCertificateIssuer',
+        'RemoteAccessHostDebugOverridePolicies',
+        'RemoteAccessHostAllowUiAccessForRemoteAssistance',
+        'RemoteAccessHostAllowFileTransfer',
+      ],
+    },
+    {
+      'id': 3,
+      'name': 'PasswordManager',
+      'policies': [
+        'PasswordManagerEnabled',
+        'PasswordManagerAllowShowPasswords',
+      ],
+    },
+    {
+      'id': 4,
+      'name': 'Proxy',
+      'policies': [
+        'ProxyMode',
+        'ProxyServerMode',
+        'ProxyServer',
+        'ProxyPacUrl',
+        'ProxyBypassList',
+        'ProxySettings',
+      ],
+    },
+    {
+      'id': 5,
+      'name': 'Extensions',
+      'policies': [
+        'ExtensionInstallBlacklist',
+        'ExtensionInstallWhitelist',
+        'ExtensionInstallForcelist',
+        'ExtensionInstallSources',
+        'ExtensionAllowedTypes',
+        'ExtensionAllowInsecureUpdates',
+        'ExtensionSettings',
+      ],
+    },
+    {
+      'id': 6,
+      'name': 'RestoreOnStartupGroup',
+      'policies': [
+        'RestoreOnStartup',
+        'RestoreOnStartupURLs',
+      ],
+    },
+    {
+      'id': 7,
+      'name': 'DefaultSearchProvider',
+      'policies': [
+        'DefaultSearchProviderEnabled',
+        'DefaultSearchProviderName',
+        'DefaultSearchProviderKeyword',
+        'DefaultSearchProviderSearchURL',
+        'DefaultSearchProviderSuggestURL',
+        'DefaultSearchProviderInstantURL',
+        'DefaultSearchProviderIconURL',
+        'DefaultSearchProviderEncodings',
+        'DefaultSearchProviderAlternateURLs',
+        'DefaultSearchProviderSearchTermsReplacementKey',
+        'DefaultSearchProviderImageURL',
+        'DefaultSearchProviderNewTabURL',
+        'DefaultSearchProviderSearchURLPostParams',
+        'DefaultSearchProviderSuggestURLPostParams',
+        'DefaultSearchProviderInstantURLPostParams',
+        'DefaultSearchProviderImageURLPostParams',
+      ],
+    },
+    {
+      'id': 8,
+      'name': 'ImageSettings',
+      'policies': [
+        'DefaultImagesSetting',
+        'ImagesAllowedForUrls',
+        'ImagesBlockedForUrls',
+      ],
+    },
+    {
+      'id': 9,
+      'name': 'CookiesSettings',
+      'policies': [
+        'DefaultCookiesSetting',
+        'CookiesAllowedForUrls',
+        'CookiesBlockedForUrls',
+        'CookiesSessionOnlyForUrls',
+      ],
+    },
+    {
+      'id': 10,
+      'name': 'JavascriptSettings',
+      'policies': [
+        'DefaultJavaScriptSetting',
+        'JavaScriptAllowedForUrls',
+        'JavaScriptBlockedForUrls',
+      ],
+    },
+    {
+      'id': 11,
+      'name': 'PluginsSettings',
+      'policies': [
+        'DefaultPluginsSetting',
+        'PluginsAllowedForUrls',
+        'PluginsBlockedForUrls',
+      ],
+    },
+    {
+      'id': 12,
+      'name': 'PopupsSettings',
+      'policies': [
+        'DefaultPopupsSetting',
+        'PopupsAllowedForUrls',
+        'PopupsBlockedForUrls',
+      ],
+    },
+    {
+      'id': 13,
+      'name': 'KeygenSettings',
+      'policies': [
+        'DefaultKeygenSetting',
+        'KeygenAllowedForUrls',
+        'KeygenBlockedForUrls',
+      ],
+    },
+    {
+      'id': 14,
+      'name': 'NotificationsSettings',
+      'policies': [
+        'DefaultNotificationsSetting',
+        'NotificationsAllowedForUrls',
+        'NotificationsBlockedForUrls',
+      ],
+    },
+    {
+      'id': 15,
+      'name': 'WebUsbSettings',
+      'policies': [
+        'DefaultWebUsbGuardSetting',
+        'WebUsbAllowDevicesForUrls',
+        'WebUsbAskForUrls',
+        'WebUsbBlockedForUrls',
+      ],
+    },
+    {
+      'id': 16,
+      'name': 'NativeMessaging',
+      'policies': [
+        'NativeMessagingBlacklist',
+        'NativeMessagingWhitelist',
+        'NativeMessagingUserLevelHosts',
+      ],
+    },
+    {
+      'id': 17,
+      'name': 'Drive',
+      'policies': [
+        'DriveDisabled',
+        'DriveDisabledOverCellular',
+      ],
+    },
+    {
+      'id': 18,
+      'name': 'Attestation',
+      'policies': [
+        'AttestationEnabledForDevice',
+        'AttestationEnabledForUser',
+        'AttestationExtensionWhitelist',
+        'AttestationForContentProtectionEnabled',
+      ],
+    },
+    {
+      'id': 19,
+      'name': 'ContentPack',
+      'policies': [
+        'ContentPackDefaultFilteringBehavior',
+        'ContentPackManualBehaviorHosts',
+        'ContentPackManualBehaviorURLs',
+      ],
+    },
+    {
+      'id': 20,
+      'name': 'SupervisedUsers',
+      'policies': [
+        'SupervisedUsersEnabled',
+        'SupervisedUserCreationEnabled',
+        'SupervisedUserContentProviderEnabled',
+      ],
+    },
+    {
+      'id': 21,
+      'name': 'GoogleCast',
+      'policies': [
+        'CastReceiverEnabled',
+        'CastReceiverName',
+      ],
+    },
+    {
+      'id': 22,
+      'name': 'QuickUnlock',
+      'policies': [
+        'QuickUnlockModeWhitelist',
+        'QuickUnlockTimeout',
+      ],
+    },
+    {
+      'id': 23,
+      'name': 'PinUnlock',
+      'policies': [
+        'PinUnlockMinimumLength',
+        'PinUnlockMaximumLength',
+        'PinUnlockWeakPinsAllowed',
+      ],
+    },
+    {
+      'id': 24,
+      'name': 'SafeBrowsing',
+      'policies': [
+        'SafeBrowsingEnabled',
+        'SafeBrowsingExtendedReportingEnabled',
+        'SafeBrowsingExtendedReportingOptInAllowed',
+        'SafeBrowsingWhitelistDomains',
+      ],
+    },
+    {
+      'id': 25,
+      'name': 'PasswordProtection',
+      'policies': [
+        'PasswordProtectionWarningTrigger',
+        'PasswordProtectionLoginURLs',
+        'PasswordProtectionChangePasswordURL',
+      ],
+    },
+    {
+      'id': 26,
+      'name': 'NetworkFileShares',
+      'policies': [
+        'NetworkFileSharesAllowed',
+        'NetBiosShareDiscoveryEnabled',
+        'NTLMShareAuthenticationEnabled',
+        'NetworkFileSharesPreconfiguredShares',
+      ],
+    },
+    {
+      'id': 27,
+      'name': 'ChromeReportingExtension',
+      'policies': [
+        'ReportVersionData',
+        'ReportPolicyData',
+        'ReportMachineIDData',
+        'ReportUserIDData',
+        'ReportExtensionsAndPluginsData',
+        'ReportSafeBrowsingData',
+        'CloudReportingEnabled',
+      ],
+    },
+    {
+      'id': 28,
+      'name': 'BrowserSwitcher',
+      'policies': [
+        'AlternativeBrowserPath',
+        'AlternativeBrowserParameters',
+        'BrowserSwitcherChromePath',
+        'BrowserSwitcherChromeParameters',
+        'BrowserSwitcherDelay',
+        'BrowserSwitcherEnabled',
+        'BrowserSwitcherExternalSitelistUrl',
+        'BrowserSwitcherExternalGreylistUrl',
+        'BrowserSwitcherKeepLastChromeTab',
+        'BrowserSwitcherUrlList',
+        'BrowserSwitcherUrlGreylist',
+        'BrowserSwitcherUseIeSitelist',
+      ],
+    },
+    {
+      'id': 29,
+      'name': 'PluginVm',
+      'policies': [
+        'PluginVmAllowed',
+        'PluginVmLicenseKey',
+        'PluginVmImage',
+      ],
+    },
+    {
+      'id': 30,
+      'name': 'DeviceSAML',
+      'policies': [
+        'DeviceSamlLoginAuthenticationType',
+        'DeviceTransferSAMLCookies',
+      ],
+    },
+    {
+      'id': 31,
+      'name': 'DeviceLoginScreenOrigins',
+      'policies': [
+        'DeviceLoginScreenIsolateOrigins',
+        'DeviceLoginScreenSitePerProcess',
+      ],
+    },
+    {
+      'id': 32,
+      'name': 'UserAndDeviceReporting',
+      'policies': [
+        'ReportDeviceVersionInfo',
+        'ReportDeviceBootMode',
+        'ReportDeviceUsers',
+        'ReportDeviceActivityTimes',
+        'ReportDeviceLocation',
+        'ReportDeviceNetworkInterfaces',
+        'ReportDeviceHardwareStatus',
+        'ReportDeviceSessionStatus',
+        'ReportDeviceBoardStatus',
+        'ReportDevicePowerStatus',
+        'ReportDeviceStorageStatus',
+        'ReportUploadFrequency',
+        'ReportArcStatusEnabled',
+        'HeartbeatEnabled',
+        'HeartbeatFrequency',
+        'LogUploadEnabled',
+        'DeviceMetricsReportingEnabled',
+      ],
+    },
+    {
+      'id': 33,
+      'name': 'DeviceWiFi',
+      'policies': [
+        'DeviceWiFiFastTransitionEnabled',
+        'DeviceWiFiAllowed'
+      ],
+    },
+    {
+      'id': 34,
+      'name': 'Kiosk',
+      'policies': [
+        'DeviceLocalAccounts',
+        'DeviceLocalAccountAutoLoginId',
+        'DeviceLocalAccountAutoLoginDelay',
+        'DeviceLocalAccountAutoLoginBailoutEnabled',
+        'DeviceLocalAccountPromptForNetworkWhenOffline',
+      ],
+    },
+    {
+      'id': 35,
+      'name': 'DateAndTime',
+      'policies': [
+        'SystemTimezone',
+        'SystemTimezoneAutomaticDetection',
+      ]
+    },
+    {
+      'id': 36,
+      'name': 'Display',
+      'policies': [
+        'DeviceDisplayResolution',
+        'DisplayRotationDefault',
+      ]
+    },
+    {
+      'id': 37,
+      'name': 'ActiveDirectoryManagement',
+      'policies': [
+        'DeviceMachinePasswordChangeRate',
+        'DeviceUserPolicyLoopbackProcessingMode',
+        'DeviceKerberosEncryptionTypes',
+        'DeviceGpoCacheLifetime',
+        'DeviceAuthDataCacheLifetime',
+      ]
+    },
+  ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used':  556
+  'highest_id_currently_used': 568,
+  'highest_atomic_group_id_currently_used': 37
 }

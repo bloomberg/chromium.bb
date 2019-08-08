@@ -17,13 +17,14 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  public:
   PWAConfirmationBubbleView(views::View* anchor_view,
                             views::Button* highlight_button,
-                            const WebApplicationInfo& web_app_info,
+                            std::unique_ptr<WebApplicationInfo> web_app_info,
                             chrome::AppInstallationAcceptanceCallback callback);
 
   // LocationBarBubbleDelegateView:
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  views::View* GetInitiallyFocusedView() override;
   void WindowClosing() override;
   bool Accept() override;
 

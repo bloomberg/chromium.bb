@@ -71,7 +71,7 @@ cr.define('invalid_settings_browsertest', function() {
       }
       const pluginProxy = new print_preview.PDFPluginStub();
       pluginProxy.setPluginCompatible(pluginCompatible);
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -96,12 +96,13 @@ cr.define('invalid_settings_browsertest', function() {
           print_preview.makeRecentDestination(printers[1]),
         ],
       });
+      initialSettings.cloudPrintURL = 'cloudprint URL';
+      initialSettings.userAccounts = [printers[0].account];
       localDestinationInfos = [];
 
       loadTimeData.overrideValues({isEnterpriseManaged: false});
       createPage(true);
 
-      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => cloudPrintInterface.setPrinter(printer));
     }
 
@@ -115,7 +116,7 @@ cr.define('invalid_settings_browsertest', function() {
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
         const overlayEl = previewArea.$$('.preview-area-overlay-layer');
         const messageEl = previewArea.$$('.preview-area-message');
-        assertEquals(print_preview_new.State.FATAL_ERROR, page.state);
+        assertEquals(print_preview.State.FATAL_ERROR, page.state);
 
         // Make sure the overlay is visible.
         assertFalse(overlayEl.classList.contains('invisible'));
@@ -184,10 +185,14 @@ cr.define('invalid_settings_browsertest', function() {
             // FooDevice was set as an invalid printer.
             assertFalse(overlay.classList.contains('invisible'));
             assertTrue(messageEl.textContent.includes(expectedMessage));
-            assertEquals(print_preview_new.State.ERROR, page.state);
+            assertEquals(print_preview.State.ERROR, page.state);
 
             // Verify that the print button is disabled
             assertTrue(printButton.disabled);
+
+            // Select should still be enabled so that the user can select a new
+            // printer.
+            assertFalse(destinationSettings.$.destinationSelect.disabled);
 
             // Reset
             nativeLayer.reset();
@@ -209,7 +214,7 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Has active print button and successfully 'prints', indicating
             assertFalse(printButton.disabled);
-            assertEquals(print_preview_new.State.READY, page.state);
+            assertEquals(print_preview.State.READY, page.state);
             printButton.click();
             // This should result in a call to print.
             return nativeLayer.whenCalled('print');
@@ -303,7 +308,7 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Verify the state is invalid and that some settings sections are
             // also disabled, so there is no way to regenerate the preview.
-            assertEquals(print_preview_new.State.ERROR, page.state);
+            assertEquals(print_preview.State.ERROR, page.state);
             assertTrue(layoutSettings.$$('select').disabled);
             assertTrue(scalingSettings.$$('cr-input').disabled);
 
@@ -323,7 +328,7 @@ cr.define('invalid_settings_browsertest', function() {
           .then(function() {
             // Has active print button, indicating recovery from error state.
             assertFalse(printButton.disabled);
-            assertEquals(print_preview_new.State.READY, page.state);
+            assertEquals(print_preview.State.READY, page.state);
 
             // Settings sections are now active.
             assertFalse(layoutSettings.$$('select').disabled);
@@ -385,7 +390,7 @@ cr.define('invalid_settings_browsertest', function() {
               .then(function() {
                 // Has active print button.
                 assertFalse(printButton.disabled);
-                assertEquals(print_preview_new.State.READY, page.state);
+                assertEquals(print_preview.State.READY, page.state);
                 // No error message.
                 assertTrue(overlayEl.classList.contains('invisible'));
 
@@ -400,7 +405,7 @@ cr.define('invalid_settings_browsertest', function() {
               .then(function() {
                 // Should have error message.
                 assertFalse(overlayEl.classList.contains('invisible'));
-                assertEquals(print_preview_new.State.ERROR, page.state);
+                assertEquals(print_preview.State.ERROR, page.state);
 
                 // Reset
                 nativeLayer.reset();

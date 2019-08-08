@@ -139,7 +139,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
       reset_token_(0),
-      during_action_(false),
       weak_factory_(this) {
   ack_token_ = g_next_ack_token++;
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
@@ -253,7 +252,6 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
 
 bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  during_action_ = true;
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
 
     IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
@@ -263,7 +261,6 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  during_action_ = false;
   return handled;
 }
 
@@ -276,15 +273,16 @@ void RenderAccessibilityImpl::NotifyUpdate(
 
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
     const WebAXObject& obj,
-    ax::mojom::Event event) {
-  HandleAXEvent(obj, event);
+    ax::mojom::Event event,
+    ax::mojom::EventFrom event_from) {
+  HandleAXEvent(obj, event, event_from);
 }
 
 void RenderAccessibilityImpl::MarkWebAXObjectDirty(const WebAXObject& obj,
                                                    bool subtree) {
   DirtyObject dirty_object;
   dirty_object.obj = obj;
-  dirty_object.event_from = GetEventFrom();
+  dirty_object.event_from = ax::mojom::EventFrom::kAction;
   dirty_objects_.push_back(dirty_object);
 
   if (subtree)
@@ -310,13 +308,13 @@ void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
   Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
 }
 
-void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
-    const WebNode& node) {
+void RenderAccessibilityImpl::AccessibilityFocusedElementChanged(
+    const WebElement& element) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
     return;
 
-  if (node.IsNull()) {
+  if (element.IsNull()) {
     // When focus is cleared, implicitly focus the document.
     // TODO(dmazzoni): Make Blink send this notification instead.
     HandleAXEvent(WebAXObject::FromWebDocument(document),
@@ -326,6 +324,7 @@ void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
 
 void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
                                             ax::mojom::Event event,
+                                            ax::mojom::EventFrom event_from,
                                             int action_request_id) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
@@ -342,7 +341,8 @@ void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
       last_scroll_offset_ = scroll_offset;
       auto webax_object = WebAXObject::FromWebDocument(document);
       if (!obj.Equals(webax_object)) {
-        HandleAXEvent(webax_object, ax::mojom::Event::kLayoutComplete);
+        HandleAXEvent(webax_object, ax::mojom::Event::kLayoutComplete,
+                      event_from);
       }
     }
   }
@@ -380,7 +380,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
   ui::AXEvent acc_event;
   acc_event.id = obj.AxID();
   acc_event.event_type = event;
-  acc_event.event_from = GetEventFrom();
+  acc_event.event_from = event_from;
   acc_event.action_request_id = action_request_id;
 
   // Discard duplicate accessibility events.
@@ -414,18 +414,6 @@ void RenderAccessibilityImpl::ScheduleSendAccessibilityEventsIfNeeded() {
                        &RenderAccessibilityImpl::SendPendingAccessibilityEvents,
                        weak_factory_.GetWeakPtr()));
   }
-}
-
-ax::mojom::EventFrom RenderAccessibilityImpl::GetEventFrom() {
-  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(
-          render_frame_->GetWebFrame())) {
-    return ax::mojom::EventFrom::kUser;
-  }
-
-  if (during_action_)
-    return ax::mojom::EventFrom::kAction;
-
-  return ax::mojom::EventFrom::kPage;
 }
 
 int RenderAccessibilityImpl::GenerateAXID() {
@@ -562,6 +550,21 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     dirty_objects.push_back(dirty_object);
   }
 
+  // Popups have a document lifecycle managed separately from the main document
+  // but we need to return a combined accessibility tree for both.
+  // We ensured layout validity for the main document in the loop above; if a
+  // popup is open, do the same for it.
+  WebDocument popup_document = GetPopupDocument();
+  if (!popup_document.IsNull()) {
+    WebAXObject popup_root_obj = WebAXObject::FromWebDocument(popup_document);
+    if (!popup_root_obj.UpdateLayoutAndCheckValidity()) {
+      // If a popup is open but we can't ensure its validity, return without
+      // sending an update bundle, the same as we would for a node in the main
+      // document.
+      return;
+    }
+  }
+
   // Keep track of if the host node for a plugin has been invalidated,
   // because if so, the plugin subtree will need to be re-serialized.
   bool invalidate_plugin_subtree = false;
@@ -574,7 +577,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   std::set<int32_t> already_serialized_ids;
   for (size_t i = 0; i < dirty_objects.size(); i++) {
     auto obj = dirty_objects[i].obj;
-    if (obj.IsDetached())
+    // Dirty objects can be added using MarkWebAXObjectDirty(obj) from other
+    // parts of the code as well, so we need to ensure the object still exists.
+    if (!obj.UpdateLayoutAndCheckValidity())
       continue;
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;
@@ -749,13 +754,8 @@ void RenderAccessibilityImpl::OnPerformAction(
           WebPoint(data.target_point.x(), data.target_point.y()));
       break;
     case ax::mojom::Action::kSetSelection:
-      if (base::FeatureList::IsEnabled(features::kNewAccessibilitySelection)) {
         anchor.SetSelection(anchor, data.anchor_offset, focus,
                             data.focus_offset);
-      } else {
-        anchor.SetSelectionDeprecated(anchor, data.anchor_offset, focus,
-                                      data.focus_offset);
-      }
       HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
       break;
     case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
@@ -852,7 +852,8 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
   }
 
   // Otherwise, send an event on the node that was hit.
-  HandleAXEvent(obj, event_to_fire, action_request_id);
+  HandleAXEvent(obj, event_to_fire, ax::mojom::EventFrom::kAction,
+                action_request_id);
 }
 
 void RenderAccessibilityImpl::OnLoadInlineTextBoxes(const WebAXObject& obj) {
@@ -1145,8 +1146,10 @@ void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
       bool should_set_attributes = false;
       switch (status) {
         case ax::mojom::ImageAnnotationStatus::kNone:
+        case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
         case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
         case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+        case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
           break;
         case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
         case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
@@ -1199,6 +1202,14 @@ void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
       }
     }
   }
+}
+
+blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
+  blink::WebPagePopup* popup =
+      render_frame_->GetRenderView()->GetWebView()->GetPagePopup();
+  if (popup)
+    return popup->GetDocument();
+  return WebDocument();
 }
 
 }  // namespace content

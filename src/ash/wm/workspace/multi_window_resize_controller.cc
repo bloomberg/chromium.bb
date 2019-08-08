@@ -9,7 +9,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -264,7 +263,7 @@ void MultiWindowResizeController::OnWindowPropertyChanged(aura::Window* window,
                                                           intptr_t old) {
   // If the window is now non-resizeable, make sure the resizer is not showing.
   if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
-       ws::mojom::kResizeBehaviorCanResize) == 0)
+       aura::client::kResizeBehaviorCanResize) == 0)
     ResetResizer();
 }
 
@@ -281,7 +280,7 @@ void MultiWindowResizeController::OnWindowDestroying(aura::Window* window) {
 
 void MultiWindowResizeController::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+    WindowStateType old_type) {
   if (window_state->IsMaximized() || window_state->IsFullscreen() ||
       window_state->IsMinimized()) {
     ResetResizer();
@@ -315,7 +314,7 @@ MultiWindowResizeController::DetermineWindows(aura::Window* window,
 
   // Check if the window is non-resizeable.
   if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
-       ws::mojom::kResizeBehaviorCanResize) == 0)
+       aura::client::kResizeBehaviorCanResize) == 0)
     return result;
 
   gfx::Point point_in_parent =
@@ -369,7 +368,7 @@ aura::Window* MultiWindowResizeController::FindWindowByEdge(
 
     // Return the window if it is resizeable and the wanted edge has the point.
     if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
-         ws::mojom::kResizeBehaviorCanResize) != 0 &&
+         aura::client::kResizeBehaviorCanResize) != 0 &&
         PointOnWindowEdge(
             window, edge_want,
             ConvertPointToTarget(parent, window,

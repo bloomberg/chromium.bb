@@ -13,11 +13,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
@@ -235,7 +236,8 @@ void AuraSurface::OnWindowActivating(ActivationReason reason,
   //   window. To support overview, we would need to have it keep the original
   //   window activated and also do this inside OnWindowStackingChanged.
   //   See crbug.com/948492.
-  auto* occlusion_tracker = window->env()->GetWindowOcclusionTracker();
+  auto* occlusion_tracker =
+      aura::Env::GetInstance()->GetWindowOcclusionTracker();
   if (occlusion_tracker->HasIgnoredAnimatingWindows()) {
     const auto& occlusion_data =
         occlusion_tracker->ComputeTargetOcclusionForWindow(window);

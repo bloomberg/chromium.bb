@@ -6,6 +6,7 @@
 
 """Runs Android's lint tool."""
 
+from __future__ import print_function
 
 import argparse
 import os
@@ -61,7 +62,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     dom = minidom.parse(result_path)
     issues = dom.getElementsByTagName('issue')
     if not silent:
-      print >> sys.stderr
+      print(file=sys.stderr)
       for issue in issues:
         issue_id = issue.attributes['id'].value
         message = issue.attributes['message'].value
@@ -73,11 +74,11 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
         else:
           # Issues in class files don't have a line number.
           error = '%s %s: %s [warning]' % (path, message, issue_id)
-        print >> sys.stderr, error.encode('utf-8')
+        print(error.encode('utf-8'), file=sys.stderr)
         for attr in ['errorLine1', 'errorLine2']:
           error_line = issue.getAttribute(attr)
           if error_line:
-            print >> sys.stderr, error_line.encode('utf-8')
+            print(error_line.encode('utf-8'), file=sys.stderr)
     return len(issues)
 
   with build_utils.TempDir() as temp_dir:
@@ -166,7 +167,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
       # classpath is necessary for most source-level checks.
       with open(os.path.join(project_dir, 'project.properties'), 'w') \
           as propfile:
-        print >> propfile, 'target=android-{}'.format(android_sdk_version)
+        print('target=android-{}'.format(android_sdk_version), file=propfile)
 
     # Put the manifest in a temporary directory in order to avoid lint detecting
     # sibling res/ and src/ directories (which should be pass explicitly if they
@@ -222,10 +223,10 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
         num_issues = _ParseAndShowResultFile()
       except Exception: # pylint: disable=broad-except
         if not silent:
-          print 'Lint created unparseable xml file...'
-          print 'File contents:'
+          print('Lint created unparseable xml file...')
+          print('File contents:')
           with open(result_path) as f:
-            print f.read()
+            print(f.read())
           if can_fail_build:
             traceback.print_exc()
         if can_fail_build:
@@ -243,7 +244,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
                ' please refer to %s\n' %
                (num_issues, _RebasePath(result_path), _LINT_MD_URL))
       if not silent:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
       if can_fail_build:
         raise Exception('Lint failed.')
 

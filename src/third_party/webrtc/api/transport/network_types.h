@@ -101,6 +101,11 @@ struct SentPacket {
   DataSize data_in_flight = DataSize::Zero();
 };
 
+struct ReceivedPacket {
+  Timestamp receive_time = Timestamp::PlusInfinity();
+  DataSize size = DataSize::Zero();
+};
+
 // Transport level feedback
 
 struct RemoteBitrateReport {
@@ -221,12 +226,12 @@ struct NetworkStateEstimate {
   DataRate link_capacity = DataRate::MinusInfinity();
   DataRate link_capacity_std_dev = DataRate::MinusInfinity();
   DataRate link_capacity_min = DataRate::MinusInfinity();
-  double cross_traffic_ratio;
+  double cross_traffic_ratio = NAN;
   TimeDelta pre_link_buffer_delay = TimeDelta::MinusInfinity();
   TimeDelta post_link_buffer_delay = TimeDelta::MinusInfinity();
   TimeDelta propagation_delay = TimeDelta::MinusInfinity();
-  double cross_delay_rate;
-  double spike_delay_rate;
+  double cross_delay_rate = NAN;
+  double spike_delay_rate = NAN;
 };
 }  // namespace webrtc
 

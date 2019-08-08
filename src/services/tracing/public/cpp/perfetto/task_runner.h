@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_local.h"
 #include "base/timer/timer.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/base/task_runner.h"
@@ -37,36 +36,24 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   // use case.
   bool RunsTasksOnCurrentThread() const override;
 
+  void SetTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner();
+  bool HasTaskRunner() const { return !!task_runner_; }
+
   // Not used in Chrome.
   void AddFileDescriptorWatch(int fd, std::function<void()>) override;
   void RemoveFileDescriptorWatch(int fd) override;
 
-  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
   // Tests will shut down all task runners in between runs, so we need
   // to re-create any static instances on each SetUp();
   void ResetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  // Sometimes we have to temporarily defer any posted tasks, like
-  // when trace events are added when the taskqueue is locked. For this purpose
-  // we keep a timer running when tracing is enabled, which will periodically
-  // drain these posted tasks.
-  void StartDeferredTasksDrainTimer();
-  void StopDeferredTasksDrainTimer();
-
-  void BlockPostTaskForThread();
-  void UnblockPostTaskForThread();
-
  private:
   void OnDeferredTasksDrainTimer();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::ThreadLocalBoolean posttask_is_blocked_for_thread_;
-
-  base::Lock lock_;  // Protects deferred_tasks_;
-  std::list<std::function<void()>> deferred_tasks_;
-  base::RepeatingTimer deferred_tasks_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoTaskRunner);
 };

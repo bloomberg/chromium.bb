@@ -107,6 +107,7 @@ IndexedDBTransaction::AbortOperation IndexedDBTransaction::TaskStack::pop() {
 IndexedDBTransaction::IndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
+    ErrorCallback error_callback,
     const std::set<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction)
@@ -114,6 +115,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       object_store_ids_(object_store_ids),
       mode_(mode),
       connection_(connection->GetWeakPtr()),
+      error_callback_(std::move(error_callback)),
       transaction_(backing_store_transaction),
       ptr_factory_(this) {
   IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
@@ -193,7 +195,7 @@ void IndexedDBTransaction::ForcePendingCommit() {
   } else {
     leveldb::Status result = Commit();
     if (!result.ok())
-      database_->ReportError(result);
+      error_callback_.Run(result, "Error force committing.");
   }
 }
 
@@ -243,18 +245,24 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  locks_.clear();
+  locks_receiver_.locks.clear();
 
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);
 
-  database_->TransactionFinished(mode_, false);
+  // |TransactionFinished| can delete the database, which owns the connection,
+  // which owns this transaction.  Grab a weak pointer to the connection so we
+  // can test it later.
+  base::WeakPtr<IndexedDBConnection> connection = connection_;
+
+  if (database_)
+    database_->TransactionFinished(mode_, false);
 
   // RemoveTransaction will delete |this|.
   // Note: During force-close situations, the connection can be destroyed during
   // the |IndexedDBDatabase::TransactionFinished| call
-  if (connection_)
-    connection_->RemoveTransaction(id_);
+  if (connection)
+    connection->RemoveTransaction(id_);
 }
 
 bool IndexedDBTransaction::IsTaskQueueEmpty() const {
@@ -273,11 +281,10 @@ void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
   open_cursors_.erase(cursor);
 }
 
-void IndexedDBTransaction::Start(std::vector<ScopeLock> locks) {
-  // TransactionCoordinator has started this transaction.
+void IndexedDBTransaction::Start() {
   DCHECK_EQ(CREATED, state_);
   state_ = STARTED;
-  locks_ = std::move(locks);
+  DCHECK(!locks_receiver_.locks.empty());
   diagnostics_.start_time = base::Time::Now();
 
   if (!used_) {
@@ -300,25 +307,6 @@ void IndexedDBTransaction::EnsureBackingStoreTransactionBegun() {
   }
 }
 
-class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
- public:
-  explicit BlobWriteCallbackImpl(
-      base::WeakPtr<IndexedDBTransaction> transaction)
-      : transaction_(std::move(transaction)) {}
-
-  leveldb::Status Run(IndexedDBBackingStore::BlobWriteResult result) override {
-    if (!transaction_)
-      return leveldb::Status::OK();
-    return transaction_->BlobWriteComplete(result);
-  }
-
- protected:
-  ~BlobWriteCallbackImpl() override {}
-
- private:
-  base::WeakPtr<IndexedDBTransaction> transaction_;
-};
-
 leveldb::Status IndexedDBTransaction::BlobWriteComplete(
     IndexedDBBackingStore::BlobWriteResult result) {
   IDB_TRACE("IndexedDBTransaction::BlobWriteComplete");
@@ -335,18 +323,18 @@ leveldb::Status IndexedDBTransaction::BlobWriteComplete(
       return leveldb::Status::OK();
     case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
     case IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC: {
-      // Save the database as |this| can be destroyed in the next line. We also
-      // make
-      // sure to handle the error if we're not being called synchronously.
-      scoped_refptr<IndexedDBDatabase> database = database_;
+      // Save the callback as|this| can be destroyed in the next line.
+      auto callback_copy = error_callback_;
       s = CommitPhaseTwo();
       if (!s.ok() &&
-          result == IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC)
-        database->ReportError(s);
-      break;
+          result == IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC) {
+        callback_copy.Run(
+            s, "Unable to finish transaction commit after writing blobs.");
+      }
+      return s;
     }
   }
-  return s;
+  NOTREACHED();
 }
 
 leveldb::Status IndexedDBTransaction::Commit() {
@@ -391,11 +379,16 @@ leveldb::Status IndexedDBTransaction::Commit() {
   if (!used_) {
     s = CommitPhaseTwo();
   } else {
-    scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback(
-        new BlobWriteCallbackImpl(ptr_factory_.GetWeakPtr()));
     // CommitPhaseOne will call the callback synchronously if there are no blobs
     // to write.
-    s = transaction_->CommitPhaseOne(callback);
+    s = transaction_->CommitPhaseOne(base::BindOnce(
+        [](base::WeakPtr<IndexedDBTransaction> transaction,
+           IndexedDBBackingStore::BlobWriteResult result) {
+          if (!transaction)
+            return leveldb::Status::OK();
+          return transaction->BlobWriteComplete(result);
+        },
+        ptr_factory_.GetWeakPtr()));
   }
 
   return s;
@@ -457,7 +450,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  locks_.clear();
+  locks_receiver_.locks.clear();
 
   if (committed) {
     abort_task_stack_.clear();
@@ -465,7 +458,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     // SendObservations must be called before OnComplete to ensure consistency
     // of callbacks at renderer.
     if (!connection_changes_map_.empty()) {
-      database_->SendObservations(std::move(connection_changes_map_));
+      if (database_)
+        database_->SendObservations(std::move(connection_changes_map_));
       connection_changes_map_.clear();
     }
     {
@@ -477,7 +471,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     if (!pending_observers_.empty() && connection_)
       connection_->ActivatePendingObservers(std::move(pending_observers_));
 
-    database_->TransactionFinished(mode_, true);
+    if (database_)
+      database_->TransactionFinished(mode_, true);
     // RemoveTransaction will delete |this|.
     connection_->RemoveTransaction(id_);
     return s;
@@ -496,7 +491,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
                                  "Internal error committing transaction.");
     }
     callbacks_->OnAbort(*this, error);
-    database_->TransactionFinished(mode_, false);
+    if (database_)
+      database_->TransactionFinished(mode_, false);
     // RemoveTransaction will delete |this|.
     connection_->RemoveTransaction(id_);
   }
@@ -531,7 +527,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     }
     if (!result.ok()) {
       processing_event_queue_ = false;
-      database_->ReportError(result);
+      error_callback_.Run(result, "Error executing transaction tasks.");
       return;
     }
 
@@ -547,7 +543,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     // This can delete |this|.
     leveldb::Status result = Commit();
     if (!result.ok())
-      database_->ReportError(result);
+      error_callback_.Run(result, "ERror committing the transaction.");
     return;
   }
 

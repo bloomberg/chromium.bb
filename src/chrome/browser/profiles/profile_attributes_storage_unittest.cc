@@ -718,7 +718,7 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
   std::string icon_filename =
       profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
   EXPECT_EQ(1U, storage()->cached_avatar_images_.size());
-  EXPECT_TRUE(storage()->cached_avatar_images_[icon_filename]->IsEmpty());
+  EXPECT_TRUE(storage()->cached_avatar_images_[icon_filename].IsEmpty());
 
   // Simulate downloading a high-res avatar.
   ProfileAvatarDownloader avatar_downloader(
@@ -738,13 +738,13 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
 
   // The image should have been cached.
   EXPECT_EQ(1U, storage()->cached_avatar_images_.size());
-  EXPECT_FALSE(storage()->cached_avatar_images_[icon_filename]->IsEmpty());
-  EXPECT_EQ(storage()->cached_avatar_images_[icon_filename].get(),
+  EXPECT_FALSE(storage()->cached_avatar_images_[icon_filename].IsEmpty());
+  EXPECT_EQ(&storage()->cached_avatar_images_[icon_filename],
             entry->GetHighResAvatar());
 
   // Since we are not using GAIA image, |GetAvatarIcon| should return the same
   // image as |GetHighResAvatar| in desktop.
-  EXPECT_EQ(storage()->cached_avatar_images_[icon_filename].get(),
+  EXPECT_EQ(&storage()->cached_avatar_images_[icon_filename],
             &entry->GetAvatarIcon());
 
   // Finish the async calls that save the image to the disk.

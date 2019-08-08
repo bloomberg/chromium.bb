@@ -23,7 +23,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_time_wait_list_manager.h"
 #include "net/third_party/quiche/src/quic/core/quic_version_manager.h"
-#include "net/third_party/quiche/src/quic/core/stateless_rejector.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 
@@ -49,7 +48,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
                  std::unique_ptr<QuicConnectionHelperInterface> helper,
                  std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
                  std::unique_ptr<QuicAlarmFactory> alarm_factory,
-                 uint8_t expected_connection_id_length);
+                 uint8_t expected_server_connection_id_length);
   QuicDispatcher(const QuicDispatcher&) = delete;
   QuicDispatcher& operator=(const QuicDispatcher&) = delete;
 
@@ -76,7 +75,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // QuicSession::Visitor interface implementation (via inheritance of
   // QuicTimeWaitListManager::Visitor):
   // Ensure that the closed connection is cleaned up asynchronously.
-  void OnConnectionClosed(QuicConnectionId connection_id,
+  void OnConnectionClosed(QuicConnectionId server_connection_id,
                           QuicErrorCode error,
                           const std::string& error_details,
                           ConnectionCloseSource source) override;
@@ -99,7 +98,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // QuicTimeWaitListManager::Visitor interface implementation
   // Called whenever the time wait list manager adds a new connection to the
   // time-wait list.
-  void OnConnectionAddedToTimeWaitList(QuicConnectionId connection_id) override;
+  void OnConnectionAddedToTimeWaitList(
+      QuicConnectionId server_connection_id) override;
 
   using SessionMap = QuicUnorderedMap<QuicConnectionId,
                                       std::unique_ptr<QuicSession>,
@@ -131,11 +131,15 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // QuicFramerVisitorInterface implementation. Not expected to be called
   // outside of this class.
+  // TODO(fayang): Make QuicDispatcher no longer implement
+  // QuicFramerVisitorInterface when deprecating
+  // quic_no_framer_object_in_dispatcher.
   void OnPacket() override;
-  // Called when the public header has been parsed.
+  // Called when the public header has been parsed. Returns false when just the
+  // public header is enough to dispatch the packet; true if the framer needs to
+  // continue parsing the packet.
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
-  // Called when the private header has been parsed of a data packet that is
-  // destined for the time wait manager.
+  // Called when the private header has been parsed.
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnError(QuicFramer* framer) override;
   bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
@@ -149,6 +153,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override;
+  void OnRetryPacket(QuicConnectionId original_connection_id,
+                     QuicConnectionId new_connection_id,
+                     QuicStringPiece retry_token) override;
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   void OnCoalescedPacket(const QuicEncryptedPacket& packet) override;
@@ -169,8 +176,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
   bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override;
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
-  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override;
-  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override;
+  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) override;
+  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
@@ -184,7 +191,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       const QuicIetfStatelessResetPacket& packet) override;
 
   // QuicBufferedPacketStore::VisitorInterface implementation.
-  void OnExpiredPackets(QuicConnectionId connection_id,
+  void OnExpiredPackets(QuicConnectionId server_connection_id,
                         QuicBufferedPacketStore::BufferedPacketList
                             early_arrived_packets) override;
 
@@ -195,16 +202,10 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   virtual bool HasChlosBuffered() const;
 
  protected:
-  virtual QuicSession* CreateQuicSession(QuicConnectionId connection_id,
+  virtual QuicSession* CreateQuicSession(QuicConnectionId server_connection_id,
                                          const QuicSocketAddress& peer_address,
                                          QuicStringPiece alpn,
                                          const ParsedQuicVersion& version) = 0;
-
-  // Called when a connection is rejected statelessly.
-  virtual void OnConnectionRejectedStatelessly() {}
-
-  // Returns true if cheap stateless rejection should be attempted.
-  virtual bool ShouldAttemptCheapStatelessRejection();
 
   // Values to be returned by ValidityChecks() to indicate what should be done
   // with a packet.  Fates with greater values are considered to be higher
@@ -231,9 +232,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // will be owned by the dispatcher as time_wait_list_manager_
   virtual QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
 
-  // Called when |connection_id| doesn't have an open connection yet, to buffer
-  // |current_packet_| until it can be delivered to the connection.
-  void BufferEarlyPacket(QuicConnectionId connection_id,
+  // Called when |server_connection_id| doesn't have an open connection yet,
+  // to buffer |current_packet_| until it can be delivered to the connection.
+  void BufferEarlyPacket(QuicConnectionId server_connection_id,
                          bool ietf_quic,
                          ParsedQuicVersion version);
 
@@ -262,8 +263,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   const ParsedQuicVersionVector& GetSupportedVersions();
 
-  QuicConnectionId current_connection_id() const {
-    return current_connection_id_;
+  QuicConnectionId current_server_connection_id() const {
+    return current_server_connection_id_;
   }
   const QuicSocketAddress& current_self_address() const {
     return current_self_address_;
@@ -312,15 +313,15 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // for CHLO. Returns true if a new connection should be created or its packets
   // should be buffered, false otherwise.
   virtual bool ShouldCreateOrBufferPacketForConnection(
-      QuicConnectionId connection_id,
+      QuicConnectionId server_connection_id,
       bool ietf_quic);
 
-  bool HasBufferedPackets(QuicConnectionId connection_id);
+  bool HasBufferedPackets(QuicConnectionId server_connection_id);
 
   // Called when BufferEarlyPacket() fail to buffer the packet.
   virtual void OnBufferPacketFailure(
       QuicBufferedPacketStore::EnqueuePacketResult result,
-      QuicConnectionId connection_id);
+      QuicConnectionId server_connection_id);
 
   // Removes the session from the session map and write blocked list, and adds
   // the ConnectionId to the time-wait list.  If |session_closed_statelessly| is
@@ -337,8 +338,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // connection to time wait list or 2) directly add connection to time wait
   // list with |action|.
   void StatelesslyTerminateConnection(
-      QuicConnectionId connection_id,
+      QuicConnectionId server_connection_id,
       PacketHeaderFormat format,
+      bool version_flag,
       ParsedQuicVersion version,
       QuicErrorCode error_code,
       const std::string& error_details,
@@ -354,33 +356,42 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // If true, our framer will change its expected connection ID length
   // to the received destination connection ID length of all IETF long headers.
-  void SetShouldUpdateExpectedConnectionIdLength(
-      bool should_update_expected_connection_id_length) {
-    framer_.SetShouldUpdateExpectedConnectionIdLength(
-        should_update_expected_connection_id_length);
+  void SetShouldUpdateExpectedServerConnectionIdLength(
+      bool should_update_expected_server_connection_id_length) {
+    if (!no_framer_) {
+      framer_.SetShouldUpdateExpectedServerConnectionIdLength(
+          should_update_expected_server_connection_id_length);
+      return;
+    }
+    should_update_expected_server_connection_id_length_ =
+        should_update_expected_server_connection_id_length;
   }
 
   // If true, the dispatcher will allow incoming initial packets that have
-  // connection IDs shorter than 64 bits.
-  void SetAllowShortInitialConnectionIds(
-      bool allow_short_initial_connection_ids) {
-    allow_short_initial_connection_ids_ = allow_short_initial_connection_ids;
+  // destination connection IDs shorter than 64 bits.
+  void SetAllowShortInitialServerConnectionIds(
+      bool allow_short_initial_server_connection_ids) {
+    allow_short_initial_server_connection_ids_ =
+        allow_short_initial_server_connection_ids;
   }
 
  private:
   friend class test::QuicDispatcherPeer;
-  friend class StatelessRejectorProcessDoneCallback;
 
   typedef QuicUnorderedSet<QuicConnectionId, QuicConnectionIdHash>
       QuicConnectionIdSet;
 
-  // Attempts to reject the connection statelessly, if stateless rejects are
-  // possible and if the current packet contains a CHLO message.  Determines a
-  // fate which describes what subsequent processing should be performed on the
-  // packets, like ValidityChecks, and invokes ProcessUnauthenticatedHeaderFate.
-  void MaybeRejectStatelessly(QuicConnectionId connection_id,
-                              PacketHeaderFormat form,
-                              ParsedQuicVersion version);
+  // Based on an unauthenticated packet header |header|, calls ValidityChecks
+  // and then ProcessUnauthenticatedHeaderFate.
+  void ProcessHeader(const QuicPacketHeader& header);
+
+  // TODO(wub): Move the body to ProcessHeader, then remove this function.
+  // Determine whether the current packet needs to be processed now or buffered
+  // for later processing, then invokes ProcessUnauthenticatedHeaderFate.
+  void ProcessOrBufferPacket(QuicConnectionId server_connection_id,
+                             PacketHeaderFormat form,
+                             bool version_flag,
+                             ParsedQuicVersion version);
 
   // Deliver |packets| to |session| for further processing.
   void DeliverPacketsToSession(
@@ -390,37 +401,20 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Perform the appropriate actions on the current packet based on |fate| -
   // either process, buffer, or drop it.
   void ProcessUnauthenticatedHeaderFate(QuicPacketFate fate,
-                                        QuicConnectionId connection_id,
+                                        QuicConnectionId server_connection_id,
                                         PacketHeaderFormat form,
+                                        bool version_flag,
                                         ParsedQuicVersion version);
-
-  // Invoked when StatelessRejector::Process completes. |first_version| is the
-  // version of the packet which initiated the stateless reject.
-  // WARNING: This function can be called when a async proof returns, i.e. not
-  // from a stack traceable to ProcessPacket().
-  // TODO(fayang): maybe consider not using callback when there is no crypto
-  // involved.
-  void OnStatelessRejectorProcessDone(
-      std::unique_ptr<StatelessRejector> rejector,
-      const QuicSocketAddress& current_client_address,
-      const QuicSocketAddress& current_peer_address,
-      const QuicSocketAddress& current_self_address,
-      std::unique_ptr<QuicReceivedPacket> current_packet,
-      ParsedQuicVersion first_version,
-      PacketHeaderFormat current_packet_format);
-
-  // Examine the state of the rejector and decide what to do with the current
-  // packet.
-  void ProcessStatelessRejectorState(
-      std::unique_ptr<StatelessRejector> rejector,
-      QuicTransportVersion first_version,
-      PacketHeaderFormat form);
 
   // If the connection ID length is different from what the dispatcher expects,
   // replace the connection ID with a random one of the right length,
   // and save it to make sure the mapping is persistent.
-  QuicConnectionId MaybeReplaceConnectionId(QuicConnectionId connection_id,
-                                            ParsedQuicVersion version);
+  QuicConnectionId MaybeReplaceServerConnectionId(
+      QuicConnectionId server_connection_id,
+      ParsedQuicVersion version);
+
+  // Returns true if |version| is a supported protocol version.
+  bool IsSupportedVersion(const ParsedQuicVersion version);
 
   void set_new_sessions_allowed_per_event_loop(
       int16_t new_sessions_allowed_per_event_loop) {
@@ -481,7 +475,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   const QuicReceivedPacket* current_packet_;
   // If |current_packet_| is a CHLO packet, the extracted alpn.
   std::string current_alpn_;
-  QuicConnectionId current_connection_id_;
+  QuicConnectionId current_server_connection_id_;
 
   // Used to get the supported versions based on flag. Does not own.
   QuicVersionManager* version_manager_;
@@ -500,8 +494,32 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   bool accept_new_connections_;
 
   // If false, the dispatcher follows the IETF spec and rejects packets with
-  // invalid connection IDs lengths below 64 bits. If true they are allowed.
-  bool allow_short_initial_connection_ids_;
+  // invalid destination connection IDs lengths below 64 bits.
+  // If true they are allowed.
+  bool allow_short_initial_server_connection_ids_;
+
+  // The last QUIC version label received. Used when no_framer_ is true.
+  // TODO(fayang): remove this member variable, instead, add an argument to
+  // OnUnauthenticatedPublicHeader when deprecating
+  // quic_no_framer_object_in_dispatcher.
+  QuicVersionLabel last_version_label_;
+
+  // IETF short headers contain a destination connection ID but do not
+  // encode its length. This variable contains the length we expect to read.
+  // This is also used to signal an error when a long header packet with
+  // different destination connection ID length is received when
+  // should_update_expected_server_connection_id_length_ is false and packet's
+  // version does not allow variable length connection ID. Used when no_framer_
+  // is true.
+  uint8_t expected_server_connection_id_length_;
+
+  // If true, change expected_server_connection_id_length_ to be the received
+  // destination connection ID length of all IETF long headers. Used when
+  // no_framer_ is true.
+  bool should_update_expected_server_connection_id_length_;
+
+  // Latched value of quic_no_framer_object_in_dispatcher.
+  const bool no_framer_;
 };
 
 }  // namespace quic

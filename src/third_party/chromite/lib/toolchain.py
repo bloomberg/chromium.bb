@@ -34,6 +34,22 @@ class UnknownToolchainError(Error):
   """Missing a required package."""
 
 
+class ToolchainInstallError(Error, cros_build_lib.RunCommandError):
+  """An error when installing a toolchain."""
+
+  def __init__(self, msg, result, exception=None, tc_info=None):
+    """ToolchainInstallError init.
+
+    Args:
+      msg (str): Error message.
+      result (cros_build_lib.CommandResult): The command result.
+      exception (Exception): The original exception.
+      tc_info (list): A list of the failed packages' portage_util.CPVs.
+    """
+    super(ToolchainInstallError, self).__init__(msg, result, exception)
+    self.failed_toolchain_info = tc_info
+
+
 def GetHostTuple():
   """Returns compiler tuple for the host system."""
   return portage.settings['CHOST']
@@ -234,7 +250,11 @@ class ToolchainInstaller(object):
       # Host and target toolchains match, install standard packages.
       cmd = ['emerge', '--oneshot', '--nodeps', '-k',
              '--root', sysroot.path, '=%s' % tc_info.libc_cpf]
-      cros_build_lib.SudoRunCommand(cmd)
+      try:
+        cros_build_lib.SudoRunCommand(cmd)
+      except cros_build_lib.RunCommandError as e:
+        raise ToolchainInstallError(e.message, e.result, exception=e,
+                                    tc_info=[tc_info.libc_cpv])
     else:
       # They do not match, install appropriate cross-toolchain variant package.
       # See ToolchainInfo for alternate package name build outs.
@@ -245,7 +265,11 @@ class ToolchainInstaller(object):
         cmd = ['emerge', '--nodeps', '-gf', '=%s' % tc_info.libc_cpf]
         cros_build_lib.SudoRunCommand(cmd)
 
-      self._ExtractLibc(sysroot, tc_info.target, libc_path)
+      try:
+        self._ExtractLibc(sysroot, tc_info.target, libc_path)
+      except ToolchainInstallError as e:
+        e.failed_toolchain_info = [tc_info.libc_cpv]
+        raise e
 
   def _ExtractLibc(self, sysroot, board_chost, libc_path):
     """Extract the libc archive to the sysroot.
@@ -265,7 +289,8 @@ class ToolchainInstaller(object):
       result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
                                              combine_stdout_stderr=True)
       if result.returncode:
-        raise Error('Error extracting libc: %s' % result.error)
+        raise ToolchainInstallError('Error extracting libc: %s' % result.output,
+                                    result)
 
       # Sync the files to the sysroot to install.
       # Trailing / on source to sync contents instead of the directory itself.
@@ -274,7 +299,8 @@ class ToolchainInstaller(object):
       result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
                                              combine_stdout_stderr=True)
       if result.returncode:
-        raise Error('Error installing libc: %s' % result.output)
+        raise ToolchainInstallError('Error installing libc: %s' % result.output,
+                                    result)
 
       # Make the debug directory.
       debug_dir = os.path.join(sysroot.path, 'usr/lib/debug')
@@ -339,6 +365,10 @@ class ToolchainInfo(object):
   @property
   def libc_cpf(self):
     return self._GetCPF(self._PKG_LIBC)
+
+  @property
+  def libc_cpv(self):
+    return self._GetCPVObj(self._PKG_LIBC)
 
   @property
   def gcc_version(self):

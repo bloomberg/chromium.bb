@@ -338,6 +338,7 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFont, public:
 
+#if !defined(OS_WIN)
 // static
 PlatformFont* PlatformFont::CreateDefault() {
   return new PlatformFontSkia;
@@ -349,5 +350,6 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromNameAndSize");
   return new PlatformFontSkia(font_name, font_size);
 }
+#endif  // !defined(OS_WIN)
 
 }  // namespace gfx

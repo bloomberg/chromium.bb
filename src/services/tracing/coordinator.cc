@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -304,13 +303,13 @@ void Coordinator::Reset() {
   start_tracing_callback_timer_.Stop();
 
   if (!stop_and_flush_callback_.is_null()) {
-    base::ResetAndReturn(&stop_and_flush_callback_)
+    std::move(stop_and_flush_callback_)
         .Run(base::Value(base::Value::Type::DICTIONARY));
   }
   if (!start_tracing_callback_.is_null())
-    base::ResetAndReturn(&start_tracing_callback_).Run(false);
+    std::move(start_tracing_callback_).Run(false);
   if (!request_buffer_usage_callback_.is_null())
-    base::ResetAndReturn(&request_buffer_usage_callback_).Run(false, 0, 0);
+    std::move(request_buffer_usage_callback_).Run(false, 0, 0);
 
   if (trace_streamer_) {
     // We are in the middle of flushing trace data. We need to

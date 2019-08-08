@@ -510,9 +510,11 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                   config_lib.GetHWTestEnv(self._run.config,
                                           model_config=model)).Run()
           else:
+            lab_board_name = config_lib.GetNonUniBuildLabBoardName(
+                archive_board)
             PaygenTestStage(self._run, self.buildstore, suite_name,
-                            archive_board, None, archive_board, self.channel,
-                            archive_build, self.skip_duts_check,
+                            archive_board, None, lab_board_name,
+                            self.channel, archive_build, self.skip_duts_check,
                             self.debug,
                             payload_test_configs,
                             config_lib.GetHWTestEnv(self._run.config)).Run()

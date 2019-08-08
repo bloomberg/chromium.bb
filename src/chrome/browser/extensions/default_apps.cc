@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -77,13 +76,9 @@ bool Provider::ShouldInstallInProfile() {
 
   switch (state) {
     case kUnknown: {
-      // Only new installations and profiles get default apps. In theory the
-      // new profile checks should catch new installations, but that is not
-      // always the case (http:/crbug.com/145351).
       bool is_new_profile = profile_->WasCreatedByVersionOrLater(
           version_info::GetVersionNumber());
-      bool is_first_run = first_run::IsChromeFirstRun();
-      if (!is_first_run && !is_new_profile)
+      if (!is_new_profile)
         install_apps = false;
       break;
     }

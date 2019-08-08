@@ -41,7 +41,7 @@ const char kTestOrigin3[] = "http://host3:3";
 
 // Extensions and Devtools should be ignored.
 const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz";
-const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw";
+const char kTestOriginDevTools[] = "devtools://abcdefghijklmnopqrstuvw";
 
 const url::Origin kOrigin1 = url::Origin::Create(GURL(kTestOrigin1));
 const url::Origin kOrigin2 = url::Origin::Create(GURL(kTestOrigin2));

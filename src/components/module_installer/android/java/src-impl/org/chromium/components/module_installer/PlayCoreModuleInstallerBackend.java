@@ -7,11 +7,13 @@ package org.chromium.components.module_installer;
 import android.content.SharedPreferences;
 import android.util.SparseLongArray;
 
+import com.google.android.play.core.splitinstall.SplitInstallException;
 import com.google.android.play.core.splitinstall.SplitInstallManager;
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
 import com.google.android.play.core.splitinstall.SplitInstallRequest;
 import com.google.android.play.core.splitinstall.SplitInstallSessionState;
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener;
+import com.google.android.play.core.splitinstall.model.SplitInstallErrorCode;
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
 import org.chromium.base.ContextUtils;
@@ -55,11 +57,29 @@ import java.util.Set;
     // These values are persisted to logs. Entries should not be renumbered and numeric values
     // should never be reused.
     private static final int INSTALL_STATUS_SUCCESS = 0;
-    private static final int INSTALL_STATUS_FAILURE = 1;
-    private static final int INSTALL_STATUS_REQUEST_ERROR = 2;
+    // private static final int INSTALL_STATUS_FAILURE = 1; [DEPRECATED]
+    // private static final int INSTALL_STATUS_REQUEST_ERROR = 2; [DEPRECATED]
     private static final int INSTALL_STATUS_CANCELLATION = 3;
+    private static final int INSTALL_STATUS_ACCESS_DENIED = 4;
+    private static final int INSTALL_STATUS_ACTIVE_SESSIONS_LIMIT_EXCEEDED = 5;
+    private static final int INSTALL_STATUS_API_NOT_AVAILABLE = 6;
+    private static final int INSTALL_STATUS_INCOMPATIBLE_WITH_EXISTING_SESSION = 7;
+    private static final int INSTALL_STATUS_INSUFFICIENT_STORAGE = 8;
+    private static final int INSTALL_STATUS_INVALID_REQUEST = 9;
+    private static final int INSTALL_STATUS_MODULE_UNAVAILABLE = 10;
+    private static final int INSTALL_STATUS_NETWORK_ERROR = 11;
+    private static final int INSTALL_STATUS_NO_ERROR = 12;
+    private static final int INSTALL_STATUS_SERVICE_DIED = 13;
+    private static final int INSTALL_STATUS_SESSION_NOT_FOUND = 14;
+    private static final int INSTALL_STATUS_SPLITCOMPAT_COPY_ERROR = 15;
+    private static final int INSTALL_STATUS_SPLITCOMPAT_EMULATION_ERROR = 16;
+    private static final int INSTALL_STATUS_SPLITCOMPAT_VERIFICATION_ERROR = 17;
+    private static final int INSTALL_STATUS_INTERNAL_ERROR = 18;
+    private static final int INSTALL_STATUS_UNKNOWN_SPLITINSTALL_ERROR = 19;
+    private static final int INSTALL_STATUS_UNKNOWN_REQUEST_ERROR = 20;
+    private static final int INSTALL_STATUS_NO_SPLITCOMPAT = 21;
     // Keep this one at the end and increment appropriately when adding new status.
-    private static final int INSTALL_STATUS_COUNT = 4;
+    private static final int INSTALL_STATUS_COUNT = 22;
 
     // FeatureModuleAvailabilityStatus defined in //tools/metrics/histograms/enums.xml.
     // These values are persisted to logs. Entries should not be renumbered and numeric values
@@ -72,6 +92,8 @@ import java.util.Set;
 
     /** Records via UMA all modules that have been requested and are currently installed. */
     public static void recordModuleAvailability() {
+        // MUST call init before creating a SplitInstallManager.
+        ModuleInstaller.init();
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         Set<String> requestedModules = new HashSet<>();
         requestedModules.addAll(
@@ -105,6 +127,8 @@ import java.util.Set;
 
     public PlayCoreModuleInstallerBackend(OnFinishedListener listener) {
         super(listener);
+        // MUST call init before creating a SplitInstallManager.
+        ModuleInstaller.init();
         mManager = SplitInstallManagerFactory.create(ContextUtils.getApplicationContext());
         mManager.registerListener(this);
     }
@@ -126,11 +150,15 @@ import java.util.Set;
 
         SplitInstallRequest request =
                 SplitInstallRequest.newBuilder().addModule(moduleName).build();
-        mManager.startInstall(request).addOnFailureListener(errorCode -> {
-            Log.e(TAG, "Failed to request module '%s': error code %s", moduleName, errorCode);
+
+        mManager.startInstall(request).addOnFailureListener(exception -> {
+            int status = exception instanceof SplitInstallException
+                    ? getHistogramCode(((SplitInstallException) exception).getErrorCode())
+                    : INSTALL_STATUS_UNKNOWN_REQUEST_ERROR;
+            Log.e(TAG, "Failed to request module '%s': error code %s", moduleName, status);
             // If we reach this error condition |onStateUpdate| won't be called. Thus, call
             // |onFinished| here.
-            finish(false, Collections.singletonList(moduleName), INSTALL_STATUS_REQUEST_ERROR);
+            finish(false, Collections.singletonList(moduleName), status);
         });
     }
 
@@ -153,7 +181,6 @@ import java.util.Set;
         assert !mIsClosed;
         switch (state.status()) {
             case SplitInstallSessionStatus.DOWNLOADING:
-            case SplitInstallSessionStatus.DOWNLOADED:
             case SplitInstallSessionStatus.INSTALLING:
             case SplitInstallSessionStatus.INSTALLED:
                 for (String name : state.moduleNames()) {
@@ -164,13 +191,21 @@ import java.util.Set;
                     finish(true, state.moduleNames(), INSTALL_STATUS_SUCCESS);
                 }
                 break;
+            // DOWNLOADED only gets sent if SplitCompat is not enabled. That's an error.
+            // SplitCompat should always be enabled.
+            case SplitInstallSessionStatus.DOWNLOADED:
             case SplitInstallSessionStatus.CANCELED:
             case SplitInstallSessionStatus.FAILED:
+                int status;
+                if (state.status() == SplitInstallSessionStatus.DOWNLOADED) {
+                    status = INSTALL_STATUS_NO_SPLITCOMPAT;
+                } else if (state.status() == SplitInstallSessionStatus.CANCELED) {
+                    status = INSTALL_STATUS_CANCELLATION;
+                } else {
+                    status = getHistogramCode(state.errorCode());
+                }
                 Log.e(TAG, "Failed to install modules '%s': error code %s", state.moduleNames(),
-                        state.status());
-                int status = state.status() == SplitInstallSessionStatus.CANCELED
-                        ? INSTALL_STATUS_CANCELLATION
-                        : INSTALL_STATUS_FAILURE;
+                        status);
                 finish(false, state.moduleNames(), status);
                 break;
         }
@@ -185,6 +220,48 @@ import java.util.Set;
             }
         }
         onFinished(success, moduleNames);
+    }
+
+    /**
+     * Gets the UMA code based on a SplitInstall error code
+     * @param errorCode The error code
+     * @return int The User Metric Analysis code
+     */
+    private int getHistogramCode(@SplitInstallErrorCode int errorCode) {
+        switch (errorCode) {
+            case SplitInstallErrorCode.ACCESS_DENIED:
+                return INSTALL_STATUS_ACCESS_DENIED;
+            case SplitInstallErrorCode.ACTIVE_SESSIONS_LIMIT_EXCEEDED:
+                return INSTALL_STATUS_ACTIVE_SESSIONS_LIMIT_EXCEEDED;
+            case SplitInstallErrorCode.API_NOT_AVAILABLE:
+                return INSTALL_STATUS_API_NOT_AVAILABLE;
+            case SplitInstallErrorCode.INCOMPATIBLE_WITH_EXISTING_SESSION:
+                return INSTALL_STATUS_INCOMPATIBLE_WITH_EXISTING_SESSION;
+            case SplitInstallErrorCode.INSUFFICIENT_STORAGE:
+                return INSTALL_STATUS_INSUFFICIENT_STORAGE;
+            case SplitInstallErrorCode.INVALID_REQUEST:
+                return INSTALL_STATUS_INVALID_REQUEST;
+            case SplitInstallErrorCode.MODULE_UNAVAILABLE:
+                return INSTALL_STATUS_MODULE_UNAVAILABLE;
+            case SplitInstallErrorCode.NETWORK_ERROR:
+                return INSTALL_STATUS_NETWORK_ERROR;
+            case SplitInstallErrorCode.NO_ERROR:
+                return INSTALL_STATUS_NO_ERROR;
+            case SplitInstallErrorCode.SERVICE_DIED:
+                return INSTALL_STATUS_SERVICE_DIED;
+            case SplitInstallErrorCode.SESSION_NOT_FOUND:
+                return INSTALL_STATUS_SESSION_NOT_FOUND;
+            case SplitInstallErrorCode.SPLITCOMPAT_COPY_ERROR:
+                return INSTALL_STATUS_SPLITCOMPAT_COPY_ERROR;
+            case SplitInstallErrorCode.SPLITCOMPAT_EMULATION_ERROR:
+                return INSTALL_STATUS_SPLITCOMPAT_EMULATION_ERROR;
+            case SplitInstallErrorCode.SPLITCOMPAT_VERIFICATION_ERROR:
+                return INSTALL_STATUS_SPLITCOMPAT_VERIFICATION_ERROR;
+            case SplitInstallErrorCode.INTERNAL_ERROR:
+                return INSTALL_STATUS_INTERNAL_ERROR;
+            default:
+                return INSTALL_STATUS_UNKNOWN_SPLITINSTALL_ERROR;
+        }
     }
 
     /**
@@ -211,9 +288,7 @@ import java.util.Set;
                 SplitInstallSessionStatus.INSTALLED);
         recordInstallTime(moduleName, ".PendingDownload", SplitInstallSessionStatus.UNKNOWN,
                 SplitInstallSessionStatus.DOWNLOADING);
-        recordInstallTime(moduleName, ".Downloading", SplitInstallSessionStatus.DOWNLOADING,
-                SplitInstallSessionStatus.DOWNLOADED);
-        recordInstallTime(moduleName, ".PendingInstall", SplitInstallSessionStatus.DOWNLOADED,
+        recordInstallTime(moduleName, ".Download", SplitInstallSessionStatus.DOWNLOADING,
                 SplitInstallSessionStatus.INSTALLING);
         recordInstallTime(moduleName, ".Installing", SplitInstallSessionStatus.INSTALLING,
                 SplitInstallSessionStatus.INSTALLED);

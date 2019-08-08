@@ -27,6 +27,7 @@ class GLSurface;
 }  // namespace gl
 
 namespace viz {
+class MetalContextProvider;
 class VulkanContextProvider;
 }  // namespace viz
 
@@ -54,12 +55,18 @@ class GPU_GLES2_EXPORT SharedContextState
       scoped_refptr<gl::GLContext> context,
       bool use_virtualized_gl_contexts,
       base::OnceClosure context_lost_callback,
-      viz::VulkanContextProvider* vulkan_context_provider = nullptr);
+      viz::VulkanContextProvider* vulkan_context_provider = nullptr,
+      viz::MetalContextProvider* metal_context_provider = nullptr);
 
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);
+  bool GrContextIsGL() const {
+    return !vk_context_provider_ && !metal_context_provider_;
+  }
+  bool GrContextIsVulkan() const { return vk_context_provider_; }
+  bool GrContextIsMetal() const { return metal_context_provider_; }
 
   bool InitializeGL(const GpuPreferences& gpu_preferences,
                     scoped_refptr<gles2::FeatureInfo> feature_info);
@@ -81,6 +88,9 @@ class GPU_GLES2_EXPORT SharedContextState
   viz::VulkanContextProvider* vk_context_provider() {
     return vk_context_provider_;
   }
+  viz::MetalContextProvider* metal_context_provider() {
+    return metal_context_provider_;
+  }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   GrContext* gr_context() { return gr_context_; }
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }
@@ -94,7 +104,6 @@ class GPU_GLES2_EXPORT SharedContextState
   std::vector<uint8_t>* scratch_deserialization_buffer() {
     return &scratch_deserialization_buffer_;
   }
-  bool use_vulkan_gr_context() const { return use_vulkan_gr_context_; }
   size_t glyph_cache_max_texture_bytes() const {
     return glyph_cache_max_texture_bytes_;
   }
@@ -144,9 +153,9 @@ class GPU_GLES2_EXPORT SharedContextState
 
   bool use_virtualized_gl_contexts_ = false;
   base::OnceClosure context_lost_callback_;
-  viz::VulkanContextProvider* vk_context_provider_ = nullptr;
+  viz::VulkanContextProvider* const vk_context_provider_;
+  viz::MetalContextProvider* const metal_context_provider_;
   GrContext* gr_context_ = nullptr;
-  const bool use_vulkan_gr_context_;
 
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLContext> context_;

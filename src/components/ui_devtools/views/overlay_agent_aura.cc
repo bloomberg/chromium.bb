@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/views/overlay_agent_aura.h"
 
+#include "components/ui_devtools/dom_agent.h"
 #include "components/ui_devtools/views/window_element.h"
 #include "ui/aura/env.h"
 #include "ui/views/view.h"
@@ -17,7 +18,6 @@ OverlayAgentAura* OverlayAgentAura::overlay_agent_aura_ = nullptr;
 OverlayAgentAura::OverlayAgentAura(DOMAgent* dom_agent)
     : OverlayAgentViews(dom_agent) {
   DCHECK(!overlay_agent_aura_);
-  RegisterEnv(aura::Env::GetInstance());
   overlay_agent_aura_ = this;
 }
 
@@ -25,18 +25,13 @@ OverlayAgentAura::~OverlayAgentAura() {
   overlay_agent_aura_ = nullptr;
 }
 
-void OverlayAgentAura::RegisterEnv(aura::Env* env) {
-  envs_.push_back(env);
-}
-
 void OverlayAgentAura::InstallPreTargetHandler() {
-  for (auto* env : envs_)
-    env->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 }
 
 void OverlayAgentAura::RemovePreTargetHandler() {
-  for (auto* env : envs_)
-    env->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
 }
 
 int OverlayAgentAura::FindElementIdTargetedByPoint(

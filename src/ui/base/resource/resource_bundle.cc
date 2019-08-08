@@ -415,7 +415,7 @@ base::string16 ResourceBundle::MaybeMangleLocalizedString(
   if (!mangle_localized_strings_)
     return str;
 
-  // IDS_DEFAULT_FONT_SIZE and friends are localization "strings" that are
+  // IDS_MINIMUM_FONT_SIZE and friends are localization "strings" that are
   // actually integral constants. These should not be mangled or they become
   // impossible to parse.
   int ignored;
@@ -553,6 +553,15 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   }
 
   return base::StringPiece();
+}
+
+bool ResourceBundle::IsGzipped(int resource_id) const {
+  bool is_gzipped;
+  for (const auto& pack : data_packs_) {
+    if (pack->IsGzipped(resource_id, &is_gzipped))
+      return is_gzipped;
+  }
+  return false;
 }
 
 base::string16 ResourceBundle::GetLocalizedString(int resource_id) {

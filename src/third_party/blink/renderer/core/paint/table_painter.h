@@ -9,9 +9,9 @@
 
 namespace blink {
 
-class LayoutPoint;
 class LayoutTable;
 struct PaintInfo;
+struct PhysicalOffset;
 
 class TablePainter {
   STACK_ALLOCATED();
@@ -19,10 +19,10 @@ class TablePainter {
  public:
   TablePainter(const LayoutTable& layout_table) : layout_table_(layout_table) {}
 
-  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintObject(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paint_offset);
-  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+                                    const PhysicalOffset& paint_offset);
+  void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   void PaintCollapsedBorders(const PaintInfo&);

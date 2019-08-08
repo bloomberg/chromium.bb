@@ -9,12 +9,12 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -26,7 +26,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -55,86 +54,60 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
                                            undoAccelerator.GetShortcutText()));
 
   // Localized strings (alphabetical order).
-  AddLocalizedString(source, "addBookmarkTitle",
-                     IDS_BOOKMARK_MANAGER_ADD_BOOKMARK_TITLE);
-  AddLocalizedString(source, "addFolderTitle",
-                     IDS_BOOKMARK_MANAGER_ADD_FOLDER_TITLE);
-  AddLocalizedString(source, "cancel", IDS_CANCEL);
-  AddLocalizedString(source, "clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH);
-  AddLocalizedString(source, "delete", IDS_DELETE);
-  AddLocalizedString(source, "editBookmarkTitle", IDS_BOOKMARK_EDITOR_TITLE);
-  AddLocalizedString(source, "editDialogInvalidUrl",
-                     IDS_BOOKMARK_MANAGER_INVALID_URL);
-  AddLocalizedString(source, "editDialogNameInput",
-                     IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER);
-  AddLocalizedString(source, "editDialogUrlInput",
-                     IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER);
-  AddLocalizedString(source, "emptyList", IDS_BOOKMARK_MANAGER_EMPTY_LIST);
-  AddLocalizedString(source, "emptyUnmodifiableList",
-                     IDS_BOOKMARK_MANAGER_EMPTY_UNMODIFIABLE_LIST);
-  AddLocalizedString(source, "folderLabel", IDS_BOOKMARK_MANAGER_FOLDER_LABEL);
-  AddLocalizedString(source, "itemsSelected",
-                     IDS_BOOKMARK_MANAGER_ITEMS_SELECTED);
-  AddLocalizedString(source, "listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL);
-  AddLocalizedString(source, "menuAddBookmark",
-                     IDS_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK);
-  AddLocalizedString(source, "menuAddFolder",
-                     IDS_BOOKMARK_MANAGER_MENU_ADD_FOLDER);
-  AddLocalizedString(source, "menuCopyURL", IDS_BOOKMARK_MANAGER_MENU_COPY_URL);
-  AddLocalizedString(source, "menuDelete", IDS_DELETE);
-  AddLocalizedString(source, "menuEdit", IDS_EDIT);
-  AddLocalizedString(source, "menuExport", IDS_BOOKMARK_MANAGER_MENU_EXPORT);
-  AddLocalizedString(source, "menuHelpCenter",
-                     IDS_BOOKMARK_MANAGER_MENU_HELP_CENTER);
-  AddLocalizedString(source, "menuImport", IDS_BOOKMARK_MANAGER_MENU_IMPORT);
-  AddLocalizedString(source, "menuOpenAllNewTab",
-                     IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL);
-  AddLocalizedString(source, "menuOpenAllNewWindow",
-                     IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_WINDOW);
-  AddLocalizedString(source, "menuOpenAllIncognito",
-                     IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_INCOGNITO);
-  AddLocalizedString(source, "menuOpenNewTab",
-                     IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_TAB);
-  AddLocalizedString(source, "menuOpenNewWindow",
-                     IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_WINDOW);
-  AddLocalizedString(source, "menuOpenIncognito",
-                     IDS_BOOKMARK_MANAGER_MENU_OPEN_INCOGNITO);
-  AddLocalizedString(source, "menuRename", IDS_BOOKMARK_MANAGER_MENU_RENAME);
-  AddLocalizedString(source, "menuShowInFolder",
-                     IDS_BOOKMARK_MANAGER_MENU_SHOW_IN_FOLDER);
-  AddLocalizedString(source, "menuSort", IDS_BOOKMARK_MANAGER_MENU_SORT);
-  AddLocalizedString(source, "moreActionsButtonTitle",
-                     IDS_BOOKMARK_MANAGER_MORE_ACTIONS);
-  AddLocalizedString(source, "moreActionsButtonAxLabel",
-                     IDS_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL);
-  AddLocalizedString(source, "noSearchResults", IDS_SEARCH_NO_RESULTS);
-  AddLocalizedString(source, "openDialogBody",
-                     IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL);
-  AddLocalizedString(source, "openDialogConfirm",
-                     IDS_BOOKMARK_MANAGER_OPEN_DIALOG_CONFIRM);
-  AddLocalizedString(source, "openDialogTitle",
-                     IDS_BOOKMARK_MANAGER_OPEN_DIALOG_TITLE);
-  AddLocalizedString(source, "organizeButtonTitle",
-                     IDS_BOOKMARK_MANAGER_ORGANIZE_MENU);
-  AddLocalizedString(source, "renameFolderTitle",
-                     IDS_BOOKMARK_MANAGER_FOLDER_RENAME_TITLE);
-  AddLocalizedString(source, "searchPrompt",
-                     IDS_BOOKMARK_MANAGER_SEARCH_BUTTON);
-  AddLocalizedString(source, "sidebarAxLabel",
-                     IDS_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL);
-  AddLocalizedString(source, "searchCleared", IDS_SEARCH_CLEARED);
-  AddLocalizedString(source, "searchResults", IDS_SEARCH_RESULTS);
-  AddLocalizedString(source, "saveEdit", IDS_SAVE);
-  AddLocalizedString(source, "title", IDS_BOOKMARK_MANAGER_TITLE);
-  AddLocalizedString(source, "toastFolderSorted",
-                     IDS_BOOKMARK_MANAGER_TOAST_FOLDER_SORTED);
-  AddLocalizedString(source, "toastItemCopied",
-                     IDS_BOOKMARK_MANAGER_TOAST_ITEM_COPIED);
-  AddLocalizedString(source, "toastItemDeleted",
-                     IDS_BOOKMARK_MANAGER_TOAST_ITEM_DELETED);
-  AddLocalizedString(source, "toastUrlCopied",
-                     IDS_BOOKMARK_MANAGER_TOAST_URL_COPIED);
-  AddLocalizedString(source, "undo", IDS_BOOKMARK_BAR_UNDO);
+  static constexpr LocalizedString kStrings[] = {
+      {"addBookmarkTitle", IDS_BOOKMARK_MANAGER_ADD_BOOKMARK_TITLE},
+      {"addFolderTitle", IDS_BOOKMARK_MANAGER_ADD_FOLDER_TITLE},
+      {"cancel", IDS_CANCEL},
+      {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
+      {"delete", IDS_DELETE},
+      {"editBookmarkTitle", IDS_BOOKMARK_EDITOR_TITLE},
+      {"editDialogInvalidUrl", IDS_BOOKMARK_MANAGER_INVALID_URL},
+      {"editDialogNameInput", IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER},
+      {"editDialogUrlInput", IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER},
+      {"emptyList", IDS_BOOKMARK_MANAGER_EMPTY_LIST},
+      {"emptyUnmodifiableList", IDS_BOOKMARK_MANAGER_EMPTY_UNMODIFIABLE_LIST},
+      {"folderLabel", IDS_BOOKMARK_MANAGER_FOLDER_LABEL},
+      {"itemsSelected", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
+      {"listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL},
+      {"menuAddBookmark", IDS_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK},
+      {"menuAddFolder", IDS_BOOKMARK_MANAGER_MENU_ADD_FOLDER},
+      {"menuCopyURL", IDS_BOOKMARK_MANAGER_MENU_COPY_URL},
+      {"menuDelete", IDS_DELETE},
+      {"menuEdit", IDS_EDIT},
+      {"menuExport", IDS_BOOKMARK_MANAGER_MENU_EXPORT},
+      {"menuHelpCenter", IDS_BOOKMARK_MANAGER_MENU_HELP_CENTER},
+      {"menuImport", IDS_BOOKMARK_MANAGER_MENU_IMPORT},
+      {"menuOpenAllNewTab", IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL},
+      {"menuOpenAllNewWindow", IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_WINDOW},
+      {"menuOpenAllIncognito", IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_INCOGNITO},
+      {"menuOpenNewTab", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_TAB},
+      {"menuOpenNewWindow", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_WINDOW},
+      {"menuOpenIncognito", IDS_BOOKMARK_MANAGER_MENU_OPEN_INCOGNITO},
+      {"menuRename", IDS_BOOKMARK_MANAGER_MENU_RENAME},
+      {"menuShowInFolder", IDS_BOOKMARK_MANAGER_MENU_SHOW_IN_FOLDER},
+      {"menuSort", IDS_BOOKMARK_MANAGER_MENU_SORT},
+      {"moreActionsButtonTitle", IDS_BOOKMARK_MANAGER_MORE_ACTIONS},
+      {"moreActionsButtonAxLabel", IDS_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL},
+      {"noSearchResults", IDS_SEARCH_NO_RESULTS},
+      {"openDialogBody", IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL},
+      {"openDialogConfirm", IDS_BOOKMARK_MANAGER_OPEN_DIALOG_CONFIRM},
+      {"openDialogTitle", IDS_BOOKMARK_MANAGER_OPEN_DIALOG_TITLE},
+      {"organizeButtonTitle", IDS_BOOKMARK_MANAGER_ORGANIZE_MENU},
+      {"renameFolderTitle", IDS_BOOKMARK_MANAGER_FOLDER_RENAME_TITLE},
+      {"searchPrompt", IDS_BOOKMARK_MANAGER_SEARCH_BUTTON},
+      {"sidebarAxLabel", IDS_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL},
+      {"searchCleared", IDS_SEARCH_CLEARED},
+      {"searchResults", IDS_SEARCH_RESULTS},
+      {"saveEdit", IDS_SAVE},
+      {"title", IDS_BOOKMARK_MANAGER_TITLE},
+      {"toastFolderSorted", IDS_BOOKMARK_MANAGER_TOAST_FOLDER_SORTED},
+      {"toastItemCopied", IDS_BOOKMARK_MANAGER_TOAST_ITEM_COPIED},
+      {"toastItemDeleted", IDS_BOOKMARK_MANAGER_TOAST_ITEM_DELETED},
+      {"toastUrlCopied", IDS_BOOKMARK_MANAGER_TOAST_URL_COPIED},
+      {"undo", IDS_BOOKMARK_BAR_UNDO},
+  };
+  for (const auto& str : kStrings)
+    AddLocalizedString(source, str.name, str.id);
 
   // Resources.
   source->AddResourcePath("images/folder_open.svg",
@@ -142,13 +115,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("images/folder.svg", IDR_BOOKMARKS_IMAGES_FOLDER_SVG);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_BOOKMARKS_CRISPER_JS);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_BOOKMARKS_VULCANIZED_P2_HTML
-          : IDR_BOOKMARKS_VULCANIZED_HTML);
-  source->UseGzip(base::BindRepeating([](const std::string& path) {
-    return path != "images/folder_open.svg" && path != "images/folder.svg";
-  }));
+  source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_HTML);
 #else
   source->AddResourcePath("actions.html", IDR_BOOKMARKS_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_BOOKMARKS_ACTIONS_JS);

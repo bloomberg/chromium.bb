@@ -209,8 +209,10 @@ static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, nullptr,
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-static const CodecInfo kMpegHAudioCodecInfo = {
+static const CodecInfo kMpegHAudioCodecInfo1 = {
     "mhm1.*", CodecInfo::AUDIO, nullptr, CodecInfo::HISTOGRAM_MPEG_H_AUDIO};
+static const CodecInfo kMpegHAudioCodecInfo2 = {
+    "mha1.*", CodecInfo::AUDIO, nullptr, CodecInfo::HISTOGRAM_MPEG_H_AUDIO};
 #endif
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -230,6 +232,7 @@ static const CodecInfo kMPEG4FLACCodecInfo = {"flac", CodecInfo::AUDIO, nullptr,
                                               CodecInfo::HISTOGRAM_FLAC};
 
 static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
+                                                   &kOpusCodecInfo,
                                                    &kMPEG4VP09CodecInfo,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    &kH264AVC1CodecInfo,
@@ -249,7 +252,8 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-                                                   &kMpegHAudioCodecInfo,
+                                                   &kMpegHAudioCodecInfo1,
+                                                   &kMpegHAudioCodecInfo2,
 #endif
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_AV1_DECODER)
@@ -263,7 +267,8 @@ static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4FLACCodecInfo,
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-                                                   &kMpegHAudioCodecInfo,
+                                                   &kMpegHAudioCodecInfo1,
+                                                   &kMpegHAudioCodecInfo2,
 #endif
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
                                                    &kAC3CodecInfo1,

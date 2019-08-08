@@ -4,15 +4,9 @@
 
 #include "chrome/browser/fullscreen.h"
 
-#include "ui/aura/env.h"
+#include "base/logging.h"
 
 bool IsFullScreenMode() {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
-    // TODO: http://crbug.com/640390.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
   // TODO: https://crbug.com/843018
   NOTIMPLEMENTED();
   return false;

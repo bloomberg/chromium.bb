@@ -60,7 +60,7 @@ const SwitchAccessPredicate = {
     }
 
     // Check various indicators that the node is actionable.
-    if (role === RoleType.BUTTON)
+    if (role === RoleType.BUTTON || role === RoleType.SLIDER)
       return true;
 
     if (SwitchAccessPredicate.isTextInput(node))

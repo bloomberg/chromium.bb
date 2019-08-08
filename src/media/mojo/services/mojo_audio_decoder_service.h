@@ -57,7 +57,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   void OnResetDone(ResetCallback callback);
 
   // Called by |decoder_| for each decoded buffer.
-  void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);
+  void OnAudioBufferReady(scoped_refptr<AudioBuffer> audio_buffer);
 
   // Called by |decoder_| when it's waiting because of |reason|, e.g. waiting
   // for decryption key.

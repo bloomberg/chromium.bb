@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,8 +17,13 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
@@ -33,10 +39,12 @@ constexpr base::TimeDelta kNotifyCycleDelta = base::TimeDelta::FromMinutes(20);
 // upgrade is detected.
 constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(4);
 
-// The scale factor to determine the elevated annoyance level from the high
-// annoyance level's threshold. The elevated level always hits half-way to the
-// high level.
-constexpr double kElevatedScaleFactor = 0.5;
+// The default amount of time between the detector's annoyance level change
+// from UPGRADE_ANNOYANCE_ELEVATED to UPGRADE_ANNOYANCE_HIGH in ms.
+constexpr int kDefaultHeadsUpPeriodMs = 24 * 60 * 60 * 1000;  // 1 day.
+
+constexpr base::TimeDelta kDefaultHeadsUpPeriod =
+    base::TimeDelta::FromMilliseconds(kDefaultHeadsUpPeriodMs);
 
 // The reason of the rollback used in the UpgradeDetector.RollbackReason
 // histogram.
@@ -107,12 +115,30 @@ UpgradeDetectorChromeos::UpgradeDetectorChromeos(
     const base::Clock* clock,
     const base::TickClock* tick_clock)
     : UpgradeDetector(clock, tick_clock),
-      high_threshold_(DetermineHighThreshold()),
       upgrade_notification_timer_(tick_clock),
       initialized_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  CalculateThresholds();
+  // Not all tests provide a PrefService for local_state().
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    pref_change_registrar_.Init(local_state);
+    // base::Unretained is safe here because |this| outlives the registrar.
+    pref_change_registrar_.Add(
+        prefs::kRelaunchHeadsUpPeriod,
+        base::BindRepeating(
+            &UpgradeDetectorChromeos::OnRelaunchHeadsUpPeriodPrefChanged,
+            base::Unretained(this)));
+  }
+}
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {}
+
+// static
+void UpgradeDetectorChromeos::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kRelaunchHeadsUpPeriod,
+                                kDefaultHeadsUpPeriodMs);
+}
 
 void UpgradeDetectorChromeos::Init() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
@@ -131,7 +157,7 @@ void UpgradeDetectorChromeos::Shutdown() {
 }
 
 base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
-  return high_threshold_ - (high_threshold_ * kElevatedScaleFactor);
+  return high_threshold_ - elevated_threshold_;
 }
 
 base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
@@ -142,15 +168,48 @@ base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
 }
 
 // static
-base::TimeDelta UpgradeDetectorChromeos::DetermineHighThreshold() {
-  base::TimeDelta custom = GetRelaunchNotificationPeriod();
-  return custom.is_zero() ? kDefaultHighThreshold : custom;
+base::TimeDelta UpgradeDetectorChromeos::GetRelaunchHeadsUpPeriod() {
+  // Not all tests provide a PrefService for local_state().
+  auto* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return base::TimeDelta();
+  const auto* preference =
+      local_state->FindPreference(prefs::kRelaunchHeadsUpPeriod);
+  const int value = preference->GetValue()->GetInt();
+  // Enforce the preference's documented minimum value.
+  static constexpr base::TimeDelta kMinValue = base::TimeDelta::FromHours(1);
+  if (preference->IsDefaultValue() || value < kMinValue.InMilliseconds())
+    return base::TimeDelta();
+  return base::TimeDelta::FromMilliseconds(value);
+}
+
+void UpgradeDetectorChromeos::CalculateThresholds() {
+  base::TimeDelta notification_period = GetRelaunchNotificationPeriod();
+  high_threshold_ = notification_period.is_zero() ? kDefaultHighThreshold
+                                                  : notification_period;
+  base::TimeDelta heads_up_period = GetRelaunchHeadsUpPeriod();
+  if (heads_up_period.is_zero())
+    heads_up_period = kDefaultHeadsUpPeriod;
+  elevated_threshold_ =
+      high_threshold_ - std::min(heads_up_period, high_threshold_);
+}
+
+void UpgradeDetectorChromeos::OnRelaunchHeadsUpPeriodPrefChanged() {
+  // Run OnThresholdPrefChanged using SequencedTaskRunner to avoid double
+  // NotifyUpgrade calls in case two polices are changed at one moment.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UpgradeDetectorChromeos::OnThresholdPrefChanged,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UpgradeDetectorChromeos::OnRelaunchNotificationPeriodPrefChanged() {
-  high_threshold_ = DetermineHighThreshold();
-  if (!upgrade_detected_time().is_null())
-    NotifyOnUpgrade();
+  // Run OnThresholdPrefChanged using SequencedTaskRunner to avoid double
+  // NotifyUpgrade calls in case two polices are changed at one moment.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UpgradeDetectorChromeos::OnThresholdPrefChanged,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UpgradeDetectorChromeos::UpdateStatusChanged(
@@ -184,24 +243,37 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
   NotifyUpdateOverCellularOneTimePermissionGranted();
 }
 
+void UpgradeDetectorChromeos::OnThresholdPrefChanged() {
+  // Check the current stage and potentially notify observers now if a change to
+  // the observed policies results in changes to the thresholds.
+  const base::TimeDelta old_elevated_threshold = elevated_threshold_;
+  const base::TimeDelta old_high_threshold = high_threshold_;
+  CalculateThresholds();
+  if (!upgrade_detected_time().is_null() &&
+      (elevated_threshold_ != old_elevated_threshold ||
+       high_threshold_ != old_high_threshold)) {
+    NotifyOnUpgrade();
+  }
+}
+
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
-  const base::TimeDelta elevated_threshold =
-      high_threshold_ * kElevatedScaleFactor;
-  base::TimeDelta delta = clock()->Now() - upgrade_detected_time();
+  const base::TimeDelta delta = clock()->Now() - upgrade_detected_time();
   // The delay from now until the next highest notification stage is reached, or
   // zero if the highest notification stage has been reached.
   base::TimeDelta next_delay;
 
+  const auto last_stage = upgrade_notification_stage();
   // These if statements must be sorted (highest interval first).
   if (delta >= high_threshold_) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-  } else if (delta >= elevated_threshold) {
+  } else if (delta >= elevated_threshold_) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
     next_delay = high_threshold_ - delta;
   } else {
-    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
-    next_delay = elevated_threshold - delta;
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_NONE);
+    next_delay = elevated_threshold_ - delta;
   }
+  const auto new_stage = upgrade_notification_stage();
 
   if (!next_delay.is_zero()) {
     // Schedule the next wakeup in 20 minutes or when the next change to the
@@ -216,7 +288,12 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
     upgrade_notification_timer_.Stop();
   }
 
-  NotifyUpgrade();
+  // Issue a notification if the stage is above "none" or if it's dropped down
+  // to "none" from something higher.
+  if (new_stage != UPGRADE_ANNOYANCE_NONE ||
+      last_stage != UPGRADE_ANNOYANCE_NONE) {
+    NotifyUpgrade();
+  }
 }
 
 void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,

@@ -328,7 +328,7 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
 
   EXPECT_EQ(1u, impl.quad_list().size());
   const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(viz::DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+  ASSERT_EQ(viz::DrawQuad::Material::kYuvVideoContent, draw_quad->material);
 
   const auto* yuv_draw_quad =
       static_cast<const viz::YUVVideoDrawQuad*>(draw_quad);
@@ -366,7 +366,7 @@ TEST(VideoLayerImplTest, HibitSoftwareVideoFrameGeneratesYUVQuad) {
 
   EXPECT_EQ(1u, impl.quad_list().size());
   const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(viz::DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+  ASSERT_EQ(viz::DrawQuad::Material::kYuvVideoContent, draw_quad->material);
 
   const auto* yuv_draw_quad =
       static_cast<const viz::YUVVideoDrawQuad*>(draw_quad);
@@ -408,7 +408,7 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
 
   EXPECT_EQ(1u, impl.quad_list().size());
   const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(viz::DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+  ASSERT_EQ(viz::DrawQuad::Material::kYuvVideoContent, draw_quad->material);
 
   const auto* yuv_draw_quad =
       static_cast<const viz::YUVVideoDrawQuad*>(draw_quad);
@@ -451,7 +451,7 @@ TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
 
   EXPECT_EQ(1u, impl.quad_list().size());
   const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(viz::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
+  ASSERT_EQ(viz::DrawQuad::Material::kTextureContent, draw_quad->material);
 
   const viz::TextureDrawQuad* texture_draw_quad =
       viz::TextureDrawQuad::MaterialCast(draw_quad);

@@ -204,12 +204,10 @@ bool VerifyAuditProof(const CTLogVerifier& log,
 class CTLogVerifierTest : public ::testing::Test {
  public:
   void SetUp() override {
-    log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog",
-                                 "ct.example.com");
+    log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog");
 
     ASSERT_TRUE(log_);
     EXPECT_EQ(ct::GetTestPublicKeyId(), log_->key_id());
-    EXPECT_EQ("ct.example.com", log_->dns_domain());
   }
 
  protected:
@@ -467,7 +465,7 @@ TEST_F(CTLogVerifierTest, ExcessDataInPublicKey) {
   key += "extra";
 
   scoped_refptr<const CTLogVerifier> log =
-      CTLogVerifier::Create(key, "testlog", "ct.example.com");
+      CTLogVerifier::Create(key, "testlog");
   EXPECT_FALSE(log);
 }
 

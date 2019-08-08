@@ -92,8 +92,8 @@ uint32_t ParentOutputSurface::GetFramebufferCopyTextureFormat() {
   return gl->GetCopyTextureInternalFormat();
 }
 
-viz::OverlayCandidateValidator*
-ParentOutputSurface::GetOverlayCandidateValidator() const {
+std::unique_ptr<viz::OverlayCandidateValidator>
+ParentOutputSurface::TakeOverlayCandidateValidator() {
   return nullptr;
 }
 
@@ -111,6 +111,13 @@ gfx::BufferFormat ParentOutputSurface::GetOverlayBufferFormat() const {
 
 unsigned ParentOutputSurface::UpdateGpuFence() {
   return 0;
+}
+
+void ParentOutputSurface::SetUpdateVSyncParametersCallback(
+    viz::UpdateVSyncParametersCallback callback) {}
+
+gfx::OverlayTransform ParentOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 }  // namespace android_webview

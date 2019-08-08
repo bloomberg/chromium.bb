@@ -27,7 +27,9 @@ class PrefService;
 // part of its interface.
 class TestSigninClient : public SigninClient {
  public:
-  TestSigninClient(PrefService* pref_service);
+  TestSigninClient(
+      PrefService* pref_service,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
   ~TestSigninClient() override;
 
   // SigninClient implementation that is specialized for unit tests.
@@ -57,9 +59,12 @@ class TestSigninClient : public SigninClient {
     cookie_manager_ = std::move(cookie_manager);
   }
 
-  network::TestURLLoaderFactory* test_url_loader_factory() {
-    return &test_url_loader_factory_;
-  }
+  // Returns |test_url_loader_factory_| if it is specified. Otherwise, lazily
+  // creates a default factory and returns it.
+  network::TestURLLoaderFactory* GetTestURLLoaderFactory();
+
+  // Pass a TestURLLoader factory to use instead of the default one.
+  void OverrideTestUrlLoaderFactory(network::TestURLLoaderFactory* factory);
 
   void set_are_signin_cookies_allowed(bool value) {
     are_signin_cookies_allowed_ = value;
@@ -79,6 +84,7 @@ class TestSigninClient : public SigninClient {
   bool IsFirstRun() const override;
   base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;
+  bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(
@@ -86,14 +92,14 @@ class TestSigninClient : public SigninClient {
   void DelayNetworkCall(base::OnceClosure callback) override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override;
+      gaia::GaiaSource source) override;
   void PreGaiaLogout(base::OnceClosure callback) override;
   void SetReadyForDiceMigration(bool ready) override;
 
  private:
-  network::TestURLLoaderFactory test_url_loader_factory_;
+  std::unique_ptr<network::TestURLLoaderFactory>
+      default_test_url_loader_factory_;
+  network::TestURLLoaderFactory* test_url_loader_factory_;
 
   PrefService* pref_service_;
   std::unique_ptr<network::mojom::CookieManager> cookie_manager_;

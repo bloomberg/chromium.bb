@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -104,6 +103,7 @@ void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
     device_affiliation_ids.insert(kAffiliationID);
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
         &device_policy_test_helper_, device_affiliation_ids));
+    device_policy_test_helper_.InstallOwnerKey();
     install_attributes_.Get()->SetCloudManaged(
         policy::PolicyBuilder::kFakeDomain,
         policy::PolicyBuilder::kFakeDeviceId);
@@ -148,8 +148,7 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
 
     if (user_status() != UserStatus::UNMANAGED) {
       policy::ProfilePolicyConnector* const connector =
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-              profile());
+          profile()->GetProfilePolicyConnector();
       connector->OverrideIsManagedForTesting(true);
     }
   }

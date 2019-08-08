@@ -395,7 +395,9 @@ chrome.fileManagerPrivate.FileWatchEvent;
  *   cellularDisabled: boolean,
  *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
- *   timezone: string
+ *   timezone: string,
+ *   arcEnabled: boolean,
+ *   arcRemovableMediaAccessEnabled: boolean
  * }}
  */
 chrome.fileManagerPrivate.Preferences;
@@ -403,6 +405,8 @@ chrome.fileManagerPrivate.Preferences;
 /**
  * @typedef {{
  *   cellularDisabled: (boolean|undefined),
+ *   arcEnabled: (boolean|undefined),
+ *   arcRemovableMediaAccessEnabled: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.PreferencesChange;
@@ -481,6 +485,16 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
  * }}
  */
 chrome.fileManagerPrivate.CrostiniEvent;
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   packageName: string,
+ *   activityName: string,
+ *   iconSet: !chrome.fileManagerPrivate.IconSet
+ * }}
+ */
+chrome.fileManagerPrivate.AndroidApp;
 
 /**
  * Logout the current user for navigating to the re-authentication screen for
@@ -747,6 +761,12 @@ chrome.fileManagerPrivate.getPreferences = function(callback) {};
  * @param {chrome.fileManagerPrivate.PreferencesChange} changeInfo
  */
 chrome.fileManagerPrivate.setPreferences = function(changeInfo) {};
+
+/**
+ * Sets the ARC flag and returns what was the value before setting.
+ * @param {function(boolean)} callback
+ */
+chrome.fileManagerPrivate.setArcStorageToastShownFlag = function(callback) {};
 
 /**
  * Performs drive content search. |searchParams| |callback|
@@ -1043,6 +1063,19 @@ chrome.fileManagerPrivate.detectCharacterEncoding = function(bytes, callback) {
  *     available.
  */
 chrome.fileManagerPrivate.getThumbnail = function(entry, cropToSquare, callback) {};
+
+/**
+ * @param {!Array<string>} extensions
+ * @param {function(!Array<chrome.fileManagerPrivate.AndroidApp>):void} callback
+ *     Completion callback.
+ */
+chrome.fileManagerPrivate.getAndroidPickerApps = function(extensions, callback) {};
+
+/**
+ * @param {chrome.fileManagerPrivate.AndroidApp} androidApp
+ * @param {function()} callback Completion callback.
+ */
+chrome.fileManagerPrivate.selectAndroidPickerApp = function(androidApp, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

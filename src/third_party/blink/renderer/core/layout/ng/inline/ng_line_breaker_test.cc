@@ -35,10 +35,10 @@ class NGLineBreakerTest : public NGLayoutTest {
     node.PrepareLayoutIfNeeded();
 
     NGConstraintSpace space =
-        NGConstraintSpaceBuilder(
-            WritingMode::kHorizontalTb, WritingMode::kHorizontalTb,
-            /* is_new_fc */ false)
-            .SetAvailableSize({available_width, NGSizeIndefinite})
+        NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
+                                 WritingMode::kHorizontalTb,
+                                 /* is_new_fc */ false)
+            .SetAvailableSize({available_width, kIndefiniteSize})
             .ToConstraintSpace();
 
     scoped_refptr<NGInlineBreakToken> break_token;
@@ -494,8 +494,13 @@ TEST_P(NGTrailingSpaceWidthTest, TrailingSpaceWidth) {
   )HTML");
 
   Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
-  EXPECT_EQ(line_infos[0].ComputeTrailingSpaceWidth(),
-            LayoutUnit(10) * data.trailing_space_width);
+  const NGLineInfo& line_info = line_infos[0];
+  if (line_info.ShouldHangTrailingSpaces()) {
+    EXPECT_EQ(line_info.HangWidth(),
+              LayoutUnit(10) * data.trailing_space_width);
+  } else {
+    EXPECT_EQ(line_info.HangWidth(), LayoutUnit());
+  }
 }
 
 TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {

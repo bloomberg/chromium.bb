@@ -54,7 +54,6 @@ source_set("cells_ui") {
   deps = [
     "//base",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
@@ -64,6 +63,7 @@ source_set("cells_ui") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui_util",
     "//ui/base",
   ]
   public_deps = [
@@ -87,8 +87,8 @@ source_set("unit_tests") {
     ":cells_ui",
     "//base",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/favicon",
     "//testing/gtest",
     "//third_party/ocmock",

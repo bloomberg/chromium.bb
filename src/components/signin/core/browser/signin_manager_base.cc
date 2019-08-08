@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -27,11 +29,14 @@
 SigninManagerBase::SigninManagerBase(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
-    AccountTrackerService* account_tracker_service)
+    AccountTrackerService* account_tracker_service,
+    GaiaCookieManagerService* cookie_manager_service,
+    signin::AccountConsistencyMethod account_consistency)
     : client_(client),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       initialized_(false),
+      account_consistency_(account_consistency),
       weak_pointer_factory_(this) {
   DCHECK(client_);
   DCHECK(account_tracker_service_);
@@ -218,10 +223,17 @@ void SigninManagerBase::SetAuthenticatedAccountId(
   // Commit authenticated account info immediately so that it does not get lost
   // if Chrome crashes before the next commit interval.
   client_->GetPrefs()->CommitPendingWrite();
+
+  if (observer_) {
+    observer_->AuthenticatedAccountSet(info);
+  }
 }
 
 void SigninManagerBase::ClearAuthenticatedAccountId() {
   authenticated_account_id_.clear();
+  if (observer_) {
+    observer_->AuthenticatedAccountCleared();
+  }
 }
 
 bool SigninManagerBase::IsAuthenticated() const {
@@ -237,3 +249,108 @@ void SigninManagerBase::ClearObserver() {
   DCHECK(observer_);
   observer_ = nullptr;
 }
+
+#if !defined(OS_CHROMEOS)
+void SigninManagerBase::SignOut(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  RemoveAccountsOption remove_option =
+      (account_consistency_ == signin::AccountConsistencyMethod::kDice)
+          ? RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError
+          : RemoveAccountsOption::kRemoveAllAccounts;
+  StartSignOut(signout_source_metric, signout_delete_metric, remove_option);
+}
+
+void SigninManagerBase::SignOutAndRemoveAllAccounts(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  StartSignOut(signout_source_metric, signout_delete_metric,
+               RemoveAccountsOption::kRemoveAllAccounts);
+}
+
+void SigninManagerBase::SignOutAndKeepAllAccounts(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  StartSignOut(signout_source_metric, signout_delete_metric,
+               RemoveAccountsOption::kKeepAllAccounts);
+}
+
+void SigninManagerBase::StartSignOut(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric,
+    RemoveAccountsOption remove_option) {
+  signin_client()->PreSignOut(
+      base::BindOnce(&SigninManagerBase::OnSignoutDecisionReached,
+                     base::Unretained(this), signout_source_metric,
+                     signout_delete_metric, remove_option),
+      signout_source_metric);
+}
+
+void SigninManagerBase::OnSignoutDecisionReached(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric,
+    RemoveAccountsOption remove_option,
+    SigninClient::SignoutDecision signout_decision) {
+  DCHECK(IsInitialized());
+
+  signin_metrics::LogSignout(signout_source_metric, signout_delete_metric);
+  if (!IsAuthenticated()) {
+    return;
+  }
+
+  // TODO(crbug.com/887756): Consider moving this higher up, or document why
+  // the above blocks are exempt from the |signout_decision| early return.
+  if (signout_decision == SigninClient::SignoutDecision::DISALLOW_SIGNOUT) {
+    DVLOG(1) << "Ignoring attempt to sign out while signout disallowed";
+    return;
+  }
+
+  AccountInfo account_info = GetAuthenticatedAccountInfo();
+  const std::string account_id = GetAuthenticatedAccountId();
+  const std::string username = account_info.email;
+  const base::Time signin_time =
+      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
+          signin_client()->GetPrefs()->GetInt64(prefs::kSignedInTime)));
+  ClearAuthenticatedAccountId();
+  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
+  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
+  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
+  signin_client()->GetPrefs()->ClearPref(prefs::kSignedInTime);
+
+  // Determine the duration the user was logged in and log that to UMA.
+  if (!signin_time.is_null()) {
+    base::TimeDelta signed_in_duration = base::Time::Now() - signin_time;
+    UMA_HISTOGRAM_COUNTS_1M("Signin.SignedInDurationBeforeSignout",
+                            signed_in_duration.InMinutes());
+  }
+
+  // Revoke all tokens before sending signed_out notification, because there
+  // may be components that don't listen for token service events when the
+  // profile is not connected to an account.
+  switch (remove_option) {
+    case RemoveAccountsOption::kRemoveAllAccounts:
+      VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out";
+      token_service()->RevokeAllCredentials(
+          signin_metrics::SourceForRefreshTokenOperation::
+              kSigninManager_ClearPrimaryAccount);
+      break;
+    case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
+      if (token_service()->RefreshTokenHasError(account_id))
+        token_service()->RevokeCredentials(
+            account_id, signin_metrics::SourceForRefreshTokenOperation::
+                            kSigninManager_ClearPrimaryAccount);
+      break;
+    case RemoveAccountsOption::kKeepAllAccounts:
+      // Do nothing.
+      break;
+  }
+
+  FireGoogleSignedOut(account_info);
+}
+
+void SigninManagerBase::FireGoogleSignedOut(const AccountInfo& account_info) {
+  if (observer_ != nullptr) {
+    observer_->GoogleSignedOut(account_info);
+  }
+}
+#endif  // !defined(OS_CHROMEOS)

@@ -84,42 +84,11 @@ bool AreColorIndicesOutOfBounds(const uint8_t* indices,
   return false;
 }
 
-// Wrapper class to use with std::unique_ptr for CJPX_Decoder.
-class JpxBitMapContext {
- public:
-  explicit JpxBitMapContext(CCodec_JpxModule* jpx_module)
-      : jpx_module_(jpx_module), decoder_(nullptr) {}
-
-  ~JpxBitMapContext() {}
-
-  void set_decoder(std::unique_ptr<CJPX_Decoder> decoder) {
-    decoder_ = std::move(decoder);
-  }
-
-  CJPX_Decoder* decoder() { return decoder_.get(); }
-
- private:
-  CCodec_JpxModule* const jpx_module_;  // Weak pointer.
-  std::unique_ptr<CJPX_Decoder> decoder_;
-
-  // Disallow evil constructors
-  JpxBitMapContext(const JpxBitMapContext&);
-  void operator=(const JpxBitMapContext&);
-};
-
 }  // namespace
 
-CPDF_DIBBase::CPDF_DIBBase() {}
+CPDF_DIBBase::CPDF_DIBBase() = default;
 
-CPDF_DIBBase::~CPDF_DIBBase() {
-  if (m_pColorSpace && m_pDocument) {
-    auto* pPageData = m_pDocument->GetPageData();
-    if (pPageData) {
-      auto* pSpace = m_pColorSpace.Release();
-      pPageData->ReleaseColorSpace(pSpace->GetArray());
-    }
-  }
-}
+CPDF_DIBBase::~CPDF_DIBBase() = default;
 
 bool CPDF_DIBBase::Load(CPDF_Document* pDoc, const CPDF_Stream* pStream) {
   if (!pStream)
@@ -495,8 +464,7 @@ CPDF_DIBBase::LoadState CPDF_DIBBase::CreateDecoder() {
     m_pDecoder = CreateFlateDecoder(src_span, m_Width, m_Height, m_nComponents,
                                     m_bpc, pParams);
   } else if (decoder == "RunLengthDecode") {
-    CCodec_ModuleMgr* pEncoders = CPDF_ModuleMgr::Get()->GetCodecModule();
-    m_pDecoder = pEncoders->GetBasicModule()->CreateRunLengthDecoder(
+    m_pDecoder = CCodec_BasicModule::CreateRunLengthDecoder(
         src_span, m_Width, m_Height, m_nComponents, m_bpc);
   } else if (decoder == "DCTDecode") {
     if (!CreateDCTDecoder(src_span, pParams))
@@ -593,20 +561,18 @@ bool CPDF_DIBBase::CreateDCTDecoder(pdfium::span<const uint8_t> src_span,
 }
 
 RetainPtr<CFX_DIBitmap> CPDF_DIBBase::LoadJpxBitmap() {
-  CCodec_JpxModule* pJpxModule = CPDF_ModuleMgr::Get()->GetJpxModule();
-  auto context = pdfium::MakeUnique<JpxBitMapContext>(pJpxModule);
-  context->set_decoder(
-      pJpxModule->CreateDecoder(m_pStreamAcc->GetSpan(), m_pColorSpace.Get()));
-  if (!context->decoder())
+  std::unique_ptr<CJPX_Decoder> decoder =
+      CCodec_JpxModule::CreateDecoder(m_pStreamAcc->GetSpan(), m_pColorSpace);
+  if (!decoder)
     return nullptr;
 
-  if (!context->decoder()->StartDecode())
+  if (!decoder->StartDecode())
     return nullptr;
 
   uint32_t width = 0;
   uint32_t height = 0;
   uint32_t components = 0;
-  pJpxModule->GetImageInfo(context->decoder(), &width, &height, &components);
+  decoder->GetInfo(&width, &height, &components);
   if (static_cast<int>(width) < m_Width || static_cast<int>(height) < m_Height)
     return nullptr;
 
@@ -652,8 +618,8 @@ RetainPtr<CFX_DIBitmap> CPDF_DIBBase::LoadJpxBitmap() {
     output_offsets[0] = 2;
     output_offsets[2] = 0;
   }
-  if (!pJpxModule->Decode(context->decoder(), pCachedBitmap->GetBuffer(),
-                          pCachedBitmap->GetPitch(), output_offsets)) {
+  if (!decoder->Decode(pCachedBitmap->GetBuffer(), pCachedBitmap->GetPitch(),
+                       output_offsets)) {
     return nullptr;
   }
 
@@ -685,7 +651,7 @@ CPDF_DIBBase::LoadState CPDF_DIBBase::StartLoadMask() {
       m_pColorSpace->CountComponents() <= m_nComponents) {
     std::vector<float> colors(m_nComponents);
     for (uint32_t i = 0; i < m_nComponents; i++)
-      colors[i] = pMatte->GetFloatAt(i);
+      colors[i] = pMatte->GetNumberAt(i);
 
     float R;
     float G;

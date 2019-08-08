@@ -91,7 +91,13 @@ const base::Feature kOmniboxMaxURLMatches{"OmniboxMaxURLMatches",
 // Feature used to enable entity suggestion images and enhanced presentation
 // showing more context and descriptive text about the entity.
 const base::Feature kOmniboxRichEntitySuggestions{
-    "OmniboxRichEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxRichEntitySuggestions",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable enhanced presentation showing larger images.
 // This is currently only used on Android.
@@ -105,17 +111,20 @@ const base::Feature kOmniboxPreserveDefaultMatchScore{
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable matching short words to bookmarks for suggestions.
+const base::Feature kOmniboxShortBookmarkSuggestions{
+    "OmniboxShortBookmarkSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to force on the experiment of transmission of tail suggestions
 // from GWS to this client, currently testing for desktop.
 const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to force on the experiment of showing a button for suggestions
-// whose URL is open in another tab, with the ability to switch to that tab,
-// currently only used on desktop and iOS platforms.
+// Feature that enables the tab-switch button on suggestions corresponding to an
+// open tab. Enabled by default on Desktop and iOS.
 const base::Feature kOmniboxTabSwitchSuggestions{
   "OmniboxTabSwitchSuggestions",
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -180,10 +189,6 @@ const base::Feature kSearchProviderWarmUpOnFocus{
 #endif
 };
 
-// Feature used for the Zero Suggest Redirect to Chrome Field Trial.
-const base::Feature kZeroSuggestRedirectToChrome{
-    "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to display the title of the current URL match.
 const base::Feature kDisplayTitleForCurrentUrl{
   "OmniboxDisplayTitleForCurrentUrl",
@@ -204,8 +209,9 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 const base::Feature kQueryInOmnibox{"QueryInOmnibox",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for showing the URL suggestion favicons as a UI experiment,
-// currently only used on desktop platforms.
+// Feature used for showing the URL suggestion favicons as a UI experiment.
+// Already launched on Desktop, and currently under development on Android.
+// This flag is not used on iOS.
 const base::Feature kUIExperimentShowSuggestionFavicons{
   "OmniboxUIExperimentShowSuggestionFavicons",
 #if defined(OS_ANDROID)
@@ -234,61 +240,6 @@ const base::Feature kUIExperimentVerticalMargin{
 // devices only. Has no effect if kUIExperimentVerticalMargin is not enabled.
 const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly{
     "OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to color "blue" the generic search icon and search terms.
-// Technically, this makes the search icon and search terms match the color of
-// Omnibox link text, which is blue by convention.
-const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery{
-    "OmniboxUIExperimentBlueSearchLoopAndSearchQuery",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to change the color of text in navigation suggestions. It
-// changes title text from black to blue, and URL text from blue to gray.
-const base::Feature kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions{
-    "OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to change the color of text in navigation suggestions. It
-// changes title text from black to blue.
-const base::Feature kUIExperimentBlueTitlesOnPageSuggestions{
-    "OmniboxUIExperimentBlueTitlesOnPageSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to show a " - Google Search", " - Bing Search", etc. suffix on
-// all search suggestions instead of just the first one in each cluster.
-const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{
-    "OmniboxUIExperimentShowSuffixOnAllSearchSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to show a white background in the omnibox while it's unfocused.
-// More technically, with this flag on, it uses the same background color as
-// the results popup (conventionally white).
-const base::Feature kUIExperimentWhiteBackgroundOnBlur{
-    "OmniboxUIExperimentWhiteBackgroundOnBlur",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to show a generic vector icon for omnibox search instead of the
-// search engine favicon.
-//
-// This feature flag's string has a typo: "Omnibox" => "Ominbox".
-// Do not correct this typo, because this misspelled string is being used
-// as-is in field trials.
-const base::Feature kUIExperimentUseGenericSearchEngineIcon{
-    "OminboxUIExperimentUseGenericSearchEngineIcon",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to bold the "user text" part of search suggestions instead
-// of the "autocomplete" part. For example, if the user typed "point reyes",
-// and the search suggestion was "point reyes weather", this feature makes
-// the "point reyes" part of the suggestion bold, instead of "weather".
-const base::Feature kUIExperimentBoldUserTextOnSearchSuggestions{
-    "OmniboxUIExperimentBoldUserTextOnSearchSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to unbold suggestion text.
-const base::Feature kUIExperimentUnboldSuggestionText{
-    "OmniboxUIExperimentUnboldSuggestionText",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Shows the "Search Google or type a URL" omnibox placeholder even when the
@@ -327,6 +278,26 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 // weather answers.
 const base::Feature kOmniboxMaterialDesignWeatherIcons{
     "OmniboxMaterialDesignWeatherIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
+// This feature's main job is to contain the "ZeroSuggestVariant" field trial
+// parameter, which configures the global mode of ZeroSuggestProvider.
+const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Feature used for the Zero Suggest Redirect to Chrome Field Trial.
+//
+// This feature is *enabled* in order to *disable* all forms of suggestions
+// based on the URL on-focus (whether from "redirect to Chrome" or the
+// default suggest server).  The actual disabling of redirect to Chrome
+// suggestions happens in contextual_suggestions_service.cc.  See comments
+// by kDefaultExperimentalServerAddress.
+//
+// If this feature were not enabled, Chrome would use the default suggest
+// server for suggestions based on the current URL on focus.  There is no
+// code in Chrome to disable that, so that why we took this route.
+const base::Feature kZeroSuggestRedirectToChrome{
+    "ZeroSuggestRedirectToChrome", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing
 // URL bar (the omnibox).

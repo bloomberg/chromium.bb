@@ -94,3 +94,11 @@ TEST_F(ExtensionsMenuButtonTest, UpdatesToDisplayTooltip) {
 
   EXPECT_EQ(button_->GetTooltipText(gfx::Point()), tooltip);
 }
+
+TEST_F(ExtensionsMenuButtonTest, ButtonMatchesEnabledStateOfExtension) {
+  EXPECT_TRUE(button_->GetEnabled());
+  controller_->SetEnabled(false);
+  EXPECT_FALSE(button_->GetEnabled());
+  controller_->SetEnabled(true);
+  EXPECT_TRUE(button_->GetEnabled());
+}

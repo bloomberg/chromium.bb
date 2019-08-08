@@ -159,7 +159,6 @@ class Dispatcher : public content::RenderThreadObserver,
   struct JsResourceInfo {
     const char* name = nullptr;
     int id = 0;
-    bool gzipped = false;
   };
   // Returns a list of resources for the JS modules to add to the source map.
   static std::vector<JsResourceInfo> GetJsResources();

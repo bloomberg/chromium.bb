@@ -21,6 +21,7 @@ import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
+import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
@@ -223,10 +224,11 @@ interface FrameNavigationControl {
                    mojo_base.mojom.String16 target_origin,
                    blink.mojom.TransferableMessage message);
 
-  // Forwards message to the portal's main frame.
-  ForwardMessageToPortalHost(blink.mojom.TransferableMessage message,
-                             url.mojom.Origin source_origin,
-                             url.mojom.Origin? target_origin);
+  // Forwards a message from a portal's host to the main frame in the portal's
+  // guest contents.
+  ForwardMessageFromHost(blink.mojom.TransferableMessage message,
+                         url.mojom.Origin source_origin,
+                         url.mojom.Origin? target_origin);
 
   // Called on the main frame of a page embedded in a Portal when it is
   // activated. The frame has the option to adopt the previous page as a portal
@@ -237,6 +239,7 @@ interface FrameNavigationControl {
   // current frame.
   OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
                     associated blink.mojom.Portal portal,
+                    associated blink.mojom.PortalClient& portal_client,
                     blink.mojom.TransferableMessage data) => (bool was_adopted);
 };
 
@@ -346,18 +349,22 @@ interface FrameHost {
       => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
 
   // Sent by the renderer process to request the creation of a new portal.
-  // |portal| is the interface to be used for the Portal object. Returns
-  // |proxy_routing_id|, which is the routing id of the RenderFrameProxy and
-  // |portal_token|, which is the unique identifier for the portal.
-  [Sync] CreatePortal(associated blink.mojom.Portal& portal)
+  // |portal| is the pipe to be used for the Portal object, |client| is the pipe
+  // used to communicate back with the caller. Returns |proxy_routing_id|, which
+  // is the routing id of the RenderFrameProxy and |portal_token|, which is the
+  // unique identifier for the portal.
+  [Sync] CreatePortal(associated blink.mojom.Portal& portal,
+                      associated blink.mojom.PortalClient client)
       => (int32 proxy_routing_id,
-          mojo_base.mojom.UnguessableToken portal_token);
+          mojo_base.mojom.UnguessableToken portal_token,
+          mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Requests that this frame adopts the portal identified by |portal_token|.
   // Returns |proxy_routing_id|, which is the routing id of the portal's
   // RenderFrameProxy.
   [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
-      => (int32 proxy_routing_id);
+      => (int32 proxy_routing_id,
+          mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);
@@ -480,4 +487,37 @@ interface FrameHost {
   // of the individual bits.
   // TODO(altimin): Move into a separate scheduling interface.
   UpdateActiveSchedulerTrackedFeatures(uint64 features_mask);
+
+  // Blink and JavaScript error messages to log to the console or debugger UI.
+  DidAddMessageToConsole(
+      blink.mojom.ConsoleMessageLevel log_level,
+      mojo_base.mojom.BigString16 msg,
+      int32 line_number,
+      mojo_base.mojom.String16 source_id);
+
+  // Sent when the renderer fails a provisional load with an error.
+  //
+  // |url| is the URL that the error is reported for.
+  //
+  // |error_code| is a net::Error code as reported in the
+  // DidFailProvisionalLoad callback.
+  //
+  // |error_description| is an error message generated from the error_code.
+  // This can be an empty string if we were unable to find a meaningful
+  // description.
+  //
+  // |showing_repost_interstitial| is true if the failure is the result of
+  // navigating to a POST again and we're going to show the POST interstitial.
+  // TODO(https://crbug.com/963806): Delete this method.
+  DidFailProvisionalLoadWithError(
+      url.mojom.Url url,
+      int32 error_code,
+      mojo_base.mojom.String16 error_description,
+      bool showing_repost_interstitial);
+
+  // Sent when the renderer fails to load with an error.
+  DidFailLoadWithError(
+      url.mojom.Url url,
+      int32 error_code,
+      mojo_base.mojom.String16 error_description);
 };

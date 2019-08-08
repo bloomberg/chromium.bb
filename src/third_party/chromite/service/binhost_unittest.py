@@ -13,6 +13,8 @@ from chromite.lib import binpkg
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import parallel
+from chromite.lib import portage_util
 from chromite.service import binhost
 
 class SetBinhostTest(cros_test_lib.MockTempDirTestCase):
@@ -160,6 +162,11 @@ class UpdatePackageIndexTest(cros_test_lib.MockTempDirTestCase):
     self.root = os.path.join(self.tempdir, 'chroot/build/target/packages')
     osutils.SafeMakedirs(self.root)
 
+  def testAbsoluteUploadPath(self):
+    """Test UpdatePackageIndex raises an error for absolute paths."""
+    with self.assertRaises(AssertionError):
+      binhost.UpdatePackageIndex(self.root, 'gs://chromeos-prebuilt', '/target')
+
   def testUpdatePackageIndex(self):
     """UpdatePackageIndex writes updated file to disk."""
     packages_content = """\
@@ -178,3 +185,19 @@ CPV: package/prebuilt
     self.assertEqual(
         actual.packages,
         [{'CPV': 'package/prebuilt', 'PATH': 'target/package/prebuilt.tbz2'}])
+
+class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
+  """Unittests for RegenBuildCache."""
+
+  def testCallsRegenPortageCache(self):
+    """Test that overlays=None works."""
+    overlays_found = [os.path.join(self.tempdir, 'path/to')]
+    for o in overlays_found:
+      osutils.SafeMakedirs(o)
+    find_overlays = self.PatchObject(
+        portage_util, 'FindOverlays', return_value=overlays_found)
+    run_tasks = self.PatchObject(parallel, 'RunTasksInProcessPool')
+
+    binhost.RegenBuildCache(None, self.tempdir)
+    find_overlays.assert_called_once_with(None, buildroot=self.tempdir)
+    run_tasks.assert_called_once_with(portage_util.RegenCache, [overlays_found])

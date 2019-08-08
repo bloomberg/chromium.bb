@@ -45,7 +45,7 @@ bool IsNotificationIndicatorEnabled() {
 
 // Enables GPU rasterization for all UI drawing (where not blacklisted).
 const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
                                            base::FEATURE_ENABLED_BY_DEFAULT
 #else
                                            base::FEATURE_DISABLED_BY_DEFAULT
@@ -85,7 +85,7 @@ const base::Feature kTSFImeSupport = {"TSFImeSupport",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsUsingWMPointerForTouch() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  return base::win::GetVersion() >= base::win::Version::WIN8 &&
          base::FeatureList::IsEnabled(kPointerEventsForTouch);
 }
 
@@ -122,16 +122,15 @@ const base::Feature kDirectManipulationStylus = {
 
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kMashOopViz = {"MashOopViz",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSingleProcessMash = {"SingleProcessMash",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-// Connecting the client and IME engine via Mojo. https://crbug.com/937167
-const base::Feature kMojoIMF = {"MojoIMF", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsFormControlsRefreshEnabled() {
+  return base::FeatureList::IsEnabled(features::kFormControlsRefresh);
+}
 
 bool IsUsingWindowService() {
   return IsSingleProcessMash() || IsMultiProcessMash();
@@ -141,21 +140,9 @@ bool IsMultiProcessMash() {
   return base::FeatureList::IsEnabled(features::kMash);
 }
 
-bool IsMashOopVizEnabled() {
-  return base::FeatureList::IsEnabled(features::kMashOopViz);
-}
-
 bool IsSingleProcessMash() {
   return base::FeatureList::IsEnabled(features::kSingleProcessMash) &&
          !base::FeatureList::IsEnabled(features::kMash);
-}
-
-bool IsMojoImfEnabled() {
-#if defined(OS_CHROMEOS)
-  return base::FeatureList::IsEnabled(features::kMojoIMF);
-#else
-  return false;
-#endif
 }
 
 bool IsAutomaticUiAdjustmentsForTouchEnabled() {
@@ -185,12 +172,6 @@ bool IsOzoneDrmMojo() {
   return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo) ||
          IsMultiProcessMash();
 }
-
-#if defined(OS_MACOSX)
-const base::Feature kDarkMode = {"DarkMode", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kDarkMode = {"DarkMode", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_CHROMEOS)
 const base::Feature kHandwritingGesture = {"HandwritingGesture",

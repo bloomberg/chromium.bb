@@ -175,8 +175,9 @@ class ServiceWorkerMetrics {
     COOKIE_CHANGE = 30,
     LONG_RUNNING_MESSAGE = 31,
     BACKGROUND_FETCH_SUCCESS = 32,
+    PERIODIC_SYNC = 33,
     // Add new events to record here.
-    kMaxValue = BACKGROUND_FETCH_SUCCESS,
+    kMaxValue = PERIODIC_SYNC,
   };
 
   // Used for UMA. Append only.
@@ -269,6 +270,9 @@ class ServiceWorkerMetrics {
 
     // The browser received the worker started IPC.
     base::TimeTicks local_end;
+
+    // Counts the time overhead of UI/IO thread hops during startup.
+    base::TimeDelta thread_hop_time;
   };
 
   // Records worker activities. Currently this only records
@@ -426,6 +430,15 @@ class ServiceWorkerMetrics {
 
   // Records the number of origins with a registered service worker.
   static void RecordRegisteredOriginCount(size_t origin_count);
+
+  // Records the duration of looking up an existing registration.
+  // |status| is the result of lookup. The records for the cases where
+  // the registration is found (kOk), not found (kErrorNotFound), or an error
+  // happens (other errors) are saved separately into a relevant suffixed
+  // histogram.
+  static void RecordLookupRegistrationTime(
+      blink::ServiceWorkerStatusCode status,
+      base::TimeDelta duration);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

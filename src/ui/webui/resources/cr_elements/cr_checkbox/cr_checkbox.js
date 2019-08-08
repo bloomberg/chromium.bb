@@ -34,14 +34,10 @@ Polymer({
 
     ariaDescription: String,
 
-    ariaLabel: {
-      type: String,
-      observer: 'onAriaLabelChanged_',
-    },
-
     tabIndex: {
       type: Number,
       value: 0,
+      observer: 'onTabIndexChanged_',
     },
   },
 
@@ -59,6 +55,11 @@ Polymer({
 
   focus: function() {
     this.$.checkbox.focus();
+  },
+
+  /** @return {!Element} */
+  getFocusableElement: function() {
+    return this.$.checkbox;
   },
 
   /** @private */
@@ -90,12 +91,6 @@ Polymer({
   /** @private */
   hideRipple_: function() {
     this.getRipple().holdDown = false;
-  },
-
-  /** @private */
-  onAriaLabelChanged_: function() {
-    this.$.checkbox.setAttribute(
-        'aria-labelledby', this.ariaLabel ? 'ariaLabel' : 'label-container');
   },
 
   /**
@@ -131,7 +126,30 @@ Polymer({
       return;
     }
 
-    this.click();
+    if (e.key == 'Enter') {
+      this.click();
+    }
+  },
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeyUp_: function(e) {
+    if (e.key == ' ' || e.key == 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (e.key == ' ') {
+      this.click();
+    }
+  },
+
+  /** @private */
+  onTabIndexChanged_: function() {
+    // :host shouldn't have a tabindex because it's set on #checkbox.
+    this.removeAttribute('tabindex');
   },
 
   // customize the element's ripple

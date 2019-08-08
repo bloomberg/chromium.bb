@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -54,21 +55,35 @@ constexpr int kStandardWidth = 100;
 constexpr int kStandardHeight = 10;
 constexpr int kMinActiveWidth = 20;
 constexpr int kMinInactiveWidth = 14;
+constexpr int kPinnedWidth = 10;
+constexpr int kTabOverlap = 4;
 
 CalculateTabBoundsResult CalculateTabBounds(TestCase test_case) {
   TabSizeInfo size_info;
-  size_info.pinned_tab_width = 10;
+  size_info.pinned_tab_width = kPinnedWidth;
   size_info.min_active_width = kMinActiveWidth;
   size_info.min_inactive_width = kMinInactiveWidth;
   size_info.standard_size = gfx::Size(kStandardWidth, kStandardHeight);
-  size_info.tab_overlap = 4;
+  size_info.tab_overlap = kTabOverlap;
+
+  std::vector<TabAnimationState> ideal_animation_states;
+  for (int tab_index = 0; tab_index < test_case.num_tabs; tab_index++) {
+    ideal_animation_states.push_back(TabAnimationState::ForIdealTabState(
+        TabAnimationState::TabOpenness::kOpen,
+        tab_index < test_case.num_pinned_tabs
+            ? TabAnimationState::TabPinnedness::kPinned
+            : TabAnimationState::TabPinnedness::kUnpinned,
+        tab_index == test_case.active_index
+            ? TabAnimationState::TabActiveness::kActive
+            : TabAnimationState::TabActiveness::kInactive,
+        0));
+  }
 
   int active_width;
   int inactive_width;
   std::vector<gfx::Rect> tab_bounds = CalculateTabBounds(
-      size_info, test_case.num_pinned_tabs, test_case.num_tabs,
-      test_case.active_index, test_case.tabstrip_width, &active_width,
-      &inactive_width);
+      size_info, ideal_animation_states, test_case.tabstrip_width,
+      &active_width, &inactive_width);
 
   CalculateTabBoundsResult result;
   result.bounds = tab_bounds;
@@ -268,4 +283,21 @@ TEST(TabStripLayoutTest, NotEnoughSpaceMixedPinnedAndNormalTabs) {
 
   auto result = CalculateTabBounds(test_case);
   EXPECT_EQ("10 14 14", TabWidthsAsString(result.bounds));
+}
+
+TEST(TabStripLayoutTest, ExactlyEnoughSpaceAllPinnedTabs) {
+  TestCase test_case;
+  test_case.num_tabs = 2;
+  test_case.num_pinned_tabs = 2;
+  test_case.tabstrip_width = 2 * kPinnedWidth - kTabOverlap;
+
+  // We want to check the case where the necessary strip width equals the
+  // available width.
+  auto result = CalculateTabBounds(test_case);
+
+  EXPECT_EQ("10 10", TabWidthsAsString(result.bounds));
+
+  // Validate that the tabstrip width is indeeed exactly enough to hold two
+  // pinned tabs.
+  EXPECT_EQ(test_case.tabstrip_width, result.bounds[1].right());
 }

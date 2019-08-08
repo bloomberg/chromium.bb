@@ -93,9 +93,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual bool IsOffscreen() = 0;
 
   // The callback is for receiving presentation feedback from |SwapBuffers|,
-  // |PostSubBuffer|, |CommitOverlayPlanes|, etc. If
-  // |SupportsPresentationCallback()| returns true, it is guarantee that the
-  // |PresentationCallback| will be called.
+  // |PostSubBuffer|, |CommitOverlayPlanes|, etc.
   // See |PresentationFeedback| for detail.
   using PresentationCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback& feedback)>;
@@ -109,13 +107,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Get the underlying platform specific surface "handle".
   virtual void* GetHandle() = 0;
-
-  // Returns whether or not the surface supports the |PresentationCallback|
-  // of |SwapBuffers|, |SwapBuffersAsync|, |SwapBuffersWithBounds|,
-  // |PostSubBuffer|, |PostSubBufferAsync|, |CommitOverlayPlanes|,
-  // |CommitOverlayPlanesAsync|, etc. If returns false, the
-  // |PresentationCallback| will never be called.
-  virtual bool SupportsPresentationCallback();
 
   // Returns whether or not the surface supports SwapBuffersWithBounds
   virtual bool SupportsSwapBuffersWithBounds();
@@ -301,6 +292,12 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Return the interface used for querying EGL timestamps.
   virtual EGLTimestampClient* GetEGLTimestampClient();
 
+  virtual bool SupportsGpuVSync() const;
+
+  virtual void SetGpuVSyncEnabled(bool enabled);
+
+  virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+
   static GLSurface* GetCurrent();
 
  protected:
@@ -324,6 +321,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   explicit GLSurfaceAdapter(GLSurface* surface);
 
   bool Initialize(GLSurfaceFormat format) override;
+  void PrepareToDestroy(bool have_context) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -352,7 +350,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void CommitOverlayPlanesAsync(
       SwapCompletionCallback completion_callback,
       PresentationCallback presentation_callback) override;
-  bool SupportsPresentationCallback() override;
   bool SupportsSwapBuffersWithBounds() override;
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
@@ -392,6 +389,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void SetEnableSwapTimestamps() override;
   bool SupportsPlaneGpuFences() const override;
   int GetBufferCount() const override;
+  bool SupportsGpuVSync() const override;
+  void SetGpuVSyncEnabled(bool enabled) override;
+  void SetDisplayTransform(gfx::OverlayTransform transform) override;
 
   GLSurface* surface() const { return surface_.get(); }
 

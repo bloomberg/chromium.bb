@@ -42,6 +42,7 @@ GERRIT_APPROVAL_MAP = {
     'CRVW': ['CR', 'Code Review    ',],
     'SUBM': ['S ', 'Submitted      ',],
     'VRIF': ['V ', 'Verified       ',],
+    'LCQ': ['L ', 'Legacy         ',],
 }
 
 # Order is important -- matches the web ui.  This also controls the short
@@ -538,6 +539,10 @@ Example:
   $ gerrit inspect 28123    # Inspect CL 28123 on the public gerrit.
   $ gerrit inspect *28123   # Inspect CL 28123 on the internal gerrit.
   $ gerrit verify 28123 1   # Mark CL 28123 as verified (+1).
+  $ gerrit reviewers 28123 foo@chromium.org    # Add foo@ as a reviewer on CL \
+28123.
+  $ gerrit reviewers 28123 ~foo@chromium.org   # Remove foo@ as a reviewer on \
+CL 28123.
 Scripting:
   $ gerrit ready `gerrit --raw mine` 1      # Mark *ALL* of your public CLs \
 ready.

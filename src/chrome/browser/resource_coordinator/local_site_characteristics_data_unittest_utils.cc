@@ -26,8 +26,7 @@ GetLocalSiteCharacteristicsDataImplForWC(content::WebContents* web_contents) {
   ResourceCoordinatorTabHelper* tab_helper =
       ResourceCoordinatorTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
-  auto* wc_observer =
-      tab_helper->local_site_characteristics_wc_observer_for_testing();
+  auto* wc_observer = tab_helper->local_site_characteristics_wc_observer();
   DCHECK(wc_observer);
 
   auto* writer = static_cast<LocalSiteCharacteristicsDataWriter*>(
@@ -82,7 +81,7 @@ void NoopLocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
 
 void NoopLocalSiteCharacteristicsDatabase::WriteSiteCharacteristicsIntoDB(
     const url::Origin& origin,
-    const SiteCharacteristicsProto& site_characteristic_proto) {}
+    const SiteDataProto& site_characteristic_proto) {}
 
 void NoopLocalSiteCharacteristicsDatabase::RemoveSiteCharacteristicsFromDB(
     const std::vector<url::Origin>& site_origins) {}

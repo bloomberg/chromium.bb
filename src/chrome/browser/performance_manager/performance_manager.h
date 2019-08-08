@@ -14,9 +14,9 @@
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -56,7 +56,7 @@ class PerformanceManager {
 
   // Invokes |graph_callback| on the performance manager's sequence, with the
   // graph as a parameter.
-  using GraphCallback = base::OnceCallback<void(Graph*)>;
+  using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
   void CallOnGraph(const base::Location& from_here,
                    GraphCallback graph_callback);
 
@@ -72,15 +72,22 @@ class PerformanceManager {
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node,
-      int frame_tree_node_id);
+      int frame_tree_node_id,
+      const base::UnguessableToken& dev_tools_token,
+      int32_t browsing_instance_id,
+      int32_t site_instance_id);
   std::unique_ptr<FrameNodeImpl> CreateFrameNode(
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node,
       int frame_tree_node_id,
+      const base::UnguessableToken& dev_tools_token,
+      int32_t browsing_instance_id,
+      int32_t site_instance_id,
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
-      const base::WeakPtr<WebContentsProxy>& contents_proxy);
+      const WebContentsProxy& contents_proxy,
+      bool is_visible);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
 
   // Destroys a node returned from the creation functions above.
@@ -128,16 +135,15 @@ class PerformanceManager {
   void BindInterfaceImpl(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
 
-  void BindWebUIGraphDump(
-      resource_coordinator::mojom::WebUIGraphDumpRequest request,
-      const service_manager::BindSourceInfo& source_info);
+  void BindWebUIGraphDump(mojom::WebUIGraphDumpRequest request,
+                          const service_manager::BindSourceInfo& source_info);
   void OnGraphDumpConnectionError(WebUIGraphDumpImpl* graph_dump);
 
   InterfaceRegistry interface_registry_;
 
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  Graph graph_;
+  GraphImpl graph_;
 
   // The registered graph observers.
   std::vector<std::unique_ptr<GraphObserver>> observers_;

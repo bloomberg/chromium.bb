@@ -23,12 +23,12 @@
 #include "chromeos/dbus/dbus_clients_browser.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/dbus/gnubby_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
-#include "chromeos/dbus/shill/gsm_sms_client.h"
 #include "chromeos/dbus/shill/modem_messaging_client.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
@@ -153,6 +153,10 @@ EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
                           : nullptr;
 }
 
+GnubbyClient* DBusThreadManager::GetGnubbyClient() {
+  return clients_browser_ ? clients_browser_->gnubby_client_.get() : nullptr;
+}
+
 ShillDeviceClient* DBusThreadManager::GetShillDeviceClient() {
   return ShillDeviceClient::Get();
 }
@@ -176,10 +180,6 @@ ShillProfileClient* DBusThreadManager::GetShillProfileClient() {
 ShillThirdPartyVpnDriverClient*
 DBusThreadManager::GetShillThirdPartyVpnDriverClient() {
   return ShillThirdPartyVpnDriverClient::Get();
-}
-
-GsmSMSClient* DBusThreadManager::GetGsmSMSClient() {
-  return GsmSMSClient::Get();
 }
 
 ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
@@ -239,16 +239,18 @@ WilcoDtcSupportdClient* DBusThreadManager::GetWilcoDtcSupportdClient() {
                           : nullptr;
 }
 
+VmPluginDispatcherClient* DBusThreadManager::GetVmPluginDispatcherClient() {
+  return clients_browser_ ? clients_browser_->vm_plugin_dispatcher_client_.get()
+                          : nullptr;
+}
+
 void DBusThreadManager::InitializeClients() {
   // Some clients call DBusThreadManager::Get() during initialization.
   DCHECK(g_dbus_thread_manager);
 
   // TODO(stevenjb): Move these to dbus_helper.cc in src/chrome and any tests
   // that require Shill clients. https://crbug.com/948390.
-  if (use_real_clients_)
-    shill_clients::Initialize(GetSystemBus());
-  else
-    shill_clients::InitializeFakes();
+  shill_clients::Initialize(GetSystemBus());
 
   if (clients_browser_)
     clients_browser_->Initialize(GetSystemBus());
@@ -271,9 +273,15 @@ void DBusThreadManager::Initialize(ClientSet client_set) {
     return;
 
   CHECK(!g_dbus_thread_manager);
+#if defined(USE_REAL_DBUS_CLIENTS)
+  bool use_real_clients = true;
+#else
+  // TODO(hashimoto): Always use fakes after adding
+  // use_real_dbus_clients=true to where needed. crbug.com/952745
   bool use_real_clients = base::SysInfo::IsRunningOnChromeOS() &&
                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
                               chromeos::switches::kDbusStub);
+#endif
   g_dbus_thread_manager = new DBusThreadManager(client_set, use_real_clients);
   g_dbus_thread_manager->InitializeClients();
 }
@@ -351,6 +359,12 @@ void DBusThreadManagerSetter::SetCrosDisksClient(
 void DBusThreadManagerSetter::SetDebugDaemonClient(
     std::unique_ptr<DebugDaemonClient> client) {
   DBusThreadManager::Get()->clients_browser_->debug_daemon_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetGnubbyClient(
+    std::unique_ptr<GnubbyClient> client) {
+  DBusThreadManager::Get()->clients_browser_->gnubby_client_ =
       std::move(client);
 }
 

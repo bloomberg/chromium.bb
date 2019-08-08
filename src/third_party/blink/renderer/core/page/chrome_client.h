@@ -29,6 +29,7 @@
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/trees/paint_holding_commit_trigger.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -50,11 +52,13 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
 
 namespace cc {
+struct ElementId;
 class Layer;
 struct OverscrollBehavior;
 }
@@ -97,6 +101,8 @@ struct WebCursorInfo;
 struct WebScreenInfo;
 struct WebWindowFeatures;
 
+using CompositorElementId = cc::ElementId;
+
 class CORE_EXPORT ChromeClient
     : public GarbageCollectedFinalized<ChromeClient> {
   DISALLOW_COPY_AND_ASSIGN(ChromeClient);
@@ -135,13 +141,13 @@ class CORE_EXPORT ChromeClient
   virtual bool CanTakeFocus(WebFocusType) = 0;
   virtual void TakeFocus(WebFocusType) = 0;
 
-  virtual void FocusedNodeChanged(Node*, Node*) = 0;
+  virtual void FocusedElementChanged(Element*, Element*) = 0;
 
   virtual bool HadFormInteraction() const = 0;
 
   virtual void BeginLifecycleUpdates() = 0;
   virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
-  virtual void StopDeferringCommits() = 0;
+  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) = 0;
 
   // Start a system drag and drop operation.
   virtual void StartDragging(LocalFrame*,
@@ -159,6 +165,7 @@ class CORE_EXPORT ChromeClient
   // request could be fulfilled. The ChromeClient should not load the request.
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
+                     const AtomicString& frame_name,
                      const WebWindowFeatures&,
                      WebSandboxFlags,
                      const FeaturePolicy::FeatureState&,
@@ -173,6 +180,23 @@ class CORE_EXPORT ChromeClient
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
                              const FloatSize& velocity_in_viewport) = 0;
+
+  // Causes a gesture event of |injected_type| to be dispatched at a later
+  // point in time. |injected_type| is required to be one of
+  // GestureScroll{Begin,Update,End}. If the main thread is currently handling
+  // an input event, the gesture will be dispatched immediately after the
+  // current event is finished being processed.
+  // If there is no input event being handled, the gesture is queued up
+  // on the main thread's input event queue.
+  // The dispatched gesture will scroll the ScrollableArea identified by
+  // |scrollable_area_element_id| by the given delta+granularity.
+  virtual void InjectGestureScrollEvent(
+      LocalFrame& local_frame,
+      WebGestureDevice device,
+      const WebFloatSize& delta,
+      ScrollGranularity granularity,
+      CompositorElementId scrollable_area_element_id,
+      WebInputEvent::Type injected_type) {}
 
   // Set the browser's behavior when overscroll happens, e.g. whether to glow
   // or navigate. This may only be called for the main frame, and takes it as
@@ -268,9 +292,14 @@ class CORE_EXPORT ChromeClient
   //    InputMultipleFieldsUI flag is set
   //  - <datalist> UI for date/time input types regardless of
   //    InputMultipleFieldsUI flag
+  // |LocalFrame| should not be null.
   virtual DateTimeChooser* OpenDateTimeChooser(
+      LocalFrame*,
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) = 0;
+  virtual ExternalDateTimeChooser* GetExternalDateTimeChooserForTesting() {
+    return nullptr;
+  }
 
   virtual void OpenTextDataListChooser(HTMLInputElement&) = 0;
 
@@ -393,8 +422,10 @@ class CORE_EXPORT ChromeClient
   // The |callback| will be fired when the corresponding renderer frame for the
   // |frame| is submitted (still called "swapped") to the display compositor
   // (either with DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(LocalFrame& frame,
-                              WebWidgetClient::ReportTimeCallback callback) {}
+  using ReportTimeCallback =
+      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                        base::TimeTicks)>;
+  virtual void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) {}
 
   virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
                                             bool left,
@@ -423,6 +454,7 @@ class CORE_EXPORT ChromeClient
   virtual void PrintDelegate(LocalFrame*) = 0;
   virtual Page* CreateWindowDelegate(LocalFrame*,
                                      const FrameLoadRequest&,
+                                     const AtomicString& frame_name,
                                      const WebWindowFeatures&,
                                      WebSandboxFlags,
                                      const FeaturePolicy::FeatureState&,

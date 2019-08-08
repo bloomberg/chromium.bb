@@ -18,7 +18,7 @@ namespace media {
 namespace {
 
 // Empty method used for keeping a reference to the original media::VideoFrame.
-void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
+void ReleaseOriginalFrame(scoped_refptr<media::VideoFrame> frame) {}
 
 // Helper to apply padding to the region outside visible rect up to the coded
 // size with the repeated last column / row of the visible rect.
@@ -423,18 +423,18 @@ void CopyRGBToVideoFrame(const uint8_t* source,
 }
 
 scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+    scoped_refptr<VideoFrame> frame) {
   DCHECK_EQ(VideoFrame::STORAGE_OWNED_MEMORY, frame->storage_type());
   DCHECK_EQ(PIXEL_FORMAT_I420A, frame->format());
 
   scoped_refptr<media::VideoFrame> wrapped_frame =
-      media::VideoFrame::WrapVideoFrame(frame, PIXEL_FORMAT_I420,
+      media::VideoFrame::WrapVideoFrame(*frame, PIXEL_FORMAT_I420,
                                         frame->visible_rect(),
                                         frame->natural_size());
   if (!wrapped_frame)
     return nullptr;
   wrapped_frame->AddDestructionObserver(
-      base::Bind(&ReleaseOriginalFrame, frame));
+      base::BindOnce(&ReleaseOriginalFrame, std::move(frame)));
   return wrapped_frame;
 }
 

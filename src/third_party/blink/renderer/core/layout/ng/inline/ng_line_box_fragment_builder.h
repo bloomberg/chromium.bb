@@ -5,13 +5,15 @@
 #ifndef NGLineBoxFragmentBuilder_h
 #define NGLineBoxFragmentBuilder_h
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -19,11 +21,10 @@ namespace blink {
 
 class ComputedStyle;
 class NGInlineBreakToken;
-class NGPhysicalFragment;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
   NGLineBoxFragmentBuilder(NGInlineNode node,
@@ -43,6 +44,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
   LayoutUnit LineHeight() const {
     return metrics_.LineHeight().ClampNegativeToZero();
+  }
+
+  void SetInlineSize(LayoutUnit inline_size) {
+    size_.inline_size = inline_size;
+  }
+
+  void SetHangInlineSize(LayoutUnit hang_inline_size) {
+    hang_inline_size_ = hang_inline_size;
   }
 
   // Mark this line box is an "empty" line box. See NGLineBoxType.
@@ -67,12 +76,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     DISALLOW_NEW();
 
     scoped_refptr<const NGLayoutResult> layout_result;
-    scoped_refptr<const NGPhysicalFragment> fragment;
+    scoped_refptr<const NGPhysicalTextFragment> fragment;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
     // |ComputeInlinePositions()| converts it to the offset within the line box.
-    NGLogicalOffset offset;
+    LogicalOffset offset;
     // The offset of a positioned float wrt. the root BFC. This should only be
     // set for positioned floats.
     NGBfcOffset bfc_offset;
@@ -90,29 +99,29 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     Child() = default;
     // Create a placeholder. A placeholder does not have a fragment nor a bidi
     // level.
-    Child(NGLogicalOffset offset) : offset(offset) {}
+    Child(LogicalOffset offset) : offset(offset) {}
     // Crete a bidi control. A bidi control does not have a fragment, but has
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
     // Create an in-flow |NGLayoutResult|.
     Child(scoped_refptr<const NGLayoutResult> layout_result,
-          NGLogicalOffset offset,
+          LogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : layout_result(std::move(layout_result)),
           offset(offset),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
-    // Create an in-flow |NGPhysicalFragment|.
-    Child(scoped_refptr<const NGPhysicalFragment> fragment,
-          NGLogicalOffset offset,
+    // Create an in-flow |NGPhysicalTextFragment|.
+    Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
+          LogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : fragment(std::move(fragment)),
           offset(offset),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
-    Child(scoped_refptr<const NGPhysicalFragment> fragment,
+    Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
           LayoutUnit block_offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
@@ -142,7 +151,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       if (fragment)
         return true;
 
-      if (layout_result && !layout_result->PhysicalFragment()->IsFloating())
+      if (layout_result && !layout_result->PhysicalFragment().IsFloating())
         return true;
 
       return false;
@@ -154,7 +163,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     bool HasBidiLevel() const { return bidi_level != 0xff; }
     bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
     const NGPhysicalFragment* PhysicalFragment() const {
-      return layout_result ? layout_result->PhysicalFragment() : fragment.get();
+      if (layout_result)
+        return &layout_result->PhysicalFragment();
+      return fragment.get();
     }
   };
 
@@ -162,7 +173,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Unlike the fragment builder, chlidren are mutable.
   // Callers can add to the fragment builder in a batch once finalized.
   class ChildList {
-    STACK_ALLOCATED();
+    DISALLOW_NEW();
 
    public:
     ChildList() = default;
@@ -204,13 +215,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     }
     void InsertChild(unsigned index,
                      scoped_refptr<const NGLayoutResult> layout_result,
-                     const NGLogicalOffset& offset,
+                     const LogicalOffset& offset,
                      LayoutUnit inline_size,
                      UBiDiLevel bidi_level) {
       children_.insert(index, Child{std::move(layout_result), offset,
                                     inline_size, bidi_level});
     }
 
+    void MoveInInlineDirection(LayoutUnit);
     void MoveInInlineDirection(LayoutUnit, unsigned start, unsigned end);
     void MoveInBlockDirection(LayoutUnit);
     void MoveInBlockDirection(LayoutUnit, unsigned start, unsigned end);
@@ -227,6 +239,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
  private:
   NGLineHeightMetrics metrics_;
+  LayoutUnit hang_inline_size_;
   NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
   TextDirection base_direction_;
 

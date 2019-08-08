@@ -94,7 +94,7 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
   }
 
   // Default case.
-  if (!reference_view || !reference_view->visible())
+  if (!reference_view || !reference_view->GetVisible())
     return browser_view->toolbar_button_provider()->GetAppMenuButton();
   return reference_view;
 }
@@ -277,7 +277,7 @@ void ExtensionInstalledBubbleView::Init() {
           provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL),
       0, 0));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   SetLayoutManager(std::move(layout));
 
   if (controller_->options() & ExtensionInstalledBubble::HOW_TO_USE)

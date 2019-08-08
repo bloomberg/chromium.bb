@@ -262,6 +262,16 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(kDelegateWhiteList, dynamic_params->delegate_whitelist);
   EXPECT_TRUE(dynamic_params->delegate_by_kdc_policy);
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  // The kerberos.enabled pref is false and the device is not Active Directory
+  // managed by default.
+  EXPECT_EQ(false, dynamic_params->allow_gssapi_library_load);
+  local_state->SetBoolean(prefs::kKerberosEnabled, true);
+  dynamic_params =
+      SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_EQ(true, dynamic_params->allow_gssapi_library_load);
+#endif  // defined(OS_CHROMEOS)
 }
 
 class SystemNetworkContextManagerStubResolverBrowsertest

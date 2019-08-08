@@ -185,7 +185,8 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     return;
   }
 
-  LayoutSize offset = scrollable->CalculateAutoscrollDirection(event_position);
+  LayoutSize offset =
+      scrollable->CalculateAutoscrollDirection(event_position).ToLayoutSize();
   if (offset.IsZero()) {
     StopAutoscroll();
     return;
@@ -314,8 +315,10 @@ void AutoscrollController::Animate() {
 
   EventHandler& event_handler =
       autoscroll_layout_object_->GetFrame()->GetEventHandler();
-  LayoutSize offset = autoscroll_layout_object_->CalculateAutoscrollDirection(
-      event_handler.LastKnownMousePositionInRootFrame());
+  LayoutSize offset = autoscroll_layout_object_
+                          ->CalculateAutoscrollDirection(
+                              event_handler.LastKnownMousePositionInRootFrame())
+                          .ToLayoutSize();
   LayoutPoint selection_point =
       LayoutPoint(event_handler.LastKnownMousePositionInRootFrame()) + offset;
   switch (autoscroll_type_) {

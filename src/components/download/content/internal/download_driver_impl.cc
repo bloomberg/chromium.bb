@@ -10,15 +10,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/background_service/driver_entry.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
@@ -113,18 +114,19 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
 }
 
 DownloadDriverImpl::DownloadDriverImpl(
-    content::DownloadManager* manager,
     SimpleDownloadManagerCoordinator* download_manager_coordinator)
-    : download_manager_(manager),
-      client_(nullptr),
+    : client_(nullptr),
       download_manager_coordinator_(download_manager_coordinator),
+      is_ready_(false),
       weak_ptr_factory_(this) {
-  DCHECK(download_manager_);
-  DCHECK(!download_manager_coordinator_ ||
-         !download_manager_coordinator_->HasSetDownloadManager());
+  DCHECK(download_manager_coordinator_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-DownloadDriverImpl::~DownloadDriverImpl() = default;
+DownloadDriverImpl::~DownloadDriverImpl() {
+  if (download_manager_coordinator_)
+    download_manager_coordinator_->GetNotifier()->RemoveObserver(this);
+}
 
 void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
   DCHECK(!client_);
@@ -132,13 +134,12 @@ void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
   DCHECK(client_);
 
   // |download_manager_| may be shut down. Informs the client.
-  if (!download_manager_) {
+  if (!download_manager_coordinator_) {
     client_->OnDriverReady(false);
     return;
   }
 
-  notifier_ =
-      std::make_unique<AllDownloadItemNotifier>(download_manager_, this);
+  download_manager_coordinator_->GetNotifier()->AddObserver(this);
 }
 
 void DownloadDriverImpl::HardRecover() {
@@ -149,8 +150,8 @@ void DownloadDriverImpl::HardRecover() {
 }
 
 bool DownloadDriverImpl::IsReady() const {
-  return client_ && download_manager_ &&
-         download_manager_->IsManagerInitialized();
+  return client_ && download_manager_coordinator_ &&
+         download_manager_coordinator_->initialized();
 }
 
 void DownloadDriverImpl::Start(
@@ -161,7 +162,7 @@ void DownloadDriverImpl::Start(
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!request_params.url.is_empty());
   DCHECK(!guid.empty());
-  if (!download_manager_)
+  if (!download_manager_coordinator_)
     return;
 
   std::unique_ptr<DownloadUrlParameters> download_url_params(
@@ -187,9 +188,9 @@ void DownloadDriverImpl::Start(
   download_url_params->set_upload_progress_callback(
       base::BindRepeating(&DownloadDriverImpl::OnUploadProgress,
                           weak_ptr_factory_.GetWeakPtr(), guid));
-  download_manager_->DownloadUrl(std::move(download_url_params),
-                                 nullptr /* blob_data_handle */,
-                                 nullptr /* blob_url_loader_factory */);
+  download_url_params->set_require_safety_checks(
+      request_params.require_safety_checks);
+  download_manager_coordinator_->DownloadUrl(std::move(download_url_params));
 }
 
 void DownloadDriverImpl::Remove(const std::string& guid, bool remove_file) {
@@ -205,9 +206,9 @@ void DownloadDriverImpl::Remove(const std::string& guid, bool remove_file) {
 
 void DownloadDriverImpl::DoRemoveDownload(const std::string& guid,
                                           bool remove_file) {
-  if (!download_manager_)
+  if (!download_manager_coordinator_)
     return;
-  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_coordinator_->GetDownloadByGuid(guid);
   // Cancels the download and removes the persisted records in content layer.
   if (item) {
     // Remove the download file for completed download.
@@ -218,25 +219,25 @@ void DownloadDriverImpl::DoRemoveDownload(const std::string& guid,
 }
 
 void DownloadDriverImpl::Pause(const std::string& guid) {
-  if (!download_manager_)
+  if (!download_manager_coordinator_)
     return;
-  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_coordinator_->GetDownloadByGuid(guid);
   if (item)
     item->Pause();
 }
 
 void DownloadDriverImpl::Resume(const std::string& guid) {
-  if (!download_manager_)
+  if (!download_manager_coordinator_)
     return;
-  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_coordinator_->GetDownloadByGuid(guid);
   if (item)
     item->Resume(true);
 }
 
 base::Optional<DriverEntry> DownloadDriverImpl::Find(const std::string& guid) {
-  if (!download_manager_)
+  if (!download_manager_coordinator_)
     return base::nullopt;
-  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_coordinator_->GetDownloadByGuid(guid);
   if (item)
     return CreateDriverEntry(item);
   return base::nullopt;
@@ -244,11 +245,11 @@ base::Optional<DriverEntry> DownloadDriverImpl::Find(const std::string& guid) {
 
 std::set<std::string> DownloadDriverImpl::GetActiveDownloads() {
   std::set<std::string> guids;
-  if (!download_manager_)
+  if (!download_manager_coordinator_)
     return guids;
 
   std::vector<DownloadItem*> items;
-  download_manager_->GetAllDownloads(&items);
+  download_manager_coordinator_->GetAllDownloads(&items);
 
   for (auto* item : items) {
     DriverEntry::State state = ToDriverEntryState(item->GetState());
@@ -260,12 +261,12 @@ std::set<std::string> DownloadDriverImpl::GetActiveDownloads() {
 }
 
 size_t DownloadDriverImpl::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(guid_to_remove_) +
-         notifier_->EstimateMemoryUsage();
+  return base::trace_event::EstimateMemoryUsage(guid_to_remove_);
 }
 
-void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,
-                                           DownloadItem* item) {
+void DownloadDriverImpl::OnDownloadUpdated(
+    SimpleDownloadManagerCoordinator* coordinator,
+    DownloadItem* item) {
   DCHECK(client_);
   // Blocks the observer call if we asked to remove the download.
   if (guid_to_remove_.find(item->GetGuid()) != guid_to_remove_.end())
@@ -287,14 +288,16 @@ void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,
   }
 }
 
-void DownloadDriverImpl::OnDownloadRemoved(content::DownloadManager* manager,
-                                           DownloadItem* download) {
+void DownloadDriverImpl::OnDownloadRemoved(
+    SimpleDownloadManagerCoordinator* coordinator,
+    DownloadItem* download) {
   guid_to_remove_.erase(download->GetGuid());
   // |download| is about to be deleted.
 }
 
-void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
-                                           DownloadItem* item) {
+void DownloadDriverImpl::OnDownloadCreated(
+    SimpleDownloadManagerCoordinator* coordinator,
+    DownloadItem* item) {
   if (guid_to_remove_.find(item->GetGuid()) != guid_to_remove_.end()) {
     // Client has removed the download before content persistence layer created
     // the record, remove the download immediately.
@@ -317,21 +320,30 @@ void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
 
 void DownloadDriverImpl::OnUploadProgress(const std::string& guid,
                                           uint64_t bytes_uploaded) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   client_->OnUploadProgress(guid, bytes_uploaded);
 }
 
-void DownloadDriverImpl::OnManagerInitialized(
-    content::DownloadManager* manager) {
-  DCHECK_EQ(download_manager_, manager);
-  DCHECK(client_);
-  DCHECK(download_manager_);
+void DownloadDriverImpl::OnDownloadsInitialized(
+    SimpleDownloadManagerCoordinator* coordinator,
+    bool active_downloads_only) {
+  DCHECK_EQ(download_manager_coordinator_, coordinator);
+  DCHECK(download_manager_coordinator_);
+
+  if (!client_)
+    return;
+
+  if (is_ready_)
+    return;
+
   client_->OnDriverReady(true);
+  is_ready_ = true;
 }
 
-void DownloadDriverImpl::OnManagerGoingDown(content::DownloadManager* manager) {
-  DCHECK_EQ(download_manager_, manager);
-  download_manager_ = nullptr;
+void DownloadDriverImpl::OnManagerGoingDown(
+    SimpleDownloadManagerCoordinator* coordinator) {
+  DCHECK_EQ(download_manager_coordinator_, coordinator);
+  download_manager_coordinator_ = nullptr;
 }
 
 void DownloadDriverImpl::OnHardRecoverComplete(bool success) {

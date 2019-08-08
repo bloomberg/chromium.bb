@@ -7,10 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
+
 // States for the InfobarBadge.
 typedef NS_OPTIONS(NSUInteger, InfobarBadgeState) {
-  // Default state. e.g. The InfobarBanner is being presented, or the Banner has
-  // been dismissed and there's nothing presenting.
+  // Default state. e.g. the Banner is being displayed or there's nothing
+  // presenting.
   InfobarBadgeStateNone = 0,
   // The InfobarBadge is selected. e.g. The InfobarBadge was tapped so the
   // InfobarModal has been presented.
@@ -24,7 +26,7 @@ typedef NS_OPTIONS(NSUInteger, InfobarBadgeState) {
 @protocol InfobarBadgeTabHelperDelegate
 
 // Asks the delegate to display or stop displaying a badge.
-- (void)displayBadge:(BOOL)display;
+- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType;
 
 // Current state for the displayed InfobarBadge.
 @property(nonatomic, assign) InfobarBadgeState badgeState;

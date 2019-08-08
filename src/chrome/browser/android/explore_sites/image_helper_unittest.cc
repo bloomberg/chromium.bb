@@ -17,10 +17,14 @@
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/gfx/color_palette.h"
 
 namespace explore_sites {
+
+SkColor getBackgroundColor() {
+  return SK_ColorTRANSPARENT;
+}
 
 const std::vector<unsigned char> kWebpBytes{
     0x52, 0x49, 0x46, 0x46, 0x40, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
@@ -148,15 +152,15 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_One) {
   EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // One square in the center. If inside the bounds, the color should be 0.
-  // If outside of the bounds the color should be kGoogleGrey100.
+  // If outside of the bounds the color should be transparent.
   for (int i = 0; i < last_bitmap_list[0]->width(); i++) {
     for (int j = 0; j < last_bitmap_list[0]->height(); j++) {
       if (j > kLowerBoundCenter && j < kUpperBoundCenter &&
           i > kLowerBoundCenter &&
           i < kUpperBoundCenter) {  // centered square is color 0
         EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), (unsigned)0);
-      } else {  // rest of bitmap is grey
-        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), gfx::kGoogleGrey100);
+      } else {  // rest of bitmap is transparent
+        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), getBackgroundColor());
       }
     }
   }
@@ -175,14 +179,14 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Two) {
   EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // Two squares, side by side. If inside the bounds, the color should be 0.
-  // If outside of the bounds the color should be kGoogleGrey100.
+  // If outside of the bounds the color should be transparent.
   for (int i = 0; i < last_bitmap_list[0]->width(); i++) {
     for (int j = 0; j < last_bitmap_list[0]->height(); j++) {
       if ((j < kLowerBoundCorner || j > kUpperBoundCorner) &&
           i > kLowerBoundCenter && i < kUpperBoundCenter) {
         EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), (unsigned)0);
-      } else {  // rest of bitmap is grey
-        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), gfx::kGoogleGrey100);
+      } else {  // rest of bitmap is transparent
+        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), getBackgroundColor());
       }
     }
   }
@@ -202,7 +206,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Three) {
 
   // Three squares, two on top and one on bottom. If inside the bounds, the
   // color should be 0. If outside of the bounds the color should be
-  // kGoogleGrey100.
+  // transparent.
   for (int i = 0; i < last_bitmap_list[0]->width(); i++) {
     for (int j = 0; j < last_bitmap_list[0]->height(); j++) {
       if ((i < kLowerBoundCorner && j < kLowerBoundCorner) ||  // top left
@@ -210,8 +214,8 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Three) {
           (i > kUpperBoundCorner && j > kLowerBoundCenter &&
            j < kUpperBoundCenter)) {  // bottom
         EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), (unsigned)0);
-      } else {  // rest of bitmap is grey
-        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), gfx::kGoogleGrey100);
+      } else {  // rest of bitmap is transparent
+        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), getBackgroundColor());
       }
     }
   }
@@ -230,7 +234,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Four) {
   EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // Four squares in each corner. If inside the bounds, the color should be 0.
-  // If outside of the bounds the color should be kGoogleGrey100.
+  // If outside of the bounds the color should be transparent.
   for (int i = 0; i < last_bitmap_list[0]->width(); i++) {
     for (int j = 0; j < last_bitmap_list[0]->height(); j++) {
       if ((i < kLowerBoundCorner && j < kLowerBoundCorner) ||  // top left
@@ -238,8 +242,8 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Four) {
           (i > kUpperBoundCorner && j < kLowerBoundCorner) ||  // bottom left
           (i > kUpperBoundCorner && j > kUpperBoundCorner)) {  // bottom right
         EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), (unsigned)0);
-      } else {  // rest of bitmap is grey
-        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), gfx::kGoogleGrey100);
+      } else {  // rest of bitmap is transparent
+        EXPECT_EQ(last_bitmap_list[0]->getColor(j, i), getBackgroundColor());
       }
     }
   }

@@ -48,6 +48,12 @@ class MockVideoFrameProvider : public cc::VideoFrameProvider {
   MOCK_METHOD0(GetCurrentFrame, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(PutCurrentFrame, void());
 
+  base::TimeDelta GetPreferredRenderInterval() override {
+    return preferred_interval;
+  }
+
+  base::TimeDelta preferred_interval;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoFrameProvider);
 };
@@ -906,6 +912,36 @@ TEST_F(VideoFrameSubmitterTest, PageVisibilityControlsSubmission) {
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
   submitter_->SetIsPageVisible(false);
   scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(VideoFrameSubmitterTest, PreferredInterval) {
+  video_frame_provider_->preferred_interval = base::TimeDelta::FromSeconds(1);
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+      BEGINFRAME_FROM_HERE, now_src_.get());
+  submitter_->OnBeginFrame(args, {});
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(sink_->last_submitted_compositor_frame()
+                .metadata.preferred_frame_interval,
+            video_frame_provider_->preferred_interval);
 }
 
 }  // namespace blink

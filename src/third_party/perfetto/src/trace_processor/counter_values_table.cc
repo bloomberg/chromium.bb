@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 9 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,8 @@ StorageSchema CounterValuesTable::CreateStorageSchema() {
   const auto& cs = storage_->counter_values();
   return StorageSchema::Builder()
       .AddGenericNumericColumn("id", RowIdAccessor(TableId::kCounterValues))
-      .AddNumericColumn("counter_id", &cs.counter_ids())
+      .AddNumericColumn("counter_id", &cs.counter_ids(),
+                        &cs.rows_for_counter_id())
       .AddOrderedNumericColumn("ts", &cs.timestamps())
       .AddNumericColumn("value", &cs.values())
       .AddNumericColumn("arg_set_id", &cs.arg_set_ids())

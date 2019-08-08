@@ -34,7 +34,11 @@ struct CrossThreadFetchClientSettingsObjectData {
       String outgoing_referrer,
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
-      mojom::IPAddressSpace address_space)
+      mojom::IPAddressSpace address_space,
+      WebInsecureRequestPolicy insecure_requests_policy,
+      FetchClientSettingsObject::InsecureNavigationsSet
+          insecure_navigations_set,
+      bool mixed_autoupgrade_opt_out)
       : global_object_url(std::move(global_object_url)),
         base_url(std::move(base_url)),
         security_origin(std::move(security_origin)),
@@ -43,7 +47,10 @@ struct CrossThreadFetchClientSettingsObjectData {
         https_state(https_state),
         mime_type_check_for_classic_worker_script(
             mime_type_check_for_classic_worker_script),
-        address_space(address_space) {}
+        address_space(address_space),
+        insecure_requests_policy(insecure_requests_policy),
+        insecure_navigations_set(std::move(insecure_navigations_set)),
+        mixed_autoupgrade_opt_out(mixed_autoupgrade_opt_out) {}
 
   const KURL global_object_url;
   const KURL base_url;
@@ -54,6 +61,10 @@ struct CrossThreadFetchClientSettingsObjectData {
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script;
   const mojom::IPAddressSpace address_space;
+  const WebInsecureRequestPolicy insecure_requests_policy;
+  const FetchClientSettingsObject::InsecureNavigationsSet
+      insecure_navigations_set;
+  const bool mixed_autoupgrade_opt_out;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrossThreadFetchClientSettingsObjectData);
@@ -83,7 +94,10 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       const String& outgoing_referrer,
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck,
-      mojom::IPAddressSpace address_space);
+      mojom::IPAddressSpace,
+      WebInsecureRequestPolicy,
+      InsecureNavigationsSet,
+      bool mixed_autoupgrade_opt_out);
 
   ~FetchClientSettingsObjectSnapshot() override = default;
 
@@ -104,6 +118,19 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
     return address_space_;
   }
 
+  WebInsecureRequestPolicy GetInsecureRequestsPolicy() const override {
+    return insecure_requests_policy_;
+  }
+
+  const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
+      const override {
+    return insecure_navigations_set_;
+  }
+
+  bool GetMixedAutoUpgradeOptOut() const override {
+    return mixed_autoupgrade_opt_out_;
+  }
+
   AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
       const override {
     return mime_type_check_for_classic_worker_script_;
@@ -115,7 +142,9 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
         global_object_url_.Copy(), base_url_.Copy(),
         security_origin_->IsolatedCopy(), referrer_policy_,
         outgoing_referrer_.IsolatedCopy(), https_state_,
-        mime_type_check_for_classic_worker_script_, address_space_);
+        mime_type_check_for_classic_worker_script_, address_space_,
+        insecure_requests_policy_, insecure_navigations_set_,
+        mixed_autoupgrade_opt_out_);
   }
 
  private:
@@ -127,7 +156,11 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const HttpsState https_state_;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script_;
-  mojom::IPAddressSpace address_space_;
+  const mojom::IPAddressSpace address_space_;
+
+  const WebInsecureRequestPolicy insecure_requests_policy_;
+  const InsecureNavigationsSet insecure_navigations_set_;
+  const bool mixed_autoupgrade_opt_out_;
 };
 
 }  // namespace blink

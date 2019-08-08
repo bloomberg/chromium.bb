@@ -24,9 +24,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using leveldb_proto::test::FakeDB;
+using testing::_;
 using testing::Invoke;
 using testing::Return;
-using testing::_;
 
 namespace dom_distiller {
 namespace test {
@@ -83,8 +83,7 @@ class DomDistillerServiceTest : public testing::Test {
   void SetUp() override {
     FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(&db_model_);
     FakeDB<ArticleEntry>::EntryMap store_model;
-    store_ =
-        test::util::CreateStoreWithFakeDB(fake_db, store_model);
+    store_ = test::util::CreateStoreWithFakeDB(fake_db, store_model);
     distiller_factory_ = new MockDistillerFactory();
     distiller_page_factory_ = new MockDistillerPageFactory();
     service_.reset(new DomDistillerService(

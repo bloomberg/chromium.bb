@@ -22,11 +22,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
@@ -267,11 +267,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     }
 
     /**
-     * Sets the tab this manager is running on.
-     * @param tab Tab instance.
+     * Sets the delegate object needed for history navigation logic.
+     * @param delegate {@link HistoryNavigationDelegate} object.
      */
-    public void setTab(Tab tab) {
-        mSelectableListLayout.setTab(tab);
+    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {
+        mSelectableListLayout.setHistoryNavigationDelegate(delegate);
     }
 
     /**

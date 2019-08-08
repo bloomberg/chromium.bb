@@ -133,7 +133,7 @@ class MobileDataNotificationsTest : public testing::Test {
     service_test->ClearServices();
     service_test->AddService(kCellularServicePath, kCellularGuid,
                              "cellular1" /* name */, shill::kTypeCellular,
-                             "activated", true /* visible */);
+                             shill::kStateIdle, true /* visible */);
     service_test->SetServiceProperty(
         kCellularServicePath, shill::kActivationStateProperty,
         base::Value(shill::kActivationStateActivated));

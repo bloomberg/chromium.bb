@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/data_use_measurement/core",
   "+components/favicon/core",
   "+components/favicon_base",
   "+components/history/core",

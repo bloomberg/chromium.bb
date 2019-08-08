@@ -9,6 +9,36 @@
 
 namespace apps {
 
+TEST(AppsNavigationThrottleTest, TestIsGoogleRedirectorUrl) {
+  // Test that redirect urls with different TLDs are still recognized.
+  EXPECT_TRUE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.com.au/url?q=wathever")));
+  EXPECT_TRUE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.com.mx/url?q=hotpot")));
+  EXPECT_TRUE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.co/url?q=query")));
+
+  // Non-google domains shouldn't be used as valid redirect links.
+  EXPECT_FALSE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.not-google.com/url?q=query")));
+  EXPECT_FALSE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.gooogle.com/url?q=legit_query")));
+
+  // This method only takes "/url" as a valid path, it needs to contain a query,
+  // we don't analyze that query as it will expand later on in the same
+  // throttle.
+  EXPECT_TRUE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.com/url?q=who_dis")));
+  EXPECT_TRUE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("http://www.google.com/url?q=who_dis")));
+  EXPECT_FALSE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.com/url")));
+  EXPECT_FALSE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.com/link?q=query")));
+  EXPECT_FALSE(AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(
+      GURL("https://www.google.com/link")));
+}
+
 TEST(AppsNavigationThrottleTest, TestShouldOverrideUrlLoading) {
   // If either of two paramters is empty, the function should return false.
   EXPECT_FALSE(AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
@@ -60,6 +90,17 @@ TEST(AppsNavigationThrottleTest, TestShouldOverrideUrlLoading) {
       GURL("chrome://fake_document"), GURL("https://www.a.com")));
   EXPECT_TRUE(AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("file://fake_document"), GURL("https://www.a.com")));
+
+  // A navigation going to a redirect url cannot be overridden, unless there's
+  // no query or the path is not valid.
+  EXPECT_FALSE(AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://www.google.com"), GURL("https://www.google.com/url?q=b")));
+  EXPECT_FALSE(AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://www.a.com"), GURL("https://www.google.com/url?q=a")));
+  EXPECT_TRUE(AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://www.a.com"), GURL("https://www.google.com/url")));
+  EXPECT_TRUE(AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://www.a.com"), GURL("https://www.google.com/link?q=a")));
 }
 
 TEST(AppsNavigationThrottleTest, TestGetPickerAction) {

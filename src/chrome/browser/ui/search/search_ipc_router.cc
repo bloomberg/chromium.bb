@@ -332,37 +332,6 @@ void SearchIPCRouter::PasteAndOpenDropdown(int page_seq_no,
   delegate_->PasteIntoOmnibox(text);
 }
 
-void SearchIPCRouter::ChromeIdentityCheck(
-    int page_seq_no,
-    const base::string16& identity,
-    ChromeIdentityCheckCallback callback) {
-  bool result = false;
-  if (page_seq_no == commit_counter_ &&
-      policy_->ShouldProcessChromeIdentityCheck()) {
-    result = delegate_->ChromeIdentityCheck(identity);
-  }
-
-  std::move(callback).Run(result);
-}
-
-void SearchIPCRouter::HistorySyncCheck(int page_seq_no,
-                                       HistorySyncCheckCallback callback) {
-  bool result = false;
-  if (page_seq_no == commit_counter_ &&
-      policy_->ShouldProcessHistorySyncCheck()) {
-    result = delegate_->HistorySyncCheck();
-  }
-
-  std::move(callback).Run(result);
-}
-
-void SearchIPCRouter::SetCustomBackgroundURL(const GURL& url) {
-  if (!policy_->ShouldProcessSetCustomBackgroundURL())
-    return;
-
-  delegate_->OnSetCustomBackgroundURL(url);
-}
-
 void SearchIPCRouter::SetCustomBackgroundURLWithAttributions(
     const GURL& background_url,
     const std::string& attribution_line_1,

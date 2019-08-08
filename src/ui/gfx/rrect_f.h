@@ -10,6 +10,7 @@
 
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/skia_util.h"
 
 namespace gfx {
@@ -65,6 +66,19 @@ class GEOMETRY_SKIA_EXPORT RRectF {
                lower_right_y,
                lower_left_x,
                lower_left_y) {}
+  RRectF(const gfx::RectF& rect, const gfx::RoundedCornersF& corners)
+      : RRectF(rect.x(),
+               rect.y(),
+               rect.width(),
+               rect.height(),
+               corners.upper_left(),
+               corners.upper_left(),
+               corners.upper_right(),
+               corners.upper_right(),
+               corners.lower_right(),
+               corners.lower_right(),
+               corners.lower_left(),
+               corners.lower_left()) {}
 
   // The rectangular portion of the RRectF, without the corner radii.
   gfx::RectF rect() const { return gfx::SkRectToRectF(skrrect_.rect()); }
@@ -98,6 +112,8 @@ class GEOMETRY_SKIA_EXPORT RRectF {
 
   bool IsEmpty() const { return GetType() == Type::kEmpty; }
 
+  // Enumeration of the corners of a rectangle in clockwise order. Values match
+  // SkRRect::Corner.
   enum class Corner {
     kUpperLeft = SkRRect::kUpperLeft_Corner,
     kUpperRight = SkRRect::kUpperRight_Corner,

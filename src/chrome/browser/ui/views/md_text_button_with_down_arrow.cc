@@ -32,9 +32,8 @@ MdTextButtonWithDownArrow::MdTextButtonWithDownArrow(ButtonListener* listener,
 
 MdTextButtonWithDownArrow::~MdTextButtonWithDownArrow() = default;
 
-void MdTextButtonWithDownArrow::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  MdTextButton::OnNativeThemeChanged(theme);
+void MdTextButtonWithDownArrow::OnThemeChanged() {
+  MdTextButton::OnThemeChanged();
 
   // The icon's color is derived from the label's |enabled_color|, which might
   // have changed as the result of the theme change.

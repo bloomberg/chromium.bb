@@ -65,8 +65,10 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Adds |form| to the list of remembered password forms. Returns the list of
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}
   // then the REMOVE is associated with the form that was added. Thus only the
-  // primary key columns contain the values associated with the removed form.
-  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form)
+  // primary key columns contain the values associated with the removed form. In
+  // case of error, it sets |error| if |error| isn't null.
+  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form,
+                                   AddLoginError* error = nullptr)
       WARN_UNUSED_RESULT;
 
   // This function does the same thing as AddLogin() with the difference that

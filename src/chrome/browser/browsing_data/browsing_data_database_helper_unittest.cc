@@ -57,7 +57,7 @@ TEST_F(CannedBrowsingDataDatabaseHelperTest, IgnoreExtensionsAndDevTools) {
   TestingProfile profile;
 
   const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");
-  const GURL origin2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/");
+  const GURL origin2("devtools://abcdefghijklmnopqrstuvwxyz/");
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(&profile));

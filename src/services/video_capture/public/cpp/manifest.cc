@@ -4,7 +4,6 @@
 
 #include "services/video_capture/public/cpp/manifest.h"
 
-#include "base/no_destructor.h"
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #endif  // defined(OS_CHROMEOS)
@@ -15,12 +14,14 @@
 
 namespace video_capture {
 
-const service_manager::Manifest& GetManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
+service_manager::Manifest GetManifest(
+    service_manager::Manifest::ExecutionMode execution_mode) {
+  return service_manager::Manifest {
     service_manager::ManifestBuilder()
         .WithServiceName(mojom::kServiceName)
         .WithDisplayName("Video Capture")
         .WithOptions(service_manager::ManifestOptionsBuilder()
+                         .WithExecutionMode(execution_mode)
                          .WithSandboxType("none")
                          .WithInstanceSharingPolicy(
                              service_manager::Manifest::InstanceSharingPolicy::
@@ -37,7 +38,6 @@ const service_manager::Manifest& GetManifest() {
                 mojom::DeviceFactoryProvider, mojom::TestingControls>())
         .Build()
   };
-  return *manifest;
 }
 
 }  // namespace video_capture

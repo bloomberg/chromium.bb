@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
+import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
+import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -14,6 +16,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.net.NetError;
 
 /**
  * An implementation of the {@link TabObserver} which has empty implementations of all methods.
@@ -50,7 +53,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onPageLoadFinished(Tab tab, String url) {}
 
     @Override
-    public void onPageLoadFailed(Tab tab, int errorCode) { }
+    public void onPageLoadFailed(Tab tab, @NetError int errorCode) {}
 
     @Override
     public void onRestoreStarted(Tab tab) {}
@@ -151,4 +154,19 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void didReloadLoFiImages(Tab tab) {}
+
+    @Override
+    public void onFindResultAvailable(FindNotificationDetails result) {}
+
+    @Override
+    public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {}
+
+    @Override
+    public void onContentViewChildrenStateUpdated(Tab tab) {}
+
+    @Override
+    public void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility) {}
+
+    @Override
+    public void onRootIdChanged(Tab tab, int newRootId) {}
 }

@@ -14,8 +14,7 @@
 # limitations under the License.
 
 from os import sys, path
-
-sys.path.append(path.dirname(path.abspath(__file__)))
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 import synth_common
 
 trace = synth_common.create_trace()
@@ -23,10 +22,15 @@ trace.add_process_tree_packet()
 trace.add_process(pid=1, ppid=0, cmdline="init")
 trace.add_process(pid=2, ppid=1, cmdline="two_thread_process")
 trace.add_process(pid=4, ppid=1, cmdline="single_thread_process")
-trace.add_thread(tid=3, tgid=2, cmdline="two_thread_process")
+
+trace.add_process(pid=1000, ppid=1, cmdline="padding_process")
+trace.add_thread(tid=1301, tgid=1000, cmdline="padding_process_thread_1")
+trace.add_thread(tid=1302, tgid=1000, cmdline="padding_process_thread_2")
+
+trace.add_thread(tid=300, tgid=2, cmdline="two_thread_process")
 
 trace.add_ftrace_packet(0)
-trace.add_kernel_lmk(ts=100, tid=3)
+trace.add_kernel_lmk(ts=100, tid=300)
 trace.add_kernel_lmk(ts=101, tid=4)
 
 print(trace.trace.SerializeToString())

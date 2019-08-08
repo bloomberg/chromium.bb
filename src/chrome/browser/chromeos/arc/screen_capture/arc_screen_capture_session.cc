@@ -117,7 +117,7 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     LOG(ERROR) << "Unable to find layer for the desktop window";
     return nullptr;
   }
-  auto context_provider = display_root_window_->env()
+  auto context_provider = aura::Env::GetInstance()
                               ->context_factory()
                               ->SharedMainThreadContextProvider();
   gl_helper_ = std::make_unique<viz::GLHelper>(
@@ -182,7 +182,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
     std::move(callback).Run();
     return;
   }
-  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
+  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -194,6 +194,8 @@ void ArcScreenCaptureSession::SetOutputBuffer(
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
+  // Dummy modifier.
+  handle.native_pixmap_handle.modifier = 0;
   base::PlatformFile platform_file;
   MojoResult mojo_result =
       mojo::UnwrapPlatformFile(std::move(graphics_buffer), &platform_file);
@@ -204,7 +206,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
   }
   handle.native_pixmap_handle.planes.emplace_back(
       stride * kBytesPerPixel, 0, stride * kBytesPerPixel * size_.height(),
-      base::ScopedFD(platform_file), 0);
+      base::ScopedFD(platform_file));
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
           client_native_pixmap_factory_.get(), std::move(handle), size_,
@@ -253,7 +255,7 @@ void ArcScreenCaptureSession::QueryCompleted(
     SetOutputBufferCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::move(callback).Run();
-  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
+  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -271,7 +273,7 @@ void ArcScreenCaptureSession::QueryCompleted(
 void ArcScreenCaptureSession::OnDesktopCaptured(
     std::unique_ptr<viz::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
+  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -308,7 +310,7 @@ void ArcScreenCaptureSession::OnDesktopCaptured(
 void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
     std::unique_ptr<DesktopTexture> desktop_texture,
     std::unique_ptr<PendingBuffer> pending_buffer) {
-  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
+  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -327,7 +329,7 @@ void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
   if (desktop_texture->release_callback_) {
     desktop_texture->release_callback_->Run(gpu::SyncToken(), false);
   }
-  display_root_window_->env()
+  aura::Env::GetInstance()
       ->context_factory()
       ->SharedMainThreadContextProvider()
       ->ContextSupport()

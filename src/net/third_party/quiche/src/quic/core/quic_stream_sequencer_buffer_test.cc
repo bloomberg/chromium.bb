@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
@@ -36,10 +35,10 @@ char GetCharFromIOVecs(size_t offset, iovec iov[], size_t count) {
     }
     start_offset += iov[i].iov_len;
   }
-  LOG(ERROR) << "Could not locate char at offset " << offset << " in " << count
-             << " iovecs";
+  QUIC_LOG(ERROR) << "Could not locate char at offset " << offset << " in "
+                  << count << " iovecs";
   for (size_t i = 0; i < count; ++i) {
-    LOG(ERROR) << "  iov[" << i << "].iov_len = " << iov[i].iov_len;
+    QUIC_LOG(ERROR) << "  iov[" << i << "].iov_len = " << iov[i].iov_len;
   }
   return '\0';
 }

@@ -121,6 +121,12 @@ public interface WebContents extends Parcelable {
     boolean isDestroyed();
 
     /**
+     * Removes the native WebContents' reference to this object. This is used when we want to
+     * destroy this object without destroying its native counterpart.
+     */
+    void clearNativeReference();
+
+    /**
      * @return The navigation controller associated with this WebContents.
      */
     NavigationController getNavigationController();
@@ -343,6 +349,11 @@ public interface WebContents extends Parcelable {
     int getThemeColor();
 
     /**
+     * @return Current page load progress on a scale of 0 to 100.
+     */
+    int getLoadProgress();
+
+    /**
      * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)
      * from the rectangle area defined by starting positions (x and y), and width and height.
      */
@@ -489,4 +500,9 @@ public interface WebContents extends Parcelable {
      * @param insets The insets stored in a Rect.
      */
     void setDisplayCutoutSafeArea(Rect insets);
+
+    /**
+     * Notify that web preferences needs update for various properties.
+     */
+    void notifyRendererPreferenceUpdate();
 }

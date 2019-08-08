@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> に送信しています...</translation>
 <translation id="111910763555783249">通知設定</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 日前}other{# 日前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分前}other{# 分前}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">おすすめのアプリ</translation>
-<translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> からの通知を無効にする</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">現在</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
-<translation id="1756116796893109054">タブを送信しています...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">ピリオド</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 か月}other{# か月}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Delete</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/秒</translation>
 <translation id="6156262341071374681">すべてのアプリを表示</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6264365405983206840">すべて選択(&amp;A)</translation>
 <translation id="6351032674660237738">アプリの候補</translation>
 <translation id="6364916375976753737">左にスクロール</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 件以上の未読の通知}other{# 件以上の未読の通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google アシスタントの音声検索を開始</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 時間前}other{# 時間前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
+<translation id="8144660977431427332">検索は Google アシスタントによって行われます。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />、オートコンプリート</translation>
 <translation id="815598010540052116">下にスクロール</translation>
 <translation id="8170087467028567933">この候補を削除すると、お使いのすべてのデバイスでアカウントに表示されなくなります。</translation>

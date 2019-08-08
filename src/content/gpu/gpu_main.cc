@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -240,17 +240,19 @@ int GpuMain(const MainFunctionParams& parameters) {
   // this.
   // TODO(ericrk): Revisit this once we assess its impact on crbug.com/662802
   // and crbug.com/609252.
-  std::unique_ptr<base::MessageLoop> main_message_loop;
+  std::unique_ptr<base::SingleThreadTaskExecutor> main_thread_task_executor;
   std::unique_ptr<ui::PlatformEventSource> event_source;
   if (command_line.HasSwitch(switches::kHeadless)) {
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            base::MessagePump::Type::DEFAULT);
   } else {
 #if defined(OS_WIN)
     // The GpuMain thread should not be pumping Windows messages because no UI
     // is expected to run on this thread.
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            base::MessagePump::Type::DEFAULT);
 #elif defined(USE_X11)
     // Depending on how Chrome is running there are multiple threads that can
     // make Xlib function calls. Call XInitThreads() here to be safe, even if
@@ -262,12 +264,14 @@ int GpuMain(const MainFunctionParams& parameters) {
     ui::SetDefaultX11ErrorHandlers();
     if (!gfx::GetXDisplay())
       return RESULT_CODE_GPU_DEAD_ON_ARRIVAL;
-    main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            base::MessagePump::Type::UI);
     event_source = ui::PlatformEventSource::CreateDefault();
 #elif defined(USE_OZONE)
-    // The MessageLoop type required depends on the Ozone platform selected at
+    // The MessagePump type required depends on the Ozone platform selected at
     // runtime.
-    main_message_loop.reset(new base::MessageLoop(
+    main_thread_task_executor.reset(new base::SingleThreadTaskExecutor(
         ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu()));
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
@@ -275,14 +279,16 @@ int GpuMain(const MainFunctionParams& parameters) {
     // Cross-process CoreAnimation requires a CFRunLoop to function at all, and
     // requires a NSRunLoop to not starve under heavy load. See:
     // https://crbug.com/312462#c51 and https://crbug.com/783298
-    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpNSRunLoop());
-    main_message_loop.reset(new base::MessageLoop(std::move(pump)));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            base::MessagePump::Type::NS_RUNLOOP);
 
     // Tell LaunchServices to continue without a connection to the daemon.
     _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
 #else
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            base::MessagePump::Type::DEFAULT);
 #endif
   }
 

@@ -78,6 +78,9 @@ class FramebufferGL : public FramebufferImpl
                                     size_t index,
                                     GLfloat *xy) const override;
 
+    // The GL back-end requires a full sync state before we call checkStatus.
+    bool shouldSyncStateBeforeCheckStatus() const override;
+
     bool checkStatus(const gl::Context *context) const override;
 
     angle::Result syncState(const gl::Context *context,
@@ -85,20 +88,6 @@ class FramebufferGL : public FramebufferImpl
 
     GLuint getFramebufferID() const;
     bool isDefault() const;
-
-    ANGLE_INLINE void maskOutInactiveOutputDrawBuffers(const gl::Context *context)
-    {
-        ASSERT(context->getExtensions().webglCompatibility);
-
-        const gl::DrawBufferMask &maxSet =
-            context->getState().getProgram()->getActiveOutputVariables();
-
-        gl::DrawBufferMask targetAppliedDrawBuffers = mState.getEnabledDrawBuffers() & maxSet;
-        if (mAppliedEnabledDrawBuffers != targetAppliedDrawBuffers)
-        {
-            maskOutInactiveOutputDrawBuffersImpl(context, targetAppliedDrawBuffers);
-        }
-    }
 
   private:
     void syncClearState(const gl::Context *context, GLbitfield mask);

@@ -485,7 +485,7 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
         evt.button() ==
             static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
       FloatPoint local_pos =
-          AbsoluteToLocal(FloatPoint(evt.AbsoluteLocation()), kUseTransforms);
+          AbsoluteToLocalFloatPoint(FloatPoint(evt.AbsoluteLocation()));
       StartResizing(cols_, local_pos.X());
       StartResizing(rows_, local_pos.Y());
       if (cols_.split_being_resized_ != kNoSplit ||
@@ -500,7 +500,7 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
          evt.button() ==
              static_cast<int16_t>(WebPointerProperties::Button::kLeft))) {
       FloatPoint local_pos =
-          AbsoluteToLocal(FloatPoint(evt.AbsoluteLocation()), kUseTransforms);
+          AbsoluteToLocalFloatPoint(FloatPoint(evt.AbsoluteLocation()));
       ContinueResizing(cols_, local_pos.X());
       ContinueResizing(rows_, local_pos.Y());
       if (evt.type() == event_type_names::kMouseup &&

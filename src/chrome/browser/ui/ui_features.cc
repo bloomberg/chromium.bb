@@ -6,6 +6,11 @@
 
 namespace features {
 
+// Enables tabs to change pinned state when dragging in the tabstrip.
+// https://crbug.com/965681
+const base::Feature kDragToPinTabs{"DragToPinTabs",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables an extension menu in the toolbar. See https://crbug.com/943702
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

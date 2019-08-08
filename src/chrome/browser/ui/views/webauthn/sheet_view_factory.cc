@@ -74,15 +74,14 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorAlreadyRegisteredErrorModel>(
               dialog_model));
       break;
-    case Step::kMissingResidentKeys:
+    case Step::kMissingCapability:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
-          AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
+          AuthenticatorGenericErrorSheetModel::ForMissingCapability(
               dialog_model));
       break;
-    case Step::kMissingUserVerification:
+    case Step::kStorageFull:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
-          AuthenticatorGenericErrorSheetModel::
-              ForMissingUserVerificationSupport(dialog_model));
+          AuthenticatorGenericErrorSheetModel::ForStorageFull(dialog_model));
       break;
     case Step::kErrorInternalUnrecognized:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
@@ -166,6 +165,12 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           AuthenticatorGenericErrorSheetModel::
               ForClientPinErrorAuthenticatorRemoved(dialog_model));
+      break;
+    case Step::kResidentCredentialConfirmation:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<
+              AuthenticatorResidentCredentialConfirmationSheetView>(
+              dialog_model));
       break;
     case Step::kSelectAccount:
       sheet_view = std::make_unique<AuthenticatorSelectAccountSheetView>(

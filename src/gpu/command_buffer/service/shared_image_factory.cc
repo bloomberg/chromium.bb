@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "gpu/config/gpu_preferences.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/trace_util.h"
 
 #if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
@@ -33,6 +34,10 @@
 #elif defined(OS_MACOSX)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #endif
+
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#endif  // OS_WIN
 
 namespace gpu {
 
@@ -63,13 +68,17 @@ SharedImageFactory::SharedImageFactory(
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
     MemoryTracker* memory_tracker,
-    bool is_using_skia_renderer)
+    bool enable_wrapped_sk_image)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
-      using_vulkan_(context_state && context_state->use_vulkan_gr_context()) {
-  gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
-      gpu_preferences, workarounds, gpu_feature_info, image_factory);
+      using_vulkan_(context_state && context_state->GrContextIsVulkan()),
+      using_metal_(context_state && context_state->GrContextIsMetal()) {
+  bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
+  if (use_gl) {
+    gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
+        gpu_preferences, workarounds, gpu_feature_info, image_factory);
+  }
   // For X11
 #if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
   if (using_vulkan_) {
@@ -84,19 +93,23 @@ SharedImageFactory::SharedImageFactory(
   // OSX
   DCHECK(!using_vulkan_);
   interop_backing_factory_ =
-      std::make_unique<SharedImageBackingFactoryIOSurface>(workarounds,
-                                                           gpu_feature_info);
+      std::make_unique<SharedImageBackingFactoryIOSurface>(
+          workarounds, gpu_feature_info, use_gl);
 #else
   // Others
   DCHECK(!using_vulkan_);
 #endif
-  // Certain test suites may enable UseSkiaRenderer feature flag, but never
-  // create a SkiaRenderer. In this case context_state is nullptr and we should
-  // not create a WrappedSkImageFactory.
-  if (is_using_skia_renderer && context_state) {
+  if (enable_wrapped_sk_image && context_state) {
     wrapped_sk_image_factory_ =
         std::make_unique<raster::WrappedSkImageFactory>(context_state);
   }
+
+#if defined(OS_WIN)
+  // For Windows
+  bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
+                         gles2::PassthroughCommandDecoderSupported();
+  swap_chain_factory_ = std::make_unique<SwapChainFactoryDXGI>(use_passthrough);
+#endif  // OS_WIN
 }
 
 SharedImageFactory::~SharedImageFactory() {
@@ -163,15 +176,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   // TODO(piman): depending on handle.type, choose platform-specific backing
   // factory, e.g. SharedImageBackingFactoryAHB.
   bool allow_legacy_mailbox = false;
-  SharedImageBackingFactory* factory = nullptr;
-  if (!using_vulkan_) {
-    // GMB is only supported by gl backing factory when gl is being used.
-    allow_legacy_mailbox = true;
-    factory = gl_backing_factory_.get();
-  } else {
-    // TODO(penghuang): support GMB for vulkan.
-    NOTIMPLEMENTED() << "GMB is not supported for vulkan.";
-  }
+  auto* factory = GetFactoryByUsage(usage, &allow_legacy_mailbox, handle.type);
   if (!factory)
     return false;
   auto backing =
@@ -208,6 +213,35 @@ void SharedImageFactory::DestroyAllSharedImages(bool have_context) {
   shared_images_.clear();
 }
 
+#if defined(OS_WIN)
+bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
+                                         const Mailbox& back_buffer_mailbox,
+                                         viz::ResourceFormat format,
+                                         const gfx::Size& size,
+                                         const gfx::ColorSpace& color_space,
+                                         uint32_t usage) {
+  DCHECK(swap_chain_factory_);
+  bool allow_legacy_mailbox = true;
+  auto backings = swap_chain_factory_->CreateSwapChain(
+      front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
+      usage);
+  return RegisterBacking(std::move(backings.front_buffer),
+                         allow_legacy_mailbox) &&
+         RegisterBacking(std::move(backings.back_buffer), allow_legacy_mailbox);
+}
+
+bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
+  DCHECK(swap_chain_factory_);
+  auto it = shared_images_.find(mailbox);
+  if (it == shared_images_.end()) {
+    DLOG(ERROR) << "PresentSwapChain: Could not find shared image mailbox";
+    return false;
+  }
+  (*it)->PresentSwapChain();
+  return true;
+}
+#endif  // OS_WIN
+
 // TODO(ericrk): Move this entirely to SharedImageManager.
 bool SharedImageFactory::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
@@ -231,14 +265,18 @@ bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
 
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
-    bool* allow_legacy_mailbox) {
+    bool* allow_legacy_mailbox,
+    gfx::GpuMemoryBufferType gmb_type) {
   bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
+  bool share_between_gl_metal =
+      using_metal_ && (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
   bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
-  bool using_interop_factory =
-      share_between_threads || share_between_gl_vulkan || using_dawn;
+  bool using_interop_factory = share_between_threads ||
+                               share_between_gl_vulkan || using_dawn ||
+                               share_between_gl_metal;
   // wrapped_sk_image_factory_ is only used for OOPR and supports
   // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |
@@ -248,6 +286,23 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
                                 (usage == kWrappedSkImageUsage) &&
                                 !using_interop_factory;
   using_interop_factory |= vulkan_usage && !using_wrapped_sk_image;
+
+  if (gmb_type != gfx::EMPTY_BUFFER) {
+    bool interop_factory_supports_gmb =
+        interop_backing_factory_ &&
+        interop_backing_factory_->CanImportGpuMemoryBuffer(gmb_type);
+
+    if (using_wrapped_sk_image ||
+        (using_interop_factory && !interop_backing_factory_)) {
+      LOG(ERROR) << "Unable to screate SharedImage backing: no support for the "
+                    "requested GpuMemoryBufferType.";
+      return nullptr;
+    }
+
+    // If |interop_backing_factory_| supports supplied GMB type then use it
+    // instead of |gl_backing_factory_|.
+    using_interop_factory |= interop_factory_supports_gmb;
+  }
 
   *allow_legacy_mailbox =
       !using_wrapped_sk_image && !using_interop_factory && !using_vulkan_;

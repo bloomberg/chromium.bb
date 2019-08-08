@@ -20,7 +20,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -171,8 +170,7 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
-                           const GpuPreferences& gpu_preferences) {
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone);
 
@@ -341,24 +339,22 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
   if (system_info->gpus.empty()) {
     return;
   }
-  if (system_info->primaryGPUIndex < 0) {
-    system_info->primaryGPUIndex = 0;
+  if (system_info->activeGPUIndex < 0) {
+    system_info->activeGPUIndex = 0;
   }
 
-  angle::GPUDeviceInfo* primary =
-      &system_info->gpus[system_info->primaryGPUIndex];
+  angle::GPUDeviceInfo* active =
+      &system_info->gpus[system_info->activeGPUIndex];
 
-  gpu_info->gpu.vendor_id = primary->vendorId;
-  gpu_info->gpu.device_id = primary->deviceId;
-  gpu_info->gpu.driver_vendor = std::move(primary->driverVendor);
-  gpu_info->gpu.driver_version = std::move(primary->driverVersion);
-  gpu_info->gpu.driver_date = std::move(primary->driverDate);
-  if (system_info->primaryGPUIndex == system_info->activeGPUIndex) {
-    gpu_info->gpu.active = true;
-  }
+  gpu_info->gpu.vendor_id = active->vendorId;
+  gpu_info->gpu.device_id = active->deviceId;
+  gpu_info->gpu.driver_vendor = std::move(active->driverVendor);
+  gpu_info->gpu.driver_version = std::move(active->driverVersion);
+  gpu_info->gpu.driver_date = std::move(active->driverDate);
+  gpu_info->gpu.active = true;
 
   for (size_t i = 0; i < system_info->gpus.size(); i++) {
-    if (static_cast<int>(i) == system_info->primaryGPUIndex) {
+    if (static_cast<int>(i) == system_info->activeGPUIndex) {
       continue;
     }
 
@@ -368,9 +364,6 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
     device.driver_vendor = std::move(system_info->gpus[i].driverVendor);
     device.driver_version = std::move(system_info->gpus[i].driverVersion);
     device.driver_date = std::move(system_info->gpus[i].driverDate);
-    if (static_cast<int>(i) == system_info->activeGPUIndex) {
-      device.active = true;
-    }
 
     gpu_info->secondary_gpus.push_back(device);
   }
@@ -385,7 +378,7 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 #if defined(OS_ANDROID)
-  CollectContextGraphicsInfo(gpu_info, GpuPreferences());
+  CollectContextGraphicsInfo(gpu_info);
 #else
   CollectBasicGraphicsInfo(gpu_info);
 #endif  // OS_ANDROID

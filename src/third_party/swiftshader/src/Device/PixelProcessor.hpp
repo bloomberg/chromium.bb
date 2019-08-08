@@ -58,15 +58,12 @@ namespace sw
 
 			unsigned int colorWriteMask;
 			VkFormat targetFormat[RENDERTARGETS];
-			bool writeSRGB;
 			unsigned int multiSample;
 			unsigned int multiSampleMask;
-			TransparencyAntialiasing transparencyAntialiasing;
+			bool alphaToCoverage;
 			bool centroid;
 			bool frontFaceCCW;
 			VkFormat depthFormat;
-
-			Sampler::State sampler[TEXTURE_IMAGE_UNITS];
 		};
 
 		struct State : States
@@ -78,11 +75,6 @@ namespace sw
 			int colorWriteActive(int index) const
 			{
 				return (colorWriteMask >> (index * 4)) & 0xF;
-			}
-
-			bool alphaTestActive() const
-			{
-				return transparencyAntialiasing != TRANSPARENCY_NONE;
 			}
 
 			unsigned int hash;
@@ -128,51 +120,22 @@ namespace sw
 	public:
 		typedef void (*RoutinePointer)(const Primitive *primitive, int count, int thread, DrawData *draw);
 
-		PixelProcessor(Context *context);
+		PixelProcessor();
 
 		virtual ~PixelProcessor();
 
-		void setRenderTarget(int index, vk::ImageView *renderTarget, unsigned int layer = 0);
-		void setDepthBuffer(vk::ImageView *depthBuffer, unsigned int layer = 0);
-		void setStencilBuffer(vk::ImageView *stencilBuffer, unsigned int layer = 0);
-
-		void setWriteSRGB(bool sRGB);
-		void setDepthBufferEnable(bool depthBufferEnable);
-		void setDepthCompare(VkCompareOp depthCompareMode);
-		void setDepthWriteEnable(bool depthWriteEnable);
-		void setCullMode(CullMode cullMode, bool frontFacingCCW);
-		void setColorWriteMask(int index, int rgbaMask);
-
-		void setColorLogicOpEnabled(bool colorLogicOpEnabled);
-		void setLogicalOperation(VkLogicOp logicalOperation);
-
 		void setBlendConstant(const Color<float> &blendConstant);
 
-		void setAlphaBlendEnable(bool alphaBlendEnable);
-		void setSourceBlendFactor(VkBlendFactor sourceBlendFactor);
-		void setDestBlendFactor(VkBlendFactor destBlendFactor);
-		void setBlendOperation(VkBlendOp blendOperation);
-
-		void setSeparateAlphaBlendEnable(bool separateAlphaBlendEnable);
-		void setSourceBlendFactorAlpha(VkBlendFactor sourceBlendFactorAlpha);
-		void setDestBlendFactorAlpha(VkBlendFactor destBlendFactorAlpha);
-		void setBlendOperationAlpha(VkBlendOp blendOperationAlpha);
-
-		void setPerspectiveCorrection(bool perspectiveCorrection);
-
-		void setOcclusionEnabled(bool enable);
-
 	protected:
-		const State update() const;
-		Routine *routine(const State &state);
+		const State update(const Context* context) const;
+		Routine *routine(const State &state, vk::PipelineLayout const *pipelineLayout,
+		                 SpirvShader const *pixelShader, const vk::DescriptorSet::Bindings &descriptorSets);
 		void setRoutineCacheSize(int routineCacheSize);
 
 		// Other semi-constants
 		Factor factor;
 
 	private:
-		Context *const context;
-
 		RoutineCache<State> *routineCache;
 	};
 }

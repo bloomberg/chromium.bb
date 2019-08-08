@@ -17,15 +17,14 @@ namespace {
 
 constexpr int kBadgeIconSize = 16;
 constexpr int kBadgeBorderWidth = 2;
-// Width/Height of the current profile photo.
-constexpr int kImageSize = 40;
 // The space between the right/bottom edge of the profile badge and the
 // right/bottom edge of the profile icon.
 constexpr int kBadgeSpacing = 4;
 // Width and Height of the badged profile photo. Doesn't include the badge
 // border to the right and to the bottom.
-constexpr int kBadgedProfilePhotoWidth = kImageSize + kBadgeSpacing;
-constexpr int kBadgedProfilePhotoHeight = kImageSize;
+constexpr int kBadgedProfilePhotoWidth =
+    BadgedProfilePhoto::kImageSize + kBadgeSpacing;
+constexpr int kBadgedProfilePhotoHeight = BadgedProfilePhoto::kImageSize;
 
 // A custom ImageView that removes the part where the badge will be placed
 // including the (transparent) border.

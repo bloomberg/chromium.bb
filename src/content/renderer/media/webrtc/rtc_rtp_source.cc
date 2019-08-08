@@ -49,4 +49,8 @@ base::Optional<double> RTCRtpSource::AudioLevel() const {
   return std::pow(10.0, -(double)rfc_level / 20.0);
 }
 
+uint32_t RTCRtpSource::RtpTimestamp() const {
+  return source_.rtp_timestamp();
+}
+
 }  // namespace content

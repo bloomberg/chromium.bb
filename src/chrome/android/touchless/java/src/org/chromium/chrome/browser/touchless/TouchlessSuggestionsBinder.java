@@ -19,7 +19,7 @@ public class TouchlessSuggestionsBinder extends SuggestionsBinder {
     private static final String TOUCHLESS_ARTICLE_AGE_FORMAT_STRING = " %s";
 
     public TouchlessSuggestionsBinder(View cardContainerView, SuggestionsUiDelegate uiDelegate) {
-        super(cardContainerView, uiDelegate, false);
+        super(cardContainerView, uiDelegate);
     }
 
     @Override

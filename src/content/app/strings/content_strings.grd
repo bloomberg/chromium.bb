@@ -929,6 +929,9 @@ below:
         Please lengthen this text to <ph name="MIN_CHARACTERS">$2<ex>101</ex></ph> characters or more (you are currently using <ph name="CURRENT_LENGTH">$1<ex>100</ex></ph> characters).
       </message>
 
+      <message name="IDS_MEDIA_SESSION_FILE_SOURCE" desc="The name of the media session source if the media is a local file.">
+        Local File
+      </message>
       <message name="IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS" desc="Media controls overflow menu item label for a closed captions button. The text for this overflow menu should be short.">
         Captions
       </message>
@@ -960,7 +963,7 @@ below:
        Download
       </message>
       <if expr="is_macosx">
-        <message name="IDS_MEDIA_OVERFLOW_MENU_ENTER_PICTURE_IN_PICTURE" desc="Media contr  ls overflow menu item label for a button to enter Picture-in-Picture.">
+        <message name="IDS_MEDIA_OVERFLOW_MENU_ENTER_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to enter Picture-in-Picture.">
           Picture in Picture
         </message>
       </if>
@@ -969,11 +972,18 @@ below:
           Picture in picture
         </message>
       </if>
-      <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
-          Exit picture-in-picture mode
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
+          Exit Picture-in-Picture
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
+          Exit picture-in-picture
+        </message>
+      </if>
       <message name="IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT" desc="Text message shown to user when in picture in picture mode. When a video is in picture in picture mode, an interstitial with this text appears where the video player is positioned. The video continues to play back in another window that gives the experience that the video is 'popped out'.">
-        Playing in picture-in-picture mode
+        Playing in picture-in-picture
       </message>
       <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Text message shown to the user when casting a video to a known remote device.">
        Now casting to <ph name="DEVICE_FRIENDLY_NAME">$1<ex>Living Room TV</ex></ph>

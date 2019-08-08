@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
@@ -15,6 +16,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget_observer.h"
@@ -26,7 +28,7 @@ class ButtonTestApi;
 
 class Button;
 class ButtonController;
-class ButtonControllerDelegate;
+class ButtonObserver;
 class Event;
 
 // An interface implemented by an object to let it know that a button was
@@ -54,14 +56,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     STATE_PRESSED,
     STATE_DISABLED,
     STATE_COUNT,
-  };
-
-  // Button styles with associated images and border painters.
-  // TODO(msw): Add Menu, ComboBox, etc.
-  enum ButtonStyle {
-    STYLE_BUTTON = 0,
-    STYLE_TEXTBUTTON,
-    STYLE_COUNT,
   };
 
   // An enum describing the events on which a button should notify its listener.
@@ -167,8 +161,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // Highlights the ink drop for the button.
   void SetHighlighted(bool bubble_visible);
 
+  void AddButtonObserver(ButtonObserver* observer);
+  void RemoveButtonObserver(ButtonObserver* observer);
+
   // Overridden from View:
-  void OnEnabledChanged() override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -217,7 +213,25 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
  protected:
   // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
-  class DefaultButtonControllerDelegate;
+  class DefaultButtonControllerDelegate : public ButtonControllerDelegate {
+   public:
+    explicit DefaultButtonControllerDelegate(Button* button);
+    ~DefaultButtonControllerDelegate() override;
+
+    // views::ButtonControllerDelegate:
+    void RequestFocusFromEvent() override;
+    void NotifyClick(const ui::Event& event) override;
+    void OnClickCanceled(const ui::Event& event) override;
+    bool IsTriggerableEvent(const ui::Event& event) override;
+    bool ShouldEnterPushedState(const ui::Event& event) override;
+    bool ShouldEnterHoveredState() override;
+    InkDrop* GetInkDrop() override;
+    int GetDragOperations(const gfx::Point& press_pt) override;
+    bool InDrag() override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
+  };
 
   std::unique_ptr<ButtonControllerDelegate> CreateButtonControllerDelegate();
 
@@ -310,6 +324,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     DISALLOW_COPY_AND_ASSIGN(WidgetObserverButtonBridge);
   };
 
+  void OnEnabledChanged();
+
   void WidgetActivationChanged(Widget* widget, bool active);
 
   // The text shown in a tooltip.
@@ -364,6 +380,12 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // TODO(cyan): Make sure all state changes are handled within
   // ButtonController.
   std::unique_ptr<ButtonController> button_controller_;
+
+  PropertyChangedSubscription enabled_changed_subscription_{
+      AddEnabledChangedCallback(base::BindRepeating(&Button::OnEnabledChanged,
+                                                    base::Unretained(this)))};
+
+  base::ObserverList<ButtonObserver> button_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };

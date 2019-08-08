@@ -324,7 +324,9 @@ String HTMLFormControlElement::ResultForDialogSubmit() {
   return FastGetAttribute(kValueAttr);
 }
 
-void HTMLFormControlElement::DidRecalcStyle(const StyleRecalcChange) {
+void HTMLFormControlElement::DidRecalcStyle(const StyleRecalcChange change) {
+  if (change.ReattachLayoutTree())
+    return;
   if (LayoutObject* layout_object = GetLayoutObject())
     layout_object->UpdateFromElement();
 }
@@ -365,15 +367,6 @@ bool HTMLFormControlElement::MatchesValidityPseudoClasses() const {
 
 bool HTMLFormControlElement::IsValidElement() {
   return ListedElement::IsValidElement();
-}
-
-void HTMLFormControlElement::DispatchBlurEvent(
-    Element* new_focused_element,
-    WebFocusType type,
-    InputDeviceCapabilities* source_capabilities) {
-  HTMLElement::DispatchBlurEvent(new_focused_element, type,
-                                 source_capabilities);
-  HideVisibleValidationMessage();
 }
 
 bool HTMLFormControlElement::IsSuccessfulSubmitButton() const {

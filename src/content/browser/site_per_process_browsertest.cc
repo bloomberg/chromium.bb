@@ -167,7 +167,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
 #endif
 
@@ -962,9 +961,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        SubframeUpdateToCorrectDeviceScaleFactor) {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1371,7 +1367,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = 5.f;
 
@@ -1383,7 +1379,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.data.scroll_update.delta_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = 5.f;
   gesture_scroll_update.data.scroll_update.velocity_y = 5.f;
@@ -1726,7 +1722,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = 5.f;
   child_rwh->ForwardGestureEvent(gesture_scroll_begin);
@@ -5088,7 +5084,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   EXPECT_EQ(popup_url, popup->web_contents()->GetLastCommittedURL());
   EXPECT_TRUE(
       base::MatchPattern(console_delegate.message(),
-                         "Not allowed to load local resource: chrome:*"));
+                         std::string("Not allowed to load local resource: ") +
+                             kChromeUIScheme + ":*"));
 }
 
 // Verify that named frames are discoverable from their opener's ancestors.
@@ -13075,6 +13072,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown) {
+  // Disable the feature to mark hidden tabs with sad frames for reload, since
+  // it makes the scenario for which this test collects metrics impossible.
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      features::kReloadHiddenTabsWithCrashedSubframes);
+
   // Start on a page that has a single iframe, which is positioned out of
   // view, and navigate that iframe cross-site.
   GURL main_url(
@@ -13143,6 +13146,125 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       CrossProcessFrameConnector::ShownAfterCrashingReason::
           kViewportIntersectionAfterTabWasShown,
       1);
+}
+
+// Verify the feature where hidden tabs with crashed subframes are marked for
+// reload.  This avoids showing crashed subframes if a hidden tab is eventually
+// shown.  See https://crbug.com/841572.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReloadHiddenTabWithCrashedSubframe) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      features::kReloadHiddenTabsWithCrashedSubframes);
+
+  auto crash_process = [](FrameTreeNode* ftn) {
+    RenderProcessHost* process = ftn->current_frame_host()->GetProcess();
+    RenderProcessHostWatcher crash_observer(
+        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    process->Shutdown(0);
+    crash_observer.Wait();
+    EXPECT_FALSE(ftn->current_frame_host()->IsRenderFrameLive());
+  };
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Hide the WebContents (UpdateWebContentsVisibility is called twice to avoid
+  // hitting the |!did_first_set_visible_| case).
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_EQ(Visibility::HIDDEN, web_contents()->GetVisibility());
+
+  // Kill the b.com subframe's process.  This should mark the hidden
+  // WebContents for reload.
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", true, 1);
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload.Visibility",
+        blink::mojom::FrameVisibility::kRenderedInViewport, 1);
+
+    // Show the WebContents.  This should trigger a reload of the main frame.
+    web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    histograms.ExpectUniqueSample(
+        "Navigation.LoadIfNecessaryType",
+        NavigationControllerImpl::NeedsReloadType::kCrashedSubframe, 1);
+  }
+
+  // Both frames should now have live renderer processes.
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Next, try the same with a crashed subframe that's scrolled out of view.
+  // This should also trigger a reload.
+  GURL out_of_view_url(
+      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), out_of_view_url));
+  NavigateIframeToURL(web_contents(), "test_iframe",
+                      embedded_test_server()->GetURL("b.com", "/title1.html"));
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", true, 1);
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload.Visibility",
+        blink::mojom::FrameVisibility::kRenderedOutOfViewport, 1);
+
+    web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    histograms.ExpectUniqueSample(
+        "Navigation.LoadIfNecessaryType",
+        NavigationControllerImpl::NeedsReloadType::kCrashedSubframe, 1);
+  }
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Now, load a page with where an iframe is hidden with "display:none".
+  // Ensure that we do not mark the tab for reload in that case.
+  GURL hidden_iframe_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_hidden_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), hidden_iframe_url));
+  NavigateIframeToURL(web_contents(), "test_iframe",
+                      embedded_test_server()->GetURL("b.com", "/title1.html"));
+  RenderFrameProxyHost* proxy_to_parent =
+      root->child_at(0)->render_manager()->GetProxyToParent();
+  EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector()->IsHidden());
+
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", false, 1);
+  }
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Finally, ensure that the reload policy doesn't trigger for a visible tab,
+  // even if it becomes hidden and then visible again.
+  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", false, 1);
+  }
+  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
 }
 
 // Check that when a frame changes a subframe's size twice and then sends a
@@ -14004,6 +14126,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                      std::string());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(another_url, controller.GetPendingEntry()->GetURL());
+  NavigationRequest* navigation_request = root->navigation_request();
+  ASSERT_TRUE(navigation_request);
 
   RenderProcessHostKillWaiter kill_waiter(
       root->current_frame_host()->GetProcess());
@@ -14020,6 +14144,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   params->gesture = NavigationGestureAuto;
   params->method = "GET";
   params->page_state = PageState::CreateFromURL(start_url);
+  params->navigation_token =
+      root->navigation_request()->commit_params().navigation_token;
 
   // Use an origin mismatched with the origin lock.
   params->origin = url::Origin::Create(another_url);
@@ -14028,6 +14154,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ("http://a.com/", policy->GetOriginLock(process_id));
   EXPECT_EQ(start_url.host(), policy->GetOriginLock(process_id).host());
   EXPECT_NE(another_url.host(), policy->GetOriginLock(process_id).host());
+
+  // Transfer the NavigationRequest ownership to the RenderFrameHost. The test
+  // for NavigationRequest match happens before the check of origin lock and
+  // needs to be successful.
+  root->TransferNavigationRequestOwnership(root->current_frame_host());
+  root->current_frame_host()->OnCrossDocumentCommitProcessed(
+      navigation_request, blink::mojom::CommitResult::Ok);
 
   // Simulate a commit IPC.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
@@ -14751,5 +14884,48 @@ INSTANTIATE_TEST_SUITE_P(
              InnerWebContentsAttachChildFrameOriginType::kCrossOrigin}),
         testing::Bool(),
         testing::Bool()));
+
+// This checks what process is used when an iframe is navigated to about:blank.
+// The new document should be loaded in the process of its initiator.
+//
+// Test case:
+// 1. Navigate to A1(B2).
+// 2. B2 navigates itself to B3 = about:blank. Process B is used.
+// 3. A1 makes B3 to navigate to A4 = about:blank. Process A is used.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SameAndCrossProcessIframeAboutBlankNavigation) {
+  // 1. Navigate to A1(B2).
+  GURL a1_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), a1_url));
+  RenderFrameHostImpl* a1_rfh = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* b2_rfh = a1_rfh->child_at(0)->current_frame_host();
+
+  // 2. B2 navigates itself to B3 = about:blank. Process B is used.
+  {
+    scoped_refptr<SiteInstance> b2_site_instance = b2_rfh->GetSiteInstance();
+    TestNavigationManager navigation_manager(web_contents(),
+                                             GURL("about:blank"));
+    EXPECT_TRUE(ExecJs(b2_rfh, "location.href = 'about:blank';"));
+    navigation_manager.WaitForNavigationFinished();
+
+    RenderFrameHostImpl* b3_rfh = a1_rfh->child_at(0)->current_frame_host();
+    DCHECK_EQ(b3_rfh->GetSiteInstance(), b2_site_instance);
+    DCHECK_NE(a1_rfh->GetProcess(), b3_rfh->GetProcess());
+  }
+
+  // 3. A1 makes B3 to navigate to A4 = about:blank. Process A is used.
+  {
+    TestNavigationManager navigation_manager(web_contents(),
+                                             GURL("about:blank"));
+    EXPECT_TRUE(ExecJs(a1_rfh, R"(
+      document.querySelector("iframe").src = "about:blank";
+    )"));
+    navigation_manager.WaitForNavigationFinished();
+
+    RenderFrameHostImpl* b4_rfh = a1_rfh->child_at(0)->current_frame_host();
+    DCHECK_EQ(a1_rfh->GetSiteInstance(), b4_rfh->GetSiteInstance());
+  }
+}
 
 }  // namespace content

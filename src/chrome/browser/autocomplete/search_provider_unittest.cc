@@ -1016,7 +1016,7 @@ TEST_F(SearchProviderTest, DontCrowdOutSingleWords) {
   AutocompleteMatch wyt_match;
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("fi"),
                                                       &wyt_match));
-  ASSERT_EQ(AutocompleteProvider::kMaxMatches + 1, provider_->matches().size());
+  ASSERT_EQ(provider_->provider_max_matches() + 1, provider_->matches().size());
   AutocompleteMatch term_match;
   EXPECT_TRUE(FindMatchWithDestination(term_url, &term_match));
   EXPECT_GT(term_match.relevance, wyt_match.relevance);
@@ -2805,7 +2805,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
 
 // Verifies that "http://" is not trimmed for input that is a leading substring.
 TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
-  const base::string16 input(ASCIIToUTF16("ht"));
+  const base::string16 input(ASCIIToUTF16("http:"));
   const base::string16 url(ASCIIToUTF16("http://a.com"));
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
@@ -2817,7 +2817,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
   EXPECT_EQ(url, match_inline.fill_into_edit);
-  EXPECT_EQ(url.substr(2), match_inline.inline_autocompletion);
+  EXPECT_EQ(url.substr(5), match_inline.inline_autocompletion);
   EXPECT_TRUE(match_inline.allowed_to_be_default_match);
   EXPECT_EQ(url, match_inline.contents);
 
@@ -2829,21 +2829,21 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   EXPECT_EQ(url, match_prevent.contents);
 }
 
-// Verifies that input "w" marks a more significant domain label than "www.".
+// Verifies that input "h" matches navsuggest "http://www.[h]ttp.com/http" and
+// "http://www." is trimmed.
 TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
-  QueryForInput(ASCIIToUTF16("w"), false, false);
+  QueryForInput(ASCIIToUTF16("h"), false, false);
   SearchSuggestionParser::NavigationResult result(
-      ChromeAutocompleteSchemeClassifier(&profile_), GURL("http://www.wow.com"),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
-      false, 0, false, ASCIIToUTF16("w"));
+      ChromeAutocompleteSchemeClassifier(&profile_),
+      GURL("http://www.http.com/http"), AutocompleteMatchType::NAVSUGGEST, 0,
+      base::string16(), std::string(), false, 0, false, ASCIIToUTF16("h"));
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
-  EXPECT_EQ(ASCIIToUTF16("ow.com"), match.inline_autocompletion);
+  EXPECT_EQ(ASCIIToUTF16("ttp.com/http"), match.inline_autocompletion);
   EXPECT_TRUE(match.allowed_to_be_default_match);
-  EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
-  EXPECT_EQ(ASCIIToUTF16("wow.com"), match.contents);
+  EXPECT_EQ(ASCIIToUTF16("www.http.com/http"), match.fill_into_edit);
+  EXPECT_EQ(ASCIIToUTF16("http.com/http"), match.contents);
 
-  // Ensure that the match for input "w" is marked on "wow" and not "www".
   ASSERT_EQ(2U, match.contents_class.size());
   EXPECT_EQ(0U, match.contents_class[0].offset);
   EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL |
@@ -2851,6 +2851,67 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
             match.contents_class[0].style);
   EXPECT_EQ(1U, match.contents_class[1].offset);
   EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[1].style);
+}
+
+// Verifies navsuggests prefer prefix matching even when a URL prefix prevents
+// the input from being a perfect prefix of the suggest text; e.g., the input
+// 'moon.com', matches 'http://[moon.com]/moon' and the 2nd 'moon' is unmatched.
+TEST_F(SearchProviderTest, NavigationPrefixClassify) {
+  QueryForInput(ASCIIToUTF16("moon"), false, false);
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_),
+      GURL("http://moon.com/moon"), AutocompleteMatchType::NAVSUGGEST, 0,
+      base::string16(), std::string(), false, 0, false, ASCIIToUTF16("moon"));
+  result.set_received_after_last_keystroke(false);
+  AutocompleteMatch match(provider_->NavigationToMatch(result));
+  EXPECT_EQ(ASCIIToUTF16("moon.com/moon"), match.contents);
+  ASSERT_EQ(2U, match.contents_class.size());
+  EXPECT_EQ(0U, match.contents_class[0].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::MATCH |
+                AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[0].style);
+  EXPECT_EQ(4U, match.contents_class[1].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[1].style);
+}
+
+// Verifies navsuggests prohibit mid-word matches; e.g., 'f[acebook].com'.
+TEST_F(SearchProviderTest, NavigationMidWordClassify) {
+  QueryForInput(ASCIIToUTF16("acebook"), false, false);
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_),
+      GURL("http://www.facebook.com"), AutocompleteMatchType::NAVSUGGEST, 0,
+      base::string16(), std::string(), false, 0, false,
+      ASCIIToUTF16("acebook"));
+  result.set_received_after_last_keystroke(false);
+  AutocompleteMatch match(provider_->NavigationToMatch(result));
+  EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);
+  ASSERT_EQ(1U, match.contents_class.size());
+  EXPECT_EQ(0U, match.contents_class[0].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[0].style);
+}
+
+// Verifies navsuggests break user and suggest texts on words;
+// e.g., the input 'duck', matches 'yellow-animals.com/[duck]'
+TEST_F(SearchProviderTest, NavigationWordBreakClassify) {
+  QueryForInput(ASCIIToUTF16("duck"), false, false);
+  SearchSuggestionParser::NavigationResult result(
+      ChromeAutocompleteSchemeClassifier(&profile_),
+      GURL("http://www.yellow-animals.com/duck"),
+      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      false, 0, false, ASCIIToUTF16("duck"));
+  result.set_received_after_last_keystroke(false);
+  AutocompleteMatch match(provider_->NavigationToMatch(result));
+  EXPECT_EQ(ASCIIToUTF16("yellow-animals.com/duck"), match.contents);
+  ASSERT_EQ(2U, match.contents_class.size());
+  EXPECT_EQ(0U, match.contents_class[0].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[0].style);
+  EXPECT_EQ(19U, match.contents_class[1].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::MATCH |
+                AutocompleteMatch::ACMatchClassification::URL,
             match.contents_class[1].style);
 }
 
@@ -3443,8 +3504,8 @@ TEST_F(SearchProviderTest, TestDeleteMatch) {
 
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 500 Owiee\nContent-type: application/json\n\n");
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.mime_type = "application/json";
   test_url_loader_factory_.AddResponse(GURL(kDeleteUrl), head, "",
                                        network::URLLoaderCompletionStatus());

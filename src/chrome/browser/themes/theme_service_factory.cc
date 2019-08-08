@@ -32,12 +32,13 @@ ThemeService* ThemeServiceFactory::GetForProfile(Profile* profile) {
 // static
 const extensions::Extension* ThemeServiceFactory::GetThemeForProfile(
     Profile* profile) {
-  std::string id = GetForProfile(profile)->GetThemeID();
-  if (id == ThemeService::kDefaultThemeID)
-    return NULL;
+  ThemeService* theme_service = GetForProfile(profile);
+  if (!theme_service->UsingExtensionTheme())
+    return nullptr;
 
-  return extensions::ExtensionRegistry::Get(
-      profile)->enabled_extensions().GetByID(id);
+  return extensions::ExtensionRegistry::Get(profile)
+      ->enabled_extensions()
+      .GetByID(theme_service->GetThemeID());
 }
 
 // static

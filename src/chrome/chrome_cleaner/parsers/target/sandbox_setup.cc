@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/task/single_thread_task_executor.h"
 #include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
@@ -56,7 +56,7 @@ class ParserSandboxTargetHooks : public MojoSandboxTargetHooks {
   }
 
   MojoTaskRunner* mojo_task_runner_;
-  base::MessageLoop message_loop_;
+  base::SingleThreadTaskExecutor main_thread_task_executor_;
   std::unique_ptr<ParserImpl> parser_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ParserSandboxTargetHooks);

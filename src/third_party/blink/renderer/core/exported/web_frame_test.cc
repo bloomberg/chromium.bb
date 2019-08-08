@@ -33,9 +33,7 @@
 #include <stdarg.h>
 
 #include <limits>
-#include <map>
 #include <memory>
-#include <set>
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -143,6 +141,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_test_suite.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -165,6 +164,8 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
@@ -328,7 +329,7 @@ class WebFrameTest : public testing::Test {
     int node_count = 0;
     for (Node& node : range.Nodes()) {
       const DocumentMarkerVector& markers_in_node =
-          document->Markers().MarkersFor(ToText(node), marker_types);
+          document->Markers().MarkersFor(To<Text>(node), marker_types);
       node_count += std::count_if(
           markers_in_node.begin(), markers_in_node.end(),
           [start_offset, end_offset, &node, &start_container,
@@ -583,135 +584,6 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
   EXPECT_EQ(true, callback_helper.BoolValue());
 }
 
-class ScriptNotPausedCallbackHelper {
- public:
-  ScriptNotPausedCallbackHelper() = default;
-  ~ScriptNotPausedCallbackHelper() = default;
-
-  WebLocalFrame::PausableTaskCallback GetCallback() {
-    return WTF::Bind(&ScriptNotPausedCallbackHelper::Run,
-                     WTF::Unretained(this));
-  }
-
-  void set_closure(base::OnceClosure closure) { closure_ = std::move(closure); }
-  const base::Optional<WebLocalFrame::PausableTaskResult>& result() const {
-    return result_;
-  }
-
- private:
-  void Run(WebLocalFrame::PausableTaskResult result) {
-    ASSERT_FALSE(result_) << "Callback invoked multiple times!";
-    result_ = result;
-    if (closure_)
-      std::move(*closure_).Run();
-  }
-
-  base::Optional<WebLocalFrame::PausableTaskResult> result_;
-  base::Optional<base::OnceClosure> closure_;
-};
-
-TEST_F(WebFrameTest, CallingPostPausableTaskWhileNotPaused) {
-  RegisterMockedHttpURLLoad("foo.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
-  WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-
-  ScriptState::Scope scope(ToScriptStateForMainWorld(main_frame->GetFrame()));
-
-  ScriptNotPausedCallbackHelper callback_helper;
-  main_frame->PostPausableTask(callback_helper.GetCallback());
-  RunPendingTasks();
-
-  ASSERT_TRUE(callback_helper.result());
-  EXPECT_EQ(WebLocalFrame::PausableTaskResult::kReady,
-            *callback_helper.result());
-}
-
-// Flaky on Android: crbug.com/804892.
-#if defined(OS_ANDROID)
-TEST_F(WebFrameTest, DISABLED_CallingPostPausableTaskWhilePaused)
-#else
-TEST_F(WebFrameTest, CallingPostPausableTaskWhilePaused)
-#endif
-{
-  RegisterMockedHttpURLLoad("foo.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
-  WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-
-  ScriptState::Scope scope(ToScriptStateForMainWorld(main_frame->GetFrame()));
-
-  // Suspend scheduled tasks so the script doesn't run.
-  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
-
-  ScriptNotPausedCallbackHelper callback_helper;
-  main_frame->PostPausableTask(callback_helper.GetCallback());
-  RunPendingTasks();
-  EXPECT_FALSE(callback_helper.result());
-
-  web_view_helper.GetWebView()->GetPage()->SetPaused(false);
-  RunPendingTasks();
-  ASSERT_TRUE(callback_helper.result());
-  EXPECT_EQ(WebLocalFrame::PausableTaskResult::kReady,
-            *callback_helper.result());
-}
-
-TEST_F(WebFrameTest, CallingPostPausableTaskAndDestroying) {
-  RegisterMockedHttpURLLoad("foo.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
-  WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-
-  ScriptState::Scope scope(ToScriptStateForMainWorld(main_frame->GetFrame()));
-
-  // Suspend scheduled tasks so the script doesn't run.
-  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
-
-  ScriptNotPausedCallbackHelper callback_helper;
-  main_frame->PostPausableTask(callback_helper.GetCallback());
-  RunPendingTasks();
-  EXPECT_FALSE(callback_helper.result());
-
-  web_view_helper.Reset();
-  ASSERT_TRUE(callback_helper.result());
-  EXPECT_EQ(WebLocalFrame::PausableTaskResult::kContextInvalidOrDestroyed,
-            *callback_helper.result());
-}
-
-TEST_F(WebFrameTest, CallingPostPausableTaskAndDestroyingTheContext) {
-  RegisterMockedHttpURLLoad("foo.html");
-  RegisterMockedHttpURLLoad("bar.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
-  WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-
-  auto navigate_frame = [](frame_test_helpers::WebViewHelper* web_view_helper,
-                           const std::string& url) {
-    frame_test_helpers::LoadFrame(
-        web_view_helper->GetWebView()->MainFrameImpl(), url);
-  };
-
-  ScriptNotPausedCallbackHelper callback_helper;
-  // Navigate the frame when the helper is notified that script can run. This
-  // will invalidate the context immediately.
-  callback_helper.set_closure(WTF::Bind(navigate_frame,
-                                        WTF::Unretained(&web_view_helper),
-                                        base_url_ + "bar.html"));
-
-  ScriptState::Scope scope(ToScriptStateForMainWorld(main_frame->GetFrame()));
-
-  main_frame->PostPausableTask(callback_helper.GetCallback());
-  RunPendingTasks();
-
-  ASSERT_TRUE(callback_helper.result());
-  EXPECT_EQ(WebLocalFrame::PausableTaskResult::kReady,
-            *callback_helper.result());
-}
-
 TEST_F(WebFrameTest, IframeScriptRemovesSelf) {
   RegisterMockedHttpURLLoad("single_iframe.html");
   RegisterMockedHttpURLLoad("visible_iframe.html");
@@ -875,7 +747,16 @@ class CSSCallbackWebFrameClient
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) override;
 
-  std::map<WebLocalFrame*, std::set<std::string>> matched_selectors_;
+  HashSet<String>& MatchedSelectors() {
+    auto it = matched_selectors_.find(Frame());
+    if (it != matched_selectors_.end())
+      return it->value;
+
+    auto add_result = matched_selectors_.insert(Frame(), HashSet<String>());
+    return add_result.stored_value->value;
+  }
+
+  HashMap<WebLocalFrame*, HashSet<String>> matched_selectors_;
   int update_count_;
 };
 
@@ -883,16 +764,21 @@ void CSSCallbackWebFrameClient::DidMatchCSS(
     const WebVector<WebString>& newly_matching_selectors,
     const WebVector<WebString>& stopped_matching_selectors) {
   ++update_count_;
-  std::set<std::string>& frame_selectors = matched_selectors_[Frame()];
+
+  HashSet<String>& frame_selectors = MatchedSelectors();
   for (size_t i = 0; i < newly_matching_selectors.size(); ++i) {
-    std::string selector = newly_matching_selectors[i].Utf8();
-    EXPECT_EQ(0U, frame_selectors.count(selector)) << selector;
+    String selector = newly_matching_selectors[i];
+    EXPECT_TRUE(frame_selectors.find(selector) == frame_selectors.end())
+        << selector;
     frame_selectors.insert(selector);
   }
   for (size_t i = 0; i < stopped_matching_selectors.size(); ++i) {
-    std::string selector = stopped_matching_selectors[i].Utf8();
-    EXPECT_EQ(1U, frame_selectors.count(selector)) << selector;
+    String selector = stopped_matching_selectors[i];
+    EXPECT_TRUE(frame_selectors.find(selector) != frame_selectors.end())
+        << selector;
     frame_selectors.erase(selector);
+    EXPECT_TRUE(frame_selectors.find(selector) == frame_selectors.end())
+        << selector;
   }
 }
 
@@ -912,8 +798,14 @@ class WebFrameCSSCallbackTest : public testing::Test {
 
   int UpdateCount() const { return client_.update_count_; }
 
-  const std::set<std::string>& MatchedSelectors() {
-    return client_.matched_selectors_[frame_];
+  const HashSet<String>& MatchedSelectors() {
+    auto it = client_.matched_selectors_.find(frame_);
+    if (it != client_.matched_selectors_.end())
+      return it->value;
+
+    auto add_result =
+        client_.matched_selectors_.insert(frame_, HashSet<String>());
+    return add_result.stored_value->value;
   }
 
   void LoadHTML(const std::string& html) {
@@ -2284,38 +2176,6 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk) {
                    .Height());
 }
 
-TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale) {
-  RegisterMockedHttpURLLoad("wide_document_width_viewport.html");
-  RegisterMockedHttpURLLoad("white-1x1.png");
-
-  FixedLayoutTestWebViewClient client;
-  client.screen_info_.device_scale_factor = 1;
-  int viewport_width = 600;
-  int viewport_height = 800;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
-                                    ConfigureAndroid);
-  web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  frame_test_helpers::LoadFrame(
-      web_view_helper.GetWebView()->MainFrameImpl(),
-      base_url_ + "wide_document_width_viewport.html");
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  int wide_document_width = 800;
-  float minimum_page_scale_factor = viewport_width / (float)wide_document_width;
-  EXPECT_EQ(minimum_page_scale_factor,
-            web_view_helper.GetWebView()->PageScaleFactor());
-  EXPECT_EQ(minimum_page_scale_factor,
-            web_view_helper.GetWebView()->MinimumPageScaleFactor());
-}
-
 TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
   RegisterMockedHttpURLLoad("viewport-height-1000.html");
 
@@ -2330,8 +2190,6 @@ TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(false);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -2344,124 +2202,6 @@ TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
                      ->GetLayoutSize()
                      .Height());
   EXPECT_EQ(1, web_view_helper.GetWebView()->PageScaleFactor());
-}
-
-TEST_F(WebFrameTest, LayoutSize320Quirk) {
-  RegisterMockedHttpURLLoad("viewport/viewport-30.html");
-
-  FixedLayoutTestWebViewClient client;
-  client.screen_info_.device_scale_factor = 1;
-  int viewport_width = 600;
-  int viewport_height = 800;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
-                                    ConfigureAndroid);
-  web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "viewport/viewport-30.html");
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  EXPECT_EQ(600, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Width());
-  EXPECT_EQ(800, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Height());
-  EXPECT_EQ(1, web_view_helper.GetWebView()->PageScaleFactor());
-
-  // The magic number to snap to device-width is 320, so test that 321 is
-  // respected.
-  ViewportData& viewport =
-      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
-          ->GetDocument()
-          ->GetViewportData();
-  ViewportDescription description = viewport.GetViewportDescription();
-  description.min_width = Length::Fixed(321);
-  description.max_width = Length::Fixed(321);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(321, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Width());
-
-  description.min_width = Length::Fixed(320);
-  description.max_width = Length::Fixed(320);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(600, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Width());
-
-  description = viewport.GetViewportDescription();
-  description.max_height = Length::Fixed(1000);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(1000, web_view_helper.GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrameView()
-                      ->GetLayoutSize()
-                      .Height());
-
-  description.max_height = Length::Fixed(320);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(800, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Height());
-}
-
-TEST_F(WebFrameTest, ZeroValuesQuirk) {
-  RegisterMockedHttpURLLoad("viewport-zero-values.html");
-
-  FixedLayoutTestWebViewClient client;
-  client.screen_info_.device_scale_factor = 1;
-  int viewport_width = 640;
-  int viewport_height = 480;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaZeroValuesQuirk(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "viewport-zero-values.html");
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
-                                ->MainFrameImpl()
-                                ->GetFrameView()
-                                ->GetLayoutSize()
-                                .Width());
-  EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
-
-  web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
-                                ->MainFrameImpl()
-                                ->GetFrameView()
-                                ->GetLayoutSize()
-                                .Width());
-  EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
 }
 
 TEST_F(WebFrameTest, OverflowHiddenDisablesScrolling) {
@@ -5688,7 +5428,9 @@ static WebPoint BottomRightMinusOne(const WebRect& rect) {
   // selection bounds, selectRange() will select the *next* element. That's
   // strictly correct, as hit-testing checks the pixel to the lower-right of
   // the input coordinate, but it's a wart on the API.
-  return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
+  if (rect.width > 0)
+    return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
+  return WebPoint(rect.x + rect.width, rect.y + rect.height - 1);
 }
 
 static WebRect ElementBounds(WebLocalFrame* frame, const WebString& id) {
@@ -6165,8 +5907,8 @@ TEST_F(WebFrameTest, SmartClipData) {
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   WebRect crop_rect(300, 125, 152, 50);
   frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
-  EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
-  EXPECT_STREQ(kExpectedClipHtml, clip_html.Utf8().c_str());
+  EXPECT_EQ(kExpectedClipText, clip_text);
+  EXPECT_EQ(kExpectedClipHtml, clip_html);
 }
 
 TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
@@ -6205,8 +5947,8 @@ TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
       WebFloatPoint(167, 100));
   WebRect crop_rect(200, 38, 228, 75);
   frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
-  EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
-  EXPECT_STREQ(kExpectedClipHtml, clip_html.Utf8().c_str());
+  EXPECT_EQ(kExpectedClipText, clip_text);
+  EXPECT_EQ(kExpectedClipHtml, clip_html);
 }
 
 TEST_F(WebFrameTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
@@ -6679,8 +6421,9 @@ class TextCheckClient : public WebTextCheckClient {
 
   // WebTextCheckClient:
   bool IsSpellCheckingEnabled() const override { return true; }
-  void RequestCheckingOfText(const WebString&,
-                             WebTextCheckingCompletion* completion) override {
+  void RequestCheckingOfText(
+      const WebString&,
+      std::unique_ptr<WebTextCheckingCompletion> completion) override {
     ++number_of_times_checked_;
     Vector<WebTextCheckingResult> results;
     const int kMisspellingStartOffset = 1;
@@ -6838,9 +6581,10 @@ class StubbornTextCheckClient : public WebTextCheckClient {
 
   // WebTextCheckClient:
   bool IsSpellCheckingEnabled() const override { return true; }
-  void RequestCheckingOfText(const WebString&,
-                             WebTextCheckingCompletion* completion) override {
-    completion_ = completion;
+  void RequestCheckingOfText(
+      const WebString&,
+      std::unique_ptr<WebTextCheckingCompletion> completion) override {
+    completion_ = std::move(completion);
   }
 
   void KickNoResults() { Kick(-1, -1, kWebTextDecorationTypeSpelling); }
@@ -6861,10 +6605,10 @@ class StubbornTextCheckClient : public WebTextCheckClient {
                                               misspelling_length));
     }
     completion_->DidFinishCheckingText(results);
-    completion_ = nullptr;
+    completion_.reset();
   }
 
-  WebTextCheckingCompletion* completion_;
+  std::unique_ptr<WebTextCheckingCompletion> completion_;
 };
 
 TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition) {
@@ -7736,7 +7480,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
       local_frame->Loader().GetDocumentLoader()->GetHistoryItem();
   RunPendingTasks();
 
-  local_frame->Loader().CommitSameDocumentNavigation(
+  local_frame->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item->Url(), WebFrameLoadType::kBackForward, item.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, /* origin_document */
       false,                                             /* has_event */
@@ -8694,32 +8438,6 @@ TEST_F(WebFrameTest, HasVisibleContentOnHiddenFrames) {
   }
 }
 
-class ManifestChangeWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  ManifestChangeWebFrameClient() : manifest_change_count_(0) {}
-  ~ManifestChangeWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  void DidChangeManifest() override { ++manifest_change_count_; }
-
-  int ManifestChangeCount() { return manifest_change_count_; }
-
- private:
-  int manifest_change_count_;
-};
-
-TEST_F(WebFrameTest, NotifyManifestChange) {
-  RegisterMockedHttpURLLoad("link-manifest-change.html");
-
-  ManifestChangeWebFrameClient web_frame_client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "link-manifest-change.html",
-                                    &web_frame_client);
-
-  EXPECT_EQ(14, web_frame_client.ManifestChangeCount());
-}
-
 static Resource* FetchManifest(Document* document, const KURL& url) {
   FetchParameters fetch_parameters{ResourceRequest(url)};
   fetch_parameters.SetRequestContext(mojom::RequestContextType::MANIFEST);
@@ -8910,28 +8628,40 @@ TEST_F(WebFrameTest, ThemeColor) {
                                     &client);
   EXPECT_TRUE(client.DidNotify());
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
-  EXPECT_EQ(0xff0000ff, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Change color by rgb.
   client.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').setAttribute('content', "
                       "'rgb(0, 0, 0)');"));
   EXPECT_TRUE(client.DidNotify());
-  EXPECT_EQ(0xff000000, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color::kBlack, frame->GetDocument().ThemeColor());
   // Change color by hsl.
   client.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').setAttribute('content', "
                       "'hsl(240,100%, 50%)');"));
   EXPECT_TRUE(client.DidNotify());
-  EXPECT_EQ(0xff0000ff, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Change of second theme-color meta tag will not change frame's theme
   // color.
   client.Reset();
   frame->ExecuteScript(WebScriptSource(
       "document.getElementById('tc2').setAttribute('content', '#00FF00');"));
   EXPECT_TRUE(client.DidNotify());
-  EXPECT_EQ(0xff0000ff, frame->GetDocument().ThemeColor());
+  EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
+  // Remove the first theme-color meta tag to apply the second.
+  client.Reset();
+  frame->ExecuteScript(
+      WebScriptSource("document.getElementById('tc1').remove();"));
+  EXPECT_TRUE(client.DidNotify());
+  EXPECT_EQ(Color(0, 255, 0), frame->GetDocument().ThemeColor());
+  // Remove the name attribute of the remaining meta.
+  client.Reset();
+  frame->ExecuteScript(WebScriptSource(
+      "document.getElementById('tc2').removeAttribute('name');"));
+  EXPECT_TRUE(client.DidNotify());
+  EXPECT_EQ(base::nullopt, frame->GetDocument().ThemeColor());
 }
 
 // Make sure that an embedder-triggered detach with a remote frame parent
@@ -12298,7 +12028,7 @@ TEST_F(WebFrameSimTest, LayoutViewLocalVisualRect) {
   )HTML");
 
   Compositor().BeginFrame();
-  ASSERT_EQ(LayoutRect(0, 0, 1200, 800),
+  ASSERT_EQ(PhysicalRect(0, 0, 1200, 800),
             GetDocument().GetLayoutView()->LocalVisualRect());
 }
 
@@ -12335,8 +12065,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       TestWebFrameClient::DidStopLoading();
     }
 
-    void DidFailProvisionalLoad(const WebURLError&,
-                                WebHistoryCommitType) override {
+    void DidFailProvisionalLoad(const WebURLError&, const WebString&) override {
       EXPECT_TRUE(false) << "The load should not have failed.";
     }
 
@@ -12659,7 +12388,8 @@ class TestFallbackWebFrameClient
       TestWebFrameClient::BeginNavigation(std::move(info));
       return;
     }
-    Frame()->CreatePlaceholderDocumentLoader(*info, nullptr /* extra_data */);
+    Frame()->WillStartNavigation(
+        *info, false /* is_history_navigation_in_new_child_frame */);
   }
 
  private:
@@ -12753,12 +12483,15 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   auto* frame =
       To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
 
-  FrameLoader& main_frame_loader =
-      web_view_helper.GetWebView()->MainFrameImpl()->GetFrame()->Loader();
+  DocumentLoader& document_loader = *web_view_helper.GetWebView()
+                                         ->MainFrameImpl()
+                                         ->GetFrame()
+                                         ->GetDocument()
+                                         ->Loader();
   scoped_refptr<SerializedScriptValue> message =
       SerializeString("message", ToScriptStateForMainWorld(frame));
   tester.ExpectTotalCount(histogramName, 0);
-  main_frame_loader.UpdateForSameDocumentNavigation(
+  document_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationHistoryApi, message,
       kScrollRestorationAuto, WebFrameLoadType::kReplaceCurrentItem,
       frame->GetDocument());
@@ -12766,13 +12499,13 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   // |SinglePageAppNavigationType|.
   tester.ExpectBucketCount(histogramName,
                            kSPANavTypeHistoryPushStateOrReplaceState, 1);
-  main_frame_loader.UpdateForSameDocumentNavigation(
+  document_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
       kScrollRestorationManual, WebFrameLoadType::kBackForward,
       frame->GetDocument());
   tester.ExpectBucketCount(histogramName,
                            kSPANavTypeSameDocumentBackwardOrForward, 1);
-  main_frame_loader.UpdateForSameDocumentNavigation(
+  document_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
       kScrollRestorationManual, WebFrameLoadType::kReplaceCurrentItem,
       frame->GetDocument());
@@ -13016,12 +12749,12 @@ TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {
   helper.Reset();
 }
 
-class MimeHandlerViewDocumentTest
+class ExternallyHandledPluginDocumentTest
     : public WebFrameTest,
       public testing::WithParamInterface<
           bool /* mime_handler_view_in_cross_process_frame */> {};
 
-TEST_P(MimeHandlerViewDocumentTest, DocumentType) {
+TEST_P(ExternallyHandledPluginDocumentTest, DocumentType) {
   bool cross_process = GetParam();
   RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(
       cross_process);
@@ -13037,5 +12770,7 @@ TEST_P(MimeHandlerViewDocumentTest, DocumentType) {
   EXPECT_NE(cross_process, document->IsPluginDocument());
 }
 
-INSTANTIATE_TEST_SUITE_P(P, MimeHandlerViewDocumentTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P,
+                         ExternallyHandledPluginDocumentTest,
+                         testing::Bool());
 }  // namespace blink

@@ -5,6 +5,7 @@
 #include "components/tracing/common/stack_sampler_android.h"
 
 #include "base/profiler/profile_builder.h"
+#include "base/profiler/unwinder.h"
 #include "base/trace_event/trace_event.h"
 
 namespace tracing {
@@ -19,7 +20,8 @@ StackSamplerAndroid::~StackSamplerAndroid() = default;
 
 // Unimplemented. StackSamplerAndroid needs to be implemented in terms of
 // base::StackSamplerImpl to make use of this.
-void StackSamplerAndroid::AddAuxUnwinder(base::Unwinder* unwinder) {}
+void StackSamplerAndroid::AddAuxUnwinder(
+    std::unique_ptr<base::Unwinder> unwinder) {}
 
 void StackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,

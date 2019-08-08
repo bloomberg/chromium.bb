@@ -18,6 +18,7 @@ group("closure_compile") {
 
 js_type_check("closure_compile_module") {
   deps = [
+    ":action_model_ui",
     ":actions_submenu",
     ":banners",
     ":closure_compile_externs",
@@ -28,7 +29,6 @@ js_type_check("closure_compile_module") {
     ":directory_tree",
     ":drag_selector",
     ":empty_folder",
-    ":error_dialog",
     ":file_grid",
     ":file_list_selection_model",
     ":file_manager_dialog_base",
@@ -73,6 +73,16 @@ js_library("closure_compile_externs") {
     "../../../../externs/paper_elements.js",
     "../../../../externs/platform.js",
     "../../../../externs/search_item.js",
+  ]
+}
+
+js_library("a11y_announce") {
+}
+
+js_library("action_model_ui") {
+  deps = [
+    ":files_alert_dialog",
+    ":list_container",
   ]
 }
 
@@ -159,6 +169,7 @@ js_unittest("directory_tree_unittest") {
     "//ui/file_manager/base/js:mock_chrome",
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
+    "//ui/file_manager/file_manager/foreground/js:fake_android_app_list_model",
     "//ui/file_manager/file_manager/foreground/js:mock_directory_model",
     "//ui/file_manager/file_manager/foreground/js:mock_folder_shortcut_data_model",
     "//ui/file_manager/file_manager/foreground/js:mock_navigation_list_model",
@@ -176,12 +187,6 @@ js_library("drag_selector") {
 js_library("empty_folder") {
   deps = [
     "//ui/webui/resources/js:util",
-  ]
-}
-
-js_library("error_dialog") {
-  deps = [
-    "//ui/webui/resources/js/cr/ui:dialogs",
   ]
 }
 
@@ -224,6 +229,8 @@ js_library("file_manager_dialog_base") {
 
 js_library("file_manager_ui") {
   deps = [
+    ":a11y_announce",
+    ":action_model_ui",
     ":actions_submenu",
     ":banners",
     ":combobutton",
@@ -231,7 +238,6 @@ js_library("file_manager_ui") {
     ":dialog_footer",
     ":directory_tree",
     ":empty_folder",
-    ":error_dialog",
     ":file_grid",
     ":file_table",
     ":files_alert_dialog",
@@ -267,6 +273,7 @@ js_library("file_metadata_formatter") {
 
 js_library("file_table") {
   deps = [
+    ":a11y_announce",
     ":drag_selector",
     ":file_metadata_formatter",
     ":file_table_list",

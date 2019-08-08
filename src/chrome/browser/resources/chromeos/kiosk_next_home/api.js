@@ -25,6 +25,16 @@ kioskNextHome.Bridge = class {
   addListener(listener) {}
 
   /**
+   * @return {!Promise<string>} Promise for the user's given name.
+   */
+  getUserGivenName() {}
+
+  /**
+   * @return {!Promise<string>} Promise for the user's display name.
+   */
+  getUserDisplayName() {}
+
+  /**
    * Gets the obfuscated account Gaia ID associated with the current user
    * session.
    * @return {!Promise<string>} Promise for the obfuscated account Gaia ID.
@@ -64,13 +74,13 @@ kioskNextHome.Bridge = class {
   launchApp(appId) {}
 
   /**
-   * Launches a URL prefixed by chromeos::switches::kKioskNextHomeUrlPrefix with
-   * the given suffix.
-   * @param {string} suffix
-   * @return {!Promise} Resolves if URL is launched, or rejects in case of
-   *     failures.
+   * Launches an allowed ARC intent. Intents are checked via
+   * chromeos::kiosk_next_home::IntentConfigHelper.
+   * @param {string} intent
+   * @return {!Promise} Resolves if intent was allowed and launched; rejects
+   *     otherwise.
    */
-  launchHomeUrl(suffix) {}
+  launchIntent(intent) {}
 
   /**
    * Shows a prompt to uninstall the app with the given appId.

@@ -8,14 +8,13 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fwl/cfwl_app.h"
 #include "xfa/fwl/cfwl_notedriver.h"
-#include "xfa/fxfa/cxfa_ffapp.h"
-#include "xfa/fxfa/cxfa_fwladapterwidgetmgr.h"
 
-CFWL_WidgetMgr::CFWL_WidgetMgr(CXFA_FFApp* pAdapterNative)
-    : m_pAdapter(pAdapterNative->GetFWLAdapterWidgetMgr()) {
+CFWL_WidgetMgr::CFWL_WidgetMgr(AdapterIface* pAdapterNative)
+    : m_pAdapter(pAdapterNative) {
   m_mapWidgetItem[nullptr] = pdfium::MakeUnique<Item>();
 }
 
@@ -325,7 +324,7 @@ void CFWL_WidgetMgr::OnProcessMessageToForm(CFWL_Message* pMessage) {
   CFWL_NoteDriver* pNoteDriver = pDstWidget->GetOwnerApp()->GetNoteDriver();
   pNoteDriver->ProcessMessage(pMessage->Clone());
 
-#if (_FX_OS_ == _FX_OS_MACOSX_)
+#if defined(OS_MACOSX)
   CFWL_NoteLoop* pTopLoop = pNoteDriver->GetTopLoop();
   if (pTopLoop)
     pNoteDriver->UnqueueMessageAndProcess(pTopLoop);

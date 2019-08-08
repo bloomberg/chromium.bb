@@ -10,6 +10,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -22,7 +23,7 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
 #include "base/no_destructor.h"
-#include "third_party/skia/include/pathops/SkPathOps.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -49,14 +50,15 @@ const gfx::Transform& GetShiftTransform() {
 bool CanCoverAvailableWorkspace(aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (split_view_controller->IsSplitViewModeActive())
+  if (split_view_controller->InSplitViewMode())
     return CanSnapInSplitview(window);
   return wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned();
 }
 
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
                                       OverviewAnimationType animation_type,
-                                      bool slide) {
+                                      bool slide,
+                                      bool observe) {
   aura::Window* window = widget->GetNativeWindow();
   if (window->layer()->GetTargetOpacity() == 1.f && !slide)
     return;
@@ -76,9 +78,10 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
   window->layer()->SetOpacity(1.0f);
-  if (slide) {
+  if (slide)
     window->SetTransform(original_transform);
 
+  if (observe) {
     auto enter_observer = std::make_unique<EnterAnimationObserver>();
     scoped_overview_animation_settings.AddObserver(enter_observer.get());
     Shell::Get()->overview_controller()->AddEnterAnimationObserver(
@@ -118,10 +121,17 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   }
 }
 
+void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
+  widget->GetNativeWindow()->SetProperty(aura::client::kAnimationsDisabledKey,
+                                         true);
+  widget->Close();
+  widget.reset();
+}
+
 wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
     aura::Window* window) {
   auto hide_predicate = [](aura::Window* window) {
-    return !window->IsVisible();
+    return window->GetProperty(kHideInOverviewKey);
   };
   return wm::GetTransientTreeIterator(window,
                                       base::BindRepeating(hide_predicate));
@@ -189,7 +199,7 @@ void SetTransform(aura::Window* window, const gfx::Transform& transform) {
 }
 
 bool IsSlidingOutOverviewFromShelf() {
-  if (!Shell::Get()->overview_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
     return false;
 
   if (Shell::Get()

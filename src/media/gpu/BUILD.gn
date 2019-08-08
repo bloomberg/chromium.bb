@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
@@ -50,16 +51,6 @@ component("gpu") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
-    "command_buffer_helper.cc",
-    "command_buffer_helper.h",
-    "fake_mjpeg_decode_accelerator.cc",
-    "fake_mjpeg_decode_accelerator.h",
-    "gles2_decoder_helper.cc",
-    "gles2_decoder_helper.h",
-    "gpu_jpeg_encode_accelerator_factory.cc",
-    "gpu_jpeg_encode_accelerator_factory.h",
-    "gpu_mjpeg_decode_accelerator_factory.cc",
-    "gpu_mjpeg_decode_accelerator_factory.h",
     "gpu_video_accelerator_util.cc",
     "gpu_video_accelerator_util.h",
     "gpu_video_decode_accelerator_factory.cc",
@@ -70,6 +61,7 @@ component("gpu") {
 
   public_deps = [
     ":buildflags",
+    ":command_buffer_helper",
     ":common",
     ":image_processor",
     ":video_frame_mapper",
@@ -80,9 +72,6 @@ component("gpu") {
     "//ui/gfx/geometry",
   ]
   deps = [
-    "//gpu/command_buffer/common:gles2_utils",
-    "//gpu/command_buffer/service:gles2",
-    "//gpu/ipc/service",
     "//third_party/libyuv",
     "//ui/base",
     "//ui/display/types",
@@ -158,6 +147,9 @@ component("gpu") {
       "//services/service_manager/public/cpp:cpp",
       "//ui/gl:gl_jni_headers",
     ]
+    if (enable_vulkan) {
+      deps += [ "//gpu/vulkan:vulkan" ]
+    }
 
     # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
     # directly.  Remove this dependency after VDAs are also running as part of
@@ -181,6 +173,8 @@ component("gpu") {
       "windows/d3d11_h264_accelerator.h",
       "windows/d3d11_picture_buffer.cc",
       "windows/d3d11_picture_buffer.h",
+      "windows/d3d11_texture_wrapper.cc",
+      "windows/d3d11_texture_wrapper.h",
       "windows/d3d11_video_context_wrapper.cc",
       "windows/d3d11_video_context_wrapper.h",
       "windows/d3d11_video_decoder.cc",
@@ -257,6 +251,8 @@ source_set("common") {
     "h264_dpb.cc",
     "h264_dpb.h",
     "macros.h",
+    "video_frame_converter.cc",
+    "video_frame_converter.h",
     "vp9_decoder.cc",
     "vp9_decoder.h",
     "vp9_picture.cc",
@@ -280,9 +276,30 @@ source_set("common") {
     ":buildflags",
     "//base",
     "//media",
+    "//media/parsers",
     "//ui/gfx:buffer_types",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
+  ]
+}
+
+source_set("command_buffer_helper") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "command_buffer_helper.cc",
+    "command_buffer_helper.h",
+    "gles2_decoder_helper.cc",
+    "gles2_decoder_helper.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/command_buffer/service",
+    "//gpu/command_buffer/service:gles2",
+    "//gpu/ipc/service",
+    "//ui/gl",
   ]
 }
 
@@ -299,15 +316,13 @@ source_set("image_processor") {
   ]
 
   deps = [
+    ":video_frame_mapper",
     "//third_party/libyuv",
     "//ui/gl",
   ]
 
   if (use_v4l2_codec) {
     deps += [ "//media/gpu/v4l2" ]
-  }
-  if (is_linux) {
-    deps += [ ":video_frame_mapper" ]
   }
 }
 
@@ -488,8 +503,11 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
       "//base/test:test_support",
       "//media:test_support",
       "//media/gpu",
+      "//media/parsers",
       "//mojo/core/embedder",
       "//testing/gtest",
+      "//third_party/ffmpeg",
+      "//third_party/libyuv",
       "//ui/base",
       "//ui/gfx",
       "//ui/gfx:test_support",
@@ -510,79 +528,6 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   }
 }
 
-if (use_v4l2_codec || use_vaapi) {
-  test("jpeg_encode_accelerator_unittest") {
-    deps = [
-      "test:helpers",
-      "//base",
-      "//base/test:test_support",
-      "//media:test_support",
-      "//media/gpu",
-      "//mojo/core/embedder",
-      "//testing/gtest",
-      "//third_party:jpeg",
-      "//third_party/libyuv",
-      "//ui/base",
-      "//ui/gfx",
-      "//ui/gfx:test_support",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-      "//ui/gl:test_support",
-    ]
-    configs += [ "//third_party/libyuv:libyuv_config" ]
-    sources = [
-      "jpeg_encode_accelerator_unittest.cc",
-    ]
-    if (use_x11) {
-      deps += [ "//ui/gfx/x" ]
-    }
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
-  }
-}
-
-if (is_chromeos || is_linux) {
-  test("jpeg_decode_accelerator_unittest") {
-    deps = [
-      "test:helpers",
-      "//base",
-      "//media:test_support",
-      "//media/gpu",
-      "//media/mojo/services",
-      "//mojo/core/embedder",
-      "//testing/gtest",
-      "//third_party/libyuv",
-      "//ui/base",
-      "//ui/gfx",
-      "//ui/gfx:test_support",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-      "//ui/gl:test_support",
-    ]
-    configs += [ "//third_party/libyuv:libyuv_config" ]
-    sources = [
-      "jpeg_decode_accelerator_unittest.cc",
-    ]
-    data = [
-      "//media/test/data/peach_pi-1280x720.jpg",
-      "//media/test/data/peach_pi-40x23.jpg",
-      "//media/test/data/peach_pi-41x22.jpg",
-      "//media/test/data/peach_pi-41x23.jpg",
-    ]
-    if (use_vaapi) {
-      deps += [ "//media/gpu/vaapi:jpeg_decoder_unit_test" ]
-      data += [ "//media/test/data/pixel-1280x720.jpg" ]
-    }
-    if (use_x11) {
-      deps += [ "//ui/gfx/x" ]
-    }
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
-  }
-}
-
 static_library("test_support") {
   visibility = [ "//media:test_support" ]
   testonly = true
@@ -591,10 +536,8 @@ static_library("test_support") {
     "test/fake_command_buffer_helper.h",
   ]
   configs += [ "//media:media_config" ]
-  deps = [
-    ":gpu",
-  ]
   public_deps = [
+    ":gpu",
     "//base",
     "//media",
   ]

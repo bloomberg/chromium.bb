@@ -44,6 +44,11 @@ class CORE_EXPORT FetchClientSettingsObjectImpl final
 
   mojom::IPAddressSpace GetAddressSpace() const override;
 
+  WebInsecureRequestPolicy GetInsecureRequestsPolicy() const override;
+  const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
+      const override;
+  bool GetMixedAutoUpgradeOptOut() const override;
+
   void Trace(Visitor* visitor) override;
 
  private:

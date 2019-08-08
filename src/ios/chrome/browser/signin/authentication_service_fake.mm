@@ -65,10 +65,6 @@ ChromeIdentity* AuthenticationServiceFake::GetAuthenticatedIdentity() {
   return authenticated_identity_;
 }
 
-NSString* AuthenticationServiceFake::GetAuthenticatedUserEmail() {
-  return [authenticated_identity_ userEmail];
-}
-
 std::unique_ptr<KeyedService>
 AuthenticationServiceFake::CreateAuthenticationService(
     web::BrowserState* context) {

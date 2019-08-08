@@ -22,7 +22,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -185,7 +185,8 @@ void AssistantInteractionController::OnDeepLinkReceived(
                        /*query_source=*/AssistantQuerySource::kDeepLink);
 }
 
-void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
+void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode,
+                                                     bool due_to_interaction) {
   if (ui_mode == AssistantUiMode::kMiniUi)
     return;
 
@@ -193,10 +194,16 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
     case InputModality::kStylus:
       // When the Assistant is not in mini state there should not be an active
       // metalayer session. If we were in mini state when the UI mode was
-      // changed, we need to clean up the metalayer session and reset default
-      // input modality.
+      // changed, we need to clean up the metalayer session.
       Shell::Get()->highlighter_controller()->AbortSession();
-      model_.SetInputModality(InputModality::kKeyboard);
+
+      // If the UI mode change was not due to interaction, we should reset the
+      // default input modality. We don't do this if the change occurred due to
+      // an Assistant interaction because we might inadvertently stop the active
+      // interaction by changing input modality. When this is the case, the
+      // modality will be correctly set in |OnInteractionStarted| if needed.
+      if (!due_to_interaction)
+        model_.SetInputModality(InputModality::kKeyboard);
       break;
     case InputModality::kVoice:
       // When transitioning to web UI we abort any in progress voice query. We
@@ -371,9 +378,8 @@ void AssistantInteractionController::OnInteractionStarted(
     // AssistantInteractionController when beginning an interaction. To address
     // this, we temporarily pend an empty text query to commit until we can do
     // development to expose something more meaningful.
-    if (model_.pending_query().type() == AssistantQueryType::kNull) {
+    if (model_.pending_query().type() == AssistantQueryType::kNull)
       model_.SetPendingQuery(std::make_unique<AssistantTextQuery>());
-    }
 
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
@@ -472,7 +478,16 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
-    assistant_controller_->OpenUrl(suggestion->action_url);
+    // Note that we post a new task when opening the |action_url| associated
+    // with |sugggestion| as this will potentially cause Assistant UI to close
+    // and destroy |suggestion| in the process. Failure to post in this case
+    // would cause any subsequent observers of this suggestion chip event to
+    // receive a deleted pointer.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantController::OpenUrl,
+                       assistant_controller_->GetWeakPtr(),
+                       suggestion->action_url, /*from_server=*/false));
     return;
   }
 
@@ -484,7 +499,7 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // user's preceding voice interaction.
   StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
                                              model_.response()->has_tts(),
-                       /*query_source*/ AssistantQuerySource::kSuggestionChip);
+                       /*query_source=*/AssistantQuerySource::kSuggestionChip);
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(

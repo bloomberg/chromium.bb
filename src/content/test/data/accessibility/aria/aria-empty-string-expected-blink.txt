@@ -5,7 +5,7 @@ rootWebArea
 ++treeItem name='Checked undefined' selected=false
 ++genericContainer name='Current undefined'
 ++genericContainer name='Disabled undefined'
-++genericContainer name='Dropeffect undefined'
+++genericContainer name='Dropeffect undefined' dropeffect=none
 ++treeItem name='Expanded undefined' selected=false
 ++genericContainer name='Grabbed undefined'
 ++button name='Haspopup undefined'

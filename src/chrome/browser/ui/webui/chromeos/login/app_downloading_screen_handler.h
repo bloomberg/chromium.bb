@@ -14,7 +14,7 @@ class AppDownloadingScreen;
 
 class AppDownloadingScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_APP_DOWNLOADING;
+  constexpr static StaticOobeScreenId kScreenId{"app-downloading"};
 
   virtual ~AppDownloadingScreenView() = default;
 
@@ -32,6 +32,8 @@ class AppDownloadingScreenView {
 class AppDownloadingScreenHandler : public BaseScreenHandler,
                                     public AppDownloadingScreenView {
  public:
+  using TView = AppDownloadingScreenView;
+
   explicit AppDownloadingScreenHandler(JSCallsContainer* js_calls_container);
   ~AppDownloadingScreenHandler() override;
 

@@ -22,8 +22,11 @@
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -40,7 +43,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
 
@@ -150,6 +153,27 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
   int basic_count_ = 0;
 };
 
+// TODO(mcnee): These tests are BrowserPlugin specific. Once
+// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these tests.
+// (See https://crbug.com/533069 and https://crbug.com/659750). These category
+// of tests are solely testing BrowserPlugin features.
+class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
+ public:
+  MimeHandlerViewBrowserPluginSpecificTest() {}
+
+  ~MimeHandlerViewBrowserPluginSpecificTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    MimeHandlerViewTest::SetUpCommandLine(cl);
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMimeHandlerViewInCrossProcessFrame);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
+};
+
 // The parametric version of the test class which runs the test both on
 // BrowserPlugin-based and cross-process-frame-based MimeHandlerView
 // implementation. All current browser tests should eventually be moved to this
@@ -172,6 +196,9 @@ class MimeHandlerViewCrossProcessTest
 #endif
     if (is_cross_process_mode_) {
       scoped_feature_list_.InitAndEnableFeature(
+          features::kMimeHandlerViewInCrossProcessFrame);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
           features::kMimeHandlerViewInCrossProcessFrame);
     }
   }
@@ -301,9 +328,11 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   render_frame_observer.WaitUntilDeleted();
   // Send the IPC. During destruction MHVFC would cause a UaF since it was not
   // removed from the global map.
-  extensions::mojom::MimeHandlerViewContainerManagerPtr container_manager;
-  embedder_web_contents->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      &container_manager);
+  extensions::mojom::MimeHandlerViewContainerManagerAssociatedPtr
+      container_manager;
+  embedder_web_contents->GetMainFrame()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&container_manager);
   container_manager->DestroyFrameContainer(element_instance_id);
   // Running the following JS code fails if the renderer has crashed.
   ASSERT_TRUE(content::ExecJs(embedder_web_contents, "window.name = 'foo'"));
@@ -387,11 +416,11 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
                     ->streams_.size());
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Iframe) {
   RunTest("test_iframe.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Abort) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Abort) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // With the network service, abortStream isn't needed since we pass a Mojo
     // pipe to the renderer. If the plugin chooses to cancel the main request
@@ -406,28 +435,29 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Abort) {
   RunTest("testAbort.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, NonAsciiHeaders) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, NonAsciiHeaders) {
   RunTest("testNonAsciiHeaders.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DataUrl) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, DataUrl) {
   const char* kDataUrlCsv = "data:text/csv;base64,Y29udGVudCB0byByZWFkCg==";
   RunTestWithUrl(GURL(kDataUrlCsv));
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlObject) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlObject) {
   RunTest("test_embedded_data_url_object.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlEmbed) {
   RunTest("test_embedded_data_url_embed.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlLong) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlLong) {
   RunTest("test_embedded_data_url_long.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ResizeBeforeAttach) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
+                       ResizeBeforeAttach) {
   // Delay the creation of the guest's WebContents in order to delay the guest's
   // attachment to the embedder. This will allow us to resize the <object> tag
   // after the guest is created, but before it is attached in
@@ -456,13 +486,13 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, SingleRequest) {
 }
 
 // Test that a mime handler view can keep a background page alive.
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BackgroundPage) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, BackgroundPage) {
   extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
   extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   RunTest("testBackgroundPage.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, TargetBlankAnchor) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, TargetBlankAnchor) {
   RunTest("testTargetBlankAnchor.csv");
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
@@ -505,20 +535,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   EXPECT_FALSE(before_unload_dialog->is_reload());
   before_unload_dialog->OnAccept(base::string16(), false);
 }
-
-// TODO(mcnee): These tests are BrowserPlugin specific. Once
-// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these tests.
-// (See https://crbug.com/533069 and https://crbug.com/659750). These category
-// of tests are solely testing BrowserPlugin features.
-class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
- public:
-  MimeHandlerViewBrowserPluginSpecificTest() {}
-
-  ~MimeHandlerViewBrowserPluginSpecificTest() override {}
-
- protected:
-  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
-};
 
 // This test verifies that when BrowserPlugin-based guest has touch handlers,
 // the embedder knows about it.
@@ -573,4 +589,102 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
     run_loop.Run();
   }
   EXPECT_EQ(GetMouseCaptureWidget(embedder_web_contents), guest_widget);
+}
+
+// Helper class to wait for document load event in the main frame.
+class DocumentLoadComplete : public content::WebContentsObserver {
+ public:
+  explicit DocumentLoadComplete(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~DocumentLoadComplete() override {}
+
+  void DocumentOnLoadCompletedInMainFrame() override {
+    did_load_ = true;
+    run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (!did_load_)
+      run_loop_.Run();
+  }
+
+ private:
+  bool did_load_ = false;
+  base::RunLoop run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       ActivatePostMessageSupportOnce) {
+  RunTest("test_embedded.html");
+  // Attach a second <embed>.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(),
+                              "const e = document.createElement('embed');"
+                              "e.src = './testEmbedded.csv'; e.type='text/csv';"
+                              "document.body.appendChild(e);"));
+  DocumentLoadComplete(GetGuestViewManager()->WaitForNextGuestCreated()).Wait();
+  // After load, an IPC has been sent to the renderer to update routing IDs for
+  // the guest frame and the content frame (and activate the
+  // PostMessageSupport). Run some JS to Ensure no DCHECKs have fired in the
+  // embedder process.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "foo = 0;"));
+}
+
+// This is a minimized repro for a clusterfuzz crasher and is not really related
+// to MimeHandlerView. The test verifies that when
+// HTMLPlugInElement::PluginWrapper is called for a plugin with no node document
+// frame, the renderer does not crash (see https://966371).
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       AdoptNodeInOnLoadDoesNotCrash) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/adopt_node_in_onload_no_crash.html"));
+  // Run some JavaScript in embedder and make sure it is not crashed.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "true"));
+}
+
+// Verifies that sandboxed frames do not create GuestViews (plugins are
+// blocked in sandboxed frames).
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       DoNotLoadInSandboxedFrame) {
+  // Use the testing subclass of MimeHandlerViewGuest.
+  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
+      base::Bind(&TestMimeHandlerViewGuest::Create));
+
+  const extensions::Extension* extension = LoadTestExtension();
+  ASSERT_TRUE(extension);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/test_sandboxed_frame.html"));
+
+  auto* guest_view_manager = GetGuestViewManager();
+  // The page contains three <iframes> where two are sandboxed. The expectation
+  // is that the sandboxed frames do not end up creating a MimeHandlerView.
+  // Therefore, it suffices to wait for one GuestView to be created, then remove
+  // the non-sandboxed frame, and ensue there are no GuestViews left.
+  if (guest_view_manager->num_guests_created() == 0)
+    ASSERT_TRUE(guest_view_manager->WaitForNextGuestCreated());
+  ASSERT_EQ(1U, guest_view_manager->num_guests_created());
+  // Remove the non-sandboxed frame.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(),
+                              "remove_frame('notsandboxed');"));
+  // The page is expected to embed only '1' GuestView. If there is GuestViews
+  // embedded inside other frames we should be timing out here.
+  guest_view_manager->WaitForAllGuestsDeleted();
+  // Sanity check: Ensure that the documents in a sandbox frame is empty.
+  auto sandbox1_document_has_contents =
+      content::EvalJs(GetEmbedderWebContents(),
+                      "!!(sandbox1.contentDocument.body && "
+                      "sandbox1.contentDocument.body.firstChild)")
+          .ExtractBool();
+  EXPECT_FALSE(sandbox1_document_has_contents);
+  // The document inside 'sandbox2' contains an <object> with fallback content.
+  // The expectation is that the <object> fails to load the MimeHandlerView and
+  // should show the fallback content instead, which means the width of the
+  // layout object is non-zero.
+  auto fallback_width =
+      content::EvalJs(GetEmbedderWebContents(),
+                      "sandbox2.contentDocument.getElementById('fallback')."
+                      "getBoundingClientRect().width")
+          .ExtractInt();
+  EXPECT_NE(0, fallback_width);
 }

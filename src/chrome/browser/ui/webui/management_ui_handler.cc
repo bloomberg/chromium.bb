@@ -21,15 +21,19 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -48,8 +52,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -117,16 +119,17 @@ const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
 const char kManagementPrinting[] = "managementPrinting";
-const char kOverview[] = "overview";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
+const char kOverview[] = "overview";
 #endif  // defined(OS_CHROMEOS)
 
+const char kCustomerLogo[] = "customerLogo";
 
 namespace {
 
 bool IsProfileManaged(Profile* profile) {
-  return policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile);
+  return profile->GetProfilePolicyConnector()->IsManaged();
 }
 
 #if defined(OS_CHROMEOS)
@@ -549,12 +552,15 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
   }
   response.SetBoolean("managed", managed_());
   GetManagementStatus(profile, &response);
+  AsyncUpdateLogo();
+  if (!fetched_image_.empty())
+    response.SetKey(kCustomerLogo, base::Value(fetched_image_));
   return response;
 }
 
 policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
-  return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-             Profile::FromWebUI(web_ui()))
+  return Profile::FromWebUI(web_ui())
+      ->GetProfilePolicyConnector()
       ->policy_service();
 }
 
@@ -566,6 +572,56 @@ const extensions::Extension* ManagementUIHandler::GetEnabledExtension(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+void ManagementUIHandler::AsyncUpdateLogo() {
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const auto url = connector->GetCustomerLogoURL();
+  if (!url.empty() && GURL(url) != logo_url_) {
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("management_ui_customer_logo", R"(
+          semantics {
+            sender: "Management UI Handler"
+            description:
+              "Download organization logo for visualization on the "
+              "chrome://management page."
+            trigger:
+              "The user managed by organization that provides a company logo "
+              "in their GSuites account loads the chrome://management page."
+            data:
+              "Organization uploaded image URL."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: NO
+            setting:
+              "This feature cannot be disabled by settings, but it is only "
+              "triggered by a user action."
+            policy_exception_justification: "Not implemented."
+          })");
+    icon_fetcher_ =
+        std::make_unique<BitmapFetcher>(GURL(url), this, traffic_annotation);
+    icon_fetcher_->Init(
+        std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
+        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+    auto* profile = Profile::FromWebUI(web_ui());
+    icon_fetcher_->Start(
+        content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get());
+  }
+#endif  // defined(OS_CHROMEOS)
+}
+
+void ManagementUIHandler::OnFetchComplete(const GURL& url,
+                                          const SkBitmap* bitmap) {
+  if (!bitmap)
+    return;
+  fetched_image_ = webui::GetBitmapDataUrl(*bitmap);
+  logo_url_ = url;
+  // Fire listener to reload managed data.
+  FireWebUIListener("managed_data_changed");
+}
 
 #if defined(OS_CHROMEOS)
 void AddStatusOverviewManagedDeviceAndAccount(
@@ -791,10 +847,9 @@ void ManagementUIHandler::RemoveObservers() {
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->RemoveObserver(this);
 
-  policy::PolicyService* policy_service =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()))
-          ->policy_service();
+  policy::PolicyService* policy_service = Profile::FromWebUI(web_ui())
+                                              ->GetProfilePolicyConnector()
+                                              ->policy_service();
   policy_service->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   pref_registrar_.RemoveAll();

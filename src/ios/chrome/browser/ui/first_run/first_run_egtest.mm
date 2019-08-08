@@ -11,6 +11,7 @@
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller+Testing.h"
@@ -18,12 +19,14 @@
 #import "ios/chrome/browser/geolocation/test_location_manager.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #include "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -39,6 +42,7 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
+using chrome_test_util::SyncSettingsConfirmButton;
 
 namespace {
 
@@ -63,19 +67,6 @@ id<GREYMatcher> FirstRunAccountConsistencySkipButton() {
 id<GREYMatcher> UndoAccountConsistencyButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_UNDO_BUTTON);
-}
-
-// Wait until |matcher| is accessible (not nil)
-void WaitForMatcher(id<GREYMatcher> matcher) {
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_notNil()
-                                                             error:&error];
-    return error == nil;
-  };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout, condition),
-             @"Waiting for matcher %@ failed.", matcher);
 }
 }
 
@@ -208,6 +199,12 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Signs in to an account and then taps the Undo button to sign out.
 - (void)testSignInAndUndo {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    LOG(WARNING) << "Skipping test as there is no undo operation when "
+                    "Unified Consent is enabled.";
+    return;
+  }
+
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
@@ -221,9 +218,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
 
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   // Undo the sign-in and dismiss the Sign In screen.
   [[EarlGrey selectElementWithMatcher:UndoAccountConsistencyButton()]
@@ -232,8 +228,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // |identity| shouldn't be signed in.
-  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
-  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 }
 
 // Signs in to an account and then taps the Advanced link to go to settings.
@@ -247,38 +242,40 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
 
-  // Sign In |identity|.
-  [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
-      performAction:grey_tap()];
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Sign In |identity|.
+    [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
+        performAction:grey_tap()];
 
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
-  // due to timing issues.
-  if (signedInError != nil) {
-    GREYAssert(false, signedInError.localizedDescription);
+    NSError* signedInError =
+        [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+    // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
+    // due to timing issues.
+    if (signedInError != nil) {
+      GREYAssert(false, signedInError.localizedDescription);
+    }
   }
 
   // Tap Settings link.
-  id<GREYMatcher> settings_link_matcher = grey_allOf(
-      grey_accessibilityLabel(@"Settings"), grey_sufficientlyVisible(), nil);
-  WaitForMatcher(settings_link_matcher);
-  [[EarlGrey selectElementWithMatcher:settings_link_matcher]
-      performAction:grey_tap()];
+  [SigninEarlGreyUI tapSettingsLink];
 
-  // Check Sync hasn't started yet, allowing the user to change somes settings.
+  // Check Sync hasn't started yet, allowing the user to change some settings.
   SyncSetupService* sync_service = SyncSetupServiceFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
   GREYAssertFalse(sync_service->HasFinishedInitialSetup(),
                   @"Sync shouldn't have finished its original setup yet");
 
   // Close Settings, user is still signed in and sync is now starting.
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+        performAction:grey_tap()];
+  }
 
-  NSError* signedInError2 =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError2, signedInError2.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   GREYAssertTrue(sync_service->HasFinishedInitialSetup(),
                  @"Sync should have finished its original setup");

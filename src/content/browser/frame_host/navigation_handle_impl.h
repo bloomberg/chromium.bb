@@ -20,7 +20,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
@@ -35,13 +34,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "url/gurl.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/scoped_java_ref.h"
-#include "content/browser/android/navigation_handle_proxy.h"
-#endif
-
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
@@ -82,7 +74,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const Referrer& GetReferrer() override;
   bool HasUserGesture() override;
   ui::PageTransition GetPageTransition() override;
-  const NavigationUIData* GetNavigationUIData() override;
+  NavigationUIData* GetNavigationUIData() override;
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() override;
@@ -113,6 +105,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GlobalRequestID& GetGlobalRequestID() override;
   bool IsDownload() override;
   bool IsFormSubmission() override;
+  bool WasInitiatedByLinkClick() override;
   bool IsSignedExchangeInnerResponse() override;
   bool WasResponseCached() override;
   const net::ProxyServer& GetProxyServer() override;
@@ -133,12 +126,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigationData* GetNavigationData() override;
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
-
-#if defined(OS_ANDROID)
-  // Returns a reference to this NavigationHandle Java counterpart. It is used
-  // by Java WebContentsObservers.
-  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle();
-#endif
 
   // Used in tests.
   NavigationRequest::NavigationHandleState state_for_testing() const {
@@ -192,12 +179,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
-  // Updates the state of the navigation handle after encountering a server
-  // redirect.
-  void UpdateStateFollowingRedirect(
-      const GURL& new_referrer_url,
-      ThrottleChecksFinishedCallback callback);
-
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() const {
     return navigation_request_->frame_tree_node();
@@ -206,18 +187,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.
   void ReadyToCommitNavigation(bool is_error);
-
-  // Called when the navigation was committed. This will update the |state_|.
-  // |navigation_entry_committed| indicates whether the navigation changed which
-  // NavigationEntry is current.
-  // |did_replace_entry| is true if the committed entry has replaced the
-  // existing one. A non-user initiated redirect causes such replacement.
-  void DidCommitNavigation(
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool navigation_entry_committed,
-      bool did_replace_entry,
-      const GURL& previous_url,
-      NavigationType navigation_type);
 
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
@@ -230,11 +199,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->navigation_ui_data();
   }
 
-  const GURL& base_url() { return base_url_; }
+  const GURL& base_url() { return navigation_request_->base_url(); }
 
   NavigationType navigation_type() {
-    DCHECK_GE(state(), NavigationRequest::DID_COMMIT);
-    return navigation_type_;
+    return navigation_request_->navigation_type();
   }
 
   void set_response_headers_for_testing(
@@ -293,10 +261,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
   NavigationHandleImpl(NavigationRequest* navigation_request,
-                       const std::vector<GURL>& redirect_chain,
                        int pending_nav_entry_id,
-                       net::HttpRequestHeaders request_headers,
-                       const Referrer& sanitized_referrer);
+                       net::HttpRequestHeaders request_headers);
 
   // Helper function to run and reset the |complete_callback_|. This marks the
   // end of a round of NavigationThrottleChecks.
@@ -321,16 +287,15 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void StopCommitTimeout();
   void RestartCommitTimeout();
 
+  // TODO(zetamoo): Remove once |ready_to_commit_time_| is owned by
+  // NavigationRequest.
+  base::TimeTicks ready_to_commit_time() const { return ready_to_commit_time_; }
+
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
 
   // See NavigationHandle for a description of those member variables.
-  Referrer sanitized_referrer_;
   net::Error net_error_code_;
-  bool was_redirected_;
-  bool did_replace_entry_;
-  bool should_update_history_;
-  bool subframe_entry_committed_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
@@ -381,18 +346,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The unique id to identify this to navigation with.
   int64_t navigation_id_;
 
-  // The chain of redirects.
-  std::vector<GURL> redirect_chain_;
-
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
 
   // Stores the restore type, or NONE it it's not a restore.
   RestoreType restore_type_;
-
-  GURL previous_url_;
-  GURL base_url_;
-  NavigationType navigation_type_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
@@ -403,12 +361,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
   scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
-
-#if defined(OS_ANDROID)
-  // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
-  // bridge in between the two.
-  std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;
-#endif
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

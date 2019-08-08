@@ -229,7 +229,7 @@ SDK.NetworkManager.Conditions;
 
 /** @type {!SDK.NetworkManager.Conditions} */
 SDK.NetworkManager.NoThrottlingConditions = {
-  title: Common.UIString('No throttling'),
+  title: ls`Online`,
   download: -1,
   upload: -1,
   latency: 0
@@ -339,6 +339,10 @@ SDK.NetworkDispatcher = class {
 
     if (response.fromDiskCache)
       networkRequest.setFromDiskCache();
+
+    if (response.fromPrefetchCache)
+      networkRequest.setFromPrefetchCache();
+
     networkRequest.timing = response.timing;
 
     networkRequest.protocol = response.protocol;
@@ -519,22 +523,13 @@ SDK.NetworkDispatcher = class {
 
     // net::ParsedCookie::kMaxCookieSize = 4096 (net/cookies/parsed_cookie.h)
     if ('set-cookie' in lowercaseHeaders && lowercaseHeaders['set-cookie'].length > 4096) {
-      const message = Common.UIString(
-          'Set-Cookie header is ignored in response from url: %s. Cookie length should be less than or equal to 4096 characters.',
-          response.url);
-      this._manager.dispatchEventToListeners(
-          SDK.NetworkManager.Events.MessageGenerated, {message: message, requestId: requestId, warning: true});
-    }
-
-    if ('public-key-pins' in lowercaseHeaders || 'public-key-pins-report-only' in lowercaseHeaders) {
-      if (!this._hpkpDomains)
-        this._hpkpDomains = new Set();
-      const parsed = new Common.ParsedURL(response.url);
-      if (parsed.isValid && !this._hpkpDomains.has(parsed.host)) {
-        this._hpkpDomains.add(parsed.host);
+      const values = lowercaseHeaders['set-cookie'].split('\n');
+      for (let i = 0; i < values.length; ++i) {
+        if (values[i].length <= 4096)
+          continue;
         const message = Common.UIString(
-            'HTTP-Based Public Key Pinning is deprecated. Chrome 69 and later will ignore HPKP response headers. (Host: %s)',
-            parsed.host);
+            'Set-Cookie header is ignored in response from url: %s. Cookie length should be less than or equal to 4096 characters.',
+            response.url);
         this._manager.dispatchEventToListeners(
             SDK.NetworkManager.Events.MessageGenerated, {message: message, requestId: requestId, warning: true});
       }
@@ -681,7 +676,7 @@ SDK.NetworkDispatcher = class {
     if (!networkRequest)
       return;
 
-    networkRequest.addFrame(response, time, false);
+    networkRequest.addProtocolFrame(response, time, false);
     networkRequest.responseReceivedTime = time;
 
     this._updateNetworkRequest(networkRequest);
@@ -698,7 +693,7 @@ SDK.NetworkDispatcher = class {
     if (!networkRequest)
       return;
 
-    networkRequest.addFrame(response, time, true);
+    networkRequest.addProtocolFrame(response, time, true);
     networkRequest.responseReceivedTime = time;
 
     this._updateNetworkRequest(networkRequest);
@@ -715,7 +710,7 @@ SDK.NetworkDispatcher = class {
     if (!networkRequest)
       return;
 
-    networkRequest.addFrameError(errorMessage, time);
+    networkRequest.addProtocolFrameError(errorMessage, time);
     networkRequest.responseReceivedTime = time;
 
     this._updateNetworkRequest(networkRequest);
@@ -818,10 +813,8 @@ SDK.NetworkDispatcher = class {
     this._inflightRequestsByURL[networkRequest.url()] = networkRequest;
     // The following relies on the fact that loaderIds and requestIds are
     // globally unique and that the main request has them equal.
-    if (networkRequest.loaderId === networkRequest.requestId()) {
+    if (networkRequest.loaderId === networkRequest.requestId())
       SDK.multitargetNetworkManager._inflightMainResourceRequests.set(networkRequest.requestId(), networkRequest);
-      delete this._hpkpDomains;
-    }
 
     this._manager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, networkRequest);
   }

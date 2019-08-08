@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "net/base/linked_hash_map.h"
+#include "net/third_party/quiche/src/common/simple_linked_hash_map.h"
 
 namespace spdy {
 
@@ -23,7 +23,7 @@ template <typename ElementType, typename Hasher, typename Eq>
 using SpdyHashSetImpl = std::unordered_set<ElementType, Hasher, Eq>;
 
 template <typename Key, typename Value, typename Hash>
-using SpdyLinkedHashMapImpl = net::linked_hash_map<Key, Value, Hash>;
+using SpdyLinkedHashMapImpl = quiche::SimpleLinkedHashMap<Key, Value, Hash>;
 
 template <typename T, size_t N, typename A = std::allocator<T>>
 using SpdyInlinedVectorImpl = std::vector<T, A>;

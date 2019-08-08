@@ -24,18 +24,20 @@ source_set("wayland") {
     "gpu/drm_render_node_path_finder.h",
     "gpu/gl_surface_wayland.cc",
     "gpu/gl_surface_wayland.h",
+    "gpu/wayland_buffer_manager_gpu.cc",
+    "gpu/wayland_buffer_manager_gpu.h",
     "gpu/wayland_canvas_surface.cc",
     "gpu/wayland_canvas_surface.h",
-    "gpu/wayland_connection_proxy.cc",
-    "gpu/wayland_connection_proxy.h",
     "gpu/wayland_surface_factory.cc",
     "gpu/wayland_surface_factory.h",
-    "host/wayland_buffer_manager.cc",
-    "host/wayland_buffer_manager.h",
+    "host/wayland_buffer_manager_connector.cc",
+    "host/wayland_buffer_manager_connector.h",
+    "host/wayland_buffer_manager_host.cc",
+    "host/wayland_buffer_manager_host.h",
+    "host/wayland_clipboard.cc",
+    "host/wayland_clipboard.h",
     "host/wayland_connection.cc",
     "host/wayland_connection.h",
-    "host/wayland_connection_connector.cc",
-    "host/wayland_connection_connector.h",
     "host/wayland_cursor.cc",
     "host/wayland_cursor.h",
     "host/wayland_cursor_position.cc",
@@ -62,8 +64,8 @@ source_set("wayland") {
     "host/wayland_pointer.h",
     "host/wayland_screen.cc",
     "host/wayland_screen.h",
-    "host/wayland_shared_memory_buffer_manager.cc",
-    "host/wayland_shared_memory_buffer_manager.h",
+    "host/wayland_shm.cc",
+    "host/wayland_shm.h",
     "host/wayland_shm_buffer.cc",
     "host/wayland_shm_buffer.h",
     "host/wayland_touch.cc",
@@ -99,6 +101,7 @@ source_set("wayland") {
     "//base",
     "//build/config/linux/libdrm",
     "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -127,7 +130,7 @@ source_set("wayland") {
   ]
 
   if (is_linux && !is_chromeos) {
-    deps += ["//ui/base/ime/linux"]
+    deps += [ "//ui/base/ime/linux" ]
   }
 
   defines = [ "OZONE_IMPLEMENTATION" ]
@@ -234,7 +237,7 @@ source_set("wayland_unittests") {
 
   sources = [
     "gpu/wayland_surface_factory_unittest.cc",
-    "host/wayland_buffer_manager_unittest.cc",
+    "host/wayland_buffer_manager_host_unittest.cc",
     "host/wayland_connection_unittest.cc",
     "host/wayland_data_device_unittest.cc",
     "host/wayland_input_method_context_unittest.cc",

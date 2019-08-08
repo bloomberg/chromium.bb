@@ -121,25 +121,25 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
 
   // Check for leaks in individual tests.
   void OnTestStart(const testing::TestInfo& test) override {
-    thread_pool_set_before_test_ = ThreadPool::GetInstance();
+    thread_pool_set_before_test_ = ThreadPoolInstance::Get();
   }
   void OnTestEnd(const testing::TestInfo& test) override {
-    DCHECK_EQ(thread_pool_set_before_test_, ThreadPool::GetInstance())
+    DCHECK_EQ(thread_pool_set_before_test_, ThreadPoolInstance::Get())
         << " in test " << test.test_case_name() << "." << test.name();
   }
 
   // Check for leaks in test cases (consisting of one or more tests).
   void OnTestCaseStart(const testing::TestCase& test_case) override {
-    thread_pool_set_before_case_ = ThreadPool::GetInstance();
+    thread_pool_set_before_case_ = ThreadPoolInstance::Get();
   }
   void OnTestCaseEnd(const testing::TestCase& test_case) override {
-    DCHECK_EQ(thread_pool_set_before_case_, ThreadPool::GetInstance())
+    DCHECK_EQ(thread_pool_set_before_case_, ThreadPoolInstance::Get())
         << " in case " << test_case.name();
   }
 
  private:
-  ThreadPool* thread_pool_set_before_test_ = nullptr;
-  ThreadPool* thread_pool_set_before_case_ = nullptr;
+  ThreadPoolInstance* thread_pool_set_before_test_ = nullptr;
+  ThreadPoolInstance* thread_pool_set_before_case_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CheckForLeakedGlobals);
 };
@@ -486,7 +486,7 @@ void TestSuite::Initialize() {
     SuppressErrorDialogs();
     debug::SetSuppressDebugUI(true);
     assert_handler_ = std::make_unique<logging::ScopedLogAssertHandler>(
-        Bind(&TestSuite::UnitTestAssertHandler, Unretained(this)));
+        BindRepeating(&TestSuite::UnitTestAssertHandler, Unretained(this)));
   }
 
   test::InitializeICUForTesting();

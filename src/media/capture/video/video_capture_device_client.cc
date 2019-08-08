@@ -19,10 +19,13 @@
 #include "media/capture/video/scoped_buffer_pool_reservation.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
-#include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/libyuv/include/libyuv.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -65,6 +68,50 @@ void GetI420BufferAccess(
   *uv_plane_stride = *y_plane_stride / 2;
 }
 
+gfx::ColorSpace OverrideColorSpaceForLibYuvConversion(
+    const gfx::ColorSpace& color_space,
+    const media::VideoPixelFormat pixel_format) {
+  gfx::ColorSpace overriden_color_space = color_space;
+  switch (pixel_format) {
+    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
+      break;
+    case media::PIXEL_FORMAT_ARGB:
+    case media::PIXEL_FORMAT_XRGB:
+    case media::PIXEL_FORMAT_RGB24:
+    case media::PIXEL_FORMAT_RGB32:
+    case media::PIXEL_FORMAT_ABGR:
+    case media::PIXEL_FORMAT_XBGR:
+      // Check if we can merge data 's primary and transfer function into the
+      // returned color space.
+      if (color_space.IsValid()) {
+        // The raw data is rgb so we expect its color space to only hold gamma
+        // correction.
+        DCHECK(color_space == color_space.GetAsFullRangeRGB());
+
+        // This captured ARGB data is going to be converted to yuv using libyuv
+        // ConvertToI420 which internally uses Rec601 coefficients. So build a
+        // combined colorspace that contains both the above gamma correction
+        // and the yuv conversion information.
+        // TODO(julien.isorce): instead pass color space information to libyuv
+        // once the support is added, see http://crbug.com/libyuv/835.
+        overriden_color_space = color_space.GetWithMatrixAndRange(
+            gfx::ColorSpace::MatrixID::SMPTE170M,
+            gfx::ColorSpace::RangeID::LIMITED);
+      } else {
+        // Color space is not specified but it's probably safe to assume its
+        // sRGB though, and so it would be valid to assume that libyuv's
+        // ConvertToI420() is going to produce results in Rec601, or very close
+        // to it.
+        overriden_color_space = gfx::ColorSpace::CreateREC601();
+      }
+      break;
+    default:
+      break;
+  }
+
+  return overriden_color_space;
+}
+
 }  // anonymous namespace
 
 namespace media {
@@ -96,6 +143,7 @@ class BufferPoolBufferHandleProvider
   const int buffer_id_;
 };
 
+#if defined(OS_CHROMEOS)
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     VideoCaptureBufferType target_buffer_type,
     std::unique_ptr<VideoFrameReceiver> receiver,
@@ -111,6 +159,16 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
       base::Bind(&VideoFrameReceiver::OnStartedUsingGpuDecode,
                  base::Unretained(receiver_.get()));
 }
+#else
+VideoCaptureDeviceClient::VideoCaptureDeviceClient(
+    VideoCaptureBufferType target_buffer_type,
+    std::unique_ptr<VideoFrameReceiver> receiver,
+    scoped_refptr<VideoCaptureBufferPool> buffer_pool)
+    : target_buffer_type_(target_buffer_type),
+      receiver_(std::move(receiver)),
+      buffer_pool_(std::move(buffer_pool)),
+      last_captured_pixel_format_(PIXEL_FORMAT_UNKNOWN) {}
+#endif  // defined(OS_CHROMEOS)
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
   for (int buffer_id : buffer_ids_known_by_receiver_)
@@ -134,6 +192,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const uint8_t* data,
     int length,
     const VideoCaptureFormat& format,
+    const gfx::ColorSpace& data_color_space,
     int rotation,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
@@ -146,6 +205,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     OnLog("Pixel format: " + VideoPixelFormatToString(format.pixel_format));
     last_captured_pixel_format_ = format.pixel_format;
 
+#if defined(OS_CHROMEOS)
     if (format.pixel_format == PIXEL_FORMAT_MJPEG &&
         optional_jpeg_decoder_factory_callback_) {
       external_jpeg_decoder_ =
@@ -153,6 +213,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       DCHECK(external_jpeg_decoder_);
       external_jpeg_decoder_->Initialize();
     }
+#endif  // defined(OS_CHROMEOS)
   }
 
   if (!format.IsValid()) {
@@ -203,7 +264,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   int crop_x = 0;
   int crop_y = 0;
   libyuv::FourCC fourcc_format = libyuv::FOURCC_ANY;
-  gfx::ColorSpace color_space;
 
   bool flip = false;
   switch (format.pixel_format) {
@@ -252,11 +312,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       // that vertical flipping is needed.
       flip = true;
 #endif
-      // We don't actually know, for sure, what the source color space is. It's
-      // probably safe to assume its sRGB, though, and so it would be valid to
-      // assume libyuv::ConvertToI420() is going to produce results in Rec601
-      // (or very close to it).
-      color_space = gfx::ColorSpace::CreateREC601();
       break;
     case PIXEL_FORMAT_RGB32:
 // Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows
@@ -267,7 +322,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 #endif
     case PIXEL_FORMAT_ARGB:
       fourcc_format = libyuv::FOURCC_ARGB;
-      color_space = gfx::ColorSpace::CreateREC601();
       break;
     case PIXEL_FORMAT_MJPEG:
       fourcc_format = libyuv::FOURCC_MJPG;
@@ -276,10 +330,14 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       NOTREACHED();
   }
 
+  const gfx::ColorSpace color_space = OverrideColorSpaceForLibYuvConversion(
+      data_color_space, format.pixel_format);
+
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), format.ImageAllocationSize());
 
+#if defined(OS_CHROMEOS)
   if (external_jpeg_decoder_) {
     const VideoCaptureJpegDecoder::STATUS status =
         external_jpeg_decoder_->GetStatus();
@@ -295,6 +353,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       return;
     }
   }
+#endif  // defined(OS_CHROMEOS)
 
   // libyuv::ConvertToI420 use Rec601 to convert RGB to YUV.
   if (libyuv::ConvertToI420(

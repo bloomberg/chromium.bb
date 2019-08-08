@@ -22,6 +22,16 @@ mojom("interfaces") {
   ]
 }
 
+mojom("gesture_properties_service") {
+  sources = [
+    "gesture_properties_service.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+}
+
 source_set("struct_traits") {
   sources = [
     "overlay_surface_candidate_struct_traits.h",

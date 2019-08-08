@@ -36,7 +36,7 @@ bool ValidateFramebufferTextureMultiviewBaseANGLE(Context *context,
                                                   GLint level,
                                                   GLsizei numViews)
 {
-    if (!context->getExtensions().multiview2)
+    if (!(context->getExtensions().multiview || context->getExtensions().multiview2))
     {
         context->validationError(GL_INVALID_OPERATION, kMultiviewNotAvailable);
         return false;
@@ -3045,6 +3045,22 @@ bool ValidateGetSynciv(Context *context,
     {
         context->validationError(GL_INVALID_VALUE, kNegativeBufferSize);
         return false;
+    }
+
+    if (context->isContextLost())
+    {
+        context->validationError(GL_CONTEXT_LOST, kContextLost);
+
+        if (pname == GL_SYNC_STATUS)
+        {
+            // Generate an error but still return true, the context still needs to return a
+            // value in this case.
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     Sync *syncObject = context->getSync(sync);

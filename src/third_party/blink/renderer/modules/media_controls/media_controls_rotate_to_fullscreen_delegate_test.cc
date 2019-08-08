@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -107,7 +108,7 @@ class MediaControlsRotateToFullscreenDelegateTest
 
     SetupPageWithClients(&clients,
                          MakeGarbageCollected<StubLocalFrameClient>());
-    video_ = HTMLVideoElement::Create(GetDocument());
+    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     GetVideo().setAttribute(kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());
     // This is not done automatically, so that tests control timing of `Attach`.
@@ -244,13 +245,13 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest, DelegateRequiresFlag) {
 
   // No delegate when flag is off.
   ScopedVideoRotateToFullscreenForTest video_rotate_to_fullscreen(false);
-  HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
+  auto* video = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
   GetDocument().body()->AppendChild(video);
   EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));
 }
 
 TEST_F(MediaControlsRotateToFullscreenDelegateTest, DelegateRequiresVideo) {
-  HTMLAudioElement* audio = HTMLAudioElement::Create(GetDocument());
+  auto* audio = MakeGarbageCollected<HTMLAudioElement>(GetDocument());
   GetDocument().body()->AppendChild(audio);
   EXPECT_FALSE(HasDelegate(*audio->GetMediaControls()));
 }

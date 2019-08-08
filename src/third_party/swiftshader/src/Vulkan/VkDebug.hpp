@@ -25,18 +25,24 @@
 #define TRACE_OUTPUT_FILE "debug.txt"
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define CHECK_PRINTF_ARGS __attribute__((format(printf, 1, 2)))
+#else
+#define CHECK_PRINTF_ARGS
+#endif
+
 namespace vk
 {
 	// Outputs text to the debugging log
-	void trace(const char *format, ...);
+	void trace(const char *format, ...) CHECK_PRINTF_ARGS;
 	inline void trace() {}
 
 	// Outputs text to the debugging log and prints to stderr.
-	void warn(const char *format, ...);
+	void warn(const char *format, ...) CHECK_PRINTF_ARGS;
 	inline void warn() {}
 
 	// Outputs the message to the debugging log and stderr, and calls abort().
-	void abort(const char *format, ...);
+	void abort(const char *format, ...) CHECK_PRINTF_ARGS;
 }
 
 // A macro to output a trace of a function call and its arguments to the
@@ -89,11 +95,22 @@ namespace vk
 		DABORT("ASSERT(%s)\n", #expression); \
 	} } while(0)
 
-// A macro to indicate unimplemented functionality.
+// A macro to indicate functionality currently unimplemented for a feature
+// advertised as supported. For unsupported features not advertised as supported
+// use UNSUPPORTED().
 #undef UNIMPLEMENTED
 #define UNIMPLEMENTED(format, ...) DABORT("UNIMPLEMENTED: " format, ##__VA_ARGS__)
 
-// A macro for code which is not expected to be reached under valid assumptions.
+// A macro to indicate unsupported functionality.
+// This should be called when a Vulkan / SPIR-V feature is attempted to be used,
+// but is not currently implemented by SwiftShader.
+// Note that in a well-behaved application these should not be reached as the
+// application should be respecting the advertised features / limits.
+#undef UNSUPPORTED
+#define UNSUPPORTED(format, ...) DABORT("UNSUPPORTED: " format, ##__VA_ARGS__)
+
+// A macro for code which should never be reached, even with misbehaving
+// applications.
 #undef UNREACHABLE
 #define UNREACHABLE(format, ...) DABORT("UNREACHABLE: " format, ##__VA_ARGS__)
 

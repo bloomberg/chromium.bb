@@ -149,10 +149,10 @@ js2gtest("select_to_speak_extjs_tests") {
   # The test base classes generate C++ code with these deps.
   deps = [
     "//ash",
+    "//ash/keyboard/ui",
     "//base",
     "//chrome/browser/chromeos",
     "//chrome/common",
-    "//ui/keyboard",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }

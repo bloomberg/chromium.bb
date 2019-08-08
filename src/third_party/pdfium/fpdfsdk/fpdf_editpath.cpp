@@ -68,65 +68,6 @@ FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV FPDFPageObj_CreateNewRect(float x,
   return FPDFPageObjectFromCPDFPageObject(pPathObj.release());
 }
 
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFPath_SetStrokeColor(FPDF_PAGEOBJECT path,
-                        unsigned int R,
-                        unsigned int G,
-                        unsigned int B,
-                        unsigned int A) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  return FPDFPageObj_SetStrokeColor(path, R, G, B, A);
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFPath_GetStrokeColor(FPDF_PAGEOBJECT path,
-                        unsigned int* R,
-                        unsigned int* G,
-                        unsigned int* B,
-                        unsigned int* A) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  return FPDFPageObj_GetStrokeColor(path, R, G, B, A);
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFPath_SetStrokeWidth(FPDF_PAGEOBJECT path, float width) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  return FPDFPageObj_SetStrokeWidth(path, width);
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_SetFillColor(FPDF_PAGEOBJECT path,
-                                                          unsigned int R,
-                                                          unsigned int G,
-                                                          unsigned int B,
-                                                          unsigned int A) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  return FPDFPageObj_SetFillColor(path, R, G, B, A);
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_GetFillColor(FPDF_PAGEOBJECT path,
-                                                          unsigned int* R,
-                                                          unsigned int* G,
-                                                          unsigned int* B,
-                                                          unsigned int* A) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  return FPDFPageObj_GetFillColor(path, R, G, B, A);
-}
-
 FPDF_EXPORT int FPDF_CALLCONV FPDFPath_CountSegments(FPDF_PAGEOBJECT path) {
   auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
   if (!pPathObj)
@@ -272,24 +213,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_SetMatrix(FPDF_PAGEOBJECT path,
   pPathObj->set_matrix(CFX_Matrix(a, b, c, d, e, f));
   pPathObj->SetDirty(true);
   return true;
-}
-
-FPDF_EXPORT void FPDF_CALLCONV FPDFPath_SetLineJoin(FPDF_PAGEOBJECT path,
-                                                    int line_join) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return;
-
-  FPDFPageObj_SetLineJoin(path, line_join);
-}
-
-FPDF_EXPORT void FPDF_CALLCONV FPDFPath_SetLineCap(FPDF_PAGEOBJECT path,
-                                                   int line_cap) {
-  auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return;
-
-  FPDFPageObj_SetLineCap(path, line_cap);
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV

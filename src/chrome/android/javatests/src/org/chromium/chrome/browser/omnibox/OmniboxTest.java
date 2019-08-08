@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -184,7 +185,8 @@ public class OmniboxTest {
                 sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
+            AutocompleteCoordinatorTestUtils.setAutocompleteController(
+                    locationBar.getAutocompleteCoordinator(), controller);
         });
         Assert.assertEquals("Should not have any zero suggest requests yet", 0,
                 controller.numZeroSuggestRequests());
@@ -222,7 +224,8 @@ public class OmniboxTest {
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
+            AutocompleteCoordinatorTestUtils.setAutocompleteController(
+                    locationBar.getAutocompleteCoordinator(), controller);
             urlBar.setText("g");
         });
 
@@ -264,7 +267,8 @@ public class OmniboxTest {
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
+            AutocompleteCoordinatorTestUtils.setAutocompleteController(
+                    locationBar.getAutocompleteCoordinator(), controller);
             urlBar.setText("g");
             urlBar.setSelection(1);
         });
@@ -491,8 +495,9 @@ public class OmniboxTest {
             public void onSuggestionsReceived(
                     List<OmniboxSuggestion> suggestions,
                     String inlineAutocompleteText) {
-                locationBar.getAutocompleteCoordinator()
-                        .getSuggestionsReceivedListenerForTest()
+                AutocompleteCoordinatorTestUtils
+                        .getSuggestionsReceivedListenerForTest(
+                                locationBar.getAutocompleteCoordinator())
                         .onSuggestionsReceived(suggestions, inlineAutocompleteText);
                 synchronized (suggestionsProcessedSignal) {
                     int remaining = suggestionsLeft.decrementAndGet();
@@ -508,7 +513,8 @@ public class OmniboxTest {
                 locationBar, suggestionsListener, suggestionsMap);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
+            AutocompleteCoordinatorTestUtils.setAutocompleteController(
+                    locationBar.getAutocompleteCoordinator(), controller);
         });
 
         KeyUtils.typeTextIntoView(
@@ -775,7 +781,6 @@ public class OmniboxTest {
     @Feature({"Omnibox"})
     @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @DisabledTest // https://crbug.com/950556
     public void testSuggestionDirectionSwitching() throws InterruptedException {
         final TextView urlBarView =
                 (TextView) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -813,11 +818,13 @@ public class OmniboxTest {
                                 .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
                                         "fac", null)));
         final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                locationBar.getAutocompleteCoordinator().getSuggestionsReceivedListenerForTest(),
+                AutocompleteCoordinatorTestUtils.getSuggestionsReceivedListenerForTest(
+                        locationBar.getAutocompleteCoordinator()),
                 suggestionsMap);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
+            AutocompleteCoordinatorTestUtils.setAutocompleteController(
+                    locationBar.getAutocompleteCoordinator(), controller);
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { urlBarView.setText("ل"); });
@@ -834,7 +841,8 @@ public class OmniboxTest {
             final int expectedSuggestionCount, final int expectedLayoutDirection) {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, expectedSuggestionCount);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ListView suggestionsList = locationBar.getAutocompleteCoordinator().getSuggestionList();
+            ListView suggestionsList = AutocompleteCoordinatorTestUtils.getSuggestionList(
+                    locationBar.getAutocompleteCoordinator());
             Assert.assertEquals(expectedSuggestionCount, suggestionsList.getChildCount());
             for (int i = 0; i < suggestionsList.getChildCount(); i++) {
                 SuggestionView suggestionView = (SuggestionView) suggestionsList.getChildAt(i);

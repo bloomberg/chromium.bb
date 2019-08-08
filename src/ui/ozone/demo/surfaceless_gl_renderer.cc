@@ -86,7 +86,8 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
   scoped_refptr<gfx::NativePixmap> pixmap =
       OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(widget, size, format, gfx::BufferUsage::SCANOUT);
+          ->CreateNativePixmap(widget, nullptr, size, format,
+                               gfx::BufferUsage::SCANOUT);
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
   if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage";
@@ -297,7 +298,6 @@ void SurfacelessGlRenderer::PostRenderFrameTask(
 
 void SurfacelessGlRenderer::OnPresentation(
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(gl_surface_->SupportsPresentationCallback());
   LOG_IF(ERROR, feedback.timestamp.is_null()) << "Last frame is discarded!";
 }
 

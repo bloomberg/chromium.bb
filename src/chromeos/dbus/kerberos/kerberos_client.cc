@@ -58,6 +58,18 @@ class KerberosClientImpl : public KerberosClient {
                     std::move(callback));
   }
 
+  void ClearAccounts(const kerberos::ClearAccountsRequest& request,
+                     ClearAccountsCallback callback) override {
+    CallProtoMethod(kerberos::kClearAccountsMethod, request,
+                    std::move(callback));
+  }
+
+  void ListAccounts(const kerberos::ListAccountsRequest& request,
+                    ListAccountsCallback callback) override {
+    CallProtoMethod(kerberos::kListAccountsMethod, request,
+                    std::move(callback));
+  }
+
   void SetConfig(const kerberos::SetConfigRequest& request,
                  SetConfigCallback callback) override {
     CallProtoMethod(kerberos::kSetConfigMethod, request, std::move(callback));
@@ -118,8 +130,6 @@ class KerberosClientImpl : public KerberosClient {
     DCHECK_EQ(signal_name, kerberos::kKerberosFilesChangedSignal);
     DCHECK(success);
   }
-
-  TestInterface* GetTestInterface() override { return nullptr; }
 
   void Init(dbus::Bus* bus) {
     proxy_ =

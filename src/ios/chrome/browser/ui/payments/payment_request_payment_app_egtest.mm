@@ -7,6 +7,7 @@
 #include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,9 +42,10 @@ const char kBobPayPage[] =
         @"available.");
   }
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kBobPayPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kBobPayPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"NotSupportedError",
                                        "The payment method is not supported"}];
@@ -52,9 +54,11 @@ const char kBobPayPage[] =
 // Tests that the Promise returned by canMakePayment() gets resolved with false
 // if the requested payment methods are payment apps that are not installed.
 - (void)testCanMakePaymentPaymentAppNotInstalled {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kBobPayPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kBobPayPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"canMakePayment"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
 
   [self waitForWebViewContainingTexts:{"false"}];
 }

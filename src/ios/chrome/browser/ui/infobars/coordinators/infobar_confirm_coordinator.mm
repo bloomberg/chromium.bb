@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,8 +34,10 @@
 @synthesize modalViewController = _modalViewController;
 
 - (instancetype)initWithInfoBarDelegate:
-    (ConfirmInfoBarDelegate*)confirmInfoBarDelegate {
-  self = [super initWithInfoBarDelegate:confirmInfoBarDelegate];
+                    (ConfirmInfoBarDelegate*)confirmInfoBarDelegate
+                                   type:(InfobarType)infobarType {
+  self = [super initWithInfoBarDelegate:confirmInfoBarDelegate
+                                   type:infobarType];
   if (self) {
     _confirmInfobarDelegate = confirmInfoBarDelegate;
   }
@@ -44,14 +47,17 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  self.started = YES;
-  self.bannerViewController =
-      [[InfobarBannerViewController alloc] initWithDelegate:self];
-  self.bannerViewController.titleText =
-      base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
-  self.bannerViewController.buttonText =
-      base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetButtonLabel(
-          ConfirmInfoBarDelegate::BUTTON_OK));
+  if (!self.started) {
+    self.started = YES;
+    self.bannerViewController =
+        [[InfobarBannerViewController alloc] initWithDelegate:self
+                                                         type:self.infobarType];
+    self.bannerViewController.titleText =
+        base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
+    self.bannerViewController.buttonText =
+        base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetButtonLabel(
+            ConfirmInfoBarDelegate::BUTTON_OK));
+  }
 }
 
 - (void)stop {
@@ -60,16 +66,27 @@
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
     // from memory.
     self.delegate->RemoveInfoBar();
+    _confirmInfobarDelegate = nil;
+    [self.infobarContainer childCoordinatorStopped];
   }
 }
 
 #pragma mark - InfobarCoordinatorImplementation
 
-- (void)configureModalViewController {
+- (BOOL)configureModalViewController {
   self.modalViewController =
       [[InfobarModalViewController alloc] initWithModalDelegate:self];
   self.modalViewController.title =
       base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
+  return YES;
+}
+
+- (void)infobarBannerWasPresented {
+  // NO-OP.
+}
+
+- (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {
+  // NO-OP.
 }
 
 - (void)dismissBannerWhenInteractionIsFinished {
@@ -84,6 +101,13 @@
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;
   self.modalViewController = nil;
+}
+
+- (CGFloat)infobarModalHeightForWidth:(CGFloat)width {
+  // TODO(crbug.com/911864): Implement, this is a temporary value. If
+  // InfobarConfirmCoordinator ends up having no Modal this should DCHECK or
+  // NOTREACHED.
+  return 50;
 }
 
 @end

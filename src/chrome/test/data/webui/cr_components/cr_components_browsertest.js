@@ -4,12 +4,8 @@
 
 /** @fileoverview Tests for shared Polymer components. */
 
-/** @const {string} Path to source root. */
-var ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * Test fixture for shared Polymer components.
@@ -20,9 +16,6 @@ function CrComponentsBrowserTest() {}
 
 CrComponentsBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
-
-  /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 
   /** @override */
   get browsePreload() {
@@ -79,8 +72,8 @@ CrComponentsNetworkConfigTest.prototype = {
 
   /** @override */
   extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/assert.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     '../chromeos/networking_private_constants.js',
     '../chromeos/fake_networking_private.js',

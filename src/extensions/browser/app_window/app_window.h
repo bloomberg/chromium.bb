@@ -255,17 +255,16 @@ class AppWindow : public content::WebContentsDelegate,
   // is on startup and from within UpdateWindowTitle().
   base::string16 GetTitle() const;
 
-  // |callback| will be called when the first navigation in the window is
-  // ready to commit or when the window goes away before that. |ready_to_commit|
-  // argument of the |callback| is set to true for the former case and false for
-  // the later.
-  using FirstCommitOrWindowClosedCallback =
-      base::OnceCallback<void(bool ready_to_commit)>;
-  void SetOnFirstCommitOrWindowClosedCallback(
-      FirstCommitOrWindowClosedCallback callback);
+  // |callback| will be called when the first navigation was completed or window
+  // is closed before that. |did_finish| argument of the |callback| is set to
+  // true for the former case and false for the latter.
+  using DidFinishFirstNavigationCallback =
+      base::OnceCallback<void(bool did_finish)>;
+  void AddOnDidFinishFirstNavigationCallback(
+      DidFinishFirstNavigationCallback callback);
 
-  // Called when the first navigation in the window is ready to commit.
-  void OnReadyToCommitFirstNavigation();
+  // Called when first navigation was completed.
+  void OnDidFinishFirstNavigation();
 
   // Call to notify ShellRegistry and delete the window. Subclasses should
   // invoke this method instead of using "delete this".
@@ -382,6 +381,8 @@ class AppWindow : public content::WebContentsDelegate,
       std::unique_ptr<AppWindowContents> contents) {
     app_window_contents_ = std::move(contents);
   }
+
+  bool DidFinishFirstNavigation() { return did_finish_first_navigation_; }
 
  protected:
   ~AppWindow() override;
@@ -586,9 +587,13 @@ class AppWindow : public content::WebContentsDelegate,
   // race condition of loading custom app icon and app content simultaneously.
   bool window_ready_ = false;
 
-  // PlzNavigate: this is called when the first navigation is ready to commit or
-  // when the window is closed.
-  FirstCommitOrWindowClosedCallback on_first_commit_or_window_closed_callback_;
+  // PlzNavigate: these callbacks are called when the navigation is finished on
+  // both browser and renderer sides.
+  std::vector<DidFinishFirstNavigationCallback>
+      on_did_finish_first_navigation_callbacks_;
+  // Whether the first navigation was completed in both browser and renderer
+  // processes.
+  bool did_finish_first_navigation_ = false;
 
   base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
 

@@ -14,5 +14,4 @@ js_library("cr_radio_group") {
   deps = [
     "//ui/webui/resources/js:event_tracker",
   ]
-  externs_list = [ "$externs_path/pending.js" ]
 }

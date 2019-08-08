@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/no_destructor.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -51,6 +52,24 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
+base::string16 AXPlatformNodeDelegateBase::GetHypertext() const {
+  return base::string16();
+}
+
+bool AXPlatformNodeDelegateBase::SetHypertextSelection(int start_offset,
+                                                       int end_offset) {
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSetSelection;
+  action_data.anchor_node_id = action_data.focus_node_id = GetData().id;
+  action_data.anchor_offset = start_offset;
+  action_data.focus_offset = end_offset;
+  return AccessibilityPerformAction(action_data);
+}
+
+base::string16 AXPlatformNodeDelegateBase::GetInnerText() const {
+  return base::string16();
+}
+
 gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
     const AXCoordinateSystem coordinate_system,
     const AXClippingBehavior clipping_behavior,
@@ -58,12 +77,21 @@ gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
   return gfx::Rect();
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetRangeBoundsRect(
+gfx::Rect AXPlatformNodeDelegateBase::GetHypertextRangeBoundsRect(
     const int start_offset,
     const int end_offset,
     const AXCoordinateSystem coordinate_system,
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
+  return gfx::Rect();
+}
+
+gfx::Rect AXPlatformNodeDelegateBase::GetInnerTextRangeBoundsRect(
+    const int start_offset,
+    const int end_offset,
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result = nullptr) const {
   return gfx::Rect();
 }
 
@@ -301,13 +329,17 @@ std::set<AXPlatformNode*> AXPlatformNodeDelegateBase::GetReverseRelations(
   return std::set<AXPlatformNode*>();
 }
 
+base::string16 AXPlatformNodeDelegateBase::GetAuthorUniqueId() const {
+  return base::string16();
+}
+
 const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   static base::NoDestructor<AXUniqueId> dummy_unique_id;
   return *dummy_unique_id;
 }
 
 base::Optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
-    ui::TextBoundaryType boundary_type,
+    AXTextBoundary boundary,
     int offset,
     TextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {

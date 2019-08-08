@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -41,7 +42,7 @@ class CustomPropertyTest : public PageTestBase {
     CSSTokenizer tokenizer(value);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
-    CSSParserContext* context = CSSParserContext::Create(GetDocument());
+    auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
     return property.ParseSingleValue(range, *context, local_context);
   }
 };

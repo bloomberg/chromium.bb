@@ -18,38 +18,19 @@ namespace quic {
 
 class FakeQuartcEndpointDelegate : public QuartcEndpoint::Delegate {
  public:
-  explicit FakeQuartcEndpointDelegate(QuartcSession::Delegate* session_delegate)
-      : session_delegate_(session_delegate) {}
-
-  void OnSessionCreated(QuartcSession* session) override {
-    CHECK_EQ(session_, nullptr);
-    CHECK_NE(session, nullptr);
-    session_ = session;
-    session_->SetDelegate(session_delegate_);
-    session_->StartCryptoHandshake();
-  }
-
-  void OnConnectError(QuicErrorCode error,
-                      const std::string& error_details) override {
-    LOG(FATAL) << "Unexpected error during QuartcEndpoint::Connect(); error="
-               << error << ", error_details=" << error_details;
-  }
-
-  QuartcSession* session() { return session_; }
-
- private:
-  QuartcSession::Delegate* session_delegate_;
-  QuartcSession* session_ = nullptr;
-};
-
-class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
- public:
-  explicit FakeQuartcSessionDelegate(QuartcStream::Delegate* stream_delegate,
-                                     const QuicClock* clock)
+  explicit FakeQuartcEndpointDelegate(QuartcStream::Delegate* stream_delegate,
+                                      const QuicClock* clock)
       : stream_delegate_(stream_delegate), clock_(clock) {}
 
+  void OnSessionCreated(QuartcSession* session) override {
+    CHECK_NE(session, nullptr);
+    session_ = session;
+    session_->StartCryptoHandshake();
+    ++num_sessions_created_;
+  }
+
   void OnConnectionWritable() override {
-    LOG(INFO) << "Connection writable!";
+    QUIC_LOG(INFO) << "Connection writable!";
     if (!writable_time_.IsInitialized()) {
       writable_time_ = clock_->Now();
     }
@@ -57,7 +38,7 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
 
   // Called when peers have established forward-secure encryption
   void OnCryptoHandshakeComplete() override {
-    LOG(INFO) << "Crypto handshake complete!";
+    QUIC_LOG(INFO) << "Crypto handshake complete!";
     crypto_handshake_time_ = clock_->Now();
   }
 
@@ -78,24 +59,44 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
     incoming_messages_.emplace_back(message);
   }
 
+  void OnMessageSent(int64_t datagram_id) override {
+    sent_datagram_ids_.push_back(datagram_id);
+  }
+
   void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
                                  QuicBandwidth pacing_rate,
                                  QuicTime::Delta latest_rtt) override {}
 
-  QuartcStream* last_incoming_stream() { return last_incoming_stream_; }
+  QuartcSession* session() { return session_; }
+
+  int num_sessions_created() const { return num_sessions_created_; }
+
+  QuartcStream* last_incoming_stream() const { return last_incoming_stream_; }
 
   // Returns all received messages.
-  const std::vector<std::string>& incoming_messages() {
+  const std::vector<std::string>& incoming_messages() const {
     return incoming_messages_;
   }
 
-  bool connected() { return connected_; }
+  // Returns all sent datagram ids in the order sent.
+  const std::vector<int64_t>& sent_datagram_ids() const {
+    return sent_datagram_ids_;
+  }
+
+  bool connected() const { return connected_; }
   QuicTime writable_time() const { return writable_time_; }
   QuicTime crypto_handshake_time() const { return crypto_handshake_time_; }
 
  private:
+  // Current session.
+  QuartcSession* session_ = nullptr;
+
+  // Number of new sessions created by the endpoint.
+  int num_sessions_created_ = 0;
+
   QuartcStream* last_incoming_stream_;
   std::vector<std::string> incoming_messages_;
+  std::vector<int64_t> sent_datagram_ids_;
   bool connected_ = true;
   QuartcStream::Delegate* stream_delegate_;
   QuicTime writable_time_ = QuicTime::Zero();

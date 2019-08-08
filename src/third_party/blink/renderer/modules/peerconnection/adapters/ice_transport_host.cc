@@ -105,23 +105,24 @@ void IceTransportHost::OnGatheringStateChanged(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *proxy_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportProxy::OnGatheringStateChanged, proxy_,
-                      new_state));
+      CrossThreadBindOnce(&IceTransportProxy::OnGatheringStateChanged, proxy_,
+                          new_state));
 }
 
 void IceTransportHost::OnCandidateGathered(
     const cricket::Candidate& candidate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(*proxy_thread_, FROM_HERE,
-                      CrossThreadBind(&IceTransportProxy::OnCandidateGathered,
-                                      proxy_, candidate));
+  PostCrossThreadTask(
+      *proxy_thread_, FROM_HERE,
+      CrossThreadBindOnce(&IceTransportProxy::OnCandidateGathered, proxy_,
+                          candidate));
 }
 
 void IceTransportHost::OnStateChanged(webrtc::IceTransportState new_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *proxy_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportProxy::OnStateChanged, proxy_, new_state));
+  PostCrossThreadTask(*proxy_thread_, FROM_HERE,
+                      CrossThreadBindOnce(&IceTransportProxy::OnStateChanged,
+                                          proxy_, new_state));
 }
 
 void IceTransportHost::OnSelectedCandidatePairChanged(
@@ -130,8 +131,8 @@ void IceTransportHost::OnSelectedCandidatePairChanged(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *proxy_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportProxy::OnSelectedCandidatePairChanged,
-                      proxy_, selected_candidate_pair));
+      CrossThreadBindOnce(&IceTransportProxy::OnSelectedCandidatePairChanged,
+                          proxy_, selected_candidate_pair));
 }
 
 }  // namespace blink

@@ -48,6 +48,30 @@ std::string GetValueFromMessage(const gcm::IncomingMessage& message,
   return value;
 }
 
+// Unpacks the private topic included in messages to the form returned for
+// subscription requests.
+//
+// Subscriptions for private topics generate a private topic from the public
+// topic of the form "/private/${public_topic}-${something}. Messages include
+// this as the sender in the form
+// "/topics/private/${public_topic}-${something}". For such messages, strip the
+// "/topics" prefix.
+//
+// Subscriptions for public topics pass-through the public topic unchanged:
+// "${public_topic}". Messages include the sender in the form
+// "/topics/${public_topic}". For these messages, strip the "/topics/" prefix.
+//
+// If the provided sender does not match either pattern, return it unchanged.
+std::string UnpackPrivateTopic(base::StringPiece private_topic) {
+  if (private_topic.starts_with("/topics/private/")) {
+    return private_topic.substr(strlen("/topics")).as_string();
+  } else if (private_topic.starts_with("/topics/")) {
+    return private_topic.substr(strlen("/topics/")).as_string();
+  } else {
+    return private_topic.as_string();
+  }
+}
+
 InvalidationParsingStatus ParseIncommingMessage(
     const gcm::IncomingMessage& message,
     std::string* payload,
@@ -63,11 +87,7 @@ InvalidationParsingStatus ParseIncommingMessage(
 
   *public_topic = GetValueFromMessage(message, kPublicTopic);
 
-  // Public topic must always be there.
-  if (public_topic->empty())
-    return InvalidationParsingStatus::kPublicTopicEmpty;
-
-  *private_topic = message.sender_id;
+  *private_topic = UnpackPrivateTopic(message.sender_id);
   if (private_topic->empty())
     return InvalidationParsingStatus::kPrivateTopicEmpty;
 

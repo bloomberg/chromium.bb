@@ -438,7 +438,23 @@ void CommandLine::ParseFromString(StringPiece16 command_line) {
 
   int num_args = 0;
   wchar_t** args = NULL;
-  args = ::CommandLineToArgvW(as_wcstr(command_line), &num_args);
+  // When calling CommandLineToArgvW, use the apiset if available.
+  // Doing so will bypass loading shell32.dll on Win8+.
+  HMODULE downlevel_shell32_dll =
+      ::LoadLibraryEx(L"api-ms-win-downlevel-shell32-l1-1-0.dll", nullptr,
+                      LOAD_LIBRARY_SEARCH_SYSTEM32);
+  if (downlevel_shell32_dll) {
+    auto command_line_to_argv_w_proc =
+        reinterpret_cast<decltype(::CommandLineToArgvW)*>(
+            ::GetProcAddress(downlevel_shell32_dll, "CommandLineToArgvW"));
+    if (command_line_to_argv_w_proc)
+      args = command_line_to_argv_w_proc(as_wcstr(command_line), &num_args);
+    ::FreeLibrary(downlevel_shell32_dll);
+  } else {
+    // Since the apiset is not available, allow the delayload of shell32.dll
+    // to take place.
+    args = ::CommandLineToArgvW(as_wcstr(command_line), &num_args);
+  }
 
   DPLOG_IF(FATAL, !args) << "CommandLineToArgvW failed on command line: "
                          << UTF16ToUTF8(command_line);

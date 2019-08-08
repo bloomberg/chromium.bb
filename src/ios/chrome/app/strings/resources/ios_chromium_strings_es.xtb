@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Información de Chromium</translation>
 <translation id="1289966288285062467">Aviso de privacidad de Chromium</translation>
 <translation id="1472013873724362412">Tu cuenta no funciona en Chromium. Ponte en contacto con el administrador del dominio o utiliza una cuenta de Google normal para iniciar sesión.</translation>
+<translation id="1507010443238049608">Ayudar a mejorar las funciones y el rendimiento de Chromium</translation>
 <translation id="1617663976202781617">Datos de la sincronización de Chromium</translation>
 <translation id="1736662517232558588">Datos de Chromium borrados</translation>
 <translation id="1838412507805038478">Chromium ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">Algunos complementos hacen que Chromium falle. Desinstala los que se indican a continuación:</translation>
 <translation id="2178608107313874732">Chromium no puede usar la cámara en este momento</translation>
 <translation id="2195025571279539885">¿Quieres que Chromium te ofrezca la posibilidad de traducir las páginas en <ph name="LANGUAGE_NAME" /> de este sitio web la próxima vez?</translation>
-<translation id="2517624234762908348">Sincronizar tus datos de Chromium</translation>
+<translation id="2590893390871230428">Sincronizar tus datos de Chromium</translation>
 <translation id="2647554856022461007">Chromium puede utilizar los servicios web para mejorar la experiencia de navegación. Puedes inhabilitar estos servicios. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium no puede utilizar la cámara porque la está usando otra aplicación</translation>
 <translation id="2915596697727466327">Chromium usa Face ID para garantizar el acceso autorizado a tus contraseñas.</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">Inicia sesión en Chromium para ver tus pestañas en todos tus dispositivos.</translation>
 <translation id="4157467675761413638">Consejo sobre Chromium. Para ver más opciones de pestañas, mantén pulsado el botón Mostrar pestañas en la barra de herramientas, que se encuentra en la parte inferior o superior de la pantalla.</translation>
 <translation id="4241912885070669028">Estás cerrando sesión en una cuenta gestionada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Tus datos de Chromium se eliminarán de este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
-<translation id="4272892696084633551">Ayudar a mejorar las funciones y el rendimiento de Chromium</translation>
 <translation id="4555020257205549924">Si esta función está activada, Chromium ofrecerá la posibilidad de traducir páginas escritas en otros idiomas con el Traductor de Google. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Aquí aparecerán las pestañas que hayas abierto en Chromium en otros dispositivos.</translation>
 <translation id="495292094137889840">Empezar a usar el escáner de QR de Chromium</translation>

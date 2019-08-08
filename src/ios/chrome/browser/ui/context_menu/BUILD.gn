@@ -7,13 +7,14 @@ source_set("context_menu") {
   sources = [
     "context_menu_coordinator.h",
     "context_menu_coordinator.mm",
+    "context_menu_item.h",
+    "context_menu_item.mm",
   ]
   deps = [
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
-    "//ios/web",
     "//ui/base",
     "//ui/strings",
   ]
@@ -28,7 +29,6 @@ source_set("unit_tests") {
   deps = [
     ":context_menu",
     "//base",
-    "//ios/web",
     "//testing/gtest",
   ]
 }

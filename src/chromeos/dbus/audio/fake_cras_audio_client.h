@@ -41,6 +41,9 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SetInputMute(bool mute_on) override;
   void SetActiveOutputNode(uint64_t node_id) override;
   void SetActiveInputNode(uint64_t node_id) override;
+  void SetHotwordModel(uint64_t node_id,
+                       const std::string& hotword_model,
+                       VoidDBusMethodCallback callback) override;
   void AddActiveInputNode(uint64_t node_id) override;
   void RemoveActiveInputNode(uint64_t node_id) override;
   void AddActiveOutputNode(uint64_t node_id) override;

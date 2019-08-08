@@ -17,6 +17,10 @@
 #include "base/strings/string16.h"
 #include "ui/base/models/tree_model.h"
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace ui {
 
 // TreeNodeModel and TreeNodes provide an implementation of TreeModel around
@@ -72,6 +76,8 @@ namespace ui {
 template <class NodeType>
 class TreeNode : public TreeModelNode {
  public:
+  using TreeNodes = std::vector<std::unique_ptr<NodeType>>;
+
   TreeNode() : parent_(nullptr) {}
 
   explicit TreeNode(const base::string16& title)
@@ -84,7 +90,7 @@ class TreeNode : public TreeModelNode {
   NodeType* Add(std::unique_ptr<NodeType> node, int index) {
     DCHECK(node);
     DCHECK_GE(index, 0);
-    DCHECK_LE(index, child_count());
+    DCHECK_LE(size_t{index}, children_.size());
     DCHECK(!node->parent_);
     node->parent_ = static_cast<NodeType*>(this);
     NodeType* node_ptr = node.get();
@@ -94,7 +100,8 @@ class TreeNode : public TreeModelNode {
 
   // Removes the node at the given index. Returns the removed node.
   std::unique_ptr<NodeType> Remove(int index) {
-    DCHECK(index >= 0 && index < child_count());
+    DCHECK_GE(index, 0);
+    DCHECK_LT(size_t{index}, children_.size());
     children_[index]->parent_ = nullptr;
     std::unique_ptr<NodeType> ptr = std::move(children_[index]);
     children_.erase(children_.begin() + index);
@@ -104,12 +111,9 @@ class TreeNode : public TreeModelNode {
   // Removes the given node. Prefer to remove by index if you know it to avoid
   // the search for the node to remove.
   std::unique_ptr<NodeType> Remove(NodeType* node) {
-    auto i = std::find_if(children_.begin(), children_.end(),
-                          [node](const std::unique_ptr<NodeType>& ptr) {
-                            return ptr.get() == node;
-                          });
-    DCHECK(i != children_.end());
-    return Remove(i - children_.begin());
+    int i = GetIndexOf(node);
+    DCHECK_NE(-1, i);
+    return Remove(i);
   }
 
   // Removes all the children from this node.
@@ -122,11 +126,11 @@ class TreeNode : public TreeModelNode {
   // Returns true if this is the root node.
   bool is_root() const { return parent_ == nullptr; }
 
-  // Returns the number of children.
-  int child_count() const { return static_cast<int>(children_.size()); }
+  const TreeNodes& children() const { return children_; }
 
-  // Returns true if this node has no children.
-  bool empty() const { return children_.empty(); }
+  // Returns the number of children.
+  // TODO(https://crbug.com/956419): Remove; use children().size().
+  int child_count() const { return static_cast<int>(children_.size()); }
 
   // Returns the number of all nodes in the subtree rooted at this node,
   // including this node.
@@ -138,9 +142,10 @@ class TreeNode : public TreeModelNode {
   }
 
   // Returns the node at |index|.
+  // TODO(https://crbug.com/956419): Remove; use children()[index].
   const NodeType* GetChild(int index) const {
     DCHECK_GE(index, 0);
-    DCHECK_LT(index, child_count());
+    DCHECK_LT(size_t{index}, children_.size());
     return children_[index].get();
   }
   NodeType* GetChild(int index) {
@@ -174,10 +179,10 @@ class TreeNode : public TreeModelNode {
     return parent_ ? parent_->HasAncestor(ancestor) : false;
   }
 
- protected:
-  std::vector<std::unique_ptr<NodeType>>& children() { return children_; }
-
  private:
+  // TODO(https://crbug.com/956314): Remove this.
+  friend class bookmarks::BookmarkModel;
+
   // Title displayed in the tree.
   base::string16 title_;
 
@@ -185,7 +190,7 @@ class TreeNode : public TreeModelNode {
   NodeType* parent_;
 
   // This node's children.
-  typename std::vector<std::unique_ptr<NodeType>> children_;
+  TreeNodes children_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNode);
 };
@@ -226,8 +231,11 @@ class TreeNodeModel : public TreeModel {
       : root_(std::move(root)) {}
   virtual ~TreeNodeModel() override {}
 
-  NodeType* AsNode(TreeModelNode* model_node) {
+  static NodeType* AsNode(TreeModelNode* model_node) {
     return static_cast<NodeType*>(model_node);
+  }
+  static const NodeType* AsNode(const TreeModelNode* model_node) {
+    return static_cast<const NodeType*>(model_node);
   }
 
   NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node, int index) {
@@ -278,22 +286,23 @@ class TreeNodeModel : public TreeModel {
     return root_.get();
   }
 
-  int GetChildCount(TreeModelNode* parent) override {
+  Nodes GetChildren(const TreeModelNode* parent) const override {
     DCHECK(parent);
-    return AsNode(parent)->child_count();
+    const auto& children = AsNode(parent)->children();
+    Nodes nodes;
+    nodes.reserve(children.size());
+    std::transform(children.cbegin(), children.cend(),
+                   std::back_inserter(nodes),
+                   [](const auto& child) { return child.get(); });
+    return nodes;
   }
 
-  NodeType* GetChild(TreeModelNode* parent, int index) override {
-    DCHECK(parent);
-    return AsNode(parent)->GetChild(index);
-  }
-
-  int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) override {
+  int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) const override {
     DCHECK(parent);
     return AsNode(parent)->GetIndexOf(AsNode(child));
   }
 
-  TreeModelNode* GetParent(TreeModelNode* node) override {
+  TreeModelNode* GetParent(TreeModelNode* node) const override {
     DCHECK(node);
     return AsNode(node)->parent();
   }

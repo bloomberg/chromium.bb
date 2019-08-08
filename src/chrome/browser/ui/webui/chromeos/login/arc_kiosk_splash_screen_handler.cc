@@ -19,6 +19,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId ArcKioskSplashScreenView::kScreenId;
+
 ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {}

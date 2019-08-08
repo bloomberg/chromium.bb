@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1282031177488366470">Συμβάλετε στη βελτίωση των λειτουργιών και της απόδοσης του Chrome</translation>
 <translation id="1326317727527857210">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, συνδεθείτε στο Chrome.</translation>
+<translation id="1682483655351012182">Συγχρονισμός των δεδομένων του Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Σημείωση απορρήτου του Google Chrome</translation>
 <translation id="1863312987075920112">Χρησιμοποιώντας αυτήν την εφαρμογή, συμφωνείτε με τους <ph name="BEGIN_LINK_TOS" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK_TOS" /> και τη <ph name="BEGIN_LINK_PRIVACY" />Σημείωση απορρήτου<ph name="END_LINK_PRIVACY" /> του Chrome.</translation>
-<translation id="1984705450038014246">Συγχρονισμός των δεδομένων του Chrome</translation>
 <translation id="2147651015520127414">Το Chrome επαλήθευσε ότι το πιστοποιητικό αυτού του ιστότοπου εκδόθηκε από τον/την <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Δεδομένα από τον συγχρονισμό Chrome</translation>
 <translation id="2342981853652716282">Συνδεθείτε στο Chrome, για να έχετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης κ.ά. σε όλες τις συσκευές σας.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Συμβάλετε στη βελτίωση του Chrome, στέλνοντας στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
 <translation id="415767770115540173">Απολαύστε μια καλύτερη εμπειρία Google στο Chrome βάσει της τοποθεσίας σας.</translation>
 <translation id="424864128008805179">Αποσύνδεση από το Chrome;</translation>
-<translation id="447252321002412580">Συμβάλλετε στη βελτίωση των λειτουργιών και της απόδοσης του Chrome</translation>
 <translation id="4523886039239821078">Ορισμένα πρόσθετα προκαλούν σφάλματα στο Chrome. Aπεγκαταστήστε τα.</translation>
 <translation id="4615174829807303908">Πρόκειται να αποσυνδεθείτε από έναν λογαριασμό του οποίου η διαχείριση γίνεται από <ph name="SIGNOUT_MANAGED_DOMAIN" />. Αυτό θα διαγράψει τα δεδομένα σας Chrome από αυτήν τη συσκευή, αλλά θα διατηρηθούν στο Λογαριασμό σας Google.</translation>
 <translation id="5389212809648216794">Το Google Chrome δεν μπορεί να χρησιμοποιήσει την κάμερά σας επειδή χρησιμοποιείται από άλλη εφαρμογή.</translation>

@@ -16,18 +16,18 @@
   <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
   <script src="chrome://resources/js/cr/ui/tabs.js"></script>
   <script src="chrome://resources/js/cr/ui/tree.js"></script>
-  <script src="chrome://resources/js/mojo_bindings_lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/util.js"></script>
-  <script src="chrome://resources/js/big_buffer.mojom-lite.js"></script>
-  <script src="chrome://resources/js/file.mojom-lite.js"></script>
-  <script src="chrome://resources/js/string16.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/file.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
 
-  <script src="url.mojom-lite.js"></script>
-  <script src="device.mojom-lite.js"></script>
-  <script src="device_manager_client.mojom-lite.js"></script>
-  <script src="device_enumeration_options.mojom-lite.js"></script>
-  <script src="device_manager.mojom-lite.js"></script>
-  <script src="device_manager_test.mojom-lite.js"></script>
+  <script src="usb_device.mojom-lite.js"></script>
+  <script src="usb_manager_client.mojom-lite.js"></script>
+  <script src="usb_enumeration_options.mojom-lite.js"></script>
+  <script src="usb_manager.mojom-lite.js"></script>
+  <script src="usb_manager_test.mojom-lite.js"></script>
   <script src="usb_internals.mojom-lite.js"></script>
 
   <script src="descriptor_panel.js"></script>
@@ -152,26 +152,32 @@
         <button id="string-descriptor-button">Get String Descriptor</button>
       </div>
       <div class="string-descriptor-panel" hidden>
-        String Descriptor Index: 
+        String Descriptor Index:
         <input id="index-input" type="number" min="1" list="indexes">
         <datalist id="indexes"></datalist>
-        Language Code: 
+        Language Code:
         <input id="language-code-input" list="languages">
         <datalist id="languages"></datalist>
         <button>GET</button>
       </div>
+      <div class="descriptor-button">
+        <button id="bos-descriptor-button">
+          Get WebUSB & Microsoft OS 2.0 Descriptors
+        </button>
+      </div>
+      <div class="bos-descriptor-panel" hidden></div>
     </tabpanel>
   </template>
 
   <template id="descriptor-panel-template">
-    <div class="descriptor-panel">
+    <descriptorpanel>
       <tree id="raw-data-tree-view"></tree>
       <div id="raw-data-byte-view"></div>
-    </div>
+    </descriptorpanel>
   </template>
 
   <template id="raw-data-byte-container-template">
-    <div></div>>
+    <div></div>
   </template>
 
   <template id="raw-data-byte-template">
@@ -184,6 +190,10 @@
 
   <template id="error">
     <error></error>
+  </template>
+
+  <template id="descriptor-panel-title">
+    <descriptorpaneltitle></descriptorpaneltitle>
   </template>
 
   <script src="usb_internals.js"></script>

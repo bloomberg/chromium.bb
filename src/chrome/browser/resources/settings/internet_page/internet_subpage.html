@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -99,11 +100,11 @@
     </template>
 
     <template is="dom-if" if="[[knownNetworksIsVisible_(deviceState)]]">
-      <div actionable class="settings-box" on-click="onKnownNetworksTap_">
-        <div class="start">$i18n{knownNetworksButton}</div>
-        <cr-icon-button class="subpage-arrow"
-            aria-label="$i18n{knownNetworksButton}"></cr-icon-button>
-      </div>
+      <cr-link-row
+          class="hr"
+          label="$i18n{knownNetworksButton}"
+          on-click="onKnownNetworksTap_">
+      </cr-link-row>
     </template>
 
     <template is="dom-if" if="[[deviceIsEnabled_(deviceState)]]">

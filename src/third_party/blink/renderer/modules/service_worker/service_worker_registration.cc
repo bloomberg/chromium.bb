@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -138,6 +138,33 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
   Attach(std::move(info));
 }
 
+ServiceWorkerRegistration::ServiceWorkerRegistration(
+    ExecutionContext* execution_context,
+    mojom::blink::ServiceWorkerRegistrationObjectInfoPtr info)
+    : ContextLifecycleObserver(execution_context),
+      registration_id_(info->registration_id),
+      scope_(std::move(info->scope)),
+      binding_(this),
+      stopped_(false) {
+  DCHECK_NE(mojom::blink::kInvalidServiceWorkerRegistrationId,
+            registration_id_);
+
+  host_.Bind(
+      std::move(info->host_ptr_info),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
+  // The host expects us to use |info.request| so bind to it.
+  binding_.Bind(
+      std::move(info->request),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
+
+  update_via_cache_ = info->update_via_cache;
+  installing_ =
+      ServiceWorker::From(GetExecutionContext(), std::move(info->installing));
+  waiting_ =
+      ServiceWorker::From(GetExecutionContext(), std::move(info->waiting));
+  active_ = ServiceWorker::From(GetExecutionContext(), std::move(info->active));
+}
+
 void ServiceWorkerRegistration::Attach(
     WebServiceWorkerRegistrationObjectInfo info) {
   DCHECK_EQ(registration_id_, info.registration_id);
@@ -223,10 +250,10 @@ void ServiceWorkerRegistration::SetNavigationPreloadHeader(
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Failed to update a ServiceWorkerRegistration: No "
-                             "associated provider is available."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Failed to update a ServiceWorkerRegistration: No "
+                          "associated provider is available."));
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Update(
@@ -237,11 +264,11 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Failed to unregister a "
-                             "ServiceWorkerRegistration: No "
-                             "associated provider is available."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Failed to unregister a "
+                          "ServiceWorkerRegistration: No "
+                          "associated provider is available."));
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Unregister(WTF::Bind(&DidUnregister, WrapPersistent(resolver)));

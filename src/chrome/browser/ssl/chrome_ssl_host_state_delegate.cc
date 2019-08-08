@@ -260,6 +260,7 @@ bool HostFilterToPatternFilter(
 
 }  // namespace
 
+// TODO(https://crbug.com/953972): Remove this and all dependent code paths.
 const base::Feature kRecurrentInterstitialFeature{
     "RecurrentInterstitialFeature", base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +52,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_transaction.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "v8/include/v8.h"
@@ -146,8 +148,8 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   // This will generate an Abort() call to the back end which is dropped by the
   // fake proxy, so an explicit OnAbort call is made.
   scope.GetExecutionContext()->NotifyContextDestroyed();
-  transaction_->OnAbort(
-      DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
+  transaction_->OnAbort(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Aborted"));
   transaction_.Clear();
   store_.Clear();
 
@@ -189,8 +191,8 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   // This will generate an Abort() call to the back end which is dropped by the
   // fake proxy, so an explicit OnAbort call is made.
   scope.GetExecutionContext()->NotifyContextDestroyed();
-  transaction_->OnAbort(
-      DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
+  transaction_->OnAbort(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Aborted"));
   transaction_.Clear();
   store_.Clear();
 
@@ -235,8 +237,8 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   // This will generate an Abort() call to the back end which is dropped by the
   // fake proxy, so an explicit OnAbort call is made.
   scope.GetExecutionContext()->NotifyContextDestroyed();
-  transaction_->OnAbort(
-      DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
+  transaction_->OnAbort(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Aborted"));
   transaction_.Clear();
   store_.Clear();
 
@@ -284,8 +286,8 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   // This will generate an Abort() call to the back end which is dropped by the
   // fake proxy, so an explicit OnAbort call is made.
   scope.GetExecutionContext()->NotifyContextDestroyed();
-  transaction_->OnAbort(
-      DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
+  transaction_->OnAbort(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Aborted"));
   transaction_.Clear();
   store_.Clear();
 
@@ -335,8 +337,8 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   // This will generate an Abort() call to the back end which is dropped by the
   // fake proxy, so an explicit OnAbort call is made.
   scope.GetDocument().Shutdown();
-  transaction_->OnAbort(
-      DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
+  transaction_->OnAbort(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Aborted"));
   transaction_.Clear();
   store_.Clear();
 
@@ -383,8 +385,8 @@ TEST_F(IDBTransactionTest, TransactionFinish) {
 
   // Fire an abort to make sure this doesn't free the transaction during use.
   // The test will not fail if it is, but ASAN would notice the error.
-  db_->OnAbort(kTransactionId,
-               DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
+  db_->OnAbort(kTransactionId, MakeGarbageCollected<DOMException>(
+                                   DOMExceptionCode::kAbortError, "Aborted"));
 
   // OnAbort() should have cleared the transaction's reference to the database.
   ThreadState::Current()->CollectAllGarbageForTesting();

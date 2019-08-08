@@ -65,7 +65,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       intra_priority_value_(0),
       requestor_id_(0),
       plugin_child_id_(-1),
-      app_cache_host_id_(0),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
       fetch_request_mode_(network::mojom::FetchRequestMode::kNoCors),

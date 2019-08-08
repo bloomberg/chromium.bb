@@ -254,8 +254,9 @@ void H264Encoder::UpdateSPS() {
       // constrained and non-constrained baseline profiles. Since many codecs
       // can't do non-constrained, and constrained is usually what we mean (and
       // it's a subset of non-constrained), default to it.
-      current_sps_.profile_idc = H264SPS::kProfileIDCBaseline;
+      current_sps_.profile_idc = H264SPS::kProfileIDCConstrainedBaseline;
       current_sps_.constraint_set0_flag = true;
+      current_sps_.constraint_set1_flag = true;
       break;
     case H264PROFILE_MAIN:
       current_sps_.profile_idc = H264SPS::kProfileIDCMain;

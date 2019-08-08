@@ -17,6 +17,10 @@ namespace content {
 class WebContents;
 }
 
+namespace tasks {
+class TaskTabHelper;
+}
+
 // Partial implementation of SyncedTabDelegate for the cases where the tab has
 // (either initially or late) a WebContents.
 class TabContentsSyncedTabDelegate : public sync_sessions::SyncedTabDelegate {
@@ -40,6 +44,9 @@ class TabContentsSyncedTabDelegate : public sync_sessions::SyncedTabDelegate {
   const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override;
   bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
+  int64_t GetTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetParentTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetRootTaskIdForNavigationId(int nav_id) const override;
 
  protected:
   const content::WebContents* web_contents() const;
@@ -47,6 +54,8 @@ class TabContentsSyncedTabDelegate : public sync_sessions::SyncedTabDelegate {
   void SetWebContents(content::WebContents* web_contents);
 
  private:
+  const tasks::TaskTabHelper* task_tab_helper() const;
+
   content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsSyncedTabDelegate);

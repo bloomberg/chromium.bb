@@ -68,7 +68,6 @@ class AwCookieStoreWrapper : public net::CookieStore {
   net::CookieChangeDispatcher& GetChangeDispatcher() override;
   void SetCookieableSchemes(const std::vector<std::string>& schemes,
                             SetCookieableSchemesCallback callback) override;
-  bool IsEphemeral() override;
 
  private:
   // Used by CreateWrappedCallback below. Takes an argument of Type and posts

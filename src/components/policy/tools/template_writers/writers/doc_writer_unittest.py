@@ -63,6 +63,12 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'doc_description': {
             'text': '_test_description'
         },
+        'doc_schema': {
+            'text': '_test_schema'
+        },
+        'doc_url_schema': {
+            'text': '_test_url_schema'
+        },
         'doc_arc_support': {
             'text': '_test_arc_support'
         },
@@ -195,7 +201,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Test if localized messages are retrieved correctly.
     self.writer.messages = {'doc_hello_world': {'text': 'hello, vilag!'}}
     self.assertEquals(
-        self.writer._GetLocalizedMessage('hello_world'), 'hello, vilag!')
+        self.writer.GetLocalizedMessage('hello_world'), 'hello, vilag!')
 
   def testMapListToString(self):
     # Test function DocWriter.MapListToString()
@@ -300,6 +306,41 @@ See http://policy-explanation.example.com for more details.
         '''<root><p>This policy disables foo, except in case of bar.
 See <a href="http://policy-explanation.example.com">http://policy-explanation.example.com</a> for more details.
 </p><ul><li>&quot;one&quot; = Disable foo</li><li>&quot;two&quot; = Solve your problem</li><li>&quot;three&quot; = Enable bar</li></ul></root>'''
+    )
+
+  def testAddSchema(self):
+    # Test if the schema of a policy is handled correctly.
+    policy = {
+        'type': 'dict',
+        'schema': {
+            'properties': {
+                'foo': {
+                    'type': 'integer'
+                }
+            },
+            'type': 'object'
+        }
+    }
+    self.writer._AddSchema(self.doc_root, policy['schema'])
+    self.assertEquals(
+        self.doc_root.toxml(), '<root>'
+        '<dt style="style_dt;">_test_schema</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">{\n'
+        '  &quot;properties&quot;: {\n'
+        '    &quot;foo&quot;: {\n'
+        '      &quot;type&quot;: &quot;integer&quot;\n'
+        '    }\n'
+        '  }, \n'
+        '  &quot;type&quot;: &quot;object&quot;\n'
+        '}</dd></root>')
+
+  def testAddUrlSchema(self):
+    # Test if the expanded schema description of a policy is handled correctly.
+    policy = {'url_schema': 'https://example.com/details'}
+    self.writer._AddTextWithLinks(self.doc_root, policy['url_schema'])
+    self.assertEquals(
+        self.doc_root.toxml(),
+        '<root><a href="https://example.com/details">https://example.com/details</a></root>'
     )
 
   def testAddFeatures(self):
@@ -632,6 +673,16 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
             'TestPolicyCaption',
         'desc':
             'TestPolicyDesc',
+        'schema': {
+            'properties': {
+                'foo': {
+                    'type': 'integer'
+                }
+            },
+            'type': 'object'
+        },
+        'url_schema':
+            'https://example.com/details',
         'supported_on': [{
             'product': 'chrome',
             'platforms': ['win', 'mac', 'linux', 'chrome_os'],
@@ -665,6 +716,17 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_supported_features</dt>'
         '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
         '<dt style="style_dt;">_test_description</dt><dd><p>TestPolicyDesc</p></dd>'
+        '<dt style="style_dt;">_test_schema</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">{\n'
+        '  &quot;properties&quot;: {\n'
+        '    &quot;foo&quot;: {\n'
+        '      &quot;type&quot;: &quot;integer&quot;\n'
+        '    }\n'
+        '  }, \n'
+        '  &quot;type&quot;: &quot;object&quot;\n'
+        '}</dd>'
+        '<dt style="style_dt;">_test_url_schema</dt>'
+        '<dd><a href="https://example.com/details">https://example.com/details</a></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>'
         '<dl style="style_dd dl;">'
@@ -710,6 +772,17 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
             'TestPolicyCaption',
         'desc':
             'TestPolicyDesc',
+        'description_schema': {
+            'properties': {
+                'url': {
+                    'type': 'string'
+                },
+                'hash': {
+                    'type': 'string'
+                },
+            },
+            'type': 'object'
+        },
         'supported_on': [{
             'product': 'chrome',
             'platforms': ['win', 'mac', 'linux'],
@@ -743,6 +816,18 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_supported_features</dt>'
         '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
         '<dt style="style_dt;">_test_description</dt><dd><p>TestPolicyDesc</p></dd>'
+        '<dt style="style_dt;">_test_schema</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">{\n'
+        '  &quot;properties&quot;: {\n'
+        '    &quot;hash&quot;: {\n'
+        '      &quot;type&quot;: &quot;string&quot;\n'
+        '    }, \n'
+        '    &quot;url&quot;: {\n'
+        '      &quot;type&quot;: &quot;string&quot;\n'
+        '    }\n'
+        '  }, \n'
+        '  &quot;type&quot;: &quot;object&quot;\n'
+        '}</dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>'
         '<dl style="style_dd dl;">'

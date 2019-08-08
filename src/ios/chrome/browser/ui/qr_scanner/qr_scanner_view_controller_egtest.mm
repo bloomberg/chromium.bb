@@ -29,6 +29,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -115,8 +116,9 @@ void ShowQRScanner() {
   // Tap the omnibox to get the keyboard accessory view to show up.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                          chrome_test_util::Omnibox()]);
 
   // Tap the QR Code scanner button in the keyboard accessory view.
   id<GREYMatcher> matcher =
@@ -775,7 +777,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   } else {
     TapKeyboardReturnKeyInOmniboxWithText(result);
   }
-  [ChromeEarlGrey waitForWebViewContainingText:response];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:response]);
 
   // Press the back button to get back to the NTP.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]

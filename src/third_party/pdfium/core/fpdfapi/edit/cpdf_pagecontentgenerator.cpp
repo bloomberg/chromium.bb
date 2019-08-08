@@ -73,7 +73,7 @@ bool GetColor(const CPDF_Color* pColor, float* rgb) {
 CPDF_PageContentGenerator::CPDF_PageContentGenerator(
     CPDF_PageObjectHolder* pObjHolder)
     : m_pObjHolder(pObjHolder), m_pDocument(pObjHolder->GetDocument()) {
-  for (const auto& pObj : *pObjHolder->GetPageObjectList()) {
+  for (const auto& pObj : *pObjHolder) {
     if (pObj)
       m_pageObjects.emplace_back(pObj.get());
   }
@@ -200,10 +200,11 @@ ByteString CPDF_PageContentGenerator::RealizeResource(
     const ByteString& bsType) const {
   ASSERT(pResource);
   if (!m_pObjHolder->m_pResources) {
-    m_pObjHolder->m_pResources = m_pDocument->NewIndirect<CPDF_Dictionary>();
-    m_pObjHolder->GetDict()->SetFor(
-        "Resources",
-        m_pObjHolder->m_pResources->MakeReference(m_pDocument.Get()));
+    m_pObjHolder->m_pResources.Reset(
+        m_pDocument->NewIndirect<CPDF_Dictionary>());
+    m_pObjHolder->GetDict()->SetNewFor<CPDF_Reference>(
+        "Resources", m_pDocument.Get(),
+        m_pObjHolder->m_pResources->GetObjNum());
   }
   CPDF_Dictionary* pResList = m_pObjHolder->m_pResources->GetDictFor(bsType);
   if (!pResList)
@@ -218,7 +219,8 @@ ByteString CPDF_PageContentGenerator::RealizeResource(
 
     idnum++;
   }
-  pResList->SetFor(name, pResource->MakeReference(m_pDocument.Get()));
+  pResList->SetNewFor<CPDF_Reference>(name, m_pDocument.Get(),
+                                      pResource->GetObjNum());
   return name;
 }
 
@@ -460,7 +462,7 @@ void CPDF_PageContentGenerator::ProcessGraphics(std::ostringstream* buf,
   if (it != m_pObjHolder->m_GraphicsMap.end()) {
     name = it->second;
   } else {
-    auto gsDict = pdfium::MakeUnique<CPDF_Dictionary>();
+    auto gsDict = pdfium::MakeRetain<CPDF_Dictionary>();
     if (graphD.fillAlpha != 1.0f)
       gsDict->SetNewFor<CPDF_Number>("ca", graphD.fillAlpha);
 
@@ -499,7 +501,7 @@ ByteString CPDF_PageContentGenerator::GetOrCreateDefaultGraphics() const {
     return it->second;
 
   // Otherwise, create them.
-  auto gsDict = pdfium::MakeUnique<CPDF_Dictionary>();
+  auto gsDict = pdfium::MakeRetain<CPDF_Dictionary>();
   gsDict->SetNewFor<CPDF_Number>("ca", defaultGraphics.fillAlpha);
   gsDict->SetNewFor<CPDF_Number>("CA", defaultGraphics.strokeAlpha);
   gsDict->SetNewFor<CPDF_Name>("BM", "Normal");
@@ -543,7 +545,7 @@ void CPDF_PageContentGenerator::ProcessText(std::ostringstream* buf,
     CPDF_Object* pIndirectFont = pFont->GetFontDict();
     if (pIndirectFont->IsInline()) {
       // In this case we assume it must be a standard font
-      auto pFontDict = pdfium::MakeUnique<CPDF_Dictionary>();
+      auto pFontDict = pdfium::MakeRetain<CPDF_Dictionary>();
       pFontDict->SetNewFor<CPDF_Name>("Type", "Font");
       pFontDict->SetNewFor<CPDF_Name>("Subtype", data.type);
       pFontDict->SetNewFor<CPDF_Name>("BaseFont", data.baseFont);

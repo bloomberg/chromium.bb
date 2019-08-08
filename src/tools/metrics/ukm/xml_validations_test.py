@@ -51,6 +51,31 @@ class UkmXmlValidationTest(unittest.TestCase):
     self.assertFalse(success)
     self.assertListEqual(expected_errors, errors)
 
+  def testMetricHasUndefinedEnum(self):
+    ukm_config = self.toUkmConfig("""
+        <ukm-configuration>
+          <event name="Event">
+            <metric name="Metric1" enum="BadEnum"/>
+            <metric name="Metric2" enum="FeatureObserver"/>
+            <metric name="Metric3" unit="ms"/>
+            <metric name="Metric4"/>
+          </event>
+        </ukm-configuration>
+        """.strip())
+    expected_errors = [
+        "Unknown enum BadEnum in ukm metric Event:Metric1.",
+    ]
+
+    expected_warnings = [
+        "Warning: Neither 'enum' or 'unit' is specified for ukm metric "
+        "Event:Metric4.",
+    ]
+
+    validator = UkmXmlValidation(ukm_config)
+    success, errors, warnings = validator.checkMetricTypeIsSpecified()
+    self.assertFalse(success)
+    self.assertListEqual(expected_errors, errors)
+    self.assertListEqual(expected_warnings, warnings)
 
 if __name__ == '__main__':
   unittest.main()

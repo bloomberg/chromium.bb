@@ -125,6 +125,7 @@ Polymer({
       case settings.ContentSettingsTypes.MIDI_DEVICES:
       case settings.ContentSettingsTypes.USB_DEVICES:
       case settings.ContentSettingsTypes.SERIAL_PORTS:
+      case settings.ContentSettingsTypes.BLUETOOTH_SCANNING:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,

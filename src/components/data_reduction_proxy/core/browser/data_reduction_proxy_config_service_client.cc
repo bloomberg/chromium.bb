@@ -270,11 +270,6 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
     return;
   }
 
-  // Strip off query string parameters
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  GURL base_config_service_url =
-      config_service_url_.ReplaceComponents(replacements);
   config_fetch_start_time_ = base::TimeTicks::Now();
 
   RetrieveRemoteConfig();
@@ -475,9 +470,8 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = config_service_url_;
   resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_BYPASS_PROXY |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->load_flags = net::LOAD_BYPASS_PROXY;
+  resource_request->allow_credentials = false;
   // Attach variations headers.
   url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
       std::move(resource_request), variations::InIncognito::kNo,

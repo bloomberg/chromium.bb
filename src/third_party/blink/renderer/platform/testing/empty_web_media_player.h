@@ -61,6 +61,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
              cc::PaintFlags&,
              int already_uploaded_id,
              VideoFrameUploadMetadata*) override {}
+  base::WeakPtr<WebMediaPlayer> AsWeakPtr() override { return nullptr; }
 };
 
 }  // namespace blink

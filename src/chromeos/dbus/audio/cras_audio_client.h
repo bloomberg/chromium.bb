@@ -119,6 +119,15 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // Sets the primary active input node to |node_id|.
   virtual void SetActiveInputNode(uint64_t node_id) = 0;
 
+  // Sets |hotword_model| for the given |node_id|.
+  // |hotword_model| is expected to be in format <language>_<region> with lower
+  // cases. E.g., "en_us".
+  // The callback will receive a boolean which indicates if the hotword model is
+  // successfully set.
+  virtual void SetHotwordModel(uint64_t node_id,
+                               const std::string& hotword_model,
+                               VoidDBusMethodCallback callback) = 0;
+
   // Adds input node |node_id| to the active input list. This is used to add
   // an additional active input node besides the one set by SetActiveInputNode.
   // Note that this action will not trigger an ActiveInputNodeChanged event and

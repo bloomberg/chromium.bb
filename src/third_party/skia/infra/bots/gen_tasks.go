@@ -32,7 +32,6 @@ import (
 const (
 	BUNDLE_RECIPES_NAME        = "Housekeeper-PerCommit-BundleRecipes"
 	ISOLATE_GCLOUD_LINUX_NAME  = "Housekeeper-PerCommit-IsolateGCloudLinux"
-	ISOLATE_GO_DEPS_NAME       = "Housekeeper-PerCommit-IsolateGoDeps"
 	ISOLATE_SKIMAGE_NAME       = "Housekeeper-PerCommit-IsolateSkImage"
 	ISOLATE_SKP_NAME           = "Housekeeper-PerCommit-IsolateSKP"
 	ISOLATE_SVG_NAME           = "Housekeeper-PerCommit-IsolateSVG"
@@ -43,7 +42,7 @@ const (
 	DEFAULT_OS_DEBIAN    = "Debian-9.4"
 	DEFAULT_OS_LINUX_GCE = "Debian-9.8"
 	DEFAULT_OS_MAC       = "Mac-10.13.6"
-	DEFAULT_OS_WIN       = "Windows-2016Server-14393"
+	DEFAULT_OS_WIN       = "Windows-Server-14393"
 
 	DEFAULT_PROJECT = "skia"
 
@@ -127,6 +126,10 @@ var (
 		&specs.Cache{
 			Name: "go_cache",
 			Path: "cache/go_cache",
+		},
+		&specs.Cache{
+			Name: "gopath",
+			Path: "cache/gopath",
 		},
 	}
 	CACHES_WORKDIR = []*specs.Cache{
@@ -452,7 +455,7 @@ func defaultSwarmDimensions(parts map[string]string) []string {
 			"Mac10.14":   "Mac-10.14.3",
 			"Ubuntu18":   "Ubuntu-18.04",
 			"Win":        DEFAULT_OS_WIN,
-			"Win10":      "Windows-10-17763.557",
+			"Win10":      "Windows-10-18362",
 			"Win2016":    DEFAULT_OS_WIN,
 			"Win7":       "Windows-7-SP1",
 			"Win8":       "Windows-8.1-SP0",
@@ -462,8 +465,8 @@ func defaultSwarmDimensions(parts map[string]string) []string {
 			glog.Fatalf("Entry %q not found in OS mapping.", os)
 		}
 		if os == "Win10" && parts["model"] == "Golo" {
-			// ChOps-owned machines have Windows 10 v1709, but a slightly different version than Skolo.
-			d["os"] = "Windows-10-16299.309"
+			// ChOps-owned machines have Windows 10 v1709.
+			d["os"] = "Windows-10-16299"
 		}
 		if d["os"] == DEFAULT_OS_WIN {
 			// Upgrades result in a new image but not a new OS version.
@@ -479,7 +482,7 @@ func defaultSwarmDimensions(parts map[string]string) []string {
 			deviceInfo, ok := map[string][]string{
 				"AndroidOne":      {"sprout", "MOB30Q"},
 				"Chorizo":         {"chorizo", "1.30_109591"},
-				"GalaxyS6":        {"zerofltetmo", "NRD90M_G920TUVU5FQK1"},
+				"GalaxyS6":        {"zerofltetmo", "NRD90M_G920TUVS6FRC1"},
 				"GalaxyS7_G930FD": {"herolte", "R16NW_G930FXXS2ERH6"}, // This is Oreo.
 				"GalaxyS9":        {"starlte", "R16NW_G960FXXU2BRJ8"}, // This is Oreo.
 				"MotoG4":          {"athene", "NPJS25.93-14.7-8"},
@@ -488,6 +491,7 @@ func defaultSwarmDimensions(parts map[string]string) []string {
 				"Nexus5x":         {"bullhead", "OPR6.170623.023"},
 				"Nexus7":          {"grouper", "LMY47V_1836172"}, // 2012 Nexus 7
 				"NexusPlayer":     {"fugu", "OPR2.170623.027"},
+				"P30":             {"HWELE", "HUAWEIELE-L29"},
 				"Pixel":           {"sailfish", "PPR1.180610.009"},
 				"Pixel2XL":        {"taimen", "PPR1.180610.009"},
 				"Pixel3":          {"blueline", "PQ1A.190105.004"},
@@ -704,10 +708,6 @@ var ISOLATE_ASSET_MAPPING = map[string]isolateAssetCfg{
 		cipdPkg: "gcloud_linux",
 		path:    "gcloud_linux",
 	},
-	ISOLATE_GO_DEPS_NAME: {
-		cipdPkg: "go_deps",
-		path:    "go_deps",
-	},
 	ISOLATE_SKIMAGE_NAME: {
 		cipdPkg: "skimage",
 		path:    "skimage",
@@ -783,11 +783,9 @@ func usesGit(t *specs.TaskSpec, name string) {
 
 // usesGo adds attributes to tasks which use go. Recipes should use
 // "with api.context(env=api.infra.go_env)".
-// (Not needed for tasks that just want to run Go code from the infra repo -- instead use go_deps.)
 func usesGo(b *specs.TasksCfgBuilder, t *specs.TaskSpec) {
 	t.Caches = append(t.Caches, CACHES_GO...)
 	t.CipdPackages = append(t.CipdPackages, b.MustGetCipdPackageFromAsset("go"))
-	t.Dependencies = append(t.Dependencies, isolateCIPDAsset(b, ISOLATE_GO_DEPS_NAME))
 }
 
 // usesDocker adds attributes to tasks which use docker.
@@ -933,18 +931,6 @@ func recreateSKPs(b *specs.TasksCfgBuilder, name string) string {
 	task.CipdPackages = append(task.CipdPackages, CIPD_PKGS_GIT...)
 	usesGo(b, task)
 	timeout(task, 4*time.Hour)
-	b.MustAddTask(name, task)
-	return name
-}
-
-// updateGoDEPS generates an UpdateGoDEPS task. Returns the name of the last
-// task in the generated chain of tasks, which the Job should add as a
-// dependency.
-func updateGoDEPS(b *specs.TasksCfgBuilder, name string) string {
-	dims := linuxGceDimensions(MACHINE_TYPE_LARGE)
-	task := kitchenTask(name, "update_go_deps", "swarm_recipe.isolate", SERVICE_ACCOUNT_UPDATE_GO_DEPS, dims, nil, OUTPUT_NONE)
-	task.CipdPackages = append(task.CipdPackages, CIPD_PKGS_GIT...)
-	usesGo(b, task)
 	b.MustAddTask(name, task)
 	return name
 }
@@ -1255,11 +1241,6 @@ func process(b *specs.TasksCfgBuilder, name string) {
 		deps = append(deps, recreateSKPs(b, name))
 	}
 
-	// Update Go DEPS.
-	if strings.Contains(name, "UpdateGoDEPS") {
-		deps = append(deps, updateGoDEPS(b, name))
-	}
-
 	// Infra tests.
 	if name == "Housekeeper-PerCommit-InfraTests" {
 		deps = append(deps, infra(b, name))
@@ -1289,7 +1270,6 @@ func process(b *specs.TasksCfgBuilder, name string) {
 
 	// These bots do not need a compile task.
 	if parts["role"] != "Build" &&
-		name != "Housekeeper-Nightly-UpdateGoDEPS" &&
 		name != "Housekeeper-PerCommit-BundleRecipes" &&
 		name != "Housekeeper-PerCommit-InfraTests" &&
 		name != "Housekeeper-PerCommit-CheckGeneratedFiles" &&

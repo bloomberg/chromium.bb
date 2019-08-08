@@ -115,8 +115,7 @@ SSLConnectJob::SSLConnectJob(
       params_(std::move(params)),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))),
-      ssl_negotiation_started_(false),
-      proxy_redirect_(false) {}
+      ssl_negotiation_started_(false) {}
 
 SSLConnectJob::~SSLConnectJob() {
   // In the case the job was canceled, need to delete nested job first to
@@ -178,12 +177,6 @@ void SSLConnectJob::OnNeedsProxyAuth(
 
 ConnectionAttempts SSLConnectJob::GetConnectionAttempts() const {
   return connection_attempts_;
-}
-
-std::unique_ptr<StreamSocket> SSLConnectJob::PassProxySocketOnFailure() {
-  if (proxy_redirect_)
-    return std::move(nested_socket_);
-  return nullptr;
 }
 
 bool SSLConnectJob::IsSSLError() const {
@@ -322,9 +315,6 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
     // |GetAdditionalErrorState|, we can easily set the state.
     if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
       ssl_cert_request_info_ = nested_connect_job_->GetCertRequestInfo();
-    } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
-      proxy_redirect_ = true;
-      connect_timing_ = nested_connect_job_->connect_timing();
     }
     return result;
   }
@@ -395,10 +385,18 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     bool has_ssl_info = ssl_socket_->GetSSLInfo(&ssl_info);
     DCHECK(has_ssl_info);
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.SSLVersion",
-        SSLConnectionStatusToVersion(ssl_info.connection_status),
-        SSL_CONNECTION_VERSION_MAX);
+    SSLVersion version =
+        SSLConnectionStatusToVersion(ssl_info.connection_status);
+    UMA_HISTOGRAM_ENUMERATION("Net.SSLVersion", version,
+                              SSL_CONNECTION_VERSION_MAX);
+    if (IsGoogleHost(host)) {
+      // Google hosts all support TLS 1.2, so any occurrences of TLS 1.0 or TLS
+      // 1.1 will be from an outdated insecure TLS MITM proxy, such as some
+      // antivirus configurations. TLS 1.0 and 1.1 are deprecated, so record
+      // these to see how prevalent they are. See https://crbug.com/896013.
+      UMA_HISTOGRAM_ENUMERATION("Net.SSLVersionGoogle", version,
+                                SSL_CONNECTION_VERSION_MAX);
+    }
 
     uint16_t cipher_suite =
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
@@ -429,14 +427,10 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     }
   }
 
-  // Don't double-count the version interference probes.
-  if (!params_->ssl_config().version_interference_probe) {
-    base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
-
-    if (tls13_supported) {
-      base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
-                               std::abs(result));
-    }
+  base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
+  if (tls13_supported) {
+    base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
+                             std::abs(result));
   }
 
   if (result == OK || IsCertificateError(result)) {

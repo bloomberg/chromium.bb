@@ -5,7 +5,8 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -15,7 +16,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/base/ui_base_types.h"
@@ -32,9 +32,10 @@ namespace {
 // test lock screen widget.
 class LockScreenSessionControllerClient : public TestSessionControllerClient {
  public:
-  explicit LockScreenSessionControllerClient(SessionController* controller)
-      : TestSessionControllerClient(controller) {
-    InitializeAndBind();
+  LockScreenSessionControllerClient(SessionControllerImpl* controller,
+                                    TestPrefServiceProvider* prefs_provider)
+      : TestSessionControllerClient(controller, prefs_provider) {
+    InitializeAndSetClient();
     CreatePredefinedUserSessions(1);
   }
   ~LockScreenSessionControllerClient() override = default;
@@ -96,7 +97,8 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     AshTestBase::SetUp();
     ash_test_helper()->set_test_session_controller_client(
         std::make_unique<LockScreenSessionControllerClient>(
-            Shell::Get()->session_controller()));
+            Shell::Get()->session_controller(),
+            ash_test_helper()->prefs_provider()));
   }
 
   aura::Window* CreateWindowInActiveDesk() {
@@ -146,9 +148,9 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     window->Init(ui::LAYER_TEXTURED);
     window->Show();
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorCanMaximize |
-                            ws::mojom::kResizeBehaviorCanMinimize |
-                            ws::mojom::kResizeBehaviorCanResize);
+                        aura::client::kResizeBehaviorCanMaximize |
+                            aura::client::kResizeBehaviorCanMinimize |
+                            aura::client::kResizeBehaviorCanResize);
     container->AddChild(window);
     return window;
   }

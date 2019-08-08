@@ -8,11 +8,11 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#import "components/remote_cocoa/app_shim/views_scrollbar_bridge.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/views_export.h"
-#import "ui/views_bridge_mac/views_scrollbar_bridge.h"
 
 namespace views {
 

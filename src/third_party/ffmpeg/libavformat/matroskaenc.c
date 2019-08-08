@@ -694,8 +694,10 @@ static int put_flac_codecpriv(AVFormatContext *s,
         av_dict_set(&dict, "WAVEFORMATEXTENSIBLE_CHANNEL_MASK", buf, 0);
 
         len = ff_vorbiscomment_length(dict, vendor, NULL, 0);
-        if (len >= ((1<<24) - 4))
+        if (len >= ((1<<24) - 4)) {
+            av_dict_free(&dict);
             return AVERROR(EINVAL);
+        }
 
         data = av_malloc(len + 4);
         if (!data) {
@@ -2534,7 +2536,8 @@ static int mkv_write_packet(AVFormatContext *s, AVPacket *pkt)
     // buffer an audio packet to ensure the packet containing the video
     // keyframe's timecode is contained in the same cluster for WebM
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
-        ret = av_packet_ref(&mkv->cur_audio_pkt, pkt);
+        if (pkt->size > 0)
+            ret = av_packet_ref(&mkv->cur_audio_pkt, pkt);
     } else
         ret = mkv_write_packet_internal(s, pkt, 0);
     return ret;

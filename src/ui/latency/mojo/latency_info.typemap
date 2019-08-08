@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//ui/latency/mojo/latency_info.mojom"
-public_headers = [
-  "//ipc/ipc_message_utils.h",
-  "//ui/latency/latency_info.h",
-]
+public_headers = [ "//ui/latency/latency_info.h" ]
 traits_headers = [ "//ui/latency/mojo/latency_info_struct_traits.h" ]
 sources = [
   "latency_info_struct_traits.cc",

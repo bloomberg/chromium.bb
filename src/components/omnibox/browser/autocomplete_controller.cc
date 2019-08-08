@@ -653,9 +653,6 @@ void AutocompleteController::UpdateAssociatedKeywords(
 
 void AutocompleteController::UpdateKeywordDescriptions(
     AutocompleteResult* result) {
-  bool show_suffix_on_all_search_suggestions = base::FeatureList::IsEnabled(
-      omnibox::kUIExperimentShowSuffixOnAllSearchSuggestions);
-
   base::string16 last_keyword;
   for (auto i(result->begin()); i != result->end(); ++i) {
     if (AutocompleteMatch::IsSearchType(i->type)) {
@@ -664,8 +661,7 @@ void AutocompleteController::UpdateKeywordDescriptions(
       i->description.clear();
       i->description_class.clear();
       DCHECK(!i->keyword.empty());
-      if (show_suffix_on_all_search_suggestions ||
-          (i->keyword != last_keyword &&
+      if ((i->keyword != last_keyword &&
            !ShouldCurbKeywordDescriptions(i->keyword))) {
         const TemplateURL* template_url =
             i->GetTemplateURL(template_url_service_, false);

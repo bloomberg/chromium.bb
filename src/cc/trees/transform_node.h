@@ -105,11 +105,6 @@ struct CC_EXPORT TransformNode {
 
   bool should_be_snapped : 1;
 
-  // These are used to position nodes wrt the right or bottom of the inner or
-  // outer viewport.
-  bool moved_by_inner_viewport_bounds_delta_x : 1;
-  bool moved_by_inner_viewport_bounds_delta_y : 1;
-
   // These are used by the compositor to determine which layers need to be
   // repositioned by the compositor as a result of browser controls
   // expanding/contracting the outer viewport size before Blink repositions the
@@ -143,8 +138,8 @@ struct CC_EXPORT TransformNode {
   gfx::Vector2dF source_offset;
   gfx::Vector2dF source_to_parent;
 
-  // See ElementAnimations::MaximumTargetScale() and AnimationStartScale() for
-  // their meanings. Updated by PropertyTrees::AnimationScalesChanged().
+  // See MutatorHost::GetAnimationScales() for their meanings. Updated by
+  // PropertyTrees::AnimationScalesChanged().
   float maximum_animation_scale;
   float starting_animation_scale;
 

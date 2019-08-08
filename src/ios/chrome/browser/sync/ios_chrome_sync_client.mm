@@ -18,7 +18,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
@@ -34,7 +33,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_service.h"
@@ -42,10 +40,10 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
-#include "components/sync/user_events/user_event_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_sync_service_factory.h"
@@ -223,23 +221,19 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return browser_state_->GetSyncablePrefs()
           ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
           ->AsWeakPtr();
-    case syncer::AUTOFILL_PROFILE:
-    case syncer::AUTOFILL_WALLET_DATA:
+    case syncer::AUTOFILL_PROFILE: {
+      if (!profile_web_data_service_)
+        return base::WeakPtr<syncer::SyncableService>();
+      return autofill::AutofillProfileSyncableService::FromWebDataService(
+                 profile_web_data_service_.get())
+          ->AsWeakPtr();
+    }
     case syncer::AUTOFILL_WALLET_METADATA: {
       if (!profile_web_data_service_)
         return base::WeakPtr<syncer::SyncableService>();
-      if (type == syncer::AUTOFILL_PROFILE) {
-        return autofill::AutofillProfileSyncableService::FromWebDataService(
-                   profile_web_data_service_.get())
-            ->AsWeakPtr();
-      } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(profile_web_data_service_.get())
-                ->AsWeakPtr();
-      }
-      return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
-          ->AsWeakPtr();
+      return autofill::AutofillWalletMetadataSyncableService::
+          FromWebDataService(profile_web_data_service_.get())
+              ->AsWeakPtr();
     }
     case syncer::HISTORY_DELETE_DIRECTIVES: {
       history::HistoryService* history =

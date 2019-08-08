@@ -15,6 +15,11 @@ MODULES = [
     'local_storage_cache_test',
 ]
 
+# We use absolute imports for Py3 compatibility.
+# This means for imports to resolve when testing we need to add the pynacl
+# directory to the module search path.
+sys.path.insert(0, './')
+
 suite = unittest.TestLoader().loadTestsFromNames(MODULES)
 result = unittest.TextTestRunner(verbosity=2).run(suite)
 if result.wasSuccessful():

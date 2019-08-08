@@ -52,8 +52,7 @@ class MockNativeMessageHost : public extensions::NativeMessageHost {
 };
 
 // Test fixture for testing native messaging API when the communication is
-// initiated by the native application. Is parameterized to allow testing with
-// and without native (C++-based) extension bindings.
+// initiated by the native application.
 class ExtensionIncomingNativeMessagingTest
     : public extensions::ExtensionApiTest {
  protected:

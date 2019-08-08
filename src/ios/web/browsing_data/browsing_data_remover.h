@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
-#import "ios/web/public/browsing_data_removing_util.h"
+#import "ios/web/public/browsing_data/browsing_data_removing_util.h"
 
 @protocol BrowsingDataRemoverObserver;
 @class WKWebView;

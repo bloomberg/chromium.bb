@@ -11,7 +11,7 @@ namespace features {
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
@@ -21,6 +21,10 @@ const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables Crostini GPU support.
+const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Crostini support for usb mounting.
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
@@ -47,10 +51,20 @@ const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the piex-wasm module for raw image preview image extraction.
+const base::Feature kEnableFileManagerPiexWasm{
+    "PiexWasm", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables web push for background notifications in
 // Android Messages Integration on Chrome OS.
 const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the use of Mojo by Chrome-process code to communicate with Power
+// Manager. In order to use mojo, this feature must be turned on and a callsite
+// must use PowerManagerMojoClient::Get().
+const base::Feature kMojoDBusRelay{"MojoDBusRelay",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, MyFiles will be a root/volume and user can create other
 // sub-folders and files in addition to the Downloads folder inside MyFiles.
@@ -71,18 +85,30 @@ const base::Feature kFsNosymfollow{"FsNosymfollow",
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, allows the qualified IME extension to connect to IME service.
-const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
+// (~2018-11) model.
+const base::Feature kSmartDimModelV3{"SmartDimModelV3",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Splits OS settings (display, mouse, keyboard, etc.) out from browser settings
 // into a separate window.
 const base::Feature kSplitSettings{"SplitSettings",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, a new screen will be shown at the end of the OOBE/Login for
+// supervised users. It will display a loading page while we fetch
+// eligibility data.
+const base::Feature kSupervisionOnboardingEligibility{
+    "SupervisionOnboardingEligibility", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, we will display the full onboarding flow for eligible supervised
+// users.
+const base::Feature kSupervisionOnboardingScreens{
+    "SupervisionOnboardingScreens", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{
@@ -105,14 +131,18 @@ const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables ML service inferencing (instead of TFNative inferencing)
-// for the Smart Dim feature on Chrome OS.
-const base::Feature kUserActivityPredictionMlService{
-    "UserActivityPredictionMlService", base::FEATURE_DISABLED_BY_DEFAULT};
+// Remap search+click to right click instead of the legacy alt+click on
+// Chrome OS.
+const base::Feature kUseSearchClickForRightClick{
+    "UseSearchClickForRightClick", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsSplitSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kSplitSettings);
+}
 
 }  // namespace features
 

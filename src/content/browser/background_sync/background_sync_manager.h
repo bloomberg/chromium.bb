@@ -24,7 +24,7 @@
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
@@ -58,6 +58,7 @@ class CONTENT_EXPORT BackgroundSyncManager
     : public ServiceWorkerContextCoreObserver {
  public:
   using BoolCallback = base::OnceCallback<void(bool)>;
+  using StatusCallback = base::OnceCallback<void(BackgroundSyncStatus)>;
   using StatusAndRegistrationCallback =
       base::OnceCallback<void(BackgroundSyncStatus,
                               std::unique_ptr<BackgroundSyncRegistration>)>;
@@ -69,7 +70,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   static std::unique_ptr<BackgroundSyncManager> Create(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
   ~BackgroundSyncManager() override;
 
   // Stores the given background sync registration and adds it to the scheduling
@@ -83,16 +84,29 @@ class CONTENT_EXPORT BackgroundSyncManager
                 blink::mojom::SyncRegistrationOptions options,
                 StatusAndRegistrationCallback callback);
 
+  // Removes the Periodic Background Sync registration identified by |tag| for
+  // the service worker identified by |sw_registration_id|. Calls |callback|
+  // with BACKGROUND_SYNC_STATUS_OK on success.
+  void UnregisterPeriodicSync(int64_t sw_registration_id,
+                              const std::string& tag,
+                              StatusCallback callback);
+
   // Called after the client has resolved its registration promise. At this
   // point it's safe to fire any pending registrations.
   void DidResolveRegistration(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info);
 
-  // Finds the background sync registrations associated with
+  // Finds the one-shot Background Sync registrations associated with
   // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
   // success.
-  void GetRegistrations(int64_t sw_registration_id,
-                        StatusAndRegistrationsCallback callback);
+  void GetOneShotSyncRegistrations(int64_t sw_registration_id,
+                                   StatusAndRegistrationsCallback callback);
+
+  // Finds the periodic Background Sync registrations associated with
+  // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
+  // success.
+  void GetPeriodicSyncRegistrations(int64_t sw_registration_id,
+                                    StatusAndRegistrationsCallback callback);
 
   // ServiceWorkerContextCoreObserver overrides.
   void OnRegistrationDeleted(int64_t sw_registration_id,
@@ -138,7 +152,7 @@ class CONTENT_EXPORT BackgroundSyncManager
  protected:
   BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
 
   // Init must be called before any public member function. Only call it once.
   void Init();
@@ -157,6 +171,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::string& tag,
       scoped_refptr<ServiceWorkerVersion> active_version,
       bool last_chance,
+      ServiceWorkerVersion::StatusCallback callback);
+  virtual void DispatchPeriodicSyncEvent(
+      const std::string& tag,
+      scoped_refptr<ServiceWorkerVersion> active_version,
       ServiceWorkerVersion::StatusCallback callback);
   virtual void ScheduleDelayedTask(base::OnceClosure callback,
                                    base::TimeDelta delay);
@@ -222,6 +240,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
 
+  void GetRegistrations(blink::mojom::BackgroundSyncType sync_type,
+                        int64_t sw_registration_id,
+                        StatusAndRegistrationsCallback callback);
+
   // Register callbacks
   void RegisterCheckIfHasMainFrame(
       int64_t sw_registration_id,
@@ -239,7 +261,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       int64_t sw_registration_id,
       blink::mojom::SyncRegistrationOptions options,
       StatusAndRegistrationCallback callback,
-      blink::mojom::PermissionStatus permission_status);
+      std::pair<blink::mojom::PermissionStatus, blink::mojom::PermissionStatus>
+          permission_statuses);
   void RegisterDidGetDelay(int64_t sw_registration_id,
                            BackgroundSyncRegistration new_registration,
                            StatusAndRegistrationCallback callback,
@@ -248,6 +271,11 @@ class CONTENT_EXPORT BackgroundSyncManager
                         const BackgroundSyncRegistration& new_registration,
                         StatusAndRegistrationCallback callback,
                         blink::ServiceWorkerStatusCode status);
+  void UnregisterPeriodicSyncImpl(int64_t sw_registration_id,
+                                  const std::string& tag,
+                                  StatusCallback callback);
+  void UnregisterPeriodicSyncDidStore(StatusCallback callback,
+                                      blink::ServiceWorkerStatusCode status);
 
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(
@@ -256,7 +284,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
   // GetRegistrations callbacks
-  void GetRegistrationsImpl(int64_t sw_registration_id,
+  void GetRegistrationsImpl(blink::mojom::BackgroundSyncType sync_type,
+                            int64_t sw_registration_id,
                             StatusAndRegistrationsCallback callback);
 
   bool AreOptionConditionsMet();
@@ -338,7 +367,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  scoped_refptr<DevToolsBackgroundServicesContext> devtools_context_;
+  scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context_;
 
   std::unique_ptr<BackgroundSyncParameters> parameters_;
 

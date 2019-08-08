@@ -58,7 +58,7 @@ CPDFSDK_PageView::~CPDFSDK_PageView() {
   CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr =
       m_pFormFillEnv->GetAnnotHandlerMgr();
   for (CPDFSDK_Annot* pAnnot : m_SDKAnnotArray)
-    pAnnotHandlerMgr->ReleaseAnnot(pAnnot);
+    pAnnotHandlerMgr->ReleaseAnnot(pdfium::WrapUnique(pAnnot));
 
   m_SDKAnnotArray.clear();
   m_pAnnotList.reset();
@@ -179,7 +179,7 @@ bool CPDFSDK_PageView::DeleteAnnot(CPDFSDK_Annot* pAnnot) {
     CPDFSDK_AnnotHandlerMgr* pAnnotHandler =
         m_pFormFillEnv->GetAnnotHandlerMgr();
     if (pAnnotHandler)
-      pAnnotHandler->ReleaseAnnot(pObserved.Get());
+      pAnnotHandler->ReleaseAnnot(pdfium::WrapUnique(pObserved.Get()));
   }
 
   auto it = std::find(m_SDKAnnotArray.begin(), m_SDKAnnotArray.end(), pAnnot);
@@ -555,7 +555,7 @@ int CPDFSDK_PageView::GetPageIndex() const {
   switch (pContext->GetFormType()) {
     case FormType::kXFAFull: {
       CXFA_FFPageView* pPageView = m_page->AsXFAPage()->GetXFAPageView();
-      return pPageView ? pPageView->GetPageIndex() : -1;
+      return pPageView ? pPageView->GetLayoutItem()->GetPageIndex() : -1;
     }
     case FormType::kNone:
     case FormType::kAcroForm:

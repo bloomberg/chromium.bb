@@ -24,7 +24,7 @@ namespace rr
 
 		virtual ~Routine();
 
-		virtual const void *getEntry() = 0;
+		virtual const void *getEntry(int index = 0) = 0;
 
 		// Reference counting
 		void bind();

@@ -92,11 +92,8 @@ class NotificationChannelsBridgeImpl
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobjectArray> raw_channels =
         Java_NotificationSettingsBridge_getSiteChannels(env);
-    jsize num_channels = env->GetArrayLength(raw_channels.obj());
     std::vector<NotificationChannel> channels;
-    for (jsize i = 0; i < num_channels; ++i) {
-      ScopedJavaLocalRef<jobject> jchannel(
-          env, env->GetObjectArrayElement(raw_channels.obj(), i));
+    for (auto jchannel : raw_channels.ReadElements<jobject>()) {
       channels.push_back(NotificationChannel(
           ConvertJavaStringToUTF8(Java_SiteChannel_getId(env, jchannel)),
           ConvertJavaStringToUTF8(Java_SiteChannel_getOrigin(env, jchannel)),
@@ -310,7 +307,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
-    base::Value* value) {
+    std::unique_ptr<base::Value>&& value) {
   if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
       !platform_supports_channels_) {
     return false;
@@ -328,7 +325,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
   DCHECK(!origin.opaque());
   const std::string origin_string = origin.Serialize();
 
-  ContentSetting setting = content_settings::ValueToContentSetting(value);
+  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
       CreateChannelIfRequired(origin_string,
@@ -351,7 +348,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
       NOTREACHED();
       break;
   }
-  delete value;
+  value.reset();
   return true;
 }
 

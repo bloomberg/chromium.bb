@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">slīdnis</translation>
 <translation id="1211441953136645838">beigu vēre</translation>
 <translation id="1281252709823657822">dialoglodziņš</translation>
-<translation id="1289247557029249093">Iziet no režīma “Attēls attēlā”</translation>
 <translation id="1335095011850992622">pateicības</translation>
 <translation id="1342835525016946179">raksts</translation>
 <translation id="1359897965706325498">reklāmkarogs</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2158401438286456825">lapu saraksts</translation>
 <translation id="2226276347425096477">Lūdzu, saīsiniet šo tekstu līdz <ph name="MAX_CHARACTERS" /> vai mazāk zīmēm (pašreiz tas ietver <ph name="CURRENT_LENGTH" /> rakstzīmes).</translation>
+<translation id="2246498165605549352">Lokāls fails</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" />. nedēļa, <ph name="YEAR" />. gads</translation>
 <translation id="2277199496770840904"><ph name="NUMBER" />. ieraksts</translation>
 <translation id="2291999235780842123">izvēles rūtiņa</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Attēls bez iezīmes</translation>
 <translation id="3706100364254443312">slēdzis</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Iziet no režīma “Attēls attēlā”</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">vārds</translation>
 <translation id="3822383571486410024">Lūdzu, papildiniet šo tekstu līdz vismaz <ph name="MIN_CHARACTERS" /> rakstzīmēm (pašlaik tas ietver <ph name="CURRENT_LENGTH" /> rakstzīmes).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">koks</translation>
 <translation id="4664250907885839816">Daļā, kas atrodas aiz zīmes <ph name="ATSIGN" />, nedrīkst būt ietverts simbols <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="4668956016107839909">pielikums</translation>
+<translation id="4718048029184481307">Tiek atskaņots režīmā “Attēls attēlā”</translation>
 <translation id="4742539557769756338">vāks</translation>
 <translation id="4748357248530471599">pārslēdz displeja izgriezuma apgabalu pilnekrāna režīmā</translation>
 <translation id="4757246831282535685">ciļņu panelis</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">pēcvārds</translation>
 <translation id="6209276755895393898">Šķiet, ka tas ir: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosārijs</translation>
-<translation id="628938136236500310">Tiek atskaņots režīmā “Attēls attēlā”</translation>
+<translation id="6310801910862476708">Aizvērt režīmu “Attēls attēlā”</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
 <translation id="6404546809543547843">audio laika skalas slīdnis</translation>
 <translation id="6443871981718447451">rādīt slēgto parakstu izvēlni</translation>

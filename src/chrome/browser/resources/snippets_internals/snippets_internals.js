@@ -199,16 +199,6 @@ function setupEventListeners() {
     pageHandler.reloadSuggestions();
   });
 
-  $('debug-log-dump').addEventListener('click', function(event) {
-    pageHandler.getDebugLog().then(function(response) {
-      let logs = response.debugLog;
-      if (logs === '') {
-        logs = 'No data yet. Have you enabled debug logging in chrome://flags?';
-      }
-      downloadData('debug_log.txt', 'text/plain', logs);
-    });
-  });
-
   $('clear-cached-suggestions').addEventListener('click', function(event) {
     pageHandler.clearCachedSuggestions();
   });
@@ -242,16 +232,6 @@ function setupEventListeners() {
       downloadJson('last_snippets.json', response.json);
     });
   });
-
-  $('reset-notifications-state-button')
-      .addEventListener('click', function(event) {
-        pageHandler.resetNotificationState();
-      });
-
-  $('reset-notifications-state-button')
-      .addEventListener('click', function(event) {
-        pageHandler.resetNotificationState();
-      });
 
   $('submit-dump').addEventListener('click', function(event) {
     pageHandler.getSuggestionsByCategory().then(function(response) {

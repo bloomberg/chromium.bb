@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: depot_tools_tutorial
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 12/15/2016
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 05/03/2019
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools f72f1ad
+.\"    Source: depot_tools e58cce6c
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS_TUTORIAL" "7" "12/15/2016" "depot_tools f72f1ad" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS_TUTORIAL" "7" "05/03/2019" "depot_tools e58cce6c" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -222,13 +222,13 @@ Clone the \fIdepot_tools\fR repository:
 .\}
 .sp
 .sp
-Add \fIdepot_tools\fR to the \fIfront\fR of your PATH (you will probably want to put this in your ~/\&.bashrc or ~/\&.zshrc)\&. Assuming you cloned \fIdepot_tools\fR to /path/to/depot_tools:
+Add \fIdepot_tools\fR to the \fIend\fR of your PATH (you will probably want to put this in your ~/\&.bashrc or ~/\&.zshrc)\&. Assuming you cloned \fIdepot_tools\fR to /path/to/depot_tools:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-\fB$ export PATH=/path/to/depot_tools:$PATH\fR
+\fB$ export PATH=$PATH:/path/to/depot_tools\fR
 .fi
 .if n \{\
 .RE
@@ -582,11 +582,11 @@ It was a Domo\-Kuun\&.
 * \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
 * \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
 \fB$ git status\fR
-# On branch fix_typo
-# Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
-#   (use "git push" to publish your local commits)
-#
-nothing to commit, working directory clean
+On branch fix_typo
+Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
 \fB$ git cl upload \-r domo@chromium\&.org \-\-send\-mail\fR
 \&.\&.\&. truncated output \&.\&.\&.
 .fi
@@ -612,15 +612,15 @@ overhead, barely disturbing the thick cigarette smoke\&. No doubt was left about
 when the fan was last cleaned\&.
 EOF
 \fB$ git status\fR
-# On branch chap2
-# Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
-#
-# Changes not staged for commit:
-#   (use "git add <file>\&.\&.\&." to update what will be committed)
-#   (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
-#
-#	modified:   build/whitespace_file\&.txt
-#
+On branch chap2
+Your branch is up to date with \*(Aqorigin/master\*(Aq\&.
+
+Changes not staged for commit:
+  (use "git add <file>\&.\&.\&." to update what will be committed)
+  (use "git restore <file>\&.\&.\&." to discard changes in working directory)
+
+	modified:   build/whitespace_file\&.txt
+
 no changes added to commit (use "git add" and/or "git commit \-a")
 .fi
 .if n \{\
@@ -701,20 +701,26 @@ origin/master
   chap2
 \fB  fix_typo *
 $ git nav\-upstream\fR
-Note: checking out \*(Aqorigin/master\*(Aq\&.
+Note: switching to \*(Aqorigin/master\*(Aq\&.
 
 You are in \*(Aqdetached HEAD\*(Aq state\&. You can look around, make experimental
 changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by performing another checkout\&.
+state without impacting any branches by switching back to a branch\&.
 
 If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using \-b with the checkout command again\&. Example:
+do so (now or later) by using \-c with the switch command\&. Example:
 
-  git checkout \-b <new\-branch\-name>
+  git switch \-c <new\-branch\-name>
 
-HEAD is now at beec6f4\&.\&.\&. Make ReflectorImpl use mailboxes
+Or undo this operation with:
+
+  git switch \-
+
+Turn off this advice by setting config variable advice\&.detachedHead to false
+
+HEAD is now at beec6f4 Make ReflectorImpl use mailboxes
 \fB$ git nav\-downstream\fR
-Previous HEAD position was beec6f4\&.\&.\&. Make ReflectorImpl use mailboxes
+Previous HEAD position was beec6f4 Make ReflectorImpl use mailboxes
 Switched to branch \*(Aqchap2\*(Aq
 Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
   (use "git push" to publish your local commits)
@@ -909,7 +915,7 @@ Rebasing: chap2
   There was an poignant pause\&.
 
   CHAPTER 3:
-++<<<<<<< 59cdb7335b1c3a159ecc22214441cbe2194de25c
+++<<<<<<< HEAD
  +Hilariousness! This chapter is awesome!
 ++=======
 + Mr\&. Usagi felt that something wasn\*(Aqt right\&. Shortly after the Domo\-Kun left he

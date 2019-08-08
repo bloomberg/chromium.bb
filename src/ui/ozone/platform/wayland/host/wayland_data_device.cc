@@ -175,7 +175,7 @@ void WaylandDataDevice::ReadClipboardDataFromFD(base::ScopedFD fd,
                                                 const std::string& mime_type) {
   std::string contents;
   ReadDataFromFD(std::move(fd), &contents);
-  connection_->SetClipboardData(contents, mime_type);
+  connection_->clipboard()->SetData(contents, mime_type);
 }
 
 void WaylandDataDevice::ReadDragDataFromFD(
@@ -208,7 +208,7 @@ void WaylandDataDevice::OnDataOffer(void* data,
                                     wl_data_offer* offer) {
   auto* self = static_cast<WaylandDataDevice*>(data);
 
-  self->connection_->UpdateClipboardSequenceNumber();
+  self->connection_->clipboard()->UpdateSequenceNumber();
 
   DCHECK(!self->new_offer_);
   self->new_offer_.reset(new WaylandDataOffer(offer));
@@ -335,7 +335,7 @@ void WaylandDataDevice::OnSelection(void* data,
     self->selection_offer_.reset();
 
     // Clear Clipboard cache.
-    self->connection_->SetClipboardData(std::string(), std::string());
+    self->connection_->clipboard()->SetData(std::string(), std::string());
     return;
   }
 

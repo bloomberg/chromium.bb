@@ -107,7 +107,7 @@ CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
 
 void AssistantViewDelegateImpl::DownloadImage(
     const GURL& url,
-    mojom::AssistantImageDownloader::DownloadCallback callback) {
+    AssistantImageDownloader::DownloadCallback callback) {
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 

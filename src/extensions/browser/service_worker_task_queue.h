@@ -75,8 +75,8 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   class TestObserver {
    public:
-    TestObserver() = default;
-    virtual ~TestObserver() = default;
+    TestObserver();
+    virtual ~TestObserver();
 
     // Called when an extension with id |extension_id| is going to be activated.
     // |will_register_service_worker| is true if a Service Worker will be

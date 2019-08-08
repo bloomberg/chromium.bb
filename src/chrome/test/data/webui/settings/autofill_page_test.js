@@ -27,11 +27,9 @@ cr.define('settings_autofill_page', function() {
       element.prefs = prefsElement.prefs;
       document.body.appendChild(element);
 
-      // TODO(dpapad): Update this once migration to Polymer 2 is done.
-      const domIfTag = Polymer.DomIf ? 'dom-if' : 'template';
-      element.$$(`${domIfTag}[route-path="/passwords"]`).if = true;
-      element.$$(`${domIfTag}[route-path="/payments"]`).if = true;
-      element.$$(`${domIfTag}[route-path="/addresses"]`).if = true;
+      element.$$('dom-if[route-path="/passwords"]').if = true;
+      element.$$('dom-if[route-path="/payments"]').if = true;
+      element.$$('dom-if[route-path="/addresses"]').if = true;
       Polymer.dom.flush();
       return element;
     }

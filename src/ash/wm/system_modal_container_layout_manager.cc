@@ -7,16 +7,16 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -131,11 +131,12 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager, Keyboard::KeybaordControllerObserver
+// SystemModalContainerLayoutManager, Keyboard::KeyboardControllerObserver
 // implementation:
 
 void SystemModalContainerLayoutManager::
-    OnKeyboardWorkspaceOccludedBoundsChanged(const gfx::Rect& new_bounds) {
+    OnKeyboardWorkspaceOccludedBoundsChanged(
+        const gfx::Rect& new_bounds_in_screen) {
   PositionDialogsAfterWorkAreaResize();
 }
 
@@ -258,7 +259,8 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::Get();
   if (keyboard_controller->IsEnabled()) {
-    gfx::Rect bounds = keyboard_controller->GetWorkspaceOccludedBounds();
+    gfx::Rect bounds =
+        keyboard_controller->GetWorkspaceOccludedBoundsInScreen();
     valid_bounds.set_height(
         std::max(0, valid_bounds.height() - bounds.height()));
   }

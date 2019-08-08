@@ -15,6 +15,13 @@
 
 namespace chromeos {
 
+struct SpeechMonitorUtterance {
+  SpeechMonitorUtterance(std::string text_, std::string lang_)
+      : text(text_), lang(lang_) {}
+  std::string text;
+  std::string lang;
+};
+
 // For testing purpose installs itself as the platform speech synthesis engine,
 // allowing it to intercept all speech calls, and then provides a method to
 // block until the next utterance is spoken.
@@ -25,6 +32,8 @@ class SpeechMonitor : public content::TtsPlatform {
 
   // Blocks until the next utterance is spoken, and returns its text.
   std::string GetNextUtterance();
+  // Blocks until the next utterance is spoken, and returns its text.
+  SpeechMonitorUtterance GetNextUtteranceWithLanguage();
 
   // Wait for next utterance and return true if next utterance is ChromeVox
   // enabled message.
@@ -40,11 +49,12 @@ class SpeechMonitor : public content::TtsPlatform {
  private:
   // TtsPlatform implementation.
   bool PlatformImplAvailable() override;
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params) override;
+             const content::UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
   bool StopSpeaking() override;
   bool IsSpeaking() override;
   void GetVoices(std::vector<content::VoiceData>* out_voices) override;
@@ -59,7 +69,8 @@ class SpeechMonitor : public content::TtsPlatform {
   void SetError(const std::string& error) override;
 
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
-  base::circular_deque<std::string> utterance_queue_;
+  // Our list of utterances and specified language.
+  base::circular_deque<SpeechMonitorUtterance> utterance_queue_;
   bool did_stop_ = false;
   std::string error_;
 

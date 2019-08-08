@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 
+#include <utility>
+
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -12,6 +14,7 @@
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -37,8 +40,8 @@ bool ValidateMapSize(uint64_t buffer_size,
     WTF::String message = message_builder.ToString();
 
     exception_state.ThrowRangeError(message);
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kOperationError, message));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, message));
 
     return false;
   }
@@ -128,15 +131,18 @@ void GPUBuffer::OnMapAsyncCallback(ScriptPromiseResolver* resolver,
       }
       break;
     case DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR:
-      resolver->Reject(DOMException::Create(DOMExceptionCode::kOperationError));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError));
       break;
     case DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN:
     case DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST:
-      resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+      resolver->Reject(
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;
     default:
       NOTREACHED();
-      resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+      resolver->Reject(
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;
   }
 }

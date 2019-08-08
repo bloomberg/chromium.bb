@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "ash/app_list/views/search_result_container_view.h"
+#include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "base/macros.h"
 
 namespace app_list {
 
 class ContentsView;
-class SearchResultSuggestionChipView;
 
 // A container that holds the suggestion chips.
 class SuggestionChipContainerView : public SearchResultContainerView {
@@ -22,6 +22,7 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   ~SuggestionChipContainerView() override;
 
   // SearchResultContainerView:
+  SearchResultSuggestionChipView* GetResultViewAt(size_t index) override;
   int DoUpdate() override;
   const char* GetClassName() const override;
 

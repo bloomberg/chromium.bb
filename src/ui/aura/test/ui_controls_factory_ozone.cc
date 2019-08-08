@@ -6,22 +6,15 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
-#include "services/ws/public/mojom/event_injector.mojom.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/env_test_helper.h"
-#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls_aura.h"
 #include "ui/display/display.h"
-#include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
@@ -31,16 +24,11 @@ namespace aura {
 namespace test {
 namespace {
 
-class UIControlsOzone : public ui_controls::UIControlsAura,
-                        display::DisplayObserver {
+class UIControlsOzone : public ui_controls::UIControlsAura {
  public:
   UIControlsOzone(WindowTreeHost* host) : host_(host) {
-    MaybeInitializeEventInjector();
-    display::Screen::GetScreen()->AddObserver(this);
   }
-  ~UIControlsOzone() override {
-    display::Screen::GetScreen()->RemoveObserver(this);
-  }
+  ~UIControlsOzone() override = default;
 
  private:
   // ui_controls::UIControlsAura:
@@ -134,9 +122,6 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
     int64_t display_id = display::kInvalidDisplayId;
     if (!ScreenDIPToHostPixels(&host_location, &display_id))
       return false;
-    last_mouse_location_ = host_location;
-    last_mouse_display_id_ = display_id;
-
     ui::EventType event_type;
 
     if (button_down_mask_)
@@ -159,17 +144,10 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
                                      int button_state,
                                      base::OnceClosure closure,
                                      int accelerator_state) override {
-    gfx::PointF host_location;
+    gfx::PointF host_location(Env::GetInstance()->last_mouse_location());
     int64_t display_id = display::kInvalidDisplayId;
-    if (last_mouse_location_.has_value()) {
-      host_location = last_mouse_location_.value();
-      display_id = last_mouse_display_id_;
-    } else {
-      host_location =
-          gfx::PointF(host_->window()->env()->last_mouse_location());
-      if (!ScreenDIPToHostPixels(&host_location, &display_id))
-        return false;
-    }
+    if (!ScreenDIPToHostPixels(&host_location, &display_id))
+      return false;
 
     int changed_button_flag = 0;
 
@@ -253,40 +231,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   }
 #endif
 
-  // display::DisplayObserver:
-  void OnDisplayRemoved(const display::Display& old_display) override {
-    if (last_mouse_display_id_ == old_display.id()) {
-      last_mouse_display_id_ = display::kInvalidDisplayId;
-      last_mouse_location_.reset();
-    }
-  }
-
   void SendEventToSink(ui::Event* event,
                        int64_t display_id,
                        base::OnceClosure closure) {
-    if (event_injector_) {
-      auto event_to_inject = ui::Event::Clone(*event);
-
-      if (event_to_inject->IsLocatedEvent()) {
-        // EventInjector expects coordinates relative to host and in DIPs.
-        display::Display display;
-        CHECK(display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
-                                                                    &display));
-
-        ui::LocatedEvent* located_event = event_to_inject->AsLocatedEvent();
-        gfx::PointF location_in_host_dip = gfx::ScalePoint(
-            located_event->location_f(), 1 / display.device_scale_factor(),
-            1 / display.device_scale_factor());
-        located_event->set_location_f(location_in_host_dip);
-        located_event->set_root_location_f(location_in_host_dip);
-      }
-
-      event_injector_->InjectEvent(
-          display_id, std::move(event_to_inject),
-          base::BindOnce(&OnWindowServiceProcessedEvent, std::move(closure)));
-      return;
-    }
-
     // Post the task before processing the event. This is necessary in case
     // processing the event results in a nested message loop.
     if (closure) {
@@ -373,18 +320,6 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
     SendEventToSink(&touch_event, display_id, std::move(closure));
   }
 
-  // Initializes EventInjector when Mus. Otherwise do nothing.
-  void MaybeInitializeEventInjector() {
-    if (host_->window()->env()->mode() != Env::Mode::MUS)
-      return;
-
-    DCHECK(aura::test::EnvTestHelper().GetWindowTreeClient());
-    aura::test::EnvTestHelper()
-        .GetWindowTreeClient()
-        ->connector()
-        ->BindInterface(ws::mojom::kServiceName, &event_injector_);
-  }
-
   bool ScreenDIPToHostPixels(gfx::PointF* location, int64_t* display_id) {
     // The location needs to be in display's coordinate.
     display::Display display =
@@ -401,17 +336,6 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   }
 
   WindowTreeHost* host_;
-  ws::mojom::EventInjectorPtr event_injector_;
-
-  // The mouse location for the last SendMouseEventsNotifyWhenDone call. This is
-  // used rather than Env::last_mouse_location() as Env::last_mouse_location()
-  // is updated asynchronously with mus.
-  base::Optional<gfx::PointF> last_mouse_location_;
-
-  // The display ID where the last SendMouseEventsNotifyWhenDone occurred. This
-  // is used along with |last_mouse_location_| to send the mouse event to the
-  // event injector. Not used when Mus is not enabled.
-  int64_t last_mouse_display_id_ = display::kInvalidDisplayId;
 
   // Mask of the mouse buttons currently down. This is static as it needs to
   // track the state globally for all displays. A UIControlsOzone instance is
@@ -428,21 +352,6 @@ unsigned UIControlsOzone::button_down_mask_ = 0;
 
 ui_controls::UIControlsAura* CreateUIControlsAura(WindowTreeHost* host) {
   return new UIControlsOzone(host);
-}
-
-void OnWindowServiceProcessedEvent(base::OnceClosure closure, bool result) {
-  DCHECK(result);
-  if (closure) {
-    // There can be several mojo calls are queued in the window tree client,
-    // which may change the order of the operations unexpectedly. Do not call
-    // WaitForAllChangesToComplete() here, since some in-flight changes might
-    // not be resolved by just waiting (like window-dragging will not finish
-    // until it's cancelled or the mouse or touch is released).
-    // See also: https://crbug.com/916177
-    WindowTreeClientTestApi(EnvTestHelper().GetWindowTreeClient())
-        .FlushForTesting();
-    std::move(closure).Run();
-  }
 }
 
 }  // namespace test

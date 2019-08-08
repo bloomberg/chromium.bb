@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 
+#include <memory>
 #include <utility>
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,11 +18,13 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/imagecapture/image_capture_frame_grabber.h"
 #include "third_party/blink/renderer/modules/imagecapture/media_settings_range.h"
 #include "third_party/blink/renderer/modules/imagecapture/photo_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -126,8 +128,8 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!service_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoServiceError));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
   }
   service_requests_.insert(resolver);
@@ -152,8 +154,8 @@ ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!service_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoServiceError));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
   }
   service_requests_.insert(resolver);
@@ -182,15 +184,15 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The associated Track is in an invalid state."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "The associated Track is in an invalid state."));
     return promise;
   }
 
   if (!service_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoServiceError));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
   }
   service_requests_.insert(resolver);
@@ -204,9 +206,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
     if (photo_capabilities_ &&
         (height < photo_capabilities_->imageHeight()->min() ||
          height > photo_capabilities_->imageHeight()->max())) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "imageHeight setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "imageHeight setting out of range"));
       return promise;
     }
     settings->height = height;
@@ -217,9 +219,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
     if (photo_capabilities_ &&
         (width < photo_capabilities_->imageWidth()->min() ||
          width > photo_capabilities_->imageWidth()->max())) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "imageWidth setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "imageWidth setting out of range"));
       return promise;
     }
     settings->width = width;
@@ -229,9 +231,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
   if (settings->has_red_eye_reduction) {
     if (photo_capabilities_ &&
         !photo_capabilities_->IsRedEyeReductionControllable()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "redEyeReduction is not controllable."));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "redEyeReduction is not controllable."));
       return promise;
     }
     settings->red_eye_reduction = photo_settings->redEyeReduction();
@@ -242,7 +244,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
     const String fill_light_mode = photo_settings->fillLightMode();
     if (photo_capabilities_ && photo_capabilities_->fillLightMode().Find(
                                    fill_light_mode) == kNotFound) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "Unsupported fillLightMode"));
       return promise;
     }
@@ -263,14 +265,14 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The associated Track is in an invalid state."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "The associated Track is in an invalid state."));
     return promise;
   }
   if (!service_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoServiceError));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
     return promise;
   }
 
@@ -304,19 +306,19 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The associated Track is in an invalid state."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "The associated Track is in an invalid state."));
     return promise;
   }
 
   // Create |m_frameGrabber| the first time.
   if (!frame_grabber_) {
-    frame_grabber_ = Platform::Current()->CreateImageCaptureFrameGrabber();
+    frame_grabber_ = std::make_unique<ImageCaptureFrameGrabber>();
   }
 
   if (!frame_grabber_) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, "Couldn't create platform resources"));
     return promise;
   }
@@ -343,8 +345,8 @@ void ImageCapture::SetMediaTrackConstraints(
     const HeapVector<Member<MediaTrackConstraintSet>>& constraints_vector) {
   DCHECK_GT(constraints_vector.size(), 0u);
   if (!service_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoServiceError));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
     return;
   }
   // TODO(mcasas): add support more than one single advanced constraint.
@@ -367,8 +369,8 @@ void ImageCapture::SetMediaTrackConstraints(
       (constraints->hasFocusDistance() && !capabilities_->hasFocusDistance()) ||
       (constraints->hasZoom() && !capabilities_->hasZoom()) ||
       (constraints->hasTorch() && !capabilities_->hasTorch())) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                          "Unsupported constraint(s)"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError, "Unsupported constraint(s)"));
     return;
   }
 
@@ -384,9 +386,9 @@ void ImageCapture::SetMediaTrackConstraints(
         constraints->whiteBalanceMode().GetAsString();
     if (capabilities_->whiteBalanceMode().Find(white_balance_mode) ==
         kNotFound) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "Unsupported whiteBalanceMode."));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Unsupported whiteBalanceMode."));
       return;
     }
     temp_constraints->setWhiteBalanceMode(constraints->whiteBalanceMode());
@@ -397,7 +399,7 @@ void ImageCapture::SetMediaTrackConstraints(
   if (settings->has_exposure_mode) {
     const auto exposure_mode = constraints->exposureMode().GetAsString();
     if (capabilities_->exposureMode().Find(exposure_mode) == kNotFound) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "Unsupported exposureMode."));
       return;
     }
@@ -410,7 +412,7 @@ void ImageCapture::SetMediaTrackConstraints(
   if (settings->has_focus_mode) {
     const auto focus_mode = constraints->focusMode().GetAsString();
     if (capabilities_->focusMode().Find(focus_mode) == kNotFound) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "Unsupported focusMode."));
       return;
     }
@@ -440,9 +442,9 @@ void ImageCapture::SetMediaTrackConstraints(
         constraints->exposureCompensation().GetAsDouble();
     if (exposure_compensation < capabilities_->exposureCompensation()->min() ||
         exposure_compensation > capabilities_->exposureCompensation()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "exposureCompensation setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "exposureCompensation setting out of range"));
       return;
     }
     temp_constraints->setExposureCompensation(
@@ -456,9 +458,9 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto exposure_time = constraints->exposureTime().GetAsDouble();
     if (exposure_time < capabilities_->exposureTime()->min() ||
         exposure_time > capabilities_->exposureTime()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "exposureTime setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "exposureTime setting out of range"));
       return;
     }
     temp_constraints->setExposureTime(constraints->exposureTime());
@@ -471,9 +473,9 @@ void ImageCapture::SetMediaTrackConstraints(
         constraints->colorTemperature().GetAsDouble();
     if (color_temperature < capabilities_->colorTemperature()->min() ||
         color_temperature > capabilities_->colorTemperature()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "colorTemperature setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "colorTemperature setting out of range"));
       return;
     }
     temp_constraints->setColorTemperature(constraints->colorTemperature());
@@ -484,7 +486,7 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto iso = constraints->iso().GetAsDouble();
     if (iso < capabilities_->iso()->min() ||
         iso > capabilities_->iso()->max()) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "iso setting out of range"));
       return;
     }
@@ -498,9 +500,9 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto brightness = constraints->brightness().GetAsDouble();
     if (brightness < capabilities_->brightness()->min() ||
         brightness > capabilities_->brightness()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "brightness setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "brightness setting out of range"));
       return;
     }
     temp_constraints->setBrightness(constraints->brightness());
@@ -512,9 +514,9 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto contrast = constraints->contrast().GetAsDouble();
     if (contrast < capabilities_->contrast()->min() ||
         contrast > capabilities_->contrast()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "contrast setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "contrast setting out of range"));
       return;
     }
     temp_constraints->setContrast(constraints->contrast());
@@ -526,9 +528,9 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto saturation = constraints->saturation().GetAsDouble();
     if (saturation < capabilities_->saturation()->min() ||
         saturation > capabilities_->saturation()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "saturation setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "saturation setting out of range"));
       return;
     }
     temp_constraints->setSaturation(constraints->saturation());
@@ -540,9 +542,9 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto sharpness = constraints->sharpness().GetAsDouble();
     if (sharpness < capabilities_->sharpness()->min() ||
         sharpness > capabilities_->sharpness()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "sharpness setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "sharpness setting out of range"));
       return;
     }
     temp_constraints->setSharpness(constraints->sharpness());
@@ -555,9 +557,9 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto focus_distance = constraints->focusDistance().GetAsDouble();
     if (focus_distance < capabilities_->focusDistance()->min() ||
         focus_distance > capabilities_->focusDistance()->max()) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               "focusDistance setting out of range"));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "focusDistance setting out of range"));
       return;
     }
     temp_constraints->setFocusDistance(constraints->focusDistance());
@@ -569,7 +571,7 @@ void ImageCapture::SetMediaTrackConstraints(
     const auto zoom = constraints->zoom().GetAsDouble();
     if (zoom < capabilities_->zoom()->min() ||
         zoom > capabilities_->zoom()->max()) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "zoom setting out of range"));
       return;
     }
@@ -583,7 +585,7 @@ void ImageCapture::SetMediaTrackConstraints(
   if (settings->has_torch) {
     const auto torch = constraints->torch().GetAsBoolean();
     if (torch && !capabilities_->torch()) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "torch not supported"));
       return;
     }
@@ -689,8 +691,8 @@ void ImageCapture::OnMojoGetPhotoState(
   DCHECK(service_requests_.Contains(resolver));
 
   if (photo_state.is_null()) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
-                                          "platform error"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kUnknownError, "platform error"));
     service_requests_.erase(resolver);
     return;
   }
@@ -740,8 +742,8 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
                        TRACE_EVENT_SCOPE_PROCESS);
 
   if (!result) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
-                                          "setOptions failed"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kUnknownError, "setOptions failed"));
     service_requests_.erase(resolver);
     return;
   }
@@ -766,8 +768,8 @@ void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
 
   // TODO(mcasas): Should be using a mojo::StructTraits.
   if (blob->data.IsEmpty()) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
-                                          "platform error"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kUnknownError, "platform error"));
   } else {
     resolver->Resolve(
         Blob::Create(blob->data.data(), blob->data.size(), blob->mime_type));
@@ -889,8 +891,8 @@ void ImageCapture::UpdateMediaTrackCapabilities(
 void ImageCapture::OnServiceConnectionError() {
   service_.reset();
   for (ScriptPromiseResolver* resolver : service_requests_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoServiceError));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
   }
   service_requests_.clear();
 }

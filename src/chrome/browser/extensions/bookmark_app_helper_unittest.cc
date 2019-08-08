@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/test/base/testing_profile.h"
@@ -121,10 +119,10 @@ WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
 class TestBookmarkAppHelper : public BookmarkAppHelper {
  public:
   TestBookmarkAppHelper(ExtensionService* service,
-                        WebApplicationInfo web_app_info,
+                        const WebApplicationInfo& web_app_info,
                         content::WebContents* contents)
       : BookmarkAppHelper(service->profile(),
-                          web_app_info,
+                          std::make_unique<WebApplicationInfo>(web_app_info),
                           contents,
                           WebappInstallSource::MENU_BROWSER_TAB),
         bitmap_(CreateSquareBitmapWithColor(32, SK_ColorRED)) {}
@@ -399,9 +397,6 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppDefaultLauncherContainers) {
-  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   std::map<GURL, std::vector<SkBitmap>> icon_map;
 
   blink::Manifest manifest;
@@ -462,9 +457,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
 
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppForcedLauncherContainers) {
-  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   WebApplicationInfo web_app_info;
   std::map<GURL, std::vector<SkBitmap>> icon_map;
 
@@ -534,6 +526,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   EXPECT_FALSE(AppThemeColorInfo::GetThemeColor(extension));
 }
 
+// Deprecated in favour of InstallManagerBookmarkAppTest.CreateWebAppFromInfo.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
@@ -577,6 +571,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
                                  ExtensionIconSet::MATCH_EXACTLY).empty());
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.InstallOrUpdateWebAppFromSync.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   WebApplicationInfo web_app_info;

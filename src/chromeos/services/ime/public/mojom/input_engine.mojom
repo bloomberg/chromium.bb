@@ -14,8 +14,8 @@ interface InputEngineManager {
   // is implmented on the client and used to receive data sent from the engine.
   // On failure (e.g. input engine is not found), |success| is false.
   ConnectToImeEngine(string ime_spec,
-                     InputChannel& to_engine_request,
-                     InputChannel from_engine,
+                     pending_receiver<InputChannel> to_engine_request,
+                     pending_remote<InputChannel> from_engine,
                      array<uint8> extra)
                      => (bool success);
 };

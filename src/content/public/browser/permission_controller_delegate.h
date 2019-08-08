@@ -31,7 +31,7 @@ class CONTENT_EXPORT PermissionControllerDelegate {
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback) = 0;
+      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) = 0;
 
   // Requests multiple permissions on behalf of a frame identified by
   // render_frame_host.
@@ -48,8 +48,8 @@ class CONTENT_EXPORT PermissionControllerDelegate {
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
-      const base::Callback<void(
-          const std::vector<blink::mojom::PermissionStatus>&)>& callback) = 0;
+      base::OnceCallback<void(
+          const std::vector<blink::mojom::PermissionStatus>&)> callback) = 0;
 
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen
@@ -84,7 +84,8 @@ class CONTENT_EXPORT PermissionControllerDelegate {
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback) = 0;
+      base::RepeatingCallback<void(blink::mojom::PermissionStatus)>
+          callback) = 0;
 
   // Unregisters from permission status change notifications.
   // The |subscription_id| must match the value returned by the

@@ -41,6 +41,7 @@ class CSSImageValue;
 class CSSValue;
 class ComputedStyle;
 class Element;
+class PseudoElement;
 class SVGResource;
 class StyleImage;
 class StylePendingImage;
@@ -58,7 +59,9 @@ class ElementStyleResources {
   STACK_ALLOCATED();
 
  public:
-  ElementStyleResources(Element&, float device_scale_factor);
+  ElementStyleResources(Element&,
+                        float device_scale_factor,
+                        PseudoElement* pseudo_element);
 
   StyleImage* GetStyleImage(CSSPropertyID, const CSSValue&);
   StyleImage* CachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
@@ -88,6 +91,7 @@ class ElementStyleResources {
   Member<Element> element_;
   HashSet<CSSPropertyID> pending_image_properties_;
   float device_scale_factor_;
+  Member<PseudoElement> pseudo_element_;
   DISALLOW_COPY_AND_ASSIGN(ElementStyleResources);
 };
 

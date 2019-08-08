@@ -99,8 +99,8 @@ namespace feedbackPrivate {
   enum Status {success, delayed};
 
   // The type of the landing page shown to the user when the feedback report is
-  // successfully sent.
-  enum LandingPageType {normal, techstop};
+  // successfully sent, if one should be shown.
+  enum LandingPageType {normal, techstop, noLandingPage};
 
   // Allowed log sources on Chrome OS.
   enum LogSource {

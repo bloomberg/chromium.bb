@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
@@ -281,7 +282,7 @@ TEST_F(BodyStreamBufferTest,
 
 TEST_F(BodyStreamBufferTest, DrainAsFormData) {
   V8TestingScope scope;
-  FormData* data = FormData::Create(UTF8Encoding());
+  auto* data = MakeGarbageCollected<FormData>(UTF8Encoding());
   data->append("name1", "value1");
   data->append("name2", "value2");
   scoped_refptr<EncodedFormData> input_form_data =

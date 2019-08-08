@@ -69,7 +69,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
 
   if (browser_view->IsBrowserTypeHostedApp()) {
     if (browser_view->browser()
-            ->web_app_controller()
+            ->app_controller()
             ->ShouldShowHostedAppButtonContainer()) {
       set_hosted_app_button_container(new HostedAppButtonContainer(
           frame, browser_view, GetCaptionColor(kActive),

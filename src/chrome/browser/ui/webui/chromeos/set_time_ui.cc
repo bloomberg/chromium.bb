@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -129,12 +130,15 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISetTimeHost);
 
-  source->AddLocalizedString("setTimeTitle", IDS_SET_TIME_TITLE);
-  source->AddLocalizedString("prompt", IDS_SET_TIME_PROMPT);
-  source->AddLocalizedString("timezoneLabel", IDS_SET_TIME_TIMEZONE_LABEL);
-  source->AddLocalizedString("dateLabel", IDS_SET_TIME_DATE_LABEL);
-  source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
-  source->AddLocalizedString("doneButton", IDS_DONE);
+  static constexpr LocalizedString kStrings[] = {
+      {"setTimeTitle", IDS_SET_TIME_TITLE},
+      {"prompt", IDS_SET_TIME_PROMPT},
+      {"timezoneLabel", IDS_SET_TIME_TIMEZONE_LABEL},
+      {"dateLabel", IDS_SET_TIME_DATE_LABEL},
+      {"timeLabel", IDS_SET_TIME_TIME_LABEL},
+      {"doneButton", IDS_DONE},
+  };
+  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
   base::DictionaryValue values;
   // List of list of strings: [[ID, name], [ID, name], ...]
@@ -151,7 +155,6 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedStrings(values);
   source->SetJsonPath("strings.js");
 
-  source->UseGzip();
   source->AddResourcePath("set_time_browser_proxy.html",
                           IDR_SET_TIME_BROWSER_PROXY_HTML);
   source->AddResourcePath("set_time_browser_proxy.js",

@@ -47,7 +47,7 @@ bool UpdateFormInVector(
   auto it = std::find_if(
       forms->begin(), forms->end(),
       [&updated_form](const std::unique_ptr<autofill::PasswordForm>& form) {
-        return ArePasswordFormUniqueKeyEqual(*form, updated_form);
+        return ArePasswordFormUniqueKeysEqual(*form, updated_form);
       });
   if (it != forms->end()) {
     **it = updated_form;
@@ -64,7 +64,7 @@ bool RemoveFormFromVector(
   auto it = std::find_if(
       forms->begin(), forms->end(),
       [&form_to_delete](const std::unique_ptr<autofill::PasswordForm>& form) {
-        return ArePasswordFormUniqueKeyEqual(*form, form_to_delete);
+        return ArePasswordFormUniqueKeysEqual(*form, form_to_delete);
       });
   if (it != forms->end()) {
     forms->erase(it);

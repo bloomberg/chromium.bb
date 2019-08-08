@@ -113,7 +113,7 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
   CryptoHandshakeMessage peer_hello;
   peer_hello.SetValue(kICSL,
                       static_cast<uint32_t>(kMaximumIdleTimeoutSecs - 1));
-  peer_hello.SetValue(kMIDS,
+  peer_hello.SetValue(kMIBS,
                       static_cast<uint32_t>(kDefaultMaxStreamsPerConnection));
   QuicConfig config;
   QuicErrorCode error_code = config.ProcessPeerHello(
@@ -238,6 +238,15 @@ void QuicEndpoint::OnCanWrite() {
   }
   WriteStreamData();
 }
+
+bool QuicEndpoint::SendProbingData() {
+  if (connection()->sent_packet_manager().MaybeRetransmitOldestPacket(
+          PROBING_RETRANSMISSION)) {
+    return true;
+  }
+  return false;
+}
+
 bool QuicEndpoint::WillingAndAbleToWrite() const {
   if (notifier_ != nullptr) {
     return notifier_->WillingToWrite();

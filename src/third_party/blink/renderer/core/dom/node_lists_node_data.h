@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/html/collection_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -94,7 +95,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       return static_cast<T*>(result.stored_value->value.Get());
     }
 
-    T* list = T::Create(node, collection_type, name);
+    auto* list = MakeGarbageCollected<T>(node, collection_type, name);
     result.stored_value->value = list;
     return list;
   }
@@ -109,7 +110,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       return static_cast<T*>(result.stored_value->value.Get());
     }
 
-    T* list = T::Create(node, collection_type);
+    auto* list = MakeGarbageCollected<T>(node, collection_type);
     result.stored_value->value = list;
     return list;
   }

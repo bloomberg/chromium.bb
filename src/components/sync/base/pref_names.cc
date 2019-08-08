@@ -69,6 +69,7 @@ const char kSyncThemes[] = "sync.themes";
 const char kSyncTypedUrls[] = "sync.typed_urls";
 const char kSyncUserConsents[] = "sync.user_consents";
 const char kSyncUserEvents[] = "sync.user_events";
+const char kSyncWifiConfigurations[] = "sync.wifi_configurations";
 const char kSyncWifiCredentials[] = "sync.wifi_credentials";
 
 // Boolean used by enterprise configuration management in order to lock down

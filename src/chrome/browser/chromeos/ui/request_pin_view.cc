@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/ui/passphrase_textfield.h"
@@ -53,7 +54,7 @@ RequestPinView::RequestPinView(const std::string& extension_name,
 // it needs to send the response.
 RequestPinView::~RequestPinView() {
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(base::string16());
+    std::move(callback_).Run(base::string16());
   }
 
   delegate_->OnPinDialogClosed();
@@ -72,7 +73,7 @@ bool RequestPinView::Cancel() {
 bool RequestPinView::Accept() {
   DCHECK(!callback_.is_null());
 
-  if (!textfield_->enabled()) {
+  if (!textfield_->GetEnabled()) {
     return true;
   }
   DCHECK(!textfield_->text().empty());
@@ -86,7 +87,7 @@ bool RequestPinView::Accept() {
   // The |textfield_| and OK button become disabled, but the user still can
   // close the dialog.
   SetAcceptInput(false);
-  base::ResetAndReturn(&callback_).Run(textfield_->text());
+  std::move(callback_).Run(textfield_->text());
   DialogModelChanged();
   delegate_->OnPinDialogInput();
 
@@ -104,7 +105,7 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
       // Not locked but the |textfield_| is not enabled. It's just a
       // notification to the user and [OK] button can be used to close the
       // dialog.
-      if (!textfield_->enabled()) {
+      if (!textfield_->GetEnabled()) {
         return true;
       }
       return textfield_->text().size() > 0;

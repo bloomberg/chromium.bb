@@ -36,8 +36,8 @@ void ThreadTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<ThreadTable>(db, storage, "thread");
 }
 
-base::Optional<Table::Schema> ThreadTable::Init(int, const char* const*) {
-  return Schema(
+util::Status ThreadTable::Init(int, const char* const*, Schema* schema) {
+  *schema = Schema(
       {
           Table::Column(Column::kUtid, "utid", ColumnType::kInt),
           Table::Column(Column::kUpid, "upid", ColumnType::kInt),
@@ -46,12 +46,11 @@ base::Optional<Table::Schema> ThreadTable::Init(int, const char* const*) {
           Table::Column(Column::kStartTs, "start_ts", ColumnType::kLong),
       },
       {Column::kUtid});
+  return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> ThreadTable::CreateCursor(
-    const QueryConstraints& qc,
-    sqlite3_value** argv) {
-  return std::unique_ptr<Table::Cursor>(new Cursor(storage_, qc, argv));
+std::unique_ptr<Table::Cursor> ThreadTable::CreateCursor() {
+  return std::unique_ptr<Table::Cursor>(new Cursor(this));
 }
 
 int ThreadTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
@@ -68,14 +67,17 @@ int ThreadTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   return SQLITE_OK;
 }
 
-ThreadTable::Cursor::Cursor(const TraceStorage* storage,
-                            const QueryConstraints& qc,
-                            sqlite3_value** argv)
-    : storage_(storage) {
+ThreadTable::Cursor::Cursor(ThreadTable* table)
+    : Table::Cursor(table), storage_(table->storage_), table_(table) {}
+
+int ThreadTable::Cursor::Filter(const QueryConstraints& qc,
+                                sqlite3_value** argv) {
+  *this = Cursor(table_);
+
   min = 0;
   max = static_cast<uint32_t>(storage_->thread_count()) - 1;
   desc = false;
-  current = min;
+
   for (size_t j = 0; j < qc.constraints().size(); j++) {
     const auto& cs = qc.constraints()[j];
     if (cs.iColumn == Column::kUtid) {
@@ -94,12 +96,15 @@ ThreadTable::Cursor::Cursor(const TraceStorage* storage,
       }
     }
   }
+
   for (const auto& ob : qc.order_by()) {
     if (ob.iColumn == Column::kUtid) {
       desc = ob.desc;
-      current = desc ? max : min;
     }
   }
+  current = desc ? max : min;
+
+  return SQLITE_OK;
 }
 
 int ThreadTable::Cursor::Column(sqlite3_context* context, int N) {

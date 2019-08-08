@@ -25,7 +25,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -45,8 +44,7 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
             new PaymentRequestTestRule("payment_request_no_update_with_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         helper.setProfile(new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
                 "Lisa Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210",

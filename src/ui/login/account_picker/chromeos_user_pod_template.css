@@ -6,6 +6,10 @@
  * chromeos_user_pod_template.html.
  */
 
+ cr-icon-button {
+  margin: 0;
+}
+
 .action-box-remove-user-warning .remove-warning-button {
   color: #E67C73;
   margin: 0;

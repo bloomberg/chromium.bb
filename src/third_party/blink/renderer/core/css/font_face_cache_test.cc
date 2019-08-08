@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -70,8 +71,8 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
   CSSPropertyValue properties[] = {
       CSSPropertyValue(GetCSSPropertyFontFamily(), *family_name),
       CSSPropertyValue(GetCSSPropertySrc(), *src_value_list)};
-  MutableCSSPropertyValueSet* font_face_descriptor =
-      MutableCSSPropertyValueSet::Create(properties, base::size(properties));
+  auto* font_face_descriptor = MakeGarbageCollected<MutableCSSPropertyValueSet>(
+      properties, base::size(properties));
 
   font_face_descriptor->SetProperty(CSSPropertyID::kFontStretch, stretch);
   font_face_descriptor->SetProperty(CSSPropertyID::kFontStyle, style);

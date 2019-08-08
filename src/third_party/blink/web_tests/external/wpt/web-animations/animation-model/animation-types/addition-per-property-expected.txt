@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 556 tests; 525 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 568 tests; 537 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -365,6 +365,18 @@ PASS mix-blend-mode: "multiply" onto "screen"
 PASS object-fit (type: discrete) has testAddition function
 PASS object-fit: "contain" onto "fill"
 PASS object-fit: "fill" onto "contain"
+PASS offset-distance (type: lengthPercentageOrCalc) has testAddition function
+PASS offset-distance: length
+PASS offset-distance: length of rem
+PASS offset-distance: percentage
+PASS offset-distance: units "%" onto "px"
+PASS offset-distance: units "px" onto "%"
+PASS offset-distance: units "rem" onto "%"
+PASS offset-distance: units "%" onto "rem"
+PASS offset-distance: units "rem" onto "em"
+PASS offset-distance: units "em" onto "rem"
+PASS offset-distance: units "calc" onto "px"
+PASS offset-distance: calc
 PASS order (type: integer) has testAddition function
 PASS order: integer
 PASS outline-color (type: color) has testAddition function

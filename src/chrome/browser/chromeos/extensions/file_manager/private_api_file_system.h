@@ -260,7 +260,8 @@ class FileManagerPrivateInternalStartCopyFunction
 
   // Part of RunAsync(). Called after the amount of space on the destination
   // is known.
-  void RunAfterCheckDiskSpace(int64_t space_needed, int64_t space_available);
+  void RunAfterCheckDiskSpace(int64_t space_needed,
+                              const std::vector<int64_t>& spaces_available);
 
   // Part of RunAsync(). Called after FreeDiskSpaceIfNeededFor() is completed on
   // IO thread.

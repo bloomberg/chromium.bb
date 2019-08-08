@@ -23,11 +23,10 @@ tools/clang/scripts/build_clang_tools_extra.py --fetch out/Release clangd
 
 ## Setting Up
 
-1. Build chrome normally. This step is required to make sure we have all
-generated files.
+1. Make sure generated ninja files are up-to-date.
 
 ```
-ninja -C out/Release chrome
+gn gen out/Release
 ```
 
 2. Generate the compilation database, clangd needs it to know how to build a
@@ -40,7 +39,15 @@ tools/clang/scripts/generate_compdb.py -p out/Release > compile_commands.json
 Note: the compilation database is not re-generated automatically, you'd need to
 regenerate it manually when you have new files checked in.
 
-3. Use clangd in your favourite editor, see detailed [instructions](
+3. Optional: build chrome normally. This ensures generated headers exist and are
+up-to-date. clangd will still work without this step, but it may give errors or
+inaccurate results for files which depend on generated headers.
+
+```
+ninja -C out/Release chrome
+```
+
+4. Use clangd in your favourite editor, see detailed [instructions](
 https://clang.llvm.org/extra/clangd/Installation.html#getting-started-with-clangd).
 
 ## Index

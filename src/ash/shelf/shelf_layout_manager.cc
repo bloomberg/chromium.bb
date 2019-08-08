@@ -17,12 +17,12 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -30,21 +30,24 @@
 #include "ash/shell.h"
 #include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/work_area_insets.h"
+#include "ash/wm/workspace/workspace_types.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -134,6 +137,24 @@ wm::WorkspaceWindowState GetShelfWorkspaceWindowState(
 int GetShelfInset(ShelfVisibilityState visibility_state, int size) {
   return visibility_state == SHELF_VISIBLE ? size : 0;
 }
+
+// Sets the shelf opacity to 0 when the shelf is done hiding to avoid getting
+// rid of blur.
+class HideAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit HideAnimationObserver(ui::Layer* layer) : layer_(layer) {}
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsScheduled() override {}
+
+  void OnImplicitAnimationsCompleted() override { layer_->SetOpacity(0); }
+
+ private:
+  // Unowned.
+  ui::Layer* layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(HideAnimationObserver);
+};
 
 }  // namespace
 
@@ -256,6 +277,7 @@ void ShelfLayoutManager::InitObservers() {
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->locale_update_controller()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
+  shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
   display::Screen::GetScreen()->AddObserver(this);
   ScreenRotationAnimator::GetForRootWindow(
@@ -406,6 +428,17 @@ void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
         event->type() == ui::ET_GESTURE_TAP) {
       UpdateAutoHideState();
     }
+
+    // Complete gesture drag when Shelf is visible in auto-hide mode. It is
+    // called when swiping Shelf up to show.
+    if (is_shelf_window && !IsStatusAreaWindow(target) &&
+        visibility_state() == SHELF_AUTO_HIDE &&
+        state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN &&
+        event->type() == ui::ET_GESTURE_END &&
+        gesture_drag_status_ != GESTURE_DRAG_NONE) {
+      CompleteGestureDrag(*event);
+    }
+
     return;
   }
 
@@ -430,7 +463,7 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 bool ShelfLayoutManager::ProcessGestureEvent(
     const ui::GestureEvent& event_in_screen) {
   // The gestures are disabled in the lock/login screen.
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
     return false;
 
@@ -494,14 +527,17 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       return SHELF_BACKGROUND_DEFAULT;
   }
 
-  if (Shell::Get()->IsSplitViewModeActive() ||
+  const bool in_split_view_mode =
+      Shell::Get()->split_view_controller() &&
+      Shell::Get()->split_view_controller()->InSplitViewMode();
+  if (in_split_view_mode ||
       (state_.visibility_state != SHELF_AUTO_HIDE &&
        state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED)) {
     return SHELF_BACKGROUND_MAXIMIZED;
   }
 
   if (Shell::Get()->overview_controller() &&
-      Shell::Get()->overview_controller()->IsSelecting()) {
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return SHELF_BACKGROUND_OVERVIEW;
   }
 
@@ -528,7 +564,8 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
 bool ShelfLayoutManager::HasVisibleWindow() const {
   aura::Window* root = shelf_widget_->GetNativeWindow()->GetRootWindow();
   const aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+          kActiveDesk);
   // Process the window list and check if there are any visible windows.
   // Ignore app list windows that may be animating to hide after dismissal.
   for (auto* window : windows) {
@@ -777,9 +814,12 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   //   in tablet mode.
   // - Going from an auto hidden shelf in tablet mode to a visible shelf in
   //   tablet mode.
-  if (state.visibility_state == SHELF_VISIBLE &&
-      state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
-      old_state.visibility_state != SHELF_VISIBLE) {
+  // - Doing so would result in animating the opacity of the shelf while it is
+  //   showing blur.
+  if (state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
+      ((state.visibility_state == SHELF_VISIBLE &&
+        old_state.visibility_state != SHELF_VISIBLE) ||
+       is_background_blur_enabled_)) {
     change_type = AnimationChangeType::IMMEDIATE;
   } else {
     // Delay the animation when the shelf was hidden, and has just been made
@@ -868,6 +908,19 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   if (suspend_visibility_update_)
     return;
 
+  hide_animation_observer_.reset();
+  if (GetLayer(shelf_widget_)->opacity() != target_bounds.shelf_opacity) {
+    if (target_bounds.shelf_opacity == 0) {
+      // On hide, set the opacity after the animation completes.
+      hide_animation_observer_ =
+          std::make_unique<HideAnimationObserver>(GetLayer(shelf_widget_));
+    } else {
+      // On show, set the opacity before the animation begins to ensure the blur
+      // is shown while the shelf moves.
+      GetLayer(shelf_widget_)->SetOpacity(target_bounds.shelf_opacity);
+    }
+  }
+
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
@@ -875,6 +928,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
         GetLayer(shelf_widget_)->GetAnimator());
     ui::ScopedLayerAnimationSettings status_animation_setter(
         GetLayer(status_widget)->GetAnimator());
+
+    if (hide_animation_observer_)
+      shelf_animation_setter.AddObserver(hide_animation_observer_.get());
+
     if (animate) {
       auto duration = base::TimeDelta::FromMilliseconds(kAnimationDurationMS);
       shelf_animation_setter.SetTransitionDuration(duration);
@@ -893,7 +950,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     if (observer)
       status_animation_setter.AddObserver(observer);
 
-    GetLayer(shelf_widget_)->SetOpacity(target_bounds.shelf_opacity);
     gfx::Rect shelf_bounds = target_bounds.shelf_bounds;
     ::wm::ConvertRectToScreen(shelf_widget_->GetNativeWindow()->parent(),
                               &shelf_bounds);
@@ -932,7 +988,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // movement on async preference initialization in tests: crbug.com/834369
     display_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
         shelf_widget_->GetNativeWindow());
-    bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
+    bool in_overview = Shell::Get()->overview_controller()->InOverviewSession();
     if (!in_overview && !state_.IsScreenLocked() &&
         (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
          display_.work_area() == display_.bounds())) {
@@ -972,7 +1028,8 @@ bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
 
   // TODO(minch): Check active window directly if removed search field
   // in overview mode. http://crbug.com/866679
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state && window_state->is_dragged() &&
@@ -1226,7 +1283,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 
   // Do not hide the shelf if overview mode is active.
   if (Shell::Get()->overview_controller() &&
-      Shell::Get()->overview_controller()->IsSelecting()) {
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
@@ -1255,6 +1312,11 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
         alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
         0);
   }
+
+  // Do not perform any checks based on the cursor position if the mouse cursor
+  // is currently hidden.
+  if (!shelf_widget_->IsMouseEventsEnabled())
+    return SHELF_AUTO_HIDE_HIDDEN;
 
   gfx::Point cursor_position_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
@@ -1305,8 +1367,6 @@ bool ShelfLayoutManager::CalculateStatusAreaVisibility(
 bool ShelfLayoutManager::ShouldRepaintStatusAreaOnStateChange(
     ShelfLayoutManager::State old_state,
     ShelfLayoutManager::State new_state) const {
-  if (!new_state.is_status_area_visible)
-    return false;
 
   if (old_state.visibility_state == new_state.visibility_state)
     return false;
@@ -1376,7 +1436,7 @@ bool ShelfLayoutManager::IsHomeScreenShown() const {
   if (!IsHomeScreenAvailable())
     return false;
 
-  return !Shell::Get()->overview_controller()->IsSelecting() &&
+  return !Shell::Get()->overview_controller()->InOverviewSession() &&
          !HasVisibleWindow();
 }
 
@@ -1524,7 +1584,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
   }
   DCHECK(Shell::Get()->app_list_controller());
 
-  using ash::mojom::AppListViewState;
+  using ash::AppListViewState;
   AppListViewState app_list_state =
       Shell::Get()->app_list_controller()->CalculateStateAfterShelfDrag(
           gesture_in_screen, launcher_above_shelf_bottom_amount_);

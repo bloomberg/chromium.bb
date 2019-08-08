@@ -16,7 +16,7 @@ class Button;
 class ImageView;
 }  // namespace views
 
-class ToolbarActionsBar;
+class ExtensionsContainer;
 
 // This bubble view displays a list of user extensions.
 // TODO(pbos): Once there's more functionality in here (getting to
@@ -27,12 +27,12 @@ class ExtensionsMenuView : public views::ButtonListener,
  public:
   ExtensionsMenuView(views::View* anchor_view,
                      Browser* browser,
-                     ToolbarActionsBar* toolbar_actions_bar);
+                     ExtensionsContainer* extensions_container);
   ~ExtensionsMenuView() override;
 
   static void ShowBubble(views::View* anchor_view,
                          Browser* browser,
-                         ToolbarActionsBar* toolbar_actions_bar);
+                         ExtensionsContainer* extensions_container);
   static bool IsShowing();
   static void Hide();
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
@@ -44,7 +44,6 @@ class ExtensionsMenuView : public views::ButtonListener,
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
   bool ShouldSnapFrameWidth() const override;
 
@@ -71,9 +70,10 @@ class ExtensionsMenuView : public views::ButtonListener,
 
  private:
   void Repopulate();
+  std::unique_ptr<views::View> CreateExtensionButtonsContainer();
 
   Browser* const browser_;
-  ToolbarActionsBar* const toolbar_actions_bar_;
+  ExtensionsContainer* const extensions_container_;
   ToolbarActionsModel* const model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;

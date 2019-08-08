@@ -125,12 +125,6 @@ test(() => {
   assert_equals(style.webkitAnimationTimingFunction, 'steps(5, start)');
   assert_equals(computedStyle.webkitAnimationTimingFunction, 'steps(5, start)');
 
-  style.animationTimingFunction = "frames(5)";
-  assert_equals(style.animationTimingFunction, 'frames(5)');
-  assert_equals(computedStyle.animationTimingFunction, 'frames(5)');
-  assert_equals(style.webkitAnimationTimingFunction, 'frames(5)');
-  assert_equals(computedStyle.webkitAnimationTimingFunction, 'frames(5)');
-
   style.animationName = "anim1, anim2";
 
   style.animationTimingFunction = "ease-in-out, ease-in";

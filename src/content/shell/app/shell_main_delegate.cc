@@ -27,7 +27,6 @@
 #include "content/public/test/web_test_support.h"
 #include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
-#include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_browser_main.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
@@ -64,6 +63,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/posix/global_descriptors.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
@@ -161,6 +161,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   if (!exit_code)
     exit_code = &dummy;
 
+#if defined(OS_ANDROID)
+  Compositor::Initialize();
+#endif
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
@@ -345,24 +348,46 @@ void ShellMainDelegate::PreSandboxStartup() {
 int ShellMainDelegate::RunProcess(
     const std::string& process_type,
     const MainFunctionParams& main_function_params) {
+  // For non-browser process, return and have the caller run the main loop.
   if (!process_type.empty())
     return -1;
-
-#if !defined(OS_ANDROID)
-  // Android stores the BrowserMainRunner instance as a scoped member pointer
-  // on the ShellMainDelegate class because of different object lifetime.
-  std::unique_ptr<BrowserMainRunner> browser_runner_;
-#endif
 
   base::trace_event::TraceLog::GetInstance()->set_process_name("Browser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  browser_runner_ = BrowserMainRunner::Create();
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kRunWebTests)
-             ? WebTestBrowserMain(main_function_params, browser_runner_)
-             : ShellBrowserMain(main_function_params, browser_runner_);
+  if (command_line.HasSwitch(switches::kRunWebTests)) {
+    // Web tests implement their own BrowserMain() replacement.
+    WebTestBrowserMain(main_function_params);
+    // Returning 0 to indicate that we have replaced BrowserMain() and the
+    // caller should not call BrowserMain() itself. Web tests do not ever
+    // return an error.
+    return 0;
+  }
+
+#if !defined(OS_ANDROID)
+  // On non-Android, we can return -1 and have the caller run BrowserMain()
+  // normally.
+  return -1;
+#else
+  // On Android, we defer to the system message loop when the stack unwinds.
+  // So here we only create (and leak) a BrowserMainRunner. The shutdown
+  // of BrowserMainRunner doesn't happen in Chrome Android and doesn't work
+  // properly on Android at all.
+  std::unique_ptr<BrowserMainRunner> main_runner = BrowserMainRunner::Create();
+  // In browser tests, the |main_function_params| contains a |ui_task| which
+  // will execute the testing. The task will be executed synchronously inside
+  // Initialize() so we don't depend on the BrowserMainRunner being Run().
+  int initialize_exit_code = main_runner->Initialize(main_function_params);
+  DCHECK_LT(initialize_exit_code, 0)
+      << "BrowserMainRunner::Initialize failed in ShellMainDelegate";
+  ignore_result(main_runner.release());
+  // Return 0 as BrowserMain() should not be called after this, bounce up to
+  // the system message loop for ContentShell, and we're already done thanks
+  // to the |ui_task| for browser tests.
+  return 0;
+#endif
 }
 
 #if defined(OS_LINUX)
@@ -423,9 +448,7 @@ void ShellMainDelegate::PreCreateMainMessageLoop() {
 #if defined(OS_ANDROID)
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRunWebTests)) {
-    bool success =
-        base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
-    CHECK(success) << "Unable to initialize the message pump for Android";
+    base::MessagePump::OverrideMessagePumpForUIFactory(&CreateMessagePumpForUI);
   }
 #elif defined(OS_MACOSX)
   RegisterShellCrApp();

@@ -53,7 +53,7 @@ class HostedAppToolbarActionsBar : public ToolbarActionsBar {
   size_t GetIconCount() const override {
     // Only show an icon when an extension action is popped out due to
     // activation, and none otherwise.
-    return popped_out_action() ? 1 : 0;
+    return GetPoppedOutAction() ? 1 : 0;
   }
 
   int GetMinimumWidth() const override {
@@ -113,7 +113,7 @@ class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
   }
 
   void FadeIn() {
-    if (visible())
+    if (GetVisible())
       return;
     SetVisible(true);
     DCHECK_EQ(layer()->opacity(), 0);
@@ -153,7 +153,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
           views::LayoutProvider::Get()->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
@@ -183,11 +183,10 @@ HostedAppButtonContainer::HostedAppButtonContainer(
       active_color_(active_color),
       inactive_color_(inactive_color) {
   DCHECK(browser_view_);
-  DCHECK(browser_view_->browser()
-             ->web_app_controller()
-             ->IsForExperimentalWebAppBrowser());
+  DCHECK(web_app::AppBrowserController::IsForWebAppBrowser(
+      browser_view_->browser()));
 
-  set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
+  SetID(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -196,9 +195,9 @@ HostedAppButtonContainer::HostedAppButtonContainer(
                       right_margin.value_or(HorizontalPaddingBetweenItems())),
           HorizontalPaddingBetweenItems()));
   // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
   layout.set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   hosted_app_origin_text_ = AddChildView(
       std::make_unique<HostedAppOriginText>(browser_view->browser()));
@@ -300,7 +299,7 @@ const char* HostedAppButtonContainer::GetClassName() const {
   return kViewClassName;
 }
 
-views::MenuButton* HostedAppButtonContainer::GetOverflowReferenceView() {
+views::LabelButton* HostedAppButtonContainer::GetOverflowReferenceView() {
   return app_menu_button_;
 }
 

@@ -240,7 +240,7 @@ void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
       ShouldHideCursorOnTouch(*event)) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     DCHECK(target);
-    if (!target->env()->IsMouseButtonDown())
+    if (!aura::Env::GetInstance()->IsMouseButtonDown())
       SetMouseEventsEnableStateOnEvent(target, event, false);
   }
 }

@@ -13,8 +13,15 @@
 @protocol InfobarCoordinatorImplementation
 
 // Initializes and configures the ModalViewController that will be presented by
-// the InfobarCoordinator.
-- (void)configureModalViewController;
+// the InfobarCoordinator. Returns YES if the modalViewController was configured
+// successfully. If it returns NO no Modal should be presented.
+- (BOOL)configureModalViewController;
+
+// Performs any actions related to an Infobar Banner presentation.
+- (void)infobarBannerWasPresented;
+
+// Performs any actions related to an Infobar Modal presentation.
+- (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner;
 
 // Dismisses the InfobarBanner once there's no interaction in progress. An
 // interaction is any user initiated behavior with the Banner.
@@ -26,6 +33,10 @@
 // Called after the Infobar (either Modal or Banner) has been dismissed.
 // Transitioning from Banner to Modal won't call this method.
 - (void)infobarWasDismissed;
+
+// The infobar modal height. Used to calculate its presentation container
+// height.
+- (CGFloat)infobarModalHeightForWidth:(CGFloat)width;
 
 @end
 

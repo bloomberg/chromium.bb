@@ -45,9 +45,17 @@ void SetValue(T* address, T value) {
   *address = value;
 }
 
+// Must run on IO thread task runner.
+base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetter(
+    storage::BlobStorageContext* blob_context) {
+  DCHECK(blob_context);
+  return blob_context->AsWeakPtr();
+}
+
 class MockDelegate : public InMemoryDownload::Delegate {
  public:
-  MockDelegate() = default;
+  MockDelegate(BlobContextGetter blob_context_getter)
+      : blob_context_getter_(blob_context_getter) {}
 
   void WaitForCompletion() {
     DCHECK(!run_loop_.running());
@@ -62,19 +70,17 @@ class MockDelegate : public InMemoryDownload::Delegate {
       run_loop_.Quit();
   }
   MOCK_METHOD1(OnUploadProgress, void(InMemoryDownload*));
+  void RetrieveBlobContextGetter(
+      base::OnceCallback<void(BlobContextGetter)> callback) override {
+    std::move(callback).Run(blob_context_getter_);
+  }
 
  private:
   base::RunLoop run_loop_;
+  BlobContextGetter blob_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
-
-// Must run on IO thread task runner.
-base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetter(
-    storage::BlobStorageContext* blob_context) {
-  DCHECK(blob_context);
-  return blob_context->AsWeakPtr();
-}
 
 class InMemoryDownloadTest : public testing::Test {
  public:
@@ -94,6 +100,11 @@ class InMemoryDownloadTest : public testing::Test {
           loop.Quit();
         }));
     loop.Run();
+
+    auto blob_storage_context_getter = base::BindRepeating(
+        &BlobStorageContextGetter, blob_storage_context_.get());
+    mock_delegate_ =
+        std::make_unique<NiceMock<MockDelegate>>(blob_storage_context_getter);
   }
 
   void TearDown() override {
@@ -108,13 +119,11 @@ class InMemoryDownloadTest : public testing::Test {
     download_ = std::make_unique<InMemoryDownloadImpl>(
         base::GenerateGUID(), request_params, /* request_body= */ nullptr,
         TRAFFIC_ANNOTATION_FOR_TESTS, delegate(), &url_loader_factory_,
-        base::BindRepeating(&BlobStorageContextGetter,
-                            blob_storage_context_.get()),
         io_thread_->task_runner());
   }
 
   InMemoryDownload* download() { return download_.get(); }
-  MockDelegate* delegate() { return &mock_delegate_; }
+  MockDelegate* delegate() { return mock_delegate_.get(); }
   network::TestURLLoaderFactory* url_loader_factory() {
     return &url_loader_factory_;
   }
@@ -166,7 +175,7 @@ class InMemoryDownloadTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<InMemoryDownloadImpl> download_;
-  NiceMock<MockDelegate> mock_delegate_;
+  std::unique_ptr<NiceMock<MockDelegate>> mock_delegate_;
 
   // Used by SimpleURLLoader network backend.
   network::TestURLLoaderFactory url_loader_factory_;

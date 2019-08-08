@@ -208,6 +208,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
     // We need to pass in the context to skip all that.
     file_system_context_ =
         in_memory_test() ? CreateIncognitoFileSystemContextForTesting(
+                               base::ThreadTaskRunnerHandle::Get(),
+                               base::ThreadTaskRunnerHandle::Get(),
                                quota_manager_->proxy(), data_dir_.GetPath())
                          : CreateFileSystemContextForTesting(
                                quota_manager_->proxy(), data_dir_.GetPath());
@@ -222,6 +224,9 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   void TearDown() override {
+    if (in_memory_test())
+      ASSERT_TRUE(IsDirectoryEmpty(data_dir_.GetPath()));
+
     quota_manager_ = nullptr;
     scoped_task_environment_.RunUntilIdle();
     sandbox_file_system_.TearDown();
@@ -657,8 +662,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
               ofu()->GetFileInfo(context.get(), dest_url, &file_info,
                                  &data_path));
     EXPECT_NE(data_path, src_file_path);
-    EXPECT_TRUE(FileExists(data_path));
-    EXPECT_EQ(src_file_length, GetLocalFileSize(data_path));
+    EXPECT_TRUE(PathExists(dest_url));
+    EXPECT_EQ(src_file_length, GetPathSize(dest_url));
 
     EXPECT_EQ(base::File::FILE_OK,
               ofu()->DeleteFile(context.get(), dest_url));
@@ -1571,9 +1576,6 @@ TEST_P(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
 }
 
 TEST_P(ObfuscatedFileUtilTest, TestCopyInForeignFile) {
-  // TODO(crbug.com/93417): Update test for in-memory mode.
-  if (in_memory_test())
-    return;
   TestCopyInForeignFileHelper(false /* overwrite */);
   TestCopyInForeignFileHelper(true /* overwrite */);
 }
@@ -1944,23 +1946,20 @@ TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
 
   // CopyInForeignFile, create case.
   url = FileSystemURLAppendUTF8(dir_url, "CopyInForeignFile_file");
-  FileSystemURL src_path = FileSystemURLAppendUTF8(
-      dir_url, "CopyInForeignFile_src_file");
-  context.reset(NewContext(nullptr));
-  EXPECT_EQ(base::File::FILE_OK,
-            ofu()->EnsureFileExists(context.get(), src_path, &created));
+  base::ScopedTempDir foreign_source_dir;
+  ASSERT_TRUE(foreign_source_dir.CreateUniqueTempDir());
+  base::FilePath foreign_src_file_path =
+      foreign_source_dir.GetPath().AppendASCII("file_name");
+
+  EXPECT_EQ(base::File::FILE_OK, storage::NativeFileUtil::EnsureFileExists(
+                                     foreign_src_file_path, &created));
   EXPECT_TRUE(created);
-  base::FilePath src_local_path;
-  context.reset(NewContext(nullptr));
-  EXPECT_EQ(base::File::FILE_OK,
-            ofu()->GetLocalFilePath(context.get(), src_path, &src_local_path));
 
   ClearTimestamp(dir_url);
   context.reset(NewContext(nullptr));
-  EXPECT_EQ(base::File::FILE_OK,
-            ofu()->CopyInForeignFile(context.get(),
-                                     src_local_path,
-                                     url));
+  EXPECT_EQ(
+      base::File::FILE_OK,
+      ofu()->CopyInForeignFile(context.get(), foreign_src_file_path, url));
   EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 }
 

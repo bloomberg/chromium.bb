@@ -44,7 +44,7 @@ from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
+from chromite.lib import uri_lib
 from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 
@@ -417,7 +417,7 @@ class SyncStage(generic_stages.BuilderStage):
     """Returns the manifest to use."""
     return self._run.config.manifest
 
-  def ManifestCheckout(self, next_manifest, fetch_all=True):
+  def ManifestCheckout(self, next_manifest, fetch_all=False):
     """Checks out the repository to the given manifest."""
     self._Print('\n'.join([
         'BUILDROOT: %s' % self.repo.directory,
@@ -749,7 +749,7 @@ class ManifestVersionedSyncStage(SyncStage):
           master_build_status['build_config'],
           1,
           branch=self._run.options.branch)
-      if latest and latest[0]['buildbucket_id'] != master_id:
+      if latest and str(latest[0]['buildbucket_id']) != str(master_id):
         raise failures_lib.MasterSlaveVersionMismatchFailure(
             'This slave\'s master (id=%s) has been supplanted by a newer '
             'master (id=%s). Aborting.' % (master_id, latest[0]['id']))
@@ -768,10 +768,7 @@ class ManifestVersionedSyncStage(SyncStage):
       next_manifest = self.ForceVersion(version)
     else:
       self.skip_sync = True
-      try:
-        next_manifest = self.GetNextManifest()
-      except validation_pool.TreeIsClosedException as e:
-        logging.warning(str(e))
+      next_manifest = self.GetNextManifest()
 
     if not next_manifest:
       logging.info('Found no work to do.')
@@ -916,7 +913,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       or None if failed to retrieve milestone and platform versions.
     """
     build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
+    buildbucket_id = build_identifier.buildbucket_id
 
     if not self.buildstore.AreClientsReady():
       return None
@@ -924,7 +921,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     builds = self.buildstore.GetBuildHistory(
         build_config=self._run.config.name,
         num_results=self.MAX_BUILD_HISTORY_LENGTH,
-        ignore_build_id=build_id)
+        ignore_build_id=buildbucket_id)
     full_versions = [b.get('full_version') for b in builds]
     old_version = next(itertools.ifilter(bool, full_versions), None)
     if old_version:
@@ -1062,30 +1059,24 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
 
-    try:
-      # In order to acquire a pool, we need an initialized buildroot.
-      if not git.FindRepoDir(self.repo.directory):
-        self.repo.Initialize()
+    # In order to acquire a pool, we need an initialized buildroot.
+    if not git.FindRepoDir(self.repo.directory):
+      self.repo.Initialize()
 
-      query = constants.CQ_READY_QUERY
-      if self._run.options.cq_gerrit_override:
-        query = (self._run.options.cq_gerrit_override, None)
+    query = constants.CQ_READY_QUERY
+    if self._run.options.cq_gerrit_override:
+      query = (self._run.options.cq_gerrit_override, None)
 
-      self.pool = validation_pool.ValidationPool.AcquirePool(
-          overlays=self._run.config.overlays,
-          repo=self.repo,
-          build_number=self._run.buildnumber,
-          builder_name=self._run.GetBuilderName(),
-          buildbucket_id=self._run.options.buildbucket_id,
-          query=query,
-          dryrun=self._run.options.debug,
-          check_tree_open=(not self._run.options.debug or
-                           self._run.options.mock_tree_status),
-          change_filter=self._ChangeFilter,
-          builder_run=self._run)
-    except validation_pool.TreeIsClosedException as e:
-      logging.warning(str(e))
-      return None
+    self.pool = validation_pool.ValidationPool.AcquirePool(
+        overlays=self._run.config.overlays,
+        repo=self.repo,
+        build_number=self._run.buildnumber,
+        builder_name=self._run.GetBuilderName(),
+        buildbucket_id=self._run.options.buildbucket_id,
+        query=query,
+        dryrun=self._run.options.debug,
+        change_filter=self._ChangeFilter,
+        builder_run=self._run)
 
     build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
@@ -1099,7 +1090,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     return manifest
 
-  def ManifestCheckout(self, next_manifest, fetch_all=True):
+  def ManifestCheckout(self, next_manifest, fetch_all=False):
     """Checks out the repository to the given manifest."""
     # Sync to the provided manifest on slaves. On the master, we're
     # already synced to this manifest, so self.skip_sync is set and
@@ -1769,7 +1760,7 @@ class PreCQLauncherStage(SyncStage):
           continue
 
         msg = PRECQ_EARLY_CRASH_MSG % (config,
-                                       tree_status.ConstructLegolandBuildURL(
+                                       uri_lib.ConstructMiloBuildUri(
                                            progress.buildbucket_id))
         pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
@@ -1963,7 +1954,6 @@ class PreCQLauncherStage(SyncStage):
         if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED
     }
 
-    is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
     launch_count = 0
     cl_launch_count = 0
     launch_count_limit = (
@@ -1975,10 +1965,7 @@ class PreCQLauncherStage(SyncStage):
       launches.setdefault(frozenset(plan), []).append(config)
 
     for plan, configs in launches.iteritems():
-      if not is_tree_open:
-        logging.info('Tree is closed, not launching configs %r for plan %s.',
-                     configs, cros_patch.GetChangesAsString(plan))
-      elif launch_count >= launch_count_limit:
+      if launch_count >= launch_count_limit:
         logging.info(
             'Hit or exceeded maximum launch count of %s this cycle, '
             'not launching configs %r for plan %s.', launch_count_limit,
@@ -2096,7 +2083,7 @@ class PreCQLauncherStage(SyncStage):
         build_dicts = self.buildstore.GetBuildStatuses(build_ids=build_ids)
         lines = []
         for b in build_dicts:
-          url = tree_status.ConstructLegolandBuildURL(b['buildbucket_id'])
+          url = uri_lib.ConstructMiloBuildUri(b['buildbucket_id'])
           lines.append('(%s) : %s ' % (b['build_config'], url))
 
         # Send notifications.
@@ -2129,19 +2116,17 @@ class PreCQLauncherStage(SyncStage):
       self._ProcessExpiry(c, v[0], v[1], pool, current_db_time)
 
     # Submit changes that are ready to submit, if we can.
-    if tree_status.IsTreeOpen(throttled_ok=True):
-      pool.SubmitNonManifestChanges(
-          check_tree_open=False, reason=constants.STRATEGY_NONMANIFEST)
-      submit_reason = constants.STRATEGY_PRECQ_SUBMIT
-      will_submit = {c: submit_reason for c in will_submit}
-      submitted, _ = pool.SubmitChanges(will_submit, check_tree_open=False)
+    pool.SubmitNonManifestChanges(reason=constants.STRATEGY_NONMANIFEST)
+    submit_reason = constants.STRATEGY_PRECQ_SUBMIT
+    will_submit = {c: submit_reason for c in will_submit}
+    submitted, _ = pool.SubmitChanges(will_submit)
 
-      # Record stats about submissions in monarch.
-      if db:
-        submitted_change_actions = db.GetActionsForChanges(submitted)
-        strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
-        clactions_metrics.RecordSubmissionMetrics(
-            clactions.CLActionHistory(submitted_change_actions), strategies)
+    # Record stats about submissions in monarch.
+    if db:
+      submitted_change_actions = db.GetActionsForChanges(submitted)
+      strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
+      clactions_metrics.RecordSubmissionMetrics(
+          clactions.CLActionHistory(submitted_change_actions), strategies)
 
     self._LaunchPreCQsIfNeeded(pool, changes)
 
@@ -2190,6 +2175,5 @@ class PreCQLauncherStage(SyncStage):
         buildbucket_id=self._run.options.buildbucket_id,
         query=query,
         dryrun=self._run.options.debug,
-        check_tree_open=False,
         change_filter=self.ProcessChanges,
         builder_run=self._run)

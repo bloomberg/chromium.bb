@@ -15,6 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_features.h"
@@ -129,18 +130,17 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
         test_case.experiment_cmd_line);
 
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        previews::features::kLitePageServerPreviews,
-        {{"previews_host", test_case.previews_host}});
+    std::map<std::string, std::string> server_experiment_params;
+    server_experiment_params[data_reduction_proxy::params::
+                                 GetDataSaverServerExperimentsOptionName()] =
+        test_case.experiment_variation;
 
-    base::FieldTrialList::CreateFieldTrial(
-        data_reduction_proxy::params::GetServerExperimentsFieldTrialName(),
-        "enabled");
-    std::map<std::string, std::string> server_experiment;
-    server_experiment["exp"] = test_case.experiment_variation;
-    variations::AssociateVariationParams(
-        data_reduction_proxy::params::GetServerExperimentsFieldTrialName(),
-        "enabled", server_experiment);
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{data_reduction_proxy::features::kDataReductionProxyServerExperiments,
+          {server_experiment_params}},
+         {previews::features::kLitePageServerPreviews,
+          {{"previews_host", test_case.previews_host}}}},
+        {});
 
     EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                   GURL(test_case.original_url)),

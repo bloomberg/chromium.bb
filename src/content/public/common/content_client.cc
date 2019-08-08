@@ -92,6 +92,10 @@ base::RefCountedMemory* ContentClient::GetDataResourceBytes(
   return nullptr;
 }
 
+bool ContentClient::IsDataResourceGzipped(int resource_id) const {
+  return false;
+}
+
 gfx::Image& ContentClient::GetNativeImageNamed(int resource_id) const {
   static base::NoDestructor<gfx::Image> kEmptyImage;
   return *kEmptyImage;

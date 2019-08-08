@@ -270,7 +270,8 @@ public class AccountChooserDialog
         if (mIsDestroyed) return;
         assert index >= 0 && index < mCredentials.length;
         assert mCredentials[index] != null;
-        Drawable avatar = ProfileDataCache.makeRoundAvatar(mContext.getResources(), avatarBitmap);
+        Drawable avatar = ProfileDataCache.makeRoundAvatar(
+                mContext.getResources(), avatarBitmap, avatarBitmap.getHeight());
         mCredentials[index].setAvatar(avatar);
         ListView view = mDialog.getListView();
         if (index >= view.getFirstVisiblePosition() && index <= view.getLastVisiblePosition()) {

@@ -39,6 +39,10 @@
 #include "base/memory/scoped_refptr.h"
 #endif
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class KURL;
@@ -132,6 +136,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   // resource instead of doing a network request.
   enum class ArchiveStatus { Absent, Present };
   ArchiveStatus archive_status = ArchiveStatus::Absent;
+
+  // The origin trial features activated in the document initiating this
+  // navigation that should be applied in the document being navigated to.
+  WebVector<int> initiator_origin_trial_features;
 
   // The value of hrefTranslate attribute of a link, if this navigation was
   // inititated by clicking a link.
@@ -295,6 +303,33 @@ struct BLINK_EXPORT WebNavigationParams {
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
+
+  // Used for SignedExchangeSubresourcePrefetch.
+  // This struct keeps the information about a prefetched signed exchange.
+  struct BLINK_EXPORT PrefetchedSignedExchange {
+    PrefetchedSignedExchange();
+    PrefetchedSignedExchange(
+        const WebURL& outer_url,
+        const WebString& header_integrity,
+        const WebURL& inner_url,
+        const WebURLResponse& inner_response,
+        mojo::ScopedMessagePipeHandle loader_factory_handle);
+    ~PrefetchedSignedExchange();
+
+    WebURL outer_url;
+    WebString header_integrity;
+    WebURL inner_url;
+    WebURLResponse inner_response;
+    mojo::ScopedMessagePipeHandle loader_factory_handle;
+  };
+  WebVector<std::unique_ptr<PrefetchedSignedExchange>>
+      prefetched_signed_exchanges;
+  // An optional tick clock to be used for document loader timing. This is used
+  // for testing.
+  const base::TickClock* tick_clock = nullptr;
+  // The origin trial features activated in the document initiating this
+  // navigation that should be applied in the document being navigated to.
+  WebVector<int> initiator_origin_trial_features;
 };
 
 }  // namespace blink

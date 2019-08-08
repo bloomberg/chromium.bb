@@ -23,63 +23,51 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogBoolCallback(
-    const char* name,
-    bool value,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetBoolean(name, value);
+base::Value NetLogBoolCallback(const char* name,
+                               bool value,
+                               NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetBoolean(name, value);
   return std::move(event_params);
 }
 
-std::unique_ptr<base::Value> NetLogIntCallback(
-    const char* name,
-    int value,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetInteger(name, value);
+base::Value NetLogIntCallback(const char* name,
+                              int value,
+                              NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetInteger(name, value);
   return std::move(event_params);
 }
 
-std::unique_ptr<base::Value> NetLogInt64Callback(
-    const char* name,
-    int64_t value,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetKey(name, NetLogNumberValue(value));
+base::Value NetLogInt64Callback(const char* name,
+                                int64_t value,
+                                NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetKey(name, NetLogNumberValue(value));
   return std::move(event_params);
 }
 
-std::unique_ptr<base::Value> NetLogStringCallback(
-    const char* name,
-    const std::string* value,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetString(name, *value);
+base::Value NetLogStringCallback(const char* name,
+                                 const std::string* value,
+                                 NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetString(name, *value);
   return std::move(event_params);
 }
 
-std::unique_ptr<base::Value> NetLogCharStringCallback(
-    const char* name,
-    const char* value,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetString(name, value);
+base::Value NetLogCharStringCallback(const char* name,
+                                     const char* value,
+                                     NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetString(name, value);
   return std::move(event_params);
 }
 
-std::unique_ptr<base::Value> NetLogString16Callback(
-    const char* name,
-    const base::string16* value,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetString(name, *value);
+base::Value NetLogString16Callback(const char* name,
+                                   const base::string16* value,
+                                   NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetString(name, *value);
   return std::move(event_params);
 }
 
@@ -236,10 +224,10 @@ const char* NetLog::EventTypeToString(NetLogEventType event) {
 }
 
 // static
-std::unique_ptr<base::Value> NetLog::GetEventTypesAsValue() {
-  auto dict = std::make_unique<base::DictionaryValue>();
+base::Value NetLog::GetEventTypesAsValue() {
+  base::DictionaryValue dict;
   for (int i = 0; i < static_cast<int>(NetLogEventType::COUNT); ++i) {
-    dict->SetInteger(EventTypeToString(static_cast<NetLogEventType>(i)), i);
+    dict.SetInteger(EventTypeToString(static_cast<NetLogEventType>(i)), i);
   }
   return std::move(dict);
 }
@@ -259,10 +247,10 @@ const char* NetLog::SourceTypeToString(NetLogSourceType source) {
 }
 
 // static
-std::unique_ptr<base::Value> NetLog::GetSourceTypesAsValue() {
-  auto dict = std::make_unique<base::DictionaryValue>();
+base::Value NetLog::GetSourceTypesAsValue() {
+  base::DictionaryValue dict;
   for (int i = 0; i < static_cast<int>(NetLogSourceType::COUNT); ++i) {
-    dict->SetInteger(SourceTypeToString(static_cast<NetLogSourceType>(i)), i);
+    dict.SetInteger(SourceTypeToString(static_cast<NetLogSourceType>(i)), i);
   }
   return std::move(dict);
 }

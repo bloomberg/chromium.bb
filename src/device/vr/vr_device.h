@@ -24,7 +24,8 @@ enum class VrViewerType {
   OPENVR_UNKNOWN = 20,
   OPENVR_VIVE = 21,
   OPENVR_RIFT_CV1 = 22,
-  VIEWER_TYPE_COUNT,
+  OCULUS_UNKNOWN = 40,                 // Going through Oculus APIs
+  WINDOWS_MIXED_REALITY_UNKNOWN = 60,  // Going through WMR APIs
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -32,8 +33,10 @@ enum class VrViewerType {
 enum class XrRuntimeAvailable {
   NONE = 0,
   OPENVR = 1,
-  COUNT,
+  kMaxValue = OPENVR,
 };
+
+void LogViewerType(VrViewerType);  // Implemented in vr_device_base.cc
 
 }  // namespace device
 

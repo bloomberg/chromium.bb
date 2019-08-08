@@ -39,6 +39,8 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   result->frame_load_type = info.frame_load_type;
   result->is_client_redirect = info.is_client_redirect;
   result->navigation_timings.input_start = info.input_start;
+  result->initiator_origin_trial_features =
+      info.initiator_origin_trial_features;
   return result;
 }
 
@@ -115,5 +117,21 @@ void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
   params->response.SetTextEncodingName(text_encoding);
   FillBodyLoader(params, data);
 }
+
+WebNavigationParams::PrefetchedSignedExchange::PrefetchedSignedExchange() =
+    default;
+WebNavigationParams::PrefetchedSignedExchange::~PrefetchedSignedExchange() =
+    default;
+WebNavigationParams::PrefetchedSignedExchange::PrefetchedSignedExchange(
+    const WebURL& outer_url,
+    const WebString& header_integrity,
+    const WebURL& inner_url,
+    const WebURLResponse& inner_response,
+    mojo::ScopedMessagePipeHandle loader_factory_handle)
+    : outer_url(outer_url),
+      header_integrity(header_integrity),
+      inner_url(inner_url),
+      inner_response(inner_response),
+      loader_factory_handle(std::move(loader_factory_handle)) {}
 
 }  // namespace blink

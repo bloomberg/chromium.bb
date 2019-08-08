@@ -83,14 +83,14 @@ class TestNotificationPermissionContext : public NotificationPermissionContext {
   void NotifyPermissionSet(const PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedder_origin,
-                           const BrowserPermissionCallback& callback,
+                           BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override {
     permission_set_count_++;
     last_permission_set_persisted_ = persist;
     last_permission_set_setting_ = content_setting;
     NotificationPermissionContext::NotifyPermissionSet(
-        id, requesting_origin, embedder_origin, callback, persist,
+        id, requesting_origin, embedder_origin, std::move(callback), persist,
         content_setting);
   }
 

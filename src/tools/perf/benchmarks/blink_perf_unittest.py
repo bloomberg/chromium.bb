@@ -4,6 +4,7 @@
 import os
 import unittest
 
+from telemetry import decorators
 from telemetry import story
 from telemetry.testing import options_for_unittests
 from telemetry.testing import page_test_test_case
@@ -106,6 +107,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertGreater(post_layout_task[0].mean, 0.001)
 
 
+  @decorators.Disabled('mac')  # Flaky on mac: crbug.com/960554
   def testBlinkPerfTracingMetricsForMeasureAsync(self):
     results = self.RunMeasurement(measurement=self._measurement,
         ps=self._CreateStorySetForTestFile(

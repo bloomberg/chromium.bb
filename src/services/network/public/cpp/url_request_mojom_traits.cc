@@ -169,7 +169,6 @@ bool StructTraits<
       !data.ReadFetchCredentialsMode(&out->fetch_credentials_mode) ||
       !data.ReadFetchRedirectMode(&out->fetch_redirect_mode) ||
       !data.ReadFetchIntegrity(&out->fetch_integrity) ||
-      !data.ReadFetchFrameType(&out->fetch_frame_type) ||
       !data.ReadRequestBody(&out->request_body) ||
       !data.ReadThrottlingProfileId(&out->throttling_profile_id) ||
       !data.ReadCustomProxyPreCacheHeaders(
@@ -177,7 +176,8 @@ bool StructTraits<
       !data.ReadCustomProxyPostCacheHeaders(
           &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
-      !data.ReadDevtoolsRequestId(&out->devtools_request_id)) {
+      !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
+      !data.ReadAppcacheHostId(&out->appcache_host_id)) {
     return false;
   }
 
@@ -189,11 +189,12 @@ bool StructTraits<
   out->allow_credentials = data.allow_credentials();
   out->plugin_child_id = data.plugin_child_id();
   out->resource_type = data.resource_type();
-  out->appcache_host_id = data.appcache_host_id();
   out->should_reset_appcache = data.should_reset_appcache();
   out->is_external_request = data.is_external_request();
   out->originated_from_service_worker = data.originated_from_service_worker();
   out->skip_service_worker = data.skip_service_worker();
+  out->corb_detachable = data.corb_detachable();
+  out->corb_excluded = data.corb_excluded();
   out->fetch_request_context_type = data.fetch_request_context_type();
   out->keepalive = data.keepalive();
   out->has_user_gesture = data.has_user_gesture();
@@ -209,6 +210,8 @@ bool StructTraits<
   out->initiated_in_secure_context = data.initiated_in_secure_context();
   out->upgrade_if_insecure = data.upgrade_if_insecure();
   out->is_revalidating = data.is_revalidating();
+  out->should_also_use_factory_bound_origin_for_cors =
+      data.should_also_use_factory_bound_origin_for_cors();
   return true;
 }
 

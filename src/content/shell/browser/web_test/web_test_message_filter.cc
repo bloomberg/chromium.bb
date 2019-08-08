@@ -204,6 +204,8 @@ void WebTestMessageFilter::OnSetPermission(
     type = PermissionType::SENSORS;
   } else if (name == "background-fetch") {
     type = PermissionType::BACKGROUND_FETCH;
+  } else if (name == "periodic-background-sync") {
+    type = PermissionType::PERIODIC_BACKGROUND_SYNC;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;

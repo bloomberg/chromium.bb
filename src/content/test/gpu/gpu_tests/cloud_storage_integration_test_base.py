@@ -422,9 +422,11 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def ToHex(self, num):
     return hex(int(num))
 
+  def ToHexOrNone(self, num):
+    return 'None' if num == None else self.ToHex(num)
+
   def _UploadTestResultToSkiaGold(self, image_name, screenshot,
-                                  tab, page,
-                                  is_check_mode=True, build_id_args=None):
+                                  tab, page, build_id_args=None):
     if build_id_args is None:
       raise Exception('Requires build args to be specified, including --commit')
     if self._skia_gold_temp_dir is None:
@@ -437,14 +439,14 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     ref_img_params = self.GetReferenceImageParameters(tab, page)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
-      'vendor_id': self.ToHex(ref_img_params.vendor_id),
-      'device_id': self.ToHex(ref_img_params.device_id),
+      'vendor_id': self.ToHexOrNone(ref_img_params.vendor_id),
+      'device_id': self.ToHexOrNone(ref_img_params.device_id),
       'vendor_string': str(ref_img_params.vendor_string),
       'device_string': str(ref_img_params.device_string),
       'msaa': str(ref_img_params.msaa),
       'model_name': str(ref_img_params.model_name),
     }
-    mode = ['--passfail'] if is_check_mode else []
+    mode = ['--passfail']
     json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
     failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
     with open(json_temp_file, 'w+') as f:
@@ -496,8 +498,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         self._UploadTestResultToSkiaGold(
           image_name, screenshot,
           tab, page,
-          # Always upload because we already did the check locally.
-          is_check_mode=False,
           build_id_args=build_id_args)
       else:
         self._WriteErrorImages(
@@ -520,3 +520,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           self.GetParsedCommandLineOptions().build_revision,
           SKIA_GOLD_INSTANCE)
     logging.error('View and triage untriaged images at %s', skia_url)
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    del options
+    return []

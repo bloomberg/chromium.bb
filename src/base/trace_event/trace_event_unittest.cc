@@ -130,19 +130,19 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   void CancelTraceAsync(WaitableEvent* flush_complete_event) {
-    TraceLog::GetInstance()->CancelTracing(
-        base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
-                   base::Unretained(static_cast<TraceEventTestFixture*>(this)),
-                   base::Unretained(flush_complete_event)));
+    TraceLog::GetInstance()->CancelTracing(base::BindRepeating(
+        &TraceEventTestFixture::OnTraceDataCollected,
+        base::Unretained(static_cast<TraceEventTestFixture*>(this)),
+        base::Unretained(flush_complete_event)));
   }
 
   void EndTraceAndFlushAsync(WaitableEvent* flush_complete_event) {
     TraceLog::GetInstance()->SetDisabled(TraceLog::RECORDING_MODE |
                                          TraceLog::FILTERING_MODE);
-    TraceLog::GetInstance()->Flush(
-        base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
-                   base::Unretained(static_cast<TraceEventTestFixture*>(this)),
-                   base::Unretained(flush_complete_event)));
+    TraceLog::GetInstance()->Flush(base::BindRepeating(
+        &TraceEventTestFixture::OnTraceDataCollected,
+        base::Unretained(static_cast<TraceEventTestFixture*>(this)),
+        base::Unretained(flush_complete_event)));
   }
 
   void SetUp() override {
@@ -2332,7 +2332,7 @@ bool IsTraceEventArgsWhitelisted(const char* category_group_name,
 
   if (base::MatchPattern(category_group_name, "benchmark") &&
       base::MatchPattern(event_name, "granularly_whitelisted")) {
-    *arg_filter = base::Bind(&IsArgNameWhitelisted);
+    *arg_filter = base::BindRepeating(&IsArgNameWhitelisted);
     return true;
   }
 
@@ -2343,7 +2343,7 @@ bool IsTraceEventArgsWhitelisted(const char* category_group_name,
 
 TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
   TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::Bind(&IsTraceEventArgsWhitelisted));
+      base::BindRepeating(&IsTraceEventArgsWhitelisted));
 
   TraceLog::GetInstance()->SetEnabled(
     TraceConfig(kRecordAllCategoryFilter, "enable-argument-filter"),

@@ -126,6 +126,12 @@ void AudioOutputDevice::Pause() {
       FROM_HERE, base::BindOnce(&AudioOutputDevice::PauseOnIOThread, this));
 }
 
+void AudioOutputDevice::Flush() {
+  TRACE_EVENT0("audio", "AudioOutputDevice::Flush");
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AudioOutputDevice::FlushOnIOThread, this));
+}
+
 bool AudioOutputDevice::SetVolume(double volume) {
   TRACE_EVENT1("audio", "AudioOutputDevice::Pause", "volume", volume);
 
@@ -230,6 +236,13 @@ void AudioOutputDevice::PauseOnIOThread() {
 
   if (ipc_)
     ipc_->PauseStream();
+}
+
+void AudioOutputDevice::FlushOnIOThread() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (ipc_)
+    ipc_->FlushStream();
 }
 
 void AudioOutputDevice::ShutDownOnIOThread() {

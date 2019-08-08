@@ -3,19 +3,23 @@
    found in the LICENSE file.
 */
 'use strict';
-tr.exportTo('cp', () => {
-  class ConfigRequest extends cp.RequestBase {
-    constructor(options) {
-      super(options);
-      this.method_ = 'POST';
-      this.body_ = new FormData();
-      this.body_.set('key', options.key);
-    }
 
-    get url_() {
-      return ConfigRequest.URL;
-    }
+import RequestBase from './request-base.js';
+
+export default class ConfigRequest extends RequestBase {
+  constructor(options) {
+    super(options);
+    this.method_ = 'POST';
+    this.body_ = new FormData();
+    this.body_.set('key', options.key);
   }
-  ConfigRequest.URL = '/api/config';
-  return {ConfigRequest};
-});
+
+  get url_() {
+    return ConfigRequest.URL;
+  }
+
+  get description_() {
+    return `loading ${this.body_.get('key')}`;
+  }
+}
+ConfigRequest.URL = '/api/config';

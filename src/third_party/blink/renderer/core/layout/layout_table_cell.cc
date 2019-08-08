@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/collapsed_border_value.h"
+#include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/core/paint/table_cell_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/transforms/transform_state.h"
 
 namespace blink {
 
@@ -336,15 +336,15 @@ void LayoutTableCell::SetOverrideLogicalHeightFromRowHeight(
   SetOverrideLogicalHeight(row_height);
 }
 
-LayoutSize LayoutTableCell::OffsetFromContainerInternal(
+PhysicalOffset LayoutTableCell::OffsetFromContainerInternal(
     const LayoutObject* o,
     bool ignore_scroll_offset) const {
   DCHECK_EQ(o, Container());
 
-  LayoutSize offset =
+  PhysicalOffset offset =
       LayoutBlockFlow::OffsetFromContainerInternal(o, ignore_scroll_offset);
   if (Parent())
-    offset -= ParentBox()->PhysicalLocationOffset();
+    offset -= ParentBox()->PhysicalLocation();
 
   return offset;
 }
@@ -381,7 +381,7 @@ void LayoutTableCell::ComputeVisualOverflow(
   unsigned top = CollapsedBorderHalfTop(true);
   unsigned bottom = CollapsedBorderHalfBottom(true);
 
-  // TODO(wangxianzhu): The following looks incorrect for vertical direction.
+  // TODO(layout-ng): The following looks incorrect for vertical direction.
   // This cell's borders may be lengthened to match the widths of orthogonal
   // borders of adjacent cells. Expand visual overflow to cover the lengthened
   // parts.
@@ -1097,13 +1097,13 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
 
 void LayoutTableCell::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   TableCellPainter(*this).PaintBoxDecorationBackground(paint_info,
                                                        paint_offset);
 }
 
 void LayoutTableCell::PaintMask(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
+                                const PhysicalOffset& paint_offset) const {
   TableCellPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
@@ -1168,7 +1168,7 @@ LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
 }
 
 bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   // If this object has layer, the area of collapsed borders should be
   // transparent to expose the collapsed borders painted on the underlying
   // layer.

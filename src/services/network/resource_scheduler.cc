@@ -34,6 +34,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/scheme_host_port.h"
 
 namespace network {
@@ -362,10 +363,12 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
  public:
-  Client(net::NetworkQualityEstimator* network_quality_estimator,
+  Client(bool is_browser_client,
+         net::NetworkQualityEstimator* network_quality_estimator,
          ResourceScheduler* resource_scheduler,
          const base::TickClock* tick_clock)
-      : in_flight_delayable_count_(0),
+      : is_browser_client_(is_browser_client),
+        in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
         num_skipped_scans_due_to_scheduled_start_(0),
         network_quality_estimator_(network_quality_estimator),
@@ -476,6 +479,10 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   bool HasNoPendingRequests() const { return pending_requests_.IsEmpty(); }
+
+  bool IsActiveResourceSchedulerClient() const {
+    return (!pending_requests_.IsEmpty() || !in_flight_requests_.empty());
+  }
 
  private:
   enum ShouldStartReqResult {
@@ -801,6 +808,10 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   ShouldStartReqResult ShouldStartRequest(
       ScheduledResourceRequestImpl* request) const {
+    // Currently, browser initiated requests are not throttled.
+    if (is_browser_client_)
+      return START_REQUEST;
+
     if (!resource_scheduler_->enabled())
       return START_REQUEST;
 
@@ -989,6 +1000,10 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   // is enabled.
   RequestQueue pending_requests_;
   RequestSet in_flight_requests_;
+
+  // True if |this| client is created for browser initiated requests.
+  const bool is_browser_client_;
+
   // The number of delayable in-flight requests.
   size_t in_flight_delayable_count_;
   // The number of layout-blocking in-flight requests.
@@ -1096,7 +1111,11 @@ void ResourceScheduler::OnClientCreated(
   DCHECK(!base::ContainsKey(client_map_, client_id));
 
   client_map_[client_id] =
-      std::make_unique<Client>(network_quality_estimator, this, tick_clock_);
+      std::make_unique<Client>(child_id == mojom::kBrowserProcessId,
+                               network_quality_estimator, this, tick_clock_);
+
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.ActiveSchedulerClientsCount",
+                           ActiveSchedulerClientsCounter());
 }
 
 void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
@@ -1123,6 +1142,16 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   }
 
   client_map_.erase(it);
+}
+
+size_t ResourceScheduler::ActiveSchedulerClientsCounter() const {
+  size_t active_scheduler_clients_count = 0;
+  for (const auto& client : client_map_) {
+    if (client.second->IsActiveResourceSchedulerClient()) {
+      ++active_scheduler_clients_count;
+    }
+  }
+  return active_scheduler_clients_count;
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,

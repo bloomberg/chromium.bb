@@ -47,8 +47,7 @@ WorkingSetTrimmer::WorkingSetTrimmer() = default;
 WorkingSetTrimmer::~WorkingSetTrimmer() = default;
 
 bool WorkingSetTrimmer::ShouldObserve(const NodeBase* node) {
-  return node->id().type ==
-         resource_coordinator::CoordinationUnitType::kProcess;
+  return node->type() == ProcessNodeImpl::Type();
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(

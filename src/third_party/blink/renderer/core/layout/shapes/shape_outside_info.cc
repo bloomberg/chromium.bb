@@ -50,7 +50,7 @@ CSSBoxType ReferenceBox(const ShapeValue& shape_value) {
 
 void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
     LayoutSize new_reference_box_logical_size) {
-  const Document& document = layout_box_.GetDocument();
+  Document& document = layout_box_.GetDocument();
   bool is_horizontal_writing_mode =
       layout_box_.ContainingBlock()->StyleRef().IsHorizontalWritingMode();
 
@@ -191,7 +191,7 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
       GetShapeImageMarginRect(layout_box_, reference_box_logical_size_);
   const LayoutRect& image_rect =
       (layout_box_.IsLayoutImage())
-          ? ToLayoutImage(layout_box_).ReplacedContentRect()
+          ? ToLayoutImage(layout_box_).ReplacedContentRect().ToLayoutRect()
           : LayoutRect(LayoutPoint(), image_size);
 
   scoped_refptr<Image> image =
@@ -449,7 +449,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
   return shape_outside_deltas_;
 }
 
-LayoutRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
+PhysicalRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
   LayoutRect physical_bounding_box =
       ComputedShape().ShapeMarginLogicalBoundingBox();
   physical_bounding_box.SetX(physical_bounding_box.X() + LogicalLeftOffset());
@@ -465,7 +465,7 @@ LayoutRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
   else
     physical_bounding_box.SetY(physical_bounding_box.Y() + LogicalTopOffset());
 
-  return physical_bounding_box;
+  return PhysicalRect(physical_bounding_box);
 }
 
 FloatPoint ShapeOutsideInfo::ShapeToLayoutObjectPoint(FloatPoint point) const {
@@ -476,12 +476,6 @@ FloatPoint ShapeOutsideInfo::ShapeToLayoutObjectPoint(FloatPoint point) const {
   if (!layout_box_.StyleRef().IsHorizontalWritingMode())
     result = result.TransposedPoint();
   return result;
-}
-
-FloatSize ShapeOutsideInfo::ShapeToLayoutObjectSize(FloatSize size) const {
-  if (!layout_box_.StyleRef().IsHorizontalWritingMode())
-    return size.TransposedSize();
-  return size;
 }
 
 }  // namespace blink

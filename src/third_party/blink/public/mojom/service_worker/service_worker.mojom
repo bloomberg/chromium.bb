@@ -229,9 +229,14 @@ interface ServiceWorker {
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
   // |timeout| is the amount of time to allow this event to finish.
-  DispatchSyncEvent(string id,
+  DispatchSyncEvent(string tag,
                     bool last_chance,
                     mojo_base.mojom.TimeDelta timeout)
+      => (ServiceWorkerEventStatus status);
+  // |timeout| is the amount of time to allow this event to finish.
+  // TODO(crbug.com/925297): Link to spec.
+  DispatchPeriodicSyncEvent(string tag,
+                            mojo_base.mojom.TimeDelta timeout)
       => (ServiceWorkerEventStatus status);
   DispatchAbortPaymentEvent(
       payments.mojom.PaymentHandlerResponseCallback result_of_abort_payment)

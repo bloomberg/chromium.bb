@@ -135,63 +135,73 @@ component("boringssl") {
   }
 }
 
-# These targets are named "_tests" rather than "_test" to avoid colliding with a
-# historical "boringssl_ssl_test" target. This works around a bug with the iOS
-# build rules.
-
-test("boringssl_crypto_tests") {
-  sources = crypto_test_sources + test_support_sources
-  deps = [
-    ":boringssl",
-    "//testing/gtest",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":internal_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
-
-  # Chromium infrastructure does not support GTest, only the //base wrapper.
-  if (build_with_chromium) {
-    sources -= [
-      "src/crypto/test/gtest_main.cc",
-
-      # //base includes its own conflicting malloc shim.
-      "src/crypto/test/malloc.cc",
-    ]
-    sources += [ "gtest_main_chromium.cc" ]
-    deps += [ "//base/test:test_support" ]
-  }
-}
-
-test("boringssl_ssl_tests") {
-  sources = ssl_test_sources + test_support_sources
-  deps = [
-    ":boringssl",
-    "//testing/gtest",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":internal_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
-
-  # Chromium infrastructure does not support GTest, only the //base wrapper.
-  if (build_with_chromium) {
-    sources -= [
-      "src/crypto/test/gtest_main.cc",
-
-      # //base includes its own conflicting malloc shim.
-      "src/crypto/test/malloc.cc",
-    ]
-    sources += [ "gtest_main_chromium.cc" ]
-    deps += [ "//base/test:test_support" ]
-  }
-}
-
 if (build_with_chromium) {
+  # These targets are named "_tests" rather than "_test" to avoid colliding with
+  # a historical "boringssl_ssl_test" target. This works around a bug with the
+  # iOS build rules.
+
+  bundle_data("boringssl_crypto_tests_bundle_data") {
+    sources = crypto_test_data
+    testonly = true
+    outputs = [
+      "{{bundle_resources_dir}}/" +
+          "{{source_root_relative_dir}}/{{source_file_part}}",
+    ]
+  }
+
+  test("boringssl_crypto_tests") {
+    sources = crypto_test_sources + test_support_sources
+    data = crypto_test_data
+    deps = [
+      ":boringssl",
+      ":boringssl_crypto_tests_bundle_data",
+      "//testing/gtest",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":internal_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+
+    # Chromium infrastructure does not support GTest, only the //base wrapper.
+    sources -= [
+      "src/crypto/test/gtest_main.cc",
+
+      # //base includes its own conflicting malloc shim.
+      "src/crypto/test/malloc.cc",
+    ]
+    sources += [
+      "gtest_main_chromium.cc",
+      "test_data_chromium.cc",
+    ]
+    deps += [ "//base/test:test_support" ]
+  }
+
+  test("boringssl_ssl_tests") {
+    sources = ssl_test_sources + test_support_sources
+    deps = [
+      ":boringssl",
+      "//testing/gtest",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":internal_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+
+    # Chromium infrastructure does not support GTest, only the //base wrapper.
+    sources -= [
+      "src/crypto/test/gtest_main.cc",
+
+      # //base includes its own conflicting malloc shim.
+      "src/crypto/test/malloc.cc",
+    ]
+    sources += [ "gtest_main_chromium.cc" ]
+    deps += [ "//base/test:test_support" ]
+  }
+
   config("fuzzer_config") {
     visibility = [ ":*" ]  # Only targets in this file can depend on this.
     defines = [

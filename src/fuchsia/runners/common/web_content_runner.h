@@ -37,11 +37,8 @@ class WebContentRunner : public fuchsia::sys::Runner {
   //   active.
   // |content|: Context (e.g. persisted profile storage) under which all web
   //   content launched through this Runner instance will be run.
-  // |on_idle_closure|: A callback which is invoked when the WebContentRunner
-  //   has entered an idle state and may be safely torn down.
   WebContentRunner(base::fuchsia::ServiceDirectory* service_directory,
-                   fuchsia::web::ContextPtr context,
-                   base::OnceClosure on_idle_closure);
+                   fuchsia::web::ContextPtr context);
   ~WebContentRunner() override;
 
   fuchsia::web::Context* context() { return context_.get(); }
@@ -64,18 +61,12 @@ class WebContentRunner : public fuchsia::sys::Runner {
   void RegisterComponent(std::unique_ptr<WebComponent> component);
 
  private:
-  void RunOnIdleClosureIfValid();
-
   fuchsia::web::ContextPtr context_;
   std::set<std::unique_ptr<WebComponent>, base::UniquePtrComparator>
       components_;
 
   // Publishes this Runner into the service directory specified at construction.
   base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner> service_binding_;
-
-  // Run when no components remain, or the last |service_binding_| client
-  // disconnects, to quit the Runner.
-  base::OnceClosure on_idle_closure_;
 
   // Test-only callback for GetWebComponentForTest.
   base::OnceCallback<void(WebComponent*)> web_component_test_callback_;

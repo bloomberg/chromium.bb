@@ -13,7 +13,6 @@
 #include "ui/base/class_property.h"
 
 namespace aura {
-class PropertyConverter;
 class Window;
 template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
@@ -25,9 +24,10 @@ class Rect;
 
 namespace ash {
 
+enum class WindowStateType;
+
 namespace mojom {
 enum class WindowPinType;
-enum class WindowStateType;
 }
 
 enum class BackdropWindowMode {
@@ -35,11 +35,6 @@ enum class BackdropWindowMode {
   kDisabled,  // The window should never have a backdrop.
   kAuto,  // The window manager decides if the window should have a backdrop.
 };
-
-// Registers Ash's properties with the given PropertyConverter. This allows Ash
-// and other services (eg. Chrome) to exchange Ash window property values.
-ASH_PUBLIC_EXPORT void RegisterWindowProperties(
-    aura::PropertyConverter* property_converter);
 
 // Shell-specific window property keys for use by ash and its clients.
 
@@ -112,9 +107,14 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsShowingInOverviewKey;
 
+// If true, the window will be ignored when mirroring the desk contents into
+// the desk's mini_view.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideInDeskMiniViewKey;
+
 // A property key to store the window state the window had before entering PIP.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kPrePipWindowStateTypeKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
+    kPrePipWindowStateTypeKey;
 
 // Maps to ws::mojom::WindowManager::kRenderParentTitleArea_Property.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
@@ -130,8 +130,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 // take preference over the current state if
 // |kRestoreWindowStateTypeOverrideKey| is set. This is used by e.g. the tablet
 // mode window manager.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kRestoreWindowStateTypeOverrideKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
+    kRestoreWindowStateTypeOverrideKey;
 
 // A property key to store whether search key accelerator is reserved for a
 // window. This is used to pass through search key accelerators to Android
@@ -152,13 +152,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 // originated from if the window is currently in tab-dragging process.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<aura::Window*>* const
     kTabDraggingSourceWindowKey;
-
-// A property key to store the window state type when the tab-dragging finishes.
-// This is for Mash to share the window state type before actual state
-// transition happens. See TabDragController::IsSnapped, and
-// https://crbug.com/880635.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kTabDroppedWindowStateTypeKey;
 
 // A property key to store the active color on the window frame.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
@@ -182,8 +175,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPositionManagedTypeKey;
 
 // A property key to indicate ash's extended window state.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kWindowStateTypeKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
+    kWindowStateTypeKey;
 
 // A property key to indicate pip window state.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const

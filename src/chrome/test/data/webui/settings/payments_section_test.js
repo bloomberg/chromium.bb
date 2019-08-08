@@ -303,7 +303,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.emptyCreditCardEntry();
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             test_util.eventToPromise('save-credit-card', creditCardDialog)
               .then(function() {

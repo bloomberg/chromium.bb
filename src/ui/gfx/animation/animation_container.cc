@@ -4,6 +4,7 @@
 
 #include "ui/gfx/animation/animation_container.h"
 
+#include "base/bind.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 
@@ -12,10 +13,7 @@ using base::TimeTicks;
 
 namespace gfx {
 
-AnimationContainer::AnimationContainer()
-    : last_tick_time_(base::TimeTicks::Now()),
-      min_timer_interval_count_(0),
-      observer_(NULL) {}
+AnimationContainer::AnimationContainer() = default;
 
 AnimationContainer::~AnimationContainer() {
   // The animations own us and stop themselves before being deleted. If
@@ -49,7 +47,7 @@ void AnimationContainer::Stop(AnimationContainerElement* element) {
   elements_.erase(element);
 
   if (elements_.empty()) {
-    timer_.Stop();
+    runner_->Stop();
     min_timer_interval_count_ = 0;
     if (observer_)
       observer_->AnimationContainerEmpty(this);
@@ -69,14 +67,20 @@ void AnimationContainer::Stop(AnimationContainerElement* element) {
   }
 }
 
-void AnimationContainer::Run() {
+void AnimationContainer::SetAnimationRunner(
+    std::unique_ptr<AnimationRunner> runner) {
+  has_custom_animation_runner_ = !!runner;
+  runner_ = has_custom_animation_runner_
+                ? std::move(runner)
+                : AnimationRunner::CreateDefaultAnimationRunner();
+}
+
+void AnimationContainer::Run(base::TimeTicks current_time) {
   // We notify the observer after updating all the elements. If all the elements
   // are deleted as a result of updating then our ref count would go to zero and
   // we would be deleted before we notify our observer. We add a reference to
   // ourself here to make sure we're still valid after running all the elements.
   scoped_refptr<AnimationContainer> this_ref(this);
-
-  TimeTicks current_time = base::TimeTicks::Now();
 
   last_tick_time_ = current_time;
 
@@ -98,9 +102,11 @@ void AnimationContainer::Run() {
 void AnimationContainer::SetMinTimerInterval(base::TimeDelta delta) {
   // This doesn't take into account how far along the current element is, but
   // that shouldn't be a problem for uses of Animation/AnimationContainer.
-  timer_.Stop();
+  runner_->Stop();
   min_timer_interval_ = delta;
-  timer_.Start(FROM_HERE, min_timer_interval_, this, &AnimationContainer::Run);
+  runner_->Start(
+      min_timer_interval_,
+      base::BindRepeating(&AnimationContainer::Run, base::Unretained(this)));
 }
 
 std::pair<TimeDelta, size_t> AnimationContainer::GetMinIntervalAndCount()

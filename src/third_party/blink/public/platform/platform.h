@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
@@ -104,23 +104,18 @@ struct ThreadCreationParams;
 class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
-class WebCanvasCaptureHandler;
-class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
-class WebImageCaptureFrameGrabber;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebMediaPlayer;
 class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebMediaStreamCenter;
-class WebMediaStreamTrack;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
-class WebPushProvider;
 class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -134,7 +129,6 @@ class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
-struct WebSize;
 
 namespace scheduler {
 class WebThreadScheduler;
@@ -181,9 +175,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   Platform();
   virtual ~Platform();
 
-  // May return null.
-  virtual WebCookieJar* CookieJar() { return nullptr; }
-
   // May return null if sandbox support is not necessary
   virtual WebSandboxSupport* GetSandboxSupport() { return nullptr; }
 
@@ -195,6 +186,10 @@ class BLINK_PLATFORM_EXPORT Platform {
       WebSpeechSynthesizerClient*) {
     return nullptr;
   }
+
+  // AppCache  ----------------------------------------------------------
+
+  virtual bool IsURLSupportedForAppCache(const WebURL& url) { return false; }
 
   // Audio --------------------------------------------------------------
 
@@ -355,12 +350,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  // Returns a WebDataConsumerHandle for a given mojo data pipe endpoint.
-  virtual std::unique_ptr<WebDataConsumerHandle> CreateDataConsumerHandle(
-      mojo::ScopedDataPipeConsumerHandle handle) {
-    return nullptr;
-  }
-
   // May return null.
   virtual WebPrescientNetworking* PrescientNetworking() { return nullptr; }
 
@@ -381,10 +370,11 @@ class BLINK_PLATFORM_EXPORT Platform {
                              size_t data_size) {}
 
   // A request to fetch contents associated with this URL from metadata cache.
-  virtual void FetchCachedCode(
-      blink::mojom::CodeCacheType cache_type,
-      const GURL&,
-      base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>) {}
+  using FetchCachedCodeCallback =
+      base::OnceCallback<void(base::Time, base::span<const uint8_t>)>;
+  virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
+                               const GURL&,
+                               FetchCachedCodeCallback) {}
   virtual void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                                    const GURL&) {}
 
@@ -527,7 +517,7 @@ class BLINK_PLATFORM_EXPORT Platform {
     kWebGPUContextType,  // WebGPU context
   };
   struct ContextAttributes {
-    bool prefer_integrated_gpu = false;
+    bool prefer_low_power_gpu = false;
     bool fail_if_major_performance_caveat = false;
     ContextType context_type = kGLES2ContextType;
     // Offscreen contexts usually share a surface for the default frame buffer
@@ -639,25 +629,12 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory();
 
-  // Creates a WebCanvasCaptureHandler to capture Canvas output.
-  virtual std::unique_ptr<WebCanvasCaptureHandler>
-  CreateCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*);
-
   // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
   // by the second parameter.
-  virtual void CreateHTMLVideoElementCapturer(
-      WebMediaStream*,
-      WebMediaPlayer*,
-      scoped_refptr<base::SingleThreadTaskRunner>) {}
   virtual void CreateHTMLAudioElementCapturer(
       WebMediaStream*,
       WebMediaPlayer*,
       scoped_refptr<base::SingleThreadTaskRunner>) {}
-
-  // Creates a WebImageCaptureFrameGrabber to take a snapshot of a Video Tracks.
-  // May return null if the functionality is not available.
-  virtual std::unique_ptr<WebImageCaptureFrameGrabber>
-  CreateImageCaptureFrameGrabber();
 
   // Returns the most optimistic view of the capabilities of the system for
   // sending or receiving media of the given kind ("audio" or "video").
@@ -686,6 +663,10 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebSecurityOrigin& script_origin) {
     return false;
   }
+  virtual bool IsExcludedHeaderForServiceWorkerFetchEvent(
+      const WebString& header_name) {
+    return false;
+  }
 
   // WebCrypto ----------------------------------------------------------
 
@@ -702,10 +683,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // WebDatabase --------------------------------------------------------
 
   virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }
-
-  // Push API------------------------------------------------------------
-
-  virtual WebPushProvider* PushProvider() { return nullptr; }
 
   // Media Capabilities --------------------------------------------------
 

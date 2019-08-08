@@ -49,6 +49,7 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
                                &num_to_delete_entries_by_type);
 
   SyncCycleSnapshot snapshot(
+      context_->birthday(), context_->bag_of_chips(),
       status_controller_->model_neutral_state(), download_progress_markers,
       delegate_->IsAnyThrottleOrBackoff(),
       status_controller_->num_encryption_conflicts(),

@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_tray.h"
@@ -69,6 +69,9 @@ class PaletteWelcomeBubble::WelcomeBubbleView
   }
 
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+
+  // views::View:
+  const char* GetClassName() const override { return "WelcomeBubbleView"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WelcomeBubbleView);

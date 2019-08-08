@@ -69,7 +69,7 @@ class WebSocketHandle {
                        WebSocketHandleClient*,
                        base::SingleThreadTaskRunner*) = 0;
   virtual void Send(bool fin, MessageType, const char* data, wtf_size_t) = 0;
-  virtual void FlowControl(int64_t quota) = 0;
+  virtual void AddReceiveFlowControlQuota(int64_t quota) = 0;
   virtual void Close(uint16_t code, const String& reason) = 0;
 };
 

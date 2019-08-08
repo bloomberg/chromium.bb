@@ -52,10 +52,6 @@ buildflag_header("buildflags") {
     "PGO_BUILD=$pgo_build",
     "OPTIMIZE_WEBUI=$optimize_webui",
   ]
-
-  if (is_mac) {
-    flags += [ "NEW_MAC_BUNDLE_STRUCTURE=$new_mac_bundle_structure" ]
-  }
 }
 
 source_set("channel_info") {
@@ -147,8 +143,6 @@ static_library("common") {
     "logging_chrome.h",
     "mac/app_shim_launch.h",
     "mac/app_shim_param_traits.h",
-    "mac/cfbundle_blocker.h",
-    "mac/cfbundle_blocker.mm",
     "mac/launchd.h",
     "mac/launchd.mm",
     "mac/service_management.h",
@@ -172,8 +166,6 @@ static_library("common") {
     "page_load_metrics/page_load_metrics_util.h",
     "page_load_metrics/page_load_timing.cc",
     "page_load_metrics/page_load_timing.h",
-    "page_load_metrics/page_track_decider.cc",
-    "page_load_metrics/page_track_decider.h",
     "pdf_util.cc",
     "pdf_util.h",
     "pref_names_util.cc",
@@ -226,7 +218,7 @@ static_library("common") {
     ":offline_page_auto_fetcher_mojom",
     ":page_load_metrics_mojom",
     ":supervised_user_commands_mojom",
-    "//base:base",
+    "//base",
     "//base:base_static",
     "//base:i18n",
     "//chrome:resources",
@@ -268,7 +260,7 @@ static_library("common") {
     "//components/translate/core/common",
     "//components/url_formatter",
     "//components/variations",
-    "//components/variations/net:net",
+    "//components/variations/net",
     "//components/visitedlink/common",
     "//content/public/common",
     "//extensions/buildflags",
@@ -380,13 +372,13 @@ static_library("common") {
     public_deps += [
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:extensions_features",
-      "//device/usb",
       "//extensions:extensions_resources",
       "//extensions/common",
       "//extensions/common:core_api_provider",
       "//extensions/common/api",
       "//extensions/strings",
       "//media/cast:net",
+      "//services/device/public/cpp/usb",
     ]
     if (is_chromeos) {
       sources += [
@@ -399,7 +391,7 @@ static_library("common") {
       ]
 
       # This dependency is for a header used only by extensions code.
-      public_deps += [ "//ui/keyboard:keyboard" ]
+      public_deps += [ "//ash/keyboard/ui" ]
     }
   }
 
@@ -454,8 +446,8 @@ static_library("common") {
 
   if (is_win) {
     deps += [
+      "//chrome/chrome_elf:chrome_elf_main_include",
       "//chrome/common/win:eventlog_messages",
-      "//chrome_elf:chrome_elf_main_include",
       "//components/crash/content/app:crash_export_thunk_include",
     ]
 
@@ -468,10 +460,7 @@ static_library("common") {
   }
 
   if (is_mac) {
-    public_deps += [
-      "//third_party/google_toolbox_for_mac",
-      "//third_party/mach_override",
-    ]
+    public_deps += [ "//third_party/google_toolbox_for_mac" ]
 
     libs = [ "ServiceManagement.framework" ]
   }
@@ -757,7 +746,7 @@ mojom("mojo_bindings") {
   ]
 
   if (is_mac) {
-    public_deps += [ "//ui/views_bridge_mac:mojo" ]
+    public_deps += [ "//components/remote_cocoa/common:mojo" ]
   }
 
   if (safe_browsing_mode == 1) {

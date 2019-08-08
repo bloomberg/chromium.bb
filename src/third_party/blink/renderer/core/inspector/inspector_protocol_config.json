@@ -84,7 +84,7 @@
             {
                 "domain": "Emulation",
                 "include": ["forceViewport", "resetViewport", "resetPageScaleFactor", "setPageScaleFactor", "setScriptExecutionDisabled", "setTouchEmulationEnabled",
-                            "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy", "setNavigatorOverrides", "setDefaultBackgroundColorOverride", "setDeviceMetricsOverride", "clearDeviceMetricsOverride",
+                            "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy", "setTimezoneOverride", "setNavigatorOverrides", "setDefaultBackgroundColorOverride", "setDeviceMetricsOverride", "clearDeviceMetricsOverride",
                             "setUserAgentOverride", "setScrollbarsHidden", "setDocumentCookieDisabled", "setFocusEmulationEnabled"],
                 "include_events": ["virtualTimeBudgetExpired", "virtualTimeAdvanced", "virtualTimePaused"]
             },
@@ -124,5 +124,10 @@
         "string_header": "third_party/blink/renderer/core/inspector/v8_inspector_string.h",
         "export_macro": "CORE_EXPORT",
         "export_header": "third_party/blink/renderer/core/core_export.h"
+    },
+
+    "encoding_lib": {
+        "header": "third_party/inspector_protocol/encoding/encoding.h",
+        "namespace": ["inspector_protocol_encoding"]
     }
 }

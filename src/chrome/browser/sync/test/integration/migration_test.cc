@@ -96,6 +96,14 @@ class MigrationTest : public SyncTest  {
     DCHECK(GetSyncService(0));
     syncer::ModelTypeSet preferred_data_types =
         GetSyncService(0)->GetPreferredDataTypes();
+
+    // Make sure all clients have the same preferred data types.
+    for (int i = 1; i < num_clients(); ++i) {
+      const syncer::ModelTypeSet other_preferred_data_types =
+          GetSyncService(i)->GetPreferredDataTypes();
+      EXPECT_EQ(other_preferred_data_types, preferred_data_types);
+    }
+
     preferred_data_types.RemoveAll(syncer::ProxyTypes());
 
     // Supervised user data types will be "unready" during this test, so we
@@ -115,12 +123,6 @@ class MigrationTest : public SyncTest  {
     // Doesn't make sense to migrate commit only types.
     preferred_data_types.RemoveAll(syncer::CommitOnlyTypes());
 
-    // Make sure all clients have the same preferred data types.
-    for (int i = 1; i < num_clients(); ++i) {
-      const syncer::ModelTypeSet other_preferred_data_types =
-          GetSyncService(i)->GetPreferredDataTypes();
-      EXPECT_EQ(other_preferred_data_types, preferred_data_types);
-    }
     return preferred_data_types;
   }
 
@@ -359,32 +361,22 @@ IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
 
 // Migrate every datatype in sequence; the catch being that the server
 // will only tell the client about the migrations one at a time.
-// TODO(rsimha): This test takes longer than 60 seconds, and will cause tree
-// redness due to sharding.
-// Re-enable this test after syncer::kInitialBackoffShortRetrySeconds is reduced
-// to zero.
-IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       DISABLED_MigrationHellWithoutNigori) {
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithoutNigori) {
   ASSERT_TRUE(SetupClients());
   MigrationList migration_list = GetPreferredDataTypesList();
-  // Let the first nudge be a datatype that's neither prefs nor
-  // bookmarks.
+  // Let the first nudge be a datatype that's neither prefs nor bookmarks.
   migration_list.push_front(MakeSet(syncer::THEMES));
+  ASSERT_EQ(MakeSet(syncer::NIGORI), migration_list.back());
+  migration_list.pop_back();
   RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       DISABLED_MigrationHellWithNigori) {
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithNigori) {
   ASSERT_TRUE(SetupClients());
   MigrationList migration_list = GetPreferredDataTypesList();
-  // Let the first nudge be a datatype that's neither prefs nor
-  // bookmarks.
+  // Let the first nudge be a datatype that's neither prefs nor bookmarks.
   migration_list.push_front(MakeSet(syncer::THEMES));
-  // Pop off one so that we don't migrate all data types; the syncer
-  // freaks out if we do that (see http://crbug.com/94882).
-  ASSERT_GE(migration_list.size(), 2u);
-  ASSERT_NE(MakeSet(syncer::NIGORI), migration_list.back());
-  migration_list.back() = MakeSet(syncer::NIGORI);
+  ASSERT_EQ(MakeSet(syncer::NIGORI), migration_list.back());
   RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 

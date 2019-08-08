@@ -572,7 +572,7 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
     new_dir_name.append(NumberToString16(GetCurrentProcId()));
     new_dir_name.push_back('_');
     new_dir_name.append(
-        NumberToString16(RandInt(0, std::numeric_limits<int16_t>::max())));
+        NumberToString16(RandInt(0, std::numeric_limits<int32_t>::max())));
 
     path_to_create = base_dir.Append(new_dir_name);
     if (::CreateDirectory(as_wcstr(path_to_create.value()), NULL)) {
@@ -759,6 +759,23 @@ bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
   }
   ::UnmapViewOfFile(file_view);
   return success;
+}
+
+FilePath MakeLongFilePath(const FilePath& input) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+
+  DWORD path_long_len = ::GetLongPathName(input.value().c_str(), nullptr, 0);
+  if (path_long_len == 0UL)
+    return FilePath();
+
+  base::string16 path_long_str;
+  path_long_len = ::GetLongPathName(
+      input.value().c_str(), base::WriteInto(&path_long_str, path_long_len),
+      path_long_len);
+  if (path_long_len == 0UL)
+    return FilePath();
+
+  return base::FilePath(path_long_str);
 }
 
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle

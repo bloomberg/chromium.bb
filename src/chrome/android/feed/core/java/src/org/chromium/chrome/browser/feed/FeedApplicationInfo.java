@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.host.config.ApplicationInfo;
+import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;

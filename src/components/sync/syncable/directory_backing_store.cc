@@ -11,12 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -277,8 +275,11 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
 ///////////////////////////////////////////////////////////////////////////////
 // DirectoryBackingStore implementation.
 
-DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
+DirectoryBackingStore::DirectoryBackingStore(
+    const string& dir_name,
+    const base::RepeatingCallback<std::string()>& cache_guid_generator)
     : dir_name_(dir_name),
+      cache_guid_generator_(cache_guid_generator),
       database_page_size_(kCurrentPageSizeKB),
       needs_metas_column_refresh_(false),
       needs_share_info_column_refresh_(false) {
@@ -286,9 +287,12 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
   ResetAndCreateConnection();
 }
 
-DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
-                                             sql::Database* db)
+DirectoryBackingStore::DirectoryBackingStore(
+    const string& dir_name,
+    const base::RepeatingCallback<std::string()>& cache_guid_generator,
+    sql::Database* db)
     : dir_name_(dir_name),
+      cache_guid_generator_(cache_guid_generator),
       database_page_size_(kCurrentPageSizeKB),
       db_(db),
       needs_metas_column_refresh_(false),
@@ -373,8 +377,9 @@ bool DirectoryBackingStore::SaveChanges(
             "UPDATE share_info "
             "SET store_birthday = ?, "
             "bag_of_chips = ?"));
-    s1.BindString(0, info.store_birthday);
-    s1.BindBlob(1, info.bag_of_chips.data(), info.bag_of_chips.size());
+    s1.BindString(0, info.legacy_store_birthday);
+    s1.BindBlob(1, info.legacy_bag_of_chips.data(),
+                info.legacy_bag_of_chips.size());
 
     if (!s1.Run())
       return false;
@@ -741,9 +746,9 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     if (!s.Step())
       return false;
 
-    info->kernel_info.store_birthday = s.ColumnString(0);
-    info->cache_guid = s.ColumnString(1);
-    s.ColumnBlobAsString(2, &(info->kernel_info.bag_of_chips));
+    info->kernel_info.legacy_store_birthday = s.ColumnString(0);
+    info->legacy_cache_guid = s.ColumnString(1);
+    s.ColumnBlobAsString(2, &(info->kernel_info.legacy_bag_of_chips));
 
     // Verify there was only one row returned.
     DCHECK(!s.Step());
@@ -819,15 +824,6 @@ string DirectoryBackingStore::ModelTypeEnumToModelId(ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(model_type, &specifics);
   return specifics.SerializeAsString();
-}
-
-// static
-std::string DirectoryBackingStore::GenerateCacheGUID() {
-  // Generate a GUID with 128 bits of randomness.
-  const int kGuidBytes = 128 / 8;
-  std::string guid;
-  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
-  return guid;
 }
 
 bool DirectoryBackingStore::MigrateToSpecifics(
@@ -1566,7 +1562,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindString(0, dir_name_);                   // id
     s.BindString(1, dir_name_);                   // name
     s.BindString(2, std::string());               // store_birthday
-    s.BindString(3, GenerateCacheGUID());         // cache_guid
+    s.BindString(3, cache_guid_generator_.Run());  // cache_guid
     s.BindBlob(4, nullptr, 0);                    // bag_of_chips
     if (!s.Run())
       return false;

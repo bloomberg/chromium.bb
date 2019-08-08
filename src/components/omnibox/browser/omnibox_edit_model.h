@@ -37,15 +37,6 @@ class Image;
 
 class OmniboxEditModel {
  public:
-  // Did the Omnibox focus originate via the user clicking on the Omnibox, on
-  // the Fakebox or the Search button?
-  enum FocusSource {
-    INVALID = 0,
-    OMNIBOX = 1,
-    FAKEBOX = 2,
-    SEARCH_BUTTON = 3
-  };
-
   struct State {
     State(bool user_input_in_progress,
           const base::string16& user_text,
@@ -54,7 +45,7 @@ class OmniboxEditModel {
           metrics::OmniboxEventProto::KeywordModeEntryMethod
               keyword_mode_entry_method,
           OmniboxFocusState focus_state,
-          FocusSource focus_source,
+          OmniboxFocusSource focus_source,
           const AutocompleteInput& autocomplete_input);
     State(const State& other);
     ~State();
@@ -66,7 +57,7 @@ class OmniboxEditModel {
     metrics::OmniboxEventProto::KeywordModeEntryMethod
         keyword_mode_entry_method;
     OmniboxFocusState focus_state;
-    FocusSource focus_source;
+    OmniboxFocusSource focus_source;
     const AutocompleteInput autocomplete_input;
    private:
     DISALLOW_ASSIGN(State);
@@ -97,6 +88,8 @@ class OmniboxEditModel {
   OmniboxEditController* controller() const { return controller_; }
 
   OmniboxClient* client() const { return client_.get(); }
+
+  metrics::OmniboxEventProto::PageClassification GetPageClassification() const;
 
   // Returns the current state.  This assumes we are switching tabs, and changes
   // the internal state appropriately.
@@ -240,8 +233,8 @@ class OmniboxEditModel {
     return focus_state_ == OMNIBOX_FOCUS_VISIBLE;
   }
 
-  FocusSource focus_source() const { return focus_source_; }
-  void set_focus_source(FocusSource focus_source) {
+  OmniboxFocusSource focus_source() const { return focus_source_; }
+  void set_focus_source(OmniboxFocusSource focus_source) {
     focus_source_ = focus_source;
   }
 
@@ -252,6 +245,10 @@ class OmniboxEditModel {
   bool is_keyword_selected() const {
     return !is_keyword_hint_ && !keyword_.empty();
   }
+
+  // A stronger version of is_keyword_selected(), which depends on there
+  // being input after the keyword.
+  bool InExplicitExperimentalKeywordMode();
 
   // Accepts the current keyword hint as a keyword. It always returns true for
   // caller convenience. |entry_method| indicates how the user entered
@@ -447,12 +444,6 @@ class OmniboxEditModel {
   // keyword.
   static bool IsSpaceCharForAcceptingKeyword(wchar_t c);
 
-  // Classify the current page being viewed as, for example, the new tab
-  // page or a normal web page.  Used for logging omnibox events for
-  // UMA opted-in users.  Examines the user's profile to determine if the
-  // current page is the user's home page.
-  metrics::OmniboxEventProto::PageClassification ClassifyPage() const;
-
   // Sets |match| and |alternate_nav_url| based on classifying |text|.
   // |alternate_nav_url| may be NULL.
   void ClassifyString(const base::string16& text,
@@ -487,7 +478,7 @@ class OmniboxEditModel {
   // Used to keep track whether the input currently in progress originated by
   // focusing in the Omnibox, Fakebox or Search button. This will be INVALID if
   // no input is in progress or the Omnibox is not focused.
-  FocusSource focus_source_;
+  OmniboxFocusSource focus_source_ = OmniboxFocusSource::INVALID;
 
   // Display-only text representing the current page. This could be any of:
   //  - The same as |url_for_editing_| if Steady State Elisions is OFF.

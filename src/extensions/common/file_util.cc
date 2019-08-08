@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -431,15 +432,20 @@ void DeleteFile(const base::FilePath& path, bool recursive) {
 }
 
 base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
-  std::string url_path = url.path();
+  base::StringPiece url_path = url.path_piece();
   if (url_path.empty() || url_path[0] != '/')
     return base::FilePath();
 
-  // Drop the leading slashes and convert %-encoded UTF8 to regular UTF8.
-  std::string file_path = net::UnescapeURLComponent(
-      url_path,
-      net::UnescapeRule::SPACES |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  // Convert %-encoded UTF8 to regular UTF8.
+  std::string file_path;
+  if (!net::UnescapeBinaryURLComponentSafe(
+          url_path, true /* fail_on_path_separators */, &file_path)) {
+    // There shouldn't be any escaped path separators or control characters in
+    // the path. However, if there are, it's best to just fail.
+    return base::FilePath();
+  }
+
+  // Drop the leading slashes.
   size_t skip = file_path.find_first_not_of("/\\");
   if (skip != file_path.npos)
     file_path = file_path.substr(skip);

@@ -8,9 +8,9 @@
 #ifndef SkMatrix_DEFINED
 #define SkMatrix_DEFINED
 
-#include "../private/SkMacros.h"
-#include "../private/SkTo.h"
-#include "SkRect.h"
+#include "include/core/SkRect.h"
+#include "include/private/SkMacros.h"
+#include "include/private/SkTo.h"
 
 struct SkRSXform;
 struct SkPoint3;
@@ -32,6 +32,14 @@ class SkString;
 SK_BEGIN_REQUIRE_DENSE
 class SK_API SkMatrix {
 public:
+
+    /** Creates an identity SkMatrix:
+
+            | 1 0 0 |
+            | 0 1 0 |
+            | 0 0 1 |
+    */
+    constexpr SkMatrix() : SkMatrix(1,0,0, 0,1,0, 0,0,1, kIdentity_Mask | kRectStaysRect_Mask) {}
 
     /** Sets SkMatrix to scale by (sx, sy). Returned matrix is:
 
@@ -1721,6 +1729,14 @@ private:
 
     SkScalar         fMat[9];
     mutable uint32_t fTypeMask;
+
+    constexpr SkMatrix(SkScalar sx, SkScalar kx, SkScalar tx,
+                       SkScalar ky, SkScalar sy, SkScalar ty,
+                       SkScalar p0, SkScalar p1, SkScalar p2, uint32_t typeMask)
+        : fMat{sx, kx, tx,
+               ky, sy, ty,
+               p0, p1, p2}
+        , fTypeMask(typeMask) {}
 
     static void ComputeInv(SkScalar dst[9], const SkScalar src[9], double invDet, bool isPersp);
 

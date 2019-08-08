@@ -7,23 +7,24 @@
 #include <utility>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -69,27 +70,13 @@ void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
 CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  // TODO(mash): Find another way to observe for crostini app window creation.
-  // https://crbug.com/887156
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->AddObserver(this);
-  // When window service is enabled, aura::Env::GetInstance() is a different
-  // instance from ash::Shell::Get()->aura_env(), and it needs to be observed
-  // for the Crostini terminal, which is a Chrome app window. Note that it still
-  // needs to observe ash::Shell::Get()->aura_env() too for other crostini apps,
-  // which are hosted by exo.
-  // TODO(mukai): clean this up. https://crbug.com/887156
-  if (features::IsUsingWindowService())
-    aura::Env::GetInstance()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
-  if (features::IsUsingWindowService())
-    aura::Env::GetInstance()->RemoveObserver(this);
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,
@@ -139,7 +126,7 @@ ash::ShelfID CrostiniAppWindowShelfController::RemoveFromShelf(
 void CrostiniAppWindowShelfController::ActiveUserChanged(
     const std::string& user_email) {
   for (auto& w : aura_window_to_app_window_) {
-    if (MultiUserWindowManagerClient::GetInstance()
+    if (MultiUserWindowManagerHelper::GetWindowManager()
             ->GetWindowOwner(w.first)
             .GetUserEmail() == user_email) {
       AddToShelf(w.first, w.second.get());
@@ -205,9 +192,16 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
     return;
   }
 
+  // Currently Crostini can only be used from the primary profile. In the
+  // future, this may be replaced by some way of matching the container that
+  // runs this app with the user that owns it.
+  const AccountId& primary_account_id =
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
+
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          owner()->profile());
+          chromeos::ProfileHelper::Get()->GetProfileByAccountId(
+              primary_account_id));
   const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
       exo::GetShellApplicationId(window), exo::GetShellStartupId(window));
   // Windows without an application id set will get filtered out here.
@@ -232,9 +226,8 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   }
 
   // Prevent Crostini window from showing up after user switch.
-  MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
-      window,
-      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+  MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
+      window, primary_account_id);
 
   RegisterAppWindow(window, shelf_app_id);
 
@@ -267,9 +260,10 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
 
   // Only add an app to the shelf if it's associated with the currently active
   // user (which should always be the primary user at this time).
-  if (SessionControllerClient::IsMultiProfileAvailable() &&
+  if (SessionControllerClientImpl::IsMultiProfileAvailable() &&
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId() !=
-          MultiUserWindowManagerClient::GetInstance()->GetWindowOwner(window))
+          MultiUserWindowManagerHelper::GetWindowManager()->GetWindowOwner(
+              window))
     return;
   AddToShelf(window, app_window);
 }

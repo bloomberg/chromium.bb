@@ -64,12 +64,6 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
   ~EventForwarder() override = default;
 
  private:
-  // Some swipes are handled by Android alone. We don't want to capture swipe
-  // events if we started a swipe on the chrome side then moved into the Android
-  // swipe region. So, keep track of whether swipe has been 'captured' by
-  // Android.
-  bool swipe_captured_ = false;
-
   // ui::EventHandler
   void OnEvent(ui::Event* event) override {
     // Do not forward event targeted to the floating close button so that
@@ -79,6 +73,9 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
             event->target()) {
       return;
     }
+
+    if (!owner_->item_ || !owner_->surface_)
+      return;
 
     views::Widget* widget = owner_->GetWidget();
     if (!widget)
@@ -113,8 +110,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         if ((event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
              event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
              event->type() == ui::ET_GESTURE_SCROLL_END ||
-             event->type() == ui::ET_GESTURE_SWIPE) &&
-            owner_->surface_) {
+             event->type() == ui::ET_GESTURE_SWIPE)) {
           gfx::RectF rect(owner_->item_->GetSwipeInputRect());
           owner_->surface_->GetContentWindow()->transform().TransformRect(
               &rect);
@@ -168,8 +164,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
     // pass tab key event to focus manager of content view.
     // TODO(yawano): include elements inside Android notification in tab focus
     // traversal rather than skipping them.
-    if (owner_->surface_ &&
-        owner_->surface_->GetAXTreeId() != ui::AXTreeIDUnknown() &&
+    if (owner_->surface_->GetAXTreeId() != ui::AXTreeIDUnknown() &&
         event->IsKeyEvent()) {
       ui::KeyEvent* key_event = event->AsKeyEvent();
       if (key_event->key_code() == ui::VKEY_TAB &&
@@ -179,6 +174,12 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
       }
     }
   }
+
+  // Some swipes are handled by Android alone. We don't want to capture swipe
+  // events if we started a swipe on the chrome side then moved into the Android
+  // swipe region. So, keep track of whether swipe has been 'captured' by
+  // Android.
+  bool swipe_captured_ = false;
 
   ArcNotificationContentView* const owner_;
   bool is_current_slide_handled_by_android_ = false;
@@ -836,7 +837,7 @@ void ArcNotificationContentView::OnItemContentChanged(
 
 void ArcNotificationContentView::OnNotificationSurfaceAdded(
     ArcNotificationSurface* surface) {
-  if (surface->GetNotificationKey() != notification_key_)
+  if (!item_ || surface->GetNotificationKey() != notification_key_)
     return;
 
   SetSurface(surface);

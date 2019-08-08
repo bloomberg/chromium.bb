@@ -203,6 +203,14 @@ public class EmulatedVrController {
         getApi().touchEvent.endTouchSequence(xEnd, yEnd, timestamp, simulatedDelay, speed);
     }
 
+    public void setTouchpadPosition(float xPos, float yPos) {
+        getApi().touchEvent.sendRawTouchEvent(xPos, yPos, 0, 0, 0);
+    }
+
+    public void stopTouchingTouchpad(float xPos, float yPos) {
+        getApi().touchEvent.endTouchSequence(xPos, yPos, 0, 0, 0);
+    }
+
     /**
      * Instantly moves the controller to the specified quaternion coordinates.
      *

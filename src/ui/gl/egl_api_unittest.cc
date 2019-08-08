@@ -18,8 +18,6 @@ class EGLApiTest : public testing::Test {
     fake_client_extension_string_ = "";
     fake_extension_string_ = "";
 
-    // TODO(dyen): Add a way to bind mock drivers for testing.
-    init::ShutdownGL(false);
     g_driver_egl.fn.eglInitializeFn = &FakeInitialize;
     g_driver_egl.fn.eglTerminateFn = &FakeTerminate;
     g_driver_egl.fn.eglQueryStringFn = &FakeQueryString;

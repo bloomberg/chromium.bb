@@ -4,6 +4,7 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
+#include <coml2api.h>
 #include <objbase.h>
 #include <objidl.h>
 #include <shlobj.h>
@@ -14,6 +15,8 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
@@ -23,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
+#include "base/win/shlwapi.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -372,6 +376,124 @@ void OSExchangeDataProviderWin::SetFilenames(
       ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage));
 }
 
+void OSExchangeDataProviderWin::SetVirtualFileContentsForTesting(
+    const std::vector<std::pair<base::FilePath, std::string>>&
+        filenames_and_contents,
+    DWORD tymed) {
+  size_t num_files = filenames_and_contents.size();
+  if (!num_files)
+    return;
+
+  // Allocate storage for the file group descriptor as CFSTR_FILEDESCRIPTORW.
+  // The fgd[] member of FILEGROUPDESCRIPTORW is of size one, thus sizeof
+  // (FILEDESCRIPTORW) is already the correct allocation size if there is only
+  // one item. Otherwise need to add room for each FILEDESCRIPTORW struct.
+  const size_t total_bytes_fgd = sizeof(FILEGROUPDESCRIPTORW) +
+                                 (sizeof(FILEDESCRIPTORW) * (num_files - 1));
+
+  HANDLE hdata = ::GlobalAlloc(GPTR, total_bytes_fgd);
+  if (!hdata)
+    return;
+
+  base::win::ScopedHGlobal<FILEGROUPDESCRIPTORW*> locked_mem(hdata);
+
+  FILEGROUPDESCRIPTORW* descriptor = locked_mem.get();
+  descriptor->cItems = num_files;
+
+  STGMEDIUM* storage = new STGMEDIUM;
+  storage->tymed = TYMED_HGLOBAL;
+  storage->hGlobal = hdata;
+  storage->pUnkForRelease = NULL;
+
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
+      ClipboardFormatType::GetFileDescriptorWType().ToFormatEtc(), storage));
+
+  for (size_t i = 0; i < num_files; i++) {
+    // Fill in each FILEDESCRIPTORW with file name.
+    descriptor->fgd[i].dwFlags |= FD_UNICODE;
+    base::string16 file_name = filenames_and_contents[i].first.value();
+    wcsncpy_s(descriptor->fgd[i].cFileName, MAX_PATH, file_name.c_str(),
+              std::min(file_name.size(), static_cast<size_t>(MAX_PATH - 1u)));
+
+    // Add the contents of each file as CFSTR_FILECONTENTS.
+    base::span<const uint8_t> data_buffer =
+        base::make_span(reinterpret_cast<const uint8_t*>(
+                            filenames_and_contents[i].second.data()),
+                        filenames_and_contents[i].second.length());
+    SetVirtualFileContentAtIndexForTesting(data_buffer, tymed, i);
+  }
+}
+
+void OSExchangeDataProviderWin::SetVirtualFileContentAtIndexForTesting(
+    base::span<const uint8_t> data_buffer,
+    DWORD tymed,
+    size_t index) {
+  std::unique_ptr<STGMEDIUM> storage_for_contents;
+
+  if (tymed == TYMED_ISTORAGE) {
+    storage_for_contents = std::make_unique<STGMEDIUM>();
+    storage_for_contents->pUnkForRelease = nullptr;
+
+    Microsoft::WRL::ComPtr<ILockBytes> lock_bytes;
+    HRESULT hr = ::CreateILockBytesOnHGlobal(
+        nullptr, /* fDeleteOnRelease*/ TRUE, &lock_bytes);
+
+    if (SUCCEEDED(hr)) {
+      hr = ::StgCreateDocfileOnILockBytes(
+          lock_bytes.Get(), STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+          0, &storage_for_contents->pstg);
+    }
+
+    Microsoft::WRL::ComPtr<IStream> destination_stream;
+    if (SUCCEEDED(hr)) {
+      hr = storage_for_contents->pstg->CreateStream(
+          L"Contents", STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0,
+          0, &destination_stream);
+    }
+
+    Microsoft::WRL::ComPtr<IStream> source_stream;
+    if (SUCCEEDED(hr)) {
+      source_stream =
+          ::SHCreateMemStream(data_buffer.data(), data_buffer.size_bytes());
+    }
+
+    if (source_stream) {
+      // Copy the data to the storage stream.
+      ULARGE_INTEGER bytes_to_copy;
+      bytes_to_copy.QuadPart = data_buffer.size_bytes();
+      hr = source_stream->CopyTo(destination_stream.Get(), bytes_to_copy,
+                                 nullptr, nullptr);
+    }
+    if (SUCCEEDED(hr))
+      hr = storage_for_contents->pstg->Commit(STGC_DEFAULT);
+    if (SUCCEEDED(hr))
+      storage_for_contents->tymed = TYMED_ISTORAGE;
+
+  } else if (tymed == TYMED_ISTREAM) {
+    storage_for_contents = std::make_unique<STGMEDIUM>();
+    storage_for_contents->pUnkForRelease = nullptr;
+    storage_for_contents->pstm =
+        ::SHCreateMemStream(data_buffer.data(), data_buffer.size_bytes());
+    if (storage_for_contents->pstm) {
+      // A properly implemented IDataObject::GetData moves the stream pointer
+      // to end.
+      const LARGE_INTEGER zero_displacement = {};
+      HRESULT hr = storage_for_contents->pstm->Seek(zero_displacement,
+                                                    STREAM_SEEK_END, nullptr);
+      if (SUCCEEDED(hr))
+        storage_for_contents->tymed = TYMED_ISTREAM;
+    }
+  } else if (tymed == TYMED_HGLOBAL) {
+    storage_for_contents.reset(
+        GetStorageForBytes(data_buffer.data(), data_buffer.size_bytes()));
+  }
+  ClipboardFormatType type =
+      ClipboardFormatType::GetFileContentAtIndexType(index);
+  // Pass ownership of |storage_for_contents| here.
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
+      type.ToFormatEtc(), storage_for_contents.release()));
+}
+
 void OSExchangeDataProviderWin::SetPickledData(
     const ClipboardFormatType& format,
     const base::Pickle& data) {
@@ -383,12 +505,12 @@ void OSExchangeDataProviderWin::SetPickledData(
 void OSExchangeDataProviderWin::SetFileContents(
     const base::FilePath& filename,
     const std::string& file_contents) {
-  // Add CFSTR_FILEDESCRIPTOR
+  // Add CFSTR_FILEDESCRIPTORW.
   STGMEDIUM* storage = GetStorageForFileDescriptor(filename);
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetFileDescriptorType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetFileDescriptorWType().ToFormatEtc(), storage));
 
-  // Add CFSTR_FILECONTENTS
+  // Add CFSTR_FILECONTENTS.
   storage = GetStorageForBytes(file_contents.data(), file_contents.length());
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       ClipboardFormatType::GetFileContentZeroType().ToFormatEtc(), storage));
@@ -455,6 +577,39 @@ bool OSExchangeDataProviderWin::GetFilenames(
           FileInfo(base::FilePath(filename_local), base::FilePath()));
   }
   return success;
+}
+
+bool OSExchangeDataProviderWin::HasVirtualFilenames() const {
+  return ClipboardUtil::HasVirtualFilenames(source_object_.Get());
+}
+
+bool OSExchangeDataProviderWin::GetVirtualFilenames(
+    std::vector<FileInfo>* filenames) const {
+  // ui_base_clipboard can't use FileInfo struct which is part of ui_base, so
+  // use FilePath instead.
+  // TODO(https://crbug.com/950360): ui_base_clipboard can't use FileInfo struct
+  // which is part of ui_base (layering issue).
+  std::vector<base::FilePath> display_names;
+  bool success =
+      ClipboardUtil::GetVirtualFilenames(source_object_.Get(), &display_names);
+
+  if (success) {
+    // On dragenter scenarios, need a placeholder file path for drag metadata
+    // checks without actually creating the temp file.
+    base::FilePath temp_path(FILE_PATH_LITERAL("temp.tmp"));
+
+    for (const auto& display_name : display_names)
+      filenames->push_back(FileInfo(temp_path, display_name));
+  }
+  return success;
+}
+
+bool OSExchangeDataProviderWin::GetVirtualFilesAsTempFiles(
+    base::OnceCallback<
+        void(const std::vector<std::pair<base::FilePath, base::FilePath>>&)>
+        callback) const {
+  return ClipboardUtil::GetVirtualFilesAsTempFiles(source_object_.Get(),
+                                                   std::move(callback));
 }
 
 bool OSExchangeDataProviderWin::GetPickledData(
@@ -1119,10 +1274,10 @@ static STGMEDIUM* GetStorageForFileDescriptor(
     const base::FilePath& path) {
   base::string16 file_name = path.value();
   DCHECK(!file_name.empty());
-  HANDLE hdata = GlobalAlloc(GPTR, sizeof(FILEGROUPDESCRIPTOR));
-  base::win::ScopedHGlobal<FILEGROUPDESCRIPTOR*> locked_mem(hdata);
+  HANDLE hdata = GlobalAlloc(GPTR, sizeof(FILEGROUPDESCRIPTORW));
+  base::win::ScopedHGlobal<FILEGROUPDESCRIPTORW*> locked_mem(hdata);
 
-  FILEGROUPDESCRIPTOR* descriptor = locked_mem.get();
+  FILEGROUPDESCRIPTORW* descriptor = locked_mem.get();
   descriptor->cItems = 1;
   descriptor->fgd[0].dwFlags = FD_LINKUI;
   wcsncpy_s(descriptor->fgd[0].cFileName, MAX_PATH, file_name.c_str(),

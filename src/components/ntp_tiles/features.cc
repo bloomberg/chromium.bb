@@ -9,6 +9,17 @@
 
 namespace ntp_tiles {
 
+const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
+
+const base::Feature kPopularSitesBakedInContentFeature{
+    "NTPPopularSitesBakedInContent", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kNtpMostLikelyFaviconsFromServerFeature{
+    "NTPMostLikelyFaviconsFromServer", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUsePopularSitesSuggestions{
+    "UsePopularSitesSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kDefaultSearchShortcut{"DefaultSearchShortcut",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 

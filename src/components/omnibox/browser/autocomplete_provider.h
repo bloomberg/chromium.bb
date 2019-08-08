@@ -219,6 +219,10 @@ class AutocompleteProvider
   // method and include the response in their estimate.
   virtual size_t EstimateMemoryUsage() const;
 
+  // Returns a suggested upper bound for how many matches this provider should
+  // return.
+  size_t provider_max_matches() const { return provider_max_matches_; }
+
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }
 
@@ -273,12 +277,6 @@ class AutocompleteProvider
       const bool text_is_search_query,
       const ACMatchClassifications& original_class = ACMatchClassifications());
 
-  // A suggested upper bound for how many matches a provider should return.
-  // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
-  // we have good relevance heuristics; the controller should handle all
-  // culling.
-  static const size_t kMaxMatches;
-
   // Used to determine if we're in keyword mode, if experimental keyword
   // mode is enabled, and if we're confident that the user is intentionally
   // (not accidentally) in keyword mode. Combined, this method returns
@@ -315,6 +313,8 @@ class AutocompleteProvider
   // NOTE: For a view-source: URL, this will trim from after "view-source:" and
   // return 0.
   static size_t TrimHttpPrefix(base::string16* url);
+
+  const size_t provider_max_matches_;
 
   ACMatches matches_;
   bool done_;

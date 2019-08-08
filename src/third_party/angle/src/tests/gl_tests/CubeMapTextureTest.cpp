@@ -21,10 +21,8 @@ class CubeMapTextureTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    virtual void SetUp()
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
         if (mProgram == 0)
         {
@@ -45,12 +43,7 @@ class CubeMapTextureTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    virtual void TearDown()
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram;
     GLint mColorLocation;
@@ -123,8 +116,6 @@ TEST_P(CubeMapTextureTest, RenderToFacesConsecutively)
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST(CubeMapTextureTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL10_0(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),

@@ -25,7 +25,7 @@ test(function(t) {
     assert_equals(axNode.intValue, 5);
     assert_equals(node.accessibleNode.valueNow, null);
     node.accessibleNode.valueNow = 9;
-    assert_equals(axNode.intValue, 9);
+    assert_equals(axNode.intValue, 5);
     node.accessibleNode.valueNow = null;
     assert_equals(axNode.intValue, 5);
     assert_equals(node.accessibleNode.valueNow, null);
@@ -44,8 +44,8 @@ test(function(t) {
     node.accessibleNode.valueNow = 33;
     node.accessibleNode.valueMin = -100;
     node.accessibleNode.valueMax = 100;;
-    assert_equals(axNode.intValue, 33);
-    assert_equals(axNode.minValue, -100);
+    assert_equals(axNode.intValue, 50);
+    assert_equals(axNode.minValue, 0);
     assert_equals(axNode.maxValue, 100);
 }, "Range values in accessible node of slider.");
 </script>
@@ -62,8 +62,8 @@ test(function(t) {
     node.accessibleNode.valueNow = 33;
     node.accessibleNode.valueMin = -100;
     node.accessibleNode.valueMax = 100;;
-    assert_equals(axNode.intValue, 33);
-    assert_equals(axNode.minValue, -100);
-    assert_equals(axNode.maxValue, 100);
+    assert_equals(axNode.intValue, 0);
+    assert_equals(axNode.minValue, 0);
+    assert_equals(axNode.maxValue, 0);
 }, "Range values in accessible node of spinbutton.");
 </script>

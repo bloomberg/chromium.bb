@@ -6,7 +6,7 @@
 
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/window_preview_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/screen.h"
@@ -66,7 +66,7 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   }
 
   CreateBubble();
-  PipPositioner::MarkWindowAsIgnoredForCollisionDetection(
+  CollisionDetectionUtils::IgnoreWindowForCollisionDetection(
       GetWidget()->GetNativeWindow());
 }
 

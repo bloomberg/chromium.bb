@@ -378,7 +378,7 @@ bool NSSDecryptor::CreatePasswordFormFromRawInfo(
     // Non-empty realm indicates that it's not html form authentication entry.
     // Extracted data doesn't allow us to distinguish basic_auth entry from
     // digest_auth entry, so let's assume basic_auth.
-    form->scheme = autofill::PasswordForm::SCHEME_BASIC;
+    form->scheme = autofill::PasswordForm::Scheme::kBasic;
   }
   form->username_element = raw_password_info.username_element;
   form->username_value = Decrypt(raw_password_info.encrypted_username);

@@ -38,8 +38,6 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   void Transform(v8::Local<v8::Value> chunk,
                  TransformStreamDefaultControllerInterface* controller,
                  ExceptionState& exception_state) override {
-    // Let |input| be the result of converting |chunk| to a DOMString. If this
-    // throws an exception, then return a promise rejected with that exception.
     V8StringResource<> input_resource = chunk;
     if (!input_resource.Prepare(script_state_->GetIsolate(), exception_state))
       return;
@@ -85,6 +83,8 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
              script_state_),
         exception_state);
   }
+
+  ScriptState* GetScriptState() override { return script_state_; }
 
   void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);

@@ -19,7 +19,6 @@ class TickClock;
 
 namespace net {
 
-class DnsClient;
 struct DnsConfig;
 class HostCache;
 class HostResolverManager;
@@ -52,19 +51,9 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
       DnsQueryType query_type) override;
-  void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out,
-                 bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
-  void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
-  bool GetNoIPv6OnWifi() override;
-  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override;
   void SetRequestContext(URLRequestContext* request_context) override;
-  const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-  GetDnsOverHttpsServersForTesting() const override;
   HostResolverManager* GetManagerForTesting() override;
   const URLRequestContext* GetContextForTesting() const override;
 
@@ -75,7 +64,6 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   size_t CacheSize() const;
 
   void SetProcParamsForTesting(const ProcTaskParams& proc_params);
-  void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
@@ -94,7 +82,6 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   std::unordered_set<WrappedRequest*> active_requests_;
 
   URLRequestContext* context_ = nullptr;
-  // TODO(crbug.com/934402): Use this cache for resolves.
   std::unique_ptr<HostCache> host_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextHostResolver);

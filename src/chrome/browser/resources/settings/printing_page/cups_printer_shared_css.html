@@ -13,8 +13,8 @@
         margin-bottom: 10px;
       }
 
-      [slot='dialog-body'] .settings-box .two-line {
-        min-height: 72px;
+      [slot='dialog-body'] .settings-box.two-line {
+        align-items: flex-start;
       }
 
       [slot='dialog-body'] .settings-box .start .label {
@@ -22,7 +22,7 @@
       }
 
       [slot='dialog-body'] .settings-box cr-input {
-        width: 270px;
+        width: 100%;
       }
 
       /* The only input that has error-message are at the end, so we don't
@@ -33,16 +33,16 @@
       }
 
       [slot='dialog-body'] .settings-box .md-select {
-        width: 270px;
+        width: 100%;
       }
 
       [slot='dialog-body'] .settings-box .printer-name-input {
-        width: 450px;
+        width: 100%;
       }
 
       [slot='dialog-body'] .settings-box .browse-file-input {
         width: auto;
-        --cr-input-width: 270px;
+        --cr-input-width: 383px;
       }
 
       [slot='dialog-body'] .settings-box .browse-button {
@@ -60,6 +60,10 @@
         position: absolute;
         top: 50%;
         width: 100%;
+      }
+
+      [slot='dialog-body'] .eula {
+        padding-inline-start: 20px;
       }
 
       [slot='dialog-buttons'] {
@@ -88,6 +92,11 @@
 
       #search input[type='search'] {
         font: inherit;
+      }
+
+      .field-label {
+        padding-inline-start: 20px;
+        @apply --cr-form-field-label;
       }
     </style>
   </template>

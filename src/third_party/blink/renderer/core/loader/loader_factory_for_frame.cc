@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
+#include "third_party/blink/renderer/core/loader/prefetched_signed_exchange_manager.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -21,10 +22,16 @@ namespace blink {
 
 LoaderFactoryForFrame::LoaderFactoryForFrame(
     const FrameOrImportedDocument& frame_or_imported_document)
-    : frame_or_imported_document_(frame_or_imported_document) {}
+    : frame_or_imported_document_(frame_or_imported_document),
+      prefetched_signed_exchange_manager_(
+          frame_or_imported_document_->GetDocumentLoader()
+              ? frame_or_imported_document_->GetDocumentLoader()
+                    ->GetPrefetchedSignedExchangeManager()
+              : nullptr) {}
 
 void LoaderFactoryForFrame::Trace(Visitor* visitor) {
   visitor->Trace(frame_or_imported_document_);
+  visitor->Trace(prefetched_signed_exchange_manager_);
   LoaderFactory::Trace(visitor);
 }
 
@@ -83,6 +90,14 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
     auto loader =
         document_loader.GetServiceWorkerNetworkProvider()->CreateURLLoader(
             webreq, frame_scheduler->CreateResourceLoadingTaskRunnerHandle());
+    if (loader)
+      return loader;
+  }
+
+  if (prefetched_signed_exchange_manager_) {
+    DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
+    auto loader =
+        prefetched_signed_exchange_manager_->MaybeCreateURLLoader(webreq);
     if (loader)
       return loader;
   }

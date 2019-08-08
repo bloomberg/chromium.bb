@@ -82,7 +82,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AnimationWorkletProxyClientTest::AddGlobalScopeForTesting,
             CrossThreadUnretained(this),
             CrossThreadUnretained(first_worklet.get()),
@@ -93,7 +93,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
     waitable_event.Reset();
     PostCrossThreadTask(
         *second_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AnimationWorkletProxyClientTest::AddGlobalScopeForTesting,
             CrossThreadUnretained(this),
             CrossThreadUnretained(second_worklet.get()),
@@ -103,7 +103,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
 
     PostCrossThreadTask(
         *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             callback, CrossThreadUnretained(this),
             CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client_),
             CrossThreadUnretained(&waitable_event)));
@@ -145,6 +145,12 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
     waitable_event->Signal();
   }
 
+  std::unique_ptr<WorkletAnimationEffectTimings> CreateEffectTimings() {
+    auto timings = base::MakeRefCounted<base::RefCountedData<Vector<Timing>>>();
+    timings->data.push_back(Timing());
+    return std::make_unique<WorkletAnimationEffectTimings>(std::move(timings));
+  }
+
   void RunMigrateAnimatorsBetweenGlobalScopesOnWorklet(
       AnimationWorkletProxyClient* proxy_client,
       base::WaitableEvent* waitable_event) {
@@ -177,15 +183,19 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
         std::make_unique<AnimationWorkletInput>();
     cc::WorkletAnimationId first_animation_id = {1, 1};
     cc::WorkletAnimationId second_animation_id = {1, 2};
+    std::unique_ptr<WorkletAnimationEffectTimings> effect_timings =
+        CreateEffectTimings();
     state->added_and_updated_animations.emplace_back(
-        first_animation_id,    // animation id
-        "stateless_animator",  // name associated with the animation
-        5000,                  // animation's current time
-        nullptr,               // options
-        1                      // number of keyframe effects
+        first_animation_id,        // animation id
+        "stateless_animator",      // name associated with the animation
+        5000,                      // animation's current time
+        nullptr,                   // options
+        std::move(effect_timings)  // keyframe effect timings
     );
+    effect_timings = CreateEffectTimings();
     state->added_and_updated_animations.emplace_back(
-        second_animation_id, "stateful_animator", 5000, nullptr, 1);
+        second_animation_id, "stateful_animator", 5000, nullptr,
+        std::move(effect_timings));
 
     // Initialize switch countdown to 1, to force a switch on the second call.
     proxy_client->next_global_scope_switch_countdown_ = 1;

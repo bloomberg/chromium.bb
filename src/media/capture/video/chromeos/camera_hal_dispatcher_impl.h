@@ -13,8 +13,10 @@
 #include "base/memory/singleton.h"
 #include "base/threading/thread.h"
 #include "components/chromeos_camera/common/jpeg_encode_accelerator.mojom.h"
+#include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/chromeos/mojo/cros_camera_service.mojom.h"
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -29,8 +31,8 @@ class WaitableEvent;
 
 namespace media {
 
-using MojoJpegEncodeAcceleratorFactoryCB =
-    base::RepeatingCallback<void(media::mojom::JpegEncodeAcceleratorRequest)>;
+using MojoJpegEncodeAcceleratorFactoryCB = base::RepeatingCallback<void(
+    chromeos_camera::mojom::JpegEncodeAcceleratorRequest)>;
 
 class CAPTURE_EXPORT CameraClientObserver {
  public:
@@ -65,9 +67,9 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void RegisterServer(cros::mojom::CameraHalServerPtr server) final;
   void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
   void GetJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
   void GetJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest jea_request) final;
+      chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) final;
 
   // base::trace_event::TraceLog::EnabledStateObserver implementation.
   void OnTraceLogEnabled() final;

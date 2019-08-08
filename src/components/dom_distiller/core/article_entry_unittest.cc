@@ -7,12 +7,12 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_pb::EntitySpecifics;
 using sync_pb::ArticlePage;
 using sync_pb::ArticleSpecifics;
+using sync_pb::EntitySpecifics;
+using testing::AssertionFailure;
 using testing::AssertionResult;
 using testing::AssertionSuccess;
-using testing::AssertionFailure;
 
 namespace dom_distiller {
 

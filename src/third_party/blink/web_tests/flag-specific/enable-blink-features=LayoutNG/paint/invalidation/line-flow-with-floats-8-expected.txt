@@ -18,6 +18,26 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+          "rect": [14, 520, 408, 80],
+          "reason": "geometry"
+        },
+        {
           "object": "NGPhysicalTextFragment 'a ridge or furrow in the way wherever she wanted to send the'",
           "rect": [14, 240, 407, 139],
           "reason": "geometry"
@@ -50,26 +70,6 @@
         {
           "object": "NGPhysicalTextFragment 'soon came to the conclusion that it was a very '",
           "rect": [14, 240, 407, 139],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
-          "rect": [14, 520, 407, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
-          "rect": [14, 520, 407, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
-          "rect": [14, 520, 407, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
-          "rect": [14, 520, 407, 80],
           "reason": "geometry"
         },
         {
@@ -128,6 +128,36 @@
           "reason": "disappeared"
         },
         {
+          "object": "NGPhysicalTextFragment 'The chief difficulty Alice found at first was in managing'",
+          "rect": [14, 80, 355, 119],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'away, comfortably enough, under her arm, with its legs'",
+          "rect": [14, 80, 355, 119],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'hanging down, but generally, just as she had got its'",
+          "rect": [14, 80, 355, 119],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'hedgehog a blow with its head, it '",
+          "rect": [14, 80, 355, 119],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'her flamingo: she succeeded in getting its body tucked'",
+          "rect": [14, 80, 355, 119],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'neck nicely straightened out, and was going to give the'",
+          "rect": [14, 80, 355, 119],
+          "reason": "geometry"
+        },
+        {
           "object": "NGPhysicalTextFragment 'and in a very short time '",
           "rect": [14, 400, 355, 59],
           "reason": "geometry"
@@ -140,36 +170,6 @@
         {
           "object": "NGPhysicalTextFragment 'quarrelling all the while, and fighting for the hedgehogs;'",
           "rect": [14, 400, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'The chief difficulty Alice found at first was in managing'",
-          "rect": [14, 80, 354, 119],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'away, comfortably enough, under her arm, with its legs'",
-          "rect": [14, 80, 354, 119],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'hanging down, but generally, just as she had got its'",
-          "rect": [14, 80, 354, 119],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'hedgehog a blow with its head, it '",
-          "rect": [14, 80, 354, 119],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'her flamingo: she succeeded in getting its body tucked'",
-          "rect": [14, 80, 354, 119],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'neck nicely straightened out, and was going to give the'",
-          "rect": [14, 80, 354, 119],
           "reason": "geometry"
         },
         {
@@ -190,11 +190,6 @@
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
           "rect": [302, 440, 67, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (floating) SPAN id='greenFloat'",
-          "rect": [372, 403, 48, 81],
           "reason": "geometry"
         },
         {

@@ -13,9 +13,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/link_header_util/link_header_util.h"
 #include "components/payments/core/error_logger.h"
+#include "components/payments/core/url_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -84,9 +84,7 @@ GURL ParseResponseHeader(const GURL& url,
 }
 
 bool IsValidManifestUrl(const GURL& url, const ErrorLogger& log) {
-  bool is_valid = url.is_valid() &&
-                  (url.SchemeIs(url::kHttpsScheme) ||
-                   (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
+  bool is_valid = UrlUtil::IsValidManifestUrl(url);
   if (!is_valid) {
     log.Error(
         base::StringPrintf("\"%s\" is not a valid payment manifest URL with "
@@ -302,8 +300,7 @@ void PaymentManifestDownloader::InitiateDownload(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->method = method;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation);

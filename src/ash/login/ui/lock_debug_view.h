@@ -21,7 +21,6 @@ class LabelButton;
 
 namespace ash {
 
-class LoginDataDispatcher;
 class LockContentsView;
 
 namespace mojom {
@@ -32,8 +31,7 @@ enum class TrayActionState;
 class LockDebugView : public views::View, public views::ButtonListener {
  public:
   LockDebugView(mojom::TrayActionState initial_note_action_state,
-                LockScreen::ScreenType screen_type,
-                LoginDataDispatcher* data_dispatcher);
+                LockScreen::ScreenType screen_type);
   ~LockDebugView() override;
 
   // views::View:

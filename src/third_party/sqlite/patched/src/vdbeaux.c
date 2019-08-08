@@ -156,10 +156,10 @@ static int growOpArray(Vdbe *v, int nOp){
   ** size of the op array or add 1KB of space, whichever is smaller. */
 #ifdef SQLITE_TEST_REALLOC_STRESS
   sqlite3_int64 nNew = (v->nOpAlloc>=512 ? 2*(sqlite3_int64)v->nOpAlloc
-                      : (sqlite3_int64)v->nOpAlloc+nOp);
+                        : (sqlite3_int64)v->nOpAlloc+nOp);
 #else
   sqlite3_int64 nNew = (v->nOpAlloc ? 2*(sqlite3_int64)v->nOpAlloc
-                      : (sqlite3_int64)1024/sizeof(Op));
+                        : (sqlite3_int64)(1024/sizeof(Op)));
   UNUSED_PARAMETER(nOp);
 #endif
 
@@ -639,6 +639,7 @@ int sqlite3VdbeAssertMayAbort(Vdbe *v, int mayAbort){
     int opcode = pOp->opcode;
     if( opcode==OP_Destroy || opcode==OP_VUpdate || opcode==OP_VRename
      || opcode==OP_VDestroy
+     || (opcode==OP_Function0 && pOp->p4.pFunc->funcFlags&SQLITE_FUNC_INTERNAL)
      || ((opcode==OP_Halt || opcode==OP_HaltIfNull)
       && ((pOp->p1)!=SQLITE_OK && pOp->p2==OE_Abort))
     ){
@@ -2067,9 +2068,9 @@ void sqlite3VdbeIOTraceSql(Vdbe *p){
 ** of a ReusableSpace object by the allocSpace() routine below.
 */
 struct ReusableSpace {
-  u8 *pSpace;          /* Available memory */
-  int nFree;           /* Bytes of available memory */
-  int nNeeded;         /* Total bytes that could not be allocated */
+  u8 *pSpace;            /* Available memory */
+  sqlite3_int64 nFree;   /* Bytes of available memory */
+  sqlite3_int64 nNeeded; /* Total bytes that could not be allocated */
 };
 
 /* Try to allocate nByte bytes of 8-byte aligned bulk memory for pBuf
@@ -2089,7 +2090,7 @@ struct ReusableSpace {
 static void *allocSpace(
   struct ReusableSpace *p,  /* Bulk memory available for allocation */
   void *pBuf,               /* Pointer to a prior allocation */
-  int nByte                 /* Bytes of memory needed */
+  sqlite3_int64 nByte       /* Bytes of memory needed */
 ){
   assert( EIGHT_BYTE_ALIGNMENT(p->pSpace) );
   if( pBuf==0 ){

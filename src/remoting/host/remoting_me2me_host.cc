@@ -45,6 +45,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "remoting/base/oauth_token_getter_proxy.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/base/util.h"
@@ -58,6 +59,8 @@
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
+#include "remoting/host/ftl_host_change_notification_listener.h"
+#include "remoting/host/ftl_signaling_connector.h"
 #include "remoting/host/gcd_rest_client.h"
 #include "remoting/host/gcd_state_updater.h"
 #include "remoting/host/heartbeat_sender.h"
@@ -87,6 +90,7 @@
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
+#include "remoting/host/xmpp_heartbeat_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -97,7 +101,12 @@
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/signaling/ftl_host_device_id_provider.h"
+#include "remoting/signaling/ftl_signal_strategy.h"
+#include "remoting/signaling/muxing_signal_strategy.h"
 #include "remoting/signaling/push_notification_subscriber.h"
+#include "remoting/signaling/remoting_log_to_server.h"
+#include "remoting/signaling/xmpp_log_to_server.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -185,6 +194,9 @@ const char kWindowIdSwitchName[] = "window-id";
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 
+// Command line switch used to disable signaling through FTL services.
+const char kDisableFtlSignalingSwitchName[] = "disable-ftl-signaling";
+
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
 const int kShutdownTimeoutSeconds = 15;
@@ -204,6 +216,7 @@ const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
 namespace remoting {
 
 class HostProcess : public ConfigWatcher::Delegate,
+                    public FtlHostChangeNotificationListener::Listener,
                     public HostChangeNotificationListener::Listener,
                     public IPC::Listener,
                     public base::RefCountedThreadSafe<HostProcess> {
@@ -323,7 +336,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void StartHostIfReady();
   void StartHost();
 
-  // Error handler for HeartbeatSender.
+  // Error handler for XmppHeartbeatSender.
   void OnHeartbeatSuccessful();
   void OnUnknownHostIdError();
 
@@ -336,6 +349,8 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Helper methods doing the work needed by RestartHost and ShutdownHost.
   void GoOffline(const std::string& host_offline_reason);
   void OnHostOfflineReasonAck(bool success);
+
+  void UpdateConfigRefreshToken(const std::string& token);
 
 #if defined(OS_WIN)
   // Initializes the pairing registry on Windows. This should be invoked on the
@@ -407,15 +422,26 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
 
-  // Must outlive |gcd_state_updater_| and |signaling_connector_|.
-  std::unique_ptr<OAuthTokenGetter> oauth_token_getter_;
+  // TODO(crbug.com/954566): Clean up GCD code
+  // Must outlive |signal_strategy_|, |gcd_state_updater_| and
+  // |signaling_connector_|.
+  std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
-  // Must outlive |signaling_connector_|, |gcd_subscriber_|, and
-  // |heartbeat_sender_|.
+  // Must outlive |heartbeat_sender_| and |host_status_logger_|.
+  std::unique_ptr<LogToServer> log_to_server_;
+
+  bool enable_ftl_signaling_ = false;
+
+  // Signal strategies must outlive |signaling_connector_|, |gcd_subscriber_|,
+  // and |xmpp_heartbeat_sender_|.
   std::unique_ptr<SignalStrategy> signal_strategy_;
 
-  std::unique_ptr<SignalingConnector> signaling_connector_;
+  std::unique_ptr<SignalingConnector> xmpp_signaling_connector_;
+  std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
+  std::unique_ptr<XmppHeartbeatSender> xmpp_heartbeat_sender_;
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
+  std::unique_ptr<FtlHostChangeNotificationListener>
+      ftl_host_change_notification_listener_;
 #if defined(USE_GCD)
   std::unique_ptr<GcdStateUpdater> gcd_state_updater_;
   std::unique_ptr<PushNotificationSubscriber> gcd_subscriber_;
@@ -580,6 +606,8 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
       return false;
     }
   }
+
+  enable_ftl_signaling_ = !cmd_line->HasSwitch(kDisableFtlSignalingSwitchName);
   return true;
 }
 
@@ -750,8 +778,8 @@ void HostProcess::CreateAuthenticatorFactory() {
     }
 
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-        use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_list_, pin_hash_, pairing_registry);
+        use_service_account_, host_owner_, host_owner_email_, local_certificate,
+        key_pair_, client_domain_list_, pin_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
   } else {
@@ -774,8 +802,8 @@ void HostProcess::CreateAuthenticatorFactory() {
         new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
                                       context_->url_request_context_getter());
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
-        use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_list_, token_validator_factory);
+        use_service_account_, host_owner_, host_owner_email_, local_certificate,
+        key_pair_, client_domain_list_, token_validator_factory);
   }
 
 #if defined(OS_POSIX)
@@ -1429,33 +1457,83 @@ void HostProcess::InitializeSignaling() {
 
   DCHECK(!signal_strategy_);
   DCHECK(!oauth_token_getter_);
-  DCHECK(!signaling_connector_);
+  DCHECK(!ftl_signaling_connector_);
+  DCHECK(!xmpp_signaling_connector_);
 #if defined(USE_GCD)
   DCHECK(!gcd_state_updater_);
   DCHECK(!gcd_subscriber_);
 #endif  // defined(USE_GCD)
+  DCHECK(!xmpp_heartbeat_sender_);
   DCHECK(!heartbeat_sender_);
 
   // Create SignalStrategy.
-  XmppSignalStrategy* xmpp_signal_strategy = new XmppSignalStrategy(
+  auto xmpp_signal_strategy = std::make_unique<XmppSignalStrategy>(
       net::ClientSocketFactory::GetDefaultFactory(),
       context_->url_request_context_getter(), xmpp_server_config_);
-  signal_strategy_.reset(xmpp_signal_strategy);
+  auto* unowned_xmpp_signal_strategy = xmpp_signal_strategy.get();
 
   // Create SignalingConnector.
-  std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker(
-      new DnsBlackholeChecker(context_->url_loader_factory(),
-                              talkgadget_prefix_));
-  std::unique_ptr<OAuthTokenGetter::OAuthAuthorizationCredentials>
-      oauth_credentials(new OAuthTokenGetter::OAuthAuthorizationCredentials(
+  auto dns_blackhole_checker = std::make_unique<DnsBlackholeChecker>(
+      context_->url_loader_factory(), talkgadget_prefix_);
+  auto oauth_credentials =
+      std::make_unique<OAuthTokenGetter::OAuthAuthorizationCredentials>(
           xmpp_server_config_.username, oauth_refresh_token_,
-          use_service_account_));
-  oauth_token_getter_.reset(new OAuthTokenGetterImpl(
-      std::move(oauth_credentials), context_->url_loader_factory(), false));
-  signaling_connector_.reset(new SignalingConnector(
-      xmpp_signal_strategy, std::move(dns_blackhole_checker),
+          use_service_account_);
+  // Unretained is sound because we own the OAuthTokenGetterImpl, and the
+  // callback will never be invoked once it is destroyed.
+  oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(
+      std::move(oauth_credentials),
+      base::BindRepeating(&HostProcess::UpdateConfigRefreshToken,
+                          base::Unretained(this)),
+      context_->url_loader_factory(), false);
+  xmpp_signaling_connector_ = std::make_unique<SignalingConnector>(
+      unowned_xmpp_signal_strategy, std::move(dns_blackhole_checker),
       oauth_token_getter_.get(),
-      base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
+      base::BindRepeating(&HostProcess::OnAuthFailed, base::Unretained(this)));
+
+  if (enable_ftl_signaling_) {
+    log_to_server_ = std::make_unique<RemotingLogToServer>(
+        ServerLogEntry::ME2ME, std::make_unique<OAuthTokenGetterProxy>(
+                                   oauth_token_getter_->GetWeakPtr()));
+    auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
+        std::make_unique<OAuthTokenGetterProxy>(
+            oauth_token_getter_->GetWeakPtr()),
+        std::make_unique<FtlHostDeviceIdProvider>(host_id_));
+    ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
+        ftl_signal_strategy.get(),
+        base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
+    ftl_signaling_connector_->Start();
+    auto muxing_signal_strategy = std::make_unique<MuxingSignalStrategy>(
+        std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
+    heartbeat_sender_ = std::make_unique<HeartbeatSender>(
+        base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
+                       base::Unretained(this)),
+        base::BindOnce(&HostProcess::OnUnknownHostIdError,
+                       base::Unretained(this)),
+        base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
+        host_id_, muxing_signal_strategy.get(), key_pair_,
+        oauth_token_getter_.get(), log_to_server_.get());
+    ftl_host_change_notification_listener_ =
+        std::make_unique<FtlHostChangeNotificationListener>(
+            this, muxing_signal_strategy->ftl_signal_strategy());
+    signal_strategy_ = std::move(muxing_signal_strategy);
+  } else {
+    xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
+        base::BindRepeating(&HostProcess::OnHeartbeatSuccessful,
+                            base::Unretained(this)),
+        base::BindRepeating(&HostProcess::OnUnknownHostIdError,
+                            base::Unretained(this)),
+        host_id_, unowned_xmpp_signal_strategy, key_pair_, directory_bot_jid_));
+    signal_strategy_ = std::move(xmpp_signal_strategy);
+    log_to_server_ = std::make_unique<XmppLogToServer>(
+        ServerLogEntry::ME2ME, signal_strategy_.get(), directory_bot_jid_);
+  }
+
+  // XMPP based HostChangeNotificationListener is still needed by double
+  // signaling hosts so that they can handle host deletion triggered by an old
+  // client talking to the legacy directory backend.
+  host_change_notification_listener_.reset(new HostChangeNotificationListener(
+      this, host_id_, unowned_xmpp_signal_strategy, directory_bot_jid_));
 
 #if defined(USE_GCD)
   // Create objects to manage GCD state.
@@ -1466,20 +1544,14 @@ void HostProcess::InitializeSignaling() {
   gcd_state_updater_.reset(new GcdStateUpdater(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-      signal_strategy_.get(), std::move(gcd_rest_client)));
+      unowned_xmpp_signal_strategy, std::move(gcd_rest_client)));
   PushNotificationSubscriber::Subscription sub;
   sub.channel = "cloud_devices";
   PushNotificationSubscriber::SubscriptionList subs;
   subs.push_back(sub);
   gcd_subscriber_.reset(
-      new PushNotificationSubscriber(signal_strategy_.get(), subs));
+      new PushNotificationSubscriber(unowned_xmpp_signal_strategy, subs));
 #endif  // defined(USE_GCD)
-
-  // Create HeartbeatSender.
-  heartbeat_sender_.reset(new HeartbeatSender(
-      base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
-      base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-      host_id_, signal_strategy_.get(), key_pair_, directory_bot_jid_));
 }
 
 void HostProcess::StartHostIfReady() {
@@ -1534,8 +1606,6 @@ void HostProcess::StartHost() {
           std::make_unique<ChromiumUrlRequestFactory>(
               context_->url_loader_factory()),
           network_settings, protocol::TransportRole::SERVER);
-  transport_context->set_ice_config_url(
-      ServiceUrls::GetInstance()->ice_config_url(), oauth_token_getter_.get());
   std::unique_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));
 
@@ -1568,12 +1638,8 @@ void HostProcess::StartHost() {
   host_->SetMaximumSessionDuration(base::TimeDelta::FromHours(20));
 #endif
 
-  host_change_notification_listener_.reset(new HostChangeNotificationListener(
-      this, host_id_, signal_strategy_.get(), directory_bot_jid_));
-
-  host_status_logger_.reset(
-      new HostStatusLogger(host_->status_monitor(), ServerLogEntry::ME2ME,
-                           signal_strategy_.get(), directory_bot_jid_));
+  host_status_logger_ = std::make_unique<HostStatusLogger>(
+      host_->status_monitor(), log_to_server_.get());
 
   power_save_blocker_.reset(new HostPowerSaveBlocker(
       host_->status_monitor(), context_->ui_task_runner(),
@@ -1655,6 +1721,7 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
   host_event_logger_.reset();
   host_status_logger_.reset();
   power_save_blocker_.reset();
+  ftl_host_change_notification_listener_.reset();
   host_change_notification_listener_.reset();
 
   // Before shutting down HostSignalingManager, send the |host_offline_reason|
@@ -1664,11 +1731,17 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
       InitializeSignaling();
 
     HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
+    if (xmpp_heartbeat_sender_) {
+      xmpp_heartbeat_sender_->SetHostOfflineReason(
+          host_offline_reason,
+          base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
+          base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
+    }
     if (heartbeat_sender_) {
       heartbeat_sender_->SetHostOfflineReason(
           host_offline_reason,
           base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
-          base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
+          base::BindOnce(&HostProcess::OnHostOfflineReasonAck, this));
     }
 #if defined(USE_GCD)
     if (gcd_state_updater_) {
@@ -1692,9 +1765,12 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   DCHECK(!host_);  // Assert that the host is really offline at this point.
 
   HOST_LOG << "SendHostOfflineReason " << (success ? "succeeded." : "failed.");
+  log_to_server_.reset();
+  xmpp_heartbeat_sender_.reset();
   heartbeat_sender_.reset();
   oauth_token_getter_.reset();
-  signaling_connector_.reset();
+  ftl_signaling_connector_.reset();
+  xmpp_signaling_connector_.reset();
   signal_strategy_.reset();
 #if defined(USE_GCD)
   gcd_state_updater_.reset();
@@ -1718,6 +1794,13 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   } else {
     NOTREACHED();
   }
+}
+
+void HostProcess::UpdateConfigRefreshToken(const std::string& token) {
+#if defined(REMOTING_MULTI_PROCESS)
+  daemon_channel_->Send(
+      new ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken(token));
+#endif
 }
 
 void HostProcess::OnCrash(const std::string& function_name,
@@ -1757,7 +1840,7 @@ int HostProcessMain() {
   base::GetLinuxDistro();
 #endif
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
@@ -1784,7 +1867,7 @@ int HostProcessMain() {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return exit_code;
 }

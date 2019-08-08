@@ -39,14 +39,14 @@ NetworkPortalDetector::CaptivePortalStatus GetCaptivePortalStatus() {
 AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
     ScreenManager* manager) {
   return static_cast<AutoEnrollmentCheckScreen*>(
-      manager->GetScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK));
+      manager->GetScreen(AutoEnrollmentCheckScreenView::kScreenId));
 }
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     AutoEnrollmentCheckScreenView* view,
     ErrorScreen* error_screen,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
+    : BaseScreen(AutoEnrollmentCheckScreenView::kScreenId),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
@@ -111,7 +111,17 @@ void AutoEnrollmentCheckScreen::Show() {
   auto_enrollment_state_ = new_auto_enrollment_state;
 
   // Make sure gears are in motion in the background.
-  auto_enrollment_controller_->Start();
+  // Note that if a previous auto-enrollment check ended with a failure,
+  // IsCompleted() would still return false, and Show would not report result
+  // early. In that case auto-enrollment check should be retried.
+  if (auto_enrollment_controller_->state() ==
+          policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR ||
+      auto_enrollment_controller_->state() ==
+          policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR) {
+    auto_enrollment_controller_->Retry();
+  } else {
+    auto_enrollment_controller_->Start();
+  }
   network_portal_detector::GetInstance()->StartPortalDetection(
       false /* force */);
 }
@@ -239,7 +249,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
   error_screen_->SetHideCallback(
       base::BindRepeating(&AutoEnrollmentCheckScreen::OnErrorScreenHidden,
                           weak_ptr_factory_.GetWeakPtr()));
-  error_screen_->SetParentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  error_screen_->SetParentScreen(AutoEnrollmentCheckScreenView::kScreenId);
   error_screen_->Show();
   histogram_helper_->OnErrorShow(error_state);
 }

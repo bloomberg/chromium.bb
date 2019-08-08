@@ -17,6 +17,23 @@ TEST(PreviewsUserDataTest, TestConstructor) {
   EXPECT_EQ(id, data->page_id());
 }
 
+TEST(PreviewsUserDataTest, TestSetEligibilityReason) {
+  PreviewsUserData data(1u);
+  EXPECT_EQ(base::nullopt,
+            data.EligibilityReasonForPreview(PreviewsType::OFFLINE));
+
+  data.SetEligibilityReasonForPreview(
+      PreviewsType::NOSCRIPT, PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
+  data.SetEligibilityReasonForPreview(
+      PreviewsType::NOSCRIPT,
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED);
+
+  EXPECT_EQ(base::nullopt,
+            data.EligibilityReasonForPreview(PreviewsType::OFFLINE));
+  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+            data.EligibilityReasonForPreview(PreviewsType::NOSCRIPT));
+}
+
 TEST(PreviewsUserDataTest, DeepCopy) {
   uint64_t id = 4u;
   std::unique_ptr<PreviewsUserData> data =
@@ -29,6 +46,7 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   EXPECT_FALSE(data->black_listed_for_lite_page());
   EXPECT_FALSE(data->offline_preview_used());
   EXPECT_EQ(data->server_lite_page_info(), nullptr);
+  EXPECT_EQ(base::nullopt, data->serialized_hint_version_string());
 
   base::TimeTicks now = base::TimeTicks::Now();
 
@@ -40,11 +58,11 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   data->set_server_lite_page_info(
       std::make_unique<PreviewsUserData::ServerLitePageInfo>());
   data->server_lite_page_info()->original_navigation_start = now;
+  data->set_serialized_hint_version_string("someversion");
 
   PreviewsUserData data_copy(*data);
   EXPECT_EQ(id, data_copy.page_id());
-  EXPECT_EQ(data->random_coin_flip_for_navigation(),
-            data_copy.random_coin_flip_for_navigation());
+  EXPECT_EQ(data->CoinFlipForNavigation(), data_copy.CoinFlipForNavigation());
   EXPECT_EQ(123, data_copy.data_savings_inflation_percent());
   EXPECT_TRUE(data_copy.cache_control_no_transform_directive());
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
@@ -53,6 +71,7 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   EXPECT_TRUE(data_copy.offline_preview_used());
   EXPECT_NE(data->server_lite_page_info(), nullptr);
   EXPECT_EQ(data->server_lite_page_info()->original_navigation_start, now);
+  EXPECT_EQ("someversion", data->serialized_hint_version_string());
 }
 
 }  // namespace previews

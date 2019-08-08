@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_formobject.h"
 #include "core/fpdfapi/page/cpdf_page.h"
@@ -243,11 +244,11 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
   FPDF_PAGEOBJECT red_rect = FPDFPageObj_CreateNewRect(10, 10, 20, 20);
   ASSERT_TRUE(red_rect);
   // Expect false when trying to set colors out of range
-  EXPECT_FALSE(FPDFPath_SetStrokeColor(red_rect, 100, 100, 100, 300));
-  EXPECT_FALSE(FPDFPath_SetFillColor(red_rect, 200, 256, 200, 0));
+  EXPECT_FALSE(FPDFPageObj_SetStrokeColor(red_rect, 100, 100, 100, 300));
+  EXPECT_FALSE(FPDFPageObj_SetFillColor(red_rect, 200, 256, 200, 0));
 
   // Fill rectangle with red and insert to the page
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 0, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
 
   int fillmode = FPDF_FILLMODE_NONE;
@@ -303,7 +304,7 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
 
   // Now add to that a green rectangle with some medium alpha
   FPDF_PAGEOBJECT green_rect = FPDFPageObj_CreateNewRect(100, 100, 40, 40);
-  EXPECT_TRUE(FPDFPath_SetFillColor(green_rect, 0, 255, 0, 128));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(green_rect, 0, 255, 0, 128));
 
   // Make sure the type of the rectangle is a path.
   EXPECT_EQ(FPDF_PAGEOBJ_PATH, FPDFPageObj_GetType(green_rect));
@@ -313,7 +314,7 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
   unsigned int G;
   unsigned int B;
   unsigned int A;
-  EXPECT_TRUE(FPDFPath_GetFillColor(green_rect, &R, &G, &B, &A));
+  EXPECT_TRUE(FPDFPageObj_GetFillColor(green_rect, &R, &G, &B, &A));
   EXPECT_EQ(0u, R);
   EXPECT_EQ(255u, G);
   EXPECT_EQ(0u, B);
@@ -366,7 +367,7 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
 
   // Add a black triangle.
   FPDF_PAGEOBJECT black_path = FPDFPageObj_CreateNewPath(400, 100);
-  EXPECT_TRUE(FPDFPath_SetFillColor(black_path, 0, 0, 0, 200));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(black_path, 0, 0, 0, 200));
   EXPECT_TRUE(FPDFPath_SetDrawMode(black_path, FPDF_FILLMODE_ALTERNATE, 0));
   EXPECT_TRUE(FPDFPath_LineTo(black_path, 400, 200));
   EXPECT_TRUE(FPDFPath_LineTo(black_path, 300, 100));
@@ -406,7 +407,7 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
 
   // Now add a more complex blue path.
   FPDF_PAGEOBJECT blue_path = FPDFPageObj_CreateNewPath(200, 200);
-  EXPECT_TRUE(FPDFPath_SetFillColor(blue_path, 0, 0, 255, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(blue_path, 0, 0, 255, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(blue_path, FPDF_FILLMODE_WINDING, 0));
   EXPECT_TRUE(FPDFPath_LineTo(blue_path, 230, 230));
   EXPECT_TRUE(FPDFPath_BezierTo(blue_path, 250, 250, 280, 280, 300, 300));
@@ -446,9 +447,9 @@ TEST_F(FPDFEditEmbedderTest, SetText) {
   // Verify the "Hello, world!" text is gone and "Changed for SetText test" is
   // now displayed.
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kChangedMD5[] = "94c1e7a5af7dd9d77dc2223b1091acb7";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kChangedMD5[] = "3137fdb27962671f5c3963a5e965eff5";
 #else
   const char kChangedMD5[] = "a0c4ea6620772991f66bf7130379b08a";
@@ -485,9 +486,9 @@ TEST_F(FPDFEditEmbedderTest, RemovePageObject) {
 
   // Show what the original file looks like.
   {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char kOriginalMD5[] = "b90475ca64d1348c3bf5e2b77ad9187a";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char kOriginalMD5[] = "795b7ce1626931aa06af0fa23b7d80bb";
 #else
     const char kOriginalMD5[] = "2baa4c0e1758deba1b9c908e1fbd04ed";
@@ -504,9 +505,9 @@ TEST_F(FPDFEditEmbedderTest, RemovePageObject) {
 
   // Verify the "Hello, world!" text is gone.
   {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char kRemovedMD5[] = "af760c4702467cb1492a57fb8215efaa";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char kRemovedMD5[] = "aae6c5334721f90ec30d3d59f4ef7deb";
 #else
     const char kRemovedMD5[] = "b76df015fe88009c3c342395df96abf1";
@@ -641,9 +642,9 @@ TEST_F(FPDFEditEmbedderTest, RemoveMarkedObjectsPrime) {
 
   // Show what the original file looks like.
   {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char kOriginalMD5[] = "5a5eb63cb21cc15084fea1f14284b8df";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char kOriginalMD5[] = "587c507a40f613f9c530b2ce2d58d655";
 #else
     const char kOriginalMD5[] = "2edc6e70d54889aa0c0b7bdf3e168f86";
@@ -686,10 +687,10 @@ TEST_F(FPDFEditEmbedderTest, RemoveMarkedObjectsPrime) {
 
   EXPECT_EQ(11, FPDFPage_CountObjects(page));
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kNonPrimesMD5[] = "57e76dc7375d896704f0fd6d6d1b9e65";
   const char kNonPrimesAfterSaveMD5[] = "6304512d0150bbd5578e8e22d3121103";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kNonPrimesMD5[] = "4d906b57fba36c70c600cf50d60f508c";
   const char kNonPrimesAfterSaveMD5[] = "4d906b57fba36c70c600cf50d60f508c";
 #else
@@ -963,9 +964,9 @@ TEST_F(FPDFEditEmbedderTest, RemoveExistingPageObjectSplitStreamsNotLonely) {
 
   // Verify the "Hello, world!" text is gone.
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kHelloRemovedMD5[] = "e07a62d412728fc4d6e3ff42f2dd0e11";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kHelloRemovedMD5[] = "a97d4c72c969ba373c2dce675d277e65";
 #else
   const char kHelloRemovedMD5[] = "95b92950647a2190e1230911e7a1a0e9";
@@ -1010,9 +1011,9 @@ TEST_F(FPDFEditEmbedderTest, RemoveExistingPageObjectSplitStreamsLonely) {
 
   // Verify the "Greetings, world!" text is gone.
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kGreetingsRemovedMD5[] = "b90475ca64d1348c3bf5e2b77ad9187a";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kGreetingsRemovedMD5[] = "795b7ce1626931aa06af0fa23b7d80bb";
 #else
   const char kGreetingsRemovedMD5[] = "2baa4c0e1758deba1b9c908e1fbd04ed";
@@ -1126,9 +1127,9 @@ TEST_F(FPDFEditEmbedderTest, RemoveAllFromStream) {
       EXPECT_EQ(1, cpdf_page_object->GetContentStream()) << i;
   }
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kStream1RemovedMD5[] = "d2e21fbd5a6de563f619feeeb6163331";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kStream1RemovedMD5[] = "b4140f203523e38793283a5943d8075b";
 #else
   const char kStream1RemovedMD5[] = "e86a3efc160ede6cfcb1f59bcacf1105";
@@ -1258,9 +1259,9 @@ TEST_F(FPDFEditEmbedderTest, RemoveFirstFromSingleStream) {
   cpdf_page_object = CPDFPageObjectFromFPDFPageObject(page_object);
   ASSERT_EQ(0, cpdf_page_object->GetContentStream());
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kFirstRemovedMD5[] = "af760c4702467cb1492a57fb8215efaa";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kFirstRemovedMD5[] = "aae6c5334721f90ec30d3d59f4ef7deb";
 #else
   const char kFirstRemovedMD5[] = "b76df015fe88009c3c342395df96abf1";
@@ -1326,9 +1327,9 @@ TEST_F(FPDFEditEmbedderTest, RemoveLastFromSingleStream) {
   cpdf_page_object = CPDFPageObjectFromFPDFPageObject(page_object);
   ASSERT_EQ(0, cpdf_page_object->GetContentStream());
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char kLastRemovedMD5[] = "f8fbd14a048b9e2ea8e5f059f22a910e";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char kLastRemovedMD5[] = "93db13099042bafefb3c22a165bad684";
 #else
   const char kLastRemovedMD5[] = "93dcc09055f87a2792c8e3065af99a1b";
@@ -1421,7 +1422,7 @@ TEST_F(FPDFEditEmbedderTest, InsertPageObjectAndSave) {
   // Add a red rectangle.
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
   FPDF_PAGEOBJECT red_rect = FPDFPageObj_CreateNewRect(20, 100, 50, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 0, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, red_rect);
 
@@ -1450,7 +1451,7 @@ TEST_F(FPDFEditEmbedderTest, InsertPageObjectEditAndSave) {
   // Add a red rectangle.
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
   FPDF_PAGEOBJECT red_rect = FPDFPageObj_CreateNewRect(20, 100, 50, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 100, 100, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 100, 100, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, red_rect);
 
@@ -1459,7 +1460,7 @@ TEST_F(FPDFEditEmbedderTest, InsertPageObjectEditAndSave) {
 
   // Generate content but change it again
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 0, 0, 255));
 
   // Save the file
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
@@ -1490,7 +1491,7 @@ TEST_F(FPDFEditEmbedderTest, InsertAndRemoveLargeFile) {
   // Add a black rectangle.
   ASSERT_EQ(kOriginalObjectCount, FPDFPage_CountObjects(page));
   FPDF_PAGEOBJECT black_rect = FPDFPageObj_CreateNewRect(20, 100, 50, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(black_rect, 0, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(black_rect, 0, 0, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(black_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, black_rect);
 
@@ -1564,7 +1565,7 @@ TEST_F(FPDFEditEmbedderTest, AddAndRemovePaths) {
   // Add a red rectangle.
   FPDF_PAGEOBJECT red_rect = FPDFPageObj_CreateNewRect(10, 10, 20, 20);
   ASSERT_TRUE(red_rect);
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 0, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, red_rect);
   const char kRedRectangleMD5[] = "66d02eaa6181e2c069ce2ea99beda497";
@@ -1625,13 +1626,13 @@ TEST_F(FPDFEditEmbedderTest, PathOnTopOfText) {
 
   // Add an opaque rectangle on top of some of the text.
   FPDF_PAGEOBJECT red_rect = FPDFPageObj_CreateNewRect(20, 100, 50, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 0, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, red_rect);
 
   // Add a transparent triangle on top of other part of the text.
   FPDF_PAGEOBJECT black_path = FPDFPageObj_CreateNewPath(20, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(black_path, 0, 0, 0, 100));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(black_path, 0, 0, 0, 100));
   EXPECT_TRUE(FPDFPath_SetDrawMode(black_path, FPDF_FILLMODE_ALTERNATE, 0));
   EXPECT_TRUE(FPDFPath_LineTo(black_path, 30, 80));
   EXPECT_TRUE(FPDFPath_LineTo(black_path, 40, 10));
@@ -1640,9 +1641,9 @@ TEST_F(FPDFEditEmbedderTest, PathOnTopOfText) {
 
   // Render and check the result. Text is slightly different on Mac.
   ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char md5[] = "f9e6fa74230f234286bfcada9f7606d8";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char md5[] = "74dd9c393b8b2578d2b7feb032b7daad";
 #else
   const char md5[] = "aa71b09b93b55f467f1290e5111babee";
@@ -1659,13 +1660,13 @@ TEST_F(FPDFEditEmbedderTest, EditOverExistingContent) {
 
   // Add a transparent rectangle on top of the existing content
   FPDF_PAGEOBJECT red_rect2 = FPDFPageObj_CreateNewRect(90, 700, 25, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect2, 255, 0, 0, 100));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect2, 255, 0, 0, 100));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect2, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, red_rect2);
 
   // Add an opaque rectangle on top of the existing content
   FPDF_PAGEOBJECT red_rect = FPDFPageObj_CreateNewRect(115, 700, 25, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(red_rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(red_rect, 255, 0, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(red_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(page, red_rect);
 
@@ -1685,13 +1686,13 @@ TEST_F(FPDFEditEmbedderTest, EditOverExistingContent) {
   ClearString();
   // Add another opaque rectangle on top of the existing content
   FPDF_PAGEOBJECT green_rect = FPDFPageObj_CreateNewRect(150, 700, 25, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(green_rect, 0, 255, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(green_rect, 0, 255, 0, 255));
   EXPECT_TRUE(FPDFPath_SetDrawMode(green_rect, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(saved_page, green_rect);
 
   // Add another transparent rectangle on top of existing content
   FPDF_PAGEOBJECT green_rect2 = FPDFPageObj_CreateNewRect(175, 700, 25, 50);
-  EXPECT_TRUE(FPDFPath_SetFillColor(green_rect2, 0, 255, 0, 100));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(green_rect2, 0, 255, 0, 100));
   EXPECT_TRUE(FPDFPath_SetDrawMode(green_rect2, FPDF_FILLMODE_ALTERNATE, 0));
   FPDFPage_InsertObject(saved_page, green_rect2);
   const char kLastMD5[] = "4b5b00f824620f8c9b8801ebb98e1cdd";
@@ -1717,9 +1718,9 @@ TEST_F(FPDFEditEmbedderTest, AddStrokedPaths) {
 
   // Add a large stroked rectangle (fill color should not affect it).
   FPDF_PAGEOBJECT rect = FPDFPageObj_CreateNewRect(20, 20, 200, 400);
-  EXPECT_TRUE(FPDFPath_SetFillColor(rect, 255, 0, 0, 255));
-  EXPECT_TRUE(FPDFPath_SetStrokeColor(rect, 0, 255, 0, 255));
-  EXPECT_TRUE(FPDFPath_SetStrokeWidth(rect, 15.0f));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(rect, 255, 0, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeColor(rect, 0, 255, 0, 255));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeWidth(rect, 15.0f));
 
   float width = 0;
   EXPECT_TRUE(FPDFPageObj_GetStrokeWidth(rect, &width));
@@ -1739,8 +1740,8 @@ TEST_F(FPDFEditEmbedderTest, AddStrokedPaths) {
   EXPECT_TRUE(FPDFPath_LineTo(check, 600, 600));
   EXPECT_TRUE(FPDFPath_MoveTo(check, 400, 600));
   EXPECT_TRUE(FPDFPath_LineTo(check, 600, 400));
-  EXPECT_TRUE(FPDFPath_SetStrokeColor(check, 128, 128, 128, 180));
-  EXPECT_TRUE(FPDFPath_SetStrokeWidth(check, 8.35f));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeColor(check, 128, 128, 128, 180));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeWidth(check, 8.35f));
   EXPECT_TRUE(FPDFPath_SetDrawMode(check, 0, 1));
   FPDFPage_InsertObject(page, check);
   {
@@ -1755,9 +1756,9 @@ TEST_F(FPDFEditEmbedderTest, AddStrokedPaths) {
   EXPECT_TRUE(FPDFPath_LineTo(path, 255, 305));
   EXPECT_TRUE(FPDFPath_BezierTo(path, 325, 233, 325, 166, 255, 105));
   EXPECT_TRUE(FPDFPath_Close(path));
-  EXPECT_TRUE(FPDFPath_SetFillColor(path, 200, 128, 128, 100));
-  EXPECT_TRUE(FPDFPath_SetStrokeColor(path, 128, 200, 128, 150));
-  EXPECT_TRUE(FPDFPath_SetStrokeWidth(path, 10.5f));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(path, 200, 128, 128, 100));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeColor(path, 128, 200, 128, 150));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeWidth(path, 10.5f));
   EXPECT_TRUE(FPDFPath_SetDrawMode(path, FPDF_FILLMODE_ALTERNATE, 1));
   FPDFPage_InsertObject(page, path);
   {
@@ -1785,9 +1786,9 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char md5[] = "a4dddc1a3930fa694bbff9789dab4161";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char md5[] = "08d1ff3e5a42801bee6077fd366bef00";
 #else
     const char md5[] = "eacaa24573b8ce997b3882595f096f00";
@@ -1810,9 +1811,9 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char md5[] = "a5c4ace4c6f27644094813fe1441a21c";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char md5[] = "3755dd35abd4c605755369401ee85b2d";
 #else
     const char md5[] = "76fcc7d08aa15445efd2e2ceb7c6cc3b";
@@ -1834,9 +1835,9 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char md5[] = "40b3ef04f915ff4c4208948001763544";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char md5[] = "aba523a8110d01ed9bd7b7781ff74045";
 #else
     const char md5[] = "b8a21668f1dab625af7c072e07fcefc4";
@@ -2003,9 +2004,9 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText2) {
   FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 20, 20);
   FPDFPage_InsertObject(page.get(), text_object);
   ScopedFPDFBitmap page_bitmap = RenderPage(page.get());
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char md5[] = "a4dddc1a3930fa694bbff9789dab4161";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char md5[] = "08d1ff3e5a42801bee6077fd366bef00";
 #else
   const char md5[] = "eacaa24573b8ce997b3882595f096f00";
@@ -2015,7 +2016,7 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText2) {
 
 TEST_F(FPDFEditEmbedderTest, LoadStandardFonts) {
   CreateNewDocument();
-  static constexpr const char* standard_font_names[] = {
+  static constexpr const char* kStandardFontNames[] = {
       "Arial",
       "Arial-Bold",
       "Arial-BoldItalic",
@@ -2038,16 +2039,16 @@ TEST_F(FPDFEditEmbedderTest, LoadStandardFonts) {
       "TimesNewRoman-BoldItalic",
       "TimesNewRoman-Italic",
       "ZapfDingbats"};
-  for (const char* font_name : standard_font_names) {
+  for (const char* font_name : kStandardFontNames) {
     FPDF_FONT font = FPDFText_LoadStandardFont(document(), font_name);
     EXPECT_TRUE(font) << font_name << " should be considered a standard font.";
   }
-  static constexpr const char* not_standard_font_names[] = {
+  static constexpr const char* kNotStandardFontNames[] = {
       "Abcdefg",      "ArialB",    "Arial-Style",
       "Font Name",    "FontArial", "NotAStandardFontName",
       "TestFontName", "Quack",     "Symbol-Italic",
       "Zapf"};
-  for (const char* font_name : not_standard_font_names) {
+  for (const char* font_name : kNotStandardFontNames) {
     FPDF_FONT font = FPDFText_LoadStandardFont(document(), font_name);
     EXPECT_FALSE(font) << font_name
                        << " should not be considered a standard font.";
@@ -2074,7 +2075,7 @@ TEST_F(FPDFEditEmbedderTest, GraphicsData) {
   FPDF_PAGEOBJECT text1 = FPDFPageObj_NewTextObj(document(), "Arial", 12.0f);
   // Only alpha, the last component, matters for the graphics dictionary. And
   // the default value is 255.
-  EXPECT_TRUE(FPDFText_SetFillColor(text1, 100, 100, 100, 255));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(text1, 100, 100, 100, 255));
   FPDFPage_InsertObject(page.get(), text1);
   EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   EXPECT_EQ(2u, graphics_dict->size());
@@ -2084,14 +2085,14 @@ TEST_F(FPDFEditEmbedderTest, GraphicsData) {
       FPDFPageObj_NewTextObj(document(), "Times-Roman", 12.0f);
   FPDFPage_InsertObject(page.get(), text2);
   FPDFPageObj_SetBlendMode(text2, "Darken");
-  EXPECT_TRUE(FPDFText_SetFillColor(text2, 0, 0, 255, 150));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(text2, 0, 0, 255, 150));
   EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   EXPECT_EQ(3u, graphics_dict->size());
 
   // Add a path that should reuse graphics
   FPDF_PAGEOBJECT path = FPDFPageObj_CreateNewPath(400, 100);
   FPDFPageObj_SetBlendMode(path, "Darken");
-  EXPECT_TRUE(FPDFPath_SetFillColor(path, 200, 200, 100, 150));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(path, 200, 200, 100, 150));
   FPDFPage_InsertObject(page.get(), path);
   EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   EXPECT_EQ(3u, graphics_dict->size());
@@ -2099,8 +2100,8 @@ TEST_F(FPDFEditEmbedderTest, GraphicsData) {
   // Add a rect increasing the size of the graphics dictionary
   FPDF_PAGEOBJECT rect2 = FPDFPageObj_CreateNewRect(10, 10, 100, 100);
   FPDFPageObj_SetBlendMode(rect2, "Darken");
-  EXPECT_TRUE(FPDFPath_SetFillColor(rect2, 0, 0, 255, 150));
-  EXPECT_TRUE(FPDFPath_SetStrokeColor(rect2, 0, 0, 0, 200));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(rect2, 0, 0, 255, 150));
+  EXPECT_TRUE(FPDFPageObj_SetStrokeColor(rect2, 0, 0, 0, 200));
   FPDFPage_InsertObject(page.get(), rect2);
   EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   EXPECT_EQ(4u, graphics_dict->size());
@@ -2112,7 +2113,7 @@ TEST_F(FPDFEditEmbedderTest, DoubleGenerating) {
 
   // Add a red rectangle with some non-default alpha
   FPDF_PAGEOBJECT rect = FPDFPageObj_CreateNewRect(10, 10, 100, 100);
-  EXPECT_TRUE(FPDFPath_SetFillColor(rect, 255, 0, 0, 128));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(rect, 255, 0, 0, 128));
   EXPECT_TRUE(FPDFPath_SetDrawMode(rect, FPDF_FILLMODE_WINDING, 0));
   FPDFPage_InsertObject(page, rect);
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
@@ -2131,7 +2132,7 @@ TEST_F(FPDFEditEmbedderTest, DoubleGenerating) {
   }
 
   // Never mind, my new favorite color is blue, increase alpha
-  EXPECT_TRUE(FPDFPath_SetFillColor(rect, 0, 0, 255, 180));
+  EXPECT_TRUE(FPDFPageObj_SetFillColor(rect, 0, 0, 255, 180));
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
   EXPECT_EQ(3u, graphics_dict->size());
 
@@ -2349,13 +2350,13 @@ TEST_F(FPDFEditEmbedderTest, AddTrueTypeFontText) {
     FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 400, 400);
     FPDFPage_InsertObject(page, text_object);
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
     const char md5[] = "17d2b6cd574cf66170b09c8927529a94";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
     const char md5[] = "d60ba39f9698e32360d99e727dd93165";
 #else
     const char md5[] = "70592859010ffbf532a2237b8118bcc4";
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#endif
     CompareBitmap(page_bitmap.get(), 612, 792, md5);
 
     // Add some more text, same font
@@ -2367,13 +2368,13 @@ TEST_F(FPDFEditEmbedderTest, AddTrueTypeFontText) {
     FPDFPage_InsertObject(page, text_object2);
   }
   ScopedFPDFBitmap page_bitmap2 = RenderPage(page);
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char md5_2[] = "8eded4193ff1f0f77b8b600a825e97ea";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char md5_2[] = "2199b579c49ab5f80c246a586a80ee90";
 #else
   const char md5_2[] = "c1d10cce1761c4a998a16b2562030568";
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#endif
   CompareBitmap(page_bitmap2.get(), 612, 792, md5_2);
 
   EXPECT_TRUE(FPDFPage_GenerateContent(page));
@@ -2467,7 +2468,7 @@ TEST_F(FPDFEditEmbedderTest, SaveAndRender) {
 
     // Now add a more complex blue path.
     FPDF_PAGEOBJECT green_path = FPDFPageObj_CreateNewPath(20, 20);
-    EXPECT_TRUE(FPDFPath_SetFillColor(green_path, 0, 255, 0, 200));
+    EXPECT_TRUE(FPDFPageObj_SetFillColor(green_path, 0, 255, 0, 200));
     // TODO(npm): stroking will cause the MD5s to differ.
     EXPECT_TRUE(FPDFPath_SetDrawMode(green_path, FPDF_FILLMODE_WINDING, 0));
     EXPECT_TRUE(FPDFPath_LineTo(green_path, 20, 63));
@@ -2625,7 +2626,7 @@ TEST_F(FPDFEditEmbedderTest, AddMarkedText) {
   // - int "IntKey" : 42
   // - string "StringKey": "StringValue"
   // - blob "BlobKey": "\x01\x02\x03\0BlobValue1\0\0\0BlobValue2\0"
-  constexpr const size_t kBlobLen = 28;
+  constexpr size_t kBlobLen = 28;
   char block_value[kBlobLen];
   memcpy(block_value, "\x01\x02\x03\0BlobValue1\0\0\0BlobValue2\0", kBlobLen);
   EXPECT_EQ(0, FPDFPageObjMark_CountParams(mark));
@@ -2663,9 +2664,9 @@ TEST_F(FPDFEditEmbedderTest, AddMarkedText) {
   EXPECT_EQ(0, memcmp(block_value, buffer, kBlobLen));
 
 // Render and check the bitmap is the expected one.
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   const char md5[] = "17d2b6cd574cf66170b09c8927529a94";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   const char md5[] = "d60ba39f9698e32360d99e727dd93165";
 #else
   const char md5[] = "70592859010ffbf532a2237b8118bcc4";

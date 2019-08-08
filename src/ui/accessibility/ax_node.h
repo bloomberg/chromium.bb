@@ -45,29 +45,25 @@ class AX_EXPORT AXNode final {
   // The constructor requires a parent, id, and index in parent, but
   // the data is not required. After initialization, only index_in_parent
   // is allowed to change, the others are guaranteed to never change.
-  AXNode(OwnerTree* tree, AXNode* parent, int32_t id, int32_t index_in_parent);
+  AXNode(OwnerTree* tree, AXNode* parent, int32_t id, size_t index_in_parent);
   virtual ~AXNode();
 
   // Accessors.
   OwnerTree* tree() const { return tree_; }
   int32_t id() const { return data_.id; }
   AXNode* parent() const { return parent_; }
-  int child_count() const { return static_cast<int>(children_.size()); }
   const AXNodeData& data() const { return data_; }
   const std::vector<AXNode*>& children() const { return children_; }
-  int index_in_parent() const { return index_in_parent_; }
+  size_t index_in_parent() const { return index_in_parent_; }
 
   // Returns ownership of |data_| to the caller; effectively clearing |data_|.
   AXNodeData&& TakeData();
 
-  // Get the child at the given index.
-  AXNode* ChildAtIndex(int index) const { return children_[index]; }
-
   // Walking the tree skipping ignored nodes.
-  int GetUnignoredChildCount() const;
-  AXNode* GetUnignoredChildAtIndex(int index) const;
+  size_t GetUnignoredChildCount() const;
+  AXNode* GetUnignoredChildAtIndex(size_t index) const;
   AXNode* GetUnignoredParent() const;
-  int GetUnignoredIndexInParent() const;
+  size_t GetUnignoredIndexInParent() const;
 
   // Returns true if the node has any of the text related roles.
   bool IsText() const;
@@ -92,7 +88,7 @@ class AX_EXPORT AXNode final {
                    gfx::Transform* transform);
 
   // Set the index in parent, for example if siblings were inserted or deleted.
-  void SetIndexInParent(int index_in_parent);
+  void SetIndexInParent(size_t index_in_parent);
 
   // Swap the internal children vector with |children|. This instance
   // now owns all of the passed children.
@@ -297,7 +293,7 @@ class AX_EXPORT AXNode final {
 
   // This should only be called by the LabelLanguageForSubtree and is used as
   // part of the language detection feature.
-  void SetLanguageInfo(AXLanguageInfo* lang_info);
+  void SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info);
 
  private:
   // Computes the text offset where each line starts by traversing all child
@@ -312,7 +308,7 @@ class AX_EXPORT AXNode final {
   AXNode* GetOrderedSet() const;
 
   OwnerTree* tree_;  // Owns this.
-  int index_in_parent_;
+  size_t index_in_parent_;
   AXNode* parent_;
   std::vector<AXNode*> children_;
   AXNodeData data_;

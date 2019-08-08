@@ -22,6 +22,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -54,9 +55,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool is_resident = false;
     // is_u2f is true if the credential was created via a U2F interface.
     bool is_u2f = false;
+    base::Optional<device::CredProtect> protection;
 
     // user is only valid if |is_resident| is true.
     base::Optional<device::PublicKeyCredentialUserEntity> user;
+    // rp is only valid if |is_resident| is true.
+    base::Optional<device::PublicKeyCredentialRpEntity> rp;
 
     DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
@@ -115,10 +119,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // Whether a device with internal-UV support has fingerprints enrolled.
     bool fingerprints_enrolled = false;
 
+    // Whether a device with bio enrollment support has been provisioned.
+    bool bio_enrollment_provisioned = false;
+
     // pending_assertions contains the second and subsequent assertions
     // resulting from a GetAssertion call. These values are awaiting a
     // GetNextAssertion request.
     std::vector<std::vector<uint8_t>> pending_assertions;
+
+    // pending_rps contains the remaining RPs to return a previous
+    // authenticatorCredentialManagement command.
+    std::list<device::PublicKeyCredentialRpEntity> pending_rps;
+
+    // pending_registrations contains the remaining |is_resident| registration
+    // to return from a previous authenticatorCredentialManagement command.
+    std::list<cbor::Value::MapValue> pending_registrations;
 
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
@@ -129,16 +144,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     //
     // Returns true on success. Will fail if there already exists a credential
     // with the given ID or if private-key generation fails.
-    bool InjectRegistration(const std::vector<uint8_t>& credential_id,
+    bool InjectRegistration(base::span<const uint8_t> credential_id,
                             const std::string& relying_party_id);
 
     // InjectResidentKey adds a resident credential with the specified values.
     // Returns false if there already exists a resident credential for the same
     // (RP ID, user ID) pair, or for the same credential ID. Otherwise returns
     // true.
-    bool InjectResidentKey(const std::vector<uint8_t>& credential_id,
+    bool InjectResidentKey(base::span<const uint8_t> credential_id,
                            const std::string& relying_party_id,
-                           const std::vector<uint8_t>& user_id,
+                           base::span<const uint8_t> user_id,
                            const std::string& name,
                            const std::string& display_name);
 

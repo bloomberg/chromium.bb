@@ -1230,7 +1230,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckResourceUrl) {
   scoped_refptr<TestSBClient> client(new TestSBClient);
   {
     MarkUrlForResourceUnexpired(blacklist_url);
-    blacklist_url_hash = GetFullHash(blacklist_url);
+    blacklist_url_hash = V4ProtocolManagerUtil::GetFullHash(blacklist_url);
 
     client->CheckResourceUrl(blacklist_url);
     EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE, client->GetThreatType());
@@ -1239,7 +1239,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckResourceUrl) {
   {
     MarkUrlForMalwareUnexpired(malware_url);
     MarkUrlForResourceUnexpired(malware_url);
-    malware_url_hash = GetFullHash(malware_url);
+    malware_url_hash = V4ProtocolManagerUtil::GetFullHash(malware_url);
 
     // Since we're checking a resource url, we should receive result that it's
     // a blacklisted resource, not a malware.

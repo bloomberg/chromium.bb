@@ -38,7 +38,7 @@ class CUResourceThrottle : public content::ResourceThrottle,
   void WillStartRequest(bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
 
   // Component updater calls this function via PostTask to unblock the request.
   void Unblock();
@@ -73,7 +73,7 @@ void CUResourceThrottle::WillRedirectRequest(
   WillStartRequest(defer);
 }
 
-const char* CUResourceThrottle::GetNameForLogging() const {
+const char* CUResourceThrottle::GetNameForLogging() {
   return "ComponentUpdateResourceThrottle";
 }
 

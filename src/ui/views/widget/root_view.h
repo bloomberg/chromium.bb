@@ -98,7 +98,6 @@ class VIEWS_EXPORT RootView : public View,
   View* GetFocusTraversableParentView() override;
 
   // Overridden from ui::EventProcessor:
-  ui::EventTarget* GetInitialEventTarget(ui::Event* event) override;
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   ui::EventTargeter* GetDefaultEventTargeter() override;
   void OnEventProcessingStarted(ui::Event* event) override;

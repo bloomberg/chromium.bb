@@ -36,11 +36,9 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
      * @param host                     A {@link LayoutManagerHost} instance.
-     * @param overviewModeDelegate     OverviewModeController to delegate tab switcher behavior.
      */
-    public LayoutManagerChromeTablet(
-            LayoutManagerHost host, OverviewModeController overviewModeDelegate) {
-        super(host, false, overviewModeDelegate);
+    public LayoutManagerChromeTablet(LayoutManagerHost host) {
+        super(host, false, null);
         Context context = host.getContext();
 
         mTabStripLayoutHelperManager =

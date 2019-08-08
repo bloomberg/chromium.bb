@@ -23,6 +23,7 @@
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/util.h"
+#include "components/safe_browsing/safe_browsing_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -82,33 +83,18 @@ class TriggerManager;
 // the heavylifting of safebrowsing service. Both of these managers stay
 // alive until SafeBrowsingService is destroyed, however, they are disabled
 // permanently when Shutdown method is called.
-class SafeBrowsingService : public base::RefCountedThreadSafe<
-                                SafeBrowsingService,
-                                content::BrowserThread::DeleteOnUIThread>,
+class SafeBrowsingService : public SafeBrowsingServiceInterface,
                             public content::NotificationObserver {
  public:
-  // Makes the passed |factory| the factory used to instanciate
-  // a SafeBrowsingService. Useful for tests.
-  static void RegisterFactory(SafeBrowsingServiceFactory* factory) {
-    factory_ = factory;
-  }
-
   static base::FilePath GetCookieFilePathForTesting();
 
   static base::FilePath GetBaseFilename();
-
-  // Create an instance of the safe browsing service.
-  static SafeBrowsingService* CreateSafeBrowsingService();
 
   // Called on the UI thread to initialize the service.
   void Initialize();
 
   // Called on the main thread to let us know that the io_thread is going away.
   void ShutDown();
-
-  // Called on UI thread to decide if the download file's sha256 hash
-  // should be calculated for safebrowsing.
-  bool DownloadBinHashNeeded() const;
 
   // NOTE(vakh): This is not the most reliable way to find out if extended
   // reporting has been enabled. That's why it starts with estimated_. It
@@ -289,11 +275,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // use.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
-  // The factory used to instantiate a SafeBrowsingService object.
-  // Useful for tests, so they can provide their own implementation of
-  // SafeBrowsingService.
-  static SafeBrowsingServiceFactory* factory_;
-
   // The SafeBrowsingURLRequestContextGetter used to access
   // |url_request_context_|. Accessed on UI thread.
   // This is only valid if the network service is disabled.
@@ -358,16 +339,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };
 
-// Factory for creating SafeBrowsingService.  Useful for tests.
-class SafeBrowsingServiceFactory {
- public:
-  SafeBrowsingServiceFactory() {}
-  virtual ~SafeBrowsingServiceFactory() {}
-  virtual SafeBrowsingService* CreateSafeBrowsingService() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactory);
-};
+SafeBrowsingServiceFactory* GetSafeBrowsingServiceFactory();
 
 }  // namespace safe_browsing
 

@@ -71,7 +71,7 @@ class NetworkSmsHandlerTest : public testing::Test {
                            "stub_cellular_device2");
 
     // This relies on the stub dbus implementations for ShillManagerClient,
-    // ShillDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.
+    // ShillDeviceClient, ModemMessagingClient and SMSClient.
     // Initialize a sms handler. The stub dbus clients will not send the
     // first test message until RequestUpdate has been called.
     network_sms_handler_.reset(new NetworkSmsHandler());

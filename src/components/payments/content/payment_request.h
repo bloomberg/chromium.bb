@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/developer_console_logger.h"
+#include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
@@ -37,6 +38,7 @@ class PaymentRequestWebContentsManager;
 // PaymentRequestSpec, and the current user selection state (and related data)
 // is stored in PaymentRequestSpec.
 class PaymentRequest : public mojom::PaymentRequest,
+                       public PaymentHandlerHost::Delegate,
                        public PaymentRequestSpec::Observer,
                        public PaymentRequestState::Delegate {
  public:
@@ -77,6 +79,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   void CanMakePayment(bool legacy_mode) override;
   void HasEnrolledInstrument(bool per_method_quota) override;
 
+  // PaymentHandlerHost::Delegate
+  bool ChangePaymentMethod(const std::string& method_name,
+                           const std::string& stringified_data) override;
+
   // PaymentRequestSpec::Observer:
   void OnSpecUpdated() override {}
 
@@ -107,10 +113,13 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Hide this Payment Request if it's already showing.
   void HideIfNecessary();
 
-  // Record the "dialog shown" event in the journey logger.
-  void RecordDialogShownEventInJourneyLogger();
-
   bool IsIncognito() const;
+
+  // Allow to skip UI into payment handlers for such payment methods as
+  // "basic-card". Used only in tests.
+  void set_skip_ui_for_non_url_payment_method_identifiers_for_test() {
+    skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
+  }
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -121,12 +130,6 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   PaymentRequestSpec* spec() const { return spec_.get(); }
   PaymentRequestState* state() const { return state_.get(); }
-
-  // Allow to skip UI into payment handlers for such payment methods as
-  // "basic-card". Used only in tests.
-  void set_skip_ui_for_non_url_payment_method_identifiers_for_test() {
-    skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
-  }
 
  private:
   // Returns true after init() has been called and the mojo connection has been
@@ -141,7 +144,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Returns true if this payment request supports skipping the Payment Sheet.
   // Typically, this means only one payment method is supported, it's a URL
   // based method, and no other info is requested from the user.
-  bool SatisfiesSkipUIConstraints() const;
+  bool SatisfiesSkipUIConstraints();
 
   // Only records the abort reason if it's the first completion for this Payment
   // Request. This is necessary since the aborts cascade into one another with
@@ -181,6 +184,10 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;
+
+  // The end-point for the payment handler renderer process to call into the
+  // browser process.
+  PaymentHandlerHost payment_handler_host_;
 
   // The RFC 6454 origin of the top level frame that has invoked PaymentRequest
   // API. This is what the user sees in the address bar.

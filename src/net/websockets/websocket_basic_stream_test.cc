@@ -15,7 +15,9 @@
 
 #include "base/big_endian.h"
 #include "base/containers/span.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/connect_job.h"
@@ -143,11 +145,12 @@ class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
     scoped_refptr<ClientSocketPool::SocketParams> null_params;
     ClientSocketPool::GroupId group_id(HostPortPair("a", 80),
                                        ClientSocketPool::SocketType::kHttp,
-                                       false /* privacy_mode */);
+                                       PrivacyMode::PRIVACY_MODE_DISABLED);
     transport_socket->Init(
-        group_id, null_params, MEDIUM, SocketTag(),
-        ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
-        ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
+        group_id, null_params, base::nullopt /* proxy_annotation_tag */, MEDIUM,
+        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+        CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(), &pool_,
+        NetLogWithSource());
     return transport_socket;
   }
 

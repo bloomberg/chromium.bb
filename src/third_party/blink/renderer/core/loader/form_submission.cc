@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -282,38 +283,39 @@ KURL FormSubmission::RequestURL() const {
   return request_url;
 }
 
-FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
-    Document* origin_document) {
-  FrameLoadRequest frame_request(origin_document);
-
-  if (!target_.IsEmpty())
-    frame_request.SetFrameName(target_);
-  else
-    frame_request.SetFrameName(origin_document->BaseTarget());
-
+void FormSubmission::Navigate() {
+  ResourceRequest resource_request(RequestURL());
   ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
   if (method_ == FormSubmission::kPostMethod) {
     reason = ClientNavigationReason::kFormSubmissionPost;
-    frame_request.GetResourceRequest().SetHttpMethod(http_names::kPOST);
-    frame_request.GetResourceRequest().SetHttpBody(form_data_);
+    resource_request.SetHttpMethod(http_names::kPOST);
+    resource_request.SetHttpBody(form_data_);
 
     // construct some user headers if necessary
     if (boundary_.IsEmpty()) {
-      frame_request.GetResourceRequest().SetHTTPContentType(content_type_);
+      resource_request.SetHTTPContentType(content_type_);
     } else {
-      frame_request.GetResourceRequest().SetHTTPContentType(
-          content_type_ + "; boundary=" + boundary_);
+      resource_request.SetHTTPContentType(content_type_ +
+                                          "; boundary=" + boundary_);
     }
   }
+  resource_request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(form_->GetDocument().GetFrame()));
+
+  FrameLoadRequest frame_request(&form_->GetDocument(), resource_request);
+  frame_request.SetNavigationPolicy(navigation_policy_);
   frame_request.SetClientRedirectReason(reason);
-
-  frame_request.GetResourceRequest().SetUrl(RequestURL());
-
   frame_request.SetForm(form_);
-
   frame_request.SetTriggeringEventInfo(triggering_event_info_);
 
-  return frame_request;
+  Frame* target_frame =
+      form_->GetDocument()
+          .GetFrame()
+          ->Tree()
+          .FindOrCreateFrameForNavigation(frame_request, target_)
+          .frame;
+  if (target_frame)
+    target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }
 
 }  // namespace blink

@@ -26,6 +26,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_range.h"
+#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -171,19 +172,25 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::Rect GetClippedFrameBoundsRect(
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
-  // Derivative utils for AXPlatformNodeDelegate::GetRangeBoundsRect
-  gfx::Rect GetUnclippedScreenRangeBoundsRect(
+  // Derivative utils for AXPlatformNodeDelegate::GetHypertextRangeBoundsRect
+  gfx::Rect GetUnclippedRootFrameHypertextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
-  gfx::Rect GetUnclippedRootFrameRangeBoundsRect(
+
+  // Derivative utils for AXPlatformNodeDelegate::GetInnerTextRangeBoundsRect
+  gfx::Rect GetUnclippedScreenInnerTextRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedRootFrameInnerTextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
   // DEPRECATED: Prefer using the interfaces provided by AXPlatformNodeDelegate
   // when writing new code.
-  gfx::Rect GetScreenRangeBoundsRect(
+  gfx::Rect GetScreenHypertextRangeBoundsRect(
       int start,
       int len,
       const ui::AXClippingBehavior clipping_behavior,
@@ -194,7 +201,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // WebAXRoleStaticText.
   // DEPRECATED (for public use): Prefer using the interfaces provided by
   // AXPlatformNodeDelegate when writing new non-private code.
-  gfx::Rect GetRootFrameRangeBoundsRect(
+  gfx::Rect GetRootFrameHypertextRangeBoundsRect(
       int start,
       int len,
       const ui::AXClippingBehavior clipping_behavior,
@@ -313,8 +320,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
   bool GetHtmlAttribute(const char* attr, base::string16* value) const;
 
-  virtual base::string16 GetText() const;
-
   // Returns true if the bit corresponding to the given enum is 1.
   bool HasState(ax::mojom::State state_enum) const;
   bool HasAction(ax::mojom::Action action_enum) const;
@@ -357,7 +362,17 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   virtual gfx::NativeViewAccessible GetNativeViewAccessible();
 
+  // AXPosition Support
+
+  // Returns the text that is present inside this node, where the representation
+  // of text found in descendant nodes depends on the platform. For example some
+  // platforms may include descendant text while while other platforms may use a
+  // special character to represent descendant text. Prefer either GetHypertext
+  // or GetInnerText so it's clear which API is called.
+  virtual base::string16 GetText() const;
+
   // AXPlatformNodeDelegate.
+  base::string16 GetAuthorUniqueId() const override;
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
   ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(
@@ -368,11 +383,20 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  base::string16 GetHypertext() const override;
+  bool SetHypertextSelection(int start_offset, int end_offset) override;
+  base::string16 GetInnerText() const override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const override;
-  gfx::Rect GetRangeBoundsRect(
+  gfx::Rect GetHypertextRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const override;
+  gfx::Rect GetInnerTextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
       const ui::AXCoordinateSystem coordinate_system,
@@ -385,7 +409,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
   base::Optional<int> FindTextBoundary(
-      ui::TextBoundaryType boundary_type,
+      ui::AXTextBoundary boundary,
       int offset,
       ui::TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const override;
@@ -466,12 +490,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   const ui::AXUniqueId& GetUniqueId() const override;
 
  private:
-  // |GetInnerText| recursively includes all the text from descendants such as
-  // text found in any embedded object. In contrast, |GetText| might include a
-  // special character in the place of every embedded object instead of its
-  // text, depending on the platform.
-  base::string16 GetInnerText() const;
-
   // Return the bounds after converting from this node's coordinate system
   // (which is relative to its nearest scrollable ancestor) to the coordinate
   // system specified. If the clipping behavior is set to clipped, clipping is
@@ -490,9 +508,23 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // ATs expect when getting the character extents past the last character in a
   // line, and equals what the caret bounds would be when past the end of the
   // text.
-  gfx::Rect GetRootFrameBoundsPastEndOfText(
+  gfx::Rect GetRootFrameHypertextBoundsPastEndOfText(
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
+
+  // Return the bounds of inline text in this node's coordinate system (which is
+  // relative to its container node specified in AXRelativeBounds).
+  gfx::RectF GetInlineTextRect(const int start_offset,
+                               const int end_offset,
+                               const int max_length) const;
+
+  // Recursive helper function for GetInnerTextRangeBounds.
+  gfx::Rect GetInnerTextRangeBoundsRectInSubtree(
+      const int start_offset,
+      const int end_offset,
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result) const;
 
   // Given a set of node ids, return the nodes in this delegate's tree to
   // which they correspond.

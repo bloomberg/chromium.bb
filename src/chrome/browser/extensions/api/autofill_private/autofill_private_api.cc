@@ -17,8 +17,9 @@
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -38,110 +39,6 @@ namespace {
 
 static const char kSettingsOrigin[] = "Chrome settings";
 static const char kErrorDataUnavailable[] = "Autofill data unavailable.";
-
-// TODO(crbug.com/903594): This does basically the same thing as
-//            components/autofill/core/browser/autofill_address_util.cc, we
-//            should refactor to use a single code path for this.
-// Fills |components| with the address UI components that should be used to
-// input an address for |country_code| when UI BCP 47 language code is
-// |ui_language_code|.
-void PopulateAddressComponents(
-    const std::string& country_code,
-    const std::string& ui_language_code,
-    autofill_private::AddressComponents* address_components) {
-  DCHECK(address_components);
-
-  i18n::addressinput::Localization localization;
-  localization.SetGetter(l10n_util::GetStringUTF8);
-  std::string best_address_language_code;
-  std::vector<addressinput::AddressUiComponent> components =
-      i18n::addressinput::BuildComponents(
-          country_code,
-          localization,
-          ui_language_code,
-          &best_address_language_code);
-  if (components.empty()) {
-    static const char kDefaultCountryCode[] = "US";
-    components = i18n::addressinput::BuildComponents(
-        kDefaultCountryCode,
-        localization,
-        ui_language_code,
-        &best_address_language_code);
-  }
-  address_components->language_code = best_address_language_code;
-  DCHECK(!components.empty());
-
-  autofill_private::AddressComponentRow* row = nullptr;
-  for (size_t i = 0; i < components.size(); ++i) {
-    if (components[i].field == ::i18n::addressinput::ORGANIZATION &&
-        !base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableCompanyName)) {
-      continue;
-    }
-    if (!row ||
-        components[i - 1].length_hint ==
-            addressinput::AddressUiComponent::HINT_LONG ||
-        components[i].length_hint ==
-            addressinput::AddressUiComponent::HINT_LONG) {
-      address_components->components.push_back(
-          autofill_private::AddressComponentRow());
-      row = &address_components->components.back();
-    }
-
-    autofill_private::AddressComponent component;
-    component.field_name = components[i].name;
-
-    switch (components[i].field) {
-      case i18n::addressinput::COUNTRY:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_COUNTRY_CODE;
-        break;
-      case i18n::addressinput::ADMIN_AREA:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_ADDRESS_LEVEL_1;
-        break;
-      case i18n::addressinput::LOCALITY:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_ADDRESS_LEVEL_2;
-        break;
-      case i18n::addressinput::DEPENDENT_LOCALITY:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_ADDRESS_LEVEL_3;
-        break;
-      case i18n::addressinput::SORTING_CODE:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_SORTING_CODE;
-        break;
-      case i18n::addressinput::POSTAL_CODE:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_POSTAL_CODE;
-        break;
-      case i18n::addressinput::STREET_ADDRESS:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_ADDRESS_LINES;
-        break;
-      case i18n::addressinput::ORGANIZATION:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_COMPANY_NAME;
-        break;
-      case i18n::addressinput::RECIPIENT:
-        component.field =
-            autofill_private::AddressField::ADDRESS_FIELD_FULL_NAME;
-        break;
-    }
-
-    switch (components[i].length_hint) {
-      case addressinput::AddressUiComponent::HINT_LONG:
-        component.is_long_field = true;
-        break;
-      case addressinput::AddressUiComponent::HINT_SHORT:
-        component.is_long_field = false;
-        break;
-    }
-
-    row->row.push_back(std::move(component));
-  }
-}
 
 // Searches the |list| for the value at |index|.  If this value is present in
 // any of the rest of the list, then the item (at |index|) is removed. The
@@ -294,6 +191,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
     profile.set_language_code(*address->language_code);
 
   if (use_existing_profile) {
+    profile.set_origin(kSettingsOrigin);
     personal_data->UpdateProfile(profile);
   } else {
     personal_data->AddProfile(profile);
@@ -343,13 +241,28 @@ ExtensionFunction::ResponseAction
           api::autofill_private::GetAddressComponents::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  autofill_private::AddressComponents components;
-  PopulateAddressComponents(
-      parameters->country_code,
-      g_browser_process->GetApplicationLocale(),
-      &components);
+  auto components = std::make_unique<base::ListValue>();
+  std::string language_code_;
 
-  return RespondNow(OneArgument(components.ToValue()));
+  autofill::GetAddressComponents(parameters->country_code,
+                                 g_browser_process->GetApplicationLocale(),
+                                 components.get(), &language_code_);
+
+  // Convert ListValue to AddressComponents
+  base::Value address_components(base::Value::Type::DICTIONARY);
+  base::Value rows(base::Value::Type::LIST);
+
+  for (auto& component : components->GetList()) {
+    base::Value row(base::Value::Type::DICTIONARY);
+    row.SetKey("row", std::move(component));
+    rows.GetList().emplace_back(std::move(row));
+  }
+
+  address_components.SetKey("components", std::move(rows));
+  address_components.SetKey("languageCode", base::Value(language_code_));
+
+  return RespondNow(OneArgument(
+      base::Value::ToUniquePtrValue(std::move(address_components))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

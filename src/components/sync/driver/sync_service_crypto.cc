@@ -11,11 +11,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/base/nigori.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/sync/nigori/nigori.h"
 
 namespace syncer {
 
@@ -109,12 +109,11 @@ bool CheckPassphraseAgainstPendingKeys(
     return false;
   }
 
-  Nigori nigori;
-  bool derivation_result =
-      nigori.InitByDerivation(key_derivation_params, passphrase);
-  DCHECK(derivation_result);
+  std::unique_ptr<Nigori> nigori =
+      Nigori::CreateByDerivation(key_derivation_params, passphrase);
+  DCHECK(nigori);
   std::string plaintext;
-  bool decrypt_result = nigori.Decrypt(pending_keys.blob(), &plaintext);
+  bool decrypt_result = nigori->Decrypt(pending_keys.blob(), &plaintext);
   DVLOG_IF(1, !decrypt_result) << "Passphrase failed to decrypt pending keys.";
   return decrypt_result;
 }
@@ -253,6 +252,7 @@ PassphraseType SyncServiceCrypto::GetPassphraseType() const {
 ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_.encrypted_types.Has(PASSWORDS));
+  DCHECK(state_.encrypted_types.Has(WIFI_CONFIGURATIONS));
   // We may be called during the setup process before we're
   // initialized. In this case, we default to the sensitive types.
   return state_.encrypted_types;
@@ -316,6 +316,7 @@ void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
            << " (encrypt everything is set to "
            << (state_.encrypt_everything ? "true" : "false") << ")";
   DCHECK(state_.encrypted_types.Has(PASSWORDS));
+  DCHECK(state_.encrypted_types.Has(WIFI_CONFIGURATIONS));
 
   notify_observers_.Run();
 }
@@ -351,12 +352,6 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<SyncEncryptionObserverProxy>(
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
-}
-
-std::unique_ptr<SyncEncryptionHandler::NigoriState>
-SyncServiceCrypto::TakeSavedNigoriState() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::move(state_.saved_nigori_state);
 }
 
 }  // namespace syncer

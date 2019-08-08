@@ -12,6 +12,7 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/dom/dom_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
@@ -84,10 +85,45 @@ class Seat : public aura::client::FocusChangeObserver,
   }
 
  private:
+  class RefCountedScopedClipboardWriter
+      : public ui::ScopedClipboardWriter,
+        public base::RefCounted<RefCountedScopedClipboardWriter> {
+   public:
+    RefCountedScopedClipboardWriter(ui::ClipboardType type)
+        : ScopedClipboardWriter(type) {}
+
+   private:
+    friend class base::RefCounted<RefCountedScopedClipboardWriter>;
+    virtual ~RefCountedScopedClipboardWriter() = default;
+  };
+
   // Called when data is read from FD passed from a client.
   // |data| is read data. |source| is source of the data, or nullptr if
   // DataSource has already been destroyed.
-  void OnDataRead(const std::vector<uint8_t>& data);
+  void OnTextRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
+                  base::OnceClosure callback,
+                  const std::string& mime_type,
+                  const std::vector<uint8_t>& data);
+  void OnRTFRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
+                 base::OnceClosure callback,
+                 const std::string& mime_type,
+                 const std::vector<uint8_t>& data);
+  void OnHTMLRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
+                  base::OnceClosure callback,
+                  const std::string& mime_type,
+                  const std::vector<uint8_t>& data);
+  void OnImageRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
+                   base::OnceClosure callback,
+                   const std::string& mime_type,
+                   const std::vector<uint8_t>& data);
+#if defined(OS_CHROMEOS)
+  void OnImageDecoded(base::OnceClosure callback,
+                      scoped_refptr<RefCountedScopedClipboardWriter> writer,
+                      const SkBitmap& bitmap);
+#endif  // defined(OS_CHROMEOS)
+
+  void OnAllReadsFinished(
+      scoped_refptr<RefCountedScopedClipboardWriter> writer);
 
   base::ObserverList<SeatObserver>::Unchecked observers_;
   // The platform code is the key in this map as it represents the physical
@@ -102,6 +138,8 @@ class Seat : public aura::client::FocusChangeObserver,
 
   // True while Seat is updating clipboard data to selection source.
   bool changing_clipboard_data_to_selection_source_;
+
+  base::WeakPtrFactory<Seat> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Seat);
 };

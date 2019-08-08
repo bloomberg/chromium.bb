@@ -41,7 +41,6 @@ include_rules = [
   "+components/subresource_filter/content/common",
   "+components/subresource_filter/content/renderer",
   "+components/subresource_filter/core/common/common_features.h",
-  "+components/thread_pool_util",
   "+components/translate/content/common",
   "+components/translate/content/renderer",
   "+components/translate/core/common",

@@ -45,6 +45,10 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceImpl {
 
   bool empty() const { return length_ == 0; }
 
+  scoped_refptr<net::IOBuffer>* impl() { return &io_buffer_; }
+
+  size_t* impl_length() { return &length_; }
+
  private:
   scoped_refptr<net::IOBuffer> io_buffer_;
   // Length of io_buffer_.

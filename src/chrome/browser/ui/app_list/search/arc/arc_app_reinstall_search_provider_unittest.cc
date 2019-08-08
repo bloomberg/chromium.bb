@@ -13,15 +13,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
-#include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,10 +34,22 @@
 using testing::ByRef;
 using testing::Eq;
 
-class ArcAppReinstallSearchProviderTest : public AppListTestBase {
+class ArcAppReinstallSearchProviderTest
+    : public extensions::ExtensionServiceTestBase {
  protected:
   void SetUp() override {
-    AppListTestBase::SetUp();
+    extensions::ExtensionServiceTestBase::SetUp();
+    auto params = CreateDefaultInitParams();
+    // We unset the pref_file so that testing_profile will have a
+    // testing_pref_service() available.
+    params.pref_file = base::FilePath();
+    InitializeExtensionService(params);
+    service_->Init();
+
+    // Let any async services complete their set-up.
+    base::RunLoop().RunUntilIdle();
+
+    // Set up custom things for our tests.
     arc_app_test_.SetUp(profile_.get());
     app_provider_ =
         base::WrapUnique(new app_list::ArcAppReinstallSearchProvider(
@@ -51,7 +66,7 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     app_provider_.reset(nullptr);
     arc_app_test_.TearDown();
 
-    AppListTestBase::TearDown();
+    extensions::ExtensionServiceTestBase::TearDown();
   }
 
   arc::FakeAppInstance* app_instance() { return arc_app_test_.app_instance(); }
@@ -163,6 +178,29 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestTimerOn) {
   // Now, stop!
   arc_app_test_.StopArcInstance();
   EXPECT_FALSE(mock_timer_->IsRunning());
+}
+
+TEST_F(ArcAppReinstallSearchProviderTest, TestPolicyManagedUser) {
+  testing_pref_service()->SetManagedPref(
+      prefs::kAppReinstallRecommendationEnabled,
+      std::make_unique<base::Value>(false));
+  std::vector<arc::mojom::AppReinstallCandidatePtr> candidates;
+  candidates.emplace_back(arc::mojom::AppReinstallCandidate::New(
+      "com.package.fakepackage1", "Title of first package",
+      "http://icon.com/icon1", 15, 4.7));
+  app_instance()->SetAppReinstallCandidates(candidates);
+  EXPECT_EQ(0, app_instance()->get_app_reinstall_callback_count());
+  SendPlayStoreApp();
+  // It's a managed user, default of pref to allow for this feature is false.
+  // Expect 0 callback executions.
+  EXPECT_EQ(0, app_instance()->get_app_reinstall_callback_count());
+
+  // Let's update the pref to true, and see that we end up with a result.
+  testing_pref_service()->SetManagedPref(
+      prefs::kAppReinstallRecommendationEnabled,
+      std::make_unique<base::Value>(true));
+  mock_timer_->Fire();
+  EXPECT_EQ(1, app_instance()->get_app_reinstall_callback_count());
 }
 
 TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithSearchChanged) {

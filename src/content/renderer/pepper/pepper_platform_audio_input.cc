@@ -166,7 +166,7 @@ bool PepperPlatformAudioInput::Initialize(
       device_id.empty() ? media::AudioDeviceDescription::kDefaultDeviceId
                         : device_id,
       client->pp_instance(),
-      base::Bind(&PepperPlatformAudioInput::OnDeviceOpened, this));
+      base::BindOnce(&PepperPlatformAudioInput::OnDeviceOpened, this));
   pending_open_device_ = true;
 
   return true;

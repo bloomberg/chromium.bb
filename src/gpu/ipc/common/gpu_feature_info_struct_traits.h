@@ -9,6 +9,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"
+#include "ui/gfx/mojo/buffer_types_struct_traits.h"
 
 namespace mojo {
 
@@ -60,80 +61,6 @@ struct EnumTraits<gpu::mojom::GpuFeatureStatus, gpu::GpuFeatureStatus> {
 };
 
 template <>
-struct EnumTraits<gpu::mojom::AntialiasingMode, gpu::AntialiasingMode> {
-  static gpu::mojom::AntialiasingMode ToMojom(gpu::AntialiasingMode mode) {
-    switch (mode) {
-      case gpu::kAntialiasingModeUnspecified:
-        return gpu::mojom::AntialiasingMode::kUnspecified;
-      case gpu::kAntialiasingModeNone:
-        return gpu::mojom::AntialiasingMode::kNone;
-      case gpu::kAntialiasingModeMSAAImplicitResolve:
-        return gpu::mojom::AntialiasingMode::kMSAAImplicitResolve;
-      case gpu::kAntialiasingModeMSAAExplicitResolve:
-        return gpu::mojom::AntialiasingMode::kMSAAExplicitResolve;
-      case gpu::kAntialiasingModeScreenSpaceAntialiasing:
-        return gpu::mojom::AntialiasingMode::kScreenSpaceAntialiasing;
-    }
-    NOTREACHED();
-    return gpu::mojom::AntialiasingMode::kUnspecified;
-  }
-
-  static bool FromMojom(gpu::mojom::AntialiasingMode input,
-                        gpu::AntialiasingMode* out) {
-    switch (input) {
-      case gpu::mojom::AntialiasingMode::kUnspecified:
-        *out = gpu::kAntialiasingModeUnspecified;
-        return true;
-      case gpu::mojom::AntialiasingMode::kNone:
-        *out = gpu::kAntialiasingModeNone;
-        return true;
-      case gpu::mojom::AntialiasingMode::kMSAAImplicitResolve:
-        *out = gpu::kAntialiasingModeMSAAImplicitResolve;
-        return true;
-      case gpu::mojom::AntialiasingMode::kMSAAExplicitResolve:
-        *out = gpu::kAntialiasingModeMSAAExplicitResolve;
-        return true;
-      case gpu::mojom::AntialiasingMode::kScreenSpaceAntialiasing:
-        *out = gpu::kAntialiasingModeScreenSpaceAntialiasing;
-        return true;
-    }
-    return false;
-  }
-};
-
-template <>
-struct StructTraits<gpu::mojom::WebglPreferencesDataView,
-                    gpu::WebglPreferences> {
-  static bool Read(gpu::mojom::WebglPreferencesDataView data,
-                   gpu::WebglPreferences* out) {
-    out->msaa_sample_count = data.msaa_sample_count();
-    out->max_active_webgl_contexts = data.max_active_webgl_contexts();
-    out->max_active_webgl_contexts_on_worker =
-        data.max_active_webgl_contexts_on_worker();
-    return data.ReadAntiAliasingMode(&out->anti_aliasing_mode);
-  }
-
-  static gpu::AntialiasingMode anti_aliasing_mode(
-      const gpu::WebglPreferences& prefs) {
-    return prefs.anti_aliasing_mode;
-  }
-
-  static uint32_t msaa_sample_count(const gpu::WebglPreferences& prefs) {
-    return prefs.msaa_sample_count;
-  }
-
-  static uint32_t max_active_webgl_contexts(
-      const gpu::WebglPreferences& prefs) {
-    return prefs.max_active_webgl_contexts;
-  }
-
-  static uint32_t max_active_webgl_contexts_on_worker(
-      const gpu::WebglPreferences& prefs) {
-    return prefs.max_active_webgl_contexts_on_worker;
-  }
-};
-
-template <>
 struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
   static bool Read(gpu::mojom::GpuFeatureInfoDataView data,
                    gpu::GpuFeatureInfo* out);
@@ -159,11 +86,6 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
     return info.disabled_webgl_extensions;
   }
 
-  static const gpu::WebglPreferences& webgl_preferences(
-      const gpu::GpuFeatureInfo& info) {
-    return info.webgl_preferences;
-  }
-
   static const std::vector<uint32_t>& applied_gpu_blacklist_entries(
       const gpu::GpuFeatureInfo& info) {
     return info.applied_gpu_blacklist_entries;
@@ -172,6 +94,12 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
   static const std::vector<uint32_t>& applied_gpu_driver_bug_list_entries(
       const gpu::GpuFeatureInfo& info) {
     return info.applied_gpu_driver_bug_list_entries;
+  }
+
+  static std::vector<gfx::BufferFormat>
+  supported_buffer_formats_for_allocation_and_texturing(
+      const gpu::GpuFeatureInfo& input) {
+    return input.supported_buffer_formats_for_allocation_and_texturing;
   }
 };
 

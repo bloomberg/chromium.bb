@@ -17,9 +17,9 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/paged_view_structure.h"
-#include "ash/app_list/pagination_model.h"
-#include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -35,6 +35,10 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
+namespace ash {
+class PaginationController;
+}
+
 namespace views {
 class ButtonListener;
 }
@@ -49,7 +53,6 @@ class ApplicationDragAndDropHost;
 class AppListItemView;
 class AppsGridViewFolderDelegate;
 class ContentsView;
-class PaginationController;
 class PulsingBlockView;
 class GhostImageView;
 
@@ -77,7 +80,7 @@ struct GridIndex {
 class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public views::ButtonListener,
                                      public AppListItemListObserver,
-                                     public PaginationModelObserver,
+                                     public ash::PaginationModelObserver,
                                      public AppListModelObserver,
                                      public ui::ImplicitAnimationObserver {
  public:
@@ -174,7 +177,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   const AppListItemView* drag_view() const { return drag_view_; }
 
   // Gets the PaginationModel used for the grid view.
-  PaginationModel* pagination_model() { return &pagination_model_; }
+  ash::PaginationModel* pagination_model() { return &pagination_model_; }
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -192,7 +195,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Updates the visibility of app list items according to |app_list_state| and
   // |is_in_drag|.
-  void UpdateControlVisibility(ash::mojom::AppListViewState app_list_state,
+  void UpdateControlVisibility(ash::AppListViewState app_list_state,
                                bool is_in_drag);
 
   // Overridden from ui::EventHandler:
@@ -668,9 +671,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // This can be NULL. Only grid views inside folders have a folder delegate.
   AppsGridViewFolderDelegate* folder_delegate_ = nullptr;
 
-  PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_;
   // Must appear after |pagination_model_|.
-  std::unique_ptr<PaginationController> pagination_controller_;
+  std::unique_ptr<ash::PaginationController> pagination_controller_;
 
   // Created by AppListMainView, owned by views hierarchy.
   ContentsView* contents_view_ = nullptr;

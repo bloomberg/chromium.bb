@@ -25,15 +25,15 @@ const service_manager::Manifest& GetContentGpuManifest() {
                                 "IPC.mojom.ChannelBootstrap",
                                 "ui.ozone.mojom.DeviceCursor",
                                 "ui.ozone.mojom.DrmDevice",
-                                "ui.ozone.mojom.WaylandConnectionClient",
+                                "ui.ozone.mojom.WaylandBufferManagerGpu",
                                 "ui.mojom.ScenicGpuService",
                                 "viz.mojom.CompositingModeReporter",
                                 "viz.mojom.VizMain",
                             })
           .RequireCapability("device", "device:power_monitor")
-          .RequireCapability(mojom::kBrowserServiceName, "dwrite_font_proxy")
-          .RequireCapability(mojom::kBrowserServiceName, "field_trials")
-          .RequireCapability(mojom::kBrowserServiceName, "gpu")
+          .RequireCapability(mojom::kSystemServiceName, "dwrite_font_proxy")
+          .RequireCapability(mojom::kSystemServiceName, "field_trials")
+          .RequireCapability(mojom::kSystemServiceName, "gpu")
           .RequireCapability("ui", "discardable_memory")
           .RequireCapability("*", "app")
           .RequireCapability("metrics", "url_keyed_metrics")

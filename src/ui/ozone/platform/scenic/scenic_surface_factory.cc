@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
+#include "ui/ozone/platform/scenic/sysmem_buffer_collection.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "ui/ozone/platform/scenic/vulkan_implementation_scenic.h"
@@ -63,53 +64,14 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLScenic);
 };
 
-// TODO(crbug.com/852011): Implement this class - currently it's just a stub.
-class ScenicPixmap : public gfx::NativePixmap {
- public:
-  explicit ScenicPixmap(gfx::AcceleratedWidget widget,
-                        gfx::Size size,
-                        gfx::BufferFormat format)
-      : size_(size), format_(format) {
-    NOTIMPLEMENTED_LOG_ONCE();
-  }
-
-  bool AreDmaBufFdsValid() const override { return false; }
-  int GetDmaBufFd(size_t plane) const override { return -1; }
-  int GetDmaBufPitch(size_t plane) const override { return 0; }
-  int GetDmaBufOffset(size_t plane) const override { return 0; }
-  uint64_t GetDmaBufModifier(size_t plane) const override { return 0; }
-  gfx::BufferFormat GetBufferFormat() const override { return format_; }
-  gfx::Size GetBufferSize() const override { return size_; }
-  uint32_t GetUniqueId() const override { return 0; }
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                            int plane_z_order,
-                            gfx::OverlayTransform plane_transform,
-                            const gfx::Rect& display_bounds,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-  gfx::NativePixmapHandle ExportHandle() override {
-    NOTIMPLEMENTED();
-    return gfx::NativePixmapHandle();
-  }
-
- private:
-  ~ScenicPixmap() override {}
-
-  gfx::Size size_;
-  gfx::BufferFormat format_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScenicPixmap);
-};
-
 }  // namespace
 
 ScenicSurfaceFactory::ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host)
     : gpu_host_(gpu_host),
       egl_implementation_(std::make_unique<GLOzoneEGLScenic>()),
+      sysmem_buffer_manager_(
+          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+              ->ConnectToServiceSync<fuchsia::sysmem::Allocator>()),
       weak_ptr_factory_(this) {
   // TODO(spang, crbug.com/923445): Add message loop to GPU tests.
   if (base::ThreadTaskRunnerHandle::IsSet())
@@ -123,7 +85,8 @@ ScenicSurfaceFactory::~ScenicSurfaceFactory() {
 std::vector<gl::GLImplementation>
 ScenicSurfaceFactory::GetAllowedGLImplementations() {
   // TODO(spang): Remove this after crbug.com/897208 is fixed.
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL,
+                                           gl::kGLImplementationStubGL};
 }
 
 GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
@@ -156,10 +119,16 @@ std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
 
 scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return new ScenicPixmap(widget, size, format);
+  auto collection = sysmem_buffer_manager_.CreateCollection(vk_device, size,
+                                                            format, usage, 1);
+  if (!collection)
+    return nullptr;
+
+  return collection->CreateNativePixmap(0);
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -169,7 +138,8 @@ ScenicSurfaceFactory::CreateVulkanImplementation() {
   if (!gpu_host_)
     LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
 
-  return std::make_unique<ui::VulkanImplementationScenic>(this);
+  return std::make_unique<ui::VulkanImplementationScenic>(
+      this, &sysmem_buffer_manager_);
 }
 #endif
 

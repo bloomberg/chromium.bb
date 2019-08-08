@@ -174,9 +174,13 @@ void ArcPowerBridge::SuspendImminent(
   if (!power_instance)
     return;
 
-  power_instance->Suspend(
-      chromeos::PowerManagerClient::Get()->GetSuspendReadinessCallback(
-          FROM_HERE));
+  auto token = base::UnguessableToken::Create();
+  chromeos::PowerManagerClient::Get()->BlockSuspend(token, "ArcPowerBridge");
+  power_instance->Suspend(base::BindOnce(
+      [](base::UnguessableToken token) {
+        chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
+      },
+      token));
 }
 
 void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
@@ -202,6 +206,16 @@ void ArcPowerBridge::ScreenBrightnessChanged(
                        weak_ptr_factory_.GetWeakPtr(), change.percent()));
   }
   last_brightness_changed_time_ = now;
+}
+
+void ArcPowerBridge::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
+  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->power(), PowerSupplyInfoChanged);
+  if (!power_instance)
+    return;
+
+  power_instance->PowerSupplyInfoChanged();
 }
 
 void ArcPowerBridge::OnPowerStateChanged(
@@ -263,7 +277,7 @@ void ArcPowerBridge::OnScreenBrightnessUpdateRequest(double percent) {
   power_manager::SetBacklightBrightnessRequest request;
   request.set_percent(percent);
   request.set_transition(
-      power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL);
+      power_manager::SetBacklightBrightnessRequest_Transition_FAST);
   request.set_cause(
       power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
   chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);

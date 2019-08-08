@@ -58,15 +58,23 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
             process.returncode)
 
   def untangle(self, stdout):
+    """Separates output based on thread IDs."""
     tasks = {}
     remaining = []
+    task_id = 0
     for line in stdout.splitlines(False):
       m = re.match(r'^(\d)+>(.*)$', line)
       if not m:
-        remaining.append(line)
+        if task_id:
+          # Lines broken with carriage breaks don't have a thread ID, but belong
+          # to the last seen thread ID.
+          tasks.setdefault(task_id, []).append(line)
+        else:
+          remaining.append(line)
       else:
         self.assertEquals([], remaining)
-        tasks.setdefault(int(m.group(1)), []).append(m.group(2))
+        task_id = int(m.group(1))
+        tasks.setdefault(task_id, []).append(m.group(2))
     out = []
     for key in sorted(tasks.iterkeys()):
       out.extend(tasks[key])
@@ -1098,12 +1106,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src -> src/repo15',
         '  "src/repo15": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_15",',
+        '    "url": "' + self.git_base + 'repo_15",',
         '  },',
         '',
         '  # src -> src/repo16',
         '  "src/repo16": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_16",',
+        '    "url": "' + self.git_base + 'repo_16",',
         '  },',
         '',
         '  # src -> src/repo2',

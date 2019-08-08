@@ -34,7 +34,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   }
 
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
-  MOCK_METHOD1(StartWizard, void(OobeScreen));
+  MOCK_METHOD1(StartWizard, void(OobeScreenId));
   MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));
 
@@ -51,12 +51,10 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD3(StartAppLaunch, void(const std::string&, bool, bool));
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
   MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
-  MOCK_METHOD2(ShowGaiaDialog,
-               void(bool can_close,
-                    const base::Optional<AccountId>& prefilled_account));
+  MOCK_METHOD2(ShowGaiaDialog, void(bool, const AccountId&));
   MOCK_METHOD0(HideOobeDialog, void());
-  MOCK_METHOD2(UpdateOobeDialogSize, void(int width, int height));
-  MOCK_METHOD1(UpdateOobeDialogState, void(ash::mojom::OobeDialogState state));
+  MOCK_METHOD2(UpdateOobeDialogSize, void(int, int));
+  MOCK_METHOD1(UpdateOobeDialogState, void(ash::OobeDialogState state));
   MOCK_METHOD0(GetUsers, const user_manager::UserList(void));
 
   MOCK_METHOD1(CompleteLogin, void(const UserContext&));

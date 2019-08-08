@@ -55,6 +55,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -344,7 +345,7 @@ class MojoAsyncResourceHandlerTestBase {
 
   virtual ~MojoAsyncResourceHandlerTestBase() {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(
-        MojoAsyncResourceHandler::kDefaultAllocationSize);
+        network::kDataPipeDefaultAllocationSize);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1368,9 +1369,9 @@ TEST_F(MojoAsyncResourceHandlerDeferOnResponseStartedTest,
     MockResourceLoader::Status result = mock_loader_->OnResponseStarted(
         base::MakeRefCounted<network::ResourceResponse>());
     EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING, result);
-    std::unique_ptr<base::Value> request_state = request_->GetStateAsValue();
+    base::Value request_state = request_->GetStateAsValue();
     base::Value* delegate_blocked_by =
-        request_state->FindKey("delegate_blocked_by");
+        request_state.FindKey("delegate_blocked_by");
     EXPECT_TRUE(delegate_blocked_by);
     EXPECT_EQ("MojoAsyncResourceHandler", delegate_blocked_by->GetString());
   }
@@ -1381,9 +1382,9 @@ TEST_F(MojoAsyncResourceHandlerDeferOnResponseStartedTest,
     handler_->ProceedWithResponse();
     mock_loader_->WaitUntilIdleOrCanceled();
     EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
-    std::unique_ptr<base::Value> request_state = request_->GetStateAsValue();
+    base::Value request_state = request_->GetStateAsValue();
     base::Value* delegate_blocked_by =
-        request_state->FindKey("delegate_blocked_by");
+        request_state.FindKey("delegate_blocked_by");
     EXPECT_FALSE(delegate_blocked_by);
   }
 }

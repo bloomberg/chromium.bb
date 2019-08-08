@@ -23,6 +23,9 @@
 // Asks the delegate to present the InfobarModal for this InfobarBanner.
 - (void)presentInfobarModalFromBanner;
 
+// Informs the delegate that the banner has been dismissed.
+- (void)infobarBannerWasDismissed;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_BANNERS_INFOBAR_BANNER_DELEGATE_H_

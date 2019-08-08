@@ -63,7 +63,6 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
 
   static void SetIsLowEndDeviceForTesting(bool);
 
-  void ClearMemory();
   static void ClearThreadSpecificMemory();
 
   static bool is_low_end_device_;

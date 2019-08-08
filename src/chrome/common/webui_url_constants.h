@@ -9,7 +9,9 @@
 #define CHROME_COMMON_WEBUI_URL_CONSTANTS_H_
 
 #include <stddef.h>
+#include <string>
 
+#include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/common/url_constants.h"
@@ -73,6 +75,7 @@ extern const char kChromeUIExtensionsInternalsHost[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFaviconHost[];
 extern const char kChromeUIFaviconURL[];
+extern const char kChromeUIFileiconURL[];
 extern const char kChromeUIFlagsHost[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIGCMInternalsHost[];
@@ -80,6 +83,7 @@ extern const char kChromeUIHangUIHost[];
 extern const char kChromeUIHelpHost[];
 extern const char kChromeUIHelpURL[];
 extern const char kChromeUIHistoryHost[];
+extern const char kChromeUIHistorySyncedTabs[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIIdentityInternalsHost[];
 extern const char kChromeUIInspectHost[];
@@ -162,8 +166,6 @@ extern const char kChromeUIUsbInternalsHost[];
 extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIVersionURL[];
-extern const char kChromeUIPasswordChangeHost[];
-extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
 extern const char kChromeUIWelcomeWin10Host[];
@@ -171,7 +173,6 @@ extern const char kChromeUIWelcomeWin10URL[];
 
 #if defined(OS_ANDROID)
 extern const char kChromeUIExploreSitesInternalsHost[];
-extern const char kChromeUIEocInternalsHost[];
 extern const char kChromeUIJavaCrashURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativeExploreURL[];
@@ -185,9 +186,19 @@ extern const char kChromeUIWebApksHost[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+// NOTE: If you add a URL/host please check if it should be added to
+// IsSystemWebUIHost().
 extern const char kChromeUIAccountManagerWelcomeHost[];
 extern const char kChromeUIAccountManagerWelcomeURL[];
+extern const char kChromeUIAccountMigrationWelcomeHost[];
+extern const char kChromeUIAccountMigrationWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
+extern const char kChromeUIAddSupervisionHost[];
+extern const char kChromeUIAddSupervisionURL[];
+extern const char kChromeUIArcGraphicsTracingHost[];
+extern const char kChromeUIArcGraphicsTracingURL[];
+extern const char kChromeUIAssistantOptInHost[];
+extern const char kChromeUIAssistantOptInURL[];
 extern const char kChromeUIBluetoothPairingHost[];
 extern const char kChromeUIBluetoothPairingURL[];
 extern const char kChromeUICellularSetupHost[];
@@ -205,6 +216,7 @@ extern const char kChromeUIInternetConfigDialogHost[];
 extern const char kChromeUIInternetDetailDialogHost[];
 extern const char kChromeUILinuxCreditsHost[];
 extern const char kChromeUILinuxCreditsURL[];
+extern const char kChromeUIMachineLearningInternalsHost[];
 extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUIMobileSetupURL[];
 extern const char kChromeUIMultiDeviceSetupHost[];
@@ -216,6 +228,8 @@ extern const char kChromeUIOSSettingsHost[];
 extern const char kChromeUIOSSettingsURL[];
 extern const char kChromeUIOobeHost[];
 extern const char kChromeUIOobeURL[];
+extern const char kChromeUIPasswordChangeHost[];
+extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIPowerHost[];
 extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUIScreenlockIconURL[];
@@ -231,10 +245,12 @@ extern const char kChromeUISmbShareURL[];
 extern const char kChromeUISysInternalsHost[];
 extern const char kChromeUIUserImageHost[];
 extern const char kChromeUIUserImageURL[];
-extern const char kChromeUIAssistantOptInHost[];
-extern const char kChromeUIAssistantOptInURL[];
-extern const char kChromeUIArcGraphicsTracingHost[];
-extern const char kChromeUIArcGraphicsTracingURL[];
+
+// Returns true if this web UI is part of the "system UI". Generally this is
+// UI that opens in a window (not a browser tab) and that on other operating
+// systems would be considered part of the OS or window manager.
+bool IsSystemWebUIHost(base::StringPiece host);
+
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -303,6 +319,7 @@ extern const char kTriggeredResetProfileSettingsSubPage[];
 #if defined(OS_CHROMEOS)
 // Entry points for OS settings sub-pages.
 extern const char kAccessibilitySubPage[];
+extern const char kAccountManagerSubPage[];
 extern const char kAndroidAppsDetailsSubPage[];
 extern const char kAssistantSubPage[];
 extern const char kBluetoothSubPage[];
@@ -313,11 +330,14 @@ extern const char kHelpSubPage[];
 extern const char kInternetSubPage[];
 extern const char kConnectedDevicesSubPage[];
 extern const char kLockScreenSubPage[];
+extern const char kNativePrintingSettingsSubPage[];
 extern const char kNetworkDetailSubPage[];
+extern const char kNetworksSubPage[];
+extern const char kPluginVmDetailsSubPage[];
+extern const char kPluginVmSharedPathSubPage[];
 extern const char kPowerSubPage[];
 extern const char kSmartLockSettingsSubPage[];
-extern const char kSmbSharesPage[];
-extern const char kSmbSharesPageAddDialog[];
+extern const char kSmbSharesSubPage[];
 extern const char kStorageSubPage[];
 extern const char kStylusSubPage[];
 extern const char kTetherSettingsSubPage[];

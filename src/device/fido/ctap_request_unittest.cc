@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/cbor/reader.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -19,7 +20,7 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
 TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   PublicKeyCredentialRpEntity rp("acme.com");
-  rp.SetRpName("Acme");
+  rp.name = "Acme";
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));
@@ -31,10 +32,11 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, 7},
                                  {CredentialType::kPublicKey, 257}}));
+  make_credential_param.resident_key_required = true;
+  make_credential_param.user_verification =
+      UserVerificationRequirement::kRequired;
   auto serialized_data = MockFidoDevice::EncodeCBORRequest(
-      make_credential_param.SetResidentKeyRequired(true)
-          .SetUserVerification(UserVerificationRequirement::kRequired)
-          .EncodeAsCBOR());
+      AsCTAPRequestValuePair(make_credential_param));
   EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(
                                    test_data::kCtapMakeCredentialRequest));
 }
@@ -60,12 +62,12 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03}));
 
-  get_assertion_req.SetAllowList(std::move(allowed_list))
-      .SetUserPresenceRequired(false)
-      .SetUserVerification(UserVerificationRequirement::kRequired);
+  get_assertion_req.allow_list = std::move(allowed_list);
+  get_assertion_req.user_presence_required = false;
+  get_assertion_req.user_verification = UserVerificationRequirement::kRequired;
 
-  auto serialized_data =
-      MockFidoDevice::EncodeCBORRequest(get_assertion_req.EncodeAsCBOR());
+  auto serialized_data = MockFidoDevice::EncodeCBORRequest(
+      AsCTAPRequestValuePair(get_assertion_req));
   EXPECT_THAT(serialized_data,
               ::testing::ElementsAreArray(
                   test_data::kTestComplexCtapGetAssertionRequest));
@@ -85,38 +87,40 @@ TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
 }
 
 TEST(VirtualCtap2DeviceTest, ParseMakeCredentialRequestForVirtualCtapKey) {
-  const auto request_and_hash = ParseCtapMakeCredentialRequest(
+  const auto& cbor_request = cbor::Reader::Read(
       base::make_span(test_data::kCtapMakeCredentialRequest).subspan(1));
+  ASSERT_TRUE(cbor_request);
+  ASSERT_TRUE(cbor_request->is_map());
+  const auto request_and_hash =
+      ParseCtapMakeCredentialRequest(cbor_request->GetMap());
   ASSERT_TRUE(request_and_hash);
   auto request = std::get<0>(*request_and_hash);
   auto client_data_hash = std::get<1>(*request_and_hash);
   EXPECT_THAT(client_data_hash,
               ::testing::ElementsAreArray(test_data::kClientDataHash));
-  EXPECT_EQ(test_data::kRelyingPartyId, request.rp().rp_id());
-  EXPECT_EQ("Acme", request.rp().rp_name());
-  EXPECT_THAT(request.user().id,
-              ::testing::ElementsAreArray(test_data::kUserId));
-  ASSERT_TRUE(request.user().name);
-  EXPECT_EQ("johnpsmith@example.com", *request.user().name);
-  ASSERT_TRUE(request.user().display_name);
-  EXPECT_EQ("John P. Smith", *request.user().display_name);
-  ASSERT_TRUE(request.user().icon_url);
+  EXPECT_EQ(test_data::kRelyingPartyId, request.rp.id);
+  EXPECT_EQ("Acme", request.rp.name);
+  EXPECT_THAT(request.user.id, ::testing::ElementsAreArray(test_data::kUserId));
+  ASSERT_TRUE(request.user.name);
+  EXPECT_EQ("johnpsmith@example.com", *request.user.name);
+  ASSERT_TRUE(request.user.display_name);
+  EXPECT_EQ("John P. Smith", *request.user.display_name);
+  ASSERT_TRUE(request.user.icon_url);
   EXPECT_EQ("https://pics.acme.com/00/p/aBjjjpqPb.png",
-            request.user().icon_url->spec());
-  ASSERT_EQ(2u, request.public_key_credential_params()
-                    .public_key_credential_params()
-                    .size());
-  EXPECT_EQ(7, request.public_key_credential_params()
-                   .public_key_credential_params()
-                   .at(0)
-                   .algorithm);
-  EXPECT_EQ(257, request.public_key_credential_params()
-                     .public_key_credential_params()
-                     .at(1)
-                     .algorithm);
-  EXPECT_EQ(UserVerificationRequirement::kRequired,
-            request.user_verification());
-  EXPECT_TRUE(request.resident_key_required());
+            request.user.icon_url->spec());
+  ASSERT_EQ(2u,
+            request.public_key_credential_params.public_key_credential_params()
+                .size());
+  EXPECT_EQ(7,
+            request.public_key_credential_params.public_key_credential_params()
+                .at(0)
+                .algorithm);
+  EXPECT_EQ(257,
+            request.public_key_credential_params.public_key_credential_params()
+                .at(1)
+                .algorithm);
+  EXPECT_EQ(UserVerificationRequirement::kRequired, request.user_verification);
+  EXPECT_TRUE(request.resident_key_required);
 }
 
 TEST(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
@@ -134,24 +138,26 @@ TEST(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
       0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
       0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 
-  auto request_and_hash = ParseCtapGetAssertionRequest(
+  const auto& cbor_request = cbor::Reader::Read(
       base::make_span(test_data::kTestComplexCtapGetAssertionRequest)
           .subspan(1));
+  ASSERT_TRUE(cbor_request);
+  ASSERT_TRUE(cbor_request->is_map());
+
+  auto request_and_hash = ParseCtapGetAssertionRequest(cbor_request->GetMap());
   ASSERT_TRUE(request_and_hash);
   auto request = std::get<0>(*request_and_hash);
   auto client_data_hash = std::get<1>(*request_and_hash);
   EXPECT_THAT(client_data_hash,
               ::testing::ElementsAreArray(test_data::kClientDataHash));
-  EXPECT_EQ(test_data::kRelyingPartyId, request.rp_id());
-  EXPECT_EQ(UserVerificationRequirement::kRequired,
-            request.user_verification());
-  EXPECT_FALSE(request.user_presence_required());
-  ASSERT_TRUE(request.allow_list());
-  ASSERT_EQ(2u, request.allow_list()->size());
+  EXPECT_EQ(test_data::kRelyingPartyId, request.rp_id);
+  EXPECT_EQ(UserVerificationRequirement::kRequired, request.user_verification);
+  EXPECT_FALSE(request.user_presence_required);
+  ASSERT_EQ(2u, request.allow_list.size());
 
-  EXPECT_THAT(request.allow_list()->at(0).id(),
+  EXPECT_THAT(request.allow_list.at(0).id(),
               ::testing::ElementsAreArray(kAllowedCredentialOne));
-  EXPECT_THAT(request.allow_list()->at(1).id(),
+  EXPECT_THAT(request.allow_list.at(1).id(),
               ::testing::ElementsAreArray(kAllowedCredentialTwo));
 }
 }  // namespace device

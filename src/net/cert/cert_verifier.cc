@@ -33,11 +33,13 @@ CertVerifier::RequestParams::RequestParams(
     scoped_refptr<X509Certificate> certificate,
     const std::string& hostname,
     int flags,
-    const std::string& ocsp_response)
+    const std::string& ocsp_response,
+    const std::string& sct_list)
     : certificate_(std::move(certificate)),
       hostname_(hostname),
       flags_(flags),
-      ocsp_response_(ocsp_response) {
+      ocsp_response_(ocsp_response),
+      sct_list_(sct_list) {
   // For efficiency sake, rather than compare all of the fields for each
   // comparison, compute a hash of their values. This is done directly in
   // this class, rather than as an overloaded hash operator, for efficiency's
@@ -53,6 +55,7 @@ CertVerifier::RequestParams::RequestParams(
   SHA256_Update(&ctx, hostname_.data(), hostname.size());
   SHA256_Update(&ctx, &flags, sizeof(flags));
   SHA256_Update(&ctx, ocsp_response.data(), ocsp_response.size());
+  SHA256_Update(&ctx, sct_list.data(), sct_list.size());
   SHA256_Final(reinterpret_cast<uint8_t*>(
                    base::WriteInto(&key_, SHA256_DIGEST_LENGTH + 1)),
                &ctx);
@@ -72,14 +75,16 @@ bool CertVerifier::RequestParams::operator<(
   return key_ < other.key_;
 }
 
-std::unique_ptr<CertVerifier> CertVerifier::CreateDefault() {
+// static
+std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
   return std::unique_ptr<CertVerifier>();
 #else
   return std::make_unique<CachingCertVerifier>(
       std::make_unique<MultiThreadedCertVerifier>(
-          CertVerifyProc::CreateDefault()));
+          CertVerifyProc::CreateDefault(std::move(cert_net_fetcher))));
 #endif
 }
 

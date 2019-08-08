@@ -172,10 +172,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
-  // Used by Web Animations CSS. Sets the color styles.
-  friend class AnimatedStyleBuilder;
-  // Used by Web Animations CSS. Gets visited and unvisited colors separately.
-  friend class CSSAnimatableValueFactory;
   // Used by CSS animations. We can't allow them to animate based off visited
   // colors.
   friend class CSSPropertyEquality;
@@ -1142,32 +1138,21 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT StyleNonInheritedVariables* NonInheritedVariables() const;
 
-  void SetVariable(const AtomicString&,
-                   scoped_refptr<CSSVariableData>,
-                   bool is_inherited_property);
-
-  void SetRegisteredVariable(const AtomicString&,
-                             const CSSValue*,
-                             bool is_inherited_property);
-
-  void RemoveVariable(const AtomicString&, bool is_inherited_property);
+  CORE_EXPORT void SetVariableData(const AtomicString&,
+                                   scoped_refptr<CSSVariableData>,
+                                   bool is_inherited_property);
+  CORE_EXPORT void SetVariableValue(const AtomicString&,
+                                    const CSSValue*,
+                                    bool is_inherited_property);
 
   // Handles both inherited and non-inherited variables
-  CORE_EXPORT CSSVariableData* GetVariable(const AtomicString&) const;
+  CORE_EXPORT CSSVariableData* GetVariableData(const AtomicString&) const;
+  CSSVariableData* GetVariableData(const AtomicString&,
+                                   bool is_inherited_property) const;
 
-  CSSVariableData* GetVariable(const AtomicString&,
-                               bool is_inherited_property) const;
-
-  const CSSValue* GetRegisteredVariable(const AtomicString&,
-                                        bool is_inherited_property) const;
-
-  const CSSValue* GetRegisteredVariable(const AtomicString&) const;
-
-  // Like GetRegisteredVariable, but returns nullptr if the computed value
-  // for the specified variable is the initial value.
-  const CSSValue* GetNonInitialRegisteredVariable(
-      const AtomicString&,
-      bool is_inherited_property) const;
+  const CSSValue* GetVariableValue(const AtomicString&) const;
+  const CSSValue* GetVariableValue(const AtomicString&,
+                                   bool is_inherited_property) const;
 
   // Animations.
   CSSAnimationData& AccessAnimations();
@@ -1951,7 +1936,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool ContainsStyle() const { return Contain() & kContainsStyle; }
   bool ContainsLayout() const { return Contain() & kContainsLayout; }
   bool ContainsSize() const { return Contain() & kContainsSize; }
-  bool ContainsContent() const { return Contain() & kContainsContent; }
 
   // Display utility functions.
   bool IsDisplayReplacedType() const {
@@ -2336,7 +2320,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
 
-  ColorScheme GetColorScheme() const {
+  enum ColorScheme UsedColorScheme() const {
     return DarkColorScheme() ? ColorScheme::kDark : ColorScheme::kLight;
   }
 
@@ -2594,8 +2578,8 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool PropertiesEqual(const Vector<CSSPropertyID>& properties,
                        const ComputedStyle& other) const;
-  bool CustomPropertiesEqual(const Vector<AtomicString>& properties,
-                             const ComputedStyle& other) const;
+  CORE_EXPORT bool CustomPropertiesEqual(const Vector<AtomicString>& properties,
+                                         const ComputedStyle& other) const;
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 
@@ -2676,6 +2660,8 @@ class ComputedStyle : public ComputedStyleBase,
       UpdatePropertySpecificDifferencesCompositingReasonsContainsPaint);
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest,
                            UpdatePropertySpecificDifferencesHasAlpha);
+  FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Values);
+  FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Data);
 };
 
 inline bool ComputedStyle::SetEffectiveZoom(float f) {

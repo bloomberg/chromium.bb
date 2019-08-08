@@ -44,11 +44,6 @@ from devil.android.tools import script_common  # pylint: disable=import-error
 from devil.android.tools import system_app  # pylint: disable=import-error
 from devil.utils import logging_common  # pylint: disable=import-error
 
-WEBVIEW_SYSTEM_IMAGE_PATHS = [
-    '/system/app/webview/webview.apk',
-    '/system/app/WebViewGoogle/WebViewGoogle.apk',
-    '/system/app/WebViewStub/WebViewStub.apk'
-]
 WEBVIEW_PACKAGES = ['com.android.webview', 'com.google.android.webview']
 
 
@@ -67,14 +62,13 @@ def UninstallWebViewUpdates(device):
   """Uninstalls updates for WebView packages, if updates exist."""
   print('Uninstalling updates from %s...' % device.serial)
   for webview_package in WEBVIEW_PACKAGES:
-    paths = device.GetApplicationPaths(webview_package)
-    if not paths:
-      continue  # Package isn't installed, nothing to do
-    if set(paths) <= set(WEBVIEW_SYSTEM_IMAGE_PATHS):
-      # If we only have preinstalled paths, don't try to uninstall updates
-      # (necessary, otherwise we will raise an exception on some devices).
-      continue
-    device.Uninstall(webview_package)
+    try:
+      device.Uninstall(webview_package)
+    except device_errors.AdbCommandFailedError:
+      # This can happen if the app is on the system image but there are no
+      # updates installed on top of that.
+      logging.info('No update to uninstall for %s on %s', webview_package,
+                   device.serial)
 
 
 def CheckWebViewIsUninstalled(device):

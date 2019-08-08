@@ -43,7 +43,7 @@ declare_args() {
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
 
-  enable_service_discovery = (enable_mdns && !is_android && !is_ios) || is_mac
+  enable_service_discovery = (enable_mdns && !is_android) || is_mac
 
   # Enables use of the session service, which is enabled by default.
   # Android stores them separately on the Java side.
@@ -66,13 +66,6 @@ declare_args() {
   pgo_build = chrome_pgo_phase > 0
 
   # optimize_webui was moved to ui/base/ui_features.gni
-
-  if (is_mac) {
-    # Restructures the macOS bundle layout so that the Framework goes in
-    # Chromium.app/Contents/Frameworks rather than
-    # Chromium.app/Contents/Versions. https://crbug.com/958976
-    new_mac_bundle_structure = true
-  }
 }
 
 # Use brlapi from brltty for braille display support.

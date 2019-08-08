@@ -98,8 +98,7 @@
 
       <iron-collapse opened="{{opened}}" id="collapse">
         <div id="tab-item-list">
-          <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list"
-              notify-dom-change>
+          <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
             <div class="item-container">
               <a href="[[tab.url]]" class="website-link" title="[[tab.title]]"
                   on-click="openTab_" on-contextmenu="onLinkRightClick_">

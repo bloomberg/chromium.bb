@@ -35,9 +35,14 @@ from tracing.value import histogram_set
 from tracing.value.diagnostics import all_diagnostics
 from tracing.value.diagnostics import reserved_infos
 
+_TEN_MINUTES = 60*10
+
+
 def _ComputeMetricsInPool((run, trace_value)):
+  story_name = run.story.name
   try:
-    assert not trace_value.is_serialized, "TraceValue should not be serialized."
+    assert not trace_value.is_serialized, (
+        "%s: TraceValue should not be serialized." % story_name)
     retvalue = {
         'run': run,
         'fail': [],
@@ -48,27 +53,34 @@ def _ComputeMetricsInPool((run, trace_value)):
         'trackDetailedModelStats': True
     }
 
+    logging.info('%s: Serializing trace.', story_name)
     trace_value.SerializeTraceData()
     trace_size_in_mib = os.path.getsize(trace_value.filename) / (2 ** 20)
     # Bails out on trace that are too big. See crbug.com/812631 for more
     # details.
     if trace_size_in_mib > 400:
       retvalue['fail'].append(
-          'Trace size is too big: %s MiB' % trace_size_in_mib)
+          '%s: Trace size is too big: %s MiB' % (story_name, trace_size_in_mib))
       return retvalue
 
-    logging.info('Starting to compute metrics on trace')
+    logging.info('%s: Starting to compute metrics on trace.', story_name)
     start = time.time()
-    mre_result = metric_runner.RunMetric(
+    # This timeout needs to be coordinated with the Swarming IO timeout for the
+    # task that runs this code. If this timeout is longer or close in length
+    # to the swarming IO timeout then we risk being forcibly killed for not
+    # producing any output. Note that this could be fixed by periodically
+    # outputing logs while waiting for metrics to be calculated.
+    timeout = _TEN_MINUTES
+    mre_result = metric_runner.RunMetricOnSingleTrace(
         trace_value.filename, trace_value.timeline_based_metric,
-        extra_import_options, report_progress=False,
-        canonical_url=trace_value.trace_url)
-    logging.info('Processing resulting traces took %.3f seconds' % (
-        time.time() - start))
+        extra_import_options, canonical_url=trace_value.trace_url,
+        timeout=timeout)
+    logging.info('%s: Computing metrics took %.3f seconds.' % (
+        story_name, time.time() - start))
 
     if mre_result.failures:
       for f in mre_result.failures:
-        retvalue['fail'].append(f.stack)
+        retvalue['fail'].append('%s: %s' % (story_name, str(f)))
 
     histogram_dicts = mre_result.pairs.get('histograms', [])
     retvalue['histogram_dicts'] = histogram_dicts
@@ -83,6 +95,7 @@ def _ComputeMetricsInPool((run, trace_value)):
     # logging exception here is the only way to get a stack trace since
     # multiprocessing's pool implementation does not save that data. See
     # crbug.com/953365.
+    logging.error('%s: Exception while calculating metric', story_name)
     logging.exception(e)
     raise
 
@@ -301,8 +314,8 @@ class TelemetryInfo(object):
 
 class PageTestResults(object):
   def __init__(self, output_formatters=None,
-               progress_reporter=None, trace_tag='', output_dir=None,
-               should_add_value=lambda v, is_first: True,
+               progress_reporter=None, output_dir=None,
+               should_add_value=None,
                benchmark_enabled=True, upload_bucket=None,
                artifact_results=None, benchmark_metadata=None):
     """
@@ -312,8 +325,6 @@ class PageTestResults(object):
           as CsvPivotTableOutputFormatter, which output the test results as CSV.
       progress_reporter: An instance of progress_reporter.ProgressReporter,
           to be used to output test status/results progressively.
-      trace_tag: A string to append to the buildbot trace name. Currently only
-          used for buildbot.
       output_dir: A string specified the directory where to store the test
           artifacts, e.g: trace, videos,...
       should_add_value: A function that takes two arguments: a value name and
@@ -325,17 +336,17 @@ class PageTestResults(object):
       benchmark_metadata: A benchmark.BenchmarkMetadata object. This is used in
           the chart JSON output formatter.
     """
-    # TODO(chrishenry): Figure out if trace_tag is still necessary.
-
     super(PageTestResults, self).__init__()
     self._progress_reporter = (
         progress_reporter if progress_reporter is not None
         else reporter_module.ProgressReporter())
     self._output_formatters = (
         output_formatters if output_formatters is not None else [])
-    self._trace_tag = trace_tag
     self._output_dir = output_dir
-    self._should_add_value = should_add_value
+    if should_add_value is not None:
+      self._should_add_value = should_add_value
+    else:
+      self._should_add_value = lambda v, is_first: True
 
     self._current_page_run = None
     self._all_page_runs = []
@@ -463,6 +474,10 @@ class PageTestResults(object):
     return failed_pages
 
   @property
+  def had_successes_not_skipped(self):
+    return bool(self.pages_that_succeeded_and_not_skipped)
+
+  @property
   def had_failures(self):
     return any(run.failed for run in self.all_page_runs)
 
@@ -550,15 +565,17 @@ class PageTestResults(object):
       try:
         return multiprocessing.cpu_count()
       except NotImplementedError:
-        # Some platforms can raise a NotImplementedError from cpu_count(). Use a
-        # small number of threads in that case.
-        return 10
+        # Some platforms can raise a NotImplementedError from cpu_count()
+        logging.warn('cpu_count() not implemented.')
+        return 8
 
     runs_and_values = self._FindRunsAndValuesWithTimelineBasedMetrics()
     if not runs_and_values:
       return
 
-    threads_count = min(_GetCpuCount(), len(runs_and_values))
+    # Note that this is speculatively halved as an attempt to fix
+    # crbug.com/953365.
+    threads_count = min(_GetCpuCount()/2 or 1, len(runs_and_values))
     pool = ThreadPool(threads_count)
     try:
       for result in pool.imap_unordered(_ComputeMetricsInPool,
@@ -668,7 +685,8 @@ class PageTestResults(object):
     # TODO(#4258): Relax this assertion.
     assert self._current_page_run, 'Not currently running test.'
     if isinstance(failure, basestring):
-      failure_str = 'Failure recorded: %s' % failure
+      failure_str = 'Failure recorded for page %s: %s' % (
+          self._current_page_run.story.name, failure)
     else:
       failure_str = ''.join(traceback.format_exception(*failure))
     logging.error(failure_str)

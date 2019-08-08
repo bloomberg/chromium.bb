@@ -42,7 +42,7 @@
       .dispatchEventToListeners(
           Security.SecurityModel.Events.SecurityStateChanged,
           new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Secure, true, explanations, null));
+              Protocol.Security.SecurityState.Secure, explanations, null));
 
   var request = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   SecurityTestRunner.dispatchRequestFinished(request);

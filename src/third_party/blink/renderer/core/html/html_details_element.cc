@@ -37,22 +37,17 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
 using namespace html_names;
 
-HTMLDetailsElement* HTMLDetailsElement::Create(Document& document) {
-  HTMLDetailsElement* details =
-      MakeGarbageCollected<HTMLDetailsElement>(document);
-  details->EnsureUserAgentShadowRoot();
-  return details;
-}
-
 HTMLDetailsElement::HTMLDetailsElement(Document& document)
     : HTMLElement(kDetailsTag, document), is_open_(false) {
   UseCounter::Count(document, WebFeature::kDetailsElement);
+  EnsureUserAgentShadowRoot();
 }
 
 HTMLDetailsElement::~HTMLDetailsElement() = default;
@@ -77,8 +72,8 @@ LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle& style,
 }
 
 void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
-  HTMLSummaryElement* default_summary =
-      HTMLSummaryElement::Create(GetDocument());
+  auto* default_summary =
+      MakeGarbageCollected<HTMLSummaryElement>(GetDocument());
   default_summary->AppendChild(
       Text::Create(GetDocument(),
                    GetLocale().QueryString(WebLocalizedString::kDetailsLabel)));
@@ -89,7 +84,7 @@ void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   summary_slot->AppendChild(default_summary);
   root.AppendChild(summary_slot);
 
-  HTMLDivElement* content = HTMLDivElement::Create(GetDocument());
+  auto* content = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   content->SetIdAttribute(shadow_element_names::DetailsContent());
   content->AppendChild(
       HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
@@ -102,8 +97,9 @@ Element* HTMLDetailsElement::FindMainSummary() const {
           Traversal<HTMLSummaryElement>::FirstChild(*this))
     return summary;
 
-  HTMLSlotElement* slot =
-      ToHTMLSlotElementOrDie(UserAgentShadowRoot()->firstChild());
+  auto* element = UserAgentShadowRoot()->firstChild();
+  CHECK(!element || IsA<HTMLSlotElement>(element));
+  HTMLSlotElement* slot = To<HTMLSlotElement>(element);
   DCHECK(slot->firstChild());
   CHECK(IsHTMLSummaryElement(*slot->firstChild()));
   return ToElement(slot->firstChild());

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -105,10 +104,7 @@ void FeedbackUploader::OnReportUploadFailure(bool should_retry) {
     retry_delay_ *= 2;
     report_being_dispatched_->set_upload_at(retry_delay_ + base::Time::Now());
     reports_queue_.emplace(report_being_dispatched_);
-    VLOG(1) << "Report upload failed. Will retry again after "
-            << retry_delay_.InSeconds() << " seconds.";
   } else {
-    VLOG(1) << "Report upload failed. Will discard.";
     // The report won't be retried, hence explicitly delete its file on disk.
     report_being_dispatched_->DeleteReportOnDisk();
   }
@@ -132,7 +128,6 @@ void FeedbackUploader::AppendExtraHeadersToUploadRequest(
     network::ResourceRequest* resource_request) {}
 
 void FeedbackUploader::DispatchReport() {
-  VLOG(1) << "Uploading report.";
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("chrome_feedback_report_app", R"(
         semantics {
@@ -164,8 +159,7 @@ void FeedbackUploader::DispatchReport() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = feedback_post_url_;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
 
   // Tell feedback server about the variation state of this install.
@@ -185,9 +179,6 @@ void FeedbackUploader::DispatchReport() {
                                            kProtoBufMimeType);
   auto it = uploads_in_progress_.insert(uploads_in_progress_.begin(),
                                         std::move(simple_url_loader));
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER
   simple_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&FeedbackUploader::OnDispatchComplete,
@@ -260,7 +251,6 @@ void FeedbackUploader::UpdateUploadTimer() {
 
 void FeedbackUploader::QueueReportWithDelay(std::unique_ptr<std::string> data,
                                             base::TimeDelta delay) {
-  VLOG(1) << "Queuing report with delay = " << delay.InSeconds() << " seconds.";
   reports_queue_.emplace(base::MakeRefCounted<FeedbackReport>(
       feedback_reports_path_, base::Time::Now() + delay, std::move(data),
       task_runner_));

@@ -42,7 +42,7 @@ void CastScreen::OnDisplayChanged(int64_t display_id,
   display::Display display(display_id);
   display.SetScaleAndBounds(device_scale_factor, bounds);
   display.set_rotation(rotation);
-  VLOG(1) << __func__ << " " << display.ToString();
+  DVLOG(1) << __func__ << " " << display.ToString();
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 

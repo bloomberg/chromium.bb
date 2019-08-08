@@ -11,7 +11,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.util.AttributeSet;
@@ -47,6 +46,8 @@ import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansio
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
 
@@ -111,19 +112,23 @@ public abstract class ToolbarLayout
      * Initialize the external dependencies required for view interaction.
      * @param toolbarDataProvider The provider for toolbar data.
      * @param tabController       The controller that handles interactions with the tab.
-     * @param appMenuButtonHelper The helper for managing menu button interactions.
      */
-    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
-            AppMenuButtonHelper appMenuButtonHelper) {
+    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController) {
         mToolbarDataProvider = toolbarDataProvider;
         mToolbarTabController = tabController;
+    }
+
+    /**
+     * @param appMenuButtonHelper The helper for managing menu button interactions.
+     */
+    void setAppMenuButtonHelper(AppMenuButtonHelper appMenuButtonHelper) {
         if (mMenuButtonWrapper != null) {
             mMenuButtonWrapper.setAppMenuButtonHelper(appMenuButtonHelper);
         } else {
             final ImageButton menuButton = getMenuButton();
             if (menuButton != null) {
                 menuButton.setOnTouchListener(appMenuButtonHelper);
-                menuButton.setAccessibilityDelegate(appMenuButtonHelper);
+                menuButton.setAccessibilityDelegate(appMenuButtonHelper.getAccessibilityDelegate());
             }
         }
     }
@@ -137,6 +142,8 @@ public abstract class ToolbarLayout
             mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider = null;
         }
+
+        getLocationBar().destroy();
     }
 
     /**
@@ -226,6 +233,16 @@ public abstract class ToolbarLayout
         mToolbarDataProvider = new ToolbarDataProvider() {
             @Override
             public boolean isIncognito() {
+                return false;
+            }
+
+            @Override
+            public boolean isInOverviewAndShowingOmnibox() {
+                return false;
+            }
+
+            @Override
+            public boolean shouldShowLocationBarInOverviewMode() {
                 return false;
             }
 
@@ -836,24 +853,48 @@ public abstract class ToolbarLayout
     /**
      * Enable the experimental toolbar button.
      * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param drawableResId The resource id of the drawable to display for the button.
+     * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
      */
-    void enableExperimentalButton(OnClickListener onClickListener, @DrawableRes int drawableResId,
+    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {}
 
     /**
-     * @return The experimental toolbar button if it exists.
+     * Updates image displayed on experimental button.
      */
-    @Nullable
-    View getExperimentalButtonView() {
-        return null;
-    }
+    void updateExperimentalButtonImage(Drawable image) {}
 
     /**
      * Disable the experimental toolbar button.
      */
     void disableExperimentalButton() {}
+
+    /**
+     * @return Experimental button view.
+     */
+    View getExperimentalButtonView() {
+        return null;
+    }
+
+    /**
+     * Displays in-product help for experimental button.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
+     */
+    void showIPHOnExperimentalButton(@StringRes int stringId, @StringRes int accessibilityStringId,
+            Runnable dismissedCallback) {
+        View experimentalButton = getExperimentalButtonView();
+        TextBubble textBubble = new TextBubble(getContext(), experimentalButton, stringId,
+                accessibilityStringId, experimentalButton);
+        textBubble.setDismissOnTouchInteraction(true);
+        ViewHighlighter.turnOnHighlight(experimentalButton, true);
+        textBubble.addOnDismissListener(() -> {
+            ViewHighlighter.turnOffHighlight(experimentalButton);
+            dismissedCallback.run();
+        });
+        textBubble.show();
+    }
 
     /**
      * Sets the menu button's background depending on whether or not we are highlighting and whether

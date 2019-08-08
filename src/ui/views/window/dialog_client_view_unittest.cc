@@ -190,8 +190,8 @@ TEST_F(DialogClientViewTest, UpdateButtons) {
 
   // Update to use both buttons.
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  EXPECT_TRUE(client_view()->ok_button()->is_default());
-  EXPECT_FALSE(client_view()->cancel_button()->is_default());
+  EXPECT_TRUE(client_view()->ok_button()->GetIsDefault());
+  EXPECT_FALSE(client_view()->cancel_button()->GetIsDefault());
   const int height_with_buttons = GetUpdatedClientBounds().height();
   EXPECT_GT(height_with_buttons, height_without_buttons);
 
@@ -203,14 +203,14 @@ TEST_F(DialogClientViewTest, UpdateButtons) {
 
   // Reset with just an ok button.
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
-  EXPECT_TRUE(client_view()->ok_button()->is_default());
+  EXPECT_TRUE(client_view()->ok_button()->GetIsDefault());
   EXPECT_EQ(nullptr, client_view()->cancel_button());
   EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
 
   // Reset with just a cancel button.
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
   EXPECT_EQ(nullptr, client_view()->ok_button());
-  EXPECT_EQ(client_view()->cancel_button()->is_default(),
+  EXPECT_EQ(client_view()->cancel_button()->GetIsDefault(),
             PlatformStyle::kDialogDefaultButtonCanBeCancel);
   EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
 }
@@ -225,8 +225,8 @@ TEST_F(DialogClientViewTest, RemoveAndUpdateButtons) {
 
   // Updating should restore the requested buttons properly.
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  EXPECT_TRUE(client_view()->ok_button()->is_default());
-  EXPECT_FALSE(client_view()->cancel_button()->is_default());
+  EXPECT_TRUE(client_view()->ok_button()->GetIsDefault());
+  EXPECT_FALSE(client_view()->cancel_button()->GetIsDefault());
 }
 
 // Test that views inside the dialog client view have the correct focus order.

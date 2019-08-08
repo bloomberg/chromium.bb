@@ -7,7 +7,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/network_context_owner.h"
+#include "ios/web/public/init/network_context_owner.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -29,7 +29,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -162,10 +161,6 @@ class SpdyHttpStreamTest : public TestWithScopedTaskEnvironment {
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     session_ = CreateSpdySession(http_session_.get(), key_, NetLogWithSource());
   }
-
-  void TestSendCredentials(ChannelIDService* channel_id_service,
-                           const std::string& cert,
-                           const std::string& proof);
 
   SpdyTestUtil spdy_util_;
   TestNetLog net_log_;

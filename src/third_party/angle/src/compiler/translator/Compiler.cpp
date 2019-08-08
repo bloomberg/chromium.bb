@@ -49,6 +49,7 @@
 #include "compiler/translator/tree_ops/VectorizeVectorScalarArithmetic.h"
 #include "compiler/translator/tree_util/BuiltIn_autogen.h"
 #include "compiler/translator/tree_util/IntermNodePatternMatcher.h"
+#include "compiler/translator/tree_util/ReplaceShadowingVariables.h"
 #include "compiler/translator/util.h"
 #include "third_party/compiler/ArrayBoundsClamper.h"
 
@@ -120,8 +121,7 @@ bool RemoveInvariant(sh::GLenum shaderType,
                      ShShaderOutput outputType,
                      ShCompileOptions compileOptions)
 {
-    if ((compileOptions & SH_DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT) == 0 &&
-        shaderType == GL_FRAGMENT_SHADER && IsGLSL420OrNewer(outputType))
+    if (shaderType == GL_FRAGMENT_SHADER && IsGLSL420OrNewer(outputType))
         return true;
 
     if ((compileOptions & SH_REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3) != 0 &&
@@ -364,8 +364,8 @@ TIntermBlock *TCompiler::compileTreeImpl(const char *const shaderStrings[],
         ++firstSource;
     }
 
-    TParseContext parseContext(mSymbolTable, mExtensionBehavior, mShaderType, mShaderSpec,
-                               compileOptions, true, &mDiagnostics, getResources());
+    TParseContext parseContext(mSymbolTable, mExtensionBehavior, mShaderType, mShaderSpec, true,
+                               &mDiagnostics, getResources());
 
     parseContext.setFragmentPrecisionHighOnESSL1(mResources.FragmentPrecisionHigh == 1);
 
@@ -538,6 +538,10 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
             return false;
         }
     }
+    if (IsSpecWithFunctionBodyNewScope(mShaderSpec, mShaderVersion))
+    {
+        ReplaceShadowingVariables(root, &mSymbolTable);
+    }
 
     if (mShaderVersion >= 310 && !ValidateVaryingLocations(root, &mDiagnostics, mShaderType))
     {
@@ -565,7 +569,8 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     }
 
     if ((compileOptions & SH_INITIALIZE_BUILTINS_FOR_INSTANCED_MULTIVIEW) &&
-        parseContext.isExtensionEnabled(TExtension::OVR_multiview2) &&
+        (parseContext.isExtensionEnabled(TExtension::OVR_multiview2) ||
+         parseContext.isExtensionEnabled(TExtension::OVR_multiview)) &&
         getShaderType() != GL_COMPUTE_SHADER)
     {
         DeclareAndInitBuiltinsForInstancedMultiview(root, mNumViews, mShaderType, compileOptions,
@@ -968,6 +973,7 @@ void TCompiler::setResourceString()
         << ":NV_shader_framebuffer_fetch:" << mResources.NV_shader_framebuffer_fetch
         << ":ARM_shader_framebuffer_fetch:" << mResources.ARM_shader_framebuffer_fetch
         << ":OVR_multiview2:" << mResources.OVR_multiview2
+        << ":OVR_multiview:" << mResources.OVR_multiview
         << ":EXT_YUV_target:" << mResources.EXT_YUV_target
         << ":EXT_geometry_shader:" << mResources.EXT_geometry_shader
         << ":MaxVertexOutputVectors:" << mResources.MaxVertexOutputVectors
@@ -1371,6 +1377,42 @@ bool TCompiler::isVaryingDefined(const char *varyingName)
     }
 
     return false;
+}
+
+void EmitMultiviewGLSL(const TCompiler &compiler,
+                       const ShCompileOptions &compileOptions,
+                       const TBehavior behavior,
+                       TInfoSinkBase &sink)
+{
+    ASSERT(behavior != EBhUndefined);
+    if (behavior == EBhDisable)
+        return;
+
+    const bool isVertexShader = (compiler.getShaderType() == GL_VERTEX_SHADER);
+    if (compileOptions & SH_INITIALIZE_BUILTINS_FOR_INSTANCED_MULTIVIEW)
+    {
+        // Emit ARB_shader_viewport_layer_array/NV_viewport_array2 in a vertex shader if the
+        // SH_SELECT_VIEW_IN_NV_GLSL_VERTEX_SHADER option is set and the
+        // OVR_multiview(2) extension is requested.
+        if (isVertexShader && (compileOptions & SH_SELECT_VIEW_IN_NV_GLSL_VERTEX_SHADER))
+        {
+            sink << "#if defined(GL_ARB_shader_viewport_layer_array)\n"
+                 << "#extension GL_ARB_shader_viewport_layer_array : require\n"
+                 << "#elif defined(GL_NV_viewport_array2)\n"
+                 << "#extension GL_NV_viewport_array2 : require\n"
+                 << "#endif\n";
+        }
+    }
+    else
+    {
+        sink << "#extension GL_OVR_multiview2 : " << GetBehaviorString(behavior) << "\n";
+
+        const auto &numViews = compiler.getNumViews();
+        if (isVertexShader && numViews != -1)
+        {
+            sink << "layout(num_views=" << numViews << ") in;\n";
+        }
+    }
 }
 
 }  // namespace sh

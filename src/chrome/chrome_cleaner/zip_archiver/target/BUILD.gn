@@ -11,7 +11,7 @@ static_library("common") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
@@ -35,7 +35,7 @@ source_set("unittest_sources") {
 
   deps = [
     ":common",
-    "//base:base",
+    "//base",
     "//base/test:test_config",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:quarantine_constants",

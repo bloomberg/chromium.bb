@@ -19,12 +19,16 @@ WebEngineContentBrowserClient::WebEngineContentBrowserClient(
 
 WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
-content::BrowserMainParts*
+std::unique_ptr<content::BrowserMainParts>
 WebEngineContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(request_);
-  main_parts_ = new WebEngineBrowserMainParts(std::move(request_));
-  return main_parts_;
+  auto browser_main_parts =
+      std::make_unique<WebEngineBrowserMainParts>(std::move(request_));
+
+  main_parts_ = browser_main_parts.get();
+
+  return browser_main_parts;
 }
 
 content::DevToolsManagerDelegate*

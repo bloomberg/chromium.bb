@@ -7,7 +7,7 @@ Domain
 Path
 Expires / Max-Age
 Size
-HTTP
+HttpOnly
 Secure
 SameSite
 Request Cookies					33

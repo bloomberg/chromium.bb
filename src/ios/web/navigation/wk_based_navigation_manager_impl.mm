@@ -24,6 +24,7 @@
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -298,8 +299,30 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
     empty_window_open_item_ = std::move(item);
   } else {
     empty_window_open_item_.reset();
-    SetNavigationItemInWKItem(proxy.backForwardList.currentItem,
-                              std::move(item));
+
+    const GURL item_url(item->GetURL());
+    WKBackForwardList* back_forward_list = proxy.backForwardList;
+    if (item_url == net::GURLWithNSURL(back_forward_list.currentItem.URL)) {
+      SetNavigationItemInWKItem(back_forward_list.currentItem, std::move(item));
+    } else {
+      // Sometimes |currentItem.URL| is not updated correctly while the webView
+      // URL is correctly updated. This is a bug in WKWebView. Check to see if
+      // the next or previous item matches, and update that item instead. If
+      // nothing matches, still update the the currentItem.
+      if (item_url == net::GURLWithNSURL(back_forward_list.backItem.URL)) {
+        SetNavigationItemInWKItem(back_forward_list.backItem, std::move(item));
+      } else if (item_url ==
+                 net::GURLWithNSURL(back_forward_list.forwardItem.URL)) {
+        SetNavigationItemInWKItem(back_forward_list.forwardItem,
+                                  std::move(item));
+      } else {
+        // Otherwise default here. This can happen when restoring an NTP, since
+        // |back_forward_list.currentItem.URL| doesn't get updated when going
+        // from a file:// scheme to about:// scheme.
+        SetNavigationItemInWKItem(back_forward_list.currentItem,
+                                  std::move(item));
+      }
+    }
   }
 
   pending_item_index_ = -1;
@@ -375,6 +398,45 @@ WebState* WKBasedNavigationManagerImpl::GetWebState() const {
   return delegate_->GetWebState();
 }
 
+bool WKBasedNavigationManagerImpl::CanTrustLastCommittedItem(
+    const NavigationItem* last_committed_item) const {
+  DCHECK(last_committed_item);
+  if (!web_view_cache_.IsAttachedToWebView())
+    return true;
+
+  // Only compare origins, as any mismatch between |web_view_url| and
+  // |last_committed_url| with the same origin are safe to return as
+  // visible.
+  GURL web_view_url = web_view_cache_.GetVisibleWebViewURL();
+  GURL last_committed_url = last_committed_item->GetURL();
+  if (web_view_url.GetOrigin() == last_committed_url.GetOrigin())
+    return true;
+
+  // Fast back-forward navigations can be performed synchronously, with the
+  // WKWebView.URL updated before enough callbacks occur to update the
+  // last committed item.  As a result, any calls to
+  // -CanTrustLastCommittedItem during a call to WKWebView
+  // -goToBackForwardListItem are wrapped in the
+  // |going_to_back_forward_list_item_| flag. This flag is set and immediately
+  // unset because the the mismatch between URL and last_committed_item is
+  // expected.
+  if (going_to_back_forward_list_item_)
+    return true;
+
+  // WKWebView.URL will update immediately when navigating to and from
+  // about, file or chrome scheme URLs.
+  if (web_view_url.SchemeIs(url::kAboutScheme) ||
+      last_committed_url.SchemeIs(url::kAboutScheme) ||
+      web_view_url.SchemeIs(url::kFileScheme) ||
+      last_committed_url.SchemeIs(url::kAboutScheme) ||
+      web::GetWebClient()->IsAppSpecificURL(web_view_url) ||
+      web::GetWebClient()->IsAppSpecificURL(last_committed_url)) {
+    return true;
+  }
+
+  return false;
+}
+
 NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
   if (is_restore_session_in_progress_ || restored_visible_item_)
     return restored_visible_item_.get();
@@ -395,9 +457,11 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
       return pending_item;
     }
   }
+
   NavigationItem* last_committed_item = GetLastCommittedItem();
-  if (last_committed_item)
+  if (last_committed_item) {
     return last_committed_item;
+  }
 
   // While an -IsRestoreSessionUrl URL can not be a committed page, it is
   // OK to display it as a visible URL.  This prevents seeing about:blank while
@@ -700,7 +764,40 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     DCHECK_EQ(0, GetItemCount());
     return nullptr;
   }
-  return GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+  NavigationItemImpl* last_committed_item =
+      GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+  if (last_committed_item && GetWebState() &&
+      !CanTrustLastCommittedItem(last_committed_item)) {
+    // Don't check trust level here, as at this point it's expected
+    // the _documentURL and the last_commited_item URL have an origin
+    // mismatch.
+    GURL document_url = GetWebState()->GetCurrentURL(/*trust_level=*/nullptr);
+    if (!last_committed_web_view_item_) {
+      last_committed_web_view_item_ = CreateNavigationItemWithRewriters(
+          /*url=*/GURL::EmptyGURL(), Referrer(),
+          ui::PageTransition::PAGE_TRANSITION_LINK,
+          NavigationInitiationType::RENDERER_INITIATED,
+          /*previous_url=*/GURL::EmptyGURL(),
+          nullptr /* use default rewriters only */);
+      last_committed_web_view_item_->SetUntrusted();
+    }
+    last_committed_web_view_item_->SetURL(document_url);
+    // Don't expose internal restore session URL's.
+    GURL virtual_url;
+    if (wk_navigation_util::IsRestoreSessionUrl(document_url) &&
+        wk_navigation_util::ExtractTargetURL(document_url, &virtual_url)) {
+      if (wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
+        last_committed_web_view_item_->SetVirtualURL(
+            wk_navigation_util::ExtractUrlFromPlaceholderUrl(virtual_url));
+      } else {
+        last_committed_web_view_item_->SetVirtualURL(virtual_url);
+      }
+    }
+    last_committed_web_view_item_->SetTimestamp(
+        time_smoother_.GetSmoothedTime(base::Time::Now()));
+    return last_committed_web_view_item_.get();
+  }
+  return last_committed_item;
 }
 
 int WKBasedNavigationManagerImpl::
@@ -752,7 +849,9 @@ void WKBasedNavigationManagerImpl::FinishGoToIndex(
       item->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
   WKBackForwardListItem* wk_item = web_view_cache_.GetWKItemAtIndex(index);
   if (wk_item) {
+    going_to_back_forward_list_item_ = true;
     delegate_->GoToBackForwardListItem(wk_item, item, type, has_user_gesture);
+    going_to_back_forward_list_item_ = false;
   } else {
     DCHECK(index == 0 && empty_window_open_item_)
         << " wk_item should not be nullptr. index: " << index
@@ -863,6 +962,18 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetBackForwardListItemCount()
 
   // If WebView has not been created, it's fair to say navigation has 0 item.
   return 0;
+}
+
+GURL WKBasedNavigationManagerImpl::WKWebViewCache::GetVisibleWebViewURL()
+    const {
+  if (!IsAttachedToWebView())
+    return GURL();
+
+  id<CRWWebViewNavigationProxy> proxy =
+      navigation_manager_->delegate_->GetWebViewNavigationProxy();
+  if (proxy)
+    return net::GURLWithNSURL(proxy.URL);
+  return GURL();
 }
 
 int WKBasedNavigationManagerImpl::WKWebViewCache::GetCurrentItemIndex() const {

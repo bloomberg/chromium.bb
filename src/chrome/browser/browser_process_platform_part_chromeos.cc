@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
@@ -45,8 +44,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
-#include "services/ws/public/mojom/constants.mojom.h"
-#include "ui/base/ui_base_features.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false),
@@ -202,13 +199,10 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
 ws::InputDeviceControllerClient*
 BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   if (!input_device_controller_client_) {
-    const std::string service_name = !features::IsMultiProcessMash()
-                                         ? chromeos::kChromeServiceName
-                                         : ws::mojom::kServiceName;
     input_device_controller_client_ =
         std::make_unique<ws::InputDeviceControllerClient>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-            service_name);
+            chromeos::kChromeServiceName);
   }
   return input_device_controller_client_.get();
 }

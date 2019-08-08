@@ -131,7 +131,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _detailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+      [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
   _detailTextLabel.adjustsFontForContentSizeCategory = YES;
   _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
   [contentView addSubview:_detailTextLabel];

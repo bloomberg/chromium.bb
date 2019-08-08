@@ -469,10 +469,10 @@ void ToolbarActionsBar::OnBubbleClosed() {
   is_showing_bubble_ = false;
 }
 
-bool ToolbarActionsBar::IsActionVisibleOnMainBar(
+bool ToolbarActionsBar::IsActionVisibleOnToolbar(
     const ToolbarActionViewController* action) const {
   if (in_overflow_mode())
-    return main_bar_->IsActionVisibleOnMainBar(action);
+    return main_bar_->IsActionVisibleOnToolbar(action);
 
   if (action == popped_out_action_)
     return true;
@@ -490,7 +490,7 @@ void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
                                      const base::Closure& closure) {
   DCHECK(!in_overflow_mode()) << "Only the main bar can pop out actions.";
   DCHECK(!popped_out_action_) << "Only one action can be popped out at a time!";
-  bool needs_redraw = !IsActionVisibleOnMainBar(controller);
+  bool needs_redraw = !IsActionVisibleOnToolbar(controller);
   popped_out_action_ = controller;
   is_popped_out_sticky_ = is_sticky;
   if (needs_redraw) {
@@ -509,6 +509,10 @@ void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
   }
 }
 
+ToolbarActionViewController* ToolbarActionsBar::GetPoppedOutAction() const {
+  return popped_out_action_;
+}
+
 void ToolbarActionsBar::UndoPopOut() {
   DCHECK(!in_overflow_mode()) << "Only the main bar can pop out actions.";
   DCHECK(popped_out_action_);
@@ -516,7 +520,7 @@ void ToolbarActionsBar::UndoPopOut() {
   popped_out_action_ = nullptr;
   is_popped_out_sticky_ = false;
   popped_out_closure_.Reset();
-  if (!IsActionVisibleOnMainBar(controller))
+  if (!IsActionVisibleOnToolbar(controller))
     delegate_->Redraw(true);
   ResizeDelegate(gfx::Tween::LINEAR);
 }
@@ -558,7 +562,7 @@ void ToolbarActionsBar::ShowToolbarActionBubble(
     ToolbarActionViewController* controller =
         GetActionForId(bubble->GetAnchorActionId());
     bool close_overflow_menu =
-        controller && !IsActionVisibleOnMainBar(controller);
+        controller && !IsActionVisibleOnToolbar(controller);
     if (close_overflow_menu)
       delegate_->CloseOverflowMenuIfOpen();
 

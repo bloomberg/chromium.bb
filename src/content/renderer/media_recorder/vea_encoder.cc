@@ -162,6 +162,7 @@ void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
 
   video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
       bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
+      false /* read_only */,
       output_buffers_[bitstream_buffer_id]->mapped_size()));
 }
 

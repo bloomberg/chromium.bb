@@ -19,6 +19,7 @@
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
@@ -40,7 +41,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
@@ -66,8 +66,6 @@ constexpr int kSearchBoxFocusRingPadding = 4;
 
 constexpr SkColor kSearchBoxFocusRingColor = gfx::kGoogleBlue300;
 
-constexpr int kAssistantIconSize = 24;
-constexpr int kCloseIconSize = 24;
 constexpr int kSearchBoxFocusRingCornerRadius = 28;
 
 // Range of the fraction of app list from collapsed to peeking that search box
@@ -181,8 +179,8 @@ void SearchBoxView::UpdateSearchIcon() {
   const gfx::VectorIcon& icon = search_model_->search_engine_is_google()
                                     ? google_icon
                                     : kSearchEngineNotGoogleIcon;
-  SetSearchIconImage(gfx::CreateVectorIcon(icon, search_box::kSearchIconSize,
-                                           search_box_color()));
+  SetSearchIconImage(
+      gfx::CreateVectorIcon(icon, search_box::kIconSize, search_box_color()));
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
@@ -205,6 +203,10 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
   }
 }
 
+const char* SearchBoxView::GetClassName() const {
+  return "SearchBoxView";
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
@@ -212,9 +214,10 @@ int SearchBoxView::GetFocusRingSpacing() {
 
 void SearchBoxView::SetupCloseButton() {
   views::ImageButton* close = close_button();
-  close->SetImage(views::ImageButton::STATE_NORMAL,
-                  gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
-                                        search_box_color()));
+  close->SetImage(
+      views::ImageButton::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kIcCloseIcon, search_box::kIconSize,
+                            gfx::kGoogleGrey700));
   close->SetVisible(false);
   base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_CLEAR_SEARCHBOX));
@@ -227,8 +230,8 @@ void SearchBoxView::SetupBackButton() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   back->SetImage(views::ImageButton::STATE_NORMAL,
                  rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
-  back->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                          views::ImageButton::ALIGN_MIDDLE);
+  back->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  back->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   back->SetVisible(false);
   base::string16 back_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_BACK));
@@ -323,8 +326,11 @@ void SearchBoxView::UpdateLayout(double progress,
   const int horizontal_spacing = gfx::Tween::LinearIntValueBetween(
       progress, GetBoxLayoutPaddingForState(current_state),
       GetBoxLayoutPaddingForState(target_state));
+  const int horizontal_right_padding =
+      horizontal_spacing -
+      (search_box::kButtonSizeDip - search_box::kIconSize) / 2;
   box_layout()->set_inside_border_insets(
-      gfx::Insets(0, horizontal_spacing, 0, 0));
+      gfx::Insets(0, horizontal_spacing, 0, horizontal_right_padding));
   box_layout()->set_between_child_spacing(horizontal_spacing);
   if (show_assistant_button()) {
     assistant_button()->layer()->SetOpacity(gfx::Tween::LinearIntValueBetween(
@@ -374,8 +380,8 @@ void SearchBoxView::UpdateOpacity() {
 
   AppListView* app_list_view = contents_view_->app_list_view();
   bool should_restore_opacity =
-      !app_list_view->is_in_drag() && (app_list_view->app_list_state() !=
-                                       ash::mojom::AppListViewState::kClosed);
+      !app_list_view->is_in_drag() &&
+      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   // Restores the opacity of searchbox if the gesture dragging ends.
   this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   contents_view_->search_results_page_view()->layer()->SetOpacity(
@@ -390,9 +396,18 @@ void SearchBoxView::ShowZeroStateSuggestions() {
 }
 
 void SearchBoxView::OnWallpaperColorsChanged() {
-  GetWallpaperProminentColors(
-      base::BindOnce(&SearchBoxView::OnWallpaperProminentColorsReceived,
-                     weak_ptr_factory_.GetWeakPtr()));
+  const auto& colors = view_delegate_->GetWallpaperProminentColors();
+  if (colors.empty())
+    return;
+
+  DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
+            colors.size());
+
+  SetSearchBoxColor(colors[static_cast<int>(ColorProfileType::DARK_MUTED)]);
+  UpdateSearchIcon();
+  search_box()->set_placeholder_text_color(search_box_color());
+  UpdateBackgroundColor(search_box::kSearchBoxBackgroundDefault);
+  SchedulePaint();
 }
 
 void SearchBoxView::ProcessAutocomplete() {
@@ -431,30 +446,6 @@ void SearchBoxView::ProcessAutocomplete() {
   // Current text in the search_box does not match the first result's url or
   // search result text.
   ClearAutocompleteText();
-}
-
-void SearchBoxView::GetWallpaperProminentColors(
-    AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
-  view_delegate_->GetWallpaperProminentColors(std::move(callback));
-}
-
-void SearchBoxView::OnWallpaperProminentColorsReceived(
-    const std::vector<SkColor>& prominent_colors) {
-  if (prominent_colors.empty())
-    return;
-  DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
-            prominent_colors.size());
-
-  SetSearchBoxColor(
-      prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)]);
-  UpdateSearchIcon();
-  close_button()->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
-                            search_box_color()));
-  search_box()->set_placeholder_text_color(search_box_color());
-  UpdateBackgroundColor(search_box::kSearchBoxBackgroundDefault);
-  SchedulePaint();
 }
 
 void SearchBoxView::AcceptAutocompleteText() {
@@ -510,7 +501,7 @@ void SearchBoxView::SetAutocompleteText(
   DCHECK(base::StartsWith(autocomplete_text, current_text,
                           base::CompareCase::INSENSITIVE_ASCII));
   // Don't set autocomplete text if it's the same as current search box text.
-  if (autocomplete_text.length() == current_text.length())
+  if (autocomplete_text == current_text)
     return;
 
   const base::string16& highlighted_text =
@@ -736,15 +727,19 @@ void SearchBoxView::SetupAssistantButton() {
     return;
   }
 
+  const bool embedded_assistant =
+      app_list_features::IsEmbeddedAssistantUIEnabled();
   views::ImageButton* assistant = assistant_button();
   assistant->SetImage(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(app_list_features::IsEmbeddedAssistantUIEnabled()
-                                ? ash::kAssistantMicIcon
-                                : ash::kAssistantIcon,
-                            kAssistantIconSize, search_box_color()));
-  assistant->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
+      gfx::CreateVectorIcon(
+          embedded_assistant ? ash::kAssistantMicIcon : ash::kAssistantIcon,
+          search_box::kIconSize, gfx::kGoogleGrey700));
+  base::string16 assistant_button_label(l10n_util::GetStringUTF16(
+      embedded_assistant ? IDS_APP_LIST_START_ASSISTANT_VOICE_QUERY
+                         : IDS_APP_LIST_START_ASSISTANT));
+  assistant->SetAccessibleName(assistant_button_label);
+  assistant->SetTooltipText(assistant_button_label);
 }
 
 }  // namespace app_list

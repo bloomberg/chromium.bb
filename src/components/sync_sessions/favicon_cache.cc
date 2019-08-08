@@ -479,37 +479,40 @@ void FaviconCache::OnFaviconVisited(const GURL& page_url,
                    syncer::SyncChange::ACTION_ADD));
 }
 
-bool FaviconCache::GetSyncedFaviconForFaviconURL(
-    const GURL& favicon_url,
-    scoped_refptr<base::RefCountedMemory>* favicon_png) const {
+scoped_refptr<base::RefCountedMemory>
+FaviconCache::GetSyncedFaviconForFaviconURL(const GURL& favicon_url) const {
   if (!favicon_url.is_valid())
-    return false;
+    return nullptr;
   auto iter = synced_favicons_.find(favicon_url);
 
   UMA_HISTOGRAM_BOOLEAN("Sync.FaviconCacheLookupSucceeded",
                         iter != synced_favicons_.end());
   if (iter == synced_favicons_.end())
-    return false;
+    return nullptr;
 
   // TODO(zea): support getting other resolutions.
   if (!iter->second->bitmap_data[SIZE_16].bitmap_data.get())
-    return false;
+    return nullptr;
 
-  *favicon_png = iter->second->bitmap_data[SIZE_16].bitmap_data;
-  return true;
+  return iter->second->bitmap_data[SIZE_16].bitmap_data;
 }
 
-bool FaviconCache::GetSyncedFaviconForPageURL(
-    const GURL& page_url,
-    scoped_refptr<base::RefCountedMemory>* favicon_png) const {
+scoped_refptr<base::RefCountedMemory> FaviconCache::GetSyncedFaviconForPageURL(
+    const GURL& page_url) const {
   if (!page_url.is_valid())
-    return false;
+    return nullptr;
+  GURL icon_url = GetIconUrlForPageUrl(page_url);
+  if (icon_url.is_empty())
+    return nullptr;
+
+  return GetSyncedFaviconForFaviconURL(icon_url);
+}
+
+GURL FaviconCache::GetIconUrlForPageUrl(const GURL& page_url) const {
   auto iter = page_favicon_map_.find(page_url);
-
   if (iter == page_favicon_map_.end())
-    return false;
-
-  return GetSyncedFaviconForFaviconURL(iter->second, favicon_png);
+    return GURL();
+  return iter->second;
 }
 
 void FaviconCache::UpdateMappingsFromForeignTab(const sync_pb::SessionTab& tab,

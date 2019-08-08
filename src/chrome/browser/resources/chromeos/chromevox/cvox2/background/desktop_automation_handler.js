@@ -434,8 +434,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {
-    // We are only interested in load completes on top level roots.
-    if (AutomationUtil.getTopLevelRoot(evt.target) != evt.target.root)
+    // We are only interested in load completes on valid top level roots.
+    var top = AutomationUtil.getTopLevelRoot(evt.target);
+    if (!top || top != evt.target.root || !top.docUrl)
       return;
 
     this.lastRootUrl_ = '';

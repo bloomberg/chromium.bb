@@ -13,7 +13,6 @@ SPVTOOLS_SRC_FILES := \
 		source/ext_inst.cpp \
 		source/enum_string_mapping.cpp \
 		source/extensions.cpp \
-		source/id_descriptor.cpp \
 		source/libspirv.cpp \
 		source/name_mapper.cpp \
 		source/opcode.cpp \
@@ -156,6 +155,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/scalar_replacement_pass.cpp \
 		source/opt/set_spec_constant_default_value_pass.cpp \
 		source/opt/simplification_pass.cpp \
+		source/opt/split_invalid_unreachable_pass.cpp \
 		source/opt/ssa_rewrite_pass.cpp \
 		source/opt/strength_reduction_pass.cpp \
 		source/opt/strip_atomic_counter_memory_pass.cpp \

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -120,7 +121,7 @@ MediaSource::MediaSource(ExecutionContext* context)
       active_source_buffers_(
           MakeGarbageCollected<SourceBufferList>(GetExecutionContext(),
                                                  async_event_queue_.Get())),
-      live_seekable_range_(TimeRanges::Create()),
+      live_seekable_range_(MakeGarbageCollected<TimeRanges>()),
       added_to_registry_counter_(0) {
   DVLOG(1) << __func__ << " this=" << this;
 }
@@ -382,7 +383,7 @@ TimeRanges* MediaSource::Buffered() const {
   // 1. If activeSourceBuffers.length equals 0 then return an empty TimeRanges
   //    object and abort these steps.
   if (ranges.IsEmpty())
-    return TimeRanges::Create();
+    return MakeGarbageCollected<TimeRanges>();
 
   // 2. Let active ranges be the ranges returned by buffered for each
   //    SourceBuffer object in activeSourceBuffers.
@@ -397,11 +398,12 @@ TimeRanges* MediaSource::Buffered() const {
 
   // Return an empty range if all ranges are empty.
   if (highest_end_time < 0)
-    return TimeRanges::Create();
+    return MakeGarbageCollected<TimeRanges>();
 
   // 4. Let intersection ranges equal a TimeRange object containing a single
   //    range from 0 to highest end time.
-  TimeRanges* intersection_ranges = TimeRanges::Create(0, highest_end_time);
+  auto* intersection_ranges =
+      MakeGarbageCollected<TimeRanges>(0, highest_end_time);
 
   // 5. For each SourceBuffer object in activeSourceBuffers run the following
   //    steps:
@@ -438,7 +440,7 @@ TimeRanges* MediaSource::Seekable() const {
   double source_duration = duration();
   // If duration equals NaN: Return an empty TimeRanges object.
   if (std::isnan(source_duration))
-    return TimeRanges::Create();
+    return MakeGarbageCollected<TimeRanges>();
 
   // If duration equals positive Infinity:
   if (source_duration == std::numeric_limits<double>::infinity()) {
@@ -452,12 +454,12 @@ TimeRanges* MediaSource::Seekable() const {
       //      earliest start time in union ranges and an end time equal to
       //      the highest end time in union ranges and abort these steps.
       if (buffered->length() == 0) {
-        return TimeRanges::Create(
+        return MakeGarbageCollected<TimeRanges>(
             live_seekable_range_->start(0, ASSERT_NO_EXCEPTION),
             live_seekable_range_->end(0, ASSERT_NO_EXCEPTION));
       }
 
-      return TimeRanges::Create(
+      return MakeGarbageCollected<TimeRanges>(
           std::min(live_seekable_range_->start(0, ASSERT_NO_EXCEPTION),
                    buffered->start(0, ASSERT_NO_EXCEPTION)),
           std::max(live_seekable_range_->end(0, ASSERT_NO_EXCEPTION),
@@ -466,18 +468,18 @@ TimeRanges* MediaSource::Seekable() const {
     // 2. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges
     //    object, then return an empty TimeRanges object and abort these steps.
     if (buffered->length() == 0)
-      return TimeRanges::Create();
+      return MakeGarbageCollected<TimeRanges>();
 
     // 3. Return a single range with a start time of 0 and an end time equal to
     //    the highest end time reported by the HTMLMediaElement.buffered
     //    attribute.
-    return TimeRanges::Create(
+    return MakeGarbageCollected<TimeRanges>(
         0, buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION));
   }
 
   // 3. Otherwise: Return a single range with a start time of 0 and an end time
   //    equal to duration.
-  return TimeRanges::Create(0, source_duration);
+  return MakeGarbageCollected<TimeRanges>(0, source_duration);
 }
 
 void MediaSource::OnTrackChanged(TrackBase* track) {
@@ -681,7 +683,7 @@ void MediaSource::setLiveSeekableRange(double start,
   // 4. Set live seekable range to be a new normalized TimeRanges object
   //    containing a single range whose start position is start and end
   //    position is end.
-  live_seekable_range_ = TimeRanges::Create(start, end);
+  live_seekable_range_ = MakeGarbageCollected<TimeRanges>(start, end);
 }
 
 void MediaSource::clearLiveSeekableRange(ExceptionState& exception_state) {
@@ -701,7 +703,7 @@ void MediaSource::clearLiveSeekableRange(ExceptionState& exception_state) {
   // 3. If live seekable range contains a range, then set live seekable range
   //    to be a new empty TimeRanges object.
   if (live_seekable_range_->length() != 0)
-    live_seekable_range_ = TimeRanges::Create();
+    live_seekable_range_ = MakeGarbageCollected<TimeRanges>();
 }
 
 bool MediaSource::IsOpen() const {

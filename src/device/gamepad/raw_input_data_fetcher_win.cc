@@ -215,13 +215,14 @@ void RawInputDataFetcher::EnumerateDevices() {
         state->axis_mask = 0;
         state->button_mask = 0;
 
-        swprintf(pad.id, Gamepad::kIdLengthCap,
+        swprintf(base::as_writable_wcstr(pad.id), Gamepad::kIdLengthCap,
                  L"%ls (%lsVendor: %04x Product: %04x)", product_string.c_str(),
                  state->mapper ? L"STANDARD GAMEPAD " : L"", vendor_int,
                  product_int);
 
         if (state->mapper)
-          swprintf(pad.mapping, Gamepad::kMappingLengthCap, L"standard");
+          swprintf(base::as_writable_wcstr(pad.mapping),
+                   Gamepad::kMappingLengthCap, L"standard");
         else
           pad.mapping[0] = 0;
       }

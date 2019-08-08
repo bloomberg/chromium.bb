@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/video_frame.h"
@@ -107,6 +108,10 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
                                          bool));
   MOCK_METHOD0(OnFrameDropped, void());
 
+  base::TimeDelta GetPreferredRenderInterval() override {
+    return preferred_render_interval_;
+  }
+
   void StartVideoRendererSink() {
     EXPECT_CALL(*submitter_, StartRendering());
     const bool had_current_frame = !!compositor_->GetCurrentFrame();
@@ -131,6 +136,7 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
     compositor()->PutCurrentFrame();
   }
 
+  base::TimeDelta preferred_render_interval_;
   base::SimpleTestTickClock tick_clock_;
   StrictMock<MockWebVideoFrameSubmitter>* submitter_;
   std::unique_ptr<StrictMock<MockWebVideoFrameSubmitter>> client_;
@@ -339,6 +345,16 @@ TEST_P(VideoFrameCompositorTest, UpdateCurrentFrameIfStale) {
 
   // Background rendering should tick another render callback.
   StopVideoRendererSink(false);
+}
+
+TEST_P(VideoFrameCompositorTest, PreferredRenderInterval) {
+  preferred_render_interval_ = base::TimeDelta::FromSeconds(1);
+  compositor_->Start(this);
+  EXPECT_EQ(compositor_->GetPreferredRenderInterval(),
+            preferred_render_interval_);
+  compositor_->Stop();
+  EXPECT_EQ(compositor_->GetPreferredRenderInterval(),
+            viz::BeginFrameArgs::MinInterval());
 }
 
 INSTANTIATE_TEST_SUITE_P(SubmitterEnabled,

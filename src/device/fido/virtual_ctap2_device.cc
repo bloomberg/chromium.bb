@@ -4,11 +4,13 @@
 
 #include "device/fido/virtual_ctap2_device.h"
 
+#include <algorithm>
 #include <array>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,6 +19,8 @@
 #include "crypto/ec_private_key.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/bio/enrollment.h"
+#include "device/fido/credential_management.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/ec_public_key.h"
@@ -30,6 +34,7 @@
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/hmac.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
@@ -63,15 +68,14 @@ void ReturnCtap2Response(
 }
 
 // CheckPINToken returns true iff |pin_auth| is a valid authentication of
-// |client_data_hash| given that the PIN token in effect is |pin_token|.
+// |data| given that the PIN token in effect is |pin_token|.
 bool CheckPINToken(base::span<const uint8_t> pin_token,
                    base::span<const uint8_t> pin_auth,
-                   base::span<const uint8_t> client_data_hash) {
+                   base::span<const uint8_t> data) {
   uint8_t calculated_pin_auth[SHA256_DIGEST_LENGTH];
   unsigned hmac_bytes;
-  CHECK(HMAC(EVP_sha256(), pin_token.data(), pin_token.size(),
-             client_data_hash.data(), client_data_hash.size(),
-             calculated_pin_auth, &hmac_bytes));
+  CHECK(HMAC(EVP_sha256(), pin_token.data(), pin_token.size(), data.data(),
+             data.size(), calculated_pin_auth, &hmac_bytes));
   DCHECK_EQ(sizeof(calculated_pin_auth), static_cast<size_t>(hmac_bytes));
 
   return pin_auth.size() == 16 &&
@@ -179,7 +183,7 @@ CtapDeviceResponseCode CheckUserVerification(
 // algorithm in publicKeyCredParam.
 bool AreMakeCredentialParamsValid(const CtapMakeCredentialRequest& request) {
   const auto& params =
-      request.public_key_credential_params().public_key_credential_params();
+      request.public_key_credential_params.public_key_credential_params();
   return std::any_of(
       params.begin(), params.end(), [](const auto& credential_info) {
         return credential_info.algorithm ==
@@ -231,7 +235,7 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
           std::move(authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
               "packed", cbor::Value(std::move(attestation_map)))));
-  return GetSerializedCtapDeviceResponse(make_credential_response);
+  return AsCTAPStyleCBORBytes(make_credential_response);
 }
 
 bool IsMakeCredentialOptionMapFormatCorrect(
@@ -404,14 +408,42 @@ CtapDeviceResponseCode SetPIN(VirtualCtap2Device::State* state,
   return CtapDeviceResponseCode::kSuccess;
 }
 
+CtapDeviceResponseCode CheckCredentialManagementPINAuth(
+    const cbor::Value::MapValue& request_map,
+    base::span<const uint8_t> pin_token,
+    base::span<const uint8_t> pinauth_bytes) {
+  const auto pin_protocol_it = request_map.find(cbor::Value(
+      static_cast<int>(CredentialManagementRequestKey::kPinProtocol)));
+  if (pin_protocol_it == request_map.end() ||
+      !pin_protocol_it->second.is_unsigned()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+  if (pin_protocol_it->second.GetUnsigned() != pin::kProtocolVersion) {
+    return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+  }
+  const auto pinauth_it = request_map.find(
+      cbor::Value(static_cast<int>(CredentialManagementRequestKey::kPinAuth)));
+  if (pinauth_it == request_map.end() || !pinauth_it->second.is_bytestring()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+  if (!CheckPINToken(pin_token, pinauth_it->second.GetBytestring(),
+                     pinauth_bytes)) {
+    return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
+  }
+  return CtapDeviceResponseCode::kSuccess;
+}
 }  // namespace
 
 VirtualCtap2Device::Config::Config() = default;
+VirtualCtap2Device::Config::Config(const Config&) = default;
+VirtualCtap2Device::Config& VirtualCtap2Device::Config::operator=(
+    const Config&) = default;
+VirtualCtap2Device::Config::~Config() = default;
 
 VirtualCtap2Device::VirtualCtap2Device()
     : VirtualFidoDevice(), weak_factory_(this) {
   device_info_ =
-      AuthenticatorGetInfoResponse({ProtocolVersion::kCtap}, kDeviceAaguid);
+      AuthenticatorGetInfoResponse({ProtocolVersion::kCtap2}, kDeviceAaguid);
 }
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
@@ -419,7 +451,7 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     : VirtualFidoDevice(std::move(state)),
       config_(config),
       weak_factory_(this) {
-  std::vector<ProtocolVersion> versions = {ProtocolVersion::kCtap};
+  std::vector<ProtocolVersion> versions = {ProtocolVersion::kCtap2};
   if (config.u2f_support) {
     versions.emplace_back(ProtocolVersion::kU2f);
     u2f_device_.reset(new VirtualU2fDevice(NewReferenceToState()));
@@ -457,8 +489,36 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     options.supports_resident_key = true;
   }
 
+  if (config.credential_management_support) {
+    options_updated = true;
+    options.supports_credential_management = true;
+  }
+
+  if (config.bio_enrollment_support) {
+    options_updated = true;
+    if (mutable_state()->bio_enrollment_provisioned) {
+      options.bio_enrollment_availability_preview =
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kSupportedAndProvisioned;
+    } else {
+      options.bio_enrollment_availability_preview =
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kSupportedButUnprovisioned;
+    }
+  }
+
+  if (config.is_platform_authenticator) {
+    options_updated = true;
+    options.is_platform_device = true;
+  }
+
   if (options_updated) {
-    device_info_->SetOptions(options);
+    device_info_->options = std::move(options);
+  }
+
+  if (config.cred_protect_support) {
+    device_info_->extensions.emplace(
+        {std::string(device::kExtensionCredProtect)});
   }
 }
 
@@ -510,6 +570,12 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
     case CtapRequestCommand::kAuthenticatorClientPin:
       response_code = OnPINCommand(request_bytes, &response_data);
       break;
+    case CtapRequestCommand::kAuthenticatorCredentialManagement:
+      response_code = OnCredentialManagement(request_bytes, &response_data);
+      break;
+    case CtapRequestCommand::kAuthenticatorBioEnrollmentPreview:
+      response_code = OnBioEnrollment(request_bytes, &response_data);
+      break;
     default:
       break;
   }
@@ -526,13 +592,20 @@ base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
 
 void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
     const AuthenticatorSupportedOptions& options) {
-  device_info_->SetOptions(options);
+  device_info_->options = options;
 }
 
 CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
-  auto request_and_hash = ParseCtapMakeCredentialRequest(request_bytes);
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  auto request_and_hash =
+      ParseCtapMakeCredentialRequest(cbor_request->GetMap());
   if (!request_and_hash) {
     DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
@@ -540,29 +613,36 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   CtapMakeCredentialRequest request = std::get<0>(*request_and_hash);
   CtapMakeCredentialRequest::ClientDataHash client_data_hash =
       std::get<1>(*request_and_hash);
-  const AuthenticatorSupportedOptions& options = device_info_->options();
+  const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
   const CtapDeviceResponseCode uv_error = CheckUserVerification(
-      true /* is makeCredential */, options, request.pin_auth(),
-      request.pin_protocol(), mutable_state()->pin_token, client_data_hash,
-      request.user_verification(), mutable_state()->simulate_press_callback,
+      true /* is makeCredential */, options, request.pin_auth,
+      request.pin_protocol, mutable_state()->pin_token, client_data_hash,
+      request.user_verification, mutable_state()->simulate_press_callback,
       &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
 
   // 6. Check for already registered credentials.
-  const auto rp_id_hash =
-      fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id());
-  if (request.exclude_list()) {
+  const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp.id);
+  if (request.exclude_list) {
     if (config_.reject_large_allow_and_exclude_lists &&
-        request.exclude_list()->size() > 1) {
+        request.exclude_list->size() > 1) {
       return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
     }
 
-    for (const auto& excluded_credential : *request.exclude_list()) {
-      if (FindRegistrationData(excluded_credential.id(), rp_id_hash)) {
+    for (const auto& excluded_credential : *request.exclude_list) {
+      const RegistrationData* found =
+          FindRegistrationData(excluded_credential.id(), rp_id_hash);
+      if (found) {
+        if (found->protection == device::CredProtect::kUVRequired &&
+            !user_verified) {
+          // Cannot disclose the existence of this credential without UV. If
+          // a credentials ends up being created it'll overwrite this one.
+          continue;
+        }
         if (mutable_state()->simulate_press_callback) {
           mutable_state()->simulate_press_callback.Run();
         }
@@ -579,7 +659,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   // Step 8.
-  if ((request.resident_key_required() && !options.supports_resident_key) ||
+  if ((request.resident_key_required && !options.supports_resident_key) ||
       !options.supports_user_presence) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
@@ -602,10 +682,19 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
 
   base::Optional<cbor::Value> extensions;
-  if (request.hmac_secret()) {
-    cbor::Value::MapValue extensions_map;
+  cbor::Value::MapValue extensions_map;
+  if (request.hmac_secret) {
     extensions_map.emplace(cbor::Value(kExtensionHmacSecret),
                            cbor::Value(true));
+  }
+
+  if (request.cred_protect) {
+    extensions_map.emplace(
+        cbor::Value(kExtensionCredProtect),
+        cbor::Value(
+            request.cred_protect->first == CredProtect::kUVRequired ? 3 : 2));
+  }
+  if (!extensions_map.empty()) {
     extensions = cbor::Value(std::move(extensions_map));
   }
 
@@ -641,12 +730,12 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   RegistrationData registration(std::move(private_key), rp_id_hash,
                                 1 /* signature counter */);
 
-  if (request.resident_key_required()) {
+  if (request.resident_key_required) {
     // If there's already a registration for this RP and user ID, delete it.
     for (const auto& registration : mutable_state()->registrations) {
       if (registration.second.is_resident &&
           rp_id_hash == registration.second.application_parameter &&
-          registration.second.user->id == request.user().id) {
+          registration.second.user->id == request.user.id) {
         mutable_state()->registrations.erase(registration.first);
         break;
       }
@@ -664,7 +753,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
     }
 
     registration.is_resident = true;
-    registration.user = request.user();
+    registration.user = request.user;
+  }
+
+  if (request.cred_protect) {
+    registration.protection = request.cred_protect->first;
   }
 
   StoreNewKey(key_handle, std::move(registration));
@@ -676,7 +769,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     std::vector<uint8_t>* response) {
   // Step numbers in this function refer to
   // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorGetAssertion
-  auto request_and_hash = ParseCtapGetAssertionRequest(request_bytes);
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  const auto& request_map = cbor_request->GetMap();
+  auto request_and_hash = ParseCtapGetAssertionRequest(request_map);
   if (!request_and_hash) {
     DLOG(ERROR) << "Incorrectly formatted GetAssertion request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
@@ -684,53 +784,52 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   CtapGetAssertionRequest request = std::get<0>(*request_and_hash);
   CtapGetAssertionRequest::ClientDataHash client_data_hash =
       std::get<1>(*request_and_hash);
-  const AuthenticatorSupportedOptions& options = device_info_->options();
+  const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
   const CtapDeviceResponseCode uv_error = CheckUserVerification(
-      false /* not makeCredential */, options, request.pin_auth(),
-      request.pin_protocol(), mutable_state()->pin_token, client_data_hash,
-      request.user_verification(), mutable_state()->simulate_press_callback,
+      false /* not makeCredential */, options, request.pin_auth,
+      request.pin_protocol, mutable_state()->pin_token, client_data_hash,
+      request.user_verification, mutable_state()->simulate_press_callback,
       &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
 
   // Resident keys are not supported.
-  if (!config_.resident_key_support &&
-      (!request.allow_list() || request.allow_list()->empty())) {
+  if (!config_.resident_key_support && request.allow_list.empty()) {
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
-  const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp_id());
+  const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp_id);
 
   std::vector<std::pair<base::span<const uint8_t>, RegistrationData*>>
       found_registrations;
 
-  if (!request.user_presence_required() &&
+  if (!request.user_presence_required &&
       config_.reject_silent_authentication_requests) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
-  if (request.allow_list()) {
-    if (config_.reject_large_allow_and_exclude_lists &&
-        request.allow_list()->size() > 1) {
-      return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
-    }
+  if (config_.reject_large_allow_and_exclude_lists &&
+      request.allow_list.size() > 1) {
+    return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
+  }
 
-    // An empty allow_list could be considered to be a resident-key request, but
-    // some authenticators in practice don't take it that way. Thus this code
-    // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
-    // behaviour.
-    for (const auto& allowed_credential : *request.allow_list()) {
-      RegistrationData* found =
-          FindRegistrationData(allowed_credential.id(), rp_id_hash);
-      if (found) {
-        found_registrations.emplace_back(allowed_credential.id(), found);
-        break;
-      }
+  // An empty allow_list could be considered to be a resident-key request, but
+  // some authenticators in practice don't take it that way. Thus this code
+  // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
+  // behaviour.
+  for (const auto& allowed_credential : request.allow_list) {
+    RegistrationData* found =
+        FindRegistrationData(allowed_credential.id(), rp_id_hash);
+    if (found) {
+      found_registrations.emplace_back(allowed_credential.id(), found);
+      break;
     }
-  } else {
+  }
+  const auto allow_list_it = request_map.find(cbor::Value(3));
+  if (allow_list_it == request_map.end()) {
     DCHECK(config_.resident_key_support);
     for (auto& registration : mutable_state()->registrations) {
       if (registration.second.is_resident &&
@@ -741,18 +840,37 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     }
   }
 
+  // Enforce credProtect semantics.
+  found_registrations.erase(
+      std::remove_if(
+          found_registrations.begin(), found_registrations.end(),
+          [user_verified, &request](
+              const std::pair<base::span<const uint8_t>, RegistrationData*>&
+                  candidate) -> bool {
+            if (!candidate.second->protection) {
+              return false;
+            }
+            switch (*candidate.second->protection) {
+              case CredProtect::kUVOrCredIDRequired:
+                return request.allow_list.empty() && !user_verified;
+              case CredProtect::kUVRequired:
+                return !user_verified;
+            }
+          }),
+      found_registrations.end());
+
   if (config_.return_immediate_invalid_credential_error &&
       found_registrations.empty()) {
     return CtapDeviceResponseCode::kCtap2ErrInvalidCredential;
   }
 
   // Step 5.
-  if (!options.supports_user_presence && request.user_presence_required()) {
+  if (!options.supports_user_presence && request.user_presence_required) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
   // Step 7.
-  if (request.user_presence_required() && !user_verified &&
+  if (request.user_presence_required && !user_verified &&
       mutable_state()->simulate_press_callback) {
     mutable_state()->simulate_press_callback.Run();
   }
@@ -842,7 +960,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetNextAssertion(
 CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
-  if (device_info_->options().client_pin_availability ==
+  if (device_info_->options.client_pin_availability ==
       AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported) {
     return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
   }
@@ -919,10 +1037,10 @@ CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
         return err;
       };
 
-      AuthenticatorSupportedOptions options = device_info_->options();
+      AuthenticatorSupportedOptions options = device_info_->options;
       options.client_pin_availability = AuthenticatorSupportedOptions::
           ClientPinAvailability::kSupportedAndPinSet;
-      device_info_->SetOptions(options);
+      device_info_->options = std::move(options);
 
       break;
     }
@@ -1010,9 +1128,316 @@ CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
   return CtapDeviceResponseCode::kSuccess;
 }
 
+CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
+    base::span<const uint8_t> request_bytes,
+    std::vector<uint8_t>* response) {
+  if (!device_info_->options.supports_credential_management) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+  const auto& request_map = cbor_request->GetMap();
+  const auto subcommand_it = request_map.find(cbor::Value(
+      static_cast<int>(CredentialManagementRequestKey::kSubCommand)));
+  if (subcommand_it == request_map.end() ||
+      !subcommand_it->second.is_unsigned()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+  const int64_t subcommand = subcommand_it->second.GetUnsigned();
+
+  cbor::Value::MapValue response_map;
+  switch (static_cast<CredentialManagementSubCommand>(subcommand)) {
+    case CredentialManagementSubCommand::kGetCredsMetadata: {
+      CtapDeviceResponseCode pin_status = CheckCredentialManagementPINAuth(
+          request_map, mutable_state()->pin_token,
+          {{static_cast<uint8_t>(subcommand)}});
+      if (pin_status != CtapDeviceResponseCode::kSuccess) {
+        return pin_status;
+      }
+
+      const size_t num_resident =
+          std::count_if(mutable_state()->registrations.begin(),
+                        mutable_state()->registrations.end(),
+                        [](const auto& it) { return it.second.is_resident; });
+      response_map.emplace(
+          static_cast<int>(CredentialManagementResponseKey::
+                               kExistingResidentCredentialsCount),
+          static_cast<int64_t>(num_resident));
+
+      const size_t num_remaining =
+          config_.resident_credential_storage - num_resident;
+      DCHECK(0 <= num_remaining);
+      response_map.emplace(
+          static_cast<int>(CredentialManagementResponseKey::
+                               kMaxPossibleRemainingResidentCredentialsCount),
+          static_cast<int64_t>(num_remaining));
+
+      *response =
+          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      return CtapDeviceResponseCode::kSuccess;
+    }
+
+    case CredentialManagementSubCommand::kEnumerateRPsBegin: {
+      CtapDeviceResponseCode pin_status = CheckCredentialManagementPINAuth(
+          request_map, mutable_state()->pin_token,
+          {{static_cast<uint8_t>(subcommand)}});
+      if (pin_status != CtapDeviceResponseCode::kSuccess) {
+        return pin_status;
+      }
+
+      InitPendingRPs();
+      response_map.emplace(
+          static_cast<int>(CredentialManagementResponseKey::kTotalRPs),
+          static_cast<int>(mutable_state()->pending_rps.size()));
+      if (!mutable_state()->pending_rps.empty()) {
+        GetNextRP(&response_map);
+      }
+
+      *response =
+          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      return CtapDeviceResponseCode::kSuccess;
+    }
+
+    case CredentialManagementSubCommand::kEnumerateRPsGetNextRP: {
+      if (mutable_state()->pending_rps.empty()) {
+        return CtapDeviceResponseCode::kCtap2ErrNotAllowed;
+      }
+      GetNextRP(&response_map);
+
+      *response =
+          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      return CtapDeviceResponseCode::kSuccess;
+    }
+
+    case CredentialManagementSubCommand::kEnumerateCredentialsBegin: {
+      const auto params_it = request_map.find(cbor::Value(
+          static_cast<int>(CredentialManagementRequestKey::kSubCommandParams)));
+      if (params_it == request_map.end() && !params_it->second.is_map()) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      const cbor::Value::MapValue& params = params_it->second.GetMap();
+
+      // pinAuth = LEFT(HMAC-SHA-256(pinToken, enumerateCredentialsBegin (0x04)
+      //                                       || subCommandParams), 16)
+      std::vector<uint8_t> pinauth_bytes =
+          cbor::Writer::Write(cbor::Value(params)).value();
+      pinauth_bytes.insert(pinauth_bytes.begin(),
+                           static_cast<uint8_t>(subcommand));
+      CtapDeviceResponseCode pin_status = CheckCredentialManagementPINAuth(
+          request_map, mutable_state()->pin_token, pinauth_bytes);
+      if (pin_status != CtapDeviceResponseCode::kSuccess) {
+        return pin_status;
+      }
+
+      const auto rp_id_hash_it = params.find(cbor::Value(
+          static_cast<int>(CredentialManagementRequestParamKey::kRPIDHash)));
+      if (rp_id_hash_it == params.end() ||
+          !rp_id_hash_it->second.is_bytestring() ||
+          rp_id_hash_it->second.GetBytestring().size() != kRpIdHashLength) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+
+      InitPendingRegistrations(rp_id_hash_it->second.GetBytestring());
+      if (mutable_state()->pending_registrations.empty()) {
+        return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
+      }
+      response_map.swap(mutable_state()->pending_registrations.front());
+      response_map.emplace(
+          static_cast<int>(CredentialManagementResponseKey::kTotalCredentials),
+          static_cast<int>(mutable_state()->pending_registrations.size()));
+      mutable_state()->pending_registrations.pop_front();
+
+      *response =
+          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      return CtapDeviceResponseCode::kSuccess;
+    }
+
+    case CredentialManagementSubCommand::
+        kEnumerateCredentialsGetNextCredential: {
+      if (mutable_state()->pending_registrations.empty()) {
+        return CtapDeviceResponseCode::kCtap2ErrNotAllowed;
+      }
+      response_map.swap(mutable_state()->pending_registrations.front());
+      mutable_state()->pending_registrations.pop_front();
+
+      *response =
+          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      return CtapDeviceResponseCode::kSuccess;
+    }
+
+    case CredentialManagementSubCommand::kDeleteCredential: {
+      const auto params_it = request_map.find(cbor::Value(
+          static_cast<int>(CredentialManagementRequestKey::kSubCommandParams)));
+      if (params_it == request_map.end() && !params_it->second.is_map()) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      const cbor::Value::MapValue& params = params_it->second.GetMap();
+      // pinAuth = LEFT(HMAC-SHA-256(pinToken, enumerateCredentialsBegin (0x04)
+      //                                       || subCommandParams), 16)
+      std::vector<uint8_t> pinauth_bytes =
+          cbor::Writer::Write(cbor::Value(params)).value();
+      pinauth_bytes.insert(pinauth_bytes.begin(),
+                           static_cast<uint8_t>(subcommand));
+      CtapDeviceResponseCode pin_status = CheckCredentialManagementPINAuth(
+          request_map, mutable_state()->pin_token, pinauth_bytes);
+      if (pin_status != CtapDeviceResponseCode::kSuccess) {
+        return pin_status;
+      }
+
+      // The spec doesn't say, but we clear the enumerateRPs and
+      // enumerateCredentials states after deleteCredential to avoid having to
+      // update them.
+      mutable_state()->pending_rps.clear();
+      mutable_state()->pending_registrations.clear();
+
+      const auto credential_id_it = params.find(cbor::Value(static_cast<int>(
+          CredentialManagementRequestParamKey::kCredentialID)));
+      if (credential_id_it == params.end() ||
+          !credential_id_it->second.is_bytestring()) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      const std::vector<uint8_t>& credential_id =
+          credential_id_it->second.GetBytestring();
+      if (!base::ContainsKey(mutable_state()->registrations, credential_id)) {
+        return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
+      }
+      mutable_state()->registrations.erase(credential_id);
+      *response = {};
+      return CtapDeviceResponseCode::kSuccess;
+    }
+  }
+  NOTREACHED();
+  return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+}
+
+CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
+    base::span<const uint8_t> request_bytes,
+    std::vector<uint8_t>* response) {
+  // Check to ensure that device supports bio enrollment.
+  if (device_info_->options.bio_enrollment_availability_preview ==
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  // Read request bytes into |cbor::Value::MapValue|.
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+  const auto& request_map = cbor_request->GetMap();
+
+  cbor::Value::MapValue response_map;
+
+  // Check for the get-modality command.
+  auto it = request_map.find(
+      cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kGetModality)));
+  if (it != request_map.end() && it->second.GetBool()) {
+    response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
+                         static_cast<int>(BioEnrollmentModality::kFingerprint));
+    *response =
+        cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+    return CtapDeviceResponseCode::kSuccess;
+  }
+
+  // Check for the get-sensor-info command.
+  it = request_map.find(
+      cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kSubCommand)));
+  if (it != request_map.end() &&
+      it->second.GetUnsigned() ==
+          static_cast<int>(
+              BioEnrollmentSubCommand::kGetFingerprintSensorInfo)) {
+    response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
+                         static_cast<int>(BioEnrollmentModality::kFingerprint));
+
+    response_map.emplace(
+        static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
+        static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
+    response_map.emplace(
+        static_cast<int>(
+            BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
+        7);
+
+    *response =
+        cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+    return CtapDeviceResponseCode::kSuccess;
+  }
+
+  // Handle all other commands as if they were unsupported (will change when
+  // support is added).
+  if (it != request_map.end()) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  // Could not find a valid command, so return an error.
+  NOTREACHED();
+  return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+}
+
+void VirtualCtap2Device::InitPendingRPs() {
+  mutable_state()->pending_rps.clear();
+  std::set<std::string> rp_ids;
+  for (const auto& registration : mutable_state()->registrations) {
+    if (!registration.second.is_resident) {
+      continue;
+    }
+    DCHECK(!registration.second.is_u2f);
+    DCHECK(registration.second.user);
+    DCHECK(registration.second.rp);
+    if (!base::ContainsKey(rp_ids, registration.second.rp->id)) {
+      mutable_state()->pending_rps.push_back(*registration.second.rp);
+    }
+  }
+}
+
+void VirtualCtap2Device::InitPendingRegistrations(
+    base::span<const uint8_t> rp_id_hash) {
+  DCHECK_EQ(rp_id_hash.size(), kRpIdHashLength);
+  mutable_state()->pending_registrations.clear();
+  for (const auto& registration : mutable_state()->registrations) {
+    if (!registration.second.is_resident ||
+        !std::equal(rp_id_hash.begin(), rp_id_hash.end(),
+                    registration.second.application_parameter.begin())) {
+      continue;
+    }
+    DCHECK(!registration.second.is_u2f && registration.second.user &&
+           registration.second.rp);
+    cbor::Value::MapValue response_map;
+    response_map.emplace(
+        static_cast<int>(CredentialManagementResponseKey::kUser),
+        AsCBOR(*registration.second.user));
+    response_map.emplace(
+        static_cast<int>(CredentialManagementResponseKey::kCredentialID),
+        AsCBOR(PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
+                                             registration.first)));
+    std::string public_key;
+    EC_KEY* ec_key =
+        EVP_PKEY_get0_EC_KEY(registration.second.private_key->key());
+    CHECK(ec_key != nullptr);
+    response_map.emplace(
+        static_cast<int>(CredentialManagementResponseKey::kPublicKey),
+        pin::EncodeCOSEPublicKey(ec_key));
+    mutable_state()->pending_registrations.emplace_back(
+        std::move(response_map));
+  }
+}
+
+void VirtualCtap2Device::GetNextRP(cbor::Value::MapValue* response_map) {
+  DCHECK(!mutable_state()->pending_rps.empty());
+  response_map->emplace(static_cast<int>(CredentialManagementResponseKey::kRP),
+                        AsCBOR(mutable_state()->pending_rps.front()));
+  response_map->emplace(
+      static_cast<int>(CredentialManagementResponseKey::kRPIDHash),
+      fido_parsing_utils::CreateSHA256Hash(
+          mutable_state()->pending_rps.front().id));
+  mutable_state()->pending_rps.pop_front();
+}
+
 CtapDeviceResponseCode VirtualCtap2Device::OnAuthenticatorGetInfo(
     std::vector<uint8_t>* response) const {
-  *response = EncodeToCBOR(*device_info_);
+  *response = AuthenticatorGetInfoResponse::EncodeToCBOR(*device_info_);
   return CtapDeviceResponseCode::kSuccess;
 }
 
@@ -1063,12 +1488,7 @@ AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
 
 base::Optional<std::pair<CtapMakeCredentialRequest,
                          CtapMakeCredentialRequest::ClientDataHash>>
-ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
-  const auto& cbor_request = cbor::Reader::Read(request_bytes);
-  if (!cbor_request || !cbor_request->is_map())
-    return base::nullopt;
-
-  const auto& request_map = cbor_request->GetMap();
+ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map) {
   if (!AreMakeCredentialRequestMapKeysCorrect(request_map))
     return base::nullopt;
 
@@ -1128,7 +1548,7 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
 
       exclude_list.push_back(std::move(*excluded_credential));
     }
-    request.SetExcludeList(std::move(exclude_list));
+    request.exclude_list = std::move(exclude_list);
   }
 
   const auto extensions_it = request_map.find(cbor::Value(6));
@@ -1144,7 +1564,30 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
       if (!hmac_secret_it->second.is_bool()) {
         return base::nullopt;
       }
-      request.SetHmacSecret(hmac_secret_it->second.GetBool());
+      request.hmac_secret = hmac_secret_it->second.GetBool();
+    }
+
+    const auto cred_protect_it =
+        extensions.find(cbor::Value(device::kExtensionCredProtect));
+    if (cred_protect_it != extensions.end()) {
+      if (!cred_protect_it->second.is_unsigned()) {
+        return base::nullopt;
+      }
+      switch (cred_protect_it->second.GetUnsigned()) {
+        case 1:
+          // Default behaviour.
+          break;
+        case 2:
+          request.cred_protect =
+              std::make_pair(device::CredProtect::kUVOrCredIDRequired, false);
+          break;
+        case 3:
+          request.cred_protect =
+              std::make_pair(device::CredProtect::kUVRequired, false);
+          break;
+        default:
+          return base::nullopt;
+      }
     }
   }
 
@@ -1160,22 +1603,22 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
     const auto resident_key_option =
         option_map.find(cbor::Value(kResidentKeyMapKey));
     if (resident_key_option != option_map.end())
-      request.SetResidentKeyRequired(resident_key_option->second.GetBool());
+      request.resident_key_required = resident_key_option->second.GetBool();
 
     const auto uv_option =
         option_map.find(cbor::Value(kUserVerificationMapKey));
     if (uv_option != option_map.end())
-      request.SetUserVerification(
+      request.user_verification =
           uv_option->second.GetBool()
               ? UserVerificationRequirement::kRequired
-              : UserVerificationRequirement::kDiscouraged);
+              : UserVerificationRequirement::kDiscouraged;
   }
 
   const auto pin_auth_it = request_map.find(cbor::Value(8));
   if (pin_auth_it != request_map.end()) {
     if (!pin_auth_it->second.is_bytestring())
       return base::nullopt;
-    request.SetPinAuth(pin_auth_it->second.GetBytestring());
+    request.pin_auth = pin_auth_it->second.GetBytestring();
   }
 
   const auto pin_protocol_it = request_map.find(cbor::Value(9));
@@ -1184,7 +1627,7 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
         pin_protocol_it->second.GetUnsigned() >
             std::numeric_limits<uint8_t>::max())
       return base::nullopt;
-    request.SetPinProtocol(pin_protocol_it->second.GetUnsigned());
+    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
   }
 
   return std::make_pair(std::move(request),
@@ -1193,12 +1636,7 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
 
 base::Optional<
     std::pair<CtapGetAssertionRequest, CtapGetAssertionRequest::ClientDataHash>>
-ParseCtapGetAssertionRequest(base::span<const uint8_t> request_bytes) {
-  const auto& cbor_request = cbor::Reader::Read(request_bytes);
-  if (!cbor_request || !cbor_request->is_map())
-    return base::nullopt;
-
-  const auto& request_map = cbor_request->GetMap();
+ParseCtapGetAssertionRequest(const cbor::Value::MapValue& request_map) {
   if (!AreGetAssertionRequestMapKeysCorrect(request_map))
     return base::nullopt;
 
@@ -1234,7 +1672,7 @@ ParseCtapGetAssertionRequest(base::span<const uint8_t> request_bytes) {
 
       allow_list.push_back(std::move(*allowed_credential));
     }
-    request.SetAllowList(std::move(allow_list));
+    request.allow_list = std::move(allow_list);
   }
 
   const auto option_it = request_map.find(cbor::Value(5));
@@ -1249,22 +1687,21 @@ ParseCtapGetAssertionRequest(base::span<const uint8_t> request_bytes) {
     const auto user_presence_option =
         option_map.find(cbor::Value(kUserPresenceMapKey));
     if (user_presence_option != option_map.end())
-      request.SetUserPresenceRequired(user_presence_option->second.GetBool());
+      request.user_presence_required = user_presence_option->second.GetBool();
 
     const auto uv_option =
         option_map.find(cbor::Value(kUserVerificationMapKey));
     if (uv_option != option_map.end())
-      request.SetUserVerification(
-          uv_option->second.GetBool()
-              ? UserVerificationRequirement::kRequired
-              : UserVerificationRequirement::kPreferred);
+      request.user_verification = uv_option->second.GetBool()
+                                      ? UserVerificationRequirement::kRequired
+                                      : UserVerificationRequirement::kPreferred;
   }
 
   const auto pin_auth_it = request_map.find(cbor::Value(6));
   if (pin_auth_it != request_map.end()) {
     if (!pin_auth_it->second.is_bytestring())
       return base::nullopt;
-    request.SetPinAuth(pin_auth_it->second.GetBytestring());
+    request.pin_auth = pin_auth_it->second.GetBytestring();
   }
 
   const auto pin_protocol_it = request_map.find(cbor::Value(7));
@@ -1273,7 +1710,7 @@ ParseCtapGetAssertionRequest(base::span<const uint8_t> request_bytes) {
         pin_protocol_it->second.GetUnsigned() >
             std::numeric_limits<uint8_t>::max())
       return base::nullopt;
-    request.SetPinProtocol(pin_protocol_it->second.GetUnsigned());
+    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
   }
 
   return std::make_pair(std::move(request),

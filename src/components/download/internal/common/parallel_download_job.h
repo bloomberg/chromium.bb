@@ -19,7 +19,11 @@
 
 namespace net {
 class URLRequestContextGetter;
-}
+}  // namespace net
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace download {
 
@@ -38,7 +42,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
       const DownloadCreateInfo& create_info,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      service_manager::Connector* connector);
   ~ParallelDownloadJob() override;
 
   // DownloadJobImpl implementation.
@@ -121,6 +126,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
   // URLRequestContextGetter for issueing network requests when network service
   // is disabled.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // Connector used for establishing the connection to the ServiceManager.
+  service_manager::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelDownloadJob);
 };

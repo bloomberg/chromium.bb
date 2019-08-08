@@ -53,7 +53,7 @@ source_set("common_os") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:version_header",
     "//chrome/chrome_cleaner/proto:file_digest_proto",
@@ -62,7 +62,7 @@ source_set("common_os") {
 
     # For file_path_sanitization
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
-    "//crypto:crypto",
+    "//crypto",
   ]
 
   libs = [
@@ -102,7 +102,7 @@ source_set("cleaner_os") {
   deps = [
     ":common_os",
     ":file_remover_api",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:version_header",
@@ -147,7 +147,7 @@ source_set("unittest_sources") {
     ":cleaner_os",
     ":common_os",
     ":file_remover_api",
-    "//base:base",
+    "//base",
     "//base/test:test_config",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",

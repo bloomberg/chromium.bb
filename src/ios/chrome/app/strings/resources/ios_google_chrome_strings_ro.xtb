@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1282031177488366470">Contribuie la îmbunătățirea funcțiilor și performanței Chrome</translation>
 <translation id="1326317727527857210">Pentru a accesa filele de pe alte dispozitive, conectează-te la Chrome.</translation>
+<translation id="1682483655351012182">Sincronizează-ți datele din Chromium</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Notificare privind confidențialitatea Google Chrome</translation>
 <translation id="1863312987075920112">Folosind această aplicație, accepți <ph name="BEGIN_LINK_TOS" />Termenii și condițiile<ph name="END_LINK_TOS" /> și <ph name="BEGIN_LINK_PRIVACY" />Notificarea privind confidențialitatea<ph name="END_LINK_PRIVACY" /> Chrome.</translation>
-<translation id="1984705450038014246">Sincronizează datele din Chrome</translation>
 <translation id="2147651015520127414">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Datele din Sincronizarea Chrome</translation>
 <translation id="2342981853652716282">Conectează-te la Chrome pentru a accesa marcajele, parolele și altele pe toate dispozitivele tale.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
 <translation id="415767770115540173">Beneficiază de o experiență Google mai bună în Chrome pe baza locației.</translation>
 <translation id="424864128008805179">Te deconectezi de la Chrome?</translation>
-<translation id="447252321002412580">Contribuie la îmbunătățirea funcțiilor și performanței Chrome</translation>
 <translation id="4523886039239821078">Unele suplimente determină blocarea browserului Chrome. Dezinstalează:</translation>
 <translation id="4615174829807303908">Te deconectezi de la un cont gestionat de <ph name="SIGNOUT_MANAGED_DOMAIN" />. Astfel, se vor șterge datele Chrome de pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
 <translation id="5389212809648216794">Google Chrome nu poate folosi camera foto, deoarece este folosită de o altă aplicație</translation>

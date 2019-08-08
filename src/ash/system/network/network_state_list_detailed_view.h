@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 namespace views {
 class Button;
@@ -19,12 +20,12 @@ class Button;
 
 namespace ash {
 
+class TrayNetworkStateModel;
+
 namespace tray {
 
 // Exported for tests.
-class ASH_EXPORT NetworkStateListDetailedView
-    : public TrayDetailedView,
-      public base::SupportsWeakPtr<NetworkStateListDetailedView> {
+class ASH_EXPORT NetworkStateListDetailedView : public TrayDetailedView {
  public:
   ~NetworkStateListDetailedView() override;
 
@@ -35,6 +36,9 @@ class ASH_EXPORT NetworkStateListDetailedView
   void Update();
 
   void ToggleInfoBubbleForTesting();
+
+  // views::View:
+  const char* GetClassName() const override;
 
  protected:
   enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
@@ -60,6 +64,10 @@ class ASH_EXPORT NetworkStateListDetailedView
                            const ui::Event& event) override;
   void CreateExtraTitleRowButtons() override;
 
+  // Implementation of 'HandleViewClicked' once networks are received.
+  void HandleViewClickedImpl(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network);
+
   // Launches the WebUI settings in a browser and closes the system menu.
   void ShowSettings();
 
@@ -81,11 +89,15 @@ class ASH_EXPORT NetworkStateListDetailedView
   // Request a network scan.
   void CallRequestScan();
 
+  bool IsWifiEnabled();
+
   // Type of list (all networks or vpn)
   ListType list_type_;
 
   // Track login state.
   LoginStatus login_;
+
+  TrayNetworkStateModel* model_;
 
   views::Button* info_button_;
   views::Button* settings_button_;
@@ -95,6 +107,8 @@ class ASH_EXPORT NetworkStateListDetailedView
 
   // Timer for starting and stopping network scans.
   base::RepeatingTimer network_scan_repeating_timer_;
+
+  base::WeakPtrFactory<NetworkStateListDetailedView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
 };

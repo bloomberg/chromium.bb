@@ -17,7 +17,7 @@ FullBrowserTransitionManager* FullBrowserTransitionManager::Get() {
   return instance.get();
 }
 
-void FullBrowserTransitionManager::RegisterCallbackOnProfileCreation(
+bool FullBrowserTransitionManager::RegisterCallbackOnProfileCreation(
     SimpleFactoryKey* key,
     OnProfileCreationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -26,8 +26,10 @@ void FullBrowserTransitionManager::RegisterCallbackOnProfileCreation(
   if (iterator != simple_key_to_profile_.end()) {
     // Profile has already been created, run the callback now.
     std::move(callback).Run(iterator->second);
+    return true;
   } else {
     on_profile_creation_callbacks_[key].push_back(std::move(callback));
+    return false;
   }
 }
 

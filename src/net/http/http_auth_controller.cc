@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/url_util.h"
 #include "net/dns/host_resolver.h"
@@ -22,6 +22,11 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_parameters_callback.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_source_type.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 
@@ -123,6 +128,20 @@ void HistogramAuthEvent(HttpAuthHandler* handler, AuthEvent auth_event) {
                             kTargetBucketsEnd);
 }
 
+base::Value ControllerParamsToValue(HttpAuth::Target target,
+                                    const GURL* url,
+                                    NetLogCaptureMode) {
+  base::Value params(base::Value::Type::DICTIONARY);
+  params.SetStringPath("target", HttpAuth::GetAuthTargetString(target));
+  params.SetStringPath("url", url->spec());
+  return params;
+}
+
+NetLogParametersCallback ControllerParamsCallback(HttpAuth::Target target,
+                                                  const GURL& url) {
+  return base::BindRepeating(&ControllerParamsToValue, target, &url);
+}
+
 }  // namespace
 
 HttpAuthController::HttpAuthController(
@@ -134,26 +153,44 @@ HttpAuthController::HttpAuthController(
     : target_(target),
       auth_url_(auth_url),
       auth_origin_(auth_url.GetOrigin()),
-      auth_path_(HttpAuth::AUTH_PROXY ? std::string() : auth_url.path()),
+      auth_path_(auth_url.path()),
       embedded_identity_used_(false),
       default_credentials_used_(false),
       http_auth_cache_(http_auth_cache),
       http_auth_handler_factory_(http_auth_handler_factory),
-      host_resolver_(host_resolver) {}
+      host_resolver_(host_resolver) {
+  DCHECK(target != HttpAuth::AUTH_PROXY || auth_path_ == "/");
+}
 
 HttpAuthController::~HttpAuthController() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (net_log_.source().IsValid())
+    net_log_.EndEvent(NetLogEventType::AUTH_CONTROLLER);
+}
+
+void HttpAuthController::BindToCallingNetLog(
+    const NetLogWithSource& caller_net_log) {
+  if (!net_log_.source().IsValid()) {
+    net_log_ = NetLogWithSource::Make(caller_net_log.net_log(),
+                                      NetLogSourceType::HTTP_AUTH_CONTROLLER);
+    net_log_.BeginEvent(NetLogEventType::AUTH_CONTROLLER,
+                        ControllerParamsCallback(target_, auth_url_));
+  }
+  caller_net_log.AddEvent(NetLogEventType::AUTH_BOUND_TO_CONTROLLER,
+                          net_log_.source().ToEventParametersCallback());
 }
 
 int HttpAuthController::MaybeGenerateAuthToken(
     const HttpRequestInfo* request,
     CompletionOnceCallback callback,
-    const NetLogWithSource& net_log) {
+    const NetLogWithSource& caller_net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!auth_info_);
-  bool needs_auth = HaveAuth() || SelectPreemptiveAuth(net_log);
+  bool needs_auth = HaveAuth() || SelectPreemptiveAuth(caller_net_log);
   if (!needs_auth)
     return OK;
+  net_log_.BeginEvent(NetLogEventType::AUTH_GENERATE_TOKEN,
+                      caller_net_log.source().ToEventParametersCallback());
   const AuthCredentials* credentials = nullptr;
   if (identity_.source != HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS)
     credentials = &identity_.credentials;
@@ -173,7 +210,8 @@ int HttpAuthController::MaybeGenerateAuthToken(
   return HandleGenerateTokenResult(rv);
 }
 
-bool HttpAuthController::SelectPreemptiveAuth(const NetLogWithSource& net_log) {
+bool HttpAuthController::SelectPreemptiveAuth(
+    const NetLogWithSource& caller_net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!HaveAuth());
   DCHECK(identity_.invalid);
@@ -187,17 +225,19 @@ bool HttpAuthController::SelectPreemptiveAuth(const NetLogWithSource& net_log) {
   // is expected to be fast. LookupByPath() is fast in the common case, since
   // the number of http auth cache entries is expected to be very small.
   // (For most users in fact, it will be 0.)
-  HttpAuthCache::Entry* entry = http_auth_cache_->LookupByPath(
-      auth_origin_, auth_path_);
+  HttpAuthCache::Entry* entry =
+      http_auth_cache_->LookupByPath(auth_origin_, auth_path_);
   if (!entry)
     return false;
+
+  BindToCallingNetLog(caller_net_log);
 
   // Try to create a handler using the previous auth challenge.
   std::unique_ptr<HttpAuthHandler> handler_preemptive;
   int rv_create =
       http_auth_handler_factory_->CreatePreemptiveAuthHandlerFromString(
           entry->auth_challenge(), target_, auth_origin_,
-          entry->IncrementNonceCount(), net_log, host_resolver_,
+          entry->IncrementNonceCount(), net_log_, host_resolver_,
           &handler_preemptive);
   if (rv_create != OK)
     return false;
@@ -228,11 +268,15 @@ int HttpAuthController::HandleAuthChallenge(
     const SSLInfo& ssl_info,
     bool do_not_send_server_auth,
     bool establishing_tunnel,
-    const NetLogWithSource& net_log) {
+    const NetLogWithSource& caller_net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(headers.get());
   DCHECK(auth_origin_.is_valid());
   DCHECK(!auth_info_);
+
+  BindToCallingNetLog(caller_net_log);
+  net_log_.BeginEvent(NetLogEventType::AUTH_HANDLE_CHALLENGE,
+                      caller_net_log.source().ToEventParametersCallback());
 
   // Give the existing auth handler first try at the authentication headers.
   // This will also evict the entry in the HttpAuthCache if the previous
@@ -291,7 +335,7 @@ int HttpAuthController::HandleAuthChallenge(
       // Find the best authentication challenge that we support.
       HttpAuth::ChooseBestChallenge(
           http_auth_handler_factory_, *headers, ssl_info, target_, auth_origin_,
-          disabled_schemes_, net_log, host_resolver_, &handler_);
+          disabled_schemes_, net_log_, host_resolver_, &handler_);
       if (handler_.get())
         HistogramAuthEvent(handler_.get(), AUTH_EVENT_START);
     }
@@ -302,10 +346,13 @@ int HttpAuthController::HandleAuthChallenge(
         // active network attacker could control its contents.  Instead, we just
         // fail to establish the tunnel.
         DCHECK(target_ == HttpAuth::AUTH_PROXY);
+        net_log_.EndEventWithNetErrorCode(
+            NetLogEventType::AUTH_HANDLE_CHALLENGE, ERR_PROXY_AUTH_UNSUPPORTED);
         return ERR_PROXY_AUTH_UNSUPPORTED;
       }
       // We found no supported challenge -- let the transaction continue so we
       // end up displaying the error page.
+      net_log_.EndEvent(NetLogEventType::AUTH_HANDLE_CHALLENGE);
       return OK;
     }
 
@@ -339,6 +386,7 @@ int HttpAuthController::HandleAuthChallenge(
     // TODO(asanka): Instead we should create a priority list of
     //     <handler,identity> and iterate through that.
   } while(!handler_.get());
+  net_log_.EndEvent(NetLogEventType::AUTH_HANDLE_CHALLENGE);
   return OK;
 }
 
@@ -513,10 +561,14 @@ void HttpAuthController::PopulateAuthChallenge() {
   auth_info_->challenger = url::Origin::Create(auth_origin_);
   auth_info_->scheme = HttpAuth::SchemeToString(handler_->auth_scheme());
   auth_info_->realm = handler_->realm();
+  auth_info_->path = auth_path_;
+  auth_info_->challenge = handler_->challenge();
 }
 
 int HttpAuthController::HandleGenerateTokenResult(int result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  net_log_.EndEventWithNetErrorCode(NetLogEventType::AUTH_GENERATE_TOKEN,
+                                    result);
   switch (result) {
     // Occurs if the credential handle is found to be invalid at the point it is
     // exercised (i.e. GenerateAuthToken stage). We are going to consider this
@@ -568,7 +620,7 @@ void HttpAuthController::OnGenerateAuthTokenDone(int result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   result = HandleGenerateTokenResult(result);
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
   }
 }
 

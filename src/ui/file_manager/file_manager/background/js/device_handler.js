@@ -20,7 +20,7 @@ class DeviceHandler extends cr.EventTarget {
     chrome.notifications.onClicked.addListener(
         this.onNotificationClicked_.bind(this));
     chrome.notifications.onButtonClicked.addListener(
-        this.onNotificationClicked_.bind(this));
+        this.onNotificationButtonClicked_.bind(this));
   }
 
   /**
@@ -253,8 +253,20 @@ class DeviceHandler extends cr.EventTarget {
               DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY.show(
                   /** @type {string} */ (metadata.devicePath));
             } else {
-              DeviceHandler.Notification.DEVICE_NAVIGATION.show(
-                  /** @type {string} */ (metadata.devicePath));
+              chrome.fileManagerPrivate.getPreferences(pref => {
+                if (!pref.arcEnabled || !util.isArcUsbStorageUIEnabled()) {
+                  DeviceHandler.Notification.DEVICE_NAVIGATION.show(
+                      /** @type {string} */ (metadata.devicePath));
+                } else if (pref.arcRemovableMediaAccessEnabled) {
+                  DeviceHandler.Notification.DEVICE_NAVIGATION_APPS_HAVE_ACCESS
+                      .show(
+                          /** @type {string} */ (metadata.devicePath));
+                } else {
+                  DeviceHandler.Notification.DEVICE_NAVIGATION_ALLOW_APP_ACCESS
+                      .show(
+                          /** @type {string} */ (metadata.devicePath));
+                }
+              });
             }
           }
         });
@@ -266,31 +278,58 @@ class DeviceHandler extends cr.EventTarget {
   }
 
   /**
-   * Handles notification body or button click.
+   * Handles notification body click.
    * @param {string} id ID of the notification.
    * @private
    */
   onNotificationClicked_(id) {
     util.doIfPrimaryContext(() => {
-      this.onNotificationClickedInternal_(id);
+      this.onNotificationClickedInternal_(id, -1 /* index */);
+    });
+  }
+
+  /**
+   * Handles notification button click.
+   * @param {string} id ID of the notification.
+   * @param {number} index index of the button.
+   * @private
+   */
+  onNotificationButtonClicked_(id, index) {
+    util.doIfPrimaryContext(() => {
+      this.onNotificationClickedInternal_(id, index);
     });
   }
 
   /**
    * @param {string} id ID of the notification.
+   * @param {number} index index of the button.
    * @private
    */
-  onNotificationClickedInternal_(id) {
+  onNotificationClickedInternal_(id, index) {
     const pos = id.indexOf(':');
     const type = id.substr(0, pos);
     const devicePath = id.substr(pos + 1);
     if (type === 'deviceNavigation' || type === 'deviceFail') {
       chrome.notifications.clear(id, () => {});
       this.openMediaDirectory_(null, devicePath, null);
-    } else if (type === 'deviceImport') {
+      return;
+    }
+    if (type === 'deviceImport') {
       chrome.notifications.clear(id, () => {});
       this.openMediaDirectory_(null, devicePath, 'DCIM');
+      return;
     }
+    if (type !== 'deviceNavigationAppAccess') {
+      return;
+    }
+    chrome.notifications.clear(id, () => {});
+    const secondButtonIndex = 1;
+    if (index === secondButtonIndex) {
+      chrome.fileManagerPrivate.openSettingsSubpage(
+          'storage/externalStoragePreferences');
+      return;
+    }
+    this.openMediaDirectory_(null, devicePath, null);
   }
 
   /**
@@ -350,8 +389,20 @@ DeviceHandler.Notification = class {
    * @param {string=} opt_buttonLabel String ID of the button label.
    * @param {boolean=} opt_isClickable True if the notification body is
    *     clickable.
+   * @param {string=} opt_additionalMessage String ID of additional message.
+   * @param {string=} opt_secondButtonLabel String ID of the second button
+   *     label.
    */
-  constructor(prefix, title, message, opt_buttonLabel, opt_isClickable) {
+  constructor(
+      prefix, title, message, opt_buttonLabel, opt_isClickable,
+      opt_additionalMessage, opt_secondButtonLabel) {
+    // Check that second button is used with primary button, because
+    // notifications API is based in button index, so the second button index
+    // is always 1.
+    if (opt_secondButtonLabel) {
+      console.assert(opt_buttonLabel !== undefined);
+    }
+
     /**
      * Prefix of notification ID.
      * @type {string}
@@ -381,6 +432,18 @@ DeviceHandler.Notification = class {
      * @type {boolean}
      */
     this.isClickable = opt_isClickable || false;
+
+    /**
+     * String ID of additional message.
+     * @type {?string}
+     */
+    this.additionalMessage = opt_additionalMessage || null;
+
+    /**
+     * String ID of second button label.
+     * @type {?string}
+     */
+    this.secondButtonLabel = opt_secondButtonLabel || null;
 
     /**
      * Queue of API call.
@@ -433,11 +496,16 @@ DeviceHandler.Notification = class {
   showInternal_(notificationId, message, callback) {
     const buttons =
         this.buttonLabel ? [{title: str(this.buttonLabel)}] : undefined;
+    if (this.secondButtonLabel) {
+      buttons.push({title: str(this.secondButtonLabel)});
+    }
+    const additionalMessage =
+        this.additionalMessage ? (' ' + str(this.additionalMessage)) : '';
     chrome.notifications.create(
         notificationId, {
           type: 'basic',
           title: str(this.title),
-          message: message || str(this.message),
+          message: message || (str(this.message) + additionalMessage),
           iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
           buttons: buttons,
           isClickable: this.isClickable
@@ -465,6 +533,30 @@ DeviceHandler.Notification = class {
     return this.prefix + ':' + devicePath;
   }
 };
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
+DeviceHandler.Notification.DEVICE_NAVIGATION_ALLOW_APP_ACCESS =
+    new DeviceHandler.Notification(
+        'deviceNavigationAppAccess', 'REMOVABLE_DEVICE_DETECTION_TITLE',
+        'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
+        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL', true,
+        'REMOVABLE_DEVICE_ALLOW_PLAY_STORE_ACCESS_MESSAGE',
+        'REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
+DeviceHandler.Notification.DEVICE_NAVIGATION_APPS_HAVE_ACCESS =
+    new DeviceHandler.Notification(
+        'deviceNavigationAppAccess', 'REMOVABLE_DEVICE_DETECTION_TITLE',
+        'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
+        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL', true,
+        'REMOVABLE_DEVICE_PLAY_STORE_APPS_HAVE_ACCESS_MESSAGE',
+        'REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL');
 
 /**
  * @type {DeviceHandler.Notification}

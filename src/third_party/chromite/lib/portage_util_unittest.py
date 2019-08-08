@@ -746,7 +746,6 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     run = self.PatchObject(cros_build_lib, 'RunCommand')
-    readfile = self.PatchObject(osutils, 'ReadFile')
 
     # Reject no output.
     run.return_value = cros_build_lib.CommandResult(
@@ -754,10 +753,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(portage_util.Error,
                       self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 2)
+    self.assertEqual(exists.call_count, 1)
     exists.reset_mock()
-    self.assertEqual(readfile.call_count, 1)
-    readfile.reset_mock()
 
     # Reject simple output.
     run.return_value = cros_build_lib.CommandResult(
@@ -765,10 +762,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(portage_util.Error,
                       self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 2)
+    self.assertEqual(exists.call_count, 1)
     exists.reset_mock()
-    self.assertEqual(readfile.call_count, 1)
-    readfile.reset_mock()
 
     # Reject error.
     run.return_value = cros_build_lib.CommandResult(
@@ -776,8 +771,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(portage_util.Error,
                       self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 2)
-    self.assertEqual(readfile.call_count, 1)
+    self.assertEqual(exists.call_count, 1)
 
   def testVersionScriptTooHighVersion(self):
     """Reject scripts that output high version numbers."""
@@ -1389,6 +1383,46 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
     # Check that doesn't fail when the package name is provided.
     pkg = portage_util.InstalledPackage(None, self.tempdir, pf='package-1')
     self.assertEquals('package-1', pkg.pf)
+
+
+class ParseParallelEmergeStatusFileTest(cros_test_lib.TempDirTestCase):
+  """ParseParallelEmergeStatusFile tests."""
+
+  def setUp(self):
+    self.dne_file = os.path.join(self.tempdir, 'does_not_exist')
+    self.empty_file = os.path.join(self.tempdir, 'empty_status_file')
+    self.single_file = os.path.join(self.tempdir, 'single_entry_status_file')
+    self.multi_file = os.path.join(self.tempdir, 'multiple_entry_status_file')
+
+    self.pkgs = ['cat/pkg', 'foo/bar']
+    self.pkg = self.pkgs[0]
+
+    self.cpvs = [portage_util.SplitCPV(p, strict=False) for p in self.pkgs]
+    self.cpv = portage_util.SplitCPV(self.pkg, strict=False)
+
+    osutils.Touch(self.empty_file)
+    osutils.WriteFile(self.single_file, self.pkg)
+    osutils.WriteFile(self.multi_file, '\n'.join(self.pkgs))
+
+  def testNoFile(self):
+    """Test parsing when file does not exist."""
+    result = portage_util.ParseParallelEmergeStatusFile(self.dne_file)
+    self.assertEqual([], result)
+
+  def testParseEmpty(self):
+    """Parse an empty file."""
+    result = portage_util.ParseParallelEmergeStatusFile(self.empty_file)
+    self.assertEqual([], result)
+
+  def testSingleEntry(self):
+    """Parse file with single entry."""
+    result = portage_util.ParseParallelEmergeStatusFile(self.single_file)
+    self.assertEqual([self.cpv], result)
+
+  def testMultipleEntries(self):
+    """Parse file with multiple entries."""
+    result = portage_util.ParseParallelEmergeStatusFile(self.multi_file)
+    self.assertEqual(self.cpvs, result)
 
 
 class PortageqBestVisibleTest(cros_test_lib.MockTestCase):

@@ -161,7 +161,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
   if (!image) {
     // Undocumented exception (not in spec)
     exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
-                                      "Out of memory");
+                                      "ImageBitmap construction failed");
   }
 
   return image;
@@ -305,7 +305,13 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     bool can_use_gpu = false;
     CanvasResourceProvider::PresentationMode presentation_mode =
         CanvasResourceProvider::kDefaultPresentationMode;
-    if (Is2d()) {
+    if (Is3d()) {
+      if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+        presentation_mode =
+            CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+      }
+      can_use_gpu = SharedGpuContext::IsGpuCompositingEnabled();
+    } else {
       if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
         presentation_mode =
             CanvasResourceProvider::kAllowImageChromiumPresentationMode;
@@ -314,12 +320,6 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
           RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
         can_use_gpu = true;
       }
-    } else if (Is3d()) {
-      if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-        presentation_mode =
-            CanvasResourceProvider::kAllowImageChromiumPresentationMode;
-      }
-      can_use_gpu = SharedGpuContext::IsGpuCompositingEnabled();
     }
 
     IntSize surface_size(width(), height());

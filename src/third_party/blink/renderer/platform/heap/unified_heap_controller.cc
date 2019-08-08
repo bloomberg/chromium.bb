@@ -26,9 +26,16 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 }  // namespace
 
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
-    : thread_state_(thread_state) {}
+    : thread_state_(thread_state) {
+  thread_state->Heap().stats_collector()->SetUnifiedHeapController(this);
+}
 
-void UnifiedHeapController::TracePrologue() {
+UnifiedHeapController::~UnifiedHeapController() {
+  thread_state_->Heap().stats_collector()->SetUnifiedHeapController(nullptr);
+}
+
+void UnifiedHeapController::TracePrologue(
+    v8::EmbedderHeapTracer::TraceFlags v8_flags) {
   VLOG(2) << "UnifiedHeapController::TracePrologue";
   ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
       thread_state_->Heap().stats_collector());
@@ -40,8 +47,11 @@ void UnifiedHeapController::TracePrologue() {
 
   // Reset any previously scheduled garbage collections.
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
-  // Start incremental marking with unified tracing.
-  thread_state_->IncrementalMarkingStart(BlinkGC::GCReason::kUnifiedHeapGC);
+  BlinkGC::GCReason gc_reason =
+      (v8_flags & v8::EmbedderHeapTracer::TraceFlags::kReduceMemory)
+          ? BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC
+          : BlinkGC::GCReason::kUnifiedHeapGC;
+  thread_state_->IncrementalMarkingStart(gc_reason);
 
   is_tracing_done_ = false;
 }
@@ -59,13 +69,14 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
     ThreadHeapStatsCollector::Scope mark_prologue_scope(
         thread_state_->Heap().stats_collector(),
         ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue);
-    thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
-                                           BlinkGC::kIncrementalMarking,
-                                           BlinkGC::GCReason::kUnifiedHeapGC);
+    thread_state_->AtomicPauseMarkPrologue(
+        ToBlinkGCStackState(stack_state), BlinkGC::kIncrementalMarking,
+        thread_state_->current_gc_data_.reason);
   }
 }
 
-void UnifiedHeapController::TraceEpilogue() {
+void UnifiedHeapController::TraceEpilogue(
+    v8::EmbedderHeapTracer::TraceSummary* summary) {
   VLOG(2) << "UnifiedHeapController::TraceEpilogue";
 
   {
@@ -80,6 +91,14 @@ void UnifiedHeapController::TraceEpilogue() {
     thread_state_->AtomicPauseSweepAndCompact(BlinkGC::kIncrementalMarking,
                                               BlinkGC::kLazySweeping);
   }
+
+  ThreadHeapStatsCollector* const stats_collector =
+      thread_state_->Heap().stats_collector();
+  summary->allocated_size =
+      static_cast<size_t>(stats_collector->marked_bytes());
+  summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
+  buffered_allocated_size_ = 0;
+  old_allocated_bytes_since_prev_gc_ = 0;
 
   if (!thread_state_->IsSweepingInProgress()) {
     // Sweeping was finished during the atomic pause. Update statistics needs to
@@ -160,6 +179,31 @@ bool UnifiedHeapController::IsRootForNonTracingGCInternal(
 bool UnifiedHeapController::IsRootForNonTracingGC(
     const v8::TracedGlobal<v8::Value>& handle) {
   return IsRootForNonTracingGCInternal(handle);
+}
+
+void UnifiedHeapController::UpdateAllocatedObjectSize(
+    int64_t allocated_bytes_since_prev_gc) {
+  int64_t delta =
+      allocated_bytes_since_prev_gc - old_allocated_bytes_since_prev_gc_;
+  old_allocated_bytes_since_prev_gc_ = allocated_bytes_since_prev_gc;
+  if (delta < 0) {
+    // TODO(mlippautz): Add support for negative deltas in V8.
+    buffered_allocated_size_ += delta;
+    return;
+  }
+
+  constexpr int64_t kMinimumReportingSize = 1024;
+  buffered_allocated_size_ += static_cast<int64_t>(delta);
+
+  // Reported from a recursive sweeping call.
+  if (thread_state()->IsSweepingInProgress() &&
+      thread_state()->SweepForbidden())
+    return;
+
+  if (buffered_allocated_size_ > kMinimumReportingSize) {
+    IncreaseAllocatedSize(static_cast<size_t>(buffered_allocated_size_));
+    buffered_allocated_size_ = 0;
+  }
 }
 
 }  // namespace blink

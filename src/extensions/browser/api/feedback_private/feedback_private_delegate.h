@@ -69,6 +69,11 @@ class FeedbackPrivateDelegate {
   // called when feedback is complete for the login profile.
   virtual void UnloadFeedbackExtension(
       content::BrowserContext* context) const = 0;
+
+  // Returns the type of the landing page which is shown to the user when the
+  // report is successfully sent.
+  virtual api::feedback_private::LandingPageType GetLandingPageType(
+      const feedback::FeedbackData& feedback_data) const = 0;
 #endif
 
   // Returns the normalized email address of the signed-in user associated with

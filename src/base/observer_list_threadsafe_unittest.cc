@@ -390,11 +390,11 @@ TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
                           BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                    observer_list, Unretained(&observer_2)));
 
-  ThreadPool::GetInstance()->FlushForTesting();
+  ThreadPoolInstance::Get()->FlushForTesting();
 
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
 
-  ThreadPool::GetInstance()->FlushForTesting();
+  ThreadPoolInstance::Get()->FlushForTesting();
 
   EXPECT_TRUE(observer_1.called_on_valid_sequence());
   EXPECT_TRUE(observer_2.called_on_valid_sequence());
@@ -467,7 +467,7 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
       ->PostTask(FROM_HERE,
                  base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                 observer_list, Unretained(&observer)));
-  ThreadPool::GetInstance()->FlushForTesting();
+  ThreadPoolInstance::Get()->FlushForTesting();
 
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
   observer.WaitForNotificationRunning();

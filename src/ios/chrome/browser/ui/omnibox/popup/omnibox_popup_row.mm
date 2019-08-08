@@ -80,11 +80,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [self.contentView addSubview:_detailAnswerLabel];
 
-    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
-      _trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    } else {
-      _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    }
+    _trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [_trailingButton setContentMode:UIViewContentModeRight];
     [self updateTrailingButtonImages];
     // TODO(justincohen): Consider using the UITableViewCell's accessory view.
@@ -189,26 +185,13 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
         kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
   } else {
     int appendResourceID = 0;
-    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
-      appendResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
-    } else {
-      appendResourceID = _incognito
-                             ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
-                             : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
-    }
+    appendResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
     appendImage = NativeReversableImage(appendResourceID, YES);
   }
   appendImage =
       [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
-    _trailingButton.tintColor = _incognito
-                                    ? [UIColor whiteColor]
-                                    : UIColorFromRGB(kLocationBarTintBlue);
-  } else {
-    _trailingButton.tintColor = _incognito
-                                    ? [UIColor colorWithWhite:1 alpha:0.5]
-                                    : [UIColor colorWithWhite:0 alpha:0.3];
-  }
+  _trailingButton.tintColor =
+      _incognito ? [UIColor whiteColor] : UIColorFromRGB(kLocationBarTintBlue);
 
   [_trailingButton setImage:appendImage forState:UIControlStateNormal];
 }

@@ -75,12 +75,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
@@ -92,11 +91,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   // Set up |cdm_context| as part of initialization.  Guarantees that |init_cb|
   // will be called depending on the outcome, though not necessarily before this
   // function returns.
-  void SetCdm(CdmContext* cdm_context, const InitCB& init_cb);
+  void SetCdm(CdmContext* cdm_context, InitCB init_cb);
 
   // Called when the Cdm provides |media_crypto|.  Will signal |init_cb| based
   // on the result, and set the codec config properly.
-  void OnMediaCryptoReady(const InitCB& init_cb,
+  void OnMediaCryptoReady(InitCB init_cb,
                           JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec);
 
@@ -177,7 +176,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   // started when we dequeued the corresponding output buffer.
   void ForwardVideoFrame(int reset_generation,
                          std::unique_ptr<ScopedAsyncTrace> async_trace,
-                         const scoped_refptr<VideoFrame>& frame);
+                         scoped_refptr<VideoFrame> frame);
 
   // Starts draining the codec by queuing an EOS if required. It skips the drain
   // if possible.
@@ -224,7 +223,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   base::Optional<DrainType> drain_type_;
 
   // The current reset cb if a Reset() is in progress.
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   // A generation counter that's incremented every time Reset() is called.
   int reset_generation_ = 0;

@@ -102,10 +102,6 @@ iframe.fill {
     flex: auto;
 }
 
-.flex-auto-important {
-    flex: auto !important;
-}
-
 .flex-none {
     flex: none;
 }
@@ -439,4 +435,15 @@ span[is=dt-icon-label] {
 .-theme-with-dark-background *::selection,
 :host-context(.-theme-with-dark-background) *::selection {
     background-color: #9e9e9e;
+}
+
+button.link {
+    border: none;
+    background: none;
+    padding: 3px;
+}
+
+button.link[data-keyboard-focus="true"]:focus {
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
 }

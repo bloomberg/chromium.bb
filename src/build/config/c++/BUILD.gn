@@ -15,6 +15,11 @@ declare_args() {
   # TODO(thomasanderson): Set this to true by default once rL352899 is available
   # in MacOS's lldb.
   libcxx_abi_unstable = !((is_mac || is_ios) && is_debug && is_component_build)
+
+  # Builds libcxx Natvis into the symbols for type visualization.
+  # Set to false to workaround http://crbug.com/966676 and
+  # http://crbug.com/966687.
+  libcxx_natvis_include = true
 }
 
 # TODO(xiaohuic): https://crbug/917533 Crashes on internal ChromeOS build.
@@ -76,7 +81,11 @@ config("runtime_library") {
     # does not match ours.
     defines += [ "_LIBCPP_NO_AUTO_LINK" ]
 
-    configs = [ "//tools/win/DebugVisualizers:libc++" ]
+    # Add a debug visualizer for Microsoft's debuggers so that they can display
+    # libc++ types well.
+    if (libcxx_natvis_include) {
+      ldflags += [ "/NATVIS:" + rebase_path("libc++.natvis", root_build_dir) ]
+    }
   } else {
     cflags_cc += [
       "-nostdinc++",

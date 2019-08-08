@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliteração (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Vista de diapositivos</translation>
 <translation id="1045157690796831147">Transliteração (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Introdução em japonês (para teclado dos EUA)</translation>
 <translation id="1047956942837015229">A eliminar <ph name="COUNT" /> itens...</translation>
 <translation id="1049926623896334335">Documento do Word</translation>
 <translation id="1062407476771304334">Substituir</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1351692861129622852">A importar <ph name="FILE_COUNT" /> ficheiros...</translation>
 <translation id="1352103415082130575">Teclado tailandês (pattachote)</translation>
-<translation id="1358032944105037487">Teclado japonês</translation>
 <translation id="1358735829858566124">O ficheiro ou o diretório não pode ser utilizado.</translation>
 <translation id="1363028406613469049">Faixa</translation>
 <translation id="1378727793141957596">Bem-vindo ao Google Drive!</translation>
@@ -162,7 +162,7 @@
 <translation id="2925966894897775835">Folhas</translation>
 <translation id="2938685643439809023">Mongol</translation>
 <translation id="2942290791863759244">Teclado NEO 2 alemão</translation>
-<translation id="2943400156390503548">Apresentações</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">Utilize um nome mais curto.</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2963783323012015985">Teclado turco </translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">Foi feita uma cópia de segurança de <ph name="FILE_COUNT" /> fotos no <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">A copiar...</translation>
 <translation id="3475447146579922140">Folha de cálculo do Google</translation>
-<translation id="3494768541638400973">Introdução japonesa do Google (para teclados japoneses)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> erros.</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Português</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3549797760399244642">Aceder a drive.google.com...</translation>
 <translation id="357479282490346887">Lituânia</translation>
+<translation id="3583509704582854624">Introdução alfanumérica (para teclado japonês)</translation>
 <translation id="3603385196401704894">Francês canadiano</translation>
 <translation id="3606220979431771195">Turco-F</translation>
 <translation id="3609785682760573515">A sincronizar…</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">Tem de estar online para aceder a este ficheiro.</translation>
 <translation id="4212740939091998969">A pasta com o nome "<ph name="FOLDER_NAME" />" já existe. Escolha um nome diferente.</translation>
 <translation id="4215448920900139318">A fazer uma cópia de segurança de <ph name="FILE_COUNT" />...</translation>
+<translation id="4242533952199664413">Abrir definições</translation>
 <translation id="426015154560005552">Teclado árabe</translation>
 <translation id="4261901459838235729">Apresentação do Google</translation>
 <translation id="4290535918735525311">1 pasta partilhada com o Linux.</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984">Ficheiro <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mais...</translation>
 <translation id="4582497162516204941">Instalar com o Linux (Beta)</translation>
-<translation id="4584780943629874245">Partilhar com o Plugin VM</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Este computador</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" irão perder o acesso, exceto se estes itens forem partilhados com eles.</translation>
 <translation id="4690246192099372265">Sueco</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Macaco</translation>
+<translation id="4697043402264950621">Lista de ficheiros ordenada por <ph name="COLUMN_NAME" /> por ordem ascendente.</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="4713544552769165154">Este ficheiro foi concebido para um computador com software Macintosh. Por isso, não é compatível com o seu dispositivo, que utiliza o Chrome OS. Procure na <ph name="BEGIN_LINK" />Web Store do Chrome<ph name="END_LINK" /> uma aplicação de substituição adequada.<ph name="BEGIN_LINK_HELP" />Saiba mais<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Foi feita uma cópia de segurança de <ph name="FILE_COUNT" /> fotos</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> itens selecionados</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="485316830061041779">Alemão</translation>
+<translation id="4867079195717347957">Clique para ordenar a coluna por ordem descendente.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
 <translation id="4880214202172289027">Controlo de deslize do volume</translation>
 <translation id="4880520557730313061">Correção automática</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">Teclado holandês</translation>
 <translation id="5170477580121653719">Espaço restante no Google Drive: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Vista de miniatura</translation>
+<translation id="5194713942430106590">Clique para ordenar a coluna por ordem ascendente.</translation>
 <translation id="5218183485292899140">Francês suíço</translation>
 <translation id="5234764350956374838">Ignorar</translation>
 <translation id="5241298539944515331">Teclado vietnamita (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">Coreano</translation>
 <translation id="5819442873484330149">Hangul 3 Set (final)</translation>
 <translation id="5833610766403489739">Este ficheiro está perdido algures. Verifique a definição da sua localização de transferências e tente novamente.</translation>
+<translation id="5838051104334203064">As aplicações da Play Store não podem aceder a este dispositivo</translation>
 <translation id="5838825566232597749">Workman internacional dos EUA</translation>
 <translation id="5850516540536751549">Este tipo de ficheiro não é suportado. Visite a <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> para encontrar uma aplicação que consiga abrir este tipo de ficheiro.
     <ph name="BEGIN_LINK_HELP" />Saiba mais<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">Teclado BÉPO francês</translation>
 <translation id="5911887972742538906">Ocorreu um erro durante a instalação da sua aplicação para Linux.</translation>
 <translation id="5913638992615760742">Falha na operação de cópia, erro inesperado: <ph name="ERROR_MESSAGE" />.</translation>
+<translation id="5923484009666796948">Introdução em japonês (para teclado japonês)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Conceda autorização às aplicações Linux para modificar ficheiros no seu Google Drive. As alterações serão sincronizadas com os seus outros dispositivos.</translation>
 <translation id="5982621672636444458">Opções de ordenação</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> encontrada(s)</translation>
 <translation id="6935521024859866267">Ao Contrário</translation>
-<translation id="6937152069980083337">Introdução japonesa do Google (para teclado dos EUA)</translation>
 <translation id="6939777852457331078">Teclado Workman dos EUA</translation>
 <translation id="696203921837389374">Ativar a sincronização através de dados móveis</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="7348749398828259943">Teclado Workman internacional dos EUA</translation>
 <translation id="7359359531237882347">A copiar <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
-<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> pastas partilhadas com o Plugin VM</translation>
+<translation id="7375951387215729722">Lista de ficheiros ordenada por <ph name="COLUMN_NAME" /> por ordem descendente.</translation>
 <translation id="7389722738210761877">Teclado tailandês (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Teclado hindi (fonética)</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7982283708762922719">Altura</translation>
 <translation id="7987485481246785146">Teclado curdo sorani baseado no árabe</translation>
-<translation id="7990715602172183602">1 pasta partilhada com o Plugin VM</translation>
 <translation id="799547531016638432">Remover atalho</translation>
 <translation id="799923393800005025">Pode ver</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">Já existe um ficheiro ou diretório com o mesmo nome.</translation>
 <translation id="8391950649760071442">Transliteração (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensões</translation>
-<translation id="8400874747056634633">Gerir a partilha do Plugin VM</translation>
 <translation id="8412586565681117057">Método de introdução rápido</translation>
 <translation id="8418113698656761985">Teclado romeno</translation>
 <translation id="8432745813735585631">Teclado americano (Colemak)</translation>

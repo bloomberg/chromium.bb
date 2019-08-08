@@ -13,7 +13,6 @@
 #include "chromeos/dbus/cups_proxy/fake_cups_proxy_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -27,7 +26,7 @@ class CupsProxyClientImpl : public CupsProxyClient {
   CupsProxyClientImpl() = default;
   ~CupsProxyClientImpl() override = default;
 
-  // CupsProxyClient override.
+  // CupsProxyClient overrides.
   void BootstrapMojoConnection(
       base::ScopedFD fd,
       base::OnceCallback<void(bool success)> result_callback) override {
@@ -40,6 +39,12 @@ class CupsProxyClientImpl : public CupsProxyClient {
         base::BindOnce(&CupsProxyClientImpl::OnBootstrapMojoConnectionResponse,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(result_callback)));
+  }
+
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
+      override {
+    daemon_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
   void Init(dbus::Bus* const bus) {

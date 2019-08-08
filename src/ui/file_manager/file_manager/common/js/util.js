@@ -603,8 +603,10 @@ util.isComputersEntry = entry => {
 };
 
 /**
- * Creates an instance of UserDOMError with given error name that looks like a
- * FileError except that it does not have the deprecated FileError.code member.
+ * Creates an instance of UserDOMError subtype of DOMError because DOMError is
+ * deprecated and its Closure extern is wrong, doesn't have the constructor
+ * with 2 arguments. This DOMError looks like a FileError except that it does
+ * not have the deprecated FileError.code member.
  *
  * @param {string} name Error name for the file error.
  * @param {string=} opt_message optional message.
@@ -616,40 +618,44 @@ util.createDOMError = (name, opt_message) => {
 
 /**
  * Creates a DOMError-like object to be used in place of returning file errors.
- *
- * @param {string} name Error name for the file error.
- * @param {string=} opt_message Optional message for this error.
- * @extends {DOMError}
- * @constructor
  */
-util.UserDOMError = function(name, opt_message) {
+util.UserDOMError = class UserDOMError extends DOMError {
   /**
-   * @type {string}
-   * @private
+   * @param {string} name Error name for the file error.
+   * @param {string=} opt_message Optional message for this error.
+   * @suppress {checkTypes} Closure externs for DOMError doesn't have
+   * constructor with 2 args.
    */
-  this.name_ = name;
+  constructor(name, opt_message) {
+    super(name, opt_message);
 
-  /**
-   * @type {string}
-   * @private
-   */
-  this.message_ = opt_message || '';
-  Object.freeze(this);
-};
+    /**
+     * @type {string}
+     * @private
+     */
+    this.name_ = name;
 
-util.UserDOMError.prototype = {
+    /**
+     * @type {string}
+     * @private
+     */
+    this.message_ = opt_message || '';
+    Object.freeze(this);
+  }
+
   /**
    * @return {string} File error name.
    */
   get name() {
     return this.name_;
-  },
+  }
+
   /**
    * @return {string} Error message.
    */
   get message() {
     return this.message_;
-  },
+  }
 };
 
 /**
@@ -1145,14 +1151,62 @@ util.getEntryLabel = (locationInfo, entry) => {
     return util.getRootTypeLabel(locationInfo);
   }
 
-  // Special case for MyFiles/Downloads.
-  if (locationInfo && util.isMyFilesVolumeEnabled() &&
-      locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS &&
-      entry.fullPath == '/Downloads') {
-    return str('DOWNLOADS_DIRECTORY_LABEL');
+  // Special case for MyFiles/Downloads and MyFiles/PvmDefault.
+  if (locationInfo &&
+      locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (util.isMyFilesVolumeEnabled() && entry.fullPath == '/Downloads') {
+      return str('DOWNLOADS_DIRECTORY_LABEL');
+    }
+    if (util.isPluginVmEnabled() && entry.fullPath == '/PvmDefault') {
+      return str('PLUGIN_VM_DIRECTORY_LABEL');
+    }
   }
 
   return entry.name;
+};
+
+/**
+ * Returns true if specified entry is a special entry such as MyFiles/Downloads,
+ * MyFiles/PvmDefault or Linux files root which cannot be modified such as
+ * deleted/cut or renamed.
+ *
+ * @param {!VolumeManager} volumeManager
+ * @param {(Entry|FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean}
+ */
+util.isNonModifiable = (volumeManager, entry) => {
+  if (!entry) {
+    return false;
+  }
+  if (util.isFakeEntry(entry)) {
+    return true;
+  }
+
+  // If the entry is not a valid entry.
+  if (!volumeManager) {
+    return false;
+  }
+
+  const volumeInfo = volumeManager.getVolumeInfo(entry);
+  if (!volumeInfo) {
+    return false;
+  }
+
+  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (util.isMyFilesVolumeEnabled() && entry.fullPath === '/Downloads') {
+      return true;
+    }
+    if (util.isPluginVmEnabled() && entry.fullPath === '/PvmDefault') {
+      return true;
+    }
+  }
+
+  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.CROSTINI &&
+      entry.fullPath === '/') {
+    return true;
+  }
+
+  return false;
 };
 
 /**
@@ -1499,9 +1553,21 @@ util.unwrapEntry = entry => {
 };
 
 /** @return {boolean} */
+util.isArcUsbStorageUIEnabled = () => {
+  return loadTimeData.valueExists('ARC_USB_STORAGE_UI_ENABLED') &&
+      loadTimeData.getBoolean('ARC_USB_STORAGE_UI_ENABLED');
+};
+
+/** @return {boolean} */
 util.isMyFilesVolumeEnabled = () => {
   return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
       loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
+};
+
+/** @return {boolean} */
+util.isPluginVmEnabled = () => {
+  return loadTimeData.valueExists('PLUGIN_VM_ENABLED') &&
+      loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
 };
 
 /**
@@ -1532,4 +1598,37 @@ util.entryDebugString = (entry) => {
     entryDescription = entryDescription + entry.toURL();
   }
   return entryDescription;
+};
+
+/**
+ * Returns true if all entries belong to the same volume. If there are no
+ * entries it also returns false.
+ *
+ * @param {!Array<Entry|FilesAppEntry>} entries
+ * @param {!VolumeManager} volumeManager
+ * @return boolean
+ */
+util.isSameVolume = (entries, volumeManager) => {
+  if (!entries.length) {
+    return false;
+  }
+
+  const firstEntry = entries[0];
+  if (!firstEntry) {
+    return false;
+  }
+  const volumeInfo = volumeManager.getVolumeInfo(firstEntry);
+
+  for (let i = 1; i < entries.length; i++) {
+    if (!entries[i]) {
+      return false;
+    }
+    const volumeInfoToCompare = volumeManager.getVolumeInfo(assert(entries[i]));
+    if (!volumeInfoToCompare ||
+        volumeInfoToCompare.volumeId !== volumeInfo.volumeId) {
+      return false;
+    }
+  }
+
+  return true;
 };

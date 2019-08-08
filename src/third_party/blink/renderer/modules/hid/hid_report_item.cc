@@ -10,8 +10,4 @@ HIDReportItem::HIDReportItem(const device::mojom::blink::HidReportItem& item) {}
 
 HIDReportItem::~HIDReportItem() {}
 
-void HIDReportItem::Trace(blink::Visitor* visitor) {
-  ScriptWrappable::Trace(visitor);
-}
-
 }  // namespace blink

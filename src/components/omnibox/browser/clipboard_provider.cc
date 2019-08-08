@@ -124,7 +124,7 @@ void ClipboardProvider::AddCreatedMatchWithTracking(
   UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge",
                                clipboard_contents_age);
 
-  matches_.emplace_back(match);
+  matches_.push_back(match);
 }
 
 base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
@@ -153,14 +153,12 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
   auto format_types = AutocompleteMatch::GetFormatTypes(false, true);
   match.contents.assign(url_formatter::FormatUrl(
       url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
-  AutocompleteMatch::ClassifyLocationInString(
-      base::string16::npos, 0, match.contents.length(),
-      ACMatchClassification::URL, &match.contents_class);
+  if (!match.contents.empty())
+    match.contents_class.push_back({0, ACMatchClassification::URL});
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_LINK_FROM_CLIPBOARD));
-  AutocompleteMatch::ClassifyLocationInString(
-      base::string16::npos, 0, match.description.length(),
-      ACMatchClassification::NONE, &match.description_class);
+  if (!match.description.empty())
+    match.description_class.push_back({0, ACMatchClassification::NONE});
 
   return match;
 }
@@ -204,14 +202,12 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
   match.destination_url = result;
   match.contents.assign(l10n_util::GetStringFUTF16(
       IDS_COPIED_TEXT_FROM_CLIPBOARD, AutocompleteMatch::SanitizeString(text)));
-  AutocompleteMatch::ClassifyLocationInString(
-      base::string16::npos, 0, match.contents.length(),
-      ACMatchClassification::NONE, &match.contents_class);
+  if (!match.contents.empty())
+    match.contents_class.push_back({0, ACMatchClassification::NONE});
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_TEXT_FROM_CLIPBOARD));
-  AutocompleteMatch::ClassifyLocationInString(
-      base::string16::npos, 0, match.description.length(),
-      ACMatchClassification::NONE, &match.description_class);
+  if (!match.description.empty())
+    match.description_class.push_back({0, ACMatchClassification::NONE});
 
   match.keyword = default_url->keyword();
   match.transition = ui::PAGE_TRANSITION_GENERATED;
@@ -285,9 +281,8 @@ void ClipboardProvider::ConstructImageMatchCallback(
                           AutocompleteMatchType::CLIPBOARD_IMAGE);
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));
-  AutocompleteMatch::ClassifyLocationInString(
-      base::string16::npos, 0, match.description.length(),
-      ACMatchClassification::NONE, &match.description_class);
+  if (!match.description.empty())
+    match.description_class.push_back({0, ACMatchClassification::NONE});
 
   TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
   search_args.image_thumbnail_content.assign(image_bytes->front_as<char>(),

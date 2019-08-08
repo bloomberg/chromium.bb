@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.tab;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
+import org.chromium.chrome.browser.complex_tasks.TaskTabHelper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tasks.TaskRecognizer;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -26,16 +28,21 @@ public final class TabHelpers {
     /**
      * Creates Tab helper objects upon Tab creation.
      * @param tab {@link Tab} to create helpers for.
+     * @param parentTab {@link Tab} parent tab
      * @param creationState State in which the tab is created.
      */
-    static void initTabHelpers(Tab tab, @TabCreationState Integer creationState) {
+    static void initTabHelpers(Tab tab, Tab parentTab, @TabCreationState Integer creationState) {
         if (creationState != null) TabUma.create(tab, creationState);
         TabDistillabilityProvider.createForTab(tab);
         TabThemeColorHelper.createForTab(tab);
-        TabFullscreenHandler.createForTab(tab);
         InterceptNavigationDelegateImpl.createForTab(tab);
         ContextualSearchTabHelper.createForTab(tab);
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SHOPPING_ASSIST)) {
+            TaskRecognizer.createForTab(tab);
+        }
         MediaSessionTabHelper.createForTab(tab);
+        TaskTabHelper.createForTab(tab, parentTab);
 
         // TODO(jinsukkim): Do this by having something observe new tab creation.
         if (tab.isIncognito()) CipherFactory.getInstance().triggerKeyGeneration();
@@ -53,7 +60,7 @@ public final class TabHelpers {
         InfoBarContainer.from(tab);
 
         TabWebContentsObserver.from(tab);
-        TabGestureStateListener.from(tab, tab::getFullscreenManager);
+        TabGestureStateListener.from(tab);
         SwipeRefreshHandler.from(tab);
         TabFavicon.from(tab);
         TrustedCdn.from(tab);

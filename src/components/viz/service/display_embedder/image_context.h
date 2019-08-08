@@ -61,6 +61,9 @@ struct ImageContext {
   // The promise image which is used on display thread.
   sk_sp<SkImage> image;
 
+  // Fallback SkImage in case we cannot produce a |representation|.
+  sk_sp<SkImage> fallback_image;
+
   // |sync_token| is only accessed on display thread.
   gpu::SyncToken sync_token;
 

@@ -128,6 +128,10 @@ bool WindowPreview::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
+const char* WindowPreview::GetClassName() const {
+  return "WindowPreview";
+}
+
 void WindowPreview::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // The close button was pressed.
@@ -158,8 +162,8 @@ void WindowPreview::SetStyling(const ui::NativeTheme* theme) {
   close_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kCloseButtonColor));
-  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                   views::ImageButton::ALIGN_MIDDLE);
+  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   close_button_->SetMinimumImageSize(
       gfx::Size(kCloseButtonImageSize, kCloseButtonImageSize));
 }

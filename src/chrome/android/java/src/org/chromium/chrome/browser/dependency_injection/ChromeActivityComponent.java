@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.browser.dependency_injection;
 
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
-
 import dagger.Subcomponent;
 
 /**
  * Activity-scoped component associated with {@link org.chromium.chrome.browser.ChromeActivity}.
  */
-@Subcomponent(modules = {ChromeActivityCommonsModule.class, ContextualSuggestionsModule.class})
+// TODO(crbug.com/954585): Remove this and fix dependencies.
+@Subcomponent(modules = {ChromeActivityCommonsModule.class})
 @ActivityScope
 public interface ChromeActivityComponent {
     ChromeAppComponent getParent();

@@ -27,7 +27,6 @@ class Framebuffer : public Object<Framebuffer, VkFramebuffer>
 {
 public:
 	Framebuffer(const VkFramebufferCreateInfo* pCreateInfo, void* mem);
-	~Framebuffer() = delete;
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
 	void clear(const RenderPass* renderPass, uint32_t clearValueCount, const VkClearValue* pClearValues, const VkRect2D& renderArea);
@@ -44,7 +43,7 @@ private:
 
 static inline Framebuffer* Cast(VkFramebuffer object)
 {
-	return reinterpret_cast<Framebuffer*>(object);
+	return reinterpret_cast<Framebuffer*>(object.get());
 }
 
 } // namespace vk

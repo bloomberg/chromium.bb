@@ -96,7 +96,7 @@ base::string16 MessageBoxView::GetInputText() {
 }
 
 bool MessageBoxView::IsCheckBoxSelected() {
-  return checkbox_ ? checkbox_->checked() : false;
+  return checkbox_ && checkbox_->GetChecked();
 }
 
 void MessageBoxView::SetCheckBoxLabel(const base::string16& label) {

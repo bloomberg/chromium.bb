@@ -30,7 +30,7 @@ struct NET_EXPORT NetLogSource {
 
   // Adds the source to a DictionaryValue containing event parameters,
   // using the name "source_dependency".
-  void AddToEventParameters(base::DictionaryValue* event_params) const;
+  void AddToEventParameters(base::Value* event_params) const;
 
   // Returns a callback that returns a dictionary with a single entry
   // named "source_dependency" that describes |this|.

@@ -25,12 +25,16 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_OPT_IN_FEATURE,
+        FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE,
+        FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE,
+        FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE,
         FeatureConstants.DOWNLOAD_SETTINGS_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,
         FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
         FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
-        FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE})
+        FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
+        FeatureConstants.IDENTITY_DISC_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -43,10 +47,14 @@ public @interface FeatureConstants {
     String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
     String DATA_SAVER_MILESTONE_PROMO_FEATURE = "IPH_DataSaverMilestonePromo";
+    String KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE = "IPH_KeyboardAccessoryAddressFilling";
+    String KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE = "IPH_KeyboardAccessoryPasswordFilling";
+    String KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE = "IPH_KeyboardAccessoryPaymentFilling";
     String NTP_BUTTON_FEATURE = "IPH_NewTabPageButton";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String HOMEPAGE_TILE_FEATURE = "IPH_HomepageTile";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
+    String EXPLORE_SITES_TILE_FEATURE = "IPH_ExploreSitesTile";
 
     /**
      * An IPH feature that encourages users who search a query from a web page in a new tab, to use
@@ -101,4 +109,10 @@ public @interface FeatureConstants {
      * An IPH feature to show on tab switcher cards with multiple tab thumbnails.
      */
     String TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE = "IPH_TabGroupsYourTabsTogether";
+
+    /**
+     * An IPH feature prompting user to tap on identity disc to navigate to "Sync and Google
+     * services" preferences.
+     */
+    String IDENTITY_DISC_FEATURE = "IPH_IdentityDisc";
 }

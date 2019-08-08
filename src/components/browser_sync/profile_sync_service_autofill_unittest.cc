@@ -27,8 +27,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
@@ -187,7 +187,6 @@ class FakeAutofillBackend : public autofill::AutofillWebDataBackend {
       autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
   }
   void CommitChanges() override {}
-  void RemoveExpiredFormElements() override {}
 
   void NotifyOfAutofillProfileChanged(
       const autofill::AutofillProfileChange& change) override {}

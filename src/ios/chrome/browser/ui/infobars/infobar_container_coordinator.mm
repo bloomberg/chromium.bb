@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -23,13 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The duration in seconds that the InfobarCoordinator banner will be presented
-// for.
-const double kBannerPresentationDurationInSeconds = 6.0;
-}  // namespace
-
-@interface InfobarContainerCoordinator () <InfobarContainerConsumer>
+@interface InfobarContainerCoordinator () <InfobarContainer,
+                                           InfobarContainerConsumer>
 
 @property(nonatomic, assign) WebStateList* webStateList;
 
@@ -42,6 +39,10 @@ const double kBannerPresentationDurationInSeconds = 6.0;
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+// If YES the legacyContainer Fullscreen support will be disabled.
+// TODO(crbug.com/927064): Remove this once the legacy container is no longer
+// needed.
+@property(nonatomic, assign) BOOL legacyContainerFullscrenSupportDisabled;
 
 @end
 
@@ -76,6 +77,8 @@ const double kBannerPresentationDurationInSeconds = 6.0;
                                  aboveSubview:self.positioner.parentView];
   [legacyContainer didMoveToParentViewController:self.baseViewController];
   legacyContainer.positioner = self.positioner;
+  legacyContainer.disableFullscreenSupport =
+      self.legacyContainerFullscrenSupportDisabled;
   self.legacyContainerViewController = legacyContainer;
 
   // Creates the mediator using both consumers.
@@ -92,7 +95,14 @@ const double kBannerPresentationDurationInSeconds = 6.0;
 
 - (void)stop {
   [[UpgradeCenter sharedInstance] unregisterClient:self.mediator];
-  self.mediator = nil;
+  [self.mediator disconnect];
+  if (!self.legacyContainerViewController)
+    return;
+
+  [self.legacyContainerViewController willMoveToParentViewController:nil];
+  [self.legacyContainerViewController.view removeFromSuperview];
+  [self.legacyContainerViewController removeFromParentViewController];
+  self.legacyContainerViewController = nil;
 }
 
 #pragma mark - Public Interface
@@ -147,10 +157,11 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
 }
 
-- (BOOL)isPresentingInfobarBanner {
+- (InfobarBannerPresentationState)infobarBannerState {
   DCHECK(IsInfobarUIRebootEnabled());
-  _presentingInfobarBanner = self.infobarViewController ? YES : NO;
-  return _presentingInfobarBanner;
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
+  return infobarCoordinator.infobarBannerState;
 }
 
 #pragma mark - InfobarConsumer
@@ -165,17 +176,23 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   infobarCoordinator.badgeDelegate = self.mediator;
   infobarCoordinator.browserState = self.browserState;
   infobarCoordinator.baseViewController = self.baseViewController;
-  [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
+  infobarCoordinator.dispatcher = self.dispatcher;
+  infobarCoordinator.infobarContainer = self;
+  if (!infobarCoordinator.bannerWasPresented)
+    [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
   self.infobarViewController = infobarCoordinator.bannerViewController;
   [self.childCoordinators addObject:infobarCoordinator];
 
-  // Dismissed the presented InfobarCoordinator banner after
-  // kBannerPresentationDuration seconds.
-  dispatch_time_t popTime = dispatch_time(
-      DISPATCH_TIME_NOW, kBannerPresentationDurationInSeconds * NSEC_PER_SEC);
-  dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-    [infobarCoordinator dismissInfobarBannerAfterInteraction];
-  });
+  // Dismisses the presented InfobarCoordinator banner after
+  // kInfobarBannerPresentationDurationInSeconds seconds.
+  if (!UIAccessibilityIsVoiceOverRunning()) {
+    dispatch_time_t popTime = dispatch_time(
+        DISPATCH_TIME_NOW,
+        kInfobarBannerPresentationDurationInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+      [infobarCoordinator dismissInfobarBannerAfterInteraction];
+    });
+  }
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {
@@ -186,6 +203,15 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   DCHECK(IsInfobarUIRebootEnabled());
   // TODO(crbug.com/927064): NO-OP - This shouldn't be needed in the new UI
   // since we use autolayout for the contained Infobars.
+}
+
+#pragma mark InfobarContainer
+
+- (void)childCoordinatorStopped {
+  DCHECK(IsInfobarUIRebootEnabled());
+  // TODO(crbug.com/961343): When more than one InfobarCoordinator can exist
+  // concurrently, delete only the one that stopped.
+  [self.childCoordinators removeAllObjects];
 }
 
 #pragma mark - InfobarCommands

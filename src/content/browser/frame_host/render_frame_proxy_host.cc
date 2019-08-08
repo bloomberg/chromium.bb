@@ -70,8 +70,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
           RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
           this)).second);
   CHECK(render_view_host ||
-        (frame_tree_node_->render_manager()->ForInnerDelegate() &&
-         frame_tree_node_->IsMainFrame()));
+        frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate());
   if (render_view_host)
     frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
 
@@ -81,8 +80,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
                                     ->current_frame_host()
                                     ->GetSiteInstance() == site_instance;
   bool is_proxy_to_outer_delegate =
-      frame_tree_node_->IsMainFrame() &&
-      frame_tree_node_->render_manager()->ForInnerDelegate();
+      frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate();
 
   // If this is a proxy to parent frame or this proxy is for the inner
   // WebContents's FrameTreeNode in outer WebContents's SiteInstance, then we
@@ -100,9 +98,6 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
 }
 
 RenderFrameProxyHost::~RenderFrameProxyHost() {
-  if (!destruction_callback_.is_null())
-    std::move(destruction_callback_).Run();
-
   if (GetProcess()->IsInitializedAndNotDead()) {
     // TODO(nasko): For now, don't send this IPC for top-level frames, as
     // the top-level RenderFrame will delete the RenderFrameProxy.
@@ -169,6 +164,13 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
 
 bool RenderFrameProxyHost::InitRenderFrameProxy() {
   DCHECK(!render_frame_proxy_created_);
+
+  // If the current RenderFrameHost is pending deletion, no new proxies should
+  // be created for it, since this frame should no longer be visible from other
+  // processes. We can get here with postMessage while trying to recreate
+  // proxies for the sender.
+  if (!frame_tree_node_->current_frame_host()->is_active())
+    return false;
 
   // It is possible to reach this when the process is dead (in particular, when
   // creating proxies from CreateProxiesForChildFrame).  In that case, don't
@@ -260,19 +262,12 @@ void RenderFrameProxyHost::ScrollRectToVisible(
 
 void RenderFrameProxyHost::BubbleLogicalScroll(
     blink::WebScrollDirection direction,
-    blink::WebScrollGranularity granularity) {
+    ui::input_types::ScrollGranularity granularity) {
   Send(new FrameMsg_BubbleLogicalScroll(routing_id_, direction, granularity));
 }
 
-void RenderFrameProxyHost::SetDestructionCallback(
-    DestructionCallback destruction_callback) {
-  destruction_callback_ = std::move(destruction_callback);
-}
-
 void RenderFrameProxyHost::OnDetach() {
-  if (frame_tree_node_->render_manager()->ForInnerDelegate()) {
-    // Only main frame proxy can detach for inner WebContents.
-    DCHECK(frame_tree_node_->IsMainFrame());
+  if (frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate()) {
     frame_tree_node_->render_manager()->RemoveOuterDelegateFrame();
     return;
   }
@@ -320,6 +315,13 @@ void RenderFrameProxyHost::OnOpenURL(
   // in the current tab.
   DCHECK_EQ(WindowOpenDisposition::CURRENT_TAB, params.disposition);
 
+  // Augment |download_policy| for situations that were not covered on the
+  // renderer side, e.g. status not available on remote frame, etc.
+  NavigationDownloadPolicy download_policy = params.download_policy;
+  GetContentClient()->browser()->AugmentNavigationDownloadPolicy(
+      frame_tree_node_->navigator()->GetController()->GetWebContents(),
+      current_rfh, params.user_gesture, &download_policy);
+
   // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
   // passed in as well.
   // TODO(lfg, lukasza): Remove |extra_headers| parameter from
@@ -331,7 +333,7 @@ void RenderFrameProxyHost::OnOpenURL(
   frame_tree_node_->navigator()->NavigateFromFrameProxy(
       current_rfh, validated_url, params.initiator_origin, site_instance_.get(),
       params.referrer, ui::PAGE_TRANSITION_LINK,
-      params.should_replace_current_entry, params.download_policy,
+      params.should_replace_current_entry, download_policy,
       params.uses_post ? "POST" : "GET", params.resource_request_body,
       params.extra_headers, std::move(blob_url_loader_factory));
 }
@@ -344,6 +346,15 @@ void RenderFrameProxyHost::OnCheckCompleted() {
 void RenderFrameProxyHost::OnRouteMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
+  if (!target_rfh->IsRenderFrameLive()) {
+    // Check if there is an inner delegate involved; if so target its main
+    // frame or otherwise return since there is no point in forwarding the
+    // message.
+    target_rfh = target_rfh->delegate()->GetMainFrameForInnerDelegate(
+        target_rfh->frame_tree_node());
+    if (!target_rfh || !target_rfh->IsRenderFrameLive())
+      return;
+  }
 
   // |targetOrigin| argument of postMessage is already checked by
   // blink::LocalDOMWindow::DispatchMessageEventWithOriginCheck (needed for

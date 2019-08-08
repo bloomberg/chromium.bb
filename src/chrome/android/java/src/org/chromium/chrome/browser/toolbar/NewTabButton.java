@@ -96,7 +96,6 @@ public class NewTabButton
                 || ((DeviceClassManager.enableAccessibilityLayout()
                             || ChromeFeatureList.isEnabled(
                                     ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                            || FeatureUtilities.isTabGroupsAndroidEnabled()
                             || FeatureUtilities.isGridTabSwitcherEnabled())
                         && mIsIncognito);
         ApiCompatibilityUtils.setImageTintList(

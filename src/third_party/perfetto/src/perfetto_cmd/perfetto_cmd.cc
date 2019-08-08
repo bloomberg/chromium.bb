@@ -49,7 +49,7 @@
 
 #include "src/tracing/ipc/default_socket.h"
 
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
 #include <android/os/DropBoxManager.h>
@@ -139,9 +139,6 @@ Usage: %s
   --no-guardrails          : Ignore guardrails triggered when using --dropbox (for testing).
   --txt                    : Parse config as pbtxt. Not a stable API. Not for production use.
   --reset-guardrails       : Resets the state of the guardails and exits (for testing).
-  --trigger           NAME : Activate the NAME on to the service. If specified multiple times
-                             will activate them all. Cannot be used with --config or
-                             configuration flags.
   --help           -h
 
 
@@ -176,7 +173,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
     OPT_CONFIG_UID,
     OPT_SUBSCRIPTION_ID,
     OPT_RESET_GUARDRAILS,
-    OPT_TRIGGER,
     OPT_PBTXT_CONFIG,
     OPT_DROPBOX,
     OPT_ATRACE_APP,
@@ -202,7 +198,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
       {"config-uid", required_argument, nullptr, OPT_CONFIG_UID},
       {"subscription-id", required_argument, nullptr, OPT_SUBSCRIPTION_ID},
       {"reset-guardrails", no_argument, nullptr, OPT_RESET_GUARDRAILS},
-      {"trigger", required_argument, nullptr, OPT_TRIGGER},
       {"detach", required_argument, nullptr, OPT_DETACH},
       {"attach", required_argument, nullptr, OPT_ATTACH},
       {"is_detached", required_argument, nullptr, OPT_IS_DETACHED},
@@ -221,7 +216,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
 
   ConfigOptions config_options;
   bool has_config_options = false;
-  std::vector<std::string> triggers_to_activate;
 
   for (;;) {
     int option =
@@ -311,11 +305,6 @@ int PerfettoCmd::Main(int argc, char** argv) {
       return 0;
     }
 
-    if (option == OPT_TRIGGER) {
-      triggers_to_activate.push_back(std::string(optarg));
-      continue;
-    }
-
     if (option == OPT_ALERT_ID) {
       statsd_metadata.set_triggering_alert_id(atoll(optarg));
       continue;
@@ -393,23 +382,14 @@ int PerfettoCmd::Main(int argc, char** argv) {
   // 1) A proto-encoded file/stdin (-c ...).
   // 2) A proto-text file/stdin (-c ... --txt).
   // 3) A set of option arguments (-t 10s -s 10m).
-  // The only cases in which a trace config is not expected is --attach or
-  // --trigger. For both of these we are just acting on already
-  // existing sessions.
+  // The only cases in which a trace config is not expected is --attach.
+  // For this we are just acting on already existing sessions.
   perfetto::protos::TraceConfig trace_config_proto;
+  std::vector<std::string> triggers_to_activate;
   bool parsed = false;
   if (is_attach()) {
     if ((!trace_config_raw.empty() || has_config_options)) {
       PERFETTO_ELOG("Cannot specify a trace config with --attach");
-      return 1;
-    }
-    if (!triggers_to_activate.empty()) {
-      PERFETTO_ELOG("Cannot specify triggers to activate with --attach");
-      return 1;
-    }
-  } else if (!triggers_to_activate.empty()) {
-    if (!trace_config_raw.empty() || has_config_options) {
-      PERFETTO_ELOG("Cannot specify a trace config with --trigger");
       return 1;
     }
   } else if (has_config_options) {
@@ -439,7 +419,7 @@ int PerfettoCmd::Main(int argc, char** argv) {
     *trace_config_proto.mutable_statsd_metadata() = std::move(statsd_metadata);
     trace_config_->FromProto(trace_config_proto);
     trace_config_raw.clear();
-  } else if (!is_attach() && triggers_to_activate.empty()) {
+  } else if (!is_attach()) {
     PERFETTO_ELOG("The trace config is invalid, bailing out.");
     return 1;
   }
@@ -454,10 +434,10 @@ int PerfettoCmd::Main(int argc, char** argv) {
     return 1;
   }
 
-  // |activate_triggers| in the trace config is shorthand for --trigger. In this
-  // case we don't intend to send any trace config to the service, rather use
-  // that as a signal to the cmdline client to connect as a producer and
-  // activate triggers.
+  // |activate_triggers| in the trace config is shorthand for trigger_perfetto.
+  // In this case we don't intend to send any trace config to the service,
+  // rather use that as a signal to the cmdline client to connect as a producer
+  // and activate triggers.
   if (!trace_config_->activate_triggers().empty()) {
     for (const auto& trigger : trace_config_->activate_triggers()) {
       triggers_to_activate.push_back(trigger);
@@ -531,11 +511,19 @@ int PerfettoCmd::Main(int argc, char** argv) {
   args.is_dropbox = !dropbox_tag_.empty();
   args.current_time = base::GetWallTimeS();
   args.ignore_guardrails = ignore_guardrails;
+  args.allow_user_build_tracing = trace_config_->allow_user_build_tracing();
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_USERDEBUG_BUILD) || \
     PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
   args.max_upload_bytes_override =
       trace_config_->guardrail_overrides().max_upload_per_day_bytes();
 #endif
+
+  if ((trace_config_->duration_ms() == 0) && args.is_dropbox &&
+      !args.ignore_guardrails) {
+    PERFETTO_ELOG("Can't trace indefinitely when uploading via Dropbox.");
+    return 1;
+  }
+
   if (!limiter.ShouldTrace(args))
     return 1;
 

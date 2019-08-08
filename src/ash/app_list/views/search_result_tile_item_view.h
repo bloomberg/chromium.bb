@@ -11,9 +11,12 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/search_result_base_view.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
+
+namespace ash {
+class PaginationModel;
+}
 
 namespace views {
 class ImageView;
@@ -24,27 +27,34 @@ namespace app_list {
 
 class AppListViewDelegate;
 class SearchResult;
-class PaginationModel;
 
 // A tile view that displays a search result. It hosts view for search result
 // that has SearchResult::DisplayType DISPLAY_TILE or DISPLAY_RECOMMENDATION.
 class APP_LIST_EXPORT SearchResultTileItemView
     : public SearchResultBaseView,
-      public views::ContextMenuController,
-      public AppListMenuModelAdapter::Delegate {
+      public views::ContextMenuController {
  public:
   SearchResultTileItemView(AppListViewDelegate* view_delegate,
-                           PaginationModel* pagination_model,
+                           ash::PaginationModel* pagination_model,
                            bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
   void OnResultChanged() override;
-  void SetIndexInItemListView(size_t index);
+
+  // Overridden from SearchResultBaseView:
+  base::string16 ComputeAccessibleName() const override;
 
   // Informs the SearchResultTileItemView of its parent's background color. The
   // controls within the SearchResultTileItemView will adapt to suit the given
   // color.
   void SetParentBackgroundColor(SkColor color);
+
+  void set_group_index_in_container_view(int index) {
+    group_index_in_container_view_ = index;
+  }
+  int group_index_in_container_view() const {
+    return group_index_in_container_view_;
+  }
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -65,9 +75,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
 
-  // AppListMenuModelAdapter::Delegate overrides:
-  void ExecuteCommand(int command_id, int event_flags) override;
-
  private:
   // Launch the result and log to various histograms.
   void ActivateResult(int event_flags);
@@ -76,7 +83,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void OnGetContextMenuModel(views::View* source,
                              const gfx::Point& point,
                              ui::MenuSourceType source_type,
-                             std::vector<ash::mojom::MenuItemPtr> menu);
+                             std::unique_ptr<ui::SimpleMenuModel> menu_model);
 
   // The callback used when a menu closes.
   void OnMenuClosed();
@@ -106,7 +113,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
-  PaginationModel* const pagination_model_;            // Owned by AppsGridView.
+  ash::PaginationModel* const pagination_model_;       // Owned by AppsGridView.
 
   views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
   views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.
@@ -117,15 +124,18 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
+  // The index of the app in its display group in its container view. Currently,
+  // there are three separately displayed groups for apps in launcher's
+  // suggestion window: Installed apps, play store apps, play store reinstalled
+  // app.
+  int group_index_in_container_view_;
+
   const bool is_play_store_app_search_enabled_;
   const bool is_app_reinstall_recommendation_enabled_;
   const bool show_in_apps_page_;  // True if shown in app list's apps page.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
-  // The index of this item in the search_result_tile_item_list_view, only used
-  // for logging.
-  int index_in_item_list_view_ = -1;
   base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);

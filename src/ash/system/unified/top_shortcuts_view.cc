@@ -9,7 +9,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -19,6 +19,7 @@
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/unified/user_chooser_view.h"
 #include "base/numerics/ranges.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -40,6 +41,7 @@ class UserAvatarButton : public views::Button {
 
 UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
     : Button(listener) {
+  SetID(VIEW_ID_USER_AVATAR_BUTTON);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
   AddChildView(CreateUserAvatarView(0 /* user_index */));
@@ -70,7 +72,7 @@ void TopShortcutButtonContainer::Layout() {
   views::View::Views visible_children;
   std::copy_if(children().cbegin(), children().cend(),
                std::back_inserter(visible_children), [](const auto* v) {
-                 return v->visible() && (v->GetPreferredSize().width() > 0);
+                 return v->GetVisible() && (v->GetPreferredSize().width() > 0);
                });
   if (visible_children.empty())
     return;
@@ -118,7 +120,7 @@ gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   int total_horizontal_size = 0;
   int num_visible = 0;
   for (const auto* child : children()) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
     int child_horizontal_size = child->GetPreferredSize().width();
     if (child_horizontal_size == 0)
@@ -134,6 +136,10 @@ gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   int height = kTrayItemSize + kUnifiedCircularButtonFocusPadding.height() +
                kUnifiedTopShortcutContainerTopPadding;
   return gfx::Size(width, height);
+}
+
+const char* TopShortcutButtonContainer::GetClassName() const {
+  return "TopShortcutButtonContainer";
 }
 
 void TopShortcutButtonContainer::AddUserAvatarButton(
@@ -156,14 +162,15 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
       views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
       kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   container_ = new TopShortcutButtonContainer();
   AddChildView(container_);
 
   if (Shell::Get()->session_controller()->login_status() !=
       LoginStatus::NOT_LOGGED_IN) {
     user_avatar_button_ = new UserAvatarButton(this);
-    user_avatar_button_->SetEnabled(controller->IsUserChooserEnabled());
+    user_avatar_button_->SetEnabled(
+        UserChooserDetailedViewController::IsUserChooserEnabled());
     container_->AddUserAvatarButton(user_avatar_button_);
   }
 
@@ -179,7 +186,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   power_button_ = new TopShortcutButton(
       this, kUnifiedMenuPowerIcon,
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
-  power_button_->set_id(VIEW_ID_POWER_BUTTON);
+  power_button_->SetID(VIEW_ID_POWER_BUTTON);
   container_->AddChildView(power_button_);
 
   lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,

@@ -117,4 +117,9 @@ enum AutoclickMenuPosition {
 
   // The top right of the screen.
   kTopRight,
+
+  // The default position. This will be either the bottom right in LTR languages
+  // or the bottom right in RTL languages. Once the user explicitly picks
+  // a position it will no longer change with language direction.
+  kSystemDefault,
 };

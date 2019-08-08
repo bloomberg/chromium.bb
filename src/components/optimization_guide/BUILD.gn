@@ -9,6 +9,8 @@ static_library("optimization_guide") {
     "hints_component_util.h",
     "optimization_guide_constants.cc",
     "optimization_guide_constants.h",
+    "optimization_guide_prefs.cc",
+    "optimization_guide_prefs.h",
     "optimization_guide_service.cc",
     "optimization_guide_service.h",
     "optimization_guide_service_observer.h",
@@ -19,6 +21,7 @@ static_library("optimization_guide") {
   deps = [
     "//base",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/prefs",
   ]
 }
 

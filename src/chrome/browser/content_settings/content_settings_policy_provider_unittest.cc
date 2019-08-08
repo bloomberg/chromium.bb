@@ -193,11 +193,9 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   // SetWebsiteSetting does nothing.
   std::unique_ptr<base::Value> value_block(
       new base::Value(CONTENT_SETTING_BLOCK));
-  bool owned = provider.SetWebsiteSetting(yt_url_pattern,
-                                          yt_url_pattern,
-                                          CONTENT_SETTINGS_TYPE_COOKIES,
-                                          std::string(),
-                                          value_block.get());
+  bool owned = provider.SetWebsiteSetting(
+      yt_url_pattern, yt_url_pattern, CONTENT_SETTINGS_TYPE_COOKIES,
+      std::string(), std::move(value_block));
   EXPECT_FALSE(owned);
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             TestUtils::GetContentSetting(&provider, youtube_url, youtube_url,

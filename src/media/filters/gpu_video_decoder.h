@@ -61,12 +61,11 @@ class MEDIA_EXPORT GpuVideoDecoder
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
@@ -104,7 +103,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   typedef std::map<int32_t, PictureBuffer> PictureBufferMap;
 
-  void DeliverFrame(const scoped_refptr<VideoFrame>& frame);
+  void DeliverFrame(scoped_refptr<VideoFrame> frame);
 
   // Static method is to allow it to run even after GVD is deleted.
   static void ReleaseMailbox(base::WeakPtr<GpuVideoDecoder> decoder,
@@ -189,7 +188,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   DecodeCB eos_decode_cb_;
 
   // Not null only during reset.
-  base::Closure pending_reset_cb_;
+  base::OnceClosure pending_reset_cb_;
 
   State state_;
 

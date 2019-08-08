@@ -9,7 +9,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/sha2.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace web_app {
 
@@ -79,8 +81,16 @@ std::string GenerateAppKeyFromURL(const GURL& url) {
 bool IsValidWebAppUrl(const GURL& app_url) {
   if (app_url.is_empty() || app_url.inner_url())
     return false;
+  // kExtensionScheme is defined in extensions/common:common_constants. It's ok
+  // to depend on it.
+  return app_url.SchemeIs(url::kHttpScheme) ||
+         app_url.SchemeIs(url::kHttpsScheme) ||
+         app_url.SchemeIs(extensions::kExtensionScheme);
+}
 
-  return app_url.SchemeIsHTTPOrHTTPS();
+bool IsValidExtensionUrl(const GURL& app_url) {
+  return !app_url.is_empty() && !app_url.inner_url() &&
+         app_url.SchemeIs(extensions::kExtensionScheme);
 }
 
 }  // namespace web_app

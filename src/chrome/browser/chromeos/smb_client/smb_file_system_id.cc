@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -17,6 +18,7 @@ namespace {
 
 constexpr char kDelimiter[] = "@@";
 constexpr char kKerberosSymbol[] = "kerberos_chromad";
+constexpr int kRandomIdBytes = 8;
 
 std::vector<std::string> GetComponents(const std::string& file_system_id) {
   const std::vector<std::string> components =
@@ -29,28 +31,24 @@ std::vector<std::string> GetComponents(const std::string& file_system_id) {
   return components;
 }
 
+std::string GenerateRandomId() {
+  char rand_bytes[kRandomIdBytes];
+  base::RandBytes(rand_bytes, sizeof(rand_bytes));
+  // Encoding to hex ensure that there are no non-alpha characters in the id
+  // (i.e. no @ delimiters).
+  return base::HexEncode(rand_bytes, sizeof(rand_bytes));
+}
+
 }  // namespace.
 
-std::string CreateFileSystemId(int32_t mount_id,
-                               const base::FilePath& share_path,
+std::string CreateFileSystemId(const base::FilePath& share_path,
                                bool is_kerberos_chromad) {
-  const std::string file_system_id = base::StrCat(
-      {base::NumberToString(mount_id), kDelimiter, share_path.value()});
+  const std::string file_system_id =
+      base::StrCat({GenerateRandomId(), kDelimiter, share_path.value()});
   if (is_kerberos_chromad) {
     return base::StrCat({file_system_id, kDelimiter, kKerberosSymbol});
   }
   return file_system_id;
-}
-
-int32_t GetMountIdFromFileSystemId(const std::string& file_system_id) {
-  const std::vector<std::string> components = GetComponents(file_system_id);
-  DCHECK_GE(components.size(), 1u);
-
-  int32_t mount_id;
-  const bool result = base::StringToInt(components[0], &mount_id);
-  DCHECK(result);
-
-  return mount_id;
 }
 
 base::FilePath GetSharePathFromFileSystemId(const std::string& file_system_id) {

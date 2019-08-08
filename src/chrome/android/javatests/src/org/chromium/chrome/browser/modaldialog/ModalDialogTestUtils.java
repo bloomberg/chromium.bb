@@ -17,6 +17,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -117,5 +118,19 @@ public class ModalDialogTestUtils {
             @Nullable Integer expectedDismissalCause, @DialogDismissalCause int dismissalCause) {
         if (expectedDismissalCause == null) return;
         Assert.assertEquals(expectedDismissalCause.intValue(), dismissalCause);
+    }
+
+    /**
+     * @param modelBuilder The builder for the modal dialog view model.
+     * @param view The {@link ModalDialogView} that should be bound.
+     * @return The {@link PropertyModel} that binds the {@code view}.
+     */
+    public static PropertyModel createModel(
+            PropertyModel.Builder modelBuilder, ModalDialogView view) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            PropertyModel model = modelBuilder.build();
+            PropertyModelChangeProcessor.create(model, view, new ModalDialogViewBinder());
+            return model;
+        });
     }
 }

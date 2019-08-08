@@ -42,7 +42,7 @@ class PepperPlatformVideoCapture {
  private:
   void OnDeviceOpened(int request_id, bool succeeded, const std::string& label);
   void OnStateUpdate(blink::VideoCaptureState state);
-  void OnFrameReady(const scoped_refptr<media::VideoFrame>& frame,
+  void OnFrameReady(scoped_refptr<media::VideoFrame> frame,
                     base::TimeTicks estimated_capture_time);
 
   // Can return NULL if the RenderFrame referenced by |render_frame_id_| has
@@ -54,8 +54,8 @@ class PepperPlatformVideoCapture {
 
   std::string label_;
   int session_id_;
-  base::Closure release_device_cb_;
-  base::Closure stop_capture_cb_;
+  base::OnceClosure release_device_cb_;
+  base::OnceClosure stop_capture_cb_;
 
   PepperVideoCaptureHost* handler_;
 

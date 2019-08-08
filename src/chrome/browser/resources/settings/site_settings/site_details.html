@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="../icons.html">
@@ -208,18 +209,22 @@
           icon="settings:payment-handler" id="paymentHandler"
           label="$i18n{siteSettingsPaymentHandler}">
       </site-details-permission>
+      <template is="dom-if" if="[[enableBluetoothScanningContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.BLUETOOTH_SCANNING}}"
+            icon="settings:bluetooth-scanning" id="bluetoothScanning"
+            label="$i18n{siteSettingsBluetoothScanning}">
+        </site-details-permission>
+      </template>
     </div>
 
     <template is="dom-if" if="[[!enableSiteSettings_]]">
-      <div id="resetSettingsButton" class="settings-box"
-          on-click="onConfirmClearSettings_" actionable>
-        <div class="start">
-          $i18n{siteSettingsReset}
-        </div>
-        <cr-icon-button class="subpage-arrow"
-            aria-label="$i18n{siteSettingsReset}"
-            aria-describedby="resetSettingsButton"></cr-icon-button>
-      </div>
+      <cr-link-row
+          class="hr"
+          id="resetSettingsButton"
+          label="$i18n{siteSettingsReset}"
+          on-click="onConfirmClearSettings_">
+      </cr-link-row>
     </template>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"

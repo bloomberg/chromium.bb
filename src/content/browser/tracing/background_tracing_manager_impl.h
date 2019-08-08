@@ -78,7 +78,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          ReceiveCallback,
                          DataFiltering data_filtering) override;
-  CONTENT_EXPORT void AbortScenario() override;
+  void AbortScenario();
   bool HasActiveScenario() override;
 
   // Named triggers
@@ -92,6 +92,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
                        StartedFinalizingCallback callback);
   bool HasTraceToUpload() override;
   std::string GetLatestTraceToUpload() override;
+  void SetTraceToUpload(std::unique_ptr<std::string> trace_data);
 
   // Add/remove EnabledStateObserver.
   CONTENT_EXPORT void AddEnabledStateObserver(EnabledStateObserver* observer);
@@ -116,9 +117,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT void InvalidateTriggerHandlesForTesting();
   CONTENT_EXPORT bool IsTracingForTesting();
   void WhenIdle(IdleCallback idle_callback) override;
-
+  CONTENT_EXPORT void AbortScenarioForTesting() override;
   CONTENT_EXPORT void SetTraceToUploadForTesting(
-      base::StringPiece data) override;
+      std::unique_ptr<std::string> trace_data) override;
 
  private:
   friend class base::NoDestructor<BackgroundTracingManagerImpl>;
@@ -147,8 +148,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   IdleCallback idle_callback_;
   base::RepeatingClosure tracing_enabled_callback_for_testing_;
+
   // This field contains serialized trace log proto.
-  std::string trace_to_upload_for_testing_;
+  std::string trace_to_upload_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingManagerImpl);
 };

@@ -148,9 +148,9 @@ UI.TextPrompt = class extends Common.Object {
    */
   textWithCurrentSuggestion() {
     const text = this.text();
-    if (!this._queryRange)
+    if (!this._queryRange || !this._currentSuggestion)
       return text;
-    const suggestion = this._currentSuggestion ? this._currentSuggestion.text : '';
+    const suggestion = this._currentSuggestion.text;
     return text.substring(0, this._queryRange.startColumn) + suggestion + text.substring(this._queryRange.endColumn);
   }
 
@@ -379,6 +379,10 @@ UI.TextPrompt = class extends Common.Object {
   }
 
   _refreshGhostText() {
+    if (this._currentSuggestion && this._currentSuggestion.hideGhostText) {
+      this._ghostTextElement.remove();
+      return;
+    }
     if (this._queryRange && this._currentSuggestion && this._isCaretAtEndOfPrompt() &&
         this._currentSuggestion.text.startsWith(this.text().substring(this._queryRange.startColumn))) {
       this._ghostTextElement.textContent =

@@ -213,10 +213,10 @@ class LayerTreeHostBlendingPixelTest
     InitializeFromTestCase(resource_type());
 
     // Force shaders only applies to gl renderer.
-    if (test_type_ != PIXEL_TEST_GL && flags & kForceShaders)
+    if (renderer_type_ != RENDERER_GL && flags & kForceShaders)
       return;
 
-    SCOPED_TRACE(TestTypeToString(test_type_));
+    SCOPED_TRACE(TestTypeToString(renderer_type_));
     SCOPED_TRACE(SkBlendMode_Name(current_blend_mode()));
 
     scoped_refptr<SolidColorLayer> root = CreateSolidColorLayer(
@@ -232,7 +232,7 @@ class LayerTreeHostBlendingPixelTest
     this->force_antialiasing_ = (flags & kUseAntialiasing);
     this->force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((flags & kUseAntialiasing) && (test_type_ == PIXEL_TEST_GL)) {
+    if ((flags & kUseAntialiasing) && (renderer_type_ == RENDERER_GL)) {
       // Blending results might differ with one pixel.
       // Don't allow large errors here, only off by ones.
       // However, large error still has to be specified to satisfy
@@ -262,8 +262,17 @@ class LayerTreeHostBlendingPixelTest
   SkColor misc_opaque_color_ = 0xffc86464;
 };
 
+INSTANTIATE_TEST_SUITE_P(
+    B,
+    LayerTreeHostBlendingPixelTest,
+    ::testing::Combine(::testing::Values(SOFTWARE, ZERO_COPY, SKIA_GL),
+                       ::testing::ValuesIn(kBlendModes)));
+
+using LayerTreeHostBlendingPixelTestNonSkia = LayerTreeHostBlendingPixelTest;
+
+// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(B,
-                         LayerTreeHostBlendingPixelTest,
+                         LayerTreeHostBlendingPixelTestNonSkia,
                          ::testing::Combine(::testing::Values(SOFTWARE,
                                                               ZERO_COPY),
                                             ::testing::ValuesIn(kBlendModes)));
@@ -295,7 +304,7 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   RunPixelResourceTest(background, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
+TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithBackdropFilter) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
   InitializeFromTestCase(resource_type());
@@ -311,9 +320,8 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
   background->AddChild(green_lane);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(.75));
-  gfx::RRectF backdrop_filter_bounds;
   green_lane->SetBackdropFilters(filters);
-  green_lane->SetBackdropFilterBounds(backdrop_filter_bounds);
+  green_lane->ClearBackdropFilterBounds();
   green_lane->SetBlendMode(current_blend_mode());
 
   SkBitmap expected;

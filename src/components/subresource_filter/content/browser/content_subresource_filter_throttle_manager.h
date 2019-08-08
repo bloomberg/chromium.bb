@@ -80,7 +80,7 @@ class ContentSubresourceFilterThrottleManager
   bool CalculateIsAdSubframe(content::RenderFrameHost* frame_host,
                              LoadPolicy load_policy) override;
 
-  bool IsFrameTaggedAsAdForTesting(content::RenderFrameHost* frame_host) const;
+  bool IsFrameTaggedAsAd(const content::RenderFrameHost* frame_host) const;
 
  protected:
   // content::WebContentsObserver:
@@ -168,7 +168,7 @@ class ContentSubresourceFilterThrottleManager
   // 3. The RenderFrame declares the frame is an ad (see AdTracker in Blink)
   // 4. It's the result of moving an old ad subframe RFH to a new RFH (e.g.,
   //    OOPIF)
-  std::set<content::RenderFrameHost*> ad_frames_;
+  std::set<const content::RenderFrameHost*> ad_frames_;
 
   content::WebContentsFrameBindingSet<mojom::SubresourceFilterHost> binding_;
 

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -26,7 +27,7 @@ namespace blink {
 void GetStringFromTrustedTypeThrows(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
         string_or_trusted_type) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   document->GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
       kContentSecurityPolicyHeaderSourceMeta);
@@ -114,7 +115,7 @@ void GetStringFromTrustedTypeWorks(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
         string_or_trusted_type,
     String expected) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   document->GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
       kContentSecurityPolicyHeaderSourceMeta);

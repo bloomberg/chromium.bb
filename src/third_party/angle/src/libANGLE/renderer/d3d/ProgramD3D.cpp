@@ -67,6 +67,20 @@ void GetDefaultInputLayoutFromShader(gl::Shader *vertexShader, gl::InputLayout *
     }
 }
 
+size_t GetMaxOutputIndex(const std::vector<PixelShaderOutputVariable> &shaderOutputVars,
+                         size_t location)
+{
+    size_t maxIndex = 0;
+    for (auto &outputVar : shaderOutputVars)
+    {
+        if (outputVar.outputLocation == location)
+        {
+            maxIndex = std::max(maxIndex, outputVar.outputIndex);
+        }
+    }
+    return maxIndex;
+}
+
 void GetDefaultOutputLayoutFromShader(
     const std::vector<PixelShaderOutputVariable> &shaderOutputVars,
     std::vector<GLenum> *outputLayoutOut)
@@ -75,8 +89,10 @@ void GetDefaultOutputLayoutFromShader(
 
     if (!shaderOutputVars.empty())
     {
-        outputLayoutOut->push_back(GL_COLOR_ATTACHMENT0 +
-                                   static_cast<unsigned int>(shaderOutputVars[0].outputIndex));
+        size_t location = shaderOutputVars[0].outputLocation;
+        size_t maxIndex = GetMaxOutputIndex(shaderOutputVars, location);
+        outputLayoutOut->assign(maxIndex + 1,
+                                GL_COLOR_ATTACHMENT0 + static_cast<unsigned int>(location));
     }
 }
 
@@ -185,102 +201,6 @@ bool FindFlatInterpolationVarying(const gl::ShaderMap<gl::Shader *> &shaders)
     return false;
 }
 
-class InterfaceBlockInfo final : angle::NonCopyable
-{
-  public:
-    InterfaceBlockInfo() {}
-
-    void getShaderBlockInfo(const std::vector<sh::InterfaceBlock> &interfaceBlocks);
-
-    bool getBlockSize(const std::string &name, const std::string &mappedName, size_t *sizeOut);
-    bool getBlockMemberInfo(const std::string &name,
-                            const std::string &mappedName,
-                            sh::BlockMemberInfo *infoOut);
-
-  private:
-    size_t getBlockInfo(const sh::InterfaceBlock &interfaceBlock);
-
-    std::map<std::string, size_t> mBlockSizes;
-    sh::BlockLayoutMap mBlockLayout;
-};
-
-void InterfaceBlockInfo::getShaderBlockInfo(const std::vector<sh::InterfaceBlock> &interfaceBlocks)
-{
-    for (const sh::InterfaceBlock &interfaceBlock : interfaceBlocks)
-    {
-        if (!interfaceBlock.active && interfaceBlock.layout == sh::BLOCKLAYOUT_PACKED)
-            continue;
-
-        if (mBlockSizes.count(interfaceBlock.name) > 0)
-            continue;
-
-        size_t dataSize                  = getBlockInfo(interfaceBlock);
-        mBlockSizes[interfaceBlock.name] = dataSize;
-    }
-}
-
-size_t InterfaceBlockInfo::getBlockInfo(const sh::InterfaceBlock &interfaceBlock)
-{
-    ASSERT(interfaceBlock.active || interfaceBlock.layout != sh::BLOCKLAYOUT_PACKED);
-
-    // define member uniforms
-    sh::Std140BlockEncoder std140Encoder;
-    sh::Std430BlockEncoder std430Encoder;
-    sh::HLSLBlockEncoder hlslEncoder(sh::HLSLBlockEncoder::ENCODE_PACKED, false);
-    sh::BlockLayoutEncoder *encoder = nullptr;
-
-    if (interfaceBlock.layout == sh::BLOCKLAYOUT_STD140)
-    {
-        encoder = &std140Encoder;
-    }
-    else if (interfaceBlock.layout == sh::BLOCKLAYOUT_STD430)
-    {
-        encoder = &std430Encoder;
-    }
-    else
-    {
-        encoder = &hlslEncoder;
-    }
-
-    sh::GetInterfaceBlockInfo(interfaceBlock.fields, interfaceBlock.fieldPrefix(), encoder,
-                              &mBlockLayout);
-
-    return encoder->getCurrentOffset();
-}
-
-bool InterfaceBlockInfo::getBlockSize(const std::string &name,
-                                      const std::string &mappedName,
-                                      size_t *sizeOut)
-{
-    size_t nameLengthWithoutArrayIndex;
-    gl::ParseArrayIndex(name, &nameLengthWithoutArrayIndex);
-    std::string baseName = name.substr(0u, nameLengthWithoutArrayIndex);
-    auto sizeIter        = mBlockSizes.find(baseName);
-    if (sizeIter == mBlockSizes.end())
-    {
-        *sizeOut = 0;
-        return false;
-    }
-
-    *sizeOut = sizeIter->second;
-    return true;
-}
-
-bool InterfaceBlockInfo::getBlockMemberInfo(const std::string &name,
-                                            const std::string &mappedName,
-                                            sh::BlockMemberInfo *infoOut)
-{
-    auto infoIter = mBlockLayout.find(name);
-    if (infoIter == mBlockLayout.end())
-    {
-        *infoOut = sh::kDefaultBlockMemberInfo;
-        return false;
-    }
-
-    *infoOut = infoIter->second;
-    return true;
-}
-
 // Helper class that gathers uniform info from the default uniform block.
 class UniformEncodingVisitorD3D : public sh::BlockEncoderVisitor
 {
@@ -339,6 +259,15 @@ class UniformEncodingVisitorD3D : public sh::BlockEncoderVisitor
     gl::ShaderType mShaderType;
     HLSLRegisterType mRegisterType;
     D3DUniformMap *mUniformMapOut;
+};
+
+class HLSLBlockLayoutEncoderFactory : public gl::CustomBlockLayoutEncoderFactory
+{
+  public:
+    sh::BlockLayoutEncoder *makeEncoder() override
+    {
+        return new sh::HLSLBlockEncoder(sh::HLSLBlockEncoder::ENCODE_PACKED, false);
+    }
 };
 }  // anonymous namespace
 
@@ -457,7 +386,7 @@ ProgramD3DMetadata::ProgramD3DMetadata(RendererD3D *renderer,
     : mRendererMajorShaderModel(renderer->getMajorShaderModel()),
       mShaderModelSuffix(renderer->getShaderModelSuffix()),
       mUsesInstancedPointSpriteEmulation(
-          renderer->getWorkarounds().useInstancedPointSpriteEmulation),
+          renderer->getWorkarounds().useInstancedPointSpriteEmulation.enabled),
       mUsesViewScale(renderer->presentPathFastEnabled()),
       mCanSelectViewInVertexShader(renderer->canSelectViewInVertexShader()),
       mAttachedShaders(attachedShaders)
@@ -475,6 +404,11 @@ bool ProgramD3DMetadata::usesBroadcast(const gl::State &data) const
     return (mAttachedShaders[gl::ShaderType::Fragment]->usesFragColor() &&
             mAttachedShaders[gl::ShaderType::Fragment]->usesMultipleRenderTargets() &&
             data.getClientMajorVersion() < 3);
+}
+
+bool ProgramD3DMetadata::usesSecondaryColor() const
+{
+    return mAttachedShaders[gl::ShaderType::Fragment]->usesSecondaryColor();
 }
 
 bool ProgramD3DMetadata::usesFragDepth() const
@@ -597,7 +531,10 @@ class ProgramD3D::GetExecutableTask : public Closure, public d3d::Context
 
     void popError(d3d::Context *context)
     {
-        context->handleResult(mStoredHR, mStoredMessage, mStoredFile, mStoredFunction, mStoredLine);
+        ASSERT(mStoredFile);
+        ASSERT(mStoredFunction);
+        context->handleResult(mStoredHR, mStoredMessage.c_str(), mStoredFile, mStoredFunction,
+                              mStoredLine);
     }
 
   protected:
@@ -606,7 +543,7 @@ class ProgramD3D::GetExecutableTask : public Closure, public d3d::Context
     gl::InfoLog mInfoLog;
     ShaderExecutableD3D *mExecutable = nullptr;
     HRESULT mStoredHR                = S_OK;
-    const char *mStoredMessage       = nullptr;
+    std::string mStoredMessage;
     const char *mStoredFile          = nullptr;
     const char *mStoredFunction      = nullptr;
     unsigned int mStoredLine         = 0;
@@ -759,7 +696,7 @@ bool ProgramD3D::usesGeometryShader(const gl::State &state, const gl::PrimitiveM
 
 bool ProgramD3D::usesInstancedPointSpriteEmulation() const
 {
-    return mRenderer->getWorkarounds().useInstancedPointSpriteEmulation;
+    return mRenderer->getWorkarounds().useInstancedPointSpriteEmulation.enabled;
 }
 
 GLint ProgramD3D::getSamplerMapping(gl::ShaderType type,
@@ -902,16 +839,9 @@ gl::RangeUI ProgramD3D::getUsedImageRange(gl::ShaderType type, bool readonly) co
 class ProgramD3D::LoadBinaryTask : public ProgramD3D::GetExecutableTask
 {
   public:
-    LoadBinaryTask(const gl::Context *context,
-                   ProgramD3D *program,
-                   gl::BinaryInputStream *stream,
-                   gl::InfoLog &infoLog)
-        : ProgramD3D::GetExecutableTask(program),
-          mContext(context),
-          mProgram(program),
-          mInfoLog(infoLog)
+    LoadBinaryTask(ProgramD3D *program, gl::BinaryInputStream *stream, gl::InfoLog &infoLog)
+        : ProgramD3D::GetExecutableTask(program), mProgram(program), mInfoLog(infoLog)
     {
-        ASSERT(mContext);
         ASSERT(mProgram);
         ASSERT(stream);
 
@@ -930,15 +860,14 @@ class ProgramD3D::LoadBinaryTask : public ProgramD3D::GetExecutableTask
         if (!mDataCopySucceeded)
         {
             mInfoLog << "Failed to copy program binary data to local buffer.";
-            return angle::Result::Stop;
+            return angle::Result::Incomplete;
         }
 
         gl::BinaryInputStream stream(mStreamData.data(), mStreamData.size());
-        return mProgram->loadBinaryShaderExecutables(mContext, &stream, mInfoLog);
+        return mProgram->loadBinaryShaderExecutables(this, &stream, mInfoLog);
     }
 
   private:
-    const gl::Context *mContext;
     ProgramD3D *mProgram;
     gl::InfoLog &mInfoLog;
 
@@ -950,11 +879,10 @@ class ProgramD3D::LoadBinaryLinkEvent final : public LinkEvent
 {
   public:
     LoadBinaryLinkEvent(std::shared_ptr<WorkerThreadPool> workerPool,
-                        const gl::Context *context,
                         ProgramD3D *program,
                         gl::BinaryInputStream *stream,
                         gl::InfoLog &infoLog)
-        : mTask(std::make_shared<ProgramD3D::LoadBinaryTask>(context, program, stream, infoLog)),
+        : mTask(std::make_shared<ProgramD3D::LoadBinaryTask>(program, stream, infoLog)),
           mWaitableEvent(angle::WorkerThreadPool::PostWorkerTask(workerPool, mTask))
     {}
 
@@ -1166,24 +1094,23 @@ std::unique_ptr<rx::LinkEvent> ProgramD3D::load(const gl::Context *context,
         stream->readInt(&mPixelShaderKey[pixelShaderKeyIndex].type);
         stream->readString(&mPixelShaderKey[pixelShaderKeyIndex].name);
         stream->readString(&mPixelShaderKey[pixelShaderKeyIndex].source);
+        stream->readInt(&mPixelShaderKey[pixelShaderKeyIndex].outputLocation);
         stream->readInt(&mPixelShaderKey[pixelShaderKeyIndex].outputIndex);
     }
 
     stream->readString(&mGeometryShaderPreamble);
 
-    return std::make_unique<LoadBinaryLinkEvent>(context->getWorkerThreadPool(), context, this,
-                                                 stream, infoLog);
+    return std::make_unique<LoadBinaryLinkEvent>(context->getWorkerThreadPool(), this, stream,
+                                                 infoLog);
 }
 
-angle::Result ProgramD3D::loadBinaryShaderExecutables(const gl::Context *context,
+angle::Result ProgramD3D::loadBinaryShaderExecutables(d3d::Context *contextD3D,
                                                       gl::BinaryInputStream *stream,
                                                       gl::InfoLog &infoLog)
 {
     const unsigned char *binary = reinterpret_cast<const unsigned char *>(stream->data());
 
     bool separateAttribs = (mState.getTransformFeedbackBufferMode() == GL_SEPARATE_ATTRIBS);
-
-    d3d::Context *contextD3D = GetImplAs<ContextD3D>(context);
 
     const unsigned int vertexShaderCount = stream->readInt<unsigned int>();
     for (unsigned int vertexShaderIndex = 0; vertexShaderIndex < vertexShaderCount;
@@ -1449,6 +1376,7 @@ void ProgramD3D::save(const gl::Context *context, gl::BinaryOutputStream *stream
         stream->writeInt(variable.type);
         stream->writeString(variable.name);
         stream->writeString(variable.source);
+        stream->writeInt(variable.outputLocation);
         stream->writeInt(variable.outputIndex);
     }
 
@@ -2665,16 +2593,13 @@ void ProgramD3D::setUniformMatrixfvInternal(GLint location,
     unsigned int arrayElementOffset             = uniformLocation.arrayIndex;
     unsigned int elementCount                   = targetUniform->getArraySizeProduct();
 
-    // Internally store matrices as transposed versions to accomodate HLSL matrix indexing
-    transpose = !transpose;
-
     for (gl::ShaderType shaderType : gl::AllShaderTypes())
     {
         if (targetUniform->mShaderData[shaderType])
         {
-            if (SetFloatUniformMatrix<cols, rows>(arrayElementOffset, elementCount, countIn,
-                                                  transpose, value,
-                                                  targetUniform->mShaderData[shaderType]))
+            if (SetFloatUniformMatrixHLSL<cols, rows>(arrayElementOffset, elementCount, countIn,
+                                                      transpose, value,
+                                                      targetUniform->mShaderData[shaderType]))
             {
                 mShaderUniformsDirty.set(shaderType);
             }
@@ -2926,7 +2851,6 @@ void ProgramD3D::reset()
     for (gl::ShaderType shaderType : gl::AllShaderTypes())
     {
         mShaderHLSL[shaderType].clear();
-        mShaderWorkarounds[shaderType] = CompilerWorkaroundsD3D();
     }
 
     mUsesFragDepth            = false;
@@ -3048,7 +2972,11 @@ void ProgramD3D::updateCachedOutputLayout(const gl::Context *context,
         {
             auto binding = colorbuffer->getBinding() == GL_BACK ? GL_COLOR_ATTACHMENT0
                                                                 : colorbuffer->getBinding();
-            mPixelShaderOutputLayoutCache.push_back(binding);
+            size_t maxIndex = binding != GL_NONE ? GetMaxOutputIndex(mPixelShaderKey,
+                                                                     binding - GL_COLOR_ATTACHMENT0)
+                                                 : 0;
+            mPixelShaderOutputLayoutCache.insert(mPixelShaderOutputLayoutCache.end(), maxIndex + 1,
+                                                 binding);
         }
         else
         {
@@ -3261,80 +3189,13 @@ void ProgramD3D::updateCachedComputeExecutableIndex()
 
 void ProgramD3D::linkResources(const gl::ProgramLinkedResources &resources)
 {
-    InterfaceBlockInfo uniformBlockInfo;
-    for (gl::ShaderType shaderType : gl::AllShaderTypes())
-    {
-        gl::Shader *shader = mState.getAttachedShader(shaderType);
-        if (shader)
-        {
-            uniformBlockInfo.getShaderBlockInfo(shader->getUniformBlocks());
-        }
-    }
+    HLSLBlockLayoutEncoderFactory hlslEncoderFactory;
+    gl::ProgramLinkedResourcesLinker linker(&hlslEncoderFactory);
 
-    // Gather interface block info.
-    auto getUniformBlockSize = [&uniformBlockInfo](const std::string &name,
-                                                   const std::string &mappedName, size_t *sizeOut) {
-        return uniformBlockInfo.getBlockSize(name, mappedName, sizeOut);
-    };
+    linker.linkResources(mState, resources);
 
-    auto getUniformBlockMemberInfo = [&uniformBlockInfo](const std::string &name,
-                                                         const std::string &mappedName,
-                                                         sh::BlockMemberInfo *infoOut) {
-        return uniformBlockInfo.getBlockMemberInfo(name, mappedName, infoOut);
-    };
-
-    resources.uniformBlockLinker.linkBlocks(getUniformBlockSize, getUniformBlockMemberInfo);
     initializeUniformBlocks();
-
-    InterfaceBlockInfo shaderStorageBlockInfo;
-    for (gl::ShaderType shaderType : gl::AllShaderTypes())
-    {
-        gl::Shader *shader = mState.getAttachedShader(shaderType);
-        if (shader)
-        {
-            shaderStorageBlockInfo.getShaderBlockInfo(shader->getShaderStorageBlocks());
-        }
-    }
-    auto getShaderStorageBlockSize = [&shaderStorageBlockInfo](const std::string &name,
-                                                               const std::string &mappedName,
-                                                               size_t *sizeOut) {
-        return shaderStorageBlockInfo.getBlockSize(name, mappedName, sizeOut);
-    };
-
-    auto getShaderStorageBlockMemberInfo = [&shaderStorageBlockInfo](const std::string &name,
-                                                                     const std::string &mappedName,
-                                                                     sh::BlockMemberInfo *infoOut) {
-        return shaderStorageBlockInfo.getBlockMemberInfo(name, mappedName, infoOut);
-    };
-
-    resources.shaderStorageBlockLinker.linkBlocks(getShaderStorageBlockSize,
-                                                  getShaderStorageBlockMemberInfo);
     initializeShaderStorageBlocks();
-
-    std::map<int, unsigned int> sizeMap;
-    getAtomicCounterBufferSizeMap(sizeMap);
-    resources.atomicCounterBufferLinker.link(sizeMap);
-}
-
-void ProgramD3D::getAtomicCounterBufferSizeMap(std::map<int, unsigned int> &sizeMapOut) const
-{
-    for (unsigned int index : mState.getAtomicCounterUniformRange())
-    {
-        const gl::LinkedUniform &glUniform = mState.getUniforms()[index];
-
-        auto &bufferDataSize = sizeMapOut[glUniform.binding];
-
-        // Calculate the size of the buffer by finding the end of the last uniform with the same
-        // binding. The end of the uniform is calculated by finding the initial offset of the
-        // uniform and adding size of the uniform. For arrays, the size is the number of elements
-        // times the element size (should always by 4 for atomic_units).
-        unsigned dataOffset =
-            glUniform.offset + (glUniform.getBasicTypeElementCount() * glUniform.getElementSize());
-        if (dataOffset > bufferDataSize)
-        {
-            bufferDataSize = dataOffset;
-        }
-    }
 }
 
 }  // namespace rx

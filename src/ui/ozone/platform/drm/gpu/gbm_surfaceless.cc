@@ -80,10 +80,6 @@ bool GbmSurfaceless::IsOffscreen() {
   return false;
 }
 
-bool GbmSurfaceless::SupportsPresentationCallback() {
-  return true;
-}
-
 bool GbmSurfaceless::SupportsAsyncSwap() {
   return true;
 }

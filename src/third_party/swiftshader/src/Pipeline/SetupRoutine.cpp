@@ -36,7 +36,7 @@ namespace sw
 
 	void SetupRoutine::generate()
 	{
-		Function<Bool(Pointer<Byte>, Pointer<Byte>, Pointer<Byte>, Pointer<Byte>)> function;
+		Function<Int(Pointer<Byte>, Pointer<Byte>, Pointer<Byte>, Pointer<Byte>)> function;
 		{
 			Pointer<Byte> primitive(function.Arg<0>());
 			Pointer<Byte> tri(function.Arg<1>());
@@ -85,7 +85,7 @@ namespace sw
 
 				If(A == 0.0f)
 				{
-					Return(false);
+					Return(0);
 				}
 
 				Int w0w1w2 = *Pointer<Int>(v0 + OFFSET(Vertex, builtins.position.w)) ^
@@ -98,11 +98,11 @@ namespace sw
 
 				if(state.cullMode & VK_CULL_MODE_FRONT_BIT)
 				{
-					If(frontFacing) Return(false);
+					If(frontFacing) Return(0);
 				}
 				if(state.cullMode & VK_CULL_MODE_BACK_BIT)
 				{
-					If(!frontFacing) Return(false);
+					If(!frontFacing) Return(0);
 				}
 
 				d = IfThenElse(A > 0.0f, d, Int(0));
@@ -175,13 +175,16 @@ namespace sw
 				yMax = (yMax + 0x0F) >> 4;
 			}
 
-			If(yMin == yMax)
-			{
-				Return(false);
-			}
-
 			yMin = Max(yMin, *Pointer<Int>(data + OFFSET(DrawData,scissorY0)));
 			yMax = Min(yMax, *Pointer<Int>(data + OFFSET(DrawData,scissorY1)));
+
+			// If yMin and yMax are initially negative, the scissor clamping above will typically result
+			// in yMin == 0 and yMax unchanged. We bail as we don't need to rasterize this primitive, and
+			// code below assumes yMin < yMax.
+			If(yMin >= yMax)
+			{
+				Return(0);
+			}
 
 			For(Int q = 0, q < state.multiSample, q++)
 			{
@@ -251,7 +254,7 @@ namespace sw
 
 					If(yMin == yMax)
 					{
-						Return(false);
+						Return(0);
 					}
 
 					*Pointer<Short>(leftEdge + (yMin - 1) * sizeof(Primitive::Span)) = *Pointer<Short>(leftEdge + yMin * sizeof(Primitive::Span));
@@ -436,8 +439,6 @@ namespace sw
 
 			for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
 			{
-				// TODO: fix `perspective` throughout interpolation code to consider NoPerspective-decorated interpolants,
-				// which were not individually-controllable in the GLES implementation.
 				// Note: `sprite` mode controls whether to replace this interpolant with the point sprite PointCoord value.
 				// This was an interesting thing to support for old GL because any texture coordinate could be replaced in this way.
 				// In modern GL and in Vulkan, the [gl_]PointCoord builtin variable to the fragment shader is used instead.
@@ -447,10 +448,10 @@ namespace sw
 							OFFSET(Primitive, V[interpolant]),
 							state.gradient[interpolant].Flat,
 							false /* is pointcoord */,
-							state.perspective, 0);
+							!state.gradient[interpolant].NoPerspective, 0);
 			}
 
-			Return(true);
+			Return(1);
 		}
 
 		routine = function("SetupRoutine");

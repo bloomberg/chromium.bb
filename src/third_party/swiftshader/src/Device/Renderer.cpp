@@ -20,7 +20,6 @@
 #include "Device/SwiftConfig.hpp"
 #include "Reactor/Reactor.hpp"
 #include "Pipeline/Constants.hpp"
-#include "System/MutexLock.hpp"
 #include "System/CPUID.hpp"
 #include "System/Memory.hpp"
 #include "System/Resource.hpp"
@@ -29,6 +28,7 @@
 #include "System/Timer.hpp"
 #include "Vulkan/VkConfig.h"
 #include "Vulkan/VkDebug.hpp"
+#include "Vulkan/VkFence.hpp"
 #include "Vulkan/VkImageView.hpp"
 #include "Vulkan/VkQueryPool.hpp"
 #include "Pipeline/SpirvShader.hpp"
@@ -47,7 +47,6 @@ namespace sw
 {
 	extern bool booleanFaceRegister;
 	extern bool fullPixelPositionRegister;
-	extern bool colorsDefaultToZero;
 
 	extern bool forceWindowed;
 	extern bool postBlendSRGB;
@@ -68,7 +67,6 @@ namespace sw
 	TranscendentalPrecision expPrecision = ACCURATE;
 	TranscendentalPrecision rcpPrecision = ACCURATE;
 	TranscendentalPrecision rsqPrecision = ACCURATE;
-	bool perspectiveCorrection = true;
 
 	static void setGlobalRenderingSettings(Conventions conventions, bool exactColorRounding)
 	{
@@ -78,7 +76,6 @@ namespace sw
 		{
 			sw::booleanFaceRegister = conventions.booleanFaceRegister;
 			sw::fullPixelPositionRegister = conventions.fullPixelPositionRegister;
-			sw::colorsDefaultToZero = conventions.colorsDefaultToZero;
 			sw::exactColorRounding = exactColorRounding;
 			initialized = true;
 		}
@@ -187,6 +184,8 @@ namespace sw
 
 		references = -1;
 
+		events = nullptr;
+
 		data = (DrawData*)allocate(sizeof(DrawData));
 		data->constants = &constants;
 	}
@@ -198,13 +197,9 @@ namespace sw
 		deallocate(data);
 	}
 
-	Renderer::Renderer(Context *context, Conventions conventions, bool exactColorRounding) : VertexProcessor(context), PixelProcessor(context), SetupProcessor(context), context(context), viewport()
+	Renderer::Renderer(Conventions conventions, bool exactColorRounding)
 	{
 		setGlobalRenderingSettings(conventions, exactColorRounding);
-
-		setRenderTarget(0, nullptr);
-		clipper = new Clipper;
-		blitter = new Blitter;
 
 		#if PERF_HUD
 			resetTimers();
@@ -265,12 +260,6 @@ namespace sw
 		terminateThreads();
 		sync->unlock();
 
-		delete clipper;
-		clipper = nullptr;
-
-		delete blitter;
-		blitter = nullptr;
-
 		delete resumeApp;
 		resumeApp = nullptr;
 
@@ -296,8 +285,23 @@ namespace sw
 		sw::deallocate(mem);
 	}
 
-	void Renderer::draw(VkPrimitiveTopology topology, VkIndexType indexType, unsigned int count, int baseVertex, bool update)
+	bool Renderer::hasQueryOfType(VkQueryType type) const
 	{
+		for(auto query : queries)
+		{
+			if(query->getType() == type)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Renderer::draw(const sw::Context* context, VkIndexType indexType, unsigned int count, int baseVertex, TaskEvents *events, bool update)
+	{
+		if(count == 0) { return; }
+
 		#ifndef NDEBUG
 			if(count < minPrimitives || count > maxPrimitives)
 			{
@@ -305,40 +309,26 @@ namespace sw
 			}
 		#endif
 
-		context->topology = topology;
-
 		updateConfiguration();
 
 		int ms = context->sampleCount;
-		unsigned int oldMultiSampleMask = context->multiSampleMask;
-		context->multiSampleMask = context->sampleMask & ((unsigned)0xFFFFFFFF >> (32 - ms));
 
 		if(!context->multiSampleMask)
 		{
 			return;
 		}
 
-		context->occlusionEnabled = false;
-		for(auto query : queries)
-		{
-			if(query->type == VK_QUERY_TYPE_OCCLUSION)
-			{
-				context->occlusionEnabled = true;
-				break;
-			}
-		}
-
 		sync->lock(sw::PRIVATE);
 
-		if(update || oldMultiSampleMask != context->multiSampleMask)
+		if(update)
 		{
-			vertexState = VertexProcessor::update(topology);
-			setupState = SetupProcessor::update();
-			pixelState = PixelProcessor::update();
+			vertexState = VertexProcessor::update(context);
+			setupState = SetupProcessor::update(context);
+			pixelState = PixelProcessor::update(context);
 
-			vertexRoutine = VertexProcessor::routine(vertexState);
+			vertexRoutine = VertexProcessor::routine(vertexState, context->pipelineLayout, context->vertexShader, context->descriptorSets);
 			setupRoutine = SetupProcessor::routine(setupState);
-			pixelRoutine = PixelProcessor::routine(pixelState);
+			pixelRoutine = PixelProcessor::routine(pixelState, context->pipelineLayout, context->pixelShader, context->descriptorSets);
 		}
 
 		int batch = batchSize / ms;
@@ -387,12 +377,12 @@ namespace sw
 			draw->queries = new std::list<vk::Query*>();
 			for(auto &query : queries)
 			{
-				++query->reference; // Atomic
+				query->start();
 				draw->queries->push_back(query);
 			}
 		}
 
-		draw->topology = topology;
+		draw->topology = context->topology;
 		draw->indexType = indexType;
 		draw->batchSize = batch;
 
@@ -411,6 +401,14 @@ namespace sw
 
 		data->descriptorSets = context->descriptorSets;
 		data->descriptorDynamicOffsets = context->descriptorDynamicOffsets;
+
+		if(events)
+		{
+			events->start();
+		}
+
+		ASSERT(!draw->events);
+		draw->events = events;
 
 		for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
 		{
@@ -437,22 +435,19 @@ namespace sw
 
 		data->factor = factor;
 
-		if(pixelState.transparencyAntialiasing == TRANSPARENCY_ALPHA_TO_COVERAGE)
+		if(pixelState.alphaToCoverage)
 		{
-			float ref = context->alphaReference * (1.0f / 255.0f);
-			float margin = sw::min(ref, 1.0f - ref);
-
 			if(ms == 4)
 			{
-				data->a2c0 = replicate(ref - margin * 0.6f);
-				data->a2c1 = replicate(ref - margin * 0.2f);
-				data->a2c2 = replicate(ref + margin * 0.2f);
-				data->a2c3 = replicate(ref + margin * 0.6f);
+				data->a2c0 = replicate(0.2f);
+				data->a2c1 = replicate(0.4f);
+				data->a2c2 = replicate(0.6f);
+				data->a2c3 = replicate(0.8f);
 			}
 			else if(ms == 2)
 			{
-				data->a2c0 = replicate(ref - margin * 0.3f);
-				data->a2c1 = replicate(ref + margin * 0.3f);
+				data->a2c0 = replicate(0.25f);
+				data->a2c1 = replicate(0.75f);
 			}
 			else ASSERT(false);
 		}
@@ -510,8 +505,7 @@ namespace sw
 
 				if(draw->renderTarget[index])
 				{
-					VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->renderTargetLayer[index]) };
-					data->colorBuffer[index] = (unsigned int*)context->renderTarget[index]->getOffsetPointer(offset, VK_IMAGE_ASPECT_COLOR_BIT);
+					data->colorBuffer[index] = (unsigned int*)context->renderTarget[index]->getOffsetPointer({0, 0, 0}, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0);
 					data->colorPitchB[index] = context->renderTarget[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 					data->colorSliceB[index] = context->renderTarget[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 				}
@@ -522,16 +516,14 @@ namespace sw
 
 			if(draw->depthBuffer)
 			{
-				VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->depthBufferLayer) };
-				data->depthBuffer = (float*)context->depthBuffer->getOffsetPointer(offset, VK_IMAGE_ASPECT_DEPTH_BIT);
+				data->depthBuffer = (float*)context->depthBuffer->getOffsetPointer({0, 0, 0}, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0);
 				data->depthPitchB = context->depthBuffer->rowPitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
 				data->depthSliceB = context->depthBuffer->slicePitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
 			}
 
 			if(draw->stencilBuffer)
 			{
-				VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->stencilBufferLayer) };
-				data->stencilBuffer = (unsigned char*)context->stencilBuffer->getOffsetPointer(offset, VK_IMAGE_ASPECT_STENCIL_BIT);
+				data->stencilBuffer = (unsigned char*)context->stencilBuffer->getOffsetPointer({0, 0, 0}, VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0);
 				data->stencilPitchB = context->stencilBuffer->rowPitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
 				data->stencilSliceB = context->stencilBuffer->slicePitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
 			}
@@ -863,39 +855,34 @@ namespace sw
 				{
 					for(auto &query : *(draw.queries))
 					{
-						std::unique_lock<std::mutex> mutexLock(query->mutex);
-
-						switch(query->type)
+						switch(query->getType())
 						{
 						case VK_QUERY_TYPE_OCCLUSION:
 							for(int cluster = 0; cluster < clusterCount; cluster++)
 							{
-								query->data += data.occlusion[cluster];
+								query->add(data.occlusion[cluster]);
 							}
 							break;
 						default:
 							break;
 						}
 
-						int queryRef = --query->reference; // Atomic
-						if(queryRef == 0)
-						{
-							query->state = vk::Query::FINISHED;
-						}
-
-						// Manual unlocking is done before notifying, to avoid
-						// waking up the waiting thread only to block again
-						mutexLock.unlock();
-						query->condition.notify_one();
+						query->finish();
 					}
 
 					delete draw.queries;
-					draw.queries = 0;
+					draw.queries = nullptr;
 				}
 
 				draw.vertexRoutine->unbind();
 				draw.setupRoutine->unbind();
 				draw.pixelRoutine->unbind();
+
+				if(draw.events)
+				{
+					draw.events->finish();
+					draw.events = nullptr;
+				}
 
 				sync->unlock();
 
@@ -994,7 +981,7 @@ namespace sw
 
 				if(clipFlagsOr != Clipper::CLIP_FINITE)
 				{
-					if(!clipper->clip(polygon, clipFlagsOr, draw))
+					if(!Clipper::Clip(polygon, clipFlagsOr, draw))
 					{
 						continue;
 					}
@@ -1114,19 +1101,19 @@ namespace sw
 
 			P[0].x += -dy0w;
 			P[0].y += +dx0h;
-			C[0] = clipper->computeClipFlags(P[0]);
+			C[0] = Clipper::ComputeClipFlags(P[0]);
 
 			P[1].x += -dy1w;
 			P[1].y += +dx1h;
-			C[1] = clipper->computeClipFlags(P[1]);
+			C[1] = Clipper::ComputeClipFlags(P[1]);
 
 			P[2].x += +dy1w;
 			P[2].y += -dx1h;
-			C[2] = clipper->computeClipFlags(P[2]);
+			C[2] = Clipper::ComputeClipFlags(P[2]);
 
 			P[3].x += +dy0w;
 			P[3].y += -dx0h;
-			C[3] = clipper->computeClipFlags(P[3]);
+			C[3] = Clipper::ComputeClipFlags(P[3]);
 
 			if((C[0] & C[1] & C[2] & C[3]) == Clipper::CLIP_FINITE)
 			{
@@ -1136,7 +1123,7 @@ namespace sw
 
 				if(clipFlagsOr != Clipper::CLIP_FINITE)
 				{
-					if(!clipper->clip(polygon, clipFlagsOr, draw))
+					if(!Clipper::Clip(polygon, clipFlagsOr, draw))
 					{
 						return false;
 					}
@@ -1166,28 +1153,28 @@ namespace sw
 			float dy1 = lineWidth * 0.5f * P1.w / H;
 
 			P[0].x += -dx0;
-			C[0] = clipper->computeClipFlags(P[0]);
+			C[0] = Clipper::ComputeClipFlags(P[0]);
 
 			P[1].y += +dy0;
-			C[1] = clipper->computeClipFlags(P[1]);
+			C[1] = Clipper::ComputeClipFlags(P[1]);
 
 			P[2].x += +dx0;
-			C[2] = clipper->computeClipFlags(P[2]);
+			C[2] = Clipper::ComputeClipFlags(P[2]);
 
 			P[3].y += -dy0;
-			C[3] = clipper->computeClipFlags(P[3]);
+			C[3] = Clipper::ComputeClipFlags(P[3]);
 
 			P[4].x += -dx1;
-			C[4] = clipper->computeClipFlags(P[4]);
+			C[4] = Clipper::ComputeClipFlags(P[4]);
 
 			P[5].y += +dy1;
-			C[5] = clipper->computeClipFlags(P[5]);
+			C[5] = Clipper::ComputeClipFlags(P[5]);
 
 			P[6].x += +dx1;
-			C[6] = clipper->computeClipFlags(P[6]);
+			C[6] = Clipper::ComputeClipFlags(P[6]);
 
 			P[7].y += -dy1;
-			C[7] = clipper->computeClipFlags(P[7]);
+			C[7] = Clipper::ComputeClipFlags(P[7]);
 
 			if((C[0] & C[1] & C[2] & C[3] & C[4] & C[5] & C[6] & C[7]) == Clipper::CLIP_FINITE)
 			{
@@ -1242,7 +1229,7 @@ namespace sw
 
 				if(clipFlagsOr != Clipper::CLIP_FINITE)
 				{
-					if(!clipper->clip(polygon, clipFlagsOr, draw))
+					if(!Clipper::Clip(polygon, clipFlagsOr, draw))
 					{
 						return false;
 					}
@@ -1279,19 +1266,19 @@ namespace sw
 
 		P[0].x -= X;
 		P[0].y += Y;
-		C[0] = clipper->computeClipFlags(P[0]);
+		C[0] = Clipper::ComputeClipFlags(P[0]);
 
 		P[1].x += X;
 		P[1].y += Y;
-		C[1] = clipper->computeClipFlags(P[1]);
+		C[1] = Clipper::ComputeClipFlags(P[1]);
 
 		P[2].x += X;
 		P[2].y -= Y;
-		C[2] = clipper->computeClipFlags(P[2]);
+		C[2] = Clipper::ComputeClipFlags(P[2]);
 
 		P[3].x -= X;
 		P[3].y -= Y;
-		C[3] = clipper->computeClipFlags(P[3]);
+		C[3] = Clipper::ComputeClipFlags(P[3]);
 
 		triangle.v1 = triangle.v0;
 		triangle.v2 = triangle.v0;
@@ -1307,7 +1294,7 @@ namespace sw
 
 			if(clipFlagsOr != Clipper::CLIP_FINITE)
 			{
-				if(!clipper->clip(polygon, clipFlagsOr, draw))
+				if(!Clipper::Clip(polygon, clipFlagsOr, draw))
 				{
 					return false;
 				}
@@ -1345,7 +1332,7 @@ namespace sw
 			parameters.renderer = this;
 
 			exitThreads = false;
-			worker[i] = new Thread(threadFunction, &parameters);
+			worker[i] = new std::thread(threadFunction, &parameters);
 
 			suspend[i]->wait();
 			suspend[i]->signal();
@@ -1356,7 +1343,7 @@ namespace sw
 	{
 		while(threadsAwake != 0)
 		{
-			Thread::sleep(1);
+			std::this_thread::yield();
 		}
 
 		for(int thread = 0; thread < threadCount; thread++)
@@ -1389,46 +1376,6 @@ namespace sw
 		}
 	}
 
-	void Renderer::setMultiSampleMask(unsigned int mask)
-	{
-		context->sampleMask = mask;
-	}
-
-	void Renderer::setTransparencyAntialiasing(TransparencyAntialiasing transparencyAntialiasing)
-	{
-		sw::transparencyAntialiasing = transparencyAntialiasing;
-	}
-
-	void Renderer::setLineWidth(float width)
-	{
-		context->lineWidth = width;
-	}
-
-	void Renderer::setDepthBias(float bias)
-	{
-		context->depthBias = bias;
-	}
-
-	void Renderer::setSlopeDepthBias(float slopeBias)
-	{
-		context->slopeDepthBias = slopeBias;
-	}
-
-	void Renderer::setRasterizerDiscard(bool rasterizerDiscard)
-	{
-		context->rasterizerDiscard = rasterizerDiscard;
-	}
-
-	void Renderer::setPixelShader(const SpirvShader *shader)
-	{
-		context->pixelShader = shader;
-	}
-
-	void Renderer::setVertexShader(const SpirvShader *shader)
-	{
-		context->vertexShader = shader;
-	}
-
 	void Renderer::addQuery(vk::Query *query)
 	{
 		queries.push_back(query);
@@ -1439,11 +1386,11 @@ namespace sw
 		queries.remove(query);
 	}
 
-	void Renderer::advanceInstanceAttributes()
+	void Renderer::advanceInstanceAttributes(Stream* inputs)
 	{
 		for(uint32_t i = 0; i < vk::MAX_VERTEX_INPUT_BINDINGS; i++)
 		{
-			auto &attrib = context->input[i];
+			auto &attrib = inputs[i];
 			if (attrib.count && attrib.instanceStride)
 			{
 				// Under the casts: attrib.buffer += attrib.instanceStride
@@ -1484,11 +1431,6 @@ namespace sw
 		}
 	#endif
 
-	void Renderer::setContext(const sw::Context& context)
-	{
-		*(this->context) = context;
-	}
-
 	void Renderer::setViewport(const VkViewport &viewport)
 	{
 		this->viewport = viewport;
@@ -1517,23 +1459,6 @@ namespace sw
 			VertexProcessor::setRoutineCacheSize(configuration.vertexRoutineCacheSize);
 			PixelProcessor::setRoutineCacheSize(configuration.pixelRoutineCacheSize);
 			SetupProcessor::setRoutineCacheSize(configuration.setupRoutineCacheSize);
-
-			switch(configuration.textureSampleQuality)
-			{
-			case 0:  Sampler::setFilterQuality(FILTER_POINT);       break;
-			case 1:  Sampler::setFilterQuality(FILTER_LINEAR);      break;
-			case 2:  Sampler::setFilterQuality(FILTER_ANISOTROPIC); break;
-			default: Sampler::setFilterQuality(FILTER_ANISOTROPIC); break;
-			}
-
-			switch(configuration.mipmapQuality)
-			{
-			case 0:  Sampler::setMipmapQuality(MIPMAP_POINT);  break;
-			case 1:  Sampler::setMipmapQuality(MIPMAP_LINEAR); break;
-			default: Sampler::setMipmapQuality(MIPMAP_LINEAR); break;
-			}
-
-			setPerspectiveCorrection(configuration.perspectiveCorrection);
 
 			switch(configuration.transcendentalPrecision)
 			{

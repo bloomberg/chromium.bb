@@ -11,6 +11,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -29,6 +30,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -39,27 +41,6 @@
 namespace extensions {
 
 namespace {
-
-bool IsSiteSecure(const content::WebContents* web_contents) {
-  const SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    switch (helper->GetSecurityLevel()) {
-      case security_state::SECURITY_LEVEL_COUNT:
-        NOTREACHED();
-        return false;
-      case security_state::EV_SECURE:
-      case security_state::SECURE:
-      case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-        return true;
-      case security_state::NONE:
-      case security_state::HTTP_SHOW_WARNING:
-      case security_state::DANGEROUS:
-        return false;
-    }
-  }
-  return false;
-}
 
 // Returns true if |app_url| and |page_url| are the same origin. To avoid
 // breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
@@ -90,12 +71,6 @@ gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
 bool IsSameScope(const GURL& app_url,
                  const GURL& page_url,
                  content::BrowserContext* profile) {
-  // We can only check scope on apps that are installed PWAs, so fall
-  // back to same origin check if PWA windowing is not enabled
-  // (GetInstalledPwaForUrl requires this).
-  if (!base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
-    return IsSameHostAndPort(app_url, page_url);
-
   const Extension* app_for_window = extensions::util::GetInstalledPwaForUrl(
       profile, app_url, extensions::LAUNCH_CONTAINER_WINDOW);
 
@@ -110,15 +85,14 @@ bool IsSameScope(const GURL& app_url,
 
 // static
 void HostedAppBrowserController::SetAppPrefsForWebContents(
-    WebAppBrowserController* controller,
+    web_app::AppBrowserController* controller,
     content::WebContents* web_contents) {
   auto* rvh = web_contents->GetRenderViewHost();
 
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   rvh->SyncRendererPrefs();
 
-  // This function could be called for non Hosted Apps.
-  if (!controller || !controller->IsHostedApp())
+  if (!controller)
     return;
 
   // All hosted apps should specify an app ID.
@@ -131,21 +105,30 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
   web_contents->NotifyPreferencesChanged();
 }
 
+// static
+void HostedAppBrowserController::ClearAppPrefsForWebContents(
+    content::WebContents* web_contents) {
+  auto* rvh = web_contents->GetRenderViewHost();
+
+  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
+  rvh->SyncRendererPrefs();
+
+  extensions::TabHelper::FromWebContents(web_contents)
+      ->SetExtensionApp(nullptr);
+
+  web_contents->NotifyPreferencesChanged();
+}
+
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : WebAppBrowserController(browser),
+    : AppBrowserController(browser),
       extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
       // indicator of a Bookmark App for an installable website.
       created_for_installed_pwa_(
-          base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-          UrlHandlers::GetUrlHandlers(GetExtension())) {
-  WebAppBrowserController::browser()->tab_strip_model()->AddObserver(this);
-}
+          UrlHandlers::GetUrlHandlers(GetExtension())) {}
 
-HostedAppBrowserController::~HostedAppBrowserController() {
-  browser()->tab_strip_model()->RemoveObserver(this);
-}
+HostedAppBrowserController::~HostedAppBrowserController() = default;
 
 base::Optional<std::string> HostedAppBrowserController::GetAppId() const {
   return extension_id_;
@@ -153,13 +136,6 @@ base::Optional<std::string> HostedAppBrowserController::GetAppId() const {
 
 bool HostedAppBrowserController::CreatedForInstalledPwa() const {
   return created_for_installed_pwa_;
-}
-
-bool HostedAppBrowserController::IsForSystemWebApp() const {
-  const Extension* extension = GetExtension();
-
-  return extension && extension->from_bookmark() &&
-         extension->location() == Manifest::EXTERNAL_COMPONENT;
 }
 
 bool HostedAppBrowserController::IsHostedApp() const {
@@ -176,8 +152,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Don't show a toolbar until a navigation has occurred.
-  if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
+  if (!web_contents)
     return false;
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
@@ -185,13 +160,6 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
 
   bool is_internal_launch_scheme = launch_scheme == kExtensionScheme ||
                                    launch_scheme == content::kChromeUIScheme;
-
-  GURL last_committed_url = web_contents->GetLastCommittedURL();
-
-  // We check the visible URL to indicate to the user that they are navigating
-  // to a different origin than that of the app as soon as the navigation
-  // starts, even if the navigation hasn't committed yet.
-  GURL visible_url = web_contents->GetVisibleURL();
 
   // The current page must be secure for us to hide the toolbar. However,
   // the chrome-extension:// and chrome:// launch URL apps can hide the toolbar,
@@ -202,30 +170,51 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   base::StringPiece secure_page_scheme =
       is_internal_launch_scheme ? launch_scheme : url::kHttpsScheme;
 
-  // Insecure page schemes show the toolbar.
-  if (last_committed_url.scheme_piece() != secure_page_scheme ||
-      visible_url.scheme_piece() != secure_page_scheme) {
+  auto should_show_toolbar_for_url = [&](const GURL& url) -> bool {
+    // If the url is unset, it doesn't give a signal as to whether the toolbar
+    // should be shown or not. In lieu of more information, do not show the
+    // toolbar.
+    if (url.is_empty())
+      return false;
+
+    if (url.scheme_piece() != secure_page_scheme)
+      return true;
+
+    if (IsForSystemWebApp()) {
+      DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
+      return false;
+    }
+
+    // Page URLs that are not within scope
+    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
+    // corresponding to |launch_url| show the toolbar.
+    return !IsSameScope(launch_url, url, web_contents->GetBrowserContext());
+  };
+
+  GURL visible_url = web_contents->GetVisibleURL();
+  GURL last_committed_url = web_contents->GetLastCommittedURL();
+
+  if (last_committed_url.is_empty() && visible_url.is_empty())
+    return should_show_toolbar_for_url(initial_url());
+
+  if (should_show_toolbar_for_url(visible_url) ||
+      should_show_toolbar_for_url(last_committed_url)) {
     return true;
   }
 
-  // Page URLs that are not within scope
-  // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-  // corresponding to |launch_url| show the toolbar.
-  if (!IsSameScope(launch_url, last_committed_url,
-                   web_contents->GetBrowserContext()) ||
-      !IsSameScope(launch_url, visible_url, web_contents->GetBrowserContext()))
-    return true;
-
   // Insecure external web sites show the toolbar.
-  if (!is_internal_launch_scheme && !IsSiteSecure(web_contents))
+  // Note: IsSiteSecure is false until a url is committed.
+  if (!last_committed_url.is_empty() && !is_internal_launch_scheme &&
+      !IsSiteSecure(web_contents)) {
     return true;
+  }
 
   return false;
 }
 
 bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
   // System Web Apps don't get the Hosted App buttons.
-  return IsForExperimentalWebAppBrowser() && !IsForSystemWebApp();
+  return IsForWebAppBrowser(browser()) && !IsForSystemWebApp();
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
@@ -249,55 +238,39 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
-  if (IsForExperimentalWebAppBrowser())
+  if (IsForWebAppBrowser(browser()))
     return GetWindowAppIcon();
 
   return browser()->GetCurrentPageIcon().AsImageSkia();
 }
 
 base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
-  base::Optional<SkColor> result;
+  base::Optional<SkColor> web_theme_color =
+      AppBrowserController::GetThemeColor();
+  if (web_theme_color)
+    return web_theme_color;
 
   const Extension* extension = GetExtension();
-  if (extension)
-    result = AppThemeColorInfo::GetThemeColor(extension);
-
-  // HTML meta theme-color tag overrides manifest theme_color, see spec:
-  // https://www.w3.org/TR/appmanifest/#theme_color-member
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (web_contents) {
-    base::Optional<SkColor> color = web_contents->GetThemeColor();
-    if (color)
-      result = color;
-  }
-
-  if (!result)
+  if (!extension)
     return base::nullopt;
 
-  // The frame/tabstrip code expects an opaque color.
-  return SkColorSetA(*result, SK_AlphaOPAQUE);
+  base::Optional<SkColor> extension_theme_color =
+      AppThemeColorInfo::GetThemeColor(extension);
+  if (extension_theme_color)
+    return SkColorSetA(*extension_theme_color, SK_AlphaOPAQUE);
+
+  return base::nullopt;
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
-  // When showing the location bar, display the name of the app, instead of the
+  // When showing the toolbar, display the name of the app, instead of the
   // current page as the title.
-  // Note: We only do this when the CustomTab UI is enabled, as otherwise the
-  // title of the current page will not be displayed anywhere.
-  if (ShouldShowToolbar() &&
-      base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI)) {
+  if (ShouldShowToolbar()) {
     const Extension* extension = GetExtension();
     return base::UTF8ToUTF16(extension->name());
   }
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return base::string16();
-
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetVisibleEntry();
-  return entry ? entry->GetTitle() : base::string16();
+  return AppBrowserController::GetTitle();
 }
 
 GURL HostedAppBrowserController::GetAppLaunchURL() const {
@@ -332,48 +305,45 @@ bool HostedAppBrowserController::CanUninstall() const {
       ->UserMayModifySettings(GetExtension(), nullptr);
 }
 
-void HostedAppBrowserController::Uninstall(UninstallReason reason,
-                                           UninstallSource source) {
+void HostedAppBrowserController::Uninstall() {
   uninstall_dialog_ = ExtensionUninstallDialog::Create(
       browser()->profile(), browser()->window()->GetNativeWindow(), this);
-  uninstall_dialog_->ConfirmUninstall(GetExtension(), reason, source);
+  uninstall_dialog_->ConfirmUninstall(
+      GetExtension(), extensions::UNINSTALL_REASON_USER_INITIATED,
+      extensions::UNINSTALL_SOURCE_HOSTED_APP_MENU);
 }
 
 bool HostedAppBrowserController::IsInstalled() const {
   return GetExtension();
 }
 
-void HostedAppBrowserController::OnTabStripModelChanged(
-    TabStripModel* tab_strip_model,
-    const TabStripModelChange& change,
-    const TabStripSelectionChange& selection) {
-  if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& delta : change.deltas())
-      OnTabInserted(delta.insert.contents);
-  } else if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& delta : change.deltas())
-      OnTabRemoved(delta.remove.contents);
-  }
+void HostedAppBrowserController::OnReceivedInitialURL() {
+  UpdateToolbarVisibility(false);
+
+  // If the window bounds have not been overridden, there is no need to resize
+  // the window.
+  if (!browser()->bounds_overridden())
+    return;
+
+  // The saved bounds will only be wrong if they are content bounds.
+  if (!chrome::SavedBoundsAreContentBounds(browser()))
+    return;
+
+  // TODO(crbug.com/964825): Correctly set the window size at creation time.
+  // This is currently not possible because the current url is not easily known
+  // at popup construction time.
+  browser()->window()->SetContentsSize(browser()->override_bounds().size());
 }
 
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
-  DCHECK(!web_contents()) << "Hosted app windows are single tabbed only";
-  HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
-  content::WebContentsObserver::Observe(contents);
+  AppBrowserController::OnTabInserted(contents);
+  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(this,
+                                                                    contents);
 }
 
 void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
-  DCHECK_EQ(contents, web_contents());
-  content::WebContentsObserver::Observe(nullptr);
-
-  auto* rvh = contents->GetRenderViewHost();
-
-  contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
-  rvh->SyncRendererPrefs();
-
-  extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(nullptr);
-
-  contents->NotifyPreferencesChanged();
+  AppBrowserController::OnTabRemoved(contents);
+  extensions::HostedAppBrowserController::ClearAppPrefsForWebContents(contents);
 }
 
 }  // namespace extensions

@@ -10,10 +10,6 @@
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:paddingTop="12dp"
-    android:paddingBottom="@dimen/autofill_assistant_bottombar_vertical_spacing"
-    android:animateLayoutChanges="true"
-    android:clipChildren="false"
-    android:clipToPadding="false"
     android:orientation="vertical">
     <LinearLayout
         android:id="@+id/header"
@@ -40,6 +36,7 @@
             android:id="@+id/profile_image"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:contentDescription="@string/preferences"
             app:srcCompat="@drawable/logo_avatar_anonymous"/>
     </LinearLayout>
 
@@ -51,4 +48,18 @@
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         app:colorBackground="@color/modern_secondary_color"
         app:colorProgress="@color/default_text_color_blue"/>
+
+    <org.chromium.chrome.browser.widget.FadingEdgeScrollView
+        android:id="@+id/scrollable_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <LinearLayout
+            android:id="@+id/scrollable_content_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
+    </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
 </org.chromium.chrome.browser.autofill_assistant.SizeListenableLinearLayout>

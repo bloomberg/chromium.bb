@@ -25,6 +25,7 @@ struct WebRequestInfo;
 
 namespace declarative_net_request {
 class CompositeMatcher;
+struct RequestParams;
 
 // Manages the set of active rulesets for the Declarative Net Request API. Can
 // be constructed on any sequence but must be accessed and destroyed from the
@@ -48,8 +49,6 @@ class RulesetManager {
     ~Action();
     Action(Action&&);
     Action& operator=(Action&&);
-
-    bool operator==(const Action&) const;
 
     Type type = Type::NONE;
 
@@ -97,12 +96,13 @@ class RulesetManager {
   void UpdateAllowedPages(const ExtensionId& extension_id,
                           URLPatternSet allowed_pages);
 
-  // Returns the action to take for the given request.
+  // Returns the action to take for the given request. Note: the returned action
+  // is owned by |request|.
   // Precedence order: Allow > Blocking > Redirect rules.
   // For redirect rules, most recently installed extensions are given
   // preference.
-  Action EvaluateRequest(const WebRequestInfo& request,
-                         bool is_incognito_context) const;
+  const Action& EvaluateRequest(const WebRequestInfo& request,
+                                bool is_incognito_context) const;
 
   // Returns true if there is an active matcher which modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
@@ -137,6 +137,20 @@ class RulesetManager {
 
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
+
+  base::Optional<Action> GetBlockOrCollapseAction(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
+  base::Optional<Action> GetRedirectAction(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
+  base::Optional<Action> GetRemoveHeadersAction(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
+
+  // Helper for EvaluateRequest.
+  Action EvaluateRequestInternal(const WebRequestInfo& request,
+                                 bool is_incognito_context) const;
 
   // Returns true if the given |request| should be evaluated for
   // blocking/redirection.

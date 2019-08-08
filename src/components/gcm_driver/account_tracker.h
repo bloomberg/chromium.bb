@@ -83,7 +83,8 @@ class AccountTracker : public identity::IdentityManager::Observer {
       const CoreAccountInfo& previous_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override;
 
   void OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
                               const std::string& gaia_id);

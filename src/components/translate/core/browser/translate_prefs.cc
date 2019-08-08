@@ -76,9 +76,6 @@ const char TranslatePrefs::kPrefExplicitLanguageAskShown[] =
 // * translate_too_often_denied
 // * translate_language_blacklist
 
-const base::Feature kRegionalLocalesAsDisplayUI{
-    "RegionalLocalesAsDisplayUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kTranslateRecentTarget{"TranslateRecentTarget",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -86,7 +83,13 @@ const base::Feature kTranslateUI{"TranslateUI",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateMobileManualTrigger{
-    "TranslateAndroidManualTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
+  "TranslateAndroidManualTrigger",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kCompactTranslateInfobarIOS{
     "CompactTranslateInfobarIOS", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -204,6 +207,8 @@ void TranslatePrefs::ResetToDefaults() {
 
   prefs_->ClearPref(kPrefTranslateLastDeniedTimeForLanguage);
   prefs_->ClearPref(kPrefTranslateTooOftenDeniedForLanguage);
+
+  prefs_->ClearPref(prefs::kOfferTranslateEnabled);
 }
 
 bool TranslatePrefs::IsBlockedLanguage(
@@ -490,8 +495,10 @@ std::vector<std::string> TranslatePrefs::GetBlacklistedSitesBetween(
   for (const auto& entry : *dict) {
     std::string site = entry.first;
     base::Time time;
-    // TODO(crbug.com/928787): Handle base::GetValueAsTime() failure.
-    ignore_result(base::GetValueAsTime(*entry.second, &time));
+    if (!base::GetValueAsTime(*entry.second, &time)) {
+      NOTREACHED();
+      continue;
+    }
     if (begin <= time && time < end)
       result.push_back(site);
   }

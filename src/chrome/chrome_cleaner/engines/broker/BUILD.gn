@@ -28,7 +28,7 @@ source_set("common") {
 
   deps = [
     ":interface_metadata_observer",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:uws_id",
@@ -82,7 +82,7 @@ source_set("cleaner_sandbox_interface") {
     "//base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/engines/common:common",
+    "//chrome/chrome_cleaner/engines/common",
     "//chrome/chrome_cleaner/engines/common:resources_header",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
@@ -121,7 +121,7 @@ source_set("noop_interface_metadata_observer") {
 
   deps = [
     ":interface_metadata_observer",
-    "//base:base",
+    "//base",
   ]
 }
 
@@ -133,7 +133,7 @@ source_set("interface_log_service") {
 
   deps = [
     ":interface_metadata_observer",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/os:common_os",
   ]
 
@@ -161,7 +161,7 @@ source_set("unittest_sources") {
     ":common",
     ":interface_log_service",
     ":interface_metadata_observer",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/engines/common",
     "//chrome/chrome_cleaner/engines/target:common",
@@ -174,7 +174,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/pup_data:test_uws",
     "//chrome/chrome_cleaner/settings",
-    "//chrome/chrome_cleaner/strings:strings",
+    "//chrome/chrome_cleaner/strings",
     "//chrome/chrome_cleaner/test:test_executables",
     "//chrome/chrome_cleaner/test:test_pup_data",
     "//chrome/chrome_cleaner/test:test_scoped_service_handle",

@@ -22,6 +22,7 @@
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
@@ -41,6 +42,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
@@ -87,15 +89,14 @@ base::LazyInstance<std::vector<base::Callback<void(DevToolsWindow*)>>>::Leaky
 static const char kKeyUpEventName[] = "keyup";
 static const char kKeyDownEventName[] = "keydown";
 static const char kDefaultFrontendURL[] =
-    "chrome-devtools://devtools/bundled/devtools_app.html";
+    "devtools://devtools/bundled/devtools_app.html";
 static const char kNodeFrontendURL[] =
-    "chrome-devtools://devtools/bundled/node_app.html";
+    "devtools://devtools/bundled/node_app.html";
 static const char kWorkerFrontendURL[] =
-    "chrome-devtools://devtools/bundled/worker_app.html";
-static const char kJSFrontendURL[] =
-    "chrome-devtools://devtools/bundled/js_app.html";
+    "devtools://devtools/bundled/worker_app.html";
+static const char kJSFrontendURL[] = "devtools://devtools/bundled/js_app.html";
 static const char kFallbackFrontendURL[] =
-    "chrome-devtools://devtools/bundled/inspector.html";
+    "devtools://devtools/bundled/inspector.html";
 
 bool FindInspectedBrowserAndTabIndex(
     WebContents* inspected_web_contents, Browser** browser, int* tab) {
@@ -115,16 +116,14 @@ bool FindInspectedBrowserAndTabIndex(
 }
 
 void SetPreferencesFromJson(Profile* profile, const std::string& json) {
-  base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> parsed = base::JSONReader::ReadDeprecated(json);
-  if (!parsed || !parsed->GetAsDictionary(&dict))
+  base::Optional<base::Value> parsed = base::JSONReader::Read(json);
+  if (!parsed || !parsed->is_dict())
     return;
   DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().is_string())
+  for (const auto& dict_value : parsed->DictItems()) {
+    if (!dict_value.second.is_string())
       continue;
-    update.Get()->SetWithoutPathExpansion(
-        it.key(), it.value().CreateDeepCopy());
+    update.Get()->SetKey(dict_value.first, std::move(dict_value.second));
   }
 }
 
@@ -266,22 +265,16 @@ class DevToolsEventForwarder {
 
 void DevToolsEventForwarder::SetWhitelistedShortcuts(
     const std::string& message) {
-  std::unique_ptr<base::Value> parsed_message =
-      base::JSONReader::ReadDeprecated(message);
-  base::ListValue* shortcut_list;
-  if (!parsed_message || !parsed_message->GetAsList(&shortcut_list))
-      return;
-  auto it = shortcut_list->begin();
-  for (; it != shortcut_list->end(); ++it) {
-    base::DictionaryValue* dictionary;
-    if (!it->GetAsDictionary(&dictionary))
+  base::Optional<base::Value> parsed_message = base::JSONReader::Read(message);
+  if (!parsed_message || !parsed_message->is_list())
+    return;
+  for (const auto& list_item : parsed_message->GetList()) {
+    if (!list_item.is_dict())
       continue;
-    int key_code = 0;
-    dictionary->GetInteger("keyCode", &key_code);
+    int key_code = list_item.FindIntKey("keyCode").value_or(0);
     if (key_code == 0)
       continue;
-    int modifiers = 0;
-    dictionary->GetInteger("modifiers", &modifiers);
+    int modifiers = list_item.FindIntKey("modifiers").value_or(0);
     if (!KeyWhitelistingAllowed(key_code, modifiers)) {
       LOG(WARNING) << "Key whitelisting forbidden: "
                    << "(" << key_code << "," << modifiers << ")";
@@ -315,14 +308,15 @@ bool DevToolsEventForwarder::ForwardEvent(
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
 
-  base::DictionaryValue event_data;
-  event_data.SetString("type", event_type);
-  event_data.SetString("key", ui::KeycodeConverter::DomKeyToKeyString(
-                                  static_cast<ui::DomKey>(event.dom_key)));
-  event_data.SetString("code", ui::KeycodeConverter::DomCodeToCodeString(
-                                   static_cast<ui::DomCode>(event.dom_code)));
-  event_data.SetInteger("keyCode", key_code);
-  event_data.SetInteger("modifiers", modifiers);
+  base::Value event_data(base::Value::Type::DICTIONARY);
+  event_data.SetStringKey("type", event_type);
+  event_data.SetStringKey("key", ui::KeycodeConverter::DomKeyToKeyString(
+                                     static_cast<ui::DomKey>(event.dom_key)));
+  event_data.SetStringKey("code",
+                          ui::KeycodeConverter::DomCodeToCodeString(
+                              static_cast<ui::DomCode>(event.dom_code)));
+  event_data.SetIntKey("keyCode", key_code);
+  event_data.SetIntKey("modifiers", modifiers);
   devtools_window_->bindings_->CallClientFunction(
       "DevToolsAPI.keyEventUnhandled", &event_data, NULL, NULL);
   return true;
@@ -802,6 +796,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     DCHECK(inspected_browser);
     DCHECK(inspected_tab_index != -1);
 
+    RegisterModalDialogManager(inspected_browser);
+
     // Tell inspected browser to update splitter and switch to inspected panel.
     BrowserWindow* inspected_window = inspected_browser->window();
     main_web_contents_->SetDelegate(this);
@@ -832,6 +828,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
 
   if (!browser_)
     CreateDevToolsBrowser();
+
+  RegisterModalDialogManager(browser_);
 
   if (should_show_window) {
     browser_->window()->Show();
@@ -951,6 +949,8 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
   zoom::ZoomController::CreateForWebContents(main_web_contents_);
   zoom::ZoomController::FromWebContents(main_web_contents_)
       ->SetShowsNotificationBubble(false);
+  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+      main_web_contents_);
 
   g_devtools_window_instances.Get().push_back(this);
 
@@ -1026,6 +1026,7 @@ DevToolsWindow* DevToolsWindow::Create(
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
   DevToolsUIBindings* bindings =
       DevToolsUIBindings::ForWebContents(main_web_contents.get());
+
   if (!bindings)
     return nullptr;
   if (!settings.empty())
@@ -1451,32 +1452,14 @@ void DevToolsWindow::RenderProcessGone(bool crashed) {
 }
 
 void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(cert_chain);
-  if (!value || value->type() != base::Value::Type::LIST) {
-    NOTREACHED();
-    return;
-  }
-
-  std::unique_ptr<base::ListValue> list =
-      base::ListValue::From(std::move(value));
+  base::Optional<base::Value> value = base::JSONReader::Read(cert_chain);
+  CHECK(value && value->is_list());
   std::vector<std::string> decoded;
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::Value* item;
-    if (!list->Get(i, &item) || !item->is_string()) {
-      NOTREACHED();
-      return;
-    }
+  for (const auto& item : value->GetList()) {
+    CHECK(item.is_string());
     std::string temp;
-    if (!item->GetAsString(&temp)) {
-      NOTREACHED();
-      return;
-    }
-    if (!base::Base64Decode(temp, &temp)) {
-      NOTREACHED();
-      return;
-    }
-    decoded.push_back(temp);
+    CHECK(base::Base64Decode(item.GetString(), &temp));
+    decoded.push_back(std::move(temp));
   }
 
   std::vector<base::StringPiece> cert_string_piece;
@@ -1484,10 +1467,7 @@ void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
     cert_string_piece.push_back(str);
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromDERCertChain(cert_string_piece);
-  if (!cert) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(cert);
 
   WebContents* inspected_contents =
       is_docked_ ? GetInspectedWebContents() : main_web_contents_;
@@ -1548,15 +1528,15 @@ void DevToolsWindow::CreateDevToolsBrowser() {
     // Ensure there is always a default size so that
     // BrowserFrame::InitBrowserFrame can retrieve it later.
     DictionaryPrefUpdate update(prefs, prefs::kAppWindowPlacement);
-    base::DictionaryValue* wp_prefs = update.Get();
-    auto dev_tools_defaults = std::make_unique<base::DictionaryValue>();
-    dev_tools_defaults->SetInteger("left", 100);
-    dev_tools_defaults->SetInteger("top", 100);
-    dev_tools_defaults->SetInteger("right", 740);
-    dev_tools_defaults->SetInteger("bottom", 740);
-    dev_tools_defaults->SetBoolean("maximized", false);
-    dev_tools_defaults->SetBoolean("always_on_top", false);
-    wp_prefs->Set(kDevToolsApp, std::move(dev_tools_defaults));
+    base::Value* wp_prefs = update.Get();
+    base::Value dev_tools_defaults(base::Value::Type::DICTIONARY);
+    dev_tools_defaults.SetIntKey("left", 100);
+    dev_tools_defaults.SetIntKey("top", 100);
+    dev_tools_defaults.SetIntKey("right", 740);
+    dev_tools_defaults.SetIntKey("bottom", 740);
+    dev_tools_defaults.SetBoolKey("maximized", false);
+    dev_tools_defaults.SetBoolKey("always_on_top", false);
+    wp_prefs->SetKey(kDevToolsApp, std::move(dev_tools_defaults));
   }
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));
@@ -1656,4 +1636,11 @@ bool DevToolsWindow::ReloadInspectedWebContents(bool bypass_cache) {
   bindings_->CallClientFunction("DevToolsAPI.reloadInspectedPage",
                                 &bypass_cache_value, nullptr, nullptr);
   return true;
+}
+
+void DevToolsWindow::RegisterModalDialogManager(Browser* browser) {
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      main_web_contents_);
+  web_modal::WebContentsModalDialogManager::FromWebContents(main_web_contents_)
+      ->SetDelegate(browser);
 }

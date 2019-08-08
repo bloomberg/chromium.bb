@@ -5,22 +5,21 @@
 import unittest
 
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.web_tests.port.test import TestPort, WEB_TEST_DIR
 
-
-MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
 
 class WPTManifestUnitTest(unittest.TestCase):
 
     def test_ensure_manifest_copies_new_manifest(self):
         host = MockHost()
-        manifest_path = MOCK_WEB_TESTS + 'external/wpt/MANIFEST.json'
+        port = TestPort(host)
+        manifest_path = WEB_TEST_DIR + '/external/wpt/MANIFEST.json'
 
         self.assertFalse(host.filesystem.exists(manifest_path))
-        WPTManifest.ensure_manifest(host)
+        WPTManifest.ensure_manifest(port)
         self.assertTrue(host.filesystem.exists(manifest_path))
         self.assertEqual(host.filesystem.written_files, {manifest_path: '{"manifest": "base"}'})
 
@@ -34,19 +33,20 @@ class WPTManifestUnitTest(unittest.TestCase):
                     '--work',
                     '--no-download',
                     '--tests-root',
-                    MOCK_WEB_TESTS + 'external/wpt',
+                    WEB_TEST_DIR + '/external/wpt',
                 ]
             ]
         )
 
     def test_ensure_manifest_updates_manifest_if_it_exists(self):
         host = MockHost()
-        manifest_path = MOCK_WEB_TESTS + 'external/wpt/MANIFEST.json'
+        port = TestPort(host)
+        manifest_path = WEB_TEST_DIR + '/external/wpt/MANIFEST.json'
 
         host.filesystem.write_text_file(manifest_path, '{"manifest": "NOT base"}')
 
         self.assertTrue(host.filesystem.exists(manifest_path))
-        WPTManifest.ensure_manifest(host)
+        WPTManifest.ensure_manifest(port)
         self.assertTrue(host.filesystem.exists(manifest_path))
         self.assertEqual(host.filesystem.written_files, {manifest_path: '{"manifest": "base"}'})
 
@@ -60,7 +60,7 @@ class WPTManifestUnitTest(unittest.TestCase):
                     '--work',
                     '--no-download',
                     '--tests-root',
-                    MOCK_WEB_TESTS + 'external/wpt',
+                    WEB_TEST_DIR + '/external/wpt',
                 ]
             ]
         )
@@ -68,13 +68,15 @@ class WPTManifestUnitTest(unittest.TestCase):
     def test_ensure_manifest_raises_exception(self):
         host = MockHost()
         host.executive = MockExecutive(should_throw=True)
+        port = TestPort(host)
 
         with self.assertRaises(ScriptError):
-            WPTManifest.ensure_manifest(host)
+            WPTManifest.ensure_manifest(port)
 
     def test_ensure_manifest_takes_optional_dest(self):
         host = MockHost()
-        WPTManifest.ensure_manifest(host, 'wpt_internal')
+        port = TestPort(host)
+        WPTManifest.ensure_manifest(port, 'wpt_internal')
         self.assertEqual(
             host.executive.calls,
             [
@@ -85,7 +87,7 @@ class WPTManifestUnitTest(unittest.TestCase):
                     '--work',
                     '--no-download',
                     '--tests-root',
-                    MOCK_WEB_TESTS + 'wpt_internal',
+                    WEB_TEST_DIR + '/wpt_internal',
                 ]
             ]
         )

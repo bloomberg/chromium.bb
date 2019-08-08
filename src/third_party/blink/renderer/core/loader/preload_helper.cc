@@ -83,11 +83,12 @@ bool IsSupportedType(ResourceType resource_type, const String& mime_type) {
   return false;
 }
 
-MediaValues* CreateMediaValues(Document& document,
-                               ViewportDescription* viewport_description) {
+MediaValues* CreateMediaValues(
+    Document& document,
+    const base::Optional<ViewportDescription>& viewport_description) {
   MediaValues* media_values =
       MediaValues::CreateDynamicIfFrameExists(document.GetFrame());
-  if (viewport_description) {
+  if (viewport_description.has_value()) {
     FloatSize initial_viewport(media_values->DeviceWidth(),
                                media_values->DeviceHeight());
     PageScaleConstraints constraints = viewport_description->Resolve(
@@ -96,6 +97,25 @@ MediaValues* CreateMediaValues(Document& document,
                                              constraints.layout_size.Height());
   }
   return media_values;
+}
+
+bool MediaMatches(const String& media, MediaValues* media_values) {
+  scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media);
+  MediaQueryEvaluator evaluator(*media_values);
+  return evaluator.Eval(*media_queries);
+}
+
+KURL GetBestFitImageURL(const Document& document,
+                        const KURL& base_url,
+                        MediaValues* media_values,
+                        const KURL& href,
+                        const String& image_srcset,
+                        const String& image_sizes) {
+  float source_size = SizesAttributeParser(media_values, image_sizes).length();
+  ImageCandidate candidate = BestFitSourceForImageAttributes(
+      media_values->DevicePixelRatio(), source_size, href, image_srcset);
+  return base_url.IsNull() ? document.CompleteURL(candidate.ToString())
+                           : KURL(base_url, candidate.ToString());
 }
 
 }  // namespace
@@ -194,12 +214,6 @@ base::Optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
   return base::nullopt;
 }
 
-static bool MediaMatches(const String& media, MediaValues* media_values) {
-  scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media);
-  MediaQueryEvaluator evaluator(*media_values);
-  return evaluator.Eval(*media_queries);
-}
-
 // |base_url| is used in Link HTTP Header based preloads to resolve relative
 // URLs in srcset, which should be based on the resource's URL, not the
 // document's base URL. If |base_url| is a null URL, relative URLs are resolved
@@ -209,7 +223,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
     Document& document,
     const KURL& base_url,
     LinkCaller caller,
-    ViewportDescription* viewport_description,
+    const base::Optional<ViewportDescription>& viewport_description,
     ParserDisposition parser_disposition) {
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
@@ -222,13 +236,8 @@ Resource* PreloadHelper::PreloadIfNeeded(
   if (resource_type == ResourceType::kImage && !params.image_srcset.IsEmpty()) {
     UseCounter::Count(document, WebFeature::kLinkRelPreloadImageSrcset);
     media_values = CreateMediaValues(document, viewport_description);
-    float source_size =
-        SizesAttributeParser(media_values, params.image_sizes).length();
-    ImageCandidate candidate = BestFitSourceForImageAttributes(
-        media_values->DevicePixelRatio(), source_size, params.href,
-        params.image_srcset);
-    url = base_url.IsNull() ? document.CompleteURL(candidate.ToString())
-                            : KURL(base_url, candidate.ToString());
+    url = GetBestFitImageURL(document, base_url, media_values, params.href,
+                             params.image_srcset, params.image_sizes);
   } else {
     url = params.href;
   }
@@ -303,7 +312,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
 void PreloadHelper::ModulePreloadIfNeeded(
     const LinkLoadParameters& params,
     Document& document,
-    ViewportDescription* viewport_description,
+    const base::Optional<ViewportDescription>& viewport_description,
     SingleModuleClient* client) {
   if (!document.Loader() || !params.rel.IsModulePreload())
     return;
@@ -466,7 +475,7 @@ void PreloadHelper::LoadLinksFromHeader(
     Document* document,
     CanLoadResources can_load_resources,
     MediaPreloadPolicy media_policy,
-    ViewportDescriptionWrapper* viewport_description_wrapper,
+    const base::Optional<ViewportDescription>& viewport_description,
     std::unique_ptr<AlternateSignedExchangeResourceInfo>
         alternate_resource_info) {
   if (header_value.IsEmpty())
@@ -485,9 +494,23 @@ void PreloadHelper::LoadLinksFromHeader(
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
       DCHECK(
           RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
-      // TODO(crbug.com/935267): Support image_srcset and image_sizes.
+      KURL url = params.href;
+      base::Optional<ResourceType> resource_type =
+          PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
+      if (document && resource_type == ResourceType::kImage &&
+          !params.image_srcset.IsEmpty()) {
+        // |media_values| is created based on the viewport dimensions of the
+        // current page that prefetched SXGs, not on the viewport of the SXG
+        // content.
+        // TODO(crbug/935267): Consider supporting Viewport HTTP response
+        // header. https://discourse.wicg.io/t/proposal-viewport-http-header/
+        MediaValues* media_values =
+            CreateMediaValues(*document, viewport_description);
+        url = GetBestFitImageURL(*document, base_url, media_values, params.href,
+                                 params.image_srcset, params.image_sizes);
+      }
       const auto* alternative_resource =
-          alternate_resource_info->FindMatchingEntry(params.href);
+          alternate_resource_info->FindMatchingEntry(url);
       if (alternative_resource &&
           alternative_resource->alternative_url().IsValid()) {
         params.href = alternative_resource->alternative_url();
@@ -518,11 +541,6 @@ void PreloadHelper::LoadLinksFromHeader(
     }
     if (can_load_resources != kDoNotLoadResources) {
       DCHECK(document);
-      ViewportDescription* viewport_description =
-          (viewport_description_wrapper && viewport_description_wrapper->set)
-              ? &(viewport_description_wrapper->description)
-              : nullptr;
-
       PreloadIfNeeded(params, *document, base_url, kLinkCalledFromHeader,
                       viewport_description, kNotParserInserted);
       PrefetchIfNeeded(params, *document);

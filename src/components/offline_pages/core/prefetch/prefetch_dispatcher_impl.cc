@@ -44,6 +44,7 @@
 #include "components/offline_pages/core/prefetch/tasks/mark_operation_done_task.h"
 #include "components/offline_pages/core/prefetch/tasks/metrics_finalization_task.h"
 #include "components/offline_pages/core/prefetch/tasks/page_bundle_update_task.h"
+#include "components/offline_pages/core/prefetch/tasks/remove_url_task.h"
 #include "components/offline_pages/core/prefetch/tasks/sent_get_operation_cleanup_task.h"
 #include "components/offline_pages/core/prefetch/tasks/stale_entry_finalizer_task.h"
 #include "components/offline_pages/core/prefetch/thumbnail_fetcher.h"
@@ -106,8 +107,7 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
     const std::vector<PrefetchURL>& prefetch_urls) {
   if (!prefetch_prefs::IsEnabled(pref_service_)) {
     if (prefetch_prefs::IsForbiddenCheckDue(pref_service_)) {
-      CheckIfEnabledByServer(service_->GetPrefetchNetworkRequestFactory(),
-                             pref_service_);
+      CheckIfEnabledByServer(pref_service_, service_);
     }
     return;
   }
@@ -147,8 +147,17 @@ void PrefetchDispatcherImpl::NewSuggestionsAvailable(
 void PrefetchDispatcherImpl::RemoveSuggestion(const GURL& url) {
   if (!prefetch_prefs::IsEnabled(pref_service_))
     return;
-  // TODO(https://crbug.com/841516): to be implemented soon.
-  NOTIMPLEMENTED();
+
+  // Remove the URL from the prefetch database.
+  task_queue_.AddTask(MakeRemoveUrlTask(service_->GetPrefetchStore(), url));
+
+  // Remove the URL from the offline model.
+  PageCriteria criteria;
+  criteria.url = url;
+  criteria.client_namespaces =
+      std::vector<std::string>{kSuggestedArticlesNamespace};
+  service_->GetOfflinePageModel()->DeletePagesWithCriteria(criteria,
+                                                           base::DoNothing());
 }
 
 void PrefetchDispatcherImpl::RemoveAllUnprocessedPrefetchURLs(
@@ -255,8 +264,7 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
 
   std::unique_ptr<Task> generate_page_bundle_task =
       std::make_unique<GeneratePageBundleTask>(
-          this, service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
-          service_->GetCachedGCMToken(),
+          this, service_->GetPrefetchStore(), service_->GetCachedGCMToken(),
           service_->GetPrefetchNetworkRequestFactory(),
           base::BindRepeating(
               &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,

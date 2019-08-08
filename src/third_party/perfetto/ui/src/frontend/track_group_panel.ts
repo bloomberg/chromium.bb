@@ -24,8 +24,10 @@ import {Panel, PanelSize} from './panel';
 import {Track} from './track';
 import {TrackContent} from './track_panel';
 import {trackRegistry} from './track_registry';
-import {drawVerticalSelection,
-        drawVerticalLineAtTime} from './vertical_line_helper';
+import {
+  drawVerticalLineAtTime,
+  drawVerticalSelection
+} from './vertical_line_helper';
 
 
 interface Attrs {
@@ -56,7 +58,10 @@ export class TrackGroupPanel extends Panel<Attrs> {
 
   view({attrs}: m.CVnode<Attrs>) {
     const collapsed = this.trackGroupState.collapsed;
-    const name = StripPathFromExecutable(this.trackGroupState.name);
+    let name = this.trackGroupState.name;
+    if (name[0] === '/') {
+      name = StripPathFromExecutable(name);
+    }
     return m(
         `.track-group-panel[collapsed=${collapsed}]`,
         m('.shell',

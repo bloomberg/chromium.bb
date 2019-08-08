@@ -168,8 +168,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnUploadProgress(
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
-}
+    mojo_base::BigBuffer data) {}
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {

@@ -9,13 +9,7 @@
 #include "base/optional.h"
 #include "url/origin.h"
 
-namespace net {
-class URLRequest;
-}  // namespace net
-
 namespace network {
-
-struct ResourceRequest;
 
 namespace mojom {
 class URLLoaderFactoryParams;
@@ -56,22 +50,24 @@ enum class InitiatorLockCompatibility {
 // |factory_params.request_initiator_site_lock|.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    const mojom::URLLoaderFactoryParams& factory_params,
-    const ResourceRequest& request);
-COMPONENT_EXPORT(NETWORK_SERVICE)
-InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
 
-// Gets initiator of |request|, falling back to a unique origin if
-// 1) |request.initiator()| is missing or
-// 2) |request.initiator()| is incompatible with |request_initiator_site_lock|.
+// Gets initiator of request, falling back to a unique origin if
+// 1) |request_initiator| is missing or
+// 2) |request_initiator| is incompatible with |request_initiator_site_lock|.
 //
-// |request_initiator_site_lock| should come from
-// URLLoaderFactoryParams::request_initiator_site_lock.
+// |request_initiator_site_lock| is the origin to which the URLLoaderFactory of
+// the request is locked in a trustworthy way.
+//   Example:
+//     URLLoaderFactoryParams::request_initiator_site_lock
+//     SubresourceSignedExchangeURLLoaderFactory::request_initiator_site_lock
+// |request_initiator| should come from net::URLRequest::initiator() or
+// network::ResourceRequest::request_initiator which may be initially set in an
+// untrustworthy process (eg: renderer process).
 url::Origin GetTrustworthyInitiator(
     const base::Optional<url::Origin>& request_initiator_site_lock,
-    const net::URLRequest& request);
+    const base::Optional<url::Origin>& request_initiator);
 
 }  // namespace network
 

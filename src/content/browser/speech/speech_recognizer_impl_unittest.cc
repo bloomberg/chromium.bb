@@ -580,7 +580,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   network::ResourceResponseHead response;
   const char kHeaders[] = "HTTP/1.0 500 Internal Server Error";
   response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(kHeaders, base::size(kHeaders)));
+      net::HttpUtil::AssembleRawHeaders(kHeaders));
   url_loader_factory_.AddResponse(pending_request->request.url, response, "",
                                   network::URLLoaderCompletionStatus());
 

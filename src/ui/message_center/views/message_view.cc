@@ -4,13 +4,11 @@
 
 #include "ui/message_center/views/message_view.h"
 
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -18,7 +16,6 @@
 #include "ui/gfx/shadow_util.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -128,6 +125,10 @@ void MessageView::SetIsNested() {
 
 void MessageView::CloseSwipeControl() {
   slide_out_controller_.CloseSwipeControl();
+}
+
+void MessageView::SlideOutAndClose(int direction) {
+  slide_out_controller_.SlideOutAndClose(direction);
 }
 
 void MessageView::SetExpanded(bool expanded) {
@@ -304,24 +305,31 @@ ui::Layer* MessageView::GetSlideOutLayer() {
 }
 
 void MessageView::OnSlideStarted() {
-  for (auto* observer : slide_observers_) {
-    observer->OnSlideStarted(notification_id_);
+  for (auto& observer : slide_observers_) {
+    observer.OnSlideStarted(notification_id_);
   }
 }
 
 void MessageView::OnSlideChanged(bool in_progress) {
-  for (auto* observer : slide_observers_) {
-    observer->OnSlideChanged(notification_id_);
+  for (auto& observer : slide_observers_) {
+    observer.OnSlideChanged(notification_id_);
   }
 }
 
 void MessageView::AddSlideObserver(MessageView::SlideObserver* observer) {
-  slide_observers_.push_back(observer);
+  slide_observers_.AddObserver(observer);
+}
+
+void MessageView::RemoveSlideObserver(MessageView::SlideObserver* observer) {
+  slide_observers_.RemoveObserver(observer);
 }
 
 void MessageView::OnSlideOut() {
   MessageCenter::Get()->RemoveNotification(notification_id_,
                                            true /* by_user */);
+
+  for (auto& observer : slide_observers_)
+    observer.OnSlideOut(notification_id_);
 }
 
 void MessageView::OnWillChangeFocus(views::View* before, views::View* now) {}

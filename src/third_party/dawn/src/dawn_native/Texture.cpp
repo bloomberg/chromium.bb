@@ -14,7 +14,10 @@
 
 #include "dawn_native/Texture.h"
 
+#include <algorithm>
+
 #include "common/Assert.h"
+#include "common/Math.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
@@ -171,6 +174,11 @@ namespace dawn_native {
             descriptor->size.depth == 0 || descriptor->arrayLayerCount == 0 ||
             descriptor->mipLevelCount == 0) {
             return DAWN_VALIDATION_ERROR("Cannot create an empty texture");
+        }
+
+        if (Log2(std::max(descriptor->size.width, descriptor->size.height)) + 1 <
+            descriptor->mipLevelCount) {
+            return DAWN_VALIDATION_ERROR("Texture has too many mip levels");
         }
 
         return {};

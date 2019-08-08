@@ -8,14 +8,14 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 
-class LayoutRectOutsets;
 struct NGLineBoxStrut;
 struct NGPhysicalBoxStrut;
 
@@ -43,7 +43,7 @@ struct CORE_EXPORT NGBoxStrut {
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return block_start + block_end; }
 
-  NGLogicalOffset StartOffset() const { return {inline_start, block_start}; }
+  LogicalOffset StartOffset() const { return {inline_start, block_start}; }
 
   bool IsEmpty() const { return *this == NGBoxStrut(); }
 
@@ -195,7 +195,16 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
   LayoutUnit HorizontalSum() const { return left + right; }
   LayoutUnit VerticalSum() const { return top + bottom; }
 
-  LayoutRectOutsets ToLayoutRectOutsets() const;
+  LayoutRectOutsets ToLayoutRectOutsets() const {
+    return LayoutRectOutsets(top, right, bottom, left);
+  }
+
+  bool operator==(const NGPhysicalBoxStrut& other) const {
+    return top == other.top && right == other.right && bottom == other.bottom &&
+           left == other.left;
+  }
+
+  bool IsZero() const { return !top && !right && !bottom && !left; }
 
   LayoutUnit top;
   LayoutUnit right;

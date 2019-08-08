@@ -151,7 +151,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,
     kForcedGCForTestingScheduled,
-    kPageNavigationGCScheduled,
     kIncrementalGCScheduled,
   };
 
@@ -224,8 +223,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void SchedulePreciseGC();
   void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
-  void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
-  void SchedulePageNavigationGC();
   void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
   void PostIdleGCTask();
@@ -237,8 +234,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool IsSweepingInProgress() const { return gc_phase_ == GCPhase::kSweeping; }
   bool IsUnifiedGCMarkingInProgress() const {
     return IsMarkingInProgress() &&
-           current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC;
+           (current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC ||
+            current_gc_data_.reason ==
+                BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC);
   }
+
+  void EnableCompactionForNextGCForTesting();
 
   // Incremental GC.
   void ScheduleIncrementalMarkingStep();
@@ -489,11 +490,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // V8 minor or major GC is likely to drop a lot of references to objects
   // on Oilpan's heap. We give a chance to schedule a GC.
   bool ShouldScheduleV8FollowupGC();
-  // Page navigation is likely to drop a lot of references to objects
-  // on Oilpan's heap. We give a chance to schedule a GC.
-  // estimatedRemovalRatio is the estimated ratio of objects that will be no
-  // longer necessary due to the navigation.
-  bool ShouldSchedulePageNavigationGC(float estimated_removal_ratio);
 
   // Internal helpers to handle memory pressure conditions.
 
@@ -594,6 +590,10 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
+
+  // Used to ensure precise GC is only run when we don't need to scan the stack.
+  // crbug.com/937117
+  bool precise_gc_allowed_ = false;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;

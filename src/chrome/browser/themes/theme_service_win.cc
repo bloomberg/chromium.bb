@@ -18,7 +18,7 @@
 namespace {
 
 SkColor GetDefaultInactiveFrameColor() {
-  return base::win::GetVersion() < base::win::VERSION_WIN10
+  return base::win::GetVersion() < base::win::Version::WIN10
              ? SkColorSetRGB(0xEB, 0xEB, 0xEB)
              : SK_ColorWHITE;
 }
@@ -30,7 +30,7 @@ ThemeServiceWin::ThemeServiceWin() {
   // because we want to monitor the frame color even when a custom frame is in
   // use, so that it will be correct if at any time the user switches to the
   // native frame.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     dwm_key_.reset(new base::win::RegKey(
         HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\DWM", KEY_READ));
     if (dwm_key_->Valid())
@@ -84,7 +84,7 @@ SkColor ThemeServiceWin::GetDefaultColor(int id, bool incognito) const {
 
 bool ThemeServiceWin::DwmColorsAllowed() const {
   return ShouldUseNativeFrame() &&
-         (base::win::GetVersion() >= base::win::VERSION_WIN8);
+         (base::win::GetVersion() >= base::win::Version::WIN8);
 }
 
 void ThemeServiceWin::OnDwmKeyUpdated() {
@@ -116,7 +116,7 @@ void ThemeServiceWin::OnDwmKeyUpdated() {
   }
 
   inactive_frame_color_from_registry_ = false;
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
     dwm_frame_color_ = dwm_accent_border_color_;
   } else {
     DWORD accent_color, color_prevalence;

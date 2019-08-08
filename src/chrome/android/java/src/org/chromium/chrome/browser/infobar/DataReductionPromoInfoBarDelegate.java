@@ -9,7 +9,6 @@ import android.content.Context;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
 import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.content_public.browser.WebContents;
@@ -52,10 +51,7 @@ public class DataReductionPromoInfoBarDelegate {
                 .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_INFOBAR_ENABLED);
         DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                 context, true);
-        Toast.makeText(context,
-                     context.getString(
-                             DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                                     R.string.data_reduction_enabled_toast)),
+        Toast.makeText(context, context.getString(R.string.data_reduction_enabled_toast_lite_mode),
                      Toast.LENGTH_LONG)
                 .show();
     }

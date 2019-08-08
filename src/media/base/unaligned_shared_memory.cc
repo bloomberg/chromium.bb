@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/system/sys_info.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -29,9 +30,10 @@ bool CalculateMisalignmentAndOffset(size_t size,
   // Note: result of % computation may be off_t or size_t, depending on the
   // relative ranks of those types. In any case we assume that
   // VMAllocationGranularity() fits in both types, so the final result does too.
+  DCHECK_GE(offset, 0);
   *misalignment = offset % base::SysInfo::VMAllocationGranularity();
 
-  // Above this |size_|, |size_| + |misalignment| overflows.
+  // Above this |max_size|, |size| + |*misalignment| overflows.
   size_t max_size = std::numeric_limits<size_t>::max() - *misalignment;
   if (size > max_size) {
     DLOG(ERROR) << "Invalid size";
@@ -48,7 +50,13 @@ UnalignedSharedMemory::UnalignedSharedMemory(
     const base::SharedMemoryHandle& handle,
     size_t size,
     bool read_only)
-    : shm_(handle, read_only), size_(size), misalignment_(0) {}
+    : shm_(handle, read_only), read_only_(read_only), size_(size) {}
+
+UnalignedSharedMemory::UnalignedSharedMemory(
+    base::subtle::PlatformSharedMemoryRegion region,
+    size_t size,
+    bool read_only)
+    : region_(std::move(region)), read_only_(read_only), size_(size) {}
 
 UnalignedSharedMemory::~UnalignedSharedMemory() = default;
 
@@ -66,17 +74,45 @@ bool UnalignedSharedMemory::MapAt(off_t offset, size_t size) {
     return false;
   }
 
-  if (!shm_.MapAt(adjusted_offset, size + misalignment)) {
-    DLOG(ERROR) << "Failed to map shared memory";
-    return false;
+  if (region_.IsValid()) {
+    if (read_only_) {
+      auto shm =
+          base::ReadOnlySharedMemoryRegion::Deserialize(std::move(region_));
+      read_only_mapping_ = shm.MapAt(adjusted_offset, size + misalignment);
+      if (!read_only_mapping_.IsValid()) {
+        DLOG(ERROR) << "Failed to map shared memory";
+        return false;
+      }
+      // TODO(crbug.com/849207): this ugly const cast will go away when uses of
+      // UnalignedSharedMemory are converted to
+      // {Writable,ReadOnly}UnalignedMapping.
+      mapping_ptr_ = const_cast<uint8_t*>(
+          static_cast<const uint8_t*>(read_only_mapping_.memory()));
+    } else {
+      auto shm =
+          base::UnsafeSharedMemoryRegion::Deserialize(std::move(region_));
+      writable_mapping_ = shm.MapAt(adjusted_offset, size + misalignment);
+      if (!writable_mapping_.IsValid()) {
+        DLOG(ERROR) << "Failed to map shared memory";
+        return false;
+      }
+      mapping_ptr_ = static_cast<uint8_t*>(writable_mapping_.memory());
+    }
+  } else {
+    if (!shm_.MapAt(adjusted_offset, size + misalignment)) {
+      DLOG(ERROR) << "Failed to map shared memory";
+      return false;
+    }
+    mapping_ptr_ = static_cast<uint8_t*>(shm_.memory());
   }
 
-  misalignment_ = misalignment;
+  DCHECK(mapping_ptr_);
+  // There should be no way for the IsValid() checks above to succeed and yet
+  // |mapping_ptr_| remain null. However, since an invalid but non-null pointer
+  // could be disastrous an extra-careful check is done.
+  if (mapping_ptr_)
+    mapping_ptr_ += misalignment;
   return true;
-}
-
-void* UnalignedSharedMemory::memory() const {
-  return static_cast<uint8_t*>(shm_.memory()) + misalignment_;
 }
 
 WritableUnalignedMapping::WritableUnalignedMapping(
@@ -110,15 +146,6 @@ WritableUnalignedMapping::WritableUnalignedMapping(
     return;
   }
 }
-
-WritableUnalignedMapping::WritableUnalignedMapping(
-    const base::SharedMemoryHandle& handle,
-    size_t size,
-    off_t offset)
-    : WritableUnalignedMapping(
-          base::UnsafeSharedMemoryRegion::CreateFromHandle(handle),
-          size,
-          offset) {}
 
 WritableUnalignedMapping::~WritableUnalignedMapping() = default;
 

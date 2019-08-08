@@ -504,7 +504,7 @@ PasswordGenerationAgent::CreatePasswordFormToPresave() {
     password_form = password_agent_->GetPasswordFormFromUnownedInputElements();
   }
   if (password_form) {
-    password_form->type = PasswordForm::TYPE_GENERATED;
+    password_form->type = PasswordForm::Type::kGenerated;
     password_form->password_value =
         current_generation_item_->generation_element_.Value().Utf16();
   }

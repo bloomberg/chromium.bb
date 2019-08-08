@@ -20,13 +20,13 @@ struct Manifest {
 
   mojo_base.mojom.String16? short_name;
 
-  url.mojom.Url? start_url;
+  url.mojom.Url start_url;
 
   DisplayMode display;
 
   device.mojom.ScreenOrientationLockType orientation;
 
-  array<ManifestImageResource>? icons;
+  array<ManifestImageResource> icons;
 
   // TODO(constantina): This field is non-standard and part of a Chrome
   // experiment. See:
@@ -38,9 +38,9 @@ struct Manifest {
   // experiment. See:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   // As such, this field should not be exposed to the drive-by web.
-  array<ManifestFileFilter>? file_handler;
+  ManifestFileHandler? file_handler;
 
-  array<ManifestRelatedApplication>? related_applications;
+  array<ManifestRelatedApplication> related_applications;
 
   // A boolean that is used as a hint for the user agent to say that related
   // applications should be preferred over the web application. False if missing
@@ -56,11 +56,11 @@ struct Manifest {
   uint32 background_color;
 
   // A URL of the HTML splash screen.
-  url.mojom.Url? splash_screen_url;
+  url.mojom.Url splash_screen_url;
 
   mojo_base.mojom.String16? gcm_sender_id;
 
-  url.mojom.Url? scope;
+  url.mojom.Url scope;
 };
 
 // Structure representing an icon as per the Manifest specification, see:
@@ -154,6 +154,12 @@ struct ManifestShareTarget {
   Enctype enctype;
 
   ManifestShareTargetParams params;
+};
+
+struct ManifestFileHandler {
+  // The URL that will be opened when the file handler is invoked.
+  url.mojom.Url action;
+  array<ManifestFileFilter> files;
 };
 
 // Debug information for a parsed manifest.

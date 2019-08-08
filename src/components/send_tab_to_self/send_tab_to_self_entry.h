@@ -54,6 +54,10 @@ class SendTabToSelfEntry {
   const std::string& GetDeviceName() const;
   // The cache guid of of the device that this tab is shared with.
   const std::string& GetTargetDeviceSyncCacheGuid() const;
+  // The opened state of the entry.
+  bool IsOpened() const;
+  // Sets the opened state of the entry to true.
+  void MarkOpened();
 
   // The state of this entry's notification: if it has been |dismissed|.
   void SetNotificationDismissed(bool notification_dismissed);
@@ -78,6 +82,12 @@ class SendTabToSelfEntry {
   // Returns if the Entry has expired based on the |current_time|.
   bool IsExpired(base::Time current_time) const;
 
+  // Creates a SendTabToSelfEntry consisting of only the required fields.
+  static std::unique_ptr<SendTabToSelfEntry> FromRequiredFields(
+      const std::string& guid,
+      const GURL& url,
+      const std::string& target_device_sync_cache_guid);
+
  private:
   std::string guid_;
   GURL url_;
@@ -87,6 +97,7 @@ class SendTabToSelfEntry {
   base::Time shared_time_;
   base::Time original_navigation_time_;
   bool notification_dismissed_;
+  bool opened_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfEntry);
 };

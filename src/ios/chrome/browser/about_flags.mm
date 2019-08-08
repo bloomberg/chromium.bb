@@ -197,6 +197,24 @@ const FeatureEntry::FeatureVariation kDetectMainThreadFreezeVariations[] = {
     {"9s", kDetectMainThreadFreezeTimeout9s,
      base::size(kDetectMainThreadFreezeTimeout9s), nullptr}};
 
+const FeatureEntry::FeatureParam
+    kAutofillUseMobileLabelDisambiguationShowAll[] = {
+        {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
+         autofill::features::
+             kAutofillUseMobileLabelDisambiguationParameterShowAll}};
+const FeatureEntry::FeatureParam
+    kAutofillUseMobileLabelDisambiguationShowOne[] = {
+        {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
+         autofill::features::
+             kAutofillUseMobileLabelDisambiguationParameterShowOne}};
+
+const FeatureEntry::FeatureVariation
+    kAutofillUseMobileLabelDisambiguationVariations[] = {
+        {"(show all)", kAutofillUseMobileLabelDisambiguationShowAll,
+         base::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
+        {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
+         base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -262,20 +280,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDownstreamUseGooglePayBrandingOniOS)},
-    {"enable-autofill-save-credit-card-uses-strike-system",
-     flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemName,
-     flag_descriptions::
-         kEnableAutofillSaveCreditCardUsesStrikeSystemDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCreditCardUsesStrikeSystem)},
-    {"enable-autofill-save-credit-card-uses-strike-system-v2",
-     flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name,
-     flag_descriptions::
-         kEnableAutofillSaveCreditCardUsesStrikeSystemV2Description,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
      SINGLE_VALUE_TYPE_AND_VALUE(
@@ -396,11 +400,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClosingLastIncognitoTabName,
      flag_descriptions::kClosingLastIncognitoTabDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kClosingLastIncognitoTab)},
-    {"omnibox-tab-switch-suggestions",
-     flag_descriptions::kOmniboxTabSwitchSuggestionsName,
-     flag_descriptions::kOmniboxTabSwitchSuggestionsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,
@@ -412,10 +411,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
-    {"browser-container-contains-ntp",
-     flag_descriptions::kBrowserContainerContainsNTPName,
-     flag_descriptions::kBrowserContainerContainsNTPDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerContainsNTP)},
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
@@ -433,33 +428,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"non-modal-dialogs", flag_descriptions::kNonModalDialogsName,
      flag_descriptions::kNonModalDialogsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(dialogs::kNonModalDialogs)},
-    {"sync-pseudo-uss-favicons", flag_descriptions::kSyncPseudoUSSFaviconsName,
-     flag_descriptions::kSyncPseudoUSSFaviconsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSFavicons)},
-    {"sync-pseudo-uss-history-delete-directives",
-     flag_descriptions::kSyncPseudoUSSHistoryDeleteDirectivesName,
-     flag_descriptions::kSyncPseudoUSSHistoryDeleteDirectivesDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSHistoryDeleteDirectives)},
-    {"sync-pseudo-uss-preferences",
-     flag_descriptions::kSyncPseudoUSSPreferencesName,
-     flag_descriptions::kSyncPseudoUSSPreferencesDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSPreferences)},
-    {"sync-pseudo-uss-priority-preferences",
-     flag_descriptions::kSyncPseudoUSSPriorityPreferencesName,
-     flag_descriptions::kSyncPseudoUSSPriorityPreferencesDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSPriorityPreferences)},
-    {"use-nsurlsession-for-signin",
-     flag_descriptions::kUseNSURLSessionForGaiaSigninRequestsName,
-     flag_descriptions::kUseNSURLSessionForGaiaSigninRequestsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kUseNSURLSessionForGaiaSigninRequests)},
-    {"sync-pseudo-uss-supervised-users",
-     flag_descriptions::kSyncPseudoUSSSupervisedUsersName,
-     flag_descriptions::kSyncPseudoUSSSupervisedUsersDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSSupervisedUsers)},
     {"detect-main-thread-freeze",
      flag_descriptions::kDetectMainThreadFreezeName,
      flag_descriptions::kDetectMainThreadFreezeDescription, flags_ui::kOsIos,
@@ -503,12 +471,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"snapshot-draw-view", flag_descriptions::kSnapshotDrawViewName,
      flag_descriptions::kSnapshotDrawViewDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSnapshotDrawView)},
-    {"enable-autocomplete-data-retention-policy",
-     flag_descriptions::kEnableAutocompleteDataRetentionPolicyName,
-     flag_descriptions::kEnableAutocompleteDataRetentionPolicyDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutocompleteRetentionPolicyEnabled)},
 #if defined(DCHECK_IS_CONFIGURABLE)
     {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
      flag_descriptions::kDcheckIsFatalDescription, flags_ui::kOsIos,
@@ -524,9 +486,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"web-clear-browsing-data", flag_descriptions::kWebClearBrowsingDataName,
      flag_descriptions::kWebClearBrowsingDataDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kWebClearBrowsingData)},
-    {"web-ui-scheme-handling", flag_descriptions::kWebUISchemeHandlingName,
-     flag_descriptions::kWebUISchemeHandlingDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kWebUISchemeHandling)},
     {"send-uma-cellular", flag_descriptions::kSendUmaOverAnyNetwork,
      flag_descriptions::kSendUmaOverAnyNetworkDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUmaCellular)},
@@ -609,9 +568,31 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfBroadcastName,
      flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
+    {"autofill-use-mobile-label-disambiguation",
+     flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
+     flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         autofill::features::kAutofillUseMobileLabelDisambiguation,
+         kAutofillUseMobileLabelDisambiguationVariations,
+         "AutofillUseMobileLabelDisambiguation")},
+    {"enable-autofill-prune-suggestions",
+     flag_descriptions::kAutofillPruneSuggestionsName,
+     flag_descriptions::kAutofillPruneSuggestionsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
+    {"language-settings", flag_descriptions::kLanguageSettingsName,
+     flag_descriptions::kLanguageSettingsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kLanguageSettings)},
     {"lock-bottom-toolbar", flag_descriptions::kLockBottomToolbarName,
      flag_descriptions::kLockBottomToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(fullscreen::features::kLockBottomToolbar)},
+    {"identity-disc", flag_descriptions::kIdentityDiscName,
+     flag_descriptions::kIdentityDiscDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIdentityDisc)},
+    {"enable-send-tab-to-self-history",
+     flag_descriptions::kSendTabToSelfHistoryName,
+     flag_descriptions::kSendTabToSelfHistoryDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfHistory)},
 };
 
 // Add all switches from experimental flags to |command_line|.
@@ -647,6 +628,17 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
           [NSString stringWithFormat:@"FreeformCommandLineFlag%d", i];
       NSString* flag = [defaults stringForKey:key];
       if ([flag length]) {
+        // iOS keyboard replaces -- with —, so undo that.
+        flag = [flag stringByReplacingOccurrencesOfString:@"—"
+                                               withString:@"--"
+                                                  options:0
+                                                    range:NSMakeRange(0, 1)];
+        // To make things easier, allow flags with no dashes by prepending them
+        // here. This also allows for flags that just have one dash if they
+        // exist.
+        if (![flag hasPrefix:@"-"]) {
+          flag = [@"--" stringByAppendingString:flag];
+        }
         flags.push_back(base::SysNSStringToUTF8(flag));
       }
     }

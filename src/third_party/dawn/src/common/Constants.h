@@ -24,18 +24,28 @@ static constexpr uint32_t kMaxBindingsPerGroup = 16u;
 static constexpr uint32_t kMaxVertexAttributes = 16u;
 // Vulkan has a standalone limit named maxVertexInputAttributeOffset (2047u at least) for vertex
 // attribute offset. The limit might be meaningless because Vulkan has another limit named
-// maxVertexInputBindingStride (2048u at least). We use maxVertexAttributeEnd (2048u) here to verify
-// vertex attribute offset, which equals to maxOffset + smallest size of vertex format (char). We
-// may use maxVertexInputStride instead in future.
+// maxVertexInputBindingStride (2048u at least). We use maxVertexAttributeEnd (2048u) here to
+// verify vertex attribute offset, which equals to maxOffset + smallest size of vertex format
+// (char). We may use maxVertexInputBindingStride (maxVertexBufferStride below) instead to replace
+// maxVertexAttributeEnd in future.
 static constexpr uint32_t kMaxVertexAttributeEnd = 2048u;
-static constexpr uint32_t kMaxVertexInputs = 16u;
-static constexpr uint32_t kMaxVertexInputStride = 2048u;
+static constexpr uint32_t kMaxVertexBuffers = 16u;
+static constexpr uint32_t kMaxVertexBufferStride = 2048u;
 static constexpr uint32_t kNumStages = 3;
 static constexpr uint32_t kMaxColorAttachments = 4u;
 static constexpr uint32_t kTextureRowPitchAlignment = 256u;
+// Dynamic buffer offsets require offset to be divisible by 256
+static constexpr uint64_t kMinDynamicBufferOffsetAlignment = 256u;
 
 // Non spec defined constants.
 static constexpr float kLodMin = 0.0;
 static constexpr float kLodMax = 1000.0;
+
+static constexpr uint32_t kVendorID_AMD = 0x1002;
+static constexpr uint32_t kVendorID_ARM = 0x13B5;
+static constexpr uint32_t kVendorID_ImgTec = 0x1010;
+static constexpr uint32_t kVendorID_Intel = 0x8086;
+static constexpr uint32_t kVendorID_Nvidia = 0x10DE;
+static constexpr uint32_t kVendorID_Qualcomm = 0x5143;
 
 #endif  // COMMON_CONSTANTS_H_

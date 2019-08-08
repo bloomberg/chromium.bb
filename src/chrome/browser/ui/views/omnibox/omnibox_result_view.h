@@ -41,7 +41,7 @@ class MenuRunner;
 }
 
 class OmniboxResultView : public views::View,
-                          private gfx::AnimationDelegate,
+                          public gfx::AnimationDelegate,
                           public views::ButtonListener,
                           public views::ContextMenuController,
                           public ui::SimpleMenuModel::Delegate {
@@ -69,7 +69,7 @@ class OmniboxResultView : public views::View,
   bool IsSelected() const;
 
   OmniboxPartState GetThemeState() const;
-  OmniboxTint GetTint() const;
+  OmniboxTint CalculateTint() const;
 
   // Notification that the match icon has changed and schedules a repaint.
   void OnMatchIconUpdated();
@@ -97,7 +97,7 @@ class OmniboxResultView : public views::View,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -105,13 +105,10 @@ class OmniboxResultView : public views::View,
                                   ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
-  bool IsCommandIdEnabled(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  // TODO(tommycli): This will be removed once we get final strings from UX.
-  enum CommandID { COMMAND_REMOVE_SUGGESTION };
-
   // Returns the height of the text portion of the result view.
   int GetTextHeight() const;
 

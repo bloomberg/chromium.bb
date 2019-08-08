@@ -286,19 +286,28 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
   // before calling this function. However chromeos/login/login_utils.cc
   // calls this function directly (see comments there) so it has to be checked
   // again.
-  bool silent_launch = command_line.HasSwitch(switches::kSilentLaunch);
 
-#if defined(CHROMEOS)
+#if defined(KIOSK_NEXT)
+  // FeatureList::IsEnabled has side effects so we call it first before doing
+  // an early return if possible
   DCHECK(!chromeos::ProfileHelper::IsSigninProfile(profile));
   if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
     const PrefService* prefs = profile->GetPrefs();
     if (prefs->GetBoolean(ash::prefs::kKioskNextShellEnabled)) {
-      silent_launch = true;
+      return true;
     }
   }
-#endif
+#endif  // defined(KIOSK_NEXT)
 
-  return silent_launch;
+  if (command_line.HasSwitch(switches::kSilentLaunch))
+    return true;
+
+#if defined(OS_CHROMEOS)
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kStartupBrowserWindowLaunchSuppressed);
+#endif  // defined(OS_CHROMEOS)
+
+  return false;
 }
 
 }  // namespace
@@ -476,6 +485,8 @@ void StartupBrowserCreator::RegisterLocalStatePrefs(
 #endif
 #if !defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kPromotionalTabsEnabled, true);
+  registry->RegisterBooleanPref(prefs::kCommandLineFlagSecurityWarningsEnabled,
+                                true);
 #endif
   registry->RegisterBooleanPref(prefs::kSuppressUnsupportedOSWarning, false);
   registry->RegisterBooleanPref(prefs::kWasRestarted, false);
@@ -936,13 +947,14 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
   if (!profile) {
     profile_manager->CreateProfileAsync(
         profile_path,
-        base::Bind(&ProcessCommandLineOnProfileCreated, command_line, cur_dir),
+        base::BindRepeating(&ProcessCommandLineOnProfileCreated, command_line,
+                            cur_dir),
         base::string16(), std::string());
     return;
   }
   StartupBrowserCreator startup_browser_creator;
-  startup_browser_creator.ProcessCmdLineImpl(command_line, cur_dir, false,
-                                             profile, Profiles());
+  startup_browser_creator.ProcessCmdLineImpl(
+      command_line, cur_dir, /*process_startup=*/false, profile, Profiles());
 }
 
 // static

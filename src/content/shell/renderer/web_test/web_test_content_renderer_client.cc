@@ -107,7 +107,7 @@ void WebTestContentRendererClient::
   // We always expose GC to web tests.
   std::string flags("--expose-gc");
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+  v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
   if (!command_line->HasSwitch(switches::kStableReleaseMode)) {
     blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
   }

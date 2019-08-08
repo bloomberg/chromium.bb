@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1028699632127661925">Wird an <ph name="DEVICE_NAME" /> gesendet…</translation>
 <translation id="111910763555783249">Benachrichtigungseinstellungen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 Tag her}other{# Tage her}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{vor 1 Minute}other{vor # Minuten}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="1409544243779336081">App-Empfehlung</translation>
-<translation id="1413622004203049571">Benachrichtigungen von <ph name="NOTIFIER_NAME" /> deaktivieren</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 Minute und  }other{# Minuten und  }}</translation>
 <translation id="1643823602425662293">Benachrichtigung</translation>
 <translation id="169515659049020177">Umschalttaste</translation>
 <translation id="1710340000377843106">jetzt</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 Minute}other{# Minuten}}</translation>
-<translation id="1756116796893109054">Tab wird gesendet…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Punkt</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 Monat}other{# Monate}}</translation>
@@ -57,7 +56,7 @@
 <translation id="2583543531130364912">Touchscreen kalibrieren</translation>
 <translation id="2666092431469916601">Oben</translation>
 <translation id="2701330563083355633">Geteilt von <ph name="DEVICE_NAME" /></translation>
-<translation id="2743387203779672305">In Zwischenablage kopieren</translation>
+<translation id="2743387203779672305">In die Zwischenablage kopieren</translation>
 <translation id="2803313416453193357">Ordner öffnen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{vor 1 Jahr}other{vor # Jahren}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{in 1 T.}other{in # T.}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Entf</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Byte/s</translation>
 <translation id="6156262341071374681">Maximieren und alle Apps anzeigen</translation>
+<translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6264365405983206840">&amp;Alles auswählen</translation>
 <translation id="6351032674660237738">APP-VORSCHLÄGE</translation>
 <translation id="6364916375976753737">Nach links blättern</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mehr als 1 ungelesene Benachrichtigung}other{Mehr als # ungelesene Benachrichtigungen}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{in 1 min}other{in # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Gesprochene Anfrage über Google Assistant starten</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 Stunde her}other{# Stunden her}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 Sek. übrig}other{# Sek. übrig}}</translation>
+<translation id="8144660977431427332">Ihre Suchanfragen werden mit Google Assistant durchgeführt. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatische Vervollständigung</translation>
 <translation id="815598010540052116">Nach unten blättern</translation>
 <translation id="8170087467028567933">Wenn Sie diesen Vorschlag entfernen, wird er für Ihr Konto nicht mehr eingeblendet, unabhängig vom Gerät.</translation>

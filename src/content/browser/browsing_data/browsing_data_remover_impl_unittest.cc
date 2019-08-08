@@ -48,13 +48,12 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/cookie_manager.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_context.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,6 +61,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/mock_persistent_nel_store.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_report.h"
@@ -96,7 +96,7 @@ const char kTestOrigin3[] = "http://host3.com:1/";
 const char kTestRegisterableDomain3[] = "host3.com";
 const char kTestOrigin4[] = "https://host3.com:1/";
 const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
-const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+const char kTestOriginDevTools[] = "devtools://abcdefghijklmnopqrstuvw/";
 
 // For HTTP auth.
 const char kTestRealm[] = "TestRealm";
@@ -305,68 +305,6 @@ bool FilterMatchesCookie(const CookieDeletionFilterPtr& filter,
 }  // namespace
 
 // Testers -------------------------------------------------------------------
-
-class RemoveChannelIDTester : public net::SSLConfigService::Observer {
- public:
-  explicit RemoveChannelIDTester(BrowserContext* browser_context) {
-    net::URLRequestContext* url_request_context =
-        BrowserContext::GetDefaultStoragePartition(browser_context)
-            ->GetURLRequestContext()
-            ->GetURLRequestContext();
-    channel_id_service_ = url_request_context->channel_id_service();
-    ssl_config_service_ = url_request_context->ssl_config_service();
-    ssl_config_service_->AddObserver(this);
-  }
-
-  ~RemoveChannelIDTester() override {
-    ssl_config_service_->RemoveObserver(this);
-  }
-
-  int ChannelIDCount() { return channel_id_service_->channel_id_count(); }
-
-  // Add a server bound cert for |server| with specific creation and expiry
-  // times.  The cert and key data will be filled with dummy values.
-  void AddChannelIDWithTimes(const std::string& server_identifier,
-                             base::Time creation_time) {
-    GetChannelIDStore()->SetChannelID(
-        std::make_unique<net::ChannelIDStore::ChannelID>(
-            server_identifier, creation_time, crypto::ECPrivateKey::Create()));
-  }
-
-  // Add a server bound cert for |server|, with the current time as the
-  // creation time.  The cert and key data will be filled with dummy values.
-  void AddChannelID(const std::string& server_identifier) {
-    base::Time now = base::Time::Now();
-    AddChannelIDWithTimes(server_identifier, now);
-  }
-
-  void GetChannelIDList(net::ChannelIDStore::ChannelIDList* channel_ids) {
-    GetChannelIDStore()->GetAllChannelIDs(base::BindOnce(
-        &RemoveChannelIDTester::GetAllChannelIDsCallback, channel_ids));
-  }
-
-  net::ChannelIDStore* GetChannelIDStore() {
-    return channel_id_service_->GetChannelIDStore();
-  }
-
-  int ssl_config_changed_count() const { return ssl_config_changed_count_; }
-
-  // net::SSLConfigService::Observer implementation:
-  void OnSSLConfigChanged() override { ssl_config_changed_count_++; }
-
- private:
-  static void GetAllChannelIDsCallback(
-      net::ChannelIDStore::ChannelIDList* dest,
-      const net::ChannelIDStore::ChannelIDList& result) {
-    *dest = result;
-  }
-
-  net::ChannelIDService* channel_id_service_;
-  net::SSLConfigService* ssl_config_service_;
-  int ssl_config_changed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveChannelIDTester);
-};
 
 class RemoveDownloadsTester {
  public:
@@ -577,6 +515,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainBlacklist) {
 
 // Test that removing cookies clears HTTP auth data.
 TEST_F(BrowsingDataRemoverImplTest, ClearHttpAuthCache_RemoveCookies) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   net::HttpNetworkSession* http_session =
       BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
           ->GetURLRequestContext()
@@ -605,6 +548,11 @@ TEST_F(BrowsingDataRemoverImplTest, ClearHttpAuthCache_RemoveCookies) {
 // closing connections.
 TEST_F(BrowsingDataRemoverImplTest,
        ClearHttpAuthCache_AvoidClosingConnections) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   net::HttpNetworkSession* http_session =
       BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
           ->GetURLRequestContext()
@@ -632,93 +580,6 @@ TEST_F(BrowsingDataRemoverImplTest,
   // The entry stays unchanged.
   EXPECT_EQ(entry, http_auth_cache->Lookup(kOrigin1.GetURL(), kTestRealm,
                                            net::HttpAuth::AUTH_SCHEME_BASIC));
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDForever) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  tester.AddChannelID(kTestOrigin1);
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ChannelIDCount());
-
-  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
-                                BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                                false);
-
-  EXPECT_EQ(BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-  EXPECT_EQ(1, tester.ssl_config_changed_count());
-  EXPECT_EQ(0, tester.ChannelIDCount());
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDLastHour) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  base::Time now = base::Time::Now();
-  tester.AddChannelID(kTestOrigin1);
-  tester.AddChannelIDWithTimes(kTestOrigin2,
-                               now - base::TimeDelta::FromHours(2));
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(2, tester.ChannelIDCount());
-
-  BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
-                                BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                                false);
-
-  EXPECT_EQ(BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-  EXPECT_EQ(1, tester.ssl_config_changed_count());
-  ASSERT_EQ(1, tester.ChannelIDCount());
-  net::ChannelIDStore::ChannelIDList channel_ids;
-  tester.GetChannelIDList(&channel_ids);
-  ASSERT_EQ(1U, channel_ids.size());
-  EXPECT_EQ(kTestOrigin2, channel_ids.front().server_identifier());
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsForServerIdentifiers) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  tester.AddChannelID(kTestRegisterableDomain1);
-  tester.AddChannelID(kTestRegisterableDomain3);
-  EXPECT_EQ(2, tester.ChannelIDCount());
-
-  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
-  filter_builder->AddRegisterableDomain(kTestRegisterableDomain1);
-
-  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                              std::move(filter_builder));
-
-  EXPECT_EQ(1, tester.ChannelIDCount());
-  net::ChannelIDStore::ChannelIDList channel_ids;
-  tester.GetChannelIDList(&channel_ids);
-  EXPECT_EQ(kTestRegisterableDomain3, channel_ids.front().server_identifier());
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsAvoidClosingConnections) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  tester.AddChannelID(kTestOrigin1);
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ChannelIDCount());
-
-  int remove_mask = BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-                    BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
-
-  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), remove_mask,
-                                false);
-
-  EXPECT_EQ(remove_mask, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-
-  // No deletion took place because the AVOID_CLOSING_CONNECTIONS flag
-  // was specified.
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ChannelIDCount());
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
@@ -1425,6 +1286,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCodeCache) {
 
 #if BUILDFLAG(ENABLE_REPORTING)
 TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
@@ -1438,22 +1304,25 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache) {
       ->set_reporting_service(reporting_service.get());
 
   GURL domain("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain), domain,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(url::Origin::Create(domain), "group",
+                                         domain, net::OriginSubdomains::DEFAULT,
+                                         base::Time::Max(), 1 /* priority */,
+                                         1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(1u, clients.size());
+  ASSERT_EQ(1u, reporting_cache->GetEndpointCount());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_TRUE(clients.empty());
+  EXPECT_EQ(0u, reporting_cache->GetEndpointCount());
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
@@ -1467,25 +1336,27 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
       ->set_reporting_service(reporting_service.get());
 
   GURL domain1("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain1), domain1,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain1), "group", domain1,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain2("https://host2.com");
-  reporting_cache->SetClient(url::Origin::Create(domain2), domain2,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain2), "group", domain2,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain3("https://host3.com");
-  reporting_cache->SetClient(url::Origin::Create(domain3), domain3,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain3), "group", domain3,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain4("https://host4.com");
-  reporting_cache->SetClient(url::Origin::Create(domain4), domain4,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain4), "group", domain4,
+      net::OriginSubdomains::EXCLUDE, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(4u, clients.size());
+  ASSERT_EQ(4u, reporting_cache->GetEndpointCount());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1495,16 +1366,18 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
                               BrowsingDataRemover::DATA_TYPE_COOKIES,
                               std::move(filter_builder));
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_EQ(2u, clients.size());
-  std::vector<GURL> origins;
-  for (const net::ReportingClient* client : clients) {
-    origins.push_back(client->endpoint);
-  }
-  EXPECT_THAT(origins, UnorderedElementsAre(domain2, domain4));
+  EXPECT_EQ(2u, reporting_cache->GetEndpointCount());
+  std::vector<url::Origin> origins = reporting_cache->GetAllOrigins();
+  EXPECT_THAT(origins, UnorderedElementsAre(url::Origin::Create(domain2),
+                                            url::Origin::Create(domain4)));
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   ASSERT_FALSE(BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
                    ->GetURLRequestContext()
                    ->GetURLRequestContext()
@@ -1514,9 +1387,54 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 }
 
-// TODO(chlily): Use a PersistentNELStore and test that entries are removed from
-// it.
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  auto store = std::make_unique<net::MockPersistentNelStore>();
+  std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
+      net::NetworkErrorLoggingService::Create(store.get());
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_network_error_logging_service(logging_service.get());
+
+  GURL domain("https://google.com");
+  logging_service->OnHeader(url::Origin::Create(domain),
+                            net::IPAddress(192, 168, 0, 1),
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
+  store->FinishLoading(true /* load_success */);
+  store->Flush();
+
+  ASSERT_EQ(1u, logging_service->GetPolicyOriginsForTesting().size());
+  ASSERT_EQ(1, store->StoredPoliciesCount());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+
+  EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
+  EXPECT_EQ(0, store->StoredPoliciesCount());
+
+  // Check that the persistent store was told to delete the policy.
+  net::NetworkErrorLoggingService::NelPolicy deleted_policy;
+  deleted_policy.origin = url::Origin::Create(domain);
+  EXPECT_THAT(store->GetAllCommands(),
+              testing::Contains(net::MockPersistentNelStore::Command(
+                  net::MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY,
+                  deleted_policy)));
+}
+
+// Test that removal of in-memory browsing data works without a persistent
+// store.
+TEST_F(BrowsingDataRemoverImplTest,
+       RemoveNetworkErrorLogging_NoPersistentStore) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
       net::NetworkErrorLoggingService::Create(nullptr /* store */);
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
@@ -1537,11 +1455,15 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
   EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
 }
 
-// TODO(chlily): Use a PersistentNELStore and test that entries are removed from
-// it.
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  auto store = std::make_unique<net::MockPersistentNelStore>();
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
-      net::NetworkErrorLoggingService::Create(nullptr /* store */);
+      net::NetworkErrorLoggingService::Create(store.get());
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
       ->GetURLRequestContext()
       ->GetURLRequestContext()
@@ -1563,8 +1485,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   logging_service->OnHeader(url::Origin::Create(domain4),
                             net::IPAddress(192, 168, 0, 1),
                             "{\"report_to\":\"group\",\"max_age\":86400}");
+  store->FinishLoading(true /* load_success */);
+  store->Flush();
 
   ASSERT_EQ(4u, logging_service->GetPolicyOriginsForTesting().size());
+  ASSERT_EQ(4, store->StoredPoliciesCount());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1580,9 +1505,29 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   EXPECT_THAT(policy_origins,
               UnorderedElementsAre(url::Origin::Create(domain2),
                                    url::Origin::Create(domain4)));
+  EXPECT_EQ(2, store->StoredPoliciesCount());
+
+  // Check that the persistent store was told to delete the policies.
+  net::NetworkErrorLoggingService::NelPolicy deleted_policy1;
+  deleted_policy1.origin = url::Origin::Create(domain1);
+  net::NetworkErrorLoggingService::NelPolicy deleted_policy2;
+  deleted_policy2.origin = url::Origin::Create(domain3);
+  EXPECT_THAT(store->GetAllCommands(),
+              testing::Contains(net::MockPersistentNelStore::Command(
+                  net::MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY,
+                  deleted_policy1)));
+  EXPECT_THAT(store->GetAllCommands(),
+              testing::Contains(net::MockPersistentNelStore::Command(
+                  net::MockPersistentNelStore::Command::Type::DELETE_NEL_POLICY,
+                  deleted_policy2)));
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_NoService) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   ASSERT_FALSE(BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
                    ->GetURLRequestContext()
                    ->GetURLRequestContext()
@@ -1679,11 +1624,6 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
                      BrowsingDataRemover::DATA_TYPE_WEB_SQL,
                      BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
                      std::move(filter_builder_1), observer.target_b());
-  tasks.emplace_back(base::Time::UnixEpoch(), base::Time::Now(),
-                     BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                     BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
-                         BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
-                     std::move(filter_builder_2), nullptr);
 
   for (BrowsingDataRemoverImpl::RemovalTask& task : tasks) {
     // All tasks can be directly translated to a RemoveInternal() call. Since

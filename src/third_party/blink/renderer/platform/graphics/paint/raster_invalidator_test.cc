@@ -389,6 +389,40 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   FinishCycle(*artifact);
 }
 
+// Tests the path detecting change of PaintChunkInfo::chunk_to_layer_clip.
+// The chunk bounds is bigger than the clip because of the outset for raster
+// effects, so incremental invalidation is not suitable.
+TEST_P(RasterInvalidatorTest, ClipPropertyChangeWithOutsetForRasterEffects) {
+  FloatRoundedRect clip_rect(-1000, -1000, 2000, 2000);
+  auto clip = CreateClip(c0(), t0(), clip_rect);
+
+  PropertyTreeState layer_state = PropertyTreeState::Root();
+  auto artifact = TestPaintArtifact()
+                      .Chunk(0)
+                      .Properties(t0(), *clip, e0())
+                      .Bounds(EnclosingIntRect(clip_rect.Rect()))
+                      .OutsetForRasterEffects(2)
+                      .Build();
+
+  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  FinishCycle(*artifact);
+
+  invalidator_.SetTracksRasterInvalidations(true);
+  FloatRoundedRect new_clip_rect(-2000, -2000, 4000, 4000);
+  clip->Update(c0(), ClipPaintPropertyNode::State{&t0(), new_clip_rect});
+
+  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  const auto& invalidations = TrackedRasterInvalidations();
+  ASSERT_EQ(1u, invalidations.size());
+  auto mapper = [](IntRect& r) { r.Inflate(2); };
+  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, 0, artifact->PaintChunks()[0],
+                                   PaintInvalidationReason::kPaintProperty,
+                                   -kDefaultLayerBounds.Location(),
+                                   base::BindRepeating(mapper));
+  invalidator_.SetTracksRasterInvalidations(false);
+  FinishCycle(*artifact);
+}
+
 TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChange) {
   auto t1 = CreateTransform(t0(), TransformationMatrix());
   auto t2 = CreateTransform(*t1, TransformationMatrix());

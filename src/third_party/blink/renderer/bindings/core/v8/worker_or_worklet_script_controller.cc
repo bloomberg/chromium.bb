@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -98,7 +100,6 @@ WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
     v8::Isolate* isolate)
     : global_scope_(global_scope),
       isolate_(isolate),
-      execution_forbidden_(false),
       rejected_promises_(RejectedPromises::Create()),
       execution_state_(nullptr) {
   DCHECK(isolate);
@@ -130,11 +131,18 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
                                      script_state_->GetContext());
   }
 
+  {
+    ScriptState::Scope scope(script_state_);
+    // This detaches v8::MicrotaskQueue pointer from v8::Context, so that we can
+    // destroy EventLoop safely.
+    script_state_->GetContext()->DetachGlobal();
+  }
+
   script_state_->DisposePerContextData();
   script_state_->DissociateContext();
 }
 
-bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
+void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
   DCHECK(!IsContextInitialized());
@@ -146,8 +154,7 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
       script_wrappable->GetWrapperTypeInfo();
   v8::Local<v8::FunctionTemplate> global_interface_template =
       wrapper_type_info->DomTemplate(isolate_, *world_);
-  if (global_interface_template.IsEmpty())
-    return false;
+  DCHECK(!global_interface_template.IsEmpty());
   v8::Local<v8::ObjectTemplate> global_template =
       global_interface_template->InstanceTemplate();
   v8::Local<v8::Context> context;
@@ -156,13 +163,20 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
     v8::ExtensionConfiguration extension_configuration =
         ScriptController::ExtensionsFor(global_scope_);
 
+    // TODO(nhiroki): Replace this null check with DCHECK(agent) after making
+    // WorkletGlobalScope take a proper Agent.
+    v8::MicrotaskQueue* microtask_queue = nullptr;
+    if (Agent* agent = global_scope_->GetAgent())
+      microtask_queue = agent->event_loop()->microtask_queue();
+
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate_));
-    context =
-        v8::Context::New(isolate_, &extension_configuration, global_template);
+    context = v8::Context::New(isolate_, &extension_configuration,
+                               global_template, v8::MaybeLocal<v8::Value>(),
+                               v8::DeserializeInternalFieldsCallback(),
+                               microtask_queue);
   }
-  if (context.IsEmpty())
-    return false;
+  DCHECK(!context.IsEmpty());
 
   script_state_ = MakeGarbageCollected<ScriptState>(context, world_);
 
@@ -206,10 +220,6 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   V8DOMWrapper::SetNativeInfo(isolate_, global_object, wrapper_type_info,
                               script_wrappable);
 
-  // All interfaces must be registered to V8PerContextData.
-  // So we explicitly call constructorForType for the global object.
-  V8PerContextData::From(context)->ConstructorForType(wrapper_type_info);
-
   if (global_scope_->IsMainThreadWorkletGlobalScope()) {
     // Set the human readable name for the world.
     DCHECK(!global_scope_->Name().IsEmpty());
@@ -223,22 +233,100 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
                              context);
   }
 
+  if (!disable_eval_pending_.IsEmpty()) {
+    DisableEvalInternal(disable_eval_pending_);
+    disable_eval_pending_ = String();
+  }
+
+  // This is a workaround for worker with on-the-main-thread script fetch and
+  // worklets.
+  // - For workers with off-the-main-thread worker script fetch,
+  //   PrepareForEvaluation() is called in WorkerGlobalScope::Initialize() after
+  //   top-level worker script fetch and before script evaluation.
+  // - For workers with on-the-main-thread worker script fetch, it's too early
+  //   to call PrepareForEvaluation() in WorkerGlobalScope::Initialize() because
+  //   it's called immediately after WorkerGlobalScope's constructor, that is,
+  //   before WorkerOrWorkletScriptController::Initialize(). Therefore, we
+  //   ignore the first call of PrepareForEvaluation() from
+  //   WorkerGlobalScope::Initialize(), and call it here again.
+  // TODO(nhiroki): Remove this workaround once off-the-main-thread worker
+  // script fetch is enabled by default for all worker types.
+  //
+  // - For worklets, there is no appropriate timing to call
+  //   PrepareForEvaluation() other than here because worklets have various
+  //   initialization sequences depending on thread model (on-main-thread vs.
+  //   off-main-thread) and unique script fetch (fetching a top-level script per
+  //   addModule() call in JS).
+  // TODO(nhiroki): Unify worklet initialization sequences, and move this to an
+  // appropriate place.
+  if (global_scope_->GetOffMainThreadWorkerScriptFetchOption() ==
+          OffMainThreadWorkerScriptFetchOption::kDisabled ||
+      global_scope_->IsWorkletGlobalScope()) {
+    // This should be called after origin trial tokens are applied for
+    // OriginTrialContext in WorkerGlobalScope::Initialize() to install origin
+    // trial features in JavaScript's global object. Workers with
+    // on-the-main-thread script fetch and worklets apply origin trial tokens
+    // before WorkerOrWorkletScriptController::initialize(), so it's safe to
+    // call this here.
+    PrepareForEvaluation();
+  }
+}
+
+void WorkerOrWorkletScriptController::PrepareForEvaluation() {
+  if (!IsContextInitialized()) {
+    // For workers with off-the-main-thread worker script fetch, this can be
+    // called before WorkerOrWorkletScriptController::Initialize() via
+    // WorkerGlobalScope creation function. In this case, PrepareForEvaluation()
+    // calls this function again. See comments in PrepareForEvaluation().
+    DCHECK(global_scope_->IsWorkerGlobalScope());
+    DCHECK_EQ(OffMainThreadWorkerScriptFetchOption::kDisabled,
+              global_scope_->GetOffMainThreadWorkerScriptFetchOption());
+    return;
+  }
+  DCHECK(!is_ready_to_evaluate_);
+  is_ready_to_evaluate_ = true;
+
+  v8::HandleScope handle_scope(isolate_);
+
+  ScriptState::Scope scope(script_state_);
+  v8::Local<v8::Context> context = script_state_->GetContext();
+
+  auto* script_wrappable = static_cast<ScriptWrappable*>(global_scope_);
+  const WrapperTypeInfo* wrapper_type_info =
+      script_wrappable->GetWrapperTypeInfo();
+
+  // All interfaces must be registered to V8PerContextData.
+  // So we explicitly call constructorForType for the global object.
+  // This should be called after OriginTrialContext::AddTokens() in
+  // WorkerGlobalScope::Initialize() to install origin trial features.
+  V8PerContextData::From(context)->ConstructorForType(wrapper_type_info);
+
+  v8::Local<v8::Object> global_object =
+      context->Global()->GetPrototype().As<v8::Object>();
+  DCHECK(!global_object.IsEmpty());
+
+  v8::Local<v8::FunctionTemplate> global_interface_template =
+      wrapper_type_info->DomTemplate(isolate_, *world_);
+  DCHECK(!global_interface_template.IsEmpty());
+
   wrapper_type_info->InstallConditionalFeatures(
       context, *world_, global_object, v8::Local<v8::Object>(),
       v8::Local<v8::Function>(), global_interface_template);
 
-  if (!disable_eval_pending_.IsEmpty()) {
-    script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
-    script_state_->GetContext()->SetErrorMessageForCodeGenerationFromStrings(
-        V8String(isolate_, disable_eval_pending_));
-    disable_eval_pending_ = String();
-  }
-
   // This can only be called after the global object is fully initialised, as it
   // reads values from it.
   InitializeV8ExtrasBinding(script_state_);
+}
 
-  return true;
+void WorkerOrWorkletScriptController::DisableEvalInternal(
+    const String& error_message) {
+  DCHECK(IsContextInitialized());
+  DCHECK(!error_message.IsEmpty());
+
+  ScriptState::Scope scope(script_state_);
+  script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
+  script_state_->GetContext()->SetErrorMessageForCodeGenerationFromStrings(
+      V8String(isolate_, error_message));
 }
 
 ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
@@ -246,6 +334,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     SanitizeScriptErrors sanitize_script_errors,
     V8CacheOptions v8_cache_options) {
   DCHECK(IsContextInitialized());
+  DCHECK(is_ready_to_evaluate_);
 
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
                inspector_evaluate_script_event::Data(
@@ -363,6 +452,23 @@ bool WorkerOrWorkletScriptController::IsExecutionForbidden() const {
 }
 
 void WorkerOrWorkletScriptController::DisableEval(const String& error_message) {
+  DCHECK(!error_message.IsEmpty());
+  // Currently, this can be called before or after
+  // WorkerOrWorkletScriptController::Initialize() because of messy
+  // worker/worklet initialization sequences. Tidy them up after
+  // off-the-main-thread worker script fetch is enabled by default, make
+  // sure to call WorkerOrWorkletScriptController::DisableEval() after
+  // WorkerOrWorkletScriptController::Initialize(), and remove
+  // |disable_eval_pending_| logic (https://crbug.com/960770).
+  if (IsContextInitialized()) {
+    DisableEvalInternal(error_message);
+    return;
+  }
+  // `eval()` will actually be disabled on
+  // WorkerOrWorkletScriptController::Initialize() to be called from
+  // WorkerThread::InitializeOnWorkerThread() immediately and synchronously
+  // after returning here. Keep the error message until that time.
+  DCHECK(disable_eval_pending_.IsEmpty());
   disable_eval_pending_ = error_message;
 }
 

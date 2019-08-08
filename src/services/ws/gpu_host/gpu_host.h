@@ -13,10 +13,6 @@
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 
-#if defined(OS_CHROMEOS)
-#include "services/ws/public/mojom/arc_gpu.mojom.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -27,10 +23,6 @@ class DiscardableSharedMemoryManager;
 
 namespace gpu {
 class ShaderCacheFactory;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace viz {
@@ -49,7 +41,6 @@ class GpuHostDelegate;
 class GpuHost : public viz::GpuHostImpl::Delegate {
  public:
   GpuHost(GpuHostDelegate* delegate,
-          service_manager::Connector* connector,
           discardable_memory::DiscardableSharedMemoryManager*
               discardable_shared_memory_manager);
   ~GpuHost() override;
@@ -60,10 +51,6 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
   void Shutdown();
 
   void Add(mojom::GpuRequest request);
-
-#if defined(OS_CHROMEOS)
-  void AddArcGpu(mojom::ArcGpuRequest request);
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_OZONE)
   void BindOzoneGpuInterface(const std::string& interface_name,

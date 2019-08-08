@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
@@ -101,7 +102,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         process_id_, script_url, request_initiator_origin,
         ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
-        appcache_handle_->core(), std::move(blob_url_loader_factory),
+        appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
         storage_partition_impl,
         base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                        weak_factory_.GetWeakPtr(), std::move(client)));
@@ -116,6 +117,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
+    registry_.AddInterface(base::BindRepeating(
+        &DedicatedWorkerHost::CreateIdleManager, base::Unretained(this)));
   }
 
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
@@ -143,8 +146,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          main_script_loader_factory,
+      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -250,6 +252,21 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CreateDedicatedWorkerHostFactory(process_id_, ancestor_render_frame_id_,
                                      origin_, std::move(request));
+  }
+
+  void CreateIdleManager(blink::mojom::IdleManagerRequest request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    auto* host =
+        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
+    if (!host->IsFeatureEnabled(
+            blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
+      mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
+      return;
+    }
+    static_cast<StoragePartitionImpl*>(
+        host->GetProcess()->GetStoragePartition())
+        ->GetIdleManager()
+        ->CreateService(std::move(request));
   }
 
   const int process_id_;

@@ -803,9 +803,25 @@ bool EnableInProcessStackDumping() {
   return success;
 }
 
-void SetStackDumpFirstChanceCallback(bool (*handler)(int, void*, void*)) {
+bool SetStackDumpFirstChanceCallback(bool (*handler)(int, void*, void*)) {
   DCHECK(try_handle_signal == nullptr || handler == nullptr);
   try_handle_signal = handler;
+
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) ||    \
+    defined(UNDEFINED_SANITIZER)
+  struct sigaction installed_handler;
+  CHECK_EQ(sigaction(SIGSEGV, NULL, &installed_handler), 0);
+  // If the installed handler does not point to StackDumpSignalHandler, then
+  // allow_user_segv_handler is 0.
+  if (installed_handler.sa_sigaction != StackDumpSignalHandler) {
+    LOG(WARNING)
+        << "WARNING: sanitizers are preventing signal handler installation. "
+        << "WebAssembly trap handlers are disabled.\n";
+    return false;
+  }
+#endif
+  return true;
 }
 
 size_t CollectStackTrace(void** trace, size_t count) {

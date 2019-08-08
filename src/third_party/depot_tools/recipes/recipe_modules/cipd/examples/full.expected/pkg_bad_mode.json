@@ -282,12 +282,30 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "RECIPE CRASH (Uncaught exception)",
+    "~followup_annotations": [
+      "@@@STEP_EXCEPTION@@@",
+      "The recipe has crashed at point 'Uncaught exception'!",
+      "",
+      "Traceback (most recent call last):",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/engine.py\", in run_steps",
+      "    raw_result = recipe_obj.run_steps(api, engine)",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/recipe_deps.py\", in run_steps",
+      "    properties_def, api=api)",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in invoke_with_properties",
+      "    arg_names, **additional_args)",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
+      "    return callable_obj(*props, **additional_args)",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/cipd/examples/full.py\", line 68, in RunSteps",
+      "    pkg = api.cipd.PackageDefinition('infra/fake-package', root, install_mode)",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/cipd/api.py\", line 64, in __init__",
+      "    raise ValueError('invalid value for install_mode: %r' % install_mode)",
+      "ValueError: invalid value for install_mode: ''"
+    ]
+  },
+  {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
       "humanReason": "Uncaught Exception: ValueError(\"invalid value for install_mode: ''\",)"
     },
     "name": "$result"

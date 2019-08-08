@@ -227,8 +227,9 @@ class PLATFORM_EXPORT PaintController {
                                      const PropertyTreeState&);
 
 #if DCHECK_IS_ON()
+  void ShowCompactDebugData() const;
   void ShowDebugData() const;
-  void ShowDebugDataWithRecords() const;
+  void ShowDebugDataWithPaintRecords() const;
 #endif
 
   void BeginFrame(const void* frame);

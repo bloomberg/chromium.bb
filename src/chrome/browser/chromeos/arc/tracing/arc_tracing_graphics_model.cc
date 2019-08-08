@@ -659,7 +659,7 @@ ssize_t FindAcquireReleasePair(
 // |timestamp|. Returns |kInvalidBufferIndex| in case event is not found.
 ssize_t FindNotLaterThan(const ArcTracingGraphicsModel::BufferEvents& events,
                          BufferEventType type,
-                         int64_t timestamp) {
+                         uint64_t timestamp) {
   if (events.empty() || events[0].timestamp > timestamp)
     return kInvalidBufferIndex;
 
@@ -1146,8 +1146,8 @@ void ArcTracingGraphicsModel::NormalizeTimestamps() {
     all_buffers.emplace_back(&buffer);
   all_buffers.emplace_back(&chrome_top_level_.global_events());
 
-  int64_t min = std::numeric_limits<int64_t>::max();
-  int64_t max = std::numeric_limits<int64_t>::min();
+  uint64_t min = std::numeric_limits<uint64_t>::max();
+  uint64_t max = std::numeric_limits<uint64_t>::min();
   for (const BufferEvents* buffer : all_buffers) {
     if (!buffer->empty()) {
       min = std::min(min, buffer->front().timestamp);

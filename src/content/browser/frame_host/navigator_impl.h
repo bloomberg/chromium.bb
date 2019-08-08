@@ -42,8 +42,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigationController* GetController() override;
   void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
-      override;
+      const GURL& url,
+      int error_code,
+      const base::string16& error_description,
+      bool showing_repost_interstitial) override;
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
                             int error_code,
@@ -54,7 +56,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                    bool was_within_same_document) override;
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url) override;
+      const GURL& default_url,
+      mojom::NavigationClientAssociatedPtrInfo* navigation_client) override;
   void Navigate(std::unique_ptr<NavigationRequest> request,
                 ReloadType reload_type,
                 RestoreType restore_type) override;
@@ -95,7 +98,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator) override;
+      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache) override;
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
   void OnAbortNavigation(FrameTreeNode* frame_tree_node) override;

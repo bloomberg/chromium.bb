@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 
 namespace ui {
 struct SelectedFileInfo;
@@ -70,6 +72,41 @@ class FileManagerPrivateSelectFilesFunction
   void GetSelectedFileInfoResponse(
       bool for_open,
       const std::vector<ui::SelectedFileInfo>& files);
+};
+
+// Get a list of Android picker apps.
+class FileManagerPrivateGetAndroidPickerAppsFunction
+    : public LoggedUIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getAndroidPickerApps",
+                             FILEMANAGERPRIVATE_GETANDROIDPICKERAPPS)
+
+ protected:
+  ~FileManagerPrivateGetAndroidPickerAppsFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  void OnActivitiesLoaded(
+      std::vector<arc::mojom::IntentHandlerInfoPtr> handlers);
+
+  void OnIconsLoaded(
+      std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
+      std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons);
+};
+
+// Select an Android picker app.  Closes the dialog window.
+class FileManagerPrivateSelectAndroidPickerAppFunction
+    : public LoggedUIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectAndroidPickerApp",
+                             FILEMANAGERPRIVATE_SELECTANDROIDPICKERAPP)
+
+ protected:
+  ~FileManagerPrivateSelectAndroidPickerAppFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

@@ -11,7 +11,6 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
@@ -22,8 +21,10 @@
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/top_icon_animation_view.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -33,7 +34,6 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -403,10 +403,11 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
       folder_view_->SetVisible(false);
 
     // Set the view bounds to a small rect, so that it won't overlap the root
-    // level apps grid view during folder item reprenting transitional period.
+    // level apps grid view during folder item reparenting transitional period.
     if (hide_for_reparent_) {
       gfx::Rect rect(folder_view_->bounds());
       folder_view_->SetBoundsRect(gfx::Rect(rect.x(), rect.y(), 1, 1));
+      folder_view_->UpdateBackgroundMaskBounds();
     }
 
     // Reset the transform after animation so that the following folder's
@@ -463,7 +464,8 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
 
   page_switcher_ =
       contents_container_->AddChildView(std::make_unique<PageSwitcher>(
-          items_grid_view_->pagination_model(), false /* vertical */));
+          items_grid_view_->pagination_model(), false /* vertical */,
+          contents_view_->app_list_view()->is_tablet_mode()));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
@@ -547,6 +549,10 @@ bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+const char* AppListFolderView::GetClassName() const {
+  return "AppListFolderView";
+}
+
 void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
   if (item == folder_item_) {
     items_grid_view_->OnFolderItemRemoved();
@@ -605,7 +611,7 @@ int AppListFolderView::GetYOffsetForFolder() {
   // This view should be on top of on-screen keyboard to prevent the folder
   // title from being blocked.
   const gfx::Rect occluded_bounds =
-      keyboard_controller->GetWorkspaceOccludedBounds();
+      keyboard_controller->GetWorkspaceOccludedBoundsInScreen();
   if (!occluded_bounds.IsEmpty()) {
     gfx::Point keyboard_top_right = occluded_bounds.top_right();
     ConvertPointFromScreen(parent(), &keyboard_top_right);
@@ -654,6 +660,15 @@ void AppListFolderView::UpdateBackgroundMask(int corner_radius,
   background_mask_->layer()->SetFillsBoundsOpaquely(false);
   background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
   background_view_->layer()->SetMaskLayer(background_mask_->layer());
+}
+
+void AppListFolderView::UpdateBackgroundMaskBounds() {
+  background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
+}
+
+void AppListFolderView::OnTabletModeChanged(bool started) {
+  folder_header_view()->set_tablet_mode(started);
+  page_switcher_->set_is_tablet_mode(started);
 }
 
 void AppListFolderView::NotifyAccessibilityLocationChanges() {

@@ -48,6 +48,8 @@ _POLYMER_PATH = os.path.join(
 _VULCANIZE_BASE_ARGS = [
   # These files are already combined and minified.
   '--exclude', 'chrome://resources/html/polymer.html',
+  '--exclude', 'chrome://resources/polymer/v1_0/html-imports/' +
+      'html-imports.min.js',
   '--exclude', 'chrome://resources/polymer/v1_0/polymer/polymer.html',
   '--exclude', 'chrome://resources/polymer/v1_0/polymer/polymer-micro.html',
   '--exclude', 'chrome://resources/polymer/v1_0/polymer/polymer-mini.html',
@@ -193,6 +195,28 @@ def _optimize(in_folder, args):
                    '--html', crisper_html_out_paths[index],
                    '--js', os.path.join(tmp_out_dir, js_out_file)])
 
+      if args.replace_for_html_imports_polyfill == js_out_file:
+        # Replace the output file with a loader script, to wait until HTML
+        # imports are ready before loading.
+        with open(crisper_html_out_paths[index], 'r') as f:
+          output = f.read()
+          output = output.replace(js_out_file + '"',
+                                  'chrome://resources/js/crisper_loader.js"' + \
+                                  ' data-script-name="' + js_out_file + '"')
+
+          # Preload the final script, even though it will not be evaluated
+          # until after crisper_loader.js executes.
+          output = output.replace('<head>',
+                                  '<head><link rel="preload" href="' + \
+                                        js_out_file + '" as="script">')
+          f.close()
+
+        # Open file again with 'w' such that the previous contents are
+        # overwritten.
+        with open(crisper_html_out_paths[index], 'w') as f:
+          f.write(output)
+          f.close()
+
       # Pass the JS file through Uglify and write the output to its final
       # destination.
       node.RunNode([node_modules.PathToUglify(),
@@ -202,27 +226,15 @@ def _optimize(in_folder, args):
 
     # Run polymer-css-build and write the output HTML files to their final
     # destination.
-    # TODO(dpapad): Remove this when Polymer 2 migration has completed.
-    _polymer_css_build(out_path, crisper_html_out_paths, args.html_out_files, 1)
-
-    if args.html_out_files_polymer2:
-      # Run polymer-css-build again with --polymer-version=2. This is
-      # necessary so that the runtime --enable-features=WebUIPolymer2 works
-      # with optimized builds.
-      _polymer_css_build(out_path, crisper_html_out_paths,
-                         args.html_out_files_polymer2, 2)
+    html_out_paths = [
+        os.path.join(out_path, f) for f in args.html_out_files]
+    node.RunNode([node_modules.PathToPolymerCssBuild()] +
+                 ['--polymer-version', '2'] +
+                 ['--no-inline-includes', '-f'] +
+                 crisper_html_out_paths + ['-o'] + html_out_paths)
   finally:
     shutil.rmtree(tmp_out_dir)
   return manifest_out_path
-
-
-def _polymer_css_build(out_path, html_in_paths, html_out_files, version):
-  html_out_paths = [
-      os.path.join(out_path, f) for f in html_out_files]
-  node.RunNode([node_modules.PathToPolymerCssBuild()] +
-               ['--polymer-version', str(version)] +
-               ['--no-inline-includes', '-f'] +
-               html_in_paths + ['-o'] + html_out_paths)
 
 
 def main(argv):
@@ -232,11 +244,11 @@ def main(argv):
   parser.add_argument('--host', required=True)
   parser.add_argument('--html_in_files', nargs='*', required=True)
   parser.add_argument('--html_out_files', nargs='*', required=True)
-  parser.add_argument('--html_out_files_polymer2', nargs='*')
   parser.add_argument('--input', required=True)
   parser.add_argument('--insert_in_head')
   parser.add_argument('--js_out_files', nargs='*', required=True)
   parser.add_argument('--out_folder', required=True)
+  parser.add_argument('--replace-for-html-imports-polyfill')
   args = parser.parse_args(argv)
 
   # NOTE(dbeam): on Windows, GN can send dirs/like/this. When joined, you might

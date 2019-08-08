@@ -45,9 +45,9 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:feature_flags",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands",
@@ -71,11 +71,13 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
-    "//ios/web",
+    "//services/identity/public/objc",
     "//ui/base",
     "//ui/strings",
   ]
@@ -106,6 +108,7 @@ source_set("content_suggestions_ui") {
     "content_suggestions_view_controller.mm",
     "content_suggestions_view_controller_audience.h",
     "ntp_home_consumer.h",
+    "user_account_image_update_delegate.h",
   ]
   deps = [
     ":content_suggestions_constant",
@@ -115,8 +118,7 @@ source_set("content_suggestions_ui") {
     "resources:ntp_search_icon",
     "//base",
     "//components/strings",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/signin:feature_flags",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
@@ -131,6 +133,7 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui_util",
     "//ios/web/common",
     "//ui/base",
   ]
@@ -162,14 +165,13 @@ source_set("content_suggestions_ui_util") {
     "//base:i18n",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/util",
     "//ios/third_party/material_components_ios",
     "//ios/web/common",
     "//ui/base",
@@ -196,8 +198,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/commands",
@@ -207,6 +209,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/location_bar:notifications",
     "//ios/chrome/browser/ui/toolbar/test",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
@@ -214,6 +217,7 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser/ui",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/identity/public/objc",
     "//testing/gtest",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -229,13 +233,12 @@ source_set("eg_tests") {
     "ntp_home_egtest.mm",
     "ntp_home_provider_test_singleton.h",
     "ntp_home_provider_test_singleton.mm",
-    "ntp_home_test_utils.h",
-    "ntp_home_test_utils.mm",
   ]
   deps = [
     ":content_suggestions_constant",
     ":content_suggestions_ui",
     ":content_suggestions_ui_util",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/keyed_service/ios",
@@ -244,20 +247,20 @@ source_set("eg_tests") {
     "//components/reading_list/core",
     "//components/search_engines",
     "//components/strings",
+    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/location_bar:location_bar",
-    "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tab_grid:egtest_support",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
@@ -272,6 +275,22 @@ source_set("eg_tests") {
   libs = [
     "UIKit.framework",
     "XCTest.framework",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "ntp_home_test_utils.h",
+    "ntp_home_test_utils.mm",
+  ]
+  deps = [
+    "//components/ntp_snippets",
+    "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
+    "//ios/third_party/earl_grey:earl_grey+link",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

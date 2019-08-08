@@ -41,8 +41,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
       PublicKeyCredentialDescriptor&& other);
   ~PublicKeyCredentialDescriptor();
 
-  cbor::Value ConvertToCBOR() const;
-
   CredentialType credential_type() const { return credential_type_; }
   const std::vector<uint8_t>& id() const { return id_; }
   const base::flat_set<FidoTransportProtocol>& transports() const {
@@ -54,6 +52,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
   std::vector<uint8_t> id_;
   base::flat_set<FidoTransportProtocol> transports_;
 };
+
+cbor::Value AsCBOR(const PublicKeyCredentialDescriptor&);
 
 }  // namespace device
 

@@ -21,21 +21,18 @@ namespace features {
 // All features in alphabetical order.
 extern const base::Feature kAutofillCreditCardAblationExperiment;
 extern const base::Feature kAutofillCreditCardAuthentication;
-extern const base::Feature kAutofillCreditCardLocalCardMigration;
+extern const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards;
 extern const base::Feature kAutofillDoNotUploadSaveUnsupportedCards;
 extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser;
 extern const base::Feature kAutofillEnableToolbarStatusChip;
 extern const base::Feature kAutofillImportDynamicForms;
 extern const base::Feature kAutofillImportNonFocusableCreditCardForms;
-extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardImprovedUserConsent;
-extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
-extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystem;
-extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystemV2;
+extern const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
 extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillUpstream;
@@ -47,26 +44,16 @@ extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamEditableExpirationDate;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
-extern const char kAutofillCreditCardLocalCardMigrationParameterName[];
+
+extern const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[];
 extern const char
-    kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[];
-
-// Enum for local card migration experimental flag states.
-enum class LocalCardMigrationExperimentalFlag {
-  // Local card migration disabled.
-  kMigrationDisabled,
-  // Only migrate local cards when user submits form.
-  kMigrationWithoutSettingsPage,
-  // Migrate both on submitted form and from settings page.
-  kMigrationIncludeSettingsPage,
-};
-
-// Returns kMigrationDisabled if no experimental behavior is enabled for
-// kAutofillCreditCardLocalCardMigration; Return kMigrationIncludeSettingsPage
-// if user enables the local card migration and does not exclude the settings
-// page. Return kMigrationWithoutSettingsPage if user chooses to exclude the
-// settings page migration.
-LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag();
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[];
 
 // For testing purposes; not to be launched.  When enabled, Chrome Upstream
 // always requests that the user enters/confirms cardholder name in the

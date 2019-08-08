@@ -17,11 +17,9 @@
 namespace dom_distiller {
 
 DistilledPagePrefs::DistilledPagePrefs(PrefService* pref_service)
-    : pref_service_(pref_service), weak_ptr_factory_(this) {
-}
+    : pref_service_(pref_service), weak_ptr_factory_(this) {}
 
-DistilledPagePrefs::~DistilledPagePrefs() {
-}
+DistilledPagePrefs::~DistilledPagePrefs() {}
 
 // static
 void DistilledPagePrefs::RegisterProfilePrefs(
@@ -115,8 +113,7 @@ void DistilledPagePrefs::NotifyOnChangeTheme(
     observer.OnChangeTheme(new_theme);
 }
 
-void DistilledPagePrefs::NotifyOnChangeFontScaling(
-    float scaling) {
+void DistilledPagePrefs::NotifyOnChangeFontScaling(float scaling) {
   for (Observer& observer : observers_)
     observer.OnChangeFontScaling(scaling);
 }

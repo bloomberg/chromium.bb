@@ -91,7 +91,7 @@ int64_t OfflinePageMetadataStoreTestUtil::GetPageCount() {
 std::unique_ptr<OfflinePageItem>
 OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(int64_t offline_id) {
   PageCriteria criteria;
-  criteria.offline_id = offline_id;
+  criteria.offline_ids = std::vector<int64_t>{offline_id};
   OfflinePageItem* page = nullptr;
   auto task = std::make_unique<GetPagesTask>(
       store(), nullptr, criteria,

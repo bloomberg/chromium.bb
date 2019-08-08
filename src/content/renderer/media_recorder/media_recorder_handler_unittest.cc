@@ -104,8 +104,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     return !media_recorder_handler_->audio_recorders_.empty();
   }
 
-  void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame) {
-    media_recorder_handler_->OnVideoFrameForTesting(frame,
+  void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame) {
+    media_recorder_handler_->OnVideoFrameForTesting(std::move(frame),
                                                     base::TimeTicks::Now());
   }
   void OnAudioBusForTesting(const media::AudioBus& audio_bus) {

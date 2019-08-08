@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -44,8 +45,6 @@ enum VTTNodeType {
 
 class VTTElement final : public Element {
  public:
-  static VTTElement* Create(const VTTNodeType, Document*);
-  static VTTElement* Create(const QualifiedName&, Document*);
   HTMLElement* CreateEquivalentHTMLElement(Document&);
 
   VTTElement(const QualifiedName&, Document*);
@@ -86,7 +85,10 @@ class VTTElement final : public Element {
   AtomicString language_;
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(VTTElement, IsVTTElement());
+template <>
+struct DowncastTraits<VTTElement> {
+  static bool AllowFrom(const Node& node) { return node.IsVTTElement(); }
+};
 
 }  // namespace blink
 

@@ -36,7 +36,7 @@ void BrightnessControllerChromeos::SetBrightnessPercent(double percent,
   request.set_percent(percent);
   request.set_transition(
       gradual
-          ? power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL
+          ? power_manager::SetBacklightBrightnessRequest_Transition_FAST
           : power_manager::SetBacklightBrightnessRequest_Transition_INSTANT);
   request.set_cause(
       power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);

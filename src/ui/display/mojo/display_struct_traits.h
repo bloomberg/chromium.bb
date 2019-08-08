@@ -86,6 +86,10 @@ struct StructTraits<display::mojom::DisplayDataView, display::Display> {
     return display.is_monochrome();
   }
 
+  static int32_t display_frequency(const display::Display& display) {
+    return display.display_frequency();
+  }
+
   static bool Read(display::mojom::DisplayDataView data, display::Display* out);
 };
 

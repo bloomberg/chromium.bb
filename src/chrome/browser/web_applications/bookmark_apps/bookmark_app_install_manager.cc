@@ -10,23 +10,23 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/scoped_observer.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager_observer.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 
 namespace extensions {
 
@@ -81,7 +81,7 @@ class InstallTask : public content::WebContentsObserver,
   }
 
   // InstallManagerObserver:
-  void InstallManagerReset() override {
+  void OnInstallManagerShutdown() override {
     DCHECK(callback_);
 
     CallInstallCallback(web_app::AppId(),
@@ -141,30 +141,6 @@ void OnBookmarkAppInstalled(std::unique_ptr<InstallTask> install_task,
   // Post async task to destroy InstallTask with BookmarkAppHelper later.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(DestroyInstallTask, std::move(install_task)));
-}
-
-WebappInstallSource ConvertOptionsToMetricsInstallSource(
-    const web_app::InstallOptions& options) {
-  WebappInstallSource metrics_install_source = WebappInstallSource::COUNT;
-  switch (options.install_source) {
-    case web_app::InstallSource::kInternal:
-      metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
-      break;
-    case web_app::InstallSource::kExternalDefault:
-      metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
-      break;
-    case web_app::InstallSource::kExternalPolicy:
-      metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
-      break;
-    case web_app::InstallSource::kSystemInstalled:
-      metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
-      break;
-    case web_app::InstallSource::kArc:
-      NOTREACHED();
-      break;
-  }
-
-  return metrics_install_source;
 }
 
 void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
@@ -230,14 +206,14 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
   }
 
   WebappInstallSource metrics_install_source =
-      ConvertOptionsToMetricsInstallSource(install_options);
+      web_app::ConvertOptionsToMetricsInstallSource(install_options);
 
   Profile* profile = Profile::FromBrowserContext(
       install_task->web_contents()->GetBrowserContext());
   DCHECK(profile);
 
   auto bookmark_app_helper = install_manager->bookmark_app_helper_factory().Run(
-      profile, *web_app_info, install_task->web_contents(),
+      profile, std::move(web_app_info), install_task->web_contents(),
       metrics_install_source);
 
   BookmarkAppHelper* helper_ptr = bookmark_app_helper.get();
@@ -252,14 +228,16 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
 
 }  // namespace
 
-BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
-    : InstallManager(profile) {
+BookmarkAppInstallManager::BookmarkAppInstallManager(
+    Profile* profile,
+    web_app::InstallFinalizer* finalizer)
+    : InstallManager(profile), finalizer_(finalizer) {
   bookmark_app_helper_factory_ = base::BindRepeating(
-      [](Profile* profile, const WebApplicationInfo& web_app_info,
+      [](Profile* profile, std::unique_ptr<WebApplicationInfo> web_app_info,
          content::WebContents* web_contents,
          WebappInstallSource install_source) {
         return std::make_unique<BookmarkAppHelper>(
-            profile, web_app_info, web_contents, install_source);
+            profile, std::move(web_app_info), web_contents, install_source);
       });
 
   data_retriever_factory_ = base::BindRepeating(
@@ -307,10 +285,10 @@ void BookmarkAppInstallManager::InstallWebAppFromManifest(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  WebApplicationInfo web_app_info;
 
   auto bookmark_app_helper = std::make_unique<BookmarkAppHelper>(
-      profile, web_app_info, web_contents, install_source);
+      profile, std::make_unique<WebApplicationInfo>(), web_contents,
+      install_source);
 
   BookmarkAppHelper* helper = bookmark_app_helper.get();
 
@@ -330,7 +308,7 @@ void BookmarkAppInstallManager::InstallWebAppFromInfo(
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto bookmark_app_helper = std::make_unique<BookmarkAppHelper>(
-      profile(), *web_application_info, /*web_contents=*/nullptr,
+      profile(), std::move(web_application_info), /*web_contents=*/nullptr,
       install_source);
 
   if (no_network_install) {
@@ -380,23 +358,15 @@ void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
       ExtensionSystem::Get(profile())->extension_service();
   DCHECK(extension_service);
 
-  const Extension* extension = extension_service->GetInstalledExtension(app_id);
-
-  // Return if there are no bookmark app details that need updating.
-  const std::string extension_sync_data_name =
-      base::UTF16ToUTF8(web_application_info->title);
-  const std::string bookmark_app_description =
-      base::UTF16ToUTF8(web_application_info->description);
-  if (extension &&
-      extension->non_localized_name() == extension_sync_data_name &&
-      extension->description() == bookmark_app_description) {
+  if (finalizer_->CanSkipAppUpdateForSync(app_id, *web_application_info))
     return;
-  }
 
 #if defined(OS_CHROMEOS)
-  const bool is_locally_installed = true;
+  // On Chrome OS, sync always locally installs an app.
+  bool is_locally_installed = true;
 #else
-  const bool is_locally_installed = extension != nullptr;
+  bool is_locally_installed =
+      extension_service->GetInstalledExtension(app_id) != nullptr;
 #endif
 
   CreateOrUpdateBookmarkApp(extension_service, web_application_info.get(),

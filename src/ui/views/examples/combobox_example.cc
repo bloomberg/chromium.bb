@@ -59,9 +59,10 @@ void ComboboxExample::CreateExampleView(View* container) {
 
 void ComboboxExample::OnPerformAction(Combobox* combobox) {
   DCHECK_EQ(combobox, combobox_);
-  PrintStatus("Selected: %s", base::UTF16ToUTF8(combobox->model()->GetItemAt(
-                                                    combobox->selected_index()))
-                                  .c_str());
+  PrintStatus("Selected: %s",
+              base::UTF16ToUTF8(
+                  combobox->model()->GetItemAt(combobox->GetSelectedIndex()))
+                  .c_str());
 }
 
 }  // namespace examples

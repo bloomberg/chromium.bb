@@ -66,7 +66,8 @@ class TestingProfileManager {
       const base::string16& user_name,
       int avatar_id,
       const std::string& supervised_user_id,
-      TestingProfile::TestingFactories testing_factories);
+      TestingProfile::TestingFactories testing_factories,
+      base::Optional<bool> override_new_profile = base::Optional<bool>());
 
   // Small helper for creating testing profiles. Just forwards to above.
   TestingProfile* CreateTestingProfile(const std::string& name);

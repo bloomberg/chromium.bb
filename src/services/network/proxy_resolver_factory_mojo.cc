@@ -40,13 +40,12 @@ namespace network {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogErrorCallback(
-    int line_number,
-    const std::string* message,
-    net::NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("line_number", line_number);
-  dict->SetString("message", *message);
+base::Value NetLogErrorCallback(int line_number,
+                                const std::string* message,
+                                net::NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetInteger("line_number", line_number);
+  dict.SetString("message", *message);
   return std::move(dict);
 }
 

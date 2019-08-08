@@ -49,8 +49,8 @@ class TestStream : public QuicStream {
   TestStream(QuicStreamId id, QuicSession* session, StreamType type)
       : QuicStream(id, session, /*is_static=*/false, type) {}
 
-  TestStream(PendingStream pending, StreamType type)
-      : QuicStream(std::move(pending), type) {}
+  TestStream(PendingStream pending, StreamType type, bool is_static)
+      : QuicStream(std::move(pending), type, is_static) {}
 
   void OnDataAvailable() override {}
 
@@ -171,6 +171,18 @@ INSTANTIATE_TEST_SUITE_P(QuicParameterizedStreamTests,
                          QuicParameterizedStreamTest,
                          ::testing::ValuesIn(AllSupportedVersions()));
 
+TEST_P(QuicStreamTest, PendingStreamStaticness) {
+  Initialize();
+
+  PendingStream pending(kTestStreamId + 2, session_.get());
+  TestStream stream(std::move(pending), StreamType::BIDIRECTIONAL, false);
+  EXPECT_FALSE(stream.is_static());
+
+  PendingStream pending2(kTestStreamId + 3, session_.get());
+  TestStream stream2(std::move(pending2), StreamType::BIDIRECTIONAL, true);
+  EXPECT_TRUE(stream2.is_static());
+}
+
 TEST_P(QuicStreamTest, PendingStreamTooMuchData) {
   Initialize();
 
@@ -228,7 +240,7 @@ TEST_P(QuicStreamTest, FromPendingStream) {
   QuicStreamFrame frame2(kTestStreamId + 2, true, 3, QuicStringPiece("."));
   pending.OnStreamFrame(frame2);
 
-  TestStream stream(std::move(pending), StreamType::READ_UNIDIRECTIONAL);
+  TestStream stream(std::move(pending), StreamType::READ_UNIDIRECTIONAL, false);
   EXPECT_EQ(3, stream.num_frames_received());
   EXPECT_EQ(3u, stream.stream_bytes_read());
   EXPECT_EQ(1, stream.num_duplicate_frames_received());
@@ -247,8 +259,8 @@ TEST_P(QuicStreamTest, FromPendingStreamThenData) {
   QuicStreamFrame frame(kTestStreamId + 2, false, 2, QuicStringPiece("."));
   pending.OnStreamFrame(frame);
 
-  auto stream =
-      new TestStream(std::move(pending), StreamType::READ_UNIDIRECTIONAL);
+  auto stream = new TestStream(std::move(pending),
+                               StreamType::READ_UNIDIRECTIONAL, false);
   session_->ActivateStream(QuicWrapUnique(stream));
 
   QuicStreamFrame frame2(kTestStreamId + 2, true, 3, QuicStringPiece("."));
@@ -956,7 +968,7 @@ TEST_P(QuicStreamTest, ConnectionClosed) {
 }
 
 TEST_P(QuicStreamTest, CanWriteNewDataAfterData) {
-  SetQuicFlag(&FLAGS_quic_buffered_data_threshold, 100);
+  SetQuicFlag(FLAGS_quic_buffered_data_threshold, 100);
   Initialize();
   EXPECT_TRUE(stream_->CanWriteNewDataAfterData(99));
   EXPECT_FALSE(stream_->CanWriteNewDataAfterData(100));
@@ -964,7 +976,7 @@ TEST_P(QuicStreamTest, CanWriteNewDataAfterData) {
 
 TEST_P(QuicStreamTest, WriteBufferedData) {
   // Set buffered data low water mark to be 100.
-  SetQuicFlag(&FLAGS_quic_buffered_data_threshold, 100);
+  SetQuicFlag(FLAGS_quic_buffered_data_threshold, 100);
   // Do not stream level flow control block this stream.
   set_initial_flow_control_window_bytes(500000);
 
@@ -1006,7 +1018,8 @@ TEST_P(QuicStreamTest, WriteBufferedData) {
   // Buffered data size < threshold, ask upper layer for more data.
   EXPECT_CALL(*stream_, OnCanWriteNewData()).Times(1);
   stream_->OnCanWrite();
-  EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
+  EXPECT_EQ(static_cast<uint64_t>(
+                GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1),
             stream_->BufferedDataBytes());
   EXPECT_TRUE(stream_->CanWriteNewData());
 
@@ -1055,7 +1068,8 @@ TEST_P(QuicStreamTest, WriteBufferedData) {
 
   EXPECT_CALL(*stream_, OnCanWriteNewData()).Times(1);
   stream_->OnCanWrite();
-  EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
+  EXPECT_EQ(static_cast<uint64_t>(
+                GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1),
             stream_->BufferedDataBytes());
   EXPECT_TRUE(stream_->CanWriteNewData());
 
@@ -1096,7 +1110,7 @@ TEST_P(QuicStreamTest, WritevDataReachStreamLimit) {
 
 TEST_P(QuicStreamTest, WriteMemSlices) {
   // Set buffered data low water mark to be 100.
-  SetQuicFlag(&FLAGS_quic_buffered_data_threshold, 100);
+  SetQuicFlag(FLAGS_quic_buffered_data_threshold, 100);
   // Do not flow control block this stream.
   set_initial_flow_control_window_bytes(500000);
 
@@ -1139,7 +1153,8 @@ TEST_P(QuicStreamTest, WriteMemSlices) {
       }));
   EXPECT_CALL(*stream_, OnCanWriteNewData()).Times(1);
   stream_->OnCanWrite();
-  EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
+  EXPECT_EQ(static_cast<uint64_t>(
+                GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1),
             stream_->BufferedDataBytes());
   // Try to write slices2 again.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(0);

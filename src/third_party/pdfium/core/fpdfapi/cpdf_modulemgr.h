@@ -10,12 +10,9 @@
 #include <memory>
 #include <utility>
 
-class CCodec_FaxModule;
 class CCodec_FlateModule;
-class CCodec_IccModule;
 class CCodec_Jbig2Module;
 class CCodec_JpegModule;
-class CCodec_JpxModule;
 class CCodec_ModuleMgr;
 class CPDF_PageModule;
 
@@ -52,11 +49,8 @@ class CPDF_ModuleMgr {
   CCodec_ModuleMgr* GetCodecModule() const { return m_pCodecModule.get(); }
   CPDF_PageModule* GetPageModule() const { return m_pPageModule.get(); }
 
-  CCodec_FaxModule* GetFaxModule();
   CCodec_JpegModule* GetJpegModule();
-  CCodec_JpxModule* GetJpxModule();
   CCodec_Jbig2Module* GetJbig2Module();
-  CCodec_IccModule* GetIccModule();
   CCodec_FlateModule* GetFlateModule();
 
  private:

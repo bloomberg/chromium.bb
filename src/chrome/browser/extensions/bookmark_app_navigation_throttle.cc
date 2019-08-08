@@ -40,7 +40,7 @@ BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
   content::BrowserContext* browser_context =
       navigation_handle->GetWebContents()->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
+  if (profile->IsIncognitoProfile()) {
     DVLOG(1) << "Don't intercept: Navigation is in incognito.";
     return nullptr;
   }

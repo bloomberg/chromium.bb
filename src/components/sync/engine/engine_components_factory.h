@@ -86,12 +86,16 @@ class EngineComponentsFactory {
       DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id,
+      const std::string& store_birthday,
+      const std::string& bag_of_chips,
       base::TimeDelta poll_interval) = 0;
 
   virtual std::unique_ptr<syncable::DirectoryBackingStore>
-  BuildDirectoryBackingStore(StorageOption storage,
-                             const std::string& dir_name,
-                             const base::FilePath& backing_filepath) = 0;
+  BuildDirectoryBackingStore(
+      StorageOption storage,
+      const std::string& dir_name,
+      const base::RepeatingCallback<std::string()>& cache_guid_generator,
+      const base::FilePath& backing_filepath) = 0;
 
   // Returns the Switches struct that this object is using as configuration, if
   // the implementation is making use of one.

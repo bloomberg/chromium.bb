@@ -25,7 +25,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel::Delegate {
       int64_t display_id);
 
   using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetMenuModel(GetMenuModelCallback callback) = 0;
 
   // ui::SimpleMenuModel::Delegate overrides:

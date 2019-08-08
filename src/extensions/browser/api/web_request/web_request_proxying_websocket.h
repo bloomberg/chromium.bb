@@ -65,7 +65,7 @@ class WebRequestProxyingWebSocket
   void SendFrame(bool fin,
                  network::mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
-  void SendFlowControl(int64_t quota) override;
+  void AddReceiveFlowControlQuota(int64_t quota) override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   // mojom::WebSocketClient methods:
@@ -146,6 +146,7 @@ class WebRequestProxyingWebSocket
   OnAuthRequiredCallback auth_required_callback_;
   scoped_refptr<net::HttpResponseHeaders> override_headers_;
   std::vector<std::string> websocket_protocols_;
+  std::vector<network::mojom::HttpHeaderPtr> additional_headers_;
 
   OnBeforeSendHeadersCallback on_before_send_headers_callback_;
   OnHeadersReceivedCallback on_headers_received_callback_;

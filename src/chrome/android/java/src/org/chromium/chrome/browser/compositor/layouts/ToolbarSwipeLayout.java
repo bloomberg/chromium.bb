@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.compositor.layouts;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -66,8 +64,6 @@ public class ToolbarSwipeLayout extends Layout {
 
     private final BlackHoleEventFilter mBlackHoleEventFilter;
     private final TabListSceneLayer mSceneLayer;
-
-    private final Interpolator mEdgeInterpolator = new DecelerateInterpolator();
 
     /** The left and right scene layer responsible for drawing bottom toolbars for each tab. */
     private ScrollingBottomViewSceneLayer mLeftBottomToolbarSceneLayer;
@@ -154,22 +150,26 @@ public class ToolbarSwipeLayout extends Layout {
                                                                            : fromIndex + 1;
         int leftIndex = dragFromLeftEdge ? toIndex : fromIndex;
         int rightIndex = !dragFromLeftEdge ? toIndex : fromIndex;
+        int leftTabId = Tab.INVALID_TAB_ID;
+        int rightTabId = Tab.INVALID_TAB_ID;
 
-        List<Integer> visibleTabs = new ArrayList<Integer>();
         if (0 <= leftIndex && leftIndex < model.getCount()) {
-            int leftTabId = model.getTabAt(leftIndex).getId();
+            leftTabId = model.getTabAt(leftIndex).getId();
             mLeftTab = createLayoutTab(leftTabId, model.isIncognito(), NO_CLOSE_BUTTON, NEED_TITLE);
             prepareLayoutTabForSwipe(mLeftTab, leftIndex != fromIndex);
-            visibleTabs.add(leftTabId);
         }
         if (0 <= rightIndex && rightIndex < model.getCount()) {
-            int rightTabId = model.getTabAt(rightIndex).getId();
+            rightTabId = model.getTabAt(rightIndex).getId();
             mRightTab =
                     createLayoutTab(rightTabId, model.isIncognito(), NO_CLOSE_BUTTON, NEED_TITLE);
             prepareLayoutTabForSwipe(mRightTab, rightIndex != fromIndex);
-            visibleTabs.add(rightTabId);
         }
-
+        // Prioritize toTabId because fromTabId likely has a live layer.
+        int fromTabId = dragFromLeftEdge ? rightTabId : leftTabId;
+        int toTabId = !dragFromLeftEdge ? rightTabId : leftTabId;
+        List<Integer> visibleTabs = new ArrayList<Integer>();
+        if (toTabId != Tab.INVALID_TAB_ID) visibleTabs.add(toTabId);
+        if (fromTabId != Tab.INVALID_TAB_ID) visibleTabs.add(fromTabId);
         updateCacheVisibleIds(visibleTabs);
 
         mToTab = null;
@@ -280,7 +280,8 @@ public class ToolbarSwipeLayout extends Layout {
         if (doEdge) {
             float progress = mOffset / getWidth();
             float direction = Math.signum(progress);
-            float smoothedProgress = mEdgeInterpolator.getInterpolation(Math.abs(progress));
+            float smoothedProgress =
+                    CompositorAnimator.DECELERATE_INTERPOLATOR.getInterpolation(Math.abs(progress));
 
             float maxSlide = getWidth() / 5.f;
             rightX = direction * smoothedProgress * maxSlide;
@@ -401,7 +402,8 @@ public class ToolbarSwipeLayout extends Layout {
         assert mSceneLayer != null;
         // contentViewport is intentionally passed for both parameters below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
-                layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
+                layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
+                SceneLayer.INVALID_RESOURCE_ID, 0);
     }
 
     /**

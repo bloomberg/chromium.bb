@@ -18,16 +18,6 @@ namespace blink {
 
 class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
-  static CSSPaintValue* Create(CSSCustomIdentValue* name) {
-    return MakeGarbageCollected<CSSPaintValue>(name);
-  }
-
-  static CSSPaintValue* Create(
-      CSSCustomIdentValue* name,
-      Vector<scoped_refptr<CSSVariableData>>& variable_data) {
-    return MakeGarbageCollected<CSSPaintValue>(name, variable_data);
-  }
-
   explicit CSSPaintValue(CSSCustomIdentValue* name);
   CSSPaintValue(CSSCustomIdentValue* name,
                 Vector<scoped_refptr<CSSVariableData>>&);

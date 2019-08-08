@@ -14,9 +14,12 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-ExtensionsToolbarButton::ExtensionsToolbarButton(Browser* browser,
-                                                 ToolbarActionsBar* main_bar)
-    : ToolbarButton(this), browser_(browser), main_bar_(main_bar) {
+ExtensionsToolbarButton::ExtensionsToolbarButton(
+    Browser* browser,
+    ExtensionsContainer* extensions_container)
+    : ToolbarButton(this),
+      browser_(browser),
+      extensions_container_(extensions_container) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_EXTENSIONS_BUTTON));
   set_notify_action(Button::NOTIFY_ON_PRESS);
 }
@@ -37,5 +40,5 @@ void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
     ExtensionsMenuView::Hide();
     return;
   }
-  ExtensionsMenuView::ShowBubble(this, browser_, main_bar_);
+  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_);
 }

@@ -109,7 +109,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -167,7 +167,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, SolidColorLayerEmptyMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -250,7 +250,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, SolidColorEmptyMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -313,7 +313,7 @@ TEST_P(LayerTreeHostLayerListPixelTest,
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -322,7 +322,7 @@ TEST_P(LayerTreeHostLayerListPixelTest,
   mask_effect.stable_id = 3;
   mask_effect.transform_id = 1;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
-  mask_effect.has_render_surface = true;
+  mask_effect.render_surface_reason = RenderSurfaceReason::kTest;
   property_trees.effect_tree.Insert(mask_effect, 2);
 
   scoped_refptr<SolidColorLayer> background =
@@ -378,7 +378,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -418,7 +418,18 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
       &property_trees);
 }
 
-TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
+using LayerTreeHostLayerListPixelTestNonSkia = LayerTreeHostLayerListPixelTest;
+
+// TODO(crbug.com/948128): Enable this test for Skia.
+INSTANTIATE_TEST_SUITE_P(
+    PixelResourceTest,
+    LayerTreeHostLayerListPixelTestNonSkia,
+    ::testing::Combine(
+        ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
+        ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
+                          Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
+
+TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;
   InitializeForLayerListMode(&root_layer, &property_trees);
@@ -426,7 +437,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -502,7 +513,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectDifferentSize) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -562,7 +573,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, ImageMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -806,9 +817,16 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackdropFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
+INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(
+    LayerTreeHostMasksForBackdropFiltersPixelTest);
+
+using LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia =
+    ParameterizedPixelResourceTest;
+
+// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
-    LayerTreeHostMasksForBackdropFiltersPixelTest,
+    LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
     ::testing::Combine(
         ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
         ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
@@ -832,9 +850,8 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
-  gfx::RRectF backdrop_filter_bounds;
   blur->SetBackdropFilters(filters);
-  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
+  blur->ClearBackdropFilterBounds();
 
   gfx::Size mask_bounds(100, 100);
   CircleContentLayerClient mask_client(mask_bounds);
@@ -845,21 +862,8 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   blur->SetMaskLayer(mask.get());
   CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
-  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 100.0f;
-  int large_error_allowed = 256;
-  int small_error_allowed = 0;
-  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-      true,  // discard_alpha
-      percentage_pixels_large_error,
-      percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels,
-      large_error_allowed,
-      small_error_allowed);
-
   base::FilePath image_name =
-      (test_case_ == GPU)
+      (test_case_ == GPU || test_case_ == SKIA_GL)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
   RunPixelResourceTest(background, image_name);
@@ -940,16 +944,24 @@ class StaticPictureLayer : private ContentLayerClient, public PictureLayer {
   scoped_refptr<DisplayItemList> display_list_;
 };
 
+constexpr uint32_t kUseAntialiasing = 1 << 0;
+constexpr uint32_t kForceShaders = 1 << 1;
+
+struct MaskTestConfig {
+  PixelResourceTestCase test_case;
+  uint32_t flags;
+};
+
 class LayerTreeHostMaskAsBlendingPixelTest
     : public LayerTreeHostPixelResourceTest,
-      public ::testing::WithParamInterface<int> {
+      public ::testing::WithParamInterface<MaskTestConfig> {
  public:
   LayerTreeHostMaskAsBlendingPixelTest()
       : LayerTreeHostPixelResourceTest(
-            GetParam() ? ZERO_COPY : SOFTWARE,
+            GetParam().test_case,
             Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
-        use_antialiasing_(GetParam() == 2 || GetParam() == 4),
-        force_shaders_(GetParam() == 3 || GetParam() == 4) {
+        use_antialiasing_(GetParam().flags & kUseAntialiasing),
+        force_shaders_(GetParam().flags & kForceShaders) {
     float percentage_pixels_small_error = 0.f;
     float percentage_pixels_error = 0.f;
     float average_error_allowed_in_bad_pixels = 0.f;
@@ -961,7 +973,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
       average_error_allowed_in_bad_pixels = 3.5f;
       large_error_allowed = 15;
       small_error_allowed = 1;
-    } else if (test_type_ != PIXEL_TEST_SOFTWARE) {
+    } else if (test_case_ != SOFTWARE) {
       percentage_pixels_small_error = 0.9f;
       percentage_pixels_error = 6.5f;
       average_error_allowed_in_bad_pixels = 3.5f;
@@ -1068,15 +1080,18 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
+// TODO(crbug.com/948128): Enable these tests for Skia.
+MaskTestConfig const kTestConfigs[] = {
+    MaskTestConfig{SOFTWARE, 0},
+    MaskTestConfig{ZERO_COPY, 0},
+    MaskTestConfig{ZERO_COPY, kUseAntialiasing},
+    MaskTestConfig{ZERO_COPY, kForceShaders},
+    MaskTestConfig{ZERO_COPY, kUseAntialiasing | kForceShaders},
+};
+
 INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostMaskAsBlendingPixelTest,
-                         ::testing::Range(0, 5));
-// Instantiate 5 test modes of the following:
-// 0: SOFTWARE (golden sample)
-// 1: GL
-// 2: GL + AA
-// 3: GL + Forced Shaders
-// 4: GL + Forced Shaders + AA
+                         ::testing::ValuesIn(kTestConfigs));
 
 TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedNoop) {
   // This test verifies the degenerate case of a no-op mask doesn't affect
@@ -1214,7 +1229,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_type_ == PIXEL_TEST_SOFTWARE)
+      (test_case_ == SOFTWARE)
           ? base::FilePath(
                 FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png"))
           : base::FilePath(
@@ -1261,7 +1276,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_type_ == PIXEL_TEST_SOFTWARE)
+      (test_case_ == SOFTWARE)
           ? base::FilePath(FILE_PATH_LITERAL(
                 "mask_as_blending_rotated_circle_underflow.png"))
           : base::FilePath(FILE_PATH_LITERAL(
@@ -1269,7 +1284,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   RunPixelResourceTest(root, image_name);
 }
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
        MaskOfLayerWithBackdropFilterAndBlend) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(128, 128), SK_ColorWHITE);
@@ -1294,8 +1309,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
   picture_horizontal->SetBackdropFilters(filters);
-  gfx::RRectF backdrop_filter_bounds;
-  picture_horizontal->SetBackdropFilterBounds(backdrop_filter_bounds);
+  picture_horizontal->ClearBackdropFilterBounds();
 
   background->AddChild(picture_vertical);
   background->AddChild(picture_horizontal);

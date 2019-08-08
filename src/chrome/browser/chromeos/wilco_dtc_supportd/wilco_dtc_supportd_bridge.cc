@@ -24,7 +24,7 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/cros_system_api/dbus/diagnosticsd/dbus-constants.h"
+#include "third_party/cros_system_api/dbus/wilco_dtc_supportd/dbus-constants.h"
 
 namespace chromeos {
 
@@ -74,7 +74,7 @@ void WilcoDtcSupportdBridgeDelegateImpl::
   mojo::OutgoingInvitation invitation;
   mojo::PlatformChannel channel;
   mojo::ScopedMessagePipeHandle server_pipe = invitation.AttachMessagePipe(
-      diagnostics::kDiagnosticsdMojoConnectionChannelToken);
+      diagnostics::kWilcoDtcSupportdMojoConnectionChannelToken);
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  base::kNullProcessHandle,
                                  channel.TakeLocalEndpoint());

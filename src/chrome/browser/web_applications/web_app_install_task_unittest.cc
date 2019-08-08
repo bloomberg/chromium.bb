@@ -19,9 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/installable/fake_installable_manager.h"
 #include "chrome/browser/installable/installable_data.h"
-#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
@@ -104,7 +102,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     WebAppTest::SetUp();
 
     database_ = std::make_unique<TestWebAppDatabase>();
-    registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
+    registrar_ = std::make_unique<WebAppRegistrar>(profile(), database_.get());
 
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
@@ -115,14 +113,11 @@ class WebAppInstallTaskTest : public WebAppTest {
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
         registrar_.get(), icon_manager_.get());
 
-    install_task_ = std::make_unique<WebAppInstallTask>(
-        profile(), install_finalizer_.get());
-  }
-
-  void CreateTestDataRetriever() {
     auto data_retriever = std::make_unique<TestDataRetriever>();
     data_retriever_ = data_retriever.get();
-    install_task_->SetDataRetrieverForTesting(std::move(data_retriever));
+
+    install_task_ = std::make_unique<WebAppInstallTask>(
+        profile(), install_finalizer_.get(), std::move(data_retriever));
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -130,8 +125,6 @@ class WebAppInstallTaskTest : public WebAppTest {
                              const std::string description,
                              const GURL& scope,
                              base::Optional<SkColor> theme_color) {
-    CreateTestDataRetriever();
-
     auto web_app_info = std::make_unique<WebApplicationInfo>();
 
     web_app_info->app_url = url;
@@ -150,13 +143,6 @@ class WebAppInstallTaskTest : public WebAppTest {
     CreateRendererAppInfo(url, name, description, GURL(), base::nullopt);
   }
 
-  void CreateDefaultInstallableManager() {
-    InstallableManager::CreateForWebContents(web_contents());
-    // Required by InstallableManager.
-    // Causes eligibility check to return NOT_FROM_SECURE_ORIGIN for GetData.
-    SecurityStateTabHelper::CreateForWebContents(web_contents());
-  }
-
   static base::NullableString16 ToNullableUTF16(const std::string& str) {
     return base::NullableString16(base::UTF8ToUTF16(str), false);
   }
@@ -166,6 +152,23 @@ class WebAppInstallTaskTest : public WebAppTest {
     test_install_finalizer_ = test_install_finalizer.get();
     install_finalizer_ = std::move(test_install_finalizer);
     install_task_->SetInstallFinalizerForTesting(test_install_finalizer_);
+  }
+
+  void CreateDefaultDataToRetrieve(const GURL& url, const GURL& scope) {
+    data_retriever_->SetRendererWebApplicationInfo(
+        std::make_unique<WebApplicationInfo>());
+
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = url;
+    manifest->scope = scope;
+
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+
+    data_retriever_->SetIcons(IconsMap{});
+  }
+
+  void CreateDefaultDataToRetrieve(const GURL& url) {
+    CreateDefaultDataToRetrieve(url, GURL{});
   }
 
   TestInstallFinalizer& test_install_finalizer() {
@@ -208,9 +211,9 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void PrepareTestAppInstall() {
-    CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
-                          "Description");
-    CreateDefaultInstallableManager();
+    const GURL url{"https://example.com/path"};
+    CreateDefaultDataToRetrieve(url);
+    CreateRendererAppInfo(url, "Name", "Description");
 
     SetInstallFinalizerForTesting();
 
@@ -236,7 +239,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
 
-  const GURL url = GURL("https://example.com/path");
+  const GURL url = GURL("https://example.com/scope/path");
   const std::string name = "Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
@@ -244,8 +247,8 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
-  CreateRendererAppInfo(url, name, description, scope, theme_color);
-  CreateDefaultInstallableManager();
+  CreateDefaultDataToRetrieve(url, scope);
+  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color);
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -283,8 +286,8 @@ TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
+  CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, name, description);
-  CreateDefaultInstallableManager();
 
   const AppId installed_web_app = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(app_id, installed_web_app);
@@ -312,11 +315,7 @@ TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
 }
 
 TEST_F(WebAppInstallTaskTest, GetWebApplicationInfoFailed) {
-  auto data_retriver = std::make_unique<TestDataRetriever>();
-  // data_retriver with empty info means an error.
-  install_task_->SetDataRetrieverForTesting(std::move(data_retriver));
-
-  CreateDefaultInstallableManager();
+  // data_retriever_ with empty info means an error.
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -338,9 +337,9 @@ TEST_F(WebAppInstallTaskTest, GetWebApplicationInfoFailed) {
 }
 
 TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
-  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
-                        "Description");
-  CreateDefaultInstallableManager();
+  const GURL url = GURL("https://example.com/path");
+  CreateDefaultDataToRetrieve(url);
+  CreateRendererAppInfo(url, "Name", "Description");
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -422,9 +421,9 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons) {
-  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
-                        "Description");
-  CreateDefaultInstallableManager();
+  const GURL url = GURL("https://example.com/path");
+  CreateDefaultDataToRetrieve(url);
+  CreateRendererAppInfo(url, "Name", "Description");
 
   SetInstallFinalizerForTesting();
 
@@ -432,8 +431,9 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
   const SkColor color = SK_ColorBLUE;
 
   // Generate one icon as if it was downloaded.
-  IconsMap icons_map =
-      GenerateIconsMapWithOneIcon(icon_url, icon_size::k128, color);
+  IconsMap icons_map;
+  AddIconToIconsMap(icon_url, icon_size::k128, color, &icons_map);
+
   SetIconsMapToRetrieve(std::move(icons_map));
 
   InstallWebAppFromManifestWithFallback();
@@ -456,9 +456,9 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
-  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
-                        "Description");
-  CreateDefaultInstallableManager();
+  const GURL url = GURL("https://example.com/path");
+  CreateDefaultDataToRetrieve(url);
+  CreateRendererAppInfo(url, "Name", "Description");
 
   SetInstallFinalizerForTesting();
 
@@ -481,9 +481,9 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
 }
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
-  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
-                        "Description");
-  CreateDefaultInstallableManager();
+  const GURL url = GURL("https://example.com/path");
+  CreateDefaultDataToRetrieve(url);
+  CreateRendererAppInfo(url, "Name", "Description");
 
   // TestingProfile creates temp directory if TestingProfile::path_ is empty
   // (i.e. if TestingProfile::Builder::SetPath was not called by a test fixture)
@@ -551,11 +551,12 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
   const GURL app_url = GURL("https://example.com/path");
+  CreateDefaultDataToRetrieve(app_url);
   CreateRendererAppInfo(app_url, "Name", "Description");
-  CreateDefaultInstallableManager();
 
-  IconsMap icons_map = GenerateIconsMapWithOneIcon(
-      GURL("https://example.com/app.ico"), icon_size::k512, SK_ColorBLUE);
+  IconsMap icons_map;
+  AddIconToIconsMap(GURL("https://example.com/app.ico"), icon_size::k512,
+                    SK_ColorBLUE, &icons_map);
   SetIconsMapToRetrieve(std::move(icons_map));
 
   const base::FilePath profile_dir = profile()->GetPath();
@@ -596,8 +597,8 @@ TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
   const GURL url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(url);
 
+  CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
-  CreateDefaultInstallableManager();
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -649,8 +650,6 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
-  CreateTestDataRetriever();
-
   const GURL url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -674,6 +673,270 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
   run_loop.Run();
 }
 
-// TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = url;
+  web_app_info->open_as_window = false;
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfo(
+      std::move(web_app_info), /*no_network_install=*/false,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                     InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccess, code);
+        EXPECT_EQ(app_id, installed_app_id);
+        EXPECT_FALSE(test_install_finalizer()
+                         .finalize_options_list()
+                         .at(0)
+                         .no_network_install);
+        EXPECT_EQ(LaunchContainer::kDefault, test_install_finalizer()
+                                                 .finalize_options_list()
+                                                 .at(0)
+                                                 .force_launch_container);
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_NoNetworkInstall) {
+  SetInstallFinalizerForTesting();
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL("https://example.com/path");
+  web_app_info->open_as_window = false;
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfo(
+      std::move(web_app_info), /*no_network_install=*/true,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_TRUE(test_install_finalizer()
+                            .finalize_options_list()
+                            .at(0)
+                            .no_network_install);
+            EXPECT_EQ(LaunchContainer::kWindow, test_install_finalizer()
+                                                    .finalize_options_list()
+                                                    .at(0)
+                                                    .force_launch_container);
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
+  SetInstallFinalizerForTesting();
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL("https://example.com/path");
+  web_app_info->open_as_window = false;
+
+  const GURL icon_url("https://example.com/path/main.ico");
+
+  // Add square yellow icon.
+  {
+    auto icon_info =
+        GenerateIconInfo(icon_url, icon_size::k256, SK_ColorYELLOW);
+    web_app_info->icons.push_back(std::move(icon_info));
+  }
+
+  // Add non-square red icon.
+  {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(icon_size::k256, icon_size::k128);
+    bitmap.eraseColor(SK_ColorRED);
+
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.url = GURL("https://example.com/path/bad.ico");
+    icon_info.width = icon_size::k256;
+    icon_info.height = icon_size::k128;
+    icon_info.data = bitmap;
+    web_app_info->icons.push_back(std::move(icon_info));
+  }
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfo(
+      std::move(web_app_info), /*no_network_install=*/true,
+      WebappInstallSource::ARC,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+
+            // Make sure that icons have been generated for all sub sizes.
+            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+
+            // Make sure no red non-square icons, only square yellow ones.
+            for (const WebApplicationInfo::IconInfo& icon :
+                 final_web_app_info->icons) {
+              EXPECT_FALSE(icon.data.drawsNothing());
+              EXPECT_EQ(SK_ColorYELLOW, icon.data.getColor(0, 0));
+
+              // All icons should have an empty url except the original one:
+              if (icon.url != icon_url)
+                EXPECT_TRUE(icon.url.is_empty());
+            }
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url{"https://example.com/path"};
+  const GURL icon1_url{"https://example.com/path/icon1.png"};
+  const GURL icon2_url{"https://example.com/path/icon2.png"};
+
+  CreateDefaultDataToRetrieve(url);
+
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = url;
+
+  WebApplicationInfo::IconInfo icon1_info;
+  icon1_info.url = icon1_url;
+  icon1_info.width = icon_size::k128;
+  web_app_info->icons.push_back(std::move(icon1_info));
+
+  WebApplicationInfo::IconInfo icon2_info;
+  icon2_info.url = icon2_url;
+  icon2_info.width = icon_size::k256;
+  web_app_info->icons.push_back(std::move(icon2_info));
+
+  IconsMap icons_map;
+  AddIconToIconsMap(icon1_url, icon_size::k128, SK_ColorBLUE, &icons_map);
+  AddIconToIconsMap(icon2_url, icon_size::k256, SK_ColorRED, &icons_map);
+
+  SetIconsMapToRetrieve(std::move(icons_map));
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfoRetrieveIcons(
+      web_contents(), std::move(web_app_info), /*is_locally_installed=*/true,
+      WebappInstallSource::SYNC,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(app_id, installed_app_id);
+
+            EXPECT_TRUE(test_install_finalizer()
+                            .finalize_options_list()
+                            .at(0)
+                            .locally_installed);
+
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+
+            EXPECT_EQ(2U, final_web_app_info->icons.size());
+
+            const auto& icon1 = final_web_app_info->icons.at(0);
+            EXPECT_FALSE(icon1.data.drawsNothing());
+            EXPECT_EQ(SK_ColorBLUE, icon1.data.getColor(0, 0));
+            EXPECT_EQ(icon1_url, icon1.url);
+
+            const auto& icon2 = final_web_app_info->icons.at(1);
+            EXPECT_FALSE(icon2.data.drawsNothing());
+            EXPECT_EQ(SK_ColorRED, icon2.data.getColor(0, 0));
+            EXPECT_EQ(icon2_url, icon2.url);
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url{"https://example.com/path"};
+  CreateDefaultDataToRetrieve(url);
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = url;
+  // All icons will get the E letter drawn into a rounded yellow background.
+  web_app_info->generated_icon_color = SK_ColorYELLOW;
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfoRetrieveIcons(
+      web_contents(), std::move(web_app_info), /*is_locally_installed=*/false,
+      WebappInstallSource::SYNC,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(app_id, installed_app_id);
+
+            EXPECT_FALSE(test_install_finalizer()
+                             .finalize_options_list()
+                             .at(0)
+                             .locally_installed);
+
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+            // Make sure that icons have been generated for all sub sizes.
+            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+
+            for (const WebApplicationInfo::IconInfo& icon :
+                 final_web_app_info->icons) {
+              EXPECT_FALSE(icon.data.drawsNothing());
+              EXPECT_TRUE(icon.url.is_empty());
+            }
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url{"https://example.com/path"};
+  CreateDefaultDataToRetrieve(url);
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromManifestWithFallback(
+      web_contents(), /*force_shortcut_app=*/true,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+            // Make sure that icons have been generated for all sub sizes.
+            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+
+            for (const WebApplicationInfo::IconInfo& icon :
+                 final_web_app_info->icons) {
+              EXPECT_FALSE(icon.data.drawsNothing());
+              EXPECT_TRUE(icon.url.is_empty());
+            }
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
 
 }  // namespace web_app

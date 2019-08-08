@@ -4,6 +4,8 @@
 
 """Simplify unit tests based on pymox."""
 
+from __future__ import print_function
+
 import os
 import random
 import shutil
@@ -68,7 +70,7 @@ class TestCaseUtils(object):
     if actual_members != expected_members:
       diff = ([i for i in actual_members if i not in expected_members] +
               [i for i in expected_members if i not in actual_members])
-      print >> sys.stderr, diff
+      print(diff, file=sys.stderr)
     # pylint: disable=no-member
     self.assertEqual(actual_members, expected_members)
 
@@ -138,7 +140,7 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
       if hasattr(parent, item):
         try:
           self.mox.StubOutWithMock(parent, item)
-        except TypeError, e:
+        except TypeError as e:
           raise TypeError(
               'Couldn\'t mock %s in %s: %s' % (item, parent.__name__, e))
 
